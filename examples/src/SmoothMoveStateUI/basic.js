@@ -5773,6 +5773,17 @@ var $mdgriffith$elm_ui$Element$rgb255 = F3(
 	});
 var $author$project$Common$Colors$backgroundLight = A3($mdgriffith$elm_ui$Element$rgb255, 248, 250, 252);
 var $author$project$Common$Colors$backgroundMedium = A3($mdgriffith$elm_ui$Element$rgb255, 226, 232, 240);
+var $author$project$Common$UI$calculateHorizontalWidth = function (_v0) {
+	var sectionCount = _v0.sectionCount;
+	var sectionWidth = _v0.sectionWidth;
+	var spacing = _v0.spacing;
+	var containerPaddingX = _v0.containerPaddingX;
+	var layoutPaddingX = _v0.layoutPaddingX;
+	var totalSpacingWidth = (sectionCount - 1) * spacing;
+	var totalSectionWidth = sectionCount * sectionWidth;
+	var totalPaddingWidth = containerPaddingX + layoutPaddingX;
+	return (totalSectionWidth + totalSpacingWidth) + totalPaddingWidth;
+};
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -5916,6 +5927,10 @@ var $mdgriffith$elm_ui$Element$paddingXY = F2(
 					xFloat));
 		}
 	});
+var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
+	return {$: 'Px', a: a};
+};
+var $mdgriffith$elm_ui$Element$px = $mdgriffith$elm_ui$Internal$Model$Px;
 var $mdgriffith$elm_ui$Internal$Model$Width = function (a) {
 	return {$: 'Width', a: a};
 };
@@ -5930,9 +5945,23 @@ var $author$project$Common$UI$getLayoutAttributes = function (layoutType) {
 						$elm$html$Html$Attributes$class('responsive-layout'))
 					]);
 			case 'Horizontal':
+				var calculatedWidth = $author$project$Common$UI$calculateHorizontalWidth(
+					{containerPaddingX: 40, layoutPaddingX: 80, sectionCount: 4, sectionWidth: 300, spacing: 40});
 				return _List_fromArray(
 					[
-						$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+						$mdgriffith$elm_ui$Element$width(
+						$mdgriffith$elm_ui$Element$px(calculatedWidth)),
+						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
+						$mdgriffith$elm_ui$Element$htmlAttribute(
+						$elm$html$Html$Attributes$class('horizontal-layout responsive-layout'))
+					]);
+			case 'HorizontalCustomWidth':
+				var customWidth = layoutType.a;
+				return _List_fromArray(
+					[
+						$mdgriffith$elm_ui$Element$width(
+						$mdgriffith$elm_ui$Element$px(
+							$elm$core$Basics$round(customWidth))),
 						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
 						$mdgriffith$elm_ui$Element$htmlAttribute(
 						$elm$html$Html$Attributes$class('horizontal-layout responsive-layout'))
@@ -5974,7 +6003,7 @@ var $author$project$Common$UI$getLayoutAttributes = function (layoutType) {
 var $author$project$Common$Styles$buttonGroupCSS = '\n    /* Example links - matching elmui-examples.html reference implementation */\n    .example-links {\n        display: flex;\n        gap: 6px;\n        flex-wrap: wrap;\n        justify-content: center;\n        margin: 20px 0;\n    }\n\n    .example-link {\n        display: flex;\n        align-items: center;\n        justify-content: center;\n        padding: 12px 8px;\n        background: linear-gradient(135deg, #4299e1, #3182ce);\n        color: white;\n        text-decoration: none;\n        border-radius: 6px;\n        font-size: 12px;\n        font-weight: 500;\n        transition: transform 0.2s, box-shadow 0.2s;\n        text-align: center;\n        min-width: 44px;\n        min-height: 44px;\n        cursor: pointer;\n        border: none;\n        font-family: inherit;\n    }\n\n    @media (min-width: 480px) {\n        .example-links {\n            gap: 8px;\n            margin: 24px 0;\n        }\n\n        .example-link {\n            font-size: 13px;\n            padding: 10px 12px;\n        }\n    }\n\n    @media (min-width: 768px) {\n        .example-links {\n            gap: 10px;\n            margin: 32px 0;\n        }\n\n        .example-link {\n            display: inline-block;\n            padding: 8px 16px;\n            font-size: 0.9rem;\n            min-width: auto;\n            min-height: auto;\n        }\n    }\n\n    .example-link:hover {\n        transform: translateY(-2px);\n        box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);\n    }\n\n    /* Backward compatibility for old button-group class */\n    .button-group {\n        display: flex;\n        gap: 6px;\n        flex-wrap: wrap;\n        justify-content: center;\n        margin: 20px 0;\n    }\n\n    @media (min-width: 480px) {\n        .button-group {\n            gap: 8px;\n            margin: 24px 0;\n        }\n    }\n\n    @media (min-width: 768px) {\n        .button-group {\n            gap: 10px;\n            margin: 32px 0;\n        }\n    }\n    ';
 var $author$project$Common$Styles$containerCSS = '\n    .container-layout {\n        min-height: 100vh;\n        padding: 20px;\n        box-sizing: border-box;\n    }\n    \n    .scroll-container-wrapper {\n        max-width: 1200px;\n        width: 100%;\n        margin: 0 auto;\n    }\n\n    /* Scrollbar styles for the scroll container */\n    #scroll-container {\n        overflow-y: auto !important;\n        scrollbar-width: thin;\n        scrollbar-color: #CBD5E0 #F7FAFC;\n    }\n\n    #scroll-container::-webkit-scrollbar {\n        width: 12px;\n    }\n\n    #scroll-container::-webkit-scrollbar-track {\n        background: #F7FAFC;\n        border-radius: 6px;\n        margin: 6px;\n    }\n\n    #scroll-container::-webkit-scrollbar-thumb {\n        background: #CBD5E0;\n        border-radius: 6px;\n    }\n\n    #scroll-container::-webkit-scrollbar-thumb:hover {\n        background: #A0AEC0;\n    }\n\n    @media (max-width: 768px) {\n        .container-layout {\n            padding: 16px;\n        }\n    }\n\n    @media (max-width: 480px) {\n        .container-layout {\n            padding: 12px;\n        }\n    }\n    ';
 var $author$project$Common$Styles$diagonalCSS = '\n    body {\n        overflow-x: auto !important;\n        overflow-y: auto !important;\n    }\n\n    .diagonal-layout {\n        min-height: 300vh;\n        height: auto;\n        width: 300vw;\n        padding: 20px 40px !important;\n    }\n\n    .diagonal-content-grid {\n        min-width: 300vw;\n        min-height: 300vh;\n    }\n\n    body::-webkit-scrollbar {\n        width: 12px;\n        height: 12px;\n    }\n\n    body::-webkit-scrollbar-track {\n        background: #F7FAFC;\n        border-radius: 6px;\n    }\n\n    body::-webkit-scrollbar-thumb {\n        background: #CBD5E0;\n        border-radius: 6px;\n    }\n\n    body::-webkit-scrollbar-thumb:hover {\n        background: #A0AEC0;\n    }\n\n    @media (max-width: 768px) {\n        .diagonal-layout {\n            min-height: 250vh;\n            width: 250vw;\n            padding: 20px 16px !important;\n        }\n        \n        .diagonal-content-grid {\n            min-width: 250vw;\n            min-height: 250vh;\n        }\n    }\n\n    @media (max-width: 480px) {\n        .diagonal-layout {\n            min-height: 200vh;\n            width: 200vw;\n            padding: 12px !important;\n        }\n        \n        .diagonal-content-grid {\n            min-width: 200vw;\n            min-height: 200vh;\n        }\n    }\n    ';
-var $author$project$Common$Styles$horizontalCSS = '\n    body {\n        overflow-x: auto !important;\n        overflow-y: auto !important;\n    }\n\n    .horizontal-layout {\n        min-height: 100vh;\n        height: auto;\n        width: 500vw;\n        padding: 20px 40px !important;\n    }\n\n    .horizontal-content-row {\n        min-width: 500vw;\n    }\n\n    body::-webkit-scrollbar:horizontal {\n        height: 12px;\n    }\n\n    body::-webkit-scrollbar-track:horizontal {\n        background: #F7FAFC;\n        border-radius: 6px;\n    }\n\n    body::-webkit-scrollbar-thumb:horizontal {\n        background: #CBD5E0;\n        border-radius: 6px;\n    }\n\n    body::-webkit-scrollbar-thumb:horizontal:hover {\n        background: #A0AEC0;\n    }\n\n    @media (max-width: 768px) {\n        .horizontal-layout {\n            width: 300vw;\n            padding: 20px 16px !important;\n        }\n        \n        .horizontal-content-row {\n            min-width: 300vw;\n        }\n    }\n\n    @media (max-width: 480px) {\n        .horizontal-layout {\n            width: 200vw;\n            padding: 8px 4px !important;\n        }\n        \n        .horizontal-content-row {\n            min-width: 200vw;\n        }\n    }\n    ';
+var $author$project$Common$Styles$horizontalCSS = '\n    body {\n        overflow-x: auto !important;\n        overflow-y: auto !important;\n    }\n\n    .horizontal-layout {\n        min-height: 100vh;\n        height: auto;\n        padding: 20px 40px !important;\n    }\n\n    .horizontal-content-row {\n        min-width: 500vw;\n    }\n\n    body::-webkit-scrollbar:horizontal {\n        height: 12px;\n    }\n\n    body::-webkit-scrollbar-track:horizontal {\n        background: #F7FAFC;\n        border-radius: 6px;\n    }\n\n    body::-webkit-scrollbar-thumb:horizontal {\n        background: #CBD5E0;\n        border-radius: 6px;\n    }\n\n    body::-webkit-scrollbar-thumb:horizontal:hover {\n        background: #A0AEC0;\n    }\n\n    @media (max-width: 768px) {\n        .horizontal-layout {\n            padding: 20px 16px !important;\n        }\n    }\n\n    @media (max-width: 480px) {\n        .horizontal-layout {\n            padding: 8px 4px !important;\n        }\n    }\n    ';
 var $author$project$Common$Styles$horizontalContainerCSS = '\n    .container-layout {\n        min-height: 100vh;\n    }\n\n    .scroll-container {\n        overflow-x: auto !important;\n        overflow-y: auto !important;\n        scrollbar-width: thin;\n        scrollbar-color: #CBD5E0 #F7FAFC;\n    }\n\n    .scroll-container::-webkit-scrollbar {\n        height: 10px;\n    }\n\n    .scroll-container::-webkit-scrollbar-track {\n        background: #F7FAFC;\n        border-radius: 5px;\n    }\n\n    .scroll-container::-webkit-scrollbar-thumb {\n        background: #CBD5E0;\n        border-radius: 5px;\n    }\n\n    .scroll-container::-webkit-scrollbar-thumb:hover {\n        background: #A0AEC0;\n    }\n\n    /* Navigation buttons responsive layout */\n    .nav-buttons-row {\n        flex-wrap: wrap;\n        justify-content: center;\n    }\n\n    /* Responsive button container - row on desktop, column on mobile */\n    .responsive-button-container {\n        display: flex !important;\n        flex-direction: row !important;\n        justify-content: center !important;\n        align-items: center !important;\n        gap: 20px !important;\n    }\n\n    @media (max-width: 768px) {\n        .responsive-layout {\n            padding: 20px 16px !important;\n        }\n        \n        .responsive-container {\n            gap: 20px !important;\n        }\n        \n        .responsive-button-container {\n            flex-direction: column !important;\n            gap: 16px !important;\n        }\n        \n        .nav-buttons-row {\n            gap: 8px !important;\n        }\n        \n        .nav-buttons-row button {\n            min-width: 80px;\n            padding: 8px 12px !important;\n            font-size: 12px !important;\n        }\n        \n        .container-layout {\n            padding: 10px 15px;\n        }\n    }\n\n    @media (max-width: 480px) {\n        .responsive-layout {\n            padding: 16px 12px !important;\n        }\n        \n        .responsive-button-container {\n            flex-direction: column !important;\n            gap: 12px !important;\n        }\n        \n        .nav-buttons-row {\n            gap: 6px !important;\n        }\n        \n        .nav-buttons-row button {\n            min-width: 70px;\n            padding: 6px 10px !important;\n            font-size: 11px !important;\n        }\n        \n        .container-layout {\n            padding: 10px;\n        }\n    }\n    ';
 var $author$project$Common$Styles$responsiveCSS = '\n    /* Base styles for responsive elements */\n    .responsive-header {\n        font-size: 32px;\n        text-align: center;\n        padding: 0;\n    }\n\n    /* Mobile-first responsive design */\n    @media (max-width: 768px) {\n        .responsive-layout {\n            padding: 20px 16px !important;\n        }\n        \n        .responsive-container {\n            gap: 20px !important;\n        }\n        \n        .responsive-header {\n            font-size: 24px !important;\n            text-align: center;\n            padding: 0 16px;\n        }\n        \n        .responsive-tech-info {\n            padding: 16px 20px !important;\n            margin: 0 16px;\n        }\n        \n        .responsive-buttons {\n            gap: 16px !important;\n            padding: 0 16px;\n        }\n        \n        .responsive-buttons button {\n            width: 100%;\n            min-height: 44px;\n            padding: 12px 20px !important;\n        }\n        \n        .responsive-paragraph {\n            padding: 20px 16px !important;\n            margin: 0 16px;\n        }\n        \n        .responsive-paragraph h1,\n        .responsive-paragraph h2,\n        .responsive-paragraph h3 {\n            font-size: 20px !important;\n        }\n    }\n    \n    @media (max-width: 480px) {\n        .responsive-layout {\n            padding: 16px 12px !important;\n        }\n        \n        .responsive-header {\n            font-size: 20px !important;\n        }\n        \n        .responsive-tech-info {\n            padding: 12px 16px !important;\n            margin: 0 12px;\n        }\n        \n        .responsive-paragraph {\n            padding: 16px 12px !important;\n            margin: 0 12px;\n        }\n        \n        .responsive-buttons {\n            padding: 0 12px;\n        }\n    }\n    ';
 var $author$project$Common$Styles$responsiveContentCSS = '\n    /* Responsive content block styling */\n    .responsive-content-block {\n        padding: 20px !important;\n    }\n\n    .responsive-content-title {\n        font-size: inherit !important;\n    }\n\n    .responsive-content-description {\n        font-size: inherit !important;\n        line-height: 1.5 !important;\n    }\n\n    .responsive-bullet-list {\n        font-size: inherit !important;\n    }\n\n    .responsive-bullet-point {\n        font-size: inherit !important;\n        line-height: 1.4 !important;\n        margin-bottom: 6px !important;\n    }\n\n    @media (max-width: 768px) {\n        .responsive-content-block {\n            padding: 16px !important;\n        }\n        \n        .responsive-content-title {\n            font-size: 18px !important;\n        }\n        \n        .responsive-content-description {\n            font-size: 14px !important;\n        }\n        \n        .responsive-bullet-list {\n            font-size: 14px !important;\n        }\n        \n        .responsive-bullet-point {\n            font-size: 14px !important;\n            margin-bottom: 8px !important;\n        }\n    }\n\n    @media (max-width: 480px) {\n        .responsive-content-block {\n            padding: 12px !important;\n        }\n        \n        .responsive-content-title {\n            font-size: 16px !important;\n        }\n        \n        .responsive-content-description {\n            font-size: 13px !important;\n        }\n        \n        .responsive-bullet-list {\n            font-size: 13px !important;\n        }\n        \n        .responsive-bullet-point {\n            font-size: 13px !important;\n            margin-bottom: 8px !important;\n        }\n    }\n    ';
@@ -5984,6 +6013,8 @@ var $author$project$Common$UI$getLayoutCSS = function (layoutType) {
 		case 'Basic':
 			return baseCSS;
 		case 'Horizontal':
+			return baseCSS + ('\n' + $author$project$Common$Styles$horizontalCSS);
+		case 'HorizontalCustomWidth':
 			return baseCSS + ('\n' + $author$project$Common$Styles$horizontalCSS);
 		case 'Diagonal':
 			return baseCSS + ('\n' + $author$project$Common$Styles$diagonalCSS);
@@ -11980,10 +12011,6 @@ var $author$project$Common$UI$pageHeader = function (title) {
 				$mdgriffith$elm_ui$Element$text(title)
 			]));
 };
-var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
-	return {$: 'Px', a: a};
-};
-var $mdgriffith$elm_ui$Element$px = $mdgriffith$elm_ui$Internal$Model$Px;
 var $mdgriffith$elm_ui$Element$rgba = $mdgriffith$elm_ui$Internal$Model$Rgba;
 var $mdgriffith$elm_ui$Internal$Model$boxShadowClass = function (shadow) {
 	return $elm$core$String$concat(
