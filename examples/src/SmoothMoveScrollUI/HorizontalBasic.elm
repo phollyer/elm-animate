@@ -2,10 +2,11 @@ module SmoothMoveScrollUI.HorizontalBasic exposing (main)
 
 import Browser exposing (Document)
 import Browser.Dom
+import Browser.Events
 import Common.Colors as Colors
 import Common.Styles as Styles
 import Common.UI as UI
-import Element exposing (Element, alignLeft, scrollbarX, centerX, centerY, column, el, explain, fill, height, htmlAttribute, layout, link, maximum, padding, paddingEach, paddingXY, paragraph, px, rgb255, row, spacing, text, width)
+import Element exposing (Element, alignLeft, alignRight, scrollbarX, centerX, centerY, column, el, explain, fill, height, htmlAttribute, layout, link, maximum, padding, paddingEach, paddingXY, paragraph, px, rgb255, row, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -35,12 +36,17 @@ main =
 
 
 type alias Model =
-    {}
+    { contentWidth : Maybe Float
+    , hasAttemptedMeasure : Bool
+    }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( {}, Cmd.none )
+    ( { contentWidth = Nothing
+    , hasAttemptedMeasure = False }
+    , Cmd.none
+    )
 
 
 
@@ -53,25 +59,41 @@ type Msg
     | ScrollToSectionTwo
     | ScrollToSectionThree
     | ScrollToStart
+    | MeasureContent
+    | GotContentWidth (Result Browser.Dom.Error Browser.Dom.Element)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg |> Debug.log "" of
+    case msg of
         NoOp ->
             ( model, Cmd.none )
 
+        MeasureContent ->
+            ( { model | hasAttemptedMeasure = True }
+            , Task.attempt GotContentWidth (Browser.Dom.getElement "horizontal-content")
+            )
+
+        GotContentWidth result ->
+            case result of
+                Ok element ->
+                    ( { model | contentWidth = Just element.element.width }, Cmd.none )
+
+                Err _ ->
+                    -- Fallback to calculated width if measurement fails
+                    ( { model | contentWidth = Just 1440 }, Cmd.none )
+
         ScrollToSectionOne ->
-            ( model, animateToCmdWithConfig NoOp { defaultConfig | speed = 30, axis = X } "section-one" )
+            ( model, animateToCmdWithConfig NoOp { defaultConfig | speed = 30, axis = X, offsetX = 20 } "section-one" )
 
         ScrollToSectionTwo ->
-            ( model, animateToCmdWithConfig NoOp { defaultConfig | speed = 30, axis = X } "section-two" )
+            ( model, animateToCmdWithConfig NoOp { defaultConfig | speed = 30, axis = X, offsetX = 20 } "section-two" )
 
         ScrollToSectionThree ->
-            ( model, animateToCmdWithConfig NoOp { defaultConfig | speed = 30, axis = X } "section-three" )
+            ( model, animateToCmdWithConfig NoOp { defaultConfig | speed = 30, axis = X, offsetX = 20 } "section-three" )
 
         ScrollToStart ->
-            ( model, animateToCmdWithConfig NoOp { defaultConfig | speed = 30, axis = X } "start" )
+            ( model, animateToCmdWithConfig NoOp { defaultConfig | speed = 30, axis = X, offsetX = 20 } "start" )
 
 
 
@@ -79,8 +101,11 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
+subscriptions model =
+    if not model.hasAttemptedMeasure && model.contentWidth == Nothing then
+        Browser.Events.onAnimationFrame (\_ -> MeasureContent)
+    else
+        Sub.none
 
 
 
@@ -89,7 +114,16 @@ subscriptions _ =
 
 view : Model -> Document Msg
 view model =
-    UI.createDocument "SmoothMoveScroll Horizontal ElmUI Example" UI.Horizontal (viewContent model)
+    let
+        layoutType =
+            case model.contentWidth of
+                Just width ->
+                    UI.HorizontalCustomWidth width
+
+                Nothing ->
+                    UI.Horizontal  -- Fallback to default calculated width while measuring
+    in
+    UI.createDocument "SmoothMoveScroll Horizontal ElmUI Example" layoutType (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)
@@ -97,38 +131,26 @@ viewContent model =
     [ -- Header Section
       column
         [ width fill
-        , spacing 20
-        , centerX
+        --, spacing 20
         ]
         [ UI.backButton
         , -- Header
           UI.pageHeader "Horizontal X Axis Scrolling"
-        , -- Technical Info
-          UI.techInfo
-            [ UI.techParagraph
-                [ text "This example demonstrates "
-                , UI.highlight "X axis scrolling"
-                , text " using "
-                , UI.highlight "{ axis = X }"
-                , text " configuration. The sections scroll horizontally instead of vertically, creating a smooth left-to-right navigation experience."
-                ]
-            , UI.techParagraph
-                [ text "Perfect for horizontal layouts, carousels, and side-scrolling interfaces where content flows naturally from left to right."
-                ]
-            ]
         ]
     , -- Navigation Buttons
+      el [alignRight
+      , paddingXY 20 0] <|
       UI.htmlActionButtons
         [ ( UI.Primary, ScrollToStart, "Start" )
         , ( UI.Success, ScrollToSectionOne, "Section 1" )
         , ( UI.Purple, ScrollToSectionTwo, "Section 2" )
         , ( UI.Warning, ScrollToSectionThree, "Section 3" )
         ]
-    , -- Horizontal Content Container (move scrolling to document level)
+    , -- Horizontal Content Container
       row
         [ spacing 40
-        , paddingXY 20 20
-        , htmlAttribute (Html.Attributes.style "width" "1000vw")
+        , paddingXY 20 0
+        , htmlAttribute (Html.Attributes.id "horizontal-content")
         ]
         [ -- Start Section
           viewSection "start"

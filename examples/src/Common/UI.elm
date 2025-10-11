@@ -3,7 +3,7 @@ module Common.UI exposing (..)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.Styles as Styles
-import Element exposing (Element, alignLeft, centerX, column, el, fill, height, htmlAttribute, layout, link, maximum, padding, paddingXY, paragraph, rgb255, spacing, text, width)
+import Element exposing (Element, alignLeft, centerX, column, el, fill, height, htmlAttribute, layout, link, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -20,10 +20,26 @@ import Html.Events
 type LayoutType
     = Basic
     | Horizontal
+    | HorizontalCustomWidth Float
     | Diagonal
     | Container
     | HorizontalContainer
 
+
+
+-- LAYOUT WIDTH CALCULATIONS
+
+
+{-| Calculate the total width needed for horizontal layouts based on content dimensions
+-}
+calculateHorizontalWidth : { sectionCount : Int, sectionWidth : Int, spacing : Int, containerPaddingX : Int, layoutPaddingX : Int } -> Int
+calculateHorizontalWidth { sectionCount, sectionWidth, spacing, containerPaddingX, layoutPaddingX } =
+    let
+        totalSectionWidth = sectionCount * sectionWidth
+        totalSpacingWidth = (sectionCount - 1) * spacing  -- gaps between sections
+        totalPaddingWidth = containerPaddingX + layoutPaddingX
+    in
+    totalSectionWidth + totalSpacingWidth + totalPaddingWidth
 
 
 -- DOCUMENT HELPERS
@@ -51,6 +67,9 @@ getLayoutCSS layoutType =
             baseCSS
 
         Horizontal ->
+            baseCSS ++ "\n" ++ Styles.horizontalCSS
+
+        HorizontalCustomWidth _ ->
             baseCSS ++ "\n" ++ Styles.horizontalCSS
 
         Diagonal ->
@@ -83,7 +102,23 @@ getLayoutAttributes layoutType =
                     [ htmlAttribute (Html.Attributes.class "responsive-layout") ]
 
                 Horizontal ->
-                    [ width fill
+                    let
+                        -- HorizontalBasic example: 4 sections × 300px + spacing 40px + container padding 40px + layout padding 80px
+                        calculatedWidth = calculateHorizontalWidth
+                            { sectionCount = 4
+                            , sectionWidth = 300
+                            , spacing = 40
+                            , containerPaddingX = 40  -- paddingXY 20 20 = 20px left + 20px right
+                            , layoutPaddingX = 80     -- paddingXY 40 20 = 40px left + 40px right
+                            }
+                    in
+                    [ width (px calculatedWidth)
+                    , height fill
+                    , htmlAttribute (Html.Attributes.class "horizontal-layout responsive-layout")
+                    ]
+
+                HorizontalCustomWidth customWidth ->
+                    [ width (px (round customWidth))
                     , height fill
                     , htmlAttribute (Html.Attributes.class "horizontal-layout responsive-layout")
                     ]
