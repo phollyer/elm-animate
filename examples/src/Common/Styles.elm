@@ -278,7 +278,6 @@ horizontalCSS =
     .horizontal-layout {
         min-height: 100vh;
         height: auto;
-        width: 500vw;
         padding: 20px 40px !important;
     }
 
@@ -306,23 +305,13 @@ horizontalCSS =
 
     @media (max-width: 768px) {
         .horizontal-layout {
-            width: 300vw;
             padding: 20px 16px !important;
-        }
-        
-        .horizontal-content-row {
-            min-width: 300vw;
         }
     }
 
     @media (max-width: 480px) {
         .horizontal-layout {
-            width: 200vw;
             padding: 8px 4px !important;
-        }
-        
-        .horizontal-content-row {
-            min-width: 200vw;
         }
     }
     """
