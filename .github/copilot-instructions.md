@@ -1,9 +1,36 @@
 # Smooth Move Elm Package - AI Coding Instructions
 
-## Project Overview
-This is an Elm 0.19 package that provides multiple animation approaches for smooth DOM element movement. The package offers 5 different animation systems, each optimized for different use cases and performance requirements. The core architecture separates public APIs from internal animation logic (`Internal/AnimationSteps.elm`).
+## ⚠️ CRITICAL FILE PROTECTION RULES ⚠️
 
-## Five Animation Approaches
+### NEVER OVERWRITE THESE PROTECTED FILES:
+- **`examples/index.html`** - This is the main examples dashboard. It's a carefully crafted HTML file that provides navigation to all examples. 
+- **`examples/src/ElmUI/index.html`** - This is the ElmUI examples dashboard.
+- **`examples/src/HTML/index.html`** - This is the HTML examples dashboard.
+
+### OUTPUT FILE RULES:
+- **Elm compilation outputs**: Always go to `/src/ModulePath/filename.js` (e.g., `src/ElmUI/Scroll/Basic/index.js`)
+- **NEVER use `--output=index.html`** - This would overwrite dashboard files
+- **NEVER use `--output=../index.html`** or similar paths that could target dashboard files
+- **When compiling**: Always specify the exact output path ending in `.js`
+
+### COMPILATION EXAMPLES - CORRECT:
+```bash
+elm make src/ElmUI/Scroll/Basic/Main.elm --output=src/ElmUI/Scroll/Basic/index.js
+elm make src/HTML/SmoothMoveScroll/Basic.elm --output=src/HTML/SmoothMoveScroll/basic.js
+```
+
+### COMPILATION EXAMPLES - WRONG (WILL BREAK DASHBOARDS):
+```bash
+elm make src/ElmUI/Scroll/Basic/Main.elm --output=index.html  # ❌ NEVER DO THIS
+elm make src/HTML/SmoothMoveScroll/Basic.elm --output=../index.html  # ❌ NEVER DO THIS
+```
+
+If you accidentally overwrite a dashboard file, it must be restored manually from git or recreated.
+
+## Project Overview
+This is an Elm 0.19 package that provides multiple animation approaches for smooth DOM element movement. The package offers 4 different animation systems, each optimized for different use cases and performance requirements. The core architecture separates public APIs from internal animation logic (`Internal/AnimationCore.elm`).
+
+## Four Animation Approaches
 
 ### 1. Task-Based API (SmoothMoveScroll)
 - **Purpose**: Scrolling animations with task-based error handling
@@ -17,19 +44,13 @@ This is an Elm 0.19 package that provides multiple animation approaches for smoo
 - **Usage**: Create `AnimationState`, subscribe to `subscriptions`, apply via CSS transform
 - **Best for**: Multiple simultaneous element animations
 
-### 3. State-Based API (SmoothMoveState)
-- **Purpose**: Convenience wrapper around subscription-based approach
-- **API**: Simplified state management with helper functions
-- **Usage**: Similar to SmoothMoveSub but with more convenience functions
-- **Best for**: Simpler state management needs
-
-### 4. CSS Transition-Based API (SmoothMoveCSS)
+### 3. CSS Transition-Based API (SmoothMoveCSS)
 - **Purpose**: Native browser CSS transitions for optimal performance
 - **API**: Generate CSS transition styles, browser handles animation
 - **Usage**: Apply returned CSS styles directly to elements
 - **Best for**: Hardware acceleration, battery efficiency, simple transitions
 
-### 5. Ports-Based API (SmoothMovePorts)
+### 4. Ports-Based API (SmoothMovePorts)
 - **Purpose**: Web Animations API integration via JavaScript
 - **API**: Elm ports communicating with JavaScript companion file
 - **Usage**: Requires `smooth-move-ports.js` and port definitions
@@ -45,7 +66,7 @@ moveToWithOptions { defaultConfig | speed = 500, axis = Both } "element-id" 0 0 
 ```
 
 ### Internal Module Organization
-- `Internal/AnimationSteps.elm` contains pure interpolation logic (`interpolate` function)
+- `Internal/AnimationCore.elm` contains pure interpolation logic (`animationSteps` and `animationStepsWithFrames` functions)
 - Main modules handle DOM interactions and API orchestration
 - Internal modules are not exposed in `elm.json`
 
@@ -58,25 +79,26 @@ moveToWithOptions { defaultConfig | speed = 500, axis = Both } "element-id" 0 0 
 
 ### Testing
 - Run tests with `elm-test` from project root
-- Tests focus on interpolation logic in `Internal.AnimationSteps`
+- Tests focus on interpolation logic in `Internal.AnimationCore`
 - Test edge cases: negative/zero speed, equal start/stop positions
 
 ### Examples Organization
 - **Location**: `examples/src/` with hierarchical module structure
 - **Structure**: Each animation approach has its own subdirectory
-  - `SmoothMoveScroll/` - Task-based examples (Basic.elm, Container.elm)
-  - `SmoothMoveSub/` - Subscription-based examples (Basic.elm, Multiple.elm)
-  - `SmoothMoveState/` - State-based examples (Basic.elm, Multiple.elm)  
-  - `SmoothMoveCSS/` - CSS-based examples (Basic.elm, Multiple.elm)
-  - `SmoothMovePorts/` - Ports-based examples (Basic.elm, Multiple.elm, README.md, smooth-move-ports.js)
+  - `Scroll/` - Task-based examples (Basic.elm, Container.elm, etc.)
+  - `Sub/` - Subscription-based examples (Basic.elm, Multiple.elm)
+  - `CSS/` - CSS-based examples (Basic.elm, Multiple.elm)
+  - `Ports/` - Ports-based examples (Basic.elm, Multiple.elm)
   - `Common/` - Reusable functions for duplicated code in the examples.
-- **Compilation**: `elm make examples/src/SmoothMoveScroll/Basic.elm`
+- **Compilation**: Use `examples/scripts/build.sh` to compile all examples
+- **Individual Compilation**: `elm make src/ElmUI/Scroll/Basic/Main.elm --output=src/ElmUI/Scroll/Basic/index.js`
 - **Development**: `elm reactor` from `examples/` directory
+- **NEVER**: Use `--output=index.html` or paths that could overwrite dashboard files
 
 ### Package Structure
-- **Exposed modules**: All 5 main animation approaches in `elm.json`
+- **Exposed modules**: All 4 main animation approaches in `elm.json`
 - **Internal modules**: Keep implementation details in `Internal/` namespace
-- **JavaScript integration**: Companion file co-located with ports examples
+- **JavaScript integration**: Companion file in `examples/scripts/smooth-move-ports.js`
 
 ## Critical Implementation Details
 
@@ -86,9 +108,8 @@ moveToWithOptions { defaultConfig | speed = 500, axis = Both } "element-id" 0 0 
 - Always clamp scroll destination between 0 and max scrollable area
 
 ### Animation Systems
-- **SmoothMoveScroll**: Pre-calculated frame steps using `Internal.interpolate` function
+- **SmoothMoveScroll**: Pre-calculated frame steps using `Internal.AnimationCore.animationSteps` function
 - **SmoothMoveSub**: Time-based interpolation with `onAnimationFrameDelta`
-- **SmoothMoveState**: Convenience wrapper around subscription approach
 - **SmoothMoveCSS**: Native CSS transitions with `cssTransitionStyle` helper
 - **SmoothMovePorts**: Web Animations API via JavaScript integration
 - Speed parameter: pixels per second for SmoothMoveSub, frame count divisor for SmoothMoveScroll
@@ -99,24 +120,40 @@ moveToWithOptions { defaultConfig | speed = 500, axis = Both } "element-id" 0 0 
 - Use `Task.attempt` to handle errors gracefully in user applications
 - Element IDs that don't exist will cause task failure
 
+### Safe Compilation Practices
+- **Always use the build script**: `./examples/scripts/build.sh` for compilation
+- **Never use generic output names**: Avoid `--output=index.html` or `--output=main.js`
+- **Specify exact paths**: Use full paths like `--output=src/ElmUI/Scroll/Basic/index.js`
+- **Avoid relative paths**: Never use `../` paths that could target dashboard files
+- **Dashboard protection**: The dashboard files are critical infrastructure - never overwrite them
+- **When in doubt**: Use the build script rather than manual elm make commands
+
 ## Current Project Structure
 ```
 src/
 ├── Internal/
-│   └── AnimationSteps.elm    - Pure interpolation logic (interpolate function)
-├── SmoothMoveScroll.elm        - Task-based scrolling API
+│   └── AnimationCore.elm     - Pure interpolation logic (animationSteps and animationStepsWithFrames functions)
+├── SmoothMoveScroll.elm      - Task-based scrolling API
 ├── SmoothMoveSub.elm         - Subscription-based positioning API  
-├── SmoothMoveState.elm       - State-based convenience API
 ├── SmoothMoveCSS.elm         - CSS transition-based API
 └── SmoothMovePorts.elm       - Ports-based Web Animations API
 
-examples/src/
-├── Common/               - Reusable functions for duplicated code in the examples.
-├── SmoothMoveScroll/           - Task examples (Basic.elm, Container.elm)
-├── SmoothMoveSub/            - Subscription examples (Basic.elm, Multiple.elm)
-├── SmoothMoveState/          - State examples (Basic.elm, Multiple.elm)
-├── SmoothMoveCSS/            - CSS examples (Basic.elm, Multiple.elm)
-└── SmoothMovePorts/          - Ports examples (Basic.elm, README.md, smooth-move-ports.js)
+examples/
+├── scripts/
+│   ├── build.sh              - Main build script
+│   └── smooth-move-ports.js  - JavaScript companion for Ports API
+└── src/
+    ├── Common/               - Reusable functions for duplicated code in the examples
+    ├── ElmUI/
+    │   ├── Scroll/           - Task examples (Basic.elm, Container.elm, etc.)
+    │   ├── Sub/              - Subscription examples (Basic.elm, Multiple.elm)
+    │   ├── CSS/              - CSS examples (Basic.elm, Multiple.elm)
+    │   └── Ports/            - Ports examples (Basic.elm, Multiple.elm)
+    └── HTML/
+        ├── SmoothMoveScroll/ - HTML task examples
+        ├── SmoothMoveSub/    - HTML subscription examples
+        ├── SmoothMoveCSS/    - HTML CSS examples
+        └── SmoothMovePorts/  - HTML ports examples
 ```
 
 ## Dependencies & Compatibility

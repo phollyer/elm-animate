@@ -1,10 +1,10 @@
 # Elm Smooth Move
 
-A comprehensive Elm package providing **5 different animation approaches** for smooth DOM element movement. Choose the approach that best fits your performance needs and use case.
+A comprehensive Elm package providing **4 different animation approaches** for smooth DOM element movement. Choose the approach that best fits your performance needs and use case.
 
 > **Credits**: This package builds upon the excellent foundation of [`linuss/smooth-scroll`](https://package.elm-lang.org/packages/linuss/smooth-scroll/latest/) by expanding it into a multi-approach animation library.
 
-## 🎯 Five Animation Approaches
+## 🎯 Four Animation Approaches
 
 ### 1. **SmoothMoveScroll** - Scrolling (Simple & Advanced)
 Perfect for **document/container scrolling** with both simple and advanced APIs.
@@ -40,20 +40,7 @@ import Html.Attributes exposing (style)
 style "transform" (transform "my-element" model.animations)
 ```
 
-### 3. **SmoothMoveState** - State-Based Convenience
-Simplified wrapper around subscription-based approach for **easier state management**.
-```elm
-import SmoothMoveState exposing (animateTo, transform)
-import Html.Attributes exposing (style)
-
--- Animate an element to position (150, 250)
-{ model | animations = animateTo "my-element" 150 250 model.animations }
-
--- Apply in view with CSS transform
-style "transform" (transform "my-element" model.animations)
-```
-
-### 4. **SmoothMoveCSS** - CSS Transition-Based
+### 3. **SmoothMoveCSS** - CSS Transition-Based
 Uses **native browser CSS transitions** for optimal performance and battery efficiency.
 ```elm
 import SmoothMoveCSS exposing (animateTo, transform)
@@ -67,7 +54,7 @@ import Html.Attributes exposing (style)
 div [ style "transform" (transform "my-element" model.animations) ] [ text "Smooth!" ]
 ```
 
-### 5. **SmoothMovePorts** - Web Animations API
+### 4. **SmoothMovePorts** - Web Animations API
 **JavaScript integration** for maximum performance and complex animations.
 ```elm
 import SmoothMovePorts exposing (animateTo, animateBatchWithPort)
@@ -103,22 +90,22 @@ SmoothScroll elementId ->
 
 **For moving UI elements:**
 ```elm
-import SmoothMoveState exposing (animateTo, init, subscriptions)
+import SmoothMoveSub exposing (animateTo, init, subscriptions)
 
 -- In your model
-type alias Model = { animations : SmoothMoveState.State, ... }
+type alias Model = { animations : SmoothMoveSub.Model, ... }
 
 -- In your init (prevent jump to 0,0)
 initialAnimations = 
-    SmoothMoveState.init
-        |> SmoothMoveState.setInitialPosition "my-element" 100 100
+    SmoothMoveSub.init
+        |> SmoothMoveSub.setInitialPosition "my-element" 100 100
 
 -- In your update  
 AnimateElement ->
     { model | animations = animateTo "my-element" 200 300 model.animations }
 
 -- Don't forget subscriptions!
-subscriptions model = SmoothMoveState.subscriptions model.animations
+subscriptions model = SmoothMoveSub.subscriptions model.animations AnimationFrame
 ```
 
 ### 3. Explore the examples
@@ -128,7 +115,7 @@ subscriptions model = SmoothMoveState.subscriptions model.animations
 cd examples/
 open index.html  # Opens main examples page in your browser
 # Or open any specific example directly, e.g.:
-open src/SmoothMoveState/basic.html
+open src/ElmUI/Sub/Basic/index.html
 ```
 
 **Option B: Using elm reactor**
@@ -139,17 +126,20 @@ elm reactor
 ```
 
 ### 4. Experiment with different approaches
-Once you're comfortable, try switching `SmoothMoveState` to `SmoothMoveCSS` in your imports for better performance, or `SmoothMovePorts` for maximum control!
+Once you're comfortable, try switching `SmoothMoveSub` to `SmoothMoveCSS` in your imports for better performance, or `SmoothMovePorts` for maximum control!
 
 ## 📚 Examples
 
-Interactive examples are ready to run! Each approach has its own folder with compiled HTML files:
+Interactive examples are ready to run! Open `examples/index.html` to see the main dashboard, or browse the organized examples:
 
-- **`SmoothMoveScroll/`** - Task-based scrolling ([basic.html](examples/src/SmoothMoveScroll/basic.html), [container.html](examples/src/SmoothMoveScroll/container.html))
-- **`SmoothMoveSub/`** - Subscription-based positioning ([basic.html](examples/src/SmoothMoveSub/basic.html), [multiple.html](examples/src/SmoothMoveSub/multiple.html))  
-- **`SmoothMoveState/`** - State-based convenience ([basic.html](examples/src/SmoothMoveState/basic.html), [multiple.html](examples/src/SmoothMoveState/multiple.html))
-- **`SmoothMoveCSS/`** - CSS transition-based ([basic.html](examples/src/SmoothMoveCSS/basic.html), [multiple.html](examples/src/SmoothMoveCSS/multiple.html))
-- **`SmoothMovePorts/`** - JavaScript Web Animations API ([basic.html](examples/src/SmoothMovePorts/basic.html), [multiple.html](examples/src/SmoothMovePorts/multiple.html))
+- **`ElmUI/Scroll/`** - Task-based scrolling examples with modern UI
+- **`ElmUI/Sub/`** - Subscription-based positioning examples  
+- **`ElmUI/CSS/`** - CSS transition-based examples
+- **`ElmUI/Ports/`** - JavaScript Web Animations API examples
+- **`HTML/SmoothMoveScroll/`** - HTML task-based examples
+- **`HTML/SmoothMoveSub/`** - HTML subscription examples
+- **`HTML/SmoothMoveCSS/`** - HTML CSS examples
+- **`HTML/SmoothMovePorts/`** - HTML ports examples
 
 **🎯 Start here: [examples/index.html](examples/index.html)** - Main examples dashboard
 
@@ -157,10 +147,10 @@ Interactive examples are ready to run! Each approach has its own folder with com
 
 ### Quick Decision Guide
 - **Scrolling a page?** → Use `SmoothMoveScroll`
-- **Moving multiple elements?** → Use `SmoothMoveSub` or `SmoothMoveState`
+- **Moving multiple elements?** → Use `SmoothMoveSub` 
 - **Need best battery life?** → Use `SmoothMoveCSS` or `SmoothMovePorts`
 - **Complex animations?** → Use `SmoothMovePorts`
-- **Simple and clean?** → Use `SmoothMoveState`
+- **Simple frame-based control?** → Use `SmoothMoveSub`
 
 ### Detailed Comparison
 
@@ -168,7 +158,6 @@ Interactive examples are ready to run! Each approach has its own folder with com
 |----------|----------|-------------|---------|------------|
 | **SmoothMoveScroll** | Document/container scrolling | Good | Medium | Simple |
 | **SmoothMoveSub** | Multiple simultaneous elements | Good | Medium | Medium |
-| **SmoothMoveState** | Clean state management | Good | Medium | Simple |
 | **SmoothMoveCSS** | Battery efficiency, simple UI | Excellent* | Best* | Simple |
 | **SmoothMovePorts** | Maximum control & performance | Excellent* | Best* | Complex |
 
@@ -210,7 +199,7 @@ Most approaches now share very similar APIs!
 ScrollTo elementId -> ( model, SmoothMoveScroll.animateTo elementId )
 
 -- Element positioning (state-based)
-MoveElement -> { model | animations = SmoothMoveState.animateTo "elem" 100 200 model.animations }
+MoveElement -> { model | animations = SmoothMoveSub.animateTo "elem" 100 200 model.animations }
 MoveElement -> { model | animations = SmoothMoveCSS.animateTo "elem" 100 200 model.animations }
 ```
 
@@ -223,7 +212,7 @@ MoveElement -> { model | animations = SmoothMoveCSS.animateTo "elem" 100 200 mod
 
 - **SmoothMoveScroll**: `animateTo`, `animateToWithConfig`, `containerElement`, `containerElementWithConfig` (simple Cmd-based) + `animateToTask`, `animateToTaskWithConfig`, `containerElementTask`, `containerElementTaskWithConfig` (advanced Task-based)
 - **SmoothMoveSub**: `animateTo`, `animateToWithConfig`, `subscriptions`, `transform`, `setInitialPosition`
-- **SmoothMoveState**: `animateTo`, `animateToWithConfig`, `subscriptions`, `transform`, `transformElement`, `setInitialPosition`
+
 - **SmoothMoveCSS**: `animateTo`, `animateToWithConfig`, `cssTransitionStyle`, `setInitialPosition`
 - **SmoothMovePorts**: `animateTo`, `animateToWithConfig`, `animateBatch`, `animateBatchWithPort`, `setInitialPosition`, `stopBatch`, `stopBatchWithPort`
 
@@ -231,7 +220,7 @@ MoveElement -> { model | animations = SmoothMoveCSS.animateTo "elem" 100 200 mod
 
 ### Animation not working?
 - **Check element IDs**: Make sure the element ID exists in your DOM
-- **Missing subscriptions**: For `SmoothMoveSub`/`SmoothMoveState`/`SmoothMoveCSS`, ensure you have `subscriptions` wired up
+- **Missing subscriptions**: For `SmoothMoveSub`/`SmoothMoveCSS`, ensure you have `subscriptions` wired up
 - **CSS positioning**: Elements need `position: absolute` or `position: relative` for transforms to work
 - **JavaScript setup**: For `SmoothMovePorts`, make sure you've set up the JavaScript side (see examples)
 
@@ -241,7 +230,7 @@ MoveElement -> { model | animations = SmoothMoveCSS.animateTo "elem" 100 200 mod
 - Consider `SmoothMovePorts` for complex animations
 
 ### Need help choosing an approach?
-- Start with `SmoothMoveState` - it's the simplest
+- Start with `SmoothMoveSub` for general element animations
 - Move to `SmoothMoveCSS` when you need better performance
 - Use `SmoothMoveScroll` for scrolling
 - Use `SmoothMovePorts` when you need maximum control

@@ -1,23 +1,23 @@
 # Elm Smooth Move Examples
 
-Interactive examples showcasing all 5 animation approaches. Each example is compiled and ready to run directly in your browser!
-
-> **Note**: If `index.html` gets accidentally overwritten, run `./restore-index.sh` to restore the dashboard.
+Interactive examples showcasing all 4 animation approaches. Each example is compiled and ready to run directly in your browser!
 
 ## 🚀 Quick Start
 
 **Just open `src/ElmUI/index.html`** in your browser to see the ElmUI examples dashboard, or open any specific example directly:
 
 **ElmUI Examples** (Modern, responsive UI):
-- `src/ElmUI/SmoothMoveScrollUI/basic.html` - Basic scrolling with ElmUI
-- `src/ElmUI/SmoothMoveStateUI/basic.html` - Simple element movement
-- `src/ElmUI/SmoothMoveCSSUI/basic.html` - Hardware-accelerated animations
+- `src/ElmUI/Scroll/Basic/index.html` - Basic scrolling with ElmUI
+- `src/ElmUI/Sub/Basic/index.html` - Subscription-based element movement
+- `src/ElmUI/CSS/Basic/index.html` - Hardware-accelerated animations
+- `src/ElmUI/Ports/Basic/index.html` - Web Animations API integration
 - And more in `src/ElmUI/`
 
 **HTML Examples** (Pure HTML/CSS):  
 - `src/HTML/SmoothMoveScroll/basic.html` - Basic scrolling
-- `src/HTML/SmoothMoveState/basic.html` - Simple element movement  
+- `src/HTML/SmoothMoveSub/basic.html` - Subscription-based element movement  
 - `src/HTML/SmoothMoveCSS/basic.html` - Hardware-accelerated animations
+- `src/HTML/SmoothMovePorts/basic.html` - Web Animations API integration
 - And more in `src/HTML/`
 
 ## 🔧 Rebuilding Examples
@@ -25,7 +25,7 @@ Interactive examples showcasing all 5 animation approaches. Each example is comp
 If you modify any `.elm` files, run the build script to recompile:
 
 ```bash
-./build.sh
+./scripts/build.sh
 ```
 
 This will regenerate all the `.js` files needed by the HTML examples.
@@ -35,20 +35,22 @@ This will regenerate all the `.js` files needed by the HTML examples.
 The examples are now organized into two main categories:
 
 ```
-examples/src/
-├── ElmUI/              - Modern ElmUI examples (recommended)
-│   ├── SmoothMoveScrollUI/
-│   ├── SmoothMoveStateUI/ 
-│   ├── SmoothMoveSubUI/
-│   ├── SmoothMoveCSSUI/
-│   └── SmoothMovePortsUI/
-├── HTML/               - Pure HTML examples  
-│   ├── SmoothMoveScroll/
-│   ├── SmoothMoveState/
-│   ├── SmoothMoveSub/
-│   ├── SmoothMoveCSS/
-│   └── SmoothMovePortsUI/
-└── Common/             - Shared utilities
+examples/
+├── scripts/            - Build and utility scripts
+│   ├── build.sh
+│   └── smooth-move-ports.js
+└── src/
+    ├── ElmUI/          - Modern ElmUI examples (recommended)
+    │   ├── Scroll/     - Task-based scrolling examples
+    │   ├── Sub/        - Subscription-based element positioning
+    │   ├── CSS/        - CSS transition-based examples
+    │   └── Ports/      - Web Animations API examples
+    ├── HTML/           - Pure HTML examples  
+    │   ├── SmoothMoveScroll/
+    │   ├── SmoothMoveSub/
+    │   ├── SmoothMoveCSS/
+    │   └── SmoothMovePorts/
+    └── Common/         - Shared utilities
 ```
 
 ## Running Examples
@@ -67,7 +69,7 @@ python -m http.server 8000
 # Then navigate to http://localhost:8000/index.html
 
 # Build all examples using the provided script
-./build.sh
+./scripts/build.sh
 ```
 
 ## Module Hierarchy
@@ -75,8 +77,10 @@ python -m http.server 8000
 All examples use proper hierarchical module names based on their category:
 
 **ElmUI Examples:**
-- `ElmUI.SmoothMoveScrollUI.Basic`
-- `ElmUI.SmoothMoveStateUI.Multiple` 
+- `ElmUI.Scroll.Basic`
+- `ElmUI.Sub.Multiple` 
+- `ElmUI.CSS.Basic`
+- `ElmUI.Ports.Multiple`
 - etc.
 
 **HTML Examples:**
@@ -97,7 +101,8 @@ This organization makes it clear which UI framework each example uses while foll
 ## JavaScript Integration
 
 The `SmoothMovePorts` examples require JavaScript integration:
-- **HTML Location**: `examples/src/HTML/SmoothMovePorts/smooth-move-ports.js`
-- **ElmUI Location**: `examples/src/ElmUI/SmoothMovePortsUI/smooth-move-ports.js`  
+- **Primary Location**: `examples/scripts/smooth-move-ports.js`
+- **HTML Location**: `examples/src/HTML/SmoothMovePorts/smooth-move-ports.js` (copied for compatibility)
+- **ElmUI Location**: Referenced from `examples/scripts/smooth-move-ports.js`  
 - **Documentation**: See the respective README.md files for detailed integration guides
 - **Purpose**: Provides Web Animations API integration for hardware-accelerated animations

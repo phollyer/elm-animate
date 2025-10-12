@@ -2,11 +2,14 @@
 
 # Elm Smooth Move Examples Build Script
 # This script compiles all examples to their respective JavaScript files
+# 
+# IMPORTANT: Always use specific output paths ending in .js
+# NEVER use --output=index.html as it would overwrite dashboard files!
 
 echo "🚀 Building Elm Smooth Move Examples..."
 
-# Change to examples directory
-cd "$(dirname "$0")"
+# Change to examples directory (parent of scripts)
+cd "$(dirname "$0")/.."
 
 # Build HTML examples
 echo "📦 Building HTML examples..."
