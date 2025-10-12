@@ -36,8 +36,9 @@ The examples are now organized into two main categories:
 
 ```
 examples/
-├── scripts/            - Build and utility scripts
-│   ├── build.sh
+├── scripts/            - Build scripts
+│   └── build.sh
+├── js/                 - JavaScript companion files
 │   └── smooth-move-ports.js
 └── src/
     ├── ElmUI/          - Modern ElmUI examples (recommended)
@@ -101,8 +102,8 @@ This organization makes it clear which UI framework each example uses while foll
 ## JavaScript Integration
 
 The `SmoothMovePorts` examples require JavaScript integration:
-- **Primary Location**: `examples/scripts/smooth-move-ports.js`
+- **Primary Location**: `examples/js/smooth-move-ports.js`
 - **HTML Location**: `examples/src/HTML/SmoothMovePorts/smooth-move-ports.js` (copied for compatibility)
-- **ElmUI Location**: Referenced from `examples/scripts/smooth-move-ports.js`  
+- **ElmUI Location**: Referenced from `examples/js/smooth-move-ports.js`  
 - **Documentation**: See the respective README.md files for detailed integration guides
 - **Purpose**: Provides Web Animations API integration for hardware-accelerated animations

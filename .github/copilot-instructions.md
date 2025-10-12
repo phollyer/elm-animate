@@ -98,7 +98,7 @@ moveToWithOptions { defaultConfig | speed = 500, axis = Both } "element-id" 0 0 
 ### Package Structure
 - **Exposed modules**: All 4 main animation approaches in `elm.json`
 - **Internal modules**: Keep implementation details in `Internal/` namespace
-- **JavaScript integration**: Companion file in `examples/scripts/smooth-move-ports.js`
+- **JavaScript integration**: Companion file in `examples/js/smooth-move-ports.js`
 
 ## Critical Implementation Details
 
@@ -140,7 +140,8 @@ src/
 
 examples/
 ├── scripts/
-│   ├── build.sh              - Main build script
+│   └── build.sh              - Main build script
+├── js/
 │   └── smooth-move-ports.js  - JavaScript companion for Ports API
 └── src/
     ├── Common/               - Reusable functions for duplicated code in the examples
