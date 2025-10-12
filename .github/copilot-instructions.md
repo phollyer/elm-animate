@@ -98,7 +98,7 @@ moveToWithOptions { defaultConfig | speed = 500, axis = Both } "element-id" 0 0 
 ### Package Structure
 - **Exposed modules**: All 4 main animation approaches in `elm.json`
 - **Internal modules**: Keep implementation details in `Internal/` namespace
-- **JavaScript integration**: Companion file in `examples/js/smooth-move-ports.js`
+- **JavaScript integration**: Available via npm (`npm install elm-smooth-move`) or in `examples/js/smooth-move-ports.js`
 
 ## Critical Implementation Details
 

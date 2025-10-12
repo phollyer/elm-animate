@@ -14,6 +14,20 @@ SmoothMovePorts provides high-performance animations using the Web Animations AP
 
 ### 1. Include the JavaScript file
 
+**Option A: Via npm (Recommended for production)**
+```bash
+npm install elm-smooth-move
+```
+```html
+<script src="./node_modules/elm-smooth-move/dist/smooth-move-ports.js"></script>
+```
+
+**Option B: Via CDN**
+```html
+<script src="https://unpkg.com/elm-smooth-move/dist/smooth-move-ports.js"></script>
+```
+
+**Option C: Local copy (for development)**
 ```html
 <script src="smooth-move-ports.js"></script>
 ```

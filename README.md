@@ -67,7 +67,7 @@ import SmoothMovePorts exposing (animateTo, animateBatchWithPort)
     [ ("box1", 100, 150), ("box2", 200, 250), ("box3", 300, 350) ] 
     model.animations
 
--- Requires companion JavaScript file - see examples/src/SmoothMovePorts/
+-- Requires companion JavaScript: npm install elm-smooth-move
 ```
 
 ## 🚀 Quick Start
@@ -75,6 +75,11 @@ import SmoothMovePorts exposing (animateTo, animateBatchWithPort)
 ### 1. Install the package
 ```bash
 elm install phollyer/elm-smooth-move
+```
+
+**For SmoothMovePorts (Web Animations API), also install the JavaScript companion:**
+```bash
+npm install elm-smooth-move
 ```
 
 ### 2. Choose your first approach (we recommend starting simple)
@@ -222,7 +227,7 @@ MoveElement -> { model | animations = SmoothMoveCSS.animateTo "elem" 100 200 mod
 - **Check element IDs**: Make sure the element ID exists in your DOM
 - **Missing subscriptions**: For `SmoothMoveSub`/`SmoothMoveCSS`, ensure you have `subscriptions` wired up
 - **CSS positioning**: Elements need `position: absolute` or `position: relative` for transforms to work
-- **JavaScript setup**: For `SmoothMovePorts`, make sure you've set up the JavaScript side (see examples)
+- **JavaScript setup**: For `SmoothMovePorts`, install via npm (`npm install elm-smooth-move`) and include the script
 
 ### Performance issues?
 - Try `SmoothMoveCSS` for hardware acceleration
@@ -235,7 +240,44 @@ MoveElement -> { model | animations = SmoothMoveCSS.animateTo "elem" 100 200 mod
 - Use `SmoothMoveScroll` for scrolling
 - Use `SmoothMovePorts` when you need maximum control
 
-## 🙏 Credits
+## � JavaScript Setup (SmoothMovePorts)
+
+For the `SmoothMovePorts` approach, you need the JavaScript companion library:
+
+### Installation
+```bash
+# Install the npm package
+npm install elm-smooth-move
+
+# Or use CDN
+<script src="https://unpkg.com/elm-smooth-move/dist/smooth-move-ports.js"></script>
+```
+
+### Usage
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="./node_modules/elm-smooth-move/dist/smooth-move-ports.js"></script>
+    <!-- Or from CDN: -->
+    <!-- <script src="https://unpkg.com/elm-smooth-move/dist/smooth-move-ports.js"></script> -->
+</head>
+<body>
+    <div id="my-elm-app"></div>
+    <script src="your-elm-app.js"></script>
+    <script>
+        var app = Elm.YourApp.init({ node: document.getElementById('my-elm-app') });
+        
+        // Initialize SmoothMovePorts
+        if (window.SmoothMovePorts && app.ports) {
+            window.SmoothMovePorts.init(app.ports);
+        }
+    </script>
+</body>
+</html>
+```
+
+## �🙏 Credits
 
 This package builds upon the excellent foundation of [`linuss/smooth-scroll`](https://package.elm-lang.org/packages/linuss/smooth-scroll/latest/). The original design and architecture provided the inspiration for this expanded multi-approach animation library.
 

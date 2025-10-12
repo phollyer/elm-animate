@@ -1,0 +1,17 @@
+# Development files
+examples/
+tests/
+elm-stuff/
+node_modules/
+
+# Elm specific
+elm.json
+
+# Documentation that's not needed for npm
+.github/
+
+# Build artifacts (except dist)
+*.log
+.DS_Store
+
+# Only publish the dist folder and essential files
