@@ -112,7 +112,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    SmoothMoveSub.subscriptions model.smoothMove AnimationFrame
+    SmoothMoveSub.subscriptions AnimationFrame model.smoothMove
 
 
 view : Model -> Document Msg

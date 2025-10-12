@@ -113,7 +113,7 @@ AnimationFrame deltaMs ->
     { model | animations = SmoothMoveSub.step deltaMs model.animations }
 
 -- Don't forget subscriptions!
-subscriptions model = SmoothMoveSub.subscriptions model.animations AnimationFrame
+subscriptions model = SmoothMoveSub.subscriptions AnimationFrame model.animations
 ```
 
 ### 3. Explore the examples

@@ -512,7 +512,7 @@ automatically stop sending updates when the animation is complete.
 
     subscriptions : Model -> Sub Msg
     subscriptions model =
-        SmoothMoveSub.subscriptions model.smoothMove AnimationFrame
+        SmoothMoveSub.subscriptions AnimationFrame model.smoothMove
 
     update msg model =
         case msg of
@@ -533,8 +533,8 @@ automatically stop sending updates when the animation is complete.
                 )
 
 -}
-subscriptions : Model -> (Float -> msg) -> Sub msg
-subscriptions (Model modelData) toMsg =
+subscriptions : (Float -> msg) -> Model -> Sub msg
+subscriptions toMsg (Model modelData) =
     if not (Dict.values modelData |> List.any (\elementData -> elementData.animation /= Nothing)) then
         Sub.none
 
