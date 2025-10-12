@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>SmoothMovePortsUI.Basic</title>
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <pre id="elm"></pre>
+
+    <!-- Load the compiled Elm JavaScript -->
+    <script src="index.js"></script>
+
+    <!-- Include the SmoothMovePorts JavaScript companion -->
+    <script src="../../smooth-move-ports.js"></script>
+
+    <script>
+        // Initialize the Elm application with port connections
+        var app = Elm.ElmUI.SmoothMovePorts.Basic.Main.init({
+            node: document.getElementById('elm')
+        });
+
+        // Connect the ports to the JavaScript animations
+        if (window.SmoothMovePorts && app.ports) {
+            window.SmoothMovePorts.init(app.ports);
+        } else {
+            console.error('SmoothMovePorts JavaScript file not loaded or ports not available');
+        }
+    </script>
+
+</body>
+
+</html>

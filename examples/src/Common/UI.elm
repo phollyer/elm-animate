@@ -156,7 +156,7 @@ backButton =
         , Border.rounded 8
         , htmlAttribute (Html.Attributes.id "top")
         ]
-        { url = "../index.html"
+        { url = "../../index.html"
         , label = text "← Back to Examples"
         }
 

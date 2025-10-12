@@ -21,17 +21,17 @@ elm make src/HTML/SmoothMovePorts/Multiple.elm --output=src/HTML/SmoothMovePorts
 
 # Build ElmUI examples
 echo "🎨 Building ElmUI examples..."
-elm make src/ElmUI/SmoothMoveScroll/Basic.elm --output=src/ElmUI/SmoothMoveScroll/basic.js
-elm make src/ElmUI/SmoothMoveScroll/Container.elm --output=src/ElmUI/SmoothMoveScroll/container.js
-elm make src/ElmUI/SmoothMoveScroll/HorizontalBasic.elm --output=src/ElmUI/SmoothMoveScroll/horizontalbasic.js
-elm make src/ElmUI/SmoothMoveScroll/HorizontalContainer.elm --output=src/ElmUI/SmoothMoveScroll/horizontalcontainer.js
-elm make src/ElmUI/SmoothMoveScroll/DiagonalBoth.elm --output=src/ElmUI/SmoothMoveScroll/diagonalboth.js
-elm make src/ElmUI/SmoothMoveSub/Basic.elm --output=src/ElmUI/SmoothMoveSub/basic.js
-elm make src/ElmUI/SmoothMoveSub/Multiple.elm --output=src/ElmUI/SmoothMoveSub/multiple.js
-elm make src/ElmUI/SmoothMoveCSS/Basic.elm --output=src/ElmUI/SmoothMoveCSS/basic.js
-elm make src/ElmUI/SmoothMoveCSS/Multiple.elm --output=src/ElmUI/SmoothMoveCSS/multiple.js
-elm make src/ElmUI/SmoothMovePorts/Basic.elm --output=src/ElmUI/SmoothMovePorts/basic.js
-elm make src/ElmUI/SmoothMovePorts/Multiple.elm --output=src/ElmUI/SmoothMovePorts/multiple.js
+elm make src/ElmUI/SmoothMoveScroll/Basic/Main.elm --output=src/ElmUI/SmoothMoveScroll/Basic/index.js
+elm make src/ElmUI/SmoothMoveScroll/Container/Main.elm --output=src/ElmUI/SmoothMoveScroll/Container/index.js
+elm make src/ElmUI/SmoothMoveScroll/HorizontalBasic/Main.elm --output=src/ElmUI/SmoothMoveScroll/HorizontalBasic/index.js
+elm make src/ElmUI/SmoothMoveScroll/HorizontalContainer/Main.elm --output=src/ElmUI/SmoothMoveScroll/HorizontalContainer/index.js
+elm make src/ElmUI/SmoothMoveScroll/DiagonalBoth/Main.elm --output=src/ElmUI/SmoothMoveScroll/DiagonalBoth/index.js
+elm make src/ElmUI/SmoothMoveSub/Basic/Main.elm --output=src/ElmUI/SmoothMoveSub/Basic/index.js
+elm make src/ElmUI/SmoothMoveSub/Multiple/Main.elm --output=src/ElmUI/SmoothMoveSub/Multiple/index.js
+elm make src/ElmUI/SmoothMoveCSS/Basic/Main.elm --output=src/ElmUI/SmoothMoveCSS/Basic/index.js
+elm make src/ElmUI/SmoothMoveCSS/Multiple/Main.elm --output=src/ElmUI/SmoothMoveCSS/Multiple/index.js
+elm make src/ElmUI/SmoothMovePorts/Basic/Main.elm --output=src/ElmUI/SmoothMovePorts/Basic/index.js
+elm make src/ElmUI/SmoothMovePorts/Multiple/Main.elm --output=src/ElmUI/SmoothMovePorts/Multiple/index.js
 
 echo "✅ All examples built successfully!"
 echo "🌐 Open index.html to view the examples dashboard"
@@ -40,7 +40,7 @@ echo "   - http://localhost:8080/src/HTML/SmoothMoveScroll/basic.html"
 echo "   - http://localhost:8080/src/HTML/SmoothMoveScroll/container.html"
 echo "   - And more in src/HTML/"
 echo "🎨 ElmUI examples available at:"
-echo "   - http://localhost:8080/src/ElmUI/SmoothMoveScroll/basic.html"
-echo "   - http://localhost:8080/src/ElmUI/SmoothMoveScroll/container.html"
-echo "   - http://localhost:8080/src/ElmUI/SmoothMoveScroll/horizontalbasic.html"
+echo "   - http://localhost:8080/src/ElmUI/SmoothMoveScroll/Basic/index.html"
+echo "   - http://localhost:8080/src/ElmUI/SmoothMoveScroll/Container/index.html"
+echo "   - http://localhost:8080/src/ElmUI/SmoothMoveScroll/HorizontalBasic/index.html"
 echo "   - And more in src/ElmUI/"
