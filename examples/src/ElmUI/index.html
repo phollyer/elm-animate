@@ -248,6 +248,32 @@
             box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
         }
 
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        @media (min-width: 768px) {
+            .back-button {
+                padding: 10px 18px;
+                font-size: 15px;
+            }
+        }
+
         .comparison-note {
             background: #edf2f7;
             padding: 12px 16px;
@@ -367,6 +393,7 @@
 
 <body>
     <div class="container">
+        <a href="../../index.html" class="back-button">← Back to All Examples</a>
         <h1>🎨 Smooth Move ElmUI Examples</h1>
         <p class="subtitle">
             Comprehensive demonstration of all 5 animation approaches using
@@ -438,33 +465,10 @@
             </div>
         </div>
 
-        <div class="features">
-            <div class="feature">
-                <div class="feature-title">🎨 ElmUI Integration</div>
-                <div class="feature-desc">Seamless integration with Element-based layouts while preserving all animation
-                    capabilities</div>
-            </div>
-            <div class="feature">
-                <div class="feature-title">📱 Responsive Design</div>
-                <div class="feature-desc">All examples work beautifully across different screen sizes using ElmUI's
-                    responsive features</div>
-            </div>
-            <div class="feature">
-                <div class="feature-title">🎨 Consistent Styling</div>
-                <div class="feature-desc">Unified gradient themes and modern design patterns throughout all examples
-                </div>
-            </div>
-            <div class="feature">
-                <div class="feature-title">⚡ Performance</div>
-                <div class="feature-desc">Each approach optimized for different use cases - from hardware acceleration
-                    to JavaScript integration</div>
-            </div>
-        </div>
-
         <div class="comparison-note">
             <h3>📊 Choose Your Animation Approach</h3>
             <ul>
-                <li><strong>SmoothMoveScroll:</strong> Best for scrolling and sequential animations</li>
+                <li><strong>SmoothMoveScroll:</strong> Best for scrolling</li>
                 <li><strong>SmoothMoveSub:</strong> Perfect for real-time element positioning with convenience helpers
                 </li>
                 <li><strong>SmoothMoveCSS:</strong> Hardware accelerated for best performance</li>
