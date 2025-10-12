@@ -1,14 +1,7 @@
-Copyright (c) 2019, Linus Schoemaker, Ruben Lie King (portions of SmoothMoveScroll.elm and Internal/AnimationCore.elm)
-Copyright (c) 2025, phollyer (all other code)
+BSD 3-Clause License
 
+Copyright (c) 2025, Paul Hollyer
 All rights reserved.
-
-This software contains limited code derived from SmoothScroll by Linus Schoemaker and Ruben Lie King (2019):
-- Parts of SmoothMoveScroll.elm (vertical scrolling functionality)  
-- Functions in Internal/AnimationCore.elm (animationSteps interpolation logic)
-
-All other modules (SmoothMoveSub, SmoothMoveCSS, SmoothMovePorts) and their related functionality
-are original work by phollyer (2025).
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -20,7 +13,7 @@ are permitted provided that the following conditions are met:
   list of conditions and the following disclaimer in the documentation and/or
   other materials provided with the distribution.
 
-* Neither the name of the {organization} nor the names of its
+* Neither the name of the copyright holder nor the names of its
   contributors may be used to endorse or promote products derived from
   this software without specific prior written permission.
 

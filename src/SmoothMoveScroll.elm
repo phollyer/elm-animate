@@ -14,6 +14,9 @@ module SmoothMoveScroll exposing
 
 {-| Smooth scrolling animations for precise DOM element targeting.
 
+This module contains portions derived from SmoothScroll by Linus Schoemaker and Ruben Lie King (2019),
+specifically the vertical scrolling functionality. Additional features and improvements by phollyer (2025).
+
 This module provides both simple Cmd-based functions (recommended for most users)
 and Task-based functions for more complex control flow and error handling.
 

@@ -1,5 +1,12 @@
 module Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames)
 
+{-| Core animation interpolation functions.
+
+This module contains code derived from SmoothScroll by Linus Schoemaker and Ruben Lie King (2019).
+The animationSteps functions implement frame-based interpolation logic from the original work.
+
+-}
+
 import Ease
 
 
