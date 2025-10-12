@@ -14,6 +14,7 @@ module SmoothMoveSub exposing
     , getPosition
     , getAllPositions
     , transform
+    , transformElement
     )
 
 {-| A subscription-based animation library for smooth element movement.
@@ -55,6 +56,7 @@ automatically through subscriptions to animation frames.
 # Styling Helper
 
 @docs transform
+@docs transformElement
 
 -}
 
@@ -475,6 +477,24 @@ updateAnimation deltaMs state =
 transform : Float -> Float -> String
 transform x y =
     "translate(" ++ String.fromFloat x ++ "px, " ++ String.fromFloat y ++ "px)"
+
+
+{-| Create a CSS transform string by looking up the element's current position
+
+This convenience function eliminates the need to manually call getPosition and handle Maybe values.
+If the element is not found, it defaults to (0, 0).
+
+    div [ style "transform" (SmoothMoveSub.transformElement "my-element" model) ] [ text "Moving element" ]
+
+-}
+transformElement : String -> Model -> String
+transformElement elementId model =
+    case getPosition elementId model of
+        Just position ->
+            transform position.x position.y
+
+        Nothing ->
+            transform 0 0
 
 
 {-| Simplified subscription function that handles animation logic internally
