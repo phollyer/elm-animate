@@ -11858,8 +11858,6 @@ var $author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToSectionTwo = {$: 
 var $author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToStart = {$: 'ScrollToStart'};
 var $author$project$Common$UI$Success = {$: 'Success'};
 var $author$project$Common$UI$Warning = {$: 'Warning'};
-var $mdgriffith$elm_ui$Internal$Model$Right = {$: 'Right'};
-var $mdgriffith$elm_ui$Element$alignRight = $mdgriffith$elm_ui$Internal$Model$AlignX($mdgriffith$elm_ui$Internal$Model$Right);
 var $mdgriffith$elm_ui$Internal$Model$Left = {$: 'Left'};
 var $mdgriffith$elm_ui$Element$alignLeft = $mdgriffith$elm_ui$Internal$Model$AlignX($mdgriffith$elm_ui$Internal$Model$Left);
 var $author$project$Common$Colors$backgroundWhite = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
@@ -11988,74 +11986,6 @@ var $mdgriffith$elm_ui$Element$el = F2(
 				_List_fromArray(
 					[child])));
 	});
-var $elm$html$Html$button = _VirtualDom_node('button');
-var $mdgriffith$elm_ui$Internal$Model$unstyled = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Unstyled, $elm$core$Basics$always);
-var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$Common$UI$htmlActionButtons = function (buttons) {
-	var getButtonGradient = function (style) {
-		switch (style.$) {
-			case 'Primary':
-				return 'linear-gradient(135deg, #4299e1, #3182ce)';
-			case 'Success':
-				return 'linear-gradient(135deg, #48bb78, #38a169)';
-			case 'Purple':
-				return 'linear-gradient(135deg, #9f7aea, #805ad5)';
-			default:
-				return 'linear-gradient(135deg, #ed8936, #dd6b20)';
-		}
-	};
-	var createButton = function (_v0) {
-		var style = _v0.a;
-		var onPress = _v0.b;
-		var label = _v0.c;
-		return A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('example-link'),
-					$elm$html$Html$Events$onClick(onPress),
-					A2(
-					$elm$html$Html$Attributes$style,
-					'background',
-					getButtonGradient(style))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(label)
-				]));
-	};
-	return A2(
-		$mdgriffith$elm_ui$Element$el,
-		_List_fromArray(
-			[$mdgriffith$elm_ui$Element$centerX]),
-		$mdgriffith$elm_ui$Element$html(
-			A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('example-links')
-					]),
-				A2($elm$core$List$map, createButton, buttons))));
-};
 var $mdgriffith$elm_ui$Internal$Model$Describe = function (a) {
 	return {$: 'Describe', a: a};
 };
@@ -12127,6 +12057,74 @@ var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
 			'background-color',
 			clr));
 };
+var $elm$html$Html$button = _VirtualDom_node('button');
+var $mdgriffith$elm_ui$Internal$Model$unstyled = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Unstyled, $elm$core$Basics$always);
+var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $author$project$Common$UI$htmlActionButtons = function (buttons) {
+	var getButtonGradient = function (style) {
+		switch (style.$) {
+			case 'Primary':
+				return 'linear-gradient(135deg, #4299e1, #3182ce)';
+			case 'Success':
+				return 'linear-gradient(135deg, #48bb78, #38a169)';
+			case 'Purple':
+				return 'linear-gradient(135deg, #9f7aea, #805ad5)';
+			default:
+				return 'linear-gradient(135deg, #ed8936, #dd6b20)';
+		}
+	};
+	var createButton = function (_v0) {
+		var style = _v0.a;
+		var onPress = _v0.b;
+		var label = _v0.c;
+		return A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('example-link'),
+					$elm$html$Html$Events$onClick(onPress),
+					A2(
+					$elm$html$Html$Attributes$style,
+					'background',
+					getButtonGradient(style))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(label)
+				]));
+	};
+	return A2(
+		$mdgriffith$elm_ui$Element$el,
+		_List_fromArray(
+			[$mdgriffith$elm_ui$Element$centerX]),
+		$mdgriffith$elm_ui$Element$html(
+			A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('example-links')
+					]),
+				A2($elm$core$List$map, createButton, buttons))));
+};
 var $mdgriffith$elm_ui$Element$rgba = $mdgriffith$elm_ui$Internal$Model$Rgba;
 var $mdgriffith$elm_ui$Internal$Model$boxShadowClass = function (shadow) {
 	return $elm$core$String$concat(
@@ -12158,229 +12156,16 @@ var $mdgriffith$elm_ui$Element$Font$size = function (i) {
 		$mdgriffith$elm_ui$Internal$Flag$fontSize,
 		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
 };
-var $mdgriffith$elm_ui$Internal$Model$Button = {$: 'Button'};
-var $elm$json$Json$Encode$bool = _Json_wrap;
-var $elm$html$Html$Attributes$boolProperty = F2(
-	function (key, bool) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$bool(bool));
-	});
-var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
-var $mdgriffith$elm_ui$Element$Input$enter = 'Enter';
-var $mdgriffith$elm_ui$Element$Input$hasFocusStyle = function (attr) {
-	if (((attr.$ === 'StyleClass') && (attr.b.$ === 'PseudoSelector')) && (attr.b.a.$ === 'Focus')) {
-		var _v1 = attr.b;
-		var _v2 = _v1.a;
-		return true;
-	} else {
-		return false;
-	}
-};
-var $mdgriffith$elm_ui$Element$Input$focusDefault = function (attrs) {
-	return A2($elm$core$List$any, $mdgriffith$elm_ui$Element$Input$hasFocusStyle, attrs) ? $mdgriffith$elm_ui$Internal$Model$NoAttribute : $mdgriffith$elm_ui$Internal$Model$htmlClass('focusable');
-};
-var $mdgriffith$elm_ui$Element$Events$onClick = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Attr, $elm$html$Html$Events$onClick);
-var $elm$json$Json$Decode$andThen = _Json_andThen;
-var $elm$json$Json$Decode$fail = _Json_fail;
-var $elm$json$Json$Decode$field = _Json_decodeField;
-var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
-	return {$: 'MayPreventDefault', a: a};
-};
-var $elm$html$Html$Events$preventDefaultOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
-	});
-var $elm$json$Json$Decode$string = _Json_decodeString;
-var $mdgriffith$elm_ui$Element$Input$onKeyLookup = function (lookup) {
-	var decode = function (code) {
-		var _v0 = lookup(code);
-		if (_v0.$ === 'Nothing') {
-			return $elm$json$Json$Decode$fail('No key matched');
-		} else {
-			var msg = _v0.a;
-			return $elm$json$Json$Decode$succeed(msg);
-		}
-	};
-	var isKey = A2(
-		$elm$json$Json$Decode$andThen,
-		decode,
-		A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string));
-	return $mdgriffith$elm_ui$Internal$Model$Attr(
-		A2(
-			$elm$html$Html$Events$preventDefaultOn,
-			'keydown',
-			A2(
-				$elm$json$Json$Decode$map,
-				function (fired) {
-					return _Utils_Tuple2(fired, true);
-				},
-				isKey)));
-};
-var $mdgriffith$elm_ui$Internal$Flag$cursor = $mdgriffith$elm_ui$Internal$Flag$flag(21);
-var $mdgriffith$elm_ui$Element$pointer = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$cursor, $mdgriffith$elm_ui$Internal$Style$classes.cursorPointer);
-var $mdgriffith$elm_ui$Element$Input$space = ' ';
-var $elm$html$Html$Attributes$tabindex = function (n) {
-	return A2(
-		_VirtualDom_attribute,
-		'tabIndex',
-		$elm$core$String$fromInt(n));
-};
-var $mdgriffith$elm_ui$Element$Input$button = F2(
-	function (attrs, _v0) {
-		var onPress = _v0.onPress;
-		var label = _v0.label;
-		return A4(
-			$mdgriffith$elm_ui$Internal$Model$element,
-			$mdgriffith$elm_ui$Internal$Model$asEl,
-			$mdgriffith$elm_ui$Internal$Model$div,
-			A2(
-				$elm$core$List$cons,
-				$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
-				A2(
-					$elm$core$List$cons,
-					$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$shrink),
-					A2(
-						$elm$core$List$cons,
-						$mdgriffith$elm_ui$Internal$Model$htmlClass($mdgriffith$elm_ui$Internal$Style$classes.contentCenterX + (' ' + ($mdgriffith$elm_ui$Internal$Style$classes.contentCenterY + (' ' + ($mdgriffith$elm_ui$Internal$Style$classes.seButton + (' ' + $mdgriffith$elm_ui$Internal$Style$classes.noTextSelection)))))),
-						A2(
-							$elm$core$List$cons,
-							$mdgriffith$elm_ui$Element$pointer,
-							A2(
-								$elm$core$List$cons,
-								$mdgriffith$elm_ui$Element$Input$focusDefault(attrs),
-								A2(
-									$elm$core$List$cons,
-									$mdgriffith$elm_ui$Internal$Model$Describe($mdgriffith$elm_ui$Internal$Model$Button),
-									A2(
-										$elm$core$List$cons,
-										$mdgriffith$elm_ui$Internal$Model$Attr(
-											$elm$html$Html$Attributes$tabindex(0)),
-										function () {
-											if (onPress.$ === 'Nothing') {
-												return A2(
-													$elm$core$List$cons,
-													$mdgriffith$elm_ui$Internal$Model$Attr(
-														$elm$html$Html$Attributes$disabled(true)),
-													attrs);
-											} else {
-												var msg = onPress.a;
-												return A2(
-													$elm$core$List$cons,
-													$mdgriffith$elm_ui$Element$Events$onClick(msg),
-													A2(
-														$elm$core$List$cons,
-														$mdgriffith$elm_ui$Element$Input$onKeyLookup(
-															function (code) {
-																return _Utils_eq(code, $mdgriffith$elm_ui$Element$Input$enter) ? $elm$core$Maybe$Just(msg) : (_Utils_eq(code, $mdgriffith$elm_ui$Element$Input$space) ? $elm$core$Maybe$Just(msg) : $elm$core$Maybe$Nothing);
-															}),
-														attrs));
-											}
-										}()))))))),
-			$mdgriffith$elm_ui$Internal$Model$Unkeyed(
-				_List_fromArray(
-					[label])));
-	});
-var $mdgriffith$elm_ui$Internal$Flag$borderColor = $mdgriffith$elm_ui$Internal$Flag$flag(28);
-var $mdgriffith$elm_ui$Element$Border$color = function (clr) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$borderColor,
-		A3(
-			$mdgriffith$elm_ui$Internal$Model$Colored,
-			'bc-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(clr),
-			'border-color',
-			clr));
-};
-var $mdgriffith$elm_ui$Element$Font$medium = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textMedium);
-var $author$project$Common$Colors$warning = A3($mdgriffith$elm_ui$Element$rgb255, 245, 158, 11);
-var $mdgriffith$elm_ui$Internal$Model$BorderWidth = F5(
-	function (a, b, c, d, e) {
-		return {$: 'BorderWidth', a: a, b: b, c: c, d: d, e: e};
-	});
-var $mdgriffith$elm_ui$Element$Border$width = function (v) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$borderWidth,
-		A5(
-			$mdgriffith$elm_ui$Internal$Model$BorderWidth,
-			'b-' + $elm$core$String$fromInt(v),
-			v,
-			v,
-			v,
-			v));
-};
-var $author$project$Common$UI$smallActionButton = F3(
-	function (style, onPress, label) {
-		var buttonColor = function () {
-			switch (style.$) {
-				case 'Primary':
-					return $author$project$Common$Colors$primary;
-				case 'Success':
-					return $author$project$Common$Colors$success;
-				case 'Purple':
-					return $author$project$Common$Colors$purple;
-				default:
-					return $author$project$Common$Colors$warning;
-			}
-		}();
-		var borderColor = function () {
-			switch (style.$) {
-				case 'Primary':
-					return A3($mdgriffith$elm_ui$Element$rgb255, 191, 219, 254);
-				case 'Success':
-					return A3($mdgriffith$elm_ui$Element$rgb255, 209, 250, 229);
-				case 'Purple':
-					return A3($mdgriffith$elm_ui$Element$rgb255, 233, 213, 255);
-				default:
-					return A3($mdgriffith$elm_ui$Element$rgb255, 254, 240, 138);
-			}
-		}();
-		var backgroundColor = function () {
-			switch (style.$) {
-				case 'Primary':
-					return A3($mdgriffith$elm_ui$Element$rgb255, 239, 246, 255);
-				case 'Success':
-					return A3($mdgriffith$elm_ui$Element$rgb255, 240, 253, 244);
-				case 'Purple':
-					return A3($mdgriffith$elm_ui$Element$rgb255, 250, 245, 255);
-				default:
-					return A3($mdgriffith$elm_ui$Element$rgb255, 255, 251, 235);
-			}
-		}();
-		return A2(
-			$mdgriffith$elm_ui$Element$Input$button,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$Font$size(14),
-					$mdgriffith$elm_ui$Element$Font$color(buttonColor),
-					$mdgriffith$elm_ui$Element$Font$medium,
-					A2($mdgriffith$elm_ui$Element$paddingXY, 12, 8),
-					$mdgriffith$elm_ui$Element$Border$rounded(6),
-					$mdgriffith$elm_ui$Element$Background$color(backgroundColor),
-					$mdgriffith$elm_ui$Element$Border$width(1),
-					$mdgriffith$elm_ui$Element$Border$color(borderColor)
-				]),
-			{
-				label: $mdgriffith$elm_ui$Element$text(label),
-				onPress: $elm$core$Maybe$Just(onPress)
-			});
-	});
 var $author$project$Common$Colors$textMedium = A3($mdgriffith$elm_ui$Element$rgb255, 71, 85, 105);
 var $author$project$SmoothMoveScrollUI$HorizontalBasic$viewSection = F6(
-	function (sectionId, title, color, nextAction, buttonText, contentLines) {
+	function (sectionId, title, color, nextAction, contentLines, buttons) {
 		return A2(
 			$mdgriffith$elm_ui$Element$column,
 			_List_fromArray(
 				[
 					$mdgriffith$elm_ui$Element$width(
 					$mdgriffith$elm_ui$Element$px(300)),
-					$mdgriffith$elm_ui$Element$height(
-					$mdgriffith$elm_ui$Element$px(300)),
+					$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
 					$mdgriffith$elm_ui$Element$spacing(20),
 					$mdgriffith$elm_ui$Element$htmlAttribute(
 					$elm$html$Html$Attributes$id(sectionId)),
@@ -12433,7 +12218,7 @@ var $author$project$SmoothMoveScrollUI$HorizontalBasic$viewSection = F6(
 									]));
 						},
 						contentLines)),
-					A3($author$project$Common$UI$smallActionButton, $author$project$Common$UI$Primary, nextAction, buttonText)
+					$author$project$Common$UI$htmlActionButtons(buttons)
 				]));
 	});
 var $author$project$SmoothMoveScrollUI$HorizontalBasic$viewContent = function (model) {
@@ -12447,24 +12232,23 @@ var $author$project$SmoothMoveScrollUI$HorizontalBasic$viewContent = function (m
 				]),
 			_List_fromArray(
 				[
-					$author$project$Common$UI$backButton,
-					$author$project$Common$UI$pageHeader('Horizontal X Axis Scrolling')
+					A2(
+					$mdgriffith$elm_ui$Element$el,
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$alignLeft,
+							A2($mdgriffith$elm_ui$Element$paddingXY, 20, 10)
+						]),
+					$author$project$Common$UI$backButton),
+					A2(
+					$mdgriffith$elm_ui$Element$el,
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$alignLeft,
+							A2($mdgriffith$elm_ui$Element$paddingXY, 20, 10)
+						]),
+					$author$project$Common$UI$pageHeader('Horizontal X Axis Scrolling'))
 				])),
-			A2(
-			$mdgriffith$elm_ui$Element$el,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$alignRight,
-					A2($mdgriffith$elm_ui$Element$paddingXY, 20, 0)
-				]),
-			$author$project$Common$UI$htmlActionButtons(
-				_List_fromArray(
-					[
-						_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToStart, 'Start'),
-						_Utils_Tuple3($author$project$Common$UI$Success, $author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToSectionOne, 'Section 1'),
-						_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToSectionTwo, 'Section 2'),
-						_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToSectionThree, 'Section 3')
-					]))),
 			A2(
 			$mdgriffith$elm_ui$Element$row,
 			_List_fromArray(
@@ -12482,36 +12266,56 @@ var $author$project$SmoothMoveScrollUI$HorizontalBasic$viewContent = function (m
 					'🚀 Start Here',
 					$author$project$Common$Colors$primary,
 					$author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToSectionOne,
-					'Begin Journey →',
 					_List_fromArray(
-						['Welcome to the horizontal scrolling demonstration!', 'This is the starting point of our X axis scrolling example.', 'Click the button below to begin the horizontal journey through the sections.'])),
+						['Welcome to the horizontal scrolling demonstration!', 'This is the starting point of our X axis scrolling example.', 'Click the buttons below to begin the horizontal journey through the sections.']),
+					_List_fromArray(
+						[
+							_Utils_Tuple3($author$project$Common$UI$Success, $author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToSectionOne, 'Section 1'),
+							_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToSectionTwo, 'Section 2'),
+							_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToSectionThree, 'Section 3')
+						])),
 					A6(
 					$author$project$SmoothMoveScrollUI$HorizontalBasic$viewSection,
 					'section-one',
 					'Section One',
 					$author$project$Common$Colors$primary,
 					$author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToSectionTwo,
-					'Continue to Section Two →',
 					_List_fromArray(
-						['This is the first section of our horizontal scrolling example.', 'Notice how the scroll animation moves left-to-right instead of up-and-down.', 'The X axis configuration makes this possible with smooth horizontal movement.'])),
+						['This is the first section of our horizontal scrolling example.', 'Notice how the scroll animation moves left-to-right instead of up-and-down.', 'The X axis configuration makes this possible with smooth horizontal movement.']),
+					_List_fromArray(
+						[
+							_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToStart, 'Start'),
+							_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToSectionTwo, 'Section 2'),
+							_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToSectionThree, 'Section 3')
+						])),
 					A6(
 					$author$project$SmoothMoveScrollUI$HorizontalBasic$viewSection,
 					'section-two',
 					'Section Two',
 					$author$project$Common$Colors$success,
 					$author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToSectionThree,
-					'Continue to Section Three →',
 					_List_fromArray(
-						['Welcome to the second section! The horizontal scrolling continues smoothly.', 'Each section is positioned side-by-side in a horizontal layout.', 'The animation automatically calculates the correct X position for each target.'])),
+						['Welcome to the second section! The horizontal scrolling continues smoothly.', 'Each section is positioned side-by-side in a horizontal layout.', 'The animation automatically calculates the correct X position for each target.']),
+					_List_fromArray(
+						[
+							_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToStart, 'Start'),
+							_Utils_Tuple3($author$project$Common$UI$Success, $author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToSectionOne, 'Section 1'),
+							_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToSectionThree, 'Section 3')
+						])),
 					A6(
 					$author$project$SmoothMoveScrollUI$HorizontalBasic$viewSection,
 					'section-three',
 					'Section Three',
 					$author$project$Common$Colors$purple,
 					$author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToStart,
-					'Back to Start ←',
 					_List_fromArray(
-						['This is the final section of our horizontal scrolling demonstration.', 'You can navigate back to any previous section using the buttons above.', 'The SmoothMoveScroll module handles all the complex scroll calculations automatically.']))
+						['This is the final section of our horizontal scrolling demonstration.', 'You can navigate back to any previous section using the buttons above.', 'The SmoothMoveScroll module handles all the complex scroll calculations automatically.']),
+					_List_fromArray(
+						[
+							_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToStart, 'Start'),
+							_Utils_Tuple3($author$project$Common$UI$Success, $author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToSectionOne, 'Section 1'),
+							_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$SmoothMoveScrollUI$HorizontalBasic$ScrollToSectionTwo, 'Section 2')
+						]))
 				]))
 		]);
 };

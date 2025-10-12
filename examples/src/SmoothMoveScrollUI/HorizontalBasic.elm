@@ -130,21 +130,18 @@ viewContent : Model -> List (Element Msg)
 viewContent model =
     [ -- Header Section
       column
-        [ width fill
-        --, spacing 20
-        ]
-        [ UI.backButton
+        [ width fill ]
+        [ el
+            [alignLeft
+            , paddingXY 20 10]
+            <|
+            UI.backButton
         , -- Header
-          UI.pageHeader "Horizontal X Axis Scrolling"
-        ]
-    , -- Navigation Buttons
-      el [alignRight
-      , paddingXY 20 0] <|
-      UI.htmlActionButtons
-        [ ( UI.Primary, ScrollToStart, "Start" )
-        , ( UI.Success, ScrollToSectionOne, "Section 1" )
-        , ( UI.Purple, ScrollToSectionTwo, "Section 2" )
-        , ( UI.Warning, ScrollToSectionThree, "Section 3" )
+          el
+            [alignLeft
+            , paddingXY 20 10]
+            <|
+                UI.pageHeader "Horizontal X Axis Scrolling"
         ]
     , -- Horizontal Content Container
       row
@@ -157,50 +154,62 @@ viewContent model =
             "🚀 Start Here"
             Colors.primary
             ScrollToSectionOne
-            "Begin Journey →"
             [ "Welcome to the horizontal scrolling demonstration!"
             , "This is the starting point of our X axis scrolling example."
-            , "Click the button below to begin the horizontal journey through the sections."
+            , "Click the buttons below to begin the horizontal journey through the sections."
+            ]
+            [ ( UI.Success, ScrollToSectionOne, "Section 1" )
+            , ( UI.Purple, ScrollToSectionTwo, "Section 2" )
+            , ( UI.Warning, ScrollToSectionThree, "Section 3" )
             ]
         , -- Section One
           viewSection "section-one"
             "Section One"
             Colors.primary
             ScrollToSectionTwo
-            "Continue to Section Two →"
             [ "This is the first section of our horizontal scrolling example."
             , "Notice how the scroll animation moves left-to-right instead of up-and-down."
             , "The X axis configuration makes this possible with smooth horizontal movement."
+            ]
+            [ ( UI.Primary, ScrollToStart, "Start" )
+            , ( UI.Purple, ScrollToSectionTwo, "Section 2" )
+            , ( UI.Warning, ScrollToSectionThree, "Section 3" )
             ]
         , -- Section Two
           viewSection "section-two"
             "Section Two"
             Colors.success
             ScrollToSectionThree
-            "Continue to Section Three →"
             [ "Welcome to the second section! The horizontal scrolling continues smoothly."
             , "Each section is positioned side-by-side in a horizontal layout."
             , "The animation automatically calculates the correct X position for each target."
+            ]
+            [ ( UI.Primary, ScrollToStart, "Start" )
+            , ( UI.Success, ScrollToSectionOne, "Section 1" )
+            , ( UI.Warning, ScrollToSectionThree, "Section 3" )
             ]
         , -- Section Three
           viewSection "section-three"
             "Section Three"
             Colors.purple
             ScrollToStart
-            "Back to Start ←"
             [ "This is the final section of our horizontal scrolling demonstration."
             , "You can navigate back to any previous section using the buttons above."
             , "The SmoothMoveScroll module handles all the complex scroll calculations automatically."
+            ]
+            [ ( UI.Primary, ScrollToStart, "Start" )
+            , ( UI.Success, ScrollToSectionOne, "Section 1" )
+            , ( UI.Purple, ScrollToSectionTwo, "Section 2" )
             ]
         ]
     ]
 
 
-viewSection : String -> String -> Element.Color -> Msg -> String -> List String -> Element Msg
-viewSection sectionId title color nextAction buttonText contentLines =
+viewSection : String -> String -> Element.Color -> Msg  -> List String -> List ( UI.ButtonStyle, Msg, String ) -> Element Msg
+viewSection sectionId title color nextAction contentLines buttons =
     column
         [ width (px 300)
-        , height (px 300)
+        , height fill
         , spacing 20
         , htmlAttribute (Html.Attributes.id sectionId)
         , htmlAttribute (Html.Attributes.class "responsive-paragraph")
@@ -238,6 +247,6 @@ viewSection sectionId title color nextAction buttonText contentLines =
                 )
                 contentLines
             )
-        , -- Navigation Button
-          UI.smallActionButton UI.Primary nextAction buttonText
+        , -- Navigation Buttons
+          UI.htmlActionButtons buttons
         ]
