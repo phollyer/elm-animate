@@ -185,7 +185,7 @@ All approaches use similar configuration patterns, making it easy to switch:
 -- Task-based scrolling
 { defaultConfig | offset = 60, speed = 400, easing = Ease.outCubic, axis = Y }
 
--- Element positioning (Sub/State)
+-- Element positioning (Sub)
 { defaultConfig | speed = 400, easing = Ease.outCubic, axis = Both }
 
 -- CSS transitions
@@ -210,7 +210,7 @@ MoveElement -> { model | animations = SmoothMoveCSS.animateTo "elem" 100 200 mod
 
 **⚠️ Requires additional changes:**
 - **SmoothMovePorts**: Returns `( Model, Cmd )` - needs tuple destructuring + JavaScript setup
-- **Subscriptions**: SmoothMoveSub/State/CSS need subscriptions, Task/Ports don't
+- **Subscriptions**: SmoothMoveSub/CSS need subscriptions, Task/Ports don't
 - **Advanced Task API**: Use `SmoothMoveScroll.animateToTask` for composition/error handling
 
 ## 📖 API Documentation

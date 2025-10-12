@@ -161,7 +161,7 @@ Same as other SmoothMove modules:
 
 | Approach | CPU Usage | Smoothness | Hardware Acceleration |
 |----------|-----------|------------|----------------------|
-| SmoothMoveSub/State | Higher | Good | No |
+| SmoothMoveSub | Higher | Good | No |
 | SmoothMoveCSS | Lower | Very Good | Yes (CSS) |
 | **SmoothMovePorts** | **Lowest** | **Excellent** | **Yes (Web API)** |
 
