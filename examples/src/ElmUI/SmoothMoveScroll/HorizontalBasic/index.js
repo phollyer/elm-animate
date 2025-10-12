@@ -5363,7 +5363,7 @@ var $elm$core$Basics$abs = function (n) {
 	return (n < 0) ? (-n) : n;
 };
 var $elm$core$Basics$round = _Basics_round;
-var $author$project$Internal$SmoothScroll$animationSteps = F4(
+var $author$project$Internal$AnimationCore$animationSteps = F4(
 	function (speed, easing, start, stop) {
 		var operator = (_Utils_cmp(start, stop) > 0) ? $elm$core$Basics$sub : $elm$core$Basics$add;
 		var diff = $elm$core$Basics$abs(start - stop);
@@ -5385,7 +5385,7 @@ var $author$project$Internal$SmoothScroll$animationSteps = F4(
 			},
 			weights);
 	});
-var $author$project$Internal$SmoothScroll$animationStepsWithFrames = F4(
+var $author$project$Internal$AnimationCore$animationStepsWithFrames = F4(
 	function (frames, easing, start, stop) {
 		var operator = (_Utils_cmp(start, stop) > 0) ? $elm$core$Basics$sub : $elm$core$Basics$add;
 		var framesFloat = frames;
@@ -5472,7 +5472,7 @@ var $author$project$SmoothMoveScroll$animateToTaskWithConfig = F2(
 										function (x) {
 											return A2($elm$browser$Browser$Dom$setViewport, x, viewport.y);
 										},
-										A4($author$project$Internal$SmoothScroll$animationSteps, config.speed, config.easing, viewport.x, clampedX)));
+										A4($author$project$Internal$AnimationCore$animationSteps, config.speed, config.easing, viewport.x, clampedX)));
 							case 'Y':
 								return $elm$core$Task$sequence(
 									A2(
@@ -5480,7 +5480,7 @@ var $author$project$SmoothMoveScroll$animateToTaskWithConfig = F2(
 										function (y) {
 											return A2($elm$browser$Browser$Dom$setViewport, viewport.x, y);
 										},
-										A4($author$project$Internal$SmoothScroll$animationSteps, config.speed, config.easing, viewport.y, clampedY)));
+										A4($author$project$Internal$AnimationCore$animationSteps, config.speed, config.easing, viewport.y, clampedY)));
 							default:
 								var yDistance = $elm$core$Basics$abs(viewport.y - clampedY);
 								var xDistance = $elm$core$Basics$abs(viewport.x - clampedX);
@@ -5489,8 +5489,8 @@ var $author$project$SmoothMoveScroll$animateToTaskWithConfig = F2(
 									$elm$core$Basics$max,
 									1,
 									($elm$core$Basics$round(maxDistance) / config.speed) | 0);
-								var xSteps = A4($author$project$Internal$SmoothScroll$animationStepsWithFrames, frames, config.easing, viewport.x, clampedX);
-								var ySteps = A4($author$project$Internal$SmoothScroll$animationStepsWithFrames, frames, config.easing, viewport.y, clampedY);
+								var xSteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.x, clampedX);
+								var ySteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.y, clampedY);
 								return $elm$core$Task$sequence(
 									A3($elm$core$List$map2, $elm$browser$Browser$Dom$setViewport, xSteps, ySteps));
 						}
@@ -5505,7 +5505,7 @@ var $author$project$SmoothMoveScroll$animateToTaskWithConfig = F2(
 										function (x) {
 											return A3($elm$browser$Browser$Dom$setViewportOf, containerNodeId, x, viewport.y);
 										},
-										A4($author$project$Internal$SmoothScroll$animationSteps, config.speed, config.easing, viewport.x, clampedX)));
+										A4($author$project$Internal$AnimationCore$animationSteps, config.speed, config.easing, viewport.x, clampedX)));
 							case 'Y':
 								return $elm$core$Task$sequence(
 									A2(
@@ -5513,7 +5513,7 @@ var $author$project$SmoothMoveScroll$animateToTaskWithConfig = F2(
 										function (y) {
 											return A3($elm$browser$Browser$Dom$setViewportOf, containerNodeId, viewport.x, y);
 										},
-										A4($author$project$Internal$SmoothScroll$animationSteps, config.speed, config.easing, viewport.y, clampedY)));
+										A4($author$project$Internal$AnimationCore$animationSteps, config.speed, config.easing, viewport.y, clampedY)));
 							default:
 								var yDistance = $elm$core$Basics$abs(viewport.y - clampedY);
 								var xDistance = $elm$core$Basics$abs(viewport.x - clampedX);
@@ -5522,8 +5522,8 @@ var $author$project$SmoothMoveScroll$animateToTaskWithConfig = F2(
 									$elm$core$Basics$max,
 									1,
 									($elm$core$Basics$round(maxDistance) / config.speed) | 0);
-								var xSteps = A4($author$project$Internal$SmoothScroll$animationStepsWithFrames, frames, config.easing, viewport.x, clampedX);
-								var ySteps = A4($author$project$Internal$SmoothScroll$animationStepsWithFrames, frames, config.easing, viewport.y, clampedY);
+								var xSteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.x, clampedX);
+								var ySteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.y, clampedY);
 								return $elm$core$Task$sequence(
 									A3(
 										$elm$core$List$map2,

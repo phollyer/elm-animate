@@ -3,7 +3,7 @@ module Tests exposing (suite)
 import Ease
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
-import Internal.AnimationSteps exposing (interpolate)
+import Internal.AnimationCore exposing (animationSteps)
 import Test exposing (..)
 
 
@@ -14,35 +14,35 @@ suite =
             \_ ->
                 let
                     steps =
-                        interpolate 100 Ease.linear 0 100000
+                        animationSteps 100 Ease.linear 0 100000
                 in
                 Expect.equal (List.sort steps) steps
         , test "stop < start" <|
             \_ ->
                 let
                     steps =
-                        interpolate 100 Ease.linear 100000 0
+                        animationSteps 100 Ease.linear 100000 0
                 in
                 Expect.equal (List.reverse (List.sort steps)) steps
         , test "negative speed is no steps" <|
             \_ ->
                 let
                     steps =
-                        interpolate -100 Ease.linear 100000 0
+                        animationSteps -100 Ease.linear 100000 0
                 in
                 Expect.equal steps []
         , test "zero speed is no steps" <|
             \_ ->
                 let
                     steps =
-                        interpolate 0 Ease.linear 100000 0
+                        animationSteps 0 Ease.linear 100000 0
                 in
                 Expect.equal steps []
         , test "start == stop is no steps" <|
             \_ ->
                 let
                     steps =
-                        interpolate 100 Ease.linear 0 0
+                        animationSteps 100 Ease.linear 0 0
                 in
                 Expect.equal steps []
         ]

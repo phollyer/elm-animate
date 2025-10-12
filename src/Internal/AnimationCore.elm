@@ -1,4 +1,4 @@
-module Internal.SmoothScroll exposing (animationSteps, animationStepsWithFrames)
+module Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames)
 
 import Ease
 

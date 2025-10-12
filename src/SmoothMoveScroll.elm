@@ -52,7 +52,7 @@ Key features:
 
 import Browser.Dom as Dom
 import Ease
-import Internal.SmoothScroll exposing (animationSteps, animationStepsWithFrames)
+import Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames)
 import Task exposing (Task)
 
 
