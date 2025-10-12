@@ -95,7 +95,7 @@ SmoothScroll elementId ->
 
 **For moving UI elements:**
 ```elm
-import SmoothMoveSub exposing (animateTo, init, subscriptions)
+import SmoothMoveSub exposing (animateTo)
 
 -- In your model
 type alias Model = { animations : SmoothMoveSub.Model, ... }
@@ -108,6 +108,9 @@ initialAnimations =
 -- In your update  
 AnimateElement ->
     { model | animations = animateTo "my-element" 200 300 model.animations }
+
+AnimationFrame deltaMs ->
+    { model | animations = SmoothMoveSub.step deltaMs model.animations }
 
 -- Don't forget subscriptions!
 subscriptions model = SmoothMoveSub.subscriptions model.animations AnimationFrame
