@@ -2,7 +2,6 @@ module ElmUI.Scroll.Container.Main exposing (main)
 
 import Browser exposing (Document)
 import Common.Colors as Colors
-import Common.Styles as Styles
 import Common.UI as UI
 import Element exposing (..)
 import Element.Background as Background

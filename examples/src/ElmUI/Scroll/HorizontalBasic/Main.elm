@@ -4,7 +4,6 @@ import Browser exposing (Document)
 import Browser.Dom
 import Browser.Events
 import Common.Colors as Colors
-import Common.Styles as Styles
 import Common.UI as UI
 import Element exposing (Element, alignLeft, alignRight, scrollbarX, centerX, centerY, column, el, explain, fill, height, htmlAttribute, layout, link, maximum, padding, paddingEach, paddingXY, paragraph, px, rgb255, row, spacing, text, width)
 import Element.Background as Background

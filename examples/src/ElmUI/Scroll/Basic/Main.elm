@@ -3,7 +3,6 @@ module ElmUI.Scroll.Basic.Main exposing (main)
 import Browser exposing (Document)
 import Browser.Dom
 import Common.Colors as Colors
-import Common.Styles as Styles
 import Common.UI as UI
 import Element exposing (Element, alignLeft, centerX, column, el, fill, height, htmlAttribute, layout, link, maximum, padding, paddingXY, paragraph, px, rgb255, row, spacing, text, width)
 import Element.Background as Background

@@ -12023,44 +12023,30 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Common$UI$htmlActionButtons = function (buttons) {
-	var getButtonColors = function (style) {
+	var getButtonStyleClass = function (style) {
 		switch (style.$) {
 			case 'Primary':
-				return _Utils_Tuple2('#4299e1', '#3182ce');
+				return 'primary';
 			case 'Success':
-				return _Utils_Tuple2('#48bb78', '#38a169');
+				return 'success';
 			case 'Purple':
-				return _Utils_Tuple2('#9f7aea', '#805ad5');
+				return 'purple';
 			default:
-				return _Utils_Tuple2('#ed8936', '#dd6b20');
+				return 'warning';
 		}
 	};
-	var createHtmlButton = function (_v1) {
-		var style = _v1.a;
-		var onPress = _v1.b;
-		var label = _v1.c;
-		var _v0 = getButtonColors(style);
-		var startColor = _v0.a;
-		var endColor = _v0.b;
+	var createHtmlButton = function (_v0) {
+		var style = _v0.a;
+		var onPress = _v0.b;
+		var label = _v0.c;
 		return A2(
 			$elm$html$Html$button,
 			_List_fromArray(
 				[
 					$elm$html$Html$Events$onClick(onPress),
-					A2($elm$html$Html$Attributes$style, 'background', 'linear-gradient(135deg, ' + (startColor + (', ' + (endColor + ')')))),
-					A2($elm$html$Html$Attributes$style, 'color', 'white'),
-					A2($elm$html$Html$Attributes$style, 'font-weight', '500'),
-					A2($elm$html$Html$Attributes$style, 'padding', '12px 24px'),
-					A2($elm$html$Html$Attributes$style, 'border', 'none'),
-					A2($elm$html$Html$Attributes$style, 'border-radius', '8px'),
-					A2($elm$html$Html$Attributes$style, 'cursor', 'pointer'),
-					A2($elm$html$Html$Attributes$style, 'font-size', '14px'),
-					A2($elm$html$Html$Attributes$style, 'transition', 'transform 0.2s, box-shadow 0.2s'),
-					A2($elm$html$Html$Attributes$style, 'box-shadow', '0 2px 4px rgba(0, 0, 0, 0.1)'),
-					$elm$html$Html$Attributes$class('ui-action-button')
+					$elm$html$Html$Attributes$class(
+					'ui-action-button ' + getButtonStyleClass(style))
 				]),
 			_List_fromArray(
 				[
@@ -12077,12 +12063,7 @@ var $author$project$Common$UI$htmlActionButtons = function (buttons) {
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-						A2($elm$html$Html$Attributes$style, 'gap', '12px'),
-						A2($elm$html$Html$Attributes$style, 'flex-wrap', 'wrap'),
-						A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-						A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
-						A2($elm$html$Html$Attributes$style, 'margin', '16px 0')
+						$elm$html$Html$Attributes$class('ui-button-group')
 					]),
 				htmlButtons)));
 };

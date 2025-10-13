@@ -1,0 +1,127 @@
+/* ============================================
+   Elm Smooth Move - UI Components CSS
+   ============================================ */
+
+/* Base button styling for UI action buttons */
+.ui-action-button {
+    display: inline-block;
+    padding: 12px 24px;
+    color: white;
+    font-weight: 500;
+    font-size: 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-family: inherit;
+    text-decoration: none;
+    text-align: center;
+    user-select: none;
+}
+
+/* Button style variants */
+.ui-action-button.primary {
+    background: linear-gradient(135deg, #4299e1, #3182ce);
+}
+
+.ui-action-button.success {
+    background: linear-gradient(135deg, #48bb78, #38a169);
+}
+
+.ui-action-button.purple {
+    background: linear-gradient(135deg, #9f7aea, #805ad5);
+}
+
+.ui-action-button.warning {
+    background: linear-gradient(135deg, #ed8936, #dd6b20);
+}
+
+/* Button interactions */
+.ui-action-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ui-action-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ui-action-button:focus {
+    outline: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 0 0 3px rgba(66, 153, 225, 0.3);
+}
+
+/* Button group container */
+.ui-button-group {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    margin: 16px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .ui-action-button {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+
+    .ui-button-group {
+        gap: 8px;
+        margin: 12px 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .ui-action-button {
+        padding: 8px 16px;
+        font-size: 12px;
+        min-width: 44px;
+        /* Ensure touch targets are at least 44px */
+        min-height: 44px;
+    }
+
+    .ui-button-group {
+        gap: 6px;
+        margin: 10px 0;
+    }
+}
+
+/* Legacy support for existing .example-link class */
+.example-link {
+    display: inline-block;
+    padding: 12px 24px;
+    color: white;
+    font-weight: 500;
+    font-size: 14px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-family: inherit;
+    text-decoration: none;
+    text-align: center;
+    user-select: none;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    flex-shrink: 0;
+}
+
+.example-link:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.example-link:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Ensure buttons work well in flex containers */
+.ui-action-button {
+    flex-shrink: 0;
+}

@@ -1,0 +1,227 @@
+/* ============================================
+   Elm Smooth Move - Layout-Specific CSS
+   ============================================ */
+
+/* HORIZONTAL LAYOUT CSS */
+.horizontal-layout body {
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+}
+
+.horizontal-layout {
+    min-height: 100vh;
+    height: auto;
+    padding: 20px 40px !important;
+}
+
+.horizontal-content-row {
+    min-width: 500vw;
+}
+
+body::-webkit-scrollbar:horizontal {
+    height: 12px;
+}
+
+body::-webkit-scrollbar-track:horizontal {
+    background: #F7FAFC;
+    border-radius: 6px;
+}
+
+body::-webkit-scrollbar-thumb:horizontal {
+    background: #CBD5E0;
+    border-radius: 6px;
+}
+
+body::-webkit-scrollbar-thumb:horizontal:hover {
+    background: #A0AEC0;
+}
+
+/* DIAGONAL LAYOUT CSS */
+.diagonal-layout body {
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+}
+
+.diagonal-layout {
+    min-height: 300vh;
+    height: auto;
+    width: 300vw;
+    padding: 20px 40px !important;
+}
+
+.diagonal-content-grid {
+    min-width: 300vw;
+    min-height: 300vh;
+}
+
+body::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+body::-webkit-scrollbar-track {
+    background: #F7FAFC;
+    border-radius: 6px;
+}
+
+body::-webkit-scrollbar-thumb {
+    background: #CBD5E0;
+    border-radius: 6px;
+}
+
+body::-webkit-scrollbar-thumb:hover {
+    background: #A0AEC0;
+}
+
+/* CONTAINER LAYOUT CSS */
+.container-layout {
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.scroll-container-wrapper {
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* Scrollbar styles for the scroll container */
+#scroll-container {
+    overflow-y: auto !important;
+    scrollbar-width: thin;
+    scrollbar-color: #CBD5E0 #F7FAFC;
+}
+
+#scroll-container::-webkit-scrollbar {
+    width: 12px;
+}
+
+#scroll-container::-webkit-scrollbar-track {
+    background: #F7FAFC;
+    border-radius: 6px;
+    margin: 6px;
+}
+
+#scroll-container::-webkit-scrollbar-thumb {
+    background: #CBD5E0;
+    border-radius: 6px;
+}
+
+#scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #A0AEC0;
+}
+
+/* HORIZONTAL CONTAINER LAYOUT CSS */
+.scroll-container {
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    scrollbar-width: thin;
+    scrollbar-color: #CBD5E0 #F7FAFC;
+}
+
+.scroll-container::-webkit-scrollbar {
+    height: 10px;
+}
+
+.scroll-container::-webkit-scrollbar-track {
+    background: #F7FAFC;
+    border-radius: 5px;
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+    background: #CBD5E0;
+    border-radius: 5px;
+}
+
+.scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #A0AEC0;
+}
+
+/* Navigation buttons responsive layout */
+.nav-buttons-row {
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+/* Responsive button container - row on desktop, column on mobile */
+.responsive-button-container {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 20px !important;
+}
+
+/* RESPONSIVE BREAKPOINTS FOR LAYOUTS */
+@media (max-width: 768px) {
+    .horizontal-layout {
+        padding: 20px 16px !important;
+    }
+
+    .diagonal-layout {
+        min-height: 250vh;
+        width: 250vw;
+        padding: 20px 16px !important;
+    }
+
+    .diagonal-content-grid {
+        min-width: 250vw;
+        min-height: 250vh;
+    }
+
+    .container-layout {
+        padding: 16px;
+    }
+
+    .responsive-button-container {
+        flex-direction: column !important;
+        gap: 16px !important;
+    }
+
+    .nav-buttons-row {
+        gap: 8px !important;
+    }
+
+    .nav-buttons-row button {
+        min-width: 80px;
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .horizontal-layout {
+        padding: 8px 4px !important;
+    }
+
+    .diagonal-layout {
+        min-height: 200vh;
+        width: 200vw;
+        padding: 12px !important;
+    }
+
+    .diagonal-content-grid {
+        min-width: 200vw;
+        min-height: 200vh;
+    }
+
+    .container-layout {
+        padding: 10px;
+    }
+
+    .responsive-button-container {
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+
+    .nav-buttons-row {
+        gap: 6px !important;
+    }
+
+    .nav-buttons-row button {
+        min-width: 70px;
+        padding: 6px 10px !important;
+        font-size: 11px !important;
+    }
+}

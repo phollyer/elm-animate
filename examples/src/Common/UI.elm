@@ -526,51 +526,31 @@ getCardColor cardNum =
 -- HTML-BASED BUTTON GROUPS
 
 
-{-| Create a button group with proper flexbox wrapping
-This renders each button as HTML and wraps them in a flexbox container
+{-| Create a button group using pure CSS classes
+All styling is handled by the ui-components.css file
 -}
 htmlActionButtons : List ( ButtonStyle, msg, String ) -> Element msg
 htmlActionButtons buttons =
     let
-        -- Create HTML buttons that match the Elm UI actionButton styling
         createHtmlButton (style, onPress, label) =
-            let
-                (startColor, endColor) = getButtonColors style
-            in
             Html.button
                 [ Html.Events.onClick onPress
-                , Html.Attributes.style "background" ("linear-gradient(135deg, " ++ startColor ++ ", " ++ endColor ++ ")")
-                , Html.Attributes.style "color" "white"
-                , Html.Attributes.style "font-weight" "500"
-                , Html.Attributes.style "padding" "12px 24px"
-                , Html.Attributes.style "border" "none"
-                , Html.Attributes.style "border-radius" "8px"
-                , Html.Attributes.style "cursor" "pointer"
-                , Html.Attributes.style "font-size" "14px"
-                , Html.Attributes.style "transition" "transform 0.2s, box-shadow 0.2s"
-                , Html.Attributes.style "box-shadow" "0 2px 4px rgba(0, 0, 0, 0.1)"
-                , Html.Attributes.class "ui-action-button"
+                , Html.Attributes.class ("ui-action-button " ++ getButtonStyleClass style)
                 ]
                 [ Html.text label ]
 
-        getButtonColors style =
+        getButtonStyleClass style =
             case style of
-                Primary -> ("#4299e1", "#3182ce")
-                Success -> ("#48bb78", "#38a169") 
-                Purple -> ("#9f7aea", "#805ad5")
-                Warning -> ("#ed8936", "#dd6b20")
+                Primary -> "primary"
+                Success -> "success" 
+                Purple -> "purple"
+                Warning -> "warning"
                 
         htmlButtons = List.map createHtmlButton buttons
     in
     Element.el [ centerX ] <| 
     Element.html
         (Html.div
-            [ Html.Attributes.style "display" "flex"
-            , Html.Attributes.style "gap" "12px"
-            , Html.Attributes.style "flex-wrap" "wrap"
-            , Html.Attributes.style "justify-content" "center"
-            , Html.Attributes.style "align-items" "center"
-            , Html.Attributes.style "margin" "16px 0"
-            ]
+            [ Html.Attributes.class "ui-button-group" ]
             htmlButtons
         )
