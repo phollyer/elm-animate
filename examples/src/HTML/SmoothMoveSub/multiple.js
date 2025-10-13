@@ -5472,7 +5472,7 @@ var $elm$core$Dict$values = function (dict) {
 		dict);
 };
 var $author$project$SmoothMoveSub$subscriptions = F2(
-	function (_v0, toMsg) {
+	function (toMsg, _v0) {
 		var modelData = _v0.a;
 		return (!A2(
 			$elm$core$List$any,
@@ -5482,7 +5482,7 @@ var $author$project$SmoothMoveSub$subscriptions = F2(
 			$elm$core$Dict$values(modelData))) ? $elm$core$Platform$Sub$none : $elm$browser$Browser$Events$onAnimationFrameDelta(toMsg);
 	});
 var $author$project$HTML$SmoothMoveSub$Multiple$subscriptions = function (model) {
-	return A2($author$project$SmoothMoveSub$subscriptions, model.smoothMove, $author$project$HTML$SmoothMoveSub$Multiple$AnimationFrame);
+	return A2($author$project$SmoothMoveSub$subscriptions, $author$project$HTML$SmoothMoveSub$Multiple$AnimationFrame, model.smoothMove);
 };
 var $elm$core$Basics$negate = function (n) {
 	return -n;

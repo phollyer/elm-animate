@@ -297,8 +297,8 @@ actionButton style onPress label =
 -- CONTENT SECTION
 
 
-contentSection : String -> String -> List String -> Maybe (Element msg) -> Element msg
-contentSection sectionId title content maybeButton =
+contentSection : String -> String -> List String -> List (( ButtonStyle, msg, String )) -> Element msg
+contentSection sectionId title content buttons =
     column
         [ spacing 20
         , htmlAttribute (Html.Attributes.id sectionId)
@@ -328,13 +328,7 @@ contentSection sectionId title content maybeButton =
             ]
             (List.map (\line -> text line) content)
          ]
-            ++ (case maybeButton of
-                    Just button ->
-                        [ button ]
-
-                    Nothing ->
-                        []
-               )
+            ++ [htmlActionButtons   buttons]
         )
 
 
