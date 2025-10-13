@@ -1,4 +1,4 @@
-module ElmUI.Scroll.Basic.Main exposing (main)
+module ElmUI.Scroll.PageY.Main exposing (main)
 
 import Browser exposing (Document)
 import Browser.Dom

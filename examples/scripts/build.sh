@@ -24,11 +24,11 @@ elm make src/HTML/SmoothMovePorts/Multiple.elm --output=src/HTML/SmoothMovePorts
 
 # Build ElmUI examples
 echo "🎨 Building ElmUI examples..."
-elm make src/ElmUI/Scroll/Basic/Main.elm --output=src/ElmUI/Scroll/Basic/index.js
-elm make src/ElmUI/Scroll/Container/Main.elm --output=src/ElmUI/Scroll/Container/index.js
-elm make src/ElmUI/Scroll/HorizontalBasic/Main.elm --output=src/ElmUI/Scroll/HorizontalBasic/index.js
-elm make src/ElmUI/Scroll/HorizontalContainer/Main.elm --output=src/ElmUI/Scroll/HorizontalContainer/index.js
-elm make src/ElmUI/Scroll/DiagonalBoth/Main.elm --output=src/ElmUI/Scroll/DiagonalBoth/index.js
+elm make src/ElmUI/Scroll/PageY/Main.elm --output=src/ElmUI/Scroll/PageY/index.js
+elm make src/ElmUI/Scroll/ContainerY/Main.elm --output=src/ElmUI/Scroll/ContainerY/index.js
+elm make src/ElmUI/Scroll/PageX/Main.elm --output=src/ElmUI/Scroll/PageX/index.js
+elm make src/ElmUI/Scroll/ContainerX/Main.elm --output=src/ElmUI/Scroll/ContainerX/index.js
+elm make src/ElmUI/Scroll/PageXY/Main.elm --output=src/ElmUI/Scroll/PageXY/index.js
 elm make src/ElmUI/Sub/Basic/Main.elm --output=src/ElmUI/Sub/Basic/index.js
 elm make src/ElmUI/Sub/Multiple/Main.elm --output=src/ElmUI/Sub/Multiple/index.js
 elm make src/ElmUI/CSS/Basic/Main.elm --output=src/ElmUI/CSS/Basic/index.js
@@ -43,7 +43,7 @@ echo "   - http://localhost:8080/src/HTML/SmoothMoveScroll/basic.html"
 echo "   - http://localhost:8080/src/HTML/SmoothMoveScroll/container.html"
 echo "   - And more in src/HTML/"
 echo "🎨 ElmUI examples available at:"
-echo "   - http://localhost:8080/src/ElmUI/Scroll/Basic/index.html"
-echo "   - http://localhost:8080/src/ElmUI/Scroll/Container/index.html"
-echo "   - http://localhost:8080/src/ElmUI/Scroll/HorizontalBasic/index.html"
+echo "   - http://localhost:8080/src/ElmUI/Scroll/PageY/index.html"
+echo "   - http://localhost:8080/src/ElmUI/Scroll/ContainerY/index.html"
+echo "   - http://localhost:8080/src/ElmUI/Scroll/PageX/index.html"
 echo "   - And more in src/ElmUI/"

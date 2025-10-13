@@ -1,4 +1,4 @@
-module ElmUI.Scroll.DiagonalBoth.Main exposing (main)
+module ElmUI.Scroll.PageXY.Main exposing (main)
 
 import Browser exposing (Document)
 import Browser.Dom

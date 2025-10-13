@@ -1,4 +1,4 @@
-module ElmUI.Scroll.Container.Main exposing (main)
+module ElmUI.Scroll.ContainerY.Main exposing (main)
 
 import Browser exposing (Document)
 import Common.Colors as Colors
