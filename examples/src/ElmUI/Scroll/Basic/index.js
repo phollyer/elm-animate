@@ -5750,30 +5750,6 @@ var $author$project$Common$UI$getLayoutAttributes = function (layoutType) {
 		]);
 	return _Utils_ap(baseAttributes, specificAttributes);
 };
-var $author$project$Common$Styles$buttonGroupCSS = '\n    /* Example links - matching elmui-examples.html reference implementation */\n    .example-links {\n        display: flex;\n        gap: 6px;\n        flex-wrap: wrap;\n        justify-content: center;\n        margin: 20px 0;\n    }\n\n    .example-link {\n        display: flex;\n        align-items: center;\n        justify-content: center;\n        padding: 12px 8px;\n        background: linear-gradient(135deg, #4299e1, #3182ce);\n        color: white;\n        text-decoration: none;\n        border-radius: 6px;\n        font-size: 12px;\n        font-weight: 500;\n        transition: transform 0.2s, box-shadow 0.2s;\n        text-align: center;\n        min-width: 44px;\n        min-height: 44px;\n        cursor: pointer;\n        border: none;\n        font-family: inherit;\n    }\n\n    @media (min-width: 480px) {\n        .example-links {\n            gap: 8px;\n            margin: 24px 0;\n        }\n\n        .example-link {\n            font-size: 13px;\n            padding: 10px 12px;\n        }\n    }\n\n    @media (min-width: 768px) {\n        .example-links {\n            gap: 10px;\n            margin: 32px 0;\n        }\n\n        .example-link {\n            display: inline-block;\n            padding: 8px 16px;\n            font-size: 0.9rem;\n            min-width: auto;\n            min-height: auto;\n        }\n    }\n\n    .example-link:hover {\n        transform: translateY(-2px);\n        box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);\n    }\n\n    /* Backward compatibility for old button-group class */\n    .button-group {\n        display: flex;\n        gap: 6px;\n        flex-wrap: wrap;\n        justify-content: center;\n        margin: 20px 0;\n    }\n\n    @media (min-width: 480px) {\n        .button-group {\n            gap: 8px;\n            margin: 24px 0;\n        }\n    }\n\n    @media (min-width: 768px) {\n        .button-group {\n            gap: 10px;\n            margin: 32px 0;\n        }\n    }\n    ';
-var $author$project$Common$Styles$containerCSS = '\n    .container-layout {\n        min-height: 100vh;\n        padding: 20px;\n        box-sizing: border-box;\n    }\n    \n    .scroll-container-wrapper {\n        max-width: 1200px;\n        width: 100%;\n        margin: 0 auto;\n    }\n\n    /* Scrollbar styles for the scroll container */\n    #scroll-container {\n        overflow-y: auto !important;\n        scrollbar-width: thin;\n        scrollbar-color: #CBD5E0 #F7FAFC;\n    }\n\n    #scroll-container::-webkit-scrollbar {\n        width: 12px;\n    }\n\n    #scroll-container::-webkit-scrollbar-track {\n        background: #F7FAFC;\n        border-radius: 6px;\n        margin: 6px;\n    }\n\n    #scroll-container::-webkit-scrollbar-thumb {\n        background: #CBD5E0;\n        border-radius: 6px;\n    }\n\n    #scroll-container::-webkit-scrollbar-thumb:hover {\n        background: #A0AEC0;\n    }\n\n    @media (max-width: 768px) {\n        .container-layout {\n            padding: 16px;\n        }\n    }\n\n    @media (max-width: 480px) {\n        .container-layout {\n            padding: 12px;\n        }\n    }\n    ';
-var $author$project$Common$Styles$diagonalCSS = '\n    body {\n        overflow-x: auto !important;\n        overflow-y: auto !important;\n    }\n\n    .diagonal-layout {\n        min-height: 300vh;\n        height: auto;\n        width: 300vw;\n        padding: 20px 40px !important;\n    }\n\n    .diagonal-content-grid {\n        min-width: 300vw;\n        min-height: 300vh;\n    }\n\n    body::-webkit-scrollbar {\n        width: 12px;\n        height: 12px;\n    }\n\n    body::-webkit-scrollbar-track {\n        background: #F7FAFC;\n        border-radius: 6px;\n    }\n\n    body::-webkit-scrollbar-thumb {\n        background: #CBD5E0;\n        border-radius: 6px;\n    }\n\n    body::-webkit-scrollbar-thumb:hover {\n        background: #A0AEC0;\n    }\n\n    @media (max-width: 768px) {\n        .diagonal-layout {\n            min-height: 250vh;\n            width: 250vw;\n            padding: 20px 16px !important;\n        }\n        \n        .diagonal-content-grid {\n            min-width: 250vw;\n            min-height: 250vh;\n        }\n    }\n\n    @media (max-width: 480px) {\n        .diagonal-layout {\n            min-height: 200vh;\n            width: 200vw;\n            padding: 12px !important;\n        }\n        \n        .diagonal-content-grid {\n            min-width: 200vw;\n            min-height: 200vh;\n        }\n    }\n    ';
-var $author$project$Common$Styles$horizontalCSS = '\n    body {\n        overflow-x: auto !important;\n        overflow-y: auto !important;\n    }\n\n    .horizontal-layout {\n        min-height: 100vh;\n        height: auto;\n        padding: 20px 40px !important;\n    }\n\n    .horizontal-content-row {\n        min-width: 500vw;\n    }\n\n    body::-webkit-scrollbar:horizontal {\n        height: 12px;\n    }\n\n    body::-webkit-scrollbar-track:horizontal {\n        background: #F7FAFC;\n        border-radius: 6px;\n    }\n\n    body::-webkit-scrollbar-thumb:horizontal {\n        background: #CBD5E0;\n        border-radius: 6px;\n    }\n\n    body::-webkit-scrollbar-thumb:horizontal:hover {\n        background: #A0AEC0;\n    }\n\n    @media (max-width: 768px) {\n        .horizontal-layout {\n            padding: 20px 16px !important;\n        }\n    }\n\n    @media (max-width: 480px) {\n        .horizontal-layout {\n            padding: 8px 4px !important;\n        }\n    }\n    ';
-var $author$project$Common$Styles$horizontalContainerCSS = '\n    .container-layout {\n        min-height: 100vh;\n    }\n\n    .scroll-container {\n        overflow-x: auto !important;\n        overflow-y: auto !important;\n        scrollbar-width: thin;\n        scrollbar-color: #CBD5E0 #F7FAFC;\n    }\n\n    .scroll-container::-webkit-scrollbar {\n        height: 10px;\n    }\n\n    .scroll-container::-webkit-scrollbar-track {\n        background: #F7FAFC;\n        border-radius: 5px;\n    }\n\n    .scroll-container::-webkit-scrollbar-thumb {\n        background: #CBD5E0;\n        border-radius: 5px;\n    }\n\n    .scroll-container::-webkit-scrollbar-thumb:hover {\n        background: #A0AEC0;\n    }\n\n    /* Navigation buttons responsive layout */\n    .nav-buttons-row {\n        flex-wrap: wrap;\n        justify-content: center;\n    }\n\n    /* Responsive button container - row on desktop, column on mobile */\n    .responsive-button-container {\n        display: flex !important;\n        flex-direction: row !important;\n        justify-content: center !important;\n        align-items: center !important;\n        gap: 20px !important;\n    }\n\n    @media (max-width: 768px) {\n        .responsive-layout {\n            padding: 20px 16px !important;\n        }\n        \n        .responsive-container {\n            gap: 20px !important;\n        }\n        \n        .responsive-button-container {\n            flex-direction: column !important;\n            gap: 16px !important;\n        }\n        \n        .nav-buttons-row {\n            gap: 8px !important;\n        }\n        \n        .nav-buttons-row button {\n            min-width: 80px;\n            padding: 8px 12px !important;\n            font-size: 12px !important;\n        }\n        \n        .container-layout {\n            padding: 10px 15px;\n        }\n    }\n\n    @media (max-width: 480px) {\n        .responsive-layout {\n            padding: 16px 12px !important;\n        }\n        \n        .responsive-button-container {\n            flex-direction: column !important;\n            gap: 12px !important;\n        }\n        \n        .nav-buttons-row {\n            gap: 6px !important;\n        }\n        \n        .nav-buttons-row button {\n            min-width: 70px;\n            padding: 6px 10px !important;\n            font-size: 11px !important;\n        }\n        \n        .container-layout {\n            padding: 10px;\n        }\n    }\n    ';
-var $author$project$Common$Styles$responsiveCSS = '\n    /* Base styles for responsive elements */\n    .responsive-header {\n        font-size: 32px;\n        text-align: center;\n        padding: 0;\n    }\n\n    /* Mobile-first responsive design */\n    @media (max-width: 768px) {\n        .responsive-layout {\n            padding: 20px 16px !important;\n        }\n        \n        .responsive-container {\n            gap: 20px !important;\n        }\n        \n        .responsive-header {\n            font-size: 24px !important;\n            text-align: center;\n            padding: 0 16px;\n        }\n        \n        .responsive-tech-info {\n            padding: 16px 20px !important;\n            margin: 0 16px;\n        }\n        \n        .responsive-buttons {\n            gap: 16px !important;\n            padding: 0 16px;\n        }\n        \n        .responsive-buttons button {\n            width: 100%;\n            min-height: 44px;\n            padding: 12px 20px !important;\n        }\n        \n        .responsive-paragraph {\n            padding: 20px 16px !important;\n            margin: 0 16px;\n        }\n        \n        .responsive-paragraph h1,\n        .responsive-paragraph h2,\n        .responsive-paragraph h3 {\n            font-size: 20px !important;\n        }\n    }\n    \n    @media (max-width: 480px) {\n        .responsive-layout {\n            padding: 16px 12px !important;\n        }\n        \n        .responsive-header {\n            font-size: 20px !important;\n        }\n        \n        .responsive-tech-info {\n            padding: 12px 16px !important;\n            margin: 0 12px;\n        }\n        \n        .responsive-paragraph {\n            padding: 16px 12px !important;\n            margin: 0 12px;\n        }\n        \n        .responsive-buttons {\n            padding: 0 12px;\n        }\n    }\n    ';
-var $author$project$Common$Styles$responsiveContentCSS = '\n    /* Responsive content block styling */\n    .responsive-content-block {\n        padding: 20px !important;\n    }\n\n    .responsive-content-title {\n        font-size: inherit !important;\n    }\n\n    .responsive-content-description {\n        font-size: inherit !important;\n        line-height: 1.5 !important;\n    }\n\n    .responsive-bullet-list {\n        font-size: inherit !important;\n    }\n\n    .responsive-bullet-point {\n        font-size: inherit !important;\n        line-height: 1.4 !important;\n        margin-bottom: 6px !important;\n    }\n\n    @media (max-width: 768px) {\n        .responsive-content-block {\n            padding: 16px !important;\n        }\n        \n        .responsive-content-title {\n            font-size: 18px !important;\n        }\n        \n        .responsive-content-description {\n            font-size: 14px !important;\n        }\n        \n        .responsive-bullet-list {\n            font-size: 14px !important;\n        }\n        \n        .responsive-bullet-point {\n            font-size: 14px !important;\n            margin-bottom: 8px !important;\n        }\n    }\n\n    @media (max-width: 480px) {\n        .responsive-content-block {\n            padding: 12px !important;\n        }\n        \n        .responsive-content-title {\n            font-size: 16px !important;\n        }\n        \n        .responsive-content-description {\n            font-size: 13px !important;\n        }\n        \n        .responsive-bullet-list {\n            font-size: 13px !important;\n        }\n        \n        .responsive-bullet-point {\n            font-size: 13px !important;\n            margin-bottom: 8px !important;\n        }\n    }\n    ';
-var $author$project$Common$UI$getLayoutCSS = function (layoutType) {
-	var baseCSS = $author$project$Common$Styles$responsiveCSS + ('\n' + ($author$project$Common$Styles$buttonGroupCSS + ('\n' + $author$project$Common$Styles$responsiveContentCSS)));
-	switch (layoutType.$) {
-		case 'Basic':
-			return baseCSS;
-		case 'Horizontal':
-			return baseCSS + ('\n' + $author$project$Common$Styles$horizontalCSS);
-		case 'HorizontalCustomWidth':
-			return baseCSS + ('\n' + $author$project$Common$Styles$horizontalCSS);
-		case 'Diagonal':
-			return baseCSS + ('\n' + $author$project$Common$Styles$diagonalCSS);
-		case 'Container':
-			return baseCSS + ('\n' + $author$project$Common$Styles$containerCSS);
-		default:
-			return baseCSS + ('\n' + $author$project$Common$Styles$horizontalContainerCSS);
-	}
-};
 var $mdgriffith$elm_ui$Internal$Style$classes = {above: 'a', active: 'atv', alignBottom: 'ab', alignCenterX: 'cx', alignCenterY: 'cy', alignContainerBottom: 'acb', alignContainerCenterX: 'accx', alignContainerCenterY: 'accy', alignContainerRight: 'acr', alignLeft: 'al', alignRight: 'ar', alignTop: 'at', alignedHorizontally: 'ah', alignedVertically: 'av', any: 's', behind: 'bh', below: 'b', bold: 'w7', borderDashed: 'bd', borderDotted: 'bdt', borderNone: 'bn', borderSolid: 'bs', capturePointerEvents: 'cpe', clip: 'cp', clipX: 'cpx', clipY: 'cpy', column: 'c', container: 'ctr', contentBottom: 'cb', contentCenterX: 'ccx', contentCenterY: 'ccy', contentLeft: 'cl', contentRight: 'cr', contentTop: 'ct', cursorPointer: 'cptr', cursorText: 'ctxt', focus: 'fcs', focusedWithin: 'focus-within', fullSize: 'fs', grid: 'g', hasBehind: 'hbh', heightContent: 'hc', heightExact: 'he', heightFill: 'hf', heightFillPortion: 'hfp', hover: 'hv', imageContainer: 'ic', inFront: 'fr', inputLabel: 'lbl', inputMultiline: 'iml', inputMultilineFiller: 'imlf', inputMultilineParent: 'imlp', inputMultilineWrapper: 'implw', inputText: 'it', italic: 'i', link: 'lnk', nearby: 'nb', noTextSelection: 'notxt', onLeft: 'ol', onRight: 'or', opaque: 'oq', overflowHidden: 'oh', page: 'pg', paragraph: 'p', passPointerEvents: 'ppe', root: 'ui', row: 'r', scrollbars: 'sb', scrollbarsX: 'sbx', scrollbarsY: 'sby', seButton: 'sbt', single: 'e', sizeByCapital: 'cap', spaceEvenly: 'sev', strike: 'sk', text: 't', textCenter: 'tc', textExtraBold: 'w8', textExtraLight: 'w2', textHeavy: 'w9', textJustify: 'tj', textJustifyAll: 'tja', textLeft: 'tl', textLight: 'w3', textMedium: 'w5', textNormalWeight: 'w4', textRight: 'tr', textSemiBold: 'w6', textThin: 'w1', textUnitalicized: 'tun', transition: 'ts', transparent: 'clr', underline: 'u', widthContent: 'wc', widthExact: 'we', widthFill: 'wf', widthFillPortion: 'wfp', wrapped: 'wrp'};
 var $mdgriffith$elm_ui$Internal$Model$htmlClass = function (cls) {
 	return $mdgriffith$elm_ui$Internal$Model$Attr(
@@ -11658,21 +11634,11 @@ var $author$project$Common$UI$mainContent = function (content) {
 			]),
 		content);
 };
-var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
 var $author$project$Common$UI$createDocument = F3(
 	function (title, layoutType, content) {
 		return {
 			body: _List_fromArray(
 				[
-					A3(
-					$elm$html$Html$node,
-					'style',
-					_List_Nil,
-					_List_fromArray(
-						[
-							$elm$html$Html$text(
-							$author$project$Common$UI$getLayoutCSS(layoutType))
-						])),
 					A2(
 					$mdgriffith$elm_ui$Element$layout,
 					$author$project$Common$UI$getLayoutAttributes(layoutType),
@@ -11957,19 +11923,39 @@ var $mdgriffith$elm_ui$Element$Font$size = function (i) {
 };
 var $author$project$Common$Colors$textDark = A3($mdgriffith$elm_ui$Element$rgb255, 30, 41, 59);
 var $author$project$Common$Colors$textMedium = A3($mdgriffith$elm_ui$Element$rgb255, 71, 85, 105);
-var $author$project$Common$UI$contentSection = F4(
-	function (sectionId, title, content, buttons) {
-		return A2(
-			$mdgriffith$elm_ui$Element$column,
+var $author$project$Common$UI$contentSection = function (config) {
+	var widthAttr = function () {
+		var _v1 = config.width;
+		if (_v1.$ === 'Nothing') {
+			return _List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+					$mdgriffith$elm_ui$Element$centerX
+				]);
+		} else {
+			var px = _v1.a;
+			return _List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$width(
+					$mdgriffith$elm_ui$Element$px(px)),
+					$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill)
+				]);
+		}
+	}();
+	var titleColor = A2($elm$core$Maybe$withDefault, $author$project$Common$Colors$textDark, config.titleColor);
+	var titleAlignment = config.centerTitle ? _List_fromArray(
+		[$mdgriffith$elm_ui$Element$centerX]) : _List_Nil;
+	return A2(
+		$mdgriffith$elm_ui$Element$column,
+		_Utils_ap(
 			_List_fromArray(
 				[
 					$mdgriffith$elm_ui$Element$spacing(20),
 					$mdgriffith$elm_ui$Element$htmlAttribute(
-					$elm$html$Html$Attributes$id(sectionId)),
+					$elm$html$Html$Attributes$id(config.id)),
 					$mdgriffith$elm_ui$Element$htmlAttribute(
 					$elm$html$Html$Attributes$class('responsive-paragraph')),
 					$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundWhite),
-					$mdgriffith$elm_ui$Element$centerX,
 					A2($mdgriffith$elm_ui$Element$paddingXY, 32, 24),
 					$mdgriffith$elm_ui$Element$Border$rounded(12),
 					$mdgriffith$elm_ui$Element$Border$shadow(
@@ -11980,39 +11966,77 @@ var $author$project$Common$UI$contentSection = F4(
 						size: 0
 					})
 				]),
-			_Utils_ap(
-				_List_fromArray(
-					[
-						A2(
-						$mdgriffith$elm_ui$Element$el,
+			widthAttr),
+		_Utils_ap(
+			_List_fromArray(
+				[
+					A2(
+					$mdgriffith$elm_ui$Element$el,
+					_Utils_ap(
 						_List_fromArray(
 							[
 								$mdgriffith$elm_ui$Element$Font$size(24),
 								$mdgriffith$elm_ui$Element$Font$semiBold,
-								$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textDark)
+								$mdgriffith$elm_ui$Element$Font$color(titleColor)
 							]),
-						$mdgriffith$elm_ui$Element$text(title)),
-						A2(
-						$mdgriffith$elm_ui$Element$paragraph,
-						_List_fromArray(
-							[
-								$mdgriffith$elm_ui$Element$spacing(16),
-								$mdgriffith$elm_ui$Element$Font$size(16),
-								$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium),
-								$mdgriffith$elm_ui$Element$width(
-								A2($mdgriffith$elm_ui$Element$maximum, 1200, $mdgriffith$elm_ui$Element$fill))
-							]),
-						A2(
-							$elm$core$List$map,
-							function (line) {
-								return $mdgriffith$elm_ui$Element$text(line);
-							},
-							content))
-					]),
-				_List_fromArray(
-					[
-						$author$project$Common$UI$htmlActionButtons(buttons)
-					])));
+						titleAlignment),
+					$mdgriffith$elm_ui$Element$text(config.title)),
+					function () {
+					var _v0 = config.width;
+					if (_v0.$ === 'Nothing') {
+						return A2(
+							$mdgriffith$elm_ui$Element$paragraph,
+							_List_fromArray(
+								[
+									$mdgriffith$elm_ui$Element$spacing(16),
+									$mdgriffith$elm_ui$Element$Font$size(16),
+									$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium),
+									$mdgriffith$elm_ui$Element$width(
+									A2($mdgriffith$elm_ui$Element$maximum, 1200, $mdgriffith$elm_ui$Element$fill))
+								]),
+							A2(
+								$elm$core$List$map,
+								function (line) {
+									return $mdgriffith$elm_ui$Element$text(line);
+								},
+								config.content));
+					} else {
+						return A2(
+							$mdgriffith$elm_ui$Element$column,
+							_List_fromArray(
+								[
+									$mdgriffith$elm_ui$Element$spacing(16),
+									$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
+								]),
+							A2(
+								$elm$core$List$map,
+								function (line) {
+									return A2(
+										$mdgriffith$elm_ui$Element$paragraph,
+										_List_fromArray(
+											[
+												$mdgriffith$elm_ui$Element$Font$size(16),
+												$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium),
+												$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
+											]),
+										_List_fromArray(
+											[
+												$mdgriffith$elm_ui$Element$text(line)
+											]));
+								},
+								config.content));
+					}
+				}()
+				]),
+			_List_fromArray(
+				[
+					$author$project$Common$UI$htmlActionButtons(config.buttons)
+				])));
+};
+var $author$project$Common$UI$contentSectionSimple = F4(
+	function (id, title, content, buttons) {
+		return $author$project$Common$UI$contentSection(
+			{buttons: buttons, centerTitle: false, content: content, id: id, title: title, titleColor: $elm$core$Maybe$Nothing, width: $elm$core$Maybe$Nothing});
 	});
 var $author$project$Common$UI$highlight = function (text) {
 	return A2(
@@ -12148,7 +12172,7 @@ var $author$project$ElmUI$Scroll$Basic$Main$viewContent = function (model) {
 				]),
 			$mdgriffith$elm_ui$Element$text('')),
 			A4(
-			$author$project$Common$UI$contentSection,
+			$author$project$Common$UI$contentSectionSimple,
 			'paragraph-one',
 			'Paragraph One',
 			_List_fromArray(
@@ -12168,7 +12192,7 @@ var $author$project$ElmUI$Scroll$Basic$Main$viewContent = function (model) {
 				]),
 			$mdgriffith$elm_ui$Element$text('')),
 			A4(
-			$author$project$Common$UI$contentSection,
+			$author$project$Common$UI$contentSectionSimple,
 			'paragraph-two',
 			'Paragraph Two',
 			_List_fromArray(
@@ -12188,7 +12212,7 @@ var $author$project$ElmUI$Scroll$Basic$Main$viewContent = function (model) {
 				]),
 			$mdgriffith$elm_ui$Element$text('')),
 			A4(
-			$author$project$Common$UI$contentSection,
+			$author$project$Common$UI$contentSectionSimple,
 			'paragraph-three',
 			'Paragraph Three',
 			_List_fromArray(

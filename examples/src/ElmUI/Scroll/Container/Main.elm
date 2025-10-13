@@ -177,9 +177,9 @@ viewContent model =
                     )
 
                 -- Content blocks 1-3
-                , contentBlock 1 "This is content block 1. Each block adds to the scrollable height and demonstrates ElmUI styling."
-                , contentBlock 2 "Content block 2 continues the gradient transition from white to dark with ElmUI elements."
-                , contentBlock 3 "Content block 3 shows the middle section of our scrollable content using ElmUI layout."
+                , UI.contentBlock 1 "This is content block 1. Each block adds to the scrollable height and demonstrates ElmUI styling."
+                , UI.contentBlock 2 "Content block 2 continues the gradient transition from white to dark with ElmUI elements."
+                , UI.contentBlock 3 "Content block 3 shows the middle section of our scrollable content using ElmUI layout."
 
                 -- Middle element
                 , el
@@ -225,18 +225,18 @@ viewContent model =
                             [ text "Click 'Scroll to Middle' to smoothly scroll to this position." ]
                         , Element.column
                             [ spacing 8 ]
-                            [ bulletPoint "This block serves as the middle anchor point"
-                            , bulletPoint "The gradient background shows scroll position"
-                            , bulletPoint "Smooth scrolling animates between positions"
+                            [ UI.bulletPoint "This block serves as the middle anchor point"
+                            , UI.bulletPoint "The gradient background shows scroll position"
+                            , UI.bulletPoint "Smooth scrolling animates between positions"
                             ]
                         ]
                     )
 
                 -- Content blocks 5-8
-                , contentBlock 5 "Content block 5 continues toward the bottom of the container with ElmUI."
-                , contentBlock 6 "Content block 6 shows we're getting closer to the bottom using ElmUI layout."
-                , contentBlock 7 "Content block 7 is near the end with darker background colors in ElmUI."
-                , contentBlock 8 "Content block 8 is almost at the bottom of the scrollable ElmUI content."
+                , UI.contentBlock 5 "Content block 5 continues toward the bottom of the container with ElmUI."
+                , UI.contentBlock 6 "Content block 6 shows we're getting closer to the bottom using ElmUI layout."
+                , UI.contentBlock 7 "Content block 7 is near the end with darker background colors in ElmUI."
+                , UI.contentBlock 8 "Content block 8 is almost at the bottom of the scrollable ElmUI content."
 
                 -- Bottom element
                 , el
@@ -299,73 +299,3 @@ viewContent model =
 -- HELPER FUNCTIONS
 
 
-contentBlock : Int -> String -> Element Msg
-contentBlock num description =
-    el
-        [ width fill
-        , Background.gradient
-            { angle = 180
-            , steps =
-                [ Colors.backgroundWhite
-                , Colors.backgroundLight
-                ]
-            }
-        , Border.color Colors.borderMedium
-        , Border.width 1
-        , Border.rounded 8
-        , padding 20
-        , spacing 15
-        ]
-        (Element.column
-            [ spacing 12
-            , width fill
-            , htmlAttribute (Html.Attributes.class "responsive-content-block")
-            ]
-            [ el
-                [ Font.size 20
-                , Font.semiBold
-                , Font.color Colors.textDark
-                , htmlAttribute (Html.Attributes.class "responsive-content-title")
-                ]
-                (text ("Content Block " ++ String.fromInt num))
-            , paragraph
-                [ Font.size 16
-                , Font.color Colors.textMedium
-                , spacing 6
-                , width fill
-                , htmlAttribute (Html.Attributes.class "responsive-content-description")
-                ]
-                [ text description ]
-            , Element.column
-                [ spacing 6
-                , width fill
-                , htmlAttribute (Html.Attributes.class "responsive-bullet-list")
-                ]
-                [ bulletPoint "Each block adds to the scrollable height"
-                , bulletPoint "The gradient background shows scroll position"
-                , bulletPoint "Smooth scrolling animates between positions"
-                ]
-            ]
-        )
-
-
-bulletPoint : String -> Element msg
-bulletPoint text_ =
-    row
-        [ spacing 8
-        , width fill
-        , htmlAttribute (Html.Attributes.class "responsive-bullet-point")
-        ]
-        [ el
-            [ Font.size 16
-            , Font.color Colors.warning
-            , alignTop
-            ]
-            (text "•")
-        , paragraph
-            [ Font.size 16
-            , Font.color Colors.textMedium
-            , width fill
-            ]
-            [ text text_ ]
-        ]

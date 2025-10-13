@@ -1,6 +1,7 @@
 module HTML.SmoothMoveScroll.Container exposing (main)
 
 import Browser exposing (Document)
+import Common.UI as UI
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -78,9 +79,9 @@ view model =
                         , p [] [ text "This is the top of the scrollable container content. The background gradient helps visualize scroll position." ]
                         , p [] [ text "Click 'Scroll to Top' to smoothly scroll to this position." ]
                         ]
-                    , contentBlock 1 "This is content block 1. Each block has enough content to make scrolling meaningful."
-                    , contentBlock 2 "Content block 2 continues the gradient transition from white to dark."
-                    , contentBlock 3 "Content block 3 shows the middle section of our scrollable content."
+                    , UI.contentBlockHtml 1 "This is content block 1. Each block has enough content to make scrolling meaningful."
+                    , UI.contentBlockHtml 2 "Content block 2 continues the gradient transition from white to dark."
+                    , UI.contentBlockHtml 3 "Content block 3 shows the middle section of our scrollable content."
                     , div [ id "middle-element", class "content-block" ]
                         [ h3 [] [ text "🎯 Content Block 4 - Middle Target" ]
                         , p [] [ text "This is the middle target of our scrollable content - Content block 4 demonstrates the progression through the gradient." ]
@@ -91,10 +92,10 @@ view model =
                             , li [] [ text "Smooth scrolling animates between positions" ]
                             ]
                         ]
-                    , contentBlock 5 "Content block 5 continues toward the bottom of the container."
-                    , contentBlock 6 "Content block 6 shows we're getting closer to the bottom."
-                    , contentBlock 7 "Content block 7 is near the end with darker background colors."
-                    , contentBlock 8 "Content block 8 is almost at the bottom of the scrollable content."
+                    , UI.contentBlockHtml 5 "Content block 5 continues toward the bottom of the container."
+                    , UI.contentBlockHtml 6 "Content block 6 shows we're getting closer to the bottom."
+                    , UI.contentBlockHtml 7 "Content block 7 is near the end with darker background colors."
+                    , UI.contentBlockHtml 8 "Content block 8 is almost at the bottom of the scrollable content."
                     , div [ id "bottom-element", class "content-block bottom-block" ]
                         [ h2 [] [ text "🔻 Bottom of Container" ]
                         , p [] [ text "This is the bottom of the scrollable container content. Notice the dark background." ]
@@ -109,18 +110,6 @@ view model =
         ]
     }
 
-
-contentBlock : Int -> String -> Html Msg
-contentBlock num description =
-    div [ class "content-block" ]
-        [ h3 [] [ text ("Content Block " ++ String.fromInt num) ]
-        , p [] [ text description ]
-        , ul []
-            [ li [] [ text "Each block adds to the scrollable height" ]
-            , li [] [ text "The gradient background shows scroll position" ]
-            , li [] [ text "Smooth scrolling animates between positions" ]
-            ]
-        ]
 
 
 css : String

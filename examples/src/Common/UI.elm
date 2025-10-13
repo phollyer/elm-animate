@@ -1,9 +1,25 @@
-module Common.UI exposing (..)
+module Common.UI exposing 
+    ( LayoutType(..)
+    , ButtonStyle(..)
+    , createDocument
+    , backButton
+    , pageHeader
+    , techInfo
+    , techParagraph
+    , highlight
+    , actionButton
+    , contentSection
+    , contentSectionSimple
+    , contentBlock
+    , contentBlockHtml
+    , bulletPoint
+    , getCardColor
+    , htmlActionButtons
+    )
 
 import Browser exposing (Document)
 import Common.Colors as Colors
-import Common.Styles as Styles
-import Element exposing (Element, alignLeft, centerX, column, el, fill, height, htmlAttribute, layout, link, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
+import Element exposing (Element, alignLeft, alignTop, centerX, column, el, fill, height, htmlAttribute, layout, link, maximum, padding, paddingXY, paragraph, px, rgb255, row, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -24,6 +40,7 @@ type LayoutType
     | Diagonal
     | Container
     | HorizontalContainer
+
 
 
 
@@ -49,37 +66,11 @@ createDocument : String -> LayoutType -> List (Element msg) -> Document msg
 createDocument title layoutType content =
     { title = title
     , body =
-        [ Html.node "style" [] [ Html.text (getLayoutCSS layoutType) ]
-        , layout (getLayoutAttributes layoutType) (mainContent content)
+        [ layout (getLayoutAttributes layoutType) (mainContent content)
         ]
     }
 
 
-getLayoutCSS : LayoutType -> String
-getLayoutCSS layoutType =
-    let
-        -- Base CSS that all layouts need
-        baseCSS =
-            Styles.responsiveCSS ++ "\n" ++ Styles.buttonGroupCSS ++ "\n" ++ Styles.responsiveContentCSS
-    in
-    case layoutType of
-        Basic ->
-            baseCSS
-
-        Horizontal ->
-            baseCSS ++ "\n" ++ Styles.horizontalCSS
-
-        HorizontalCustomWidth _ ->
-            baseCSS ++ "\n" ++ Styles.horizontalCSS
-
-        Diagonal ->
-            baseCSS ++ "\n" ++ Styles.diagonalCSS
-
-        Container ->
-            baseCSS ++ "\n" ++ Styles.containerCSS
-
-        HorizontalContainer ->
-            baseCSS ++ "\n" ++ Styles.horizontalContainerCSS
 
 
 getLayoutAttributes : LayoutType -> List (Element.Attribute msg)
@@ -297,14 +288,36 @@ actionButton style onPress label =
 -- CONTENT SECTION
 
 
-contentSection : String -> String -> List String -> List (( ButtonStyle, msg, String )) -> Element msg
-contentSection sectionId title content buttons =
+{-| Flexible content section that works for all use cases
+-}
+contentSection : 
+    { id : String
+    , title : String
+    , titleColor : Maybe Element.Color
+    , content : List String
+    , buttons : List (( ButtonStyle, msg, String ))
+    , width : Maybe Int  -- Nothing for full width, Just px for fixed width
+    , centerTitle : Bool
+    }
+    -> Element msg
+contentSection config =
+    let
+        widthAttr = 
+            case config.width of
+                Nothing -> [ width fill, centerX ]
+                Just px -> [ width (Element.px px), height fill ]
+                
+        titleColor = 
+            Maybe.withDefault Colors.textDark config.titleColor
+            
+        titleAlignment =
+            if config.centerTitle then [ centerX ] else []
+    in
     column
-        [ spacing 20
-        , htmlAttribute (Html.Attributes.id sectionId)
+        ([ spacing 20
+        , htmlAttribute (Html.Attributes.id config.id)
         , htmlAttribute (Html.Attributes.class "responsive-paragraph")
         , Background.color Colors.backgroundWhite
-        , centerX
         , paddingXY 32 24
         , Border.rounded 12
         , Border.shadow
@@ -313,87 +326,154 @@ contentSection sectionId title content buttons =
             , blur = 8
             , color = Element.rgba 0 0 0 0.1
             }
-        ]
+        ] ++ widthAttr)
         ([ el
-            [ Font.size 24
+            ([ Font.size 24
             , Font.semiBold
-            , Font.color Colors.textDark
-            ]
-            (text title)
-         , Element.paragraph
-            [ spacing 16
-            , Font.size 16
-            , Font.color Colors.textMedium
-            , width (maximum 1200 fill)
-            ]
-            (List.map (\line -> text line) content)
+            , Font.color titleColor
+            ] ++ titleAlignment)
+            (text config.title)
+         , case config.width of
+            Nothing ->
+                Element.paragraph
+                    [ spacing 16
+                    , Font.size 16
+                    , Font.color Colors.textMedium
+                    , width (maximum 1200 fill)
+                    ]
+                    (List.map (\line -> text line) config.content)
+            Just _ ->
+                column
+                    [ spacing 16
+                    , width fill
+                    ]
+                    (List.map
+                        (\line ->
+                            paragraph
+                                [ Font.size 16
+                                , Font.color Colors.textMedium
+                                , width fill
+                                ]
+                                [ text line ]
+                        )
+                        config.content
+                    )
          ]
-            ++ [htmlActionButtons   buttons]
+            ++ [htmlActionButtons config.buttons]
         )
+
+
+{-| Simple wrapper for backward compatibility and basic usage
+-}
+contentSectionSimple : String -> String -> List String -> List (( ButtonStyle, msg, String )) -> Element msg
+contentSectionSimple id title content buttons =
+    contentSection
+        { id = id
+        , title = title
+        , titleColor = Nothing
+        , content = content
+        , buttons = buttons
+        , width = Nothing
+        , centerTitle = False
+        }
+
+
+
+-- CONTENT BLOCK (for numbered sections)
+
+
+{-| Numbered content block for container examples
+-}
+contentBlock : Int -> String -> Element msg
+contentBlock num description =
+    el
+        [ width fill
+        , Background.gradient
+            { angle = 180
+            , steps =
+                [ Colors.backgroundWhite
+                , Colors.backgroundLight
+                ]
+            }
+        , Border.color Colors.borderMedium
+        , Border.width 1
+        , Border.rounded 8
+        , padding 20
+        ]
+        (Element.column
+            [ spacing 12
+            , width fill
+            , htmlAttribute (Html.Attributes.class "responsive-content-block")
+            ]
+            [ el
+                [ Font.size 20
+                , Font.semiBold
+                , Font.color Colors.textDark
+                , htmlAttribute (Html.Attributes.class "responsive-content-title")
+                ]
+                (text ("Content Block " ++ String.fromInt num))
+            , paragraph
+                [ Font.size 16
+                , Font.color Colors.textMedium
+                , spacing 6
+                , width fill
+                , htmlAttribute (Html.Attributes.class "responsive-content-description")
+                ]
+                [ text description ]
+            , Element.column
+                [ spacing 6
+                , width fill
+                , htmlAttribute (Html.Attributes.class "responsive-bullet-list")
+                ]
+                [ bulletPoint "Each block adds to the scrollable height"
+                , bulletPoint "The gradient background shows scroll position"
+                , bulletPoint "Smooth scrolling animates between positions"
+                ]
+            ]
+        )
+
+
+{-| HTML version of content block for HTML examples
+-}
+contentBlockHtml : Int -> String -> Html.Html msg
+contentBlockHtml num description =
+    Html.div [ Html.Attributes.class "content-block" ]
+        [ Html.h3 [] [ Html.text ("Content Block " ++ String.fromInt num) ]
+        , Html.p [] [ Html.text description ]
+        , Html.ul []
+            [ Html.li [] [ Html.text "Each block adds to the scrollable height" ]
+            , Html.li [] [ Html.text "The gradient background shows scroll position" ]
+            , Html.li [] [ Html.text "Smooth scrolling animates between positions" ]
+            ]
+        ]
+
+
+bulletPoint : String -> Element msg
+bulletPoint text_ =
+    row
+        [ spacing 8
+        , width fill
+        , htmlAttribute (Html.Attributes.class "responsive-bullet-point")
+        ]
+        [ el
+            [ Font.size 16
+            , Font.color Colors.warning
+            , alignTop
+            ]
+            (text "•")
+        , paragraph
+            [ Font.size 16
+            , Font.color Colors.textMedium
+            , width fill
+            ]
+            [ text text_ ]
+        ]
 
 
 
 -- SMALL ACTION BUTTON (for continue buttons)
 
 
-smallActionButton : ButtonStyle -> msg -> String -> Element msg
-smallActionButton style onPress label =
-    let
-        buttonColor =
-            case style of
-                Primary ->
-                    Colors.primary
-
-                Success ->
-                    Colors.success
-
-                Purple ->
-                    Colors.purple
-
-                Warning ->
-                    Colors.warning
-
-        backgroundColor =
-            case style of
-                Primary ->
-                    Element.rgb255 239 246 255
-
-                Success ->
-                    Element.rgb255 240 253 244
-
-                Purple ->
-                    Element.rgb255 250 245 255
-
-                Warning ->
-                    Element.rgb255 255 251 235
-
-        borderColor =
-            case style of
-                Primary ->
-                    Element.rgb255 191 219 254
-
-                Success ->
-                    Element.rgb255 209 250 229
-
-                Purple ->
-                    Element.rgb255 233 213 255
-
-                Warning ->
-                    Element.rgb255 254 240 138
-    in
-    Input.button
-        [ Font.size 14
-        , Font.color buttonColor
-        , Font.medium
-        , paddingXY 12 8
-        , Border.rounded 6
-        , Background.color backgroundColor
-        , Border.width 1
-        , Border.color borderColor
-        ]
-        { onPress = Just onPress
-        , label = text label
-        }
 
 
 
@@ -439,16 +519,7 @@ getCardColor cardNum =
 -- Emerald
 
 
-darkenColor : Element.Color -> Element.Color
-darkenColor color =
-    let
-        rgb =
-            Element.toRgb color
-    in
-    rgb255
-        (round (rgb.red * 255 * 0.8))
-        (round (rgb.green * 255 * 0.8))
-        (round (rgb.blue * 255 * 0.8))
+
 
 
 

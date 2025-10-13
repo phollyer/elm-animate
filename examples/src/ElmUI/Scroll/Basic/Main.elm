@@ -129,7 +129,7 @@ viewContent model =
     , -- Add some space before content
       el [ height (px 100) ] (text "")
     , -- Paragraph One
-      UI.contentSection "paragraph-one"
+      UI.contentSectionSimple "paragraph-one"
         "Paragraph One"
         [ "This is the first paragraph of our example. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. "
         , "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. "
@@ -143,7 +143,7 @@ viewContent model =
     , -- Add space between paragraphs
       el [ height (px 200) ] (text "")
     , -- Paragraph Two
-      UI.contentSection "paragraph-two"
+      UI.contentSectionSimple "paragraph-two"
         "Paragraph Two"
         [ "This is the second paragraph. Totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo."
         , "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt."
@@ -156,7 +156,7 @@ viewContent model =
     , -- Add space between paragraphs
       el [ height (px 100) ] (text "")
     , -- Paragraph Three
-      UI.contentSection "paragraph-three"
+      UI.contentSectionSimple "paragraph-three"
         "Paragraph Three"
         [ "This is the third and final paragraph. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam."
         , "Nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur."

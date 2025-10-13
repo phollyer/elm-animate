@@ -150,103 +150,76 @@ viewContent model =
         , htmlAttribute (Html.Attributes.id "horizontal-content")
         ]
         [ -- Start Section
-          viewSection "start"
-            "🚀 Start Here"
-            Colors.primary
-            ScrollToSectionOne
-            [ "Welcome to the horizontal scrolling demonstration!"
-            , "This is the starting point of our X axis scrolling example."
-            , "Click the buttons below to begin the horizontal journey through the sections."
-            ]
-            [ ( UI.Success, ScrollToSectionOne, "Section 1" )
-            , ( UI.Purple, ScrollToSectionTwo, "Section 2" )
-            , ( UI.Warning, ScrollToSectionThree, "Section 3" )
-            ]
+          UI.contentSection 
+            { id = "start"
+            , title = "🚀 Start Here"
+            , titleColor = Just Colors.primary
+            , content = 
+                [ "Welcome to the horizontal scrolling demonstration!"
+                , "This is the starting point of our X axis scrolling example."
+                , "Click the buttons below to begin the horizontal journey through the sections."
+                ]
+            , buttons = 
+                [ ( UI.Success, ScrollToSectionOne, "Section 1" )
+                , ( UI.Purple, ScrollToSectionTwo, "Section 2" )
+                , ( UI.Warning, ScrollToSectionThree, "Section 3" )
+                ]
+            , width = Just 300
+            , centerTitle = True
+            }
         , -- Section One
-          viewSection "section-one"
-            "Section One"
-            Colors.primary
-            ScrollToSectionTwo
-            [ "This is the first section of our horizontal scrolling example."
-            , "Notice how the scroll animation moves left-to-right instead of up-and-down."
-            , "The X axis configuration makes this possible with smooth horizontal movement."
-            ]
-            [ ( UI.Primary, ScrollToStart, "Start" )
-            , ( UI.Purple, ScrollToSectionTwo, "Section 2" )
-            , ( UI.Warning, ScrollToSectionThree, "Section 3" )
-            ]
+          UI.contentSection 
+            { id = "section-one"
+            , title = "Section One"
+            , titleColor = Just Colors.primary
+            , content = 
+                [ "This is the first section of our horizontal scrolling example."
+                , "Notice how the scroll animation moves left-to-right instead of up-and-down."
+                , "The X axis configuration makes this possible with smooth horizontal movement."
+                ]
+            , buttons = 
+                [ ( UI.Primary, ScrollToStart, "Start" )
+                , ( UI.Purple, ScrollToSectionTwo, "Section 2" )
+                , ( UI.Warning, ScrollToSectionThree, "Section 3" )
+                ]
+            , width = Just 300
+            , centerTitle = True
+            }
         , -- Section Two
-          viewSection "section-two"
-            "Section Two"
-            Colors.success
-            ScrollToSectionThree
-            [ "Welcome to the second section! The horizontal scrolling continues smoothly."
-            , "Each section is positioned side-by-side in a horizontal layout."
-            , "The animation automatically calculates the correct X position for each target."
-            ]
-            [ ( UI.Primary, ScrollToStart, "Start" )
-            , ( UI.Success, ScrollToSectionOne, "Section 1" )
-            , ( UI.Warning, ScrollToSectionThree, "Section 3" )
-            ]
+          UI.contentSection 
+            { id = "section-two"
+            , title = "Section Two"
+            , titleColor = Just Colors.success
+            , content = 
+                [ "Welcome to the second section! The horizontal scrolling continues smoothly."
+                , "Each section is positioned side-by-side in a horizontal layout."
+                , "The animation automatically calculates the correct X position for each target."
+                ]
+            , buttons = 
+                [ ( UI.Primary, ScrollToStart, "Start" )
+                , ( UI.Success, ScrollToSectionOne, "Section 1" )
+                , ( UI.Warning, ScrollToSectionThree, "Section 3" )
+                ]
+            , width = Just 300
+            , centerTitle = True
+            }
         , -- Section Three
-          viewSection "section-three"
-            "Section Three"
-            Colors.purple
-            ScrollToStart
-            [ "This is the final section of our horizontal scrolling demonstration."
-            , "You can navigate back to any previous section using the buttons above."
-            , "The SmoothMoveScroll module handles all the complex scroll calculations automatically."
-            ]
-            [ ( UI.Primary, ScrollToStart, "Start" )
-            , ( UI.Success, ScrollToSectionOne, "Section 1" )
-            , ( UI.Purple, ScrollToSectionTwo, "Section 2" )
-            ]
-        ]
-    ]
-
-
-viewSection : String -> String -> Element.Color -> Msg  -> List String -> List ( UI.ButtonStyle, Msg, String ) -> Element Msg
-viewSection sectionId title color nextAction contentLines buttons =
-    column
-        [ width (px 300)
-        , height fill
-        , spacing 20
-        , htmlAttribute (Html.Attributes.id sectionId)
-        , htmlAttribute (Html.Attributes.class "responsive-paragraph")
-        , Background.color Colors.backgroundWhite
-        , paddingXY 32 24
-        , Border.rounded 12
-        , Border.shadow
-            { offset = ( 0, 4 )
-            , size = 0
-            , blur = 8
-            , color = Element.rgba 0 0 0 0.1
+          UI.contentSection 
+            { id = "section-three"
+            , title = "Section Three"
+            , titleColor = Just Colors.purple
+            , content = 
+                [ "This is the final section of our horizontal scrolling demonstration."
+                , "You can navigate back to any previous section using the buttons above."
+                , "The SmoothMoveScroll module handles all the complex scroll calculations automatically."
+                ]
+            , buttons = 
+                [ ( UI.Primary, ScrollToStart, "Start" )
+                , ( UI.Success, ScrollToSectionOne, "Section 1" )
+                , ( UI.Purple, ScrollToSectionTwo, "Section 2" )
+                ]
+            , width = Just 300
+            , centerTitle = True
             }
         ]
-        [ -- Section Title
-          el
-            [ Font.size 24
-            , Font.semiBold
-            , Font.color color
-            , centerX
-            ]
-            (text title)
-        , -- Content
-          column
-            [ spacing 16
-            , width fill
-            ]
-            (List.map
-                (\line ->
-                    paragraph
-                        [ Font.size 16
-                        , Font.color Colors.textMedium
-                        , width fill
-                        ]
-                        [ text line ]
-                )
-                contentLines
-            )
-        , -- Navigation Buttons
-          UI.htmlActionButtons buttons
-        ]
+    ]

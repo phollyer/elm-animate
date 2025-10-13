@@ -5489,7 +5489,7 @@ var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$ul = _VirtualDom_node('ul');
-var $author$project$HTML$SmoothMoveScroll$Container$contentBlock = F2(
+var $author$project$Common$UI$contentBlockHtml = F2(
 	function (num, description) {
 		return A2(
 			$elm$html$Html$div,
@@ -5702,9 +5702,9 @@ var $author$project$HTML$SmoothMoveScroll$Container$view = function (model) {
 														$elm$html$Html$text('Click \'Scroll to Top\' to smoothly scroll to this position.')
 													]))
 											])),
-										A2($author$project$HTML$SmoothMoveScroll$Container$contentBlock, 1, 'This is content block 1. Each block has enough content to make scrolling meaningful.'),
-										A2($author$project$HTML$SmoothMoveScroll$Container$contentBlock, 2, 'Content block 2 continues the gradient transition from white to dark.'),
-										A2($author$project$HTML$SmoothMoveScroll$Container$contentBlock, 3, 'Content block 3 shows the middle section of our scrollable content.'),
+										A2($author$project$Common$UI$contentBlockHtml, 1, 'This is content block 1. Each block has enough content to make scrolling meaningful.'),
+										A2($author$project$Common$UI$contentBlockHtml, 2, 'Content block 2 continues the gradient transition from white to dark.'),
+										A2($author$project$Common$UI$contentBlockHtml, 3, 'Content block 3 shows the middle section of our scrollable content.'),
 										A2(
 										$elm$html$Html$div,
 										_List_fromArray(
@@ -5763,10 +5763,10 @@ var $author$project$HTML$SmoothMoveScroll$Container$view = function (model) {
 															]))
 													]))
 											])),
-										A2($author$project$HTML$SmoothMoveScroll$Container$contentBlock, 5, 'Content block 5 continues toward the bottom of the container.'),
-										A2($author$project$HTML$SmoothMoveScroll$Container$contentBlock, 6, 'Content block 6 shows we\'re getting closer to the bottom.'),
-										A2($author$project$HTML$SmoothMoveScroll$Container$contentBlock, 7, 'Content block 7 is near the end with darker background colors.'),
-										A2($author$project$HTML$SmoothMoveScroll$Container$contentBlock, 8, 'Content block 8 is almost at the bottom of the scrollable content.'),
+										A2($author$project$Common$UI$contentBlockHtml, 5, 'Content block 5 continues toward the bottom of the container.'),
+										A2($author$project$Common$UI$contentBlockHtml, 6, 'Content block 6 shows we\'re getting closer to the bottom.'),
+										A2($author$project$Common$UI$contentBlockHtml, 7, 'Content block 7 is near the end with darker background colors.'),
+										A2($author$project$Common$UI$contentBlockHtml, 8, 'Content block 8 is almost at the bottom of the scrollable content.'),
 										A2(
 										$elm$html$Html$div,
 										_List_fromArray(
