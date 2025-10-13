@@ -330,30 +330,6 @@ viewContent model =
     in
     [ UI.backButton
     , UI.pageHeader "SmoothMovePorts Multiple Example"
-    , UI.techInfo
-        [ paragraph
-            [ Font.size 16
-            , Font.color Colors.textMedium
-            , width fill
-            ]
-            [ text "This example demonstrates the SmoothMovePorts module orchestrating "
-            , el [ Font.semiBold ] (text "multiple elements simultaneously")
-            , text " via the Web Animations API. Each element receives "
-            , el [ Font.semiBold ] (text "real-time position feedback")
-            , text " through JavaScript ports, enabling advanced animation coordination and platform-specific optimizations."
-            ]
-        , paragraph
-            [ Font.size 16
-            , Font.color Colors.textMedium
-            , width fill
-            ]
-            [ text "Perfect for complex choreographed animations requiring "
-            , el [ Font.semiBold ] (text "native performance")
-            , text " and advanced timing controls. "
-            , el [ Font.color Colors.warning, Font.semiBold ] (text "⚠️ Requires smooth-move-ports.js")
-            , text " to be loaded for full functionality."
-            ]
-        ]
     , -- Element status and positions (6 elements in 2 rows)
       column
         [ spacing 20

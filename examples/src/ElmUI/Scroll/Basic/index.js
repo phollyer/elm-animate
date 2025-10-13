@@ -12034,13 +12034,6 @@ var $author$project$Common$UI$contentSectionSimple = F4(
 		return $author$project$Common$UI$contentSection(
 			{buttons: buttons, centerTitle: false, content: content, id: id, title: title, titleColor: $elm$core$Maybe$Nothing, width: $elm$core$Maybe$Nothing});
 	});
-var $author$project$Common$UI$highlight = function (text) {
-	return A2(
-		$mdgriffith$elm_ui$Element$el,
-		_List_fromArray(
-			[$mdgriffith$elm_ui$Element$Font$semiBold]),
-		$mdgriffith$elm_ui$Element$text(text));
-};
 var $author$project$Common$UI$pageHeader = function (title) {
 	return A2(
 		$mdgriffith$elm_ui$Element$paragraph,
@@ -12057,101 +12050,11 @@ var $author$project$Common$UI$pageHeader = function (title) {
 				$mdgriffith$elm_ui$Element$text(title)
 			]));
 };
-var $author$project$Common$Colors$borderLight = A3($mdgriffith$elm_ui$Element$rgb255, 226, 232, 240);
-var $mdgriffith$elm_ui$Internal$Flag$borderColor = $mdgriffith$elm_ui$Internal$Flag$flag(28);
-var $mdgriffith$elm_ui$Element$Border$color = function (clr) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$borderColor,
-		A3(
-			$mdgriffith$elm_ui$Internal$Model$Colored,
-			'bc-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(clr),
-			'border-color',
-			clr));
-};
-var $mdgriffith$elm_ui$Internal$Flag$borderStyle = $mdgriffith$elm_ui$Internal$Flag$flag(11);
-var $mdgriffith$elm_ui$Element$Border$solid = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$borderStyle, $mdgriffith$elm_ui$Internal$Style$classes.borderSolid);
-var $mdgriffith$elm_ui$Internal$Model$BorderWidth = F5(
-	function (a, b, c, d, e) {
-		return {$: 'BorderWidth', a: a, b: b, c: c, d: d, e: e};
-	});
-var $mdgriffith$elm_ui$Element$Border$width = function (v) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$borderWidth,
-		A5(
-			$mdgriffith$elm_ui$Internal$Model$BorderWidth,
-			'b-' + $elm$core$String$fromInt(v),
-			v,
-			v,
-			v,
-			v));
-};
-var $author$project$Common$UI$techInfo = function (content) {
-	return A2(
-		$mdgriffith$elm_ui$Element$column,
-		_List_fromArray(
-			[
-				$mdgriffith$elm_ui$Element$spacing(16),
-				$mdgriffith$elm_ui$Element$width(
-				A2($mdgriffith$elm_ui$Element$maximum, 1200, $mdgriffith$elm_ui$Element$fill)),
-				$mdgriffith$elm_ui$Element$centerX,
-				A2($mdgriffith$elm_ui$Element$paddingXY, 32, 24),
-				$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundLight),
-				$mdgriffith$elm_ui$Element$Border$rounded(8),
-				$mdgriffith$elm_ui$Element$Border$solid,
-				$mdgriffith$elm_ui$Element$Border$width(1),
-				$mdgriffith$elm_ui$Element$Border$color($author$project$Common$Colors$borderLight),
-				$mdgriffith$elm_ui$Element$htmlAttribute(
-				$elm$html$Html$Attributes$class('responsive-tech-info'))
-			]),
-		content);
-};
-var $author$project$Common$UI$techParagraph = function (content) {
-	return A2(
-		$mdgriffith$elm_ui$Element$paragraph,
-		_List_fromArray(
-			[
-				$mdgriffith$elm_ui$Element$Font$size(16),
-				$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium),
-				$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
-			]),
-		content);
-};
 var $author$project$ElmUI$Scroll$Basic$Main$viewContent = function (model) {
 	return _List_fromArray(
 		[
 			$author$project$Common$UI$backButton,
 			$author$project$Common$UI$pageHeader('SmoothMoveScroll Document Example'),
-			$author$project$Common$UI$techInfo(
-			_List_fromArray(
-				[
-					$author$project$Common$UI$techParagraph(
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$text('This example demonstrates the SmoothMoveScroll module, which provides '),
-							$author$project$Common$UI$highlight('task-based scrolling animations'),
-							$mdgriffith$elm_ui$Element$text(' with composable error handling. It offers '),
-							$author$project$Common$UI$highlight('smooth document navigation'),
-							$mdgriffith$elm_ui$Element$text(' using the browser\'s native scrolling capabilities with customizable easing and timing controls.')
-						])),
-					$author$project$Common$UI$techParagraph(
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$text('Perfect for applications requiring '),
-							$author$project$Common$UI$highlight('sequential animations'),
-							$mdgriffith$elm_ui$Element$text(' and reliable scrolling operations with comprehensive error handling and task composition.')
-						])),
-					$author$project$Common$UI$techParagraph(
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$text('For beginners, this module provides an easy-to-use, fully managed approach that returns '),
-							$author$project$Common$UI$highlight('Cmds'),
-							$mdgriffith$elm_ui$Element$text(' rather than '),
-							$author$project$Common$UI$highlight('Tasks'),
-							$mdgriffith$elm_ui$Element$text('.')
-						]))
-				])),
 			A2(
 			$mdgriffith$elm_ui$Element$el,
 			_List_fromArray(

@@ -11883,8 +11883,6 @@ var $author$project$Common$UI$bulletPoint = function (text_) {
 					]))
 			]));
 };
-var $mdgriffith$elm_ui$Internal$Flag$overflow = $mdgriffith$elm_ui$Internal$Flag$flag(20);
-var $mdgriffith$elm_ui$Element$clipY = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$overflow, $mdgriffith$elm_ui$Internal$Style$classes.clipY);
 var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
 	return A2(
 		$mdgriffith$elm_ui$Internal$Model$StyleClass,
@@ -11996,13 +11994,6 @@ var $author$project$Common$UI$contentBlock = F2(
 							]))
 					])));
 	});
-var $author$project$Common$UI$highlight = function (text) {
-	return A2(
-		$mdgriffith$elm_ui$Element$el,
-		_List_fromArray(
-			[$mdgriffith$elm_ui$Element$Font$semiBold]),
-		$mdgriffith$elm_ui$Element$text(text));
-};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $mdgriffith$elm_ui$Internal$Model$unstyled = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Unstyled, $elm$core$Basics$always);
 var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
@@ -12087,6 +12078,7 @@ var $mdgriffith$elm_ui$Element$rgba255 = F4(
 	function (red, green, blue, a) {
 		return A4($mdgriffith$elm_ui$Internal$Model$Rgba, red / 255, green / 255, blue / 255, a);
 	});
+var $mdgriffith$elm_ui$Internal$Flag$overflow = $mdgriffith$elm_ui$Internal$Flag$flag(20);
 var $mdgriffith$elm_ui$Element$scrollbarY = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$overflow, $mdgriffith$elm_ui$Internal$Style$classes.scrollbarsY);
 var $mdgriffith$elm_ui$Internal$Model$boxShadowClass = function (shadow) {
 	return $elm$core$String$concat(
@@ -12114,74 +12106,12 @@ var $mdgriffith$elm_ui$Element$Border$shadow = function (almostShade) {
 };
 var $author$project$Common$Colors$success = A3($mdgriffith$elm_ui$Element$rgb255, 16, 185, 129);
 var $author$project$Common$Colors$successDark = A3($mdgriffith$elm_ui$Element$rgb255, 5, 150, 105);
-var $author$project$Common$Colors$borderLight = A3($mdgriffith$elm_ui$Element$rgb255, 226, 232, 240);
-var $mdgriffith$elm_ui$Internal$Model$Max = F2(
-	function (a, b) {
-		return {$: 'Max', a: a, b: b};
-	});
-var $mdgriffith$elm_ui$Element$maximum = F2(
-	function (i, l) {
-		return A2($mdgriffith$elm_ui$Internal$Model$Max, i, l);
-	});
-var $mdgriffith$elm_ui$Internal$Flag$borderStyle = $mdgriffith$elm_ui$Internal$Flag$flag(11);
-var $mdgriffith$elm_ui$Element$Border$solid = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$borderStyle, $mdgriffith$elm_ui$Internal$Style$classes.borderSolid);
-var $author$project$Common$UI$techInfo = function (content) {
-	return A2(
-		$mdgriffith$elm_ui$Element$column,
-		_List_fromArray(
-			[
-				$mdgriffith$elm_ui$Element$spacing(16),
-				$mdgriffith$elm_ui$Element$width(
-				A2($mdgriffith$elm_ui$Element$maximum, 1200, $mdgriffith$elm_ui$Element$fill)),
-				$mdgriffith$elm_ui$Element$centerX,
-				A2($mdgriffith$elm_ui$Element$paddingXY, 32, 24),
-				$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundLight),
-				$mdgriffith$elm_ui$Element$Border$rounded(8),
-				$mdgriffith$elm_ui$Element$Border$solid,
-				$mdgriffith$elm_ui$Element$Border$width(1),
-				$mdgriffith$elm_ui$Element$Border$color($author$project$Common$Colors$borderLight),
-				$mdgriffith$elm_ui$Element$htmlAttribute(
-				$elm$html$Html$Attributes$class('responsive-tech-info'))
-			]),
-		content);
-};
-var $author$project$Common$UI$techParagraph = function (content) {
-	return A2(
-		$mdgriffith$elm_ui$Element$paragraph,
-		_List_fromArray(
-			[
-				$mdgriffith$elm_ui$Element$Font$size(16),
-				$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium),
-				$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
-			]),
-		content);
-};
 var $author$project$Common$Colors$warningDark = A3($mdgriffith$elm_ui$Element$rgb255, 217, 119, 6);
 var $author$project$ElmUI$Scroll$Container$Main$viewContent = function (model) {
 	return _List_fromArray(
 		[
 			$author$project$Common$UI$backButton,
 			$author$project$Common$UI$pageHeader('SmoothMoveScroll - Container Example'),
-			$author$project$Common$UI$techInfo(
-			_List_fromArray(
-				[
-					$author$project$Common$UI$techParagraph(
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$text('This example demonstrates the SmoothMoveScroll module handling '),
-							$author$project$Common$UI$highlight('container-specific scrolling'),
-							$mdgriffith$elm_ui$Element$text(' with boundary detection and viewport calculations. It provides '),
-							$author$project$Common$UI$highlight('precise element positioning'),
-							$mdgriffith$elm_ui$Element$text(' within scrollable containers while respecting container bounds and scroll limits.')
-						])),
-					$author$project$Common$UI$techParagraph(
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$text('Perfect for applications with '),
-							$author$project$Common$UI$highlight('nested scrollable content'),
-							$mdgriffith$elm_ui$Element$text(' requiring smooth navigation within constrained viewport areas and complex layout hierarchies.')
-						]))
-				])),
 			$author$project$Common$UI$htmlActionButtons(
 			_List_fromArray(
 				[
@@ -12217,8 +12147,7 @@ var $author$project$ElmUI$Scroll$Container$Main$viewContent = function (model) {
 							offset: _Utils_Tuple2(0, 4),
 							size: 0
 						}),
-						$mdgriffith$elm_ui$Element$scrollbarY,
-						$mdgriffith$elm_ui$Element$clipY
+						$mdgriffith$elm_ui$Element$scrollbarY
 					]),
 				A2(
 					$mdgriffith$elm_ui$Element$column,

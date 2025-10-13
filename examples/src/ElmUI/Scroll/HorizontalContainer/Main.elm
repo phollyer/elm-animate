@@ -98,28 +98,10 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ -- Header Section
-      column
-        [ width fill
-        , spacing 20
-        , centerX
-        ]
-        [ UI.backButton
-        , UI.pageHeader "Horizontal Container Scrolling"
-        , UI.techInfo
-            [ paragraph []
-                [ text "This example demonstrates "
-                , el [ Font.semiBold ] (text "horizontal container scrolling")
-                , text " using "
-                , el [ Font.semiBold ] (text "{ axis = X, container = containerElement \"scroll-container\" }")
-                , text ". The scrolling is constrained to a specific container element rather than the entire document."
-                ]
-            , paragraph []
-                [ text "The smooth animation works reliably using the new SmoothMoveScroll API with ElmUI. "
-                , text "Each card scrolls smoothly into view within the horizontal container."
-                ]
-            ]
-        ]
+    [ -- Back Button
+      UI.backButton
+    , UI.pageHeader "Horizontal Container Scrolling"
+        
     , -- Navigation Buttons
       column
         [ spacing 16

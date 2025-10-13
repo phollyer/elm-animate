@@ -5200,155 +5200,13 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$ElmUI$Scroll$HorizontalBasic$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{contentWidth: $elm$core$Maybe$Nothing, hasAttemptedMeasure: false},
+		{},
 		$elm$core$Platform$Cmd$none);
 };
-var $author$project$ElmUI$Scroll$HorizontalBasic$Main$MeasureContent = {$: 'MeasureContent'};
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $elm$core$Basics$not = _Basics_not;
-var $elm$browser$Browser$AnimationManager$Time = function (a) {
-	return {$: 'Time', a: a};
-};
-var $elm$browser$Browser$AnimationManager$State = F3(
-	function (subs, request, oldTime) {
-		return {oldTime: oldTime, request: request, subs: subs};
-	});
-var $elm$browser$Browser$AnimationManager$init = $elm$core$Task$succeed(
-	A3($elm$browser$Browser$AnimationManager$State, _List_Nil, $elm$core$Maybe$Nothing, 0));
-var $elm$core$Process$kill = _Scheduler_kill;
-var $elm$browser$Browser$AnimationManager$now = _Browser_now(_Utils_Tuple0);
-var $elm$browser$Browser$AnimationManager$rAF = _Browser_rAF(_Utils_Tuple0);
-var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
-var $elm$core$Process$spawn = _Scheduler_spawn;
-var $elm$browser$Browser$AnimationManager$onEffects = F3(
-	function (router, subs, _v0) {
-		var request = _v0.request;
-		var oldTime = _v0.oldTime;
-		var _v1 = _Utils_Tuple2(request, subs);
-		if (_v1.a.$ === 'Nothing') {
-			if (!_v1.b.b) {
-				var _v2 = _v1.a;
-				return $elm$browser$Browser$AnimationManager$init;
-			} else {
-				var _v4 = _v1.a;
-				return A2(
-					$elm$core$Task$andThen,
-					function (pid) {
-						return A2(
-							$elm$core$Task$andThen,
-							function (time) {
-								return $elm$core$Task$succeed(
-									A3(
-										$elm$browser$Browser$AnimationManager$State,
-										subs,
-										$elm$core$Maybe$Just(pid),
-										time));
-							},
-							$elm$browser$Browser$AnimationManager$now);
-					},
-					$elm$core$Process$spawn(
-						A2(
-							$elm$core$Task$andThen,
-							$elm$core$Platform$sendToSelf(router),
-							$elm$browser$Browser$AnimationManager$rAF)));
-			}
-		} else {
-			if (!_v1.b.b) {
-				var pid = _v1.a.a;
-				return A2(
-					$elm$core$Task$andThen,
-					function (_v3) {
-						return $elm$browser$Browser$AnimationManager$init;
-					},
-					$elm$core$Process$kill(pid));
-			} else {
-				return $elm$core$Task$succeed(
-					A3($elm$browser$Browser$AnimationManager$State, subs, request, oldTime));
-			}
-		}
-	});
-var $elm$time$Time$Posix = function (a) {
-	return {$: 'Posix', a: a};
-};
-var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
-var $elm$browser$Browser$AnimationManager$onSelfMsg = F3(
-	function (router, newTime, _v0) {
-		var subs = _v0.subs;
-		var oldTime = _v0.oldTime;
-		var send = function (sub) {
-			if (sub.$ === 'Time') {
-				var tagger = sub.a;
-				return A2(
-					$elm$core$Platform$sendToApp,
-					router,
-					tagger(
-						$elm$time$Time$millisToPosix(newTime)));
-			} else {
-				var tagger = sub.a;
-				return A2(
-					$elm$core$Platform$sendToApp,
-					router,
-					tagger(newTime - oldTime));
-			}
-		};
-		return A2(
-			$elm$core$Task$andThen,
-			function (pid) {
-				return A2(
-					$elm$core$Task$andThen,
-					function (_v1) {
-						return $elm$core$Task$succeed(
-							A3(
-								$elm$browser$Browser$AnimationManager$State,
-								subs,
-								$elm$core$Maybe$Just(pid),
-								newTime));
-					},
-					$elm$core$Task$sequence(
-						A2($elm$core$List$map, send, subs)));
-			},
-			$elm$core$Process$spawn(
-				A2(
-					$elm$core$Task$andThen,
-					$elm$core$Platform$sendToSelf(router),
-					$elm$browser$Browser$AnimationManager$rAF)));
-	});
-var $elm$browser$Browser$AnimationManager$Delta = function (a) {
-	return {$: 'Delta', a: a};
-};
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
-var $elm$browser$Browser$AnimationManager$subMap = F2(
-	function (func, sub) {
-		if (sub.$ === 'Time') {
-			var tagger = sub.a;
-			return $elm$browser$Browser$AnimationManager$Time(
-				A2($elm$core$Basics$composeL, func, tagger));
-		} else {
-			var tagger = sub.a;
-			return $elm$browser$Browser$AnimationManager$Delta(
-				A2($elm$core$Basics$composeL, func, tagger));
-		}
-	});
-_Platform_effectManagers['Browser.AnimationManager'] = _Platform_createManager($elm$browser$Browser$AnimationManager$init, $elm$browser$Browser$AnimationManager$onEffects, $elm$browser$Browser$AnimationManager$onSelfMsg, 0, $elm$browser$Browser$AnimationManager$subMap);
-var $elm$browser$Browser$AnimationManager$subscription = _Platform_leaf('Browser.AnimationManager');
-var $elm$browser$Browser$AnimationManager$onAnimationFrame = function (tagger) {
-	return $elm$browser$Browser$AnimationManager$subscription(
-		$elm$browser$Browser$AnimationManager$Time(tagger));
-};
-var $elm$browser$Browser$Events$onAnimationFrame = $elm$browser$Browser$AnimationManager$onAnimationFrame;
 var $author$project$ElmUI$Scroll$HorizontalBasic$Main$subscriptions = function (model) {
-	return ((!model.hasAttemptedMeasure) && _Utils_eq(model.contentWidth, $elm$core$Maybe$Nothing)) ? $elm$browser$Browser$Events$onAnimationFrame(
-		function (_v0) {
-			return $author$project$ElmUI$Scroll$HorizontalBasic$Main$MeasureContent;
-		}) : $elm$core$Platform$Sub$none;
-};
-var $author$project$ElmUI$Scroll$HorizontalBasic$Main$GotContentWidth = function (a) {
-	return {$: 'GotContentWidth', a: a};
+	return $elm$core$Platform$Sub$none;
 };
 var $author$project$ElmUI$Scroll$HorizontalBasic$Main$NoOp = {$: 'NoOp'};
 var $author$project$SmoothMoveScroll$X = {$: 'X'};
@@ -5566,6 +5424,11 @@ var $author$project$SmoothMoveScroll$animateToTaskWithConfig = F2(
 				$elm$browser$Browser$Dom$getElement(id),
 				getContainerInfo));
 	});
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
 var $elm$core$Task$onError = _Scheduler_onError;
 var $elm$core$Task$attempt = F2(
 	function (resultToMessage, task) {
@@ -5609,35 +5472,6 @@ var $author$project$ElmUI$Scroll$HorizontalBasic$Main$update = F2(
 		switch (msg.$) {
 			case 'NoOp':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			case 'MeasureContent':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{hasAttemptedMeasure: true}),
-					A2(
-						$elm$core$Task$attempt,
-						$author$project$ElmUI$Scroll$HorizontalBasic$Main$GotContentWidth,
-						$elm$browser$Browser$Dom$getElement('horizontal-content')));
-			case 'GotContentWidth':
-				var result = msg.a;
-				if (result.$ === 'Ok') {
-					var element = result.a;
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								contentWidth: $elm$core$Maybe$Just(element.element.width)
-							}),
-						$elm$core$Platform$Cmd$none);
-				} else {
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{
-								contentWidth: $elm$core$Maybe$Just(1440)
-							}),
-						$elm$core$Platform$Cmd$none);
-				}
 			case 'ScrollToSectionOne':
 				return _Utils_Tuple2(
 					model,
@@ -5681,9 +5515,6 @@ var $author$project$ElmUI$Scroll$HorizontalBasic$Main$update = F2(
 		}
 	});
 var $author$project$Common$UI$Horizontal = {$: 'Horizontal'};
-var $author$project$Common$UI$HorizontalCustomWidth = function (a) {
-	return {$: 'HorizontalCustomWidth', a: a};
-};
 var $mdgriffith$elm_ui$Internal$Model$Rgba = F4(
 	function (a, b, c, d) {
 		return {$: 'Rgba', a: a, b: b, c: c, d: d};
@@ -9716,6 +9547,7 @@ var $elm$virtual_dom$VirtualDom$keyedNode = function (tag) {
 	return _VirtualDom_keyedNode(
 		_VirtualDom_noScript(tag));
 };
+var $elm$core$Basics$not = _Basics_not;
 var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$core$Bitwise$and = _Bitwise_and;
 var $mdgriffith$elm_ui$Internal$Flag$present = F2(
@@ -12240,39 +12072,13 @@ var $author$project$Common$Colors$success = A3($mdgriffith$elm_ui$Element$rgb255
 var $author$project$ElmUI$Scroll$HorizontalBasic$Main$viewContent = function (model) {
 	return _List_fromArray(
 		[
-			A2(
-			$mdgriffith$elm_ui$Element$column,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$mdgriffith$elm_ui$Element$el,
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$alignLeft,
-							A2($mdgriffith$elm_ui$Element$paddingXY, 20, 10)
-						]),
-					$author$project$Common$UI$backButton),
-					A2(
-					$mdgriffith$elm_ui$Element$el,
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$alignLeft,
-							A2($mdgriffith$elm_ui$Element$paddingXY, 20, 10)
-						]),
-					$author$project$Common$UI$pageHeader('Horizontal X Axis Scrolling'))
-				])),
+			$author$project$Common$UI$backButton,
+			$author$project$Common$UI$pageHeader('Horizontal X Axis Scrolling'),
 			A2(
 			$mdgriffith$elm_ui$Element$row,
 			_List_fromArray(
 				[
-					$mdgriffith$elm_ui$Element$spacing(40),
-					A2($mdgriffith$elm_ui$Element$paddingXY, 20, 0),
-					$mdgriffith$elm_ui$Element$htmlAttribute(
-					$elm$html$Html$Attributes$id('horizontal-content'))
+					$mdgriffith$elm_ui$Element$spacing(40)
 				]),
 			_List_fromArray(
 				[
@@ -12344,19 +12150,10 @@ var $author$project$ElmUI$Scroll$HorizontalBasic$Main$viewContent = function (mo
 		]);
 };
 var $author$project$ElmUI$Scroll$HorizontalBasic$Main$view = function (model) {
-	var layoutType = function () {
-		var _v0 = model.contentWidth;
-		if (_v0.$ === 'Just') {
-			var width = _v0.a;
-			return $author$project$Common$UI$HorizontalCustomWidth(width);
-		} else {
-			return $author$project$Common$UI$Horizontal;
-		}
-	}();
 	return A3(
 		$author$project$Common$UI$createDocument,
 		'SmoothMoveScroll Horizontal ElmUI Example',
-		layoutType,
+		$author$project$Common$UI$Horizontal,
 		$author$project$ElmUI$Scroll$HorizontalBasic$Main$viewContent(model));
 };
 var $author$project$ElmUI$Scroll$HorizontalBasic$Main$main = $elm$browser$Browser$document(

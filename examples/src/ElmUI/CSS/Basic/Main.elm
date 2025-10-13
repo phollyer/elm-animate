@@ -133,20 +133,6 @@ viewContent model =
     in
     [ UI.backButton
     , UI.pageHeader "SmoothMoveCSS Basic Example"
-    , UI.techInfo
-        [ paragraph []
-            [ text "This example demonstrates the SmoothMoveCSS module, which leverages "
-            , el [ Font.semiBold ] (text "native CSS transitions")
-            , text " for optimal performance. The browser handles all animation calculations using "
-            , el [ Font.semiBold ] (text "hardware acceleration")
-            , text ", resulting in smooth, efficient animations with minimal JavaScript overhead."
-            ]
-        , paragraph []
-            [ text "Perfect for battery-efficient mobile animations and high-performance transitions where "
-            , el [ Font.semiBold ] (text "native browser optimization")
-            , text " provides the best user experience."
-            ]
-        ]
     , -- Position display
       el
         [ Font.size 14

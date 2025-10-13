@@ -12115,7 +12115,6 @@ var $mdgriffith$elm_ui$Element$Border$shadow = function (almostShade) {
 };
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$Common$Colors$borderLight = A3($mdgriffith$elm_ui$Element$rgb255, 226, 232, 240);
 var $mdgriffith$elm_ui$Internal$Flag$borderColor = $mdgriffith$elm_ui$Internal$Flag$flag(28);
 var $mdgriffith$elm_ui$Element$Border$color = function (clr) {
 	return A2(
@@ -12126,52 +12125,6 @@ var $mdgriffith$elm_ui$Element$Border$color = function (clr) {
 			'bc-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(clr),
 			'border-color',
 			clr));
-};
-var $mdgriffith$elm_ui$Internal$Model$Max = F2(
-	function (a, b) {
-		return {$: 'Max', a: a, b: b};
-	});
-var $mdgriffith$elm_ui$Element$maximum = F2(
-	function (i, l) {
-		return A2($mdgriffith$elm_ui$Internal$Model$Max, i, l);
-	});
-var $mdgriffith$elm_ui$Internal$Flag$borderStyle = $mdgriffith$elm_ui$Internal$Flag$flag(11);
-var $mdgriffith$elm_ui$Element$Border$solid = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$borderStyle, $mdgriffith$elm_ui$Internal$Style$classes.borderSolid);
-var $mdgriffith$elm_ui$Internal$Model$BorderWidth = F5(
-	function (a, b, c, d, e) {
-		return {$: 'BorderWidth', a: a, b: b, c: c, d: d, e: e};
-	});
-var $mdgriffith$elm_ui$Element$Border$width = function (v) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$borderWidth,
-		A5(
-			$mdgriffith$elm_ui$Internal$Model$BorderWidth,
-			'b-' + $elm$core$String$fromInt(v),
-			v,
-			v,
-			v,
-			v));
-};
-var $author$project$Common$UI$techInfo = function (content) {
-	return A2(
-		$mdgriffith$elm_ui$Element$column,
-		_List_fromArray(
-			[
-				$mdgriffith$elm_ui$Element$spacing(16),
-				$mdgriffith$elm_ui$Element$width(
-				A2($mdgriffith$elm_ui$Element$maximum, 1200, $mdgriffith$elm_ui$Element$fill)),
-				$mdgriffith$elm_ui$Element$centerX,
-				A2($mdgriffith$elm_ui$Element$paddingXY, 32, 24),
-				$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundLight),
-				$mdgriffith$elm_ui$Element$Border$rounded(8),
-				$mdgriffith$elm_ui$Element$Border$solid,
-				$mdgriffith$elm_ui$Element$Border$width(1),
-				$mdgriffith$elm_ui$Element$Border$color($author$project$Common$Colors$borderLight),
-				$mdgriffith$elm_ui$Element$htmlAttribute(
-				$elm$html$Html$Attributes$class('responsive-tech-info'))
-			]),
-		content);
 };
 var $elm$core$Basics$modBy = _Basics_modBy;
 var $author$project$Common$UI$getCardColor = function (cardNum) {
@@ -12200,6 +12153,22 @@ var $mdgriffith$elm_ui$Element$Font$size = function (i) {
 		$mdgriffith$elm_ui$Internal$Model$StyleClass,
 		$mdgriffith$elm_ui$Internal$Flag$fontSize,
 		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
+};
+var $mdgriffith$elm_ui$Internal$Model$BorderWidth = F5(
+	function (a, b, c, d, e) {
+		return {$: 'BorderWidth', a: a, b: b, c: c, d: d, e: e};
+	});
+var $mdgriffith$elm_ui$Element$Border$width = function (v) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$borderWidth,
+		A5(
+			$mdgriffith$elm_ui$Internal$Model$BorderWidth,
+			'b-' + $elm$core$String$fromInt(v),
+			v,
+			v,
+			v,
+			v));
 };
 var $author$project$ElmUI$Scroll$HorizontalContainer$Main$viewCard = function (cardNum) {
 	return A2(
@@ -12337,50 +12306,8 @@ var $author$project$ElmUI$Scroll$HorizontalContainer$Main$viewCard = function (c
 var $author$project$ElmUI$Scroll$HorizontalContainer$Main$viewContent = function (model) {
 	return _List_fromArray(
 		[
-			A2(
-			$mdgriffith$elm_ui$Element$column,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-					$mdgriffith$elm_ui$Element$spacing(20),
-					$mdgriffith$elm_ui$Element$centerX
-				]),
-			_List_fromArray(
-				[
-					$author$project$Common$UI$backButton,
-					$author$project$Common$UI$pageHeader('Horizontal Container Scrolling'),
-					$author$project$Common$UI$techInfo(
-					_List_fromArray(
-						[
-							A2(
-							$mdgriffith$elm_ui$Element$paragraph,
-							_List_Nil,
-							_List_fromArray(
-								[
-									$mdgriffith$elm_ui$Element$text('This example demonstrates '),
-									A2(
-									$mdgriffith$elm_ui$Element$el,
-									_List_fromArray(
-										[$mdgriffith$elm_ui$Element$Font$semiBold]),
-									$mdgriffith$elm_ui$Element$text('horizontal container scrolling')),
-									$mdgriffith$elm_ui$Element$text(' using '),
-									A2(
-									$mdgriffith$elm_ui$Element$el,
-									_List_fromArray(
-										[$mdgriffith$elm_ui$Element$Font$semiBold]),
-									$mdgriffith$elm_ui$Element$text('{ axis = X, container = containerElement \"scroll-container\" }')),
-									$mdgriffith$elm_ui$Element$text('. The scrolling is constrained to a specific container element rather than the entire document.')
-								])),
-							A2(
-							$mdgriffith$elm_ui$Element$paragraph,
-							_List_Nil,
-							_List_fromArray(
-								[
-									$mdgriffith$elm_ui$Element$text('The smooth animation works reliably using the new SmoothMoveScroll API with ElmUI. '),
-									$mdgriffith$elm_ui$Element$text('Each card scrolls smoothly into view within the horizontal container.')
-								]))
-						]))
-				])),
+			$author$project$Common$UI$backButton,
+			$author$project$Common$UI$pageHeader('Horizontal Container Scrolling'),
 			A2(
 			$mdgriffith$elm_ui$Element$column,
 			_List_fromArray(

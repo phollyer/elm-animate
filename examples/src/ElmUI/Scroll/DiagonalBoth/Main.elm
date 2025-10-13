@@ -146,19 +146,6 @@ viewContent model =
       UI.backButton
     , -- Title
       UI.pageHeader "Diagonal Both Axis Scrolling"
-    , -- Technical Info
-      UI.techInfo
-        [ UI.techParagraph
-            [ text "This example demonstrates "
-            , UI.highlight "diagonal scrolling"
-            , text " using "
-            , UI.highlight "{ axis = Both }"
-            , text ". Click any corner or center button to see smooth diagonal movement that combines X and Y axis scrolling."
-            ]
-        , UI.techParagraph
-            [ text "Perfect for layouts with both horizontal and vertical navigation, creating natural diagonal paths between any two points on the page."
-            ]
-        ]
     , -- Navigation Buttons
       column
         [ spacing 20

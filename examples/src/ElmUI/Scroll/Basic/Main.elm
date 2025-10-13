@@ -97,28 +97,6 @@ viewContent model =
       UI.backButton
     , -- Header
       UI.pageHeader "SmoothMoveScroll Document Example"
-    , -- Technical information
-      UI.techInfo
-        [ UI.techParagraph
-            [ text "This example demonstrates the SmoothMoveScroll module, which provides "
-            , UI.highlight "task-based scrolling animations"
-            , text " with composable error handling. It offers "
-            , UI.highlight "smooth document navigation"
-            , text " using the browser's native scrolling capabilities with customizable easing and timing controls."
-            ]
-        , UI.techParagraph
-            [ text "Perfect for applications requiring "
-            , UI.highlight "sequential animations"
-            , text " and reliable scrolling operations with comprehensive error handling and task composition."
-            ]
-        , UI.techParagraph
-            [ text "For beginners, this module provides an easy-to-use, fully managed approach that returns "
-            , UI.highlight "Cmds"
-            , text " rather than "
-            , UI.highlight "Tasks"
-            , text "."
-            ]
-        ]
         -- Buttons
     , el [ centerX ] <| 
       UI.htmlActionButtons

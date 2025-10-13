@@ -215,28 +215,6 @@ viewContent model =
     in
     [ UI.backButton
     , UI.pageHeader "SmoothMoveCSS Multiple Example"
-    , UI.techInfo
-        [ paragraph
-            [ Font.size 16
-            , Font.color Colors.textMedium
-            , width fill
-            ]
-            [ text "This example demonstrates the SmoothMoveCSS module coordinating "
-            , el [ Font.semiBold ] (text "multiple CSS transitions")
-            , text " simultaneously. Each element uses native browser optimization with "
-            , el [ Font.semiBold ] (text "hardware acceleration")
-            , text ", eliminating animation frame subscriptions while maintaining smooth formation control."
-            ]
-        , paragraph
-            [ Font.size 16
-            , Font.color Colors.textMedium
-            , width fill
-            ]
-            [ text "Perfect for complex multi-element choreography where "
-            , el [ Font.semiBold ] (text "battery efficiency")
-            , text " and native performance are critical requirements."
-            ]
-        ]
     , -- Element status and positions (6 elements in 2 rows)
       column
         [ spacing 20

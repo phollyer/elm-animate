@@ -35,15 +35,12 @@ main =
 
 
 type alias Model =
-    { contentWidth : Maybe Float
-    , hasAttemptedMeasure : Bool
-    }
+    { }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { contentWidth = Nothing
-    , hasAttemptedMeasure = False }
+    ( { }
     , Cmd.none
     )
 
@@ -58,8 +55,6 @@ type Msg
     | ScrollToSectionTwo
     | ScrollToSectionThree
     | ScrollToStart
-    | MeasureContent
-    | GotContentWidth (Result Browser.Dom.Error Browser.Dom.Element)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -67,20 +62,6 @@ update msg model =
     case msg of
         NoOp ->
             ( model, Cmd.none )
-
-        MeasureContent ->
-            ( { model | hasAttemptedMeasure = True }
-            , Task.attempt GotContentWidth (Browser.Dom.getElement "horizontal-content")
-            )
-
-        GotContentWidth result ->
-            case result of
-                Ok element ->
-                    ( { model | contentWidth = Just element.element.width }, Cmd.none )
-
-                Err _ ->
-                    -- Fallback to calculated width if measurement fails
-                    ( { model | contentWidth = Just 1440 }, Cmd.none )
 
         ScrollToSectionOne ->
             ( model, animateToCmdWithConfig NoOp { defaultConfig | speed = 30, axis = X, offsetX = 20 } "section-one" )
@@ -101,10 +82,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    if not model.hasAttemptedMeasure && model.contentWidth == Nothing then
-        Browser.Events.onAnimationFrame (\_ -> MeasureContent)
-    else
-        Sub.none
+    Sub.none
 
 
 
@@ -113,41 +91,19 @@ subscriptions model =
 
 view : Model -> Document Msg
 view model =
-    let
-        layoutType =
-            case model.contentWidth of
-                Just width ->
-                    UI.HorizontalCustomWidth width
-
-                Nothing ->
-                    UI.Horizontal  -- Fallback to default calculated width while measuring
-    in
-    UI.createDocument "SmoothMoveScroll Horizontal ElmUI Example" layoutType (viewContent model)
+    UI.createDocument "SmoothMoveScroll Horizontal ElmUI Example" UI.Horizontal  (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ -- Header Section
-      column
-        [ width fill ]
-        [ el
-            [alignLeft
-            , paddingXY 20 10]
-            <|
-            UI.backButton
+    [ -- Back Button
+      UI.backButton
         , -- Header
-          el
-            [alignLeft
-            , paddingXY 20 10]
-            <|
-                UI.pageHeader "Horizontal X Axis Scrolling"
-        ]
+          UI.pageHeader "Horizontal X Axis Scrolling"
+        
     , -- Horizontal Content Container
       row
-        [ spacing 40
-        , paddingXY 20 0
-        , htmlAttribute (Html.Attributes.id "horizontal-content")
-        ]
+        [ spacing 40 ]
         [ -- Start Section
           UI.contentSection 
             { id = "start"
@@ -220,5 +176,5 @@ viewContent model =
             , width = Just 300
             , centerTitle = True
             }
-        ]
+        ] 
     ]

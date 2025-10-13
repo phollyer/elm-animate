@@ -207,28 +207,6 @@ viewContent model =
     in
     [ UI.backButton
     , UI.pageHeader "SmoothMovePorts Basic Example"
-    , UI.techInfo
-        [ paragraph
-            [ Font.size 16
-            , Font.color Colors.textMedium
-            , width fill
-            ]
-            [ text "This example demonstrates the SmoothMovePorts module, which integrates with the "
-            , el [ Font.semiBold ] (text "Web Animations API")
-            , text " through JavaScript ports. This approach provides access to "
-            , el [ Font.semiBold ] (text "platform-specific optimizations")
-            , text " and advanced animation features not available through pure Elm."
-            ]
-        , paragraph
-            [ Font.size 16
-            , Font.color Colors.textMedium
-            , width fill
-            ]
-            [ text "Perfect for complex animations requiring "
-            , el [ Font.semiBold ] (text "native performance")
-            , text " and advanced timing controls beyond what CSS transitions can provide."
-            ]
-        ]
     , -- Position display
       el
         [ Font.size 14

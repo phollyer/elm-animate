@@ -87,20 +87,6 @@ viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButton
     , UI.pageHeader "SmoothMoveScroll - Container Example"
-    , UI.techInfo
-        [ UI.techParagraph
-            [ text "This example demonstrates the SmoothMoveScroll module handling "
-            , UI.highlight "container-specific scrolling"
-            , text " with boundary detection and viewport calculations. It provides "
-            , UI.highlight "precise element positioning"
-            , text " within scrollable containers while respecting container bounds and scroll limits."
-            ]
-        , UI.techParagraph
-            [ text "Perfect for applications with "
-            , UI.highlight "nested scrollable content"
-            , text " requiring smooth navigation within constrained viewport areas and complex layout hierarchies."
-            ]
-        ]
     , UI.htmlActionButtons
         [ ( UI.Primary, ScrollToTop, "Scroll to Top" )
         , ( UI.Success, ScrollToMiddle, "Scroll to Middle" )
@@ -110,7 +96,7 @@ viewContent model =
       el [ width fill, htmlAttribute (Html.Attributes.class "scroll-container-wrapper") ] <|
         el
             [ htmlAttribute (Html.Attributes.id "scroll-container")
-            , width fill
+             , width fill
             , height (px 600)
             , Border.width 2
             , Border.color Colors.borderMedium
@@ -123,7 +109,7 @@ viewContent model =
                 , color = rgba255 0 0 0 0.1
                 }
             , scrollbarY
-            , clipY
+            --, clipY
             ]
             (Element.column
                 [ width fill

@@ -124,20 +124,6 @@ viewContent model =
     in
     [ UI.backButton
     , UI.pageHeader "SmoothMoveSub Basic Example"
-    , UI.techInfo
-        [ paragraph []
-            [ text "This example demonstrates the SmoothMoveSub module, which provides "
-            , el [ Font.semiBold ] (text "subscription-based positioning")
-            , text " with frame-rate independent animations. It offers "
-            , el [ Font.semiBold ] (text "real-time updates")
-            , text " via onAnimationFrameDelta subscriptions, ensuring smooth element transitions across different device capabilities."
-            ]
-        , paragraph []
-            [ text "Perfect for applications requiring "
-            , el [ Font.semiBold ] (text "precise timing control")
-            , text " and multiple simultaneous animations with automatic state management."
-            ]
-        ]
     , -- Position display
       el
         [ Font.size 14

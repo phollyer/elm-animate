@@ -200,20 +200,6 @@ viewContent model =
     in
     [ UI.backButton
     , UI.pageHeader "SmoothMoveSub Multiple Example"
-    , UI.techInfo
-        [ paragraph []
-            [ text "This example demonstrates the SmoothMoveSub module coordinating "
-            , el [ Font.semiBold ] (text "multiple elements simultaneously")
-            , text " with subscription-based animations. Each element receives "
-            , el [ Font.semiBold ] (text "frame-rate independent updates")
-            , text ", ensuring smooth formation control and synchronized movement patterns across different device capabilities."
-            ]
-        , paragraph []
-            [ text "Perfect for complex choreographed animations where "
-            , el [ Font.semiBold ] (text "precise timing synchronization")
-            , text " and real-time positioning control are essential requirements."
-            ]
-        ]
     , -- Element status and positions (6 elements in 2 rows)
       column
         [ spacing 20
