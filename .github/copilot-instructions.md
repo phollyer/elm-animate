@@ -7,6 +7,11 @@
 - **`examples/src/ElmUI/index.html`** - This is the ElmUI examples dashboard.
 - **`examples/src/HTML/index.html`** - This is the HTML examples dashboard.
 
+### ⛔ DO NOT MODIFY HTML EXAMPLES:
+- **NEVER modify any files in `examples/src/HTML/`** - These are standalone HTML examples that should remain untouched until explicitly told otherwise by the user
+- **Only modify ElmUI examples in `examples/src/ElmUI/`** when working on Elm UI related features
+- **User must explicitly request removal of this rule or remove it manually before HTML examples can be modified**
+
 ### OUTPUT FILE RULES:
 - **Elm compilation outputs**: Always go to `/src/ModulePath/filename.js` (e.g., `src/ElmUI/Scroll/Basic/index.js`)
 - **NEVER use `--output=index.html`** - This would overwrite dashboard files

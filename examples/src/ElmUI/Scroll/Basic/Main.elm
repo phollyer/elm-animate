@@ -120,7 +120,8 @@ viewContent model =
             , text "."
             ]
         ]
-    , -- Buttons
+        -- Buttons
+    , el [ centerX ] <| 
       UI.htmlActionButtons
         [ ( UI.Primary, ScrollToParagraphOne, "Scroll to Paragraph One ↓" )
         , ( UI.Success, ScrollToParagraphTwo, "Scroll to Paragraph Two ↓" )

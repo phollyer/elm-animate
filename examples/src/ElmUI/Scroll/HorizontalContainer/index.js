@@ -11990,38 +11990,48 @@ var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Common$UI$htmlActionButtons = function (buttons) {
-	var getButtonGradient = function (style) {
+	var getButtonColors = function (style) {
 		switch (style.$) {
 			case 'Primary':
-				return 'linear-gradient(135deg, #4299e1, #3182ce)';
+				return _Utils_Tuple2('#4299e1', '#3182ce');
 			case 'Success':
-				return 'linear-gradient(135deg, #48bb78, #38a169)';
+				return _Utils_Tuple2('#48bb78', '#38a169');
 			case 'Purple':
-				return 'linear-gradient(135deg, #9f7aea, #805ad5)';
+				return _Utils_Tuple2('#9f7aea', '#805ad5');
 			default:
-				return 'linear-gradient(135deg, #ed8936, #dd6b20)';
+				return _Utils_Tuple2('#ed8936', '#dd6b20');
 		}
 	};
-	var createButton = function (_v0) {
-		var style = _v0.a;
-		var onPress = _v0.b;
-		var label = _v0.c;
+	var createHtmlButton = function (_v1) {
+		var style = _v1.a;
+		var onPress = _v1.b;
+		var label = _v1.c;
+		var _v0 = getButtonColors(style);
+		var startColor = _v0.a;
+		var endColor = _v0.b;
 		return A2(
 			$elm$html$Html$button,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('example-link'),
 					$elm$html$Html$Events$onClick(onPress),
-					A2(
-					$elm$html$Html$Attributes$style,
-					'background',
-					getButtonGradient(style))
+					A2($elm$html$Html$Attributes$style, 'background', 'linear-gradient(135deg, ' + (startColor + (', ' + (endColor + ')')))),
+					A2($elm$html$Html$Attributes$style, 'color', 'white'),
+					A2($elm$html$Html$Attributes$style, 'font-weight', '500'),
+					A2($elm$html$Html$Attributes$style, 'padding', '12px 24px'),
+					A2($elm$html$Html$Attributes$style, 'border', 'none'),
+					A2($elm$html$Html$Attributes$style, 'border-radius', '8px'),
+					A2($elm$html$Html$Attributes$style, 'cursor', 'pointer'),
+					A2($elm$html$Html$Attributes$style, 'font-size', '14px'),
+					A2($elm$html$Html$Attributes$style, 'transition', 'transform 0.2s, box-shadow 0.2s'),
+					A2($elm$html$Html$Attributes$style, 'box-shadow', '0 2px 4px rgba(0, 0, 0, 0.1)'),
+					$elm$html$Html$Attributes$class('ui-action-button')
 				]),
 			_List_fromArray(
 				[
 					$elm$html$Html$text(label)
 				]));
 	};
+	var htmlButtons = A2($elm$core$List$map, createHtmlButton, buttons);
 	return A2(
 		$mdgriffith$elm_ui$Element$el,
 		_List_fromArray(
@@ -12031,9 +12041,14 @@ var $author$project$Common$UI$htmlActionButtons = function (buttons) {
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$class('example-links')
+						A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+						A2($elm$html$Html$Attributes$style, 'gap', '12px'),
+						A2($elm$html$Html$Attributes$style, 'flex-wrap', 'wrap'),
+						A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
+						A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
+						A2($elm$html$Html$Attributes$style, 'margin', '16px 0')
 					]),
-				A2($elm$core$List$map, createButton, buttons))));
+				htmlButtons)));
 };
 var $mdgriffith$elm_ui$Internal$Model$Paragraph = {$: 'Paragraph'};
 var $mdgriffith$elm_ui$Element$paragraph = F2(

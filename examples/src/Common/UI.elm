@@ -359,7 +359,7 @@ contentSection config =
                         config.content
                     )
          ]
-            ++ [htmlActionButtons config.buttons]
+            ++ [ htmlActionButtons config.buttons]
         )
 
 
@@ -526,39 +526,51 @@ getCardColor cardNum =
 -- HTML-BASED BUTTON GROUPS
 
 
-{-| Create an HTML-based button group that properly wraps and centers
-This uses native HTML with .example-links class to avoid ElmUI row limitations
+{-| Create a button group with proper flexbox wrapping
+This renders each button as HTML and wraps them in a flexbox container
 -}
 htmlActionButtons : List ( ButtonStyle, msg, String ) -> Element msg
 htmlActionButtons buttons =
     let
-        createButton ( style, onPress, label ) =
+        -- Create HTML buttons that match the Elm UI actionButton styling
+        createHtmlButton (style, onPress, label) =
+            let
+                (startColor, endColor) = getButtonColors style
+            in
             Html.button
-                [ Html.Attributes.class "example-link"
-                , Html.Events.onClick onPress
-                , Html.Attributes.style "background" (getButtonGradient style)
+                [ Html.Events.onClick onPress
+                , Html.Attributes.style "background" ("linear-gradient(135deg, " ++ startColor ++ ", " ++ endColor ++ ")")
+                , Html.Attributes.style "color" "white"
+                , Html.Attributes.style "font-weight" "500"
+                , Html.Attributes.style "padding" "12px 24px"
+                , Html.Attributes.style "border" "none"
+                , Html.Attributes.style "border-radius" "8px"
+                , Html.Attributes.style "cursor" "pointer"
+                , Html.Attributes.style "font-size" "14px"
+                , Html.Attributes.style "transition" "transform 0.2s, box-shadow 0.2s"
+                , Html.Attributes.style "box-shadow" "0 2px 4px rgba(0, 0, 0, 0.1)"
+                , Html.Attributes.class "ui-action-button"
                 ]
                 [ Html.text label ]
 
-        getButtonGradient style =
+        getButtonColors style =
             case style of
-                Primary ->
-                    "linear-gradient(135deg, #4299e1, #3182ce)"
-
-                Success ->
-                    "linear-gradient(135deg, #48bb78, #38a169)"
-
-                Purple ->
-                    "linear-gradient(135deg, #9f7aea, #805ad5)"
-
-                Warning ->
-                    "linear-gradient(135deg, #ed8936, #dd6b20)"
+                Primary -> ("#4299e1", "#3182ce")
+                Success -> ("#48bb78", "#38a169") 
+                Purple -> ("#9f7aea", "#805ad5")
+                Warning -> ("#ed8936", "#dd6b20")
+                
+        htmlButtons = List.map createHtmlButton buttons
     in
-    el
-        [ centerX ]
-    <|
-        Element.html
-            (Html.div
-                [ Html.Attributes.class "example-links" ]
-                (List.map createButton buttons)
-            )
+    Element.el [ centerX ] <| 
+    Element.html
+        (Html.div
+            [ Html.Attributes.style "display" "flex"
+            , Html.Attributes.style "gap" "12px"
+            , Html.Attributes.style "flex-wrap" "wrap"
+            , Html.Attributes.style "justify-content" "center"
+            , Html.Attributes.style "align-items" "center"
+            , Html.Attributes.style "margin" "16px 0"
+            ]
+            htmlButtons
+        )
