@@ -268,10 +268,10 @@ animateToTaskWithConfig config id =
                 ( clampedX, clampedY ) =
                     ( targetX
                         |> min (scene.width - viewport.width)
-                        |> Basics.max 0
+                        |> max 0
                     , targetY
                         |> min (scene.height - viewport.height)
-                        |> Basics.max 0
+                        |> max 0
                     )
 
                 setViewportTask =
