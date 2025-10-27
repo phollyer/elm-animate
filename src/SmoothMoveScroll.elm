@@ -10,6 +10,8 @@ module SmoothMoveScroll exposing
     , animateToCmdWithConfig
     , animateToTask
     , animateToTaskWithConfig
+    , scrollToTop
+    , scrollToTopWithConfig
     )
 
 {-| Smooth scrolling animations for precise DOM element targeting.
@@ -50,6 +52,12 @@ Key features:
 
 @docs animateToTask
 @docs animateToTaskWithConfig
+
+
+# Convenience Functions
+
+@docs scrollToTop
+@docs scrollToTopWithConfig
 
 -}
 
@@ -356,3 +364,65 @@ animateToTaskWithConfig config id =
     in
     Task.map3 scrollTask getViewport (Dom.getElement id) getContainerInfo
         |> Task.andThen identity
+
+
+{-| Scroll to the top of a container with default configuration.
+
+Perfect for "back to top" buttons or resetting scroll position.
+
+    BackToTop ->
+        ( model, scrollToTop "main-content" )
+
+For document body scrolling, use an empty string:
+
+    BackToTop ->
+        ( model, scrollToTop "" )
+
+-}
+scrollToTop : String -> Cmd ()
+scrollToTop containerId =
+    scrollToTopWithConfig defaultConfig containerId
+
+
+{-| Scroll to the top of a container with custom configuration.
+
+    BackToTop ->
+        ( model, scrollToTopWithConfig { defaultConfig | speed = 50 } "main-content" )
+
+-}
+scrollToTopWithConfig : Config -> String -> Cmd ()
+scrollToTopWithConfig config containerId =
+    let
+        scrollToTopTask =
+            case containerId of
+                "" ->
+                    -- Document body scrolling
+                    Dom.getViewport
+                        |> Task.andThen
+                            (\{ viewport } ->
+                                let
+                                    steps =
+                                        animationSteps config.speed config.easing viewport.y 0
+                                in
+                                steps
+                                    |> List.map (\y -> Dom.setViewport viewport.x y)
+                                    |> Task.sequence
+                                    |> Task.map (always ())
+                            )
+
+                _ ->
+                    -- Container scrolling
+                    Dom.getViewportOf containerId
+                        |> Task.andThen
+                            (\{ viewport } ->
+                                let
+                                    steps =
+                                        animationSteps config.speed config.easing viewport.y 0
+                                in
+                                steps
+                                    |> List.map (\y -> Dom.setViewportOf containerId viewport.x y)
+                                    |> Task.sequence
+                                    |> Task.map (always ())
+                            )
+    in
+    Task.attempt (always ()) scrollToTopTask

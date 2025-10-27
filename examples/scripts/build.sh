@@ -30,6 +30,7 @@ elm make src/ElmUI/Scroll/PageX/Main.elm --output=src/ElmUI/Scroll/PageX/index.j
 elm make src/ElmUI/Scroll/ContainerX/Main.elm --output=src/ElmUI/Scroll/ContainerX/index.js
 elm make src/ElmUI/Scroll/PageXY/Main.elm --output=src/ElmUI/Scroll/PageXY/index.js
 elm make src/ElmUI/Scroll/ContainerXY/Main.elm --output=src/ElmUI/Scroll/ContainerXY/index.js
+elm make src/ElmUI/Scroll/ScrollToTop/Main.elm --output=src/ElmUI/Scroll/ScrollToTop/index.js
 elm make src/ElmUI/Sub/Basic/Main.elm --output=src/ElmUI/Sub/Basic/index.js
 elm make src/ElmUI/Sub/Multiple/Main.elm --output=src/ElmUI/Sub/Multiple/index.js
 elm make src/ElmUI/CSS/Basic/Main.elm --output=src/ElmUI/CSS/Basic/index.js
