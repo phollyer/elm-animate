@@ -59,8 +59,7 @@ update msg model =
             ( model
             , animateToCmdWithConfig NoOp
                 { defaultConfig
-                    | speed = 25
-                    , axis = X
+                    | axis = X
                     , container = containerElement "horizontal-scroll-container"
                 }
                 ("card-" ++ String.fromInt cardNum)
@@ -70,8 +69,7 @@ update msg model =
             ( model
             , animateToCmdWithConfig NoOp
                 { defaultConfig
-                    | speed = 25
-                    , axis = X
+                    | axis = X
                     , container = containerElement "horizontal-scroll-container"
                 }
                 "card-1"

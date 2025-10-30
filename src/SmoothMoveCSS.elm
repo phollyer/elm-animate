@@ -32,6 +32,7 @@ This module uses CSS transitions instead of JavaScript animation frames, providi
 
 @docs Config
 @docs defaultConfig
+@docs Timing
 @docs Axis
 
 
@@ -70,18 +71,44 @@ import Browser.Events
 import Dict exposing (Dict)
 
 
+{-| Animation timing configuration
+
+Choose between speed-based or duration-based timing:
+
+  - Speed: Animation speed in pixels per second (higher = faster)
+  - Duration: Animation duration in milliseconds (higher = slower)
+
+-}
+type Timing
+    = Speed Float
+    | Duration Int
+
+
 {-| Configuration for CSS-based animations
 
   - axis: Movement axis (X, Y, or Both)
-  - duration: Animation duration in milliseconds
+  - timing: Animation timing (Speed in pixels per second or Duration in milliseconds)
   - easing: CSS easing function ("ease-out", "cubic-bezier(0.4, 0.0, 0.2, 1)", etc.)
 
 -}
 type alias Config =
     { axis : Axis
-    , duration : Float
+    , timing : Timing
     , easing : String
     }
+
+
+{-| Convert timing configuration to milliseconds for CSS transitions
+-}
+timingToMilliseconds : Timing -> Float -> Float
+timingToMilliseconds timing distance =
+    case timing of
+        Speed pixelsPerSecond ->
+            -- Convert pixels per second to duration: distance / speed = seconds, then * 1000 for ms
+            (distance / pixelsPerSecond) * 1000
+
+        Duration milliseconds ->
+            toFloat milliseconds
 
 
 {-| Animation axis constraint
@@ -97,7 +124,7 @@ type Axis
 defaultConfig : Config
 defaultConfig =
     { axis = Both
-    , duration = 400
+    , timing = Duration 400
     , easing = "cubic-bezier(0.4, 0.0, 0.2, 1)" -- Material Design's "standard" easing
     }
 
@@ -312,8 +339,23 @@ cssTransitionStyle elementId (Model elements) =
     case Dict.get elementId elements of
         Just elementData ->
             if elementData.isAnimating then
+                let
+                    distance =
+                        case elementData.config.axis of
+                            X ->
+                                abs (elementData.targetX - elementData.currentX)
+
+                            Y ->
+                                abs (elementData.targetY - elementData.currentY)
+
+                            Both ->
+                                sqrt ((elementData.targetX - elementData.currentX) ^ 2 + (elementData.targetY - elementData.currentY) ^ 2)
+
+                    duration =
+                        timingToMilliseconds elementData.config.timing distance
+                in
                 "transform "
-                    ++ String.fromFloat elementData.config.duration
+                    ++ String.fromFloat duration
                     ++ "ms "
                     ++ elementData.config.easing
 

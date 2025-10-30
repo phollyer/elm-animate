@@ -5205,7 +5205,14 @@ var $author$project$SmoothMovePorts$init = $author$project$SmoothMovePorts$Model
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$SmoothMovePorts$Both = {$: 'Both'};
-var $author$project$SmoothMovePorts$defaultConfig = {axis: $author$project$SmoothMovePorts$Both, duration: 400, easing: 'ease-out'};
+var $author$project$SmoothMovePorts$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
+var $author$project$SmoothMovePorts$defaultConfig = {
+	axis: $author$project$SmoothMovePorts$Both,
+	easing: 'ease-out',
+	timing: $author$project$SmoothMovePorts$Duration(400)
+};
 var $elm$core$Dict$Black = {$: 'Black'};
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
@@ -5363,6 +5370,12 @@ var $author$project$ElmUI$Ports$Multiple$Main$subscriptions = function (_v0) {
 };
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $author$project$ElmUI$Ports$Multiple$Main$animateElement = _Platform_outgoingPort('animateElement', $elm$json$Json$Encode$string);
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
 		get:
@@ -5414,6 +5427,18 @@ var $author$project$SmoothMovePorts$getPosition = F2(
 			},
 			A2($elm$core$Dict$get, elementId, elements));
 	});
+var $elm$core$Basics$pow = _Basics_pow;
+var $elm$core$Basics$sqrt = _Basics_sqrt;
+var $author$project$SmoothMovePorts$timingToMilliseconds = F2(
+	function (timing, distance) {
+		if (timing.$ === 'Speed') {
+			var pixelsPerSecond = timing.a;
+			return (distance / pixelsPerSecond) * 1000;
+		} else {
+			var milliseconds = timing.a;
+			return milliseconds;
+		}
+	});
 var $elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
 		if (maybe.$ === 'Just') {
@@ -5433,6 +5458,18 @@ var $author$project$SmoothMovePorts$animateToWithConfig = F5(
 				$author$project$SmoothMovePorts$getPosition,
 				elementId,
 				$author$project$SmoothMovePorts$Model(elements)));
+		var distance = function () {
+			var _v2 = config.axis;
+			switch (_v2.$) {
+				case 'X':
+					return $elm$core$Basics$abs(targetX - currentPos.x);
+				case 'Y':
+					return $elm$core$Basics$abs(targetY - currentPos.y);
+				default:
+					return $elm$core$Basics$sqrt(
+						A2($elm$core$Basics$pow, targetX - currentPos.x, 2) + A2($elm$core$Basics$pow, targetY - currentPos.y, 2));
+			}
+		}();
 		var elementData = {config: config, currentX: currentPos.x, currentY: currentPos.y, isAnimating: true, targetX: targetX, targetY: targetY};
 		var updatedElements = A3($elm$core$Dict$insert, elementId, elementData, elements);
 		var axisString = function () {
@@ -5446,7 +5483,14 @@ var $author$project$SmoothMovePorts$animateToWithConfig = F5(
 					return 'both';
 			}
 		}();
-		var command = {axis: axisString, duration: config.duration, easing: config.easing, elementId: elementId, targetX: targetX, targetY: targetY};
+		var command = {
+			axis: axisString,
+			duration: A2($author$project$SmoothMovePorts$timingToMilliseconds, config.timing, distance),
+			easing: config.easing,
+			elementId: elementId,
+			targetX: targetX,
+			targetY: targetY
+		};
 		return _Utils_Tuple2(
 			$author$project$SmoothMovePorts$Model(updatedElements),
 			command);
@@ -8520,9 +8564,6 @@ var $elm$core$Basics$min = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) < 0) ? x : y;
 	});
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
 var $mdgriffith$elm_ui$Internal$Model$renderProps = F3(
 	function (force, _v0, existing) {
 		var key = _v0.a;

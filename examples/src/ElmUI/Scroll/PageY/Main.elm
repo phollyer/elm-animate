@@ -61,16 +61,16 @@ update msg model =
             ( model, Cmd.none )
 
         ScrollToParagraphOne ->
-            ( model, animateToCmdWithConfig NoOp { defaultConfig | speed = 20 } "paragraph-one" )
+            ( model, animateToCmdWithConfig NoOp defaultConfig "paragraph-one" )
 
         ScrollToParagraphTwo ->
-            ( model, animateToCmdWithConfig NoOp { defaultConfig | speed = 20 } "paragraph-two" )
+            ( model, animateToCmdWithConfig NoOp defaultConfig "paragraph-two" )
 
         ScrollToParagraphThree ->
-            ( model, animateToCmdWithConfig NoOp { defaultConfig | speed = 20 } "paragraph-three" )
+            ( model, animateToCmdWithConfig NoOp defaultConfig "paragraph-three" )
 
         ScrollToTop ->
-            ( model, animateToCmdWithConfig NoOp { defaultConfig | speed = 20 } "top" )
+            ( model, animateToCmdWithConfig NoOp defaultConfig "top" )
 
 
 

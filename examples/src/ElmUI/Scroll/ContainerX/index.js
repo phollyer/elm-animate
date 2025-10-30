@@ -5290,6 +5290,22 @@ var $elm$core$Basics$min = F2(
 	});
 var $elm$browser$Browser$Dom$setViewport = _Browser_setViewport;
 var $elm$browser$Browser$Dom$setViewportOf = _Browser_setViewportOf;
+var $author$project$SmoothMoveScroll$timingToSpeed = F2(
+	function (timing, distance) {
+		if (timing.$ === 'Speed') {
+			var pixelsPerSecond = timing.a;
+			return A2(
+				$elm$core$Basics$max,
+				1,
+				$elm$core$Basics$round((distance * 60) / pixelsPerSecond));
+		} else {
+			var milliseconds = timing.a;
+			return A2(
+				$elm$core$Basics$max,
+				1,
+				$elm$core$Basics$round(distance / (milliseconds * 0.06)));
+		}
+	});
 var $author$project$SmoothMoveScroll$animateToTaskWithConfig = F2(
 	function (config, id) {
 		var scrollTask = F3(
@@ -5330,7 +5346,15 @@ var $author$project$SmoothMoveScroll$animateToTaskWithConfig = F2(
 										function (x) {
 											return A2($elm$browser$Browser$Dom$setViewport, x, viewport.y);
 										},
-										A4($author$project$Internal$AnimationCore$animationSteps, config.speed, config.easing, viewport.x, clampedX)));
+										A4(
+											$author$project$Internal$AnimationCore$animationSteps,
+											A2(
+												$author$project$SmoothMoveScroll$timingToSpeed,
+												config.timing,
+												$elm$core$Basics$abs(clampedX - viewport.x)),
+											config.easing,
+											viewport.x,
+											clampedX)));
 							case 'Y':
 								return $elm$core$Task$sequence(
 									A2(
@@ -5338,7 +5362,15 @@ var $author$project$SmoothMoveScroll$animateToTaskWithConfig = F2(
 										function (y) {
 											return A2($elm$browser$Browser$Dom$setViewport, viewport.x, y);
 										},
-										A4($author$project$Internal$AnimationCore$animationSteps, config.speed, config.easing, viewport.y, clampedY)));
+										A4(
+											$author$project$Internal$AnimationCore$animationSteps,
+											A2(
+												$author$project$SmoothMoveScroll$timingToSpeed,
+												config.timing,
+												$elm$core$Basics$abs(clampedY - viewport.y)),
+											config.easing,
+											viewport.y,
+											clampedY)));
 							default:
 								var yDistance = $elm$core$Basics$abs(viewport.y - clampedY);
 								var xDistance = $elm$core$Basics$abs(viewport.x - clampedX);
@@ -5346,7 +5378,7 @@ var $author$project$SmoothMoveScroll$animateToTaskWithConfig = F2(
 								var frames = A2(
 									$elm$core$Basics$max,
 									1,
-									($elm$core$Basics$round(maxDistance) / config.speed) | 0);
+									A2($author$project$SmoothMoveScroll$timingToSpeed, config.timing, maxDistance));
 								var xSteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.x, clampedX);
 								var ySteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.y, clampedY);
 								return $elm$core$Task$sequence(
@@ -5363,7 +5395,15 @@ var $author$project$SmoothMoveScroll$animateToTaskWithConfig = F2(
 										function (x) {
 											return A3($elm$browser$Browser$Dom$setViewportOf, containerNodeId, x, viewport.y);
 										},
-										A4($author$project$Internal$AnimationCore$animationSteps, config.speed, config.easing, viewport.x, clampedX)));
+										A4(
+											$author$project$Internal$AnimationCore$animationSteps,
+											A2(
+												$author$project$SmoothMoveScroll$timingToSpeed,
+												config.timing,
+												$elm$core$Basics$abs(clampedX - viewport.x)),
+											config.easing,
+											viewport.x,
+											clampedX)));
 							case 'Y':
 								return $elm$core$Task$sequence(
 									A2(
@@ -5371,7 +5411,15 @@ var $author$project$SmoothMoveScroll$animateToTaskWithConfig = F2(
 										function (y) {
 											return A3($elm$browser$Browser$Dom$setViewportOf, containerNodeId, viewport.x, y);
 										},
-										A4($author$project$Internal$AnimationCore$animationSteps, config.speed, config.easing, viewport.y, clampedY)));
+										A4(
+											$author$project$Internal$AnimationCore$animationSteps,
+											A2(
+												$author$project$SmoothMoveScroll$timingToSpeed,
+												config.timing,
+												$elm$core$Basics$abs(clampedY - viewport.y)),
+											config.easing,
+											viewport.y,
+											clampedY)));
 							default:
 								var yDistance = $elm$core$Basics$abs(viewport.y - clampedY);
 								var xDistance = $elm$core$Basics$abs(viewport.x - clampedX);
@@ -5379,7 +5427,7 @@ var $author$project$SmoothMoveScroll$animateToTaskWithConfig = F2(
 								var frames = A2(
 									$elm$core$Basics$max,
 									1,
-									($elm$core$Basics$round(maxDistance) / config.speed) | 0);
+									A2($author$project$SmoothMoveScroll$timingToSpeed, config.timing, maxDistance));
 								var xSteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.x, clampedX);
 								var ySteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.y, clampedY);
 								return $elm$core$Task$sequence(
@@ -5462,6 +5510,9 @@ var $author$project$SmoothMoveScroll$containerElement = function (elementId) {
 	return $author$project$SmoothMoveScroll$InnerNode(elementId);
 };
 var $author$project$SmoothMoveScroll$DocumentBody = {$: 'DocumentBody'};
+var $author$project$SmoothMoveScroll$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
 var $author$project$SmoothMoveScroll$Y = {$: 'Y'};
 var $elm_community$easing_functions$Ease$flip = F2(
 	function (easing, time) {
@@ -5472,7 +5523,15 @@ var $elm_community$easing_functions$Ease$inQuint = function (time) {
 	return A2($elm$core$Basics$pow, time, 5);
 };
 var $elm_community$easing_functions$Ease$outQuint = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inQuint);
-var $author$project$SmoothMoveScroll$defaultConfig = {axis: $author$project$SmoothMoveScroll$Y, container: $author$project$SmoothMoveScroll$DocumentBody, easing: $elm_community$easing_functions$Ease$outQuint, offsetX: 0, offsetY: 12, scrollBar: true, speed: 200};
+var $author$project$SmoothMoveScroll$defaultConfig = {
+	axis: $author$project$SmoothMoveScroll$Y,
+	container: $author$project$SmoothMoveScroll$DocumentBody,
+	easing: $elm_community$easing_functions$Ease$outQuint,
+	offsetX: 0,
+	offsetY: 12,
+	scrollBar: true,
+	timing: $author$project$SmoothMoveScroll$Duration(400)
+};
 var $author$project$ElmUI$Scroll$ContainerX$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -5489,8 +5548,7 @@ var $author$project$ElmUI$Scroll$ContainerX$Main$update = F2(
 							$author$project$SmoothMoveScroll$defaultConfig,
 							{
 								axis: $author$project$SmoothMoveScroll$X,
-								container: $author$project$SmoothMoveScroll$containerElement('horizontal-scroll-container'),
-								speed: 25
+								container: $author$project$SmoothMoveScroll$containerElement('horizontal-scroll-container')
 							}),
 						'card-' + $elm$core$String$fromInt(cardNum)));
 			default:
@@ -5503,8 +5561,7 @@ var $author$project$ElmUI$Scroll$ContainerX$Main$update = F2(
 							$author$project$SmoothMoveScroll$defaultConfig,
 							{
 								axis: $author$project$SmoothMoveScroll$X,
-								container: $author$project$SmoothMoveScroll$containerElement('horizontal-scroll-container'),
-								speed: 25
+								container: $author$project$SmoothMoveScroll$containerElement('horizontal-scroll-container')
 							}),
 						'card-1'));
 		}

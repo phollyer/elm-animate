@@ -5205,7 +5205,14 @@ var $author$project$SmoothMoveCSS$init = $author$project$SmoothMoveCSS$Model($el
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$SmoothMoveCSS$Both = {$: 'Both'};
-var $author$project$SmoothMoveCSS$defaultConfig = {axis: $author$project$SmoothMoveCSS$Both, duration: 400, easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)'};
+var $author$project$SmoothMoveCSS$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
+var $author$project$SmoothMoveCSS$defaultConfig = {
+	axis: $author$project$SmoothMoveCSS$Both,
+	easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
+	timing: $author$project$SmoothMoveCSS$Duration(400)
+};
 var $elm$core$Dict$Black = {$: 'Black'};
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
@@ -11560,13 +11567,45 @@ var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
 			'background-color',
 			clr));
 };
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var $elm$core$Basics$pow = _Basics_pow;
+var $elm$core$Basics$sqrt = _Basics_sqrt;
+var $author$project$SmoothMoveCSS$timingToMilliseconds = F2(
+	function (timing, distance) {
+		if (timing.$ === 'Speed') {
+			var pixelsPerSecond = timing.a;
+			return (distance / pixelsPerSecond) * 1000;
+		} else {
+			var milliseconds = timing.a;
+			return milliseconds;
+		}
+	});
 var $author$project$SmoothMoveCSS$cssTransitionStyle = F2(
 	function (elementId, _v0) {
 		var elements = _v0.a;
 		var _v1 = A2($elm$core$Dict$get, elementId, elements);
 		if (_v1.$ === 'Just') {
 			var elementData = _v1.a;
-			return elementData.isAnimating ? ('transform ' + ($elm$core$String$fromFloat(elementData.config.duration) + ('ms ' + elementData.config.easing))) : 'none';
+			if (elementData.isAnimating) {
+				var distance = function () {
+					var _v2 = elementData.config.axis;
+					switch (_v2.$) {
+						case 'X':
+							return $elm$core$Basics$abs(elementData.targetX - elementData.currentX);
+						case 'Y':
+							return $elm$core$Basics$abs(elementData.targetY - elementData.currentY);
+						default:
+							return $elm$core$Basics$sqrt(
+								A2($elm$core$Basics$pow, elementData.targetX - elementData.currentX, 2) + A2($elm$core$Basics$pow, elementData.targetY - elementData.currentY, 2));
+					}
+				}();
+				var duration = A2($author$project$SmoothMoveCSS$timingToMilliseconds, elementData.config.timing, distance);
+				return 'transform ' + ($elm$core$String$fromFloat(duration) + ('ms ' + elementData.config.easing));
+			} else {
+				return 'none';
+			}
 		} else {
 			return 'none';
 		}

@@ -49,10 +49,10 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ScrollToTop ->
-            ( model, Cmd.map (always NoOp) (SmoothMoveScroll.scrollToTop "") )
+            ( model, SmoothMoveScroll.scrollToTop NoOp "" )
 
         ScrollContainerToTop ->
-            ( model, Cmd.map (always NoOp) (SmoothMoveScroll.scrollToTop "content-container") )
+            ( model, SmoothMoveScroll.scrollToTop NoOp "content-container" )
 
         NoOp ->
             ( model, Cmd.none )

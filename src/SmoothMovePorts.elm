@@ -45,6 +45,7 @@ See the accompanying `smooth-move-ports.js` file for the JavaScript implementati
 
 @docs Config
 @docs defaultConfig
+@docs Timing
 @docs Axis
 
 
@@ -94,18 +95,44 @@ See the accompanying `smooth-move-ports.js` file for the JavaScript implementati
 import Dict exposing (Dict)
 
 
+{-| Animation timing configuration
+
+Choose between speed-based or duration-based timing:
+
+  - Speed: Animation speed in pixels per second (higher = faster)
+  - Duration: Animation duration in milliseconds (higher = slower)
+
+-}
+type Timing
+    = Speed Float
+    | Duration Int
+
+
 {-| Configuration for port-based animations
 
   - axis: Movement axis (X, Y, or Both)
-  - duration: Animation duration in milliseconds
+  - timing: Animation timing (Speed in pixels per second or Duration in milliseconds)
   - easing: Web Animations API easing ("ease-out", "cubic-bezier(0.4, 0.0, 0.2, 1)", etc.)
 
 -}
 type alias Config =
     { axis : Axis
-    , duration : Float
+    , timing : Timing
     , easing : String
     }
+
+
+{-| Convert timing configuration to milliseconds for Web Animations API
+-}
+timingToMilliseconds : Timing -> Float -> Float
+timingToMilliseconds timing distance =
+    case timing of
+        Speed pixelsPerSecond ->
+            -- Convert pixels per second to duration: distance / speed = seconds, then * 1000 for ms
+            (distance / pixelsPerSecond) * 1000
+
+        Duration milliseconds ->
+            toFloat milliseconds
 
 
 {-| Animation axis constraint
@@ -121,7 +148,7 @@ type Axis
 defaultConfig : Config
 defaultConfig =
     { axis = Both
-    , duration = 400
+    , timing = Duration 400
     , easing = "ease-out" -- Standard Web Animations API easing
     }
 
@@ -234,6 +261,17 @@ animateToWithConfig config elementId targetX targetY (Model elements) =
         updatedElements =
             Dict.insert elementId elementData elements
 
+        distance =
+            case config.axis of
+                X ->
+                    abs (targetX - currentPos.x)
+
+                Y ->
+                    abs (targetY - currentPos.y)
+
+                Both ->
+                    sqrt ((targetX - currentPos.x) ^ 2 + (targetY - currentPos.y) ^ 2)
+
         axisString =
             case config.axis of
                 X ->
@@ -249,7 +287,7 @@ animateToWithConfig config elementId targetX targetY (Model elements) =
             { elementId = elementId
             , targetX = targetX
             , targetY = targetY
-            , duration = config.duration
+            , duration = timingToMilliseconds config.timing distance
             , easing = config.easing
             , axis = axisString
             }

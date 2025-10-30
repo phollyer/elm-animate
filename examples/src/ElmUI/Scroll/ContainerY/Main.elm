@@ -60,17 +60,17 @@ update msg model =
 
         ScrollToTop ->
             ( model
-            , animateToCmdWithConfig NoOp (setContainer "scroll-container" { defaultConfig | speed = 20 }) "top-element"
+            , animateToCmdWithConfig NoOp (setContainer "scroll-container" defaultConfig) "top-element"
             )
 
         ScrollToMiddle ->
             ( model
-            , animateToCmdWithConfig NoOp { defaultConfig | container = containerElement "scroll-container", speed = 20 } "middle-element"
+            , animateToCmdWithConfig NoOp { defaultConfig | container = containerElement "scroll-container" } "middle-element"
             )
 
         ScrollToBottom ->
             ( model
-            , animateToCmdWithConfig NoOp (setContainer "scroll-container" { defaultConfig | speed = 20 }) "bottom-element"
+            , animateToCmdWithConfig NoOp (setContainer "scroll-container" defaultConfig) "bottom-element"
             )
 
 

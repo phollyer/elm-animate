@@ -5601,6 +5601,16 @@ var $author$project$SmoothMoveSub$getPosition = F2(
 	});
 var $elm$core$Basics$pow = _Basics_pow;
 var $elm$core$Basics$sqrt = _Basics_sqrt;
+var $author$project$SmoothMoveSub$timingToPixelsPerSecond = F2(
+	function (timing, distance) {
+		if (timing.$ === 'Speed') {
+			var pixelsPerSecond = timing.a;
+			return pixelsPerSecond;
+		} else {
+			var milliseconds = timing.a;
+			return distance / (milliseconds / 1000);
+		}
+	});
 var $elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
 		if (maybe.$ === 'Just') {
@@ -5634,7 +5644,10 @@ var $author$project$SmoothMoveSub$animateToWithConfig = F5(
 						A2($elm$core$Basics$pow, targetX - startX, 2) + A2($elm$core$Basics$pow, targetY - startY, 2));
 			}
 		}();
-		var duration = A2($elm$core$Basics$max, 100, (distance * 1000) / config.speed);
+		var duration = A2(
+			$elm$core$Basics$max,
+			100,
+			(distance * 1000) / A2($author$project$SmoothMoveSub$timingToPixelsPerSecond, config.timing, distance));
 		var animationState = {config: config, currentX: startX, currentY: startY, duration: duration, startX: startX, startY: startY, startedAt: 0, targetX: targetX, targetY: targetY};
 		var elementData = {
 			animation: $elm$core$Maybe$Just(animationState),
@@ -5645,6 +5658,9 @@ var $author$project$SmoothMoveSub$animateToWithConfig = F5(
 		return $author$project$SmoothMoveSub$Model(updatedDict);
 	});
 var $author$project$SmoothMoveSub$Both = {$: 'Both'};
+var $author$project$SmoothMoveSub$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
 var $elm_community$easing_functions$Ease$flip = F2(
 	function (easing, time) {
 		return 1 - easing(1 - time);
@@ -5653,7 +5669,11 @@ var $elm_community$easing_functions$Ease$inCubic = function (time) {
 	return A2($elm$core$Basics$pow, time, 3);
 };
 var $elm_community$easing_functions$Ease$outCubic = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inCubic);
-var $author$project$SmoothMoveSub$defaultConfig = {axis: $author$project$SmoothMoveSub$Both, easing: $elm_community$easing_functions$Ease$outCubic, speed: 400.0};
+var $author$project$SmoothMoveSub$defaultConfig = {
+	axis: $author$project$SmoothMoveSub$Both,
+	easing: $elm_community$easing_functions$Ease$outCubic,
+	timing: $author$project$SmoothMoveSub$Duration(400)
+};
 var $author$project$SmoothMoveSub$animateTo = F4(
 	function (elementId, targetX, targetY, model) {
 		return A5($author$project$SmoothMoveSub$animateToWithConfig, $author$project$SmoothMoveSub$defaultConfig, elementId, targetX, targetY, model);

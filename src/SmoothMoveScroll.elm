@@ -35,6 +35,7 @@ Key features:
 
 @docs Config
 @docs defaultConfig
+@docs Timing
 @docs Axis
 @docs Container
 @docs containerElement
@@ -67,12 +68,25 @@ import Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames
 import Task exposing (Task)
 
 
+{-| Animation timing configuration
+
+Choose between speed-based or duration-based timing:
+
+  - Speed: Animation speed in pixels per second (higher = faster)
+  - Duration: Animation duration in milliseconds (higher = slower)
+
+-}
+type Timing
+    = Speed Float
+    | Duration Int
+
+
 {-| Configuration for scrolling animations
 
 This module provides both simple Cmd-based functions (recommended for most users)
 and advanced Task-based functions (for composition and custom error handling).
 
-  - speed: Animation speed divider (lower = faster, higher = slower)
+  - timing: Animation timing (Speed in pixels per second or Duration in milliseconds)
   - offsetX: Horizontal offset in pixels from the target position
   - offsetY: Vertical offset in pixels from the target position
   - easing: Easing function from [elm-community/easing-functions](https://package.elm-lang.org/packages/elm-community/easing-functions/latest/)
@@ -82,7 +96,7 @@ and advanced Task-based functions (for composition and custom error handling).
 
 -}
 type alias Config =
-    { speed : Int
+    { timing : Timing
     , offsetX : Int
     , offsetY : Int
     , easing : Ease.Easing
@@ -153,7 +167,7 @@ type Container
 -}
 defaultConfig : Config
 defaultConfig =
-    { speed = 200
+    { timing = Duration 400
     , offsetX = 0
     , offsetY = 12
     , easing = Ease.outQuint
@@ -161,6 +175,23 @@ defaultConfig =
     , axis = Y
     , scrollBar = True
     }
+
+
+{-| Convert timing configuration to speed divider for internal animation functions
+-}
+timingToSpeed : Timing -> Float -> Int
+timingToSpeed timing distance =
+    case timing of
+        Speed pixelsPerSecond ->
+            -- Convert pixels per second to frame divider
+            -- Assuming 60fps, we want: frames = distance / (pixelsPerSecond / 60)
+            max 1 (round (distance * 60 / pixelsPerSecond))
+
+        Duration milliseconds ->
+            -- Convert duration in milliseconds to frame divider
+            -- Assuming 60fps: frames = (milliseconds / 1000) * 60 = milliseconds * 0.06
+            -- speed divider = distance / frames = distance / (milliseconds * 0.06)
+            max 1 (round (distance / (toFloat milliseconds * 0.06)))
 
 
 {-| Set the container to scroll within to a specific DOM element by ID.
@@ -287,12 +318,12 @@ animateToTaskWithConfig config id =
                         DocumentBody ->
                             case config.axis of
                                 X ->
-                                    animationSteps config.speed config.easing viewport.x clampedX
+                                    animationSteps (timingToSpeed config.timing (abs (clampedX - viewport.x))) config.easing viewport.x clampedX
                                         |> List.map (\x -> Dom.setViewport x viewport.y)
                                         |> Task.sequence
 
                                 Y ->
-                                    animationSteps config.speed config.easing viewport.y clampedY
+                                    animationSteps (timingToSpeed config.timing (abs (clampedY - viewport.y))) config.easing viewport.y clampedY
                                         |> List.map (\y -> Dom.setViewport viewport.x y)
                                         |> Task.sequence
 
@@ -310,7 +341,7 @@ animateToTaskWithConfig config id =
 
                                         -- Use the same frame count for both axes to ensure synchronization
                                         frames =
-                                            Basics.max 1 (round maxDistance // config.speed)
+                                            Basics.max 1 (timingToSpeed config.timing maxDistance)
 
                                         -- Generate synchronized steps
                                         xSteps =
@@ -325,12 +356,12 @@ animateToTaskWithConfig config id =
                         InnerNode containerNodeId ->
                             case config.axis of
                                 X ->
-                                    animationSteps config.speed config.easing viewport.x clampedX
+                                    animationSteps (timingToSpeed config.timing (abs (clampedX - viewport.x))) config.easing viewport.x clampedX
                                         |> List.map (\x -> Dom.setViewportOf containerNodeId x viewport.y)
                                         |> Task.sequence
 
                                 Y ->
-                                    animationSteps config.speed config.easing viewport.y clampedY
+                                    animationSteps (timingToSpeed config.timing (abs (clampedY - viewport.y))) config.easing viewport.y clampedY
                                         |> List.map (\y -> Dom.setViewportOf containerNodeId viewport.x y)
                                         |> Task.sequence
 
@@ -348,7 +379,7 @@ animateToTaskWithConfig config id =
 
                                         -- Use the same frame count for both axes to ensure synchronization
                                         frames =
-                                            Basics.max 1 (round maxDistance // config.speed)
+                                            Basics.max 1 (timingToSpeed config.timing maxDistance)
 
                                         -- Generate synchronized steps
                                         xSteps =
@@ -387,7 +418,7 @@ scrollToTop msg containerId =
 {-| Scroll to the top of a container with custom configuration.
 
     BackToTop ->
-        ( model, scrollToTopWithConfig { defaultConfig | speed = 50 } "main-content" )
+        ( model, scrollToTopWithConfig NoOp { defaultConfig | timing = Duration 500 } "main-content" )
 
 -}
 scrollToTopWithConfig : msg -> Config -> String -> Cmd msg
@@ -402,7 +433,7 @@ scrollToTopWithConfig msg config containerId =
                             (\{ viewport } ->
                                 let
                                     steps =
-                                        animationSteps config.speed config.easing viewport.y 0
+                                        animationSteps (timingToSpeed config.timing (abs viewport.y)) config.easing viewport.y 0
                                 in
                                 steps
                                     |> List.map (\y -> Dom.setViewport viewport.x y)
@@ -417,7 +448,7 @@ scrollToTopWithConfig msg config containerId =
                             (\{ viewport } ->
                                 let
                                     steps =
-                                        animationSteps config.speed config.easing viewport.y 0
+                                        animationSteps (timingToSpeed config.timing (abs viewport.y)) config.easing viewport.y 0
                                 in
                                 steps
                                     |> List.map (\y -> Dom.setViewportOf containerId viewport.x y)

@@ -64,16 +64,16 @@ update msg model =
             ( model, Cmd.none )
 
         ScrollToSectionOne ->
-            ( model, animateToCmdWithConfig NoOp { defaultConfig | speed = 30, axis = X, offsetX = 20 } "section-one" )
+            ( model, animateToCmdWithConfig NoOp { defaultConfig | axis = X, offsetX = 20 } "section-one" )
 
         ScrollToSectionTwo ->
-            ( model, animateToCmdWithConfig NoOp { defaultConfig | speed = 30, axis = X, offsetX = 20 } "section-two" )
+            ( model, animateToCmdWithConfig NoOp { defaultConfig | axis = X, offsetX = 20 } "section-two" )
 
         ScrollToSectionThree ->
-            ( model, animateToCmdWithConfig NoOp { defaultConfig | speed = 30, axis = X, offsetX = 20 } "section-three" )
+            ( model, animateToCmdWithConfig NoOp { defaultConfig | axis = X, offsetX = 20 } "section-three" )
 
         ScrollToStart ->
-            ( model, animateToCmdWithConfig NoOp { defaultConfig | speed = 30, axis = X, offsetX = 20 } "start" )
+            ( model, animateToCmdWithConfig NoOp { defaultConfig | axis = X, offsetX = 20 } "start" )
 
 
 

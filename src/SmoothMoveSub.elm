@@ -27,6 +27,7 @@ automatically through subscriptions to animation frames.
 
 @docs Config
 @docs defaultConfig
+@docs Timing
 @docs Axis
 
 
@@ -65,18 +66,44 @@ import Dict exposing (Dict)
 import Ease
 
 
+{-| Animation timing configuration
+
+Choose between speed-based or duration-based timing:
+
+  - Speed: Animation speed in pixels per second (higher = faster)
+  - Duration: Animation duration in milliseconds (higher = slower)
+
+-}
+type Timing
+    = Speed Float
+    | Duration Int
+
+
 {-| Configuration options for subscription-based animations
 
-  - speed: Animation speed in pixels per second (higher = faster movement)
+  - timing: Animation timing (Speed in pixels per second or Duration in milliseconds)
   - easing: Easing function from elm-community/easing-functions
   - axis: Movement axis (X, Y, or Both)
 
 -}
 type alias Config =
-    { speed : Float
+    { timing : Timing
     , easing : Ease.Easing
     , axis : Axis
     }
+
+
+{-| Convert timing configuration to pixels per second for internal calculations
+-}
+timingToPixelsPerSecond : Timing -> Float -> Float
+timingToPixelsPerSecond timing distance =
+    case timing of
+        Speed pixelsPerSecond ->
+            pixelsPerSecond
+
+        Duration milliseconds ->
+            -- Convert duration to pixels per second: distance / (duration in seconds)
+            distance / (toFloat milliseconds / 1000)
 
 
 {-| Axis configuration for movement direction
@@ -181,7 +208,7 @@ animateToWithConfig config elementId targetX targetY (Model elementsDict) =
 
         -- Duration based on distance and speed (speed = pixels per second)
         duration =
-            max 100 (distance * 1000 / config.speed)
+            max 100 (distance * 1000 / timingToPixelsPerSecond config.timing distance)
 
         animationState =
             { startX = startX
@@ -396,7 +423,7 @@ import SmoothMoveSub exposing (defaultConfig)
 -}
 defaultConfig : Config
 defaultConfig =
-    { speed = 400.0
+    { timing = Duration 400
     , easing = Ease.outCubic
     , axis = Both
     }

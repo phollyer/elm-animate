@@ -65,8 +65,7 @@ update msg model =
             ( model
             , animateToCmdWithConfig NoOp
                 { defaultConfig
-                    | speed = 25
-                    , axis = Both
+                    | axis = Both
                     , offsetX = 20
                     , offsetY = 20
                 }
@@ -77,8 +76,7 @@ update msg model =
             ( model
             , animateToCmdWithConfig NoOp
                 { defaultConfig
-                    | speed = 25
-                    , axis = Both
+                    | axis = Both
                     , offsetX = 20
                     , offsetY = 20
                 }
@@ -89,8 +87,7 @@ update msg model =
             ( model
             , animateToCmdWithConfig NoOp
                 { defaultConfig
-                    | speed = 25
-                    , axis = Both
+                    | axis = Both
                     , offsetX = 20
                     , offsetY = 20
                 }
@@ -101,8 +98,7 @@ update msg model =
             ( model
             , animateToCmdWithConfig NoOp
                 { defaultConfig
-                    | speed = 25
-                    , axis = Both
+                    | axis = Both
                     , offsetX = 20
                     , offsetY = 20
                 }
@@ -113,8 +109,7 @@ update msg model =
             ( model
             , animateToCmdWithConfig NoOp
                 { defaultConfig
-                    | speed = 25
-                    , axis = Both
+                    | axis = Both
                     , offsetX = 20
                     , offsetY = 20
                 }
