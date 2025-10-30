@@ -379,9 +379,9 @@ For document body scrolling, use an empty string:
         ( model, scrollToTop "" )
 
 -}
-scrollToTop : String -> Cmd ()
-scrollToTop containerId =
-    scrollToTopWithConfig defaultConfig containerId
+scrollToTop : msg -> String -> Cmd msg
+scrollToTop msg containerId =
+    scrollToTopWithConfig msg defaultConfig containerId
 
 
 {-| Scroll to the top of a container with custom configuration.
@@ -390,8 +390,8 @@ scrollToTop containerId =
         ( model, scrollToTopWithConfig { defaultConfig | speed = 50 } "main-content" )
 
 -}
-scrollToTopWithConfig : Config -> String -> Cmd ()
-scrollToTopWithConfig config containerId =
+scrollToTopWithConfig : msg -> Config -> String -> Cmd msg
+scrollToTopWithConfig msg config containerId =
     let
         scrollToTopTask =
             case containerId of
@@ -425,4 +425,4 @@ scrollToTopWithConfig config containerId =
                                     |> Task.map (always ())
                             )
     in
-    Task.attempt (always ()) scrollToTopTask
+    Task.attempt (always msg) scrollToTopTask
