@@ -5306,10 +5306,10 @@ var $author$project$SmoothMoveScroll$timingToSpeed = F2(
 var $author$project$SmoothMoveScroll$animateToTaskWithConfig = F2(
 	function (config, id) {
 		var scrollTask = F3(
-			function (_v8, _v9, container) {
-				var scene = _v8.scene;
-				var viewport = _v8.viewport;
-				var element = _v9.element;
+			function (_v10, _v11, container) {
+				var scene = _v10.scene;
+				var viewport = _v10.viewport;
+				var element = _v11.element;
 				var _v2 = function () {
 					if (container.$ === 'Nothing') {
 						return _Utils_Tuple2(element.x - config.offsetX, element.y - config.offsetY);
@@ -5378,13 +5378,34 @@ var $author$project$SmoothMoveScroll$animateToTaskWithConfig = F2(
 									A2($author$project$SmoothMoveScroll$timingToSpeed, config.timing, maxDistance));
 								var xSteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.x, clampedX);
 								var ySteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.y, clampedY);
-								return $elm$core$Task$sequence(
-									A3($elm$core$List$map2, $elm$browser$Browser$Dom$setViewport, xSteps, ySteps));
+								var _v7 = _Utils_Tuple2(xSteps, ySteps);
+								if (!_v7.a.b) {
+									return $elm$core$Task$sequence(
+										A2(
+											$elm$core$List$map,
+											function (y) {
+												return A2($elm$browser$Browser$Dom$setViewport, viewport.x, y);
+											},
+											ySteps));
+								} else {
+									if (!_v7.b.b) {
+										return $elm$core$Task$sequence(
+											A2(
+												$elm$core$List$map,
+												function (x) {
+													return A2($elm$browser$Browser$Dom$setViewport, x, viewport.y);
+												},
+												xSteps));
+									} else {
+										return $elm$core$Task$sequence(
+											A3($elm$core$List$map2, $elm$browser$Browser$Dom$setViewport, xSteps, ySteps));
+									}
+								}
 						}
 					} else {
 						var containerNodeId = _v5.a;
-						var _v7 = config.axis;
-						switch (_v7.$) {
+						var _v8 = config.axis;
+						switch (_v8.$) {
 							case 'X':
 								return $elm$core$Task$sequence(
 									A2(
@@ -5427,12 +5448,33 @@ var $author$project$SmoothMoveScroll$animateToTaskWithConfig = F2(
 									A2($author$project$SmoothMoveScroll$timingToSpeed, config.timing, maxDistance));
 								var xSteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.x, clampedX);
 								var ySteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.y, clampedY);
-								return $elm$core$Task$sequence(
-									A3(
-										$elm$core$List$map2,
-										$elm$browser$Browser$Dom$setViewportOf(containerNodeId),
-										xSteps,
-										ySteps));
+								var _v9 = _Utils_Tuple2(xSteps, ySteps);
+								if (!_v9.a.b) {
+									return $elm$core$Task$sequence(
+										A2(
+											$elm$core$List$map,
+											function (y) {
+												return A3($elm$browser$Browser$Dom$setViewportOf, containerNodeId, viewport.x, y);
+											},
+											ySteps));
+								} else {
+									if (!_v9.b.b) {
+										return $elm$core$Task$sequence(
+											A2(
+												$elm$core$List$map,
+												function (x) {
+													return A3($elm$browser$Browser$Dom$setViewportOf, containerNodeId, x, viewport.y);
+												},
+												xSteps));
+									} else {
+										return $elm$core$Task$sequence(
+											A3(
+												$elm$core$List$map2,
+												$elm$browser$Browser$Dom$setViewportOf(containerNodeId),
+												xSteps,
+												ySteps));
+									}
+								}
 						}
 					}
 				}();

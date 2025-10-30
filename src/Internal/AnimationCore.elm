@@ -17,7 +17,7 @@ animationSteps speed easing start stop =
             abs <| start - stop
 
         frames =
-            Basics.max 1 <| round diff // speed
+            max 1 <| round diff // speed
 
         framesFloat =
             toFloat frames

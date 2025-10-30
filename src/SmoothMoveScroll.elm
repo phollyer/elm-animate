@@ -351,8 +351,22 @@ animateToTaskWithConfig config id =
                                         ySteps =
                                             animationStepsWithFrames frames config.easing viewport.y clampedY
                                     in
-                                    List.map2 Dom.setViewport xSteps ySteps
-                                        |> Task.sequence
+                                    case ( xSteps, ySteps ) of
+                                        ( [], _ ) ->
+                                            -- No horizontal movement needed, only animate Y
+                                            ySteps
+                                                |> List.map (\y -> Dom.setViewport viewport.x y)
+                                                |> Task.sequence
+
+                                        ( _, [] ) ->
+                                            -- No vertical movement needed, only animate X
+                                            xSteps
+                                                |> List.map (\x -> Dom.setViewport x viewport.y)
+                                                |> Task.sequence
+
+                                        _ ->
+                                            List.map2 Dom.setViewport xSteps ySteps
+                                                |> Task.sequence
 
                         InnerNode containerNodeId ->
                             case config.axis of
@@ -389,8 +403,22 @@ animateToTaskWithConfig config id =
                                         ySteps =
                                             animationStepsWithFrames frames config.easing viewport.y clampedY
                                     in
-                                    List.map2 (Dom.setViewportOf containerNodeId) xSteps ySteps
-                                        |> Task.sequence
+                                    case ( xSteps, ySteps ) of
+                                        ( [], _ ) ->
+                                            -- No horizontal movement needed, only animate Y
+                                            ySteps
+                                                |> List.map (\y -> Dom.setViewportOf containerNodeId viewport.x y)
+                                                |> Task.sequence
+
+                                        ( _, [] ) ->
+                                            -- No vertical movement needed, only animate X
+                                            xSteps
+                                                |> List.map (\x -> Dom.setViewportOf containerNodeId x viewport.y)
+                                                |> Task.sequence
+
+                                        _ ->
+                                            List.map2 (Dom.setViewportOf containerNodeId) xSteps ySteps
+                                                |> Task.sequence
             in
             setViewportTask
     in
