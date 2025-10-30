@@ -1,6 +1,7 @@
 module SmoothMoveSub exposing
     ( Config
     , defaultConfig
+    , Timing(..)
     , Axis(..)
     , Model
     , init

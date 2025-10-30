@@ -1,6 +1,7 @@
 module SmoothMoveScroll exposing
     ( Config
     , defaultConfig
+    , Timing(..)
     , Axis(..)
     , Container
     , containerElement

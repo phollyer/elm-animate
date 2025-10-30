@@ -1,6 +1,7 @@
 module SmoothMoveCSS exposing
     ( Config
     , defaultConfig
+    , Timing(..)
     , Axis(..)
     , Model
     , init

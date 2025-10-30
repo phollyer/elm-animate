@@ -1,6 +1,7 @@
 module SmoothMovePorts exposing
     ( Config
     , defaultConfig
+    , Timing(..)
     , Axis(..)
     , Model
     , init
