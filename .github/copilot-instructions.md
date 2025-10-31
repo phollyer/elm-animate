@@ -115,7 +115,7 @@ moveToWithOptions { defaultConfig | speed = 500, axis = Both } "element-id" 0 0 
 ### Animation Systems
 - **SmoothMoveScroll**: Pre-calculated frame steps using `Internal.AnimationCore.animationSteps` function
 - **SmoothMoveSub**: Time-based interpolation with `onAnimationFrameDelta`
-- **SmoothMoveCSS**: Native CSS transitions with `cssTransitionStyle` helper
+- **SmoothMoveCSS**: Pure CSS generation functions (`transform`, `transition`, `transitionWithDistance`, `calculateDuration`)
 - **SmoothMovePorts**: Web Animations API via JavaScript integration
 - Speed parameter: pixels per second for SmoothMoveSub, frame count divisor for SmoothMoveScroll
 - Easing functions from `elm-community/easing-functions` package applied to progress values

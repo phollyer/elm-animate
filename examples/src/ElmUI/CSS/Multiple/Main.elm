@@ -50,7 +50,14 @@ main =
 
 
 type alias Model =
-    { animations : SmoothMoveCSS.Model
+    { positions : 
+        { elementA : { x : Float, y : Float }
+        , elementB : { x : Float, y : Float }
+        , elementC : { x : Float, y : Float }
+        , elementD : { x : Float, y : Float }
+        , elementE : { x : Float, y : Float }
+        , elementF : { x : Float, y : Float }
+        }
     }
 
 
@@ -60,19 +67,16 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    let
-        -- Initialize with starting positions to prevent jump to (0,0)
-        initialAnimations =
-            SmoothMoveCSS.init
-                |> SmoothMoveCSS.setInitialPosition "element-a" 150 100
-                |> SmoothMoveCSS.setInitialPosition "element-b" 200 150
-                |> SmoothMoveCSS.setInitialPosition "element-c" 100 200
-                |> SmoothMoveCSS.setInitialPosition "element-d" 250 200
-                |> SmoothMoveCSS.setInitialPosition "element-e" 300 100
-                |> SmoothMoveCSS.setInitialPosition "element-f" 180 50
-    in
-    ( { animations = initialAnimations }
-    , Cmd.none
+    ( { positions = 
+          { elementA = { x = 150, y = 100 }
+          , elementB = { x = 200, y = 150 }
+          , elementC = { x = 100, y = 200 }
+          , elementD = { x = 250, y = 200 }
+          , elementE = { x = 300, y = 100 }
+          , elementF = { x = 180, y = 50 }
+          }
+      }
+    , Cmd.none 
     )
 
 
@@ -90,30 +94,30 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ScatterElements ->
-            let
-                newAnimations =
-                    model.animations
-                        |> SmoothMoveCSS.animateTo "element-a" 320 80
-                        |> SmoothMoveCSS.animateTo "element-b" 80 280
-                        |> SmoothMoveCSS.animateTo "element-c" 280 220
-                        |> SmoothMoveCSS.animateTo "element-d" 400 180
-                        |> SmoothMoveCSS.animateTo "element-e" 60 120
-                        |> SmoothMoveCSS.animateTo "element-f" 350 320
-            in
-            ( { model | animations = newAnimations }, Cmd.none )
+            ( { model | positions = 
+                  { elementA = { x = 80, y = 60 }
+                  , elementB = { x = 320, y = 80 }
+                  , elementC = { x = 40, y = 300 }
+                  , elementD = { x = 380, y = 260 }
+                  , elementE = { x = 60, y = 120 }
+                  , elementF = { x = 350, y = 320 }
+                  }
+              }
+            , Cmd.none 
+            )
 
         ResetPositions ->
-            let
-                newAnimations =
-                    model.animations
-                        |> SmoothMoveCSS.animateTo "element-a" 150 100
-                        |> SmoothMoveCSS.animateTo "element-b" 200 150
-                        |> SmoothMoveCSS.animateTo "element-c" 100 200
-                        |> SmoothMoveCSS.animateTo "element-d" 250 200
-                        |> SmoothMoveCSS.animateTo "element-e" 300 100
-                        |> SmoothMoveCSS.animateTo "element-f" 180 50
-            in
-            ( { model | animations = newAnimations }, Cmd.none )
+            ( { model | positions = 
+                  { elementA = { x = 150, y = 100 }
+                  , elementB = { x = 200, y = 150 }
+                  , elementC = { x = 100, y = 200 }
+                  , elementD = { x = 250, y = 200 }
+                  , elementE = { x = 300, y = 100 }
+                  , elementF = { x = 180, y = 50 }
+                  }
+              }
+            , Cmd.none 
+            )
 
         CircleFormation ->
             let
@@ -125,25 +129,18 @@ update msg model =
 
                 radius =
                     90
-
-                -- 6 elements evenly spaced around circle (60 degrees apart)
-                newAnimations =
-                    model.animations
-                        |> SmoothMoveCSS.animateTo "element-a" (centerX + radius) centerY
-                        -- 0°
-                        |> SmoothMoveCSS.animateTo "element-b" (centerX + radius * 0.5) (centerY + radius * 0.866)
-                        -- 60°
-                        |> SmoothMoveCSS.animateTo "element-c" (centerX - radius * 0.5) (centerY + radius * 0.866)
-                        -- 120°
-                        |> SmoothMoveCSS.animateTo "element-d" (centerX - radius) centerY
-                        -- 180°
-                        |> SmoothMoveCSS.animateTo "element-e" (centerX - radius * 0.5) (centerY - radius * 0.866)
-                        -- 240°
-                        |> SmoothMoveCSS.animateTo "element-f" (centerX + radius * 0.5) (centerY - radius * 0.866)
-
-                -- 300°
             in
-            ( { model | animations = newAnimations }, Cmd.none )
+            ( { model | positions = 
+                  { elementA = { x = centerX + radius, y = centerY } -- 0°
+                  , elementB = { x = centerX + radius * 0.5, y = centerY + radius * 0.866 } -- 60°
+                  , elementC = { x = centerX - radius * 0.5, y = centerY + radius * 0.866 } -- 120°
+                  , elementD = { x = centerX - radius, y = centerY } -- 180°
+                  , elementE = { x = centerX - radius * 0.5, y = centerY - radius * 0.866 } -- 240°
+                  , elementF = { x = centerX + radius * 0.5, y = centerY - radius * 0.866 } -- 300°
+                  }
+              }
+            , Cmd.none 
+            )
 
 
 
@@ -171,47 +168,15 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     let
-        positionA =
-            SmoothMoveCSS.getPosition "element-a" model.animations
-                |> Maybe.withDefault { x = 150, y = 100 }
+        positionA = model.positions.elementA
+        positionB = model.positions.elementB  
+        positionC = model.positions.elementC
+        positionD = model.positions.elementD
+        positionE = model.positions.elementE
+        positionF = model.positions.elementF
 
-        positionB =
-            SmoothMoveCSS.getPosition "element-b" model.animations
-                |> Maybe.withDefault { x = 200, y = 150 }
-
-        positionC =
-            SmoothMoveCSS.getPosition "element-c" model.animations
-                |> Maybe.withDefault { x = 100, y = 200 }
-
-        positionD =
-            SmoothMoveCSS.getPosition "element-d" model.animations
-                |> Maybe.withDefault { x = 250, y = 200 }
-
-        positionE =
-            SmoothMoveCSS.getPosition "element-e" model.animations
-                |> Maybe.withDefault { x = 300, y = 100 }
-
-        positionF =
-            SmoothMoveCSS.getPosition "element-f" model.animations
-                |> Maybe.withDefault { x = 180, y = 50 }
-
-        cssStylesA =
-            SmoothMoveCSS.cssTransitionStyle "element-a" model.animations
-
-        cssStylesB =
-            SmoothMoveCSS.cssTransitionStyle "element-b" model.animations
-
-        cssStylesC =
-            SmoothMoveCSS.cssTransitionStyle "element-c" model.animations
-
-        cssStylesD =
-            SmoothMoveCSS.cssTransitionStyle "element-d" model.animations
-
-        cssStylesE =
-            SmoothMoveCSS.cssTransitionStyle "element-e" model.animations
-
-        cssStylesF =
-            SmoothMoveCSS.cssTransitionStyle "element-f" model.animations
+        -- Generate CSS transition styles for smooth animation
+        cssTransition = SmoothMoveCSS.transition
     in
     [ UI.backButton
     , UI.pageHeader "SmoothMoveCSS Multiple Example"
@@ -268,7 +233,7 @@ viewContent model =
             ]
         ]
     , -- Control buttons
-      UI.htmlActionButtons
+              UI.htmlActionButtons
         [ ( UI.Primary, ScatterElements, "Scatter" )
         , ( UI.Success, CircleFormation, "Circle Formation" )
         , ( UI.Purple, ResetPositions, "Reset" )
@@ -303,8 +268,8 @@ viewContent model =
                     , Html.Attributes.style "height" "50px"
                     , Html.Attributes.style "background" "linear-gradient(135deg, #3B82F6, #2563EB)"
                     , Html.Attributes.style "border-radius" "12px"
-                    , Html.Attributes.style "transform" ("translate(" ++ String.fromFloat positionA.x ++ "px, " ++ String.fromFloat positionA.y ++ "px)")
-                    , Html.Attributes.style "transition" cssStylesA
+                    , Html.Attributes.style "transform" (SmoothMoveCSS.transform positionA.x positionA.y)
+                    , Html.Attributes.style "transition" cssTransition
                     , Html.Attributes.style "display" "flex"
                     , Html.Attributes.style "align-items" "center"
                     , Html.Attributes.style "justify-content" "center"
@@ -321,8 +286,8 @@ viewContent model =
                     , Html.Attributes.style "height" "50px"
                     , Html.Attributes.style "background" "linear-gradient(135deg, #10B981, #059669)"
                     , Html.Attributes.style "border-radius" "12px"
-                    , Html.Attributes.style "transform" ("translate(" ++ String.fromFloat positionB.x ++ "px, " ++ String.fromFloat positionB.y ++ "px)")
-                    , Html.Attributes.style "transition" cssStylesB
+                    , Html.Attributes.style "transform" (SmoothMoveCSS.transform positionB.x positionB.y)
+                    , Html.Attributes.style "transition" cssTransition
                     , Html.Attributes.style "display" "flex"
                     , Html.Attributes.style "align-items" "center"
                     , Html.Attributes.style "justify-content" "center"
@@ -339,8 +304,8 @@ viewContent model =
                     , Html.Attributes.style "height" "50px"
                     , Html.Attributes.style "background" "linear-gradient(135deg, #A855F7, #9333EA)"
                     , Html.Attributes.style "border-radius" "12px"
-                    , Html.Attributes.style "transform" ("translate(" ++ String.fromFloat positionC.x ++ "px, " ++ String.fromFloat positionC.y ++ "px)")
-                    , Html.Attributes.style "transition" cssStylesC
+                    , Html.Attributes.style "transform" (SmoothMoveCSS.transform positionC.x positionC.y)
+                    , Html.Attributes.style "transition" cssTransition
                     , Html.Attributes.style "display" "flex"
                     , Html.Attributes.style "align-items" "center"
                     , Html.Attributes.style "justify-content" "center"
@@ -357,8 +322,8 @@ viewContent model =
                     , Html.Attributes.style "height" "50px"
                     , Html.Attributes.style "background" "linear-gradient(135deg, #F97316, #EA580C)"
                     , Html.Attributes.style "border-radius" "12px"
-                    , Html.Attributes.style "transform" ("translate(" ++ String.fromFloat positionD.x ++ "px, " ++ String.fromFloat positionD.y ++ "px)")
-                    , Html.Attributes.style "transition" cssStylesD
+                    , Html.Attributes.style "transform" (SmoothMoveCSS.transform positionD.x positionD.y)
+                    , Html.Attributes.style "transition" cssTransition
                     , Html.Attributes.style "display" "flex"
                     , Html.Attributes.style "align-items" "center"
                     , Html.Attributes.style "justify-content" "center"
@@ -375,8 +340,8 @@ viewContent model =
                     , Html.Attributes.style "height" "50px"
                     , Html.Attributes.style "background" "linear-gradient(135deg, #EF4444, #DC2626)"
                     , Html.Attributes.style "border-radius" "12px"
-                    , Html.Attributes.style "transform" ("translate(" ++ String.fromFloat positionE.x ++ "px, " ++ String.fromFloat positionE.y ++ "px)")
-                    , Html.Attributes.style "transition" cssStylesE
+                    , Html.Attributes.style "transform" (SmoothMoveCSS.transform positionE.x positionE.y)
+                    , Html.Attributes.style "transition" cssTransition
                     , Html.Attributes.style "display" "flex"
                     , Html.Attributes.style "align-items" "center"
                     , Html.Attributes.style "justify-content" "center"
@@ -393,8 +358,8 @@ viewContent model =
                     , Html.Attributes.style "height" "50px"
                     , Html.Attributes.style "background" "linear-gradient(135deg, #EC4899, #DB2777)"
                     , Html.Attributes.style "border-radius" "12px"
-                    , Html.Attributes.style "transform" ("translate(" ++ String.fromFloat positionF.x ++ "px, " ++ String.fromFloat positionF.y ++ "px)")
-                    , Html.Attributes.style "transition" cssStylesF
+                    , Html.Attributes.style "transform" (SmoothMoveCSS.transform positionF.x positionF.y)
+                    , Html.Attributes.style "transition" cssTransition
                     , Html.Attributes.style "display" "flex"
                     , Html.Attributes.style "align-items" "center"
                     , Html.Attributes.style "justify-content" "center"

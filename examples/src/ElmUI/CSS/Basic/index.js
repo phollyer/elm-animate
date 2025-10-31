@@ -5196,143 +5196,14 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$document = _Browser_document;
-var $author$project$SmoothMoveCSS$Model = function (a) {
-	return {$: 'Model', a: a};
-};
-var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
-var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
-var $author$project$SmoothMoveCSS$init = $author$project$SmoothMoveCSS$Model($elm$core$Dict$empty);
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$SmoothMoveCSS$Both = {$: 'Both'};
-var $author$project$SmoothMoveCSS$Duration = function (a) {
-	return {$: 'Duration', a: a};
-};
-var $author$project$SmoothMoveCSS$defaultConfig = {
-	axis: $author$project$SmoothMoveCSS$Both,
-	easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
-	timing: $author$project$SmoothMoveCSS$Duration(400)
-};
-var $elm$core$Dict$Black = {$: 'Black'};
-var $elm$core$Dict$RBNode_elm_builtin = F5(
-	function (a, b, c, d, e) {
-		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
-	});
-var $elm$core$Dict$Red = {$: 'Red'};
-var $elm$core$Dict$balance = F5(
-	function (color, key, value, left, right) {
-		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
-			var _v1 = right.a;
-			var rK = right.b;
-			var rV = right.c;
-			var rLeft = right.d;
-			var rRight = right.e;
-			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-				var _v3 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var lLeft = left.d;
-				var lRight = left.e;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Red,
-					key,
-					value,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					color,
-					rK,
-					rV,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
-					rRight);
-			}
-		} else {
-			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
-				var _v5 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var _v6 = left.d;
-				var _v7 = _v6.a;
-				var llK = _v6.b;
-				var llV = _v6.c;
-				var llLeft = _v6.d;
-				var llRight = _v6.e;
-				var lRight = left.e;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Red,
-					lK,
-					lV,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
-			} else {
-				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
-			}
-		}
-	});
-var $elm$core$Basics$compare = _Utils_compare;
-var $elm$core$Dict$insertHelp = F3(
-	function (key, value, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
-		} else {
-			var nColor = dict.a;
-			var nKey = dict.b;
-			var nValue = dict.c;
-			var nLeft = dict.d;
-			var nRight = dict.e;
-			var _v1 = A2($elm$core$Basics$compare, key, nKey);
-			switch (_v1.$) {
-				case 'LT':
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						A3($elm$core$Dict$insertHelp, key, value, nLeft),
-						nRight);
-				case 'EQ':
-					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
-				default:
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						nLeft,
-						A3($elm$core$Dict$insertHelp, key, value, nRight));
-			}
-		}
-	});
-var $elm$core$Dict$insert = F3(
-	function (key, value, dict) {
-		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
-		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
-			var _v1 = _v0.a;
-			var k = _v0.b;
-			var v = _v0.c;
-			var l = _v0.d;
-			var r = _v0.e;
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
-		} else {
-			var x = _v0;
-			return x;
-		}
-	});
-var $author$project$SmoothMoveCSS$setInitialPosition = F4(
-	function (elementId, x, y, _v0) {
-		var elements = _v0.a;
-		var elementData = {config: $author$project$SmoothMoveCSS$defaultConfig, currentX: x, currentY: y, isAnimating: false, targetX: x, targetY: y};
-		var updatedElements = A3($elm$core$Dict$insert, elementId, elementData, elements);
-		return $author$project$SmoothMoveCSS$Model(updatedElements);
-	});
 var $author$project$ElmUI$CSS$Basic$Main$init = function (_v0) {
-	var initialAnimations = A4($author$project$SmoothMoveCSS$setInitialPosition, 'moving-box', 0, 0, $author$project$SmoothMoveCSS$init);
 	return _Utils_Tuple2(
-		{animations: initialAnimations},
+		{
+			isAnimating: false,
+			position: {x: 0, y: 0}
+		},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -5340,96 +5211,6 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$ElmUI$CSS$Basic$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
 };
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $author$project$SmoothMoveCSS$getPosition = F2(
-	function (elementId, _v0) {
-		var elements = _v0.a;
-		return A2(
-			$elm$core$Maybe$map,
-			function (elementData) {
-				if (elementData.isAnimating) {
-					var _v1 = elementData.config.axis;
-					switch (_v1.$) {
-						case 'X':
-							return {x: elementData.targetX, y: elementData.currentY};
-						case 'Y':
-							return {x: elementData.currentX, y: elementData.targetY};
-						default:
-							return {x: elementData.targetX, y: elementData.targetY};
-					}
-				} else {
-					return {x: elementData.currentX, y: elementData.currentY};
-				}
-			},
-			A2($elm$core$Dict$get, elementId, elements));
-	});
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
-var $author$project$SmoothMoveCSS$animateToWithConfig = F5(
-	function (config, elementId, targetX, targetY, _v0) {
-		var elements = _v0.a;
-		var currentPos = A2(
-			$elm$core$Maybe$withDefault,
-			{x: 0, y: 0},
-			A2(
-				$author$project$SmoothMoveCSS$getPosition,
-				elementId,
-				$author$project$SmoothMoveCSS$Model(elements)));
-		var elementData = {config: config, currentX: currentPos.x, currentY: currentPos.y, isAnimating: true, targetX: targetX, targetY: targetY};
-		var updatedElements = A3($elm$core$Dict$insert, elementId, elementData, elements);
-		return $author$project$SmoothMoveCSS$Model(updatedElements);
-	});
-var $author$project$SmoothMoveCSS$animateTo = F4(
-	function (elementId, targetX, targetY, model) {
-		return A5($author$project$SmoothMoveCSS$animateToWithConfig, $author$project$SmoothMoveCSS$defaultConfig, elementId, targetX, targetY, model);
-	});
 var $author$project$ElmUI$CSS$Basic$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -5438,7 +5219,8 @@ var $author$project$ElmUI$CSS$Basic$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animations: A4($author$project$SmoothMoveCSS$animateTo, 'moving-box', 100, 100, model.animations)
+							isAnimating: true,
+							position: {x: 100, y: 100}
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'MoveToCenter':
@@ -5446,16 +5228,24 @@ var $author$project$ElmUI$CSS$Basic$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animations: A4($author$project$SmoothMoveCSS$animateTo, 'moving-box', 300, 200, model.animations)
+							isAnimating: true,
+							position: {x: 300, y: 200}
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'StopAnimation':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							isAnimating: true,
+							position: {x: 0, y: 0}
 						}),
 					$elm$core$Platform$Cmd$none);
 			default:
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{
-							animations: A4($author$project$SmoothMoveCSS$animateTo, 'moving-box', 0, 0, model.animations)
-						}),
+						{isAnimating: false}),
 					$elm$core$Platform$Cmd$none);
 		}
 	});
@@ -5824,6 +5614,8 @@ var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$core$Set$Set_elm_builtin = function (a) {
 	return {$: 'Set_elm_builtin', a: a};
 };
+var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
 var $mdgriffith$elm_ui$Internal$Model$lengthClassName = function (x) {
 	switch (x.$) {
@@ -5878,6 +5670,15 @@ var $mdgriffith$elm_ui$Internal$Model$transformClass = function (transform) {
 				'tfrm-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(tx) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(ty) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(tz) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(sx) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(sy) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(sz) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(ox) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(oy) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(oz) + ('-' + $mdgriffith$elm_ui$Internal$Model$floatClass(angle))))))))))))))))))));
 	}
 };
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
 var $mdgriffith$elm_ui$Internal$Model$getStyleName = function (style) {
 	switch (style.$) {
 		case 'Shadows':
@@ -5969,11 +5770,151 @@ var $mdgriffith$elm_ui$Internal$Model$getStyleName = function (style) {
 				$mdgriffith$elm_ui$Internal$Model$transformClass(x));
 	}
 };
+var $elm$core$Dict$Black = {$: 'Black'};
+var $elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+	});
+var $elm$core$Dict$Red = {$: 'Red'};
+var $elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+			var _v1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+				var _v3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					key,
+					value,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+				var _v5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _v6 = left.d;
+				var _v7 = _v6.a;
+				var llK = _v6.b;
+				var llV = _v6.c;
+				var llLeft = _v6.d;
+				var llRight = _v6.e;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					lK,
+					lV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
+			} else {
+				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var $elm$core$Basics$compare = _Utils_compare;
+var $elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _v1 = A2($elm$core$Basics$compare, key, nKey);
+			switch (_v1.$) {
+				case 'LT':
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3($elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 'EQ':
+					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3($elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var $elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
 var $elm$core$Set$insert = F2(
 	function (key, _v0) {
 		var dict = _v0.a;
 		return $elm$core$Set$Set_elm_builtin(
 			A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict));
+	});
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
 	});
 var $elm$core$Dict$member = F2(
 	function (key, dict) {
@@ -6049,6 +5990,16 @@ var $mdgriffith$elm_ui$Internal$Model$formatBoxShadow = function (shadow) {
 					$mdgriffith$elm_ui$Internal$Model$formatColor(shadow.color))
 				])));
 };
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $elm$core$Tuple$mapFirst = F2(
 	function (func, _v0) {
 		var x = _v0.a;
@@ -11440,6 +11391,7 @@ var $author$project$Common$UI$createDocument = F3(
 			title: title
 		};
 	});
+var $author$project$ElmUI$CSS$Basic$Main$AnimationComplete = {$: 'AnimationComplete'};
 var $author$project$ElmUI$CSS$Basic$Main$MoveToCenter = {$: 'MoveToCenter'};
 var $author$project$ElmUI$CSS$Basic$Main$MoveToCorner = {$: 'MoveToCorner'};
 var $author$project$Common$UI$Primary = {$: 'Primary'};
@@ -11567,49 +11519,6 @@ var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
 			'background-color',
 			clr));
 };
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
-var $elm$core$Basics$pow = _Basics_pow;
-var $elm$core$Basics$sqrt = _Basics_sqrt;
-var $author$project$SmoothMoveCSS$timingToMilliseconds = F2(
-	function (timing, distance) {
-		if (timing.$ === 'Speed') {
-			var pixelsPerSecond = timing.a;
-			return (distance / pixelsPerSecond) * 1000;
-		} else {
-			var milliseconds = timing.a;
-			return milliseconds;
-		}
-	});
-var $author$project$SmoothMoveCSS$cssTransitionStyle = F2(
-	function (elementId, _v0) {
-		var elements = _v0.a;
-		var _v1 = A2($elm$core$Dict$get, elementId, elements);
-		if (_v1.$ === 'Just') {
-			var elementData = _v1.a;
-			if (elementData.isAnimating) {
-				var distance = function () {
-					var _v2 = elementData.config.axis;
-					switch (_v2.$) {
-						case 'X':
-							return $elm$core$Basics$abs(elementData.targetX - elementData.currentX);
-						case 'Y':
-							return $elm$core$Basics$abs(elementData.targetY - elementData.currentY);
-						default:
-							return $elm$core$Basics$sqrt(
-								A2($elm$core$Basics$pow, elementData.targetX - elementData.currentX, 2) + A2($elm$core$Basics$pow, elementData.targetY - elementData.currentY, 2));
-					}
-				}();
-				var duration = A2($author$project$SmoothMoveCSS$timingToMilliseconds, elementData.config.timing, distance);
-				return 'transform ' + ($elm$core$String$fromFloat(duration) + ('ms ' + elementData.config.easing));
-			} else {
-				return 'none';
-			}
-		} else {
-			return 'none';
-		}
-	});
 var $mdgriffith$elm_ui$Element$el = F2(
 	function (attrs, child) {
 		return A4(
@@ -11708,6 +11617,12 @@ var $mdgriffith$elm_ui$Element$maximum = F2(
 	function (i, l) {
 		return A2($mdgriffith$elm_ui$Internal$Model$Max, i, l);
 	});
+var $author$project$SmoothMoveCSS$onTransitionEnd = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'transitionend',
+		$elm$json$Json$Decode$succeed(msg));
+};
 var $mdgriffith$elm_ui$Internal$Model$Describe = function (a) {
 	return {$: 'Describe', a: a};
 };
@@ -11781,12 +11696,36 @@ var $mdgriffith$elm_ui$Element$Font$size = function (i) {
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Common$Colors$textMedium = A3($mdgriffith$elm_ui$Element$rgb255, 71, 85, 105);
+var $author$project$SmoothMoveCSS$transform = F2(
+	function (x, y) {
+		return 'translate(' + ($elm$core$String$fromFloat(x) + ('px, ' + ($elm$core$String$fromFloat(y) + 'px)')));
+	});
+var $author$project$SmoothMoveCSS$Both = {$: 'Both'};
+var $author$project$SmoothMoveCSS$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
+var $author$project$SmoothMoveCSS$defaultConfig = {
+	axis: $author$project$SmoothMoveCSS$Both,
+	easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
+	timing: $author$project$SmoothMoveCSS$Duration(400)
+};
+var $author$project$SmoothMoveCSS$timingToMilliseconds = F2(
+	function (timing, distance) {
+		if (timing.$ === 'Speed') {
+			var pixelsPerSecond = timing.a;
+			return (pixelsPerSecond <= 0) ? 400 : A2($elm$core$Basics$max, 50, (distance / pixelsPerSecond) * 1000);
+		} else {
+			var milliseconds = timing.a;
+			return A2($elm$core$Basics$max, 50, milliseconds);
+		}
+	});
+var $author$project$SmoothMoveCSS$transitionWithConfig = F2(
+	function (config, distance) {
+		var duration = A2($author$project$SmoothMoveCSS$timingToMilliseconds, config.timing, distance);
+		return 'transform ' + ($elm$core$String$fromFloat(duration) + ('ms ' + config.easing));
+	});
+var $author$project$SmoothMoveCSS$transition = A2($author$project$SmoothMoveCSS$transitionWithConfig, $author$project$SmoothMoveCSS$defaultConfig, 0);
 var $author$project$ElmUI$CSS$Basic$Main$viewContent = function (model) {
-	var position = A2(
-		$elm$core$Maybe$withDefault,
-		{x: 0, y: 0},
-		A2($author$project$SmoothMoveCSS$getPosition, 'moving-box', model.animations));
-	var cssStyles = A2($author$project$SmoothMoveCSS$cssTransitionStyle, 'moving-box', model.animations);
 	return _List_fromArray(
 		[
 			$author$project$Common$UI$backButton,
@@ -11801,8 +11740,8 @@ var $author$project$ElmUI$CSS$Basic$Main$viewContent = function (model) {
 				]),
 			$mdgriffith$elm_ui$Element$text(
 				'Position: (' + ($elm$core$String$fromInt(
-					$elm$core$Basics$round(position.x)) + (', ' + ($elm$core$String$fromInt(
-					$elm$core$Basics$round(position.y)) + ')'))))),
+					$elm$core$Basics$round(model.position.x)) + (', ' + ($elm$core$String$fromInt(
+					$elm$core$Basics$round(model.position.y)) + ')'))))),
 			$author$project$Common$UI$htmlActionButtons(
 			_List_fromArray(
 				[
@@ -11851,9 +11790,14 @@ var $author$project$ElmUI$CSS$Basic$Main$viewContent = function (model) {
 						A2(
 							$elm$html$Html$Attributes$style,
 							'transform',
-							'translate(' + ($elm$core$String$fromFloat(position.x) + ('px, ' + ($elm$core$String$fromFloat(position.y) + 'px)'))))),
+							A2($author$project$SmoothMoveCSS$transform, model.position.x, model.position.y))),
 						$mdgriffith$elm_ui$Element$htmlAttribute(
-						A2($elm$html$Html$Attributes$style, 'transition', cssStyles))
+						A2(
+							$elm$html$Html$Attributes$style,
+							'transition',
+							model.isAnimating ? $author$project$SmoothMoveCSS$transition : 'none')),
+						$mdgriffith$elm_ui$Element$htmlAttribute(
+						$author$project$SmoothMoveCSS$onTransitionEnd($author$project$ElmUI$CSS$Basic$Main$AnimationComplete))
 					]),
 				$mdgriffith$elm_ui$Element$text('')))
 		]);

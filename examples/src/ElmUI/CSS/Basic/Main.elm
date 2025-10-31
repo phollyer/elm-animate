@@ -16,8 +16,9 @@ BENEFITS:
 
 USAGE:
 
-  - Call SmoothMoveCSS.animateTo to get transition styles
-  - Apply the returned CSS directly to elements
+  - Update position in your model when you want to animate
+  - Use SmoothMoveCSS.transform to generate CSS transform styles
+  - Use SmoothMoveCSS.transition to generate CSS transition styles
   - Browser handles all animation timing and optimization
 
 -}
@@ -52,7 +53,8 @@ main =
 
 
 type alias Model =
-    { animations : SmoothMoveCSS.Model
+    { position : { x : Float, y : Float }
+    , isAnimating : Bool
     }
 
 
@@ -62,13 +64,9 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    let
-        -- Initialize with starting position to prevent jump to (0,0)
-        initialAnimations =
-            SmoothMoveCSS.init
-                |> SmoothMoveCSS.setInitialPosition "moving-box" 0 0
-    in
-    ( { animations = initialAnimations }
+    ( { position = { x = 0, y = 0 }
+      , isAnimating = False
+      }
     , Cmd.none
     )
 
@@ -81,23 +79,38 @@ type Msg
     = MoveToCorner
     | MoveToCenter
     | StopAnimation
+    | AnimationComplete
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         MoveToCorner ->
-            ( { model | animations = SmoothMoveCSS.animateTo "moving-box" 100 100 model.animations }
+            ( { model 
+                | position = { x = 100, y = 100 }
+                , isAnimating = True
+              }
             , Cmd.none
             )
 
         MoveToCenter ->
-            ( { model | animations = SmoothMoveCSS.animateTo "moving-box" 300 200 model.animations }
+            ( { model 
+                | position = { x = 300, y = 200 }
+                , isAnimating = True
+              }
             , Cmd.none
             )
 
         StopAnimation ->
-            ( { model | animations = SmoothMoveCSS.animateTo "moving-box" 0 0 model.animations }
+            ( { model 
+                | position = { x = 0, y = 0 }
+                , isAnimating = True
+              }
+            , Cmd.none
+            )
+
+        AnimationComplete ->
+            ( { model | isAnimating = False }
             , Cmd.none
             )
 
@@ -111,7 +124,6 @@ subscriptions _ =
     Sub.none
 
 
-
 -- No subscriptions needed for CSS transitions!
 -- VIEW
 
@@ -123,14 +135,6 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    let
-        position =
-            SmoothMoveCSS.getPosition "moving-box" model.animations
-                |> Maybe.withDefault { x = 0, y = 0 }
-
-        cssStyles =
-            SmoothMoveCSS.cssTransitionStyle "moving-box" model.animations
-    in
     [ UI.backButton
     , UI.pageHeader "SmoothMoveCSS Basic Example"
     , -- Position display
@@ -139,7 +143,7 @@ viewContent model =
         , Font.color Colors.textMedium
         , centerX
         ]
-        (text ("Position: (" ++ String.fromInt (round position.x) ++ ", " ++ String.fromInt (round position.y) ++ ")"))
+        (text ("Position: (" ++ String.fromInt (round model.position.x) ++ ", " ++ String.fromInt (round model.position.y) ++ ")"))
     , -- Buttons for predefined moves
       UI.htmlActionButtons
         [ ( UI.Primary, MoveToCorner, "Move to (100, 100)" )
@@ -171,8 +175,16 @@ viewContent model =
             , htmlAttribute (Html.Attributes.style "position" "absolute")
 
             -- Apply CSS transition styles directly - browser handles the animation!
-            , htmlAttribute (Html.Attributes.style "transform" ("translate(" ++ String.fromFloat position.x ++ "px, " ++ String.fromFloat position.y ++ "px)"))
-            , htmlAttribute (Html.Attributes.style "transition" cssStyles)
+            , htmlAttribute (Html.Attributes.style "transform" (SmoothMoveCSS.transform model.position.x model.position.y))
+            , htmlAttribute (Html.Attributes.style "transition" 
+                (if model.isAnimating then
+                    SmoothMoveCSS.transition
+                 else
+                    "none"
+                ))
+            
+            -- CSS transition event handler - fires when animation completes
+            , htmlAttribute (SmoothMoveCSS.onTransitionEnd AnimationComplete)
             ]
             (text "")
         )

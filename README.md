@@ -43,15 +43,20 @@ style "transform" (transform "my-element" model.animations)
 ### 3. **SmoothMoveCSS** - CSS Transition-Based
 Uses **native browser CSS transitions** for optimal performance and battery efficiency.
 ```elm
-import SmoothMoveCSS exposing (animateTo, transform)
+import SmoothMoveCSS exposing (transform, transition, onTransitionEnd)
 import Html exposing (div, text)
 import Html.Attributes exposing (style)
 
--- Animate an element to position (100, 200)
-{ model | animations = animateTo "my-element" 100 200 model.animations }
+-- Simple position tracking in your model
+{ model | position = { x = 100, y = 200 } }
 
--- Apply CSS transition in view
-div [ style "transform" (transform "my-element" model.animations) ] [ text "Smooth!" ]
+-- Apply CSS transition in view (browser handles the animation!)
+div 
+  [ style "transform" (SmoothMoveCSS.transform model.position.x model.position.y)
+  , style "transition" SmoothMoveCSS.transition
+  , SmoothMoveCSS.onTransitionEnd AnimationComplete  -- Optional: listen for completion
+  ] 
+  [ text "Smooth!" ]
 ```
 
 ### 4. **SmoothMovePorts** - Web Animations API
@@ -93,7 +98,26 @@ SmoothScroll elementId ->
     ( model, animateTo elementId )
 ```
 
-**For moving UI elements:**
+**For moving UI elements (CSS approach - recommended):**
+```elm
+import SmoothMoveCSS exposing (transform, transition)
+
+-- In your model (simple position tracking)
+type alias Model = { position : { x : Float, y : Float }, ... }
+
+-- In your update (just update position!)
+AnimateElement ->
+    { model | position = { x = 200, y = 300 } }
+
+-- In your view (browser handles animation)
+div 
+  [ style "transform" (SmoothMoveCSS.transform model.position.x model.position.y)
+  , style "transition" SmoothMoveCSS.transition
+  ] 
+  [ text "Animated element" ]
+```
+
+**For moving UI elements (subscription approach):**
 ```elm
 import SmoothMoveSub exposing (animateTo)
 
@@ -134,7 +158,7 @@ elm reactor
 ```
 
 ### 4. Experiment with different approaches
-Once you're comfortable, try switching `SmoothMoveSub` to `SmoothMoveCSS` in your imports for better performance, or `SmoothMovePorts` for maximum control!
+Once you're comfortable, try switching between approaches: `SmoothMoveCSS` offers the simplest API with best performance, `SmoothMoveSub` for complex frame-based control, or `SmoothMovePorts` for maximum control!
 
 ## 📚 Examples
 
@@ -179,6 +203,20 @@ All approaches support constraining movement to specific axes:
 { defaultConfig | axis = Both }  -- Both directions (default)
 ```
 
+### CSS Transition Events (SmoothMoveCSS)
+Hook into native browser transition events for coordination and UI updates:
+```elm
+div 
+  [ style "transform" (SmoothMoveCSS.transform x y)
+  , style "transition" SmoothMoveCSS.transition
+  , SmoothMoveCSS.onTransitionStart TransitionStarted    -- When animation starts
+  , SmoothMoveCSS.onTransitionEnd TransitionCompleted    -- When animation finishes
+  , SmoothMoveCSS.onTransitionRun TransitionCreated      -- When animation is created
+  , SmoothMoveCSS.onTransitionCancel TransitionCancelled -- When animation is interrupted
+  ]
+  [ text "Smooth element" ]
+```
+
 ## ⚙️ Configuration & Switching Between Approaches
 
 ### Consistent Configuration
@@ -201,14 +239,16 @@ All approaches use similar configuration patterns, making it easy to switch:
 ### Migration Between Approaches
 Most approaches now share very similar APIs!
 
-**✅ Easy transitions (consistent Cmd-based patterns):**
+**✅ Easy transitions:**
 ```elm
 -- Scrolling (simple Cmd-based)
 ScrollTo elementId -> ( model, SmoothMoveScroll.animateTo elementId )
 
--- Element positioning (state-based)
+-- Element positioning (CSS - stateless, recommended)
+MoveElement -> { model | position = { x = 100, y = 200 } }
+
+-- Element positioning (subscription - state-based)  
 MoveElement -> { model | animations = SmoothMoveSub.animateTo "elem" 100 200 model.animations }
-MoveElement -> { model | animations = SmoothMoveCSS.animateTo "elem" 100 200 model.animations }
 ```
 
 **⚠️ Requires additional changes:**
@@ -221,25 +261,25 @@ MoveElement -> { model | animations = SmoothMoveCSS.animateTo "elem" 100 200 mod
 - **SmoothMoveScroll**: `animateTo`, `animateToWithConfig`, `containerElement`, `containerElementWithConfig` (simple Cmd-based) + `animateToTask`, `animateToTaskWithConfig`, `containerElementTask`, `containerElementTaskWithConfig` (advanced Task-based)
 - **SmoothMoveSub**: `animateTo`, `animateToWithConfig`, `subscriptions`, `transform`, `setInitialPosition`
 
-- **SmoothMoveCSS**: `animateTo`, `animateToWithConfig`, `cssTransitionStyle`, `setInitialPosition`
+- **SmoothMoveCSS**: `transform`, `transition`, `transitionWithDistance`, `calculateDuration` (pure CSS generation) + `onTransitionStart`, `onTransitionEnd`, `onTransitionRun`, `onTransitionCancel` (event handlers)
 - **SmoothMovePorts**: `animateTo`, `animateToWithConfig`, `animateBatch`, `animateBatchWithPort`, `setInitialPosition`, `stopBatch`, `stopBatchWithPort`
 
 ## � Troubleshooting
 
 ### Animation not working?
 - **Check element IDs**: Make sure the element ID exists in your DOM
-- **Missing subscriptions**: For `SmoothMoveSub`/`SmoothMoveCSS`, ensure you have `subscriptions` wired up
+- **Missing subscriptions**: For `SmoothMoveSub`, ensure you have `subscriptions` wired up (`SmoothMoveCSS` doesn't need subscriptions)
 - **CSS positioning**: Elements need `position: absolute` or `position: relative` for transforms to work
 - **JavaScript setup**: For `SmoothMovePorts`, install via npm (`npm install elm-smooth-move`) and include the script
 
 ### Performance issues?
-- Try `SmoothMoveCSS` for hardware acceleration
-- Use `axis` constraints to animate fewer dimensions
+- **Start with `SmoothMoveCSS`** - simplest and most performant with hardware acceleration
+- Use `axis` constraints to animate fewer dimensions  
 - Consider `SmoothMovePorts` for complex animations
 
 ### Need help choosing an approach?
-- Start with `SmoothMoveSub` for general element animations
-- Move to `SmoothMoveCSS` when you need better performance
+- **Start with `SmoothMoveCSS`** for element animations (simplest API, best performance)
+- Use `SmoothMoveSub` when you need frame-based control or complex timing
 - Use `SmoothMoveScroll` for scrolling
 - Use `SmoothMovePorts` when you need maximum control
 
