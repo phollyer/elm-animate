@@ -1,9 +1,21 @@
 module SmoothMoveCSS exposing
     ( Config
     , defaultConfig
+    , Position
     , Timing(..)
-    , Axis(..)
+    , Model
+    , init
+    , setPosition
+    , animateTo
+    , animateToX
+    , animateToY
+    , animateToWithConfig
+    , animateToXWithConfig
+    , animateToYWithConfig
+    , getPosition
     , transform
+    , transformElement
+    , transformPosition
     , transition
     , transitionWithDistance
     , calculateDuration
@@ -21,20 +33,36 @@ This module generates CSS properties for transitions, letting the browser handle
   - Smooth animations even when JavaScript is busy
   - Automatic easing handled by CSS
   - Less CPU usage compared to frame-based animation
-  - No state management required
+  - Multiple element management with Model-based state
 
 
 # Configuration
 
 @docs Config
 @docs defaultConfig
+@docs Position
 @docs Timing
-@docs Axis
+
+
+# Model Management
+
+@docs Model
+@docs init
+@docs setPosition
+@docs animateTo
+@docs animateToX
+@docs animateToY
+@docs animateToWithConfig
+@docs animateToXWithConfig
+@docs animateToYWithConfig
+@docs getPosition
 
 
 # CSS Generation
 
 @docs transform
+@docs transformElement
+@docs transformPosition
 @docs transition
 @docs transitionWithDistance
 @docs calculateDuration
@@ -49,9 +77,18 @@ This module generates CSS properties for transitions, letting the browser handle
 
 -}
 
+import Dict exposing (Dict)
 import Html exposing (Attribute)
 import Html.Events exposing (on)
 import Json.Decode as Decode
+
+
+{-| Position type alias for X and Y coordinates
+-}
+type alias Position =
+    { x : Float
+    , y : Float
+    }
 
 
 {-| Animation timing configuration
@@ -67,24 +104,14 @@ type Timing
     | Duration Int
 
 
-{-| Animation axis constraint
--}
-type Axis
-    = X
-    | Y
-    | Both
-
-
 {-| Configuration for CSS-based animations
 
-  - axis: Movement axis (X, Y, or Both) - currently unused but kept for API consistency
   - timing: Animation timing (Speed in pixels per second or Duration in milliseconds)
   - easing: CSS easing function ("ease-out", "cubic-bezier(0.4, 0.0, 0.2, 1)", etc.)
 
 -}
 type alias Config =
-    { axis : Axis
-    , timing : Timing
+    { timing : Timing
     , easing : String
     }
 
@@ -93,10 +120,178 @@ type alias Config =
 -}
 defaultConfig : Config
 defaultConfig =
-    { axis = Both
-    , timing = Duration 400
+    { timing = Duration 400
     , easing = "cubic-bezier(0.4, 0.0, 0.2, 1)" -- Material Design's "standard" easing
     }
+
+
+{-| Model for tracking multiple element positions
+
+Uses a Dict for O(1) position lookups and efficient management of many elements.
+
+-}
+type Model
+    = Model (Dict String Position)
+
+
+{-| Initialize an empty model with no element positions
+
+    initialModel =
+        init
+
+-}
+init : Model
+init =
+    Model Dict.empty
+
+
+{-| Set the position for an element
+
+Useful for preventing elements from jumping from (0,0) when first animated:
+
+    model
+        |> setPosition "box1" 100 150
+        |> setPosition "box2" 200 250
+
+-}
+setPosition : String -> Float -> Float -> Model -> Model
+setPosition elementId x y (Model positions) =
+    Model (Dict.insert elementId { x = x, y = y } positions)
+
+
+{-| Update an element's position for CSS animation
+
+This function updates the model state. Apply the position in your view with `transform`:
+
+    -- In update
+    AnimateBox ->
+        { model | animations = animateTo "box" 300 200 model.animations }
+
+    -- In view
+    div
+        [ style "transform" (transform "box" model.animations)
+        , style "transition" transition
+        ]
+        [ text "Animated box" ]
+
+-}
+animateTo : String -> Float -> Float -> Model -> Model
+animateTo elementId x y model =
+    animateToWithConfig defaultConfig elementId x y model
+
+
+{-| Update an element's position with custom configuration
+
+Note: The config parameter is provided for API consistency with other modules,
+but in CSS-based animations, timing and easing are applied via the CSS transition property.
+Use `transitionWithDistance` to generate transitions with custom config.
+
+    -- Update position
+    model.animations = animateToWithConfig config "box" 300 200 model.animations
+
+    -- Apply custom transition in view
+    div
+        [ style "transform" (transformElement "box" model.animations)
+        , style "transition" (transitionWithDistance config distance)
+        ]
+        [ text "Custom animated box" ]
+
+-}
+animateToWithConfig : Config -> String -> Float -> Float -> Model -> Model
+animateToWithConfig _ elementId x y (Model positions) =
+    Model (Dict.insert elementId { x = x, y = y } positions)
+
+
+{-| Animate element horizontally to target X position
+
+Only the X coordinate will change - Y position remains at current value.
+Uses default configuration.
+
+    model.animations = animateToX "box" 300 model.animations
+
+-}
+animateToX : String -> Float -> Model -> Model
+animateToX elementId x model =
+    animateToXWithConfig defaultConfig elementId x model
+
+
+{-| Animate element vertically to target Y position  
+
+Only the Y coordinate will change - X position remains at current value.
+Uses default configuration.
+
+    model.animations = animateToY "box" 200 model.animations
+
+-}
+animateToY : String -> Float -> Model -> Model
+animateToY elementId y model =
+    animateToYWithConfig defaultConfig elementId y model
+
+
+{-| Animate element horizontally with custom configuration
+
+Only the X coordinate will change - Y position remains at current value.
+
+    model.animations = animateToXWithConfig config "box" 300 model.animations
+
+-}
+animateToXWithConfig : Config -> String -> Float -> Model -> Model
+animateToXWithConfig _ elementId x (Model positions) =
+    let
+        currentPos = Dict.get elementId positions |> Maybe.withDefault { x = 0, y = 0 }
+    in
+    Model (Dict.insert elementId { x = x, y = currentPos.y } positions)
+
+
+{-| Animate element vertically with custom configuration
+
+Only the Y coordinate will change - X position remains at current value.
+
+    model.animations = animateToYWithConfig config "box" 200 model.animations
+
+-}
+animateToYWithConfig : Config -> String -> Float -> Model -> Model
+animateToYWithConfig _ elementId y (Model positions) =
+    let
+        currentPos = Dict.get elementId positions |> Maybe.withDefault { x = 0, y = 0 }
+    in
+    Model (Dict.insert elementId { x = currentPos.x, y = y } positions)
+
+
+{-| Get the current position of an element
+
+Returns `Nothing` if the element hasn't been positioned yet:
+
+    case getPosition "box" model.animations of
+        Just pos ->
+            text ("Box is at " ++ String.fromFloat pos.x ++ ", " ++ String.fromFloat pos.y)
+
+        Nothing ->
+            text "Box position not set"
+
+-}
+getPosition : String -> Model -> Maybe Position
+getPosition elementId (Model positions) =
+    Dict.get elementId positions
+
+
+{-| Generate CSS transform string for a specific element
+
+    div
+        [ style "transform" (transformElement "box" model.animations)
+        , style "transition" transition
+        ]
+        [ text "Box" ]
+
+-}
+transformElement : String -> Model -> String
+transformElement elementId (Model positions) =
+    case Dict.get elementId positions of
+        Just pos ->
+            transformPosition pos
+
+        Nothing ->
+            transformPosition { x = 0, y = 0 }
 
 
 {-| Create a CSS transform string for positioning
@@ -109,6 +304,22 @@ defaultConfig =
 transform : Float -> Float -> String
 transform x y =
     "translate(" ++ String.fromFloat x ++ "px, " ++ String.fromFloat y ++ "px)"
+
+
+{-| Create a CSS transform string from a Position record
+
+    let
+        pos =
+            { x = 150, y = 250 }
+    in
+    div
+        [ style "transform" (SmoothMoveCSS.transformPosition pos) ]
+        [ text "Positioned at (150, 250)" ]
+
+-}
+transformPosition : Position -> String
+transformPosition pos =
+    transform pos.x pos.y
 
 
 {-| Generate CSS transition property with default timing
@@ -154,13 +365,13 @@ Useful for coordinating animations or knowing when transitions will complete.
 
 
     duration =
-        calculateDuration defaultConfig 100 200 300 150
+        calculateDuration defaultConfig ( 100, 200 ) ( 300, 150 )
 
     -- Returns duration in milliseconds for moving from (100,200) to (300,150)
 
 -}
-calculateDuration : Config -> Float -> Float -> Float -> Float -> Float
-calculateDuration config fromX fromY toX toY =
+calculateDuration : Config -> ( Float, Float ) -> ( Float, Float ) -> Float
+calculateDuration config ( fromX, fromY ) ( toX, toY ) =
     let
         distance =
             sqrt ((toX - fromX) ^ 2 + (toY - fromY) ^ 2)

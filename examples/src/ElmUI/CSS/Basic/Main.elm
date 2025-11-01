@@ -53,7 +53,7 @@ main =
 
 
 type alias Model =
-    { position : { x : Float, y : Float }
+    { animations : SmoothMoveCSS.Model
     , isAnimating : Bool
     }
 
@@ -64,7 +64,12 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { position = { x = 0, y = 0 }
+    let
+        initialAnimations =
+            SmoothMoveCSS.init
+                |> SmoothMoveCSS.setPosition "box" 0 0
+    in
+    ( { animations = initialAnimations
       , isAnimating = False
       }
     , Cmd.none
@@ -78,6 +83,10 @@ init _ =
 type Msg
     = MoveToCorner
     | MoveToCenter
+    | MoveLeft
+    | MoveRight
+    | MoveUp
+    | MoveDown
     | StopAnimation
     | AnimationComplete
 
@@ -87,7 +96,7 @@ update msg model =
     case msg of
         MoveToCorner ->
             ( { model 
-                | position = { x = 100, y = 100 }
+                | animations = SmoothMoveCSS.animateTo "box" 100 100 model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -95,7 +104,39 @@ update msg model =
 
         MoveToCenter ->
             ( { model 
-                | position = { x = 300, y = 200 }
+                | animations = SmoothMoveCSS.animateTo "box" 300 200 model.animations
+                , isAnimating = True
+              }
+            , Cmd.none
+            )
+
+        MoveLeft ->
+            ( { model 
+                | animations = SmoothMoveCSS.animateToX "box" 50 model.animations
+                , isAnimating = True
+              }
+            , Cmd.none
+            )
+
+        MoveRight ->
+            ( { model 
+                | animations = SmoothMoveCSS.animateToX "box" 450 model.animations
+                , isAnimating = True
+              }
+            , Cmd.none
+            )
+
+        MoveUp ->
+            ( { model 
+                | animations = SmoothMoveCSS.animateToY "box" 50 model.animations
+                , isAnimating = True
+              }
+            , Cmd.none
+            )
+
+        MoveDown ->
+            ( { model 
+                | animations = SmoothMoveCSS.animateToY "box" 350 model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -103,7 +144,7 @@ update msg model =
 
         StopAnimation ->
             ( { model 
-                | position = { x = 0, y = 0 }
+                | animations = SmoothMoveCSS.animateTo "box" 0 0 model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -143,12 +184,25 @@ viewContent model =
         , Font.color Colors.textMedium
         , centerX
         ]
-        (text ("Position: (" ++ String.fromInt (round model.position.x) ++ ", " ++ String.fromInt (round model.position.y) ++ ")"))
+        (case SmoothMoveCSS.getPosition "box" model.animations of
+            Just pos ->
+                text ("Position: (" ++ String.fromInt (round pos.x) ++ ", " ++ String.fromInt (round pos.y) ++ ")")
+            
+            Nothing ->
+                text "Position: (0, 0)"
+        )
     , -- Buttons for predefined moves
       UI.htmlActionButtons
         [ ( UI.Primary, MoveToCorner, "Move to (100, 100)" )
         , ( UI.Success, MoveToCenter, "Move to (300, 200)" )
         , ( UI.Purple, StopAnimation, "Return to Origin" )
+        ]
+    , -- Axis-specific movement buttons  
+      UI.htmlActionButtons
+        [ ( UI.Warning, MoveLeft, "← Move Left" )
+        , ( UI.Warning, MoveRight, "Move Right →" )
+        , ( UI.Success, MoveUp, "↑ Move Up" )
+        , ( UI.Success, MoveDown, "Move Down ↓" )
         ]
     , -- Animation area with moving box
       el
@@ -175,7 +229,7 @@ viewContent model =
             , htmlAttribute (Html.Attributes.style "position" "absolute")
 
             -- Apply CSS transition styles directly - browser handles the animation!
-            , htmlAttribute (Html.Attributes.style "transform" (SmoothMoveCSS.transform model.position.x model.position.y))
+            , htmlAttribute (Html.Attributes.style "transform" (SmoothMoveCSS.transformElement "box" model.animations))
             , htmlAttribute (Html.Attributes.style "transition" 
                 (if model.isAnimating then
                     SmoothMoveCSS.transition

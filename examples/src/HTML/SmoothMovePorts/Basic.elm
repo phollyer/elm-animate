@@ -43,7 +43,7 @@ init _ =
         -- Initialize with starting position to prevent jump to (0,0)
         initialAnimations =
             SmoothMovePorts.init
-                |> SmoothMovePorts.setInitialPosition "box" 50 50
+                |> SmoothMovePorts.setPosition "box" 50 50
     in
     ( { animations = initialAnimations
       }
@@ -91,18 +91,9 @@ update msg model =
                     ( { model | animations = newAnimations }, Cmd.none )
 
         PositionUpdateMsg value ->
-            -- Parse the position update from JavaScript
-            case Decode.decodeValue positionDecoder value of
-                Ok posUpdate ->
-                    let
-                        newAnimations =
-                            SmoothMovePorts.handlePositionUpdate
-                                posUpdate.elementId
-                                posUpdate.x
-                                posUpdate.y
-                                posUpdate.isAnimating
-                                model.animations
-                    in
+            -- Handle position update with automatic decoding
+            case SmoothMovePorts.handlePositionUpdateFromJson value model.animations of
+                Ok newAnimations ->
                     ( { model | animations = newAnimations }, Cmd.none )
 
                 Err _ ->
@@ -111,23 +102,6 @@ update msg model =
 
 
 -- DECODERS --
-
-
-type alias PositionUpdate =
-    { elementId : String
-    , x : Float
-    , y : Float
-    , isAnimating : Bool
-    }
-
-
-positionDecoder : Decode.Decoder PositionUpdate
-positionDecoder =
-    Decode.map4 PositionUpdate
-        (Decode.field "elementId" Decode.string)
-        (Decode.field "x" Decode.float)
-        (Decode.field "y" Decode.float)
-        (Decode.field "isAnimating" Decode.bool)
 
 
 

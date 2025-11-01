@@ -28,7 +28,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Html
 import Html.Attributes
-import SmoothMoveSub exposing (animateTo, getPosition, isAnimating, setInitialPosition, transform)
+import SmoothMoveSub exposing (animateTo, getPosition, isAnimating, setPosition, transform)
 
 
 
@@ -63,12 +63,12 @@ init _ =
     let
         smoothMove =
             SmoothMoveSub.init
-                |> setInitialPosition "element-a" 150 100
-                |> setInitialPosition "element-b" 200 150
-                |> setInitialPosition "element-c" 100 200
-                |> setInitialPosition "element-d" 250 200
-                |> setInitialPosition "element-e" 300 100
-                |> setInitialPosition "element-f" 180 50
+                |> setPosition "element-a" 150 100
+                |> setPosition "element-b" 200 150
+                |> setPosition "element-c" 100 200
+                |> setPosition "element-d" 250 200
+                |> setPosition "element-e" 300 100
+                |> setPosition "element-f" 180 50
     in
     ( { smoothMove = smoothMove }, Cmd.none )
 

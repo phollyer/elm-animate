@@ -5167,8 +5167,13 @@ var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $author$project$SmoothMovePorts$init = $author$project$SmoothMovePorts$Model($elm$core$Dict$empty);
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$SmoothMovePorts$Both = {$: 'Both'};
-var $author$project$SmoothMovePorts$defaultConfig = {axis: $author$project$SmoothMovePorts$Both, duration: 400, easing: 'ease-out'};
+var $author$project$SmoothMovePorts$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
+var $author$project$SmoothMovePorts$defaultConfig = {
+	easing: 'ease-out',
+	timing: $author$project$SmoothMovePorts$Duration(400)
+};
 var $elm$core$Dict$Black = {$: 'Black'};
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
@@ -5278,7 +5283,7 @@ var $elm$core$Dict$insert = F3(
 			return x;
 		}
 	});
-var $author$project$SmoothMovePorts$setInitialPosition = F4(
+var $author$project$SmoothMovePorts$setPosition = F4(
 	function (elementId, x, y, _v0) {
 		var elements = _v0.a;
 		var elementData = {config: $author$project$SmoothMovePorts$defaultConfig, currentX: x, currentY: y, isAnimating: false, targetX: x, targetY: y};
@@ -5287,16 +5292,16 @@ var $author$project$SmoothMovePorts$setInitialPosition = F4(
 	});
 var $author$project$HTML$SmoothMovePorts$Multiple$init = function (_v0) {
 	var initialAnimations = A4(
-		$author$project$SmoothMovePorts$setInitialPosition,
+		$author$project$SmoothMovePorts$setPosition,
 		'element-c',
 		150,
 		200,
 		A4(
-			$author$project$SmoothMovePorts$setInitialPosition,
+			$author$project$SmoothMovePorts$setPosition,
 			'element-b',
 			200,
 			150,
-			A4($author$project$SmoothMovePorts$setInitialPosition, 'element-a', 100, 100, $author$project$SmoothMovePorts$init)));
+			A4($author$project$SmoothMovePorts$setPosition, 'element-a', 100, 100, $author$project$SmoothMovePorts$init)));
 	return _Utils_Tuple2(
 		{animations: initialAnimations},
 		$elm$core$Platform$Cmd$none);
@@ -5360,6 +5365,18 @@ var $author$project$SmoothMovePorts$getPosition = F2(
 			},
 			A2($elm$core$Dict$get, elementId, elements));
 	});
+var $elm$core$Basics$pow = _Basics_pow;
+var $elm$core$Basics$sqrt = _Basics_sqrt;
+var $author$project$SmoothMovePorts$timingToMilliseconds = F2(
+	function (timing, distance) {
+		if (timing.$ === 'Speed') {
+			var pixelsPerSecond = timing.a;
+			return (distance / pixelsPerSecond) * 1000;
+		} else {
+			var milliseconds = timing.a;
+			return milliseconds;
+		}
+	});
 var $elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
 		if (maybe.$ === 'Just') {
@@ -5379,20 +5396,18 @@ var $author$project$SmoothMovePorts$animateToWithConfig = F5(
 				$author$project$SmoothMovePorts$getPosition,
 				elementId,
 				$author$project$SmoothMovePorts$Model(elements)));
+		var distance = $elm$core$Basics$sqrt(
+			A2($elm$core$Basics$pow, targetX - currentPos.x, 2) + A2($elm$core$Basics$pow, targetY - currentPos.y, 2));
 		var elementData = {config: config, currentX: currentPos.x, currentY: currentPos.y, isAnimating: true, targetX: targetX, targetY: targetY};
 		var updatedElements = A3($elm$core$Dict$insert, elementId, elementData, elements);
-		var axisString = function () {
-			var _v1 = config.axis;
-			switch (_v1.$) {
-				case 'X':
-					return 'x';
-				case 'Y':
-					return 'y';
-				default:
-					return 'both';
-			}
-		}();
-		var command = {axis: axisString, duration: config.duration, easing: config.easing, elementId: elementId, targetX: targetX, targetY: targetY};
+		var command = {
+			axis: 'both',
+			duration: A2($author$project$SmoothMovePorts$timingToMilliseconds, config.timing, distance),
+			easing: config.easing,
+			elementId: elementId,
+			targetX: targetX,
+			targetY: targetY
+		};
 		return _Utils_Tuple2(
 			$author$project$SmoothMovePorts$Model(updatedElements),
 			command);
@@ -5530,25 +5545,37 @@ var $author$project$HTML$SmoothMovePorts$Multiple$update = F2(
 				var animationSpecs = _List_fromArray(
 					[
 						{
-						config: {axis: $author$project$SmoothMovePorts$Both, duration: 800, easing: 'ease-in-out'},
+						config: {
+							easing: 'ease-in-out',
+							timing: $author$project$SmoothMovePorts$Duration(800)
+						},
 						elementId: 'box1',
 						targetX: 50,
 						targetY: 50
 					},
 						{
-						config: {axis: $author$project$SmoothMovePorts$Both, duration: 600, easing: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)'},
+						config: {
+							easing: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+							timing: $author$project$SmoothMovePorts$Duration(600)
+						},
 						elementId: 'box2',
 						targetX: 450,
 						targetY: 50
 					},
 						{
-						config: {axis: $author$project$SmoothMovePorts$Both, duration: 1000, easing: 'ease-out'},
+						config: {
+							easing: 'ease-out',
+							timing: $author$project$SmoothMovePorts$Duration(1000)
+						},
 						elementId: 'box3',
 						targetX: 450,
 						targetY: 350
 					},
 						{
-						config: {axis: $author$project$SmoothMovePorts$Both, duration: 700, easing: 'ease-in-out'},
+						config: {
+							easing: 'ease-in-out',
+							timing: $author$project$SmoothMovePorts$Duration(700)
+						},
 						elementId: 'box4',
 						targetX: 50,
 						targetY: 350
@@ -5566,25 +5593,37 @@ var $author$project$HTML$SmoothMovePorts$Multiple$update = F2(
 				var animationSpecs = _List_fromArray(
 					[
 						{
-						config: {axis: $author$project$SmoothMovePorts$Both, duration: 500, easing: 'ease-out'},
+						config: {
+							easing: 'ease-out',
+							timing: $author$project$SmoothMovePorts$Duration(500)
+						},
 						elementId: 'box1',
 						targetX: 237,
 						targetY: 137
 					},
 						{
-						config: {axis: $author$project$SmoothMovePorts$Both, duration: 750, easing: 'ease-out'},
+						config: {
+							easing: 'ease-out',
+							timing: $author$project$SmoothMovePorts$Duration(750)
+						},
 						elementId: 'box2',
 						targetX: 317,
 						targetY: 137
 					},
 						{
-						config: {axis: $author$project$SmoothMovePorts$Both, duration: 600, easing: 'ease-out'},
+						config: {
+							easing: 'ease-out',
+							timing: $author$project$SmoothMovePorts$Duration(600)
+						},
 						elementId: 'box3',
 						targetX: 237,
 						targetY: 217
 					},
 						{
-						config: {axis: $author$project$SmoothMovePorts$Both, duration: 900, easing: 'ease-out'},
+						config: {
+							easing: 'ease-out',
+							timing: $author$project$SmoothMovePorts$Duration(900)
+						},
 						elementId: 'box4',
 						targetX: 317,
 						targetY: 217
@@ -5602,25 +5641,37 @@ var $author$project$HTML$SmoothMovePorts$Multiple$update = F2(
 				var animationSpecs = _List_fromArray(
 					[
 						{
-						config: {axis: $author$project$SmoothMovePorts$Both, duration: 400, easing: 'ease-in-out'},
+						config: {
+							easing: 'ease-in-out',
+							timing: $author$project$SmoothMovePorts$Duration(400)
+						},
 						elementId: 'box1',
 						targetX: 100,
 						targetY: 100
 					},
 						{
-						config: {axis: $author$project$SmoothMovePorts$Both, duration: 600, easing: 'ease-in-out'},
+						config: {
+							easing: 'ease-in-out',
+							timing: $author$project$SmoothMovePorts$Duration(600)
+						},
 						elementId: 'box2',
 						targetX: 200,
 						targetY: 150
 					},
 						{
-						config: {axis: $author$project$SmoothMovePorts$Both, duration: 800, easing: 'ease-in-out'},
+						config: {
+							easing: 'ease-in-out',
+							timing: $author$project$SmoothMovePorts$Duration(800)
+						},
 						elementId: 'box3',
 						targetX: 300,
 						targetY: 200
 					},
 						{
-						config: {axis: $author$project$SmoothMovePorts$Both, duration: 1000, easing: 'ease-in-out'},
+						config: {
+							easing: 'ease-in-out',
+							timing: $author$project$SmoothMovePorts$Duration(1000)
+						},
 						elementId: 'box4',
 						targetX: 400,
 						targetY: 250

@@ -2,15 +2,19 @@ module SmoothMovePorts exposing
     ( Config
     , defaultConfig
     , Timing(..)
-    , Axis(..)
     , Model
     , init
     , animateTo
+    , animateToX
+    , animateToY
     , animateToWithConfig
+    , animateToXWithConfig
+    , animateToYWithConfig
     , animateBatch
     , animateBatchWithPort
-    , setInitialPosition
+    , setPosition
     , stopAnimation
+    , stopAnimationWithPort
     , stopBatch
     , stopBatchWithPort
     , isAnimating
@@ -19,12 +23,14 @@ module SmoothMovePorts exposing
     , transform
     , transformElement
     , handlePositionUpdate
+    , handlePositionUpdateFromJson
     , handleAnimationComplete
     , encodeAnimationCommand
     , encodeStopCommand
     , AnimationCommand
     , AnimationSpec
     , PositionUpdate
+    , positionUpdateDecoder
     )
 
 {-| A port-based animation library helper that works with JavaScript's Web Animations API for high-performance element movement.
@@ -47,7 +53,6 @@ See the accompanying `smooth-move-ports.js` file for the JavaScript implementati
 @docs Config
 @docs defaultConfig
 @docs Timing
-@docs Axis
 
 
 # State Management
@@ -59,11 +64,16 @@ See the accompanying `smooth-move-ports.js` file for the JavaScript implementati
 # Animation Control
 
 @docs animateTo
+@docs animateToX
+@docs animateToY
 @docs animateToWithConfig
+@docs animateToXWithConfig
+@docs animateToYWithConfig
 @docs animateBatch
 @docs animateBatchWithPort
-@docs setInitialPosition
+@docs setPosition
 @docs stopAnimation
+@docs stopAnimationWithPort
 @docs stopBatch
 @docs stopBatchWithPort
 
@@ -84,16 +94,19 @@ See the accompanying `smooth-move-ports.js` file for the JavaScript implementati
 # Port Integration Helpers
 
 @docs handlePositionUpdate
+@docs handlePositionUpdateFromJson
 @docs handleAnimationComplete
 @docs encodeAnimationCommand
 @docs encodeStopCommand
 @docs AnimationCommand
 @docs AnimationSpec
 @docs PositionUpdate
+@docs positionUpdateDecoder
 
 -}
 
 import Dict exposing (Dict)
+import Json.Decode as Decode
 
 
 {-| Animation timing configuration
@@ -111,14 +124,12 @@ type Timing
 
 {-| Configuration for port-based animations
 
-  - axis: Movement axis (X, Y, or Both)
   - timing: Animation timing (Speed in pixels per second or Duration in milliseconds)
   - easing: Web Animations API easing ("ease-out", "cubic-bezier(0.4, 0.0, 0.2, 1)", etc.)
 
 -}
 type alias Config =
-    { axis : Axis
-    , timing : Timing
+    { timing : Timing
     , easing : String
     }
 
@@ -136,20 +147,11 @@ timingToMilliseconds timing distance =
             toFloat milliseconds
 
 
-{-| Animation axis constraint
--}
-type Axis
-    = X
-    | Y
-    | Both
-
-
 {-| Default configuration using Web Animations API
 -}
 defaultConfig : Config
 defaultConfig =
-    { axis = Both
-    , timing = Duration 400
+    { timing = Duration 400
     , easing = "ease-out" -- Standard Web Animations API easing
     }
 
@@ -224,6 +226,24 @@ type alias PositionUpdate =
     }
 
 
+{-| Decode position updates from JavaScript
+
+Use this with your port subscription:
+
+    case Decode.decodeValue SmoothMovePorts.positionUpdateDecoder value of
+        Ok positionUpdate ->
+            SmoothMovePorts.handlePositionUpdate positionUpdate model
+
+-}
+positionUpdateDecoder : Decode.Decoder PositionUpdate
+positionUpdateDecoder =
+    Decode.map4 PositionUpdate
+        (Decode.field "elementId" Decode.string)
+        (Decode.field "x" Decode.float)
+        (Decode.field "y" Decode.float)
+        (Decode.field "isAnimating" Decode.bool)
+
+
 
 -- PUBLIC API --
 
@@ -236,6 +256,28 @@ Returns the updated model and an animation command for your port.
 animateTo : String -> Float -> Float -> Model -> ( Model, AnimationCommand )
 animateTo elementId targetX targetY model =
     animateToWithConfig defaultConfig elementId targetX targetY model
+
+
+{-| Start animating an element horizontally to a target X position
+
+Only the X coordinate will change - Y position remains at current value.
+Returns the updated model and an animation command for your port.
+
+-}
+animateToX : String -> Float -> Model -> ( Model, AnimationCommand )
+animateToX elementId targetX model =
+    animateToXWithConfig defaultConfig elementId targetX model
+
+
+{-| Start animating an element vertically to a target Y position
+
+Only the Y coordinate will change - X position remains at current value.
+Returns the updated model and an animation command for your port.
+
+-}
+animateToY : String -> Float -> Model -> ( Model, AnimationCommand )
+animateToY elementId targetY model =
+    animateToYWithConfig defaultConfig elementId targetY model
 
 
 {-| Start animating an element to a target position with custom configuration
@@ -262,27 +304,9 @@ animateToWithConfig config elementId targetX targetY (Model elements) =
         updatedElements =
             Dict.insert elementId elementData elements
 
+        -- For animateToWithConfig (both axes), calculate Euclidean distance
         distance =
-            case config.axis of
-                X ->
-                    abs (targetX - currentPos.x)
-
-                Y ->
-                    abs (targetY - currentPos.y)
-
-                Both ->
-                    sqrt ((targetX - currentPos.x) ^ 2 + (targetY - currentPos.y) ^ 2)
-
-        axisString =
-            case config.axis of
-                X ->
-                    "x"
-
-                Y ->
-                    "y"
-
-                Both ->
-                    "both"
+            sqrt ((targetX - currentPos.x) ^ 2 + (targetY - currentPos.y) ^ 2)
 
         command =
             { elementId = elementId
@@ -290,7 +314,97 @@ animateToWithConfig config elementId targetX targetY (Model elements) =
             , targetY = targetY
             , duration = timingToMilliseconds config.timing distance
             , easing = config.easing
-            , axis = axisString
+            , axis = "both"
+            }
+    in
+    ( Model updatedElements, command )
+
+
+{-| Start animating an element horizontally to a target X position with custom configuration
+
+Only the X coordinate will change - Y position remains at current value.
+Returns the updated model and an animation command for your port.
+
+-}
+animateToXWithConfig : Config -> String -> Float -> Model -> ( Model, AnimationCommand )
+animateToXWithConfig config elementId targetX (Model elements) =
+    let
+        currentPos =
+            getPosition elementId (Model elements)
+                |> Maybe.withDefault { x = 0, y = 0 }
+
+        -- For X-only animation, Y target equals current Y
+        targetY =
+            currentPos.y
+
+        elementData =
+            { currentX = currentPos.x
+            , currentY = currentPos.y
+            , targetX = targetX
+            , targetY = targetY
+            , isAnimating = True
+            , config = config
+            }
+
+        updatedElements =
+            Dict.insert elementId elementData elements
+
+        -- For X-only animation, only calculate X distance
+        distance =
+            abs (targetX - currentPos.x)
+
+        command =
+            { elementId = elementId
+            , targetX = targetX
+            , targetY = targetY
+            , duration = timingToMilliseconds config.timing distance
+            , easing = config.easing
+            , axis = "x"
+            }
+    in
+    ( Model updatedElements, command )
+
+
+{-| Start animating an element vertically to a target Y position with custom configuration
+
+Only the Y coordinate will change - X position remains at current value.
+Returns the updated model and an animation command for your port.
+
+-}
+animateToYWithConfig : Config -> String -> Float -> Model -> ( Model, AnimationCommand )
+animateToYWithConfig config elementId targetY (Model elements) =
+    let
+        currentPos =
+            getPosition elementId (Model elements)
+                |> Maybe.withDefault { x = 0, y = 0 }
+
+        -- For Y-only animation, X target equals current X
+        targetX =
+            currentPos.x
+
+        elementData =
+            { currentX = currentPos.x
+            , currentY = currentPos.y
+            , targetX = targetX
+            , targetY = targetY
+            , isAnimating = True
+            , config = config
+            }
+
+        updatedElements =
+            Dict.insert elementId elementData elements
+
+        -- For Y-only animation, only calculate Y distance
+        distance =
+            abs (targetY - currentPos.y)
+
+        command =
+            { elementId = elementId
+            , targetX = targetX
+            , targetY = targetY
+            , duration = timingToMilliseconds config.timing distance
+            , easing = config.easing
+            , axis = "y"
             }
     in
     ( Model updatedElements, command )
@@ -352,18 +466,21 @@ animateBatchWithPort portFunction specs model =
     )
 
 
-{-| Set the initial position of an element without animation
+{-| Set the position of an element without animation
 
-This is useful for preventing the "jump to (0,0)" behavior on first animation.
-Call this during initialization to establish element positions.
+Call this during initialization to establish element positions, otherwise they will start at (0,0).
+
+Pipe this in your init function for as many elements as needed:
 
     initialModel =
         SmoothMovePorts.init
-            |> SmoothMovePorts.setInitialPosition "element-a" 100 150
+            |> SmoothMovePorts.setPosition "element-a" 100 150
+            |> SmoothMovePorts.setPosition "element-b" 200 250
+            |> SmoothMovePorts.setPosition "element-c" 300 150
 
 -}
-setInitialPosition : String -> Float -> Float -> Model -> Model
-setInitialPosition elementId x y (Model elements) =
+setPosition : String -> Float -> Float -> Model -> Model
+setPosition elementId x y (Model elements) =
     let
         elementData =
             { currentX = x
@@ -400,6 +517,29 @@ stopAnimation elementId (Model elements) =
 
         Nothing ->
             ( Model elements, Nothing )
+
+
+{-| Stop animation for a specific element with automatic port handling
+
+This is the most convenient way to stop a single animation - it handles all the
+encoding internally. Just provide your element ID and port function.
+
+    ( newModel, cmd ) =
+        stopAnimationWithPort stopElementAnimation "box1" model
+
+-}
+stopAnimationWithPort : (String -> Cmd msg) -> String -> Model -> ( Model, Cmd msg )
+stopAnimationWithPort portFunction elementId model =
+    let
+        ( newModel, maybeStoppedId ) =
+            stopAnimation elementId model
+    in
+    case maybeStoppedId of
+        Just stoppedId ->
+            ( newModel, portFunction (encodeStopCommand stoppedId) )
+
+        Nothing ->
+            ( newModel, Cmd.none )
 
 
 {-| Stop multiple animations at once
@@ -505,13 +645,26 @@ transformElement elementId model =
 
 Call this from your update function when receiving position updates:
 
-    updatePosition : String -> Float -> Float -> Bool -> Model -> Model
-    updatePosition elementId x y isAnimating model =
-        SmoothMovePorts.handlePositionUpdate elementId x y isAnimating model
+    case Decode.decodeValue positionDecoder value of
+        Ok positionUpdate ->
+            SmoothMovePorts.handlePositionUpdate positionUpdate model
 
 -}
-handlePositionUpdate : String -> Float -> Float -> Bool -> Model -> Model
-handlePositionUpdate elementId x y animating (Model elements) =
+handlePositionUpdate : PositionUpdate -> Model -> Model
+handlePositionUpdate positionUpdate (Model elements) =
+    let
+        elementId =
+            positionUpdate.elementId
+
+        x =
+            positionUpdate.x
+
+        y =
+            positionUpdate.y
+
+        animating =
+            positionUpdate.isAnimating
+    in
     case Dict.get elementId elements of
         Just elementData ->
             let
@@ -543,6 +696,30 @@ handlePositionUpdate elementId x y animating (Model elements) =
                     Dict.insert elementId newElementData elements
             in
             Model updatedElements
+
+
+{-| Handle position updates from JavaScript with automatic JSON decoding
+
+This is the most convenient way to handle position updates - it combines
+decoding and model updating in a single function call.
+
+    PositionUpdateMsg value ->
+        case SmoothMovePorts.handlePositionUpdateFromJson value model.animations of
+            Ok newAnimations ->
+                ( { model | animations = newAnimations }, Cmd.none )
+
+            Err _ ->
+                ( model, Cmd.none )
+
+-}
+handlePositionUpdateFromJson : Decode.Value -> Model -> Result Decode.Error Model
+handlePositionUpdateFromJson value model =
+    case Decode.decodeValue positionUpdateDecoder value of
+        Ok positionUpdate ->
+            Ok (handlePositionUpdate positionUpdate model)
+
+        Err error ->
+            Err error
 
 
 {-| Handle animation completion from JavaScript

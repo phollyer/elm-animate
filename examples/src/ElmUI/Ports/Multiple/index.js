@@ -5204,12 +5204,10 @@ var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $author$project$SmoothMovePorts$init = $author$project$SmoothMovePorts$Model($elm$core$Dict$empty);
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$SmoothMovePorts$Both = {$: 'Both'};
 var $author$project$SmoothMovePorts$Duration = function (a) {
 	return {$: 'Duration', a: a};
 };
 var $author$project$SmoothMovePorts$defaultConfig = {
-	axis: $author$project$SmoothMovePorts$Both,
 	easing: 'ease-out',
 	timing: $author$project$SmoothMovePorts$Duration(400)
 };
@@ -5322,7 +5320,7 @@ var $elm$core$Dict$insert = F3(
 			return x;
 		}
 	});
-var $author$project$SmoothMovePorts$setInitialPosition = F4(
+var $author$project$SmoothMovePorts$setPosition = F4(
 	function (elementId, x, y, _v0) {
 		var elements = _v0.a;
 		var elementData = {config: $author$project$SmoothMovePorts$defaultConfig, currentX: x, currentY: y, isAnimating: false, targetX: x, targetY: y};
@@ -5331,31 +5329,31 @@ var $author$project$SmoothMovePorts$setInitialPosition = F4(
 	});
 var $author$project$ElmUI$Ports$Multiple$Main$init = function (_v0) {
 	var initialAnimations = A4(
-		$author$project$SmoothMovePorts$setInitialPosition,
+		$author$project$SmoothMovePorts$setPosition,
 		'element-f',
 		80.0,
 		140.0,
 		A4(
-			$author$project$SmoothMovePorts$setInitialPosition,
+			$author$project$SmoothMovePorts$setPosition,
 			'element-e',
 			200.0,
 			40.0,
 			A4(
-				$author$project$SmoothMovePorts$setInitialPosition,
+				$author$project$SmoothMovePorts$setPosition,
 				'element-d',
 				350.0,
 				180.0,
 				A4(
-					$author$project$SmoothMovePorts$setInitialPosition,
+					$author$project$SmoothMovePorts$setPosition,
 					'element-c',
 					120.0,
 					220.0,
 					A4(
-						$author$project$SmoothMovePorts$setInitialPosition,
+						$author$project$SmoothMovePorts$setPosition,
 						'element-b',
 						380.0,
 						50.0,
-						A4($author$project$SmoothMovePorts$setInitialPosition, 'element-a', 50.0, 80.0, $author$project$SmoothMovePorts$init))))));
+						A4($author$project$SmoothMovePorts$setPosition, 'element-a', 50.0, 80.0, $author$project$SmoothMovePorts$init))))));
 	return _Utils_Tuple2(
 		{animations: initialAnimations},
 		$elm$core$Platform$Cmd$none);
@@ -5370,12 +5368,6 @@ var $author$project$ElmUI$Ports$Multiple$Main$subscriptions = function (_v0) {
 };
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $author$project$ElmUI$Ports$Multiple$Main$animateElement = _Platform_outgoingPort('animateElement', $elm$json$Json$Encode$string);
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
 		get:
@@ -5458,33 +5450,12 @@ var $author$project$SmoothMovePorts$animateToWithConfig = F5(
 				$author$project$SmoothMovePorts$getPosition,
 				elementId,
 				$author$project$SmoothMovePorts$Model(elements)));
-		var distance = function () {
-			var _v2 = config.axis;
-			switch (_v2.$) {
-				case 'X':
-					return $elm$core$Basics$abs(targetX - currentPos.x);
-				case 'Y':
-					return $elm$core$Basics$abs(targetY - currentPos.y);
-				default:
-					return $elm$core$Basics$sqrt(
-						A2($elm$core$Basics$pow, targetX - currentPos.x, 2) + A2($elm$core$Basics$pow, targetY - currentPos.y, 2));
-			}
-		}();
+		var distance = $elm$core$Basics$sqrt(
+			A2($elm$core$Basics$pow, targetX - currentPos.x, 2) + A2($elm$core$Basics$pow, targetY - currentPos.y, 2));
 		var elementData = {config: config, currentX: currentPos.x, currentY: currentPos.y, isAnimating: true, targetX: targetX, targetY: targetY};
 		var updatedElements = A3($elm$core$Dict$insert, elementId, elementData, elements);
-		var axisString = function () {
-			var _v1 = config.axis;
-			switch (_v1.$) {
-				case 'X':
-					return 'x';
-				case 'Y':
-					return 'y';
-				default:
-					return 'both';
-			}
-		}();
 		var command = {
-			axis: axisString,
+			axis: 'both',
 			duration: A2($author$project$SmoothMovePorts$timingToMilliseconds, config.timing, distance),
 			easing: config.easing,
 			elementId: elementId,
@@ -5515,9 +5486,13 @@ var $author$project$SmoothMovePorts$encodeAnimationCommand = function (cmd) {
 				cmd.axis
 			]));
 };
-var $author$project$SmoothMovePorts$handlePositionUpdate = F5(
-	function (elementId, x, y, animating, _v0) {
+var $author$project$SmoothMovePorts$handlePositionUpdate = F2(
+	function (positionUpdate, _v0) {
 		var elements = _v0.a;
+		var y = positionUpdate.y;
+		var x = positionUpdate.x;
+		var elementId = positionUpdate.elementId;
+		var animating = positionUpdate.isAnimating;
 		var _v1 = A2($elm$core$Dict$get, elementId, elements);
 		if (_v1.$ === 'Just') {
 			var elementData = _v1.a;
@@ -5532,7 +5507,7 @@ var $author$project$SmoothMovePorts$handlePositionUpdate = F5(
 			return $author$project$SmoothMovePorts$Model(updatedElements);
 		}
 	});
-var $author$project$ElmUI$Ports$Multiple$Main$PositionUpdate = F4(
+var $author$project$SmoothMovePorts$PositionUpdate = F4(
 	function (elementId, x, y, isAnimating) {
 		return {elementId: elementId, isAnimating: isAnimating, x: x, y: y};
 	});
@@ -5541,9 +5516,9 @@ var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $elm$json$Json$Decode$map4 = _Json_map4;
 var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$ElmUI$Ports$Multiple$Main$positionDecoder = A5(
+var $author$project$SmoothMovePorts$positionUpdateDecoder = A5(
 	$elm$json$Json$Decode$map4,
-	$author$project$ElmUI$Ports$Multiple$Main$PositionUpdate,
+	$author$project$SmoothMovePorts$PositionUpdate,
 	A2($elm$json$Json$Decode$field, 'elementId', $elm$json$Json$Decode$string),
 	A2($elm$json$Json$Decode$field, 'x', $elm$json$Json$Decode$float),
 	A2($elm$json$Json$Decode$field, 'y', $elm$json$Json$Decode$float),
@@ -5675,10 +5650,10 @@ var $author$project$ElmUI$Ports$Multiple$Main$update = F2(
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			default:
 				var value = msg.a;
-				var _v19 = A2($elm$json$Json$Decode$decodeValue, $author$project$ElmUI$Ports$Multiple$Main$positionDecoder, value);
+				var _v19 = A2($elm$json$Json$Decode$decodeValue, $author$project$SmoothMovePorts$positionUpdateDecoder, value);
 				if (_v19.$ === 'Ok') {
-					var posUpdate = _v19.a;
-					var newAnimations = A5($author$project$SmoothMovePorts$handlePositionUpdate, posUpdate.elementId, posUpdate.x, posUpdate.y, posUpdate.isAnimating, model.animations);
+					var positionUpdate = _v19.a;
+					var newAnimations = A2($author$project$SmoothMovePorts$handlePositionUpdate, positionUpdate, model.animations);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -8564,6 +8539,9 @@ var $elm$core$Basics$min = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) < 0) ? x : y;
 	});
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
 var $mdgriffith$elm_ui$Internal$Model$renderProps = F3(
 	function (force, _v0, existing) {
 		var key = _v0.a;

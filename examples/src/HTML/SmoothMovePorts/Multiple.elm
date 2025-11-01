@@ -6,7 +6,7 @@ import Html exposing (Html, button, div, h1, h2, text)
 import Html.Attributes exposing (id, style)
 import Html.Events exposing (onClick)
 import Json.Decode as Decode
-import SmoothMovePorts
+import SmoothMovePorts exposing (Timing(..))
 
 
 
@@ -46,9 +46,9 @@ init _ =
         -- Initialize with starting positions to prevent jump to (0,0)
         initialAnimations =
             SmoothMovePorts.init
-                |> SmoothMovePorts.setInitialPosition "element-a" 100 100
-                |> SmoothMovePorts.setInitialPosition "element-b" 200 150
-                |> SmoothMovePorts.setInitialPosition "element-c" 150 200
+                |> SmoothMovePorts.setPosition "element-a" 100 100
+                |> SmoothMovePorts.setPosition "element-b" 200 150
+                |> SmoothMovePorts.setPosition "element-c" 150 200
     in
     ( { animations = initialAnimations
       }
@@ -67,10 +67,10 @@ update msg model =
             let
                 -- Animate multiple boxes to different corners using batch animation
                 animationSpecs =
-                    [ { elementId = "box1", targetX = 50, targetY = 50, config = { axis = SmoothMovePorts.Both, duration = 800, easing = "ease-in-out" } }
-                    , { elementId = "box2", targetX = 450, targetY = 50, config = { axis = SmoothMovePorts.Both, duration = 600, easing = "cubic-bezier(0.68, -0.55, 0.265, 1.55)" } }
-                    , { elementId = "box3", targetX = 450, targetY = 350, config = { axis = SmoothMovePorts.Both, duration = 1000, easing = "ease-out" } }
-                    , { elementId = "box4", targetX = 50, targetY = 350, config = { axis = SmoothMovePorts.Both, duration = 700, easing = "ease-in-out" } }
+                    [ { elementId = "box1", targetX = 50, targetY = 50, config = { timing = Duration 800, easing = "ease-in-out" } }
+                    , { elementId = "box2", targetX = 450, targetY = 50, config = { timing = Duration 600, easing = "cubic-bezier(0.68, -0.55, 0.265, 1.55)" } }
+                    , { elementId = "box3", targetX = 450, targetY = 350, config = { timing = Duration 1000, easing = "ease-out" } }
+                    , { elementId = "box4", targetX = 50, targetY = 350, config = { timing = Duration 700, easing = "ease-in-out" } }
                     ]
 
                 ( newAnimations, cmd ) =
@@ -82,10 +82,10 @@ update msg model =
             let
                 -- Simple 2x2 grid using batch animation - much cleaner!
                 animationSpecs =
-                    [ { elementId = "box1", targetX = 237, targetY = 137, config = { axis = SmoothMovePorts.Both, duration = 500, easing = "ease-out" } }
-                    , { elementId = "box2", targetX = 317, targetY = 137, config = { axis = SmoothMovePorts.Both, duration = 750, easing = "ease-out" } }
-                    , { elementId = "box3", targetX = 237, targetY = 217, config = { axis = SmoothMovePorts.Both, duration = 600, easing = "ease-out" } }
-                    , { elementId = "box4", targetX = 317, targetY = 217, config = { axis = SmoothMovePorts.Both, duration = 900, easing = "ease-out" } }
+                    [ { elementId = "box1", targetX = 237, targetY = 137, config = { timing = Duration 500, easing = "ease-out" } }
+                    , { elementId = "box2", targetX = 317, targetY = 137, config = { timing = Duration 750, easing = "ease-out" } }
+                    , { elementId = "box3", targetX = 237, targetY = 217, config = { timing = Duration 600, easing = "ease-out" } }
+                    , { elementId = "box4", targetX = 317, targetY = 217, config = { timing = Duration 900, easing = "ease-out" } }
                     ]
 
                 ( newAnimations, cmd ) =
@@ -97,10 +97,10 @@ update msg model =
             let
                 -- Sequential animation with staggered delays using different durations
                 animationSpecs =
-                    [ { elementId = "box1", targetX = 100, targetY = 100, config = { axis = SmoothMovePorts.Both, duration = 400, easing = "ease-in-out" } }
-                    , { elementId = "box2", targetX = 200, targetY = 150, config = { axis = SmoothMovePorts.Both, duration = 600, easing = "ease-in-out" } }
-                    , { elementId = "box3", targetX = 300, targetY = 200, config = { axis = SmoothMovePorts.Both, duration = 800, easing = "ease-in-out" } }
-                    , { elementId = "box4", targetX = 400, targetY = 250, config = { axis = SmoothMovePorts.Both, duration = 1000, easing = "ease-in-out" } }
+                    [ { elementId = "box1", targetX = 100, targetY = 100, config = { timing = Duration 400, easing = "ease-in-out" } }
+                    , { elementId = "box2", targetX = 200, targetY = 150, config = { timing = Duration 600, easing = "ease-in-out" } }
+                    , { elementId = "box3", targetX = 300, targetY = 200, config = { timing = Duration 800, easing = "ease-in-out" } }
+                    , { elementId = "box4", targetX = 400, targetY = 250, config = { timing = Duration 1000, easing = "ease-in-out" } }
                     ]
 
                 ( newAnimations, cmd ) =

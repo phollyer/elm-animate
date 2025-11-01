@@ -11738,12 +11738,10 @@ var $author$project$SmoothMoveCSS$transform = F2(
 	function (x, y) {
 		return 'translate(' + ($elm$core$String$fromFloat(x) + ('px, ' + ($elm$core$String$fromFloat(y) + 'px)')));
 	});
-var $author$project$SmoothMoveCSS$Both = {$: 'Both'};
 var $author$project$SmoothMoveCSS$Duration = function (a) {
 	return {$: 'Duration', a: a};
 };
 var $author$project$SmoothMoveCSS$defaultConfig = {
-	axis: $author$project$SmoothMoveCSS$Both,
 	easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
 	timing: $author$project$SmoothMoveCSS$Duration(400)
 };

@@ -5394,12 +5394,6 @@ var $author$project$SmoothMoveSub$subscriptions = F2(
 var $author$project$ElmUI$Sub$Basic$Main$subscriptions = function (model) {
 	return A2($author$project$SmoothMoveSub$subscriptions, $author$project$ElmUI$Sub$Basic$Main$AnimationFrame, model.smoothMove);
 };
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
 var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -5599,18 +5593,8 @@ var $author$project$SmoothMoveSub$animateToWithConfig = F5(
 				$author$project$SmoothMoveSub$Model(elementsDict)));
 		var startX = currentPos.x;
 		var startY = currentPos.y;
-		var distance = function () {
-			var _v1 = config.axis;
-			switch (_v1.$) {
-				case 'X':
-					return $elm$core$Basics$abs(targetX - startX);
-				case 'Y':
-					return $elm$core$Basics$abs(targetY - startY);
-				default:
-					return $elm$core$Basics$sqrt(
-						A2($elm$core$Basics$pow, targetX - startX, 2) + A2($elm$core$Basics$pow, targetY - startY, 2));
-			}
-		}();
+		var distance = $elm$core$Basics$sqrt(
+			A2($elm$core$Basics$pow, targetX - startX, 2) + A2($elm$core$Basics$pow, targetY - startY, 2));
 		var duration = A2(
 			$elm$core$Basics$max,
 			100,
@@ -5624,7 +5608,6 @@ var $author$project$SmoothMoveSub$animateToWithConfig = F5(
 		var updatedDict = A3($elm$core$Dict$insert, elementId, elementData, elementsDict);
 		return $author$project$SmoothMoveSub$Model(updatedDict);
 	});
-var $author$project$SmoothMoveSub$Both = {$: 'Both'};
 var $author$project$SmoothMoveSub$Duration = function (a) {
 	return {$: 'Duration', a: a};
 };
@@ -5637,7 +5620,6 @@ var $elm_community$easing_functions$Ease$inCubic = function (time) {
 };
 var $elm_community$easing_functions$Ease$outCubic = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inCubic);
 var $author$project$SmoothMoveSub$defaultConfig = {
-	axis: $author$project$SmoothMoveSub$Both,
 	easing: $elm_community$easing_functions$Ease$outCubic,
 	timing: $author$project$SmoothMoveSub$Duration(400)
 };
@@ -5645,23 +5627,15 @@ var $author$project$SmoothMoveSub$animateTo = F4(
 	function (elementId, targetX, targetY, model) {
 		return A5($author$project$SmoothMoveSub$animateToWithConfig, $author$project$SmoothMoveSub$defaultConfig, elementId, targetX, targetY, model);
 	});
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
 var $author$project$SmoothMoveSub$isAnimationComplete = function (state) {
-	var yComplete = function () {
-		var _v1 = state.config.axis;
-		if (_v1.$ === 'X') {
-			return true;
-		} else {
-			return $elm$core$Basics$abs(state.currentY - state.targetY) < 0.1;
-		}
-	}();
-	var xComplete = function () {
-		var _v0 = state.config.axis;
-		if (_v0.$ === 'Y') {
-			return true;
-		} else {
-			return $elm$core$Basics$abs(state.currentX - state.targetX) < 0.1;
-		}
-	}();
+	var yComplete = $elm$core$Basics$abs(state.currentY - state.targetY) < 0.1;
+	var xComplete = $elm$core$Basics$abs(state.currentX - state.targetX) < 0.1;
 	return xComplete && yComplete;
 };
 var $elm$core$Dict$map = F2(
@@ -5692,22 +5666,8 @@ var $author$project$SmoothMoveSub$updateAnimation = F2(
 		var newElapsedTime = (!state.startedAt) ? deltaMs : (state.startedAt + deltaMs);
 		var progress = A2($elm$core$Basics$min, 1.0, newElapsedTime / state.duration);
 		var easedProgress = state.config.easing(progress);
-		var currentY = function () {
-			var _v1 = state.config.axis;
-			if (_v1.$ === 'X') {
-				return state.startY;
-			} else {
-				return state.startY + ((state.targetY - state.startY) * easedProgress);
-			}
-		}();
-		var currentX = function () {
-			var _v0 = state.config.axis;
-			if (_v0.$ === 'Y') {
-				return state.startX;
-			} else {
-				return state.startX + ((state.targetX - state.startX) * easedProgress);
-			}
-		}();
+		var currentY = state.startY + ((state.targetY - state.startY) * easedProgress);
+		var currentX = state.startX + ((state.targetX - state.startX) * easedProgress);
 		return _Utils_update(
 			state,
 			{currentX: currentX, currentY: currentY, startedAt: newElapsedTime});

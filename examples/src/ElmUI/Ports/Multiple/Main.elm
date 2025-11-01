@@ -49,26 +49,6 @@ port positionUpdates : (Decode.Value -> msg) -> Sub msg
 -- TYPES
 
 
-type alias PositionUpdate =
-    { elementId : String
-    , x : Float
-    , y : Float
-    , isAnimating : Bool
-    }
-
-
-{-| Decoder for position updates from JavaScript
--}
-positionDecoder : Decode.Decoder PositionUpdate
-positionDecoder =
-    Decode.map4 PositionUpdate
-        (Decode.field "elementId" Decode.string)
-        (Decode.field "x" Decode.float)
-        (Decode.field "y" Decode.float)
-        (Decode.field "isAnimating" Decode.bool)
-
-
-
 -- MAIN
 
 
@@ -101,17 +81,17 @@ init _ =
         -- Initialize with scattered positions across the container (450px × 300px)
         initialAnimations =
             SmoothMovePorts.init
-                |> SmoothMovePorts.setInitialPosition "element-a" 50.0 80.0
+                |> SmoothMovePorts.setPosition "element-a" 50.0 80.0
                 -- Top-left area
-                |> SmoothMovePorts.setInitialPosition "element-b" 380.0 50.0
+                |> SmoothMovePorts.setPosition "element-b" 380.0 50.0
                 -- Top-right area
-                |> SmoothMovePorts.setInitialPosition "element-c" 120.0 220.0
+                |> SmoothMovePorts.setPosition "element-c" 120.0 220.0
                 -- Bottom-left area
-                |> SmoothMovePorts.setInitialPosition "element-d" 350.0 180.0
+                |> SmoothMovePorts.setPosition "element-d" 350.0 180.0
                 -- Right-middle area
-                |> SmoothMovePorts.setInitialPosition "element-e" 200.0 40.0
+                |> SmoothMovePorts.setPosition "element-e" 200.0 40.0
                 -- Top-center area
-                |> SmoothMovePorts.setInitialPosition "element-f" 80.0 140.0
+                |> SmoothMovePorts.setPosition "element-f" 80.0 140.0
 
         -- Left-middle area
     in
@@ -259,18 +239,9 @@ update msg model =
             ( model, Cmd.none )
 
         PositionUpdateMsg value ->
-            -- Parse the position update from JavaScript
-            case Decode.decodeValue positionDecoder value of
-                Ok posUpdate ->
-                    let
-                        newAnimations =
-                            SmoothMovePorts.handlePositionUpdate
-                                posUpdate.elementId
-                                posUpdate.x
-                                posUpdate.y
-                                posUpdate.isAnimating
-                                model.animations
-                    in
+            -- Handle position update with automatic decoding
+            case SmoothMovePorts.handlePositionUpdateFromJson value model.animations of
+                Ok newAnimations ->
                     ( { model | animations = newAnimations }, Cmd.none )
 
                 Err _ ->

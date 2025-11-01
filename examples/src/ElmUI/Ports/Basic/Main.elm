@@ -52,29 +52,6 @@ port positionUpdates : (Decode.Value -> msg) -> Sub msg
 
 
 
--- TYPES
-
-
-type alias PositionUpdate =
-    { elementId : String
-    , x : Float
-    , y : Float
-    , isAnimating : Bool
-    }
-
-
-{-| Decoder for position updates from JavaScript
--}
-positionDecoder : Decode.Decoder PositionUpdate
-positionDecoder =
-    Decode.map4 PositionUpdate
-        (Decode.field "elementId" Decode.string)
-        (Decode.field "x" Decode.float)
-        (Decode.field "y" Decode.float)
-        (Decode.field "isAnimating" Decode.bool)
-
-
-
 -- MAIN
 
 
@@ -107,7 +84,7 @@ init _ =
         -- Initialize with starting position
         initialAnimations =
             SmoothMovePorts.init
-                |> SmoothMovePorts.setInitialPosition "moving-box" 0 0
+                |> SmoothMovePorts.setPosition "moving-box" 0 0
     in
     ( { animations = initialAnimations }
     , Cmd.none
@@ -156,18 +133,9 @@ update msg model =
             )
 
         PositionUpdateMsg value ->
-            -- Parse the position update from JavaScript
-            case Decode.decodeValue positionDecoder value of
-                Ok posUpdate ->
-                    let
-                        newAnimations =
-                            SmoothMovePorts.handlePositionUpdate
-                                posUpdate.elementId
-                                posUpdate.x
-                                posUpdate.y
-                                posUpdate.isAnimating
-                                model.animations
-                    in
+            -- Handle position update with automatic decoding
+            case SmoothMovePorts.handlePositionUpdateFromJson value model.animations of
+                Ok newAnimations ->
                     ( { model | animations = newAnimations }, Cmd.none )
 
                 Err _ ->

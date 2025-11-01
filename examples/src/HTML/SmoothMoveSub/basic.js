@@ -5276,7 +5276,7 @@ var $elm$core$Dict$insert = F3(
 			return x;
 		}
 	});
-var $author$project$SmoothMoveSub$setInitialPosition = F4(
+var $author$project$SmoothMoveSub$setPosition = F4(
 	function (elementId, x, y, _v0) {
 		var elementsDict = _v0.a;
 		var elementData = {animation: $elm$core$Maybe$Nothing, lastX: x, lastY: y};
@@ -5284,7 +5284,7 @@ var $author$project$SmoothMoveSub$setInitialPosition = F4(
 		return $author$project$SmoothMoveSub$Model(updatedDict);
 	});
 var $author$project$HTML$SmoothMoveSub$Basic$init = function (_v0) {
-	var initialSmoothMove = A4($author$project$SmoothMoveSub$setInitialPosition, 'moving-element', 200, 150, $author$project$SmoothMoveSub$init);
+	var initialSmoothMove = A4($author$project$SmoothMoveSub$setPosition, 'moving-element', 200, 150, $author$project$SmoothMoveSub$init);
 	return _Utils_Tuple2(
 		{smoothMove: initialSmoothMove},
 		$elm$core$Platform$Cmd$none);
@@ -5474,12 +5474,6 @@ var $author$project$SmoothMoveSub$subscriptions = F2(
 var $author$project$HTML$SmoothMoveSub$Basic$subscriptions = function (model) {
 	return A2($author$project$SmoothMoveSub$subscriptions, $author$project$HTML$SmoothMoveSub$Basic$AnimationFrame, model.smoothMove);
 };
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
 		get:
@@ -5570,18 +5564,8 @@ var $author$project$SmoothMoveSub$animateToWithConfig = F5(
 				$author$project$SmoothMoveSub$Model(elementsDict)));
 		var startX = currentPos.x;
 		var startY = currentPos.y;
-		var distance = function () {
-			var _v1 = config.axis;
-			switch (_v1.$) {
-				case 'X':
-					return $elm$core$Basics$abs(targetX - startX);
-				case 'Y':
-					return $elm$core$Basics$abs(targetY - startY);
-				default:
-					return $elm$core$Basics$sqrt(
-						A2($elm$core$Basics$pow, targetX - startX, 2) + A2($elm$core$Basics$pow, targetY - startY, 2));
-			}
-		}();
+		var distance = $elm$core$Basics$sqrt(
+			A2($elm$core$Basics$pow, targetX - startX, 2) + A2($elm$core$Basics$pow, targetY - startY, 2));
 		var duration = A2(
 			$elm$core$Basics$max,
 			100,
@@ -5595,7 +5579,6 @@ var $author$project$SmoothMoveSub$animateToWithConfig = F5(
 		var updatedDict = A3($elm$core$Dict$insert, elementId, elementData, elementsDict);
 		return $author$project$SmoothMoveSub$Model(updatedDict);
 	});
-var $author$project$SmoothMoveSub$Both = {$: 'Both'};
 var $author$project$SmoothMoveSub$Duration = function (a) {
 	return {$: 'Duration', a: a};
 };
@@ -5608,7 +5591,6 @@ var $elm_community$easing_functions$Ease$inCubic = function (time) {
 };
 var $elm_community$easing_functions$Ease$outCubic = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inCubic);
 var $author$project$SmoothMoveSub$defaultConfig = {
-	axis: $author$project$SmoothMoveSub$Both,
 	easing: $elm_community$easing_functions$Ease$outCubic,
 	timing: $author$project$SmoothMoveSub$Duration(400)
 };
@@ -5617,23 +5599,15 @@ var $author$project$SmoothMoveSub$animateTo = F4(
 		return A5($author$project$SmoothMoveSub$animateToWithConfig, $author$project$SmoothMoveSub$defaultConfig, elementId, targetX, targetY, model);
 	});
 var $author$project$HTML$SmoothMoveSub$Basic$elementId = 'moving-element';
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
 var $author$project$SmoothMoveSub$isAnimationComplete = function (state) {
-	var yComplete = function () {
-		var _v1 = state.config.axis;
-		if (_v1.$ === 'X') {
-			return true;
-		} else {
-			return $elm$core$Basics$abs(state.currentY - state.targetY) < 0.1;
-		}
-	}();
-	var xComplete = function () {
-		var _v0 = state.config.axis;
-		if (_v0.$ === 'Y') {
-			return true;
-		} else {
-			return $elm$core$Basics$abs(state.currentX - state.targetX) < 0.1;
-		}
-	}();
+	var yComplete = $elm$core$Basics$abs(state.currentY - state.targetY) < 0.1;
+	var xComplete = $elm$core$Basics$abs(state.currentX - state.targetX) < 0.1;
 	return xComplete && yComplete;
 };
 var $elm$core$Dict$map = F2(
@@ -5664,22 +5638,8 @@ var $author$project$SmoothMoveSub$updateAnimation = F2(
 		var newElapsedTime = (!state.startedAt) ? deltaMs : (state.startedAt + deltaMs);
 		var progress = A2($elm$core$Basics$min, 1.0, newElapsedTime / state.duration);
 		var easedProgress = state.config.easing(progress);
-		var currentY = function () {
-			var _v1 = state.config.axis;
-			if (_v1.$ === 'X') {
-				return state.startY;
-			} else {
-				return state.startY + ((state.targetY - state.startY) * easedProgress);
-			}
-		}();
-		var currentX = function () {
-			var _v0 = state.config.axis;
-			if (_v0.$ === 'Y') {
-				return state.startX;
-			} else {
-				return state.startX + ((state.targetX - state.startX) * easedProgress);
-			}
-		}();
+		var currentY = state.startY + ((state.targetY - state.startY) * easedProgress);
+		var currentX = state.startX + ((state.targetX - state.startX) * easedProgress);
 		return _Utils_update(
 			state,
 			{currentX: currentX, currentY: currentY, startedAt: newElapsedTime});

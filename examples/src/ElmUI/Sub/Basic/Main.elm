@@ -31,7 +31,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
-import SmoothMoveSub exposing (animateTo, getPosition, init, isAnimating, setInitialPosition, subscriptions, transform)
+import SmoothMoveSub exposing (animateTo, getPosition, init, isAnimating, setPosition, subscriptions, transform)
 
 
 

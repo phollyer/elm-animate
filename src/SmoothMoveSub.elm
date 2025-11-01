@@ -2,14 +2,17 @@ module SmoothMoveSub exposing
     ( Config
     , defaultConfig
     , Timing(..)
-    , Axis(..)
     , Model
     , init
     , step
     , subscriptions
     , animateTo
+    , animateToX
+    , animateToY
     , animateToWithConfig
-    , setInitialPosition
+    , animateToXWithConfig
+    , animateToYWithConfig
+    , setPosition
     , stopAnimation
     , isAnimating
     , getPosition
@@ -29,7 +32,6 @@ automatically through subscriptions to animation frames.
 @docs Config
 @docs defaultConfig
 @docs Timing
-@docs Axis
 
 
 # State Management
@@ -43,8 +45,12 @@ automatically through subscriptions to animation frames.
 # Animation Control
 
 @docs animateTo
+@docs animateToX
+@docs animateToY
 @docs animateToWithConfig
-@docs setInitialPosition
+@docs animateToXWithConfig
+@docs animateToYWithConfig
+@docs setPosition
 @docs stopAnimation
 
 
@@ -84,13 +90,11 @@ type Timing
 
   - timing: Animation timing (Speed in pixels per second or Duration in milliseconds)
   - easing: Easing function from elm-community/easing-functions
-  - axis: Movement axis (X, Y, or Both)
 
 -}
 type alias Config =
     { timing : Timing
     , easing : Ease.Easing
-    , axis : Axis
     }
 
 
@@ -105,14 +109,6 @@ timingToPixelsPerSecond timing distance =
         Duration milliseconds ->
             -- Convert duration to pixels per second: distance / (duration in seconds)
             distance / (toFloat milliseconds / 1000)
-
-
-{-| Axis configuration for movement direction
--}
-type Axis
-    = X
-    | Y
-    | Both
 
 
 type alias AnimationState =
@@ -174,6 +170,32 @@ animateTo elementId targetX targetY model =
     animateToWithConfig defaultConfig elementId targetX targetY model
 
 
+{-| Start animating an element horizontally to a target X position
+
+Only the X coordinate will change - Y position remains at current value.
+
+    newModel =
+        SmoothMoveSub.animateToX "my-element" 200 model.smoothMove
+
+-}
+animateToX : String -> Float -> Model -> Model
+animateToX elementId targetX model =
+    animateToXWithConfig defaultConfig elementId targetX model
+
+
+{-| Start animating an element vertically to a target Y position
+
+Only the Y coordinate will change - X position remains at current value.
+
+    newModel =
+        SmoothMoveSub.animateToY "my-element" 300 model.smoothMove
+
+-}
+animateToY : String -> Float -> Model -> Model
+animateToY elementId targetY model =
+    animateToYWithConfig defaultConfig elementId targetY model
+
+
 {-| Start animating an element to a target position with custom configuration
 
     config =
@@ -196,16 +218,127 @@ animateToWithConfig config elementId targetX targetY (Model elementsDict) =
         startY =
             currentPos.y
 
+        -- For animateTo (both axes), calculate Euclidean distance
         distance =
-            case config.axis of
-                X ->
-                    abs (targetX - startX)
+            sqrt ((targetX - startX) ^ 2 + (targetY - startY) ^ 2)
 
-                Y ->
-                    abs (targetY - startY)
+        -- Duration based on distance and speed (speed = pixels per second)
+        duration =
+            max 100 (distance * 1000 / timingToPixelsPerSecond config.timing distance)
 
-                Both ->
-                    sqrt ((targetX - startX) ^ 2 + (targetY - startY) ^ 2)
+        animationState =
+            { startX = startX
+            , startY = startY
+            , targetX = targetX
+            , targetY = targetY
+            , currentX = startX
+            , currentY = startY
+            , config = config
+            , startedAt = 0
+            , duration = duration
+            }
+
+        elementData =
+            { lastX = startX
+            , lastY = startY
+            , animation = Just animationState
+            }
+
+        updatedDict =
+            Dict.insert elementId elementData elementsDict
+    in
+    Model updatedDict
+
+
+{-| Start animating an element horizontally to a target X position with custom configuration
+
+Only the X coordinate will change - Y position remains at current value.
+
+    config =
+        { defaultConfig | timing = Speed 600.0, easing = Ease.outQuint }
+
+    newModel =
+        SmoothMoveSub.animateToXWithConfig config "my-element" 200 model.smoothMove
+
+-}
+animateToXWithConfig : Config -> String -> Float -> Model -> Model
+animateToXWithConfig config elementId targetX (Model elementsDict) =
+    let
+        currentPos =
+            getPosition elementId (Model elementsDict)
+                |> Maybe.withDefault { x = 0, y = 0 }
+
+        startX =
+            currentPos.x
+
+        startY =
+            currentPos.y
+
+        -- For X-only animation, Y target equals current Y
+        targetY =
+            startY
+
+        distance =
+            abs (targetX - startX)
+
+        -- Duration based on distance and speed (speed = pixels per second)
+        duration =
+            max 100 (distance * 1000 / timingToPixelsPerSecond config.timing distance)
+
+        animationState =
+            { startX = startX
+            , startY = startY
+            , targetX = targetX
+            , targetY = targetY
+            , currentX = startX
+            , currentY = startY
+            , config = config
+            , startedAt = 0
+            , duration = duration
+            }
+
+        elementData =
+            { lastX = startX
+            , lastY = startY
+            , animation = Just animationState
+            }
+
+        updatedDict =
+            Dict.insert elementId elementData elementsDict
+    in
+    Model updatedDict
+
+
+{-| Start animating an element vertically to a target Y position with custom configuration
+
+Only the Y coordinate will change - X position remains at current value.
+
+    config =
+        { defaultConfig | timing = Speed 600.0, easing = Ease.outQuint }
+
+    newModel =
+        SmoothMoveSub.animateToYWithConfig config "my-element" 300 model.smoothMove
+
+-}
+animateToYWithConfig : Config -> String -> Float -> Model -> Model
+animateToYWithConfig config elementId targetY (Model elementsDict) =
+    let
+        currentPos =
+            getPosition elementId (Model elementsDict)
+                |> Maybe.withDefault { x = 0, y = 0 }
+
+        startX =
+            currentPos.x
+
+        startY =
+            currentPos.y
+
+        -- For Y-only animation, X target equals current X
+        targetX =
+            startX
+
+        distance =
+            abs (targetY - startY)
 
         -- Duration based on distance and speed (speed = pixels per second)
         duration =
@@ -242,12 +375,12 @@ Call this during initialization to establish element positions.
 
     initialModel =
         SmoothMoveSub.init
-            |> SmoothMoveSub.setInitialPosition "element-a" 100 150
-            |> SmoothMoveSub.setInitialPosition "element-b" 200 250
+            |> SmoothMoveSub.setPosition "element-a" 100 150
+            |> SmoothMoveSub.setPosition "element-b" 200 250
 
 -}
-setInitialPosition : String -> Float -> Float -> Model -> Model
-setInitialPosition elementId x y (Model elementsDict) =
+setPosition : String -> Float -> Float -> Model -> Model
+setPosition elementId x y (Model elementsDict) =
     let
         elementData =
             { lastX = x
@@ -426,7 +559,6 @@ defaultConfig : Config
 defaultConfig =
     { timing = Duration 400
     , easing = Ease.outCubic
-    , axis = Both
     }
 
 
@@ -436,22 +568,10 @@ isAnimationComplete : AnimationState -> Bool
 isAnimationComplete state =
     let
         xComplete =
-            case state.config.axis of
-                Y ->
-                    True
-
-                -- X axis not animated, so always complete
-                _ ->
-                    abs (state.currentX - state.targetX) < 0.1
+            abs (state.currentX - state.targetX) < 0.1
 
         yComplete =
-            case state.config.axis of
-                X ->
-                    True
-
-                -- Y axis not animated, so always complete
-                _ ->
-                    abs (state.currentY - state.targetY) < 0.1
+            abs (state.currentY - state.targetY) < 0.1
     in
     xComplete && yComplete
 
@@ -475,20 +595,10 @@ updateAnimation deltaMs state =
             state.config.easing progress
 
         currentX =
-            case state.config.axis of
-                Y ->
-                    state.startX
-
-                _ ->
-                    state.startX + (state.targetX - state.startX) * easedProgress
+            state.startX + (state.targetX - state.startX) * easedProgress
 
         currentY =
-            case state.config.axis of
-                X ->
-                    state.startY
-
-                _ ->
-                    state.startY + (state.targetY - state.startY) * easedProgress
+            state.startY + (state.targetY - state.startY) * easedProgress
     in
     { state
         | startedAt = newElapsedTime
