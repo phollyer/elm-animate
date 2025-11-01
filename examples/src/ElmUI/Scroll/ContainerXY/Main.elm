@@ -11,7 +11,7 @@ import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes
-import SmoothMoveScroll exposing (Axis(..), animateToCmdWithConfig, containerElement, defaultConfig)
+import SmoothMoveScroll exposing (Axis(..), scrollCmdWithConfig, containerElement, defaultConfig)
 
 
 
@@ -62,62 +62,62 @@ update msg model =
 
         ScrollToTopLeft ->
             ( model
-            , animateToCmdWithConfig NoOp
+            , scrollCmdWithConfig NoOp
+                "top-left-element"
                 { defaultConfig
                     | axis = Both
                     , container = containerElement "scroll-container"
                     , offsetX = 20
                     , offsetY = 20
                 }
-                "top-left-element"
             )
 
         ScrollToTopRight ->
             ( model
-            , animateToCmdWithConfig NoOp
+            , scrollCmdWithConfig NoOp
+                "top-right-element"
                 { defaultConfig
                     | axis = Both
                     , container = containerElement "scroll-container"
                     , offsetX = 20
                     , offsetY = 20
                 }
-                "top-right-element"
             )
 
         ScrollToBottomLeft ->
             ( model
-            , animateToCmdWithConfig NoOp
+            , scrollCmdWithConfig NoOp
+                "bottom-left-element"
                 { defaultConfig
                     | axis = Both
                     , container = containerElement "scroll-container"
                     , offsetX = 20
                     , offsetY = 20
                 }
-                "bottom-left-element"
             )
 
         ScrollToBottomRight ->
             ( model
-            , animateToCmdWithConfig NoOp
+            , scrollCmdWithConfig NoOp
+                "bottom-right-element"
                 { defaultConfig
                     | axis = Both
                     , container = containerElement "scroll-container"
                     , offsetX = 20
                     , offsetY = 20
                 }
-                "bottom-right-element"
             )
 
         ScrollToCenter ->
             ( model
-            , animateToCmdWithConfig NoOp
+            , scrollCmdWithConfig NoOp
+                "center-element"
                 { defaultConfig
                     | axis = Both
                     , container = containerElement "scroll-container"
                     , offsetX = 20
                     , offsetY = 20
                 }
-                "center-element"
             )
 
 

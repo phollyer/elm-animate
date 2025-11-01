@@ -5,7 +5,7 @@ import Common.UI as UI
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import SmoothMoveScroll exposing (animateToCmdWithConfig, defaultConfig, setContainer)
+import SmoothMoveScroll exposing (scrollCmdWithConfig, defaultConfig, setContainer)
 
 
 main =
@@ -41,17 +41,17 @@ update msg model =
 
         ScrollToTop ->
             ( model
-            , animateToCmdWithConfig NoOp (setContainer "scroll-container" defaultConfig) "top-element"
+            , scrollCmdWithConfig NoOp "top-element" (setContainer "scroll-container" defaultConfig)
             )
 
         ScrollToMiddle ->
             ( model
-            , animateToCmdWithConfig NoOp (setContainer "scroll-container" defaultConfig) "middle-element"
+            , scrollCmdWithConfig NoOp "middle-element" (setContainer "scroll-container" defaultConfig)
             )
 
         ScrollToBottom ->
             ( model
-            , animateToCmdWithConfig NoOp (setContainer "scroll-container" defaultConfig) "bottom-element"
+            , scrollCmdWithConfig NoOp "bottom-element" (setContainer "scroll-container" defaultConfig)
             )
 
 

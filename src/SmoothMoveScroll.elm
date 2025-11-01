@@ -7,12 +7,12 @@ module SmoothMoveScroll exposing
     , containerElement
     , setContainer
     , setDocumentBody
-    , animateToCmd
-    , animateToCmdWithConfig
+    , scrollCmd
+    , scrollCmdWithConfig
     , jumpTo
     , jumpToWithConfig
-    , animateToTask
-    , animateToTaskWithConfig
+    , scrollTask
+    , scrollTaskWithConfig
     , scrollToTop
     , scrollToTopWithConfig
     )
@@ -48,8 +48,8 @@ Key features:
 
 # Simple Commands (Recommended)
 
-@docs animateToCmd
-@docs animateToCmdWithConfig
+@docs scrollCmd
+@docs scrollCmdWithConfig
 
 
 # Instant Scrolling
@@ -58,10 +58,10 @@ Key features:
 @docs jumpToWithConfig
 
 
-# Task-based API (Advanced)
+# Advanced Task API
 
-@docs animateToTask
-@docs animateToTaskWithConfig
+@docs scrollTask
+@docs scrollTaskWithConfig
 
 
 # Convenience Functions
@@ -126,22 +126,22 @@ Use this to control whether your animation moves horizontally or vertically:
 Examples:
 
     -- Vertical scrolling to an element (default behavior)
-    animateToCmdWithConfig
-        { defaultConfig | axis = Y }
+    scrollCmdWithConfig NoOp
         "my-section"
+        { defaultConfig | axis = Y }
 
     -- Horizontal scrolling within a carousel container
-    animateToCmdWithConfig
+    scrollCmdWithConfig NoOp
+        "slide-3"
         { defaultConfig
             | axis = X
             , container = containerElement "carousel-container"
         }
-        "slide-3"
 
     -- Both horizontal and vertical scrolling
-    animateToCmdWithConfig
-        { defaultConfig | axis = Both }
+    scrollCmdWithConfig NoOp
         "target-element"
+        { defaultConfig | axis = Both }
 
 -}
 type Axis
@@ -205,9 +205,9 @@ timingToSpeed timing distance =
 
 {-| Set the container to scroll within to a specific DOM element by ID.
 
-    import SmoothMoveScroll exposing (setContainer, animateToCmdWithConfig, defaultConfig)
+    import SmoothMoveScroll exposing (setContainer, scrollCmdWithConfig, defaultConfig)
 
-    animateToCmdWithConfig NoOp (setContainer "article-list" defaultConfig) "article-42"
+    scrollCmdWithConfig NoOp "article-42" (setContainer "article-list" defaultConfig)
 
 -}
 setContainer : String -> Config -> Config
@@ -217,9 +217,9 @@ setContainer elementId config =
 
 {-| Set the container to scroll within to the document body (default behavior).
 
-    import SmoothMoveScroll exposing (setDocumentBody, animateToCmdWithConfig, defaultConfig)
+    import SmoothMoveScroll exposing (setDocumentBody, scrollCmdWithConfig, defaultConfig)
 
-    animateToCmdWithConfig NoOp (setDocumentBody defaultConfig) "article-42"
+    scrollCmdWithConfig NoOp "article-42" (setDocumentBody defaultConfig)
 
 -}
 setDocumentBody : Config -> Config
@@ -230,9 +230,9 @@ setDocumentBody config =
 {-| Create a container reference for use with record update syntax.
 Provides an alternative coding style for developers who prefer this approach.
 
-    import SmoothMoveScroll exposing (containerElement, animateToCmdWithConfig, defaultConfig)
+    import SmoothMoveScroll exposing (containerElement, scrollCmdWithConfig, defaultConfig)
 
-    animateToCmdWithConfig NoOp { defaultConfig | container = containerElement "article-list" } "article-42"
+    scrollCmdWithConfig NoOp "article-42" { defaultConfig | container = containerElement "article-list" }
 
 -}
 containerElement : String -> Container
@@ -243,23 +243,23 @@ containerElement elementId =
 {-| Cmd-based scrolling with custom completion message.
 
     ScrollTo elementId ->
-        ( model, animateToCmd ScrollComplete elementId )
+        ( model, scrollCmd ScrollComplete elementId )
 
 -}
-animateToCmd : msg -> String -> Cmd msg
-animateToCmd msg elementId =
-    animateToCmdWithConfig msg defaultConfig elementId
+scrollCmd : msg -> String -> Cmd msg
+scrollCmd msg elementId =
+    scrollCmdWithConfig msg elementId defaultConfig
 
 
 {-| Cmd-based scrolling with configuration and custom completion message.
 
     ScrollTo elementId ->
-        ( model, animateToCmdWithConfig ScrollComplete { defaultConfig | offset = 100 } elementId )
+        ( model, scrollCmdWithConfig ScrollComplete elementId { defaultConfig | offsetY = 100 } )
 
 -}
-animateToCmdWithConfig : msg -> Config -> String -> Cmd msg
-animateToCmdWithConfig msg config elementId =
-    animateToTaskWithConfig config elementId
+scrollCmdWithConfig : msg -> String -> Config -> Cmd msg
+scrollCmdWithConfig msg elementId config =
+    scrollTaskWithConfig elementId config
         |> Task.attempt (always msg)
 
 
@@ -273,25 +273,25 @@ Perfect for immediate navigation where you don't want smooth scrolling.
 -}
 jumpTo : msg -> String -> Cmd msg
 jumpTo msg elementId =
-    jumpToWithConfig msg defaultConfig elementId
+    jumpToWithConfig msg elementId defaultConfig
 
 
 {-| Jump to an element with configuration (respects offset and axis settings).
 
     JumpToSection sectionId ->
-        ( model, jumpToWithConfig JumpComplete { defaultConfig | offset = 50 } sectionId )
+        ( model, jumpToWithConfig JumpComplete sectionId { defaultConfig | offsetY = 50 } )
 
 -}
-jumpToWithConfig : msg -> Config -> String -> Cmd msg
-jumpToWithConfig msg config elementId =
-    jumpToTask config elementId
+jumpToWithConfig : msg -> String -> Config -> Cmd msg
+jumpToWithConfig msg elementId config =
+    jumpToTask elementId config
         |> Task.attempt (always msg)
 
 
 {-| Internal task for instant jumping - used by jumpTo functions
 -}
-jumpToTask : Config -> String -> Task Dom.Error ()
-jumpToTask config id =
+jumpToTask : String -> Config -> Task Dom.Error ()
+jumpToTask id config =
     let
         getViewport_ =
             getViewport config.container
@@ -299,7 +299,7 @@ jumpToTask config id =
         getContainerInfo_ =
             getContainerInfo config.container
 
-        scrollTask { scene, viewport } { element } container =
+        performJumpTask { scene, viewport } { element } container =
             let
                 ( clampedX, clampedY ) =
                     getClampedPositions element viewport scene container config
@@ -330,29 +330,29 @@ jumpToTask config id =
             in
             setViewportTask
     in
-    Task.map3 scrollTask getViewport_ (Dom.getElement id) getContainerInfo_
+    Task.map3 performJumpTask getViewport_ (Dom.getElement id) getContainerInfo_
         |> Task.andThen identity
 
 
 {-| Task-based scrolling for advanced users who need error handling or composition.
 
     ScrollTo elementId ->
-        ( model, Task.attempt HandleScrollError (animateToTask elementId) )
+        ( model, Task.attempt HandleScrollError (scrollTask elementId) )
 
 -}
-animateToTask : String -> Task Dom.Error (List ())
-animateToTask elementId =
-    animateToTaskWithConfig defaultConfig elementId
+scrollTask : String -> Task Dom.Error (List ())
+scrollTask elementId =
+    scrollTaskWithConfig elementId defaultConfig
 
 
 {-| Task-based scrolling with configuration for advanced users.
 
     ScrollTo elementId ->
-        ( model, Task.attempt HandleScrollError (animateToTaskWithConfig config elementId) )
+        ( model, Task.attempt HandleScrollError (scrollTaskWithConfig elementId config) )
 
 -}
-animateToTaskWithConfig : Config -> String -> Task Dom.Error (List ())
-animateToTaskWithConfig config id =
+scrollTaskWithConfig : String -> Config -> Task Dom.Error (List ())
+scrollTaskWithConfig id config =
     let
         getViewport_ =
             getViewport config.container
@@ -360,7 +360,7 @@ animateToTaskWithConfig config id =
         getContainerInfo_ =
             getContainerInfo config.container
 
-        scrollTask { scene, viewport } { element } container =
+        performScrollTask { scene, viewport } { element } container =
             let
                 ( clampedX, clampedY ) =
                     getClampedPositions element viewport scene container config
@@ -473,7 +473,7 @@ animateToTaskWithConfig config id =
             in
             setViewportTask
     in
-    Task.map3 scrollTask getViewport_ (Dom.getElement id) getContainerInfo_
+    Task.map3 performScrollTask getViewport_ (Dom.getElement id) getContainerInfo_
         |> Task.andThen identity
 
 
@@ -492,17 +492,17 @@ For document body scrolling, use an empty string:
 -}
 scrollToTop : msg -> String -> Cmd msg
 scrollToTop msg containerId =
-    scrollToTopWithConfig msg defaultConfig containerId
+    scrollToTopWithConfig msg containerId defaultConfig
 
 
 {-| Scroll to the top of a container with custom configuration.
 
     BackToTop ->
-        ( model, scrollToTopWithConfig NoOp { defaultConfig | timing = Duration 500 } "main-content" )
+        ( model, scrollToTopWithConfig NoOp "main-content" { defaultConfig | timing = Duration 500 } )
 
 -}
-scrollToTopWithConfig : msg -> Config -> String -> Cmd msg
-scrollToTopWithConfig msg config containerId =
+scrollToTopWithConfig : msg -> String -> Config -> Cmd msg
+scrollToTopWithConfig msg containerId config =
     let
         scrollToTopTask =
             case containerId of

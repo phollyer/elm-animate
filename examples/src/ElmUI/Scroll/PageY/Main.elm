@@ -11,7 +11,7 @@ import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes
-import SmoothMoveScroll exposing (animateToCmd, animateToCmdWithConfig, animateToTask, defaultConfig)
+import SmoothMoveScroll exposing (scrollCmd, scrollCmdWithConfig, scrollTask, defaultConfig)
 import Task
 
 
@@ -61,16 +61,16 @@ update msg model =
             ( model, Cmd.none )
 
         ScrollToParagraphOne ->
-            ( model, animateToCmdWithConfig NoOp defaultConfig "paragraph-one" )
+            ( model, scrollCmdWithConfig NoOp "paragraph-one" defaultConfig )
 
         ScrollToParagraphTwo ->
-            ( model, animateToCmdWithConfig NoOp defaultConfig "paragraph-two" )
+            ( model, scrollCmdWithConfig NoOp "paragraph-two" defaultConfig )
 
         ScrollToParagraphThree ->
-            ( model, animateToCmdWithConfig NoOp defaultConfig "paragraph-three" )
+            ( model, scrollCmdWithConfig NoOp "paragraph-three" defaultConfig )
 
         ScrollToTop ->
-            ( model, animateToCmdWithConfig NoOp defaultConfig "top" )
+            ( model, scrollCmdWithConfig NoOp "top" defaultConfig )
 
 
 

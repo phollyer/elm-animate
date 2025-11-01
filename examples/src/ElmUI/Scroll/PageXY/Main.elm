@@ -11,7 +11,7 @@ import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes
-import SmoothMoveScroll exposing (Axis(..), animateToCmdWithConfig, defaultConfig)
+import SmoothMoveScroll exposing (Axis(..), scrollCmdWithConfig, defaultConfig)
 import Task
 
 
@@ -63,57 +63,57 @@ update msg model =
 
         ScrollToTopLeft ->
             ( model
-            , animateToCmdWithConfig NoOp
+            , scrollCmdWithConfig NoOp
+                "top-left"
                 { defaultConfig
                     | axis = Both
                     , offsetX = 20
                     , offsetY = 20
                 }
-                "top-left"
             )
 
         ScrollToTopRight ->
             ( model
-            , animateToCmdWithConfig NoOp
+            , scrollCmdWithConfig NoOp
+                "top-right"
                 { defaultConfig
                     | axis = Both
                     , offsetX = 20
                     , offsetY = 20
                 }
-                "top-right"
             )
 
         ScrollToBottomLeft ->
             ( model
-            , animateToCmdWithConfig NoOp
+            , scrollCmdWithConfig NoOp
+                "bottom-left"
                 { defaultConfig
                     | axis = Both
                     , offsetX = 20
                     , offsetY = 20
                 }
-                "bottom-left"
             )
 
         ScrollToBottomRight ->
             ( model
-            , animateToCmdWithConfig NoOp
+            , scrollCmdWithConfig NoOp
+                "bottom-right"
                 { defaultConfig
                     | axis = Both
                     , offsetX = 20
                     , offsetY = 20
                 }
-                "bottom-right"
             )
 
         ScrollToCenter ->
             ( model
-            , animateToCmdWithConfig NoOp
+            , scrollCmdWithConfig NoOp
+                "center"
                 { defaultConfig
                     | axis = Both
                     , offsetX = 20
                     , offsetY = 20
                 }
-                "center"
             )
 
 

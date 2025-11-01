@@ -9,41 +9,32 @@ A comprehensive Elm package providing **4 different animation approaches** for s
 ### 1. **SmoothMoveScroll** - Scrolling (Simple & Advanced)
 Perfect for **document/container scrolling** with both simple and advanced APIs.
 ```elm
-import SmoothMoveScroll exposing (animateTo, animateToWithConfig)
+import SmoothMoveScroll exposing (defaultConfig, scrollCmd, scrollCmdWithConfig, Timing(..))
 
 -- Simple usage (recommended for most users)
-animateTo "target-element-id"  -- Returns Cmd ()
+scrollCmd NoOp "target-element-id"  -- Returns (Cmd msg)
 
 -- Simple with configuration
-animateToWithConfig 
-    { defaultConfig | offset = 60, speed = 15 } 
-    "target-element-id"
+scrollCmdWithConfig NoOp "target-element-id" <|
+    { defaultConfig | offsetY = 60, timing = Speed 15 }
 
 -- Instant scrolling without animation
-jumpTo "target-element-id"  -- Immediate scroll
+jumpTo NoOp "target-element-id"  -- Immediate scroll
+
+-- Scroll to top of page
+scrollToTop NoOp "container-id"  -- Smooth scroll to top
+scrollToTopWithConfig NoOp "container-id" <|
+    { defaultConfig | timing = Duration 300 }  -- Scroll to top with configuration
 
 -- Advanced: Task-based for composition/error handling
-import SmoothMoveScroll exposing (animateToTask)
+import SmoothMoveScroll exposing (scrollTask)
 import Task
 
-animateToTask "target-element-id"
+scrollTask "target-element-id"
     |> Task.attempt HandleScrollError
 ```
 
-### 2. **SmoothMoveSub** - Subscription-Based Positioning  
-Ideal for **multiple simultaneous element animations** with frame-rate independence.
-```elm
-import SmoothMoveSub exposing (animateTo, transform)
-import Html.Attributes exposing (style)
-
--- Animate an element to position (100, 200)
-{ model | animations = animateTo "my-element" 100 200 model.animations }
-
--- Apply in view with CSS transform
-style "transform" (transform "my-element" model.animations)
-```
-
-### 3. **SmoothMoveCSS** - CSS Transition-Based
+### 2. **SmoothMoveCSS** - CSS Transition-Based
 Uses **native browser CSS transitions** for optimal performance and battery efficiency.
 ```elm
 import SmoothMoveCSS exposing (transform, transition, onTransitionEnd)
@@ -60,6 +51,19 @@ div
   , SmoothMoveCSS.onTransitionEnd AnimationComplete  -- Optional: listen for completion
   ] 
   [ text "Smooth!" ]
+```
+
+### 3. **SmoothMoveSub** - Subscription-Based Positioning  
+Ideal for **multiple simultaneous element animations** with frame-rate independence.
+```elm
+import SmoothMoveSub exposing (animateTo, transform)
+import Html.Attributes exposing (style)
+
+-- Animate an element to position (100, 200)
+{ model | animations = animateTo "my-element" 100 200 model.animations }
+
+-- Apply in view with CSS transform
+style "transform" (transform "my-element" model.animations)
 ```
 
 ### 4. **SmoothMovePorts** - Web Animations API
@@ -94,11 +98,11 @@ npm install elm-smooth-move
 
 **For page scrolling:**  
 ```elm
-import SmoothMoveScroll exposing (animateTo)
+import SmoothMoveScroll exposing (scrollCmd)
 
 -- In your update function (simple!)
 SmoothScroll elementId ->
-    ( model, animateTo elementId )
+    ( model, scrollCmd NoOp elementId )
 ```
 
 **For moving UI elements (CSS approach - recommended):**
@@ -192,8 +196,8 @@ Interactive examples are ready to run! Open `examples/index.html` to see the mai
 | Approach | Best For | Performance | Battery | Complexity |
 |----------|----------|-------------|---------|------------|
 | **SmoothMoveScroll** | Document/container scrolling | Good | Medium | Simple |
-| **SmoothMoveSub** | Multiple simultaneous elements | Good | Medium | Medium |
 | **SmoothMoveCSS** | Battery efficiency, simple UI | Excellent* | Best* | Simple |
+| **SmoothMoveSub** | Multiple simultaneous elements | Good | Medium | Medium |
 | **SmoothMovePorts** | Maximum control & performance | Excellent* | Best* | Complex |
 
 _*Hardware accelerated when available_
@@ -245,7 +249,7 @@ Most approaches now share very similar APIs!
 **✅ Easy transitions:**
 ```elm
 -- Scrolling (simple Cmd-based)
-ScrollTo elementId -> ( model, SmoothMoveScroll.animateTo elementId )
+ScrollTo elementId -> ( model, SmoothMoveScroll.scrollCmd NoOp elementId )
 
 -- Element positioning (CSS - stateless, recommended)
 MoveElement -> { model | position = { x = 100, y = 200 } }
@@ -257,11 +261,11 @@ MoveElement -> { model | animations = SmoothMoveSub.animateTo "elem" 100 200 mod
 **⚠️ Requires additional changes:**
 - **SmoothMovePorts**: Returns `( Model, Cmd )` - needs tuple destructuring + JavaScript setup
 - **Subscriptions**: SmoothMoveSub/CSS need subscriptions, Task/Ports don't
-- **Advanced Task API**: Use `SmoothMoveScroll.animateToTask` for composition/error handling
+- **Advanced Task API**: Use `SmoothMoveScroll.scrollTask` for composition/error handling
 
 ## 📖 API Documentation
 
-- **SmoothMoveScroll**: `animateTo`, `animateToWithConfig`, `containerElement`, `containerElementWithConfig` (simple Cmd-based) + `animateToTask`, `animateToTaskWithConfig`, `containerElementTask`, `containerElementTaskWithConfig` (advanced Task-based)
+- **SmoothMoveScroll**: `scrollCmd`, `scrollCmdWithConfig`, `jumpTo`, `jumpToWithConfig`, `scrollToTop`, `scrollToTopWithConfig` (simple Cmd-based) + `scrollTask`, `scrollTaskWithConfig` (advanced Task-based)
 - **SmoothMoveSub**: `animateTo`, `animateToWithConfig`, `subscriptions`, `transform`, `setInitialPosition`
 
 - **SmoothMoveCSS**: `transform`, `transition`, `transitionWithDistance`, `calculateDuration` (pure CSS generation) + `onTransitionStart`, `onTransitionEnd`, `onTransitionRun`, `onTransitionCancel` (event handlers)
