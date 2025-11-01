@@ -19,6 +19,9 @@ animateToWithConfig
     { defaultConfig | offset = 60, speed = 15 } 
     "target-element-id"
 
+-- Instant scrolling without animation
+jumpTo "target-element-id"  -- Immediate scroll
+
 -- Advanced: Task-based for composition/error handling
 import SmoothMoveScroll exposing (animateToTask)
 import Task

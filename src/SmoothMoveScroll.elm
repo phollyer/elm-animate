@@ -9,6 +9,8 @@ module SmoothMoveScroll exposing
     , setDocumentBody
     , animateToCmd
     , animateToCmdWithConfig
+    , jumpTo
+    , jumpToWithConfig
     , animateToTask
     , animateToTaskWithConfig
     , scrollToTop
@@ -48,6 +50,12 @@ Key features:
 
 @docs animateToCmd
 @docs animateToCmdWithConfig
+
+
+# Instant Scrolling
+
+@docs jumpTo
+@docs jumpToWithConfig
 
 
 # Task-based API (Advanced)
@@ -255,6 +263,77 @@ animateToCmdWithConfig msg config elementId =
         |> Task.attempt (always msg)
 
 
+{-| Instantly jump to an element without animation.
+
+Perfect for immediate navigation where you don't want smooth scrolling.
+
+    JumpToSection sectionId ->
+        ( model, jumpTo JumpComplete sectionId )
+
+-}
+jumpTo : msg -> String -> Cmd msg
+jumpTo msg elementId =
+    jumpToWithConfig msg defaultConfig elementId
+
+
+{-| Jump to an element with configuration (respects offset and axis settings).
+
+    JumpToSection sectionId ->
+        ( model, jumpToWithConfig JumpComplete { defaultConfig | offset = 50 } sectionId )
+
+-}
+jumpToWithConfig : msg -> Config -> String -> Cmd msg
+jumpToWithConfig msg config elementId =
+    jumpToTask config elementId
+        |> Task.attempt (always msg)
+
+
+{-| Internal task for instant jumping - used by jumpTo functions
+-}
+jumpToTask : Config -> String -> Task Dom.Error ()
+jumpToTask config id =
+    let
+        getViewport_ =
+            getViewport config.container
+
+        getContainerInfo_ =
+            getContainerInfo config.container
+
+        scrollTask { scene, viewport } { element } container =
+            let
+                ( clampedX, clampedY ) =
+                    getClampedPositions element viewport scene container config
+
+                setViewportTask =
+                    case config.container of
+                        DocumentBody ->
+                            case config.axis of
+                                X ->
+                                    Dom.setViewport clampedX viewport.y
+
+                                Y ->
+                                    Dom.setViewport viewport.x clampedY
+
+                                Both ->
+                                    Dom.setViewport clampedX clampedY
+
+                        InnerNode containerNodeId ->
+                            case config.axis of
+                                X ->
+                                    Dom.setViewportOf containerNodeId clampedX viewport.y
+
+                                Y ->
+                                    Dom.setViewportOf containerNodeId viewport.x clampedY
+
+                                Both ->
+                                    Dom.setViewportOf containerNodeId clampedX clampedY
+            in
+            setViewportTask
+    in
+    Task.map3 scrollTask getViewport_ (Dom.getElement id) getContainerInfo_
+        |> Task.andThen identity
+
+
 {-| Task-based scrolling for advanced users who need error handling or composition.
 
     ScrollTo elementId ->
@@ -275,44 +354,16 @@ animateToTask elementId =
 animateToTaskWithConfig : Config -> String -> Task Dom.Error (List ())
 animateToTaskWithConfig config id =
     let
-        getViewport =
-            case config.container of
-                DocumentBody ->
-                    Dom.getViewport
+        getViewport_ =
+            getViewport config.container
 
-                InnerNode containerNodeId ->
-                    Dom.getViewportOf containerNodeId
-
-        getContainerInfo =
-            case config.container of
-                DocumentBody ->
-                    Task.succeed Nothing
-
-                InnerNode containerNodeId ->
-                    Task.map Just (Dom.getElement containerNodeId)
+        getContainerInfo_ =
+            getContainerInfo config.container
 
         scrollTask { scene, viewport } { element } container =
             let
-                ( targetX, targetY ) =
-                    case container of
-                        Nothing ->
-                            ( element.x - toFloat config.offsetX
-                            , element.y - toFloat config.offsetY
-                            )
-
-                        Just containerInfo ->
-                            ( viewport.x + element.x - toFloat config.offsetX - containerInfo.element.x
-                            , viewport.y + element.y - toFloat config.offsetY - containerInfo.element.y
-                            )
-
                 ( clampedX, clampedY ) =
-                    ( targetX
-                        |> min (scene.width - viewport.width)
-                        |> max 0
-                    , targetY
-                        |> min (scene.height - viewport.height)
-                        |> max 0
-                    )
+                    getClampedPositions element viewport scene container config
 
                 setViewportTask =
                     case config.container of
@@ -422,7 +473,7 @@ animateToTaskWithConfig config id =
             in
             setViewportTask
     in
-    Task.map3 scrollTask getViewport (Dom.getElement id) getContainerInfo
+    Task.map3 scrollTask getViewport_ (Dom.getElement id) getContainerInfo_
         |> Task.andThen identity
 
 
@@ -486,3 +537,52 @@ scrollToTopWithConfig msg config containerId =
                             )
     in
     Task.attempt (always msg) scrollToTopTask
+
+
+getViewport : Container -> Task Dom.Error Dom.Viewport
+getViewport container =
+    case container of
+        DocumentBody ->
+            Dom.getViewport
+
+        InnerNode containerNodeId ->
+            Dom.getViewportOf containerNodeId
+
+
+getContainerInfo : Container -> Task Dom.Error (Maybe Dom.Element)
+getContainerInfo container =
+    case container of
+        DocumentBody ->
+            Task.succeed Nothing
+
+        InnerNode containerNodeId ->
+            Task.map Just (Dom.getElement containerNodeId)
+
+
+getClampedPositions : { a | x : Float, y : Float, height : Float, width : Float } -> { a | x : Float, y : Float, height : Float, width : Float } -> { a | width : Float, height : Float } -> Maybe Dom.Element -> Config -> ( Float, Float )
+getClampedPositions element viewport scene container config =
+    let
+        ( targetX, targetY ) =
+            getTargetPositions element viewport container config
+    in
+    ( targetX
+        |> min (scene.width - viewport.width)
+        |> max 0
+    , targetY
+        |> min (scene.height - viewport.height)
+        |> max 0
+    )
+
+
+getTargetPositions : { a | x : Float, y : Float } -> { a | x : Float, y : Float } -> Maybe Dom.Element -> Config -> ( Float, Float )
+getTargetPositions element viewport container config =
+    case container of
+        Nothing ->
+            ( element.x - toFloat config.offsetX
+            , element.y - toFloat config.offsetY
+            )
+
+        Just containerInfo ->
+            ( viewport.x + element.x - toFloat config.offsetX - containerInfo.element.x
+            , viewport.y + element.y - toFloat config.offsetY - containerInfo.element.y
+            )
