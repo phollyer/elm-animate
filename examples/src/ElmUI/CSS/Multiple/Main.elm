@@ -176,7 +176,7 @@ viewContent model =
         positionF = model.positions.elementF
 
         -- Generate CSS transition styles for smooth animation
-        cssTransition = SmoothMoveCSS.transition
+        cssTransition = SmoothMoveCSS.transition SmoothMoveCSS.defaultConfig
     in
     [ UI.backButton
     , UI.pageHeader "SmoothMoveCSS Multiple Example"

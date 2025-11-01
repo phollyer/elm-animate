@@ -11539,6 +11539,13 @@ var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
 			'background-color',
 			clr));
 };
+var $author$project$SmoothMoveCSS$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
+var $author$project$SmoothMoveCSS$defaultConfig = {
+	easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
+	timing: $author$project$SmoothMoveCSS$Duration(400)
+};
 var $mdgriffith$elm_ui$Element$el = F2(
 	function (attrs, child) {
 		return A4(
@@ -11738,13 +11745,6 @@ var $author$project$SmoothMoveCSS$transform = F2(
 	function (x, y) {
 		return 'translate(' + ($elm$core$String$fromFloat(x) + ('px, ' + ($elm$core$String$fromFloat(y) + 'px)')));
 	});
-var $author$project$SmoothMoveCSS$Duration = function (a) {
-	return {$: 'Duration', a: a};
-};
-var $author$project$SmoothMoveCSS$defaultConfig = {
-	easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
-	timing: $author$project$SmoothMoveCSS$Duration(400)
-};
 var $author$project$SmoothMoveCSS$timingToMilliseconds = F2(
 	function (timing, distance) {
 		if (timing.$ === 'Speed') {
@@ -11760,7 +11760,9 @@ var $author$project$SmoothMoveCSS$transitionWithConfig = F2(
 		var duration = A2($author$project$SmoothMoveCSS$timingToMilliseconds, config.timing, distance);
 		return 'transform ' + ($elm$core$String$fromFloat(duration) + ('ms ' + config.easing));
 	});
-var $author$project$SmoothMoveCSS$transition = A2($author$project$SmoothMoveCSS$transitionWithConfig, $author$project$SmoothMoveCSS$defaultConfig, 0);
+var $author$project$SmoothMoveCSS$transition = function (config) {
+	return A2($author$project$SmoothMoveCSS$transitionWithConfig, config, 0);
+};
 var $author$project$Common$Colors$warning = A3($mdgriffith$elm_ui$Element$rgb255, 245, 158, 11);
 var $author$project$Common$Colors$warningDark = A3($mdgriffith$elm_ui$Element$rgb255, 217, 119, 6);
 var $author$project$ElmUI$CSS$Multiple$Main$viewContent = function (model) {
@@ -11770,7 +11772,7 @@ var $author$project$ElmUI$CSS$Multiple$Main$viewContent = function (model) {
 	var positionC = model.positions.elementC;
 	var positionB = model.positions.elementB;
 	var positionA = model.positions.elementA;
-	var cssTransition = $author$project$SmoothMoveCSS$transition;
+	var cssTransition = $author$project$SmoothMoveCSS$transition($author$project$SmoothMoveCSS$defaultConfig);
 	return _List_fromArray(
 		[
 			$author$project$Common$UI$backButton,

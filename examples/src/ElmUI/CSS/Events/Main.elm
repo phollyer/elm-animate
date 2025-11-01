@@ -266,7 +266,7 @@ viewContent model =
             , htmlAttribute (Html.Attributes.style "transform" (SmoothMoveCSS.transform model.position.x model.position.y))
             , htmlAttribute (Html.Attributes.style "transition" 
                 (if model.isAnimating then
-                    SmoothMoveCSS.transition
+                    SmoothMoveCSS.transition SmoothMoveCSS.defaultConfig
                  else
                     "none"
                 ))

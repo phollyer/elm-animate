@@ -9,15 +9,13 @@ module SmoothMoveCSS exposing
     , animateTo
     , animateToX
     , animateToY
-    , animateToWithConfig
-    , animateToXWithConfig
-    , animateToYWithConfig
     , getPosition
     , transform
     , transformElement
     , transformPosition
     , transition
     , transitionWithDistance
+    , transitionWithSpeed
     , calculateDuration
     , onTransitionStart
     , onTransitionEnd
@@ -52,9 +50,6 @@ This module generates CSS properties for transitions, letting the browser handle
 @docs animateTo
 @docs animateToX
 @docs animateToY
-@docs animateToWithConfig
-@docs animateToXWithConfig
-@docs animateToYWithConfig
 @docs getPosition
 
 
@@ -65,6 +60,7 @@ This module generates CSS properties for transitions, letting the browser handle
 @docs transformPosition
 @docs transition
 @docs transitionWithDistance
+@docs transitionWithSpeed
 @docs calculateDuration
 
 
@@ -147,7 +143,7 @@ init =
 
 {-| Set the position for an element
 
-Useful for preventing elements from jumping from (0,0) when first animated:
+If not set, the element defaults to (0,0):
 
     model
         |> setPosition "box1" 100 150
@@ -170,35 +166,13 @@ This function updates the model state. Apply the position in your view with `tra
     -- In view
     div
         [ style "transform" (transform "box" model.animations)
-        , style "transition" transition
+        , style "transition" (transition defaultConfig)
         ]
         [ text "Animated box" ]
 
 -}
 animateTo : String -> Float -> Float -> Model -> Model
-animateTo elementId x y model =
-    animateToWithConfig defaultConfig elementId x y model
-
-
-{-| Update an element's position with custom configuration
-
-Note: The config parameter is provided for API consistency with other modules,
-but in CSS-based animations, timing and easing are applied via the CSS transition property.
-Use `transitionWithDistance` to generate transitions with custom config.
-
-    -- Update position
-    model.animations = animateToWithConfig config "box" 300 200 model.animations
-
-    -- Apply custom transition in view
-    div
-        [ style "transform" (transformElement "box" model.animations)
-        , style "transition" (transitionWithDistance config distance)
-        ]
-        [ text "Custom animated box" ]
-
--}
-animateToWithConfig : Config -> String -> Float -> Float -> Model -> Model
-animateToWithConfig _ elementId x y (Model positions) =
+animateTo elementId x y (Model positions) =
     Model (Dict.insert elementId { x = x, y = y } positions)
 
 
@@ -211,11 +185,16 @@ Uses default configuration.
 
 -}
 animateToX : String -> Float -> Model -> Model
-animateToX elementId x model =
-    animateToXWithConfig defaultConfig elementId x model
+animateToX elementId x (Model positions) =
+    let
+        currentPos =
+            Dict.get elementId positions
+                |> Maybe.withDefault { x = 0, y = 0 }
+    in
+    Model (Dict.insert elementId { x = x, y = currentPos.y } positions)
 
 
-{-| Animate element vertically to target Y position  
+{-| Animate element vertically to target Y position
 
 Only the Y coordinate will change - X position remains at current value.
 Uses default configuration.
@@ -224,36 +203,11 @@ Uses default configuration.
 
 -}
 animateToY : String -> Float -> Model -> Model
-animateToY elementId y model =
-    animateToYWithConfig defaultConfig elementId y model
-
-
-{-| Animate element horizontally with custom configuration
-
-Only the X coordinate will change - Y position remains at current value.
-
-    model.animations = animateToXWithConfig config "box" 300 model.animations
-
--}
-animateToXWithConfig : Config -> String -> Float -> Model -> Model
-animateToXWithConfig _ elementId x (Model positions) =
+animateToY elementId y (Model positions) =
     let
-        currentPos = Dict.get elementId positions |> Maybe.withDefault { x = 0, y = 0 }
-    in
-    Model (Dict.insert elementId { x = x, y = currentPos.y } positions)
-
-
-{-| Animate element vertically with custom configuration
-
-Only the Y coordinate will change - X position remains at current value.
-
-    model.animations = animateToYWithConfig config "box" 200 model.animations
-
--}
-animateToYWithConfig : Config -> String -> Float -> Model -> Model
-animateToYWithConfig _ elementId y (Model positions) =
-    let
-        currentPos = Dict.get elementId positions |> Maybe.withDefault { x = 0, y = 0 }
+        currentPos =
+            Dict.get elementId positions
+                |> Maybe.withDefault { x = 0, y = 0 }
     in
     Model (Dict.insert elementId { x = currentPos.x, y = y } positions)
 
@@ -279,7 +233,7 @@ getPosition elementId (Model positions) =
 
     div
         [ style "transform" (transformElement "box" model.animations)
-        , style "transition" transition
+        , style "transition" (transition defaultConfig)
         ]
         [ text "Box" ]
 
@@ -322,20 +276,31 @@ transformPosition pos =
     transform pos.x pos.y
 
 
-{-| Generate CSS transition property with default timing
+{-| Generate CSS transition property with custom configuration
 
-Creates a transition for the transform property with default configuration.
+Creates a transition for the transform property with your configuration.
+For default configuration, pass `defaultConfig`.
 
     div
         [ style "transform" (SmoothMoveCSS.transform targetX targetY)
-        , style "transition" SmoothMoveCSS.transition
+        , style "transition" (SmoothMoveCSS.transition SmoothMoveCSS.defaultConfig)
         ]
         [ text "Animated element" ]
 
+    -- Or with custom config
+    customConfig =
+        { defaultConfig | timing = Speed 200, easing = "ease-in-out" }
+
+    div
+        [ style "transform" (SmoothMoveCSS.transform targetX targetY)
+        , style "transition" (SmoothMoveCSS.transition customConfig)
+        ]
+        [ text "Custom animated element" ]
+
 -}
-transition : String
-transition =
-    transitionWithConfig defaultConfig 0
+transition : Config -> String
+transition config =
+    transitionWithConfig config 0
 
 
 {-| Generate CSS transition property with distance-based duration
@@ -349,14 +314,46 @@ Use this when you want the animation speed to feel consistent regardless of dist
     in
     div
         [ style "transform" (SmoothMoveCSS.transform targetX targetY)
-        , style "transition" (SmoothMoveCSS.transitionWithDistance defaultConfig distance)
+        , style "transition" (SmoothMoveCSS.transitionWithDistance distance defaultConfig)
         ]
         [ text "Animated element" ]
 
 -}
-transitionWithDistance : Config -> Float -> String
-transitionWithDistance config distance =
+transitionWithDistance : Float -> Config -> String
+transitionWithDistance distance config =
     transitionWithConfig config distance
+
+
+{-| Generate CSS transition property with speed-based timing
+
+This is a convenience function for creating transitions with Speed-based timing.
+Calculates the duration based on the distance and speed (pixels per second).
+
+    let
+        -- pixels to travel
+        distance =
+            100
+
+        -- pixels per second
+        speed =
+            200
+    in
+    div
+        [ style "transform" (SmoothMoveCSS.transform targetX targetY)
+        , style "transition" (SmoothMoveCSS.transitionWithSpeed speed distance defaultConfig)
+        ]
+        [ text "Speed-based animated element" ]
+
+-}
+transitionWithSpeed : Float -> Float -> Config -> String
+transitionWithSpeed speed distance config =
+    let
+        duration =
+            (distance / speed) * 1000
+
+        -- Convert to milliseconds
+    in
+    "transform " ++ String.fromFloat duration ++ "ms " ++ config.easing
 
 
 {-| Calculate animation duration in milliseconds based on distance and timing config
@@ -417,7 +414,7 @@ timingToMilliseconds timing distance =
 
     div
         [ style "transform" (SmoothMoveCSS.transform x y)
-        , style "transition" SmoothMoveCSS.transition
+        , style "transition" (SmoothMoveCSS.transition SmoothMoveCSS.defaultConfig)
         , SmoothMoveCSS.onTransitionStart TransitionStarted
         ]
         [ text "Animated element" ]
@@ -432,7 +429,7 @@ onTransitionStart msg =
 
     div
         [ style "transform" (SmoothMoveCSS.transform x y)
-        , style "transition" SmoothMoveCSS.transition
+        , style "transition" (SmoothMoveCSS.transition SmoothMoveCSS.defaultConfig)
         , SmoothMoveCSS.onTransitionEnd TransitionCompleted
         ]
         [ text "Animated element" ]
@@ -453,7 +450,7 @@ It fires before transitionstart.
 
     div
         [ style "transform" (SmoothMoveCSS.transform x y)
-        , style "transition" SmoothMoveCSS.transition
+        , style "transition" (SmoothMoveCSS.transition SmoothMoveCSS.defaultConfig)
         , SmoothMoveCSS.onTransitionRun TransitionCreated
         ]
         [ text "Animated element" ]
@@ -471,7 +468,7 @@ such as when the element is removed or another transition starts.
 
     div
         [ style "transform" (SmoothMoveCSS.transform x y)
-        , style "transition" SmoothMoveCSS.transition
+        , style "transition" (SmoothMoveCSS.transition SmoothMoveCSS.defaultConfig)
         , SmoothMoveCSS.onTransitionCancel TransitionCancelled
         ]
         [ text "Animated element" ]

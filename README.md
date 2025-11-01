@@ -20,13 +20,13 @@ scrollTask "target-element-id" -- returns `Task Dom.Error (List ())`
 **Benefits:** "Fire and forget", hardware acceleration, multiple elements, battery efficient  
 **Drawbacks:** No access to intermediate values, limited control once started  
 ```elm
--- Update position in model
+-- Update the position in your model
 { model | smoothMove = SmoothMoveCSS.animateTo "my-element" 100 200 model.smoothMove }
 
 -- Apply in your view  
 div 
     [ style "transform" (SmoothMoveCSS.transformElement "my-element" model.smoothMove)
-    , style "transition" SmoothMoveCSS.transition 
+    , style "transition" (SmoothMoveCSS.transition SmoothMoveCSS.defaultConfig) 
     ] 
     [ text "Smooth!" ]
 ```
@@ -36,7 +36,7 @@ div
 **Benefits:** Full programmatic control, access to current positions, mid-animation changes  
 **Drawbacks:** Requires subscription management, more complex setup  
 ```elm
--- Update position in model
+-- Update the position in your model
 { model | smoothMove = SmoothMoveSub.animateTo "my-element" 100 200 model.smoothMove }
 
 -- Apply in your view
@@ -52,7 +52,7 @@ div
 **Drawbacks:** Requires JavaScript setup, more complex architecture  
 
 ```elm
--- Update position in model
+-- Update the position in your model
 let
     ( newSmoothMove, cmd ) = 
         SmoothMovePorts.animateTo "my-element" 100 200 model.smoothMove
@@ -120,7 +120,7 @@ init =
     , ...
     }
 
--- In your update (just update position(s)!)
+-- In your update function (just update position(s)!)
 AnimateElement ->
     { model 
     | element1 = SmoothMoveCSS.Position 100 100
@@ -134,15 +134,19 @@ AnimateElement ->
 -- In your view (browser handles animation)
 -- User manages position
 div 
-  [ style "transform" (SmoothMoveCSS.transform element1.x element1.y)
-  , style "transition" SmoothMoveCSS.transition
+  [ style "transform" <|
+        SmoothMoveCSS.transform model.element1.x model.element1.y
+  , style "transition" <|
+        SmoothMoveCSS.transition SmoothMoveCSS.defaultConfig
   ] 
   [ text "Animated element 1" ]
 
 -- SmoothMoveCSS manages position
 div 
-  [ style "transform" (SmoothMoveCSS.transformElement "element-2" model.smoothMove)
-  , style "transition" SmoothMoveCSS.transition
+  [ style "transform" <|
+        SmoothMoveCSS.transformElement "element-2" model.smoothMove
+  , style "transition" <|
+        SmoothMoveCSS.transition SmoothMoveCSS.defaultConfig
   ] 
   [ text "Animated element 2" ]
 ```
@@ -169,7 +173,8 @@ init =
 
 -- In your update  
 AnimateElement ->
-    { model | smoothMove = 
+    { model 
+    | smoothMove = 
         model.smoothMove
             -- move one or more elements
             |> SmoothMoveSub.animateTo "element-1" 200 300 

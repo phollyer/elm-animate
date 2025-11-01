@@ -5334,9 +5334,9 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$ElmUI$CSS$Basic$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
 };
-var $author$project$SmoothMoveCSS$animateToWithConfig = F5(
-	function (_v0, elementId, x, y, _v1) {
-		var positions = _v1.a;
+var $author$project$SmoothMoveCSS$animateTo = F4(
+	function (elementId, x, y, _v0) {
+		var positions = _v0.a;
 		return $author$project$SmoothMoveCSS$Model(
 			A3(
 				$elm$core$Dict$insert,
@@ -5344,16 +5344,73 @@ var $author$project$SmoothMoveCSS$animateToWithConfig = F5(
 				{x: x, y: y},
 				positions));
 	});
-var $author$project$SmoothMoveCSS$Duration = function (a) {
-	return {$: 'Duration', a: a};
-};
-var $author$project$SmoothMoveCSS$defaultConfig = {
-	easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
-	timing: $author$project$SmoothMoveCSS$Duration(400)
-};
-var $author$project$SmoothMoveCSS$animateTo = F4(
-	function (elementId, x, y, model) {
-		return A5($author$project$SmoothMoveCSS$animateToWithConfig, $author$project$SmoothMoveCSS$defaultConfig, elementId, x, y, model);
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$SmoothMoveCSS$animateToX = F3(
+	function (elementId, x, _v0) {
+		var positions = _v0.a;
+		var currentPos = A2(
+			$elm$core$Maybe$withDefault,
+			{x: 0, y: 0},
+			A2($elm$core$Dict$get, elementId, positions));
+		return $author$project$SmoothMoveCSS$Model(
+			A3(
+				$elm$core$Dict$insert,
+				elementId,
+				{x: x, y: currentPos.y},
+				positions));
+	});
+var $author$project$SmoothMoveCSS$animateToY = F3(
+	function (elementId, y, _v0) {
+		var positions = _v0.a;
+		var currentPos = A2(
+			$elm$core$Maybe$withDefault,
+			{x: 0, y: 0},
+			A2($elm$core$Dict$get, elementId, positions));
+		return $author$project$SmoothMoveCSS$Model(
+			A3(
+				$elm$core$Dict$insert,
+				elementId,
+				{x: currentPos.x, y: y},
+				positions));
 	});
 var $author$project$ElmUI$CSS$Basic$Main$update = F2(
 	function (msg, model) {
@@ -5373,6 +5430,42 @@ var $author$project$ElmUI$CSS$Basic$Main$update = F2(
 						model,
 						{
 							animations: A4($author$project$SmoothMoveCSS$animateTo, 'box', 300, 200, model.animations),
+							isAnimating: true
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'MoveLeft':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							animations: A3($author$project$SmoothMoveCSS$animateToX, 'box', 50, model.animations),
+							isAnimating: true
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'MoveRight':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							animations: A3($author$project$SmoothMoveCSS$animateToX, 'box', 450, model.animations),
+							isAnimating: true
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'MoveUp':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							animations: A3($author$project$SmoothMoveCSS$animateToY, 'box', 50, model.animations),
+							isAnimating: true
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'MoveDown':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							animations: A3($author$project$SmoothMoveCSS$animateToY, 'box', 350, model.animations),
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -5812,15 +5905,6 @@ var $mdgriffith$elm_ui$Internal$Model$transformClass = function (transform) {
 				'tfrm-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(tx) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(ty) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(tz) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(sx) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(sy) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(sz) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(ox) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(oy) + ('-' + ($mdgriffith$elm_ui$Internal$Model$floatClass(oz) + ('-' + $mdgriffith$elm_ui$Internal$Model$floatClass(angle))))))))))))))))))));
 	}
 };
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
 var $mdgriffith$elm_ui$Internal$Model$getStyleName = function (style) {
 	switch (style.$) {
 		case 'Shadows':
@@ -5917,37 +6001,6 @@ var $elm$core$Set$insert = F2(
 		var dict = _v0.a;
 		return $elm$core$Set$Set_elm_builtin(
 			A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict));
-	});
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
 	});
 var $elm$core$Dict$member = F2(
 	function (key, dict) {
@@ -11425,12 +11478,17 @@ var $author$project$Common$UI$createDocument = F3(
 		};
 	});
 var $author$project$ElmUI$CSS$Basic$Main$AnimationComplete = {$: 'AnimationComplete'};
+var $author$project$ElmUI$CSS$Basic$Main$MoveDown = {$: 'MoveDown'};
+var $author$project$ElmUI$CSS$Basic$Main$MoveLeft = {$: 'MoveLeft'};
+var $author$project$ElmUI$CSS$Basic$Main$MoveRight = {$: 'MoveRight'};
 var $author$project$ElmUI$CSS$Basic$Main$MoveToCenter = {$: 'MoveToCenter'};
 var $author$project$ElmUI$CSS$Basic$Main$MoveToCorner = {$: 'MoveToCorner'};
+var $author$project$ElmUI$CSS$Basic$Main$MoveUp = {$: 'MoveUp'};
 var $author$project$Common$UI$Primary = {$: 'Primary'};
 var $author$project$Common$UI$Purple = {$: 'Purple'};
 var $author$project$ElmUI$CSS$Basic$Main$StopAnimation = {$: 'StopAnimation'};
 var $author$project$Common$UI$Success = {$: 'Success'};
+var $author$project$Common$UI$Warning = {$: 'Warning'};
 var $mdgriffith$elm_ui$Internal$Model$Left = {$: 'Left'};
 var $mdgriffith$elm_ui$Element$alignLeft = $mdgriffith$elm_ui$Internal$Model$AlignX($mdgriffith$elm_ui$Internal$Model$Left);
 var $author$project$Common$Colors$backgroundWhite = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
@@ -11551,6 +11609,13 @@ var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
 			'bg-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(clr),
 			'background-color',
 			clr));
+};
+var $author$project$SmoothMoveCSS$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
+var $author$project$SmoothMoveCSS$defaultConfig = {
+	easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
+	timing: $author$project$SmoothMoveCSS$Duration(400)
 };
 var $mdgriffith$elm_ui$Element$el = F2(
 	function (attrs, child) {
@@ -11768,7 +11833,9 @@ var $author$project$SmoothMoveCSS$transitionWithConfig = F2(
 		var duration = A2($author$project$SmoothMoveCSS$timingToMilliseconds, config.timing, distance);
 		return 'transform ' + ($elm$core$String$fromFloat(duration) + ('ms ' + config.easing));
 	});
-var $author$project$SmoothMoveCSS$transition = A2($author$project$SmoothMoveCSS$transitionWithConfig, $author$project$SmoothMoveCSS$defaultConfig, 0);
+var $author$project$SmoothMoveCSS$transition = function (config) {
+	return A2($author$project$SmoothMoveCSS$transitionWithConfig, config, 0);
+};
 var $author$project$ElmUI$CSS$Basic$Main$viewContent = function (model) {
 	return _List_fromArray(
 		[
@@ -11800,6 +11867,14 @@ var $author$project$ElmUI$CSS$Basic$Main$viewContent = function (model) {
 					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$CSS$Basic$Main$MoveToCorner, 'Move to (100, 100)'),
 					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$CSS$Basic$Main$MoveToCenter, 'Move to (300, 200)'),
 					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$CSS$Basic$Main$StopAnimation, 'Return to Origin')
+				])),
+			$author$project$Common$UI$htmlActionButtons(
+			_List_fromArray(
+				[
+					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$CSS$Basic$Main$MoveLeft, '← Move Left'),
+					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$CSS$Basic$Main$MoveRight, 'Move Right →'),
+					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$CSS$Basic$Main$MoveUp, '↑ Move Up'),
+					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$CSS$Basic$Main$MoveDown, 'Move Down ↓')
 				])),
 			A2(
 			$mdgriffith$elm_ui$Element$el,
@@ -11847,7 +11922,7 @@ var $author$project$ElmUI$CSS$Basic$Main$viewContent = function (model) {
 						A2(
 							$elm$html$Html$Attributes$style,
 							'transition',
-							model.isAnimating ? $author$project$SmoothMoveCSS$transition : 'none')),
+							model.isAnimating ? $author$project$SmoothMoveCSS$transition($author$project$SmoothMoveCSS$defaultConfig) : 'none')),
 						$mdgriffith$elm_ui$Element$htmlAttribute(
 						$author$project$SmoothMoveCSS$onTransitionEnd($author$project$ElmUI$CSS$Basic$Main$AnimationComplete))
 					]),

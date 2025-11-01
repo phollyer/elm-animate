@@ -11703,6 +11703,13 @@ var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
 			'background-color',
 			clr));
 };
+var $author$project$SmoothMoveCSS$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
+var $author$project$SmoothMoveCSS$defaultConfig = {
+	easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
+	timing: $author$project$SmoothMoveCSS$Duration(400)
+};
 var $mdgriffith$elm_ui$Element$el = F2(
 	function (attrs, child) {
 		return A4(
@@ -11904,15 +11911,6 @@ var $author$project$SmoothMoveCSS$transform = F2(
 	function (x, y) {
 		return 'translate(' + ($elm$core$String$fromFloat(x) + ('px, ' + ($elm$core$String$fromFloat(y) + 'px)')));
 	});
-var $author$project$SmoothMoveCSS$Both = {$: 'Both'};
-var $author$project$SmoothMoveCSS$Duration = function (a) {
-	return {$: 'Duration', a: a};
-};
-var $author$project$SmoothMoveCSS$defaultConfig = {
-	axis: $author$project$SmoothMoveCSS$Both,
-	easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
-	timing: $author$project$SmoothMoveCSS$Duration(400)
-};
 var $author$project$SmoothMoveCSS$timingToMilliseconds = F2(
 	function (timing, distance) {
 		if (timing.$ === 'Speed') {
@@ -11928,7 +11926,9 @@ var $author$project$SmoothMoveCSS$transitionWithConfig = F2(
 		var duration = A2($author$project$SmoothMoveCSS$timingToMilliseconds, config.timing, distance);
 		return 'transform ' + ($elm$core$String$fromFloat(duration) + ('ms ' + config.easing));
 	});
-var $author$project$SmoothMoveCSS$transition = A2($author$project$SmoothMoveCSS$transitionWithConfig, $author$project$SmoothMoveCSS$defaultConfig, 0);
+var $author$project$SmoothMoveCSS$transition = function (config) {
+	return A2($author$project$SmoothMoveCSS$transitionWithConfig, config, 0);
+};
 var $author$project$Common$Colors$borderLight = A3($mdgriffith$elm_ui$Element$rgb255, 226, 232, 240);
 var $mdgriffith$elm_ui$Internal$Flag$borderColor = $mdgriffith$elm_ui$Internal$Flag$flag(28);
 var $mdgriffith$elm_ui$Element$Border$color = function (clr) {
@@ -12188,7 +12188,7 @@ var $author$project$ElmUI$CSS$Events$Main$viewContent = function (model) {
 						A2(
 							$elm$html$Html$Attributes$style,
 							'transition',
-							model.isAnimating ? $author$project$SmoothMoveCSS$transition : 'none')),
+							model.isAnimating ? $author$project$SmoothMoveCSS$transition($author$project$SmoothMoveCSS$defaultConfig) : 'none')),
 						$mdgriffith$elm_ui$Element$htmlAttribute(
 						$author$project$SmoothMoveCSS$onTransitionStart($author$project$ElmUI$CSS$Events$Main$OnTransitionStart)),
 						$mdgriffith$elm_ui$Element$htmlAttribute(

@@ -232,7 +232,7 @@ viewContent model =
             , htmlAttribute (Html.Attributes.style "transform" (SmoothMoveCSS.transformElement "box" model.animations))
             , htmlAttribute (Html.Attributes.style "transition" 
                 (if model.isAnimating then
-                    SmoothMoveCSS.transition
+                    SmoothMoveCSS.transition SmoothMoveCSS.defaultConfig
                  else
                     "none"
                 ))
