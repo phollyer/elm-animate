@@ -9,12 +9,12 @@ module Scroll exposing
 
 {-| Shared types for smooth scrolling animations.
 
-This module provides the common types used by both [Scroll.Cmd](Scroll.Cmd) and [Scroll.Task](Scroll.Task).
+This module provides the common types used by all `Scroll.*.Cmd` and `Scroll.*.Task` modules.
 
 For actual scrolling functionality, import one of:
 
-  - `Scroll.Cmd` for command-based API
-  - `Scroll.Task` for task-based API with error handling
+  - `Scroll.*.Cmd` for command-based API
+  - `Scroll.*.Task` for task-based API with error handling
 
 
 # Configuration

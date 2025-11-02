@@ -77,8 +77,8 @@ update msg model =
         ScrollToTopRight ->
             ( model
             , Scroll.scrollWithConfig
-                "scroll-container"
                 "top-right-element"
+                (Container "scroll-container")
                 NoOp
                 { defaultConfig
                     | axis = Both
@@ -91,7 +91,7 @@ update msg model =
             ( model
             , Scroll.scrollWithConfig
                 "bottom-left-element"
-                "scroll-container"
+                (Container "scroll-container")
                 NoOp
                 { defaultConfig
                     | axis = Both
@@ -104,7 +104,7 @@ update msg model =
             ( model
             , Scroll.scrollWithConfig
                 "bottom-right-element"
-                "scroll-container"
+                (Container "scroll-container")
                 NoOp
                 { defaultConfig
                     | axis = Both
@@ -117,7 +117,7 @@ update msg model =
             ( model
             , Scroll.scrollWithConfig
                 "center-element"
-                "scroll-container"
+                (Container "scroll-container")
                 NoOp
                 { defaultConfig
                     | axis = Both

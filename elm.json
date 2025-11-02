@@ -6,8 +6,10 @@
     "version": "2.0.1",
     "exposed-modules": [
         "Scroll",
-        "Scroll.Cmd",
-        "Scroll.Task",
+        "Scroll.Document.Cmd",
+        "Scroll.Document.Task",
+        "Scroll.Container.Cmd",
+        "Scroll.Container.Task",
         "SmoothMoveSub",
         "SmoothMoveCSS",
         "SmoothMovePorts"

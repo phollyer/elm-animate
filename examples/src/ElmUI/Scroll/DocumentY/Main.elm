@@ -1,4 +1,4 @@
-module ElmUI.Scroll.PageY.Main exposing (main)
+module ElmUI.Scroll.DocumentY.Main exposing (main)
 
 import Browser exposing (Document)
 import Browser.Dom
@@ -11,8 +11,8 @@ import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes
-import Scroll exposing (defaultConfig, Container(..))
-import Scroll.Cmd as Scroll
+import Scroll exposing (defaultConfig)
+import Scroll.Document.Cmd as Scroll
 import Task
 
 
@@ -63,19 +63,19 @@ update msg model =
             ( model, Cmd.none )
 
         ScrollToParagraphOne ->
-            ( model, Scroll.scrollWithConfig "paragraph-one" DocumentBody NoOp defaultConfig )
+            ( model, Scroll.scrollWithConfig "paragraph-one" NoOp defaultConfig )
 
         ScrollToParagraphTwo ->
-            ( model, Scroll.scrollWithConfig "paragraph-two" DocumentBody NoOp defaultConfig )
+            ( model, Scroll.scrollWithConfig "paragraph-two" NoOp defaultConfig )
 
         ScrollToParagraphThree ->
-            ( model, Scroll.scrollWithConfig "paragraph-three" DocumentBody NoOp defaultConfig )
+            ( model, Scroll.scrollWithConfig "paragraph-three" NoOp defaultConfig )
 
         ScrollToTop ->
-            ( model, Scroll.scrollToTop DocumentBody NoOp )
+            ( model, Scroll.scrollToTop NoOp )
 
         ScrollToBottom ->
-            ( model, Scroll.scrollToBottom DocumentBody NoOp )
+            ( model, Scroll.scrollToBottom NoOp )
 
 
 

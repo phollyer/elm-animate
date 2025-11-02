@@ -11,8 +11,8 @@ import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes
-import Scroll exposing (defaultConfig, Container(..))
-import Scroll.Cmd as Scroll
+import Scroll exposing (defaultConfig)
+import Scroll.Container.Cmd as Scroll
 
 
 
@@ -61,17 +61,17 @@ update msg model =
 
         ScrollToTop ->
             ( model
-            , Scroll.scrollWithConfig "top-element" (Container "scroll-container") NoOp defaultConfig
+            , Scroll.scrollWithConfig "scroll-container" "top-element" NoOp defaultConfig
             )
 
         ScrollToMiddle ->
             ( model
-            , Scroll.scrollWithConfig "middle-element" (Container "scroll-container") NoOp defaultConfig
+            , Scroll.scrollWithConfig "scroll-container" "middle-element" NoOp defaultConfig
             )
 
         ScrollToBottom ->
             ( model
-            , Scroll.scrollWithConfig "bottom-element" (Container "scroll-container") NoOp defaultConfig
+            , Scroll.scrollWithConfig "scroll-container" "bottom-element" NoOp defaultConfig
             )
 
 

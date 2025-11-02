@@ -1,4 +1,4 @@
-module ElmUI.Scroll.PageXY.Main exposing (main)
+module ElmUI.Scroll.DocumentXY.Main exposing (main)
 
 import Browser exposing (Document)
 import Common.Colors as Colors
@@ -8,8 +8,8 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
-import Scroll exposing (Axis(..), ElementId, defaultConfig, Container(..))
-import Scroll.Cmd as Scroll
+import Scroll exposing (Axis(..), ElementId, defaultConfig)
+import Scroll.Document.Cmd as Scroll
 import Task
 
 
@@ -43,7 +43,7 @@ init _ =
 
 scrollTo : ElementId -> Cmd Msg
 scrollTo targetId =
-    Scroll.scrollWithConfig targetId DocumentBody NoOp <|
+    Scroll.scrollWithConfig targetId NoOp <|
         { defaultConfig
             | axis = Both
             , offsetY = 0

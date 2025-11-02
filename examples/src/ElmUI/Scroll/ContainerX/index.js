@@ -5208,9 +5208,6 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$ElmUI$Scroll$ContainerX$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
 };
-var $author$project$Scroll$Container = function (a) {
-	return {$: 'Container', a: a};
-};
 var $author$project$ElmUI$Scroll$ContainerX$Main$NoOp = {$: 'NoOp'};
 var $author$project$Scroll$X = {$: 'X'};
 var $author$project$Scroll$Duration = function (a) {
@@ -5290,9 +5287,7 @@ var $author$project$Internal$AnimationCore$animationSteps = F4(
 			},
 			weights);
 	});
-var $elm$browser$Browser$Dom$getViewport = _Browser_withWindow(_Browser_getViewport);
 var $elm$browser$Browser$Dom$getViewportOf = _Browser_getViewportOf;
-var $elm$browser$Browser$Dom$setViewport = _Browser_setViewport;
 var $elm$browser$Browser$Dom$setViewportOf = _Browser_setViewportOf;
 var $author$project$Scroll$Internal$timingToSpeed = F2(
 	function (timing, distance) {
@@ -5310,134 +5305,83 @@ var $author$project$Scroll$Internal$timingToSpeed = F2(
 				$elm$core$Basics$round(distance / (milliseconds * 0.06)));
 		}
 	});
-var $author$project$Scroll$Task$scrollToLeftEdgeWithConfig = F2(
-	function (container, config) {
-		if (container.$ === 'DocumentBody') {
-			return A2(
-				$elm$core$Task$andThen,
-				function (_v1) {
-					var viewport = _v1.viewport;
-					var steps = A4(
-						$author$project$Internal$AnimationCore$animationSteps,
-						A2(
-							$author$project$Scroll$Internal$timingToSpeed,
-							config.timing,
-							$elm$core$Basics$abs(viewport.x)),
-						config.easing,
-						viewport.x,
-						0);
-					return $elm$core$Task$sequence(
-						A2(
-							$elm$core$List$map,
-							function (x) {
-								return A2($elm$browser$Browser$Dom$setViewport, x, viewport.y);
-							},
-							steps));
-				},
-				$elm$browser$Browser$Dom$getViewport);
-		} else {
-			var containerId = container.a;
-			return A2(
-				$elm$core$Task$andThen,
-				function (_v2) {
-					var viewport = _v2.viewport;
-					var steps = A4(
-						$author$project$Internal$AnimationCore$animationSteps,
-						A2(
-							$author$project$Scroll$Internal$timingToSpeed,
-							config.timing,
-							$elm$core$Basics$abs(viewport.x)),
-						config.easing,
-						viewport.x,
-						0);
-					return $elm$core$Task$sequence(
-						A2(
-							$elm$core$List$map,
-							function (x) {
-								return A3($elm$browser$Browser$Dom$setViewportOf, containerId, x, viewport.y);
-							},
-							steps));
-				},
-				$elm$browser$Browser$Dom$getViewportOf(containerId));
-		}
+var $author$project$Scroll$Container$Task$scrollToLeftEdgeWithConfig = F2(
+	function (containerId, config) {
+		return A2(
+			$elm$core$Task$andThen,
+			function (_v0) {
+				var viewport = _v0.viewport;
+				var steps = A4(
+					$author$project$Internal$AnimationCore$animationSteps,
+					A2(
+						$author$project$Scroll$Internal$timingToSpeed,
+						config.timing,
+						$elm$core$Basics$abs(viewport.x)),
+					config.easing,
+					viewport.x,
+					0);
+				return $elm$core$Task$sequence(
+					A2(
+						$elm$core$List$map,
+						function (x) {
+							return A3($elm$browser$Browser$Dom$setViewportOf, containerId, x, viewport.y);
+						},
+						steps));
+			},
+			$elm$browser$Browser$Dom$getViewportOf(containerId));
 	});
-var $author$project$Scroll$Cmd$scrollToLeftEdgeWithConfig = F3(
-	function (container, msg, config) {
+var $author$project$Scroll$Container$Cmd$scrollToLeftEdgeWithConfig = F3(
+	function (containerId, msg, config) {
 		return A2(
 			$elm$core$Task$attempt,
 			$elm$core$Basics$always(msg),
-			A2($author$project$Scroll$Task$scrollToLeftEdgeWithConfig, container, config));
+			A2($author$project$Scroll$Container$Task$scrollToLeftEdgeWithConfig, containerId, config));
 	});
-var $author$project$Scroll$Cmd$scrollToLeftEdge = F2(
-	function (container, msg) {
-		return A3($author$project$Scroll$Cmd$scrollToLeftEdgeWithConfig, container, msg, $author$project$Scroll$defaultConfig);
+var $author$project$Scroll$Container$Cmd$scrollToLeftEdge = F2(
+	function (containerId, msg) {
+		return A3($author$project$Scroll$Container$Cmd$scrollToLeftEdgeWithConfig, containerId, msg, $author$project$Scroll$defaultConfig);
 	});
-var $author$project$Scroll$Task$scrollToRightEdgeWithConfig = F2(
-	function (container, config) {
-		if (container.$ === 'DocumentBody') {
-			return A2(
-				$elm$core$Task$andThen,
-				function (_v1) {
-					var scene = _v1.scene;
-					var viewport = _v1.viewport;
-					var maxX = scene.width - viewport.width;
-					var steps = A4(
-						$author$project$Internal$AnimationCore$animationSteps,
-						A2(
-							$author$project$Scroll$Internal$timingToSpeed,
-							config.timing,
-							$elm$core$Basics$abs(maxX - viewport.x)),
-						config.easing,
-						viewport.x,
-						maxX);
-					return $elm$core$Task$sequence(
-						A2(
-							$elm$core$List$map,
-							function (x) {
-								return A2($elm$browser$Browser$Dom$setViewport, x, viewport.y);
-							},
-							steps));
-				},
-				$elm$browser$Browser$Dom$getViewport);
-		} else {
-			var containerId = container.a;
-			return A2(
-				$elm$core$Task$andThen,
-				function (_v2) {
-					var scene = _v2.scene;
-					var viewport = _v2.viewport;
-					var maxX = scene.width - viewport.width;
-					var steps = A4(
-						$author$project$Internal$AnimationCore$animationSteps,
-						A2(
-							$author$project$Scroll$Internal$timingToSpeed,
-							config.timing,
-							$elm$core$Basics$abs(maxX - viewport.x)),
-						config.easing,
-						viewport.x,
-						maxX);
-					return $elm$core$Task$sequence(
-						A2(
-							$elm$core$List$map,
-							function (x) {
-								return A3($elm$browser$Browser$Dom$setViewportOf, containerId, x, viewport.y);
-							},
-							steps));
-				},
-				$elm$browser$Browser$Dom$getViewportOf(containerId));
-		}
+var $author$project$Scroll$Container$Task$scrollToRightEdgeWithConfig = F2(
+	function (containerId, config) {
+		return A2(
+			$elm$core$Task$andThen,
+			function (_v0) {
+				var scene = _v0.scene;
+				var viewport = _v0.viewport;
+				var maxX = scene.width - viewport.width;
+				var steps = A4(
+					$author$project$Internal$AnimationCore$animationSteps,
+					A2(
+						$author$project$Scroll$Internal$timingToSpeed,
+						config.timing,
+						$elm$core$Basics$abs(maxX - viewport.x)),
+					config.easing,
+					viewport.x,
+					maxX);
+				return $elm$core$Task$sequence(
+					A2(
+						$elm$core$List$map,
+						function (x) {
+							return A3($elm$browser$Browser$Dom$setViewportOf, containerId, x, viewport.y);
+						},
+						steps));
+			},
+			$elm$browser$Browser$Dom$getViewportOf(containerId));
 	});
-var $author$project$Scroll$Cmd$scrollToRightEdgeWithConfig = F3(
-	function (container, msg, config) {
+var $author$project$Scroll$Container$Cmd$scrollToRightEdgeWithConfig = F3(
+	function (containerId, msg, config) {
 		return A2(
 			$elm$core$Task$attempt,
 			$elm$core$Basics$always(msg),
-			A2($author$project$Scroll$Task$scrollToRightEdgeWithConfig, container, config));
+			A2($author$project$Scroll$Container$Task$scrollToRightEdgeWithConfig, containerId, config));
 	});
-var $author$project$Scroll$Cmd$scrollToRightEdge = F2(
-	function (container, msg) {
-		return A3($author$project$Scroll$Cmd$scrollToRightEdgeWithConfig, container, msg, $author$project$Scroll$defaultConfig);
+var $author$project$Scroll$Container$Cmd$scrollToRightEdge = F2(
+	function (containerId, msg) {
+		return A3($author$project$Scroll$Container$Cmd$scrollToRightEdgeWithConfig, containerId, msg, $author$project$Scroll$defaultConfig);
 	});
+var $author$project$Scroll$Container = function (a) {
+	return {$: 'Container', a: a};
+};
 var $author$project$Internal$AnimationCore$animationStepsWithFrames = F4(
 	function (frames, easing, start, stop) {
 		var operator = (_Utils_cmp(start, stop) > 0) ? $elm$core$Basics$sub : $elm$core$Basics$add;
@@ -5496,6 +5440,7 @@ var $author$project$Scroll$Internal$getContainerInfo = function (container) {
 			$elm$browser$Browser$Dom$getElement(containerNodeId));
 	}
 };
+var $elm$browser$Browser$Dom$getViewport = _Browser_withWindow(_Browser_getViewport);
 var $author$project$Scroll$Internal$getViewport = function (container) {
 	if (container.$ === 'DocumentBody') {
 		return $elm$browser$Browser$Dom$getViewport;
@@ -5524,166 +5469,96 @@ var $elm$core$Task$map3 = F4(
 			},
 			taskA);
 	});
-var $author$project$Scroll$Task$scrollWithConfig = F3(
-	function (id, container, config) {
+var $author$project$Scroll$Container$Task$scrollWithConfig = F3(
+	function (containerId, elementId, config) {
 		var performScrollTask = F3(
-			function (_v6, _v7, containerInfo) {
-				var scene = _v6.scene;
-				var viewport = _v6.viewport;
-				var element = _v7.element;
+			function (_v3, _v4, containerInfo) {
+				var scene = _v3.scene;
+				var viewport = _v3.viewport;
+				var element = _v4.element;
 				var _v0 = A5($author$project$Scroll$Internal$getClampedPositions, element, viewport, scene, containerInfo, config);
 				var clampedX = _v0.a;
 				var clampedY = _v0.b;
 				var setViewportTask = function () {
-					if (container.$ === 'DocumentBody') {
-						var _v2 = config.axis;
-						switch (_v2.$) {
-							case 'X':
-								return $elm$core$Task$sequence(
-									A2(
-										$elm$core$List$map,
-										function (x) {
-											return A2($elm$browser$Browser$Dom$setViewport, x, viewport.y);
-										},
-										A4(
-											$author$project$Internal$AnimationCore$animationSteps,
-											A2(
-												$author$project$Scroll$Internal$timingToSpeed,
-												config.timing,
-												$elm$core$Basics$abs(clampedX - viewport.x)),
-											config.easing,
-											viewport.x,
-											clampedX)));
-							case 'Y':
+					var _v1 = config.axis;
+					switch (_v1.$) {
+						case 'X':
+							return $elm$core$Task$sequence(
+								A2(
+									$elm$core$List$map,
+									function (x) {
+										return A3($elm$browser$Browser$Dom$setViewportOf, containerId, x, viewport.y);
+									},
+									A4(
+										$author$project$Internal$AnimationCore$animationSteps,
+										A2(
+											$author$project$Scroll$Internal$timingToSpeed,
+											config.timing,
+											$elm$core$Basics$abs(clampedX - viewport.x)),
+										config.easing,
+										viewport.x,
+										clampedX)));
+						case 'Y':
+							return $elm$core$Task$sequence(
+								A2(
+									$elm$core$List$map,
+									function (y) {
+										return A3($elm$browser$Browser$Dom$setViewportOf, containerId, viewport.x, y);
+									},
+									A4(
+										$author$project$Internal$AnimationCore$animationSteps,
+										A2(
+											$author$project$Scroll$Internal$timingToSpeed,
+											config.timing,
+											$elm$core$Basics$abs(clampedY - viewport.y)),
+										config.easing,
+										viewport.y,
+										clampedY)));
+						default:
+							var yDistance = $elm$core$Basics$abs(viewport.y - clampedY);
+							var xDistance = $elm$core$Basics$abs(viewport.x - clampedX);
+							var maxDistance = A2($elm$core$Basics$max, xDistance, yDistance);
+							var frames = A2(
+								$elm$core$Basics$max,
+								1,
+								A2($author$project$Scroll$Internal$timingToSpeed, config.timing, maxDistance));
+							var xSteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.x, clampedX);
+							var ySteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.y, clampedY);
+							var _v2 = _Utils_Tuple2(xSteps, ySteps);
+							if (!_v2.a.b) {
 								return $elm$core$Task$sequence(
 									A2(
 										$elm$core$List$map,
 										function (y) {
-											return A2($elm$browser$Browser$Dom$setViewport, viewport.x, y);
+											return A3($elm$browser$Browser$Dom$setViewportOf, containerId, viewport.x, y);
 										},
-										A4(
-											$author$project$Internal$AnimationCore$animationSteps,
-											A2(
-												$author$project$Scroll$Internal$timingToSpeed,
-												config.timing,
-												$elm$core$Basics$abs(clampedY - viewport.y)),
-											config.easing,
-											viewport.y,
-											clampedY)));
-							default:
-								var yDistance = $elm$core$Basics$abs(viewport.y - clampedY);
-								var xDistance = $elm$core$Basics$abs(viewport.x - clampedX);
-								var maxDistance = A2($elm$core$Basics$max, xDistance, yDistance);
-								var frames = A2(
-									$elm$core$Basics$max,
-									1,
-									A2($author$project$Scroll$Internal$timingToSpeed, config.timing, maxDistance));
-								var xSteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.x, clampedX);
-								var ySteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.y, clampedY);
-								var _v3 = _Utils_Tuple2(xSteps, ySteps);
-								if (!_v3.a.b) {
+										ySteps));
+							} else {
+								if (!_v2.b.b) {
 									return $elm$core$Task$sequence(
 										A2(
 											$elm$core$List$map,
-											function (y) {
-												return A2($elm$browser$Browser$Dom$setViewport, viewport.x, y);
+											function (x) {
+												return A3($elm$browser$Browser$Dom$setViewportOf, containerId, x, viewport.y);
 											},
-											ySteps));
+											xSteps));
 								} else {
-									if (!_v3.b.b) {
-										return $elm$core$Task$sequence(
-											A2(
-												$elm$core$List$map,
-												function (x) {
-													return A2($elm$browser$Browser$Dom$setViewport, x, viewport.y);
-												},
-												xSteps));
-									} else {
-										return $elm$core$Task$sequence(
-											A3($elm$core$List$map2, $elm$browser$Browser$Dom$setViewport, xSteps, ySteps));
-									}
-								}
-						}
-					} else {
-						var containerNodeId = container.a;
-						var _v4 = config.axis;
-						switch (_v4.$) {
-							case 'X':
-								return $elm$core$Task$sequence(
-									A2(
-										$elm$core$List$map,
-										function (x) {
-											return A3($elm$browser$Browser$Dom$setViewportOf, containerNodeId, x, viewport.y);
-										},
-										A4(
-											$author$project$Internal$AnimationCore$animationSteps,
-											A2(
-												$author$project$Scroll$Internal$timingToSpeed,
-												config.timing,
-												$elm$core$Basics$abs(clampedX - viewport.x)),
-											config.easing,
-											viewport.x,
-											clampedX)));
-							case 'Y':
-								return $elm$core$Task$sequence(
-									A2(
-										$elm$core$List$map,
-										function (y) {
-											return A3($elm$browser$Browser$Dom$setViewportOf, containerNodeId, viewport.x, y);
-										},
-										A4(
-											$author$project$Internal$AnimationCore$animationSteps,
-											A2(
-												$author$project$Scroll$Internal$timingToSpeed,
-												config.timing,
-												$elm$core$Basics$abs(clampedY - viewport.y)),
-											config.easing,
-											viewport.y,
-											clampedY)));
-							default:
-								var yDistance = $elm$core$Basics$abs(viewport.y - clampedY);
-								var xDistance = $elm$core$Basics$abs(viewport.x - clampedX);
-								var maxDistance = A2($elm$core$Basics$max, xDistance, yDistance);
-								var frames = A2(
-									$elm$core$Basics$max,
-									1,
-									A2($author$project$Scroll$Internal$timingToSpeed, config.timing, maxDistance));
-								var xSteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.x, clampedX);
-								var ySteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.y, clampedY);
-								var _v5 = _Utils_Tuple2(xSteps, ySteps);
-								if (!_v5.a.b) {
 									return $elm$core$Task$sequence(
-										A2(
-											$elm$core$List$map,
-											function (y) {
-												return A3($elm$browser$Browser$Dom$setViewportOf, containerNodeId, viewport.x, y);
-											},
+										A3(
+											$elm$core$List$map2,
+											$elm$browser$Browser$Dom$setViewportOf(containerId),
+											xSteps,
 											ySteps));
-								} else {
-									if (!_v5.b.b) {
-										return $elm$core$Task$sequence(
-											A2(
-												$elm$core$List$map,
-												function (x) {
-													return A3($elm$browser$Browser$Dom$setViewportOf, containerNodeId, x, viewport.y);
-												},
-												xSteps));
-									} else {
-										return $elm$core$Task$sequence(
-											A3(
-												$elm$core$List$map2,
-												$elm$browser$Browser$Dom$setViewportOf(containerNodeId),
-												xSteps,
-												ySteps));
-									}
 								}
-						}
+							}
 					}
 				}();
 				return setViewportTask;
 			});
-		var getViewport_ = $author$project$Scroll$Internal$getViewport(container);
-		var getContainerInfo_ = $author$project$Scroll$Internal$getContainerInfo(container);
+		var getViewport_ = $author$project$Scroll$Internal$getViewport(
+			$author$project$Scroll$Container(containerId));
+		var getContainerInfo_ = $author$project$Scroll$Internal$getContainerInfo(
+			$author$project$Scroll$Container(containerId));
 		return A2(
 			$elm$core$Task$andThen,
 			$elm$core$Basics$identity,
@@ -5691,15 +5566,15 @@ var $author$project$Scroll$Task$scrollWithConfig = F3(
 				$elm$core$Task$map3,
 				performScrollTask,
 				getViewport_,
-				$elm$browser$Browser$Dom$getElement(id),
+				$elm$browser$Browser$Dom$getElement(elementId),
 				getContainerInfo_));
 	});
-var $author$project$Scroll$Cmd$scrollWithConfig = F4(
-	function (elementId, container, msg, config) {
+var $author$project$Scroll$Container$Cmd$scrollWithConfig = F4(
+	function (containerId, elementId, msg, config) {
 		return A2(
 			$elm$core$Task$attempt,
 			$elm$core$Basics$always(msg),
-			A3($author$project$Scroll$Task$scrollWithConfig, elementId, container, config));
+			A3($author$project$Scroll$Container$Task$scrollWithConfig, containerId, elementId, config));
 	});
 var $author$project$ElmUI$Scroll$ContainerX$Main$update = F2(
 	function (msg, model) {
@@ -5711,9 +5586,9 @@ var $author$project$ElmUI$Scroll$ContainerX$Main$update = F2(
 				return _Utils_Tuple2(
 					model,
 					A4(
-						$author$project$Scroll$Cmd$scrollWithConfig,
+						$author$project$Scroll$Container$Cmd$scrollWithConfig,
+						'horizontal-scroll-container',
 						'card-' + $elm$core$String$fromInt(cardNum),
-						$author$project$Scroll$Container('horizontal-scroll-container'),
 						$author$project$ElmUI$Scroll$ContainerX$Main$NoOp,
 						_Utils_update(
 							$author$project$Scroll$defaultConfig,
@@ -5721,17 +5596,11 @@ var $author$project$ElmUI$Scroll$ContainerX$Main$update = F2(
 			case 'ScrollToStart':
 				return _Utils_Tuple2(
 					model,
-					A2(
-						$author$project$Scroll$Cmd$scrollToLeftEdge,
-						$author$project$Scroll$Container('horizontal-scroll-container'),
-						$author$project$ElmUI$Scroll$ContainerX$Main$NoOp));
+					A2($author$project$Scroll$Container$Cmd$scrollToLeftEdge, 'horizontal-scroll-container', $author$project$ElmUI$Scroll$ContainerX$Main$NoOp));
 			default:
 				return _Utils_Tuple2(
 					model,
-					A2(
-						$author$project$Scroll$Cmd$scrollToRightEdge,
-						$author$project$Scroll$Container('horizontal-scroll-container'),
-						$author$project$ElmUI$Scroll$ContainerX$Main$NoOp));
+					A2($author$project$Scroll$Container$Cmd$scrollToRightEdge, 'horizontal-scroll-container', $author$project$ElmUI$Scroll$ContainerX$Main$NoOp));
 		}
 	});
 var $author$project$Common$UI$HorizontalContainer = {$: 'HorizontalContainer'};

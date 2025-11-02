@@ -1,4 +1,4 @@
-module ElmUI.Scroll.PageX.Main exposing (main)
+module ElmUI.Scroll.DocumentX.Main exposing (main)
 
 import Browser exposing (Document)
 import Browser.Dom
@@ -12,8 +12,8 @@ import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes
-import Scroll exposing (Axis(..), defaultConfig, Container(..))
-import Scroll.Cmd as Scroll
+import Scroll exposing (Axis(..), defaultConfig)
+import Scroll.Document.Cmd as Scroll
 import Task
 
 
@@ -67,15 +67,15 @@ update msg model =
 
         ScrollToSection id ->
             ( model
-            , Scroll.scrollWithConfig id DocumentBody NoOp <|
+            , Scroll.scrollWithConfig id NoOp <|
                  { defaultConfig | axis = X, offsetX = 20 } 
             )
 
         ScrollToStart ->
-            ( model, Scroll.scrollToLeftEdge DocumentBody NoOp )
+            ( model, Scroll.scrollToLeftEdge NoOp )
 
         ScrollToEnd ->
-            ( model, Scroll.scrollToRightEdge DocumentBody NoOp  )
+            ( model, Scroll.scrollToRightEdge NoOp )
 
         AddSection ->
             ( { model | sectionCount = model.sectionCount + 1 }, Cmd.none )

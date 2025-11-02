@@ -9,8 +9,8 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Html.Attributes
-import Scroll exposing (Axis(..), defaultConfig, Container(..))
-import Scroll.Cmd as Scroll
+import Scroll exposing (Axis(..), defaultConfig)
+import Scroll.Container.Cmd as Scroll
 
 
 
@@ -60,8 +60,8 @@ update msg model =
         ScrollToCard cardNum ->
             ( model
             , Scroll.scrollWithConfig
+                "horizontal-scroll-container"
                 ("card-" ++ String.fromInt cardNum)
-                (Container "horizontal-scroll-container")
                 NoOp
                 { defaultConfig | axis = X }
             )
@@ -69,14 +69,14 @@ update msg model =
         ScrollToStart ->
             ( model
             , Scroll.scrollToLeftEdge
-                (Container "horizontal-scroll-container")
+                "horizontal-scroll-container"
                 NoOp
             )
 
         ScrollToEnd ->
             ( model
             , Scroll.scrollToRightEdge
-                (Container "horizontal-scroll-container")
+                "horizontal-scroll-container"
                 NoOp
             )
 
