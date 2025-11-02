@@ -5200,7 +5200,7 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$ElmUI$Scroll$PageX$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{},
+		{sectionCount: 4},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -5288,6 +5288,154 @@ var $author$project$Internal$AnimationCore$animationSteps = F4(
 			},
 			weights);
 	});
+var $elm$browser$Browser$Dom$getViewport = _Browser_withWindow(_Browser_getViewport);
+var $elm$browser$Browser$Dom$getViewportOf = _Browser_getViewportOf;
+var $elm$browser$Browser$Dom$setViewport = _Browser_setViewport;
+var $elm$browser$Browser$Dom$setViewportOf = _Browser_setViewportOf;
+var $author$project$Scroll$Internal$timingToSpeed = F2(
+	function (timing, distance) {
+		if (timing.$ === 'Speed') {
+			var pixelsPerSecond = timing.a;
+			return A2(
+				$elm$core$Basics$max,
+				1,
+				$elm$core$Basics$round((distance * 60) / pixelsPerSecond));
+		} else {
+			var milliseconds = timing.a;
+			return A2(
+				$elm$core$Basics$max,
+				1,
+				$elm$core$Basics$round(distance / (milliseconds * 0.06)));
+		}
+	});
+var $author$project$Scroll$Task$scrollToLeftEdgeWithConfig = F2(
+	function (container, config) {
+		if (container.$ === 'DocumentBody') {
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v1) {
+					var viewport = _v1.viewport;
+					var steps = A4(
+						$author$project$Internal$AnimationCore$animationSteps,
+						A2(
+							$author$project$Scroll$Internal$timingToSpeed,
+							config.timing,
+							$elm$core$Basics$abs(viewport.x)),
+						config.easing,
+						viewport.x,
+						0);
+					return $elm$core$Task$sequence(
+						A2(
+							$elm$core$List$map,
+							function (x) {
+								return A2($elm$browser$Browser$Dom$setViewport, x, viewport.y);
+							},
+							steps));
+				},
+				$elm$browser$Browser$Dom$getViewport);
+		} else {
+			var containerId = container.a;
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v2) {
+					var viewport = _v2.viewport;
+					var steps = A4(
+						$author$project$Internal$AnimationCore$animationSteps,
+						A2(
+							$author$project$Scroll$Internal$timingToSpeed,
+							config.timing,
+							$elm$core$Basics$abs(viewport.x)),
+						config.easing,
+						viewport.x,
+						0);
+					return $elm$core$Task$sequence(
+						A2(
+							$elm$core$List$map,
+							function (x) {
+								return A3($elm$browser$Browser$Dom$setViewportOf, containerId, x, viewport.y);
+							},
+							steps));
+				},
+				$elm$browser$Browser$Dom$getViewportOf(containerId));
+		}
+	});
+var $author$project$Scroll$Cmd$scrollToLeftEdgeWithConfig = F3(
+	function (container, msg, config) {
+		return A2(
+			$elm$core$Task$attempt,
+			$elm$core$Basics$always(msg),
+			A2($author$project$Scroll$Task$scrollToLeftEdgeWithConfig, container, config));
+	});
+var $author$project$Scroll$Cmd$scrollToLeftEdge = F2(
+	function (container, msg) {
+		return A3($author$project$Scroll$Cmd$scrollToLeftEdgeWithConfig, container, msg, $author$project$Scroll$defaultConfig);
+	});
+var $author$project$Scroll$Task$scrollToRightEdgeWithConfig = F2(
+	function (container, config) {
+		if (container.$ === 'DocumentBody') {
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v1) {
+					var scene = _v1.scene;
+					var viewport = _v1.viewport;
+					var maxX = scene.width - viewport.width;
+					var steps = A4(
+						$author$project$Internal$AnimationCore$animationSteps,
+						A2(
+							$author$project$Scroll$Internal$timingToSpeed,
+							config.timing,
+							$elm$core$Basics$abs(maxX - viewport.x)),
+						config.easing,
+						viewport.x,
+						maxX);
+					return $elm$core$Task$sequence(
+						A2(
+							$elm$core$List$map,
+							function (x) {
+								return A2($elm$browser$Browser$Dom$setViewport, x, viewport.y);
+							},
+							steps));
+				},
+				$elm$browser$Browser$Dom$getViewport);
+		} else {
+			var containerId = container.a;
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v2) {
+					var scene = _v2.scene;
+					var viewport = _v2.viewport;
+					var maxX = scene.width - viewport.width;
+					var steps = A4(
+						$author$project$Internal$AnimationCore$animationSteps,
+						A2(
+							$author$project$Scroll$Internal$timingToSpeed,
+							config.timing,
+							$elm$core$Basics$abs(maxX - viewport.x)),
+						config.easing,
+						viewport.x,
+						maxX);
+					return $elm$core$Task$sequence(
+						A2(
+							$elm$core$List$map,
+							function (x) {
+								return A3($elm$browser$Browser$Dom$setViewportOf, containerId, x, viewport.y);
+							},
+							steps));
+				},
+				$elm$browser$Browser$Dom$getViewportOf(containerId));
+		}
+	});
+var $author$project$Scroll$Cmd$scrollToRightEdgeWithConfig = F3(
+	function (container, msg, config) {
+		return A2(
+			$elm$core$Task$attempt,
+			$elm$core$Basics$always(msg),
+			A2($author$project$Scroll$Task$scrollToRightEdgeWithConfig, container, config));
+	});
+var $author$project$Scroll$Cmd$scrollToRightEdge = F2(
+	function (container, msg) {
+		return A3($author$project$Scroll$Cmd$scrollToRightEdgeWithConfig, container, msg, $author$project$Scroll$defaultConfig);
+	});
 var $author$project$Internal$AnimationCore$animationStepsWithFrames = F4(
 	function (frames, easing, start, stop) {
 		var operator = (_Utils_cmp(start, stop) > 0) ? $elm$core$Basics$sub : $elm$core$Basics$add;
@@ -5346,8 +5494,6 @@ var $author$project$Scroll$Internal$getContainerInfo = function (container) {
 			$elm$browser$Browser$Dom$getElement(containerNodeId));
 	}
 };
-var $elm$browser$Browser$Dom$getViewport = _Browser_withWindow(_Browser_getViewport);
-var $elm$browser$Browser$Dom$getViewportOf = _Browser_getViewportOf;
 var $author$project$Scroll$Internal$getViewport = function (container) {
 	if (container.$ === 'DocumentBody') {
 		return $elm$browser$Browser$Dom$getViewport;
@@ -5375,24 +5521,6 @@ var $elm$core$Task$map3 = F4(
 					taskB);
 			},
 			taskA);
-	});
-var $elm$browser$Browser$Dom$setViewport = _Browser_setViewport;
-var $elm$browser$Browser$Dom$setViewportOf = _Browser_setViewportOf;
-var $author$project$Scroll$Internal$timingToSpeed = F2(
-	function (timing, distance) {
-		if (timing.$ === 'Speed') {
-			var pixelsPerSecond = timing.a;
-			return A2(
-				$elm$core$Basics$max,
-				1,
-				$elm$core$Basics$round((distance * 60) / pixelsPerSecond));
-		} else {
-			var milliseconds = timing.a;
-			return A2(
-				$elm$core$Basics$max,
-				1,
-				$elm$core$Basics$round(distance / (milliseconds * 0.06)));
-		}
 	});
 var $author$project$Scroll$Task$scrollWithConfig = F3(
 	function (id, container, config) {
@@ -5576,53 +5704,43 @@ var $author$project$ElmUI$Scroll$PageX$Main$update = F2(
 		switch (msg.$) {
 			case 'NoOp':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			case 'ScrollToSectionOne':
+			case 'ScrollToSection':
+				var id = msg.a;
 				return _Utils_Tuple2(
 					model,
 					A4(
 						$author$project$Scroll$Cmd$scrollWithConfig,
-						'section-one',
+						id,
 						$author$project$Scroll$DocumentBody,
 						$author$project$ElmUI$Scroll$PageX$Main$NoOp,
 						_Utils_update(
 							$author$project$Scroll$defaultConfig,
 							{axis: $author$project$Scroll$X, offsetX: 20})));
-			case 'ScrollToSectionTwo':
+			case 'ScrollToStart':
 				return _Utils_Tuple2(
 					model,
-					A4(
-						$author$project$Scroll$Cmd$scrollWithConfig,
-						'section-two',
-						$author$project$Scroll$DocumentBody,
-						$author$project$ElmUI$Scroll$PageX$Main$NoOp,
-						_Utils_update(
-							$author$project$Scroll$defaultConfig,
-							{axis: $author$project$Scroll$X, offsetX: 20})));
-			case 'ScrollToSectionThree':
+					A2($author$project$Scroll$Cmd$scrollToLeftEdge, $author$project$Scroll$DocumentBody, $author$project$ElmUI$Scroll$PageX$Main$NoOp));
+			case 'ScrollToEnd':
 				return _Utils_Tuple2(
 					model,
-					A4(
-						$author$project$Scroll$Cmd$scrollWithConfig,
-						'section-three',
-						$author$project$Scroll$DocumentBody,
-						$author$project$ElmUI$Scroll$PageX$Main$NoOp,
-						_Utils_update(
-							$author$project$Scroll$defaultConfig,
-							{axis: $author$project$Scroll$X, offsetX: 20})));
+					A2($author$project$Scroll$Cmd$scrollToRightEdge, $author$project$Scroll$DocumentBody, $author$project$ElmUI$Scroll$PageX$Main$NoOp));
+			case 'AddSection':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{sectionCount: model.sectionCount + 1}),
+					$elm$core$Platform$Cmd$none);
 			default:
 				return _Utils_Tuple2(
-					model,
-					A4(
-						$author$project$Scroll$Cmd$scrollWithConfig,
-						'start',
-						$author$project$Scroll$DocumentBody,
-						$author$project$ElmUI$Scroll$PageX$Main$NoOp,
-						_Utils_update(
-							$author$project$Scroll$defaultConfig,
-							{axis: $author$project$Scroll$X, offsetX: 20})));
+					_Utils_update(
+						model,
+						{
+							sectionCount: A2($elm$core$Basics$max, 1, model.sectionCount) - 1
+						}),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
-var $author$project$Common$UI$Horizontal = {$: 'Horizontal'};
+var $author$project$Common$UI$HorizontalContainer = {$: 'HorizontalContainer'};
 var $mdgriffith$elm_ui$Internal$Model$Rgba = F4(
 	function (a, b, c, d) {
 		return {$: 'Rgba', a: a, b: b, c: c, d: d};
@@ -11756,12 +11874,8 @@ var $author$project$Common$UI$createDocument = F3(
 			title: title
 		};
 	});
-var $author$project$Common$UI$Primary = {$: 'Primary'};
-var $author$project$Common$UI$Purple = {$: 'Purple'};
-var $author$project$ElmUI$Scroll$PageX$Main$ScrollToSectionOne = {$: 'ScrollToSectionOne'};
-var $author$project$ElmUI$Scroll$PageX$Main$ScrollToSectionThree = {$: 'ScrollToSectionThree'};
-var $author$project$ElmUI$Scroll$PageX$Main$ScrollToSectionTwo = {$: 'ScrollToSectionTwo'};
-var $author$project$ElmUI$Scroll$PageX$Main$ScrollToStart = {$: 'ScrollToStart'};
+var $author$project$ElmUI$Scroll$PageX$Main$AddSection = {$: 'AddSection'};
+var $author$project$ElmUI$Scroll$PageX$Main$RemoveSection = {$: 'RemoveSection'};
 var $author$project$Common$UI$Success = {$: 'Success'};
 var $author$project$Common$UI$Warning = {$: 'Warning'};
 var $mdgriffith$elm_ui$Internal$Model$Left = {$: 'Left'};
@@ -11875,16 +11989,8 @@ var $author$project$Common$UI$backButton = A2(
 		label: $mdgriffith$elm_ui$Element$text('← Back to Examples'),
 		url: '../../index.html'
 	});
-var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$bgColor,
-		A3(
-			$mdgriffith$elm_ui$Internal$Model$Colored,
-			'bg-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(clr),
-			'background-color',
-			clr));
-};
+var $mdgriffith$elm_ui$Internal$Flag$fontAlignment = $mdgriffith$elm_ui$Internal$Flag$flag(12);
+var $mdgriffith$elm_ui$Element$Font$center = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontAlignment, $mdgriffith$elm_ui$Internal$Style$classes.textCenter);
 var $mdgriffith$elm_ui$Element$el = F2(
 	function (attrs, child) {
 		return A4(
@@ -11902,6 +12008,16 @@ var $mdgriffith$elm_ui$Element$el = F2(
 				_List_fromArray(
 					[child])));
 	});
+var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$bgColor,
+		A3(
+			$mdgriffith$elm_ui$Internal$Model$Colored,
+			'bg-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(clr),
+			'background-color',
+			clr));
+};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $mdgriffith$elm_ui$Internal$Model$unstyled = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Unstyled, $elm$core$Basics$always);
 var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
@@ -12139,6 +12255,122 @@ var $author$project$Common$UI$contentSection = function (config) {
 					$author$project$Common$UI$htmlActionButtons(config.buttons)
 				])));
 };
+var $author$project$Common$UI$Primary = {$: 'Primary'};
+var $author$project$ElmUI$Scroll$PageX$Main$ScrollToEnd = {$: 'ScrollToEnd'};
+var $author$project$ElmUI$Scroll$PageX$Main$ScrollToSection = function (a) {
+	return {$: 'ScrollToSection', a: a};
+};
+var $author$project$ElmUI$Scroll$PageX$Main$ScrollToStart = {$: 'ScrollToStart'};
+var $author$project$Common$UI$Purple = {$: 'Purple'};
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $author$project$ElmUI$Scroll$PageX$Main$getButtonStyle = function (index) {
+	var _v0 = A2($elm$core$Basics$modBy, 4, index);
+	switch (_v0) {
+		case 0:
+			return $author$project$Common$UI$Success;
+		case 1:
+			return $author$project$Common$UI$Primary;
+		case 2:
+			return $author$project$Common$UI$Purple;
+		default:
+			return $author$project$Common$UI$Warning;
+	}
+};
+var $author$project$ElmUI$Scroll$PageX$Main$generateSectionButtons = F2(
+	function (currentSection, totalSections) {
+		var startButton = _List_fromArray(
+			[
+				_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$PageX$Main$ScrollToStart, 'Start')
+			]);
+		var sectionButtons = A2(
+			$elm$core$List$map,
+			function (n) {
+				return _Utils_Tuple3(
+					$author$project$ElmUI$Scroll$PageX$Main$getButtonStyle(n),
+					$author$project$ElmUI$Scroll$PageX$Main$ScrollToSection(
+						'section-' + $elm$core$String$fromInt(n)),
+					'Section ' + $elm$core$String$fromInt(n));
+			},
+			A2(
+				$elm$core$List$filter,
+				function (n) {
+					return !_Utils_eq(n, currentSection);
+				},
+				A2($elm$core$List$range, 1, totalSections)));
+		var endButton = _List_fromArray(
+			[
+				_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$PageX$Main$ScrollToEnd, 'End')
+			]);
+		return _Utils_ap(
+			startButton,
+			_Utils_ap(sectionButtons, endButton));
+	});
+var $author$project$Common$Colors$purple = A3($mdgriffith$elm_ui$Element$rgb255, 168, 85, 247);
+var $author$project$Common$Colors$success = A3($mdgriffith$elm_ui$Element$rgb255, 16, 185, 129);
+var $author$project$Common$Colors$warning = A3($mdgriffith$elm_ui$Element$rgb255, 245, 158, 11);
+var $author$project$ElmUI$Scroll$PageX$Main$getTitleColor = function (index) {
+	var _v0 = A2($elm$core$Basics$modBy, 4, index);
+	switch (_v0) {
+		case 0:
+			return $author$project$Common$Colors$success;
+		case 1:
+			return $author$project$Common$Colors$primary;
+		case 2:
+			return $author$project$Common$Colors$purple;
+		default:
+			return $author$project$Common$Colors$warning;
+	}
+};
+var $author$project$ElmUI$Scroll$PageX$Main$generateSection = F2(
+	function (sectionNum, totalSections) {
+		return $author$project$Common$UI$contentSection(
+			{
+				buttons: A2($author$project$ElmUI$Scroll$PageX$Main$generateSectionButtons, sectionNum, totalSections),
+				centerTitle: true,
+				content: _List_fromArray(
+					[
+						'This is section ' + ($elm$core$String$fromInt(sectionNum) + ' of our horizontal scrolling example.'),
+						'Use the add/remove buttons to change the number of sections dynamically.'
+					]),
+				id: 'section-' + $elm$core$String$fromInt(sectionNum),
+				title: 'Section ' + $elm$core$String$fromInt(sectionNum),
+				titleColor: $elm$core$Maybe$Just(
+					$author$project$ElmUI$Scroll$PageX$Main$getTitleColor(sectionNum)),
+				width: $elm$core$Maybe$Just(300)
+			});
+	});
+var $author$project$ElmUI$Scroll$PageX$Main$generateStartSection = function (totalSections) {
+	var sectionButtons = A2(
+		$elm$core$List$map,
+		function (n) {
+			return _Utils_Tuple3(
+				$author$project$ElmUI$Scroll$PageX$Main$getButtonStyle(n),
+				$author$project$ElmUI$Scroll$PageX$Main$ScrollToSection(
+					'section-' + $elm$core$String$fromInt(n)),
+				'Section ' + $elm$core$String$fromInt(n));
+		},
+		A2($elm$core$List$range, 1, totalSections));
+	var endButton = _List_fromArray(
+		[
+			_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$PageX$Main$ScrollToEnd, 'End')
+		]);
+	return $author$project$Common$UI$contentSection(
+		{
+			buttons: _Utils_ap(sectionButtons, endButton),
+			centerTitle: true,
+			content: _List_fromArray(
+				[
+					'Welcome to the horizontal scrolling demonstration!',
+					'This is the starting point of our X axis scrolling example.',
+					'Current sections: ' + $elm$core$String$fromInt(totalSections),
+					'Click the buttons below to begin the horizontal journey through the sections.'
+				]),
+			id: 'start',
+			title: '🚀 Start Here',
+			titleColor: $elm$core$Maybe$Just($author$project$Common$Colors$primary),
+			width: $elm$core$Maybe$Just(300)
+		});
+};
 var $author$project$Common$UI$pageHeader = function (title) {
 	return A2(
 		$mdgriffith$elm_ui$Element$paragraph,
@@ -12155,7 +12387,6 @@ var $author$project$Common$UI$pageHeader = function (title) {
 				$mdgriffith$elm_ui$Element$text(title)
 			]));
 };
-var $author$project$Common$Colors$purple = A3($mdgriffith$elm_ui$Element$rgb255, 168, 85, 247);
 var $mdgriffith$elm_ui$Internal$Model$AsRow = {$: 'AsRow'};
 var $mdgriffith$elm_ui$Internal$Model$asRow = $mdgriffith$elm_ui$Internal$Model$AsRow;
 var $mdgriffith$elm_ui$Element$row = F2(
@@ -12176,92 +12407,63 @@ var $mdgriffith$elm_ui$Element$row = F2(
 						attrs))),
 			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
 	});
-var $author$project$Common$Colors$success = A3($mdgriffith$elm_ui$Element$rgb255, 16, 185, 129);
 var $author$project$ElmUI$Scroll$PageX$Main$viewContent = function (model) {
 	return _List_fromArray(
 		[
 			$author$project$Common$UI$backButton,
 			$author$project$Common$UI$pageHeader('Horizontal X Axis Scrolling'),
 			A2(
+			$mdgriffith$elm_ui$Element$column,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$spacing(8),
+					$mdgriffith$elm_ui$Element$centerX
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$mdgriffith$elm_ui$Element$paragraph,
+					_List_fromArray(
+						[$mdgriffith$elm_ui$Element$Font$center]),
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$text('Add or remove sections to increase or decrease the page width.')
+						])),
+					A2(
+					$mdgriffith$elm_ui$Element$el,
+					_List_fromArray(
+						[$mdgriffith$elm_ui$Element$centerX]),
+					$author$project$Common$UI$htmlActionButtons(
+						_List_fromArray(
+							[
+								_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Scroll$PageX$Main$AddSection, '+ Add Section'),
+								_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$PageX$Main$RemoveSection, '− Remove Section')
+							])))
+				])),
+			A2(
 			$mdgriffith$elm_ui$Element$row,
 			_List_fromArray(
 				[
 					$mdgriffith$elm_ui$Element$spacing(40)
 				]),
-			_List_fromArray(
-				[
-					$author$project$Common$UI$contentSection(
-					{
-						buttons: _List_fromArray(
-							[
-								_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Scroll$PageX$Main$ScrollToSectionOne, 'Section 1'),
-								_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$PageX$Main$ScrollToSectionTwo, 'Section 2'),
-								_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$PageX$Main$ScrollToSectionThree, 'Section 3')
-							]),
-						centerTitle: true,
-						content: _List_fromArray(
-							['Welcome to the horizontal scrolling demonstration!', 'This is the starting point of our X axis scrolling example.', 'Click the buttons below to begin the horizontal journey through the sections.']),
-						id: 'start',
-						title: '🚀 Start Here',
-						titleColor: $elm$core$Maybe$Just($author$project$Common$Colors$primary),
-						width: $elm$core$Maybe$Just(300)
-					}),
-					$author$project$Common$UI$contentSection(
-					{
-						buttons: _List_fromArray(
-							[
-								_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$PageX$Main$ScrollToStart, 'Start'),
-								_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$PageX$Main$ScrollToSectionTwo, 'Section 2'),
-								_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$PageX$Main$ScrollToSectionThree, 'Section 3')
-							]),
-						centerTitle: true,
-						content: _List_fromArray(
-							['This is the first section of our horizontal scrolling example.', 'Notice how the scroll animation moves left-to-right instead of up-and-down.', 'The X axis configuration makes this possible with smooth horizontal movement.']),
-						id: 'section-one',
-						title: 'Section One',
-						titleColor: $elm$core$Maybe$Just($author$project$Common$Colors$primary),
-						width: $elm$core$Maybe$Just(300)
-					}),
-					$author$project$Common$UI$contentSection(
-					{
-						buttons: _List_fromArray(
-							[
-								_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$PageX$Main$ScrollToStart, 'Start'),
-								_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Scroll$PageX$Main$ScrollToSectionOne, 'Section 1'),
-								_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$PageX$Main$ScrollToSectionThree, 'Section 3')
-							]),
-						centerTitle: true,
-						content: _List_fromArray(
-							['Welcome to the second section! The horizontal scrolling continues smoothly.', 'Each section is positioned side-by-side in a horizontal layout.', 'The animation automatically calculates the correct X position for each target.']),
-						id: 'section-two',
-						title: 'Section Two',
-						titleColor: $elm$core$Maybe$Just($author$project$Common$Colors$success),
-						width: $elm$core$Maybe$Just(300)
-					}),
-					$author$project$Common$UI$contentSection(
-					{
-						buttons: _List_fromArray(
-							[
-								_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$PageX$Main$ScrollToStart, 'Start'),
-								_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Scroll$PageX$Main$ScrollToSectionOne, 'Section 1'),
-								_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$PageX$Main$ScrollToSectionTwo, 'Section 2')
-							]),
-						centerTitle: true,
-						content: _List_fromArray(
-							['This is the final section of our horizontal scrolling demonstration.', 'You can navigate back to any previous section using the buttons above.', 'The SmoothMoveScroll module handles all the complex scroll calculations automatically.']),
-						id: 'section-three',
-						title: 'Section Three',
-						titleColor: $elm$core$Maybe$Just($author$project$Common$Colors$purple),
-						width: $elm$core$Maybe$Just(300)
-					})
-				]))
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$author$project$ElmUI$Scroll$PageX$Main$generateStartSection(model.sectionCount)
+					]),
+				A2(
+					$elm$core$List$map,
+					function (n) {
+						return A2($author$project$ElmUI$Scroll$PageX$Main$generateSection, n, model.sectionCount);
+					},
+					A2($elm$core$List$range, 1, model.sectionCount))))
 		]);
 };
 var $author$project$ElmUI$Scroll$PageX$Main$view = function (model) {
 	return A3(
 		$author$project$Common$UI$createDocument,
 		'SmoothMoveScroll Horizontal ElmUI Example',
-		$author$project$Common$UI$Horizontal,
+		$author$project$Common$UI$HorizontalContainer,
 		$author$project$ElmUI$Scroll$PageX$Main$viewContent(model));
 };
 var $author$project$ElmUI$Scroll$PageX$Main$main = $elm$browser$Browser$document(

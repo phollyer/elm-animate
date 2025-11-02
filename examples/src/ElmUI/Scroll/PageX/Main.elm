@@ -36,12 +36,12 @@ main =
 
 
 type alias Model =
-    { }
+    { sectionCount : Int }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { }
+    ( { sectionCount = 4 }
     , Cmd.none
     )
 
@@ -52,10 +52,11 @@ init _ =
 
 type Msg
     = NoOp
-    | ScrollToSectionOne
-    | ScrollToSectionTwo
-    | ScrollToSectionThree
+    | ScrollToSection String
     | ScrollToStart
+    | ScrollToEnd
+    | AddSection
+    | RemoveSection
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -64,17 +65,23 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        ScrollToSectionOne ->
-            ( model, Scroll.scrollWithConfig "section-one" DocumentBody NoOp { defaultConfig | axis = X, offsetX = 20 } )
-
-        ScrollToSectionTwo ->
-            ( model, Scroll.scrollWithConfig "section-two" DocumentBody NoOp { defaultConfig | axis = X, offsetX = 20 } )
-
-        ScrollToSectionThree ->
-            ( model, Scroll.scrollWithConfig "section-three" DocumentBody NoOp { defaultConfig | axis = X, offsetX = 20 } )
+        ScrollToSection id ->
+            ( model
+            , Scroll.scrollWithConfig id DocumentBody NoOp <|
+                 { defaultConfig | axis = X, offsetX = 20 } 
+            )
 
         ScrollToStart ->
-            ( model, Scroll.scrollWithConfig "start" DocumentBody NoOp { defaultConfig | axis = X, offsetX = 20 } )
+            ( model, Scroll.scrollToLeftEdge DocumentBody NoOp )
+
+        ScrollToEnd ->
+            ( model, Scroll.scrollToRightEdge DocumentBody NoOp  )
+
+        AddSection ->
+            ( { model | sectionCount = model.sectionCount + 1 }, Cmd.none )
+
+        RemoveSection ->
+            ( { model | sectionCount = max 1 model.sectionCount - 1 }, Cmd.none )
 
 
 
@@ -90,9 +97,81 @@ subscriptions model =
 -- VIEW
 
 
+getButtonStyle : Int -> UI.ButtonStyle
+getButtonStyle index =
+    case modBy 4 index of
+        0 -> UI.Success
+        1 -> UI.Primary
+        2 -> UI.Purple
+        _ -> UI.Warning
+
+
+getTitleColor : Int -> Element.Color
+getTitleColor index =
+    case modBy 4 index of
+        0 -> Colors.success
+        1 -> Colors.primary
+        2 -> Colors.purple
+        _ -> Colors.warning
+
+
+generateSectionButtons : Int -> Int -> List ( UI.ButtonStyle, Msg, String )
+generateSectionButtons currentSection totalSections =
+    let
+        startButton = [ ( UI.Primary, ScrollToStart, "Start" ) ]
+        endButton = [ ( UI.Warning, ScrollToEnd, "End" ) ]
+        sectionButtons = 
+            List.range 1 totalSections
+                |> List.filter (\n -> n /= currentSection)
+                --|> List.take 3  -- Limit to 3 other sections to avoid too many buttons
+                |> List.map (\n -> ( getButtonStyle n, ScrollToSection ("section-" ++ String.fromInt n), "Section " ++ String.fromInt n ))
+    in
+    startButton ++ sectionButtons ++ endButton
+
+
+generateSection : Int -> Int -> Element Msg
+generateSection sectionNum totalSections =
+    UI.contentSection 
+        { id = "section-" ++ String.fromInt sectionNum
+        , title = "Section " ++ String.fromInt sectionNum
+        , titleColor = Just (getTitleColor sectionNum)
+        , content = 
+            [ "This is section " ++ String.fromInt sectionNum ++ " of our horizontal scrolling example."
+            , "Use the add/remove buttons to change the number of sections dynamically."
+            ]
+        , buttons = generateSectionButtons sectionNum totalSections
+        , width = Just 300
+        , centerTitle = True
+        }
+
+
+generateStartSection : Int -> Element Msg
+generateStartSection totalSections =
+    let
+        sectionButtons = 
+            List.range 1 (totalSections)  
+                |> List.map (\n -> ( getButtonStyle n, ScrollToSection ("section-" ++ String.fromInt n), "Section " ++ String.fromInt n ))
+        endButton = [ ( UI.Warning, ScrollToEnd, "End" ) ]
+    in
+    UI.contentSection 
+        { id = "start"
+        , title = "🚀 Start Here"
+        , titleColor = Just Colors.primary
+        , content = 
+            [ "Welcome to the horizontal scrolling demonstration!"
+            , "This is the starting point of our X axis scrolling example."
+            , "Current sections: " ++ String.fromInt totalSections
+            , "Click the buttons below to begin the horizontal journey through the sections."
+            ]
+        , buttons = sectionButtons ++ endButton
+        , width = Just 300
+        , centerTitle = True
+        }
+
+
 view : Model -> Document Msg
 view model =
-    UI.createDocument "SmoothMoveScroll Horizontal ElmUI Example" UI.Horizontal  (viewContent model)
+    UI.createDocument "SmoothMoveScroll Horizontal ElmUI Example" UI.HorizontalContainer (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)
@@ -102,80 +181,25 @@ viewContent model =
         , -- Header
           UI.pageHeader "Horizontal X Axis Scrolling"
         
+        , -- Add/Remove Section Controls
+        column
+            [ spacing 8, centerX ]
+            [ paragraph
+                [Font.center]
+                [text "Add or remove sections to increase or decrease the page width."]
+        , el [ centerX ] <|
+            UI.htmlActionButtons
+                [ ( UI.Success, AddSection, "+ Add Section" )
+                , ( UI.Warning, RemoveSection, "− Remove Section" )
+                ]
+        ]
+
     , -- Horizontal Content Container
       row
         [ spacing 40 ]
-        [ -- Start Section
-          UI.contentSection 
-            { id = "start"
-            , title = "🚀 Start Here"
-            , titleColor = Just Colors.primary
-            , content = 
-                [ "Welcome to the horizontal scrolling demonstration!"
-                , "This is the starting point of our X axis scrolling example."
-                , "Click the buttons below to begin the horizontal journey through the sections."
-                ]
-            , buttons = 
-                [ ( UI.Success, ScrollToSectionOne, "Section 1" )
-                , ( UI.Purple, ScrollToSectionTwo, "Section 2" )
-                , ( UI.Warning, ScrollToSectionThree, "Section 3" )
-                ]
-            , width = Just 300
-            , centerTitle = True
-            }
-        , -- Section One
-          UI.contentSection 
-            { id = "section-one"
-            , title = "Section One"
-            , titleColor = Just Colors.primary
-            , content = 
-                [ "This is the first section of our horizontal scrolling example."
-                , "Notice how the scroll animation moves left-to-right instead of up-and-down."
-                , "The X axis configuration makes this possible with smooth horizontal movement."
-                ]
-            , buttons = 
-                [ ( UI.Primary, ScrollToStart, "Start" )
-                , ( UI.Purple, ScrollToSectionTwo, "Section 2" )
-                , ( UI.Warning, ScrollToSectionThree, "Section 3" )
-                ]
-            , width = Just 300
-            , centerTitle = True
-            }
-        , -- Section Two
-          UI.contentSection 
-            { id = "section-two"
-            , title = "Section Two"
-            , titleColor = Just Colors.success
-            , content = 
-                [ "Welcome to the second section! The horizontal scrolling continues smoothly."
-                , "Each section is positioned side-by-side in a horizontal layout."
-                , "The animation automatically calculates the correct X position for each target."
-                ]
-            , buttons = 
-                [ ( UI.Primary, ScrollToStart, "Start" )
-                , ( UI.Success, ScrollToSectionOne, "Section 1" )
-                , ( UI.Warning, ScrollToSectionThree, "Section 3" )
-                ]
-            , width = Just 300
-            , centerTitle = True
-            }
-        , -- Section Three
-          UI.contentSection 
-            { id = "section-three"
-            , title = "Section Three"
-            , titleColor = Just Colors.purple
-            , content = 
-                [ "This is the final section of our horizontal scrolling demonstration."
-                , "You can navigate back to any previous section using the buttons above."
-                , "The SmoothMoveScroll module handles all the complex scroll calculations automatically."
-                ]
-            , buttons = 
-                [ ( UI.Primary, ScrollToStart, "Start" )
-                , ( UI.Success, ScrollToSectionOne, "Section 1" )
-                , ( UI.Purple, ScrollToSectionTwo, "Section 2" )
-                ]
-            , width = Just 300
-            , centerTitle = True
-            }
-        ] 
+        ([ generateStartSection model.sectionCount ] ++
+         (List.range 1 model.sectionCount
+          |> List.map (\n -> generateSection n model.sectionCount)
+         )
+        )
     ]
