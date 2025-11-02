@@ -21,7 +21,7 @@ Bring an element into view using minimal movement.
 
 If an element is below the viewport, it will only scroll up enough to make it fully visible, accounting for its height.
 If the element is taller than the viewport, it will align the top of the element with the top of the viewport.
-The same logic applies for horizontal scrolling.
+The same logic applies for horizontal scrolling, with the left edge equating to the top.
 
 @docs scrollIntoView, scrollIntoViewWithConfig, jumpIntoView, jumpIntoViewWithConfig
 
