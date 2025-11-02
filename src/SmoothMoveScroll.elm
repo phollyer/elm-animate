@@ -1,8 +1,9 @@
 module SmoothMoveScroll exposing
     ( Config
     , defaultConfig
-    , Timing(..)
     , Axis(..)
+    , Timing(..)
+    , ElementId
     , Container
     , containerElement
     , setContainer
@@ -19,34 +20,40 @@ module SmoothMoveScroll exposing
 
 {-| Smooth scrolling animations for precise DOM element targeting.
 
-This module contains portions derived from SmoothScroll by Linus Schoemaker and Ruben Lie King (2019),
+This module contains portions derived from [SmoothScroll](https://package.elm-lang.org/packages/linuss/smooth-scroll/latest/) by Linus Schoemaker and Ruben Lie King (2019),
 specifically the vertical scrolling functionality. Additional features and improvements by phollyer (2025).
 
-This module provides both simple Cmd-based functions (recommended for most users)
-and Task-based functions for more complex control flow and error handling.
+This module provides both simple Cmd-based functions and Task-based
+functions for more complex control flow and error handling.
 
 Key features:
 
-  - Smooth scrolling to specific DOM elements
+  - Smooth scrolling (both vertical and horizontal) to specific DOM elements
   - Support for both document body and container element scrolling
   - Configurable animation parameters (speed, easing, axis)
-  - Task-based API for composable operations
-  - Error handling for missing DOM elements
+  - Task-based API for composable operations and error handling
 
 
 # Configuration
 
 @docs Config
 @docs defaultConfig
-@docs Timing
 @docs Axis
+@docs Timing
+@docs ElementId
 @docs Container
 @docs containerElement
 @docs setContainer
 @docs setDocumentBody
 
 
-# Simple Commands (Recommended)
+# Simple Commands
+
+These commands do not provide error handling and are best suited for straightforward use cases
+such as:
+
+1.  You know the target elements exist, or
+2.  You want a quick and easy way to trigger scrolling without handling errors
 
 @docs scrollCmd
 @docs scrollCmdWithConfig
@@ -58,7 +65,9 @@ Key features:
 @docs jumpToWithConfig
 
 
-# Advanced Task API
+# Task API
+
+Task-based scrolling for advanced users who need error handling or composition.
 
 @docs scrollTask
 @docs scrollTaskWithConfig
@@ -77,7 +86,13 @@ import Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames
 import Task exposing (Task)
 
 
-{-| Animation timing configuration
+{-| Type alias for DOM element IDs.
+-}
+type alias ElementId =
+    String
+
+
+{-| Animation timing configuration.
 
 Choose between speed-based or duration-based timing:
 
@@ -90,18 +105,14 @@ type Timing
     | Duration Int
 
 
-{-| Configuration for scrolling animations
+{-| Configuration for scrolling.
 
-This module provides both simple Cmd-based functions (recommended for most users)
-and advanced Task-based functions (for composition and custom error handling).
-
-  - timing: Animation timing (Speed in pixels per second or Duration in milliseconds)
-  - offsetX: Horizontal offset in pixels from the target position
-  - offsetY: Vertical offset in pixels from the target position
-  - easing: Easing function from [elm-community/easing-functions](https://package.elm-lang.org/packages/elm-community/easing-functions/latest/)
-  - axis: Movement axis (Y for scrolling, X for horizontal, Both for diagonal)
-  - container: Which element to scroll within (document body or container)
-  - scrollBar: Whether to show scrollbar during animation
+  - **timing**: Animation timing (Speed in pixels per second or Duration in milliseconds). Default is `Duration 400`.
+  - **offsetX**: Horizontal offset in pixels from the target position. Default is 0.
+  - **offsetY**: Vertical offset in pixels from the target position. Default is 12.
+  - **easing**: Easing function from [elm-community/easing-functions](https://package.elm-lang.org/packages/elm-community/easing-functions/latest/). Default is [Ease.outQuint](https://package.elm-lang.org/packages/elm-community/easing-functions/latest/Ease#outQuint).
+  - **axis**: Movement axis (Y for vertical, X for horizontal, Both for diagonal). Default is Y.
+  - **container**: Which element to scroll within (document body or container). Default is document body. Set this using [containerElement](#containerElement), [setContainer](#setContainer) or [setDocumentBody](#setDocumentBody).
 
 -}
 type alias Config =
@@ -111,7 +122,6 @@ type alias Config =
     , easing : Ease.Easing
     , axis : Axis
     , container : Container
-    , scrollBar : Bool
     }
 
 
@@ -125,10 +135,8 @@ Use this to control whether your animation moves horizontally or vertically:
 
 Examples:
 
-    -- Vertical scrolling to an element (default behavior)
-    scrollCmdWithConfig NoOp
-        "my-section"
-        { defaultConfig | axis = Y }
+    -- Vertical document scrolling to an element (default behavior)
+    scrollCmdWithConfig NoOp "my-section" defaultConfig
 
     -- Horizontal scrolling within a carousel container
     scrollCmdWithConfig NoOp
@@ -157,20 +165,18 @@ type Container
     | InnerNode String
 
 
-{-| The default configuration which can be modified
+{-| The default configuration which you can customize as needed.
 
     import Ease
-    import SmoothMoveScroll exposing (defaultConfig)
+    import SmoothMoveScroll exposing (Axis(..), Timing(..), containerElement, defaultConfig)
 
-    defaultConfig : Config
-    defaultConfig =
-        { speed = 200
-        , offsetX = 0
-        , offsetY = 12
-        , easing = Ease.outQuint
-        , container = DocumentBody
-        , axis = Y
-        , scrollBar = True
+    newConfig =
+        { defaultConfig
+            | timing = Duration 500
+            , offsetY = 20
+            , easing = Ease.inOutCubic
+            , axis = Both
+            , container = containerElement "my-scroll-container"
         }
 
 -}
@@ -182,11 +188,10 @@ defaultConfig =
     , easing = Ease.outQuint
     , container = DocumentBody
     , axis = Y
-    , scrollBar = True
     }
 
 
-{-| Convert timing configuration to speed divider for internal animation functions
+{-| Convert timing configuration to speed divider for internal animation functions.
 -}
 timingToSpeed : Timing -> Float -> Int
 timingToSpeed timing distance =
@@ -207,10 +212,10 @@ timingToSpeed timing distance =
 
     import SmoothMoveScroll exposing (setContainer, scrollCmdWithConfig, defaultConfig)
 
-    scrollCmdWithConfig NoOp "article-42" (setContainer "article-list" defaultConfig)
+    scrollCmdWithConfig "article-42" NoOp (setContainer "article-list" defaultConfig)
 
 -}
-setContainer : String -> Config -> Config
+setContainer : ElementId -> Config -> Config
 setContainer elementId config =
     { config | container = InnerNode elementId }
 
@@ -219,7 +224,7 @@ setContainer elementId config =
 
     import SmoothMoveScroll exposing (setDocumentBody, scrollCmdWithConfig, defaultConfig)
 
-    scrollCmdWithConfig NoOp "article-42" (setDocumentBody defaultConfig)
+    scrollCmdWithConfig "article-42" NoOp (setDocumentBody defaultConfig)
 
 -}
 setDocumentBody : Config -> Config
@@ -232,10 +237,10 @@ Provides an alternative coding style for developers who prefer this approach.
 
     import SmoothMoveScroll exposing (containerElement, scrollCmdWithConfig, defaultConfig)
 
-    scrollCmdWithConfig NoOp "article-42" { defaultConfig | container = containerElement "article-list" }
+    scrollCmdWithConfig "article-42" NoOp { defaultConfig | container = containerElement "article-list" }
 
 -}
-containerElement : String -> Container
+containerElement : ElementId -> Container
 containerElement elementId =
     InnerNode elementId
 
@@ -243,22 +248,22 @@ containerElement elementId =
 {-| Cmd-based scrolling with custom completion message.
 
     ScrollTo elementId ->
-        ( model, scrollCmd ScrollComplete elementId )
+        ( model, scrollCmd elementId ScrollComplete )
 
 -}
-scrollCmd : msg -> String -> Cmd msg
-scrollCmd msg elementId =
-    scrollCmdWithConfig msg elementId defaultConfig
+scrollCmd : ElementId -> msg -> Cmd msg
+scrollCmd elementId msg =
+    scrollCmdWithConfig elementId msg defaultConfig
 
 
 {-| Cmd-based scrolling with configuration and custom completion message.
 
     ScrollTo elementId ->
-        ( model, scrollCmdWithConfig ScrollComplete elementId { defaultConfig | offsetY = 100 } )
+        ( model, scrollCmdWithConfig elementId ScrollComplete { defaultConfig | offsetY = 100 } )
 
 -}
-scrollCmdWithConfig : msg -> String -> Config -> Cmd msg
-scrollCmdWithConfig msg elementId config =
+scrollCmdWithConfig : ElementId -> msg -> Config -> Cmd msg
+scrollCmdWithConfig elementId msg config =
     scrollTaskWithConfig elementId config
         |> Task.attempt (always msg)
 
@@ -268,29 +273,29 @@ scrollCmdWithConfig msg elementId config =
 Perfect for immediate navigation where you don't want smooth scrolling.
 
     JumpToSection sectionId ->
-        ( model, jumpTo JumpComplete sectionId )
+        ( model, jumpTo sectionId JumpComplete )
 
 -}
-jumpTo : msg -> String -> Cmd msg
-jumpTo msg elementId =
-    jumpToWithConfig msg elementId defaultConfig
+jumpTo : ElementId -> msg -> Cmd msg
+jumpTo elementId msg =
+    jumpToWithConfig elementId msg defaultConfig
 
 
 {-| Jump to an element with configuration (respects offset and axis settings).
 
     JumpToSection sectionId ->
-        ( model, jumpToWithConfig JumpComplete sectionId { defaultConfig | offsetY = 50 } )
+        ( model, jumpToWithConfig sectionId JumpComplete { defaultConfig | offsetY = 50 } )
 
 -}
-jumpToWithConfig : msg -> String -> Config -> Cmd msg
-jumpToWithConfig msg elementId config =
+jumpToWithConfig : ElementId -> msg -> Config -> Cmd msg
+jumpToWithConfig elementId msg config =
     jumpToTask elementId config
         |> Task.attempt (always msg)
 
 
-{-| Internal task for instant jumping - used by jumpTo functions
+{-| Internal task for instant jumping - used by jumpTo functions.
 -}
-jumpToTask : String -> Config -> Task Dom.Error ()
+jumpToTask : ElementId -> Config -> Task Dom.Error ()
 jumpToTask id config =
     let
         getViewport_ =
@@ -334,24 +339,24 @@ jumpToTask id config =
         |> Task.andThen identity
 
 
-{-| Task-based scrolling for advanced users who need error handling or composition.
+{-|
 
     ScrollTo elementId ->
         ( model, Task.attempt HandleScrollError (scrollTask elementId) )
 
 -}
-scrollTask : String -> Task Dom.Error (List ())
+scrollTask : ElementId -> Task Dom.Error (List ())
 scrollTask elementId =
     scrollTaskWithConfig elementId defaultConfig
 
 
-{-| Task-based scrolling with configuration for advanced users.
+{-|
 
     ScrollTo elementId ->
         ( model, Task.attempt HandleScrollError (scrollTaskWithConfig elementId config) )
 
 -}
-scrollTaskWithConfig : String -> Config -> Task Dom.Error (List ())
+scrollTaskWithConfig : ElementId -> Config -> Task Dom.Error (List ())
 scrollTaskWithConfig id config =
     let
         getViewport_ =
@@ -490,19 +495,19 @@ For document body scrolling, use an empty string:
         ( model, scrollToTop "" )
 
 -}
-scrollToTop : msg -> String -> Cmd msg
-scrollToTop msg containerId =
-    scrollToTopWithConfig msg containerId defaultConfig
+scrollToTop : ElementId -> msg -> Cmd msg
+scrollToTop containerId msg =
+    scrollToTopWithConfig containerId msg defaultConfig
 
 
 {-| Scroll to the top of a container with custom configuration.
 
     BackToTop ->
-        ( model, scrollToTopWithConfig NoOp "main-content" { defaultConfig | timing = Duration 500 } )
+        ( model, scrollToTopWithConfig "main-content" NoOp { defaultConfig | timing = Duration 500 } )
 
 -}
-scrollToTopWithConfig : msg -> String -> Config -> Cmd msg
-scrollToTopWithConfig msg containerId config =
+scrollToTopWithConfig : ElementId -> msg -> Config -> Cmd msg
+scrollToTopWithConfig containerId msg config =
     let
         scrollToTopTask =
             case containerId of
