@@ -3,7 +3,8 @@ module Scroll exposing
     , defaultConfig
     , Axis(..)
     , Timing(..)
-    , ElementId
+    , TargetId
+    , ContainerId
     , Container(..)
     )
 
@@ -23,7 +24,8 @@ For actual scrolling functionality, import one of:
 @docs defaultConfig
 @docs Axis
 @docs Timing
-@docs ElementId
+@docs TargetId
+@docs ContainerId
 @docs Container
 
 -}
@@ -31,9 +33,15 @@ For actual scrolling functionality, import one of:
 import Ease exposing (..)
 
 
-{-| Type alias for DOM element IDs.
+{-| Type alias for target element IDs that we want to scroll to.
 -}
-type alias ElementId =
+type alias TargetId =
+    String
+
+
+{-| Type alias for container element IDs that define scrollable areas.
+-}
+type alias ContainerId =
     String
 
 
@@ -85,13 +93,13 @@ type Axis
 
 {-| Type for configuring which element to scroll within.
 
-Use `DocumentBody` for scrolling the main document, or `Container elementId`
+Use `DocumentBody` for scrolling the main document, or `Container containerId`
 for scrolling within a specific container element.
 
 -}
 type Container
     = DocumentBody
-    | Container ElementId
+    | Container ContainerId
 
 
 {-| The default configuration which you can customize as needed.

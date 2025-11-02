@@ -71,6 +71,7 @@ automatically through subscriptions to animation frames.
 import Browser.Events
 import Dict exposing (Dict)
 import Ease
+import Scroll exposing (TargetId)
 
 
 {-| Animation timing configuration
@@ -165,7 +166,7 @@ If the element has no current position, it starts from (0, 0).
         SmoothMoveSub.animateTo "my-element" 200 300 model.smoothMove
 
 -}
-animateTo : String -> Float -> Float -> Model -> Model
+animateTo : TargetId -> Float -> Float -> Model -> Model
 animateTo elementId targetX targetY model =
     animateToWithConfig defaultConfig elementId targetX targetY model
 
@@ -178,7 +179,7 @@ Only the X coordinate will change - Y position remains at current value.
         SmoothMoveSub.animateToX "my-element" 200 model.smoothMove
 
 -}
-animateToX : String -> Float -> Model -> Model
+animateToX : TargetId -> Float -> Model -> Model
 animateToX elementId targetX model =
     animateToXWithConfig defaultConfig elementId targetX model
 
@@ -191,7 +192,7 @@ Only the Y coordinate will change - X position remains at current value.
         SmoothMoveSub.animateToY "my-element" 300 model.smoothMove
 
 -}
-animateToY : String -> Float -> Model -> Model
+animateToY : TargetId -> Float -> Model -> Model
 animateToY elementId targetY model =
     animateToYWithConfig defaultConfig elementId targetY model
 
@@ -205,7 +206,7 @@ animateToY elementId targetY model =
         SmoothMoveSub.animateToWithConfig config "my-element" 100 150 model.smoothMove
 
 -}
-animateToWithConfig : Config -> String -> Float -> Float -> Model -> Model
+animateToWithConfig : Config -> TargetId -> Float -> Float -> Model -> Model
 animateToWithConfig config elementId targetX targetY (Model elementsDict) =
     let
         currentPos =
@@ -261,7 +262,7 @@ Only the X coordinate will change - Y position remains at current value.
         SmoothMoveSub.animateToXWithConfig config "my-element" 200 model.smoothMove
 
 -}
-animateToXWithConfig : Config -> String -> Float -> Model -> Model
+animateToXWithConfig : Config -> TargetId -> Float -> Model -> Model
 animateToXWithConfig config elementId targetX (Model elementsDict) =
     let
         currentPos =
@@ -320,7 +321,7 @@ Only the Y coordinate will change - X position remains at current value.
         SmoothMoveSub.animateToYWithConfig config "my-element" 300 model.smoothMove
 
 -}
-animateToYWithConfig : Config -> String -> Float -> Model -> Model
+animateToYWithConfig : Config -> TargetId -> Float -> Model -> Model
 animateToYWithConfig config elementId targetY (Model elementsDict) =
     let
         currentPos =
@@ -379,7 +380,7 @@ Call this during initialization to establish element positions.
             |> SmoothMoveSub.setPosition "element-b" 200 250
 
 -}
-setPosition : String -> Float -> Float -> Model -> Model
+setPosition : TargetId -> Float -> Float -> Model -> Model
 setPosition elementId x y (Model elementsDict) =
     let
         elementData =
@@ -474,7 +475,7 @@ Returns Nothing if the element has never been animated.
             text "Element not found"
 
 -}
-getPosition : String -> Model -> Maybe { x : Float, y : Float }
+getPosition : TargetId -> Model -> Maybe { x : Float, y : Float }
 getPosition elementId (Model elementsDict) =
     Dict.get elementId elementsDict
         |> Maybe.map
@@ -496,7 +497,7 @@ The element will remain at its current position.
         SmoothMoveSub.stopAnimation "my-element" currentModel.smoothMove
 
 -}
-stopAnimation : String -> Model -> Model
+stopAnimation : TargetId -> Model -> Model
 stopAnimation elementId (Model elementsDict) =
     case Dict.get elementId elementsDict of
         Just elementData ->
@@ -625,7 +626,7 @@ If the element is not found, it defaults to (0, 0).
     div [ style "transform" (SmoothMoveSub.transformElement "my-element" model) ] [ text "Moving element" ]
 
 -}
-transformElement : String -> Model -> String
+transformElement : TargetId -> Model -> String
 transformElement elementId model =
     case getPosition elementId model of
         Just position ->

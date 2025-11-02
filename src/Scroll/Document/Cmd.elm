@@ -69,7 +69,7 @@ Functions that scroll to specific positions within the document.
 
 -}
 
-import Scroll exposing (Config, Container(..), ElementId, defaultConfig)
+import Scroll exposing (Config, Container(..), TargetId, defaultConfig)
 import Scroll.Document.Task as ScrollTask
 import Task
 
@@ -85,7 +85,7 @@ import Task
 This scrolls to the element with ID "my-element" in the document body.
 
 -}
-scroll : ElementId -> msg -> Cmd msg
+scroll : TargetId -> msg -> Cmd msg
 scroll elementId msg =
     scrollWithConfig elementId msg defaultConfig
 
@@ -100,7 +100,7 @@ scroll elementId msg =
         }
 
 -}
-scrollWithConfig : ElementId -> msg -> Config -> Cmd msg
+scrollWithConfig : TargetId -> msg -> Config -> Cmd msg
 scrollWithConfig elementId msg config =
     ScrollTask.scrollWithConfig elementId config
         |> Task.attempt (always msg)
@@ -111,7 +111,7 @@ scrollWithConfig elementId msg config =
     jump "my-element" NoOp
 
 -}
-jump : ElementId -> msg -> Cmd msg
+jump : TargetId -> msg -> Cmd msg
 jump elementId msg =
     jumpWithConfig elementId msg defaultConfig
 
@@ -123,7 +123,7 @@ jump elementId msg =
         { defaultConfig | offsetY = 50 }
 
 -}
-jumpWithConfig : ElementId -> msg -> Config -> Cmd msg
+jumpWithConfig : TargetId -> msg -> Config -> Cmd msg
 jumpWithConfig elementId msg config =
     ScrollTask.jumpWithConfig elementId config
         |> Task.attempt (always msg)

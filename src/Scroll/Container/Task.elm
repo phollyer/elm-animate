@@ -29,21 +29,21 @@ module Scroll.Container.Task exposing
 
 import Browser.Dom as Dom
 import Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames)
-import Scroll exposing (Axis(..), Config, Container(..), ElementId, defaultConfig)
+import Scroll exposing (Axis(..), Config, Container(..), ContainerId, TargetId, defaultConfig)
 import Scroll.Internal exposing (getClampedPositions, getContainerInfo, getViewport, timingToSpeed)
 import Task exposing (Task)
 
 
 {-| Smooth scroll to element within a container.
 -}
-scroll : ElementId -> ElementId -> Task Dom.Error (List ())
+scroll : ContainerId -> TargetId -> Task Dom.Error (List ())
 scroll containerId elementId =
     scrollWithConfig containerId elementId defaultConfig
 
 
 {-| Smooth scroll to element within a container with custom configuration.
 -}
-scrollWithConfig : ElementId -> ElementId -> Config -> Task Dom.Error (List ())
+scrollWithConfig : ContainerId -> TargetId -> Config -> Task Dom.Error (List ())
 scrollWithConfig containerId elementId config =
     let
         getViewport_ =
@@ -117,14 +117,14 @@ scrollWithConfig containerId elementId config =
 
 {-| Jump instantly to element within a container.
 -}
-jump : ElementId -> ElementId -> Task Dom.Error ()
+jump : ContainerId -> TargetId -> Task Dom.Error ()
 jump containerId elementId =
     jumpWithConfig containerId elementId defaultConfig
 
 
 {-| Jump instantly to element within a container with custom configuration.
 -}
-jumpWithConfig : ElementId -> ElementId -> Config -> Task Dom.Error ()
+jumpWithConfig : ContainerId -> TargetId -> Config -> Task Dom.Error ()
 jumpWithConfig containerId elementId config =
     let
         getViewport_ =
@@ -157,14 +157,14 @@ jumpWithConfig containerId elementId config =
 
 {-| Smooth scroll to top of container.
 -}
-scrollToTop : ElementId -> Task Dom.Error (List ())
+scrollToTop : ContainerId -> Task Dom.Error (List ())
 scrollToTop containerId =
     scrollToTopWithConfig containerId defaultConfig
 
 
 {-| Smooth scroll to top of container with custom configuration.
 -}
-scrollToTopWithConfig : ElementId -> Config -> Task Dom.Error (List ())
+scrollToTopWithConfig : ContainerId -> Config -> Task Dom.Error (List ())
 scrollToTopWithConfig containerId config =
     Dom.getViewportOf containerId
         |> Task.andThen
@@ -181,14 +181,14 @@ scrollToTopWithConfig containerId config =
 
 {-| Smooth scroll to bottom of container.
 -}
-scrollToBottom : ElementId -> Task Dom.Error (List ())
+scrollToBottom : ContainerId -> Task Dom.Error (List ())
 scrollToBottom containerId =
     scrollToBottomWithConfig containerId defaultConfig
 
 
 {-| Smooth scroll to bottom of container with custom configuration.
 -}
-scrollToBottomWithConfig : ElementId -> Config -> Task Dom.Error (List ())
+scrollToBottomWithConfig : ContainerId -> Config -> Task Dom.Error (List ())
 scrollToBottomWithConfig containerId config =
     Dom.getViewportOf containerId
         |> Task.andThen
@@ -208,14 +208,14 @@ scrollToBottomWithConfig containerId config =
 
 {-| Smooth scroll to left edge of container.
 -}
-scrollToLeftEdge : ElementId -> Task Dom.Error (List ())
+scrollToLeftEdge : ContainerId -> Task Dom.Error (List ())
 scrollToLeftEdge containerId =
     scrollToLeftEdgeWithConfig containerId defaultConfig
 
 
 {-| Smooth scroll to left edge of container with custom configuration.
 -}
-scrollToLeftEdgeWithConfig : ElementId -> Config -> Task Dom.Error (List ())
+scrollToLeftEdgeWithConfig : ContainerId -> Config -> Task Dom.Error (List ())
 scrollToLeftEdgeWithConfig containerId config =
     Dom.getViewportOf containerId
         |> Task.andThen
@@ -232,14 +232,14 @@ scrollToLeftEdgeWithConfig containerId config =
 
 {-| Smooth scroll to right edge of container.
 -}
-scrollToRightEdge : ElementId -> Task Dom.Error (List ())
+scrollToRightEdge : ContainerId -> Task Dom.Error (List ())
 scrollToRightEdge containerId =
     scrollToRightEdgeWithConfig containerId defaultConfig
 
 
 {-| Smooth scroll to right edge of container with custom configuration.
 -}
-scrollToRightEdgeWithConfig : ElementId -> Config -> Task Dom.Error (List ())
+scrollToRightEdgeWithConfig : ContainerId -> Config -> Task Dom.Error (List ())
 scrollToRightEdgeWithConfig containerId config =
     Dom.getViewportOf containerId
         |> Task.andThen
@@ -259,14 +259,14 @@ scrollToRightEdgeWithConfig containerId config =
 
 {-| Jump instantly to top of container.
 -}
-jumpToTop : ElementId -> Task Dom.Error ()
+jumpToTop : ContainerId -> Task Dom.Error ()
 jumpToTop containerId =
     jumpToTopWithConfig containerId defaultConfig
 
 
 {-| Jump instantly to top of container with custom configuration.
 -}
-jumpToTopWithConfig : ElementId -> Config -> Task Dom.Error ()
+jumpToTopWithConfig : ContainerId -> Config -> Task Dom.Error ()
 jumpToTopWithConfig containerId _ =
     Dom.getViewportOf containerId
         |> Task.andThen (\{ viewport } -> Dom.setViewportOf containerId viewport.x 0)
@@ -274,14 +274,14 @@ jumpToTopWithConfig containerId _ =
 
 {-| Jump instantly to bottom of container.
 -}
-jumpToBottom : ElementId -> Task Dom.Error ()
+jumpToBottom : ContainerId -> Task Dom.Error ()
 jumpToBottom containerId =
     jumpToBottomWithConfig containerId defaultConfig
 
 
 {-| Jump instantly to bottom of container with custom configuration.
 -}
-jumpToBottomWithConfig : ElementId -> Config -> Task Dom.Error ()
+jumpToBottomWithConfig : ContainerId -> Config -> Task Dom.Error ()
 jumpToBottomWithConfig containerId _ =
     Dom.getViewportOf containerId
         |> Task.andThen
@@ -296,14 +296,14 @@ jumpToBottomWithConfig containerId _ =
 
 {-| Jump instantly to left edge of container.
 -}
-jumpToLeftEdge : ElementId -> Task Dom.Error ()
+jumpToLeftEdge : ContainerId -> Task Dom.Error ()
 jumpToLeftEdge containerId =
     jumpToLeftEdgeWithConfig containerId defaultConfig
 
 
 {-| Jump instantly to left edge of container with custom configuration.
 -}
-jumpToLeftEdgeWithConfig : ElementId -> Config -> Task Dom.Error ()
+jumpToLeftEdgeWithConfig : ContainerId -> Config -> Task Dom.Error ()
 jumpToLeftEdgeWithConfig containerId _ =
     Dom.getViewportOf containerId
         |> Task.andThen (\{ viewport } -> Dom.setViewportOf containerId 0 viewport.y)
@@ -311,14 +311,14 @@ jumpToLeftEdgeWithConfig containerId _ =
 
 {-| Jump instantly to right edge of container.
 -}
-jumpToRightEdge : ElementId -> Task Dom.Error ()
+jumpToRightEdge : ContainerId -> Task Dom.Error ()
 jumpToRightEdge containerId =
     jumpToRightEdgeWithConfig containerId defaultConfig
 
 
 {-| Jump instantly to right edge of container with custom configuration.
 -}
-jumpToRightEdgeWithConfig : ElementId -> Config -> Task Dom.Error ()
+jumpToRightEdgeWithConfig : ContainerId -> Config -> Task Dom.Error ()
 jumpToRightEdgeWithConfig containerId _ =
     Dom.getViewportOf containerId
         |> Task.andThen

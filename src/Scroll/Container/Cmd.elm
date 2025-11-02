@@ -69,7 +69,7 @@ Functions that scroll to specific positions within a container.
 
 -}
 
-import Scroll exposing (Config, Container(..), ElementId, defaultConfig)
+import Scroll exposing (Config, Container(..), ContainerId, TargetId, defaultConfig)
 import Scroll.Container.Task as ScrollTask
 import Task
 
@@ -85,7 +85,7 @@ import Task
 This scrolls to the element with ID "my-element" within the container with ID "container-id".
 
 -}
-scroll : ElementId -> ElementId -> msg -> Cmd msg
+scroll : ContainerId -> TargetId -> msg -> Cmd msg
 scroll containerId elementId msg =
     scrollWithConfig containerId elementId msg defaultConfig
 
@@ -101,7 +101,7 @@ scroll containerId elementId msg =
         }
 
 -}
-scrollWithConfig : ElementId -> ElementId -> msg -> Config -> Cmd msg
+scrollWithConfig : ContainerId -> TargetId -> msg -> Config -> Cmd msg
 scrollWithConfig containerId elementId msg config =
     ScrollTask.scrollWithConfig containerId elementId config
         |> Task.attempt (always msg)
@@ -112,7 +112,7 @@ scrollWithConfig containerId elementId msg config =
     jump "container-id" "my-element" NoOp
 
 -}
-jump : ElementId -> ElementId -> msg -> Cmd msg
+jump : ContainerId -> TargetId -> msg -> Cmd msg
 jump containerId elementId msg =
     jumpWithConfig containerId elementId msg defaultConfig
 
@@ -125,7 +125,7 @@ jump containerId elementId msg =
         { defaultConfig | offsetY = 50 }
 
 -}
-jumpWithConfig : ElementId -> ElementId -> msg -> Config -> Cmd msg
+jumpWithConfig : ContainerId -> TargetId -> msg -> Config -> Cmd msg
 jumpWithConfig containerId elementId msg config =
     ScrollTask.jumpWithConfig containerId elementId config
         |> Task.attempt (always msg)
@@ -140,7 +140,7 @@ jumpWithConfig containerId elementId msg config =
     scrollToTop "container-id" NoOp
 
 -}
-scrollToTop : ElementId -> msg -> Cmd msg
+scrollToTop : ContainerId -> msg -> Cmd msg
 scrollToTop containerId msg =
     scrollToTopWithConfig containerId msg defaultConfig
 
@@ -152,7 +152,7 @@ scrollToTop containerId msg =
         { defaultConfig | timing = Duration 600 }
 
 -}
-scrollToTopWithConfig : ElementId -> msg -> Config -> Cmd msg
+scrollToTopWithConfig : ContainerId -> msg -> Config -> Cmd msg
 scrollToTopWithConfig containerId msg config =
     ScrollTask.scrollToTopWithConfig containerId config
         |> Task.attempt (always msg)
@@ -163,7 +163,7 @@ scrollToTopWithConfig containerId msg config =
     scrollToBottom "container-id" NoOp
 
 -}
-scrollToBottom : ElementId -> msg -> Cmd msg
+scrollToBottom : ContainerId -> msg -> Cmd msg
 scrollToBottom containerId msg =
     scrollToBottomWithConfig containerId msg defaultConfig
 
@@ -175,7 +175,7 @@ scrollToBottom containerId msg =
         { defaultConfig | timing = Speed 800 }
 
 -}
-scrollToBottomWithConfig : ElementId -> msg -> Config -> Cmd msg
+scrollToBottomWithConfig : ContainerId -> msg -> Config -> Cmd msg
 scrollToBottomWithConfig containerId msg config =
     ScrollTask.scrollToBottomWithConfig containerId config
         |> Task.attempt (always msg)
@@ -186,7 +186,7 @@ scrollToBottomWithConfig containerId msg config =
     scrollToLeftEdge "container-id" NoOp
 
 -}
-scrollToLeftEdge : ElementId -> msg -> Cmd msg
+scrollToLeftEdge : ContainerId -> msg -> Cmd msg
 scrollToLeftEdge containerId msg =
     scrollToLeftEdgeWithConfig containerId msg defaultConfig
 
@@ -198,7 +198,7 @@ scrollToLeftEdge containerId msg =
         { defaultConfig | timing = Duration 400 }
 
 -}
-scrollToLeftEdgeWithConfig : ElementId -> msg -> Config -> Cmd msg
+scrollToLeftEdgeWithConfig : ContainerId -> msg -> Config -> Cmd msg
 scrollToLeftEdgeWithConfig containerId msg config =
     ScrollTask.scrollToLeftEdgeWithConfig containerId config
         |> Task.attempt (always msg)
@@ -209,7 +209,7 @@ scrollToLeftEdgeWithConfig containerId msg config =
     scrollToRightEdge "container-id" NoOp
 
 -}
-scrollToRightEdge : ElementId -> msg -> Cmd msg
+scrollToRightEdge : ContainerId -> msg -> Cmd msg
 scrollToRightEdge containerId msg =
     scrollToRightEdgeWithConfig containerId msg defaultConfig
 
@@ -221,7 +221,7 @@ scrollToRightEdge containerId msg =
         { defaultConfig | timing = Duration 500 }
 
 -}
-scrollToRightEdgeWithConfig : ElementId -> msg -> Config -> Cmd msg
+scrollToRightEdgeWithConfig : ContainerId -> msg -> Config -> Cmd msg
 scrollToRightEdgeWithConfig containerId msg config =
     ScrollTask.scrollToRightEdgeWithConfig containerId config
         |> Task.attempt (always msg)
@@ -232,7 +232,7 @@ scrollToRightEdgeWithConfig containerId msg config =
     jumpToTop "container-id" NoOp
 
 -}
-jumpToTop : ElementId -> msg -> Cmd msg
+jumpToTop : ContainerId -> msg -> Cmd msg
 jumpToTop containerId msg =
     jumpToTopWithConfig containerId msg defaultConfig
 
@@ -244,7 +244,7 @@ jumpToTop containerId msg =
         { defaultConfig | offsetY = 10 }
 
 -}
-jumpToTopWithConfig : ElementId -> msg -> Config -> Cmd msg
+jumpToTopWithConfig : ContainerId -> msg -> Config -> Cmd msg
 jumpToTopWithConfig containerId msg config =
     ScrollTask.jumpToTopWithConfig containerId config
         |> Task.attempt (always msg)
@@ -255,7 +255,7 @@ jumpToTopWithConfig containerId msg config =
     jumpToBottom "container-id" NoOp
 
 -}
-jumpToBottom : ElementId -> msg -> Cmd msg
+jumpToBottom : ContainerId -> msg -> Cmd msg
 jumpToBottom containerId msg =
     jumpToBottomWithConfig containerId msg defaultConfig
 
@@ -267,7 +267,7 @@ jumpToBottom containerId msg =
         { defaultConfig | offsetY = 20 }
 
 -}
-jumpToBottomWithConfig : ElementId -> msg -> Config -> Cmd msg
+jumpToBottomWithConfig : ContainerId -> msg -> Config -> Cmd msg
 jumpToBottomWithConfig containerId msg config =
     ScrollTask.jumpToBottomWithConfig containerId config
         |> Task.attempt (always msg)
@@ -278,7 +278,7 @@ jumpToBottomWithConfig containerId msg config =
     jumpToLeftEdge "container-id" NoOp
 
 -}
-jumpToLeftEdge : ElementId -> msg -> Cmd msg
+jumpToLeftEdge : ContainerId -> msg -> Cmd msg
 jumpToLeftEdge containerId msg =
     jumpToLeftEdgeWithConfig containerId msg defaultConfig
 
@@ -290,7 +290,7 @@ jumpToLeftEdge containerId msg =
         { defaultConfig | offsetX = 5 }
 
 -}
-jumpToLeftEdgeWithConfig : ElementId -> msg -> Config -> Cmd msg
+jumpToLeftEdgeWithConfig : ContainerId -> msg -> Config -> Cmd msg
 jumpToLeftEdgeWithConfig containerId msg config =
     ScrollTask.jumpToLeftEdgeWithConfig containerId config
         |> Task.attempt (always msg)
@@ -301,7 +301,7 @@ jumpToLeftEdgeWithConfig containerId msg config =
     jumpToRightEdge "container-id" NoOp
 
 -}
-jumpToRightEdge : ElementId -> msg -> Cmd msg
+jumpToRightEdge : ContainerId -> msg -> Cmd msg
 jumpToRightEdge containerId msg =
     jumpToRightEdgeWithConfig containerId msg defaultConfig
 
@@ -313,7 +313,7 @@ jumpToRightEdge containerId msg =
         { defaultConfig | offsetX = 15 }
 
 -}
-jumpToRightEdgeWithConfig : ElementId -> msg -> Config -> Cmd msg
+jumpToRightEdgeWithConfig : ContainerId -> msg -> Config -> Cmd msg
 jumpToRightEdgeWithConfig containerId msg config =
     ScrollTask.jumpToRightEdgeWithConfig containerId config
         |> Task.attempt (always msg)

@@ -107,6 +107,7 @@ See the accompanying `smooth-move-ports.js` file for the JavaScript implementati
 
 import Dict exposing (Dict)
 import Json.Decode as Decode
+import Scroll exposing (TargetId)
 
 
 {-| Animation timing configuration
@@ -253,7 +254,7 @@ positionUpdateDecoder =
 Returns the updated model and an animation command for your port.
 
 -}
-animateTo : String -> Float -> Float -> Model -> ( Model, AnimationCommand )
+animateTo : TargetId -> Float -> Float -> Model -> ( Model, AnimationCommand )
 animateTo elementId targetX targetY model =
     animateToWithConfig defaultConfig elementId targetX targetY model
 
@@ -264,7 +265,7 @@ Only the X coordinate will change - Y position remains at current value.
 Returns the updated model and an animation command for your port.
 
 -}
-animateToX : String -> Float -> Model -> ( Model, AnimationCommand )
+animateToX : TargetId -> Float -> Model -> ( Model, AnimationCommand )
 animateToX elementId targetX model =
     animateToXWithConfig defaultConfig elementId targetX model
 
@@ -275,7 +276,7 @@ Only the Y coordinate will change - X position remains at current value.
 Returns the updated model and an animation command for your port.
 
 -}
-animateToY : String -> Float -> Model -> ( Model, AnimationCommand )
+animateToY : TargetId -> Float -> Model -> ( Model, AnimationCommand )
 animateToY elementId targetY model =
     animateToYWithConfig defaultConfig elementId targetY model
 
@@ -479,7 +480,7 @@ Pipe this in your init function for as many elements as needed:
             |> SmoothMovePorts.setPosition "element-c" 300 150
 
 -}
-setPosition : String -> Float -> Float -> Model -> Model
+setPosition : TargetId -> Float -> Float -> Model -> Model
 setPosition elementId x y (Model elements) =
     let
         elementData =
@@ -502,7 +503,7 @@ setPosition elementId x y (Model elements) =
 Returns the updated model and the element ID to stop (for your port).
 
 -}
-stopAnimation : String -> Model -> ( Model, Maybe String )
+stopAnimation : TargetId -> Model -> ( Model, Maybe String )
 stopAnimation elementId (Model elements) =
     case Dict.get elementId elements of
         Just elementData ->
@@ -602,7 +603,7 @@ isAnimating (Model elements) =
 
 {-| Get the current position of a specific element
 -}
-getPosition : String -> Model -> Maybe { x : Float, y : Float }
+getPosition : TargetId -> Model -> Maybe { x : Float, y : Float }
 getPosition elementId (Model elements) =
     Dict.get elementId elements
         |> Maybe.map
@@ -631,7 +632,7 @@ transform x y =
 
 {-| Create a CSS transform string by looking up the element's current position
 -}
-transformElement : String -> Model -> String
+transformElement : TargetId -> Model -> String
 transformElement elementId model =
     case getPosition elementId model of
         Just pos ->
@@ -724,7 +725,7 @@ handlePositionUpdateFromJson value model =
 
 {-| Handle animation completion from JavaScript
 -}
-handleAnimationComplete : String -> Model -> Model
+handleAnimationComplete : TargetId -> Model -> Model
 handleAnimationComplete elementId (Model elements) =
     case Dict.get elementId elements of
         Just elementData ->
@@ -765,6 +766,6 @@ encodeAnimationCommand cmd =
 
 {-| Create a string representation of a stop command
 -}
-encodeStopCommand : String -> String
+encodeStopCommand : TargetId -> String
 encodeStopCommand elementId =
     elementId

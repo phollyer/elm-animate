@@ -77,6 +77,7 @@ import Dict exposing (Dict)
 import Html exposing (Attribute)
 import Html.Events exposing (on)
 import Json.Decode as Decode
+import Scroll exposing (TargetId)
 
 
 {-| Position type alias for X and Y coordinates
@@ -150,7 +151,7 @@ If not set, the element defaults to (0,0):
         |> setPosition "box2" 200 250
 
 -}
-setPosition : String -> Float -> Float -> Model -> Model
+setPosition : TargetId -> Float -> Float -> Model -> Model
 setPosition elementId x y (Model positions) =
     Model (Dict.insert elementId { x = x, y = y } positions)
 
@@ -171,7 +172,7 @@ This function updates the model state. Apply the position in your view with `tra
         [ text "Animated box" ]
 
 -}
-animateTo : String -> Float -> Float -> Model -> Model
+animateTo : TargetId -> Float -> Float -> Model -> Model
 animateTo elementId x y (Model positions) =
     Model (Dict.insert elementId { x = x, y = y } positions)
 
@@ -183,7 +184,7 @@ Only the X coordinate will change - Y position remains at current value.
     { model | animations = animateToX "box" 300 model.animations }
 
 -}
-animateToX : String -> Float -> Model -> Model
+animateToX : TargetId -> Float -> Model -> Model
 animateToX elementId x (Model positions) =
     let
         currentPos =
@@ -200,7 +201,7 @@ Only the Y coordinate will change - X position remains at current value.
     { model | animations = animateToY "box" 200 model.animations }
 
 -}
-animateToY : String -> Float -> Model -> Model
+animateToY : TargetId -> Float -> Model -> Model
 animateToY elementId y (Model positions) =
     let
         currentPos =
@@ -222,7 +223,7 @@ Returns `Nothing` if the element hasn't been positioned yet:
             text "Box position not set"
 
 -}
-getPosition : String -> Model -> Maybe Position
+getPosition : TargetId -> Model -> Maybe Position
 getPosition elementId (Model positions) =
     Dict.get elementId positions
 
@@ -238,7 +239,7 @@ Use this when SmoothMoveCSS is managing element(s) positions
         [ text "Box" ]
 
 -}
-transformElement : String -> Model -> String
+transformElement : TargetId -> Model -> String
 transformElement elementId (Model positions) =
     case Dict.get elementId positions of
         Just pos ->

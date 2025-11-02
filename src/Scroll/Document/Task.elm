@@ -29,21 +29,21 @@ module Scroll.Document.Task exposing
 
 import Browser.Dom as Dom
 import Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames)
-import Scroll exposing (Axis(..), Config, Container(..), ElementId, defaultConfig)
+import Scroll exposing (Axis(..), Config, Container(..), TargetId, defaultConfig)
 import Scroll.Internal exposing (getClampedPositions, getContainerInfo, getViewport, timingToSpeed)
 import Task exposing (Task)
 
 
 {-| Smooth scroll to element in document.
 -}
-scroll : ElementId -> Task Dom.Error (List ())
+scroll : TargetId -> Task Dom.Error (List ())
 scroll elementId =
     scrollWithConfig elementId defaultConfig
 
 
 {-| Smooth scroll to element in document with custom configuration.
 -}
-scrollWithConfig : ElementId -> Config -> Task Dom.Error (List ())
+scrollWithConfig : TargetId -> Config -> Task Dom.Error (List ())
 scrollWithConfig id config =
     let
         getViewport_ =
@@ -117,14 +117,14 @@ scrollWithConfig id config =
 
 {-| Jump instantly to element in document.
 -}
-jump : ElementId -> Task Dom.Error ()
+jump : TargetId -> Task Dom.Error ()
 jump elementId =
     jumpWithConfig elementId defaultConfig
 
 
 {-| Jump instantly to element in document with custom configuration.
 -}
-jumpWithConfig : ElementId -> Config -> Task Dom.Error ()
+jumpWithConfig : TargetId -> Config -> Task Dom.Error ()
 jumpWithConfig id config =
     let
         getViewport_ =
