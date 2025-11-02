@@ -179,9 +179,8 @@ animateTo elementId x y (Model positions) =
 {-| Animate element horizontally to target X position
 
 Only the X coordinate will change - Y position remains at current value.
-Uses default configuration.
 
-    model.animations = animateToX "box" 300 model.animations
+    { model | animations = animateToX "box" 300 model.animations }
 
 -}
 animateToX : String -> Float -> Model -> Model
@@ -197,9 +196,8 @@ animateToX elementId x (Model positions) =
 {-| Animate element vertically to target Y position
 
 Only the Y coordinate will change - X position remains at current value.
-Uses default configuration.
 
-    model.animations = animateToY "box" 200 model.animations
+    { model | animations = animateToY "box" 200 model.animations }
 
 -}
 animateToY : String -> Float -> Model -> Model
@@ -231,6 +229,8 @@ getPosition elementId (Model positions) =
 
 {-| Generate CSS transform string for a specific element
 
+Use this when SmoothMoveCSS is managing element(s) positions
+
     div
         [ style "transform" (transformElement "box" model.animations)
         , style "transition" (transition defaultConfig)
@@ -250,8 +250,12 @@ transformElement elementId (Model positions) =
 
 {-| Create a CSS transform string for positioning
 
+Use this when you are managing positions manually
+
     div
-        [ style "transform" (SmoothMoveCSS.transform 100 200) ]
+        [ style "transform" <|
+            transform 100 200
+        ]
         [ text "Positioned at (100, 200)" ]
 
 -}
@@ -267,7 +271,9 @@ transform x y =
             { x = 150, y = 250 }
     in
     div
-        [ style "transform" (SmoothMoveCSS.transformPosition pos) ]
+        [ style "transform" <|
+            transformPosition pos
+        ]
         [ text "Positioned at (150, 250)" ]
 
 -}
@@ -276,24 +282,26 @@ transformPosition pos =
     transform pos.x pos.y
 
 
-{-| Generate CSS transition property with custom configuration
-
-Creates a transition for the transform property with your configuration.
+{-| Creates a transition for the transform property with your configuration.
 For default configuration, pass `defaultConfig`.
 
     div
-        [ style "transform" (SmoothMoveCSS.transform targetX targetY)
-        , style "transition" (SmoothMoveCSS.transition SmoothMoveCSS.defaultConfig)
+        [ style "transform" <|
+            transform targetX targetY
+        , style "transition" <|
+            transition defaultConfig
         ]
         [ text "Animated element" ]
 
     -- Or with custom config
     customConfig =
-        { defaultConfig | timing = Speed 200, easing = "ease-in-out" }
+        { defaultConfig | timing = Speed 200 }
 
     div
-        [ style "transform" (SmoothMoveCSS.transform targetX targetY)
-        , style "transition" (SmoothMoveCSS.transition customConfig)
+        [ style "transform" <|
+            transform targetX targetY
+        , style "transition" <|
+            transition customConfig
         ]
         [ text "Custom animated element" ]
 
