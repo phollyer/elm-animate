@@ -1,5 +1,6 @@
 module Scroll.Internal exposing
-    ( getClampedPositions
+    ( calculateScrollIntoView
+    , getClampedPositions
     , getContainerInfo
     , getTargetPositions
     , getViewport
@@ -86,3 +87,118 @@ getTargetPositions element viewport container config =
             ( viewport.x + element.x - toFloat config.offsetX - containerInfo.element.x
             , viewport.y + element.y - toFloat config.offsetY - containerInfo.element.y
             )
+
+
+{-| Calculate scroll positions to bring an element fully into view with minimal movement.
+If element is larger than viewport, positions it at top-left.
+-}
+calculateScrollIntoView : { a | x : Float, y : Float, height : Float, width : Float } -> { a | x : Float, y : Float, height : Float, width : Float } -> { a | width : Float, height : Float } -> Maybe Dom.Element -> Config -> ( Float, Float )
+calculateScrollIntoView element viewport scene containerInfo config =
+    let
+        -- Get element dimensions
+        elementX =
+            element.x
+
+        elementY =
+            element.y
+
+        elementWidth =
+            element.width
+
+        elementHeight =
+            element.height
+
+        -- Get viewport dimensions and current scroll
+        viewportX =
+            viewport.x
+
+        viewportY =
+            viewport.y
+
+        viewportWidth =
+            viewport.width
+
+        viewportHeight =
+            viewport.height
+
+        -- Adjust for container if present
+        ( adjustedElementX, adjustedElementY ) =
+            case containerInfo of
+                Nothing ->
+                    -- Document scrolling
+                    ( elementX, elementY )
+
+                Just containerEl ->
+                    -- Container scrolling - element position relative to container
+                    ( elementX - containerEl.element.x
+                    , elementY - containerEl.element.y
+                    )
+
+        ( currentScrollX, currentScrollY ) =
+            ( viewportX, viewportY )
+
+        -- Calculate horizontal scroll position
+        newScrollX =
+            if elementWidth >= viewportWidth then
+                -- Element wider than viewport - align to left edge
+                adjustedElementX
+
+            else
+                let
+                    leftEdge =
+                        adjustedElementX
+
+                    rightEdge =
+                        adjustedElementX + elementWidth
+
+                    viewportLeft =
+                        currentScrollX
+
+                    viewportRight =
+                        currentScrollX + viewportWidth
+                in
+                if leftEdge >= viewportLeft && rightEdge <= viewportRight then
+                    -- Already fully visible horizontally
+                    currentScrollX
+
+                else if leftEdge < viewportLeft then
+                    -- Element cut off on left - scroll left to show left edge
+                    leftEdge
+
+                else
+                    -- Element cut off on right - scroll right to show right edge
+                    rightEdge - viewportWidth
+
+        -- Calculate vertical scroll position
+        newScrollY =
+            if elementHeight >= viewportHeight then
+                -- Element taller than viewport - align to top edge
+                adjustedElementY
+
+            else
+                let
+                    topEdge =
+                        adjustedElementY
+
+                    bottomEdge =
+                        adjustedElementY + elementHeight
+
+                    viewportTop =
+                        currentScrollY
+
+                    viewportBottom =
+                        currentScrollY + viewportHeight
+                in
+                if topEdge >= viewportTop && bottomEdge <= viewportBottom then
+                    -- Already fully visible vertically
+                    currentScrollY
+
+                else if topEdge < viewportTop then
+                    -- Element cut off on top - scroll up to show top edge
+                    topEdge
+
+                else
+                    -- Element cut off on bottom - scroll down to show bottom edge
+                    bottomEdge - viewportHeight
+    in
+    ( newScrollX, newScrollY )
