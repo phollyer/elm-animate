@@ -90,8 +90,8 @@ update msg model =
         ScrollToBottomLeft ->
             ( model
             , Scroll.scrollWithConfig
-                "bottom-left-element"
                 "scroll-container"
+                "bottom-left-element"
                 NoOp
                 { defaultConfig
                     | axis = Both
@@ -103,8 +103,8 @@ update msg model =
         ScrollToBottomRight ->
             ( model
             , Scroll.scrollWithConfig
-                "bottom-right-element"
                 "scroll-container"
+                "bottom-right-element"
                 NoOp
                 { defaultConfig
                     | axis = Both
@@ -116,8 +116,8 @@ update msg model =
         ScrollToCenter ->
             ( model
             , Scroll.scrollWithConfig
-                "center-element"
                 "scroll-container"
+                "center-element"
                 NoOp
                 { defaultConfig
                     | axis = Both

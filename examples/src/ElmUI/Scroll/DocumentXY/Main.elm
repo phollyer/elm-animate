@@ -8,7 +8,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
-import Scroll exposing (Axis(..), ElementId, defaultConfig)
+import Scroll exposing (Axis(..), TargetId, defaultConfig)
 import Scroll.Document.Cmd as Scroll
 import Task
 
@@ -41,7 +41,7 @@ init _ =
 
 
 
-scrollTo : ElementId -> Cmd Msg
+scrollTo : TargetId -> Cmd Msg
 scrollTo targetId =
     Scroll.scrollWithConfig targetId NoOp <|
         { defaultConfig
