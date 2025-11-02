@@ -8,7 +8,8 @@ import Element.Events as Events
 import Element.Font as Font
 import Html exposing (Html)
 import Html.Attributes as Attr
-import SmoothMoveScroll
+import Scroll.Cmd as Scroll
+import Scroll exposing (Container(..))
 
 
 -- MAIN
@@ -49,10 +50,10 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ScrollToTop ->
-            ( model, SmoothMoveScroll.scrollToTop NoOp "" )
+            ( model, Scroll.scrollToTop DocumentBody NoOp )
 
         ScrollContainerToTop ->
-            ( model, SmoothMoveScroll.scrollToTop NoOp "content-container" )
+            ( model, Scroll.scrollToTop (Container "content-container") NoOp )
 
         NoOp ->
             ( model, Cmd.none )

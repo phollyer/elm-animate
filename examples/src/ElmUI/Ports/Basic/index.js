@@ -5445,7 +5445,6 @@ var $author$project$SmoothMovePorts$animateTo = F4(
 	function (elementId, targetX, targetY, model) {
 		return A5($author$project$SmoothMovePorts$animateToWithConfig, $author$project$SmoothMovePorts$defaultConfig, elementId, targetX, targetY, model);
 	});
-var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $elm$core$String$fromFloat = _String_fromNumber;
 var $author$project$SmoothMovePorts$encodeAnimationCommand = function (cmd) {
 	return A2(
@@ -5461,6 +5460,7 @@ var $author$project$SmoothMovePorts$encodeAnimationCommand = function (cmd) {
 				cmd.axis
 			]));
 };
+var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $author$project$SmoothMovePorts$handlePositionUpdate = F2(
 	function (positionUpdate, _v0) {
 		var elements = _v0.a;
@@ -5498,6 +5498,18 @@ var $author$project$SmoothMovePorts$positionUpdateDecoder = A5(
 	A2($elm$json$Json$Decode$field, 'x', $elm$json$Json$Decode$float),
 	A2($elm$json$Json$Decode$field, 'y', $elm$json$Json$Decode$float),
 	A2($elm$json$Json$Decode$field, 'isAnimating', $elm$json$Json$Decode$bool));
+var $author$project$SmoothMovePorts$handlePositionUpdateFromJson = F2(
+	function (value, model) {
+		var _v0 = A2($elm$json$Json$Decode$decodeValue, $author$project$SmoothMovePorts$positionUpdateDecoder, value);
+		if (_v0.$ === 'Ok') {
+			var positionUpdate = _v0.a;
+			return $elm$core$Result$Ok(
+				A2($author$project$SmoothMovePorts$handlePositionUpdate, positionUpdate, model));
+		} else {
+			var error = _v0.a;
+			return $elm$core$Result$Err(error);
+		}
+	});
 var $author$project$ElmUI$Ports$Basic$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -5533,10 +5545,9 @@ var $author$project$ElmUI$Ports$Basic$Main$update = F2(
 						$author$project$SmoothMovePorts$encodeAnimationCommand(command)));
 			default:
 				var value = msg.a;
-				var _v4 = A2($elm$json$Json$Decode$decodeValue, $author$project$SmoothMovePorts$positionUpdateDecoder, value);
+				var _v4 = A2($author$project$SmoothMovePorts$handlePositionUpdateFromJson, value, model.animations);
 				if (_v4.$ === 'Ok') {
-					var positionUpdate = _v4.a;
-					var newAnimations = A2($author$project$SmoothMovePorts$handlePositionUpdate, positionUpdate, model.animations);
+					var newAnimations = _v4.a;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,

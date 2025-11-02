@@ -11,7 +11,8 @@ import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes
-import SmoothMoveScroll exposing (scrollCmd, scrollCmdWithConfig, scrollTask, defaultConfig)
+import Scroll exposing (defaultConfig, Container(..))
+import Scroll.Cmd as Scroll
 import Task
 
 
@@ -52,6 +53,7 @@ type Msg
     | ScrollToParagraphTwo
     | ScrollToParagraphThree
     | ScrollToTop
+    | ScrollToBottom
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -61,16 +63,19 @@ update msg model =
             ( model, Cmd.none )
 
         ScrollToParagraphOne ->
-            ( model, scrollCmdWithConfig NoOp "paragraph-one" defaultConfig )
+            ( model, Scroll.scrollWithConfig "paragraph-one" DocumentBody NoOp defaultConfig )
 
         ScrollToParagraphTwo ->
-            ( model, scrollCmdWithConfig NoOp "paragraph-two" defaultConfig )
+            ( model, Scroll.scrollWithConfig "paragraph-two" DocumentBody NoOp defaultConfig )
 
         ScrollToParagraphThree ->
-            ( model, scrollCmdWithConfig NoOp "paragraph-three" defaultConfig )
+            ( model, Scroll.scrollWithConfig "paragraph-three" DocumentBody NoOp defaultConfig )
 
         ScrollToTop ->
-            ( model, scrollCmdWithConfig NoOp "top" defaultConfig )
+            ( model, Scroll.scrollToTop DocumentBody NoOp )
+
+        ScrollToBottom ->
+            ( model, Scroll.scrollToBottom DocumentBody NoOp )
 
 
 
@@ -103,6 +108,7 @@ viewContent model =
         [ ( UI.Primary, ScrollToParagraphOne, "Scroll to Paragraph One ↓" )
         , ( UI.Success, ScrollToParagraphTwo, "Scroll to Paragraph Two ↓" )
         , ( UI.Purple, ScrollToParagraphThree, "Scroll to Paragraph Three ↓" )
+        , ( UI.Warning, ScrollToBottom, "Scroll to Bottom ↓" )
         ]
     , -- Add some space before content
       el [ height (px 100) ] (text "")
@@ -114,9 +120,9 @@ viewContent model =
         , "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium."
         ]
         [ ( UI.Purple, ScrollToTop, "Scroll to Top ↑" )
-        
         , ( UI.Success, ScrollToParagraphTwo, "Scroll to Paragraph Two ↓" )
         , ( UI.Purple, ScrollToParagraphThree, "Scroll to Paragraph Three ↓" )
+        , ( UI.Warning, ScrollToBottom, "Scroll to Bottom ↓" )
         ]
     , -- Add space between paragraphs
       el [ height (px 200) ] (text "")
@@ -128,8 +134,9 @@ viewContent model =
         , "Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem."
         ] 
         [ ( UI.Purple, ScrollToTop, "Scroll to Top ↑" )
-        ,( UI.Primary, ScrollToParagraphOne, "Scroll to Paragraph One ↑" )
+        , ( UI.Primary, ScrollToParagraphOne, "Scroll to Paragraph One ↑" )
         , ( UI.Purple, ScrollToParagraphThree, "Scroll to Paragraph Three ↓" )
+        , ( UI.Warning, ScrollToBottom, "Scroll to Bottom ↓" )
         ]
     , -- Add space between paragraphs
       el [ height (px 100) ] (text "")
@@ -143,6 +150,7 @@ viewContent model =
         [ ( UI.Purple, ScrollToTop, "Scroll to Top ↑" )
         ,( UI.Primary, ScrollToParagraphOne, "Scroll to Paragraph One ↑" )
         , ( UI.Success, ScrollToParagraphTwo, "Scroll to Paragraph Two ↑" )
+        , ( UI.Warning, ScrollToBottom, "Scroll to Bottom ↓" )
         
         ]
     , -- Add some space after content

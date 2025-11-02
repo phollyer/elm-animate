@@ -5,7 +5,9 @@
     "license": "BSD-3-Clause",
     "version": "2.0.1",
     "exposed-modules": [
-        "SmoothMoveScroll",
+        "Scroll",
+        "Scroll.Cmd",
+        "Scroll.Task",
         "SmoothMoveSub",
         "SmoothMoveCSS",
         "SmoothMovePorts"

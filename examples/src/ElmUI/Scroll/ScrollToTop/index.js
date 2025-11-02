@@ -5205,12 +5205,15 @@ var $author$project$ElmUI$Scroll$ScrollToTop$Main$init = function (_v0) {
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $author$project$Scroll$Container = function (a) {
+	return {$: 'Container', a: a};
+};
+var $author$project$Scroll$DocumentBody = {$: 'DocumentBody'};
 var $author$project$ElmUI$Scroll$ScrollToTop$Main$NoOp = {$: 'NoOp'};
-var $author$project$SmoothMoveScroll$DocumentBody = {$: 'DocumentBody'};
-var $author$project$SmoothMoveScroll$Duration = function (a) {
+var $author$project$Scroll$Duration = function (a) {
 	return {$: 'Duration', a: a};
 };
-var $author$project$SmoothMoveScroll$Y = {$: 'Y'};
+var $author$project$Scroll$Y = {$: 'Y'};
 var $elm_community$easing_functions$Ease$flip = F2(
 	function (easing, time) {
 		return 1 - easing(1 - time);
@@ -5220,47 +5223,16 @@ var $elm_community$easing_functions$Ease$inQuint = function (time) {
 	return A2($elm$core$Basics$pow, time, 5);
 };
 var $elm_community$easing_functions$Ease$outQuint = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inQuint);
-var $author$project$SmoothMoveScroll$defaultConfig = {
-	axis: $author$project$SmoothMoveScroll$Y,
-	container: $author$project$SmoothMoveScroll$DocumentBody,
+var $author$project$Scroll$defaultConfig = {
+	axis: $author$project$Scroll$Y,
 	easing: $elm_community$easing_functions$Ease$outQuint,
 	offsetX: 0,
 	offsetY: 12,
-	scrollBar: true,
-	timing: $author$project$SmoothMoveScroll$Duration(400)
-};
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
+	timing: $author$project$Scroll$Duration(400)
 };
 var $elm$core$Basics$always = F2(
 	function (a, _v0) {
 		return a;
-	});
-var $elm$core$Basics$round = _Basics_round;
-var $author$project$Internal$AnimationCore$animationSteps = F4(
-	function (speed, easing, start, stop) {
-		var operator = (_Utils_cmp(start, stop) > 0) ? $elm$core$Basics$sub : $elm$core$Basics$add;
-		var diff = $elm$core$Basics$abs(start - stop);
-		var frames = A2(
-			$elm$core$Basics$max,
-			1,
-			($elm$core$Basics$round(diff) / speed) | 0);
-		var framesFloat = frames;
-		var weights = A2(
-			$elm$core$List$map,
-			function (i) {
-				return easing(i / framesFloat);
-			},
-			A2($elm$core$List$range, 0, frames));
-		return ((speed <= 0) || _Utils_eq(start, stop)) ? _List_Nil : A2(
-			$elm$core$List$map,
-			function (weight) {
-				return A2(operator, start, weight * diff);
-			},
-			weights);
 	});
 var $elm$core$Basics$composeL = F3(
 	function (g, f, x) {
@@ -5286,11 +5258,40 @@ var $elm$core$Task$attempt = F2(
 							$elm$core$Result$Ok),
 						task))));
 	});
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var $elm$core$Basics$round = _Basics_round;
+var $author$project$Internal$AnimationCore$animationSteps = F4(
+	function (speed, easing, start, stop) {
+		var operator = (_Utils_cmp(start, stop) > 0) ? $elm$core$Basics$sub : $elm$core$Basics$add;
+		var diff = $elm$core$Basics$abs(start - stop);
+		var frames = A2(
+			$elm$core$Basics$max,
+			1,
+			($elm$core$Basics$round(diff) / speed) | 0);
+		var framesFloat = frames;
+		var weights = A2(
+			$elm$core$List$map,
+			function (i) {
+				return easing(i / framesFloat);
+			},
+			A2($elm$core$List$range, 0, frames));
+		return ((speed <= 0) || _Utils_eq(start, stop)) ? _List_Nil : A2(
+			$elm$core$List$map,
+			function (weight) {
+				return A2(operator, start, weight * diff);
+			},
+			weights);
+	});
 var $elm$browser$Browser$Dom$getViewport = _Browser_withWindow(_Browser_getViewport);
 var $elm$browser$Browser$Dom$getViewportOf = _Browser_getViewportOf;
 var $elm$browser$Browser$Dom$setViewport = _Browser_setViewport;
 var $elm$browser$Browser$Dom$setViewportOf = _Browser_setViewportOf;
-var $author$project$SmoothMoveScroll$timingToSpeed = F2(
+var $author$project$Scroll$Internal$timingToSpeed = F2(
 	function (timing, distance) {
 		if (timing.$ === 'Speed') {
 			var pixelsPerSecond = timing.a;
@@ -5306,71 +5307,67 @@ var $author$project$SmoothMoveScroll$timingToSpeed = F2(
 				$elm$core$Basics$round(distance / (milliseconds * 0.06)));
 		}
 	});
-var $author$project$SmoothMoveScroll$scrollToTopWithConfig = F3(
-	function (msg, containerId, config) {
-		var scrollToTopTask = function () {
-			if (containerId === '') {
-				return A2(
-					$elm$core$Task$andThen,
-					function (_v1) {
-						var viewport = _v1.viewport;
-						var steps = A4(
-							$author$project$Internal$AnimationCore$animationSteps,
-							A2(
-								$author$project$SmoothMoveScroll$timingToSpeed,
-								config.timing,
-								$elm$core$Basics$abs(viewport.y)),
-							config.easing,
-							viewport.y,
-							0);
-						return A2(
-							$elm$core$Task$map,
-							$elm$core$Basics$always(_Utils_Tuple0),
-							$elm$core$Task$sequence(
-								A2(
-									$elm$core$List$map,
-									function (y) {
-										return A2($elm$browser$Browser$Dom$setViewport, viewport.x, y);
-									},
-									steps)));
-					},
-					$elm$browser$Browser$Dom$getViewport);
-			} else {
-				return A2(
-					$elm$core$Task$andThen,
-					function (_v2) {
-						var viewport = _v2.viewport;
-						var steps = A4(
-							$author$project$Internal$AnimationCore$animationSteps,
-							A2(
-								$author$project$SmoothMoveScroll$timingToSpeed,
-								config.timing,
-								$elm$core$Basics$abs(viewport.y)),
-							config.easing,
-							viewport.y,
-							0);
-						return A2(
-							$elm$core$Task$map,
-							$elm$core$Basics$always(_Utils_Tuple0),
-							$elm$core$Task$sequence(
-								A2(
-									$elm$core$List$map,
-									function (y) {
-										return A3($elm$browser$Browser$Dom$setViewportOf, containerId, viewport.x, y);
-									},
-									steps)));
-					},
-					$elm$browser$Browser$Dom$getViewportOf(containerId));
-			}
-		}();
+var $author$project$Scroll$Task$scrollToTopWithConfig = F2(
+	function (container, config) {
+		if (container.$ === 'DocumentBody') {
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v1) {
+					var viewport = _v1.viewport;
+					var steps = A4(
+						$author$project$Internal$AnimationCore$animationSteps,
+						A2(
+							$author$project$Scroll$Internal$timingToSpeed,
+							config.timing,
+							$elm$core$Basics$abs(viewport.y)),
+						config.easing,
+						viewport.y,
+						0);
+					return $elm$core$Task$sequence(
+						A2(
+							$elm$core$List$map,
+							function (y) {
+								return A2($elm$browser$Browser$Dom$setViewport, viewport.x, y);
+							},
+							steps));
+				},
+				$elm$browser$Browser$Dom$getViewport);
+		} else {
+			var containerId = container.a;
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v2) {
+					var viewport = _v2.viewport;
+					var steps = A4(
+						$author$project$Internal$AnimationCore$animationSteps,
+						A2(
+							$author$project$Scroll$Internal$timingToSpeed,
+							config.timing,
+							$elm$core$Basics$abs(viewport.y)),
+						config.easing,
+						viewport.y,
+						0);
+					return $elm$core$Task$sequence(
+						A2(
+							$elm$core$List$map,
+							function (y) {
+								return A3($elm$browser$Browser$Dom$setViewportOf, containerId, viewport.x, y);
+							},
+							steps));
+				},
+				$elm$browser$Browser$Dom$getViewportOf(containerId));
+		}
+	});
+var $author$project$Scroll$Cmd$scrollToTopWithConfig = F3(
+	function (container, msg, config) {
 		return A2(
 			$elm$core$Task$attempt,
 			$elm$core$Basics$always(msg),
-			scrollToTopTask);
+			A2($author$project$Scroll$Task$scrollToTopWithConfig, container, config));
 	});
-var $author$project$SmoothMoveScroll$scrollToTop = F2(
-	function (msg, containerId) {
-		return A3($author$project$SmoothMoveScroll$scrollToTopWithConfig, msg, containerId, $author$project$SmoothMoveScroll$defaultConfig);
+var $author$project$Scroll$Cmd$scrollToTop = F2(
+	function (container, msg) {
+		return A3($author$project$Scroll$Cmd$scrollToTopWithConfig, container, msg, $author$project$Scroll$defaultConfig);
 	});
 var $author$project$ElmUI$Scroll$ScrollToTop$Main$update = F2(
 	function (msg, model) {
@@ -5378,11 +5375,14 @@ var $author$project$ElmUI$Scroll$ScrollToTop$Main$update = F2(
 			case 'ScrollToTop':
 				return _Utils_Tuple2(
 					model,
-					A2($author$project$SmoothMoveScroll$scrollToTop, $author$project$ElmUI$Scroll$ScrollToTop$Main$NoOp, ''));
+					A2($author$project$Scroll$Cmd$scrollToTop, $author$project$Scroll$DocumentBody, $author$project$ElmUI$Scroll$ScrollToTop$Main$NoOp));
 			case 'ScrollContainerToTop':
 				return _Utils_Tuple2(
 					model,
-					A2($author$project$SmoothMoveScroll$scrollToTop, $author$project$ElmUI$Scroll$ScrollToTop$Main$NoOp, 'content-container'));
+					A2(
+						$author$project$Scroll$Cmd$scrollToTop,
+						$author$project$Scroll$Container('content-container'),
+						$author$project$ElmUI$Scroll$ScrollToTop$Main$NoOp));
 			default:
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}

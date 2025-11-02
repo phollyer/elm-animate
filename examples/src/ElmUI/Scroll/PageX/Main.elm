@@ -12,7 +12,8 @@ import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes
-import SmoothMoveScroll exposing (Axis(..), scrollCmd, scrollCmdWithConfig, scrollTask, defaultConfig)
+import Scroll exposing (Axis(..), defaultConfig, Container(..))
+import Scroll.Cmd as Scroll
 import Task
 
 
@@ -64,16 +65,16 @@ update msg model =
             ( model, Cmd.none )
 
         ScrollToSectionOne ->
-            ( model, scrollCmdWithConfig NoOp "section-one" { defaultConfig | axis = X, offsetX = 20 } )
+            ( model, Scroll.scrollWithConfig "section-one" DocumentBody NoOp { defaultConfig | axis = X, offsetX = 20 } )
 
         ScrollToSectionTwo ->
-            ( model, scrollCmdWithConfig NoOp "section-two" { defaultConfig | axis = X, offsetX = 20 } )
+            ( model, Scroll.scrollWithConfig "section-two" DocumentBody NoOp { defaultConfig | axis = X, offsetX = 20 } )
 
         ScrollToSectionThree ->
-            ( model, scrollCmdWithConfig NoOp "section-three" { defaultConfig | axis = X, offsetX = 20 } )
+            ( model, Scroll.scrollWithConfig "section-three" DocumentBody NoOp { defaultConfig | axis = X, offsetX = 20 } )
 
         ScrollToStart ->
-            ( model, scrollCmdWithConfig NoOp "start" { defaultConfig | axis = X, offsetX = 20 } )
+            ( model, Scroll.scrollWithConfig "start" DocumentBody NoOp { defaultConfig | axis = X, offsetX = 20 } )
 
 
 

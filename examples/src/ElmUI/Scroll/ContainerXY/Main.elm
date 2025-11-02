@@ -11,7 +11,8 @@ import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes
-import SmoothMoveScroll exposing (Axis(..), scrollCmdWithConfig, containerElement, defaultConfig)
+import Scroll exposing (Axis(..), defaultConfig, Container(..))
+import Scroll.Cmd as Scroll
 
 
 
@@ -62,11 +63,12 @@ update msg model =
 
         ScrollToTopLeft ->
             ( model
-            , scrollCmdWithConfig NoOp
+            , Scroll.scrollWithConfig
                 "top-left-element"
+                (Container "scroll-container")
+                NoOp
                 { defaultConfig
                     | axis = Both
-                    , container = containerElement "scroll-container"
                     , offsetX = 20
                     , offsetY = 20
                 }
@@ -74,11 +76,12 @@ update msg model =
 
         ScrollToTopRight ->
             ( model
-            , scrollCmdWithConfig NoOp
+            , Scroll.scrollWithConfig
                 "top-right-element"
+                (Container "scroll-container")
+                NoOp
                 { defaultConfig
                     | axis = Both
-                    , container = containerElement "scroll-container"
                     , offsetX = 20
                     , offsetY = 20
                 }
@@ -86,11 +89,12 @@ update msg model =
 
         ScrollToBottomLeft ->
             ( model
-            , scrollCmdWithConfig NoOp
+            , Scroll.scrollWithConfig
                 "bottom-left-element"
+                (Container "scroll-container")
+                NoOp
                 { defaultConfig
                     | axis = Both
-                    , container = containerElement "scroll-container"
                     , offsetX = 20
                     , offsetY = 20
                 }
@@ -98,11 +102,12 @@ update msg model =
 
         ScrollToBottomRight ->
             ( model
-            , scrollCmdWithConfig NoOp
+            , Scroll.scrollWithConfig
                 "bottom-right-element"
+                (Container "scroll-container")
+                NoOp
                 { defaultConfig
                     | axis = Both
-                    , container = containerElement "scroll-container"
                     , offsetX = 20
                     , offsetY = 20
                 }
@@ -110,11 +115,12 @@ update msg model =
 
         ScrollToCenter ->
             ( model
-            , scrollCmdWithConfig NoOp
+            , Scroll.scrollWithConfig
                 "center-element"
+                (Container "scroll-container")
+                NoOp
                 { defaultConfig
                     | axis = Both
-                    , container = containerElement "scroll-container"
                     , offsetX = 20
                     , offsetY = 20
                 }

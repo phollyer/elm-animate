@@ -11,7 +11,8 @@ import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes
-import SmoothMoveScroll exposing (scrollCmdWithConfig, containerElement, defaultConfig, setContainer)
+import Scroll exposing (defaultConfig, Container(..))
+import Scroll.Cmd as Scroll
 
 
 
@@ -60,17 +61,17 @@ update msg model =
 
         ScrollToTop ->
             ( model
-            , scrollCmdWithConfig NoOp "top-element" (setContainer "scroll-container" defaultConfig)
+            , Scroll.scrollWithConfig "top-element" (Container "scroll-container") NoOp defaultConfig
             )
 
         ScrollToMiddle ->
             ( model
-            , scrollCmdWithConfig NoOp "middle-element" { defaultConfig | container = containerElement "scroll-container" }
+            , Scroll.scrollWithConfig "middle-element" (Container "scroll-container") NoOp defaultConfig
             )
 
         ScrollToBottom ->
             ( model
-            , scrollCmdWithConfig NoOp "bottom-element" (setContainer "scroll-container" defaultConfig)
+            , Scroll.scrollWithConfig "bottom-element" (Container "scroll-container") NoOp defaultConfig
             )
 
 

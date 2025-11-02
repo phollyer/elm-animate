@@ -11,7 +11,8 @@ import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes
-import SmoothMoveScroll exposing (Axis(..), scrollCmdWithConfig, defaultConfig)
+import Scroll exposing (Axis(..), defaultConfig, Container(..))
+import Scroll.Cmd as Scroll
 import Task
 
 
@@ -63,8 +64,10 @@ update msg model =
 
         ScrollToTopLeft ->
             ( model
-            , scrollCmdWithConfig NoOp
+            , Scroll.scrollWithConfig
                 "top-left"
+                DocumentBody
+                NoOp
                 { defaultConfig
                     | axis = Both
                     , offsetX = 20
@@ -74,8 +77,10 @@ update msg model =
 
         ScrollToTopRight ->
             ( model
-            , scrollCmdWithConfig NoOp
+            , Scroll.scrollWithConfig
                 "top-right"
+                DocumentBody
+                NoOp
                 { defaultConfig
                     | axis = Both
                     , offsetX = 20
@@ -85,8 +90,10 @@ update msg model =
 
         ScrollToBottomLeft ->
             ( model
-            , scrollCmdWithConfig NoOp
+            , Scroll.scrollWithConfig
                 "bottom-left"
+                DocumentBody
+                NoOp
                 { defaultConfig
                     | axis = Both
                     , offsetX = 20
@@ -96,8 +103,10 @@ update msg model =
 
         ScrollToBottomRight ->
             ( model
-            , scrollCmdWithConfig NoOp
+            , Scroll.scrollWithConfig
                 "bottom-right"
+                DocumentBody
+                NoOp
                 { defaultConfig
                     | axis = Both
                     , offsetX = 20
@@ -107,8 +116,10 @@ update msg model =
 
         ScrollToCenter ->
             ( model
-            , scrollCmdWithConfig NoOp
+            , Scroll.scrollWithConfig
                 "center"
+                DocumentBody
+                NoOp
                 { defaultConfig
                     | axis = Both
                     , offsetX = 20

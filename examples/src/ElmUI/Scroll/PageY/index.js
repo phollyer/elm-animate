@@ -5208,12 +5208,12 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$ElmUI$Scroll$PageY$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
 };
+var $author$project$Scroll$DocumentBody = {$: 'DocumentBody'};
 var $author$project$ElmUI$Scroll$PageY$Main$NoOp = {$: 'NoOp'};
-var $author$project$SmoothMoveScroll$DocumentBody = {$: 'DocumentBody'};
-var $author$project$SmoothMoveScroll$Duration = function (a) {
+var $author$project$Scroll$Duration = function (a) {
 	return {$: 'Duration', a: a};
 };
-var $author$project$SmoothMoveScroll$Y = {$: 'Y'};
+var $author$project$Scroll$Y = {$: 'Y'};
 var $elm_community$easing_functions$Ease$flip = F2(
 	function (easing, time) {
 		return 1 - easing(1 - time);
@@ -5223,14 +5223,12 @@ var $elm_community$easing_functions$Ease$inQuint = function (time) {
 	return A2($elm$core$Basics$pow, time, 5);
 };
 var $elm_community$easing_functions$Ease$outQuint = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inQuint);
-var $author$project$SmoothMoveScroll$defaultConfig = {
-	axis: $author$project$SmoothMoveScroll$Y,
-	container: $author$project$SmoothMoveScroll$DocumentBody,
+var $author$project$Scroll$defaultConfig = {
+	axis: $author$project$Scroll$Y,
 	easing: $elm_community$easing_functions$Ease$outQuint,
 	offsetX: 0,
 	offsetY: 12,
-	scrollBar: true,
-	timing: $author$project$SmoothMoveScroll$Duration(400)
+	timing: $author$project$Scroll$Duration(400)
 };
 var $elm$core$Basics$always = F2(
 	function (a, _v0) {
@@ -5289,6 +5287,154 @@ var $author$project$Internal$AnimationCore$animationSteps = F4(
 			},
 			weights);
 	});
+var $elm$browser$Browser$Dom$getViewport = _Browser_withWindow(_Browser_getViewport);
+var $elm$browser$Browser$Dom$getViewportOf = _Browser_getViewportOf;
+var $elm$browser$Browser$Dom$setViewport = _Browser_setViewport;
+var $elm$browser$Browser$Dom$setViewportOf = _Browser_setViewportOf;
+var $author$project$Scroll$Internal$timingToSpeed = F2(
+	function (timing, distance) {
+		if (timing.$ === 'Speed') {
+			var pixelsPerSecond = timing.a;
+			return A2(
+				$elm$core$Basics$max,
+				1,
+				$elm$core$Basics$round((distance * 60) / pixelsPerSecond));
+		} else {
+			var milliseconds = timing.a;
+			return A2(
+				$elm$core$Basics$max,
+				1,
+				$elm$core$Basics$round(distance / (milliseconds * 0.06)));
+		}
+	});
+var $author$project$Scroll$Task$scrollToBottomWithConfig = F2(
+	function (container, config) {
+		if (container.$ === 'DocumentBody') {
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v1) {
+					var scene = _v1.scene;
+					var viewport = _v1.viewport;
+					var maxY = scene.height - viewport.height;
+					var steps = A4(
+						$author$project$Internal$AnimationCore$animationSteps,
+						A2(
+							$author$project$Scroll$Internal$timingToSpeed,
+							config.timing,
+							$elm$core$Basics$abs(maxY - viewport.y)),
+						config.easing,
+						viewport.y,
+						maxY);
+					return $elm$core$Task$sequence(
+						A2(
+							$elm$core$List$map,
+							function (y) {
+								return A2($elm$browser$Browser$Dom$setViewport, viewport.x, y);
+							},
+							steps));
+				},
+				$elm$browser$Browser$Dom$getViewport);
+		} else {
+			var containerId = container.a;
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v2) {
+					var scene = _v2.scene;
+					var viewport = _v2.viewport;
+					var maxY = scene.height - viewport.height;
+					var steps = A4(
+						$author$project$Internal$AnimationCore$animationSteps,
+						A2(
+							$author$project$Scroll$Internal$timingToSpeed,
+							config.timing,
+							$elm$core$Basics$abs(maxY - viewport.y)),
+						config.easing,
+						viewport.y,
+						maxY);
+					return $elm$core$Task$sequence(
+						A2(
+							$elm$core$List$map,
+							function (y) {
+								return A3($elm$browser$Browser$Dom$setViewportOf, containerId, viewport.x, y);
+							},
+							steps));
+				},
+				$elm$browser$Browser$Dom$getViewportOf(containerId));
+		}
+	});
+var $author$project$Scroll$Cmd$scrollToBottomWithConfig = F3(
+	function (container, msg, config) {
+		return A2(
+			$elm$core$Task$attempt,
+			$elm$core$Basics$always(msg),
+			A2($author$project$Scroll$Task$scrollToBottomWithConfig, container, config));
+	});
+var $author$project$Scroll$Cmd$scrollToBottom = F2(
+	function (container, msg) {
+		return A3($author$project$Scroll$Cmd$scrollToBottomWithConfig, container, msg, $author$project$Scroll$defaultConfig);
+	});
+var $author$project$Scroll$Task$scrollToTopWithConfig = F2(
+	function (container, config) {
+		if (container.$ === 'DocumentBody') {
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v1) {
+					var viewport = _v1.viewport;
+					var steps = A4(
+						$author$project$Internal$AnimationCore$animationSteps,
+						A2(
+							$author$project$Scroll$Internal$timingToSpeed,
+							config.timing,
+							$elm$core$Basics$abs(viewport.y)),
+						config.easing,
+						viewport.y,
+						0);
+					return $elm$core$Task$sequence(
+						A2(
+							$elm$core$List$map,
+							function (y) {
+								return A2($elm$browser$Browser$Dom$setViewport, viewport.x, y);
+							},
+							steps));
+				},
+				$elm$browser$Browser$Dom$getViewport);
+		} else {
+			var containerId = container.a;
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v2) {
+					var viewport = _v2.viewport;
+					var steps = A4(
+						$author$project$Internal$AnimationCore$animationSteps,
+						A2(
+							$author$project$Scroll$Internal$timingToSpeed,
+							config.timing,
+							$elm$core$Basics$abs(viewport.y)),
+						config.easing,
+						viewport.y,
+						0);
+					return $elm$core$Task$sequence(
+						A2(
+							$elm$core$List$map,
+							function (y) {
+								return A3($elm$browser$Browser$Dom$setViewportOf, containerId, viewport.x, y);
+							},
+							steps));
+				},
+				$elm$browser$Browser$Dom$getViewportOf(containerId));
+		}
+	});
+var $author$project$Scroll$Cmd$scrollToTopWithConfig = F3(
+	function (container, msg, config) {
+		return A2(
+			$elm$core$Task$attempt,
+			$elm$core$Basics$always(msg),
+			A2($author$project$Scroll$Task$scrollToTopWithConfig, container, config));
+	});
+var $author$project$Scroll$Cmd$scrollToTop = F2(
+	function (container, msg) {
+		return A3($author$project$Scroll$Cmd$scrollToTopWithConfig, container, msg, $author$project$Scroll$defaultConfig);
+	});
 var $author$project$Internal$AnimationCore$animationStepsWithFrames = F4(
 	function (frames, easing, start, stop) {
 		var operator = (_Utils_cmp(start, stop) > 0) ? $elm$core$Basics$sub : $elm$core$Basics$add;
@@ -5307,7 +5453,7 @@ var $author$project$Internal$AnimationCore$animationStepsWithFrames = F4(
 			},
 			weights);
 	});
-var $author$project$SmoothMoveScroll$getTargetPositions = F4(
+var $author$project$Scroll$Internal$getTargetPositions = F4(
 	function (element, viewport, container, config) {
 		if (container.$ === 'Nothing') {
 			return _Utils_Tuple2(element.x - config.offsetX, element.y - config.offsetY);
@@ -5320,9 +5466,9 @@ var $elm$core$Basics$min = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) < 0) ? x : y;
 	});
-var $author$project$SmoothMoveScroll$getClampedPositions = F5(
+var $author$project$Scroll$Internal$getClampedPositions = F5(
 	function (element, viewport, scene, container, config) {
-		var _v0 = A4($author$project$SmoothMoveScroll$getTargetPositions, element, viewport, container, config);
+		var _v0 = A4($author$project$Scroll$Internal$getTargetPositions, element, viewport, container, config);
 		var targetX = _v0.a;
 		var targetY = _v0.b;
 		return _Utils_Tuple2(
@@ -5336,7 +5482,7 @@ var $author$project$SmoothMoveScroll$getClampedPositions = F5(
 				A2($elm$core$Basics$min, scene.height - viewport.height, targetY)));
 	});
 var $elm$browser$Browser$Dom$getElement = _Browser_getElement;
-var $author$project$SmoothMoveScroll$getContainerInfo = function (container) {
+var $author$project$Scroll$Internal$getContainerInfo = function (container) {
 	if (container.$ === 'DocumentBody') {
 		return $elm$core$Task$succeed($elm$core$Maybe$Nothing);
 	} else {
@@ -5347,9 +5493,7 @@ var $author$project$SmoothMoveScroll$getContainerInfo = function (container) {
 			$elm$browser$Browser$Dom$getElement(containerNodeId));
 	}
 };
-var $elm$browser$Browser$Dom$getViewport = _Browser_withWindow(_Browser_getViewport);
-var $elm$browser$Browser$Dom$getViewportOf = _Browser_getViewportOf;
-var $author$project$SmoothMoveScroll$getViewport = function (container) {
+var $author$project$Scroll$Internal$getViewport = function (container) {
 	if (container.$ === 'DocumentBody') {
 		return $elm$browser$Browser$Dom$getViewport;
 	} else {
@@ -5377,37 +5521,18 @@ var $elm$core$Task$map3 = F4(
 			},
 			taskA);
 	});
-var $elm$browser$Browser$Dom$setViewport = _Browser_setViewport;
-var $elm$browser$Browser$Dom$setViewportOf = _Browser_setViewportOf;
-var $author$project$SmoothMoveScroll$timingToSpeed = F2(
-	function (timing, distance) {
-		if (timing.$ === 'Speed') {
-			var pixelsPerSecond = timing.a;
-			return A2(
-				$elm$core$Basics$max,
-				1,
-				$elm$core$Basics$round((distance * 60) / pixelsPerSecond));
-		} else {
-			var milliseconds = timing.a;
-			return A2(
-				$elm$core$Basics$max,
-				1,
-				$elm$core$Basics$round(distance / (milliseconds * 0.06)));
-		}
-	});
-var $author$project$SmoothMoveScroll$scrollTaskWithConfig = F2(
-	function (id, config) {
+var $author$project$Scroll$Task$scrollWithConfig = F3(
+	function (id, container, config) {
 		var performScrollTask = F3(
-			function (_v6, _v7, container) {
+			function (_v6, _v7, containerInfo) {
 				var scene = _v6.scene;
 				var viewport = _v6.viewport;
 				var element = _v7.element;
-				var _v0 = A5($author$project$SmoothMoveScroll$getClampedPositions, element, viewport, scene, container, config);
+				var _v0 = A5($author$project$Scroll$Internal$getClampedPositions, element, viewport, scene, containerInfo, config);
 				var clampedX = _v0.a;
 				var clampedY = _v0.b;
 				var setViewportTask = function () {
-					var _v1 = config.container;
-					if (_v1.$ === 'DocumentBody') {
+					if (container.$ === 'DocumentBody') {
 						var _v2 = config.axis;
 						switch (_v2.$) {
 							case 'X':
@@ -5420,7 +5545,7 @@ var $author$project$SmoothMoveScroll$scrollTaskWithConfig = F2(
 										A4(
 											$author$project$Internal$AnimationCore$animationSteps,
 											A2(
-												$author$project$SmoothMoveScroll$timingToSpeed,
+												$author$project$Scroll$Internal$timingToSpeed,
 												config.timing,
 												$elm$core$Basics$abs(clampedX - viewport.x)),
 											config.easing,
@@ -5436,7 +5561,7 @@ var $author$project$SmoothMoveScroll$scrollTaskWithConfig = F2(
 										A4(
 											$author$project$Internal$AnimationCore$animationSteps,
 											A2(
-												$author$project$SmoothMoveScroll$timingToSpeed,
+												$author$project$Scroll$Internal$timingToSpeed,
 												config.timing,
 												$elm$core$Basics$abs(clampedY - viewport.y)),
 											config.easing,
@@ -5449,7 +5574,7 @@ var $author$project$SmoothMoveScroll$scrollTaskWithConfig = F2(
 								var frames = A2(
 									$elm$core$Basics$max,
 									1,
-									A2($author$project$SmoothMoveScroll$timingToSpeed, config.timing, maxDistance));
+									A2($author$project$Scroll$Internal$timingToSpeed, config.timing, maxDistance));
 								var xSteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.x, clampedX);
 								var ySteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.y, clampedY);
 								var _v3 = _Utils_Tuple2(xSteps, ySteps);
@@ -5477,7 +5602,7 @@ var $author$project$SmoothMoveScroll$scrollTaskWithConfig = F2(
 								}
 						}
 					} else {
-						var containerNodeId = _v1.a;
+						var containerNodeId = container.a;
 						var _v4 = config.axis;
 						switch (_v4.$) {
 							case 'X':
@@ -5490,7 +5615,7 @@ var $author$project$SmoothMoveScroll$scrollTaskWithConfig = F2(
 										A4(
 											$author$project$Internal$AnimationCore$animationSteps,
 											A2(
-												$author$project$SmoothMoveScroll$timingToSpeed,
+												$author$project$Scroll$Internal$timingToSpeed,
 												config.timing,
 												$elm$core$Basics$abs(clampedX - viewport.x)),
 											config.easing,
@@ -5506,7 +5631,7 @@ var $author$project$SmoothMoveScroll$scrollTaskWithConfig = F2(
 										A4(
 											$author$project$Internal$AnimationCore$animationSteps,
 											A2(
-												$author$project$SmoothMoveScroll$timingToSpeed,
+												$author$project$Scroll$Internal$timingToSpeed,
 												config.timing,
 												$elm$core$Basics$abs(clampedY - viewport.y)),
 											config.easing,
@@ -5519,7 +5644,7 @@ var $author$project$SmoothMoveScroll$scrollTaskWithConfig = F2(
 								var frames = A2(
 									$elm$core$Basics$max,
 									1,
-									A2($author$project$SmoothMoveScroll$timingToSpeed, config.timing, maxDistance));
+									A2($author$project$Scroll$Internal$timingToSpeed, config.timing, maxDistance));
 								var xSteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.x, clampedX);
 								var ySteps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, config.easing, viewport.y, clampedY);
 								var _v5 = _Utils_Tuple2(xSteps, ySteps);
@@ -5554,8 +5679,8 @@ var $author$project$SmoothMoveScroll$scrollTaskWithConfig = F2(
 				}();
 				return setViewportTask;
 			});
-		var getViewport_ = $author$project$SmoothMoveScroll$getViewport(config.container);
-		var getContainerInfo_ = $author$project$SmoothMoveScroll$getContainerInfo(config.container);
+		var getViewport_ = $author$project$Scroll$Internal$getViewport(container);
+		var getContainerInfo_ = $author$project$Scroll$Internal$getContainerInfo(container);
 		return A2(
 			$elm$core$Task$andThen,
 			$elm$core$Basics$identity,
@@ -5566,12 +5691,12 @@ var $author$project$SmoothMoveScroll$scrollTaskWithConfig = F2(
 				$elm$browser$Browser$Dom$getElement(id),
 				getContainerInfo_));
 	});
-var $author$project$SmoothMoveScroll$scrollCmdWithConfig = F3(
-	function (msg, elementId, config) {
+var $author$project$Scroll$Cmd$scrollWithConfig = F4(
+	function (elementId, container, msg, config) {
 		return A2(
 			$elm$core$Task$attempt,
 			$elm$core$Basics$always(msg),
-			A2($author$project$SmoothMoveScroll$scrollTaskWithConfig, elementId, config));
+			A3($author$project$Scroll$Task$scrollWithConfig, elementId, container, config));
 	});
 var $author$project$ElmUI$Scroll$PageY$Main$update = F2(
 	function (msg, model) {
@@ -5581,19 +5706,23 @@ var $author$project$ElmUI$Scroll$PageY$Main$update = F2(
 			case 'ScrollToParagraphOne':
 				return _Utils_Tuple2(
 					model,
-					A3($author$project$SmoothMoveScroll$scrollCmdWithConfig, $author$project$ElmUI$Scroll$PageY$Main$NoOp, 'paragraph-one', $author$project$SmoothMoveScroll$defaultConfig));
+					A4($author$project$Scroll$Cmd$scrollWithConfig, 'paragraph-one', $author$project$Scroll$DocumentBody, $author$project$ElmUI$Scroll$PageY$Main$NoOp, $author$project$Scroll$defaultConfig));
 			case 'ScrollToParagraphTwo':
 				return _Utils_Tuple2(
 					model,
-					A3($author$project$SmoothMoveScroll$scrollCmdWithConfig, $author$project$ElmUI$Scroll$PageY$Main$NoOp, 'paragraph-two', $author$project$SmoothMoveScroll$defaultConfig));
+					A4($author$project$Scroll$Cmd$scrollWithConfig, 'paragraph-two', $author$project$Scroll$DocumentBody, $author$project$ElmUI$Scroll$PageY$Main$NoOp, $author$project$Scroll$defaultConfig));
 			case 'ScrollToParagraphThree':
 				return _Utils_Tuple2(
 					model,
-					A3($author$project$SmoothMoveScroll$scrollCmdWithConfig, $author$project$ElmUI$Scroll$PageY$Main$NoOp, 'paragraph-three', $author$project$SmoothMoveScroll$defaultConfig));
+					A4($author$project$Scroll$Cmd$scrollWithConfig, 'paragraph-three', $author$project$Scroll$DocumentBody, $author$project$ElmUI$Scroll$PageY$Main$NoOp, $author$project$Scroll$defaultConfig));
+			case 'ScrollToTop':
+				return _Utils_Tuple2(
+					model,
+					A2($author$project$Scroll$Cmd$scrollToTop, $author$project$Scroll$DocumentBody, $author$project$ElmUI$Scroll$PageY$Main$NoOp));
 			default:
 				return _Utils_Tuple2(
 					model,
-					A3($author$project$SmoothMoveScroll$scrollCmdWithConfig, $author$project$ElmUI$Scroll$PageY$Main$NoOp, 'top', $author$project$SmoothMoveScroll$defaultConfig));
+					A2($author$project$Scroll$Cmd$scrollToBottom, $author$project$Scroll$DocumentBody, $author$project$ElmUI$Scroll$PageY$Main$NoOp));
 		}
 	});
 var $author$project$Common$UI$Basic = {$: 'Basic'};
@@ -11732,11 +11861,13 @@ var $author$project$Common$UI$createDocument = F3(
 	});
 var $author$project$Common$UI$Primary = {$: 'Primary'};
 var $author$project$Common$UI$Purple = {$: 'Purple'};
+var $author$project$ElmUI$Scroll$PageY$Main$ScrollToBottom = {$: 'ScrollToBottom'};
 var $author$project$ElmUI$Scroll$PageY$Main$ScrollToParagraphOne = {$: 'ScrollToParagraphOne'};
 var $author$project$ElmUI$Scroll$PageY$Main$ScrollToParagraphThree = {$: 'ScrollToParagraphThree'};
 var $author$project$ElmUI$Scroll$PageY$Main$ScrollToParagraphTwo = {$: 'ScrollToParagraphTwo'};
 var $author$project$ElmUI$Scroll$PageY$Main$ScrollToTop = {$: 'ScrollToTop'};
 var $author$project$Common$UI$Success = {$: 'Success'};
+var $author$project$Common$UI$Warning = {$: 'Warning'};
 var $mdgriffith$elm_ui$Internal$Model$Left = {$: 'Left'};
 var $mdgriffith$elm_ui$Element$alignLeft = $mdgriffith$elm_ui$Internal$Model$AlignX($mdgriffith$elm_ui$Internal$Model$Left);
 var $author$project$Common$Colors$backgroundWhite = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
@@ -12147,7 +12278,8 @@ var $author$project$ElmUI$Scroll$PageY$Main$viewContent = function (model) {
 					[
 						_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$PageY$Main$ScrollToParagraphOne, 'Scroll to Paragraph One ↓'),
 						_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Scroll$PageY$Main$ScrollToParagraphTwo, 'Scroll to Paragraph Two ↓'),
-						_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$PageY$Main$ScrollToParagraphThree, 'Scroll to Paragraph Three ↓')
+						_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$PageY$Main$ScrollToParagraphThree, 'Scroll to Paragraph Three ↓'),
+						_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$PageY$Main$ScrollToBottom, 'Scroll to Bottom ↓')
 					]))),
 			A2(
 			$mdgriffith$elm_ui$Element$el,
@@ -12167,7 +12299,8 @@ var $author$project$ElmUI$Scroll$PageY$Main$viewContent = function (model) {
 				[
 					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$PageY$Main$ScrollToTop, 'Scroll to Top ↑'),
 					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Scroll$PageY$Main$ScrollToParagraphTwo, 'Scroll to Paragraph Two ↓'),
-					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$PageY$Main$ScrollToParagraphThree, 'Scroll to Paragraph Three ↓')
+					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$PageY$Main$ScrollToParagraphThree, 'Scroll to Paragraph Three ↓'),
+					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$PageY$Main$ScrollToBottom, 'Scroll to Bottom ↓')
 				])),
 			A2(
 			$mdgriffith$elm_ui$Element$el,
@@ -12187,7 +12320,8 @@ var $author$project$ElmUI$Scroll$PageY$Main$viewContent = function (model) {
 				[
 					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$PageY$Main$ScrollToTop, 'Scroll to Top ↑'),
 					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$PageY$Main$ScrollToParagraphOne, 'Scroll to Paragraph One ↑'),
-					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$PageY$Main$ScrollToParagraphThree, 'Scroll to Paragraph Three ↓')
+					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$PageY$Main$ScrollToParagraphThree, 'Scroll to Paragraph Three ↓'),
+					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$PageY$Main$ScrollToBottom, 'Scroll to Bottom ↓')
 				])),
 			A2(
 			$mdgriffith$elm_ui$Element$el,
@@ -12207,7 +12341,8 @@ var $author$project$ElmUI$Scroll$PageY$Main$viewContent = function (model) {
 				[
 					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$PageY$Main$ScrollToTop, 'Scroll to Top ↑'),
 					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$PageY$Main$ScrollToParagraphOne, 'Scroll to Paragraph One ↑'),
-					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Scroll$PageY$Main$ScrollToParagraphTwo, 'Scroll to Paragraph Two ↑')
+					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Scroll$PageY$Main$ScrollToParagraphTwo, 'Scroll to Paragraph Two ↑'),
+					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$PageY$Main$ScrollToBottom, 'Scroll to Bottom ↓')
 				])),
 			A2(
 			$mdgriffith$elm_ui$Element$el,

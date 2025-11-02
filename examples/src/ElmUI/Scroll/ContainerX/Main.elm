@@ -9,7 +9,8 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Html.Attributes
-import SmoothMoveScroll exposing (Axis(..), scrollCmdWithConfig, containerElement, defaultConfig)
+import Scroll exposing (Axis(..), defaultConfig, Container(..))
+import Scroll.Cmd as Scroll
 
 
 
@@ -57,22 +58,20 @@ update msg model =
 
         ScrollToCard cardNum ->
             ( model
-            , scrollCmdWithConfig NoOp
+            , Scroll.scrollWithConfig
                 ("card-" ++ String.fromInt cardNum)
-                { defaultConfig
-                    | axis = X
-                    , container = containerElement "horizontal-scroll-container"
-                }
+                (Container "horizontal-scroll-container")
+                NoOp
+                { defaultConfig | axis = X }
             )
 
         ScrollToStart ->
             ( model
-            , scrollCmdWithConfig NoOp
+            , Scroll.scrollWithConfig
                 "card-1"
-                { defaultConfig
-                    | axis = X
-                    , container = containerElement "horizontal-scroll-container"
-                }
+                (Container "horizontal-scroll-container")
+                NoOp
+                { defaultConfig | axis = X }
             )
 
 
