@@ -4,10 +4,7 @@ module SmoothMoveScroll exposing
     , Axis(..)
     , Timing(..)
     , ElementId
-    , Container
-    , containerElement
-    , setContainer
-    , setDocumentBody
+    , Container(..)
     , scrollCmd
     , scrollCmdWithConfig
     , jumpTo
@@ -42,9 +39,6 @@ Key features:
 @docs Timing
 @docs ElementId
 @docs Container
-@docs containerElement
-@docs setContainer
-@docs setDocumentBody
 
 
 # Simple Commands
@@ -112,7 +106,7 @@ type Timing
   - **offsetY**: Vertical offset in pixels from the target position. Default is 12.
   - **easing**: Easing function from [elm-community/easing-functions](https://package.elm-lang.org/packages/elm-community/easing-functions/latest/). Default is [Ease.outQuint](https://package.elm-lang.org/packages/elm-community/easing-functions/latest/Ease#outQuint).
   - **axis**: Movement axis (Y for vertical, X for horizontal, Both for diagonal). Default is Y.
-  - **container**: Which element to scroll within (document body or container). Default is document body. Set this using [containerElement](#containerElement), [setContainer](#setContainer) or [setDocumentBody](#setDocumentBody).
+  - **container**: Which element to scroll within. Use `DocumentBody` for document scrolling or `Container "element-id"` for container scrolling. Default is `DocumentBody`.
 
 -}
 type alias Config =
@@ -139,16 +133,16 @@ Examples:
     scrollCmdWithConfig NoOp "my-section" defaultConfig
 
     -- Horizontal scrolling within a carousel container
-    scrollCmdWithConfig NoOp
-        "slide-3"
+    scrollCmdWithConfig "slide-3"
+        NoOp
         { defaultConfig
             | axis = X
-            , container = containerElement "carousel-container"
+            , container = Container "carousel-container"
         }
 
     -- Both horizontal and vertical scrolling
-    scrollCmdWithConfig NoOp
-        "target-element"
+    scrollCmdWithConfig "target-element"
+        NoOp
         { defaultConfig | axis = Both }
 
 -}
@@ -158,17 +152,21 @@ type Axis
     | Both
 
 
-{-| An internal type for configuring which element to scroll within.
+{-| Type for configuring which element to scroll within.
+
+Use `DocumentBody` for scrolling the main document, or `Container elementId`
+for scrolling within a specific container element.
+
 -}
 type Container
     = DocumentBody
-    | InnerNode String
+    | Container String
 
 
 {-| The default configuration which you can customize as needed.
 
     import Ease
-    import SmoothMoveScroll exposing (Axis(..), Timing(..), containerElement, defaultConfig)
+    import SmoothMoveScroll exposing (Axis(..), Container(..), Timing(..), defaultConfig)
 
     newConfig =
         { defaultConfig
@@ -176,7 +174,7 @@ type Container
             , offsetY = 20
             , easing = Ease.inOutCubic
             , axis = Both
-            , container = containerElement "my-scroll-container"
+            , container = Container "my-scroll-container"
         }
 
 -}
@@ -206,43 +204,6 @@ timingToSpeed timing distance =
             -- Assuming 60fps: frames = (milliseconds / 1000) * 60 = milliseconds * 0.06
             -- speed divider = distance / frames = distance / (milliseconds * 0.06)
             max 1 (round (distance / (toFloat milliseconds * 0.06)))
-
-
-{-| Set the container to scroll within to a specific DOM element by ID.
-
-    import SmoothMoveScroll exposing (setContainer, scrollCmdWithConfig, defaultConfig)
-
-    scrollCmdWithConfig "article-42" NoOp (setContainer "article-list" defaultConfig)
-
--}
-setContainer : ElementId -> Config -> Config
-setContainer elementId config =
-    { config | container = InnerNode elementId }
-
-
-{-| Set the container to scroll within to the document body (default behavior).
-
-    import SmoothMoveScroll exposing (setDocumentBody, scrollCmdWithConfig, defaultConfig)
-
-    scrollCmdWithConfig "article-42" NoOp (setDocumentBody defaultConfig)
-
--}
-setDocumentBody : Config -> Config
-setDocumentBody config =
-    { config | container = DocumentBody }
-
-
-{-| Create a container reference for use with record update syntax.
-Provides an alternative coding style for developers who prefer this approach.
-
-    import SmoothMoveScroll exposing (containerElement, scrollCmdWithConfig, defaultConfig)
-
-    scrollCmdWithConfig "article-42" NoOp { defaultConfig | container = containerElement "article-list" }
-
--}
-containerElement : ElementId -> Container
-containerElement elementId =
-    InnerNode elementId
 
 
 {-| Cmd-based scrolling with custom completion message.
@@ -322,7 +283,7 @@ jumpToTask id config =
                                 Both ->
                                     Dom.setViewport clampedX clampedY
 
-                        InnerNode containerNodeId ->
+                        Container containerNodeId ->
                             case config.axis of
                                 X ->
                                     Dom.setViewportOf containerNodeId clampedX viewport.y
@@ -424,7 +385,7 @@ scrollTaskWithConfig id config =
                                             List.map2 Dom.setViewport xSteps ySteps
                                                 |> Task.sequence
 
-                        InnerNode containerNodeId ->
+                        Container containerNodeId ->
                             case config.axis of
                                 X ->
                                     animationSteps (timingToSpeed config.timing (abs (clampedX - viewport.x))) config.easing viewport.x clampedX
@@ -482,36 +443,36 @@ scrollTaskWithConfig id config =
         |> Task.andThen identity
 
 
-{-| Scroll to the top of a container with default configuration.
+{-| Smooth scroll to the top of the document body or a container element.
 
 Perfect for "back to top" buttons or resetting scroll position.
 
     BackToTop ->
-        ( model, scrollToTop "main-content" )
+        ( model, scrollToTop (Container "main-content") )
 
-For document body scrolling, use an empty string:
+For document body scrolling:
 
     BackToTop ->
-        ( model, scrollToTop "" )
+        ( model, scrollToTop DocumentBody )
 
 -}
-scrollToTop : ElementId -> msg -> Cmd msg
-scrollToTop containerId msg =
-    scrollToTopWithConfig containerId msg defaultConfig
+scrollToTop : Container -> msg -> Cmd msg
+scrollToTop container msg =
+    scrollToTopWithConfig container msg defaultConfig
 
 
 {-| Scroll to the top of a container with custom configuration.
 
     BackToTop ->
-        ( model, scrollToTopWithConfig "main-content" NoOp { defaultConfig | timing = Duration 500 } )
+        ( model, scrollToTopWithConfig (Container "main-content") NoOp { defaultConfig | timing = Duration 500 } )
 
 -}
-scrollToTopWithConfig : ElementId -> msg -> Config -> Cmd msg
-scrollToTopWithConfig containerId msg config =
+scrollToTopWithConfig : Container -> msg -> Config -> Cmd msg
+scrollToTopWithConfig container msg config =
     let
         scrollToTopTask =
-            case containerId of
-                "" ->
+            case container of
+                DocumentBody ->
                     -- Document body scrolling
                     Dom.getViewport
                         |> Task.andThen
@@ -526,7 +487,7 @@ scrollToTopWithConfig containerId msg config =
                                     |> Task.map (always ())
                             )
 
-                _ ->
+                Container containerId ->
                     -- Container scrolling
                     Dom.getViewportOf containerId
                         |> Task.andThen
@@ -550,7 +511,7 @@ getViewport container =
         DocumentBody ->
             Dom.getViewport
 
-        InnerNode containerNodeId ->
+        Container containerNodeId ->
             Dom.getViewportOf containerNodeId
 
 
@@ -560,7 +521,7 @@ getContainerInfo container =
         DocumentBody ->
             Task.succeed Nothing
 
-        InnerNode containerNodeId ->
+        Container containerNodeId ->
             Task.map Just (Dom.getElement containerNodeId)
 
 
