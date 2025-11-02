@@ -1,17 +1,14 @@
 module ElmUI.Scroll.PageXY.Main exposing (main)
 
 import Browser exposing (Document)
-import Browser.Dom
 import Common.Colors as Colors
 import Common.UI as UI
-import Element exposing (Element, alignLeft, centerX, centerY, column, el, fill, height, htmlAttribute, layout, link, maximum, padding, paddingXY, paragraph, px, rgb255, row, spacing, text, width)
+import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
-import Element.Input as Input
-import Html
 import Html.Attributes
-import Scroll exposing (Axis(..), defaultConfig, Container(..))
+import Scroll exposing (Axis(..), ElementId, defaultConfig, Container(..))
 import Scroll.Cmd as Scroll
 import Task
 
@@ -26,7 +23,7 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = (\_ -> Sub.none)
         }
 
 
@@ -44,6 +41,14 @@ init _ =
 
 
 
+scrollTo : ElementId -> Cmd Msg
+scrollTo targetId =
+    Scroll.scrollWithConfig targetId DocumentBody NoOp <|
+        { defaultConfig
+            | axis = Both
+            , offsetY = 0
+        }
+        
 -- UPDATE
 
 
@@ -62,79 +67,20 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        ScrollToTopLeft ->
-            ( model
-            , Scroll.scrollWithConfig
-                "top-left"
-                DocumentBody
-                NoOp
-                { defaultConfig
-                    | axis = Both
-                    , offsetX = 20
-                    , offsetY = 20
-                }
-            )
+        ScrollToTopLeft ->  
+            ( model , scrollTo "top-left" )
 
         ScrollToTopRight ->
-            ( model
-            , Scroll.scrollWithConfig
-                "top-right"
-                DocumentBody
-                NoOp
-                { defaultConfig
-                    | axis = Both
-                    , offsetX = 20
-                    , offsetY = 20
-                }
-            )
+            ( model, scrollTo "top-right" )
 
         ScrollToBottomLeft ->
-            ( model
-            , Scroll.scrollWithConfig
-                "bottom-left"
-                DocumentBody
-                NoOp
-                { defaultConfig
-                    | axis = Both
-                    , offsetX = 20
-                    , offsetY = 20
-                }
-            )
+            ( model, scrollTo "bottom-left" )
 
         ScrollToBottomRight ->
-            ( model
-            , Scroll.scrollWithConfig
-                "bottom-right"
-                DocumentBody
-                NoOp
-                { defaultConfig
-                    | axis = Both
-                    , offsetX = 20
-                    , offsetY = 20
-                }
-            )
+            ( model, scrollTo "bottom-right" )
 
         ScrollToCenter ->
-            ( model
-            , Scroll.scrollWithConfig
-                "center"
-                DocumentBody
-                NoOp
-                { defaultConfig
-                    | axis = Both
-                    , offsetX = 20
-                    , offsetY = 20
-                }
-            )
-
-
-
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
+            ( model, scrollTo "center" )
 
 
 
@@ -190,7 +136,7 @@ viewSimpleGrid =
             [ width fill
             , spacing 100
             ]
-            [ viewCorner "top-left"
+            [ viewCard "top-left"
                 "↖ TOP LEFT"
                 (rgb255 59 130 246)
                 [ "This is the top-left corner of our diagonal scrolling demonstration."
@@ -198,7 +144,7 @@ viewSimpleGrid =
                 , "The Both axis scrolling moves smoothly in X and Y directions simultaneously."
                 ]
             , el [ width (fill |> maximum 600) ] (text "") -- Spacer
-            , viewCorner "top-right"
+            , viewCard "top-right"
                 "↗ TOP RIGHT"
                 (rgb255 16 185 129)
                 [ "Welcome to the top-right corner!"
@@ -211,22 +157,22 @@ viewSimpleGrid =
             [ width fill
             , spacing 100
             ]
-            [ el [ width (fill |> maximum 400) ] (text "") -- Spacer
-            , viewCorner "center"
+            [ el [ width (fill |> maximum 600) ] (text "") -- Spacer (increased to match other rows)
+            , viewCard "center"
                 "🎯 CENTER"
                 (rgb255 168 85 247)
                 [ "This is the center position of our layout."
                 , "From any corner, clicking 'Center' creates a perfect diagonal scroll."
                 , "The center demonstrates Both axis interpolation at its finest."
                 ]
-            , el [ width (fill |> maximum 400) ] (text "") -- Spacer
+            , el [ width (fill |> maximum 600) ] (text "") -- Spacer (increased to match other rows)
             ]
         , -- Bottom Row
           row
             [ width fill
             , spacing 100
             ]
-            [ viewCorner "bottom-left"
+            [ viewCard "bottom-left"
                 "↙ BOTTOM LEFT"
                 (rgb255 245 101 101)
                 [ "You've reached the bottom-left corner."
@@ -234,7 +180,7 @@ viewSimpleGrid =
                 , "Each animation smoothly interpolates between start and end positions."
                 ]
             , el [ width (fill |> maximum 600) ] (text "") -- Spacer
-            , viewCorner "bottom-right"
+            , viewCard "bottom-right"
                 "↘ BOTTOM RIGHT"
                 (rgb255 251 146 60)
                 [ "This is the bottom-right corner, the final destination."
@@ -245,11 +191,10 @@ viewSimpleGrid =
         ]
 
 
-viewCorner : String -> String -> Element.Color -> List String -> Element Msg
-viewCorner targetId title color contentLines =
+viewCard : String -> String -> Element.Color -> List String -> Element Msg
+viewCard targetId title color contentLines =
     column
-        [ width (fill |> maximum 400)
-        , height (px 300)
+        [ width (fill |> maximum 500)  
         , spacing 16
         , htmlAttribute (Html.Attributes.id targetId)
         , htmlAttribute (Html.Attributes.class "responsive-paragraph")
@@ -280,6 +225,7 @@ viewCorner targetId title color contentLines =
                 (\line ->
                     paragraph
                         [ Font.size 14
+                        , Font.center
                         , Font.color (rgb255 255 255 255)
                         , width fill
                         ]
@@ -287,4 +233,67 @@ viewCorner targetId title color contentLines =
                 )
                 contentLines
             )
+        , -- Navigation Buttons
+          column
+            [ spacing 8
+            , width fill
+            , paddingXY 0 12
+            ]
+            [ el
+                [ Font.size 12
+                , Font.semiBold
+                , Font.color (rgb255 255 255 255)
+                , centerX
+                ]
+                (text "Navigate to:")
+            , row
+                [ spacing 12
+                , width fill
+                ]
+                (List.map (\(style, msg, label) ->
+                    UI.actionButton style msg label
+                ) (getNavigationButtons targetId))
+            ]
         ]
+
+
+getNavigationButtons : String -> List ( UI.ButtonStyle, Msg, String )
+getNavigationButtons currentId =
+    case currentId of
+        "top-left" ->
+            [ ( UI.Success, ScrollToTopRight, "↗ TR" )
+            , ( UI.Purple, ScrollToCenter, "🎯 C" )
+            , ( UI.Warning, ScrollToBottomLeft, "↙ BL" )
+            , ( UI.Primary, ScrollToBottomRight, "↘ BR" )
+            ]
+        
+        "top-right" ->
+            [ ( UI.Primary, ScrollToTopLeft, "↖ TL" )
+            , ( UI.Purple, ScrollToCenter, "🎯 C" )
+            , ( UI.Warning, ScrollToBottomLeft, "↙ BL" )
+            , ( UI.Success, ScrollToBottomRight, "↘ BR" )
+            ]
+        
+        "center" ->
+            [ ( UI.Primary, ScrollToTopLeft, "↖ TL" )
+            , ( UI.Success, ScrollToTopRight, "↗ TR" )
+            , ( UI.Warning, ScrollToBottomLeft, "↙ BL" )
+            , ( UI.Purple, ScrollToBottomRight, "↘ BR" )
+            ]
+        
+        "bottom-left" ->
+            [ ( UI.Primary, ScrollToTopLeft, "↖ TL" )
+            , ( UI.Success, ScrollToTopRight, "↗ TR" )
+            , ( UI.Purple, ScrollToCenter, "🎯 C" )
+            , ( UI.Warning, ScrollToBottomRight, "↘ BR" )
+            ]
+        
+        "bottom-right" ->
+            [ ( UI.Primary, ScrollToTopLeft, "↖ TL" )
+            , ( UI.Success, ScrollToTopRight, "↗ TR" )
+            , ( UI.Purple, ScrollToCenter, "🎯 C" )
+            , ( UI.Warning, ScrollToBottomLeft, "↙ BL" )
+            ]
+        
+        _ ->
+            []

@@ -5205,9 +5205,6 @@ var $author$project$ElmUI$Scroll$PageXY$Main$init = function (_v0) {
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$ElmUI$Scroll$PageXY$Main$subscriptions = function (_v0) {
-	return $elm$core$Platform$Sub$none;
-};
 var $author$project$Scroll$Both = {$: 'Both'};
 var $author$project$Scroll$DocumentBody = {$: 'DocumentBody'};
 var $author$project$ElmUI$Scroll$PageXY$Main$NoOp = {$: 'NoOp'};
@@ -5571,6 +5568,16 @@ var $author$project$Scroll$Cmd$scrollWithConfig = F4(
 			$elm$core$Basics$always(msg),
 			A3($author$project$Scroll$Task$scrollWithConfig, elementId, container, config));
 	});
+var $author$project$ElmUI$Scroll$PageXY$Main$scrollTo = function (targetId) {
+	return A4(
+		$author$project$Scroll$Cmd$scrollWithConfig,
+		targetId,
+		$author$project$Scroll$DocumentBody,
+		$author$project$ElmUI$Scroll$PageXY$Main$NoOp,
+		_Utils_update(
+			$author$project$Scroll$defaultConfig,
+			{axis: $author$project$Scroll$Both, offsetY: 0}));
+};
 var $author$project$ElmUI$Scroll$PageXY$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -5579,58 +5586,23 @@ var $author$project$ElmUI$Scroll$PageXY$Main$update = F2(
 			case 'ScrollToTopLeft':
 				return _Utils_Tuple2(
 					model,
-					A4(
-						$author$project$Scroll$Cmd$scrollWithConfig,
-						'top-left',
-						$author$project$Scroll$DocumentBody,
-						$author$project$ElmUI$Scroll$PageXY$Main$NoOp,
-						_Utils_update(
-							$author$project$Scroll$defaultConfig,
-							{axis: $author$project$Scroll$Both, offsetX: 20, offsetY: 20})));
+					$author$project$ElmUI$Scroll$PageXY$Main$scrollTo('top-left'));
 			case 'ScrollToTopRight':
 				return _Utils_Tuple2(
 					model,
-					A4(
-						$author$project$Scroll$Cmd$scrollWithConfig,
-						'top-right',
-						$author$project$Scroll$DocumentBody,
-						$author$project$ElmUI$Scroll$PageXY$Main$NoOp,
-						_Utils_update(
-							$author$project$Scroll$defaultConfig,
-							{axis: $author$project$Scroll$Both, offsetX: 20, offsetY: 20})));
+					$author$project$ElmUI$Scroll$PageXY$Main$scrollTo('top-right'));
 			case 'ScrollToBottomLeft':
 				return _Utils_Tuple2(
 					model,
-					A4(
-						$author$project$Scroll$Cmd$scrollWithConfig,
-						'bottom-left',
-						$author$project$Scroll$DocumentBody,
-						$author$project$ElmUI$Scroll$PageXY$Main$NoOp,
-						_Utils_update(
-							$author$project$Scroll$defaultConfig,
-							{axis: $author$project$Scroll$Both, offsetX: 20, offsetY: 20})));
+					$author$project$ElmUI$Scroll$PageXY$Main$scrollTo('bottom-left'));
 			case 'ScrollToBottomRight':
 				return _Utils_Tuple2(
 					model,
-					A4(
-						$author$project$Scroll$Cmd$scrollWithConfig,
-						'bottom-right',
-						$author$project$Scroll$DocumentBody,
-						$author$project$ElmUI$Scroll$PageXY$Main$NoOp,
-						_Utils_update(
-							$author$project$Scroll$defaultConfig,
-							{axis: $author$project$Scroll$Both, offsetX: 20, offsetY: 20})));
+					$author$project$ElmUI$Scroll$PageXY$Main$scrollTo('bottom-right'));
 			default:
 				return _Utils_Tuple2(
 					model,
-					A4(
-						$author$project$Scroll$Cmd$scrollWithConfig,
-						'center',
-						$author$project$Scroll$DocumentBody,
-						$author$project$ElmUI$Scroll$PageXY$Main$NoOp,
-						_Utils_update(
-							$author$project$Scroll$defaultConfig,
-							{axis: $author$project$Scroll$Both, offsetX: 20, offsetY: 20})));
+					$author$project$ElmUI$Scroll$PageXY$Main$scrollTo('center'));
 		}
 	});
 var $author$project$Common$UI$Diagonal = {$: 'Diagonal'};
@@ -12042,6 +12014,181 @@ var $mdgriffith$elm_ui$Element$row = F2(
 						attrs))),
 			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
 	});
+var $mdgriffith$elm_ui$Internal$Model$Button = {$: 'Button'};
+var $elm$json$Json$Encode$bool = _Json_wrap;
+var $elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$bool(bool));
+	});
+var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
+var $mdgriffith$elm_ui$Element$Input$enter = 'Enter';
+var $mdgriffith$elm_ui$Element$Input$hasFocusStyle = function (attr) {
+	if (((attr.$ === 'StyleClass') && (attr.b.$ === 'PseudoSelector')) && (attr.b.a.$ === 'Focus')) {
+		var _v1 = attr.b;
+		var _v2 = _v1.a;
+		return true;
+	} else {
+		return false;
+	}
+};
+var $mdgriffith$elm_ui$Element$Input$focusDefault = function (attrs) {
+	return A2($elm$core$List$any, $mdgriffith$elm_ui$Element$Input$hasFocusStyle, attrs) ? $mdgriffith$elm_ui$Internal$Model$NoAttribute : $mdgriffith$elm_ui$Internal$Model$htmlClass('focusable');
+};
+var $mdgriffith$elm_ui$Element$Events$onClick = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Attr, $elm$html$Html$Events$onClick);
+var $elm$json$Json$Decode$andThen = _Json_andThen;
+var $elm$json$Json$Decode$fail = _Json_fail;
+var $elm$json$Json$Decode$field = _Json_decodeField;
+var $elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
+	return {$: 'MayPreventDefault', a: a};
+};
+var $elm$html$Html$Events$preventDefaultOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
+	});
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $mdgriffith$elm_ui$Element$Input$onKeyLookup = function (lookup) {
+	var decode = function (code) {
+		var _v0 = lookup(code);
+		if (_v0.$ === 'Nothing') {
+			return $elm$json$Json$Decode$fail('No key matched');
+		} else {
+			var msg = _v0.a;
+			return $elm$json$Json$Decode$succeed(msg);
+		}
+	};
+	var isKey = A2(
+		$elm$json$Json$Decode$andThen,
+		decode,
+		A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string));
+	return $mdgriffith$elm_ui$Internal$Model$Attr(
+		A2(
+			$elm$html$Html$Events$preventDefaultOn,
+			'keydown',
+			A2(
+				$elm$json$Json$Decode$map,
+				function (fired) {
+					return _Utils_Tuple2(fired, true);
+				},
+				isKey)));
+};
+var $mdgriffith$elm_ui$Internal$Flag$cursor = $mdgriffith$elm_ui$Internal$Flag$flag(21);
+var $mdgriffith$elm_ui$Element$pointer = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$cursor, $mdgriffith$elm_ui$Internal$Style$classes.cursorPointer);
+var $mdgriffith$elm_ui$Element$Input$space = ' ';
+var $elm$html$Html$Attributes$tabindex = function (n) {
+	return A2(
+		_VirtualDom_attribute,
+		'tabIndex',
+		$elm$core$String$fromInt(n));
+};
+var $mdgriffith$elm_ui$Element$Input$button = F2(
+	function (attrs, _v0) {
+		var onPress = _v0.onPress;
+		var label = _v0.label;
+		return A4(
+			$mdgriffith$elm_ui$Internal$Model$element,
+			$mdgriffith$elm_ui$Internal$Model$asEl,
+			$mdgriffith$elm_ui$Internal$Model$div,
+			A2(
+				$elm$core$List$cons,
+				$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
+				A2(
+					$elm$core$List$cons,
+					$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$shrink),
+					A2(
+						$elm$core$List$cons,
+						$mdgriffith$elm_ui$Internal$Model$htmlClass($mdgriffith$elm_ui$Internal$Style$classes.contentCenterX + (' ' + ($mdgriffith$elm_ui$Internal$Style$classes.contentCenterY + (' ' + ($mdgriffith$elm_ui$Internal$Style$classes.seButton + (' ' + $mdgriffith$elm_ui$Internal$Style$classes.noTextSelection)))))),
+						A2(
+							$elm$core$List$cons,
+							$mdgriffith$elm_ui$Element$pointer,
+							A2(
+								$elm$core$List$cons,
+								$mdgriffith$elm_ui$Element$Input$focusDefault(attrs),
+								A2(
+									$elm$core$List$cons,
+									$mdgriffith$elm_ui$Internal$Model$Describe($mdgriffith$elm_ui$Internal$Model$Button),
+									A2(
+										$elm$core$List$cons,
+										$mdgriffith$elm_ui$Internal$Model$Attr(
+											$elm$html$Html$Attributes$tabindex(0)),
+										function () {
+											if (onPress.$ === 'Nothing') {
+												return A2(
+													$elm$core$List$cons,
+													$mdgriffith$elm_ui$Internal$Model$Attr(
+														$elm$html$Html$Attributes$disabled(true)),
+													attrs);
+											} else {
+												var msg = onPress.a;
+												return A2(
+													$elm$core$List$cons,
+													$mdgriffith$elm_ui$Element$Events$onClick(msg),
+													A2(
+														$elm$core$List$cons,
+														$mdgriffith$elm_ui$Element$Input$onKeyLookup(
+															function (code) {
+																return _Utils_eq(code, $mdgriffith$elm_ui$Element$Input$enter) ? $elm$core$Maybe$Just(msg) : (_Utils_eq(code, $mdgriffith$elm_ui$Element$Input$space) ? $elm$core$Maybe$Just(msg) : $elm$core$Maybe$Nothing);
+															}),
+														attrs));
+											}
+										}()))))))),
+			$mdgriffith$elm_ui$Internal$Model$Unkeyed(
+				_List_fromArray(
+					[label])));
+	});
+var $mdgriffith$elm_ui$Element$Font$medium = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textMedium);
+var $author$project$Common$Colors$purple = A3($mdgriffith$elm_ui$Element$rgb255, 168, 85, 247);
+var $author$project$Common$Colors$purpleDark = A3($mdgriffith$elm_ui$Element$rgb255, 147, 51, 234);
+var $author$project$Common$Colors$success = A3($mdgriffith$elm_ui$Element$rgb255, 16, 185, 129);
+var $author$project$Common$Colors$successDark = A3($mdgriffith$elm_ui$Element$rgb255, 5, 150, 105);
+var $author$project$Common$Colors$warning = A3($mdgriffith$elm_ui$Element$rgb255, 245, 158, 11);
+var $author$project$Common$Colors$warningDark = A3($mdgriffith$elm_ui$Element$rgb255, 217, 119, 6);
+var $author$project$Common$UI$actionButton = F3(
+	function (style, onPress, label) {
+		var _v0 = function () {
+			switch (style.$) {
+				case 'Primary':
+					return _Utils_Tuple2(
+						$author$project$Common$Colors$primary,
+						A3($mdgriffith$elm_ui$Element$rgb255, 37, 99, 235));
+				case 'Success':
+					return _Utils_Tuple2($author$project$Common$Colors$success, $author$project$Common$Colors$successDark);
+				case 'Purple':
+					return _Utils_Tuple2($author$project$Common$Colors$purple, $author$project$Common$Colors$purpleDark);
+				default:
+					return _Utils_Tuple2($author$project$Common$Colors$warning, $author$project$Common$Colors$warningDark);
+			}
+		}();
+		var startColor = _v0.a;
+		var endColor = _v0.b;
+		return A2(
+			$mdgriffith$elm_ui$Element$Input$button,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$Background$gradient(
+					{
+						angle: 0,
+						steps: _List_fromArray(
+							[startColor, endColor])
+					}),
+					$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$backgroundWhite),
+					$mdgriffith$elm_ui$Element$Font$medium,
+					A2($mdgriffith$elm_ui$Element$paddingXY, 24, 12),
+					$mdgriffith$elm_ui$Element$Border$rounded(8),
+					$mdgriffith$elm_ui$Element$centerX
+				]),
+			{
+				label: $mdgriffith$elm_ui$Element$text(label),
+				onPress: $elm$core$Maybe$Just(onPress)
+			});
+	});
+var $mdgriffith$elm_ui$Internal$Flag$fontAlignment = $mdgriffith$elm_ui$Internal$Flag$flag(12);
+var $mdgriffith$elm_ui$Element$Font$center = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontAlignment, $mdgriffith$elm_ui$Internal$Style$classes.textCenter);
 var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
 	return A2(
 		$mdgriffith$elm_ui$Internal$Model$StyleClass,
@@ -12051,6 +12198,52 @@ var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
 			'bg-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(clr),
 			'background-color',
 			clr));
+};
+var $author$project$ElmUI$Scroll$PageXY$Main$getNavigationButtons = function (currentId) {
+	switch (currentId) {
+		case 'top-left':
+			return _List_fromArray(
+				[
+					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Scroll$PageXY$Main$ScrollToTopRight, '↗ TR'),
+					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$PageXY$Main$ScrollToCenter, '🎯 C'),
+					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$PageXY$Main$ScrollToBottomLeft, '↙ BL'),
+					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$PageXY$Main$ScrollToBottomRight, '↘ BR')
+				]);
+		case 'top-right':
+			return _List_fromArray(
+				[
+					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$PageXY$Main$ScrollToTopLeft, '↖ TL'),
+					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$PageXY$Main$ScrollToCenter, '🎯 C'),
+					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$PageXY$Main$ScrollToBottomLeft, '↙ BL'),
+					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Scroll$PageXY$Main$ScrollToBottomRight, '↘ BR')
+				]);
+		case 'center':
+			return _List_fromArray(
+				[
+					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$PageXY$Main$ScrollToTopLeft, '↖ TL'),
+					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Scroll$PageXY$Main$ScrollToTopRight, '↗ TR'),
+					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$PageXY$Main$ScrollToBottomLeft, '↙ BL'),
+					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$PageXY$Main$ScrollToBottomRight, '↘ BR')
+				]);
+		case 'bottom-left':
+			return _List_fromArray(
+				[
+					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$PageXY$Main$ScrollToTopLeft, '↖ TL'),
+					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Scroll$PageXY$Main$ScrollToTopRight, '↗ TR'),
+					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$PageXY$Main$ScrollToCenter, '🎯 C'),
+					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$PageXY$Main$ScrollToBottomRight, '↘ BR')
+				]);
+		case 'bottom-right':
+			return _List_fromArray(
+				[
+					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$PageXY$Main$ScrollToTopLeft, '↖ TL'),
+					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Scroll$PageXY$Main$ScrollToTopRight, '↗ TR'),
+					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$PageXY$Main$ScrollToCenter, '🎯 C'),
+					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$PageXY$Main$ScrollToBottomLeft, '↙ BL')
+				]);
+		default:
+			return _List_Nil;
+	}
 };
 var $mdgriffith$elm_ui$Element$rgba = $mdgriffith$elm_ui$Internal$Model$Rgba;
 var $mdgriffith$elm_ui$Internal$Model$boxShadowClass = function (shadow) {
@@ -12077,16 +12270,14 @@ var $mdgriffith$elm_ui$Element$Border$shadow = function (almostShade) {
 			'box-shadow',
 			$mdgriffith$elm_ui$Internal$Model$formatBoxShadow(shade)));
 };
-var $author$project$ElmUI$Scroll$PageXY$Main$viewCorner = F4(
+var $author$project$ElmUI$Scroll$PageXY$Main$viewCard = F4(
 	function (targetId, title, color, contentLines) {
 		return A2(
 			$mdgriffith$elm_ui$Element$column,
 			_List_fromArray(
 				[
 					$mdgriffith$elm_ui$Element$width(
-					A2($mdgriffith$elm_ui$Element$maximum, 400, $mdgriffith$elm_ui$Element$fill)),
-					$mdgriffith$elm_ui$Element$height(
-					$mdgriffith$elm_ui$Element$px(300)),
+					A2($mdgriffith$elm_ui$Element$maximum, 500, $mdgriffith$elm_ui$Element$fill)),
 					$mdgriffith$elm_ui$Element$spacing(16),
 					$mdgriffith$elm_ui$Element$htmlAttribute(
 					$elm$html$Html$Attributes$id(targetId)),
@@ -12131,6 +12322,7 @@ var $author$project$ElmUI$Scroll$PageXY$Main$viewCorner = F4(
 								_List_fromArray(
 									[
 										$mdgriffith$elm_ui$Element$Font$size(14),
+										$mdgriffith$elm_ui$Element$Font$center,
 										$mdgriffith$elm_ui$Element$Font$color(
 										A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255)),
 										$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
@@ -12140,7 +12332,45 @@ var $author$project$ElmUI$Scroll$PageXY$Main$viewCorner = F4(
 										$mdgriffith$elm_ui$Element$text(line)
 									]));
 						},
-						contentLines))
+						contentLines)),
+					A2(
+					$mdgriffith$elm_ui$Element$column,
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$spacing(8),
+							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+							A2($mdgriffith$elm_ui$Element$paddingXY, 0, 12)
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$mdgriffith$elm_ui$Element$el,
+							_List_fromArray(
+								[
+									$mdgriffith$elm_ui$Element$Font$size(12),
+									$mdgriffith$elm_ui$Element$Font$semiBold,
+									$mdgriffith$elm_ui$Element$Font$color(
+									A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255)),
+									$mdgriffith$elm_ui$Element$centerX
+								]),
+							$mdgriffith$elm_ui$Element$text('Navigate to:')),
+							A2(
+							$mdgriffith$elm_ui$Element$row,
+							_List_fromArray(
+								[
+									$mdgriffith$elm_ui$Element$spacing(12),
+									$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
+								]),
+							A2(
+								$elm$core$List$map,
+								function (_v0) {
+									var style = _v0.a;
+									var msg = _v0.b;
+									var label = _v0.c;
+									return A3($author$project$Common$UI$actionButton, style, msg, label);
+								},
+								$author$project$ElmUI$Scroll$PageXY$Main$getNavigationButtons(targetId)))
+						]))
 				]));
 	});
 var $author$project$ElmUI$Scroll$PageXY$Main$viewSimpleGrid = A2(
@@ -12166,7 +12396,7 @@ var $author$project$ElmUI$Scroll$PageXY$Main$viewSimpleGrid = A2(
 			_List_fromArray(
 				[
 					A4(
-					$author$project$ElmUI$Scroll$PageXY$Main$viewCorner,
+					$author$project$ElmUI$Scroll$PageXY$Main$viewCard,
 					'top-left',
 					'↖ TOP LEFT',
 					A3($mdgriffith$elm_ui$Element$rgb255, 59, 130, 246),
@@ -12181,7 +12411,7 @@ var $author$project$ElmUI$Scroll$PageXY$Main$viewSimpleGrid = A2(
 						]),
 					$mdgriffith$elm_ui$Element$text('')),
 					A4(
-					$author$project$ElmUI$Scroll$PageXY$Main$viewCorner,
+					$author$project$ElmUI$Scroll$PageXY$Main$viewCard,
 					'top-right',
 					'↗ TOP RIGHT',
 					A3($mdgriffith$elm_ui$Element$rgb255, 16, 185, 129),
@@ -12202,11 +12432,11 @@ var $author$project$ElmUI$Scroll$PageXY$Main$viewSimpleGrid = A2(
 					_List_fromArray(
 						[
 							$mdgriffith$elm_ui$Element$width(
-							A2($mdgriffith$elm_ui$Element$maximum, 400, $mdgriffith$elm_ui$Element$fill))
+							A2($mdgriffith$elm_ui$Element$maximum, 600, $mdgriffith$elm_ui$Element$fill))
 						]),
 					$mdgriffith$elm_ui$Element$text('')),
 					A4(
-					$author$project$ElmUI$Scroll$PageXY$Main$viewCorner,
+					$author$project$ElmUI$Scroll$PageXY$Main$viewCard,
 					'center',
 					'🎯 CENTER',
 					A3($mdgriffith$elm_ui$Element$rgb255, 168, 85, 247),
@@ -12217,7 +12447,7 @@ var $author$project$ElmUI$Scroll$PageXY$Main$viewSimpleGrid = A2(
 					_List_fromArray(
 						[
 							$mdgriffith$elm_ui$Element$width(
-							A2($mdgriffith$elm_ui$Element$maximum, 400, $mdgriffith$elm_ui$Element$fill))
+							A2($mdgriffith$elm_ui$Element$maximum, 600, $mdgriffith$elm_ui$Element$fill))
 						]),
 					$mdgriffith$elm_ui$Element$text(''))
 				])),
@@ -12231,7 +12461,7 @@ var $author$project$ElmUI$Scroll$PageXY$Main$viewSimpleGrid = A2(
 			_List_fromArray(
 				[
 					A4(
-					$author$project$ElmUI$Scroll$PageXY$Main$viewCorner,
+					$author$project$ElmUI$Scroll$PageXY$Main$viewCard,
 					'bottom-left',
 					'↙ BOTTOM LEFT',
 					A3($mdgriffith$elm_ui$Element$rgb255, 245, 101, 101),
@@ -12246,7 +12476,7 @@ var $author$project$ElmUI$Scroll$PageXY$Main$viewSimpleGrid = A2(
 						]),
 					$mdgriffith$elm_ui$Element$text('')),
 					A4(
-					$author$project$ElmUI$Scroll$PageXY$Main$viewCorner,
+					$author$project$ElmUI$Scroll$PageXY$Main$viewCard,
 					'bottom-right',
 					'↘ BOTTOM RIGHT',
 					A3($mdgriffith$elm_ui$Element$rgb255, 251, 146, 60),
@@ -12299,6 +12529,13 @@ var $author$project$ElmUI$Scroll$PageXY$Main$view = function (model) {
 		$author$project$ElmUI$Scroll$PageXY$Main$viewContent(model));
 };
 var $author$project$ElmUI$Scroll$PageXY$Main$main = $elm$browser$Browser$document(
-	{init: $author$project$ElmUI$Scroll$PageXY$Main$init, subscriptions: $author$project$ElmUI$Scroll$PageXY$Main$subscriptions, update: $author$project$ElmUI$Scroll$PageXY$Main$update, view: $author$project$ElmUI$Scroll$PageXY$Main$view});
+	{
+		init: $author$project$ElmUI$Scroll$PageXY$Main$init,
+		subscriptions: function (_v0) {
+			return $elm$core$Platform$Sub$none;
+		},
+		update: $author$project$ElmUI$Scroll$PageXY$Main$update,
+		view: $author$project$ElmUI$Scroll$PageXY$Main$view
+	});
 _Platform_export({'ElmUI':{'Scroll':{'PageXY':{'Main':{'init':$author$project$ElmUI$Scroll$PageXY$Main$main(
 	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}}}}});}(this));
