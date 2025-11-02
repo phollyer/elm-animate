@@ -48,6 +48,7 @@ type Msg
     = NoOp
     | ScrollToCard Int
     | ScrollToStart
+    | ScrollToEnd
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -67,11 +68,16 @@ update msg model =
 
         ScrollToStart ->
             ( model
-            , Scroll.scrollWithConfig
-                "card-1"
+            , Scroll.scrollToLeftEdge
                 (Container "horizontal-scroll-container")
                 NoOp
-                { defaultConfig | axis = X }
+            )
+
+        ScrollToEnd ->
+            ( model
+            , Scroll.scrollToRightEdge
+                (Container "horizontal-scroll-container")
+                NoOp
             )
 
 
@@ -105,7 +111,7 @@ viewContent model =
         , centerX
         ]
         [ UI.htmlActionButtons
-            (List.range 1 8
+            (List.range 1 10
                 |> List.map
                     (\i ->
                         ( case i of
@@ -130,14 +136,24 @@ viewContent model =
                             7 ->
                                 UI.Purple
 
-                            _ ->
+                            8 ->
                                 UI.Warning
+
+                            9 ->
+                                UI.Primary
+
+                            _ ->
+                                UI.Success
                         , ScrollToCard i
                         , "Card " ++ String.fromInt i
                         )
                     )
             )
-        , UI.actionButton UI.Primary ScrollToStart "← Back to Start"
+        , row [ spacing 16
+            , centerX ]
+            [ UI.actionButton UI.Primary ScrollToStart "← Start" 
+            , UI.actionButton UI.Primary ScrollToEnd "End →"
+            ]
         ]
     , -- Horizontal Scroll Container
       el
@@ -154,12 +170,11 @@ viewContent model =
         , htmlAttribute (Html.Attributes.id "horizontal-scroll-container")
         , htmlAttribute (Html.Attributes.class "scroll-container")
         , scrollbarX
-        , clipX
         ]
         (row
             [ spacing 20
             , paddingXY 30 30
-            , htmlAttribute (Html.Attributes.style "width" "2000px")
+            --, width (px 2000)
             ]
             (List.range 1 10
                 |> List.map viewCard

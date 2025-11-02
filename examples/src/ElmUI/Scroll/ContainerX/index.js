@@ -5290,6 +5290,154 @@ var $author$project$Internal$AnimationCore$animationSteps = F4(
 			},
 			weights);
 	});
+var $elm$browser$Browser$Dom$getViewport = _Browser_withWindow(_Browser_getViewport);
+var $elm$browser$Browser$Dom$getViewportOf = _Browser_getViewportOf;
+var $elm$browser$Browser$Dom$setViewport = _Browser_setViewport;
+var $elm$browser$Browser$Dom$setViewportOf = _Browser_setViewportOf;
+var $author$project$Scroll$Internal$timingToSpeed = F2(
+	function (timing, distance) {
+		if (timing.$ === 'Speed') {
+			var pixelsPerSecond = timing.a;
+			return A2(
+				$elm$core$Basics$max,
+				1,
+				$elm$core$Basics$round((distance * 60) / pixelsPerSecond));
+		} else {
+			var milliseconds = timing.a;
+			return A2(
+				$elm$core$Basics$max,
+				1,
+				$elm$core$Basics$round(distance / (milliseconds * 0.06)));
+		}
+	});
+var $author$project$Scroll$Task$scrollToLeftEdgeWithConfig = F2(
+	function (container, config) {
+		if (container.$ === 'DocumentBody') {
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v1) {
+					var viewport = _v1.viewport;
+					var steps = A4(
+						$author$project$Internal$AnimationCore$animationSteps,
+						A2(
+							$author$project$Scroll$Internal$timingToSpeed,
+							config.timing,
+							$elm$core$Basics$abs(viewport.x)),
+						config.easing,
+						viewport.x,
+						0);
+					return $elm$core$Task$sequence(
+						A2(
+							$elm$core$List$map,
+							function (x) {
+								return A2($elm$browser$Browser$Dom$setViewport, x, viewport.y);
+							},
+							steps));
+				},
+				$elm$browser$Browser$Dom$getViewport);
+		} else {
+			var containerId = container.a;
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v2) {
+					var viewport = _v2.viewport;
+					var steps = A4(
+						$author$project$Internal$AnimationCore$animationSteps,
+						A2(
+							$author$project$Scroll$Internal$timingToSpeed,
+							config.timing,
+							$elm$core$Basics$abs(viewport.x)),
+						config.easing,
+						viewport.x,
+						0);
+					return $elm$core$Task$sequence(
+						A2(
+							$elm$core$List$map,
+							function (x) {
+								return A3($elm$browser$Browser$Dom$setViewportOf, containerId, x, viewport.y);
+							},
+							steps));
+				},
+				$elm$browser$Browser$Dom$getViewportOf(containerId));
+		}
+	});
+var $author$project$Scroll$Cmd$scrollToLeftEdgeWithConfig = F3(
+	function (container, msg, config) {
+		return A2(
+			$elm$core$Task$attempt,
+			$elm$core$Basics$always(msg),
+			A2($author$project$Scroll$Task$scrollToLeftEdgeWithConfig, container, config));
+	});
+var $author$project$Scroll$Cmd$scrollToLeftEdge = F2(
+	function (container, msg) {
+		return A3($author$project$Scroll$Cmd$scrollToLeftEdgeWithConfig, container, msg, $author$project$Scroll$defaultConfig);
+	});
+var $author$project$Scroll$Task$scrollToRightEdgeWithConfig = F2(
+	function (container, config) {
+		if (container.$ === 'DocumentBody') {
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v1) {
+					var scene = _v1.scene;
+					var viewport = _v1.viewport;
+					var maxX = scene.width - viewport.width;
+					var steps = A4(
+						$author$project$Internal$AnimationCore$animationSteps,
+						A2(
+							$author$project$Scroll$Internal$timingToSpeed,
+							config.timing,
+							$elm$core$Basics$abs(maxX - viewport.x)),
+						config.easing,
+						viewport.x,
+						maxX);
+					return $elm$core$Task$sequence(
+						A2(
+							$elm$core$List$map,
+							function (x) {
+								return A2($elm$browser$Browser$Dom$setViewport, x, viewport.y);
+							},
+							steps));
+				},
+				$elm$browser$Browser$Dom$getViewport);
+		} else {
+			var containerId = container.a;
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v2) {
+					var scene = _v2.scene;
+					var viewport = _v2.viewport;
+					var maxX = scene.width - viewport.width;
+					var steps = A4(
+						$author$project$Internal$AnimationCore$animationSteps,
+						A2(
+							$author$project$Scroll$Internal$timingToSpeed,
+							config.timing,
+							$elm$core$Basics$abs(maxX - viewport.x)),
+						config.easing,
+						viewport.x,
+						maxX);
+					return $elm$core$Task$sequence(
+						A2(
+							$elm$core$List$map,
+							function (x) {
+								return A3($elm$browser$Browser$Dom$setViewportOf, containerId, x, viewport.y);
+							},
+							steps));
+				},
+				$elm$browser$Browser$Dom$getViewportOf(containerId));
+		}
+	});
+var $author$project$Scroll$Cmd$scrollToRightEdgeWithConfig = F3(
+	function (container, msg, config) {
+		return A2(
+			$elm$core$Task$attempt,
+			$elm$core$Basics$always(msg),
+			A2($author$project$Scroll$Task$scrollToRightEdgeWithConfig, container, config));
+	});
+var $author$project$Scroll$Cmd$scrollToRightEdge = F2(
+	function (container, msg) {
+		return A3($author$project$Scroll$Cmd$scrollToRightEdgeWithConfig, container, msg, $author$project$Scroll$defaultConfig);
+	});
 var $author$project$Internal$AnimationCore$animationStepsWithFrames = F4(
 	function (frames, easing, start, stop) {
 		var operator = (_Utils_cmp(start, stop) > 0) ? $elm$core$Basics$sub : $elm$core$Basics$add;
@@ -5348,8 +5496,6 @@ var $author$project$Scroll$Internal$getContainerInfo = function (container) {
 			$elm$browser$Browser$Dom$getElement(containerNodeId));
 	}
 };
-var $elm$browser$Browser$Dom$getViewport = _Browser_withWindow(_Browser_getViewport);
-var $elm$browser$Browser$Dom$getViewportOf = _Browser_getViewportOf;
 var $author$project$Scroll$Internal$getViewport = function (container) {
 	if (container.$ === 'DocumentBody') {
 		return $elm$browser$Browser$Dom$getViewport;
@@ -5377,24 +5523,6 @@ var $elm$core$Task$map3 = F4(
 					taskB);
 			},
 			taskA);
-	});
-var $elm$browser$Browser$Dom$setViewport = _Browser_setViewport;
-var $elm$browser$Browser$Dom$setViewportOf = _Browser_setViewportOf;
-var $author$project$Scroll$Internal$timingToSpeed = F2(
-	function (timing, distance) {
-		if (timing.$ === 'Speed') {
-			var pixelsPerSecond = timing.a;
-			return A2(
-				$elm$core$Basics$max,
-				1,
-				$elm$core$Basics$round((distance * 60) / pixelsPerSecond));
-		} else {
-			var milliseconds = timing.a;
-			return A2(
-				$elm$core$Basics$max,
-				1,
-				$elm$core$Basics$round(distance / (milliseconds * 0.06)));
-		}
 	});
 var $author$project$Scroll$Task$scrollWithConfig = F3(
 	function (id, container, config) {
@@ -5590,17 +5718,20 @@ var $author$project$ElmUI$Scroll$ContainerX$Main$update = F2(
 						_Utils_update(
 							$author$project$Scroll$defaultConfig,
 							{axis: $author$project$Scroll$X})));
+			case 'ScrollToStart':
+				return _Utils_Tuple2(
+					model,
+					A2(
+						$author$project$Scroll$Cmd$scrollToLeftEdge,
+						$author$project$Scroll$Container('horizontal-scroll-container'),
+						$author$project$ElmUI$Scroll$ContainerX$Main$NoOp));
 			default:
 				return _Utils_Tuple2(
 					model,
-					A4(
-						$author$project$Scroll$Cmd$scrollWithConfig,
-						'card-1',
+					A2(
+						$author$project$Scroll$Cmd$scrollToRightEdge,
 						$author$project$Scroll$Container('horizontal-scroll-container'),
-						$author$project$ElmUI$Scroll$ContainerX$Main$NoOp,
-						_Utils_update(
-							$author$project$Scroll$defaultConfig,
-							{axis: $author$project$Scroll$X})));
+						$author$project$ElmUI$Scroll$ContainerX$Main$NoOp));
 		}
 	});
 var $author$project$Common$UI$HorizontalContainer = {$: 'HorizontalContainer'};
@@ -11742,6 +11873,7 @@ var $author$project$Common$UI$Purple = {$: 'Purple'};
 var $author$project$ElmUI$Scroll$ContainerX$Main$ScrollToCard = function (a) {
 	return {$: 'ScrollToCard', a: a};
 };
+var $author$project$ElmUI$Scroll$ContainerX$Main$ScrollToEnd = {$: 'ScrollToEnd'};
 var $author$project$ElmUI$Scroll$ContainerX$Main$ScrollToStart = {$: 'ScrollToStart'};
 var $author$project$Common$UI$Success = {$: 'Success'};
 var $author$project$Common$UI$Warning = {$: 'Warning'};
@@ -12049,8 +12181,6 @@ var $author$project$Common$UI$backButton = A2(
 		label: $mdgriffith$elm_ui$Element$text('← Back to Examples'),
 		url: '../../index.html'
 	});
-var $mdgriffith$elm_ui$Internal$Flag$overflow = $mdgriffith$elm_ui$Internal$Flag$flag(20);
-var $mdgriffith$elm_ui$Element$clipX = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$overflow, $mdgriffith$elm_ui$Internal$Style$classes.clipX);
 var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
 	return A2(
 		$mdgriffith$elm_ui$Internal$Model$StyleClass,
@@ -12182,6 +12312,7 @@ var $mdgriffith$elm_ui$Element$row = F2(
 						attrs))),
 			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
 	});
+var $mdgriffith$elm_ui$Internal$Flag$overflow = $mdgriffith$elm_ui$Internal$Flag$flag(20);
 var $mdgriffith$elm_ui$Element$scrollbarX = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$overflow, $mdgriffith$elm_ui$Internal$Style$classes.scrollbarsX);
 var $mdgriffith$elm_ui$Internal$Model$boxShadowClass = function (shadow) {
 	return $elm$core$String$concat(
@@ -12207,8 +12338,6 @@ var $mdgriffith$elm_ui$Element$Border$shadow = function (almostShade) {
 			'box-shadow',
 			$mdgriffith$elm_ui$Internal$Model$formatBoxShadow(shade)));
 };
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $mdgriffith$elm_ui$Internal$Flag$borderColor = $mdgriffith$elm_ui$Internal$Flag$flag(28);
 var $mdgriffith$elm_ui$Element$Border$color = function (clr) {
 	return A2(
@@ -12432,15 +12561,30 @@ var $author$project$ElmUI$Scroll$ContainerX$Main$viewContent = function (model) 
 											return $author$project$Common$UI$Success;
 										case 7:
 											return $author$project$Common$UI$Purple;
-										default:
+										case 8:
 											return $author$project$Common$UI$Warning;
+										case 9:
+											return $author$project$Common$UI$Primary;
+										default:
+											return $author$project$Common$UI$Success;
 									}
 								}(),
 								$author$project$ElmUI$Scroll$ContainerX$Main$ScrollToCard(i),
 								'Card ' + $elm$core$String$fromInt(i));
 						},
-						A2($elm$core$List$range, 1, 8))),
-					A3($author$project$Common$UI$actionButton, $author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$ContainerX$Main$ScrollToStart, '← Back to Start')
+						A2($elm$core$List$range, 1, 10))),
+					A2(
+					$mdgriffith$elm_ui$Element$row,
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$spacing(16),
+							$mdgriffith$elm_ui$Element$centerX
+						]),
+					_List_fromArray(
+						[
+							A3($author$project$Common$UI$actionButton, $author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$ContainerX$Main$ScrollToStart, '← Start'),
+							A3($author$project$Common$UI$actionButton, $author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$ContainerX$Main$ScrollToEnd, 'End →')
+						]))
 				])),
 			A2(
 			$mdgriffith$elm_ui$Element$el,
@@ -12462,17 +12606,14 @@ var $author$project$ElmUI$Scroll$ContainerX$Main$viewContent = function (model) 
 					$elm$html$Html$Attributes$id('horizontal-scroll-container')),
 					$mdgriffith$elm_ui$Element$htmlAttribute(
 					$elm$html$Html$Attributes$class('scroll-container')),
-					$mdgriffith$elm_ui$Element$scrollbarX,
-					$mdgriffith$elm_ui$Element$clipX
+					$mdgriffith$elm_ui$Element$scrollbarX
 				]),
 			A2(
 				$mdgriffith$elm_ui$Element$row,
 				_List_fromArray(
 					[
 						$mdgriffith$elm_ui$Element$spacing(20),
-						A2($mdgriffith$elm_ui$Element$paddingXY, 30, 30),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						A2($elm$html$Html$Attributes$style, 'width', '2000px'))
+						A2($mdgriffith$elm_ui$Element$paddingXY, 30, 30)
 					]),
 				A2(
 					$elm$core$List$map,
