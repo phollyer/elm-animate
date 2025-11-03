@@ -11,6 +11,7 @@ This example shows:
 -}
 
 import Browser exposing (Document)
+import Browser.Events as Event
 import Common.UI as UI
 import Element exposing (..)
 import Element.Background as Background
@@ -55,6 +56,7 @@ type Msg
     | JumpToElement String
     | TaskCompleted
     | TaskFailed
+    | OnResize Int Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -82,6 +84,15 @@ update msg model =
             , Cmd.none
             )
 
+        OnResize newWidth newHeight ->
+            ( { model | windowWidth = newWidth, windowHeight = newHeight }
+            , Cmd.none
+            )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Event.onResize OnResize
 
 -- VIEW
 
@@ -302,5 +313,5 @@ main =
         { init = \flags -> ( initialModel flags, Cmd.none )
         , view = view
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
