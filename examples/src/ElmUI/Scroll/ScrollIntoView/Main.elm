@@ -102,6 +102,18 @@ viewContent model =
       UI.backButton
     , -- Header
       UI.pageHeader "ScrollIntoView Example"
+    , -- Navigation buttons
+      el []
+        <|
+            UI.htmlActionButtons
+                [ ( UI.Primary, ScrollToElement "top-element", "→ Top" )
+                , ( UI.Success, ScrollToElement "left-element", "→ Left" )
+                , ( UI.Purple, ScrollToElement "center-element", "→ Center" )
+                , ( UI.Warning, ScrollToElement "wide-element", "→ Wide" )
+                , ( UI.Primary, ScrollToElement "tall-element", "→ Tall" )
+                , ( UI.Success, ScrollToElement "right-element", "→ Right" )
+                , ( UI.Purple, ScrollToElement "bottom-element", "→ Bottom" )
+                ]
     , -- Status info
       row [ width fill, spacing 20, centerX ]
         [ el [ Font.size 16, Font.color (rgb 0.5 0.5 0.5) ] 
@@ -120,13 +132,13 @@ viewContent model =
                         "Top Section"
                         (model.windowHeight)
                         (rgb 1.0 0.95 0.95)
-                        [ targetElementWithButtons "top-element" "Top Element (400x200)" 400 200 (rgb 1.0 0.9 0.9)
-                            [ button "→ Left" (ScrollToElement "left-element")
-                            , button "→ Center" (ScrollToElement "center-element")
-                            , button "→ Wide" (ScrollToElement "wide-element")
-                            , button "→ Tall" (ScrollToElement "tall-element")
-                            , button "→ Right" (ScrollToElement "right-element")
-                            , button "→ Bottom" (ScrollToElement "bottom-element")
+                        [ targetElementWithButtons "top-element" "Top Element" 400 200 (rgb 1.0 0.9 0.9)
+                            [ ( UI.Primary, ScrollToElement "left-element", "→ Left" )
+                            , ( UI.Success, ScrollToElement "center-element", "→ Center" )
+                            , ( UI.Purple, ScrollToElement "wide-element", "→ Wide" )
+                            , ( UI.Warning, ScrollToElement "tall-element", "→ Tall" )
+                            , ( UI.Primary, ScrollToElement "right-element", "→ Right" )
+                            , ( UI.Success, ScrollToElement "bottom-element", "→ Bottom" )
                             ]
                         ]
                         []
@@ -139,13 +151,13 @@ viewContent model =
                                 "Left Panel" 
                                 (model.windowHeight * 2)
                                 (rgb 0.95 1.0 0.95)
-                                [ targetElementWithButtons "left-element" "Left Element (350x250)" 350 250 (rgb 0.8 1.0 0.8)
-                                    [ button "→ Top" (ScrollToElement "top-element")
-                                    , button "→ Center" (ScrollToElement "center-element")
-                                    , button "→ Wide" (ScrollToElement "wide-element")
-                                    , button "→ Tall" (ScrollToElement "tall-element")
-                                    , button "→ Right" (ScrollToElement "right-element")
-                                    , button "→ Bottom" (ScrollToElement "bottom-element")
+                                [ targetElementWithButtons "left-element" "Left Element" 350 250 (rgb 0.8 1.0 0.8)
+                                    [ ( UI.Primary, ScrollToElement "top-element", "→ Top" )
+                                    , ( UI.Success, ScrollToElement "center-element", "→ Center" )
+                                    , ( UI.Purple, ScrollToElement "wide-element", "→ Wide" )
+                                    , ( UI.Warning, ScrollToElement "tall-element", "→ Tall" )
+                                    , ( UI.Primary, ScrollToElement "right-element", "→ Right" )
+                                    , ( UI.Success, ScrollToElement "bottom-element", "→ Bottom" )
                                     ]
                                 ]
                                 []
@@ -155,31 +167,31 @@ viewContent model =
                                 "Center Panel"
                                 (model.windowHeight * 2) 
                                 (rgb 0.95 0.95 1.0)
-                                [ targetElementWithButtons "center-element" "Center Element (300x200)" 300 200 (rgb 0.8 0.9 1.0)
-                                    [ button "→ Top" (ScrollToElement "top-element")
-                                    , button "→ Left" (ScrollToElement "left-element")
-                                    , button "→ Wide" (ScrollToElement "wide-element")
-                                    , button "→ Tall" (ScrollToElement "tall-element")
-                                    , button "→ Right" (ScrollToElement "right-element")
-                                    , button "→ Bottom" (ScrollToElement "bottom-element")
+                                [ targetElementWithButtons "center-element" "Center Element" 300 300 (rgb 0.8 0.9 1.0)
+                                    [ ( UI.Primary, ScrollToElement "top-element", "→ Top" )
+                                    , ( UI.Success, ScrollToElement "left-element", "→ Left" )
+                                    , ( UI.Purple, ScrollToElement "wide-element", "→ Wide" )
+                                    , ( UI.Warning, ScrollToElement "tall-element", "→ Tall" )
+                                    , ( UI.Primary, ScrollToElement "right-element", "→ Right" )
+                                    , ( UI.Success, ScrollToElement "bottom-element", "→ Bottom" )
                                     ]
                                 , el [ height (px 100) ] none
-                                , targetElementWithButtons "wide-element" ("Wide Element (" ++ String.fromInt (model.windowWidth + 400) ++ "x200)") (model.windowWidth + 400) 200 (rgb 1.0 0.9 0.8)
-                                    [ button "→ Top" (ScrollToElement "top-element")
-                                    , button "→ Left" (ScrollToElement "left-element")
-                                    , button "→ Center" (ScrollToElement "center-element")
-                                    , button "→ Tall" (ScrollToElement "tall-element")
-                                    , button "→ Right" (ScrollToElement "right-element")
-                                    , button "→ Bottom" (ScrollToElement "bottom-element")
+                                , targetElementWithButtons "wide-element" "Wide Element" (model.windowWidth + 400) 200 (rgb 1.0 0.9 0.8)
+                                    [ ( UI.Primary, ScrollToElement "top-element", "→ Top" )
+                                    , ( UI.Success, ScrollToElement "left-element", "→ Left" )
+                                    , ( UI.Purple, ScrollToElement "center-element", "→ Center" )
+                                    , ( UI.Warning, ScrollToElement "tall-element", "→ Tall" )
+                                    , ( UI.Primary, ScrollToElement "right-element", "→ Right" )
+                                    , ( UI.Success, ScrollToElement "bottom-element", "→ Bottom" )
                                     ]
                                 , el [ height (px 100) ] none
-                                , targetElementWithButtons "tall-element" ("Tall Element (400x" ++ String.fromInt (model.windowHeight + 200) ++ ")") 400 (model.windowHeight + 200) (rgb 0.9 1.0 0.8)
-                                    [ button "→ Top" (ScrollToElement "top-element")
-                                    , button "→ Left" (ScrollToElement "left-element")
-                                    , button "→ Center" (ScrollToElement "center-element")
-                                    , button "→ Wide" (ScrollToElement "wide-element")
-                                    , button "→ Right" (ScrollToElement "right-element")
-                                    , button "→ Bottom" (ScrollToElement "bottom-element")
+                                , targetElementWithButtons "tall-element" "Tall Element" 400 (model.windowHeight + 200) (rgb 0.9 1.0 0.8)
+                                    [ ( UI.Primary, ScrollToElement "top-element", "→ Top" )
+                                    , ( UI.Success, ScrollToElement "left-element", "→ Left" )
+                                    , ( UI.Purple, ScrollToElement "center-element", "→ Center" )
+                                    , ( UI.Warning, ScrollToElement "wide-element", "→ Wide" )
+                                    , ( UI.Primary, ScrollToElement "right-element", "→ Right" )
+                                    , ( UI.Success, ScrollToElement "bottom-element", "→ Bottom" )
                                     ]
                                 ]
                                 []
@@ -189,13 +201,13 @@ viewContent model =
                                 "Right Panel"
                                 (model.windowHeight * 2)
                                 (rgb 1.0 0.95 1.0)
-                                [ targetElementWithButtons "right-element" "Right Element (350x250)" 350 250 (rgb 1.0 0.8 0.8)
-                                    [ button "→ Top" (ScrollToElement "top-element")
-                                    , button "→ Left" (ScrollToElement "left-element")
-                                    , button "→ Center" (ScrollToElement "center-element")
-                                    , button "→ Wide" (ScrollToElement "wide-element")
-                                    , button "→ Tall" (ScrollToElement "tall-element")
-                                    , button "→ Bottom" (ScrollToElement "bottom-element")
+                                [ targetElementWithButtons "right-element" "Right Element" 350 250 (rgb 1.0 0.8 0.8)
+                                    [ ( UI.Primary, ScrollToElement "top-element", "→ Top" )
+                                    , ( UI.Success, ScrollToElement "left-element", "→ Left" )
+                                    , ( UI.Purple, ScrollToElement "center-element", "→ Center" )
+                                    , ( UI.Warning, ScrollToElement "wide-element", "→ Wide" )
+                                    , ( UI.Primary, ScrollToElement "tall-element", "→ Tall" )
+                                    , ( UI.Success, ScrollToElement "bottom-element", "→ Bottom" )
                                     ]
                                 ]
                                 []
@@ -207,13 +219,13 @@ viewContent model =
                         "Bottom Section"
                         (model.windowHeight)
                         (rgb 0.98 0.95 1.0)
-                        [ targetElementWithButtons "bottom-element" "Bottom Element (500x200)" 500 200 (rgb 0.9 0.8 1.0)
-                            [ button "→ Top" (ScrollToElement "top-element")
-                            , button "→ Left" (ScrollToElement "left-element")
-                            , button "→ Center" (ScrollToElement "center-element")
-                            , button "→ Wide" (ScrollToElement "wide-element")
-                            , button "→ Tall" (ScrollToElement "tall-element")
-                            , button "→ Right" (ScrollToElement "right-element")
+                        [ targetElementWithButtons "bottom-element" "Bottom Element" 500 200 (rgb 0.9 0.8 1.0)
+                            [ ( UI.Primary, ScrollToElement "top-element", "→ Top" )
+                            , ( UI.Success, ScrollToElement "left-element", "→ Left" )
+                            , ( UI.Purple, ScrollToElement "center-element", "→ Center" )
+                            , ( UI.Warning, ScrollToElement "wide-element", "→ Wide" )
+                            , ( UI.Primary, ScrollToElement "tall-element", "→ Tall" )
+                            , ( UI.Success, ScrollToElement "right-element", "→ Right" )
                             ]
                         ]
                         []
@@ -250,7 +262,7 @@ targetElement elementId label w h color =
         (el [ centerX, centerY, Font.size 16, Font.bold ] (text label))
 
 
-targetElementWithButtons : String -> String -> Int -> Int -> Color -> List (Element Msg) -> Element Msg
+targetElementWithButtons : String -> String -> Int -> Int -> Color -> List ( UI.ButtonStyle, Msg, String ) -> Element Msg
 targetElementWithButtons elementId label w h color buttons =
     el
         [ htmlAttribute (Html.Attributes.id elementId)
@@ -265,27 +277,13 @@ targetElementWithButtons elementId label w h color buttons =
             [ el [ Font.size 16, Font.bold, centerX ] (text label)
             , column [ spacing 8, centerX ]
                 [ el [ Font.size 12, Font.bold, Font.color (rgb 0.4 0.4 0.4), centerX ] (text "Navigate to:")
-                , wrappedRow [ spacing 6, centerX ] buttons
+                , UI.htmlActionButtons buttons
                 ]
             ]
         )
 
 
-button : String -> Msg -> Element Msg
-button label msg =
-    el
-        [ onClick msg
-        , paddingXY 12 8
-        , Background.color (rgb 0.2 0.4 0.8)
-        , Font.color (rgb 1 1 1)
-        , Font.size 14
-        , Font.bold
-        , Border.rounded 5
-        , Border.shadow { offset = ( 0, 2 ), size = 0, blur = 4, color = rgba 0 0 0 0.2 }
-        , mouseOver [ Background.color (rgb 0.3 0.5 0.9) ]
-        , pointer
-        ]
-        (text label)
+
 
 
 -- MAIN
