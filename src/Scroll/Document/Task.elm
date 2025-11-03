@@ -343,8 +343,11 @@ scrollToTopWithConfig config =
         |> Task.andThen
             (\{ viewport } ->
                 let
+                    targetY =
+                        toFloat config.offsetY
+
                     steps =
-                        animationSteps (timingToSpeed config.timing (abs viewport.y)) config.easing viewport.y 0
+                        animationSteps (timingToSpeed config.timing (abs (viewport.y - targetY))) config.easing viewport.y targetY
                 in
                 steps
                     |> List.map (\y -> Dom.setViewport viewport.x y)
@@ -370,8 +373,11 @@ scrollToBottomWithConfig config =
                     maxY =
                         scene.height - viewport.height
 
+                    targetY =
+                        maxY - toFloat config.offsetY
+
                     steps =
-                        animationSteps (timingToSpeed config.timing (abs (maxY - viewport.y))) config.easing viewport.y maxY
+                        animationSteps (timingToSpeed config.timing (abs (targetY - viewport.y))) config.easing viewport.y targetY
                 in
                 steps
                     |> List.map (\y -> Dom.setViewport viewport.x y)
@@ -394,8 +400,11 @@ scrollToLeftEdgeWithConfig config =
         |> Task.andThen
             (\{ viewport } ->
                 let
+                    targetX =
+                        toFloat config.offsetX
+
                     steps =
-                        animationSteps (timingToSpeed config.timing (abs viewport.x)) config.easing viewport.x 0
+                        animationSteps (timingToSpeed config.timing (abs (viewport.x - targetX))) config.easing viewport.x targetX
                 in
                 steps
                     |> List.map (\x -> Dom.setViewport x viewport.y)
@@ -421,8 +430,11 @@ scrollToRightEdgeWithConfig config =
                     maxX =
                         scene.width - viewport.width
 
+                    targetX =
+                        maxX - toFloat config.offsetX
+
                     steps =
-                        animationSteps (timingToSpeed config.timing (abs (maxX - viewport.x))) config.easing viewport.x maxX
+                        animationSteps (timingToSpeed config.timing (abs (targetX - viewport.x))) config.easing viewport.x targetX
                 in
                 steps
                     |> List.map (\x -> Dom.setViewport x viewport.y)
@@ -440,9 +452,9 @@ jumpToTop =
 {-| Jump instantly to top of document with custom configuration.
 -}
 jumpToTopWithConfig : Config -> Task Dom.Error ()
-jumpToTopWithConfig _ =
+jumpToTopWithConfig config =
     Dom.getViewport
-        |> Task.andThen (\{ viewport } -> Dom.setViewport viewport.x 0)
+        |> Task.andThen (\{ viewport } -> Dom.setViewport viewport.x (toFloat config.offsetY))
 
 
 {-| Jump instantly to bottom of document.
@@ -455,13 +467,13 @@ jumpToBottom =
 {-| Jump instantly to bottom of document with custom configuration.
 -}
 jumpToBottomWithConfig : Config -> Task Dom.Error ()
-jumpToBottomWithConfig _ =
+jumpToBottomWithConfig config =
     Dom.getViewport
         |> Task.andThen
             (\{ scene, viewport } ->
                 let
                     maxY =
-                        scene.height - viewport.height
+                        scene.height - viewport.height - toFloat config.offsetY
                 in
                 Dom.setViewport viewport.x maxY
             )
@@ -477,9 +489,9 @@ jumpToLeftEdge =
 {-| Jump instantly to left edge of document with custom configuration.
 -}
 jumpToLeftEdgeWithConfig : Config -> Task Dom.Error ()
-jumpToLeftEdgeWithConfig _ =
+jumpToLeftEdgeWithConfig config =
     Dom.getViewport
-        |> Task.andThen (\{ viewport } -> Dom.setViewport 0 viewport.y)
+        |> Task.andThen (\{ viewport } -> Dom.setViewport (toFloat config.offsetX) viewport.y)
 
 
 {-| Jump instantly to right edge of document.
@@ -492,13 +504,13 @@ jumpToRightEdge =
 {-| Jump instantly to right edge of document with custom configuration.
 -}
 jumpToRightEdgeWithConfig : Config -> Task Dom.Error ()
-jumpToRightEdgeWithConfig _ =
+jumpToRightEdgeWithConfig config =
     Dom.getViewport
         |> Task.andThen
             (\{ scene, viewport } ->
                 let
                     maxX =
-                        scene.width - viewport.width
+                        scene.width - viewport.width - toFloat config.offsetX
                 in
                 Dom.setViewport maxX viewport.y
             )
