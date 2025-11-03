@@ -88,7 +88,15 @@ update msg model =
 
 view : Model -> Document Msg
 view model =
-    UI.createDocument "ScrollIntoView Example" UI.Basic (viewContent model)
+    { title = "ScrollIntoView Example"
+    , body = 
+        [ layout 
+            [] 
+            (column [ width fill, height fill, paddingXY 40 20, spacing 20 ]
+                (viewContent model)
+            )
+        ]
+    }
 
 
 viewContent : Model -> List (Element Msg)
@@ -122,11 +130,10 @@ viewContent model =
         ]
     , -- Large scrollable content area
       el 
-        [ width (px containerWidth)
+        [ width fill
         , height (px containerHeight)
-        , Background.color (rgb 0.98 0.98 0.98)
         ]
-        (column [ width fill, height fill, spacing 0 ]
+        (column [ width (px containerWidth), height fill, spacing 0 ]
                     [ -- Top section
                       contentPanel 
                         "Top Section"
