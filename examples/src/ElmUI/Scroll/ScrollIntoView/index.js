@@ -5868,7 +5868,6 @@ var $author$project$Internal$AnimationCore$animationStepsWithFrames = F4(
 			},
 			weights);
 	});
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$Scroll$Internal$timingToSpeed = F2(
 	function (timing, distance) {
 		if (timing.$ === 'Speed') {
@@ -5895,18 +5894,15 @@ var $author$project$Scroll$Document$Task$scrollIntoViewWithConfig = F2(
 				var _v0 = A5($author$project$Scroll$Internal$calculateScrollIntoView, element, viewport, scene, containerInfo, config);
 				var targetX = _v0.a;
 				var targetY = _v0.b;
-				var _v1 = A2(
-					$elm$core$Debug$log,
-					'scrollIntoViewWithConfig - target positions',
-					_Utils_Tuple2(
-						A2(
-							$elm$core$Basics$max,
-							0,
-							A2($elm$core$Basics$min, scene.width - viewport.width, targetX)),
-						A2(
-							$elm$core$Basics$max,
-							0,
-							A2($elm$core$Basics$min, scene.height - viewport.height, targetY))));
+				var _v1 = _Utils_Tuple2(
+					A2(
+						$elm$core$Basics$max,
+						0,
+						A2($elm$core$Basics$min, scene.width - viewport.width, targetX)),
+					A2(
+						$elm$core$Basics$max,
+						0,
+						A2($elm$core$Basics$min, scene.height - viewport.height, targetY)));
 				var clampedX = _v1.a;
 				var clampedY = _v1.b;
 				var setViewportTask = function () {
@@ -5999,7 +5995,7 @@ var $author$project$Scroll$Document$Task$scrollIntoView = function (elementId) {
 		elementId,
 		_Utils_update(
 			$author$project$Scroll$defaultConfig,
-			{axis: $author$project$Scroll$Both, offsetY: 60}));
+			{axis: $author$project$Scroll$Both, offsetY: 0}));
 };
 var $author$project$ElmUI$Scroll$ScrollIntoView$Main$update = F2(
 	function (msg, model) {

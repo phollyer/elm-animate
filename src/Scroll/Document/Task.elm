@@ -19,9 +19,14 @@ module Scroll.Document.Task exposing
 
 Bring an element into view using minimal movement.
 
-If an element is below the viewport, it will only scroll up enough to make it fully visible, accounting for its height.
-If the element is taller than the viewport, it will align the top of the element with the top of the viewport.
+If the bottom of the target element is below the viewport, it will scroll up enough to make it fully visible, so
+it's bottom edge will line up with the bottom edge of the viewport.
+
+If the element is taller than the viewport, it's top edge will align with the top of the viewport.
 The same logic applies for horizontal scrolling, with the left edge equating to the top.
+
+So if an element is taller and wider than the viewport, the top-left corner of the element will be aligned with
+the top-left corner of the viewport.
 
 @docs scrollIntoView, scrollIntoViewWithConfig, jumpIntoView, jumpIntoViewWithConfig
 
@@ -179,14 +184,17 @@ jumpWithConfig id config =
 
 
 {-| Scroll element into view using minimal movement. Automatically scrolls on both X and Y axes as needed.
-Uses a larger offset (60px) to account for common fixed headers and navigation bars.
 -}
 scrollIntoView : TargetId -> Task Dom.Error (List ())
 scrollIntoView elementId =
-    scrollIntoViewWithConfig elementId { defaultConfig | axis = Both, offsetY = 60 }
+    scrollIntoViewWithConfig elementId { defaultConfig | axis = Both, offsetY = 0 }
 
 
-{-| -}
+{-| Scroll element into view using minimal movement. Automatically scrolls on both X and Y axes as needed.
+
+Use the [Config](Scroll#Config) to customize the scrolling behavior (e.g. axis, timing, offsets).
+
+-}
 scrollIntoViewWithConfig : TargetId -> Config -> Task Dom.Error (List ())
 scrollIntoViewWithConfig elementId config =
     let
@@ -209,7 +217,6 @@ scrollIntoViewWithConfig elementId config =
                         |> min (scene.height - viewport.height)
                         |> max 0
                     )
-                        |> Debug.log "scrollIntoViewWithConfig - target positions"
 
                 setViewportTask =
                     case config.axis of
@@ -269,14 +276,18 @@ scrollIntoViewWithConfig elementId config =
         |> Task.andThen identity
 
 
-{-| Jump element into view using minimal movement. Automatically scrolls on both X and Y axes as needed.
+{-| Jump element into view using minimal movement. Automatically jumps on both X and Y axes as needed.
 -}
 jumpIntoView : TargetId -> Task Dom.Error ()
 jumpIntoView elementId =
     jumpIntoViewWithConfig elementId { defaultConfig | axis = Both }
 
 
-{-| -}
+{-| Jump element into view using minimal movement.
+
+Use the [Config](Scroll#Config) to customize the jump behavior (e.g. axis, offsets).
+
+-}
 jumpIntoViewWithConfig : TargetId -> Config -> Task Dom.Error ()
 jumpIntoViewWithConfig elementId config =
     let
