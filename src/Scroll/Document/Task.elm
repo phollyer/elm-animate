@@ -9,6 +9,15 @@ module Scroll.Document.Task exposing
     , scrollToTopRight, scrollToTopRightWithConfig, jumpToTopRight, jumpToTopRightWithConfig
     , scrollToBottomLeft, scrollToBottomLeftWithConfig, jumpToBottomLeft, jumpToBottomLeftWithConfig
     , scrollToBottomRight, scrollToBottomRightWithConfig, jumpToBottomRight, jumpToBottomRightWithConfig
+    , scrollToCenter, scrollToCenterWithConfig, jumpToCenter, jumpToCenterWithConfig
+    , scrollToCenterX, scrollToCenterXWithConfig, jumpToCenterX, jumpToCenterXWithConfig
+    , scrollToCenterY, scrollToCenterYWithConfig, jumpToCenterY, jumpToCenterYWithConfig
+    , scrollToPercentage, scrollToPercentageWithConfig, jumpToPercentage, jumpToPercentageWithConfig
+    , scrollToPercentageX, scrollToPercentageXWithConfig, jumpToPercentageX, jumpToPercentageXWithConfig
+    , scrollToPercentageY, scrollToPercentageYWithConfig, jumpToPercentageY, jumpToPercentageYWithConfig
+    , scrollBy, scrollByWithConfig, jumpBy, jumpByWithConfig
+    , scrollByViewportSize, scrollByViewportSizeWithConfig, jumpByViewportSize, jumpByViewportSizeWithConfig
+    , scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
     )
 
 {-| This module provides smooth scrolling operations for the main document body using Tasks.
@@ -107,6 +116,44 @@ These functions ignore the `axis` field in the [Config](Scroll#Config) because t
 ## Bottom-Right Corner
 
 @docs scrollToBottomRight, scrollToBottomRightWithConfig, jumpToBottomRight, jumpToBottomRightWithConfig
+
+
+## Center Positioning
+
+Use these functions to scroll or jump to the center of the document or center on a specific axis.
+
+These functions ignore the `axis` field in the [Config](Scroll#Config) and scroll on the required axes.
+
+@docs scrollToCenter, scrollToCenterWithConfig, jumpToCenter, jumpToCenterWithConfig
+@docs scrollToCenterX, scrollToCenterXWithConfig, jumpToCenterX, jumpToCenterXWithConfig
+@docs scrollToCenterY, scrollToCenterYWithConfig, jumpToCenterY, jumpToCenterYWithConfig
+
+
+# Advanced Positioning Functions
+
+
+## Percentage-Based Positioning
+
+Scroll to positions defined as percentages of the total scrollable area.
+
+@docs scrollToPercentage, scrollToPercentageWithConfig, jumpToPercentage, jumpToPercentageWithConfig
+@docs scrollToPercentageX, scrollToPercentageXWithConfig, jumpToPercentageX, jumpToPercentageXWithConfig
+@docs scrollToPercentageY, scrollToPercentageYWithConfig, jumpToPercentageY, jumpToPercentageYWithConfig
+
+
+## Relative Movement
+
+Scroll relative to the current position by pixel offsets or viewport multiples.
+
+@docs scrollBy, scrollByWithConfig, jumpBy, jumpByWithConfig
+@docs scrollByViewportSize, scrollByViewportSizeWithConfig, jumpByViewportSize, jumpByViewportSizeWithConfig
+
+
+## Coordinate Targeting
+
+Scroll to specific pixel coordinates within the document.
+
+@docs scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
 
 -}
 
@@ -911,4 +958,658 @@ jumpToBottomRightWithConfig config =
                         scene.height - viewport.height - toFloat config.offsetY
                 in
                 Dom.setViewport maxX maxY
+            )
+
+
+{-| Smooth scroll to center of document.
+-}
+scrollToCenter : Task Dom.Error (List ())
+scrollToCenter =
+    scrollToCenterWithConfig defaultConfig
+
+
+{-| Smooth scroll to center of document with custom configuration.
+-}
+scrollToCenterWithConfig : Config -> Task Dom.Error (List ())
+scrollToCenterWithConfig config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    centerX =
+                        (scene.width - viewport.width) / 2 + toFloat config.offsetX
+
+                    centerY =
+                        (scene.height - viewport.height) / 2 + toFloat config.offsetY
+
+                    -- Calculate the maximum distance to determine frame count
+                    xDistance =
+                        abs (viewport.x - centerX)
+
+                    yDistance =
+                        abs (viewport.y - centerY)
+
+                    maxDistance =
+                        max xDistance yDistance
+
+                    -- Use the same frame count for both axes to ensure synchronization
+                    frames =
+                        Basics.max 1 (timingToSpeed config.timing maxDistance)
+
+                    -- Generate synchronized steps
+                    xSteps =
+                        animationStepsWithFrames frames config.easing viewport.x centerX
+
+                    ySteps =
+                        animationStepsWithFrames frames config.easing viewport.y centerY
+                in
+                case ( xSteps, ySteps ) of
+                    ( [], _ ) ->
+                        -- No horizontal movement needed, only animate Y
+                        ySteps
+                            |> List.map (\y -> Dom.setViewport viewport.x y)
+                            |> Task.sequence
+
+                    ( _, [] ) ->
+                        -- No vertical movement needed, only animate X
+                        xSteps
+                            |> List.map (\x -> Dom.setViewport x viewport.y)
+                            |> Task.sequence
+
+                    _ ->
+                        List.map2 Dom.setViewport xSteps ySteps
+                            |> Task.sequence
+            )
+
+
+{-| Jump instantly to center of document.
+-}
+jumpToCenter : Task Dom.Error ()
+jumpToCenter =
+    jumpToCenterWithConfig defaultConfig
+
+
+{-| Jump instantly to center of document with custom configuration.
+-}
+jumpToCenterWithConfig : Config -> Task Dom.Error ()
+jumpToCenterWithConfig config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    centerX =
+                        (scene.width - viewport.width) / 2 + toFloat config.offsetX
+
+                    centerY =
+                        (scene.height - viewport.height) / 2 + toFloat config.offsetY
+                in
+                Dom.setViewport centerX centerY
+            )
+
+
+{-| Smooth scroll to center horizontally.
+-}
+scrollToCenterX : Task Dom.Error (List ())
+scrollToCenterX =
+    scrollToCenterXWithConfig defaultConfig
+
+
+{-| Smooth scroll to center horizontally with custom configuration.
+-}
+scrollToCenterXWithConfig : Config -> Task Dom.Error (List ())
+scrollToCenterXWithConfig config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    centerX =
+                        (scene.width - viewport.width) / 2 + toFloat config.offsetX
+
+                    steps =
+                        animationSteps (timingToSpeed config.timing (abs (viewport.x - centerX))) config.easing viewport.x centerX
+                in
+                steps
+                    |> List.map (\x -> Dom.setViewport x viewport.y)
+                    |> Task.sequence
+            )
+
+
+{-| Jump instantly to center horizontally.
+-}
+jumpToCenterX : Task Dom.Error ()
+jumpToCenterX =
+    jumpToCenterXWithConfig defaultConfig
+
+
+{-| Jump instantly to center horizontally with custom configuration.
+-}
+jumpToCenterXWithConfig : Config -> Task Dom.Error ()
+jumpToCenterXWithConfig config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    centerX =
+                        (scene.width - viewport.width) / 2 + toFloat config.offsetX
+                in
+                Dom.setViewport centerX viewport.y
+            )
+
+
+{-| Smooth scroll to center vertically.
+-}
+scrollToCenterY : Task Dom.Error (List ())
+scrollToCenterY =
+    scrollToCenterYWithConfig defaultConfig
+
+
+{-| Smooth scroll to center vertically with custom configuration.
+-}
+scrollToCenterYWithConfig : Config -> Task Dom.Error (List ())
+scrollToCenterYWithConfig config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    centerY =
+                        (scene.height - viewport.height) / 2 + toFloat config.offsetY
+
+                    steps =
+                        animationSteps (timingToSpeed config.timing (abs (viewport.y - centerY))) config.easing viewport.y centerY
+                in
+                steps
+                    |> List.map (\y -> Dom.setViewport viewport.x y)
+                    |> Task.sequence
+            )
+
+
+{-| Jump instantly to center vertically.
+-}
+jumpToCenterY : Task Dom.Error ()
+jumpToCenterY =
+    jumpToCenterYWithConfig defaultConfig
+
+
+{-| Jump instantly to center vertically with custom configuration.
+-}
+jumpToCenterYWithConfig : Config -> Task Dom.Error ()
+jumpToCenterYWithConfig config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    centerY =
+                        (scene.height - viewport.height) / 2 + toFloat config.offsetY
+                in
+                Dom.setViewport viewport.x centerY
+            )
+
+
+{-| Smooth scroll to percentage positions. Takes percentageX and percentageY as values between 0.0 and 1.0.
+-}
+scrollToPercentage : Float -> Float -> Task Dom.Error (List ())
+scrollToPercentage percentageX percentageY =
+    scrollToPercentageWithConfig percentageX percentageY defaultConfig
+
+
+{-| Smooth scroll to percentage positions with custom configuration.
+-}
+scrollToPercentageWithConfig : Float -> Float -> Config -> Task Dom.Error (List ())
+scrollToPercentageWithConfig percentageX percentageY config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    maxX =
+                        scene.width - viewport.width
+
+                    maxY =
+                        scene.height - viewport.height
+
+                    targetX =
+                        (maxX * percentageX) + toFloat config.offsetX
+
+                    targetY =
+                        (maxY * percentageY) + toFloat config.offsetY
+
+                    -- Calculate the maximum distance to determine frame count
+                    xDistance =
+                        abs (viewport.x - targetX)
+
+                    yDistance =
+                        abs (viewport.y - targetY)
+
+                    maxDistance =
+                        max xDistance yDistance
+
+                    -- Use the same frame count for both axes to ensure synchronization
+                    frames =
+                        Basics.max 1 (timingToSpeed config.timing maxDistance)
+
+                    -- Generate synchronized steps
+                    xSteps =
+                        animationStepsWithFrames frames config.easing viewport.x targetX
+
+                    ySteps =
+                        animationStepsWithFrames frames config.easing viewport.y targetY
+                in
+                case ( xSteps, ySteps ) of
+                    ( [], _ ) ->
+                        -- No horizontal movement needed, only animate Y
+                        ySteps
+                            |> List.map (\y -> Dom.setViewport viewport.x y)
+                            |> Task.sequence
+
+                    ( _, [] ) ->
+                        -- No vertical movement needed, only animate X
+                        xSteps
+                            |> List.map (\x -> Dom.setViewport x viewport.y)
+                            |> Task.sequence
+
+                    _ ->
+                        List.map2 Dom.setViewport xSteps ySteps
+                            |> Task.sequence
+            )
+
+
+{-| Jump instantly to percentage positions.
+-}
+jumpToPercentage : Float -> Float -> Task Dom.Error ()
+jumpToPercentage percentageX percentageY =
+    jumpToPercentageWithConfig percentageX percentageY defaultConfig
+
+
+{-| Jump instantly to percentage positions with custom configuration.
+-}
+jumpToPercentageWithConfig : Float -> Float -> Config -> Task Dom.Error ()
+jumpToPercentageWithConfig percentageX percentageY config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    maxX =
+                        scene.width - viewport.width
+
+                    maxY =
+                        scene.height - viewport.height
+
+                    targetX =
+                        (maxX * percentageX) + toFloat config.offsetX
+
+                    targetY =
+                        (maxY * percentageY) + toFloat config.offsetY
+                in
+                Dom.setViewport targetX targetY
+            )
+
+
+{-| Smooth scroll to percentage position horizontally.
+-}
+scrollToPercentageX : Float -> Task Dom.Error (List ())
+scrollToPercentageX percentage =
+    scrollToPercentageXWithConfig percentage defaultConfig
+
+
+{-| Smooth scroll to percentage position horizontally with custom configuration.
+-}
+scrollToPercentageXWithConfig : Float -> Config -> Task Dom.Error (List ())
+scrollToPercentageXWithConfig percentage config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    maxX =
+                        scene.width - viewport.width
+
+                    targetX =
+                        (maxX * percentage) + toFloat config.offsetX
+
+                    steps =
+                        animationSteps (timingToSpeed config.timing (abs (viewport.x - targetX))) config.easing viewport.x targetX
+                in
+                steps
+                    |> List.map (\x -> Dom.setViewport x viewport.y)
+                    |> Task.sequence
+            )
+
+
+{-| Jump instantly to percentage position horizontally.
+-}
+jumpToPercentageX : Float -> Task Dom.Error ()
+jumpToPercentageX percentage =
+    jumpToPercentageXWithConfig percentage defaultConfig
+
+
+{-| Jump instantly to percentage position horizontally with custom configuration.
+-}
+jumpToPercentageXWithConfig : Float -> Config -> Task Dom.Error ()
+jumpToPercentageXWithConfig percentage config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    maxX =
+                        scene.width - viewport.width
+
+                    targetX =
+                        (maxX * percentage) + toFloat config.offsetX
+                in
+                Dom.setViewport targetX viewport.y
+            )
+
+
+{-| Smooth scroll to percentage position vertically.
+-}
+scrollToPercentageY : Float -> Task Dom.Error (List ())
+scrollToPercentageY percentage =
+    scrollToPercentageYWithConfig percentage defaultConfig
+
+
+{-| Smooth scroll to percentage position vertically with custom configuration.
+-}
+scrollToPercentageYWithConfig : Float -> Config -> Task Dom.Error (List ())
+scrollToPercentageYWithConfig percentage config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    maxY =
+                        scene.height - viewport.height
+
+                    targetY =
+                        (maxY * percentage) + toFloat config.offsetY
+
+                    steps =
+                        animationSteps (timingToSpeed config.timing (abs (viewport.y - targetY))) config.easing viewport.y targetY
+                in
+                steps
+                    |> List.map (\y -> Dom.setViewport viewport.x y)
+                    |> Task.sequence
+            )
+
+
+{-| Jump instantly to percentage position vertically.
+-}
+jumpToPercentageY : Float -> Task Dom.Error ()
+jumpToPercentageY percentage =
+    jumpToPercentageYWithConfig percentage defaultConfig
+
+
+{-| Jump instantly to percentage position vertically with custom configuration.
+-}
+jumpToPercentageYWithConfig : Float -> Config -> Task Dom.Error ()
+jumpToPercentageYWithConfig percentage config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    maxY =
+                        scene.height - viewport.height
+
+                    targetY =
+                        (maxY * percentage) + toFloat config.offsetY
+                in
+                Dom.setViewport viewport.x targetY
+            )
+
+
+{-| Smooth scroll by pixel offsets from current position.
+-}
+scrollBy : Float -> Float -> Task Dom.Error (List ())
+scrollBy offsetX offsetY =
+    scrollByWithConfig offsetX offsetY defaultConfig
+
+
+{-| Smooth scroll by pixel offsets from current position with custom configuration.
+-}
+scrollByWithConfig : Float -> Float -> Config -> Task Dom.Error (List ())
+scrollByWithConfig offsetX offsetY config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    maxX =
+                        scene.width - viewport.width
+
+                    maxY =
+                        scene.height - viewport.height
+
+                    targetX =
+                        (viewport.x + offsetX + toFloat config.offsetX)
+                            |> max 0
+                            |> min maxX
+
+                    targetY =
+                        (viewport.y + offsetY + toFloat config.offsetY)
+                            |> max 0
+                            |> min maxY
+
+                    -- Calculate the maximum distance to determine frame count
+                    xDistance =
+                        abs (viewport.x - targetX)
+
+                    yDistance =
+                        abs (viewport.y - targetY)
+
+                    maxDistance =
+                        max xDistance yDistance
+
+                    -- Use the same frame count for both axes to ensure synchronization
+                    frames =
+                        Basics.max 1 (timingToSpeed config.timing maxDistance)
+
+                    -- Generate synchronized steps
+                    xSteps =
+                        animationStepsWithFrames frames config.easing viewport.x targetX
+
+                    ySteps =
+                        animationStepsWithFrames frames config.easing viewport.y targetY
+                in
+                case ( xSteps, ySteps ) of
+                    ( [], _ ) ->
+                        -- No horizontal movement needed, only animate Y
+                        ySteps
+                            |> List.map (\y -> Dom.setViewport viewport.x y)
+                            |> Task.sequence
+
+                    ( _, [] ) ->
+                        -- No vertical movement needed, only animate X
+                        xSteps
+                            |> List.map (\x -> Dom.setViewport x viewport.y)
+                            |> Task.sequence
+
+                    _ ->
+                        List.map2 Dom.setViewport xSteps ySteps
+                            |> Task.sequence
+            )
+
+
+{-| Jump instantly by pixel offsets from current position.
+-}
+jumpBy : Float -> Float -> Task Dom.Error ()
+jumpBy offsetX offsetY =
+    jumpByWithConfig offsetX offsetY defaultConfig
+
+
+{-| Jump instantly by pixel offsets from current position with custom configuration.
+-}
+jumpByWithConfig : Float -> Float -> Config -> Task Dom.Error ()
+jumpByWithConfig offsetX offsetY config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    maxX =
+                        scene.width - viewport.width
+
+                    maxY =
+                        scene.height - viewport.height
+
+                    targetX =
+                        (viewport.x + offsetX + toFloat config.offsetX)
+                            |> max 0
+                            |> min maxX
+
+                    targetY =
+                        (viewport.y + offsetY + toFloat config.offsetY)
+                            |> max 0
+                            |> min maxY
+                in
+                Dom.setViewport targetX targetY
+            )
+
+
+{-| Smooth scroll by viewport size multiples from current position.
+-}
+scrollByViewportSize : Float -> Float -> Task Dom.Error (List ())
+scrollByViewportSize multiplierX multiplierY =
+    scrollByViewportSizeWithConfig multiplierX multiplierY defaultConfig
+
+
+{-| Smooth scroll by viewport size multiples from current position with custom configuration.
+-}
+scrollByViewportSizeWithConfig : Float -> Float -> Config -> Task Dom.Error (List ())
+scrollByViewportSizeWithConfig multiplierX multiplierY config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ viewport } ->
+                let
+                    offsetX =
+                        viewport.width * multiplierX
+
+                    offsetY =
+                        viewport.height * multiplierY
+                in
+                scrollByWithConfig offsetX offsetY config
+            )
+
+
+{-| Jump instantly by viewport size multiples from current position.
+-}
+jumpByViewportSize : Float -> Float -> Task Dom.Error ()
+jumpByViewportSize multiplierX multiplierY =
+    jumpByViewportSizeWithConfig multiplierX multiplierY defaultConfig
+
+
+{-| Jump instantly by viewport size multiples from current position with custom configuration.
+-}
+jumpByViewportSizeWithConfig : Float -> Float -> Config -> Task Dom.Error ()
+jumpByViewportSizeWithConfig multiplierX multiplierY config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ viewport } ->
+                let
+                    offsetX =
+                        viewport.width * multiplierX
+
+                    offsetY =
+                        viewport.height * multiplierY
+                in
+                jumpByWithConfig offsetX offsetY config
+            )
+
+
+{-| Smooth scroll to specific pixel coordinates.
+-}
+scrollToCoordinates : Float -> Float -> Task Dom.Error (List ())
+scrollToCoordinates x y =
+    scrollToCoordinatesWithConfig x y defaultConfig
+
+
+{-| Smooth scroll to specific pixel coordinates with custom configuration.
+-}
+scrollToCoordinatesWithConfig : Float -> Float -> Config -> Task Dom.Error (List ())
+scrollToCoordinatesWithConfig x y config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    maxX =
+                        scene.width - viewport.width
+
+                    maxY =
+                        scene.height - viewport.height
+
+                    targetX =
+                        (x + toFloat config.offsetX)
+                            |> max 0
+                            |> min maxX
+
+                    targetY =
+                        (y + toFloat config.offsetY)
+                            |> max 0
+                            |> min maxY
+
+                    -- Calculate the maximum distance to determine frame count
+                    xDistance =
+                        abs (viewport.x - targetX)
+
+                    yDistance =
+                        abs (viewport.y - targetY)
+
+                    maxDistance =
+                        max xDistance yDistance
+
+                    -- Use the same frame count for both axes to ensure synchronization
+                    frames =
+                        Basics.max 1 (timingToSpeed config.timing maxDistance)
+
+                    -- Generate synchronized steps
+                    xSteps =
+                        animationStepsWithFrames frames config.easing viewport.x targetX
+
+                    ySteps =
+                        animationStepsWithFrames frames config.easing viewport.y targetY
+                in
+                case ( xSteps, ySteps ) of
+                    ( [], _ ) ->
+                        -- No horizontal movement needed, only animate Y
+                        ySteps
+                            |> List.map (\y_ -> Dom.setViewport viewport.x y_)
+                            |> Task.sequence
+
+                    ( _, [] ) ->
+                        -- No vertical movement needed, only animate X
+                        xSteps
+                            |> List.map (\x_ -> Dom.setViewport x_ viewport.y)
+                            |> Task.sequence
+
+                    _ ->
+                        List.map2 Dom.setViewport xSteps ySteps
+                            |> Task.sequence
+            )
+
+
+{-| Jump instantly to specific pixel coordinates.
+-}
+jumpToCoordinates : Float -> Float -> Task Dom.Error ()
+jumpToCoordinates x y =
+    jumpToCoordinatesWithConfig x y defaultConfig
+
+
+{-| Jump instantly to specific pixel coordinates with custom configuration.
+-}
+jumpToCoordinatesWithConfig : Float -> Float -> Config -> Task Dom.Error ()
+jumpToCoordinatesWithConfig x y config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    maxX =
+                        scene.width - viewport.width
+
+                    maxY =
+                        scene.height - viewport.height
+
+                    targetX =
+                        (x + toFloat config.offsetX)
+                            |> max 0
+                            |> min maxX
+
+                    targetY =
+                        (y + toFloat config.offsetY)
+                            |> max 0
+                            |> min maxY
+                in
+                Dom.setViewport targetX targetY
             )
