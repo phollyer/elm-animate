@@ -228,7 +228,7 @@ _[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning F
 import Browser.Dom as Dom
 import Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames)
 import Scroll exposing (Axis(..), Config, Container(..), ContainerId, TargetId, defaultConfig)
-import Scroll.Internal exposing (calculateScrollIntoView, getClampedPositions, getContainerInfo, getViewport, timingToSpeed)
+import Scroll.Internal exposing (Direction(..), calculateScrollIntoView, getAxisDirection, getClampedPositions, getContainerInfo, getViewport, timingToSpeed)
 import Task exposing (Task)
 
 
@@ -256,18 +256,18 @@ scrollWithConfig containerId elementId config =
                     getClampedPositions element viewport scene containerInfo config
 
                 setViewportTask =
-                    case config.axis of
-                        X ->
+                    case getAxisDirection config.axis of
+                        XDirection ->
                             animationSteps (timingToSpeed config.timing (abs (clampedX - viewport.x))) config.easing viewport.x clampedX
                                 |> List.map (\x -> Dom.setViewportOf containerId x viewport.y)
                                 |> Task.sequence
 
-                        Y ->
+                        YDirection ->
                             animationSteps (timingToSpeed config.timing (abs (clampedY - viewport.y))) config.easing viewport.y clampedY
                                 |> List.map (\y -> Dom.setViewportOf containerId viewport.x y)
                                 |> Task.sequence
 
-                        Both ->
+                        BothDirection ->
                             let
                                 -- Calculate the maximum distance to determine frame count
                                 xDistance =
@@ -337,14 +337,14 @@ jumpWithConfig containerId elementId config =
                     getClampedPositions element viewport scene containerInfo config
 
                 setViewportTask =
-                    case config.axis of
-                        X ->
+                    case getAxisDirection config.axis of
+                        XDirection ->
                             Dom.setViewportOf containerId clampedX viewport.y
 
-                        Y ->
+                        YDirection ->
                             Dom.setViewportOf containerId viewport.x clampedY
 
-                        Both ->
+                        BothDirection ->
                             Dom.setViewportOf containerId clampedX clampedY
             in
             setViewportTask
@@ -543,7 +543,7 @@ This scrolls the minimum amount necessary to make the target element fully visib
 -}
 scrollIntoView : ContainerId -> TargetId -> Task Dom.Error (List ())
 scrollIntoView containerId elementId =
-    scrollIntoViewWithConfig containerId elementId { defaultConfig | axis = Both, offsetY = 0 }
+    scrollIntoViewWithConfig containerId elementId { defaultConfig | axis = BothWithOffset 0 0 }
 
 
 {-| Smoothly scroll to bring an element into view within a container with custom configuration.
@@ -575,18 +575,18 @@ scrollIntoViewWithConfig containerId elementId config =
                     )
 
                 setViewportTask =
-                    case config.axis of
-                        X ->
+                    case getAxisDirection config.axis of
+                        XDirection ->
                             animationSteps (timingToSpeed config.timing (abs (clampedX - viewport.x))) config.easing viewport.x clampedX
                                 |> List.map (\x -> Dom.setViewportOf containerId x viewport.y)
                                 |> Task.sequence
 
-                        Y ->
+                        YDirection ->
                             animationSteps (timingToSpeed config.timing (abs (clampedY - viewport.y))) config.easing viewport.y clampedY
                                 |> List.map (\y -> Dom.setViewportOf containerId viewport.x y)
                                 |> Task.sequence
 
-                        Both ->
+                        BothDirection ->
                             let
                                 -- Calculate the maximum distance to determine frame count
                                 xDistance =
@@ -629,7 +629,7 @@ scrollIntoViewWithConfig containerId elementId config =
 -}
 jumpIntoView : ContainerId -> TargetId -> Task Dom.Error ()
 jumpIntoView containerId elementId =
-    jumpIntoViewWithConfig containerId elementId { defaultConfig | axis = Both, offsetY = 0 }
+    jumpIntoViewWithConfig containerId elementId { defaultConfig | axis = BothWithOffset 0 0 }
 
 
 {-| Jump instantly to bring an element into view within a container with custom configuration.
@@ -1294,18 +1294,18 @@ scrollToCoordinatesWithConfig containerId targetX targetY config =
                     )
 
                 setViewportTask =
-                    case config.axis of
-                        X ->
+                    case getAxisDirection config.axis of
+                        XDirection ->
                             animationSteps (timingToSpeed config.timing (abs (clampedX - viewport.x))) config.easing viewport.x clampedX
                                 |> List.map (\x -> Dom.setViewportOf containerId x viewport.y)
                                 |> Task.sequence
 
-                        Y ->
+                        YDirection ->
                             animationSteps (timingToSpeed config.timing (abs (clampedY - viewport.y))) config.easing viewport.y clampedY
                                 |> List.map (\y -> Dom.setViewportOf containerId viewport.x y)
                                 |> Task.sequence
 
-                        Both ->
+                        BothDirection ->
                             let
                                 -- Calculate the maximum distance to determine frame count
                                 xDistance =

@@ -188,7 +188,7 @@ _[↑ Relative Movement](#relative-movement) | [↑ Advanced Positioning Functio
 import Browser.Dom as Dom
 import Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames)
 import Scroll exposing (Axis(..), Config, Container(..), TargetId, defaultConfig)
-import Scroll.Internal exposing (calculateScrollIntoView, getClampedPositions, getContainerInfo, getViewport, timingToSpeed)
+import Scroll.Internal exposing (Direction(..), calculateScrollIntoView, getAxisDirection, getClampedPositions, getContainerInfo, getOffsetX, getOffsetY, getViewport, timingToSpeed)
 import Task exposing (Task)
 
 
@@ -216,18 +216,18 @@ scrollWithConfig id config =
                     getClampedPositions element viewport scene containerInfo config
 
                 setViewportTask =
-                    case config.axis of
-                        X ->
+                    case getAxisDirection config.axis of
+                        XDirection ->
                             animationSteps (timingToSpeed config.timing (abs (clampedX - viewport.x))) config.easing viewport.x clampedX
                                 |> List.map (\x -> Dom.setViewport x viewport.y)
                                 |> Task.sequence
 
-                        Y ->
+                        YDirection ->
                             animationSteps (timingToSpeed config.timing (abs (clampedY - viewport.y))) config.easing viewport.y clampedY
                                 |> List.map (\y -> Dom.setViewport viewport.x y)
                                 |> Task.sequence
 
-                        Both ->
+                        BothDirection ->
                             let
                                 -- Calculate the maximum distance to determine frame count
                                 xDistance =
@@ -297,14 +297,14 @@ jumpWithConfig id config =
                     getClampedPositions element viewport scene containerInfo config
 
                 setViewportTask =
-                    case config.axis of
-                        X ->
+                    case getAxisDirection config.axis of
+                        XDirection ->
                             Dom.setViewport clampedX viewport.y
 
-                        Y ->
+                        YDirection ->
                             Dom.setViewport viewport.x clampedY
 
-                        Both ->
+                        BothDirection ->
                             Dom.setViewport clampedX clampedY
             in
             setViewportTask
@@ -317,7 +317,7 @@ jumpWithConfig id config =
 -}
 scrollIntoView : TargetId -> Task Dom.Error (List ())
 scrollIntoView elementId =
-    scrollIntoViewWithConfig elementId { defaultConfig | axis = Both, offsetY = 0 }
+    scrollIntoViewWithConfig elementId { defaultConfig | axis = Both }
 
 
 {-| Scroll element into view using minimal movement. Automatically scrolls on both X and Y axes as needed.
@@ -349,18 +349,18 @@ scrollIntoViewWithConfig elementId config =
                     )
 
                 setViewportTask =
-                    case config.axis of
-                        X ->
+                    case getAxisDirection config.axis of
+                        XDirection ->
                             animationSteps (timingToSpeed config.timing (abs (clampedX - viewport.x))) config.easing viewport.x clampedX
                                 |> List.map (\x -> Dom.setViewport x viewport.y)
                                 |> Task.sequence
 
-                        Y ->
+                        YDirection ->
                             animationSteps (timingToSpeed config.timing (abs (clampedY - viewport.y))) config.easing viewport.y clampedY
                                 |> List.map (\y -> Dom.setViewport viewport.x y)
                                 |> Task.sequence
 
-                        Both ->
+                        BothDirection ->
                             let
                                 -- Calculate the maximum distance to determine frame count
                                 xDistance =
@@ -442,14 +442,14 @@ jumpIntoViewWithConfig elementId config =
                     )
 
                 setViewportTask =
-                    case config.axis of
-                        X ->
+                    case getAxisDirection config.axis of
+                        XDirection ->
                             Dom.setViewport clampedX viewport.y
 
-                        Y ->
+                        YDirection ->
                             Dom.setViewport viewport.x clampedY
 
-                        Both ->
+                        BothDirection ->
                             Dom.setViewport clampedX clampedY
             in
             setViewportTask
@@ -474,7 +474,7 @@ scrollToTopWithConfig config =
             (\{ viewport } ->
                 let
                     targetY =
-                        toFloat config.offsetY
+                        getOffsetY config.axis
 
                     steps =
                         animationSteps (timingToSpeed config.timing (abs (viewport.y - targetY))) config.easing viewport.y targetY
@@ -504,7 +504,7 @@ scrollToBottomWithConfig config =
                         scene.height - viewport.height
 
                     targetY =
-                        maxY - toFloat config.offsetY
+                        maxY - getOffsetY config.axis
 
                     steps =
                         animationSteps (timingToSpeed config.timing (abs (targetY - viewport.y))) config.easing viewport.y targetY
@@ -531,7 +531,7 @@ scrollToLeftEdgeWithConfig config =
             (\{ viewport } ->
                 let
                     targetX =
-                        toFloat config.offsetX
+                        getOffsetX config.axis
 
                     steps =
                         animationSteps (timingToSpeed config.timing (abs (viewport.x - targetX))) config.easing viewport.x targetX
@@ -561,7 +561,7 @@ scrollToRightEdgeWithConfig config =
                         scene.width - viewport.width
 
                     targetX =
-                        maxX - toFloat config.offsetX
+                        maxX - getOffsetX config.axis
 
                     steps =
                         animationSteps (timingToSpeed config.timing (abs (targetX - viewport.x))) config.easing viewport.x targetX
@@ -584,7 +584,7 @@ jumpToTop =
 jumpToTopWithConfig : Config -> Task Dom.Error ()
 jumpToTopWithConfig config =
     Dom.getViewport
-        |> Task.andThen (\{ viewport } -> Dom.setViewport viewport.x (toFloat config.offsetY))
+        |> Task.andThen (\{ viewport } -> Dom.setViewport viewport.x (getOffsetY config.axis))
 
 
 {-| Jump instantly to bottom of document.
@@ -603,7 +603,7 @@ jumpToBottomWithConfig config =
             (\{ scene, viewport } ->
                 let
                     maxY =
-                        scene.height - viewport.height - toFloat config.offsetY
+                        scene.height - viewport.height - getOffsetY config.axis
                 in
                 Dom.setViewport viewport.x maxY
             )
@@ -621,7 +621,7 @@ jumpToLeftEdge =
 jumpToLeftEdgeWithConfig : Config -> Task Dom.Error ()
 jumpToLeftEdgeWithConfig config =
     Dom.getViewport
-        |> Task.andThen (\{ viewport } -> Dom.setViewport (toFloat config.offsetX) viewport.y)
+        |> Task.andThen (\{ viewport } -> Dom.setViewport (getOffsetX config.axis) viewport.y)
 
 
 {-| Jump instantly to right edge of document.
@@ -640,7 +640,7 @@ jumpToRightEdgeWithConfig config =
             (\{ scene, viewport } ->
                 let
                     maxX =
-                        scene.width - viewport.width - toFloat config.offsetX
+                        scene.width - viewport.width - getOffsetX config.axis
                 in
                 Dom.setViewport maxX viewport.y
             )
@@ -662,10 +662,10 @@ scrollToTopLeftWithConfig config =
             (\{ viewport } ->
                 let
                     targetX =
-                        toFloat config.offsetX
+                        getOffsetX config.axis
 
                     targetY =
-                        toFloat config.offsetY
+                        getOffsetY config.axis
 
                     -- Calculate the maximum distance to determine frame count
                     xDistance =
@@ -721,7 +721,7 @@ jumpToTopLeftWithConfig config =
     Dom.getViewport
         |> Task.andThen
             (\_ ->
-                Dom.setViewport (toFloat config.offsetX) (toFloat config.offsetY)
+                Dom.setViewport (getOffsetX config.axis) (getOffsetY config.axis)
             )
 
 
@@ -744,10 +744,10 @@ scrollToTopRightWithConfig config =
                         scene.width - viewport.width
 
                     targetX =
-                        maxX - toFloat config.offsetX
+                        maxX - getOffsetX config.axis
 
                     targetY =
-                        toFloat config.offsetY
+                        getOffsetY config.axis
 
                     -- Calculate the maximum distance to determine frame count
                     xDistance =
@@ -805,9 +805,9 @@ jumpToTopRightWithConfig config =
             (\{ scene, viewport } ->
                 let
                     maxX =
-                        scene.width - viewport.width - toFloat config.offsetX
+                        scene.width - viewport.width - getOffsetX config.axis
                 in
-                Dom.setViewport maxX (toFloat config.offsetY)
+                Dom.setViewport maxX (getOffsetY config.axis)
             )
 
 
@@ -830,10 +830,10 @@ scrollToBottomLeftWithConfig config =
                         scene.height - viewport.height
 
                     targetX =
-                        toFloat config.offsetX
+                        getOffsetX config.axis
 
                     targetY =
-                        maxY - toFloat config.offsetY
+                        maxY - getOffsetY config.axis
 
                     -- Calculate the maximum distance to determine frame count
                     xDistance =
@@ -891,9 +891,9 @@ jumpToBottomLeftWithConfig config =
             (\{ scene, viewport } ->
                 let
                     maxY =
-                        scene.height - viewport.height - toFloat config.offsetY
+                        scene.height - viewport.height - getOffsetY config.axis
                 in
-                Dom.setViewport (toFloat config.offsetX) maxY
+                Dom.setViewport (getOffsetX config.axis) maxY
             )
 
 
@@ -919,10 +919,10 @@ scrollToBottomRightWithConfig config =
                         scene.height - viewport.height
 
                     targetX =
-                        maxX - toFloat config.offsetX
+                        maxX - getOffsetX config.axis
 
                     targetY =
-                        maxY - toFloat config.offsetY
+                        maxY - getOffsetY config.axis
 
                     -- Calculate the maximum distance to determine frame count
                     xDistance =
@@ -980,10 +980,10 @@ jumpToBottomRightWithConfig config =
             (\{ scene, viewport } ->
                 let
                     maxX =
-                        scene.width - viewport.width - toFloat config.offsetX
+                        scene.width - viewport.width - getOffsetX config.axis
 
                     maxY =
-                        scene.height - viewport.height - toFloat config.offsetY
+                        scene.height - viewport.height - getOffsetY config.axis
                 in
                 Dom.setViewport maxX maxY
             )
@@ -1005,10 +1005,10 @@ scrollToCenterWithConfig config =
             (\{ scene, viewport } ->
                 let
                     centerX =
-                        (scene.width - viewport.width) / 2 + toFloat config.offsetX
+                        (scene.width - viewport.width) / 2 + getOffsetX config.axis
 
                     centerY =
-                        (scene.height - viewport.height) / 2 + toFloat config.offsetY
+                        (scene.height - viewport.height) / 2 + getOffsetY config.axis
 
                     -- Calculate the maximum distance to determine frame count
                     xDistance =
@@ -1066,10 +1066,10 @@ jumpToCenterWithConfig config =
             (\{ scene, viewport } ->
                 let
                     centerX =
-                        (scene.width - viewport.width) / 2 + toFloat config.offsetX
+                        (scene.width - viewport.width) / 2 + getOffsetX config.axis
 
                     centerY =
-                        (scene.height - viewport.height) / 2 + toFloat config.offsetY
+                        (scene.height - viewport.height) / 2 + getOffsetY config.axis
                 in
                 Dom.setViewport centerX centerY
             )
@@ -1091,7 +1091,7 @@ scrollToCenterXWithConfig config =
             (\{ scene, viewport } ->
                 let
                     centerX =
-                        (scene.width - viewport.width) / 2 + toFloat config.offsetX
+                        (scene.width - viewport.width) / 2 + getOffsetX config.axis
 
                     steps =
                         animationSteps (timingToSpeed config.timing (abs (viewport.x - centerX))) config.easing viewport.x centerX
@@ -1118,7 +1118,7 @@ jumpToCenterXWithConfig config =
             (\{ scene, viewport } ->
                 let
                     centerX =
-                        (scene.width - viewport.width) / 2 + toFloat config.offsetX
+                        (scene.width - viewport.width) / 2 + getOffsetX config.axis
                 in
                 Dom.setViewport centerX viewport.y
             )
@@ -1140,7 +1140,7 @@ scrollToCenterYWithConfig config =
             (\{ scene, viewport } ->
                 let
                     centerY =
-                        (scene.height - viewport.height) / 2 + toFloat config.offsetY
+                        (scene.height - viewport.height) / 2 + getOffsetY config.axis
 
                     steps =
                         animationSteps (timingToSpeed config.timing (abs (viewport.y - centerY))) config.easing viewport.y centerY
@@ -1167,7 +1167,7 @@ jumpToCenterYWithConfig config =
             (\{ scene, viewport } ->
                 let
                     centerY =
-                        (scene.height - viewport.height) / 2 + toFloat config.offsetY
+                        (scene.height - viewport.height) / 2 + getOffsetY config.axis
                 in
                 Dom.setViewport viewport.x centerY
             )
@@ -1195,10 +1195,10 @@ scrollToPercentageWithConfig percentageX percentageY config =
                         scene.height - viewport.height
 
                     targetX =
-                        (maxX * percentageX) + toFloat config.offsetX
+                        (maxX * percentageX) + getOffsetX config.axis
 
                     targetY =
-                        (maxY * percentageY) + toFloat config.offsetY
+                        (maxY * percentageY) + getOffsetY config.axis
 
                     -- Calculate the maximum distance to determine frame count
                     xDistance =
@@ -1262,10 +1262,10 @@ jumpToPercentageWithConfig percentageX percentageY config =
                         scene.height - viewport.height
 
                     targetX =
-                        (maxX * percentageX) + toFloat config.offsetX
+                        (maxX * percentageX) + getOffsetX config.axis
 
                     targetY =
-                        (maxY * percentageY) + toFloat config.offsetY
+                        (maxY * percentageY) + getOffsetY config.axis
                 in
                 Dom.setViewport targetX targetY
             )
@@ -1290,7 +1290,7 @@ scrollToPercentageXWithConfig percentage config =
                         scene.width - viewport.width
 
                     targetX =
-                        (maxX * percentage) + toFloat config.offsetX
+                        (maxX * percentage) + getOffsetX config.axis
 
                     steps =
                         animationSteps (timingToSpeed config.timing (abs (viewport.x - targetX))) config.easing viewport.x targetX
@@ -1320,7 +1320,7 @@ jumpToPercentageXWithConfig percentage config =
                         scene.width - viewport.width
 
                     targetX =
-                        (maxX * percentage) + toFloat config.offsetX
+                        (maxX * percentage) + getOffsetX config.axis
                 in
                 Dom.setViewport targetX viewport.y
             )
@@ -1345,7 +1345,7 @@ scrollToPercentageYWithConfig percentage config =
                         scene.height - viewport.height
 
                     targetY =
-                        (maxY * percentage) + toFloat config.offsetY
+                        (maxY * percentage) + getOffsetY config.axis
 
                     steps =
                         animationSteps (timingToSpeed config.timing (abs (viewport.y - targetY))) config.easing viewport.y targetY
@@ -1375,7 +1375,7 @@ jumpToPercentageYWithConfig percentage config =
                         scene.height - viewport.height
 
                     targetY =
-                        (maxY * percentage) + toFloat config.offsetY
+                        (maxY * percentage) + getOffsetY config.axis
                 in
                 Dom.setViewport viewport.x targetY
             )
@@ -1403,12 +1403,12 @@ scrollByWithConfig offsetX offsetY config =
                         scene.height - viewport.height
 
                     targetX =
-                        (viewport.x + offsetX + toFloat config.offsetX)
+                        (viewport.x + offsetX + getOffsetX config.axis)
                             |> max 0
                             |> min maxX
 
                     targetY =
-                        (viewport.y + offsetY + toFloat config.offsetY)
+                        (viewport.y + offsetY + getOffsetY config.axis)
                             |> max 0
                             |> min maxY
 
@@ -1474,12 +1474,12 @@ jumpByWithConfig offsetX offsetY config =
                         scene.height - viewport.height
 
                     targetX =
-                        (viewport.x + offsetX + toFloat config.offsetX)
+                        (viewport.x + offsetX + getOffsetX config.axis)
                             |> max 0
                             |> min maxX
 
                     targetY =
-                        (viewport.y + offsetY + toFloat config.offsetY)
+                        (viewport.y + offsetY + getOffsetY config.axis)
                             |> max 0
                             |> min maxY
                 in
@@ -1559,12 +1559,12 @@ scrollToCoordinatesWithConfig x y config =
                         scene.height - viewport.height
 
                     targetX =
-                        (x + toFloat config.offsetX)
+                        (x + getOffsetX config.axis)
                             |> max 0
                             |> min maxX
 
                     targetY =
-                        (y + toFloat config.offsetY)
+                        (y + getOffsetY config.axis)
                             |> max 0
                             |> min maxY
 
@@ -1630,12 +1630,12 @@ jumpToCoordinatesWithConfig x y config =
                         scene.height - viewport.height
 
                     targetX =
-                        (x + toFloat config.offsetX)
+                        (x + getOffsetX config.axis)
                             |> max 0
                             |> min maxX
 
                     targetY =
-                        (y + toFloat config.offsetY)
+                        (y + getOffsetY config.axis)
                             |> max 0
                             |> min maxY
                 in

@@ -212,8 +212,7 @@ scroll elementId msg =
     scrollWithConfig "my-element"
         NoOp
         { defaultConfig
-            | axis = X
-            , offsetX = 20
+            | axis = XWithOffset 20
         }
 
 -}
@@ -287,7 +286,7 @@ jumpIntoView elementId msg =
 
     jumpIntoViewWithConfig "target-element"
         NoOp
-        { defaultConfig | offsetX = 15 }
+        { defaultConfig |
 
 -}
 jumpIntoViewWithConfig : TargetId -> msg -> Config -> Cmd msg
@@ -445,7 +444,7 @@ jumpToLeftEdge msg =
 {-| Instantly jump to the left edge of the document with custom configuration.
 
     jumpToLeftEdgeWithConfig NoOp
-        { defaultConfig | offsetX = 5 }
+        { defaultConfig |
 
 -}
 jumpToLeftEdgeWithConfig : msg -> Config -> Cmd msg
@@ -467,7 +466,7 @@ jumpToRightEdge msg =
 {-| Instantly jump to the right edge of the document with custom configuration.
 
     jumpToRightEdgeWithConfig NoOp
-        { defaultConfig | offsetX = 15 }
+        { defaultConfig |
 
 -}
 jumpToRightEdgeWithConfig : msg -> Config -> Cmd msg
@@ -493,7 +492,7 @@ scrollToTopLeft msg =
 {-| Smoothly scroll to the top-left corner of the document with custom configuration.
 
     scrollToTopLeftWithConfig NoOp
-        { defaultConfig | offsetX = 10, offsetY = 20 }
+        { defaultConfig | axis = BothWithOffset 10 20 }
 
 -}
 scrollToTopLeftWithConfig : msg -> Config -> Cmd msg
@@ -515,7 +514,7 @@ jumpToTopLeft msg =
 {-| Jump instantly to the top-left corner of the document with custom configuration.
 
     jumpToTopLeftWithConfig NoOp
-        { defaultConfig | offsetX = 10, offsetY = 20 }
+        { defaultConfig | axis = BothWithOffset 10 20 }
 
 -}
 jumpToTopLeftWithConfig : msg -> Config -> Cmd msg
@@ -537,7 +536,7 @@ scrollToTopRight msg =
 {-| Smoothly scroll to the top-right corner of the document with custom configuration.
 
     scrollToTopRightWithConfig NoOp
-        { defaultConfig | offsetX = 10, offsetY = 20 }
+        { defaultConfig | axis = BothWithOffset 10 20 }
 
 -}
 scrollToTopRightWithConfig : msg -> Config -> Cmd msg
@@ -559,7 +558,7 @@ jumpToTopRight msg =
 {-| Jump instantly to the top-right corner of the document with custom configuration.
 
     jumpToTopRightWithConfig NoOp
-        { defaultConfig | offsetX = 10, offsetY = 20 }
+        { defaultConfig | axis = BothWithOffset 10 20 }
 
 -}
 jumpToTopRightWithConfig : msg -> Config -> Cmd msg
@@ -581,7 +580,7 @@ scrollToBottomLeft msg =
 {-| Smoothly scroll to the bottom-left corner of the document with custom configuration.
 
     scrollToBottomLeftWithConfig NoOp
-        { defaultConfig | offsetX = 10, offsetY = 20 }
+        { defaultConfig | axis = BothWithOffset 10 20 }
 
 -}
 scrollToBottomLeftWithConfig : msg -> Config -> Cmd msg
@@ -603,7 +602,7 @@ jumpToBottomLeft msg =
 {-| Jump instantly to the bottom-left corner of the document with custom configuration.
 
     jumpToBottomLeftWithConfig NoOp
-        { defaultConfig | offsetX = 10, offsetY = 20 }
+        { defaultConfig | axis = BothWithOffset 10 20 }
 
 -}
 jumpToBottomLeftWithConfig : msg -> Config -> Cmd msg
@@ -625,7 +624,7 @@ scrollToBottomRight msg =
 {-| Smoothly scroll to the bottom-right corner of the document with custom configuration.
 
     scrollToBottomRightWithConfig NoOp
-        { defaultConfig | offsetX = 10, offsetY = 20 }
+        { defaultConfig | axis = BothWithOffset 10 20 }
 
 -}
 scrollToBottomRightWithConfig : msg -> Config -> Cmd msg
@@ -647,7 +646,7 @@ jumpToBottomRight msg =
 {-| Jump instantly to the bottom-right corner of the document with custom configuration.
 
     jumpToBottomRightWithConfig NoOp
-        { defaultConfig | offsetX = 10, offsetY = 20 }
+        { defaultConfig | axis = BothWithOffset 10 20 }
 
 -}
 jumpToBottomRightWithConfig : msg -> Config -> Cmd msg
@@ -673,7 +672,7 @@ scrollToCenter msg =
 {-| Smoothly scroll to the center of the document with custom configuration.
 
     scrollToCenterWithConfig NoOp
-        { defaultConfig | offsetX = 10, offsetY = 20 }
+        { defaultConfig | axis = BothWithOffset 10 20 }
 
 -}
 scrollToCenterWithConfig : msg -> Config -> Cmd msg
@@ -695,7 +694,7 @@ jumpToCenter msg =
 {-| Jump instantly to the center of the document with custom configuration.
 
     jumpToCenterWithConfig NoOp
-        { defaultConfig | offsetX = 10, offsetY = 20 }
+        { defaultConfig | axis = BothWithOffset 10 20 }
 
 -}
 jumpToCenterWithConfig : msg -> Config -> Cmd msg
@@ -717,7 +716,7 @@ scrollToCenterX msg =
 {-| Smoothly scroll to center horizontally with custom configuration.
 
     scrollToCenterXWithConfig NoOp
-        { defaultConfig | offsetX = 10 }
+        { defaultConfig |
 
 -}
 scrollToCenterXWithConfig : msg -> Config -> Cmd msg
@@ -739,7 +738,7 @@ jumpToCenterX msg =
 {-| Jump instantly to center horizontally with custom configuration.
 
     jumpToCenterXWithConfig NoOp
-        { defaultConfig | offsetX = 10 }
+        { defaultConfig |
 
 -}
 jumpToCenterXWithConfig : msg -> Config -> Cmd msg
@@ -835,7 +834,7 @@ jumpToPercentage percentageX percentageY msg =
     jumpToPercentageWithConfig 0.5
         0.8
         NoOp
-        { defaultConfig | offsetX = 10, offsetY = 20 }
+        { defaultConfig | axis = BothWithOffset 10 20 }
 
 -}
 jumpToPercentageWithConfig : Float -> Float -> msg -> Config -> Cmd msg
@@ -881,7 +880,7 @@ jumpToPercentageX percentage msg =
 
     jumpToPercentageXWithConfig 0.5
         NoOp
-        { defaultConfig | offsetX = 10 }
+        { defaultConfig |
 
 -}
 jumpToPercentageXWithConfig : Float -> msg -> Config -> Cmd msg
@@ -979,7 +978,7 @@ jumpBy offsetX offsetY msg =
     jumpByWithConfig 100
         -50
         NoOp
-        { defaultConfig | offsetX = 10, offsetY = 20 }
+        { defaultConfig | axis = BothWithOffset 10 20 }
 
 -}
 jumpByWithConfig : Float -> Float -> msg -> Config -> Cmd msg
@@ -1027,7 +1026,7 @@ jumpByViewportSize multiplierX multiplierY msg =
     jumpByViewportSizeWithConfig 1
         -0.5
         NoOp
-        { defaultConfig | offsetX = 10, offsetY = 20 }
+        { defaultConfig | axis = BothWithOffset 10 20 }
 
 -}
 jumpByViewportSizeWithConfig : Float -> Float -> msg -> Config -> Cmd msg
@@ -1079,7 +1078,7 @@ jumpToCoordinates x y msg =
     jumpToCoordinatesWithConfig 100
         200
         NoOp
-        { defaultConfig | offsetX = 10, offsetY = 20 }
+        { defaultConfig | axis = BothWithOffset 10 20 }
 
 -}
 jumpToCoordinatesWithConfig : Float -> Float -> msg -> Config -> Cmd msg

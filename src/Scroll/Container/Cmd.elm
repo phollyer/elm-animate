@@ -253,8 +253,7 @@ scroll containerId elementId msg =
         "my-element"
         NoOp
         { defaultConfig
-            | axis = X
-            , offsetX = 20
+            | axis = XWithOffset 20
         }
 
 -}
@@ -444,7 +443,7 @@ jumpToLeftEdge containerId msg =
 
     jumpToLeftEdgeWithConfig "container-id"
         NoOp
-        { defaultConfig | offsetX = 5 }
+        { defaultConfig |
 
 -}
 jumpToLeftEdgeWithConfig : ContainerId -> msg -> Config -> Cmd msg
@@ -467,7 +466,7 @@ jumpToRightEdge containerId msg =
 
     jumpToRightEdgeWithConfig "container-id"
         NoOp
-        { defaultConfig | offsetX = 15 }
+        { defaultConfig |
 
 -}
 jumpToRightEdgeWithConfig : ContainerId -> msg -> Config -> Cmd msg

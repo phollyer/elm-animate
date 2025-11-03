@@ -61,34 +61,36 @@ type Timing
 {-| Configuration for scrolling.
 
   - **timing**: Animation timing (Speed in pixels per second or Duration in milliseconds). Default is `Duration 400`.
-  - **offsetX**: Horizontal offset in pixels from the target position. Default is 0.
-  - **offsetY**: Vertical offset in pixels from the target position. Default is 12.
   - **easing**: Easing function from [elm-community/easing-functions](https://package.elm-lang.org/packages/elm-community/easing-functions/latest/). Default is [Ease.outQuint](https://package.elm-lang.org/packages/elm-community/easing-functions/latest/Ease#outQuint).
-  - **axis**: Movement axis (Y for vertical, X for horizontal, Both for diagonal). Default is Y.
+  - **axis**: Movement axis with optional offsets. Default is `YWithOffset 12`.
 
 -}
 type alias Config =
     { timing : Timing
-    , offsetX : Int
-    , offsetY : Int
     , easing : Ease.Easing
     , axis : Axis
     }
 
 
-{-| Axis configuration for animation movement direction.
+{-| Axis configuration for animation movement direction with optional offsets.
 
-Use this to control whether your animation moves horizontally or vertically:
+Use this to control whether your animation moves horizontally or vertically, and specify any offsets:
 
-  - `Y` - Vertical scrolling (most common, default for page scrolling)
+  - `Y` - Vertical scrolling (most common)
   - `X` - Horizontal scrolling (for sideways carousels or horizontal content)
   - `Both` - Both horizontal and vertical scrolling to reach the target element
+  - `YWithOffset Float` - Vertical scrolling with vertical offset in pixels
+  - `XWithOffset Float` - Horizontal scrolling with horizontal offset in pixels
+  - `BothWithOffset Float Float` - Both axes scrolling with horizontal and vertical offsets
 
 -}
 type Axis
     = X
     | Y
     | Both
+    | YWithOffset Float
+    | XWithOffset Float
+    | BothWithOffset Float Float
 
 
 {-| Type for configuring which element to scroll within.
@@ -110,17 +112,14 @@ type Container
     customConfig =
         { defaultConfig
             | timing = Duration 500
-            , offsetY = 20
             , easing = Ease.inOutCubic
-            , axis = Both
+            , axis = BothWithOffset 10.0 20.0
         }
 
 -}
 defaultConfig : Config
 defaultConfig =
     { timing = Duration 400
-    , offsetX = 0
-    , offsetY = 12
     , easing = Ease.outQuint
-    , axis = Y
+    , axis = YWithOffset 12.0
     }

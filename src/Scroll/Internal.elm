@@ -1,7 +1,11 @@
 module Scroll.Internal exposing
-    ( calculateScrollIntoView
+    ( Direction(..)
+    , calculateScrollIntoView
+    , getAxisDirection
     , getClampedPositions
     , getContainerInfo
+    , getOffsetX
+    , getOffsetY
     , getTargetPositions
     , getViewport
     , timingToSpeed
@@ -13,6 +17,86 @@ module Scroll.Internal exposing
 import Browser.Dom as Dom
 import Scroll exposing (..)
 import Task exposing (Task)
+
+
+{-| Extract horizontal offset from axis configuration.
+-}
+getOffsetX : Axis -> Float
+getOffsetX axis =
+    case axis of
+        X ->
+            0.0
+
+        Y ->
+            0.0
+
+        Both ->
+            0.0
+
+        XWithOffset offset ->
+            offset
+
+        YWithOffset _ ->
+            0.0
+
+        BothWithOffset offsetX _ ->
+            offsetX
+
+
+{-| Extract vertical offset from axis configuration.
+-}
+getOffsetY : Axis -> Float
+getOffsetY axis =
+    case axis of
+        X ->
+            0.0
+
+        Y ->
+            0.0
+
+        Both ->
+            0.0
+
+        XWithOffset _ ->
+            0.0
+
+        YWithOffset offset ->
+            offset
+
+        BothWithOffset _ offsetY ->
+            offsetY
+
+
+{-| Simple direction type without offsets.
+-}
+type Direction
+    = XDirection
+    | YDirection
+    | BothDirection
+
+
+{-| Extract the basic axis direction from axis configuration, ignoring offsets.
+-}
+getAxisDirection : Axis -> Direction
+getAxisDirection axis =
+    case axis of
+        X ->
+            XDirection
+
+        Y ->
+            YDirection
+
+        Both ->
+            BothDirection
+
+        XWithOffset _ ->
+            XDirection
+
+        YWithOffset _ ->
+            YDirection
+
+        BothWithOffset _ _ ->
+            BothDirection
 
 
 {-| Convert timing configuration to speed divider for internal animation functions.
@@ -77,15 +161,22 @@ getClampedPositions element viewport scene container config =
 -}
 getTargetPositions : { a | x : Float, y : Float } -> { a | x : Float, y : Float } -> Maybe Dom.Element -> Config -> ( Float, Float )
 getTargetPositions element viewport container config =
+    let
+        offsetX =
+            getOffsetX config.axis
+
+        offsetY =
+            getOffsetY config.axis
+    in
     case container of
         Nothing ->
-            ( element.x - toFloat config.offsetX
-            , element.y - toFloat config.offsetY
+            ( element.x - offsetX
+            , element.y - offsetY
             )
 
         Just containerInfo ->
-            ( viewport.x + element.x - toFloat config.offsetX - containerInfo.element.x
-            , viewport.y + element.y - toFloat config.offsetY - containerInfo.element.y
+            ( viewport.x + element.x - offsetX - containerInfo.element.x
+            , viewport.y + element.y - offsetY - containerInfo.element.y
             )
 
 
@@ -95,6 +186,12 @@ If element is larger than viewport, positions it at top-left.
 calculateScrollIntoView : { a | x : Float, y : Float, height : Float, width : Float } -> { a | x : Float, y : Float, height : Float, width : Float } -> { a | width : Float, height : Float } -> Maybe Dom.Element -> Config -> ( Float, Float )
 calculateScrollIntoView element viewport scene containerInfo config =
     let
+        offsetX =
+            getOffsetX config.axis
+
+        offsetY =
+            getOffsetY config.axis
+
         -- Get element dimensions
         elementX =
             element.x
@@ -204,5 +301,16 @@ calculateScrollIntoView element viewport scene containerInfo config =
                 else
                     -- Element cut off on bottom - scroll down to show bottom edge
                     bottomEdge - viewportHeight
+
+        -- Apply offsets and clamp to valid scroll ranges
+        finalScrollX =
+            (newScrollX - offsetX)
+                |> max 0
+                |> min (scene.width - viewport.width)
+
+        finalScrollY =
+            (newScrollY - offsetY)
+                |> max 0
+                |> min (scene.height - viewport.height)
     in
-    ( newScrollX, newScrollY )
+    ( finalScrollX, finalScrollY )
