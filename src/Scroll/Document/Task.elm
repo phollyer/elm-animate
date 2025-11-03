@@ -11,7 +11,23 @@ module Scroll.Document.Task exposing
     , scrollToBottomRight, scrollToBottomRightWithConfig, jumpToBottomRight, jumpToBottomRightWithConfig
     )
 
-{-| Document scrolling tasks for smooth animations. These functions scroll the main document body.
+{-| This module provides smooth scrolling operations for the main document body using Tasks.
+
+**Use this module when you need:**
+
+  - Error handling for scroll operations
+  - Task composition and chaining
+  - Fine-grained control over scroll completion
+
+**Use [Scroll.Document.Cmd](Scroll.Document.Cmd) instead when you want:**
+
+  - Simple 'fire-and-forget' scroll commands
+  - Integration with standard Elm architecture
+
+**For container-based scrolling, see:**
+
+  - [Scroll.Container.Task](Scroll.Container.Task)
+  - [Scroll.Container.Cmd](Scroll.Container.Cmd)
 
 
 # Element-Targeting Functions
