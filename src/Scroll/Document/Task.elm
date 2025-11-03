@@ -5,6 +5,10 @@ module Scroll.Document.Task exposing
     , scrollToBottom, scrollToBottomWithConfig, jumpToBottom, jumpToBottomWithConfig
     , scrollToLeftEdge, scrollToLeftEdgeWithConfig, jumpToLeftEdge, jumpToLeftEdgeWithConfig
     , scrollToRightEdge, scrollToRightEdgeWithConfig, jumpToRightEdge, jumpToRightEdgeWithConfig
+    , scrollToTopLeft, scrollToTopLeftWithConfig, jumpToTopLeft, jumpToTopLeftWithConfig
+    , scrollToTopRight, scrollToTopRightWithConfig, jumpToTopRight, jumpToTopRightWithConfig
+    , scrollToBottomLeft, scrollToBottomLeftWithConfig, jumpToBottomLeft, jumpToBottomLeftWithConfig
+    , scrollToBottomRight, scrollToBottomRightWithConfig, jumpToBottomRight, jumpToBottomRightWithConfig
     )
 
 {-| Document scrolling tasks for smooth animations. These functions scroll the main document body.
@@ -34,6 +38,14 @@ the top-left corner of the viewport.
 # Position-Targeting Functions
 
 
+## Edges
+
+Use these functions to scroll or jump to specific edges of the document.
+
+These functions ignore the `axis` field in the [Config](Scroll#Config) because they will always scroll on the required axis
+to reach the target edge.
+
+
 ## Top
 
 @docs scrollToTop, scrollToTopWithConfig, jumpToTop, jumpToTopWithConfig
@@ -52,6 +64,33 @@ the top-left corner of the viewport.
 ## Right Edge
 
 @docs scrollToRightEdge, scrollToRightEdgeWithConfig, jumpToRightEdge, jumpToRightEdgeWithConfig
+
+
+## Corners
+
+Use these functions to scroll or jump to specific corners of the document.
+
+These functions ignore the `axis` field in the [Config](Scroll#Config) because they will always scroll on both axes to reach the target corner.
+
+
+## Top-Left Corner
+
+@docs scrollToTopLeft, scrollToTopLeftWithConfig, jumpToTopLeft, jumpToTopLeftWithConfig
+
+
+## Top-Right Corner
+
+@docs scrollToTopRight, scrollToTopRightWithConfig, jumpToTopRight, jumpToTopRightWithConfig
+
+
+## Bottom-Left Corner
+
+@docs scrollToBottomLeft, scrollToBottomLeftWithConfig, jumpToBottomLeft, jumpToBottomLeftWithConfig
+
+
+## Bottom-Right Corner
+
+@docs scrollToBottomRight, scrollToBottomRightWithConfig, jumpToBottomRight, jumpToBottomRightWithConfig
 
 -}
 
@@ -513,4 +552,347 @@ jumpToRightEdgeWithConfig config =
                         scene.width - viewport.width - toFloat config.offsetX
                 in
                 Dom.setViewport maxX viewport.y
+            )
+
+
+{-| Smooth scroll to top-left corner of document.
+-}
+scrollToTopLeft : Task Dom.Error (List ())
+scrollToTopLeft =
+    scrollToTopLeftWithConfig defaultConfig
+
+
+{-| Smooth scroll to top-left corner of document with custom configuration.
+-}
+scrollToTopLeftWithConfig : Config -> Task Dom.Error (List ())
+scrollToTopLeftWithConfig config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ viewport } ->
+                let
+                    targetX =
+                        toFloat config.offsetX
+
+                    targetY =
+                        toFloat config.offsetY
+
+                    -- Calculate the maximum distance to determine frame count
+                    xDistance =
+                        abs (viewport.x - targetX)
+
+                    yDistance =
+                        abs (viewport.y - targetY)
+
+                    maxDistance =
+                        max xDistance yDistance
+
+                    -- Use the same frame count for both axes to ensure synchronization
+                    frames =
+                        Basics.max 1 (timingToSpeed config.timing maxDistance)
+
+                    -- Generate synchronized steps
+                    xSteps =
+                        animationStepsWithFrames frames config.easing viewport.x targetX
+
+                    ySteps =
+                        animationStepsWithFrames frames config.easing viewport.y targetY
+                in
+                case ( xSteps, ySteps ) of
+                    ( [], _ ) ->
+                        -- No horizontal movement needed, only animate Y
+                        ySteps
+                            |> List.map (\y -> Dom.setViewport viewport.x y)
+                            |> Task.sequence
+
+                    ( _, [] ) ->
+                        -- No vertical movement needed, only animate X
+                        xSteps
+                            |> List.map (\x -> Dom.setViewport x viewport.y)
+                            |> Task.sequence
+
+                    _ ->
+                        List.map2 Dom.setViewport xSteps ySteps
+                            |> Task.sequence
+            )
+
+
+{-| Jump instantly to top-left corner of document.
+-}
+jumpToTopLeft : Task Dom.Error ()
+jumpToTopLeft =
+    jumpToTopLeftWithConfig defaultConfig
+
+
+{-| Jump instantly to top-left corner of document with custom configuration.
+-}
+jumpToTopLeftWithConfig : Config -> Task Dom.Error ()
+jumpToTopLeftWithConfig config =
+    Dom.getViewport
+        |> Task.andThen
+            (\_ ->
+                Dom.setViewport (toFloat config.offsetX) (toFloat config.offsetY)
+            )
+
+
+{-| Smooth scroll to top-right corner of document.
+-}
+scrollToTopRight : Task Dom.Error (List ())
+scrollToTopRight =
+    scrollToTopRightWithConfig defaultConfig
+
+
+{-| Smooth scroll to top-right corner of document with custom configuration.
+-}
+scrollToTopRightWithConfig : Config -> Task Dom.Error (List ())
+scrollToTopRightWithConfig config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    maxX =
+                        scene.width - viewport.width
+
+                    targetX =
+                        maxX - toFloat config.offsetX
+
+                    targetY =
+                        toFloat config.offsetY
+
+                    -- Calculate the maximum distance to determine frame count
+                    xDistance =
+                        abs (viewport.x - targetX)
+
+                    yDistance =
+                        abs (viewport.y - targetY)
+
+                    maxDistance =
+                        max xDistance yDistance
+
+                    -- Use the same frame count for both axes to ensure synchronization
+                    frames =
+                        Basics.max 1 (timingToSpeed config.timing maxDistance)
+
+                    -- Generate synchronized steps
+                    xSteps =
+                        animationStepsWithFrames frames config.easing viewport.x targetX
+
+                    ySteps =
+                        animationStepsWithFrames frames config.easing viewport.y targetY
+                in
+                case ( xSteps, ySteps ) of
+                    ( [], _ ) ->
+                        -- No horizontal movement needed, only animate Y
+                        ySteps
+                            |> List.map (\y -> Dom.setViewport viewport.x y)
+                            |> Task.sequence
+
+                    ( _, [] ) ->
+                        -- No vertical movement needed, only animate X
+                        xSteps
+                            |> List.map (\x -> Dom.setViewport x viewport.y)
+                            |> Task.sequence
+
+                    _ ->
+                        List.map2 Dom.setViewport xSteps ySteps
+                            |> Task.sequence
+            )
+
+
+{-| Jump instantly to top-right corner of document.
+-}
+jumpToTopRight : Task Dom.Error ()
+jumpToTopRight =
+    jumpToTopRightWithConfig defaultConfig
+
+
+{-| Jump instantly to top-right corner of document with custom configuration.
+-}
+jumpToTopRightWithConfig : Config -> Task Dom.Error ()
+jumpToTopRightWithConfig config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    maxX =
+                        scene.width - viewport.width - toFloat config.offsetX
+                in
+                Dom.setViewport maxX (toFloat config.offsetY)
+            )
+
+
+{-| Smooth scroll to bottom-left corner of document.
+-}
+scrollToBottomLeft : Task Dom.Error (List ())
+scrollToBottomLeft =
+    scrollToBottomLeftWithConfig defaultConfig
+
+
+{-| Smooth scroll to bottom-left corner of document with custom configuration.
+-}
+scrollToBottomLeftWithConfig : Config -> Task Dom.Error (List ())
+scrollToBottomLeftWithConfig config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    maxY =
+                        scene.height - viewport.height
+
+                    targetX =
+                        toFloat config.offsetX
+
+                    targetY =
+                        maxY - toFloat config.offsetY
+
+                    -- Calculate the maximum distance to determine frame count
+                    xDistance =
+                        abs (viewport.x - targetX)
+
+                    yDistance =
+                        abs (viewport.y - targetY)
+
+                    maxDistance =
+                        max xDistance yDistance
+
+                    -- Use the same frame count for both axes to ensure synchronization
+                    frames =
+                        Basics.max 1 (timingToSpeed config.timing maxDistance)
+
+                    -- Generate synchronized steps
+                    xSteps =
+                        animationStepsWithFrames frames config.easing viewport.x targetX
+
+                    ySteps =
+                        animationStepsWithFrames frames config.easing viewport.y targetY
+                in
+                case ( xSteps, ySteps ) of
+                    ( [], _ ) ->
+                        -- No horizontal movement needed, only animate Y
+                        ySteps
+                            |> List.map (\y -> Dom.setViewport viewport.x y)
+                            |> Task.sequence
+
+                    ( _, [] ) ->
+                        -- No vertical movement needed, only animate X
+                        xSteps
+                            |> List.map (\x -> Dom.setViewport x viewport.y)
+                            |> Task.sequence
+
+                    _ ->
+                        List.map2 Dom.setViewport xSteps ySteps
+                            |> Task.sequence
+            )
+
+
+{-| Jump instantly to bottom-left corner of document.
+-}
+jumpToBottomLeft : Task Dom.Error ()
+jumpToBottomLeft =
+    jumpToBottomLeftWithConfig defaultConfig
+
+
+{-| Jump instantly to bottom-left corner of document with custom configuration.
+-}
+jumpToBottomLeftWithConfig : Config -> Task Dom.Error ()
+jumpToBottomLeftWithConfig config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    maxY =
+                        scene.height - viewport.height - toFloat config.offsetY
+                in
+                Dom.setViewport (toFloat config.offsetX) maxY
+            )
+
+
+{-| Smooth scroll to bottom-right corner of document.
+-}
+scrollToBottomRight : Task Dom.Error (List ())
+scrollToBottomRight =
+    scrollToBottomRightWithConfig defaultConfig
+
+
+{-| Smooth scroll to bottom-right corner of document with custom configuration.
+-}
+scrollToBottomRightWithConfig : Config -> Task Dom.Error (List ())
+scrollToBottomRightWithConfig config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    maxX =
+                        scene.width - viewport.width
+
+                    maxY =
+                        scene.height - viewport.height
+
+                    targetX =
+                        maxX - toFloat config.offsetX
+
+                    targetY =
+                        maxY - toFloat config.offsetY
+
+                    -- Calculate the maximum distance to determine frame count
+                    xDistance =
+                        abs (viewport.x - targetX)
+
+                    yDistance =
+                        abs (viewport.y - targetY)
+
+                    maxDistance =
+                        max xDistance yDistance
+
+                    -- Use the same frame count for both axes to ensure synchronization
+                    frames =
+                        Basics.max 1 (timingToSpeed config.timing maxDistance)
+
+                    -- Generate synchronized steps
+                    xSteps =
+                        animationStepsWithFrames frames config.easing viewport.x targetX
+
+                    ySteps =
+                        animationStepsWithFrames frames config.easing viewport.y targetY
+                in
+                case ( xSteps, ySteps ) of
+                    ( [], _ ) ->
+                        -- No horizontal movement needed, only animate Y
+                        ySteps
+                            |> List.map (\y -> Dom.setViewport viewport.x y)
+                            |> Task.sequence
+
+                    ( _, [] ) ->
+                        -- No vertical movement needed, only animate X
+                        xSteps
+                            |> List.map (\x -> Dom.setViewport x viewport.y)
+                            |> Task.sequence
+
+                    _ ->
+                        List.map2 Dom.setViewport xSteps ySteps
+                            |> Task.sequence
+            )
+
+
+{-| Jump instantly to bottom-right corner of document.
+-}
+jumpToBottomRight : Task Dom.Error ()
+jumpToBottomRight =
+    jumpToBottomRightWithConfig defaultConfig
+
+
+{-| Jump instantly to bottom-right corner of document with custom configuration.
+-}
+jumpToBottomRightWithConfig : Config -> Task Dom.Error ()
+jumpToBottomRightWithConfig config =
+    Dom.getViewport
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    maxX =
+                        scene.width - viewport.width - toFloat config.offsetX
+
+                    maxY =
+                        scene.height - viewport.height - toFloat config.offsetY
+                in
+                Dom.setViewport maxX maxY
             )
