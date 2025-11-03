@@ -38,9 +38,25 @@ module Scroll.Document.Cmd exposing
   - [Scroll.Container.Cmd](Scroll.Container.Cmd)
 
 
+# Documentation Index
+
+  - **[Element-Targeting Functions](#element-targeting-functions)** - Scroll to elements by ID
+  - **[Bring Into View Functions](#bring-into-view-functions)** - Minimal movement to show elements
+  - **[Position-Targeting Functions](#position-targeting-functions)** - Scroll to specific positions
+      - [Edges](#edges) - Top, bottom, left, and right edges
+      - [Corners](#corners) - All four corner positions
+      - [Center Positioning](#center-positioning) - Center elements in viewport
+  - **[Advanced Positioning Functions](#advanced-positioning-functions)** - Sophisticated positioning
+      - [Percentage-Based Positioning](#percentage-based-positioning) - Position by percentage
+      - [Relative Movement](#relative-movement) - Move by pixel amounts or viewport sizes
+      - [Coordinate Targeting](#coordinate-targeting) - Direct coordinate positioning
+
+
 # Element-Targeting Functions
 
 @docs scroll, scrollWithConfig, jump, jumpWithConfig
+
+_[↑ Element-Targeting Functions](#element-targeting-functions) | [↑ Documentation Index](#documentation-index)_
 
 
 # Bring Into View Functions
@@ -57,6 +73,8 @@ So if an element is taller and wider than the viewport, the top-left corner of t
 the top-left corner of the viewport.
 
 @docs scrollIntoView, scrollIntoViewWithConfig, jumpIntoView, jumpIntoViewWithConfig
+
+_[↑ Bring Into View Functions](#bring-into-view-functions) | [↑ Documentation Index](#documentation-index)_
 
 
 # Position-Targeting Functions
@@ -80,14 +98,16 @@ to reach the target edge.
 @docs scrollToBottom, scrollToBottomWithConfig, jumpToBottom, jumpToBottomWithConfig
 
 
-## Left Edge
+## Left
 
 @docs scrollToLeftEdge, scrollToLeftEdgeWithConfig, jumpToLeftEdge, jumpToLeftEdgeWithConfig
 
 
-## Right Edge
+## Right
 
 @docs scrollToRightEdge, scrollToRightEdgeWithConfig, jumpToRightEdge, jumpToRightEdgeWithConfig
+
+_[↑ Edges](#edges) | [↑ Position-Targeting Functions](#position-targeting-functions) | [↑ Documentation Index](#documentation-index)_
 
 
 ## Corners
@@ -116,6 +136,8 @@ These functions ignore the `axis` field in the [Config](Scroll#Config) because t
 
 @docs scrollToBottomRight, scrollToBottomRightWithConfig, jumpToBottomRight, jumpToBottomRightWithConfig
 
+_[↑ Corners](#corners) | [↑ Position-Targeting Functions](#position-targeting-functions) | [↑ Documentation Index](#documentation-index)_
+
 
 ## Center Positioning
 
@@ -126,6 +148,8 @@ These functions ignore the `axis` field in the [Config](Scroll#Config) and scrol
 @docs scrollToCenter, scrollToCenterWithConfig, jumpToCenter, jumpToCenterWithConfig
 @docs scrollToCenterX, scrollToCenterXWithConfig, jumpToCenterX, jumpToCenterXWithConfig
 @docs scrollToCenterY, scrollToCenterYWithConfig, jumpToCenterY, jumpToCenterYWithConfig
+
+_[↑ Center Positioning](#center-positioning) | [↑ Position-Targeting Functions](#position-targeting-functions) | [↑ Documentation Index](#documentation-index)_
 
 
 # Advanced Positioning Functions
@@ -139,6 +163,8 @@ Scroll to positions defined as percentages of the total scrollable area.
 @docs scrollToPercentageX, scrollToPercentageXWithConfig, jumpToPercentageX, jumpToPercentageXWithConfig
 @docs scrollToPercentageY, scrollToPercentageYWithConfig, jumpToPercentageY, jumpToPercentageYWithConfig
 
+_[↑ Percentage-Based Positioning](#percentage-based-positioning) | [↑ Advanced Positioning Functions](#advanced-positioning-functions) | [↑ Documentation Index](#documentation-index)_
+
 
 ## Relative Movement
 
@@ -147,12 +173,16 @@ Scroll relative to the current position by pixel offsets or viewport multiples.
 @docs scrollBy, scrollByWithConfig, jumpBy, jumpByWithConfig
 @docs scrollByViewportSize, scrollByViewportSizeWithConfig, jumpByViewportSize, jumpByViewportSizeWithConfig
 
+_[↑ Relative Movement](#relative-movement) | [↑ Advanced Positioning Functions](#advanced-positioning-functions) | [↑ Documentation Index](#documentation-index)_
+
 
 ## Coordinate Targeting
 
 Scroll to specific pixel coordinates within the document.
 
 @docs scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
+
+_[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning Functions](#advanced-positioning-functions) | [↑ Documentation Index](#documentation-index)_
 
 -}
 
