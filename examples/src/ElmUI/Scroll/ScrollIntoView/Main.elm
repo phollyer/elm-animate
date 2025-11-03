@@ -10,7 +10,8 @@ This example shows:
 
 -}
 
-import Browser
+import Browser exposing (Document)
+import Common.UI as UI
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -85,30 +86,35 @@ update msg model =
 -- VIEW
 
 
-view : Model -> Html Msg
+view : Model -> Document Msg
 view model =
+    UI.createDocument "ScrollIntoView Example" UI.Basic (viewContent model)
+
+
+viewContent : Model -> List (Element Msg)
+viewContent model =
     let
         -- Calculate container dimensions much larger than viewport
         containerWidth = model.windowWidth * 3
         containerHeight = model.windowHeight * 4
     in
-    layout [] <|
-        column [ width fill, spacing 20, padding 20 ]
-            [ -- Header
-              row [ width fill, spacing 20 ]
-                [ el [ Font.size 24, Font.bold ] (text "ScrollIntoView Example")
-                , el [ Font.size 16, Font.color (rgb 0.5 0.5 0.5) ] 
-                    (text ("Window: " ++ String.fromInt model.windowWidth ++ "x" ++ String.fromInt model.windowHeight))
-                , el [ Font.size 16, Font.color (rgb 0.5 0.5 0.5) ] (text model.status)
-                ]
-            
-            -- Large scrollable content area
-            , el 
-                [ width (px containerWidth)
-                , height (px containerHeight)
-                , Background.color (rgb 0.98 0.98 0.98)
-                ]
-                (column [ width fill, height fill, spacing 0 ]
+    [ -- Back Button
+      UI.backButton
+    , -- Header
+      UI.pageHeader "ScrollIntoView Example"
+    , -- Status info
+      row [ width fill, spacing 20, centerX ]
+        [ el [ Font.size 16, Font.color (rgb 0.5 0.5 0.5) ] 
+            (text ("Window: " ++ String.fromInt model.windowWidth ++ "x" ++ String.fromInt model.windowHeight))
+        , el [ Font.size 16, Font.color (rgb 0.5 0.5 0.5) ] (text model.status)
+        ]
+    , -- Large scrollable content area
+      el 
+        [ width (px containerWidth)
+        , height (px containerHeight)
+        , Background.color (rgb 0.98 0.98 0.98)
+        ]
+        (column [ width fill, height fill, spacing 0 ]
                     [ -- Top section
                       contentPanel 
                         "Top Section"
@@ -213,11 +219,11 @@ view model =
                         []
                     ]
                 )
-            ]
+    ]
 
 
 contentPanel : String -> Int -> Color -> List (Element Msg) -> List (Element Msg) -> Element Msg
-contentPanel title panelHeight bgColor elements _ =
+contentPanel _ panelHeight bgColor elements _ =
     el 
         [ width fill
         , height (px panelHeight)
@@ -225,14 +231,8 @@ contentPanel title panelHeight bgColor elements _ =
         , Border.width 2
         , Border.color (rgb 0.7 0.7 0.7)
         ]
-        (column [ width fill, height fill, spacing 30, padding 30 ]
-            [ -- Panel header with title only
-              el [ Font.size 20, Font.bold, Font.color (rgb 0.2 0.2 0.2) ] (text title)
-            
-            -- Panel content
-            , el [ width fill, height fill ]
-                (column [ centerX, centerY, spacing 50 ] elements)
-            ]
+        (el [ width fill, height fill, padding 30 ]
+            (column [ centerX, centerY, spacing 50 ] elements)
         )
 
 
@@ -293,7 +293,7 @@ button label msg =
 
 main : Program Flags Model Msg
 main =
-    Browser.element
+    Browser.document
         { init = \flags -> ( initialModel flags, Cmd.none )
         , view = view
         , update = update
