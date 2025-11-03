@@ -178,10 +178,12 @@ jumpWithConfig id config =
         |> Task.andThen identity
 
 
-{-| -}
+{-| Scroll element into view using minimal movement. Automatically scrolls on both X and Y axes as needed.
+Uses a larger offset (60px) to account for common fixed headers and navigation bars.
+-}
 scrollIntoView : TargetId -> Task Dom.Error (List ())
 scrollIntoView elementId =
-    scrollIntoViewWithConfig elementId defaultConfig
+    scrollIntoViewWithConfig elementId { defaultConfig | axis = Both, offsetY = 60 }
 
 
 {-| -}
@@ -196,8 +198,18 @@ scrollIntoViewWithConfig elementId config =
 
         performScrollTask { scene, viewport } { element } containerInfo =
             let
-                ( clampedX, clampedY ) =
+                ( targetX, targetY ) =
                     calculateScrollIntoView element viewport scene containerInfo config
+
+                ( clampedX, clampedY ) =
+                    ( targetX
+                        |> min (scene.width - viewport.width)
+                        |> max 0
+                    , targetY
+                        |> min (scene.height - viewport.height)
+                        |> max 0
+                    )
+                        |> Debug.log "scrollIntoViewWithConfig - target positions"
 
                 setViewportTask =
                     case config.axis of
@@ -257,10 +269,11 @@ scrollIntoViewWithConfig elementId config =
         |> Task.andThen identity
 
 
-{-| -}
+{-| Jump element into view using minimal movement. Automatically scrolls on both X and Y axes as needed.
+-}
 jumpIntoView : TargetId -> Task Dom.Error ()
 jumpIntoView elementId =
-    jumpIntoViewWithConfig elementId defaultConfig
+    jumpIntoViewWithConfig elementId { defaultConfig | axis = Both }
 
 
 {-| -}
@@ -275,8 +288,17 @@ jumpIntoViewWithConfig elementId config =
 
         performJumpTask { scene, viewport } { element } containerInfo =
             let
-                ( clampedX, clampedY ) =
+                ( targetX, targetY ) =
                     calculateScrollIntoView element viewport scene containerInfo config
+
+                ( clampedX, clampedY ) =
+                    ( targetX
+                        |> min (scene.width - viewport.width)
+                        |> max 0
+                    , targetY
+                        |> min (scene.height - viewport.height)
+                        |> max 0
+                    )
 
                 setViewportTask =
                     case config.axis of

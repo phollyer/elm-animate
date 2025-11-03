@@ -144,30 +144,34 @@ calculateScrollIntoView element viewport scene containerInfo config =
                 adjustedElementX
 
             else
+                -- Element fits in viewport - calculate minimal movement
                 let
-                    leftEdge =
+                    -- For document scrolling: element positions are absolute
+                    -- For container scrolling: element positions are relative to container
+                    elementLeft =
                         adjustedElementX
 
-                    rightEdge =
+                    elementRight =
                         adjustedElementX + elementWidth
 
+                    -- Current viewport bounds in document coordinates
                     viewportLeft =
                         currentScrollX
 
                     viewportRight =
                         currentScrollX + viewportWidth
                 in
-                if leftEdge >= viewportLeft && rightEdge <= viewportRight then
-                    -- Already fully visible horizontally
+                if elementLeft >= viewportLeft && elementRight <= viewportRight then
+                    -- Already fully visible horizontally - no change needed
                     currentScrollX
 
-                else if leftEdge < viewportLeft then
-                    -- Element cut off on left - scroll left to show left edge
-                    leftEdge
+                else if elementLeft < viewportLeft then
+                    -- Element extends beyond left edge - scroll left to show element at left edge
+                    elementLeft
 
                 else
-                    -- Element cut off on right - scroll right to show right edge
-                    rightEdge - viewportWidth
+                    -- Element extends beyond right edge - scroll right to show element at right edge
+                    elementRight - viewportWidth
 
         -- Calculate vertical scroll position
         newScrollY =

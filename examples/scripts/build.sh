@@ -54,6 +54,7 @@ build_example "src/ElmUI/Scroll/DocumentX/Main.elm" "src/ElmUI/Scroll/DocumentX/
 build_example "src/ElmUI/Scroll/ContainerX/Main.elm" "src/ElmUI/Scroll/ContainerX/index.js" "ElmUI.Scroll.ContainerX.Main"
 build_example "src/ElmUI/Scroll/DocumentXY/Main.elm" "src/ElmUI/Scroll/DocumentXY/index.js" "ElmUI.Scroll.DocumentXY.Main"
 build_example "src/ElmUI/Scroll/ContainerXY/Main.elm" "src/ElmUI/Scroll/ContainerXY/index.js" "ElmUI.Scroll.ContainerXY.Main"
+build_example "src/ElmUI/Scroll/ScrollIntoView/Main.elm" "src/ElmUI/Scroll/ScrollIntoView/index.js" "ElmUI.Scroll.ScrollIntoView.Main"
 build_example "src/ElmUI/Sub/Basic/Main.elm" "src/ElmUI/Sub/Basic/index.js" "ElmUI.Sub.Basic.Main"
 build_example "src/ElmUI/Sub/Multiple/Main.elm" "src/ElmUI/Sub/Multiple/index.js" "ElmUI.Sub.Multiple.Main"
 build_example "src/ElmUI/CSS/Basic/Main.elm" "src/ElmUI/CSS/Basic/index.js" "ElmUI.CSS.Basic.Main"
