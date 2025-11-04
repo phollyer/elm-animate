@@ -67,6 +67,8 @@ module Scroll.Container.Cmd exposing
 
 # Element-Targeting Functions
 
+Perfect for navigating to specific elements within scrollable containers like modals, sidebars, or content areas.
+
 @docs ContainerId, TargetId
 @docs scroll, scrollWithConfig, jump, jumpWithConfig
 
@@ -84,6 +86,8 @@ The same logic applies for horizontal scrolling, with the left edge equating to 
 So if an element is taller and wider than the container's viewport, the top-left corner of the element will be aligned with
 the top-left corner of the container's viewport.
 
+Perfect for ensuring elements are visible without jarring jumps - ideal for forms, notifications, or highlighted content.
+
 @docs scrollIntoView, scrollIntoViewWithConfig, jumpIntoView, jumpIntoViewWithConfig
 
 _[↑ Bring Into View Functions](#bring-into-view-functions) | [↑ Documentation Index](#documentation-index)_
@@ -98,6 +102,8 @@ Use these functions to scroll or jump to specific edges of the container.
 
 These functions ignore the `axis` field in the [Config](Scroll#Config) because they will always scroll on the required axis
 to reach the target edge.
+
+Perfect for "scroll to top/bottom" buttons, navigation shortcuts, or resetting container positions.
 
 
 ## Top
@@ -129,6 +135,8 @@ Use these functions to scroll or jump to the four corners of the container.
 These functions ignore the `axis` field in the [Config](Scroll#Config) because they will always scroll on both axes
 to reach the target corner.
 
+Perfect for image galleries, maps, or when you need precise positioning at container boundaries.
+
 
 ### Top-Left Corner
 
@@ -156,6 +164,8 @@ _[↑ Corners](#corners) | [↑ Position-Targeting Functions](#position-targetin
 
 Use these functions to scroll or jump to center positions within the container.
 
+Perfect for highlighting content, creating focus effects, or centering important UI elements.
+
 
 ### Both Axes
 
@@ -181,6 +191,8 @@ _[↑ Center Positioning](#center-positioning) | [↑ Position-Targeting Functio
 
 Scroll or jump to specific pixel coordinates within the container. Coordinates are automatically clamped to valid ranges.
 
+Perfect for programmatic positioning, drag-and-drop interfaces, or restoring saved scroll positions.
+
 @docs XCoordinate, YCoordinate
 
 
@@ -205,6 +217,8 @@ _[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning F
 
 Position within the container using percentages (0-100). Values outside this range are automatically clamped.
 
+Perfect for responsive layouts, progress indicators, or proportional navigation within content.
+
 @docs PercX, PercY
 
 
@@ -226,6 +240,8 @@ _[↑ Percentage-Based Positioning](#percentage-based-positioning) | [↑ Advanc
 
 
 ## Relative Movement
+
+Perfect for incremental navigation, keyboard controls, or step-by-step content browsing.
 
 
 ### Pixel Offsets

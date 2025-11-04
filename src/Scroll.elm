@@ -91,8 +91,8 @@ Use this to control whether your animation moves horizontally or vertically, and
   - `Y` - Vertical scrolling (most common)
   - `X` - Horizontal scrolling (for sideways carousels or horizontal content)
   - `Both` - Both horizontal and vertical scrolling to reach the target element
-  - `YWithOffset YOffsetFloat` - Vertical scrolling with vertical offset in pixels
   - `XWithOffset XOffsetFloat` - Horizontal scrolling with horizontal offset in pixels
+  - `YWithOffset YOffsetFloat` - Vertical scrolling with vertical offset in pixels
   - `BothWithOffset XOffsetFloat YOffsetFloat` - Both axes scrolling with horizontal and vertical offsets
 
 -}
@@ -100,8 +100,8 @@ type Axis
     = X
     | Y
     | Both
-    | YWithOffset YOffsetFloat
     | XWithOffset XOffsetFloat
+    | YWithOffset YOffsetFloat
     | BothWithOffset XOffsetFloat YOffsetFloat
 
 

@@ -65,6 +65,8 @@ module Scroll.Document.Cmd exposing
 
 # Element-Targeting Functions
 
+Perfect for navigating to specific sections, anchors, or dynamic content anywhere on the page.
+
 @docs TargetId
 @docs scroll, scrollWithConfig, jump, jumpWithConfig
 
@@ -84,6 +86,8 @@ The same logic applies for horizontal scrolling, with the left edge equating to 
 So if an element is taller and wider than the viewport, the top-left corner of the element will be aligned with
 the top-left corner of the viewport.
 
+Perfect for ensuring form fields, error messages, or search results stay visible without jarring movements.
+
 @docs scrollIntoView, scrollIntoViewWithConfig, jumpIntoView, jumpIntoViewWithConfig
 
 _[↑ Bring Into View Functions](#bring-into-view-functions) | [↑ Documentation Index](#documentation-index)_
@@ -98,6 +102,8 @@ Use these functions to scroll or jump to specific edges of the document.
 
 These functions ignore the `axis` field in the [Config](Scroll#Config) because they will always scroll on the required axis
 to reach the target edge.
+
+Perfect for "back to top" buttons, "skip to bottom" links, or page navigation shortcuts.
 
 
 ## Top
@@ -128,6 +134,8 @@ Use these functions to scroll or jump to specific corners of the document.
 
 These functions ignore the `axis` field in the [Config](Scroll#Config) because they will always scroll on both axes to reach the target corner.
 
+Perfect for full-page image viewers, document readers, or when you need precise positioning at page boundaries.
+
 
 ## Top-Left Corner
 
@@ -155,6 +163,8 @@ _[↑ Corners](#corners) | [↑ Position-Targeting Functions](#position-targetin
 
 Use these functions to scroll or jump to the center of the document or center on a specific axis.
 
+Perfect for focusing attention, creating cinematic effects, or centering important content like modals or hero sections.
+
 
 ### Both Axes
 
@@ -180,6 +190,8 @@ _[↑ Center Positioning](#center-positioning) | [↑ Position-Targeting Functio
 
 Scroll to specific pixel coordinates within the document.
 
+Perfect for programmatic positioning, restoring saved scroll states, or implementing custom navigation systems.
+
 @docs XCoordinate, YCoordinate
 
 
@@ -204,6 +216,8 @@ _[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning F
 
 Scroll to positions defined as percentages of the total scrollable area.
 
+Perfect for progress-based navigation, reading position indicators, or responsive layouts that adapt to content length.
+
 @docs PercX, PercY
 
 
@@ -225,6 +239,8 @@ _[↑ Percentage-Based Positioning](#percentage-based-positioning) | [↑ Advanc
 
 
 ## Relative Movement
+
+Perfect for keyboard navigation, incremental scrolling, or step-by-step content browsing like pagination.
 
 
 ### Pixel Offsets
