@@ -20,8 +20,12 @@ module Scroll.Document.Cmd exposing
     , scrollToPercentageY, scrollToPercentageYWithConfig, jumpToPercentageY, jumpToPercentageYWithConfig
     , ScrollDeltaX, ScrollDeltaY
     , scrollBy, scrollByWithConfig, jumpBy, jumpByWithConfig
+    , scrollByX, scrollByXWithConfig, jumpByX, jumpByXWithConfig
+    , scrollByY, scrollByYWithConfig, jumpByY, jumpByYWithConfig
     , ViewportMultiplierX, ViewportMultiplierY
     , scrollByViewportSize, scrollByViewportSizeWithConfig, jumpByViewportSize, jumpByViewportSizeWithConfig
+    , scrollByViewportSizeX, scrollByViewportSizeXWithConfig, jumpByViewportSizeX, jumpByViewportSizeXWithConfig
+    , scrollByViewportSizeY, scrollByViewportSizeYWithConfig, jumpByViewportSizeY, jumpByViewportSizeYWithConfig
     )
 
 {-| This module provides smooth scrolling operations for the main document body using commands.
@@ -183,20 +187,49 @@ _[↑ Percentage-Based Positioning](#percentage-based-positioning) | [↑ Advanc
 
 ## Relative Movement
 
-Scroll relative to the current position by pixel offsets or viewport multiples.
-
 
 ### Pixel Offsets
 
+Move relative to the current scroll position by specific pixel amounts.
+
 @docs ScrollDeltaX, ScrollDeltaY
+
+
+#### Both Axes
 
 @docs scrollBy, scrollByWithConfig, jumpBy, jumpByWithConfig
 
 
+#### X Axis Only
+
+@docs scrollByX, scrollByXWithConfig, jumpByX, jumpByXWithConfig
+
+
+#### Y Axis Only
+
+@docs scrollByY, scrollByYWithConfig, jumpByY, jumpByYWithConfig
+
+
 ### Viewport Multiples
 
+Move relative to the current scroll position by multiples of the viewport size.
+
 @docs ViewportMultiplierX, ViewportMultiplierY
+
+
+#### Both Axes
+
 @docs scrollByViewportSize, scrollByViewportSizeWithConfig, jumpByViewportSize, jumpByViewportSizeWithConfig
+
+
+#### X Axis Only
+
+@docs scrollByViewportSizeX, scrollByViewportSizeXWithConfig, jumpByViewportSizeX, jumpByViewportSizeXWithConfig
+
+
+#### Y Axis Only
+
+@docs scrollByViewportSizeY, scrollByViewportSizeYWithConfig, jumpByViewportSizeY, jumpByViewportSizeYWithConfig
 
 _[↑ Relative Movement](#relative-movement) | [↑ Advanced Positioning Functions](#advanced-positioning-functions) | [↑ Documentation Index](#documentation-index)_
 
@@ -375,7 +408,7 @@ scrollToTop msg =
 
 {-| Smoothly scroll to the top of the document with custom configuration.
 
-    scrollToTopWithConfig NoOp
+    scrollToTopWithConfig NoOp <|
         { defaultConfig | timing = Duration 600 }
 
 -}
@@ -419,7 +452,7 @@ scrollToLeftEdge msg =
 
 {-| Smoothly scroll to the left edge of the document with custom configuration.
 
-    scrollToLeftEdgeWithConfig NoOp
+    scrollToLeftEdgeWithConfig NoOp <|
         { defaultConfig | timing = Duration 400 }
 
 -}
@@ -441,7 +474,7 @@ scrollToRightEdge msg =
 
 {-| Smoothly scroll to the right edge of the document with custom configuration.
 
-    scrollToRightEdgeWithConfig NoOp
+    scrollToRightEdgeWithConfig NoOp <|
         { defaultConfig | timing = Duration 500 }
 
 -}
@@ -871,9 +904,7 @@ scrollToPercentage percentageX percentageY msg =
 
 {-| Smoothly scroll to percentage positions with custom configuration.
 
-    scrollToPercentageWithConfig 0.5
-        0.8
-        NoOp
+    scrollToPercentageWithConfig 0.5 0.8 NoOp <|
         { defaultConfig | timing = Duration 800 }
 
 -}
@@ -919,8 +950,7 @@ scrollToPercentageX percentage msg =
 
 {-| Smoothly scroll to percentage position horizontally with custom configuration.
 
-    scrollToPercentageXWithConfig 0.5
-        NoOp
+    scrollToPercentageXWithConfig 0.5 NoOp <|
         { defaultConfig | timing = Duration 800 }
 
 -}
@@ -965,8 +995,7 @@ scrollToPercentageY percentage msg =
 
 {-| Smoothly scroll to percentage position vertically with custom configuration.
 
-    scrollToPercentageYWithConfig 0.8
-        NoOp
+    scrollToPercentageYWithConfig 0.8 NoOp <|
         { defaultConfig | timing = Duration 800 }
 
 -}
@@ -1015,9 +1044,7 @@ scrollBy offsetX offsetY msg =
 
 {-| Smoothly scroll by pixel offsets from current position with custom configuration.
 
-    scrollByWithConfig 100
-        -50
-        NoOp
+    scrollByWithConfig 100.0 -50.0 NoOp <|
         { defaultConfig | timing = Duration 800 }
 
 -}
@@ -1051,6 +1078,92 @@ jumpByWithConfig offsetX offsetY msg config =
         |> Task.attempt (always msg)
 
 
+{-| Smoothly scroll horizontally by a pixel offset from current position using default configuration.
+
+    scrollByX 100 NoOp -- scroll 100px to the right
+
+-}
+scrollByX : ScrollDeltaX -> msg -> Cmd msg
+scrollByX offsetX msg =
+    scrollByXWithConfig offsetX msg defaultConfig
+
+
+{-| Smoothly scroll horizontally by pixel offset with custom configuration.
+
+    scrollByXWithConfig 100.0 NoOp <|
+        { defaultConfig | speed = 1000 }
+
+-}
+scrollByXWithConfig : ScrollDeltaX -> msg -> Config -> Cmd msg
+scrollByXWithConfig offsetX msg config =
+    ScrollTask.scrollByWithConfig offsetX 0.0 config
+        |> Task.attempt (always msg)
+
+
+{-| Jump instantly horizontally by a pixel offset from current position using default configuration.
+
+    jumpByX 100 NoOp
+
+-}
+jumpByX : ScrollDeltaX -> msg -> Cmd msg
+jumpByX offsetX msg =
+    jumpByXWithConfig offsetX msg defaultConfig
+
+
+{-| Jump instantly horizontally by pixel offset with custom configuration.
+
+    jumpByXWithConfig 100 NoOp defaultConfig
+
+-}
+jumpByXWithConfig : ScrollDeltaX -> msg -> Config -> Cmd msg
+jumpByXWithConfig offsetX msg config =
+    ScrollTask.jumpByWithConfig offsetX 0.0 config
+        |> Task.attempt (always msg)
+
+
+{-| Smoothly scroll vertically by a pixel offset from current position using default configuration.
+
+    scrollByY -50 NoOp -- scroll 50px up
+
+-}
+scrollByY : ScrollDeltaY -> msg -> Cmd msg
+scrollByY offsetY msg =
+    scrollByYWithConfig offsetY msg defaultConfig
+
+
+{-| Smoothly scroll vertically by pixel offset with custom configuration.
+
+    scrollByYWithConfig -50.0 NoOp <|
+        { defaultConfig | speed = 1000 }
+
+-}
+scrollByYWithConfig : ScrollDeltaY -> msg -> Config -> Cmd msg
+scrollByYWithConfig offsetY msg config =
+    ScrollTask.scrollByWithConfig 0.0 offsetY config
+        |> Task.attempt (always msg)
+
+
+{-| Jump instantly vertically by a pixel offset from current position using default configuration.
+
+    jumpByY -50 NoOp
+
+-}
+jumpByY : ScrollDeltaY -> msg -> Cmd msg
+jumpByY offsetY msg =
+    jumpByYWithConfig offsetY msg defaultConfig
+
+
+{-| Jump instantly vertically by pixel offset with custom configuration.
+
+    jumpByYWithConfig -50 NoOp defaultConfig
+
+-}
+jumpByYWithConfig : ScrollDeltaY -> msg -> Config -> Cmd msg
+jumpByYWithConfig offsetY msg config =
+    ScrollTask.jumpByWithConfig 0.0 offsetY config
+        |> Task.attempt (always msg)
+
+
 {-| Smoothly scroll by viewport size multiples from current position using default configuration.
 
     scrollByViewportSize 1 -0.5 NoOp -- 1 viewport right, half viewport up
@@ -1063,10 +1176,8 @@ scrollByViewportSize multiplierX multiplierY msg =
 
 {-| Smoothly scroll by viewport size multiples from current position with custom configuration.
 
-    scrollByViewportSizeWithConfig 1
-        -0.5
-        NoOp
-        { defaultConfig | timing = Duration 800 }
+    scrollByViewportSizeWithConfig 1.0 0.5 NoOp <|
+        { defaultConfig | speed = 1000 }
 
 -}
 scrollByViewportSizeWithConfig : ViewportMultiplierX -> ViewportMultiplierY -> msg -> Config -> Cmd msg
@@ -1099,6 +1210,93 @@ jumpByViewportSizeWithConfig multiplierX multiplierY msg config =
         |> Task.attempt (always msg)
 
 
+{-| Smoothly scroll horizontally by viewport width multiples from current position using default configuration.
+
+    scrollByViewportSizeX 1.0 NoOp -- scroll one viewport width to the right
+
+-}
+scrollByViewportSizeX : ViewportMultiplierX -> msg -> Cmd msg
+scrollByViewportSizeX multiplierX msg =
+    scrollByViewportSizeXWithConfig multiplierX msg defaultConfig
+
+
+{-| Smoothly scroll horizontally by viewport width multiples with custom configuration.
+
+    scrollByViewportSizeXWithConfig 1.0 NoOp <|
+        { defaultConfig | speed = 1000 }
+
+-}
+scrollByViewportSizeXWithConfig : ViewportMultiplierX -> msg -> Config -> Cmd msg
+scrollByViewportSizeXWithConfig multiplierX msg config =
+    ScrollTask.scrollByViewportSizeWithConfig multiplierX 0.0 config
+        |> Task.attempt (always msg)
+
+
+{-| Jump instantly horizontally by viewport width multiples from current position using default configuration.
+
+    jumpByViewportSizeX 1.0 NoOp
+
+-}
+jumpByViewportSizeX : ViewportMultiplierX -> msg -> Cmd msg
+jumpByViewportSizeX multiplierX msg =
+    jumpByViewportSizeXWithConfig multiplierX msg defaultConfig
+
+
+{-| Jump instantly horizontally by viewport width multiples with custom configuration.
+
+    jumpByViewportSizeXWithConfig 1.0 NoOp defaultConfig
+
+-}
+jumpByViewportSizeXWithConfig : ViewportMultiplierX -> msg -> Config -> Cmd msg
+jumpByViewportSizeXWithConfig multiplierX msg config =
+    ScrollTask.jumpByViewportSizeWithConfig multiplierX 0.0 config
+        |> Task.attempt (always msg)
+
+
+{-| Smoothly scroll vertically by viewport height multiples from current position using default configuration.
+
+    scrollByViewportSizeY 1.0 NoOp -- scroll one viewport height down
+
+-}
+scrollByViewportSizeY : ViewportMultiplierY -> msg -> Cmd msg
+scrollByViewportSizeY multiplierY msg =
+    scrollByViewportSizeYWithConfig multiplierY msg defaultConfig
+
+
+{-| Smoothly scroll vertically by viewport height multiples with custom configuration.
+
+    scrollByViewportSizeYWithConfig 1.0 NoOp <|
+        { defaultConfig | speed = 1000 }
+
+-}
+scrollByViewportSizeYWithConfig : ViewportMultiplierY -> msg -> Config -> Cmd msg
+scrollByViewportSizeYWithConfig multiplierY msg config =
+    ScrollTask.scrollByViewportSizeWithConfig 0.0 multiplierY config
+        |> Task.attempt (always msg)
+
+
+{-| Jump instantly vertically by viewport height multiples from current position using default configuration.
+
+    jumpByViewportSizeY 1.0 NoOp
+
+-}
+jumpByViewportSizeY : ViewportMultiplierY -> msg -> Cmd msg
+jumpByViewportSizeY multiplierY msg =
+    jumpByViewportSizeYWithConfig multiplierY msg defaultConfig
+
+
+{-| Jump instantly vertically by viewport height multiples with custom configuration.
+
+    jumpByViewportSizeYWithConfig 1.0 NoOp <|
+        { defaultConfig | speed = 1000 }
+
+-}
+jumpByViewportSizeYWithConfig : ViewportMultiplierY -> msg -> Config -> Cmd msg
+jumpByViewportSizeYWithConfig multiplierY msg config =
+    ScrollTask.jumpByViewportSizeWithConfig 0.0 multiplierY config
+        |> Task.attempt (always msg)
+
+
 
 -- COORDINATE TARGETING FUNCTIONS
 
@@ -1115,9 +1313,7 @@ scrollToCoordinates x y msg =
 
 {-| Smoothly scroll to specific pixel coordinates with custom configuration.
 
-    scrollToCoordinatesWithConfig 100
-        200
-        NoOp
+    scrollToCoordinatesWithConfig 100.0 200.0 NoOp <|
         { defaultConfig | timing = Duration 800 }
 
 -}

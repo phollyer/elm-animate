@@ -20,8 +20,12 @@ module Scroll.Document.Task exposing
     , scrollToPercentageY, scrollToPercentageYWithConfig, jumpToPercentageY, jumpToPercentageYWithConfig
     , ScrollDeltaX, ScrollDeltaY
     , scrollBy, scrollByWithConfig, jumpBy, jumpByWithConfig
+    , scrollByX, scrollByXWithConfig, jumpByX, jumpByXWithConfig
+    , scrollByY, scrollByYWithConfig, jumpByY, jumpByYWithConfig
     , ViewportMultiplierX, ViewportMultiplierY
     , scrollByViewportSize, scrollByViewportSizeWithConfig, jumpByViewportSize, jumpByViewportSizeWithConfig
+    , scrollByViewportSizeX, scrollByViewportSizeXWithConfig, jumpByViewportSizeX, jumpByViewportSizeXWithConfig
+    , scrollByViewportSizeY, scrollByViewportSizeYWithConfig, jumpByViewportSizeY, jumpByViewportSizeYWithConfig
     )
 
 {-| This module provides smooth scrolling operations for the main document body using Tasks.
@@ -182,20 +186,49 @@ _[↑ Percentage-Based Positioning](#percentage-based-positioning) | [↑ Advanc
 
 ## Relative Movement
 
-Scroll relative to the current position by pixel offsets or viewport multiples.
-
 
 ### Pixel Offsets
 
+Move relative to the current scroll position by specific pixel amounts.
+
 @docs ScrollDeltaX, ScrollDeltaY
+
+
+#### Both Axes
 
 @docs scrollBy, scrollByWithConfig, jumpBy, jumpByWithConfig
 
 
+#### X Axis Only
+
+@docs scrollByX, scrollByXWithConfig, jumpByX, jumpByXWithConfig
+
+
+#### Y Axis Only
+
+@docs scrollByY, scrollByYWithConfig, jumpByY, jumpByYWithConfig
+
+
 ### Viewport Multiples
 
+Move relative to the current scroll position by multiples of the viewport size.
+
 @docs ViewportMultiplierX, ViewportMultiplierY
+
+
+#### Both Axes
+
 @docs scrollByViewportSize, scrollByViewportSizeWithConfig, jumpByViewportSize, jumpByViewportSizeWithConfig
+
+
+#### X Axis Only
+
+@docs scrollByViewportSizeX, scrollByViewportSizeXWithConfig, jumpByViewportSizeX, jumpByViewportSizeXWithConfig
+
+
+#### Y Axis Only
+
+@docs scrollByViewportSizeY, scrollByViewportSizeYWithConfig, jumpByViewportSizeY, jumpByViewportSizeYWithConfig
 
 _[↑ Relative Movement](#relative-movement) | [↑ Advanced Positioning Functions](#advanced-positioning-functions) | [↑ Documentation Index](#documentation-index)_
 
@@ -1454,6 +1487,9 @@ jumpToPercentageYWithConfig percentage config =
 
 
 {-| Smooth scroll by pixel offsets from current position.
+
+    scrollBy 100.0 -50.0
+
 -}
 scrollBy : ScrollDeltaX -> ScrollDeltaY -> Task Dom.Error (List ())
 scrollBy offsetX offsetY =
@@ -1461,6 +1497,10 @@ scrollBy offsetX offsetY =
 
 
 {-| Smooth scroll by pixel offsets from current position with custom configuration.
+
+    scrollByWithConfig 100.0 -50.0 <|
+        { defaultConfig | speed = 1000 }
+
 -}
 scrollByWithConfig : ScrollDeltaX -> ScrollDeltaY -> Config -> Task Dom.Error (List ())
 scrollByWithConfig offsetX offsetY config =
@@ -1525,6 +1565,9 @@ scrollByWithConfig offsetX offsetY config =
 
 
 {-| Jump instantly by pixel offsets from current position.
+
+    jumpBy 100.0 -50.0
+
 -}
 jumpBy : ScrollDeltaX -> ScrollDeltaY -> Task Dom.Error ()
 jumpBy offsetX offsetY =
@@ -1532,6 +1575,9 @@ jumpBy offsetX offsetY =
 
 
 {-| Jump instantly by pixel offsets from current position with custom configuration.
+
+    jumpByWithConfig 100.0 -50.0 defaultConfig
+
 -}
 jumpByWithConfig : ScrollDeltaX -> ScrollDeltaY -> Config -> Task Dom.Error ()
 jumpByWithConfig offsetX offsetY config =
@@ -1559,7 +1605,92 @@ jumpByWithConfig offsetX offsetY config =
             )
 
 
+{-| Smooth scroll horizontally by a pixel offset from current position.
+
+    scrollByX 100.0
+
+-}
+scrollByX : ScrollDeltaX -> Task Dom.Error (List ())
+scrollByX offsetX =
+    scrollByXWithConfig offsetX defaultConfig
+
+
+{-| Smooth scroll horizontally by pixel offset with custom configuration.
+
+    scrollByXWithConfig 100.0 <|
+        { defaultConfig | speed = 1000 }
+
+-}
+scrollByXWithConfig : ScrollDeltaX -> Config -> Task Dom.Error (List ())
+scrollByXWithConfig offsetX config =
+    scrollByWithConfig offsetX 0.0 config
+
+
+{-| Jump instantly horizontally by a pixel offset from current position.
+
+    jumpByX 100.0
+
+-}
+jumpByX : ScrollDeltaX -> Task Dom.Error ()
+jumpByX offsetX =
+    jumpByXWithConfig offsetX defaultConfig
+
+
+{-| Jump instantly horizontally by pixel offset with custom configuration.
+
+    jumpByXWithConfig 100.0 defaultConfig
+
+-}
+jumpByXWithConfig : ScrollDeltaX -> Config -> Task Dom.Error ()
+jumpByXWithConfig offsetX config =
+    jumpByWithConfig offsetX 0.0 config
+
+
+{-| Smooth scroll vertically by a pixel offset from current position.
+
+    scrollByY -50.0
+
+-}
+scrollByY : ScrollDeltaY -> Task Dom.Error (List ())
+scrollByY offsetY =
+    scrollByYWithConfig offsetY defaultConfig
+
+
+{-| Smooth scroll vertically by pixel offset with custom configuration.
+
+    scrollByYWithConfig -50.0 <|
+        { defaultConfig | speed = 1000 }
+
+-}
+scrollByYWithConfig : ScrollDeltaY -> Config -> Task Dom.Error (List ())
+scrollByYWithConfig offsetY config =
+    scrollByWithConfig 0.0 offsetY config
+
+
+{-| Jump instantly vertically by a pixel offset from current position.
+
+    jumpByY -50.0
+
+-}
+jumpByY : ScrollDeltaY -> Task Dom.Error ()
+jumpByY offsetY =
+    jumpByYWithConfig offsetY defaultConfig
+
+
+{-| Jump instantly vertically by pixel offset with custom configuration.
+
+    jumpByYWithConfig -50.0 defaultConfig
+
+-}
+jumpByYWithConfig : ScrollDeltaY -> Config -> Task Dom.Error ()
+jumpByYWithConfig offsetY config =
+    jumpByWithConfig 0.0 offsetY config
+
+
 {-| Smooth scroll by viewport size multiples from current position.
+
+    scrollByViewportSize 1.0 0.5
+
 -}
 scrollByViewportSize : ViewportMultiplierX -> ViewportMultiplierY -> Task Dom.Error (List ())
 scrollByViewportSize multiplierX multiplierY =
@@ -1567,6 +1698,10 @@ scrollByViewportSize multiplierX multiplierY =
 
 
 {-| Smooth scroll by viewport size multiples from current position with custom configuration.
+
+    scrollByViewportSizeWithConfig 1.0 0.5 <|
+        { defaultConfig | speed = 1000 }
+
 -}
 scrollByViewportSizeWithConfig : ViewportMultiplierX -> ViewportMultiplierY -> Config -> Task Dom.Error (List ())
 scrollByViewportSizeWithConfig multiplierX multiplierY config =
@@ -1585,6 +1720,9 @@ scrollByViewportSizeWithConfig multiplierX multiplierY config =
 
 
 {-| Jump instantly by viewport size multiples from current position.
+
+    jumpByViewportSize 1.0 0.5
+
 -}
 jumpByViewportSize : ViewportMultiplierX -> ViewportMultiplierY -> Task Dom.Error ()
 jumpByViewportSize multiplierX multiplierY =
@@ -1592,6 +1730,9 @@ jumpByViewportSize multiplierX multiplierY =
 
 
 {-| Jump instantly by viewport size multiples from current position with custom configuration.
+
+    jumpByViewportSizeWithConfig 1.0 0.5 defaultConfig
+
 -}
 jumpByViewportSizeWithConfig : ViewportMultiplierX -> ViewportMultiplierY -> Config -> Task Dom.Error ()
 jumpByViewportSizeWithConfig multiplierX multiplierY config =
@@ -1607,6 +1748,88 @@ jumpByViewportSizeWithConfig multiplierX multiplierY config =
                 in
                 jumpByWithConfig offsetX offsetY config
             )
+
+
+{-| Smooth scroll horizontally by viewport width multiples from current position.
+
+    scrollByViewportSizeX 1.0
+
+-}
+scrollByViewportSizeX : ViewportMultiplierX -> Task Dom.Error (List ())
+scrollByViewportSizeX multiplierX =
+    scrollByViewportSizeXWithConfig multiplierX defaultConfig
+
+
+{-| Smooth scroll horizontally by viewport width multiples with custom configuration.
+
+    scrollByViewportSizeXWithConfig 1.0 <|
+        { defaultConfig | speed = 1000 }
+
+-}
+scrollByViewportSizeXWithConfig : ViewportMultiplierX -> Config -> Task Dom.Error (List ())
+scrollByViewportSizeXWithConfig multiplierX config =
+    scrollByViewportSizeWithConfig multiplierX 0.0 config
+
+
+{-| Jump instantly horizontally by viewport width multiples from current position.
+
+    jumpByViewportSizeX 1.0
+
+-}
+jumpByViewportSizeX : ViewportMultiplierX -> Task Dom.Error ()
+jumpByViewportSizeX multiplierX =
+    jumpByViewportSizeXWithConfig multiplierX defaultConfig
+
+
+{-| Jump instantly horizontally by viewport width multiples with custom configuration.
+
+    jumpByViewportSizeXWithConfig 1.0 defaultConfig
+
+-}
+jumpByViewportSizeXWithConfig : ViewportMultiplierX -> Config -> Task Dom.Error ()
+jumpByViewportSizeXWithConfig multiplierX config =
+    jumpByViewportSizeWithConfig multiplierX 0.0 config
+
+
+{-| Smooth scroll vertically by viewport height multiples from current position.
+
+    scrollByViewportSizeY 1.0
+
+-}
+scrollByViewportSizeY : ViewportMultiplierY -> Task Dom.Error (List ())
+scrollByViewportSizeY multiplierY =
+    scrollByViewportSizeYWithConfig multiplierY defaultConfig
+
+
+{-| Smooth scroll vertically by viewport height multiples with custom configuration.
+
+    scrollByViewportSizeYWithConfig 1.0 <|
+        { defaultConfig | speed = 1000 }
+
+-}
+scrollByViewportSizeYWithConfig : ViewportMultiplierY -> Config -> Task Dom.Error (List ())
+scrollByViewportSizeYWithConfig multiplierY config =
+    scrollByViewportSizeWithConfig 0.0 multiplierY config
+
+
+{-| Jump instantly vertically by viewport height multiples from current position.
+
+    jumpByViewportSizeY 1.0
+
+-}
+jumpByViewportSizeY : ViewportMultiplierY -> Task Dom.Error ()
+jumpByViewportSizeY multiplierY =
+    jumpByViewportSizeYWithConfig multiplierY defaultConfig
+
+
+{-| Jump instantly vertically by viewport height multiples with custom configuration.
+
+    jumpByViewportSizeYWithConfig 1.0 defaultConfig
+
+-}
+jumpByViewportSizeYWithConfig : ViewportMultiplierY -> Config -> Task Dom.Error ()
+jumpByViewportSizeYWithConfig multiplierY config =
+    jumpByViewportSizeWithConfig 0.0 multiplierY config
 
 
 {-| Smooth scroll to specific pixel coordinates.
