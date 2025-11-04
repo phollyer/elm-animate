@@ -45,7 +45,6 @@ main =
 
 type alias Model =
     { animations : Anim.CSS.Model
-    , activeAnimation : String
     }
 
 
@@ -68,61 +67,75 @@ update msg model =
         StartComplexAnimation elementId ->
             -- Combine position + scale + rotation
             let
-                updatedModel1 = { model | animations = animatePosition elementId (Position 200 150) model.animations }
-                updatedModel2 = { updatedModel1 | animations = animateScale elementId { x = 1.5, y = 1.5 } updatedModel1.animations }
-                updatedModel3 = { updatedModel2 | animations = animateRotation elementId 45 updatedModel2.animations }
+                animations = 
+                    model.animations
+                        |> animatePosition elementId (Position 200 100)
+                        |> animateScale elementId { x = 1.5, y = 1.9 }
+                        |> animateRotation elementId 90
             in
-            ( { updatedModel3 | activeAnimation = elementId }, Cmd.none )
+            ( { model | animations = animations }, Cmd.none )
 
         StartFadeMove elementId ->
             -- Combine opacity + position
             let
-                updatedModel1 = { model | animations = animateOpacity elementId 0.3 model.animations }
-                updatedModel2 = { updatedModel1 | animations = animatePosition elementId (Position 300 100) updatedModel1.animations }
+                animations = 
+                    model.animations
+                        |> animateOpacity elementId 0.3
+                        |> animatePosition elementId (Position 250 80)
             in
-            ( { updatedModel2 | activeAnimation = elementId }, Cmd.none )
+            ( { model | animations = animations }, Cmd.none )
 
         StartSpinScale elementId ->
             -- Combine rotation + scale + color
             let
-                updatedModel1 = { model | animations = animateRotation elementId 180 model.animations }
-                updatedModel2 = { updatedModel1 | animations = animateScale elementId { x = 0.8, y = 0.8 } updatedModel1.animations }
-                updatedModel3 = { updatedModel2 | animations = animateBackgroundColor elementId (Hex "#e74c3c") updatedModel2.animations }
+                animations = 
+                    model.animations
+                        |> animateRotation elementId 180
+                        |> animateScale elementId { x = 0.8, y = 0.8 }
+                        |> animateBackgroundColor elementId (Hex "#e74c3c")
+                    
             in
-            ( { updatedModel3 | activeAnimation = elementId }, Cmd.none )
+            ( { model | animations = animations }, Cmd.none )
 
         StartColorMorph elementId ->
             -- Combine color + scale + opacity
             let
-                updatedModel1 = { model | animations = animateBackgroundColor elementId (Hsl { h = 142, s = 71, l = 45 }) model.animations }
-                updatedModel2 = { updatedModel1 | animations = animateScale elementId { x = 2.0, y = 0.5 } updatedModel1.animations }
-                updatedModel3 = { updatedModel2 | animations = animateOpacity elementId 0.8 updatedModel2.animations }
+                animations =
+                    model.animations
+                        |> animateBackgroundColor elementId (Hsl { h = 142, s = 71, l = 45 })
+                        |> animateScale elementId { x = 2.0, y = 0.5 }
+                        |> animateOpacity elementId 0.8
             in
-            ( { updatedModel3 | activeAnimation = elementId }, Cmd.none )
+            ( { model | animations = animations }, Cmd.none )
 
         StartFullTransform elementId ->
             -- All properties at once!
             let
-                updatedModel1 = { model | animations = animatePosition elementId (Position 250 200) model.animations }
-                updatedModel2 = { updatedModel1 | animations = animateScale elementId { x = 1.2, y = 1.2 } updatedModel1.animations }
-                updatedModel3 = { updatedModel2 | animations = animateRotation elementId 90 updatedModel2.animations }
-                updatedModel4 = { updatedModel3 | animations = animateOpacity elementId 0.7 updatedModel3.animations }
-                updatedModel5 = { updatedModel4 | animations = animateBackgroundColor elementId (Hex "#9b59b6") updatedModel4.animations }
+                animations = 
+                    model.animations 
+                        |> animatePosition elementId (Position 200 200)
+                        |> animateScale elementId { x = 1.3, y = 1.3 }
+                        |> animateRotation elementId 270
+                        |> animateOpacity elementId 0.7
+                        |> animateBackgroundColor elementId (Hex "#9b59b6")
+                    
             in
-            ( { updatedModel5 | activeAnimation = elementId }, Cmd.none )
+            ( { model | animations = animations }, Cmd.none )
 
         ResetAll ->
             let
-                resetModel1 = { model | animations = animatePosition "mixed-box" (Position 0 0) model.animations }
-                resetModel2 = { resetModel1 | animations = animateScale "mixed-box" { x = 1.0, y = 1.0 } resetModel1.animations }
-                resetModel3 = { resetModel2 | animations = animateRotation "mixed-box" 0 resetModel2.animations }
-                updatedModel4 = { resetModel3 | animations = animateOpacity "mixed-box" 1.0 resetModel3.animations }
-                resetModel5 = { updatedModel4 | animations = animateBackgroundColor "mixed-box" (Hex "#3498db") updatedModel4.animations }
+                animations =
+                    model.animations
+                        |> animatePosition "mixed-box" (Position 0 0)
+                        |> animateScale "mixed-box" { x = 1.0, y = 1.0 }
+                        |> animateRotation "mixed-box" 0
+                        |> animateOpacity "mixed-box" 1.0
+                        |> animateBackgroundColor "mixed-box" (Hex "#3498db")
             in
-            ( { resetModel5 | activeAnimation = "reset" }, Cmd.none )
+            ( { model | animations = animations }, Cmd.none )
 
         AnimationComplete ->
-            ( { model | activeAnimation = "" }, Cmd.none )
+            ( model, Cmd.none )
 
 
 -- INIT
@@ -130,8 +143,11 @@ update msg model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Anim.CSS.init
-      , activeAnimation = ""
+    let
+        -- Set initial position for the mixed-box element at origin
+        initialAnimations = animatePosition "mixed-box" (Position 0 0) Anim.CSS.init
+    in
+    ( { animations = initialAnimations
       }
     , Cmd.none
     )
@@ -150,97 +166,34 @@ subscriptions _ =
 
 view : Model -> Document Msg
 view model =
-    { title = "ElmUI - Anim.CSS Mixed Properties Example"
-    , body = 
-        [ Element.layout
-            [ padding 20
-            , Background.color Colors.backgroundLight
-            , Font.family [ Font.typeface "Inter", Font.sansSerif ]
-            ]
-            (viewContent model)
-        ]
-    }
+    UI.createDocument
+        "Anim.CSS Mixed Properties ElmUI Example"
+        UI.Basic
+        (viewContent model)
 
 
-viewContent : Model -> Element Msg
+viewContent : Model -> List (Element Msg)
 viewContent model =
-    column
-        [ spacing 30
-        , width fill
+    [ UI.backButton
+    , UI.pageHeader "CSS Mixed Property Animations"
+    , -- Description
+      el
+        [ Font.size 16
+        , Font.color Colors.textMedium
         , centerX
-        , width (fill |> maximum 900)
         ]
-        [ -- Back Button
-          UI.backButton
-        
-        -- Header
-        , UI.pageHeader "CSS Mixed Property Animations"
-        
-        -- Animation controls in wrapped rows
-        , column [ spacing 15, width fill ]
-            [ paragraph [ Font.size 16, Font.color Colors.textMedium, centerX ] 
-                [ text "Complex animations combining position, scale, rotation, opacity, and color simultaneously" ]
-            
-            -- Transform combo
-            , el [ centerX ] <|
-                UI.htmlActionButtons
-                    [ ( UI.Primary, StartComplexAnimation "mixed-box", "Position + Scale + Rotation" )
-                    ]
-            
-            -- Visibility effects
-            , el [ centerX ] <|
-                UI.htmlActionButtons
-                    [ ( UI.Success, StartFadeMove "mixed-box", "Fade + Move" )
-                    ]
-            
-            -- Dynamic style
-            , el [ centerX ] <|
-                UI.htmlActionButtons
-                    [ ( UI.Warning, StartSpinScale "mixed-box", "Spin + Scale + Color" )
-                    ]
-            
-            -- Color morphing
-            , el [ centerX ] <|
-                UI.htmlActionButtons
-                    [ ( UI.Purple, StartColorMorph "mixed-box", "Color + Shape + Opacity" )
-                    ]
-            
-            -- Ultimate transform
-            , el [ centerX ] <|
-                UI.htmlActionButtons
-                    [ ( UI.Primary, StartFullTransform "mixed-box", "ALL Properties!" )
-                    ]
-            
-            -- Reset
-            , el [ centerX ] <|
-                UI.htmlActionButtons
-                    [ ( UI.Success, ResetAll, "Reset to Default" )
-                    ]
-            ]
-        
-        -- Status indicator
-        , if model.activeAnimation /= "" then
-            el 
-                [ centerX
-                , Font.color Colors.primary
-                , Font.bold
-                , Font.size 16
-                ]
-                (text ("Active: " ++ 
-                    case model.activeAnimation of
-                        "reset" -> "Resetting..."
-                        _ -> "Animating " ++ model.activeAnimation
-                ))
-          else
-            el 
-                [ centerX
-                , Font.color Colors.textMedium
-                , Font.size 16
-                ]
-                (text "Ready for animation")
-        
-        -- Animation area
-        , el
+        (text "Combining multiple CSS properties in single animations for complex transformations")
+    , -- Mixed property animation controls
+      UI.htmlActionButtons
+        [ ( UI.Primary, StartComplexAnimation "mixed-box", "Move + Scale + Rotate" )
+        , ( UI.Success, StartFadeMove "mixed-box", "Fade + Move" )
+        , ( UI.Warning, StartSpinScale "mixed-box", "Spin + Scale + Color" )
+        , ( UI.Purple, StartColorMorph "mixed-box", "Color + Shape + Opacity" )
+        , ( UI.Primary, StartFullTransform "mixed-box", "ALL Properties!" )
+        , ( UI.Success, ResetAll, "Reset" )
+        ]
+    , -- Animation area
+      el
             [ width (fill |> maximum 600)
             , height (px 400)
             , Background.color Colors.backgroundWhite
@@ -267,8 +220,6 @@ mixedAnimationBox model =
         , Border.rounded 12
         , htmlAttribute (Html.Attributes.id "mixed-box")
         , htmlAttribute (Html.Attributes.style "position" "absolute")
-        , htmlAttribute (Html.Attributes.style "left" "50px")
-        , htmlAttribute (Html.Attributes.style "top" "50px")
         , htmlAttribute (Html.Attributes.style "background-color" "#3498db") -- Default blue
         , htmlAttribute (Html.Attributes.style "transform-origin" "center")
         , htmlAttribute (Html.Attributes.style "display" "flex")

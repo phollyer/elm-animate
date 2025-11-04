@@ -45,6 +45,7 @@ main =
 
 type alias Model =
     { animations : Anim.CSS.Model
+    , isVisible : Bool
     }
 
 
@@ -54,15 +55,16 @@ type alias Model =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations = Anim.CSS.init
+      , isVisible = True
       }
     , Cmd.none
     )
 
 
 type Msg
-    = FadeIn String
-    | FadeOut String
-    | FadeToggle String
+    = FadeIn
+    | FadeOut
+    | FadeToggle
     | AnimationComplete
 
 
@@ -72,24 +74,31 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        FadeIn elementId ->
+        FadeIn ->
             ( { model 
-                | animations = animateOpacity elementId 1.0 model.animations
+                | animations = animateOpacity "box" 1.0 model.animations
+                , isVisible = True
               }
             , Cmd.none
             )
 
-        FadeOut elementId ->
+        FadeOut ->
             ( { model 
-                | animations = animateOpacity elementId 0.0 model.animations
+                | animations = animateOpacity "box" 0.0 model.animations
+                , isVisible = False
               }
             , Cmd.none
             )
 
-        FadeToggle elementId ->
-            -- Simple toggle between visible and semi-transparent
+        FadeToggle ->
+            -- Toggle between fully visible (1.0) and fully invisible (0.0)
+            let
+                newOpacity = if model.isVisible then 0.0 else 1.0
+                newVisible = not model.isVisible
+            in
             ( { model 
-                | animations = animateOpacity elementId 0.5 model.animations
+                | animations = animateOpacity "box" newOpacity model.animations
+                , isVisible = newVisible
               }
             , Cmd.none
             )
@@ -111,61 +120,31 @@ subscriptions _ =
 
 view : Model -> Document Msg
 view model =
-    { title = "ElmUI - Anim.CSS Opacity Example"
-    , body = 
-        [ Element.layout
-            [ padding 20
-            , Background.color Colors.backgroundLight
-            , Font.family [ Font.typeface "Inter", Font.sansSerif ]
-            ]
-            (viewContent model)
-        ]
-    }
+    UI.createDocument
+        "Anim.CSS Opacity ElmUI Example"
+        UI.Basic
+        (viewContent model)
 
 
-viewContent : Model -> Element Msg
+viewContent : Model -> List (Element Msg)
 viewContent model =
-    column
-        [ spacing 30
-        , width fill
+    [ UI.backButton
+    , UI.pageHeader "CSS Opacity Animations"
+    , -- Description
+      el
+        [ Font.size 16
+        , Font.color Colors.textMedium
         , centerX
-        , width (fill |> maximum 800)
         ]
-        [ -- Back Button
-          UI.backButton
-        
-        -- Header
-        , UI.pageHeader "CSS Opacity Animations"
-        
-        -- Controls in wrapped rows
-        , column [ spacing 15, width fill ]
-            [ paragraph [ Font.size 16, Font.color Colors.textMedium, centerX ] 
-                [ text "Smooth fade-in and fade-out effects using browser-native CSS transitions" ]
-            
-            , el [ centerX ] <|
-                UI.htmlActionButtons
-                    [ ( UI.Success, FadeIn "box1", "Fade In Box 1" )
-                    , ( UI.Warning, FadeOut "box1", "Fade Out Box 1" )
-                    , ( UI.Primary, FadeToggle "box1", "Toggle Box 1" )
-                    ]
-            
-            , el [ centerX ] <|
-                UI.htmlActionButtons
-                    [ ( UI.Success, FadeIn "box2", "Fade In Box 2" )
-                    , ( UI.Warning, FadeOut "box2", "Fade Out Box 2" )
-                    , ( UI.Primary, FadeToggle "box2", "Toggle Box 2" )
-                    ]
-                
-            , el [ centerX ] <|
-                UI.htmlActionButtons
-                    [ ( UI.Success, FadeIn "box3", "Fade In Box 3" )
-                    , ( UI.Warning, FadeOut "box3", "Fade Out Box 3" )
-                    , ( UI.Primary, FadeToggle "box3", "Toggle Box 3" )
-                    ]
-            ]
-        
-        -- Animation area with boxes
-        , el
+        (text "Smooth fade-in and fade-out effects using browser-native CSS transitions")
+    , -- Opacity controls
+      UI.htmlActionButtons
+        [ ( UI.Success, FadeIn, "Fade In" )
+        , ( UI.Warning, FadeOut, "Fade Out" )
+        , ( UI.Primary, FadeToggle, "Toggle Visibility" )
+        ]
+    , -- Animation area with boxes
+      el
             [ width (fill |> maximum 600)
             , height (px 300)
             , Background.color Colors.backgroundWhite
@@ -180,34 +159,29 @@ viewContent model =
             , htmlAttribute (Html.Attributes.style "position" "relative")
             , htmlAttribute (Html.Attributes.style "overflow" "hidden")
             ]
-            (column
-                [ spacing 20
-                , padding 40
-                , width fill
-                , height fill
+            (el
+                [ centerX
+                , Element.centerY
+                , width (px 200)
+                , height (px 200)
                 ]
-                [ -- Box 1 - Fast fade
-                  animatedBox "box1" "Fast Fade (0.3s)" Colors.primary model
-                
-                -- Box 2 - Medium fade  
-                , animatedBox "box2" "Medium Fade (0.6s)" Colors.success model
-                
-                -- Box 3 - Slow fade
-                , animatedBox "box3" "Slow Fade (1.2s)" Colors.warning model
-                ]
+                (animatedBox "box" "Opacity Demo" Colors.primary model)
             )
-        ]
+    ]
 
 
 animatedBox : String -> String -> Element.Color -> Model -> Element Msg
 animatedBox elementId label color model =
     el
-        ([ width fill
-        , height (px 60)
+        ([ width (px 150)
+        , height (px 150)
         , Background.color color
-        , Border.rounded 8
-        , paddingXY 20 0
+        , Border.rounded 12
+        , centerX
         , htmlAttribute (Html.Attributes.id elementId)
+        , htmlAttribute (Html.Attributes.style "display" "flex")
+        , htmlAttribute (Html.Attributes.style "align-items" "center")
+        , htmlAttribute (Html.Attributes.style "justify-content" "center")
         ] 
         ++ (styleProperties elementId model.animations
             |> List.map (\(prop, value) -> htmlAttribute (Html.Attributes.style prop value)))
@@ -220,6 +194,7 @@ animatedBox elementId label color model =
             , Element.centerY
             , Font.color Colors.backgroundWhite
             , Font.bold
+            , Font.size 16
             ] 
             (text label)
         )

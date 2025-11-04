@@ -5535,7 +5535,7 @@ var $author$project$ElmUI$CSS$Position$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animations: A3($author$project$Anim$CSS$animateToX, 'box', 50, model.animations),
+							animations: A3($author$project$Anim$CSS$animateToX, 'box', 0, model.animations),
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -5553,7 +5553,7 @@ var $author$project$ElmUI$CSS$Position$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animations: A3($author$project$Anim$CSS$animateToY, 'box', 50, model.animations),
+							animations: A3($author$project$Anim$CSS$animateToY, 'box', 0, model.animations),
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);

@@ -93,7 +93,12 @@ animate elementId target (Model animations) =
             Dict.get elementId animations |> Maybe.withDefault []
 
         newTargets =
-            target :: List.filter (\t -> getTargetType t /= getTargetType target) currentTargets
+            -- For transform targets, filter by specific target type, not general type
+            if isTransformTarget target then
+                target :: List.filter (\t -> getSpecificTargetType t /= getSpecificTargetType target) currentTargets
+
+            else
+                target :: List.filter (\t -> getTargetType t /= getTargetType target) currentTargets
     in
     Model (Dict.insert elementId newTargets animations)
 
@@ -269,12 +274,64 @@ isTransformTarget target =
 
 
 {-| Combine multiple transform targets into single transform value.
+Ensures transforms are applied in the correct order: translate, scale, rotate.
 -}
 combineTransforms : List AnimationTarget -> String
 combineTransforms targets =
-    targets
-        |> List.map transformToString
-        |> String.join " "
+    let
+        -- Separate transforms by type for proper ordering
+        positions =
+            targets |> List.filterMap extractTranslate
+
+        scales =
+            targets |> List.filterMap extractScale
+
+        rotations =
+            targets |> List.filterMap extractRotation
+
+        -- Combine in correct order: translate, scale, rotate
+        orderedTransforms =
+            (positions |> List.map transformToString)
+                ++ (scales |> List.map transformToString)
+                ++ (rotations |> List.map transformToString)
+    in
+    String.join " " orderedTransforms
+
+
+{-| Extract translate transform from AnimationTarget if it's a ToPosition target.
+-}
+extractTranslate : AnimationTarget -> Maybe AnimationTarget
+extractTranslate target =
+    case target of
+        ToPosition _ ->
+            Just target
+
+        _ ->
+            Nothing
+
+
+{-| Extract scale transform from AnimationTarget if it's a ToScale target.
+-}
+extractScale : AnimationTarget -> Maybe AnimationTarget
+extractScale target =
+    case target of
+        ToScale _ ->
+            Just target
+
+        _ ->
+            Nothing
+
+
+{-| Extract rotation transform from AnimationTarget if it's a ToRotation target.
+-}
+extractRotation : AnimationTarget -> Maybe AnimationTarget
+extractRotation target =
+    case target of
+        ToRotation _ ->
+            Just target
+
+        _ ->
+            Nothing
 
 
 {-| Convert transform target to CSS transform function.
@@ -322,7 +379,43 @@ getTargetType target =
             "border-color"
 
         ToDimensions _ ->
-            "width"
+            "dimensions"
+
+        ToBorderRadius _ ->
+            "border-radius"
+
+        ToFilter _ ->
+            "filter"
+
+
+{-| Get the specific type identifier for an AnimationTarget (distinguishes between transform subtypes).
+-}
+getSpecificTargetType : AnimationTarget -> String
+getSpecificTargetType target =
+    case target of
+        ToPosition _ ->
+            "position"
+
+        ToScale _ ->
+            "scale"
+
+        ToRotation _ ->
+            "rotation"
+
+        ToOpacity _ ->
+            "opacity"
+
+        ToBackgroundColor _ ->
+            "background-color"
+
+        ToTextColor _ ->
+            "color"
+
+        ToBorderColor _ ->
+            "border-color"
+
+        ToDimensions _ ->
+            "dimensions"
 
         ToBorderRadius _ ->
             "border-radius"

@@ -60,9 +60,11 @@ init _ =
 
 
 type Msg
-    = ScaleTo String ScaleValue
-    | ScaleReset String
-    | PulseAnimation String
+    = ScaleUp
+    | ScaleDown
+    | ScaleReset
+    | ScaleWide
+    | ScaleTall
     | AnimationComplete
 
 
@@ -72,23 +74,37 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ScaleTo elementId scale ->
+        ScaleUp ->
             ( { model 
-                | animations = animateScale elementId scale model.animations
+                | animations = animateScale "box" { x = 1.5, y = 1.5 } model.animations
               }
             , Cmd.none
             )
 
-        ScaleReset elementId ->
+        ScaleDown ->
             ( { model 
-                | animations = animateScale elementId { x = 1.0, y = 1.0 } model.animations
+                | animations = animateScale "box" { x = 0.7, y = 0.7 } model.animations
               }
             , Cmd.none
             )
 
-        PulseAnimation elementId ->
+        ScaleReset ->
             ( { model 
-                | animations = animateScale elementId { x = 1.2, y = 1.2 } model.animations
+                | animations = animateScale "box" { x = 1.0, y = 1.0 } model.animations
+              }
+            , Cmd.none
+            )
+
+        ScaleWide ->
+            ( { model 
+                | animations = animateScale "box" { x = 1.8, y = 0.6 } model.animations
+              }
+            , Cmd.none
+            )
+
+        ScaleTall ->
+            ( { model 
+                | animations = animateScale "box" { x = 0.6, y = 1.8 } model.animations
               }
             , Cmd.none
             )
@@ -110,79 +126,33 @@ subscriptions _ =
 
 view : Model -> Document Msg
 view model =
-    { title = "ElmUI - Anim.CSS Scale Example"
-    , body = 
-        [ Element.layout
-            [ padding 20
-            , Background.color Colors.backgroundLight
-            , Font.family [ Font.typeface "Inter", Font.sansSerif ]
-            ]
-            (viewContent model)
-        ]
-    }
+    UI.createDocument
+        "Anim.CSS Scale ElmUI Example"
+        UI.Basic
+        (viewContent model)
 
 
-viewContent : Model -> Element Msg
+viewContent : Model -> List (Element Msg)
 viewContent model =
-    column
-        [ spacing 30
-        , width fill
+    [ UI.backButton
+    , UI.pageHeader "CSS Scale Animations"
+    , -- Description
+      el
+        [ Font.size 16
+        , Font.color Colors.textMedium
         , centerX
-        , width (fill |> maximum 800)
         ]
-        [ -- Back Button
-          UI.backButton
-        
-        -- Header
-        , UI.pageHeader "CSS Scale Animations"
-        
-        -- Controls in wrapped rows
-        , column [ spacing 15, width fill ]
-            [ paragraph [ Font.size 16, Font.color Colors.textMedium, centerX ] 
-                [ text "Smooth size transformations using browser-native CSS transitions" ]
-            
-            , el [ centerX ] <|
-                UI.htmlActionButtons
-                    [ ( UI.Primary, ScaleTo "box1" { x = 1.5, y = 1.5 }, "Scale Up" )
-                    , ( UI.Warning, ScaleTo "box1" { x = 0.7, y = 0.7 }, "Scale Down" )
-                    , ( UI.Purple, ScaleReset "box1", "Reset Scale" )
-                    ]
-            
-            , el [ centerX ] <|
-                UI.htmlActionButtons
-                    [ ( UI.Success, ScaleTo "box1" { x = 1.2, y = 1.2 }, "Scale 120%" )
-                    , ( UI.Primary, ScaleTo "box1" { x = 1.8, y = 1.8 }, "Scale 180%" )
-                    , ( UI.Purple, ScaleTo "box1" { x = 1.0, y = 1.0 }, "Reset to 100%" )
-                    ]
-                
-            , el [ centerX ] <|
-                UI.htmlActionButtons
-                    [ ( UI.Warning, ScaleTo "box1" { x = 1.5, y = 0.5 }, "Wide & Short" )
-                    , ( UI.Success, ScaleTo "box1" { x = 0.5, y = 1.5 }, "Tall & Narrow" )
-                    , ( UI.Primary, ScaleTo "box1" { x = 1.0, y = 1.0 }, "Normal" )
-                    ]
-            ]        -- Controls for Box 2 - Non-uniform scaling
-        , column [ spacing 15, width fill ]
-            [ el [ Font.size 18, Font.bold, Font.color Colors.textDark ] (text "Non-Uniform Scaling")
-            , UI.htmlActionButtons
-                [ ( UI.Primary, ScaleTo "box2" { x = 2.0, y = 0.5 }, "Wide & Thin" )
-                , ( UI.Success, ScaleTo "box2" { x = 0.5, y = 2.0 }, "Tall & Narrow" )
-                , ( UI.Warning, ScaleTo "box2" { x = 1.0, y = 1.0 }, "Reset" )
-                , ( UI.Purple, ScaleTo "box2" { x = 1.5, y = 1.5 }, "Proportional" )
-                ]
-            ]
-            
-        -- Controls for Box 3 - Pulse effects
-        , column [ spacing 15, width fill ]
-            [ el [ Font.size 18, Font.bold, Font.color Colors.textDark ] (text "Pulse Effects")
-            , UI.htmlActionButtons
-                [ ( UI.Success, PulseAnimation "box3", "Pulse" )
-                , ( UI.Primary, ScaleReset "box3", "Reset" )
-                ]
-            ]
-        
-        -- Animation area with boxes
-        , el
+        (text "Smooth size transformations using browser-native CSS transitions")
+    , -- Scale controls
+      UI.htmlActionButtons
+        [ ( UI.Primary, ScaleUp, "Scale Up" )
+        , ( UI.Warning, ScaleDown, "Scale Down" )
+        , ( UI.Success, ScaleWide, "Wide" )
+        , ( UI.Success, ScaleTall, "Tall" )
+        , ( UI.Purple, ScaleReset, "Reset" )
+        ]
+    , -- Animation area with box
+      el
             [ width (fill |> maximum 600)
             , height (px 400)
             , Background.color Colors.backgroundWhite
@@ -202,34 +172,30 @@ viewContent model =
             , htmlAttribute (Html.Attributes.style "justify-content" "space-around")
             , htmlAttribute (Html.Attributes.style "padding" "40px")
             ]
-            (column
-                [ spacing 40
-                , width fill
-                , height fill
+            (el
+                [ centerX
+                , Element.centerY
+                , width (px 200)
+                , height (px 200)
                 ]
-                [ -- Box 1 - Uniform scaling
-                  animatedBox "box1" "Uniform Scale" Colors.primary model
-                
-                -- Box 2 - Non-uniform scaling
-                , animatedBox "box2" "Non-Uniform Scale" Colors.success model
-                
-                -- Box 3 - Pulse effects
-                , animatedBox "box3" "Pulse Effects" Colors.warning model
-                ]
+                (animatedBox "box" "Scale Demo" Colors.primary model)
             )
-        ]
+    ]
 
 
 animatedBox : String -> String -> Element.Color -> Model -> Element Msg
 animatedBox elementId label color model =
     el
-        ([ width (px 120)
-        , height (px 80)
+        ([ width (px 150)
+        , height (px 150)
         , Background.color color
         , Border.rounded 12
         , centerX
         , htmlAttribute (Html.Attributes.id elementId)
         , htmlAttribute (Html.Attributes.style "transform-origin" "center")
+        , htmlAttribute (Html.Attributes.style "display" "flex")
+        , htmlAttribute (Html.Attributes.style "align-items" "center")
+        , htmlAttribute (Html.Attributes.style "justify-content" "center")
         ] 
         ++ (styleProperties elementId model.animations
             |> List.map (\(prop, value) -> htmlAttribute (Html.Attributes.style prop value)))
@@ -237,17 +203,12 @@ animatedBox elementId label color model =
                 (transitionStyles elementId model.animations))
         , htmlAttribute (onTransitionEnd AnimationComplete)
         ])
-        (column
+        (el 
             [ centerX
             , Element.centerY
-            , spacing 5
-            ]
-            [ el 
-                [ centerX
-                , Font.color Colors.backgroundWhite
-                , Font.bold
-                , Font.size 14
-                ] 
-                (text label)
-            ]
+            , Font.color Colors.backgroundWhite
+            , Font.bold
+            , Font.size 16
+            ] 
+            (text label)
         )

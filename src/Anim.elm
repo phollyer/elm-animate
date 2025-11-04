@@ -13,15 +13,13 @@ module Anim exposing
     , FilterValue(..)
     )
 
-{-| Shared types for smooth element movement and animation.
-
-This module provides the common types used by all `Move.*` modules for animating DOM elements.
+{-| Shared types for smooth element animations.
 
 For actual animation functionality, import one of:
 
-  - `Move.CSS` for CSS transition-based API
-  - `Move.Sub` for subscription-based API
-  - `Move.Ports` for Web Animations API via JavaScript
+  - [Anim.CSS](Anim.CSS) for CSS transition-based API
+  - [Anim.Sub](Anim.Sub) for subscription-based API
+  - [Anim.Ports](Anim.Ports) for Web Animations API via JavaScript
 
 
 # Configuration

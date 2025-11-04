@@ -107,7 +107,7 @@ update msg model =
 
         MoveLeft ->
             ( { model 
-                | animations = animateToX "box" 50 model.animations
+                | animations = animateToX "box" 0 model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -115,7 +115,7 @@ update msg model =
 
         MoveRight ->
             ( { model 
-                | animations = animateToX "box" 450 model.animations
+                | animations = animateToX "box" 450 model.animations  -- 500px container - 50px box = 450px for right edge
                 , isAnimating = True
               }
             , Cmd.none
@@ -123,7 +123,7 @@ update msg model =
 
         MoveUp ->
             ( { model 
-                | animations = animateToY "box" 50 model.animations
+                | animations = animateToY "box" 0 model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -131,7 +131,7 @@ update msg model =
 
         MoveDown ->
             ( { model 
-                | animations = animateToY "box" 350 model.animations
+                | animations = animateToY "box" 350 model.animations  -- 400px container - 50px box = 350px for bottom edge
                 , isAnimating = True
               }
             , Cmd.none
