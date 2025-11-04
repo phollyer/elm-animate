@@ -14,6 +14,8 @@ module Scroll.Container.Task exposing
     , scrollToCenterY, scrollToCenterYWithConfig, jumpToCenterY, jumpToCenterYWithConfig
     , XCoordinate, YCoordinate
     , scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
+    , scrollToCoordinateX, scrollToCoordinateXWithConfig, jumpToCoordinateX, jumpToCoordinateXWithConfig
+    , scrollToCoordinateY, scrollToCoordinateYWithConfig, jumpToCoordinateY, jumpToCoordinateYWithConfig
     , PercX, PercY
     , scrollToPercentage, scrollToPercentageWithConfig, jumpToPercentage, jumpToPercentageWithConfig
     , scrollToPercentageX, scrollToPercentageXWithConfig, jumpToPercentageX, jumpToPercentageXWithConfig
@@ -178,7 +180,20 @@ Scroll or jump to specific pixel coordinates within the container. Coordinates a
 
 @docs XCoordinate, YCoordinate
 
+
+### Both Axes
+
 @docs scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
+
+
+### X Axis Only
+
+@docs scrollToCoordinateX, scrollToCoordinateXWithConfig, jumpToCoordinateX, jumpToCoordinateXWithConfig
+
+
+### Y Axis Only
+
+@docs scrollToCoordinateY, scrollToCoordinateYWithConfig, jumpToCoordinateY, jumpToCoordinateYWithConfig
 
 _[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning Functions](#advanced-positioning-functions) | [↑ Documentation Index](#documentation-index)_
 
@@ -1636,4 +1651,110 @@ jumpToCoordinatesWithConfig containerId targetX targetY _ =
                         )
                 in
                 Dom.setViewportOf containerId clampedX clampedY
+            )
+
+
+
+-- X AXIS COORDINATE FUNCTIONS
+
+
+{-| Smoothly scroll to specific X coordinate, keeping current Y position.
+
+    scrollToCoordinateX "container-id" 500.0
+
+-}
+scrollToCoordinateX : ContainerId -> XCoordinate -> Task Dom.Error (List ())
+scrollToCoordinateX containerId x =
+    scrollToCoordinateXWithConfig containerId x defaultConfig
+
+
+{-| Smoothly scroll to specific X coordinate with custom configuration.
+
+    scrollToCoordinateXWithConfig "container-id" 500.0 <|
+        { defaultConfig | speed = 1000 }
+
+-}
+scrollToCoordinateXWithConfig : ContainerId -> XCoordinate -> Config -> Task Dom.Error (List ())
+scrollToCoordinateXWithConfig containerId x config =
+    Dom.getViewportOf containerId
+        |> Task.andThen
+            (\viewport ->
+                scrollToCoordinatesWithConfig containerId x viewport.viewport.y { config | axis = X }
+            )
+
+
+{-| Jump instantly to specific X coordinate, keeping current Y position.
+
+    jumpToCoordinateX "container-id" 500.0
+
+-}
+jumpToCoordinateX : ContainerId -> XCoordinate -> Task Dom.Error ()
+jumpToCoordinateX containerId x =
+    jumpToCoordinateXWithConfig containerId x defaultConfig
+
+
+{-| Jump instantly to specific X coordinate with custom configuration.
+
+    jumpToCoordinateXWithConfig "container-id" 500.0 defaultConfig
+
+-}
+jumpToCoordinateXWithConfig : ContainerId -> XCoordinate -> Config -> Task Dom.Error ()
+jumpToCoordinateXWithConfig containerId x config =
+    Dom.getViewportOf containerId
+        |> Task.andThen
+            (\viewport ->
+                jumpToCoordinatesWithConfig containerId x viewport.viewport.y config
+            )
+
+
+
+-- Y AXIS COORDINATE FUNCTIONS
+
+
+{-| Smoothly scroll to specific Y coordinate, keeping current X position.
+
+    scrollToCoordinateY "container-id" 1000.0
+
+-}
+scrollToCoordinateY : ContainerId -> YCoordinate -> Task Dom.Error (List ())
+scrollToCoordinateY containerId y =
+    scrollToCoordinateYWithConfig containerId y defaultConfig
+
+
+{-| Smoothly scroll to specific Y coordinate with custom configuration.
+
+    scrollToCoordinateYWithConfig "container-id" 1000.0 <|
+        { defaultConfig | speed = 1000 }
+
+-}
+scrollToCoordinateYWithConfig : ContainerId -> YCoordinate -> Config -> Task Dom.Error (List ())
+scrollToCoordinateYWithConfig containerId y config =
+    Dom.getViewportOf containerId
+        |> Task.andThen
+            (\viewport ->
+                scrollToCoordinatesWithConfig containerId viewport.viewport.x y { config | axis = Y }
+            )
+
+
+{-| Jump instantly to specific Y coordinate, keeping current X position.
+
+    jumpToCoordinateY "container-id" 1000.0
+
+-}
+jumpToCoordinateY : ContainerId -> YCoordinate -> Task Dom.Error ()
+jumpToCoordinateY containerId y =
+    jumpToCoordinateYWithConfig containerId y defaultConfig
+
+
+{-| Jump instantly to specific Y coordinate with custom configuration.
+
+    jumpToCoordinateYWithConfig "container-id" 1000.0 defaultConfig
+
+-}
+jumpToCoordinateYWithConfig : ContainerId -> YCoordinate -> Config -> Task Dom.Error ()
+jumpToCoordinateYWithConfig containerId y config =
+    Dom.getViewportOf containerId
+        |> Task.andThen
+            (\viewport ->
+                jumpToCoordinatesWithConfig containerId viewport.viewport.x y config
             )

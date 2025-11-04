@@ -14,6 +14,8 @@ module Scroll.Document.Cmd exposing
     , scrollToCenterY, scrollToCenterYWithConfig, jumpToCenterY, jumpToCenterYWithConfig
     , XCoordinate, YCoordinate
     , scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
+    , scrollToCoordinateX, scrollToCoordinateXWithConfig, jumpToCoordinateX, jumpToCoordinateXWithConfig
+    , scrollToCoordinateY, scrollToCoordinateYWithConfig, jumpToCoordinateY, jumpToCoordinateYWithConfig
     , PercX, PercY
     , scrollToPercentage, scrollToPercentageWithConfig, jumpToPercentage, jumpToPercentageWithConfig
     , scrollToPercentageX, scrollToPercentageXWithConfig, jumpToPercentageX, jumpToPercentageXWithConfig
@@ -178,7 +180,20 @@ Scroll to specific pixel coordinates within the document.
 
 @docs XCoordinate, YCoordinate
 
+
+### Both Axes
+
 @docs scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
+
+
+### X Axis Only
+
+@docs scrollToCoordinateX, scrollToCoordinateXWithConfig, jumpToCoordinateX, jumpToCoordinateXWithConfig
+
+
+### Y Axis Only
+
+@docs scrollToCoordinateY, scrollToCoordinateYWithConfig, jumpToCoordinateY, jumpToCoordinateYWithConfig
 
 _[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning Functions](#advanced-positioning-functions) | [↑ Documentation Index](#documentation-index)_
 
@@ -1366,4 +1381,100 @@ jumpToCoordinates x y msg =
 jumpToCoordinatesWithConfig : XCoordinate -> YCoordinate -> msg -> Config -> Cmd msg
 jumpToCoordinatesWithConfig x y msg config =
     ScrollTask.jumpToCoordinatesWithConfig x y config
+        |> Task.attempt (always msg)
+
+
+
+-- X AXIS COORDINATE FUNCTIONS
+
+
+{-| Smoothly scroll to specific X coordinate, keeping current Y position.
+
+    scrollToCoordinateX 500.0 NoOp
+
+-}
+scrollToCoordinateX : XCoordinate -> msg -> Cmd msg
+scrollToCoordinateX x msg =
+    scrollToCoordinateXWithConfig x msg defaultConfig
+
+
+{-| Smoothly scroll to specific X coordinate with custom configuration.
+
+    scrollToCoordinateXWithConfig 500.0 NoOp <|
+        { defaultConfig | speed = 1000 }
+
+-}
+scrollToCoordinateXWithConfig : XCoordinate -> msg -> Config -> Cmd msg
+scrollToCoordinateXWithConfig x msg config =
+    ScrollTask.scrollToCoordinateXWithConfig x config
+        |> Task.attempt (always msg)
+
+
+{-| Jump instantly to specific X coordinate, keeping current Y position.
+
+    jumpToCoordinateX 500.0 NoOp
+
+-}
+jumpToCoordinateX : XCoordinate -> msg -> Cmd msg
+jumpToCoordinateX x msg =
+    jumpToCoordinateXWithConfig x msg defaultConfig
+
+
+{-| Jump instantly to specific X coordinate with custom configuration.
+
+    jumpToCoordinateXWithConfig 500.0 NoOp <|
+        { defaultConfig | speed = 1000 }
+
+-}
+jumpToCoordinateXWithConfig : XCoordinate -> msg -> Config -> Cmd msg
+jumpToCoordinateXWithConfig x msg config =
+    ScrollTask.jumpToCoordinateXWithConfig x config
+        |> Task.attempt (always msg)
+
+
+
+-- Y AXIS COORDINATE FUNCTIONS
+
+
+{-| Smoothly scroll to specific Y coordinate, keeping current X position.
+
+    scrollToCoordinateY 1000.0 NoOp
+
+-}
+scrollToCoordinateY : YCoordinate -> msg -> Cmd msg
+scrollToCoordinateY y msg =
+    scrollToCoordinateYWithConfig y msg defaultConfig
+
+
+{-| Smoothly scroll to specific Y coordinate with custom configuration.
+
+    scrollToCoordinateYWithConfig 1000.0 NoOp <|
+        { defaultConfig | speed = 1000 }
+
+-}
+scrollToCoordinateYWithConfig : YCoordinate -> msg -> Config -> Cmd msg
+scrollToCoordinateYWithConfig y msg config =
+    ScrollTask.scrollToCoordinateYWithConfig y config
+        |> Task.attempt (always msg)
+
+
+{-| Jump instantly to specific Y coordinate, keeping current X position.
+
+    jumpToCoordinateY 1000.0 NoOp
+
+-}
+jumpToCoordinateY : YCoordinate -> msg -> Cmd msg
+jumpToCoordinateY y msg =
+    jumpToCoordinateYWithConfig y msg defaultConfig
+
+
+{-| Jump instantly to specific Y coordinate with custom configuration.
+
+    jumpToCoordinateYWithConfig 1000.0 NoOp <|
+        { defaultConfig | speed = 1000 }
+
+-}
+jumpToCoordinateYWithConfig : YCoordinate -> msg -> Config -> Cmd msg
+jumpToCoordinateYWithConfig y msg config =
+    ScrollTask.jumpToCoordinateYWithConfig y config
         |> Task.attempt (always msg)

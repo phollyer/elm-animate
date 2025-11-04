@@ -14,6 +14,8 @@ module Scroll.Container.Cmd exposing
     , scrollToCenterY, scrollToCenterYWithConfig, jumpToCenterY, jumpToCenterYWithConfig
     , XCoordinate, YCoordinate
     , scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
+    , scrollToCoordinateX, scrollToCoordinateXWithConfig, jumpToCoordinateX, jumpToCoordinateXWithConfig
+    , scrollToCoordinateY, scrollToCoordinateYWithConfig, jumpToCoordinateY, jumpToCoordinateYWithConfig
     , PercX, PercY
     , scrollToPercentage, scrollToPercentageWithConfig, jumpToPercentage, jumpToPercentageWithConfig
     , scrollToPercentageX, scrollToPercentageXWithConfig, jumpToPercentageX, jumpToPercentageXWithConfig
@@ -179,7 +181,20 @@ Scroll or jump to specific pixel coordinates within the container. Coordinates a
 
 @docs XCoordinate, YCoordinate
 
+
+### Both Axes
+
 @docs scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
+
+
+### X Axis Only
+
+@docs scrollToCoordinateX, scrollToCoordinateXWithConfig, jumpToCoordinateX, jumpToCoordinateXWithConfig
+
+
+### Y Axis Only
+
+@docs scrollToCoordinateY, scrollToCoordinateYWithConfig, jumpToCoordinateY, jumpToCoordinateYWithConfig
 
 _[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning Functions](#advanced-positioning-functions) | [↑ Documentation Index](#documentation-index)_
 
@@ -258,7 +273,7 @@ _[↑ Relative Movement](#relative-movement) | [↑ Advanced Positioning Functio
 
 -}
 
-import Scroll exposing (Config, Container(..), ContainerId, TargetId, defaultConfig)
+import Scroll exposing (Config, ContainerId, TargetId, defaultConfig)
 import Scroll.Container.Task as ScrollTask
 import Task
 
@@ -1356,4 +1371,100 @@ jumpToCoordinates containerId x y msg =
 jumpToCoordinatesWithConfig : ContainerId -> XCoordinate -> YCoordinate -> msg -> Config -> Cmd msg
 jumpToCoordinatesWithConfig containerId x y msg config =
     ScrollTask.jumpToCoordinatesWithConfig containerId x y config
+        |> Task.attempt (always msg)
+
+
+
+-- X AXIS COORDINATE FUNCTIONS
+
+
+{-| Smoothly scroll to specific X coordinate, keeping current Y position.
+
+    scrollToCoordinateX "container-id" 500.0 NoOp
+
+-}
+scrollToCoordinateX : ContainerId -> XCoordinate -> msg -> Cmd msg
+scrollToCoordinateX containerId x msg =
+    scrollToCoordinateXWithConfig containerId x msg defaultConfig
+
+
+{-| Smoothly scroll to specific X coordinate with custom configuration.
+
+    scrollToCoordinateXWithConfig "container-id" 500.0 NoOp <|
+        { defaultConfig | speed = 1000 }
+
+-}
+scrollToCoordinateXWithConfig : ContainerId -> XCoordinate -> msg -> Config -> Cmd msg
+scrollToCoordinateXWithConfig containerId x msg config =
+    ScrollTask.scrollToCoordinateXWithConfig containerId x config
+        |> Task.attempt (always msg)
+
+
+{-| Jump instantly to specific X coordinate, keeping current Y position.
+
+    jumpToCoordinateX "container-id" 500.0 NoOp
+
+-}
+jumpToCoordinateX : ContainerId -> XCoordinate -> msg -> Cmd msg
+jumpToCoordinateX containerId x msg =
+    jumpToCoordinateXWithConfig containerId x msg defaultConfig
+
+
+{-| Jump instantly to specific X coordinate with custom configuration.
+
+    jumpToCoordinateXWithConfig "container-id" 500.0 NoOp <|
+        { defaultConfig | speed = 1000 }
+
+-}
+jumpToCoordinateXWithConfig : ContainerId -> XCoordinate -> msg -> Config -> Cmd msg
+jumpToCoordinateXWithConfig containerId x msg config =
+    ScrollTask.jumpToCoordinateXWithConfig containerId x config
+        |> Task.attempt (always msg)
+
+
+
+-- Y AXIS COORDINATE FUNCTIONS
+
+
+{-| Smoothly scroll to specific Y coordinate, keeping current X position.
+
+    scrollToCoordinateY "container-id" 1000.0 NoOp
+
+-}
+scrollToCoordinateY : ContainerId -> YCoordinate -> msg -> Cmd msg
+scrollToCoordinateY containerId y msg =
+    scrollToCoordinateYWithConfig containerId y msg defaultConfig
+
+
+{-| Smoothly scroll to specific Y coordinate with custom configuration.
+
+    scrollToCoordinateYWithConfig "container-id" 1000.0 NoOp <|
+        { defaultConfig | speed = 1000 }
+
+-}
+scrollToCoordinateYWithConfig : ContainerId -> YCoordinate -> msg -> Config -> Cmd msg
+scrollToCoordinateYWithConfig containerId y msg config =
+    ScrollTask.scrollToCoordinateYWithConfig containerId y config
+        |> Task.attempt (always msg)
+
+
+{-| Jump instantly to specific Y coordinate, keeping current X position.
+
+    jumpToCoordinateY "container-id" 1000.0 NoOp
+
+-}
+jumpToCoordinateY : ContainerId -> YCoordinate -> msg -> Cmd msg
+jumpToCoordinateY containerId y msg =
+    jumpToCoordinateYWithConfig containerId y msg defaultConfig
+
+
+{-| Jump instantly to specific Y coordinate with custom configuration.
+
+    jumpToCoordinateYWithConfig "container-id" 1000.0 NoOp <|
+        { defaultConfig | speed = 1000 }
+
+-}
+jumpToCoordinateYWithConfig : ContainerId -> YCoordinate -> msg -> Config -> Cmd msg
+jumpToCoordinateYWithConfig containerId y msg config =
+    ScrollTask.jumpToCoordinateYWithConfig containerId y config
         |> Task.attempt (always msg)

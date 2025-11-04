@@ -14,6 +14,8 @@ module Scroll.Document.Task exposing
     , scrollToCenterY, scrollToCenterYWithConfig, jumpToCenterY, jumpToCenterYWithConfig
     , XCoordinate, YCoordinate
     , scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
+    , scrollToCoordinateX, scrollToCoordinateXWithConfig, jumpToCoordinateX, jumpToCoordinateXWithConfig
+    , scrollToCoordinateY, scrollToCoordinateYWithConfig, jumpToCoordinateY, jumpToCoordinateYWithConfig
     , PercX, PercY
     , scrollToPercentage, scrollToPercentageWithConfig, jumpToPercentage, jumpToPercentageWithConfig
     , scrollToPercentageX, scrollToPercentageXWithConfig, jumpToPercentageX, jumpToPercentageXWithConfig
@@ -177,7 +179,20 @@ Scroll to specific pixel coordinates within the document.
 
 @docs XCoordinate, YCoordinate
 
+
+### Both Axes
+
 @docs scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
+
+
+### X Axis Only
+
+@docs scrollToCoordinateX, scrollToCoordinateXWithConfig, jumpToCoordinateX, jumpToCoordinateXWithConfig
+
+
+### Y Axis Only
+
+@docs scrollToCoordinateY, scrollToCoordinateYWithConfig, jumpToCoordinateY, jumpToCoordinateYWithConfig
 
 _[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning Functions](#advanced-positioning-functions) | [↑ Documentation Index](#documentation-index)_
 
@@ -1957,4 +1972,110 @@ jumpToCoordinatesWithConfig x y config =
                             |> min maxY
                 in
                 Dom.setViewport targetX targetY
+            )
+
+
+
+-- X AXIS COORDINATE FUNCTIONS
+
+
+{-| Smoothly scroll to specific X coordinate, keeping current Y position.
+
+    scrollToCoordinateX 500.0
+
+-}
+scrollToCoordinateX : XCoordinate -> Task Dom.Error (List ())
+scrollToCoordinateX x =
+    scrollToCoordinateXWithConfig x defaultConfig
+
+
+{-| Smoothly scroll to specific X coordinate with custom configuration.
+
+    scrollToCoordinateXWithConfig 500.0 <|
+        { defaultConfig | speed = 1000 }
+
+-}
+scrollToCoordinateXWithConfig : XCoordinate -> Config -> Task Dom.Error (List ())
+scrollToCoordinateXWithConfig x config =
+    Dom.getViewport
+        |> Task.andThen
+            (\viewport ->
+                scrollToCoordinatesWithConfig x viewport.viewport.y { config | axis = X }
+            )
+
+
+{-| Jump instantly to specific X coordinate, keeping current Y position.
+
+    jumpToCoordinateX 500.0
+
+-}
+jumpToCoordinateX : XCoordinate -> Task Dom.Error ()
+jumpToCoordinateX x =
+    jumpToCoordinateXWithConfig x defaultConfig
+
+
+{-| Jump instantly to specific X coordinate with custom configuration.
+
+    jumpToCoordinateXWithConfig 500.0 defaultConfig
+
+-}
+jumpToCoordinateXWithConfig : XCoordinate -> Config -> Task Dom.Error ()
+jumpToCoordinateXWithConfig x config =
+    Dom.getViewport
+        |> Task.andThen
+            (\viewport ->
+                jumpToCoordinatesWithConfig x viewport.viewport.y config
+            )
+
+
+
+-- Y AXIS COORDINATE FUNCTIONS
+
+
+{-| Smoothly scroll to specific Y coordinate, keeping current X position.
+
+    scrollToCoordinateY 1000.0
+
+-}
+scrollToCoordinateY : YCoordinate -> Task Dom.Error (List ())
+scrollToCoordinateY y =
+    scrollToCoordinateYWithConfig y defaultConfig
+
+
+{-| Smoothly scroll to specific Y coordinate with custom configuration.
+
+    scrollToCoordinateYWithConfig 1000.0 <|
+        { defaultConfig | speed = 1000 }
+
+-}
+scrollToCoordinateYWithConfig : YCoordinate -> Config -> Task Dom.Error (List ())
+scrollToCoordinateYWithConfig y config =
+    Dom.getViewport
+        |> Task.andThen
+            (\viewport ->
+                scrollToCoordinatesWithConfig viewport.viewport.x y { config | axis = Y }
+            )
+
+
+{-| Jump instantly to specific Y coordinate, keeping current X position.
+
+    jumpToCoordinateY 1000.0
+
+-}
+jumpToCoordinateY : YCoordinate -> Task Dom.Error ()
+jumpToCoordinateY y =
+    jumpToCoordinateYWithConfig y defaultConfig
+
+
+{-| Jump instantly to specific Y coordinate with custom configuration.
+
+    jumpToCoordinateYWithConfig 1000.0 defaultConfig
+
+-}
+jumpToCoordinateYWithConfig : YCoordinate -> Config -> Task Dom.Error ()
+jumpToCoordinateYWithConfig y config =
+    Dom.getViewport
+        |> Task.andThen
+            (\viewport ->
+                jumpToCoordinatesWithConfig viewport.viewport.x y config
             )

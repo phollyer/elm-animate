@@ -1,13 +1,11 @@
 module Scroll exposing
     ( Config
     , defaultConfig
-    , Axis(..)
     , Timing(..)
-    , TargetId
-    , ContainerId
+    , XOffsetFloat, YOffsetFloat
+    , Axis(..)
+    , ContainerId, TargetId
     , Container(..)
-    , XOffsetFloat
-    , YOffsetFloat
     )
 
 {-| Shared types for smooth scrolling animations.
@@ -24,17 +22,14 @@ For actual scrolling functionality, import one of:
 
 @docs Config
 @docs defaultConfig
-@docs Axis
 @docs Timing
-@docs TargetId
-@docs ContainerId
+@docs XOffsetFloat, YOffsetFloat
+@docs Axis
+@docs ContainerId, TargetId
 @docs Container
 
 
 # Type Aliases
-
-@docs XOffsetFloat
-@docs YOffsetFloat
 
 -}
 
