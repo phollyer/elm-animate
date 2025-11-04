@@ -10,10 +10,10 @@
         "Scroll.Document.Task",
         "Scroll.Container.Cmd",
         "Scroll.Container.Task",
-        "Move",
-        "Move.CSS",
-        "Move.Sub",
-        "Move.Ports"
+        "Anim",
+        "Anim.CSS",
+        "Anim.Sub",
+        "Anim.Ports"
     ],
     "elm-version": "0.19.0 <= v < 0.20.0",
     "dependencies": {

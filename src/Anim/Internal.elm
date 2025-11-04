@@ -1,4 +1,4 @@
-module Move.Internal exposing
+module Anim.Internal exposing
     ( calculateDistance
     , easingToEaseFunction
     , easingToString
@@ -6,11 +6,11 @@ module Move.Internal exposing
     , timingToPixelsPerSecond
     )
 
-{-| Internal helper functions shared between Move modules.
+{-| Internal helper functions shared between Anim modules.
 -}
 
+import Anim exposing (EasePreset(..), Easing(..), Timing(..))
 import Ease
-import Move exposing (EasePreset(..), Easing(..), Timing(..))
 
 
 
