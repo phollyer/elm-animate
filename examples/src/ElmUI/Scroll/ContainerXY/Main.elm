@@ -67,11 +67,7 @@ update msg model =
                 "scroll-container"
                 "top-left-element"
                 NoOp
-                { defaultConfig
-                    | axis = Both
-                    , offsetX = 20
-                    , offsetY = 20
-                }
+                { defaultConfig | axis = BothWithOffset 20 20 }
             )
 
         ScrollToTopRight ->
@@ -80,11 +76,7 @@ update msg model =
                 "scroll-container"
                 "top-right-element"
                 NoOp
-                { defaultConfig
-                    | axis = Both
-                    , offsetX = 20
-                    , offsetY = 20
-                }
+                { defaultConfig | axis = BothWithOffset 20 20 }
             )
 
         ScrollToBottomLeft ->
@@ -93,11 +85,7 @@ update msg model =
                 "scroll-container"
                 "bottom-left-element"
                 NoOp
-                { defaultConfig
-                    | axis = Both
-                    , offsetX = 20
-                    , offsetY = 20
-                }
+                { defaultConfig | axis = BothWithOffset 20 20 }
             )
 
         ScrollToBottomRight ->
@@ -106,11 +94,7 @@ update msg model =
                 "scroll-container"
                 "bottom-right-element"
                 NoOp
-                { defaultConfig
-                    | axis = Both
-                    , offsetX = 20
-                    , offsetY = 20
-                }
+                { defaultConfig | axis = BothWithOffset 20 20 }
             )
 
         ScrollToCenter ->
@@ -119,11 +103,7 @@ update msg model =
                 "scroll-container"
                 "center-element"
                 NoOp
-                { defaultConfig
-                    | axis = Both
-                    , offsetX = 20
-                    , offsetY = 20
-                }
+                { defaultConfig | axis = BothWithOffset 20 20 }
             )
 
 

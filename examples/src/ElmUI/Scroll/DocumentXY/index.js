@@ -5205,12 +5205,17 @@ var $author$project$ElmUI$Scroll$DocumentXY$Main$init = function (_v0) {
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$Scroll$Both = {$: 'Both'};
+var $author$project$Scroll$BothWithOffset = F2(
+	function (a, b) {
+		return {$: 'BothWithOffset', a: a, b: b};
+	});
 var $author$project$ElmUI$Scroll$DocumentXY$Main$NoOp = {$: 'NoOp'};
 var $author$project$Scroll$Duration = function (a) {
 	return {$: 'Duration', a: a};
 };
-var $author$project$Scroll$Y = {$: 'Y'};
+var $author$project$Scroll$YWithOffset = function (a) {
+	return {$: 'YWithOffset', a: a};
+};
 var $elm_community$easing_functions$Ease$flip = F2(
 	function (easing, time) {
 		return 1 - easing(1 - time);
@@ -5221,10 +5226,8 @@ var $elm_community$easing_functions$Ease$inQuint = function (time) {
 };
 var $elm_community$easing_functions$Ease$outQuint = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inQuint);
 var $author$project$Scroll$defaultConfig = {
-	axis: $author$project$Scroll$Y,
+	axis: $author$project$Scroll$YWithOffset(12.0),
 	easing: $elm_community$easing_functions$Ease$outQuint,
-	offsetX: 0,
-	offsetY: 12,
 	timing: $author$project$Scroll$Duration(400)
 };
 var $elm$core$Basics$always = F2(
@@ -5255,7 +5258,7 @@ var $elm$core$Task$attempt = F2(
 							$elm$core$Result$Ok),
 						task))));
 	});
-var $author$project$Scroll$DocumentBody = {$: 'DocumentBody'};
+var $author$project$Scroll$Internal$DocumentBody = {$: 'DocumentBody'};
 var $elm$core$Basics$negate = function (n) {
 	return -n;
 };
@@ -5303,13 +5306,70 @@ var $author$project$Internal$AnimationCore$animationStepsWithFrames = F4(
 			},
 			weights);
 	});
+var $author$project$Scroll$Internal$BothDirection = {$: 'BothDirection'};
+var $author$project$Scroll$Internal$XDirection = {$: 'XDirection'};
+var $author$project$Scroll$Internal$YDirection = {$: 'YDirection'};
+var $author$project$Scroll$Internal$getAxisDirection = function (axis) {
+	switch (axis.$) {
+		case 'X':
+			return $author$project$Scroll$Internal$XDirection;
+		case 'Y':
+			return $author$project$Scroll$Internal$YDirection;
+		case 'Both':
+			return $author$project$Scroll$Internal$BothDirection;
+		case 'XWithOffset':
+			return $author$project$Scroll$Internal$XDirection;
+		case 'YWithOffset':
+			return $author$project$Scroll$Internal$YDirection;
+		default:
+			return $author$project$Scroll$Internal$BothDirection;
+	}
+};
+var $author$project$Scroll$Internal$getOffsetX = function (axis) {
+	switch (axis.$) {
+		case 'X':
+			return 0.0;
+		case 'Y':
+			return 0.0;
+		case 'Both':
+			return 0.0;
+		case 'XWithOffset':
+			var offset = axis.a;
+			return offset;
+		case 'YWithOffset':
+			return 0.0;
+		default:
+			var offsetX = axis.a;
+			return offsetX;
+	}
+};
+var $author$project$Scroll$Internal$getOffsetY = function (axis) {
+	switch (axis.$) {
+		case 'X':
+			return 0.0;
+		case 'Y':
+			return 0.0;
+		case 'Both':
+			return 0.0;
+		case 'XWithOffset':
+			return 0.0;
+		case 'YWithOffset':
+			var offset = axis.a;
+			return offset;
+		default:
+			var offsetY = axis.b;
+			return offsetY;
+	}
+};
 var $author$project$Scroll$Internal$getTargetPositions = F4(
 	function (element, viewport, container, config) {
+		var offsetY = $author$project$Scroll$Internal$getOffsetY(config.axis);
+		var offsetX = $author$project$Scroll$Internal$getOffsetX(config.axis);
 		if (container.$ === 'Nothing') {
-			return _Utils_Tuple2(element.x - config.offsetX, element.y - config.offsetY);
+			return _Utils_Tuple2(element.x - offsetX, element.y - offsetY);
 		} else {
 			var containerInfo = container.a;
-			return _Utils_Tuple2(((viewport.x + element.x) - config.offsetX) - containerInfo.element.x, ((viewport.y + element.y) - config.offsetY) - containerInfo.element.y);
+			return _Utils_Tuple2(((viewport.x + element.x) - offsetX) - containerInfo.element.x, ((viewport.y + element.y) - offsetY) - containerInfo.element.y);
 		}
 	});
 var $elm$core$Basics$min = F2(
@@ -5401,9 +5461,9 @@ var $author$project$Scroll$Document$Task$scrollWithConfig = F2(
 				var clampedX = _v0.a;
 				var clampedY = _v0.b;
 				var setViewportTask = function () {
-					var _v1 = config.axis;
+					var _v1 = $author$project$Scroll$Internal$getAxisDirection(config.axis);
 					switch (_v1.$) {
-						case 'X':
+						case 'XDirection':
 							return $elm$core$Task$sequence(
 								A2(
 									$elm$core$List$map,
@@ -5419,7 +5479,7 @@ var $author$project$Scroll$Document$Task$scrollWithConfig = F2(
 										config.easing,
 										viewport.x,
 										clampedX)));
-						case 'Y':
+						case 'YDirection':
 							return $elm$core$Task$sequence(
 								A2(
 									$elm$core$List$map,
@@ -5472,8 +5532,8 @@ var $author$project$Scroll$Document$Task$scrollWithConfig = F2(
 				}();
 				return setViewportTask;
 			});
-		var getViewport_ = $author$project$Scroll$Internal$getViewport($author$project$Scroll$DocumentBody);
-		var getContainerInfo_ = $author$project$Scroll$Internal$getContainerInfo($author$project$Scroll$DocumentBody);
+		var getViewport_ = $author$project$Scroll$Internal$getViewport($author$project$Scroll$Internal$DocumentBody);
+		var getContainerInfo_ = $author$project$Scroll$Internal$getContainerInfo($author$project$Scroll$Internal$DocumentBody);
 		return A2(
 			$elm$core$Task$andThen,
 			$elm$core$Basics$identity,
@@ -5498,7 +5558,9 @@ var $author$project$ElmUI$Scroll$DocumentXY$Main$scrollTo = function (targetId) 
 		$author$project$ElmUI$Scroll$DocumentXY$Main$NoOp,
 		_Utils_update(
 			$author$project$Scroll$defaultConfig,
-			{axis: $author$project$Scroll$Both, offsetY: 0}));
+			{
+				axis: A2($author$project$Scroll$BothWithOffset, 0, 0)
+			}));
 };
 var $author$project$ElmUI$Scroll$DocumentXY$Main$update = F2(
 	function (msg, model) {

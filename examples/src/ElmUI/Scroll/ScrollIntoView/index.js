@@ -5654,7 +5654,9 @@ var $author$project$Scroll$Both = {$: 'Both'};
 var $author$project$Scroll$Duration = function (a) {
 	return {$: 'Duration', a: a};
 };
-var $author$project$Scroll$Y = {$: 'Y'};
+var $author$project$Scroll$YWithOffset = function (a) {
+	return {$: 'YWithOffset', a: a};
+};
 var $elm_community$easing_functions$Ease$flip = F2(
 	function (easing, time) {
 		return 1 - easing(1 - time);
@@ -5665,20 +5667,60 @@ var $elm_community$easing_functions$Ease$inQuint = function (time) {
 };
 var $elm_community$easing_functions$Ease$outQuint = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inQuint);
 var $author$project$Scroll$defaultConfig = {
-	axis: $author$project$Scroll$Y,
+	axis: $author$project$Scroll$YWithOffset(12.0),
 	easing: $elm_community$easing_functions$Ease$outQuint,
-	offsetX: 0,
-	offsetY: 12,
 	timing: $author$project$Scroll$Duration(400)
 };
-var $author$project$Scroll$DocumentBody = {$: 'DocumentBody'};
+var $author$project$Scroll$Internal$DocumentBody = {$: 'DocumentBody'};
 var $elm$core$Basics$ge = _Utils_ge;
+var $author$project$Scroll$Internal$getOffsetX = function (axis) {
+	switch (axis.$) {
+		case 'X':
+			return 0.0;
+		case 'Y':
+			return 0.0;
+		case 'Both':
+			return 0.0;
+		case 'XWithOffset':
+			var offset = axis.a;
+			return offset;
+		case 'YWithOffset':
+			return 0.0;
+		default:
+			var offsetX = axis.a;
+			return offsetX;
+	}
+};
+var $author$project$Scroll$Internal$getOffsetY = function (axis) {
+	switch (axis.$) {
+		case 'X':
+			return 0.0;
+		case 'Y':
+			return 0.0;
+		case 'Both':
+			return 0.0;
+		case 'XWithOffset':
+			return 0.0;
+		case 'YWithOffset':
+			var offset = axis.a;
+			return offset;
+		default:
+			var offsetY = axis.b;
+			return offsetY;
+	}
+};
+var $elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
 var $author$project$Scroll$Internal$calculateScrollIntoView = F5(
 	function (element, viewport, scene, containerInfo, config) {
 		var viewportY = viewport.y;
 		var viewportX = viewport.x;
 		var viewportWidth = viewport.width;
 		var viewportHeight = viewport.height;
+		var offsetY = $author$project$Scroll$Internal$getOffsetY(config.axis);
+		var offsetX = $author$project$Scroll$Internal$getOffsetX(config.axis);
 		var elementY = element.y;
 		var elementX = element.x;
 		var elementWidth = element.width;
@@ -5707,6 +5749,10 @@ var $author$project$Scroll$Internal$calculateScrollIntoView = F5(
 				return ((_Utils_cmp(elementLeft, viewportLeft) > -1) && (_Utils_cmp(elementRight, viewportRight) < 1)) ? currentScrollX : ((_Utils_cmp(elementLeft, viewportLeft) < 0) ? elementLeft : (elementRight - viewportWidth));
 			}
 		}();
+		var finalScrollX = A2(
+			$elm$core$Basics$min,
+			scene.width - viewport.width,
+			A2($elm$core$Basics$max, 0, newScrollX - offsetX));
 		var newScrollY = function () {
 			if (_Utils_cmp(elementHeight, viewportHeight) > -1) {
 				return adjustedElementY;
@@ -5718,8 +5764,31 @@ var $author$project$Scroll$Internal$calculateScrollIntoView = F5(
 				return ((_Utils_cmp(topEdge, viewportTop) > -1) && (_Utils_cmp(bottomEdge, viewportBottom) < 1)) ? currentScrollY : ((_Utils_cmp(topEdge, viewportTop) < 0) ? topEdge : (bottomEdge - viewportHeight));
 			}
 		}();
-		return _Utils_Tuple2(newScrollX, newScrollY);
+		var finalScrollY = A2(
+			$elm$core$Basics$min,
+			scene.height - viewport.height,
+			A2($elm$core$Basics$max, 0, newScrollY - offsetY));
+		return _Utils_Tuple2(finalScrollX, finalScrollY);
 	});
+var $author$project$Scroll$Internal$BothDirection = {$: 'BothDirection'};
+var $author$project$Scroll$Internal$XDirection = {$: 'XDirection'};
+var $author$project$Scroll$Internal$YDirection = {$: 'YDirection'};
+var $author$project$Scroll$Internal$getAxisDirection = function (axis) {
+	switch (axis.$) {
+		case 'X':
+			return $author$project$Scroll$Internal$XDirection;
+		case 'Y':
+			return $author$project$Scroll$Internal$YDirection;
+		case 'Both':
+			return $author$project$Scroll$Internal$BothDirection;
+		case 'XWithOffset':
+			return $author$project$Scroll$Internal$XDirection;
+		case 'YWithOffset':
+			return $author$project$Scroll$Internal$YDirection;
+		default:
+			return $author$project$Scroll$Internal$BothDirection;
+	}
+};
 var $elm$browser$Browser$Dom$getElement = _Browser_getElement;
 var $author$project$Scroll$Internal$getContainerInfo = function (container) {
 	if (container.$ === 'DocumentBody') {
@@ -5762,10 +5831,6 @@ var $elm$core$Task$map3 = F4(
 			},
 			taskA);
 	});
-var $elm$core$Basics$min = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) < 0) ? x : y;
-	});
 var $elm$browser$Browser$Dom$setViewport = _Browser_setViewport;
 var $author$project$Scroll$Document$Task$jumpIntoViewWithConfig = F2(
 	function (elementId, config) {
@@ -5789,11 +5854,11 @@ var $author$project$Scroll$Document$Task$jumpIntoViewWithConfig = F2(
 				var clampedX = _v1.a;
 				var clampedY = _v1.b;
 				var setViewportTask = function () {
-					var _v2 = config.axis;
+					var _v2 = $author$project$Scroll$Internal$getAxisDirection(config.axis);
 					switch (_v2.$) {
-						case 'X':
+						case 'XDirection':
 							return A2($elm$browser$Browser$Dom$setViewport, clampedX, viewport.y);
-						case 'Y':
+						case 'YDirection':
 							return A2($elm$browser$Browser$Dom$setViewport, viewport.x, clampedY);
 						default:
 							return A2($elm$browser$Browser$Dom$setViewport, clampedX, clampedY);
@@ -5801,8 +5866,8 @@ var $author$project$Scroll$Document$Task$jumpIntoViewWithConfig = F2(
 				}();
 				return setViewportTask;
 			});
-		var getViewport_ = $author$project$Scroll$Internal$getViewport($author$project$Scroll$DocumentBody);
-		var getContainerInfo_ = $author$project$Scroll$Internal$getContainerInfo($author$project$Scroll$DocumentBody);
+		var getViewport_ = $author$project$Scroll$Internal$getViewport($author$project$Scroll$Internal$DocumentBody);
+		var getContainerInfo_ = $author$project$Scroll$Internal$getContainerInfo($author$project$Scroll$Internal$DocumentBody);
 		return A2(
 			$elm$core$Task$andThen,
 			$elm$core$Basics$identity,
@@ -5906,9 +5971,9 @@ var $author$project$Scroll$Document$Task$scrollIntoViewWithConfig = F2(
 				var clampedX = _v1.a;
 				var clampedY = _v1.b;
 				var setViewportTask = function () {
-					var _v2 = config.axis;
+					var _v2 = $author$project$Scroll$Internal$getAxisDirection(config.axis);
 					switch (_v2.$) {
-						case 'X':
+						case 'XDirection':
 							return $elm$core$Task$sequence(
 								A2(
 									$elm$core$List$map,
@@ -5924,7 +5989,7 @@ var $author$project$Scroll$Document$Task$scrollIntoViewWithConfig = F2(
 										config.easing,
 										viewport.x,
 										clampedX)));
-						case 'Y':
+						case 'YDirection':
 							return $elm$core$Task$sequence(
 								A2(
 									$elm$core$List$map,
@@ -5977,8 +6042,8 @@ var $author$project$Scroll$Document$Task$scrollIntoViewWithConfig = F2(
 				}();
 				return setViewportTask;
 			});
-		var getViewport_ = $author$project$Scroll$Internal$getViewport($author$project$Scroll$DocumentBody);
-		var getContainerInfo_ = $author$project$Scroll$Internal$getContainerInfo($author$project$Scroll$DocumentBody);
+		var getViewport_ = $author$project$Scroll$Internal$getViewport($author$project$Scroll$Internal$DocumentBody);
+		var getContainerInfo_ = $author$project$Scroll$Internal$getContainerInfo($author$project$Scroll$Internal$DocumentBody);
 		return A2(
 			$elm$core$Task$andThen,
 			$elm$core$Basics$identity,
@@ -5995,7 +6060,7 @@ var $author$project$Scroll$Document$Task$scrollIntoView = function (elementId) {
 		elementId,
 		_Utils_update(
 			$author$project$Scroll$defaultConfig,
-			{axis: $author$project$Scroll$Both, offsetY: 0}));
+			{axis: $author$project$Scroll$Both}));
 };
 var $author$project$ElmUI$Scroll$ScrollIntoView$Main$update = F2(
 	function (msg, model) {

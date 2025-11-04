@@ -68,7 +68,7 @@ update msg model =
         ScrollToSection id ->
             ( model
             , Scroll.scrollWithConfig id NoOp <|
-                 { defaultConfig | axis = X, offsetX = 20 } 
+                 { defaultConfig | axis = XWithOffset 20 } 
             )
 
         ScrollToStart ->
