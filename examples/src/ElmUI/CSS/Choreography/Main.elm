@@ -1,18 +1,26 @@
-module ElmUI.CSS.Multiple.Main exposing (main)
+module ElmUI.CSS.Choreography.Main exposing (main)
 
-{-| Anim.CSS Multiple Example using ElmUI - Multiple elements with native CSS transitions
+{-| Anim.CSS Choreography Example using ElmUI - Coordinated multi-element animations
 
-This demonstrates hardware-accelerated animations for multiple elements simultaneously
-using browser-native CSS transitions for optimal performance and battery efficiency.
+This demonstrates choreographed animations with multiple elements moving together in formations.
+Shows how to create complex patterns like scatter, circle formations, and synchronized group movements.
 
 FEATURES:
 
-  - ✅ Multiple hardware-accelerated animations
-  - ✅ Native browser optimization for each element
-  - ✅ Battery efficient simultaneous transitions
-  - ✅ Formation patterns with CSS-native easing
-  - ✅ Zero JavaScript animation overhead
-  - ✅ Auto-scaling based on device performance
+  - ✅ Coordinated multi-element animations
+  - ✅ Formation patterns (scatter, circle, custom arrangements)
+  - ✅ Synchronized group movements
+  - ✅ Hardware-accelerated choreography
+  - ✅ Complex animation orchestration
+  - ✅ Real-time formation transitions
+
+USAGE EXAMPLES:
+
+  - Dashboard widgets arranging into grid layouts
+  - Game pieces moving in coordinated formations  
+  - Data visualization elements reorganizing
+  - UI components transitioning between layouts
+  - Interactive storytelling with character movement
 
 -}
 
@@ -169,7 +177,7 @@ subscriptions _ =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.CSS Multiple ElmUI Example"
+        "Anim.CSS Choreography ElmUI Example"
         UI.Basic
         (viewContent model)
 
@@ -185,19 +193,19 @@ viewContent model =
         positionF = getCurrentPosition "elementF" model.animations
     in
     [ UI.backButton
-    , UI.pageHeader "Anim.CSS Multiple Example"
+    , UI.pageHeader "CSS Choreography Animations"
     , -- Element status display
       el
         [ Font.size 14
         , Font.color Colors.textMedium
         , centerX
         ]
-        (text ("6 elements animating simultaneously with CSS transitions"))
+        (text ("Coordinated choreography with 6 elements in formation patterns"))
     , -- Control buttons
       UI.htmlActionButtons
-        [ ( UI.Primary, ScatterElements, "Scatter" )
+        [ ( UI.Primary, ScatterElements, "Scatter Formation" )
         , ( UI.Success, CircleFormation, "Circle Formation" )
-        , ( UI.Purple, ResetPositions, "Reset" )
+        , ( UI.Purple, ResetPositions, "Reset Formation" )
         ]
     , -- Animation area with 6 moving boxes using proper ElmUI + new API
       el

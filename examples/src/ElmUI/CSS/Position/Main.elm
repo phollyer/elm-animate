@@ -1,24 +1,23 @@
-module ElmUI.CSS.Basic.Main exposing (main)
+module ElmUI.CSS.Position.Main exposing (main)
 
-{-| Anim.CSS Basic Example using ElmUI - Native browser CSS transitions for optimal performance
+{-| Anim.CSS Position Example using ElmUI - Element position animations with CSS transitions
 
-This approach uses browser-native CSS transitions for hardware acceleration and battery efficiency.
-Perfect for simple transitions where you want maximum performance with minimal JavaScript overhead.
+This example demonstrates smooth position transitions using browser-native CSS transforms.
+Perfect for moving elements around the screen with hardware acceleration and battery efficiency.
 
-BENEFITS:
+FEATURES:
 
-  - ✅ Hardware acceleration via native CSS transitions
-  - ✅ Battery efficient (browser optimizes automatically)
-  - ✅ Simple API - just apply CSS styles directly
-  - ✅ No animation frame subscriptions needed
-  - ✅ Smooth 60fps animations with browser optimization
-  - ✅ Automatic performance scaling based on device capabilities
+  - ✅ Smooth position animations (X and Y coordinates)
+  - ✅ Independent axis movement (animateToX, animateToY)
+  - ✅ Hardware-accelerated CSS transforms
+  - ✅ Predefined position targets and directional movement
+  - ✅ Real-time position display
 
 USAGE:
 
-  - Update position in your model when you want to animate
-  - Use Anim.CSS.transform to generate CSS transform styles
-  - Use Anim.CSS.transition to generate CSS transition styles
+  - Use animatePosition for absolute positioning (Position x y)
+  - Use animateToX/animateToY for single-axis movement
+  - Position values are in pixels relative to container
   - Browser handles all animation timing and optimization
 
 -}
@@ -167,13 +166,13 @@ subscriptions _ =
 
 view : Model -> Document Msg
 view model =
-    UI.createDocument "SmoothMoveCSS Basic ElmUI Example" UI.Basic (viewContent model)
+    UI.createDocument "Anim.CSS Position ElmUI Example" UI.Basic (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButton
-    , UI.pageHeader "SmoothMoveCSS Basic Example"
+    , UI.pageHeader "CSS Position Animations"
     , -- Position display
       el
         [ Font.size 14
