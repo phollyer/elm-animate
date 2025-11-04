@@ -12,11 +12,14 @@ module Scroll.Document.Cmd exposing
     , scrollToCenter, scrollToCenterWithConfig, jumpToCenter, jumpToCenterWithConfig
     , scrollToCenterX, scrollToCenterXWithConfig, jumpToCenterX, jumpToCenterXWithConfig
     , scrollToCenterY, scrollToCenterYWithConfig, jumpToCenterY, jumpToCenterYWithConfig
+    , PercX, PercY
     , scrollToPercentage, scrollToPercentageWithConfig, jumpToPercentage, jumpToPercentageWithConfig
     , scrollToPercentageX, scrollToPercentageXWithConfig, jumpToPercentageX, jumpToPercentageXWithConfig
     , scrollToPercentageY, scrollToPercentageYWithConfig, jumpToPercentageY, jumpToPercentageYWithConfig
+    , ScrollDeltaX, ScrollDeltaY, ViewportMultiplierX, ViewportMultiplierY
     , scrollBy, scrollByWithConfig, jumpBy, jumpByWithConfig
     , scrollByViewportSize, scrollByViewportSizeWithConfig, jumpByViewportSize, jumpByViewportSizeWithConfig
+    , XCoordinate, YCoordinate
     , scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
     )
 
@@ -159,6 +162,8 @@ _[↑ Center Positioning](#center-positioning) | [↑ Position-Targeting Functio
 
 Scroll to positions defined as percentages of the total scrollable area.
 
+@docs PercX, PercY
+
 @docs scrollToPercentage, scrollToPercentageWithConfig, jumpToPercentage, jumpToPercentageWithConfig
 @docs scrollToPercentageX, scrollToPercentageXWithConfig, jumpToPercentageX, jumpToPercentageXWithConfig
 @docs scrollToPercentageY, scrollToPercentageYWithConfig, jumpToPercentageY, jumpToPercentageYWithConfig
@@ -170,6 +175,8 @@ _[↑ Percentage-Based Positioning](#percentage-based-positioning) | [↑ Advanc
 
 Scroll relative to the current position by pixel offsets or viewport multiples.
 
+@docs ScrollDeltaX, ScrollDeltaY, ViewportMultiplierX, ViewportMultiplierY
+
 @docs scrollBy, scrollByWithConfig, jumpBy, jumpByWithConfig
 @docs scrollByViewportSize, scrollByViewportSizeWithConfig, jumpByViewportSize, jumpByViewportSizeWithConfig
 
@@ -180,6 +187,8 @@ _[↑ Relative Movement](#relative-movement) | [↑ Advanced Positioning Functio
 
 Scroll to specific pixel coordinates within the document.
 
+@docs XCoordinate, YCoordinate
+
 @docs scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
 
 _[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning Functions](#advanced-positioning-functions) | [↑ Documentation Index](#documentation-index)_
@@ -189,6 +198,54 @@ _[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning F
 import Scroll exposing (Config, Container(..), TargetId, defaultConfig)
 import Scroll.Document.Task as ScrollTask
 import Task
+
+
+{-| X-coordinate percentage (0.0 to 1.0)
+-}
+type alias PercX =
+    Float
+
+
+{-| Y-coordinate percentage (0.0 to 1.0)
+-}
+type alias PercY =
+    Float
+
+
+{-| Horizontal scroll delta in pixels
+-}
+type alias ScrollDeltaX =
+    Float
+
+
+{-| Vertical scroll delta in pixels
+-}
+type alias ScrollDeltaY =
+    Float
+
+
+{-| X-axis viewport size multiplier
+-}
+type alias ViewportMultiplierX =
+    Float
+
+
+{-| Y-axis viewport size multiplier
+-}
+type alias ViewportMultiplierY =
+    Float
+
+
+{-| X-coordinate in pixels from document origin
+-}
+type alias XCoordinate =
+    Float
+
+
+{-| Y-coordinate in pixels from document origin
+-}
+type alias YCoordinate =
+    Float
 
 
 
@@ -800,7 +857,7 @@ jumpToCenterYWithConfig msg config =
     scrollToPercentage 0.5 0.8 NoOp -- 50% horizontally, 80% vertically
 
 -}
-scrollToPercentage : Float -> Float -> msg -> Cmd msg
+scrollToPercentage : PercX -> PercY -> msg -> Cmd msg
 scrollToPercentage percentageX percentageY msg =
     scrollToPercentageWithConfig percentageX percentageY msg defaultConfig
 
@@ -813,7 +870,7 @@ scrollToPercentage percentageX percentageY msg =
         { defaultConfig | timing = Duration 800 }
 
 -}
-scrollToPercentageWithConfig : Float -> Float -> msg -> Config -> Cmd msg
+scrollToPercentageWithConfig : PercX -> PercY -> msg -> Config -> Cmd msg
 scrollToPercentageWithConfig percentageX percentageY msg config =
     ScrollTask.scrollToPercentageWithConfig percentageX percentageY config
         |> Task.attempt (always msg)
@@ -824,7 +881,7 @@ scrollToPercentageWithConfig percentageX percentageY msg config =
     jumpToPercentage 0.5 0.8 NoOp
 
 -}
-jumpToPercentage : Float -> Float -> msg -> Cmd msg
+jumpToPercentage : PercX -> PercY -> msg -> Cmd msg
 jumpToPercentage percentageX percentageY msg =
     jumpToPercentageWithConfig percentageX percentageY msg defaultConfig
 
@@ -837,7 +894,7 @@ jumpToPercentage percentageX percentageY msg =
         { defaultConfig | axis = BothWithOffset 10 20 }
 
 -}
-jumpToPercentageWithConfig : Float -> Float -> msg -> Config -> Cmd msg
+jumpToPercentageWithConfig : PercX -> PercY -> msg -> Config -> Cmd msg
 jumpToPercentageWithConfig percentageX percentageY msg config =
     ScrollTask.jumpToPercentageWithConfig percentageX percentageY config
         |> Task.attempt (always msg)
@@ -848,7 +905,7 @@ jumpToPercentageWithConfig percentageX percentageY msg config =
     scrollToPercentageX 0.5 NoOp -- 50% horizontally
 
 -}
-scrollToPercentageX : Float -> msg -> Cmd msg
+scrollToPercentageX : PercX -> msg -> Cmd msg
 scrollToPercentageX percentage msg =
     scrollToPercentageXWithConfig percentage msg defaultConfig
 
@@ -860,7 +917,7 @@ scrollToPercentageX percentage msg =
         { defaultConfig | timing = Duration 800 }
 
 -}
-scrollToPercentageXWithConfig : Float -> msg -> Config -> Cmd msg
+scrollToPercentageXWithConfig : PercX -> msg -> Config -> Cmd msg
 scrollToPercentageXWithConfig percentage msg config =
     ScrollTask.scrollToPercentageXWithConfig percentage config
         |> Task.attempt (always msg)
@@ -871,7 +928,7 @@ scrollToPercentageXWithConfig percentage msg config =
     jumpToPercentageX 0.5 NoOp
 
 -}
-jumpToPercentageX : Float -> msg -> Cmd msg
+jumpToPercentageX : PercX -> msg -> Cmd msg
 jumpToPercentageX percentage msg =
     jumpToPercentageXWithConfig percentage msg defaultConfig
 
@@ -883,7 +940,7 @@ jumpToPercentageX percentage msg =
         { defaultConfig |
 
 -}
-jumpToPercentageXWithConfig : Float -> msg -> Config -> Cmd msg
+jumpToPercentageXWithConfig : PercX -> msg -> Config -> Cmd msg
 jumpToPercentageXWithConfig percentage msg config =
     ScrollTask.jumpToPercentageXWithConfig percentage config
         |> Task.attempt (always msg)
@@ -894,7 +951,7 @@ jumpToPercentageXWithConfig percentage msg config =
     scrollToPercentageY 0.8 NoOp -- 80% vertically
 
 -}
-scrollToPercentageY : Float -> msg -> Cmd msg
+scrollToPercentageY : PercY -> msg -> Cmd msg
 scrollToPercentageY percentage msg =
     scrollToPercentageYWithConfig percentage msg defaultConfig
 
@@ -906,7 +963,7 @@ scrollToPercentageY percentage msg =
         { defaultConfig | timing = Duration 800 }
 
 -}
-scrollToPercentageYWithConfig : Float -> msg -> Config -> Cmd msg
+scrollToPercentageYWithConfig : PercY -> msg -> Config -> Cmd msg
 scrollToPercentageYWithConfig percentage msg config =
     ScrollTask.scrollToPercentageYWithConfig percentage config
         |> Task.attempt (always msg)
@@ -917,7 +974,7 @@ scrollToPercentageYWithConfig percentage msg config =
     jumpToPercentageY 0.8 NoOp
 
 -}
-jumpToPercentageY : Float -> msg -> Cmd msg
+jumpToPercentageY : PercY -> msg -> Cmd msg
 jumpToPercentageY percentage msg =
     jumpToPercentageYWithConfig percentage msg defaultConfig
 
@@ -929,7 +986,7 @@ jumpToPercentageY percentage msg =
         { defaultConfig | offsetY = 20 }
 
 -}
-jumpToPercentageYWithConfig : Float -> msg -> Config -> Cmd msg
+jumpToPercentageYWithConfig : PercY -> msg -> Config -> Cmd msg
 jumpToPercentageYWithConfig percentage msg config =
     ScrollTask.jumpToPercentageYWithConfig percentage config
         |> Task.attempt (always msg)
@@ -944,7 +1001,7 @@ jumpToPercentageYWithConfig percentage msg config =
     scrollBy 100 -50 NoOp -- 100px right, 50px up
 
 -}
-scrollBy : Float -> Float -> msg -> Cmd msg
+scrollBy : ScrollDeltaX -> ScrollDeltaY -> msg -> Cmd msg
 scrollBy offsetX offsetY msg =
     scrollByWithConfig offsetX offsetY msg defaultConfig
 
@@ -957,7 +1014,7 @@ scrollBy offsetX offsetY msg =
         { defaultConfig | timing = Duration 800 }
 
 -}
-scrollByWithConfig : Float -> Float -> msg -> Config -> Cmd msg
+scrollByWithConfig : ScrollDeltaX -> ScrollDeltaY -> msg -> Config -> Cmd msg
 scrollByWithConfig offsetX offsetY msg config =
     ScrollTask.scrollByWithConfig offsetX offsetY config
         |> Task.attempt (always msg)
@@ -968,7 +1025,7 @@ scrollByWithConfig offsetX offsetY msg config =
     jumpBy 100 -50 NoOp
 
 -}
-jumpBy : Float -> Float -> msg -> Cmd msg
+jumpBy : ScrollDeltaX -> ScrollDeltaY -> msg -> Cmd msg
 jumpBy offsetX offsetY msg =
     jumpByWithConfig offsetX offsetY msg defaultConfig
 
@@ -981,7 +1038,7 @@ jumpBy offsetX offsetY msg =
         { defaultConfig | axis = BothWithOffset 10 20 }
 
 -}
-jumpByWithConfig : Float -> Float -> msg -> Config -> Cmd msg
+jumpByWithConfig : ScrollDeltaX -> ScrollDeltaY -> msg -> Config -> Cmd msg
 jumpByWithConfig offsetX offsetY msg config =
     ScrollTask.jumpByWithConfig offsetX offsetY config
         |> Task.attempt (always msg)
@@ -992,7 +1049,7 @@ jumpByWithConfig offsetX offsetY msg config =
     scrollByViewportSize 1 -0.5 NoOp -- 1 viewport right, half viewport up
 
 -}
-scrollByViewportSize : Float -> Float -> msg -> Cmd msg
+scrollByViewportSize : ViewportMultiplierX -> ViewportMultiplierY -> msg -> Cmd msg
 scrollByViewportSize multiplierX multiplierY msg =
     scrollByViewportSizeWithConfig multiplierX multiplierY msg defaultConfig
 
@@ -1005,7 +1062,7 @@ scrollByViewportSize multiplierX multiplierY msg =
         { defaultConfig | timing = Duration 800 }
 
 -}
-scrollByViewportSizeWithConfig : Float -> Float -> msg -> Config -> Cmd msg
+scrollByViewportSizeWithConfig : ViewportMultiplierX -> ViewportMultiplierY -> msg -> Config -> Cmd msg
 scrollByViewportSizeWithConfig multiplierX multiplierY msg config =
     ScrollTask.scrollByViewportSizeWithConfig multiplierX multiplierY config
         |> Task.attempt (always msg)
@@ -1016,7 +1073,7 @@ scrollByViewportSizeWithConfig multiplierX multiplierY msg config =
     jumpByViewportSize 1 -0.5 NoOp
 
 -}
-jumpByViewportSize : Float -> Float -> msg -> Cmd msg
+jumpByViewportSize : ViewportMultiplierX -> ViewportMultiplierY -> msg -> Cmd msg
 jumpByViewportSize multiplierX multiplierY msg =
     jumpByViewportSizeWithConfig multiplierX multiplierY msg defaultConfig
 
@@ -1029,7 +1086,7 @@ jumpByViewportSize multiplierX multiplierY msg =
         { defaultConfig | axis = BothWithOffset 10 20 }
 
 -}
-jumpByViewportSizeWithConfig : Float -> Float -> msg -> Config -> Cmd msg
+jumpByViewportSizeWithConfig : ViewportMultiplierX -> ViewportMultiplierY -> msg -> Config -> Cmd msg
 jumpByViewportSizeWithConfig multiplierX multiplierY msg config =
     ScrollTask.jumpByViewportSizeWithConfig multiplierX multiplierY config
         |> Task.attempt (always msg)
@@ -1044,7 +1101,7 @@ jumpByViewportSizeWithConfig multiplierX multiplierY msg config =
     scrollToCoordinates 100 200 NoOp -- scroll to (100, 200)
 
 -}
-scrollToCoordinates : Float -> Float -> msg -> Cmd msg
+scrollToCoordinates : XCoordinate -> YCoordinate -> msg -> Cmd msg
 scrollToCoordinates x y msg =
     scrollToCoordinatesWithConfig x y msg defaultConfig
 
@@ -1057,7 +1114,7 @@ scrollToCoordinates x y msg =
         { defaultConfig | timing = Duration 800 }
 
 -}
-scrollToCoordinatesWithConfig : Float -> Float -> msg -> Config -> Cmd msg
+scrollToCoordinatesWithConfig : XCoordinate -> YCoordinate -> msg -> Config -> Cmd msg
 scrollToCoordinatesWithConfig x y msg config =
     ScrollTask.scrollToCoordinatesWithConfig x y config
         |> Task.attempt (always msg)
@@ -1068,7 +1125,7 @@ scrollToCoordinatesWithConfig x y msg config =
     jumpToCoordinates 100 200 NoOp
 
 -}
-jumpToCoordinates : Float -> Float -> msg -> Cmd msg
+jumpToCoordinates : XCoordinate -> YCoordinate -> msg -> Cmd msg
 jumpToCoordinates x y msg =
     jumpToCoordinatesWithConfig x y msg defaultConfig
 
@@ -1081,7 +1138,7 @@ jumpToCoordinates x y msg =
         { defaultConfig | axis = BothWithOffset 10 20 }
 
 -}
-jumpToCoordinatesWithConfig : Float -> Float -> msg -> Config -> Cmd msg
+jumpToCoordinatesWithConfig : XCoordinate -> YCoordinate -> msg -> Config -> Cmd msg
 jumpToCoordinatesWithConfig x y msg config =
     ScrollTask.jumpToCoordinatesWithConfig x y config
         |> Task.attempt (always msg)

@@ -12,11 +12,14 @@ module Scroll.Container.Task exposing
     , scrollToCenter, scrollToCenterWithConfig, jumpToCenter, jumpToCenterWithConfig
     , scrollToCenterX, scrollToCenterXWithConfig, jumpToCenterX, jumpToCenterXWithConfig
     , scrollToCenterY, scrollToCenterYWithConfig, jumpToCenterY, jumpToCenterYWithConfig
+    , PercX, PercY
     , scrollToPercentage, scrollToPercentageWithConfig, jumpToPercentage, jumpToPercentageWithConfig
     , scrollToPercentageX, scrollToPercentageXWithConfig, jumpToPercentageX, jumpToPercentageXWithConfig
     , scrollToPercentageY, scrollToPercentageYWithConfig, jumpToPercentageY, jumpToPercentageYWithConfig
+    , ScrollDeltaX, ScrollDeltaY, ViewportMultiplierX, ViewportMultiplierY
     , scrollBy, scrollByWithConfig, jumpBy, jumpByWithConfig
     , scrollByViewportSize, scrollByViewportSizeWithConfig, jumpByViewportSize, jumpByViewportSizeWithConfig
+    , XCoordinate, YCoordinate
     , scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
     )
 
@@ -143,12 +146,6 @@ _[↑ Corners](#corners) | [↑ Position-Targeting Functions](#position-targetin
 
 Use these functions to scroll or jump to center positions within the container.
 
-The `axis` field in [Config](Scroll#Config) controls which axes are used:
-
-  - **X**: Center horizontally only
-  - **Y**: Center vertically only
-  - **Both**: Center on both axes (default)
-
 
 ### Both Axes
 
@@ -176,6 +173,8 @@ Position within the container using percentages (0-100). Values outside this ran
 
 The `axis` field in [Config](Scroll#Config) controls which axes are used for percentage positioning.
 
+@docs PercX, PercY
+
 
 ### Both Axes
 
@@ -200,6 +199,8 @@ Move relative to the current scroll position within the container.
 
 The `axis` field in [Config](Scroll#Config) controls which axes are affected by the relative movement.
 
+@docs ScrollDeltaX, ScrollDeltaY, ViewportMultiplierX, ViewportMultiplierY
+
 
 ### Pixel-Based Movement
 
@@ -219,6 +220,8 @@ Scroll or jump to specific pixel coordinates within the container. Coordinates a
 
 The `axis` field in [Config](Scroll#Config) controls which axes are used for coordinate targeting.
 
+@docs XCoordinate, YCoordinate
+
 @docs scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
 
 _[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning Functions](#advanced-positioning-functions) | [↑ Documentation Index](#documentation-index)_
@@ -230,6 +233,54 @@ import Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames
 import Scroll exposing (Axis(..), Config, Container(..), ContainerId, TargetId, defaultConfig)
 import Scroll.Internal exposing (Direction(..), calculateScrollIntoView, getAxisDirection, getClampedPositions, getContainerInfo, getViewport, timingToSpeed)
 import Task exposing (Task)
+
+
+{-| X-coordinate percentage (0.0 to 1.0)
+-}
+type alias PercX =
+    Float
+
+
+{-| Y-coordinate percentage (0.0 to 1.0)
+-}
+type alias PercY =
+    Float
+
+
+{-| Horizontal scroll delta in pixels
+-}
+type alias ScrollDeltaX =
+    Float
+
+
+{-| Vertical scroll delta in pixels
+-}
+type alias ScrollDeltaY =
+    Float
+
+
+{-| X-axis viewport size multiplier
+-}
+type alias ViewportMultiplierX =
+    Float
+
+
+{-| Y-axis viewport size multiplier
+-}
+type alias ViewportMultiplierY =
+    Float
+
+
+{-| X-coordinate in pixels from document origin
+-}
+type alias XCoordinate =
+    Float
+
+
+{-| Y-coordinate in pixels from document origin
+-}
+type alias YCoordinate =
+    Float
 
 
 {-| Smooth scroll to element within a container.
@@ -984,14 +1035,14 @@ jumpToCenterYWithConfig containerId config =
 
 {-| Smoothly scroll to a position defined by percentages (both X and Y).
 -}
-scrollToPercentage : ContainerId -> Float -> Float -> Task Dom.Error (List ())
+scrollToPercentage : ContainerId -> PercX -> PercY -> Task Dom.Error (List ())
 scrollToPercentage containerId percentX percentY =
     scrollToPercentageWithConfig containerId percentX percentY defaultConfig
 
 
 {-| Smoothly scroll to percentage position with custom configuration.
 -}
-scrollToPercentageWithConfig : ContainerId -> Float -> Float -> Config -> Task Dom.Error (List ())
+scrollToPercentageWithConfig : ContainerId -> PercX -> PercY -> Config -> Task Dom.Error (List ())
 scrollToPercentageWithConfig containerId percentX percentY config =
     Dom.getViewportOf containerId
         |> Task.andThen
@@ -1015,14 +1066,14 @@ scrollToPercentageWithConfig containerId percentX percentY config =
 
 {-| Jump instantly to a position defined by percentages (both X and Y).
 -}
-jumpToPercentage : ContainerId -> Float -> Float -> Task Dom.Error ()
+jumpToPercentage : ContainerId -> PercX -> PercY -> Task Dom.Error ()
 jumpToPercentage containerId percentX percentY =
     jumpToPercentageWithConfig containerId percentX percentY defaultConfig
 
 
 {-| Jump instantly to percentage position with custom configuration.
 -}
-jumpToPercentageWithConfig : ContainerId -> Float -> Float -> Config -> Task Dom.Error ()
+jumpToPercentageWithConfig : ContainerId -> PercX -> PercY -> Config -> Task Dom.Error ()
 jumpToPercentageWithConfig containerId percentX percentY config =
     Dom.getViewportOf containerId
         |> Task.andThen
@@ -1046,14 +1097,14 @@ jumpToPercentageWithConfig containerId percentX percentY config =
 
 {-| Smoothly scroll to a horizontal percentage position (X axis only).
 -}
-scrollToPercentageX : ContainerId -> Float -> Task Dom.Error (List ())
+scrollToPercentageX : ContainerId -> PercX -> Task Dom.Error (List ())
 scrollToPercentageX containerId percentX =
     scrollToPercentageXWithConfig containerId percentX defaultConfig
 
 
 {-| Smoothly scroll to horizontal percentage with custom configuration.
 -}
-scrollToPercentageXWithConfig : ContainerId -> Float -> Config -> Task Dom.Error (List ())
+scrollToPercentageXWithConfig : ContainerId -> PercX -> Config -> Task Dom.Error (List ())
 scrollToPercentageXWithConfig containerId percentX config =
     Dom.getViewportOf containerId
         |> Task.andThen
@@ -1071,14 +1122,14 @@ scrollToPercentageXWithConfig containerId percentX config =
 
 {-| Jump instantly to a horizontal percentage position (X axis only).
 -}
-jumpToPercentageX : ContainerId -> Float -> Task Dom.Error ()
+jumpToPercentageX : ContainerId -> PercX -> Task Dom.Error ()
 jumpToPercentageX containerId percentX =
     jumpToPercentageXWithConfig containerId percentX defaultConfig
 
 
 {-| Jump instantly to horizontal percentage with custom configuration.
 -}
-jumpToPercentageXWithConfig : ContainerId -> Float -> Config -> Task Dom.Error ()
+jumpToPercentageXWithConfig : ContainerId -> PercX -> Config -> Task Dom.Error ()
 jumpToPercentageXWithConfig containerId percentX config =
     Dom.getViewportOf containerId
         |> Task.andThen
@@ -1096,14 +1147,14 @@ jumpToPercentageXWithConfig containerId percentX config =
 
 {-| Smoothly scroll to a vertical percentage position (Y axis only).
 -}
-scrollToPercentageY : ContainerId -> Float -> Task Dom.Error (List ())
+scrollToPercentageY : ContainerId -> PercY -> Task Dom.Error (List ())
 scrollToPercentageY containerId percentY =
     scrollToPercentageYWithConfig containerId percentY defaultConfig
 
 
 {-| Smoothly scroll to vertical percentage with custom configuration.
 -}
-scrollToPercentageYWithConfig : ContainerId -> Float -> Config -> Task Dom.Error (List ())
+scrollToPercentageYWithConfig : ContainerId -> PercY -> Config -> Task Dom.Error (List ())
 scrollToPercentageYWithConfig containerId percentY config =
     Dom.getViewportOf containerId
         |> Task.andThen
@@ -1121,14 +1172,14 @@ scrollToPercentageYWithConfig containerId percentY config =
 
 {-| Jump instantly to a vertical percentage position (Y axis only).
 -}
-jumpToPercentageY : ContainerId -> Float -> Task Dom.Error ()
+jumpToPercentageY : ContainerId -> PercY -> Task Dom.Error ()
 jumpToPercentageY containerId percentY =
     jumpToPercentageYWithConfig containerId percentY defaultConfig
 
 
 {-| Jump instantly to vertical percentage with custom configuration.
 -}
-jumpToPercentageYWithConfig : ContainerId -> Float -> Config -> Task Dom.Error ()
+jumpToPercentageYWithConfig : ContainerId -> PercY -> Config -> Task Dom.Error ()
 jumpToPercentageYWithConfig containerId percentY config =
     Dom.getViewportOf containerId
         |> Task.andThen
@@ -1150,14 +1201,14 @@ jumpToPercentageYWithConfig containerId percentY config =
 
 {-| Smoothly scroll by specific pixel amounts from the current position.
 -}
-scrollBy : ContainerId -> Float -> Float -> Task Dom.Error (List ())
+scrollBy : ContainerId -> ScrollDeltaX -> ScrollDeltaY -> Task Dom.Error (List ())
 scrollBy containerId deltaX deltaY =
     scrollByWithConfig containerId deltaX deltaY defaultConfig
 
 
 {-| Smoothly scroll by pixel amounts with custom configuration.
 -}
-scrollByWithConfig : ContainerId -> Float -> Float -> Config -> Task Dom.Error (List ())
+scrollByWithConfig : ContainerId -> ScrollDeltaX -> ScrollDeltaY -> Config -> Task Dom.Error (List ())
 scrollByWithConfig containerId deltaX deltaY config =
     Dom.getViewportOf containerId
         |> Task.andThen
@@ -1175,14 +1226,14 @@ scrollByWithConfig containerId deltaX deltaY config =
 
 {-| Jump instantly by specific pixel amounts from the current position.
 -}
-jumpBy : ContainerId -> Float -> Float -> Task Dom.Error ()
+jumpBy : ContainerId -> ScrollDeltaX -> ScrollDeltaY -> Task Dom.Error ()
 jumpBy containerId deltaX deltaY =
     jumpByWithConfig containerId deltaX deltaY defaultConfig
 
 
 {-| Jump instantly by pixel amounts with custom configuration.
 -}
-jumpByWithConfig : ContainerId -> Float -> Float -> Config -> Task Dom.Error ()
+jumpByWithConfig : ContainerId -> ScrollDeltaX -> ScrollDeltaY -> Config -> Task Dom.Error ()
 jumpByWithConfig containerId deltaX deltaY config =
     Dom.getViewportOf containerId
         |> Task.andThen
@@ -1200,14 +1251,14 @@ jumpByWithConfig containerId deltaX deltaY config =
 
 {-| Smoothly scroll by viewport multiples from the current position.
 -}
-scrollByViewportSize : ContainerId -> Float -> Float -> Task Dom.Error (List ())
+scrollByViewportSize : ContainerId -> ViewportMultiplierX -> ViewportMultiplierY -> Task Dom.Error (List ())
 scrollByViewportSize containerId multiplierX multiplierY =
     scrollByViewportSizeWithConfig containerId multiplierX multiplierY defaultConfig
 
 
 {-| Smoothly scroll by viewport multiples with custom configuration.
 -}
-scrollByViewportSizeWithConfig : ContainerId -> Float -> Float -> Config -> Task Dom.Error (List ())
+scrollByViewportSizeWithConfig : ContainerId -> ViewportMultiplierX -> ViewportMultiplierY -> Config -> Task Dom.Error (List ())
 scrollByViewportSizeWithConfig containerId multiplierX multiplierY config =
     Dom.getViewportOf containerId
         |> Task.andThen
@@ -1231,14 +1282,14 @@ scrollByViewportSizeWithConfig containerId multiplierX multiplierY config =
 
 {-| Jump instantly by viewport multiples from the current position.
 -}
-jumpByViewportSize : ContainerId -> Float -> Float -> Task Dom.Error ()
+jumpByViewportSize : ContainerId -> ViewportMultiplierX -> ViewportMultiplierY -> Task Dom.Error ()
 jumpByViewportSize containerId multiplierX multiplierY =
     jumpByViewportSizeWithConfig containerId multiplierX multiplierY defaultConfig
 
 
 {-| Jump instantly by viewport multiples with custom configuration.
 -}
-jumpByViewportSizeWithConfig : ContainerId -> Float -> Float -> Config -> Task Dom.Error ()
+jumpByViewportSizeWithConfig : ContainerId -> ViewportMultiplierX -> ViewportMultiplierY -> Config -> Task Dom.Error ()
 jumpByViewportSizeWithConfig containerId multiplierX multiplierY config =
     Dom.getViewportOf containerId
         |> Task.andThen
@@ -1266,14 +1317,14 @@ jumpByViewportSizeWithConfig containerId multiplierX multiplierY config =
 
 {-| Smoothly scroll to specific pixel coordinates within a container.
 -}
-scrollToCoordinates : ContainerId -> Float -> Float -> Task Dom.Error (List ())
+scrollToCoordinates : ContainerId -> XCoordinate -> YCoordinate -> Task Dom.Error (List ())
 scrollToCoordinates containerId x y =
     scrollToCoordinatesWithConfig containerId x y defaultConfig
 
 
 {-| Smoothly scroll to coordinates with custom configuration.
 -}
-scrollToCoordinatesWithConfig : ContainerId -> Float -> Float -> Config -> Task Dom.Error (List ())
+scrollToCoordinatesWithConfig : ContainerId -> XCoordinate -> YCoordinate -> Config -> Task Dom.Error (List ())
 scrollToCoordinatesWithConfig containerId targetX targetY config =
     let
         getViewport_ =
@@ -1343,14 +1394,14 @@ scrollToCoordinatesWithConfig containerId targetX targetY config =
 
 {-| Jump instantly to specific pixel coordinates within a container.
 -}
-jumpToCoordinates : ContainerId -> Float -> Float -> Task Dom.Error ()
+jumpToCoordinates : ContainerId -> XCoordinate -> YCoordinate -> Task Dom.Error ()
 jumpToCoordinates containerId x y =
     jumpToCoordinatesWithConfig containerId x y defaultConfig
 
 
 {-| Jump instantly to coordinates with custom configuration.
 -}
-jumpToCoordinatesWithConfig : ContainerId -> Float -> Float -> Config -> Task Dom.Error ()
+jumpToCoordinatesWithConfig : ContainerId -> XCoordinate -> YCoordinate -> Config -> Task Dom.Error ()
 jumpToCoordinatesWithConfig containerId targetX targetY _ =
     Dom.getViewportOf containerId
         |> Task.andThen

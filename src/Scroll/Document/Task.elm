@@ -12,11 +12,14 @@ module Scroll.Document.Task exposing
     , scrollToCenter, scrollToCenterWithConfig, jumpToCenter, jumpToCenterWithConfig
     , scrollToCenterX, scrollToCenterXWithConfig, jumpToCenterX, jumpToCenterXWithConfig
     , scrollToCenterY, scrollToCenterYWithConfig, jumpToCenterY, jumpToCenterYWithConfig
+    , PercX, PercY
     , scrollToPercentage, scrollToPercentageWithConfig, jumpToPercentage, jumpToPercentageWithConfig
     , scrollToPercentageX, scrollToPercentageXWithConfig, jumpToPercentageX, jumpToPercentageXWithConfig
     , scrollToPercentageY, scrollToPercentageYWithConfig, jumpToPercentageY, jumpToPercentageYWithConfig
+    , ScrollDeltaX, ScrollDeltaY, ViewportMultiplierX, ViewportMultiplierY
     , scrollBy, scrollByWithConfig, jumpBy, jumpByWithConfig
     , scrollByViewportSize, scrollByViewportSizeWithConfig, jumpByViewportSize, jumpByViewportSizeWithConfig
+    , XCoordinate, YCoordinate
     , scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
     )
 
@@ -158,6 +161,8 @@ _[↑ Center Positioning](#center-positioning) | [↑ Position-Targeting Functio
 
 Scroll to positions defined as percentages of the total scrollable area.
 
+@docs PercX, PercY
+
 @docs scrollToPercentage, scrollToPercentageWithConfig, jumpToPercentage, jumpToPercentageWithConfig
 @docs scrollToPercentageX, scrollToPercentageXWithConfig, jumpToPercentageX, jumpToPercentageXWithConfig
 @docs scrollToPercentageY, scrollToPercentageYWithConfig, jumpToPercentageY, jumpToPercentageYWithConfig
@@ -169,6 +174,8 @@ _[↑ Percentage-Based Positioning](#percentage-based-positioning) | [↑ Advanc
 
 Scroll relative to the current position by pixel offsets or viewport multiples.
 
+@docs ScrollDeltaX, ScrollDeltaY, ViewportMultiplierX, ViewportMultiplierY
+
 @docs scrollBy, scrollByWithConfig, jumpBy, jumpByWithConfig
 @docs scrollByViewportSize, scrollByViewportSizeWithConfig, jumpByViewportSize, jumpByViewportSizeWithConfig
 
@@ -178,6 +185,8 @@ _[↑ Relative Movement](#relative-movement) | [↑ Advanced Positioning Functio
 ## Coordinate Targeting
 
 Scroll to specific pixel coordinates within the document.
+
+@docs XCoordinate, YCoordinate
 
 @docs scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
 
@@ -190,6 +199,62 @@ import Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames
 import Scroll exposing (Axis(..), Config, Container(..), TargetId, defaultConfig)
 import Scroll.Internal exposing (Direction(..), calculateScrollIntoView, getAxisDirection, getClampedPositions, getContainerInfo, getOffsetX, getOffsetY, getViewport, timingToSpeed)
 import Task exposing (Task)
+
+
+
+-- TYPE ALIASES
+
+
+{-| Type alias for horizontal percentage values (0.0 to 1.0).
+-}
+type alias PercX =
+    Float
+
+
+{-| Type alias for vertical percentage values (0.0 to 1.0).
+-}
+type alias PercY =
+    Float
+
+
+{-| Type alias for horizontal scroll offset delta values in pixels.
+-}
+type alias ScrollDeltaX =
+    Float
+
+
+{-| Type alias for vertical scroll offset delta values in pixels.
+-}
+type alias ScrollDeltaY =
+    Float
+
+
+{-| Type alias for horizontal viewport size multiplier values.
+-}
+type alias ViewportMultiplierX =
+    Float
+
+
+{-| Type alias for vertical viewport size multiplier values.
+-}
+type alias ViewportMultiplierY =
+    Float
+
+
+{-| Type alias for horizontal coordinate positions in pixels.
+-}
+type alias XCoordinate =
+    Float
+
+
+{-| Type alias for vertical coordinate positions in pixels.
+-}
+type alias YCoordinate =
+    Float
+
+
+
+-- FUNCTIONS
 
 
 {-| Smooth scroll to element in document.
@@ -1175,14 +1240,14 @@ jumpToCenterYWithConfig config =
 
 {-| Smooth scroll to percentage positions. Takes percentageX and percentageY as values between 0.0 and 1.0.
 -}
-scrollToPercentage : Float -> Float -> Task Dom.Error (List ())
+scrollToPercentage : PercX -> PercY -> Task Dom.Error (List ())
 scrollToPercentage percentageX percentageY =
     scrollToPercentageWithConfig percentageX percentageY defaultConfig
 
 
 {-| Smooth scroll to percentage positions with custom configuration.
 -}
-scrollToPercentageWithConfig : Float -> Float -> Config -> Task Dom.Error (List ())
+scrollToPercentageWithConfig : PercX -> PercY -> Config -> Task Dom.Error (List ())
 scrollToPercentageWithConfig percentageX percentageY config =
     Dom.getViewport
         |> Task.andThen
@@ -1242,14 +1307,14 @@ scrollToPercentageWithConfig percentageX percentageY config =
 
 {-| Jump instantly to percentage positions.
 -}
-jumpToPercentage : Float -> Float -> Task Dom.Error ()
+jumpToPercentage : PercX -> PercY -> Task Dom.Error ()
 jumpToPercentage percentageX percentageY =
     jumpToPercentageWithConfig percentageX percentageY defaultConfig
 
 
 {-| Jump instantly to percentage positions with custom configuration.
 -}
-jumpToPercentageWithConfig : Float -> Float -> Config -> Task Dom.Error ()
+jumpToPercentageWithConfig : PercX -> PercY -> Config -> Task Dom.Error ()
 jumpToPercentageWithConfig percentageX percentageY config =
     Dom.getViewport
         |> Task.andThen
@@ -1273,14 +1338,14 @@ jumpToPercentageWithConfig percentageX percentageY config =
 
 {-| Smooth scroll to percentage position horizontally.
 -}
-scrollToPercentageX : Float -> Task Dom.Error (List ())
+scrollToPercentageX : PercX -> Task Dom.Error (List ())
 scrollToPercentageX percentage =
     scrollToPercentageXWithConfig percentage defaultConfig
 
 
 {-| Smooth scroll to percentage position horizontally with custom configuration.
 -}
-scrollToPercentageXWithConfig : Float -> Config -> Task Dom.Error (List ())
+scrollToPercentageXWithConfig : PercX -> Config -> Task Dom.Error (List ())
 scrollToPercentageXWithConfig percentage config =
     Dom.getViewport
         |> Task.andThen
@@ -1303,14 +1368,14 @@ scrollToPercentageXWithConfig percentage config =
 
 {-| Jump instantly to percentage position horizontally.
 -}
-jumpToPercentageX : Float -> Task Dom.Error ()
+jumpToPercentageX : PercX -> Task Dom.Error ()
 jumpToPercentageX percentage =
     jumpToPercentageXWithConfig percentage defaultConfig
 
 
 {-| Jump instantly to percentage position horizontally with custom configuration.
 -}
-jumpToPercentageXWithConfig : Float -> Config -> Task Dom.Error ()
+jumpToPercentageXWithConfig : PercX -> Config -> Task Dom.Error ()
 jumpToPercentageXWithConfig percentage config =
     Dom.getViewport
         |> Task.andThen
@@ -1328,14 +1393,14 @@ jumpToPercentageXWithConfig percentage config =
 
 {-| Smooth scroll to percentage position vertically.
 -}
-scrollToPercentageY : Float -> Task Dom.Error (List ())
+scrollToPercentageY : PercY -> Task Dom.Error (List ())
 scrollToPercentageY percentage =
     scrollToPercentageYWithConfig percentage defaultConfig
 
 
 {-| Smooth scroll to percentage position vertically with custom configuration.
 -}
-scrollToPercentageYWithConfig : Float -> Config -> Task Dom.Error (List ())
+scrollToPercentageYWithConfig : PercY -> Config -> Task Dom.Error (List ())
 scrollToPercentageYWithConfig percentage config =
     Dom.getViewport
         |> Task.andThen
@@ -1358,14 +1423,14 @@ scrollToPercentageYWithConfig percentage config =
 
 {-| Jump instantly to percentage position vertically.
 -}
-jumpToPercentageY : Float -> Task Dom.Error ()
+jumpToPercentageY : PercY -> Task Dom.Error ()
 jumpToPercentageY percentage =
     jumpToPercentageYWithConfig percentage defaultConfig
 
 
 {-| Jump instantly to percentage position vertically with custom configuration.
 -}
-jumpToPercentageYWithConfig : Float -> Config -> Task Dom.Error ()
+jumpToPercentageYWithConfig : PercY -> Config -> Task Dom.Error ()
 jumpToPercentageYWithConfig percentage config =
     Dom.getViewport
         |> Task.andThen
@@ -1383,14 +1448,14 @@ jumpToPercentageYWithConfig percentage config =
 
 {-| Smooth scroll by pixel offsets from current position.
 -}
-scrollBy : Float -> Float -> Task Dom.Error (List ())
+scrollBy : ScrollDeltaX -> ScrollDeltaY -> Task Dom.Error (List ())
 scrollBy offsetX offsetY =
     scrollByWithConfig offsetX offsetY defaultConfig
 
 
 {-| Smooth scroll by pixel offsets from current position with custom configuration.
 -}
-scrollByWithConfig : Float -> Float -> Config -> Task Dom.Error (List ())
+scrollByWithConfig : ScrollDeltaX -> ScrollDeltaY -> Config -> Task Dom.Error (List ())
 scrollByWithConfig offsetX offsetY config =
     Dom.getViewport
         |> Task.andThen
@@ -1454,14 +1519,14 @@ scrollByWithConfig offsetX offsetY config =
 
 {-| Jump instantly by pixel offsets from current position.
 -}
-jumpBy : Float -> Float -> Task Dom.Error ()
+jumpBy : ScrollDeltaX -> ScrollDeltaY -> Task Dom.Error ()
 jumpBy offsetX offsetY =
     jumpByWithConfig offsetX offsetY defaultConfig
 
 
 {-| Jump instantly by pixel offsets from current position with custom configuration.
 -}
-jumpByWithConfig : Float -> Float -> Config -> Task Dom.Error ()
+jumpByWithConfig : ScrollDeltaX -> ScrollDeltaY -> Config -> Task Dom.Error ()
 jumpByWithConfig offsetX offsetY config =
     Dom.getViewport
         |> Task.andThen
@@ -1489,14 +1554,14 @@ jumpByWithConfig offsetX offsetY config =
 
 {-| Smooth scroll by viewport size multiples from current position.
 -}
-scrollByViewportSize : Float -> Float -> Task Dom.Error (List ())
+scrollByViewportSize : ViewportMultiplierX -> ViewportMultiplierY -> Task Dom.Error (List ())
 scrollByViewportSize multiplierX multiplierY =
     scrollByViewportSizeWithConfig multiplierX multiplierY defaultConfig
 
 
 {-| Smooth scroll by viewport size multiples from current position with custom configuration.
 -}
-scrollByViewportSizeWithConfig : Float -> Float -> Config -> Task Dom.Error (List ())
+scrollByViewportSizeWithConfig : ViewportMultiplierX -> ViewportMultiplierY -> Config -> Task Dom.Error (List ())
 scrollByViewportSizeWithConfig multiplierX multiplierY config =
     Dom.getViewport
         |> Task.andThen
@@ -1514,14 +1579,14 @@ scrollByViewportSizeWithConfig multiplierX multiplierY config =
 
 {-| Jump instantly by viewport size multiples from current position.
 -}
-jumpByViewportSize : Float -> Float -> Task Dom.Error ()
+jumpByViewportSize : ViewportMultiplierX -> ViewportMultiplierY -> Task Dom.Error ()
 jumpByViewportSize multiplierX multiplierY =
     jumpByViewportSizeWithConfig multiplierX multiplierY defaultConfig
 
 
 {-| Jump instantly by viewport size multiples from current position with custom configuration.
 -}
-jumpByViewportSizeWithConfig : Float -> Float -> Config -> Task Dom.Error ()
+jumpByViewportSizeWithConfig : ViewportMultiplierX -> ViewportMultiplierY -> Config -> Task Dom.Error ()
 jumpByViewportSizeWithConfig multiplierX multiplierY config =
     Dom.getViewport
         |> Task.andThen
@@ -1539,14 +1604,14 @@ jumpByViewportSizeWithConfig multiplierX multiplierY config =
 
 {-| Smooth scroll to specific pixel coordinates.
 -}
-scrollToCoordinates : Float -> Float -> Task Dom.Error (List ())
+scrollToCoordinates : XCoordinate -> YCoordinate -> Task Dom.Error (List ())
 scrollToCoordinates x y =
     scrollToCoordinatesWithConfig x y defaultConfig
 
 
 {-| Smooth scroll to specific pixel coordinates with custom configuration.
 -}
-scrollToCoordinatesWithConfig : Float -> Float -> Config -> Task Dom.Error (List ())
+scrollToCoordinatesWithConfig : XCoordinate -> YCoordinate -> Config -> Task Dom.Error (List ())
 scrollToCoordinatesWithConfig x y config =
     Dom.getViewport
         |> Task.andThen
@@ -1610,14 +1675,14 @@ scrollToCoordinatesWithConfig x y config =
 
 {-| Jump instantly to specific pixel coordinates.
 -}
-jumpToCoordinates : Float -> Float -> Task Dom.Error ()
+jumpToCoordinates : XCoordinate -> YCoordinate -> Task Dom.Error ()
 jumpToCoordinates x y =
     jumpToCoordinatesWithConfig x y defaultConfig
 
 
 {-| Jump instantly to specific pixel coordinates with custom configuration.
 -}
-jumpToCoordinatesWithConfig : Float -> Float -> Config -> Task Dom.Error ()
+jumpToCoordinatesWithConfig : XCoordinate -> YCoordinate -> Config -> Task Dom.Error ()
 jumpToCoordinatesWithConfig x y config =
     Dom.getViewport
         |> Task.andThen

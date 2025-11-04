@@ -12,11 +12,14 @@ module Scroll.Container.Cmd exposing
     , scrollToCenter, scrollToCenterWithConfig, jumpToCenter, jumpToCenterWithConfig
     , scrollToCenterX, scrollToCenterXWithConfig, jumpToCenterX, jumpToCenterXWithConfig
     , scrollToCenterY, scrollToCenterYWithConfig, jumpToCenterY, jumpToCenterYWithConfig
+    , PercX, PercY
     , scrollToPercentage, scrollToPercentageWithConfig, jumpToPercentage, jumpToPercentageWithConfig
     , scrollToPercentageX, scrollToPercentageXWithConfig, jumpToPercentageX, jumpToPercentageXWithConfig
     , scrollToPercentageY, scrollToPercentageYWithConfig, jumpToPercentageY, jumpToPercentageYWithConfig
+    , ScrollDeltaX, ScrollDeltaY, ViewportMultiplierX, ViewportMultiplierY
     , scrollBy, scrollByWithConfig, jumpBy, jumpByWithConfig
     , scrollByViewportSize, scrollByViewportSizeWithConfig, jumpByViewportSize, jumpByViewportSizeWithConfig
+    , XCoordinate, YCoordinate
     , scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
     )
 
@@ -144,12 +147,6 @@ _[↑ Corners](#corners) | [↑ Position-Targeting Functions](#position-targetin
 
 Use these functions to scroll or jump to center positions within the container.
 
-The `axis` field in [Config](Scroll#Config) controls which axes are used:
-
-  - **X**: Center horizontally only
-  - **Y**: Center vertically only
-  - **Both**: Center on both axes (default)
-
 
 ### Both Axes
 
@@ -177,6 +174,8 @@ Position within the container using percentages (0-100). Values outside this ran
 
 The `axis` field in [Config](Scroll#Config) controls which axes are used for percentage positioning.
 
+@docs PercX, PercY
+
 
 ### Both Axes
 
@@ -201,6 +200,8 @@ Move relative to the current scroll position within the container.
 
 The `axis` field in [Config](Scroll#Config) controls which axes are affected by the relative movement.
 
+@docs ScrollDeltaX, ScrollDeltaY, ViewportMultiplierX, ViewportMultiplierY
+
 
 ### Pixel-Based Movement
 
@@ -220,6 +221,8 @@ Scroll or jump to specific pixel coordinates within the container. Coordinates a
 
 The `axis` field in [Config](Scroll#Config) controls which axes are used for coordinate targeting.
 
+@docs XCoordinate, YCoordinate
+
 @docs scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
 
 _[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning Functions](#advanced-positioning-functions) | [↑ Documentation Index](#documentation-index)_
@@ -229,6 +232,54 @@ _[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning F
 import Scroll exposing (Config, Container(..), ContainerId, TargetId, defaultConfig)
 import Scroll.Container.Task as ScrollTask
 import Task
+
+
+{-| X-coordinate percentage (0.0 to 1.0)
+-}
+type alias PercX =
+    Float
+
+
+{-| Y-coordinate percentage (0.0 to 1.0)
+-}
+type alias PercY =
+    Float
+
+
+{-| Horizontal scroll delta in pixels
+-}
+type alias ScrollDeltaX =
+    Float
+
+
+{-| Vertical scroll delta in pixels
+-}
+type alias ScrollDeltaY =
+    Float
+
+
+{-| X-axis viewport size multiplier
+-}
+type alias ViewportMultiplierX =
+    Float
+
+
+{-| Y-axis viewport size multiplier
+-}
+type alias ViewportMultiplierY =
+    Float
+
+
+{-| X-coordinate in pixels from document origin
+-}
+type alias XCoordinate =
+    Float
+
+
+{-| Y-coordinate in pixels from document origin
+-}
+type alias YCoordinate =
+    Float
 
 
 
@@ -832,7 +883,7 @@ jumpToCenterYWithConfig containerId msg config =
     scrollToPercentage "container-id" 50.0 75.0 NoOp
 
 -}
-scrollToPercentage : ContainerId -> Float -> Float -> msg -> Cmd msg
+scrollToPercentage : ContainerId -> PercX -> PercY -> msg -> Cmd msg
 scrollToPercentage containerId percentX percentY msg =
     scrollToPercentageWithConfig containerId percentX percentY msg defaultConfig
 
@@ -842,7 +893,7 @@ scrollToPercentage containerId percentX percentY msg =
     scrollToPercentageWithConfig "container-id" 50.0 75.0 NoOp { defaultConfig | speed = 1000 }
 
 -}
-scrollToPercentageWithConfig : ContainerId -> Float -> Float -> msg -> Config -> Cmd msg
+scrollToPercentageWithConfig : ContainerId -> PercX -> PercY -> msg -> Config -> Cmd msg
 scrollToPercentageWithConfig containerId percentX percentY msg config =
     ScrollTask.scrollToPercentageWithConfig containerId percentX percentY config
         |> Task.attempt (always msg)
@@ -853,7 +904,7 @@ scrollToPercentageWithConfig containerId percentX percentY msg config =
     jumpToPercentage "container-id" 50.0 75.0 NoOp
 
 -}
-jumpToPercentage : ContainerId -> Float -> Float -> msg -> Cmd msg
+jumpToPercentage : ContainerId -> PercX -> PercY -> msg -> Cmd msg
 jumpToPercentage containerId percentX percentY msg =
     jumpToPercentageWithConfig containerId percentX percentY msg defaultConfig
 
@@ -863,7 +914,7 @@ jumpToPercentage containerId percentX percentY msg =
     jumpToPercentageWithConfig "container-id" 50.0 75.0 NoOp defaultConfig
 
 -}
-jumpToPercentageWithConfig : ContainerId -> Float -> Float -> msg -> Config -> Cmd msg
+jumpToPercentageWithConfig : ContainerId -> PercX -> PercY -> msg -> Config -> Cmd msg
 jumpToPercentageWithConfig containerId percentX percentY msg config =
     ScrollTask.jumpToPercentageWithConfig containerId percentX percentY config
         |> Task.attempt (always msg)
@@ -874,7 +925,7 @@ jumpToPercentageWithConfig containerId percentX percentY msg config =
     scrollToPercentageX "container-id" 25.0 NoOp
 
 -}
-scrollToPercentageX : ContainerId -> Float -> msg -> Cmd msg
+scrollToPercentageX : ContainerId -> PercX -> msg -> Cmd msg
 scrollToPercentageX containerId percentX msg =
     scrollToPercentageXWithConfig containerId percentX msg defaultConfig
 
@@ -884,7 +935,7 @@ scrollToPercentageX containerId percentX msg =
     scrollToPercentageXWithConfig "container-id" 25.0 NoOp { defaultConfig | speed = 1000 }
 
 -}
-scrollToPercentageXWithConfig : ContainerId -> Float -> msg -> Config -> Cmd msg
+scrollToPercentageXWithConfig : ContainerId -> PercX -> msg -> Config -> Cmd msg
 scrollToPercentageXWithConfig containerId percentX msg config =
     ScrollTask.scrollToPercentageXWithConfig containerId percentX config
         |> Task.attempt (always msg)
@@ -895,7 +946,7 @@ scrollToPercentageXWithConfig containerId percentX msg config =
     jumpToPercentageX "container-id" 25.0 NoOp
 
 -}
-jumpToPercentageX : ContainerId -> Float -> msg -> Cmd msg
+jumpToPercentageX : ContainerId -> PercX -> msg -> Cmd msg
 jumpToPercentageX containerId percentX msg =
     jumpToPercentageXWithConfig containerId percentX msg defaultConfig
 
@@ -905,7 +956,7 @@ jumpToPercentageX containerId percentX msg =
     jumpToPercentageXWithConfig "container-id" 25.0 NoOp defaultConfig
 
 -}
-jumpToPercentageXWithConfig : ContainerId -> Float -> msg -> Config -> Cmd msg
+jumpToPercentageXWithConfig : ContainerId -> PercX -> msg -> Config -> Cmd msg
 jumpToPercentageXWithConfig containerId percentX msg config =
     ScrollTask.jumpToPercentageXWithConfig containerId percentX config
         |> Task.attempt (always msg)
@@ -916,7 +967,7 @@ jumpToPercentageXWithConfig containerId percentX msg config =
     scrollToPercentageY "container-id" 80.0 NoOp
 
 -}
-scrollToPercentageY : ContainerId -> Float -> msg -> Cmd msg
+scrollToPercentageY : ContainerId -> PercY -> msg -> Cmd msg
 scrollToPercentageY containerId percentY msg =
     scrollToPercentageYWithConfig containerId percentY msg defaultConfig
 
@@ -926,7 +977,7 @@ scrollToPercentageY containerId percentY msg =
     scrollToPercentageYWithConfig "container-id" 80.0 NoOp { defaultConfig | speed = 1000 }
 
 -}
-scrollToPercentageYWithConfig : ContainerId -> Float -> msg -> Config -> Cmd msg
+scrollToPercentageYWithConfig : ContainerId -> PercY -> msg -> Config -> Cmd msg
 scrollToPercentageYWithConfig containerId percentY msg config =
     ScrollTask.scrollToPercentageYWithConfig containerId percentY config
         |> Task.attempt (always msg)
@@ -937,7 +988,7 @@ scrollToPercentageYWithConfig containerId percentY msg config =
     jumpToPercentageY "container-id" 80.0 NoOp
 
 -}
-jumpToPercentageY : ContainerId -> Float -> msg -> Cmd msg
+jumpToPercentageY : ContainerId -> PercY -> msg -> Cmd msg
 jumpToPercentageY containerId percentY msg =
     jumpToPercentageYWithConfig containerId percentY msg defaultConfig
 
@@ -947,7 +998,7 @@ jumpToPercentageY containerId percentY msg =
     jumpToPercentageYWithConfig "container-id" 80.0 NoOp defaultConfig
 
 -}
-jumpToPercentageYWithConfig : ContainerId -> Float -> msg -> Config -> Cmd msg
+jumpToPercentageYWithConfig : ContainerId -> PercY -> msg -> Config -> Cmd msg
 jumpToPercentageYWithConfig containerId percentY msg config =
     ScrollTask.jumpToPercentageYWithConfig containerId percentY config
         |> Task.attempt (always msg)
@@ -962,7 +1013,7 @@ jumpToPercentageYWithConfig containerId percentY msg config =
     scrollBy "container-id" 100.0 -50.0 NoOp
 
 -}
-scrollBy : ContainerId -> Float -> Float -> msg -> Cmd msg
+scrollBy : ContainerId -> ScrollDeltaX -> ScrollDeltaY -> msg -> Cmd msg
 scrollBy containerId deltaX deltaY msg =
     scrollByWithConfig containerId deltaX deltaY msg defaultConfig
 
@@ -972,7 +1023,7 @@ scrollBy containerId deltaX deltaY msg =
     scrollByWithConfig "container-id" 100.0 -50.0 NoOp { defaultConfig | speed = 1000 }
 
 -}
-scrollByWithConfig : ContainerId -> Float -> Float -> msg -> Config -> Cmd msg
+scrollByWithConfig : ContainerId -> ScrollDeltaX -> ScrollDeltaY -> msg -> Config -> Cmd msg
 scrollByWithConfig containerId deltaX deltaY msg config =
     ScrollTask.scrollByWithConfig containerId deltaX deltaY config
         |> Task.attempt (always msg)
@@ -983,7 +1034,7 @@ scrollByWithConfig containerId deltaX deltaY msg config =
     jumpBy "container-id" 100.0 -50.0 NoOp
 
 -}
-jumpBy : ContainerId -> Float -> Float -> msg -> Cmd msg
+jumpBy : ContainerId -> ScrollDeltaX -> ScrollDeltaY -> msg -> Cmd msg
 jumpBy containerId deltaX deltaY msg =
     jumpByWithConfig containerId deltaX deltaY msg defaultConfig
 
@@ -993,7 +1044,7 @@ jumpBy containerId deltaX deltaY msg =
     jumpByWithConfig "container-id" 100.0 -50.0 NoOp defaultConfig
 
 -}
-jumpByWithConfig : ContainerId -> Float -> Float -> msg -> Config -> Cmd msg
+jumpByWithConfig : ContainerId -> ScrollDeltaX -> ScrollDeltaY -> msg -> Config -> Cmd msg
 jumpByWithConfig containerId deltaX deltaY msg config =
     ScrollTask.jumpByWithConfig containerId deltaX deltaY config
         |> Task.attempt (always msg)
@@ -1004,7 +1055,7 @@ jumpByWithConfig containerId deltaX deltaY msg config =
     scrollByViewportSize "container-id" 1.0 0.5 NoOp
 
 -}
-scrollByViewportSize : ContainerId -> Float -> Float -> msg -> Cmd msg
+scrollByViewportSize : ContainerId -> ViewportMultiplierX -> ViewportMultiplierY -> msg -> Cmd msg
 scrollByViewportSize containerId multiplierX multiplierY msg =
     scrollByViewportSizeWithConfig containerId multiplierX multiplierY msg defaultConfig
 
@@ -1014,7 +1065,7 @@ scrollByViewportSize containerId multiplierX multiplierY msg =
     scrollByViewportSizeWithConfig "container-id" 1.0 0.5 NoOp { defaultConfig | speed = 1000 }
 
 -}
-scrollByViewportSizeWithConfig : ContainerId -> Float -> Float -> msg -> Config -> Cmd msg
+scrollByViewportSizeWithConfig : ContainerId -> ViewportMultiplierX -> ViewportMultiplierY -> msg -> Config -> Cmd msg
 scrollByViewportSizeWithConfig containerId multiplierX multiplierY msg config =
     ScrollTask.scrollByViewportSizeWithConfig containerId multiplierX multiplierY config
         |> Task.attempt (always msg)
@@ -1025,7 +1076,7 @@ scrollByViewportSizeWithConfig containerId multiplierX multiplierY msg config =
     jumpByViewportSize "container-id" 1.0 0.5 NoOp
 
 -}
-jumpByViewportSize : ContainerId -> Float -> Float -> msg -> Cmd msg
+jumpByViewportSize : ContainerId -> ViewportMultiplierX -> ViewportMultiplierY -> msg -> Cmd msg
 jumpByViewportSize containerId multiplierX multiplierY msg =
     jumpByViewportSizeWithConfig containerId multiplierX multiplierY msg defaultConfig
 
@@ -1035,7 +1086,7 @@ jumpByViewportSize containerId multiplierX multiplierY msg =
     jumpByViewportSizeWithConfig "container-id" 1.0 0.5 NoOp defaultConfig
 
 -}
-jumpByViewportSizeWithConfig : ContainerId -> Float -> Float -> msg -> Config -> Cmd msg
+jumpByViewportSizeWithConfig : ContainerId -> ViewportMultiplierX -> ViewportMultiplierY -> msg -> Config -> Cmd msg
 jumpByViewportSizeWithConfig containerId multiplierX multiplierY msg config =
     ScrollTask.jumpByViewportSizeWithConfig containerId multiplierX multiplierY config
         |> Task.attempt (always msg)
@@ -1050,7 +1101,7 @@ jumpByViewportSizeWithConfig containerId multiplierX multiplierY msg config =
     scrollToCoordinates "container-id" 500.0 300.0 NoOp
 
 -}
-scrollToCoordinates : ContainerId -> Float -> Float -> msg -> Cmd msg
+scrollToCoordinates : ContainerId -> XCoordinate -> YCoordinate -> msg -> Cmd msg
 scrollToCoordinates containerId x y msg =
     scrollToCoordinatesWithConfig containerId x y msg defaultConfig
 
@@ -1060,7 +1111,7 @@ scrollToCoordinates containerId x y msg =
     scrollToCoordinatesWithConfig "container-id" 500.0 300.0 NoOp { defaultConfig | speed = 1000 }
 
 -}
-scrollToCoordinatesWithConfig : ContainerId -> Float -> Float -> msg -> Config -> Cmd msg
+scrollToCoordinatesWithConfig : ContainerId -> XCoordinate -> YCoordinate -> msg -> Config -> Cmd msg
 scrollToCoordinatesWithConfig containerId x y msg config =
     ScrollTask.scrollToCoordinatesWithConfig containerId x y config
         |> Task.attempt (always msg)
@@ -1071,7 +1122,7 @@ scrollToCoordinatesWithConfig containerId x y msg config =
     jumpToCoordinates "container-id" 500.0 300.0 NoOp
 
 -}
-jumpToCoordinates : ContainerId -> Float -> Float -> msg -> Cmd msg
+jumpToCoordinates : ContainerId -> XCoordinate -> YCoordinate -> msg -> Cmd msg
 jumpToCoordinates containerId x y msg =
     jumpToCoordinatesWithConfig containerId x y msg defaultConfig
 
@@ -1081,7 +1132,7 @@ jumpToCoordinates containerId x y msg =
     jumpToCoordinatesWithConfig "container-id" 500.0 300.0 NoOp defaultConfig
 
 -}
-jumpToCoordinatesWithConfig : ContainerId -> Float -> Float -> msg -> Config -> Cmd msg
+jumpToCoordinatesWithConfig : ContainerId -> XCoordinate -> YCoordinate -> msg -> Config -> Cmd msg
 jumpToCoordinatesWithConfig containerId x y msg config =
     ScrollTask.jumpToCoordinatesWithConfig containerId x y config
         |> Task.attempt (always msg)

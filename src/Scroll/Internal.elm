@@ -15,13 +15,14 @@ module Scroll.Internal exposing
 -}
 
 import Browser.Dom as Dom
+import Internal.Types exposing (CoordinatePair, Distance, Frames)
 import Scroll exposing (..)
 import Task exposing (Task)
 
 
 {-| Extract horizontal offset from axis configuration.
 -}
-getOffsetX : Axis -> Float
+getOffsetX : Axis -> XOffsetFloat
 getOffsetX axis =
     case axis of
         X ->
@@ -45,7 +46,7 @@ getOffsetX axis =
 
 {-| Extract vertical offset from axis configuration.
 -}
-getOffsetY : Axis -> Float
+getOffsetY : Axis -> YOffsetFloat
 getOffsetY axis =
     case axis of
         X ->
@@ -101,7 +102,7 @@ getAxisDirection axis =
 
 {-| Convert timing configuration to speed divider for internal animation functions.
 -}
-timingToSpeed : Timing -> Float -> Int
+timingToSpeed : Timing -> Distance -> Frames
 timingToSpeed timing distance =
     case timing of
         Speed pixelsPerSecond ->
@@ -142,7 +143,7 @@ getContainerInfo container =
 
 {-| Calculate clamped scroll positions to ensure they stay within bounds.
 -}
-getClampedPositions : { a | x : Float, y : Float, height : Float, width : Float } -> { a | x : Float, y : Float, height : Float, width : Float } -> { a | width : Float, height : Float } -> Maybe Dom.Element -> Config -> ( Float, Float )
+getClampedPositions : { a | x : Float, y : Float, height : Float, width : Float } -> { a | x : Float, y : Float, height : Float, width : Float } -> { a | width : Float, height : Float } -> Maybe Dom.Element -> Config -> CoordinatePair
 getClampedPositions element viewport scene container config =
     let
         ( targetX, targetY ) =
@@ -159,7 +160,7 @@ getClampedPositions element viewport scene container config =
 
 {-| Calculate target scroll positions based on element position and container.
 -}
-getTargetPositions : { a | x : Float, y : Float } -> { a | x : Float, y : Float } -> Maybe Dom.Element -> Config -> ( Float, Float )
+getTargetPositions : { a | x : Float, y : Float } -> { a | x : Float, y : Float } -> Maybe Dom.Element -> Config -> CoordinatePair
 getTargetPositions element viewport container config =
     let
         offsetX =
@@ -183,7 +184,7 @@ getTargetPositions element viewport container config =
 {-| Calculate scroll positions to bring an element fully into view with minimal movement.
 If element is larger than viewport, positions it at top-left.
 -}
-calculateScrollIntoView : { a | x : Float, y : Float, height : Float, width : Float } -> { a | x : Float, y : Float, height : Float, width : Float } -> { a | width : Float, height : Float } -> Maybe Dom.Element -> Config -> ( Float, Float )
+calculateScrollIntoView : { a | x : Float, y : Float, height : Float, width : Float } -> { a | x : Float, y : Float, height : Float, width : Float } -> { a | width : Float, height : Float } -> Maybe Dom.Element -> Config -> CoordinatePair
 calculateScrollIntoView element viewport scene containerInfo config =
     let
         offsetX =

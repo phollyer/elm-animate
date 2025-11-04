@@ -6,6 +6,8 @@ module Scroll exposing
     , TargetId
     , ContainerId
     , Container(..)
+    , XOffsetFloat
+    , YOffsetFloat
     )
 
 {-| Shared types for smooth scrolling animations.
@@ -28,9 +30,35 @@ For actual scrolling functionality, import one of:
 @docs ContainerId
 @docs Container
 
+
+# Type Aliases
+
+@docs XOffsetFloat
+@docs YOffsetFloat
+
 -}
 
 import Ease exposing (..)
+
+
+
+-- TYPE ALIASES FOR CORE TYPES
+
+
+{-| Type alias for horizontal offset values in pixels.
+-}
+type alias XOffsetFloat =
+    Float
+
+
+{-| Type alias for vertical offset values in pixels.
+-}
+type alias YOffsetFloat =
+    Float
+
+
+
+-- MODULE TYPES
 
 
 {-| Type alias for target element IDs that we want to scroll to.
@@ -79,18 +107,18 @@ Use this to control whether your animation moves horizontally or vertically, and
   - `Y` - Vertical scrolling (most common)
   - `X` - Horizontal scrolling (for sideways carousels or horizontal content)
   - `Both` - Both horizontal and vertical scrolling to reach the target element
-  - `YWithOffset Float` - Vertical scrolling with vertical offset in pixels
-  - `XWithOffset Float` - Horizontal scrolling with horizontal offset in pixels
-  - `BothWithOffset Float Float` - Both axes scrolling with horizontal and vertical offsets
+  - `YWithOffset YOffsetFloat` - Vertical scrolling with vertical offset in pixels
+  - `XWithOffset XOffsetFloat` - Horizontal scrolling with horizontal offset in pixels
+  - `BothWithOffset XOffsetFloat YOffsetFloat` - Both axes scrolling with horizontal and vertical offsets
 
 -}
 type Axis
     = X
     | Y
     | Both
-    | YWithOffset Float
-    | XWithOffset Float
-    | BothWithOffset Float Float
+    | YWithOffset YOffsetFloat
+    | XWithOffset XOffsetFloat
+    | BothWithOffset XOffsetFloat YOffsetFloat
 
 
 {-| Type for configuring which element to scroll within.
