@@ -146,8 +146,6 @@ _[↑ Corners](#corners) | [↑ Position-Targeting Functions](#position-targetin
 
 Use these functions to scroll or jump to the center of the document or center on a specific axis.
 
-These functions ignore the `axis` field in the [Config](Scroll#Config) and scroll on the required axes.
-
 @docs scrollToCenter, scrollToCenterWithConfig, jumpToCenter, jumpToCenterWithConfig
 @docs scrollToCenterX, scrollToCenterXWithConfig, jumpToCenterX, jumpToCenterXWithConfig
 @docs scrollToCenterY, scrollToCenterYWithConfig, jumpToCenterY, jumpToCenterYWithConfig
