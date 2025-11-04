@@ -186,6 +186,7 @@ Here's a complete example showing how all the port integration pieces work toget
                 case maybeCommand of
                     Just command ->
                         ( { model | movePortsModel = newMoveModel }
+                          -- Note: 'animateElement' is YOUR port definition defined in Step 1
                         , animateElement (Move.Ports.encodeAnimationCommand command)
                         )
 
