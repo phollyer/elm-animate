@@ -1,5 +1,6 @@
 module Scroll.Container.Cmd exposing
-    ( scroll, scrollWithConfig, jump, jumpWithConfig
+    ( ContainerId, TargetId
+    , scroll, scrollWithConfig, jump, jumpWithConfig
     , scrollIntoView, scrollIntoViewWithConfig, jumpIntoView, jumpIntoViewWithConfig
     , scrollToTop, scrollToTopWithConfig, jumpToTop, jumpToTopWithConfig
     , scrollToBottom, scrollToBottomWithConfig, jumpToBottom, jumpToBottomWithConfig
@@ -66,6 +67,7 @@ module Scroll.Container.Cmd exposing
 
 # Element-Targeting Functions
 
+@docs ContainerId, TargetId
 @docs scroll, scrollWithConfig, jump, jumpWithConfig
 
 
@@ -273,9 +275,25 @@ _[↑ Relative Movement](#relative-movement) | [↑ Advanced Positioning Functio
 
 -}
 
-import Scroll exposing (Config, ContainerId, TargetId, defaultConfig)
+import Scroll exposing (Config, defaultConfig)
 import Scroll.Container.Task as ScrollTask
 import Task
+
+
+
+-- TYPE ALIASES
+
+
+{-| Type alias for container element IDs that define scrollable areas.
+-}
+type alias ContainerId =
+    String
+
+
+{-| Type alias for target element IDs that we want to scroll to.
+-}
+type alias TargetId =
+    String
 
 
 {-| X-coordinate percentage (0.0 to 1.0)

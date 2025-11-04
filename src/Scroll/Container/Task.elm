@@ -1,5 +1,6 @@
 module Scroll.Container.Task exposing
-    ( scroll, scrollWithConfig, jump, jumpWithConfig
+    ( ContainerId, TargetId
+    , scroll, scrollWithConfig, jump, jumpWithConfig
     , scrollIntoView, scrollIntoViewWithConfig, jumpIntoView, jumpIntoViewWithConfig
     , scrollToTop, scrollToTopWithConfig, jumpToTop, jumpToTopWithConfig
     , scrollToBottom, scrollToBottomWithConfig, jumpToBottom, jumpToBottomWithConfig
@@ -65,6 +66,7 @@ module Scroll.Container.Task exposing
 
 # Element-Targeting Functions
 
+@docs ContainerId, TargetId
 @docs scroll, scrollWithConfig, jump, jumpWithConfig
 
 
@@ -274,9 +276,25 @@ _[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning F
 
 import Browser.Dom as Dom
 import Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames)
-import Scroll exposing (Axis(..), Config, Container(..), ContainerId, TargetId, defaultConfig)
-import Scroll.Internal exposing (Direction(..), calculateScrollIntoView, getAxisDirection, getClampedPositions, getContainerInfo, getViewport, timingToSpeed)
+import Scroll exposing (Axis(..), Config, defaultConfig)
+import Scroll.Internal exposing (Container(..), Direction(..), calculateScrollIntoView, getAxisDirection, getClampedPositions, getContainerInfo, getViewport, timingToSpeed)
 import Task exposing (Task)
+
+
+
+-- TYPE ALIASES
+
+
+{-| Type alias for container element IDs that define scrollable areas.
+-}
+type alias ContainerId =
+    String
+
+
+{-| Type alias for target element IDs that we want to scroll to.
+-}
+type alias TargetId =
+    String
 
 
 {-| X-coordinate percentage (0.0 to 1.0)

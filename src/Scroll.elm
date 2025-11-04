@@ -4,8 +4,6 @@ module Scroll exposing
     , Timing(..)
     , XOffsetFloat, YOffsetFloat
     , Axis(..)
-    , ContainerId, TargetId
-    , Container(..)
     )
 
 {-| Shared types for smooth scrolling animations.
@@ -22,14 +20,17 @@ For actual scrolling functionality, import one of:
 
 @docs Config
 @docs defaultConfig
+
+
+## Timing
+
 @docs Timing
+
+
+## Axis
+
 @docs XOffsetFloat, YOffsetFloat
 @docs Axis
-@docs ContainerId, TargetId
-@docs Container
-
-
-# Type Aliases
 
 -}
 
@@ -54,18 +55,6 @@ type alias YOffsetFloat =
 
 
 -- MODULE TYPES
-
-
-{-| Type alias for target element IDs that we want to scroll to.
--}
-type alias TargetId =
-    String
-
-
-{-| Type alias for container element IDs that define scrollable areas.
--}
-type alias ContainerId =
-    String
 
 
 {-| Animation timing configuration.
@@ -114,17 +103,6 @@ type Axis
     | YWithOffset YOffsetFloat
     | XWithOffset XOffsetFloat
     | BothWithOffset XOffsetFloat YOffsetFloat
-
-
-{-| Type for configuring which element to scroll within.
-
-Use `DocumentBody` for scrolling the main document, or `Container containerId`
-for scrolling within a specific container element.
-
--}
-type Container
-    = DocumentBody
-    | Container ContainerId
 
 
 {-| The default configuration which you can customize as needed.

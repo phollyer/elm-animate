@@ -1,5 +1,6 @@
 module Scroll.Internal exposing
-    ( Direction(..)
+    ( Container(..)
+    , Direction(..)
     , calculateScrollIntoView
     , getAxisDirection
     , getClampedPositions
@@ -16,7 +17,7 @@ module Scroll.Internal exposing
 
 import Browser.Dom as Dom
 import Internal.Types exposing (CoordinatePair, Distance, Frames)
-import Scroll exposing (..)
+import Scroll exposing (Axis(..), Config, Timing(..), XOffsetFloat, YOffsetFloat)
 import Task exposing (Task)
 
 
@@ -68,7 +69,28 @@ getOffsetY axis =
             offsetY
 
 
-{-| Simple direction type without offsets.
+
+-- TYPE ALIASES
+
+
+{-| Type alias for container element IDs that define scrollable areas.
+-}
+type alias ContainerId =
+    String
+
+
+{-| Type for configuring which element to scroll within.
+
+Use `DocumentBody` for scrolling the main document, or `Container containerId`
+for scrolling within a specific container element.
+
+-}
+type Container
+    = DocumentBody
+    | Container ContainerId
+
+
+{-| Extract horizontal offset from axis configuration.
 -}
 type Direction
     = XDirection

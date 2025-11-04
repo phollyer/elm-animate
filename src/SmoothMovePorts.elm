@@ -1,6 +1,7 @@
 module SmoothMovePorts exposing
     ( Config
     , defaultConfig
+    , TargetId
     , Timing(..)
     , Model
     , init
@@ -52,6 +53,7 @@ See the accompanying `smooth-move-ports.js` file for the JavaScript implementati
 
 @docs Config
 @docs defaultConfig
+@docs TargetId
 @docs Timing
 
 
@@ -107,7 +109,12 @@ See the accompanying `smooth-move-ports.js` file for the JavaScript implementati
 
 import Dict exposing (Dict)
 import Json.Decode as Decode
-import Scroll exposing (TargetId)
+
+
+{-| Type alias for target element IDs that we want to scroll to.
+-}
+type alias TargetId =
+    String
 
 
 {-| Animation timing configuration

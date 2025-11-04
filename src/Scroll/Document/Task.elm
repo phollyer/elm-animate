@@ -1,5 +1,6 @@
 module Scroll.Document.Task exposing
-    ( scroll, scrollWithConfig, jump, jumpWithConfig
+    ( TargetId
+    , scroll, scrollWithConfig, jump, jumpWithConfig
     , scrollIntoView, scrollIntoViewWithConfig, jumpIntoView, jumpIntoViewWithConfig
     , scrollToTop, scrollToTopWithConfig, jumpToTop, jumpToTopWithConfig
     , scrollToBottom, scrollToBottomWithConfig, jumpToBottom, jumpToBottomWithConfig
@@ -65,6 +66,7 @@ module Scroll.Document.Task exposing
 
 # Element-Targeting Functions
 
+@docs TargetId
 @docs scroll, scrollWithConfig, jump, jumpWithConfig
 
 
@@ -273,13 +275,19 @@ _[↑ Relative Movement](#relative-movement) | [↑ Advanced Positioning Functio
 
 import Browser.Dom as Dom
 import Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames)
-import Scroll exposing (Axis(..), Config, Container(..), TargetId, defaultConfig)
-import Scroll.Internal exposing (Direction(..), calculateScrollIntoView, getAxisDirection, getClampedPositions, getContainerInfo, getOffsetX, getOffsetY, getViewport, timingToSpeed)
+import Scroll exposing (Axis(..), Config, defaultConfig)
+import Scroll.Internal exposing (Container(..), Direction(..), calculateScrollIntoView, getAxisDirection, getClampedPositions, getContainerInfo, getOffsetX, getOffsetY, getViewport, timingToSpeed)
 import Task exposing (Task)
 
 
 
 -- TYPE ALIASES
+
+
+{-| Type alias for target element IDs that we want to scroll to.
+-}
+type alias TargetId =
+    String
 
 
 {-| Type alias for horizontal percentage values (0.0 to 1.0).

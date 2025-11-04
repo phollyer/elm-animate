@@ -71,7 +71,12 @@ automatically through subscriptions to animation frames.
 import Browser.Events
 import Dict exposing (Dict)
 import Ease
-import Scroll exposing (TargetId)
+
+
+{-| Type alias for target element IDs that we want to scroll to.
+-}
+type alias TargetId =
+    String
 
 
 {-| Animation timing configuration

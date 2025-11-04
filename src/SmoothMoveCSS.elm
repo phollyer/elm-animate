@@ -1,6 +1,7 @@
 module SmoothMoveCSS exposing
     ( Config
     , defaultConfig
+    , TargetId
     , Position
     , Timing(..)
     , Model
@@ -38,6 +39,7 @@ This module generates CSS properties for transitions, letting the browser handle
 
 @docs Config
 @docs defaultConfig
+@docs TargetId
 @docs Position
 @docs Timing
 
@@ -77,7 +79,12 @@ import Dict exposing (Dict)
 import Html exposing (Attribute)
 import Html.Events exposing (on)
 import Json.Decode as Decode
-import Scroll exposing (TargetId)
+
+
+{-| Type alias for target element IDs that we want to scroll to.
+-}
+type alias TargetId =
+    String
 
 
 {-| Position type alias for X and Y coordinates
