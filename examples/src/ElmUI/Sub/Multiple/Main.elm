@@ -28,7 +28,8 @@ import Element.Border as Border
 import Element.Font as Font
 import Html
 import Html.Attributes
-import Move.Sub exposing (Position, animateTo, getPosition, isAnimating, setPosition, step, subscriptions, transform)
+import Anim exposing (Position)
+import Anim.Sub exposing (Model, animateTo, getPosition, isAnimating, setPosition, step, subscriptions, transform)
 
 
 
@@ -50,7 +51,7 @@ main =
 
 
 type alias Model =
-    { smoothMove : Move.Sub.Model
+    { smoothMove : Anim.Sub.Model
     }
 
 
@@ -62,7 +63,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         smoothMove =
-            Move.Sub.init
+            Anim.Sub.init
                 |> setPosition "element-a" (Position 150 100)
                 |> setPosition "element-b" (Position 200 150)
                 |> setPosition "element-c" (Position 100 200)
@@ -161,7 +162,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Move.Sub.subscriptions AnimationFrame model.smoothMove
+    Anim.Sub.subscriptions AnimationFrame model.smoothMove
 
 
 
@@ -170,7 +171,7 @@ subscriptions model =
 
 view : Model -> Document Msg
 view model =
-    UI.createDocument "Move.Sub Multiple ElmUI Example" UI.Basic (viewContent model)
+    UI.createDocument "Anim.Sub Multiple ElmUI Example" UI.Basic (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)
@@ -204,7 +205,7 @@ viewContent model =
                 || isAnimating "element-f" model.smoothMove
     in
     [ UI.backButton
-    , UI.pageHeader "Move.Sub Multiple Example"
+    , UI.pageHeader "Anim.Sub Multiple Example"
     , -- Element status and positions (6 elements in 2 rows)
       column
         [ spacing 20

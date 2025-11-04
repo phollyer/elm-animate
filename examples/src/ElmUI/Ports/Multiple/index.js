@@ -5196,28 +5196,93 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$document = _Browser_document;
-var $author$project$Move$Ports$Position = F2(
-	function (x, y) {
-		return {x: x, y: y};
-	});
-var $author$project$Move$Ports$Model = function (a) {
+var $author$project$Anim$Ports$Model = function (a) {
 	return {$: 'Model', a: a};
 };
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
-var $author$project$Move$Ports$init = $author$project$Move$Ports$Model($elm$core$Dict$empty);
+var $author$project$Anim$Ports$init = $author$project$Anim$Ports$Model($elm$core$Dict$empty);
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$Move$Duration = function (a) {
-	return {$: 'Duration', a: a};
+var $author$project$ElmUI$Ports$Multiple$Main$init = function (_v0) {
+	return _Utils_Tuple2(
+		{animations: $author$project$Anim$Ports$init},
+		$elm$core$Platform$Cmd$none);
 };
-var $author$project$Move$EaseOut = {$: 'EaseOut'};
-var $author$project$Move$EasePreset = function (a) {
-	return {$: 'EasePreset', a: a};
+var $author$project$ElmUI$Ports$Multiple$Main$AnimationCompleteMsg = function (a) {
+	return {$: 'AnimationCompleteMsg', a: a};
 };
-var $author$project$Move$Ports$defaultConfig = {
-	easing: $author$project$Move$EasePreset($author$project$Move$EaseOut),
-	timing: $author$project$Move$Duration(400)
+var $author$project$ElmUI$Ports$Multiple$Main$PositionUpdateMsg = function (a) {
+	return {$: 'PositionUpdateMsg', a: a};
+};
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $author$project$ElmUI$Ports$Multiple$Main$animationComplete = _Platform_incomingPort('animationComplete', $elm$json$Json$Decode$string);
+var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $author$project$ElmUI$Ports$Multiple$Main$positionUpdates = _Platform_incomingPort('positionUpdates', $elm$json$Json$Decode$value);
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$Platform$Sub$batch = _Platform_batch;
+var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $elm$core$Dict$values = function (dict) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2($elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
+};
+var $author$project$Anim$Ports$subscriptions = F2(
+	function (ports_, _v0) {
+		var elementsDict = _v0.a;
+		var hasActiveAnimations = A2(
+			$elm$core$List$any,
+			function (elementData) {
+				return A2(
+					$elm$core$List$any,
+					$elm$core$Basics$identity,
+					$elm$core$Dict$values(elementData.animating));
+			},
+			$elm$core$Dict$values(elementsDict));
+		return hasActiveAnimations ? $elm$core$Platform$Sub$batch(
+			_List_fromArray(
+				[ports_.propertyUpdates, ports_.animationComplete])) : $elm$core$Platform$Sub$none;
+	});
+var $author$project$ElmUI$Ports$Multiple$Main$subscriptions = function (model) {
+	return A2(
+		$author$project$Anim$Ports$subscriptions,
+		{
+			animationComplete: $author$project$ElmUI$Ports$Multiple$Main$animationComplete($author$project$ElmUI$Ports$Multiple$Main$AnimationCompleteMsg),
+			propertyUpdates: $author$project$ElmUI$Ports$Multiple$Main$positionUpdates($author$project$ElmUI$Ports$Multiple$Main$PositionUpdateMsg)
+		},
+		model.animations);
+};
+var $author$project$Anim$Position = F2(
+	function (x, y) {
+		return {x: x, y: y};
+	});
+var $author$project$Anim$ToPosition = function (a) {
+	return {$: 'ToPosition', a: a};
 };
 var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$get = F2(
@@ -5251,6 +5316,30 @@ var $elm$core$Dict$get = F2(
 			}
 		}
 	});
+var $author$project$Anim$Ports$getPropertyKey = function (target) {
+	switch (target.$) {
+		case 'ToPosition':
+			return 'position';
+		case 'ToOpacity':
+			return 'opacity';
+		case 'ToScale':
+			return 'scale';
+		case 'ToRotation':
+			return 'rotation';
+		case 'ToBackgroundColor':
+			return 'background-color';
+		case 'ToTextColor':
+			return 'text-color';
+		case 'ToBorderColor':
+			return 'border-color';
+		case 'ToDimensions':
+			return 'dimensions';
+		case 'ToBorderRadius':
+			return 'border-radius';
+		default:
+			return 'filter';
+	}
+};
 var $elm$core$Dict$Black = {$: 'Black'};
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
@@ -5368,173 +5457,31 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
-var $author$project$Move$Ports$setPosition = F3(
-	function (elementId, position, _v0) {
+var $author$project$Anim$Ports$animateWithConfig = F4(
+	function (config, elementId, target, _v0) {
 		var elementsDict = _v0.a;
-		var elementData = function (data) {
-			return _Utils_update(
-				data,
-				{currentX: position.x, currentY: position.y, isAnimating: false, targetX: position.x, targetY: position.y});
-		}(
-			A2(
-				$elm$core$Maybe$withDefault,
-				{config: $author$project$Move$Ports$defaultConfig, currentX: 0, currentY: 0, isAnimating: false, targetX: 0, targetY: 0},
-				A2($elm$core$Dict$get, elementId, elementsDict)));
-		var updatedDict = A3($elm$core$Dict$insert, elementId, elementData, elementsDict);
-		return $author$project$Move$Ports$Model(updatedDict);
-	});
-var $author$project$ElmUI$Ports$Multiple$Main$init = function (_v0) {
-	var initialAnimations = A3(
-		$author$project$Move$Ports$setPosition,
-		'element-f',
-		A2($author$project$Move$Ports$Position, 80.0, 140.0),
-		A3(
-			$author$project$Move$Ports$setPosition,
-			'element-e',
-			A2($author$project$Move$Ports$Position, 200.0, 40.0),
-			A3(
-				$author$project$Move$Ports$setPosition,
-				'element-d',
-				A2($author$project$Move$Ports$Position, 350.0, 180.0),
-				A3(
-					$author$project$Move$Ports$setPosition,
-					'element-c',
-					A2($author$project$Move$Ports$Position, 120.0, 220.0),
-					A3(
-						$author$project$Move$Ports$setPosition,
-						'element-b',
-						A2($author$project$Move$Ports$Position, 380.0, 50.0),
-						A3(
-							$author$project$Move$Ports$setPosition,
-							'element-a',
-							A2($author$project$Move$Ports$Position, 50.0, 80.0),
-							$author$project$Move$Ports$init))))));
-	return _Utils_Tuple2(
-		{animations: initialAnimations},
-		$elm$core$Platform$Cmd$none);
-};
-var $author$project$ElmUI$Ports$Multiple$Main$AnimationCompleteMsg = function (a) {
-	return {$: 'AnimationCompleteMsg', a: a};
-};
-var $author$project$ElmUI$Ports$Multiple$Main$PositionUpdateMsg = function (a) {
-	return {$: 'PositionUpdateMsg', a: a};
-};
-var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$ElmUI$Ports$Multiple$Main$animationComplete = _Platform_incomingPort('animationComplete', $elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $author$project$ElmUI$Ports$Multiple$Main$positionUpdates = _Platform_incomingPort('positionUpdates', $elm$json$Json$Decode$value);
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var $elm$core$Platform$Sub$batch = _Platform_batch;
-var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $elm$core$Dict$values = function (dict) {
-	return A3(
-		$elm$core$Dict$foldr,
-		F3(
-			function (key, value, valueList) {
-				return A2($elm$core$List$cons, value, valueList);
-			}),
-		_List_Nil,
-		dict);
-};
-var $author$project$Move$Ports$subscriptions = F2(
-	function (ports_, _v0) {
-		var elementsDict = _v0.a;
-		var hasActiveAnimations = A2(
-			$elm$core$List$any,
-			function ($) {
-				return $.isAnimating;
-			},
-			$elm$core$Dict$values(elementsDict));
-		return hasActiveAnimations ? $elm$core$Platform$Sub$batch(
-			_List_fromArray(
-				[ports_.positionUpdates, ports_.animationComplete])) : $elm$core$Platform$Sub$none;
-	});
-var $author$project$ElmUI$Ports$Multiple$Main$subscriptions = function (model) {
-	return A2(
-		$author$project$Move$Ports$subscriptions,
-		{
-			animationComplete: $author$project$ElmUI$Ports$Multiple$Main$animationComplete($author$project$ElmUI$Ports$Multiple$Main$AnimationCompleteMsg),
-			positionUpdates: $author$project$ElmUI$Ports$Multiple$Main$positionUpdates($author$project$ElmUI$Ports$Multiple$Main$PositionUpdateMsg)
-		},
-		model.animations);
-};
-var $author$project$Move$Internal$easingToString = function (easing) {
-	switch (easing.$) {
-		case 'EaseString':
-			var string = easing.a;
-			return string;
-		case 'EasePreset':
-			var preset = easing.a;
-			switch (preset.$) {
-				case 'Linear':
-					return 'linear';
-				case 'EaseOut':
-					return 'ease-out';
-				case 'EaseIn':
-					return 'ease-in';
-				default:
-					return 'ease-in-out';
-			}
-		default:
-			return 'ease-out';
-	}
-};
-var $elm$core$Basics$pow = _Basics_pow;
-var $elm$core$Basics$sqrt = _Basics_sqrt;
-var $author$project$Move$Internal$timingToMilliseconds = F2(
-	function (timing, distance) {
-		if (timing.$ === 'Speed') {
-			var pixelsPerSecond = timing.a;
-			return (distance / pixelsPerSecond) * 1000;
-		} else {
-			var milliseconds = timing.a;
-			return milliseconds;
-		}
-	});
-var $author$project$Move$Ports$animateToWithConfig = F4(
-	function (config, elementId, position, _v0) {
-		var elementsDict = _v0.a;
-		var currentData = A2(
+		var propertyKey = $author$project$Anim$Ports$getPropertyKey(target);
+		var currentElementData = A2(
 			$elm$core$Maybe$withDefault,
-			{config: config, currentX: 0, currentY: 0, isAnimating: false, targetX: 0, targetY: 0},
+			{animating: $elm$core$Dict$empty, properties: $elm$core$Dict$empty},
 			A2($elm$core$Dict$get, elementId, elementsDict));
-		var distance = $elm$core$Basics$sqrt(
-			A2($elm$core$Basics$pow, position.x - currentData.currentX, 2) + A2($elm$core$Basics$pow, position.y - currentData.currentY, 2));
-		var duration = A2($author$project$Move$Internal$timingToMilliseconds, config.timing, distance);
-		var elementData = _Utils_update(
-			currentData,
-			{config: config, isAnimating: true, targetX: position.x, targetY: position.y});
+		var updatedAnimating = A3($elm$core$Dict$insert, propertyKey, true, currentElementData.animating);
+		var updatedProperties = A3($elm$core$Dict$insert, propertyKey, target, currentElementData.properties);
+		var elementData = {animating: updatedAnimating, properties: updatedProperties};
 		var updatedDict = A3($elm$core$Dict$insert, elementId, elementData, elementsDict);
-		var animationCommand = {
-			duration: duration,
-			easing: $author$project$Move$Internal$easingToString(config.easing),
-			elementId: elementId,
-			targetX: position.x,
-			targetY: position.y
-		};
+		var animationCommand = {config: config, elementId: elementId, target: target};
 		return _Utils_Tuple2(
-			$author$project$Move$Ports$Model(updatedDict),
+			$author$project$Anim$Ports$Model(updatedDict),
 			$elm$core$Maybe$Just(animationCommand));
+	});
+var $author$project$Anim$Ports$animateToWithConfig = F4(
+	function (config, elementId, position, model) {
+		return A4(
+			$author$project$Anim$Ports$animateWithConfig,
+			config,
+			elementId,
+			$author$project$Anim$ToPosition(position),
+			model);
 	});
 var $elm$core$Tuple$mapSecond = F2(
 	function (func, _v0) {
@@ -5544,7 +5491,7 @@ var $elm$core$Tuple$mapSecond = F2(
 			x,
 			func(y));
 	});
-var $author$project$Move$Ports$animateBatch = F3(
+var $author$project$Anim$Ports$animateBatch = F3(
 	function (config, specs, model) {
 		return A2(
 			$elm$core$Tuple$mapSecond,
@@ -5555,7 +5502,7 @@ var $author$project$Move$Ports$animateBatch = F3(
 					function (spec, _v0) {
 						var currentModel = _v0.a;
 						var commands = _v0.b;
-						var _v1 = A4($author$project$Move$Ports$animateToWithConfig, config, spec.elementId, spec.target, currentModel);
+						var _v1 = A4($author$project$Anim$Ports$animateToWithConfig, config, spec.elementId, spec.target, currentModel);
 						var newModel = _v1.a;
 						var maybeCommand = _v1.b;
 						if (maybeCommand.$ === 'Just') {
@@ -5576,11 +5523,19 @@ var $elm$core$Basics$composeL = F3(
 		return g(
 			f(x));
 	});
-var $author$project$Move$defaultConfig = {
-	easing: $author$project$Move$EasePreset($author$project$Move$EaseOut),
-	timing: $author$project$Move$Duration(400)
+var $author$project$Anim$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
+var $author$project$Anim$EaseOut = {$: 'EaseOut'};
+var $author$project$Anim$EasePreset = function (a) {
+	return {$: 'EasePreset', a: a};
+};
+var $author$project$Anim$defaultConfig = {
+	easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
+	timing: $author$project$Anim$Duration(400)
 };
 var $elm$json$Json$Encode$float = _Json_wrap;
+var $elm$json$Json$Encode$int = _Json_wrap;
 var $elm$json$Json$Encode$object = function (pairs) {
 	return _Json_wrap(
 		A3(
@@ -5595,456 +5550,604 @@ var $elm$json$Json$Encode$object = function (pairs) {
 			pairs));
 };
 var $elm$json$Json$Encode$string = _Json_wrap;
-var $author$project$Move$Ports$encodeAnimationCommand = function (command) {
+var $author$project$Anim$Ports$encodeColorValue = function (colorValue) {
+	switch (colorValue.$) {
+		case 'Hex':
+			var hexStr = colorValue.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('hex')),
+						_Utils_Tuple2(
+						'value',
+						$elm$json$Json$Encode$string(hexStr))
+					]));
+		case 'Rgb':
+			var rgb = colorValue.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('rgb')),
+						_Utils_Tuple2(
+						'r',
+						$elm$json$Json$Encode$int(rgb.r)),
+						_Utils_Tuple2(
+						'g',
+						$elm$json$Json$Encode$int(rgb.g)),
+						_Utils_Tuple2(
+						'b',
+						$elm$json$Json$Encode$int(rgb.b))
+					]));
+		case 'Rgba':
+			var rgba = colorValue.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('rgba')),
+						_Utils_Tuple2(
+						'r',
+						$elm$json$Json$Encode$int(rgba.r)),
+						_Utils_Tuple2(
+						'g',
+						$elm$json$Json$Encode$int(rgba.g)),
+						_Utils_Tuple2(
+						'b',
+						$elm$json$Json$Encode$int(rgba.b)),
+						_Utils_Tuple2(
+						'a',
+						$elm$json$Json$Encode$float(rgba.a))
+					]));
+		case 'Hsl':
+			var hsl = colorValue.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('hsl')),
+						_Utils_Tuple2(
+						'h',
+						$elm$json$Json$Encode$float(hsl.h)),
+						_Utils_Tuple2(
+						's',
+						$elm$json$Json$Encode$float(hsl.s)),
+						_Utils_Tuple2(
+						'l',
+						$elm$json$Json$Encode$float(hsl.l))
+					]));
+		default:
+			var hsla = colorValue.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('hsla')),
+						_Utils_Tuple2(
+						'h',
+						$elm$json$Json$Encode$float(hsla.h)),
+						_Utils_Tuple2(
+						's',
+						$elm$json$Json$Encode$float(hsla.s)),
+						_Utils_Tuple2(
+						'l',
+						$elm$json$Json$Encode$float(hsla.l)),
+						_Utils_Tuple2(
+						'a',
+						$elm$json$Json$Encode$float(hsla.a))
+					]));
+	}
+};
+var $author$project$Anim$Ports$encodeFilterValue = function (filterValue) {
+	switch (filterValue.$) {
+		case 'Blur':
+			var radius = filterValue.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('blur')),
+						_Utils_Tuple2(
+						'value',
+						$elm$json$Json$Encode$float(radius))
+					]));
+		case 'Brightness':
+			var value = filterValue.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('brightness')),
+						_Utils_Tuple2(
+						'value',
+						$elm$json$Json$Encode$float(value))
+					]));
+		case 'Contrast':
+			var value = filterValue.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('contrast')),
+						_Utils_Tuple2(
+						'value',
+						$elm$json$Json$Encode$float(value))
+					]));
+		case 'Grayscale':
+			var value = filterValue.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('grayscale')),
+						_Utils_Tuple2(
+						'value',
+						$elm$json$Json$Encode$float(value))
+					]));
+		default:
+			var value = filterValue.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('saturate')),
+						_Utils_Tuple2(
+						'value',
+						$elm$json$Json$Encode$float(value))
+					]));
+	}
+};
+var $author$project$Anim$Ports$encodeAnimationCommand = function (command) {
+	var targetValue = function () {
+		var _v3 = command.target;
+		switch (_v3.$) {
+			case 'ToPosition':
+				var pos = _v3.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('position')),
+							_Utils_Tuple2(
+							'x',
+							$elm$json$Json$Encode$float(pos.x)),
+							_Utils_Tuple2(
+							'y',
+							$elm$json$Json$Encode$float(pos.y))
+						]));
+			case 'ToOpacity':
+				var value = _v3.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('opacity')),
+							_Utils_Tuple2(
+							'value',
+							$elm$json$Json$Encode$float(value))
+						]));
+			case 'ToScale':
+				var scale = _v3.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('scale')),
+							_Utils_Tuple2(
+							'x',
+							$elm$json$Json$Encode$float(scale.x)),
+							_Utils_Tuple2(
+							'y',
+							$elm$json$Json$Encode$float(scale.y))
+						]));
+			case 'ToRotation':
+				var degrees = _v3.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('rotation')),
+							_Utils_Tuple2(
+							'value',
+							$elm$json$Json$Encode$float(degrees))
+						]));
+			case 'ToBackgroundColor':
+				var colorValue = _v3.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('backgroundColor')),
+							_Utils_Tuple2(
+							'value',
+							$author$project$Anim$Ports$encodeColorValue(colorValue))
+						]));
+			case 'ToTextColor':
+				var colorValue = _v3.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('textColor')),
+							_Utils_Tuple2(
+							'value',
+							$author$project$Anim$Ports$encodeColorValue(colorValue))
+						]));
+			case 'ToBorderColor':
+				var colorValue = _v3.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('borderColor')),
+							_Utils_Tuple2(
+							'value',
+							$author$project$Anim$Ports$encodeColorValue(colorValue))
+						]));
+			case 'ToDimensions':
+				var dim = _v3.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('dimensions')),
+							_Utils_Tuple2(
+							'width',
+							$elm$json$Json$Encode$float(dim.width)),
+							_Utils_Tuple2(
+							'height',
+							$elm$json$Json$Encode$float(dim.height))
+						]));
+			case 'ToBorderRadius':
+				var radius = _v3.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('borderRadius')),
+							_Utils_Tuple2(
+							'value',
+							$elm$json$Json$Encode$float(radius))
+						]));
+			default:
+				var filter = _v3.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('filter')),
+							_Utils_Tuple2(
+							'value',
+							$author$project$Anim$Ports$encodeFilterValue(filter))
+						]));
+		}
+	}();
+	var easing = function () {
+		var _v1 = command.config.easing;
+		switch (_v1.$) {
+			case 'EasePreset':
+				var preset = _v1.a;
+				switch (preset.$) {
+					case 'Linear':
+						return 'linear';
+					case 'EaseIn':
+						return 'ease-in';
+					case 'EaseOut':
+						return 'ease-out';
+					default:
+						return 'ease-in-out';
+				}
+			case 'EaseString':
+				var str = _v1.a;
+				return str;
+			default:
+				return 'ease-out';
+		}
+	}();
+	var duration = function () {
+		var _v0 = command.config.timing;
+		if (_v0.$ === 'Duration') {
+			var ms = _v0.a;
+			return ms;
+		} else {
+			return 500.0;
+		}
+	}();
 	return $elm$json$Json$Encode$object(
 		_List_fromArray(
 			[
 				_Utils_Tuple2(
 				'elementId',
 				$elm$json$Json$Encode$string(command.elementId)),
-				_Utils_Tuple2(
-				'targetX',
-				$elm$json$Json$Encode$float(command.targetX)),
-				_Utils_Tuple2(
-				'targetY',
-				$elm$json$Json$Encode$float(command.targetY)),
+				_Utils_Tuple2('target', targetValue),
 				_Utils_Tuple2(
 				'duration',
-				$elm$json$Json$Encode$float(command.duration)),
+				$elm$json$Json$Encode$float(duration)),
 				_Utils_Tuple2(
 				'easing',
-				$elm$json$Json$Encode$string(command.easing))
+				$elm$json$Json$Encode$string(easing))
 			]));
 };
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $elm$core$Dict$getMin = function (dict) {
-	getMin:
-	while (true) {
-		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
-			var left = dict.d;
-			var $temp$dict = left;
-			dict = $temp$dict;
-			continue getMin;
-		} else {
-			return dict;
-		}
-	}
-};
-var $elm$core$Dict$moveRedLeft = function (dict) {
-	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
-		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v1 = dict.d;
-			var lClr = _v1.a;
-			var lK = _v1.b;
-			var lV = _v1.c;
-			var lLeft = _v1.d;
-			var lRight = _v1.e;
-			var _v2 = dict.e;
-			var rClr = _v2.a;
-			var rK = _v2.b;
-			var rV = _v2.c;
-			var rLeft = _v2.d;
-			var _v3 = rLeft.a;
-			var rlK = rLeft.b;
-			var rlV = rLeft.c;
-			var rlL = rLeft.d;
-			var rlR = rLeft.e;
-			var rRight = _v2.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				$elm$core$Dict$Red,
-				rlK,
-				rlV,
-				A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					rlL),
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rlR, rRight));
-		} else {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v4 = dict.d;
-			var lClr = _v4.a;
-			var lK = _v4.b;
-			var lV = _v4.c;
-			var lLeft = _v4.d;
-			var lRight = _v4.e;
-			var _v5 = dict.e;
-			var rClr = _v5.a;
-			var rK = _v5.b;
-			var rV = _v5.c;
-			var rLeft = _v5.d;
-			var rRight = _v5.e;
-			if (clr.$ === 'Black') {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			}
-		}
-	} else {
-		return dict;
-	}
-};
-var $elm$core$Dict$moveRedRight = function (dict) {
-	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
-		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v1 = dict.d;
-			var lClr = _v1.a;
-			var lK = _v1.b;
-			var lV = _v1.c;
-			var _v2 = _v1.d;
-			var _v3 = _v2.a;
-			var llK = _v2.b;
-			var llV = _v2.c;
-			var llLeft = _v2.d;
-			var llRight = _v2.e;
-			var lRight = _v1.e;
-			var _v4 = dict.e;
-			var rClr = _v4.a;
-			var rK = _v4.b;
-			var rV = _v4.c;
-			var rLeft = _v4.d;
-			var rRight = _v4.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				$elm$core$Dict$Red,
-				lK,
-				lV,
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
-				A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					lRight,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight)));
-		} else {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v5 = dict.d;
-			var lClr = _v5.a;
-			var lK = _v5.b;
-			var lV = _v5.c;
-			var lLeft = _v5.d;
-			var lRight = _v5.e;
-			var _v6 = dict.e;
-			var rClr = _v6.a;
-			var rK = _v6.b;
-			var rV = _v6.c;
-			var rLeft = _v6.d;
-			var rRight = _v6.e;
-			if (clr.$ === 'Black') {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			}
-		}
-	} else {
-		return dict;
-	}
-};
-var $elm$core$Dict$removeHelpPrepEQGT = F7(
-	function (targetKey, dict, color, key, value, left, right) {
-		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-			var _v1 = left.a;
-			var lK = left.b;
-			var lV = left.c;
-			var lLeft = left.d;
-			var lRight = left.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				lK,
-				lV,
-				lLeft,
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, lRight, right));
-		} else {
-			_v2$2:
-			while (true) {
-				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
-					if (right.d.$ === 'RBNode_elm_builtin') {
-						if (right.d.a.$ === 'Black') {
-							var _v3 = right.a;
-							var _v4 = right.d;
-							var _v5 = _v4.a;
-							return $elm$core$Dict$moveRedRight(dict);
-						} else {
-							break _v2$2;
-						}
-					} else {
-						var _v6 = right.a;
-						var _v7 = right.d;
-						return $elm$core$Dict$moveRedRight(dict);
-					}
-				} else {
-					break _v2$2;
-				}
-			}
-			return dict;
-		}
-	});
-var $elm$core$Dict$removeMin = function (dict) {
-	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
-		var color = dict.a;
-		var key = dict.b;
-		var value = dict.c;
-		var left = dict.d;
-		var lColor = left.a;
-		var lLeft = left.d;
-		var right = dict.e;
-		if (lColor.$ === 'Black') {
-			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
-				var _v3 = lLeft.a;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					color,
-					key,
-					value,
-					$elm$core$Dict$removeMin(left),
-					right);
-			} else {
-				var _v4 = $elm$core$Dict$moveRedLeft(dict);
-				if (_v4.$ === 'RBNode_elm_builtin') {
-					var nColor = _v4.a;
-					var nKey = _v4.b;
-					var nValue = _v4.c;
-					var nLeft = _v4.d;
-					var nRight = _v4.e;
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						$elm$core$Dict$removeMin(nLeft),
-						nRight);
-				} else {
-					return $elm$core$Dict$RBEmpty_elm_builtin;
-				}
-			}
-		} else {
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				key,
-				value,
-				$elm$core$Dict$removeMin(left),
-				right);
-		}
-	} else {
-		return $elm$core$Dict$RBEmpty_elm_builtin;
-	}
-};
-var $elm$core$Dict$removeHelp = F2(
-	function (targetKey, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		} else {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			if (_Utils_cmp(targetKey, key) < 0) {
-				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
-					var _v4 = left.a;
-					var lLeft = left.d;
-					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
-						var _v6 = lLeft.a;
-						return A5(
-							$elm$core$Dict$RBNode_elm_builtin,
-							color,
-							key,
-							value,
-							A2($elm$core$Dict$removeHelp, targetKey, left),
-							right);
-					} else {
-						var _v7 = $elm$core$Dict$moveRedLeft(dict);
-						if (_v7.$ === 'RBNode_elm_builtin') {
-							var nColor = _v7.a;
-							var nKey = _v7.b;
-							var nValue = _v7.c;
-							var nLeft = _v7.d;
-							var nRight = _v7.e;
-							return A5(
-								$elm$core$Dict$balance,
-								nColor,
-								nKey,
-								nValue,
-								A2($elm$core$Dict$removeHelp, targetKey, nLeft),
-								nRight);
-						} else {
-							return $elm$core$Dict$RBEmpty_elm_builtin;
-						}
-					}
-				} else {
-					return A5(
-						$elm$core$Dict$RBNode_elm_builtin,
-						color,
-						key,
-						value,
-						A2($elm$core$Dict$removeHelp, targetKey, left),
-						right);
-				}
-			} else {
-				return A2(
-					$elm$core$Dict$removeHelpEQGT,
-					targetKey,
-					A7($elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
-			}
-		}
-	});
-var $elm$core$Dict$removeHelpEQGT = F2(
-	function (targetKey, dict) {
-		if (dict.$ === 'RBNode_elm_builtin') {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			if (_Utils_eq(targetKey, key)) {
-				var _v1 = $elm$core$Dict$getMin(right);
-				if (_v1.$ === 'RBNode_elm_builtin') {
-					var minKey = _v1.b;
-					var minValue = _v1.c;
-					return A5(
-						$elm$core$Dict$balance,
-						color,
-						minKey,
-						minValue,
-						left,
-						$elm$core$Dict$removeMin(right));
-				} else {
-					return $elm$core$Dict$RBEmpty_elm_builtin;
-				}
-			} else {
-				return A5(
-					$elm$core$Dict$balance,
-					color,
-					key,
-					value,
-					left,
-					A2($elm$core$Dict$removeHelp, targetKey, right));
-			}
-		} else {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		}
-	});
-var $elm$core$Dict$remove = F2(
-	function (key, dict) {
-		var _v0 = A2($elm$core$Dict$removeHelp, key, dict);
-		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
-			var _v1 = _v0.a;
-			var k = _v0.b;
-			var v = _v0.c;
-			var l = _v0.d;
-			var r = _v0.e;
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
-		} else {
-			var x = _v0;
-			return x;
-		}
-	});
-var $elm$core$Dict$update = F3(
-	function (targetKey, alter, dictionary) {
-		var _v0 = alter(
-			A2($elm$core$Dict$get, targetKey, dictionary));
-		if (_v0.$ === 'Just') {
-			var value = _v0.a;
-			return A3($elm$core$Dict$insert, targetKey, value, dictionary);
-		} else {
-			return A2($elm$core$Dict$remove, targetKey, dictionary);
-		}
-	});
-var $author$project$Move$Ports$handleAnimationComplete = F2(
-	function (elementId, _v0) {
-		var elementsDict = _v0.a;
-		var updatedDict = A3(
-			$elm$core$Dict$update,
-			elementId,
-			$elm$core$Maybe$map(
-				function (data) {
-					return _Utils_update(
-						data,
-						{currentX: data.targetX, currentY: data.targetY, isAnimating: false});
-				}),
-			elementsDict);
-		return $author$project$Move$Ports$Model(updatedDict);
-	});
-var $author$project$Move$Ports$handlePositionUpdate = F2(
+var $author$project$Anim$Ports$handlePropertyUpdate = F2(
 	function (update, _v0) {
 		var elementsDict = _v0.a;
-		var updatedDict = A3(
-			$elm$core$Dict$update,
-			update.elementId,
-			$elm$core$Maybe$map(
-				function (data) {
-					return _Utils_update(
-						data,
-						{currentX: update.x, currentY: update.y});
-				}),
-			elementsDict);
-		return $author$project$Move$Ports$Model(updatedDict);
+		var currentElementData = A2(
+			$elm$core$Maybe$withDefault,
+			{animating: $elm$core$Dict$empty, properties: $elm$core$Dict$empty},
+			A2($elm$core$Dict$get, update.elementId, elementsDict));
+		var updatedProperties = A3($elm$core$Dict$insert, update.propertyKey, update.target, currentElementData.properties);
+		var elementData = _Utils_update(
+			currentElementData,
+			{properties: updatedProperties});
+		var updatedDict = A3($elm$core$Dict$insert, update.elementId, elementData, elementsDict);
+		return $author$project$Anim$Ports$Model(updatedDict);
 	});
 var $elm$json$Json$Decode$decodeValue = _Json_run;
-var $author$project$Move$Ports$PositionUpdate = F3(
-	function (elementId, x, y) {
-		return {elementId: elementId, x: x, y: y};
+var $author$project$Anim$Ports$PropertyUpdate = F3(
+	function (elementId, propertyKey, target) {
+		return {elementId: elementId, propertyKey: propertyKey, target: target};
 	});
+var $author$project$Anim$ToBackgroundColor = function (a) {
+	return {$: 'ToBackgroundColor', a: a};
+};
+var $author$project$Anim$ToBorderColor = function (a) {
+	return {$: 'ToBorderColor', a: a};
+};
+var $author$project$Anim$ToBorderRadius = function (a) {
+	return {$: 'ToBorderRadius', a: a};
+};
+var $author$project$Anim$ToDimensions = function (a) {
+	return {$: 'ToDimensions', a: a};
+};
+var $author$project$Anim$ToFilter = function (a) {
+	return {$: 'ToFilter', a: a};
+};
+var $author$project$Anim$ToOpacity = function (a) {
+	return {$: 'ToOpacity', a: a};
+};
+var $author$project$Anim$ToRotation = function (a) {
+	return {$: 'ToRotation', a: a};
+};
+var $author$project$Anim$ToScale = function (a) {
+	return {$: 'ToScale', a: a};
+};
+var $author$project$Anim$ToTextColor = function (a) {
+	return {$: 'ToTextColor', a: a};
+};
+var $elm$json$Json$Decode$andThen = _Json_andThen;
+var $author$project$Anim$Hex = function (a) {
+	return {$: 'Hex', a: a};
+};
+var $author$project$Anim$Hsl = function (a) {
+	return {$: 'Hsl', a: a};
+};
+var $author$project$Anim$Hsla = function (a) {
+	return {$: 'Hsla', a: a};
+};
+var $author$project$Anim$Rgb = function (a) {
+	return {$: 'Rgb', a: a};
+};
+var $author$project$Anim$Rgba = function (a) {
+	return {$: 'Rgba', a: a};
+};
+var $elm$json$Json$Decode$fail = _Json_fail;
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
+var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$json$Json$Decode$map3 = _Json_map3;
-var $author$project$Move$Ports$positionUpdateDecoder = A4(
+var $elm$json$Json$Decode$map4 = _Json_map4;
+var $author$project$Anim$Ports$colorValueDecoder = A2(
+	$elm$json$Json$Decode$andThen,
+	function (format) {
+		switch (format) {
+			case 'hex':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$Hex,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$string));
+			case 'rgb':
+				return A4(
+					$elm$json$Json$Decode$map3,
+					F3(
+						function (r, g, b) {
+							return $author$project$Anim$Rgb(
+								{b: b, g: g, r: r});
+						}),
+					A2($elm$json$Json$Decode$field, 'r', $elm$json$Json$Decode$int),
+					A2($elm$json$Json$Decode$field, 'g', $elm$json$Json$Decode$int),
+					A2($elm$json$Json$Decode$field, 'b', $elm$json$Json$Decode$int));
+			case 'rgba':
+				return A5(
+					$elm$json$Json$Decode$map4,
+					F4(
+						function (r, g, b, a) {
+							return $author$project$Anim$Rgba(
+								{a: a, b: b, g: g, r: r});
+						}),
+					A2($elm$json$Json$Decode$field, 'r', $elm$json$Json$Decode$int),
+					A2($elm$json$Json$Decode$field, 'g', $elm$json$Json$Decode$int),
+					A2($elm$json$Json$Decode$field, 'b', $elm$json$Json$Decode$int),
+					A2($elm$json$Json$Decode$field, 'a', $elm$json$Json$Decode$float));
+			case 'hsl':
+				return A4(
+					$elm$json$Json$Decode$map3,
+					F3(
+						function (h, s, l) {
+							return $author$project$Anim$Hsl(
+								{h: h, l: l, s: s});
+						}),
+					A2($elm$json$Json$Decode$field, 'h', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 's', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 'l', $elm$json$Json$Decode$float));
+			case 'hsla':
+				return A5(
+					$elm$json$Json$Decode$map4,
+					F4(
+						function (h, s, l, a) {
+							return $author$project$Anim$Hsla(
+								{a: a, h: h, l: l, s: s});
+						}),
+					A2($elm$json$Json$Decode$field, 'h', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 's', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 'l', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 'a', $elm$json$Json$Decode$float));
+			default:
+				return $elm$json$Json$Decode$fail('Unknown color format: ' + format);
+		}
+	},
+	A2($elm$json$Json$Decode$field, 'format', $elm$json$Json$Decode$string));
+var $author$project$Anim$Blur = function (a) {
+	return {$: 'Blur', a: a};
+};
+var $author$project$Anim$Brightness = function (a) {
+	return {$: 'Brightness', a: a};
+};
+var $author$project$Anim$Contrast = function (a) {
+	return {$: 'Contrast', a: a};
+};
+var $author$project$Anim$Grayscale = function (a) {
+	return {$: 'Grayscale', a: a};
+};
+var $author$project$Anim$Saturate = function (a) {
+	return {$: 'Saturate', a: a};
+};
+var $author$project$Anim$Ports$filterValueDecoder = A2(
+	$elm$json$Json$Decode$andThen,
+	function (filterType) {
+		switch (filterType) {
+			case 'blur':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$Blur,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'brightness':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$Brightness,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'contrast':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$Contrast,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'grayscale':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$Grayscale,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'saturate':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$Saturate,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			default:
+				return $elm$json$Json$Decode$fail('Unknown filter type: ' + filterType);
+		}
+	},
+	A2($elm$json$Json$Decode$field, 'type', $elm$json$Json$Decode$string));
+var $author$project$Anim$Ports$animationTargetDecoder = A2(
+	$elm$json$Json$Decode$andThen,
+	function (targetType) {
+		switch (targetType) {
+			case 'position':
+				return A3(
+					$elm$json$Json$Decode$map2,
+					F2(
+						function (x, y) {
+							return $author$project$Anim$ToPosition(
+								{x: x, y: y});
+						}),
+					A2($elm$json$Json$Decode$field, 'x', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 'y', $elm$json$Json$Decode$float));
+			case 'opacity':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToOpacity,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'scale':
+				return A3(
+					$elm$json$Json$Decode$map2,
+					F2(
+						function (x, y) {
+							return $author$project$Anim$ToScale(
+								{x: x, y: y});
+						}),
+					A2($elm$json$Json$Decode$field, 'x', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 'y', $elm$json$Json$Decode$float));
+			case 'rotation':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToRotation,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'background-color':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToBackgroundColor,
+					A2($elm$json$Json$Decode$field, 'value', $author$project$Anim$Ports$colorValueDecoder));
+			case 'text-color':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToTextColor,
+					A2($elm$json$Json$Decode$field, 'value', $author$project$Anim$Ports$colorValueDecoder));
+			case 'border-color':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToBorderColor,
+					A2($elm$json$Json$Decode$field, 'value', $author$project$Anim$Ports$colorValueDecoder));
+			case 'dimensions':
+				return A3(
+					$elm$json$Json$Decode$map2,
+					F2(
+						function (w, h) {
+							return $author$project$Anim$ToDimensions(
+								{height: h, width: w});
+						}),
+					A2($elm$json$Json$Decode$field, 'width', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 'height', $elm$json$Json$Decode$float));
+			case 'border-radius':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToBorderRadius,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'filter':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToFilter,
+					A2($elm$json$Json$Decode$field, 'value', $author$project$Anim$Ports$filterValueDecoder));
+			default:
+				return $elm$json$Json$Decode$fail('Unknown animation target type: ' + targetType);
+		}
+	},
+	A2($elm$json$Json$Decode$field, 'type', $elm$json$Json$Decode$string));
+var $author$project$Anim$Ports$propertyUpdateDecoder = A4(
 	$elm$json$Json$Decode$map3,
-	$author$project$Move$Ports$PositionUpdate,
+	$author$project$Anim$Ports$PropertyUpdate,
 	A2($elm$json$Json$Decode$field, 'elementId', $elm$json$Json$Decode$string),
-	A2($elm$json$Json$Decode$field, 'x', $elm$json$Json$Decode$float),
-	A2($elm$json$Json$Decode$field, 'y', $elm$json$Json$Decode$float));
-var $author$project$Move$Ports$handlePositionUpdateFromJson = function (value) {
-	return A2($elm$json$Json$Decode$decodeValue, $author$project$Move$Ports$positionUpdateDecoder, value);
+	A2($elm$json$Json$Decode$field, 'propertyKey', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'target', $author$project$Anim$Ports$animationTargetDecoder));
+var $author$project$Anim$Ports$handlePropertyUpdateFromJson = function (value) {
+	return A2($elm$json$Json$Decode$decodeValue, $author$project$Anim$Ports$propertyUpdateDecoder, value);
 };
 var $author$project$ElmUI$Ports$Multiple$Main$update = F2(
 	function (msg, model) {
@@ -6054,30 +6157,30 @@ var $author$project$ElmUI$Ports$Multiple$Main$update = F2(
 					[
 						{
 						elementId: 'element-a',
-						target: A2($author$project$Move$Ports$Position, 50.0, 80.0)
+						target: A2($author$project$Anim$Position, 50.0, 80.0)
 					},
 						{
 						elementId: 'element-b',
-						target: A2($author$project$Move$Ports$Position, 350.0, 120.0)
+						target: A2($author$project$Anim$Position, 350.0, 120.0)
 					},
 						{
 						elementId: 'element-c',
-						target: A2($author$project$Move$Ports$Position, 120.0, 250.0)
+						target: A2($author$project$Anim$Position, 120.0, 250.0)
 					},
 						{
 						elementId: 'element-d',
-						target: A2($author$project$Move$Ports$Position, 300.0, 280.0)
+						target: A2($author$project$Anim$Position, 300.0, 280.0)
 					},
 						{
 						elementId: 'element-e',
-						target: A2($author$project$Move$Ports$Position, 80.0, 180.0)
+						target: A2($author$project$Anim$Position, 80.0, 180.0)
 					},
 						{
 						elementId: 'element-f',
-						target: A2($author$project$Move$Ports$Position, 380.0, 200.0)
+						target: A2($author$project$Anim$Position, 380.0, 200.0)
 					}
 					]);
-				var _v1 = A3($author$project$Move$Ports$animateBatch, $author$project$Move$defaultConfig, scatterSpecs, model.animations);
+				var _v1 = A3($author$project$Anim$Ports$animateBatch, $author$project$Anim$defaultConfig, scatterSpecs, model.animations);
 				var newAnimations = _v1.a;
 				var commands = _v1.b;
 				return _Utils_Tuple2(
@@ -6087,37 +6190,37 @@ var $author$project$ElmUI$Ports$Multiple$Main$update = F2(
 					$elm$core$Platform$Cmd$batch(
 						A2(
 							$elm$core$List$map,
-							A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Multiple$Main$animateElement, $author$project$Move$Ports$encodeAnimationCommand),
+							A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Multiple$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
 							commands)));
 			case 'Reset':
 				var resetSpecs = _List_fromArray(
 					[
 						{
 						elementId: 'element-a',
-						target: A2($author$project$Move$Ports$Position, 50.0, 80.0)
+						target: A2($author$project$Anim$Position, 50.0, 80.0)
 					},
 						{
 						elementId: 'element-b',
-						target: A2($author$project$Move$Ports$Position, 380.0, 50.0)
+						target: A2($author$project$Anim$Position, 380.0, 50.0)
 					},
 						{
 						elementId: 'element-c',
-						target: A2($author$project$Move$Ports$Position, 120.0, 220.0)
+						target: A2($author$project$Anim$Position, 120.0, 220.0)
 					},
 						{
 						elementId: 'element-d',
-						target: A2($author$project$Move$Ports$Position, 350.0, 180.0)
+						target: A2($author$project$Anim$Position, 350.0, 180.0)
 					},
 						{
 						elementId: 'element-e',
-						target: A2($author$project$Move$Ports$Position, 200.0, 40.0)
+						target: A2($author$project$Anim$Position, 200.0, 40.0)
 					},
 						{
 						elementId: 'element-f',
-						target: A2($author$project$Move$Ports$Position, 80.0, 140.0)
+						target: A2($author$project$Anim$Position, 80.0, 140.0)
 					}
 					]);
-				var _v2 = A3($author$project$Move$Ports$animateBatch, $author$project$Move$defaultConfig, resetSpecs, model.animations);
+				var _v2 = A3($author$project$Anim$Ports$animateBatch, $author$project$Anim$defaultConfig, resetSpecs, model.animations);
 				var newAnimations = _v2.a;
 				var commands = _v2.b;
 				return _Utils_Tuple2(
@@ -6127,7 +6230,7 @@ var $author$project$ElmUI$Ports$Multiple$Main$update = F2(
 					$elm$core$Platform$Cmd$batch(
 						A2(
 							$elm$core$List$map,
-							A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Multiple$Main$animateElement, $author$project$Move$Ports$encodeAnimationCommand),
+							A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Multiple$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
 							commands)));
 			case 'Circle':
 				var radius = 50.0;
@@ -6137,30 +6240,30 @@ var $author$project$ElmUI$Ports$Multiple$Main$update = F2(
 					[
 						{
 						elementId: 'element-a',
-						target: A2($author$project$Move$Ports$Position, centerX, centerY - radius)
+						target: A2($author$project$Anim$Position, centerX, centerY - radius)
 					},
 						{
 						elementId: 'element-b',
-						target: A2($author$project$Move$Ports$Position, centerX + (radius * 0.866), centerY - (radius / 2))
+						target: A2($author$project$Anim$Position, centerX + (radius * 0.866), centerY - (radius / 2))
 					},
 						{
 						elementId: 'element-c',
-						target: A2($author$project$Move$Ports$Position, centerX + (radius * 0.866), centerY + (radius / 2))
+						target: A2($author$project$Anim$Position, centerX + (radius * 0.866), centerY + (radius / 2))
 					},
 						{
 						elementId: 'element-d',
-						target: A2($author$project$Move$Ports$Position, centerX, centerY + radius)
+						target: A2($author$project$Anim$Position, centerX, centerY + radius)
 					},
 						{
 						elementId: 'element-e',
-						target: A2($author$project$Move$Ports$Position, centerX - (radius * 0.866), centerY + (radius / 2))
+						target: A2($author$project$Anim$Position, centerX - (radius * 0.866), centerY + (radius / 2))
 					},
 						{
 						elementId: 'element-f',
-						target: A2($author$project$Move$Ports$Position, centerX - (radius * 0.866), centerY - (radius / 2))
+						target: A2($author$project$Anim$Position, centerX - (radius * 0.866), centerY - (radius / 2))
 					}
 					]);
-				var _v3 = A3($author$project$Move$Ports$animateBatch, $author$project$Move$defaultConfig, circleSpecs, model.animations);
+				var _v3 = A3($author$project$Anim$Ports$animateBatch, $author$project$Anim$defaultConfig, circleSpecs, model.animations);
 				var newAnimations = _v3.a;
 				var commands = _v3.b;
 				return _Utils_Tuple2(
@@ -6170,20 +6273,20 @@ var $author$project$ElmUI$Ports$Multiple$Main$update = F2(
 					$elm$core$Platform$Cmd$batch(
 						A2(
 							$elm$core$List$map,
-							A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Multiple$Main$animateElement, $author$project$Move$Ports$encodeAnimationCommand),
+							A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Multiple$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
 							commands)));
 			case 'StopAll':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'PositionUpdateMsg':
 				var value = msg.a;
-				var _v4 = $author$project$Move$Ports$handlePositionUpdateFromJson(value);
+				var _v4 = $author$project$Anim$Ports$handlePropertyUpdateFromJson(value);
 				if (_v4.$ === 'Ok') {
-					var positionUpdate = _v4.a;
+					var propertyUpdate = _v4.a;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
 							{
-								animations: A2($author$project$Move$Ports$handlePositionUpdate, positionUpdate, model.animations)
+								animations: A2($author$project$Anim$Ports$handlePropertyUpdate, propertyUpdate, model.animations)
 							}),
 						$elm$core$Platform$Cmd$none);
 				} else {
@@ -6191,13 +6294,7 @@ var $author$project$ElmUI$Ports$Multiple$Main$update = F2(
 				}
 			default:
 				var elementId = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							animations: A2($author$project$Move$Ports$handleAnimationComplete, elementId, model.animations)
-						}),
-					$elm$core$Platform$Cmd$none);
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Common$UI$Basic = {$: 'Basic'};
@@ -6789,6 +6886,16 @@ var $mdgriffith$elm_ui$Internal$Model$formatBoxShadow = function (shadow) {
 					$mdgriffith$elm_ui$Internal$Model$formatColor(shadow.color))
 				])));
 };
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $elm$core$Tuple$mapFirst = F2(
 	function (func, _v0) {
 		var x = _v0.a;
@@ -12282,15 +12389,34 @@ var $mdgriffith$elm_ui$Element$el = F2(
 				_List_fromArray(
 					[child])));
 	});
-var $author$project$Move$Ports$getPosition = F2(
-	function (elementId, _v0) {
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$Anim$Ports$getCurrentValue = F3(
+	function (elementId, propertyKey, _v0) {
 		var elementsDict = _v0.a;
 		return A2(
-			$elm$core$Maybe$map,
-			function (data) {
-				return {x: data.currentX, y: data.currentY};
+			$elm$core$Maybe$andThen,
+			function (elementData) {
+				return A2($elm$core$Dict$get, propertyKey, elementData.properties);
 			},
 			A2($elm$core$Dict$get, elementId, elementsDict));
+	});
+var $author$project$Anim$Ports$getPosition = F2(
+	function (elementId, model) {
+		var _v0 = A3($author$project$Anim$Ports$getCurrentValue, elementId, 'position', model);
+		if ((_v0.$ === 'Just') && (_v0.a.$ === 'ToPosition')) {
+			var position = _v0.a.a;
+			return $elm$core$Maybe$Just(position);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
 	});
 var $elm$core$Basics$always = F2(
 	function (a, _v0) {
@@ -12360,7 +12486,14 @@ var $author$project$Common$UI$htmlActionButtons = function (buttons) {
 					]),
 				htmlButtons)));
 };
-var $author$project$Move$Ports$isAnimating = F2(
+var $elm$core$Dict$isEmpty = function (dict) {
+	if (dict.$ === 'RBEmpty_elm_builtin') {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $author$project$Anim$Ports$isAnimating = F2(
 	function (elementId, _v0) {
 		var elementsDict = _v0.a;
 		return A2(
@@ -12368,8 +12501,8 @@ var $author$project$Move$Ports$isAnimating = F2(
 			false,
 			A2(
 				$elm$core$Maybe$map,
-				function ($) {
-					return $.isAnimating;
+				function (elementData) {
+					return !$elm$core$Dict$isEmpty(elementData.animating);
 				},
 				A2($elm$core$Dict$get, elementId, elementsDict)));
 	});
@@ -12483,32 +12616,32 @@ var $author$project$Common$Colors$warningDark = A3($mdgriffith$elm_ui$Element$rg
 var $author$project$ElmUI$Ports$Multiple$Main$viewContent = function (model) {
 	var positionF = A2(
 		$elm$core$Maybe$withDefault,
-		A2($author$project$Move$Ports$Position, 181, 130),
-		A2($author$project$Move$Ports$getPosition, 'element-f', model.animations));
+		A2($author$project$Anim$Position, 181, 130),
+		A2($author$project$Anim$Ports$getPosition, 'element-f', model.animations));
 	var positionE = A2(
 		$elm$core$Maybe$withDefault,
-		A2($author$project$Move$Ports$Position, 181, 170),
-		A2($author$project$Move$Ports$getPosition, 'element-e', model.animations));
+		A2($author$project$Anim$Position, 181, 170),
+		A2($author$project$Anim$Ports$getPosition, 'element-e', model.animations));
 	var positionD = A2(
 		$elm$core$Maybe$withDefault,
-		A2($author$project$Move$Ports$Position, 225, 200),
-		A2($author$project$Move$Ports$getPosition, 'element-d', model.animations));
+		A2($author$project$Anim$Position, 225, 200),
+		A2($author$project$Anim$Ports$getPosition, 'element-d', model.animations));
 	var positionC = A2(
 		$elm$core$Maybe$withDefault,
-		A2($author$project$Move$Ports$Position, 269, 170),
-		A2($author$project$Move$Ports$getPosition, 'element-c', model.animations));
+		A2($author$project$Anim$Position, 269, 170),
+		A2($author$project$Anim$Ports$getPosition, 'element-c', model.animations));
 	var positionB = A2(
 		$elm$core$Maybe$withDefault,
-		A2($author$project$Move$Ports$Position, 269, 130),
-		A2($author$project$Move$Ports$getPosition, 'element-b', model.animations));
+		A2($author$project$Anim$Position, 269, 130),
+		A2($author$project$Anim$Ports$getPosition, 'element-b', model.animations));
 	var positionA = A2(
 		$elm$core$Maybe$withDefault,
-		A2($author$project$Move$Ports$Position, 225, 100),
-		A2($author$project$Move$Ports$getPosition, 'element-a', model.animations));
+		A2($author$project$Anim$Position, 225, 100),
+		A2($author$project$Anim$Ports$getPosition, 'element-a', model.animations));
 	var anyElementAnimating = A2(
 		$elm$core$List$any,
 		function (elementId) {
-			return A2($author$project$Move$Ports$isAnimating, elementId, model.animations);
+			return A2($author$project$Anim$Ports$isAnimating, elementId, model.animations);
 		},
 		_List_fromArray(
 			['element-a', 'element-b', 'element-c', 'element-d', 'element-e', 'element-f']));

@@ -31,7 +31,8 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
-import Move.Sub exposing (Position, animateTo, getPosition, init, isAnimating, setPosition, step, subscriptions, transform)
+import Anim exposing (Position)
+import Anim.Sub exposing (Model, animateTo, getPosition, init, isAnimating, setPosition, step, subscriptions, transform)
 
 
 
@@ -53,7 +54,7 @@ main =
 
 
 type alias Model =
-    { smoothMove : Move.Sub.Model
+    { smoothMove : Anim.Sub.Model
     }
 
 
@@ -63,7 +64,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { smoothMove = Move.Sub.init }
+    ( { smoothMove = Anim.Sub.init }
     , Cmd.none
     )
 
@@ -101,7 +102,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Move.Sub.subscriptions AnimationFrame model.smoothMove
+    Anim.Sub.subscriptions AnimationFrame model.smoothMove
 
 
 
@@ -110,7 +111,7 @@ subscriptions model =
 
 view : Model -> Document Msg
 view model =
-    UI.createDocument "Move.Sub Basic ElmUI Example" UI.Basic (viewContent model)
+    UI.createDocument "Anim.Sub Basic ElmUI Example" UI.Basic (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)
@@ -123,7 +124,7 @@ viewContent model =
             isAnimating "moving-box" model.smoothMove
     in
     [ UI.backButton
-    , UI.pageHeader "Move.Sub Basic Example"
+    , UI.pageHeader "Anim.Sub Basic Example"
     , -- Position display
       el
         [ Font.size 14

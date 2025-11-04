@@ -30,8 +30,8 @@ import Html
 import Html.Attributes
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Move exposing (defaultConfig)
-import Move.Ports exposing (Position, Model, init, setPosition, animateTo, getPosition, transformElement, handlePositionUpdate, handleAnimationComplete, handlePositionUpdateFromJson, encodeAnimationCommand, subscriptions, isAnimating, animateBatch, AnimationSpec)
+import Anim exposing (Position, defaultConfig, AnimationTarget(..))
+import Anim.Ports exposing (Model, init, setValue, animateTo, getPosition, transformElement, handlePropertyUpdate, handlePropertyUpdateFromJson, encodeAnimationCommand, subscriptions, isAnimating, animateBatch, AnimationSpec)
 
 
 
@@ -71,7 +71,7 @@ main =
 
 
 type alias Model =
-    { animations : Move.Ports.Model
+    { animations : Anim.Ports.Model
     }
 
 
@@ -81,18 +81,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    let
-        -- Initialize with scattered positions across the container (450px × 300px)
-        initialAnimations =
-            Move.Ports.init
-                |> setPosition "element-a" (Position 50.0 80.0)   -- Top-left area
-                |> setPosition "element-b" (Position 380.0 50.0)  -- Top-right area
-                |> setPosition "element-c" (Position 120.0 220.0) -- Bottom-left area
-                |> setPosition "element-d" (Position 350.0 180.0) -- Right-middle area
-                |> setPosition "element-e" (Position 200.0 40.0)  -- Top-center area
-                |> setPosition "element-f" (Position 80.0 140.0)  -- Left-middle area
-    in
-    ( { animations = initialAnimations }
+    ( { animations = Anim.Ports.init }
     , Cmd.none
     )
 
@@ -185,15 +174,15 @@ update msg model =
 
         PositionUpdateMsg value ->
             -- Handle position update with automatic decoding
-            case handlePositionUpdateFromJson value of
-                Ok positionUpdate ->
-                    ( { model | animations = handlePositionUpdate positionUpdate model.animations }, Cmd.none )
+            case handlePropertyUpdateFromJson value of
+                Ok propertyUpdate ->
+                    ( { model | animations = handlePropertyUpdate propertyUpdate model.animations }, Cmd.none )
 
                 Err _ ->
                     ( model, Cmd.none )
 
         AnimationCompleteMsg elementId ->
-            ( { model | animations = handleAnimationComplete elementId model.animations }, Cmd.none )
+            ( model, Cmd.none )
 
 
 
@@ -202,8 +191,8 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Move.Ports.subscriptions
-        { positionUpdates = positionUpdates PositionUpdateMsg
+    Anim.Ports.subscriptions
+        { propertyUpdates = positionUpdates PositionUpdateMsg
         , animationComplete = animationComplete AnimationCompleteMsg
         }
         model.animations

@@ -36,8 +36,8 @@ import Html
 import Html.Attributes
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Move exposing (defaultConfig)
-import Move.Ports exposing (Position, Model, init, setPosition, animateTo, getPosition, transformElement, handlePositionUpdate, handleAnimationComplete, handlePositionUpdateFromJson, encodeAnimationCommand, subscriptions, isAnimating)
+import Anim exposing (Position, defaultConfig, AnimationTarget(..))
+import Anim.Ports exposing (Model, init, setValue, animateTo, getPosition, transformElement, handlePropertyUpdate, handlePropertyUpdateFromJson, encodeAnimationCommand, subscriptions, isAnimating)
 
 
 
@@ -75,7 +75,7 @@ main =
 
 
 type alias Model =
-    { animations : Move.Ports.Model
+    { animations : Anim.Ports.Model
     }
 
 
@@ -85,13 +85,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    let
-        -- Initialize with starting position
-        initialAnimations =
-            Move.Ports.init
-                |> Move.Ports.setPosition "moving-box" (Position 0 0)
-    in
-    ( { animations = initialAnimations }
+    ( { animations = Anim.Ports.init }
     , Cmd.none
     )
 
@@ -155,15 +149,15 @@ update msg model =
 
         PositionUpdateMsg value ->
             -- Handle position update with automatic decoding
-            case handlePositionUpdateFromJson value of
-                Ok positionUpdate ->
-                    ( { model | animations = handlePositionUpdate positionUpdate model.animations }, Cmd.none )
+            case handlePropertyUpdateFromJson value of
+                Ok propertyUpdate ->
+                    ( { model | animations = handlePropertyUpdate propertyUpdate model.animations }, Cmd.none )
 
                 Err _ ->
                     ( model, Cmd.none )
 
         AnimationCompleteMsg elementId ->
-            ( { model | animations = handleAnimationComplete elementId model.animations }, Cmd.none )
+            ( model, Cmd.none )
 
 
 
@@ -172,8 +166,8 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Move.Ports.subscriptions
-        { positionUpdates = positionUpdates PositionUpdateMsg
+    Anim.Ports.subscriptions
+        { propertyUpdates = positionUpdates PositionUpdateMsg
         , animationComplete = animationComplete AnimationCompleteMsg
         }
         model.animations

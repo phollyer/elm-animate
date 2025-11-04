@@ -4,11 +4,18 @@ module Anim.CSS exposing
     , animate
     , animateOpacity
     , animatePosition
+    , animateToX
+    , animateToY
     , animateScale
     , animateRotation
     , animateBackgroundColor
+    , getCurrentPosition
     , styleProperties
     , transitionStyles
+    , onTransitionStart
+    , onTransitionEnd
+    , onTransitionRun
+    , onTransitionCancel
     )
 
 {-| CSS-based animation system using native browser transitions.
@@ -25,9 +32,12 @@ module Anim.CSS exposing
 @docs animate
 @docs animateOpacity
 @docs animatePosition
+@docs animateToX
+@docs animateToY
 @docs animateScale
 @docs animateRotation
 @docs animateBackgroundColor
+@docs getCurrentPosition
 
 
 # CSS Generation
@@ -35,11 +45,22 @@ module Anim.CSS exposing
 @docs styleProperties
 @docs transitionStyles
 
+
+# Event Handlers
+
+@docs onTransitionStart
+@docs onTransitionEnd
+@docs onTransitionRun
+@docs onTransitionCancel
+
 -}
 
 import Anim exposing (AnimationTarget(..), ColorValue(..), FilterValue(..), Position, RotationValue, ScaleValue, defaultConfig)
 import Anim.Internal as Internal
 import Dict exposing (Dict)
+import Html
+import Html.Events
+import Json.Decode
 
 
 
@@ -110,6 +131,62 @@ animateRotation elementId degrees model =
 animateBackgroundColor : String -> ColorValue -> Model -> Model
 animateBackgroundColor elementId color model =
     animate elementId (ToBackgroundColor color) model
+
+
+{-| Animate element to a specific X coordinate, preserving current Y position.
+-}
+animateToX : String -> Float -> Model -> Model
+animateToX elementId targetX model =
+    let
+        currentPosition =
+            getCurrentPosition elementId model
+
+        newPosition =
+            { currentPosition | x = targetX }
+    in
+    animatePosition elementId newPosition model
+
+
+{-| Animate element to a specific Y coordinate, preserving current X position.
+-}
+animateToY : String -> Float -> Model -> Model
+animateToY elementId targetY model =
+    let
+        currentPosition =
+            getCurrentPosition elementId model
+
+        newPosition =
+            { currentPosition | y = targetY }
+    in
+    animatePosition elementId newPosition model
+
+
+{-| Get the current position of an element from the animation model.
+Returns { x = 0, y = 0 } if no position is set.
+-}
+getCurrentPosition : String -> Model -> Position
+getCurrentPosition elementId (Model animations) =
+    case Dict.get elementId animations of
+        Just targets ->
+            targets
+                |> List.filterMap extractPosition
+                |> List.head
+                |> Maybe.withDefault { x = 0, y = 0 }
+
+        Nothing ->
+            { x = 0, y = 0 }
+
+
+{-| Extract position from AnimationTarget if it's a ToPosition target.
+-}
+extractPosition : AnimationTarget -> Maybe Position
+extractPosition target =
+    case target of
+        ToPosition position ->
+            Just position
+
+        _ ->
+            Nothing
 
 
 
@@ -328,3 +405,35 @@ filterToString filter =
 
         Saturate value ->
             "saturate(" ++ String.fromFloat value ++ ")"
+
+
+
+-- CSS TRANSITION EVENT HANDLERS
+
+
+{-| Event handler for when a CSS transition starts.
+-}
+onTransitionStart : msg -> Html.Attribute msg
+onTransitionStart msg =
+    Html.Events.on "transitionstart" (Json.Decode.succeed msg)
+
+
+{-| Event handler for when a CSS transition ends.
+-}
+onTransitionEnd : msg -> Html.Attribute msg
+onTransitionEnd msg =
+    Html.Events.on "transitionend" (Json.Decode.succeed msg)
+
+
+{-| Event handler for when a CSS transition run begins (even if delayed).
+-}
+onTransitionRun : msg -> Html.Attribute msg
+onTransitionRun msg =
+    Html.Events.on "transitionrun" (Json.Decode.succeed msg)
+
+
+{-| Event handler for when a CSS transition is cancelled.
+-}
+onTransitionCancel : msg -> Html.Attribute msg
+onTransitionCancel msg =
+    Html.Events.on "transitioncancel" (Json.Decode.succeed msg)

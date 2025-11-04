@@ -32,8 +32,8 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Html.Attributes
-import Move exposing (defaultConfig)
-import Move.CSS exposing (Position, Model, init, setPosition, animateTo, getPosition, transformElement, transition, onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel)
+import Anim exposing (Position, defaultConfig)
+import Anim.CSS exposing (Model, init, animatePosition, animateToX, animateToY, getCurrentPosition, styleProperties, transitionStyles, onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel)
 
 
 
@@ -55,7 +55,7 @@ main =
 
 
 type alias Model =
-    { animations : Move.CSS.Model
+    { animations : Anim.CSS.Model
     , isAnimating : Bool
     , eventLog : List EventLogEntry
     , eventCounter : Int
@@ -83,12 +83,7 @@ type EventType
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    let
-        initialAnimations =
-            Move.CSS.init
-                |> setPosition "box" (Position 0 0)
-    in
-    ( { animations = initialAnimations
+    ( { animations = Anim.CSS.init
       , isAnimating = False
       , eventLog = []
       , eventCounter = 0
@@ -118,7 +113,7 @@ update msg model =
     case msg of
         MoveToCorner ->
             ( { model 
-                | animations = animateTo "box" (Position 100 100) model.animations
+                | animations = animatePosition "box" (Position 100 100) model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -126,7 +121,7 @@ update msg model =
 
         MoveToCenter ->
             ( { model 
-                | animations = animateTo "box" (Position 300 200) model.animations
+                | animations = animatePosition "box" (Position 300 200) model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -134,7 +129,7 @@ update msg model =
 
         MoveToOpposite ->
             ( { model 
-                | animations = animateTo "box" (Position 400 50) model.animations
+                | animations = animatePosition "box" (Position 400 50) model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -142,7 +137,7 @@ update msg model =
 
         StopAnimation ->
             ( { model 
-                | animations = animateTo "box" (Position 0 0) model.animations
+                | animations = animatePosition "box" (Position 0 0) model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -182,8 +177,7 @@ addEventToLog : EventType -> Model -> Model
 addEventToLog eventType model =
     let
         currentPosition =
-            getPosition "box" model.animations 
-                |> Maybe.withDefault (Position 0 0)
+            getCurrentPosition "box" model.animations
         
         newEntry =
             { id = model.eventCounter
@@ -232,11 +226,10 @@ viewContent model =
             , Font.color Colors.textMedium
             , centerX
             ]
-            (case getPosition "box" model.animations of
-                Just pos -> 
-                    text ("Position: (" ++ String.fromInt (round pos.x) ++ ", " ++ String.fromInt (round pos.y) ++ ")")
-                Nothing ->
-                    text "Position: (0, 0)"
+            (let
+                pos = getCurrentPosition "box" model.animations
+             in
+                text ("Position: (" ++ String.fromInt (round pos.x) ++ ", " ++ String.fromInt (round pos.y) ++ ")")
             )
         , el
             [ Font.size 14
@@ -270,28 +263,30 @@ viewContent model =
         , htmlAttribute (Html.Attributes.style "overflow" "hidden")
         ]
         (el
-            [ width (px 50)
+            ([ width (px 50)
             , height (px 50)
             , Background.color Colors.primary
             , Border.rounded 8
-            , htmlAttribute (Html.Attributes.id "moving-box")
+            , htmlAttribute (Html.Attributes.id "box")
             , htmlAttribute (Html.Attributes.style "position" "absolute")
-
-            -- Apply CSS transition styles with all event handlers
-            , htmlAttribute (Html.Attributes.style "transform" (transformElement "box" model.animations))
-            , htmlAttribute (Html.Attributes.style "transition" 
-                (if model.isAnimating then
-                    transition defaultConfig
-                 else
-                    "none"
-                ))
+            
+            -- Apply CSS styles from animation model
+            ] 
+            ++ (styleProperties "box" model.animations
+                |> List.map (\(prop, value) -> htmlAttribute (Html.Attributes.style prop value)))
+            ++ [ htmlAttribute (Html.Attributes.style "transition" 
+                    (if model.isAnimating then
+                        transitionStyles "box" model.animations
+                     else
+                        "none"
+                    ))
             
             -- All CSS transition event handlers
             , htmlAttribute (onTransitionStart OnTransitionStart)
             , htmlAttribute (onTransitionEnd OnTransitionEnd)
             , htmlAttribute (onTransitionRun OnTransitionRun)
             , htmlAttribute (onTransitionCancel OnTransitionCancel)
-            ]
+            ])
             (text "📦")
         )
     , -- Event log section

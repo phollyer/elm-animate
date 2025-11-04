@@ -1,6 +1,6 @@
 module ElmUI.CSS.Basic.Main exposing (main)
 
-{-| Move.CSS Basic Example using ElmUI - Native browser CSS transitions for optimal performance
+{-| Anim.CSS Basic Example using ElmUI - Native browser CSS transitions for optimal performance
 
 This approach uses browser-native CSS transitions for hardware acceleration and battery efficiency.
 Perfect for simple transitions where you want maximum performance with minimal JavaScript overhead.
@@ -17,8 +17,8 @@ BENEFITS:
 USAGE:
 
   - Update position in your model when you want to animate
-  - Use Move.CSS.transform to generate CSS transform styles
-  - Use Move.CSS.transition to generate CSS transition styles
+  - Use Anim.CSS.transform to generate CSS transform styles
+  - Use Anim.CSS.transition to generate CSS transition styles
   - Browser handles all animation timing and optimization
 
 -}
@@ -31,8 +31,8 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
-import Move exposing (defaultConfig)
-import Move.CSS exposing (Position, Model, init, setPosition, animateTo, animateToX, animateToY, getPosition, transform, transformElement, transition, onTransitionEnd)
+import Anim exposing (Position, defaultConfig)
+import Anim.CSS exposing (Model, init, animatePosition, animateToX, animateToY, getCurrentPosition, styleProperties, transitionStyles)
 
 
 
@@ -54,7 +54,7 @@ main =
 
 
 type alias Model =
-    { animations : Move.CSS.Model
+    { animations : Anim.CSS.Model
     , isAnimating : Bool
     }
 
@@ -65,12 +65,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    let
-        initialAnimations =
-            Move.CSS.init
-                |> setPosition "box" (Position 0 0)
-    in
-    ( { animations = initialAnimations
+    ( { animations = Anim.CSS.init
       , isAnimating = False
       }
     , Cmd.none
@@ -97,7 +92,7 @@ update msg model =
     case msg of
         MoveToCorner ->
             ( { model 
-                | animations = animateTo "box" (Position 100 100) model.animations
+                | animations = animatePosition "box" (Position 100 100) model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -105,7 +100,7 @@ update msg model =
 
         MoveToCenter ->
             ( { model 
-                | animations = animateTo "box" (Position 300 200) model.animations
+                | animations = animatePosition "box" (Position 300 200) model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -145,7 +140,7 @@ update msg model =
 
         StopAnimation ->
             ( { model 
-                | animations = animateTo "box" (Position 0 0) model.animations
+                | animations = animatePosition "box" (Position 0 0) model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -185,12 +180,10 @@ viewContent model =
         , Font.color Colors.textMedium
         , centerX
         ]
-        (case getPosition "box" model.animations of
-            Just pos ->
-                text ("Position: (" ++ String.fromInt (round pos.x) ++ ", " ++ String.fromInt (round pos.y) ++ ")")
-            
-            Nothing ->
-                text "Position: (0, 0)"
+        (let
+            pos = getCurrentPosition "box" model.animations
+         in
+            text ("Position: (" ++ String.fromInt (round pos.x) ++ ", " ++ String.fromInt (round pos.y) ++ ")")
         )
     , -- Buttons for predefined moves
       UI.htmlActionButtons
@@ -222,25 +215,27 @@ viewContent model =
         , htmlAttribute (Html.Attributes.style "overflow" "hidden")
         ]
         (el
-            [ width (px 50)
+            ([ width (px 50)
             , height (px 50)
             , Background.color Colors.primary
             , Border.rounded 8
-            , htmlAttribute (Html.Attributes.id "moving-box")
+            , htmlAttribute (Html.Attributes.id "box")
             , htmlAttribute (Html.Attributes.style "position" "absolute")
-
-            -- Apply CSS transition styles directly - browser handles the animation!
-            , htmlAttribute (Html.Attributes.style "transform" (transformElement "box" model.animations))
-            , htmlAttribute (Html.Attributes.style "transition" 
-                (if model.isAnimating then
-                    transition defaultConfig
-                 else
-                    "none"
-                ))
             
-            -- CSS transition event handler - fires when animation completes
-            , htmlAttribute (onTransitionEnd AnimationComplete)
-            ]
+            -- Apply CSS styles from animation model - browser handles the animation!
+            ] 
+            ++ (styleProperties "box" model.animations
+                |> List.map (\(prop, value) -> htmlAttribute (Html.Attributes.style prop value)))
+            ++ [ htmlAttribute (Html.Attributes.style "transition" 
+                    (if model.isAnimating then
+                        transitionStyles "box" model.animations
+                     else
+                        "none"
+                    ))
+            
+            -- CSS transition event handler - fires when animation completes  
+            , htmlAttribute (Html.Attributes.attribute "ontransitionend" "this.dispatchEvent(new CustomEvent('animation-complete'))")
+            ])
             (text "")
         )
     ]
