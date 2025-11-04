@@ -128,6 +128,91 @@ Encoders and decoders for port communication.
 @docs encodeStopCommand
 @docs positionUpdateDecoder
 
+
+# Complete Integration Example
+
+Here's a complete example showing how all the port integration pieces work together:
+
+**Step 1: Define your ports in Main.elm**
+
+    -- Outgoing ports (Elm -> JavaScript)
+    port animateElement : Encode.Value -> Cmd msg
+
+    port stopElement : Encode.Value -> Cmd msg
+
+    -- Incoming ports (JavaScript -> Elm)
+    port positionUpdates : (Decode.Value -> msg) -> Sub msg
+
+    port animationComplete : (String -> msg) -> Sub msg
+
+**Step 2: Set up your Model and Messages**
+
+    type alias Model =
+        { movePortsModel : Move.Ports.Model
+        , -- your other model fields
+        }
+
+    type Msg
+        = AnimateClicked
+        | PositionUpdateReceived (Result Decode.Error Move.Ports.PositionUpdate)
+        | AnimationCompleted String
+        | -- your other messages
+
+**Step 3: Initialize and handle subscriptions**
+
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { movePortsModel = Move.Ports.init }, Cmd.none )
+
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        Move.Ports.subscriptions
+            { positionUpdates =
+                positionUpdates (PositionUpdateReceived << Move.Ports.handlePositionUpdateFromJson)
+            , animationComplete = animationComplete AnimationCompleted
+            }
+            model.movePortsModel
+
+**Step 4: Handle animations in your update function**
+
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            AnimateClicked ->
+                let
+                    ( newMoveModel, maybeCommand ) =
+                        Move.Ports.animateTo "my-element" (Position 200 300) model.movePortsModel
+                in
+                case maybeCommand of
+                    Just command ->
+                        ( { model | movePortsModel = newMoveModel }
+                        , animateElement (Move.Ports.encodeAnimationCommand command)
+                        )
+
+                    Nothing ->
+                        ( { model | movePortsModel = newMoveModel }, Cmd.none )
+
+            PositionUpdateReceived (Ok positionUpdate) ->
+                ( { model | movePortsModel = Move.Ports.handlePositionUpdate positionUpdate model.movePortsModel }
+                , Cmd.none
+                )
+
+            AnimationCompleted elementId ->
+                ( { model | movePortsModel = Move.Ports.handleAnimationComplete elementId model.movePortsModel }
+                , Cmd.none
+                )
+
+**Step 5: Include smooth-move-ports.js in your HTML**
+
+    <script src="https://unpkg.com/elm-smooth-move/dist/smooth-move-ports.js"></script>
+    <script>
+        var app = Elm.Main.init({ node: document.getElementById('elm') });
+        SmoothMovePorts.init(app.ports);
+    </script>
+
+This complete flow shows how the AnimationCommand type gets encoded, sent through ports to JavaScript,
+while PositionUpdate messages flow back from JavaScript to update your Elm model state.
+
 -}
 
 import Dict exposing (Dict)
