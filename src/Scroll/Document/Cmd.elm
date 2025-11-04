@@ -151,8 +151,19 @@ _[↑ Corners](#corners) | [↑ Position-Targeting Functions](#position-targetin
 
 Use these functions to scroll or jump to the center of the document or center on a specific axis.
 
+
+### Both Axes
+
 @docs scrollToCenter, scrollToCenterWithConfig, jumpToCenter, jumpToCenterWithConfig
+
+
+### X Axis Only
+
 @docs scrollToCenterX, scrollToCenterXWithConfig, jumpToCenterX, jumpToCenterXWithConfig
+
+
+### Y Axis Only
+
 @docs scrollToCenterY, scrollToCenterYWithConfig, jumpToCenterY, jumpToCenterYWithConfig
 
 _[↑ Center Positioning](#center-positioning) | [↑ Position-Targeting Functions](#position-targeting-functions) | [↑ Documentation Index](#documentation-index)_
@@ -178,8 +189,19 @@ Scroll to positions defined as percentages of the total scrollable area.
 
 @docs PercX, PercY
 
+
+### Both Axes
+
 @docs scrollToPercentage, scrollToPercentageWithConfig, jumpToPercentage, jumpToPercentageWithConfig
+
+
+### X Axis Only
+
 @docs scrollToPercentageX, scrollToPercentageXWithConfig, jumpToPercentageX, jumpToPercentageXWithConfig
+
+
+### Y Axis Only
+
 @docs scrollToPercentageY, scrollToPercentageYWithConfig, jumpToPercentageY, jumpToPercentageYWithConfig
 
 _[↑ Percentage-Based Positioning](#percentage-based-positioning) | [↑ Advanced Positioning Functions](#advanced-positioning-functions) | [↑ Documentation Index](#documentation-index)_
