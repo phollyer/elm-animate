@@ -1,6 +1,6 @@
 module ElmUI.Sub.Basic.Main exposing (main)
 
-{-| This example demonstrates SmoothMoveSub using ElmUI - subscription-based positioning with automatic state management.
+{-| This example demonstrates Move.Sub using ElmUI - subscription-based positioning with automatic state management.
 
 BENEFITS:
 
@@ -14,9 +14,9 @@ BENEFITS:
 
 DEVELOPER EXPERIENCE:
 
-  - Keep only a SmoothMoveSub.Model in your model
+  - Keep only a Move.Sub.Model in your model
   - Call animateTo to begin animations (automatic current position)
-  - Subscribe with SmoothMoveSub.subscriptions for smooth updates (just deltaMs!)
+  - Subscribe with Move.Sub.subscriptions for smooth updates (just deltaMs!)
   - Use transform for CSS transforms with getPosition!
   - Use getPosition when you need the actual position values
   - Library handles everything else automatically!
@@ -31,7 +31,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
-import SmoothMoveSub exposing (animateTo, getPosition, init, isAnimating, setPosition, subscriptions, transform)
+import Move.Sub exposing (Position, animateTo, getPosition, init, isAnimating, setPosition, step, subscriptions, transform)
 
 
 
@@ -53,7 +53,7 @@ main =
 
 
 type alias Model =
-    { smoothMove : SmoothMoveSub.Model
+    { smoothMove : Move.Sub.Model
     }
 
 
@@ -63,7 +63,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { smoothMove = SmoothMoveSub.init }
+    ( { smoothMove = Move.Sub.init }
     , Cmd.none
     )
 
@@ -83,14 +83,14 @@ update msg model =
         StartMove x y ->
             let
                 updatedSmoothMove =
-                    animateTo "moving-box" x y model.smoothMove
+                    animateTo "moving-box" (Position x y) model.smoothMove
             in
             ( { model | smoothMove = updatedSmoothMove }, Cmd.none )
 
         AnimationFrame deltaMs ->
             let
                 updatedSmoothMove =
-                    SmoothMoveSub.step deltaMs model.smoothMove
+                    step deltaMs model.smoothMove
             in
             ( { model | smoothMove = updatedSmoothMove }, Cmd.none )
 
@@ -101,7 +101,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    SmoothMoveSub.subscriptions AnimationFrame model.smoothMove
+    Move.Sub.subscriptions AnimationFrame model.smoothMove
 
 
 
@@ -110,7 +110,7 @@ subscriptions model =
 
 view : Model -> Document Msg
 view model =
-    UI.createDocument "SmoothMoveSub Basic ElmUI Example" UI.Basic (viewContent model)
+    UI.createDocument "Move.Sub Basic ElmUI Example" UI.Basic (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)
@@ -120,10 +120,10 @@ viewContent model =
             getPosition "moving-box" model.smoothMove |> Maybe.withDefault { x = 0, y = 0 }
 
         isMoving =
-            isAnimating model.smoothMove
+            isAnimating "moving-box" model.smoothMove
     in
     [ UI.backButton
-    , UI.pageHeader "SmoothMoveSub Basic Example"
+    , UI.pageHeader "Move.Sub Basic Example"
     , -- Position display
       el
         [ Font.size 14
@@ -161,7 +161,7 @@ viewContent model =
             , Border.rounded 8
             , htmlAttribute (Html.Attributes.id "moving-box")
             , htmlAttribute (Html.Attributes.style "position" "absolute")
-            , htmlAttribute (Html.Attributes.style "transform" (transform position.x position.y))
+            , htmlAttribute (Html.Attributes.style "transform" (transform "moving-box" model.smoothMove))
             , htmlAttribute (Html.Attributes.style "transition" "none")
             ]
             (text "")

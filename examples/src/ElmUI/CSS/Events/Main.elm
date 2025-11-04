@@ -32,7 +32,8 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Html.Attributes
-import SmoothMoveCSS
+import Move exposing (defaultConfig)
+import Move.CSS exposing (Position, Model, init, setPosition, animateTo, getPosition, transformElement, transition, onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel)
 
 
 
@@ -54,7 +55,7 @@ main =
 
 
 type alias Model =
-    { position : { x : Float, y : Float }
+    { animations : Move.CSS.Model
     , isAnimating : Bool
     , eventLog : List EventLogEntry
     , eventCounter : Int
@@ -65,7 +66,7 @@ type alias EventLogEntry =
     { id : Int
     , eventType : EventType
     , timestamp : Int
-    , position : { x : Float, y : Float }
+    , position : Position
     }
 
 
@@ -82,7 +83,12 @@ type EventType
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { position = { x = 0, y = 0 }
+    let
+        initialAnimations =
+            Move.CSS.init
+                |> setPosition "box" (Position 0 0)
+    in
+    ( { animations = initialAnimations
       , isAnimating = False
       , eventLog = []
       , eventCounter = 0
@@ -112,7 +118,7 @@ update msg model =
     case msg of
         MoveToCorner ->
             ( { model 
-                | position = { x = 100, y = 100 }
+                | animations = animateTo "box" (Position 100 100) model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -120,7 +126,7 @@ update msg model =
 
         MoveToCenter ->
             ( { model 
-                | position = { x = 300, y = 200 }
+                | animations = animateTo "box" (Position 300 200) model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -128,7 +134,7 @@ update msg model =
 
         MoveToOpposite ->
             ( { model 
-                | position = { x = 400, y = 50 }
+                | animations = animateTo "box" (Position 400 50) model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -136,7 +142,7 @@ update msg model =
 
         StopAnimation ->
             ( { model 
-                | position = { x = 0, y = 0 }
+                | animations = animateTo "box" (Position 0 0) model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -175,11 +181,15 @@ update msg model =
 addEventToLog : EventType -> Model -> Model
 addEventToLog eventType model =
     let
+        currentPosition =
+            getPosition "box" model.animations 
+                |> Maybe.withDefault (Position 0 0)
+        
         newEntry =
             { id = model.eventCounter
             , eventType = eventType
             , timestamp = model.eventCounter  -- Simple counter for demo
-            , position = model.position
+            , position = currentPosition
             }
         
         -- Keep only the last 10 events for display
@@ -222,7 +232,12 @@ viewContent model =
             , Font.color Colors.textMedium
             , centerX
             ]
-            (text ("Position: (" ++ String.fromInt (round model.position.x) ++ ", " ++ String.fromInt (round model.position.y) ++ ")"))
+            (case getPosition "box" model.animations of
+                Just pos -> 
+                    text ("Position: (" ++ String.fromInt (round pos.x) ++ ", " ++ String.fromInt (round pos.y) ++ ")")
+                Nothing ->
+                    text "Position: (0, 0)"
+            )
         , el
             [ Font.size 14
             , Font.color (if model.isAnimating then Colors.warning else Colors.success)
@@ -263,19 +278,19 @@ viewContent model =
             , htmlAttribute (Html.Attributes.style "position" "absolute")
 
             -- Apply CSS transition styles with all event handlers
-            , htmlAttribute (Html.Attributes.style "transform" (SmoothMoveCSS.transform model.position.x model.position.y))
+            , htmlAttribute (Html.Attributes.style "transform" (transformElement "box" model.animations))
             , htmlAttribute (Html.Attributes.style "transition" 
                 (if model.isAnimating then
-                    SmoothMoveCSS.transition SmoothMoveCSS.defaultConfig
+                    transition defaultConfig
                  else
                     "none"
                 ))
             
             -- All CSS transition event handlers
-            , htmlAttribute (SmoothMoveCSS.onTransitionStart OnTransitionStart)
-            , htmlAttribute (SmoothMoveCSS.onTransitionEnd OnTransitionEnd)
-            , htmlAttribute (SmoothMoveCSS.onTransitionRun OnTransitionRun)
-            , htmlAttribute (SmoothMoveCSS.onTransitionCancel OnTransitionCancel)
+            , htmlAttribute (onTransitionStart OnTransitionStart)
+            , htmlAttribute (onTransitionEnd OnTransitionEnd)
+            , htmlAttribute (onTransitionRun OnTransitionRun)
+            , htmlAttribute (onTransitionCancel OnTransitionCancel)
             ]
             (text "📦")
         )

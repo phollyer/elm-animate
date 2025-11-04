@@ -5196,12 +5196,16 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$document = _Browser_document;
-var $author$project$SmoothMoveSub$Model = function (a) {
+var $author$project$Move$Sub$Position = F2(
+	function (x, y) {
+		return {x: x, y: y};
+	});
+var $author$project$Move$Sub$Model = function (a) {
 	return {$: 'Model', a: a};
 };
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
-var $author$project$SmoothMoveSub$init = $author$project$SmoothMoveSub$Model($elm$core$Dict$empty);
+var $author$project$Move$Sub$init = $author$project$Move$Sub$Model($elm$core$Dict$empty);
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $elm$core$Dict$Black = {$: 'Black'};
@@ -5313,40 +5317,39 @@ var $elm$core$Dict$insert = F3(
 			return x;
 		}
 	});
-var $author$project$SmoothMoveSub$setPosition = F4(
-	function (elementId, x, y, _v0) {
+var $author$project$Move$Sub$setPosition = F3(
+	function (elementId, position, _v0) {
 		var elementsDict = _v0.a;
-		var elementData = {animation: $elm$core$Maybe$Nothing, lastX: x, lastY: y};
+		var elementData = {animation: $elm$core$Maybe$Nothing, lastX: position.x, lastY: position.y};
 		var updatedDict = A3($elm$core$Dict$insert, elementId, elementData, elementsDict);
-		return $author$project$SmoothMoveSub$Model(updatedDict);
+		return $author$project$Move$Sub$Model(updatedDict);
 	});
 var $author$project$ElmUI$Sub$Multiple$Main$init = function (_v0) {
-	var smoothMove = A4(
-		$author$project$SmoothMoveSub$setPosition,
+	var smoothMove = A3(
+		$author$project$Move$Sub$setPosition,
 		'element-f',
-		180,
-		50,
-		A4(
-			$author$project$SmoothMoveSub$setPosition,
+		A2($author$project$Move$Sub$Position, 180, 50),
+		A3(
+			$author$project$Move$Sub$setPosition,
 			'element-e',
-			300,
-			100,
-			A4(
-				$author$project$SmoothMoveSub$setPosition,
+			A2($author$project$Move$Sub$Position, 300, 100),
+			A3(
+				$author$project$Move$Sub$setPosition,
 				'element-d',
-				250,
-				200,
-				A4(
-					$author$project$SmoothMoveSub$setPosition,
+				A2($author$project$Move$Sub$Position, 250, 200),
+				A3(
+					$author$project$Move$Sub$setPosition,
 					'element-c',
-					100,
-					200,
-					A4(
-						$author$project$SmoothMoveSub$setPosition,
+					A2($author$project$Move$Sub$Position, 100, 200),
+					A3(
+						$author$project$Move$Sub$setPosition,
 						'element-b',
-						200,
-						150,
-						A4($author$project$SmoothMoveSub$setPosition, 'element-a', 150, 100, $author$project$SmoothMoveSub$init))))));
+						A2($author$project$Move$Sub$Position, 200, 150),
+						A3(
+							$author$project$Move$Sub$setPosition,
+							'element-a',
+							A2($author$project$Move$Sub$Position, 150, 100),
+							$author$project$Move$Sub$init))))));
 	return _Utils_Tuple2(
 		{smoothMove: smoothMove},
 		$elm$core$Platform$Cmd$none);
@@ -5375,10 +5378,8 @@ var $elm$core$List$any = F2(
 			}
 		}
 	});
-var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $elm$core$Basics$not = _Basics_not;
 var $elm$browser$Browser$AnimationManager$Delta = function (a) {
 	return {$: 'Delta', a: a};
 };
@@ -5523,19 +5524,32 @@ var $elm$core$Dict$values = function (dict) {
 		_List_Nil,
 		dict);
 };
-var $author$project$SmoothMoveSub$subscriptions = F2(
+var $author$project$Move$Sub$subscriptions = F2(
 	function (toMsg, _v0) {
-		var modelData = _v0.a;
-		return (!A2(
+		var elementsDict = _v0.a;
+		var hasActiveAnimations = A2(
 			$elm$core$List$any,
 			function (elementData) {
-				return !_Utils_eq(elementData.animation, $elm$core$Maybe$Nothing);
+				var _v1 = elementData.animation;
+				if (_v1.$ === 'Just') {
+					return true;
+				} else {
+					return false;
+				}
 			},
-			$elm$core$Dict$values(modelData))) ? $elm$core$Platform$Sub$none : $elm$browser$Browser$Events$onAnimationFrameDelta(toMsg);
+			$elm$core$Dict$values(elementsDict));
+		return hasActiveAnimations ? $elm$browser$Browser$Events$onAnimationFrameDelta(toMsg) : $elm$core$Platform$Sub$none;
 	});
 var $author$project$ElmUI$Sub$Multiple$Main$subscriptions = function (model) {
-	return A2($author$project$SmoothMoveSub$subscriptions, $author$project$ElmUI$Sub$Multiple$Main$AnimationFrame, model.smoothMove);
+	return A2($author$project$Move$Sub$subscriptions, $author$project$ElmUI$Sub$Multiple$Main$AnimationFrame, model.smoothMove);
 };
+var $elm$core$Basics$sqrt = _Basics_sqrt;
+var $author$project$Move$Internal$calculateDistance = F2(
+	function (from, to) {
+		var dy = to.y - from.y;
+		var dx = to.x - from.x;
+		return $elm$core$Basics$sqrt((dx * dx) + (dy * dy));
+	});
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
 		get:
@@ -5577,7 +5591,7 @@ var $elm$core$Maybe$map = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
-var $author$project$SmoothMoveSub$getPosition = F2(
+var $author$project$Move$Sub$getPosition = F2(
 	function (elementId, _v0) {
 		var elementsDict = _v0.a;
 		return A2(
@@ -5585,17 +5599,15 @@ var $author$project$SmoothMoveSub$getPosition = F2(
 			function (elementData) {
 				var _v1 = elementData.animation;
 				if (_v1.$ === 'Just') {
-					var animationState = _v1.a;
-					return {x: animationState.currentX, y: animationState.currentY};
+					var animState = _v1.a;
+					return {x: animState.currentX, y: animState.currentY};
 				} else {
 					return {x: elementData.lastX, y: elementData.lastY};
 				}
 			},
 			A2($elm$core$Dict$get, elementId, elementsDict));
 	});
-var $elm$core$Basics$pow = _Basics_pow;
-var $elm$core$Basics$sqrt = _Basics_sqrt;
-var $author$project$SmoothMoveSub$timingToPixelsPerSecond = F2(
+var $author$project$Move$Internal$timingToPixelsPerSecond = F2(
 	function (timing, distance) {
 		if (timing.$ === 'Speed') {
 			var pixelsPerSecond = timing.a;
@@ -5614,63 +5626,84 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
-var $author$project$SmoothMoveSub$animateToWithConfig = F5(
-	function (config, elementId, targetX, targetY, _v0) {
+var $author$project$Move$Sub$animateToWithConfig = F4(
+	function (config, elementId, position, _v0) {
 		var elementsDict = _v0.a;
 		var currentPos = A2(
 			$elm$core$Maybe$withDefault,
 			{x: 0, y: 0},
 			A2(
-				$author$project$SmoothMoveSub$getPosition,
+				$author$project$Move$Sub$getPosition,
 				elementId,
-				$author$project$SmoothMoveSub$Model(elementsDict)));
-		var startX = currentPos.x;
-		var startY = currentPos.y;
-		var distance = $elm$core$Basics$sqrt(
-			A2($elm$core$Basics$pow, targetX - startX, 2) + A2($elm$core$Basics$pow, targetY - startY, 2));
+				$author$project$Move$Sub$Model(elementsDict)));
+		var distance = A2($author$project$Move$Internal$calculateDistance, currentPos, position);
 		var duration = A2(
 			$elm$core$Basics$max,
 			100,
-			(distance * 1000) / A2($author$project$SmoothMoveSub$timingToPixelsPerSecond, config.timing, distance));
-		var animationState = {config: config, currentX: startX, currentY: startY, duration: duration, startX: startX, startY: startY, startedAt: 0, targetX: targetX, targetY: targetY};
+			(distance * 1000) / A2($author$project$Move$Internal$timingToPixelsPerSecond, config.timing, distance));
+		var startX = currentPos.x;
+		var startY = currentPos.y;
+		var animationState = {config: config, currentX: startX, currentY: startY, duration: duration, startX: startX, startY: startY, startedAt: 0, targetX: position.x, targetY: position.y};
 		var elementData = {
 			animation: $elm$core$Maybe$Just(animationState),
 			lastX: startX,
 			lastY: startY
 		};
 		var updatedDict = A3($elm$core$Dict$insert, elementId, elementData, elementsDict);
-		return $author$project$SmoothMoveSub$Model(updatedDict);
+		return $author$project$Move$Sub$Model(updatedDict);
 	});
-var $author$project$SmoothMoveSub$Duration = function (a) {
-	return {$: 'Duration', a: a};
+var $author$project$Move$EaseOut = {$: 'EaseOut'};
+var $author$project$Move$EasePreset = function (a) {
+	return {$: 'EasePreset', a: a};
+};
+var $author$project$Move$Speed = function (a) {
+	return {$: 'Speed', a: a};
+};
+var $author$project$Move$Sub$defaultConfig = {
+	easing: $author$project$Move$EasePreset($author$project$Move$EaseOut),
+	timing: $author$project$Move$Speed(400.0)
+};
+var $author$project$Move$Sub$animateTo = F3(
+	function (elementId, position, model) {
+		return A4($author$project$Move$Sub$animateToWithConfig, $author$project$Move$Sub$defaultConfig, elementId, position, model);
+	});
+var $elm_community$easing_functions$Ease$inOut = F3(
+	function (e1, e2, time) {
+		return (time < 0.5) ? (e1(time * 2) / 2) : (0.5 + (e2((time - 0.5) * 2) / 2));
+	});
+var $elm$core$Basics$pow = _Basics_pow;
+var $elm_community$easing_functions$Ease$inQuint = function (time) {
+	return A2($elm$core$Basics$pow, time, 5);
 };
 var $elm_community$easing_functions$Ease$flip = F2(
 	function (easing, time) {
 		return 1 - easing(1 - time);
 	});
-var $elm_community$easing_functions$Ease$inCubic = function (time) {
-	return A2($elm$core$Basics$pow, time, 3);
+var $elm_community$easing_functions$Ease$outQuint = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inQuint);
+var $elm_community$easing_functions$Ease$inOutQuint = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inQuint, $elm_community$easing_functions$Ease$outQuint);
+var $elm_community$easing_functions$Ease$linear = $elm$core$Basics$identity;
+var $author$project$Move$Internal$easingToEaseFunction = function (easing) {
+	switch (easing.$) {
+		case 'EaseFunction':
+			var easeFunction = easing.a;
+			return easeFunction;
+		case 'EasePreset':
+			var preset = easing.a;
+			switch (preset.$) {
+				case 'Linear':
+					return $elm_community$easing_functions$Ease$linear;
+				case 'EaseOut':
+					return $elm_community$easing_functions$Ease$outQuint;
+				case 'EaseIn':
+					return $elm_community$easing_functions$Ease$inQuint;
+				default:
+					return $elm_community$easing_functions$Ease$inOutQuint;
+			}
+		default:
+			return $elm_community$easing_functions$Ease$outQuint;
+	}
 };
-var $elm_community$easing_functions$Ease$outCubic = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inCubic);
-var $author$project$SmoothMoveSub$defaultConfig = {
-	easing: $elm_community$easing_functions$Ease$outCubic,
-	timing: $author$project$SmoothMoveSub$Duration(400)
-};
-var $author$project$SmoothMoveSub$animateTo = F4(
-	function (elementId, targetX, targetY, model) {
-		return A5($author$project$SmoothMoveSub$animateToWithConfig, $author$project$SmoothMoveSub$defaultConfig, elementId, targetX, targetY, model);
-	});
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
-var $author$project$SmoothMoveSub$isAnimationComplete = function (state) {
-	var yComplete = $elm$core$Basics$abs(state.currentY - state.targetY) < 0.1;
-	var xComplete = $elm$core$Basics$abs(state.currentX - state.targetX) < 0.1;
-	return xComplete && yComplete;
-};
+var $elm$core$Basics$ge = _Utils_ge;
 var $elm$core$Dict$map = F2(
 	function (func, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
@@ -5694,110 +5727,110 @@ var $elm$core$Basics$min = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) < 0) ? x : y;
 	});
-var $author$project$SmoothMoveSub$updateAnimation = F2(
-	function (deltaMs, state) {
-		var newElapsedTime = (!state.startedAt) ? deltaMs : (state.startedAt + deltaMs);
-		var progress = A2($elm$core$Basics$min, 1.0, newElapsedTime / state.duration);
-		var easedProgress = state.config.easing(progress);
-		var currentY = state.startY + ((state.targetY - state.startY) * easedProgress);
-		var currentX = state.startX + ((state.targetX - state.startX) * easedProgress);
-		return _Utils_update(
-			state,
-			{currentX: currentX, currentY: currentY, startedAt: newElapsedTime});
-	});
-var $author$project$SmoothMoveSub$step = F2(
-	function (deltaMs, _v0) {
+var $author$project$Move$Sub$step = F2(
+	function (delta, _v0) {
 		var elementsDict = _v0.a;
-		var updateElementData = F2(
-			function (_v2, elementData) {
-				var _v1 = elementData.animation;
-				if (_v1.$ === 'Nothing') {
-					return elementData;
-				} else {
-					var animationState = _v1.a;
-					var updatedState = A2($author$project$SmoothMoveSub$updateAnimation, deltaMs, animationState);
-					return $author$project$SmoothMoveSub$isAnimationComplete(updatedState) ? _Utils_update(
-						elementData,
-						{animation: $elm$core$Maybe$Nothing, lastX: updatedState.targetX, lastY: updatedState.targetY}) : _Utils_update(
-						elementData,
-						{
-							animation: $elm$core$Maybe$Just(updatedState)
-						});
-				}
-			});
-		var updatedDict = A2($elm$core$Dict$map, updateElementData, elementsDict);
-		return $author$project$SmoothMoveSub$Model(updatedDict);
+		var updateElement = function (elementData) {
+			var _v2 = elementData.animation;
+			if (_v2.$ === 'Nothing') {
+				return elementData;
+			} else {
+				var animState = _v2.a;
+				var newStartedAt = (!animState.startedAt) ? delta : animState.startedAt;
+				var elapsed = (!animState.startedAt) ? 0 : (delta - newStartedAt);
+				var progress = (animState.duration <= 0) ? 1.0 : A2($elm$core$Basics$min, 1.0, elapsed / animState.duration);
+				var easedProgress = A2($author$project$Move$Internal$easingToEaseFunction, animState.config.easing, progress);
+				var newX = animState.startX + ((animState.targetX - animState.startX) * easedProgress);
+				var newY = animState.startY + ((animState.targetY - animState.startY) * easedProgress);
+				var updatedAnimState = _Utils_update(
+					animState,
+					{currentX: newX, currentY: newY, startedAt: newStartedAt});
+				return (progress >= 1.0) ? _Utils_update(
+					elementData,
+					{animation: $elm$core$Maybe$Nothing, lastX: animState.targetX, lastY: animState.targetY}) : _Utils_update(
+					elementData,
+					{
+						animation: $elm$core$Maybe$Just(updatedAnimState)
+					});
+			}
+		};
+		var updatedDict = A2(
+			$elm$core$Dict$map,
+			F2(
+				function (_v1, elementData) {
+					return updateElement(elementData);
+				}),
+			elementsDict);
+		return $author$project$Move$Sub$Model(updatedDict);
 	});
 var $author$project$ElmUI$Sub$Multiple$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'AnimationFrame':
 				var deltaMs = msg.a;
-				var updatedSmoothMove = A2($author$project$SmoothMoveSub$step, deltaMs, model.smoothMove);
+				var updatedSmoothMove = A2($author$project$Move$Sub$step, deltaMs, model.smoothMove);
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{smoothMove: updatedSmoothMove}),
 					$elm$core$Platform$Cmd$none);
 			case 'ScatterElements':
-				var updatedSmoothMove = A4(
-					$author$project$SmoothMoveSub$animateTo,
+				var updatedSmoothMove = A3(
+					$author$project$Move$Sub$animateTo,
 					'element-f',
-					350,
-					320,
-					A4(
-						$author$project$SmoothMoveSub$animateTo,
+					A2($author$project$Move$Sub$Position, 350, 320),
+					A3(
+						$author$project$Move$Sub$animateTo,
 						'element-e',
-						60,
-						120,
-						A4(
-							$author$project$SmoothMoveSub$animateTo,
+						A2($author$project$Move$Sub$Position, 60, 120),
+						A3(
+							$author$project$Move$Sub$animateTo,
 							'element-d',
-							400,
-							180,
-							A4(
-								$author$project$SmoothMoveSub$animateTo,
+							A2($author$project$Move$Sub$Position, 400, 180),
+							A3(
+								$author$project$Move$Sub$animateTo,
 								'element-c',
-								280,
-								220,
-								A4(
-									$author$project$SmoothMoveSub$animateTo,
+								A2($author$project$Move$Sub$Position, 280, 220),
+								A3(
+									$author$project$Move$Sub$animateTo,
 									'element-b',
-									80,
-									280,
-									A4($author$project$SmoothMoveSub$animateTo, 'element-a', 320, 80, model.smoothMove))))));
+									A2($author$project$Move$Sub$Position, 80, 280),
+									A3(
+										$author$project$Move$Sub$animateTo,
+										'element-a',
+										A2($author$project$Move$Sub$Position, 320, 80),
+										model.smoothMove))))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{smoothMove: updatedSmoothMove}),
 					$elm$core$Platform$Cmd$none);
 			case 'ResetPositions':
-				var updatedSmoothMove = A4(
-					$author$project$SmoothMoveSub$animateTo,
+				var updatedSmoothMove = A3(
+					$author$project$Move$Sub$animateTo,
 					'element-f',
-					180,
-					50,
-					A4(
-						$author$project$SmoothMoveSub$animateTo,
+					A2($author$project$Move$Sub$Position, 180, 50),
+					A3(
+						$author$project$Move$Sub$animateTo,
 						'element-e',
-						300,
-						100,
-						A4(
-							$author$project$SmoothMoveSub$animateTo,
+						A2($author$project$Move$Sub$Position, 300, 100),
+						A3(
+							$author$project$Move$Sub$animateTo,
 							'element-d',
-							250,
-							200,
-							A4(
-								$author$project$SmoothMoveSub$animateTo,
+							A2($author$project$Move$Sub$Position, 250, 200),
+							A3(
+								$author$project$Move$Sub$animateTo,
 								'element-c',
-								100,
-								200,
-								A4(
-									$author$project$SmoothMoveSub$animateTo,
+								A2($author$project$Move$Sub$Position, 100, 200),
+								A3(
+									$author$project$Move$Sub$animateTo,
 									'element-b',
-									200,
-									150,
-									A4($author$project$SmoothMoveSub$animateTo, 'element-a', 150, 100, model.smoothMove))))));
+									A2($author$project$Move$Sub$Position, 200, 150),
+									A3(
+										$author$project$Move$Sub$animateTo,
+										'element-a',
+										A2($author$project$Move$Sub$Position, 150, 100),
+										model.smoothMove))))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -5807,32 +5840,31 @@ var $author$project$ElmUI$Sub$Multiple$Main$update = F2(
 				var radius = 90;
 				var centerY = 180;
 				var centerX = 225;
-				var updatedSmoothMove = A4(
-					$author$project$SmoothMoveSub$animateTo,
+				var updatedSmoothMove = A3(
+					$author$project$Move$Sub$animateTo,
 					'element-f',
-					centerX + (radius * 0.5),
-					centerY - (radius * 0.866),
-					A4(
-						$author$project$SmoothMoveSub$animateTo,
+					A2($author$project$Move$Sub$Position, centerX + (radius * 0.5), centerY - (radius * 0.866)),
+					A3(
+						$author$project$Move$Sub$animateTo,
 						'element-e',
-						centerX - (radius * 0.5),
-						centerY - (radius * 0.866),
-						A4(
-							$author$project$SmoothMoveSub$animateTo,
+						A2($author$project$Move$Sub$Position, centerX - (radius * 0.5), centerY - (radius * 0.866)),
+						A3(
+							$author$project$Move$Sub$animateTo,
 							'element-d',
-							centerX - radius,
-							centerY,
-							A4(
-								$author$project$SmoothMoveSub$animateTo,
+							A2($author$project$Move$Sub$Position, centerX - radius, centerY),
+							A3(
+								$author$project$Move$Sub$animateTo,
 								'element-c',
-								centerX - (radius * 0.5),
-								centerY + (radius * 0.866),
-								A4(
-									$author$project$SmoothMoveSub$animateTo,
+								A2($author$project$Move$Sub$Position, centerX - (radius * 0.5), centerY + (radius * 0.866)),
+								A3(
+									$author$project$Move$Sub$animateTo,
 									'element-b',
-									centerX + (radius * 0.5),
-									centerY + (radius * 0.866),
-									A4($author$project$SmoothMoveSub$animateTo, 'element-a', centerX + radius, centerY, model.smoothMove))))));
+									A2($author$project$Move$Sub$Position, centerX + (radius * 0.5), centerY + (radius * 0.866)),
+									A3(
+										$author$project$Move$Sub$animateTo,
+										'element-a',
+										A2($author$project$Move$Sub$Position, centerX + radius, centerY),
+										model.smoothMove))))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -8694,6 +8726,9 @@ var $mdgriffith$elm_ui$Internal$Model$hasSmallCaps = function (typeface) {
 		return false;
 	}
 };
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
 var $mdgriffith$elm_ui$Internal$Model$renderProps = F3(
 	function (force, _v0, existing) {
 		var key = _v0.a;
@@ -9409,6 +9444,7 @@ var $elm$core$List$minimum = function (list) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
+var $elm$core$Basics$neq = _Utils_notEqual;
 var $mdgriffith$elm_ui$Internal$Model$convertAdjustment = function (adjustment) {
 	var lines = _List_fromArray(
 		[adjustment.capital, adjustment.baseline, adjustment.descender, adjustment.lowercase]);
@@ -9693,6 +9729,7 @@ var $elm$virtual_dom$VirtualDom$keyedNode = function (tag) {
 	return _VirtualDom_keyedNode(
 		_VirtualDom_noScript(tag));
 };
+var $elm$core$Basics$not = _Basics_not;
 var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$core$Bitwise$and = _Bitwise_and;
 var $mdgriffith$elm_ui$Internal$Flag$present = F2(
@@ -10538,7 +10575,6 @@ var $mdgriffith$elm_ui$Internal$Model$renderWidth = function (w) {
 	}
 };
 var $mdgriffith$elm_ui$Internal$Flag$borderWidth = $mdgriffith$elm_ui$Internal$Flag$flag(27);
-var $elm$core$Basics$ge = _Utils_ge;
 var $mdgriffith$elm_ui$Internal$Model$skippable = F2(
 	function (flag, style) {
 		if (_Utils_eq(flag, $mdgriffith$elm_ui$Internal$Flag$borderWidth)) {
@@ -12005,15 +12041,22 @@ var $author$project$Common$UI$htmlActionButtons = function (buttons) {
 					]),
 				htmlButtons)));
 };
-var $author$project$SmoothMoveSub$isAnimating = function (_v0) {
-	var elementsDict = _v0.a;
-	return A2(
-		$elm$core$List$any,
-		function (elementData) {
-			return !_Utils_eq(elementData.animation, $elm$core$Maybe$Nothing);
-		},
-		$elm$core$Dict$values(elementsDict));
-};
+var $author$project$Move$Sub$isAnimating = F2(
+	function (elementId, _v0) {
+		var elementsDict = _v0.a;
+		var _v1 = A2($elm$core$Dict$get, elementId, elementsDict);
+		if (_v1.$ === 'Just') {
+			var elementData = _v1.a;
+			var _v2 = elementData.animation;
+			if (_v2.$ === 'Just') {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	});
 var $mdgriffith$elm_ui$Internal$Model$Max = F2(
 	function (a, b) {
 		return {$: 'Max', a: a, b: b};
@@ -12118,41 +12161,47 @@ var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Common$Colors$success = A3($mdgriffith$elm_ui$Element$rgb255, 16, 185, 129);
 var $author$project$Common$Colors$textMedium = A3($mdgriffith$elm_ui$Element$rgb255, 71, 85, 105);
-var $author$project$SmoothMoveSub$transform = F2(
-	function (x, y) {
-		return 'translate(' + ($elm$core$String$fromFloat(x) + ('px, ' + ($elm$core$String$fromFloat(y) + 'px)')));
+var $author$project$Move$Sub$transform = F2(
+	function (elementId, model) {
+		var _v0 = A2($author$project$Move$Sub$getPosition, elementId, model);
+		if (_v0.$ === 'Just') {
+			var position = _v0.a;
+			return 'translate(' + ($elm$core$String$fromFloat(position.x) + ('px, ' + ($elm$core$String$fromFloat(position.y) + 'px)')));
+		} else {
+			return 'translate(0px, 0px)';
+		}
 	});
 var $author$project$Common$Colors$warning = A3($mdgriffith$elm_ui$Element$rgb255, 245, 158, 11);
 var $author$project$ElmUI$Sub$Multiple$Main$viewContent = function (model) {
 	var positionF = A2(
 		$elm$core$Maybe$withDefault,
 		{x: 180, y: 50},
-		A2($author$project$SmoothMoveSub$getPosition, 'element-f', model.smoothMove));
+		A2($author$project$Move$Sub$getPosition, 'element-f', model.smoothMove));
 	var positionE = A2(
 		$elm$core$Maybe$withDefault,
 		{x: 300, y: 100},
-		A2($author$project$SmoothMoveSub$getPosition, 'element-e', model.smoothMove));
+		A2($author$project$Move$Sub$getPosition, 'element-e', model.smoothMove));
 	var positionD = A2(
 		$elm$core$Maybe$withDefault,
 		{x: 250, y: 200},
-		A2($author$project$SmoothMoveSub$getPosition, 'element-d', model.smoothMove));
+		A2($author$project$Move$Sub$getPosition, 'element-d', model.smoothMove));
 	var positionC = A2(
 		$elm$core$Maybe$withDefault,
 		{x: 100, y: 200},
-		A2($author$project$SmoothMoveSub$getPosition, 'element-c', model.smoothMove));
+		A2($author$project$Move$Sub$getPosition, 'element-c', model.smoothMove));
 	var positionB = A2(
 		$elm$core$Maybe$withDefault,
 		{x: 200, y: 150},
-		A2($author$project$SmoothMoveSub$getPosition, 'element-b', model.smoothMove));
+		A2($author$project$Move$Sub$getPosition, 'element-b', model.smoothMove));
 	var positionA = A2(
 		$elm$core$Maybe$withDefault,
 		{x: 150, y: 100},
-		A2($author$project$SmoothMoveSub$getPosition, 'element-a', model.smoothMove));
-	var isMoving = $author$project$SmoothMoveSub$isAnimating(model.smoothMove);
+		A2($author$project$Move$Sub$getPosition, 'element-a', model.smoothMove));
+	var isMoving = A2($author$project$Move$Sub$isAnimating, 'element-a', model.smoothMove) || (A2($author$project$Move$Sub$isAnimating, 'element-b', model.smoothMove) || (A2($author$project$Move$Sub$isAnimating, 'element-c', model.smoothMove) || (A2($author$project$Move$Sub$isAnimating, 'element-d', model.smoothMove) || (A2($author$project$Move$Sub$isAnimating, 'element-e', model.smoothMove) || A2($author$project$Move$Sub$isAnimating, 'element-f', model.smoothMove)))));
 	return _List_fromArray(
 		[
 			$author$project$Common$UI$backButton,
-			$author$project$Common$UI$pageHeader('SmoothMoveSub Multiple Example'),
+			$author$project$Common$UI$pageHeader('Move.Sub Multiple Example'),
 			A2(
 			$mdgriffith$elm_ui$Element$column,
 			_List_fromArray(
@@ -12413,7 +12462,7 @@ var $author$project$ElmUI$Sub$Multiple$Main$viewContent = function (model) {
 									A2(
 									$elm$html$Html$Attributes$style,
 									'transform',
-									A2($author$project$SmoothMoveSub$transform, positionA.x, positionA.y)),
+									A2($author$project$Move$Sub$transform, 'element-a', model.smoothMove)),
 									A2($elm$html$Html$Attributes$style, 'transition', 'none'),
 									A2($elm$html$Html$Attributes$style, 'display', 'flex'),
 									A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
@@ -12439,7 +12488,7 @@ var $author$project$ElmUI$Sub$Multiple$Main$viewContent = function (model) {
 									A2(
 									$elm$html$Html$Attributes$style,
 									'transform',
-									A2($author$project$SmoothMoveSub$transform, positionB.x, positionB.y)),
+									A2($author$project$Move$Sub$transform, 'element-b', model.smoothMove)),
 									A2($elm$html$Html$Attributes$style, 'transition', 'none'),
 									A2($elm$html$Html$Attributes$style, 'display', 'flex'),
 									A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
@@ -12465,7 +12514,7 @@ var $author$project$ElmUI$Sub$Multiple$Main$viewContent = function (model) {
 									A2(
 									$elm$html$Html$Attributes$style,
 									'transform',
-									A2($author$project$SmoothMoveSub$transform, positionC.x, positionC.y)),
+									A2($author$project$Move$Sub$transform, 'element-c', model.smoothMove)),
 									A2($elm$html$Html$Attributes$style, 'transition', 'none'),
 									A2($elm$html$Html$Attributes$style, 'display', 'flex'),
 									A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
@@ -12491,7 +12540,7 @@ var $author$project$ElmUI$Sub$Multiple$Main$viewContent = function (model) {
 									A2(
 									$elm$html$Html$Attributes$style,
 									'transform',
-									A2($author$project$SmoothMoveSub$transform, positionD.x, positionD.y)),
+									A2($author$project$Move$Sub$transform, 'element-d', model.smoothMove)),
 									A2($elm$html$Html$Attributes$style, 'transition', 'none'),
 									A2($elm$html$Html$Attributes$style, 'display', 'flex'),
 									A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
@@ -12517,7 +12566,7 @@ var $author$project$ElmUI$Sub$Multiple$Main$viewContent = function (model) {
 									A2(
 									$elm$html$Html$Attributes$style,
 									'transform',
-									A2($author$project$SmoothMoveSub$transform, positionE.x, positionE.y)),
+									A2($author$project$Move$Sub$transform, 'element-e', model.smoothMove)),
 									A2($elm$html$Html$Attributes$style, 'transition', 'none'),
 									A2($elm$html$Html$Attributes$style, 'display', 'flex'),
 									A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
@@ -12543,7 +12592,7 @@ var $author$project$ElmUI$Sub$Multiple$Main$viewContent = function (model) {
 									A2(
 									$elm$html$Html$Attributes$style,
 									'transform',
-									A2($author$project$SmoothMoveSub$transform, positionF.x, positionF.y)),
+									A2($author$project$Move$Sub$transform, 'element-f', model.smoothMove)),
 									A2($elm$html$Html$Attributes$style, 'transition', 'none'),
 									A2($elm$html$Html$Attributes$style, 'display', 'flex'),
 									A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
@@ -12562,7 +12611,7 @@ var $author$project$ElmUI$Sub$Multiple$Main$viewContent = function (model) {
 var $author$project$ElmUI$Sub$Multiple$Main$view = function (model) {
 	return A3(
 		$author$project$Common$UI$createDocument,
-		'SmoothMoveSub Multiple ElmUI Example',
+		'Move.Sub Multiple ElmUI Example',
 		$author$project$Common$UI$Basic,
 		$author$project$ElmUI$Sub$Multiple$Main$viewContent(model));
 };

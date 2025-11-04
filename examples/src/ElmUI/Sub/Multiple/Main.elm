@@ -1,6 +1,6 @@
 module ElmUI.Sub.Multiple.Main exposing (main)
 
-{-| This example demonstrates MULTIPLE SIMULTANEOUS ANIMATIONS using ElmUI!
+{-| This example demonstrates MULTIPLE SIMULTANEOUS ANIMATIONS using Move.Sub with ElmUI!
 
 🎉 NEW FEATURES:
 
@@ -12,10 +12,10 @@ module ElmUI.Sub.Multiple.Main exposing (main)
 
 ARCHITECTURE:
 
-  - Model tracks multiple activeAnimations: List AnimationState
+  - Model tracks animation state for all elements in Move.Sub.Model
   - animateTo adds new animations without stopping existing ones
-  - update processes all active animations each frame
-  - transform with getPosition works for any number of elements
+  - step function processes all active animations each frame
+  - transform with element ID works for any number of elements
 
 -}
 
@@ -28,7 +28,7 @@ import Element.Border as Border
 import Element.Font as Font
 import Html
 import Html.Attributes
-import SmoothMoveSub exposing (animateTo, getPosition, isAnimating, setPosition, transform)
+import Move.Sub exposing (Position, animateTo, getPosition, isAnimating, setPosition, step, subscriptions, transform)
 
 
 
@@ -50,7 +50,7 @@ main =
 
 
 type alias Model =
-    { smoothMove : SmoothMoveSub.Model
+    { smoothMove : Move.Sub.Model
     }
 
 
@@ -62,13 +62,13 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         smoothMove =
-            SmoothMoveSub.init
-                |> setPosition "element-a" 150 100
-                |> setPosition "element-b" 200 150
-                |> setPosition "element-c" 100 200
-                |> setPosition "element-d" 250 200
-                |> setPosition "element-e" 300 100
-                |> setPosition "element-f" 180 50
+            Move.Sub.init
+                |> setPosition "element-a" (Position 150 100)
+                |> setPosition "element-b" (Position 200 150)
+                |> setPosition "element-c" (Position 100 200)
+                |> setPosition "element-d" (Position 250 200)
+                |> setPosition "element-e" (Position 300 100)
+                |> setPosition "element-f" (Position 180 50)
     in
     ( { smoothMove = smoothMove }, Cmd.none )
 
@@ -91,7 +91,7 @@ update msg model =
         AnimationFrame deltaMs ->
             let
                 updatedSmoothMove =
-                    SmoothMoveSub.step deltaMs model.smoothMove
+                    step deltaMs model.smoothMove
             in
             ( { model | smoothMove = updatedSmoothMove }, Cmd.none )
 
@@ -99,12 +99,12 @@ update msg model =
             let
                 updatedSmoothMove =
                     model.smoothMove
-                        |> animateTo "element-a" 320 80
-                        |> animateTo "element-b" 80 280
-                        |> animateTo "element-c" 280 220
-                        |> animateTo "element-d" 400 180
-                        |> animateTo "element-e" 60 120
-                        |> animateTo "element-f" 350 320
+                        |> animateTo "element-a" (Position 320 80)
+                        |> animateTo "element-b" (Position 80 280)
+                        |> animateTo "element-c" (Position 280 220)
+                        |> animateTo "element-d" (Position 400 180)
+                        |> animateTo "element-e" (Position 60 120)
+                        |> animateTo "element-f" (Position 350 320)
             in
             ( { model | smoothMove = updatedSmoothMove }, Cmd.none )
 
@@ -112,12 +112,12 @@ update msg model =
             let
                 updatedSmoothMove =
                     model.smoothMove
-                        |> animateTo "element-a" 150 100
-                        |> animateTo "element-b" 200 150
-                        |> animateTo "element-c" 100 200
-                        |> animateTo "element-d" 250 200
-                        |> animateTo "element-e" 300 100
-                        |> animateTo "element-f" 180 50
+                        |> animateTo "element-a" (Position 150 100)
+                        |> animateTo "element-b" (Position 200 150)
+                        |> animateTo "element-c" (Position 100 200)
+                        |> animateTo "element-d" (Position 250 200)
+                        |> animateTo "element-e" (Position 300 100)
+                        |> animateTo "element-f" (Position 180 50)
             in
             ( { model | smoothMove = updatedSmoothMove }, Cmd.none )
 
@@ -135,17 +135,17 @@ update msg model =
                 -- 6 elements evenly spaced around circle (60 degrees apart)
                 updatedSmoothMove =
                     model.smoothMove
-                        |> animateTo "element-a" (centerX + radius) centerY
+                        |> animateTo "element-a" (Position (centerX + radius) centerY)
                         -- 0°
-                        |> animateTo "element-b" (centerX + radius * 0.5) (centerY + radius * 0.866)
+                        |> animateTo "element-b" (Position (centerX + radius * 0.5) (centerY + radius * 0.866))
                         -- 60°
-                        |> animateTo "element-c" (centerX - radius * 0.5) (centerY + radius * 0.866)
+                        |> animateTo "element-c" (Position (centerX - radius * 0.5) (centerY + radius * 0.866))
                         -- 120°
-                        |> animateTo "element-d" (centerX - radius) centerY
+                        |> animateTo "element-d" (Position (centerX - radius) centerY)
                         -- 180°
-                        |> animateTo "element-e" (centerX - radius * 0.5) (centerY - radius * 0.866)
+                        |> animateTo "element-e" (Position (centerX - radius * 0.5) (centerY - radius * 0.866))
                         -- 240°
-                        |> animateTo "element-f" (centerX + radius * 0.5) (centerY - radius * 0.866)
+                        |> animateTo "element-f" (Position (centerX + radius * 0.5) (centerY - radius * 0.866))
 
                 -- 300°
             in
@@ -161,7 +161,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    SmoothMoveSub.subscriptions AnimationFrame model.smoothMove
+    Move.Sub.subscriptions AnimationFrame model.smoothMove
 
 
 
@@ -170,7 +170,7 @@ subscriptions model =
 
 view : Model -> Document Msg
 view model =
-    UI.createDocument "SmoothMoveSub Multiple ElmUI Example" UI.Basic (viewContent model)
+    UI.createDocument "Move.Sub Multiple ElmUI Example" UI.Basic (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)
@@ -194,12 +194,17 @@ viewContent model =
         positionF =
             getPosition "element-f" model.smoothMove |> Maybe.withDefault { x = 180, y = 50 }
 
-        -- isAnimating only takes the model, checks if any element is animating
+        -- Check if any of the elements are animating
         isMoving =
-            isAnimating model.smoothMove
+            isAnimating "element-a" model.smoothMove
+                || isAnimating "element-b" model.smoothMove
+                || isAnimating "element-c" model.smoothMove
+                || isAnimating "element-d" model.smoothMove
+                || isAnimating "element-e" model.smoothMove
+                || isAnimating "element-f" model.smoothMove
     in
     [ UI.backButton
-    , UI.pageHeader "SmoothMoveSub Multiple Example"
+    , UI.pageHeader "Move.Sub Multiple Example"
     , -- Element status and positions (6 elements in 2 rows)
       column
         [ spacing 20
@@ -289,7 +294,7 @@ viewContent model =
                     , Html.Attributes.style "height" "50px"
                     , Html.Attributes.style "background-color" "#3B82F6"
                     , Html.Attributes.style "border-radius" "8px"
-                    , Html.Attributes.style "transform" (transform positionA.x positionA.y)
+                    , Html.Attributes.style "transform" (transform "element-a" model.smoothMove)
                     , Html.Attributes.style "transition" "none"
                     , Html.Attributes.style "display" "flex"
                     , Html.Attributes.style "align-items" "center"
@@ -307,7 +312,7 @@ viewContent model =
                     , Html.Attributes.style "height" "50px"
                     , Html.Attributes.style "background-color" "#10B981"
                     , Html.Attributes.style "border-radius" "8px"
-                    , Html.Attributes.style "transform" (transform positionB.x positionB.y)
+                    , Html.Attributes.style "transform" (transform "element-b" model.smoothMove)
                     , Html.Attributes.style "transition" "none"
                     , Html.Attributes.style "display" "flex"
                     , Html.Attributes.style "align-items" "center"
@@ -325,7 +330,7 @@ viewContent model =
                     , Html.Attributes.style "height" "50px"
                     , Html.Attributes.style "background-color" "#A855F7"
                     , Html.Attributes.style "border-radius" "8px"
-                    , Html.Attributes.style "transform" (transform positionC.x positionC.y)
+                    , Html.Attributes.style "transform" (transform "element-c" model.smoothMove)
                     , Html.Attributes.style "transition" "none"
                     , Html.Attributes.style "display" "flex"
                     , Html.Attributes.style "align-items" "center"
@@ -343,7 +348,7 @@ viewContent model =
                     , Html.Attributes.style "height" "50px"
                     , Html.Attributes.style "background-color" "#F56565"
                     , Html.Attributes.style "border-radius" "8px"
-                    , Html.Attributes.style "transform" (transform positionD.x positionD.y)
+                    , Html.Attributes.style "transform" (transform "element-d" model.smoothMove)
                     , Html.Attributes.style "transition" "none"
                     , Html.Attributes.style "display" "flex"
                     , Html.Attributes.style "align-items" "center"
@@ -361,7 +366,7 @@ viewContent model =
                     , Html.Attributes.style "height" "50px"
                     , Html.Attributes.style "background-color" "#FB923C"
                     , Html.Attributes.style "border-radius" "8px"
-                    , Html.Attributes.style "transform" (transform positionE.x positionE.y)
+                    , Html.Attributes.style "transform" (transform "element-e" model.smoothMove)
                     , Html.Attributes.style "transition" "none"
                     , Html.Attributes.style "display" "flex"
                     , Html.Attributes.style "align-items" "center"
@@ -379,7 +384,7 @@ viewContent model =
                     , Html.Attributes.style "height" "50px"
                     , Html.Attributes.style "background-color" "#22C55E"
                     , Html.Attributes.style "border-radius" "8px"
-                    , Html.Attributes.style "transform" (transform positionF.x positionF.y)
+                    , Html.Attributes.style "transform" (transform "element-f" model.smoothMove)
                     , Html.Attributes.style "transition" "none"
                     , Html.Attributes.style "display" "flex"
                     , Html.Attributes.style "align-items" "center"

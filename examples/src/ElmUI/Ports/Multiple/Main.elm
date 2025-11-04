@@ -29,21 +29,25 @@ import Element.Input as Input
 import Html
 import Html.Attributes
 import Json.Decode as Decode
-import SmoothMovePorts
+import Json.Encode as Encode
+import Move exposing (defaultConfig)
+import Move.Ports exposing (Position, Model, init, setPosition, animateTo, getPosition, transformElement, handlePositionUpdate, handleAnimationComplete, handlePositionUpdateFromJson, encodeAnimationCommand, subscriptions, isAnimating, animateBatch, AnimationSpec)
 
 
 
 -- PORTS
 
 
-port animateElement : String -> Cmd msg
+port animateElement : Encode.Value -> Cmd msg
 
 
-port stopElementAnimation : String -> Cmd msg
+port stopElement : Encode.Value -> Cmd msg
 
 
 port positionUpdates : (Decode.Value -> msg) -> Sub msg
 
+
+port animationComplete : (String -> msg) -> Sub msg
 
 
 -- TYPES
@@ -67,7 +71,7 @@ main =
 
 
 type alias Model =
-    { animations : SmoothMovePorts.Model
+    { animations : Move.Ports.Model
     }
 
 
@@ -80,20 +84,13 @@ init _ =
     let
         -- Initialize with scattered positions across the container (450px × 300px)
         initialAnimations =
-            SmoothMovePorts.init
-                |> SmoothMovePorts.setPosition "element-a" 50.0 80.0
-                -- Top-left area
-                |> SmoothMovePorts.setPosition "element-b" 380.0 50.0
-                -- Top-right area
-                |> SmoothMovePorts.setPosition "element-c" 120.0 220.0
-                -- Bottom-left area
-                |> SmoothMovePorts.setPosition "element-d" 350.0 180.0
-                -- Right-middle area
-                |> SmoothMovePorts.setPosition "element-e" 200.0 40.0
-                -- Top-center area
-                |> SmoothMovePorts.setPosition "element-f" 80.0 140.0
-
-        -- Left-middle area
+            Move.Ports.init
+                |> setPosition "element-a" (Position 50.0 80.0)   -- Top-left area
+                |> setPosition "element-b" (Position 380.0 50.0)  -- Top-right area
+                |> setPosition "element-c" (Position 120.0 220.0) -- Bottom-left area
+                |> setPosition "element-d" (Position 350.0 180.0) -- Right-middle area
+                |> setPosition "element-e" (Position 200.0 40.0)  -- Top-center area
+                |> setPosition "element-f" (Position 80.0 140.0)  -- Left-middle area
     in
     ( { animations = initialAnimations }
     , Cmd.none
@@ -110,6 +107,7 @@ type Msg
     | Circle
     | StopAll
     | PositionUpdateMsg Decode.Value
+    | AnimationCompleteMsg String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -118,72 +116,39 @@ update msg model =
         Scatter ->
             let
                 -- Scatter elements to random positions across the animation area
-                ( newAnimations1, cmd1 ) =
-                    SmoothMovePorts.animateTo "element-a" 50.0 80.0 model.animations
-
-                ( newAnimations2, cmd2 ) =
-                    SmoothMovePorts.animateTo "element-b" 350.0 120.0 newAnimations1
-
-                ( newAnimations3, cmd3 ) =
-                    SmoothMovePorts.animateTo "element-c" 120.0 250.0 newAnimations2
-
-                ( newAnimations4, cmd4 ) =
-                    SmoothMovePorts.animateTo "element-d" 300.0 280.0 newAnimations3
-
-                ( newAnimations5, cmd5 ) =
-                    SmoothMovePorts.animateTo "element-e" 80.0 180.0 newAnimations4
-
-                ( newAnimations6, cmd6 ) =
-                    SmoothMovePorts.animateTo "element-f" 380.0 200.0 newAnimations5
+                scatterSpecs =
+                    [ { elementId = "element-a", target = Position 50.0 80.0 }
+                    , { elementId = "element-b", target = Position 350.0 120.0 }
+                    , { elementId = "element-c", target = Position 120.0 250.0 }
+                    , { elementId = "element-d", target = Position 300.0 280.0 }
+                    , { elementId = "element-e", target = Position 80.0 180.0 }
+                    , { elementId = "element-f", target = Position 380.0 200.0 }
+                    ]
+                
+                ( newAnimations, commands ) =
+                    animateBatch defaultConfig scatterSpecs model.animations
             in
-            ( { model | animations = newAnimations6 }
-            , Cmd.batch
-                [ animateElement (SmoothMovePorts.encodeAnimationCommand cmd1)
-                , animateElement (SmoothMovePorts.encodeAnimationCommand cmd2)
-                , animateElement (SmoothMovePorts.encodeAnimationCommand cmd3)
-                , animateElement (SmoothMovePorts.encodeAnimationCommand cmd4)
-                , animateElement (SmoothMovePorts.encodeAnimationCommand cmd5)
-                , animateElement (SmoothMovePorts.encodeAnimationCommand cmd6)
-                ]
+            ( { model | animations = newAnimations }
+            , Cmd.batch (List.map (animateElement << encodeAnimationCommand) commands)
             )
 
         Reset ->
             let
                 -- Return to scattered starting positions
-                ( newAnimations1, cmd1 ) =
-                    SmoothMovePorts.animateTo "element-a" 50.0 80.0 model.animations
-
-                -- Top-left area
-                ( newAnimations2, cmd2 ) =
-                    SmoothMovePorts.animateTo "element-b" 380.0 50.0 newAnimations1
-
-                -- Top-right area
-                ( newAnimations3, cmd3 ) =
-                    SmoothMovePorts.animateTo "element-c" 120.0 220.0 newAnimations2
-
-                -- Bottom-left area
-                ( newAnimations4, cmd4 ) =
-                    SmoothMovePorts.animateTo "element-d" 350.0 180.0 newAnimations3
-
-                -- Right-middle area
-                ( newAnimations5, cmd5 ) =
-                    SmoothMovePorts.animateTo "element-e" 200.0 40.0 newAnimations4
-
-                -- Top-center area
-                ( newAnimations6, cmd6 ) =
-                    SmoothMovePorts.animateTo "element-f" 80.0 140.0 newAnimations5
-
-                -- Left-middle area
+                resetSpecs =
+                    [ { elementId = "element-a", target = Position 50.0 80.0 }   -- Top-left area
+                    , { elementId = "element-b", target = Position 380.0 50.0 }  -- Top-right area
+                    , { elementId = "element-c", target = Position 120.0 220.0 } -- Bottom-left area
+                    , { elementId = "element-d", target = Position 350.0 180.0 } -- Right-middle area
+                    , { elementId = "element-e", target = Position 200.0 40.0 }  -- Top-center area
+                    , { elementId = "element-f", target = Position 80.0 140.0 }  -- Left-middle area
+                    ]
+                
+                ( newAnimations, commands ) =
+                    animateBatch defaultConfig resetSpecs model.animations
             in
-            ( { model | animations = newAnimations6 }
-            , Cmd.batch
-                [ animateElement (SmoothMovePorts.encodeAnimationCommand cmd1)
-                , animateElement (SmoothMovePorts.encodeAnimationCommand cmd2)
-                , animateElement (SmoothMovePorts.encodeAnimationCommand cmd3)
-                , animateElement (SmoothMovePorts.encodeAnimationCommand cmd4)
-                , animateElement (SmoothMovePorts.encodeAnimationCommand cmd5)
-                , animateElement (SmoothMovePorts.encodeAnimationCommand cmd6)
-                ]
+            ( { model | animations = newAnimations }
+            , Cmd.batch (List.map (animateElement << encodeAnimationCommand) commands)
             )
 
         Circle ->
@@ -198,40 +163,20 @@ update msg model =
                 radius =
                     50.0
 
-                ( newAnimations1, cmd1 ) =
-                    SmoothMovePorts.animateTo "element-a" centerX (centerY - radius) model.animations
-
-                -- Top (0°)
-                ( newAnimations2, cmd2 ) =
-                    SmoothMovePorts.animateTo "element-b" (centerX + radius * 0.866) (centerY - radius / 2) newAnimations1
-
-                -- Top-right (60°)
-                ( newAnimations3, cmd3 ) =
-                    SmoothMovePorts.animateTo "element-c" (centerX + radius * 0.866) (centerY + radius / 2) newAnimations2
-
-                -- Bottom-right (120°)
-                ( newAnimations4, cmd4 ) =
-                    SmoothMovePorts.animateTo "element-d" centerX (centerY + radius) newAnimations3
-
-                -- Bottom (180°)
-                ( newAnimations5, cmd5 ) =
-                    SmoothMovePorts.animateTo "element-e" (centerX - radius * 0.866) (centerY + radius / 2) newAnimations4
-
-                -- Bottom-left (240°)
-                ( newAnimations6, cmd6 ) =
-                    SmoothMovePorts.animateTo "element-f" (centerX - radius * 0.866) (centerY - radius / 2) newAnimations5
-
-                -- Top-left (300°)
+                circleSpecs =
+                    [ { elementId = "element-a", target = Position centerX (centerY - radius) }                              -- Top (0°)
+                    , { elementId = "element-b", target = Position (centerX + radius * 0.866) (centerY - radius / 2) }      -- Top-right (60°)
+                    , { elementId = "element-c", target = Position (centerX + radius * 0.866) (centerY + radius / 2) }      -- Bottom-right (120°)
+                    , { elementId = "element-d", target = Position centerX (centerY + radius) }                              -- Bottom (180°)
+                    , { elementId = "element-e", target = Position (centerX - radius * 0.866) (centerY + radius / 2) }      -- Bottom-left (240°)
+                    , { elementId = "element-f", target = Position (centerX - radius * 0.866) (centerY - radius / 2) }      -- Top-left (300°)
+                    ]
+                
+                ( newAnimations, commands ) =
+                    animateBatch defaultConfig circleSpecs model.animations
             in
-            ( { model | animations = newAnimations6 }
-            , Cmd.batch
-                [ animateElement (SmoothMovePorts.encodeAnimationCommand cmd1)
-                , animateElement (SmoothMovePorts.encodeAnimationCommand cmd2)
-                , animateElement (SmoothMovePorts.encodeAnimationCommand cmd3)
-                , animateElement (SmoothMovePorts.encodeAnimationCommand cmd4)
-                , animateElement (SmoothMovePorts.encodeAnimationCommand cmd5)
-                , animateElement (SmoothMovePorts.encodeAnimationCommand cmd6)
-                ]
+            ( { model | animations = newAnimations }
+            , Cmd.batch (List.map (animateElement << encodeAnimationCommand) commands)
             )
 
         StopAll ->
@@ -240,12 +185,15 @@ update msg model =
 
         PositionUpdateMsg value ->
             -- Handle position update with automatic decoding
-            case SmoothMovePorts.handlePositionUpdateFromJson value model.animations of
-                Ok newAnimations ->
-                    ( { model | animations = newAnimations }, Cmd.none )
+            case handlePositionUpdateFromJson value of
+                Ok positionUpdate ->
+                    ( { model | animations = handlePositionUpdate positionUpdate model.animations }, Cmd.none )
 
                 Err _ ->
                     ( model, Cmd.none )
+
+        AnimationCompleteMsg elementId ->
+            ( { model | animations = handleAnimationComplete elementId model.animations }, Cmd.none )
 
 
 
@@ -253,8 +201,12 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    positionUpdates PositionUpdateMsg
+subscriptions model =
+    Move.Ports.subscriptions
+        { positionUpdates = positionUpdates PositionUpdateMsg
+        , animationComplete = animationComplete AnimationCompleteMsg
+        }
+        model.animations
 
 
 
@@ -273,31 +225,32 @@ viewContent : Model -> List (Element Msg)
 viewContent model =
     let
         positionA =
-            SmoothMovePorts.getPosition "element-a" model.animations
-                |> Maybe.withDefault { x = 225, y = 100 }
+            getPosition "element-a" model.animations
+                |> Maybe.withDefault (Position 225 100)
 
         positionB =
-            SmoothMovePorts.getPosition "element-b" model.animations
-                |> Maybe.withDefault { x = 269, y = 130 }
+            getPosition "element-b" model.animations
+                |> Maybe.withDefault (Position 269 130)
 
         positionC =
-            SmoothMovePorts.getPosition "element-c" model.animations
-                |> Maybe.withDefault { x = 269, y = 170 }
+            getPosition "element-c" model.animations
+                |> Maybe.withDefault (Position 269 170)
 
         positionD =
-            SmoothMovePorts.getPosition "element-d" model.animations
-                |> Maybe.withDefault { x = 225, y = 200 }
+            getPosition "element-d" model.animations
+                |> Maybe.withDefault (Position 225 200)
 
         positionE =
-            SmoothMovePorts.getPosition "element-e" model.animations
-                |> Maybe.withDefault { x = 181, y = 170 }
+            getPosition "element-e" model.animations
+                |> Maybe.withDefault (Position 181 170)
 
         positionF =
-            SmoothMovePorts.getPosition "element-f" model.animations
-                |> Maybe.withDefault { x = 181, y = 130 }
+            getPosition "element-f" model.animations
+                |> Maybe.withDefault (Position 181 130)
 
-        isAnimating =
-            SmoothMovePorts.isAnimating model.animations
+        anyElementAnimating =
+            List.any (\elementId -> isAnimating elementId model.animations) 
+                ["element-a", "element-b", "element-c", "element-d", "element-e", "element-f"]
     in
     [ UI.backButton
     , UI.pageHeader "SmoothMovePorts Multiple Example"

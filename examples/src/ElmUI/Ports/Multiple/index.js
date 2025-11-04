@@ -5196,21 +5196,61 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$document = _Browser_document;
-var $author$project$SmoothMovePorts$Model = function (a) {
+var $author$project$Move$Ports$Position = F2(
+	function (x, y) {
+		return {x: x, y: y};
+	});
+var $author$project$Move$Ports$Model = function (a) {
 	return {$: 'Model', a: a};
 };
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
-var $author$project$SmoothMovePorts$init = $author$project$SmoothMovePorts$Model($elm$core$Dict$empty);
+var $author$project$Move$Ports$init = $author$project$Move$Ports$Model($elm$core$Dict$empty);
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$SmoothMovePorts$Duration = function (a) {
+var $author$project$Move$Duration = function (a) {
 	return {$: 'Duration', a: a};
 };
-var $author$project$SmoothMovePorts$defaultConfig = {
-	easing: 'ease-out',
-	timing: $author$project$SmoothMovePorts$Duration(400)
+var $author$project$Move$EaseOut = {$: 'EaseOut'};
+var $author$project$Move$EasePreset = function (a) {
+	return {$: 'EasePreset', a: a};
 };
+var $author$project$Move$Ports$defaultConfig = {
+	easing: $author$project$Move$EasePreset($author$project$Move$EaseOut),
+	timing: $author$project$Move$Duration(400)
+};
+var $elm$core$Basics$compare = _Utils_compare;
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
 var $elm$core$Dict$Black = {$: 'Black'};
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
@@ -5271,7 +5311,6 @@ var $elm$core$Dict$balance = F5(
 			}
 		}
 	});
-var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$insertHelp = F3(
 	function (key, value, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
@@ -5320,85 +5359,263 @@ var $elm$core$Dict$insert = F3(
 			return x;
 		}
 	});
-var $author$project$SmoothMovePorts$setPosition = F4(
-	function (elementId, x, y, _v0) {
-		var elements = _v0.a;
-		var elementData = {config: $author$project$SmoothMovePorts$defaultConfig, currentX: x, currentY: y, isAnimating: false, targetX: x, targetY: y};
-		var updatedElements = A3($elm$core$Dict$insert, elementId, elementData, elements);
-		return $author$project$SmoothMovePorts$Model(updatedElements);
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Move$Ports$setPosition = F3(
+	function (elementId, position, _v0) {
+		var elementsDict = _v0.a;
+		var elementData = function (data) {
+			return _Utils_update(
+				data,
+				{currentX: position.x, currentY: position.y, isAnimating: false, targetX: position.x, targetY: position.y});
+		}(
+			A2(
+				$elm$core$Maybe$withDefault,
+				{config: $author$project$Move$Ports$defaultConfig, currentX: 0, currentY: 0, isAnimating: false, targetX: 0, targetY: 0},
+				A2($elm$core$Dict$get, elementId, elementsDict)));
+		var updatedDict = A3($elm$core$Dict$insert, elementId, elementData, elementsDict);
+		return $author$project$Move$Ports$Model(updatedDict);
 	});
 var $author$project$ElmUI$Ports$Multiple$Main$init = function (_v0) {
-	var initialAnimations = A4(
-		$author$project$SmoothMovePorts$setPosition,
+	var initialAnimations = A3(
+		$author$project$Move$Ports$setPosition,
 		'element-f',
-		80.0,
-		140.0,
-		A4(
-			$author$project$SmoothMovePorts$setPosition,
+		A2($author$project$Move$Ports$Position, 80.0, 140.0),
+		A3(
+			$author$project$Move$Ports$setPosition,
 			'element-e',
-			200.0,
-			40.0,
-			A4(
-				$author$project$SmoothMovePorts$setPosition,
+			A2($author$project$Move$Ports$Position, 200.0, 40.0),
+			A3(
+				$author$project$Move$Ports$setPosition,
 				'element-d',
-				350.0,
-				180.0,
-				A4(
-					$author$project$SmoothMovePorts$setPosition,
+				A2($author$project$Move$Ports$Position, 350.0, 180.0),
+				A3(
+					$author$project$Move$Ports$setPosition,
 					'element-c',
-					120.0,
-					220.0,
-					A4(
-						$author$project$SmoothMovePorts$setPosition,
+					A2($author$project$Move$Ports$Position, 120.0, 220.0),
+					A3(
+						$author$project$Move$Ports$setPosition,
 						'element-b',
-						380.0,
-						50.0,
-						A4($author$project$SmoothMovePorts$setPosition, 'element-a', 50.0, 80.0, $author$project$SmoothMovePorts$init))))));
+						A2($author$project$Move$Ports$Position, 380.0, 50.0),
+						A3(
+							$author$project$Move$Ports$setPosition,
+							'element-a',
+							A2($author$project$Move$Ports$Position, 50.0, 80.0),
+							$author$project$Move$Ports$init))))));
 	return _Utils_Tuple2(
 		{animations: initialAnimations},
 		$elm$core$Platform$Cmd$none);
 };
+var $author$project$ElmUI$Ports$Multiple$Main$AnimationCompleteMsg = function (a) {
+	return {$: 'AnimationCompleteMsg', a: a};
+};
 var $author$project$ElmUI$Ports$Multiple$Main$PositionUpdateMsg = function (a) {
 	return {$: 'PositionUpdateMsg', a: a};
 };
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $author$project$ElmUI$Ports$Multiple$Main$animationComplete = _Platform_incomingPort('animationComplete', $elm$json$Json$Decode$string);
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$ElmUI$Ports$Multiple$Main$positionUpdates = _Platform_incomingPort('positionUpdates', $elm$json$Json$Decode$value);
-var $author$project$ElmUI$Ports$Multiple$Main$subscriptions = function (_v0) {
-	return $author$project$ElmUI$Ports$Multiple$Main$positionUpdates($author$project$ElmUI$Ports$Multiple$Main$PositionUpdateMsg);
-};
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $author$project$ElmUI$Ports$Multiple$Main$animateElement = _Platform_outgoingPort('animateElement', $elm$json$Json$Encode$string);
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
 		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return $elm$core$Maybe$Nothing;
+			if (!list.b) {
+				return false;
 			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
 				}
 			}
 		}
 	});
+var $elm$core$Platform$Sub$batch = _Platform_batch;
+var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $elm$core$Dict$values = function (dict) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2($elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
+};
+var $author$project$Move$Ports$subscriptions = F2(
+	function (ports_, _v0) {
+		var elementsDict = _v0.a;
+		var hasActiveAnimations = A2(
+			$elm$core$List$any,
+			function ($) {
+				return $.isAnimating;
+			},
+			$elm$core$Dict$values(elementsDict));
+		return hasActiveAnimations ? $elm$core$Platform$Sub$batch(
+			_List_fromArray(
+				[ports_.positionUpdates, ports_.animationComplete])) : $elm$core$Platform$Sub$none;
+	});
+var $author$project$ElmUI$Ports$Multiple$Main$subscriptions = function (model) {
+	return A2(
+		$author$project$Move$Ports$subscriptions,
+		{
+			animationComplete: $author$project$ElmUI$Ports$Multiple$Main$animationComplete($author$project$ElmUI$Ports$Multiple$Main$AnimationCompleteMsg),
+			positionUpdates: $author$project$ElmUI$Ports$Multiple$Main$positionUpdates($author$project$ElmUI$Ports$Multiple$Main$PositionUpdateMsg)
+		},
+		model.animations);
+};
+var $author$project$Move$Internal$easingToString = function (easing) {
+	switch (easing.$) {
+		case 'EaseString':
+			var string = easing.a;
+			return string;
+		case 'EasePreset':
+			var preset = easing.a;
+			switch (preset.$) {
+				case 'Linear':
+					return 'linear';
+				case 'EaseOut':
+					return 'ease-out';
+				case 'EaseIn':
+					return 'ease-in';
+				default:
+					return 'ease-in-out';
+			}
+		default:
+			return 'ease-out';
+	}
+};
+var $elm$core$Basics$pow = _Basics_pow;
+var $elm$core$Basics$sqrt = _Basics_sqrt;
+var $author$project$Move$Internal$timingToMilliseconds = F2(
+	function (timing, distance) {
+		if (timing.$ === 'Speed') {
+			var pixelsPerSecond = timing.a;
+			return (distance / pixelsPerSecond) * 1000;
+		} else {
+			var milliseconds = timing.a;
+			return milliseconds;
+		}
+	});
+var $author$project$Move$Ports$animateToWithConfig = F4(
+	function (config, elementId, position, _v0) {
+		var elementsDict = _v0.a;
+		var currentData = A2(
+			$elm$core$Maybe$withDefault,
+			{config: config, currentX: 0, currentY: 0, isAnimating: false, targetX: 0, targetY: 0},
+			A2($elm$core$Dict$get, elementId, elementsDict));
+		var distance = $elm$core$Basics$sqrt(
+			A2($elm$core$Basics$pow, position.x - currentData.currentX, 2) + A2($elm$core$Basics$pow, position.y - currentData.currentY, 2));
+		var duration = A2($author$project$Move$Internal$timingToMilliseconds, config.timing, distance);
+		var elementData = _Utils_update(
+			currentData,
+			{config: config, isAnimating: true, targetX: position.x, targetY: position.y});
+		var updatedDict = A3($elm$core$Dict$insert, elementId, elementData, elementsDict);
+		var animationCommand = {
+			duration: duration,
+			easing: $author$project$Move$Internal$easingToString(config.easing),
+			elementId: elementId,
+			targetX: position.x,
+			targetY: position.y
+		};
+		return _Utils_Tuple2(
+			$author$project$Move$Ports$Model(updatedDict),
+			$elm$core$Maybe$Just(animationCommand));
+	});
+var $elm$core$Tuple$mapSecond = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			x,
+			func(y));
+	});
+var $author$project$Move$Ports$animateBatch = F3(
+	function (config, specs, model) {
+		return A2(
+			$elm$core$Tuple$mapSecond,
+			$elm$core$List$reverse,
+			A3(
+				$elm$core$List$foldl,
+				F2(
+					function (spec, _v0) {
+						var currentModel = _v0.a;
+						var commands = _v0.b;
+						var _v1 = A4($author$project$Move$Ports$animateToWithConfig, config, spec.elementId, spec.target, currentModel);
+						var newModel = _v1.a;
+						var maybeCommand = _v1.b;
+						if (maybeCommand.$ === 'Just') {
+							var command = maybeCommand.a;
+							return _Utils_Tuple2(
+								newModel,
+								A2($elm$core$List$cons, command, commands));
+						} else {
+							return _Utils_Tuple2(newModel, commands);
+						}
+					}),
+				_Utils_Tuple2(model, _List_Nil),
+				specs));
+	});
+var $author$project$ElmUI$Ports$Multiple$Main$animateElement = _Platform_outgoingPort('animateElement', $elm$core$Basics$identity);
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $author$project$Move$defaultConfig = {
+	easing: $author$project$Move$EasePreset($author$project$Move$EaseOut),
+	timing: $author$project$Move$Duration(400)
+};
+var $elm$json$Json$Encode$float = _Json_wrap;
+var $elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, obj) {
+					var k = _v0.a;
+					var v = _v0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$Move$Ports$encodeAnimationCommand = function (command) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'elementId',
+				$elm$json$Json$Encode$string(command.elementId)),
+				_Utils_Tuple2(
+				'targetX',
+				$elm$json$Json$Encode$float(command.targetX)),
+				_Utils_Tuple2(
+				'targetY',
+				$elm$json$Json$Encode$float(command.targetY)),
+				_Utils_Tuple2(
+				'duration',
+				$elm$json$Json$Encode$float(command.duration)),
+				_Utils_Tuple2(
+				'easing',
+				$elm$json$Json$Encode$string(command.easing))
+			]));
+};
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
 		if (maybe.$ === 'Just') {
@@ -5409,270 +5626,578 @@ var $elm$core$Maybe$map = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
-var $author$project$SmoothMovePorts$getPosition = F2(
-	function (elementId, _v0) {
-		var elements = _v0.a;
-		return A2(
-			$elm$core$Maybe$map,
-			function (elementData) {
-				return {x: elementData.currentX, y: elementData.currentY};
-			},
-			A2($elm$core$Dict$get, elementId, elements));
-	});
-var $elm$core$Basics$pow = _Basics_pow;
-var $elm$core$Basics$sqrt = _Basics_sqrt;
-var $author$project$SmoothMovePorts$timingToMilliseconds = F2(
-	function (timing, distance) {
-		if (timing.$ === 'Speed') {
-			var pixelsPerSecond = timing.a;
-			return (distance / pixelsPerSecond) * 1000;
+var $elm$core$Dict$getMin = function (dict) {
+	getMin:
+	while (true) {
+		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+			var left = dict.d;
+			var $temp$dict = left;
+			dict = $temp$dict;
+			continue getMin;
 		} else {
-			var milliseconds = timing.a;
-			return milliseconds;
+			return dict;
 		}
-	});
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
-var $author$project$SmoothMovePorts$animateToWithConfig = F5(
-	function (config, elementId, targetX, targetY, _v0) {
-		var elements = _v0.a;
-		var currentPos = A2(
-			$elm$core$Maybe$withDefault,
-			{x: 0, y: 0},
-			A2(
-				$author$project$SmoothMovePorts$getPosition,
-				elementId,
-				$author$project$SmoothMovePorts$Model(elements)));
-		var distance = $elm$core$Basics$sqrt(
-			A2($elm$core$Basics$pow, targetX - currentPos.x, 2) + A2($elm$core$Basics$pow, targetY - currentPos.y, 2));
-		var elementData = {config: config, currentX: currentPos.x, currentY: currentPos.y, isAnimating: true, targetX: targetX, targetY: targetY};
-		var updatedElements = A3($elm$core$Dict$insert, elementId, elementData, elements);
-		var command = {
-			axis: 'both',
-			duration: A2($author$project$SmoothMovePorts$timingToMilliseconds, config.timing, distance),
-			easing: config.easing,
-			elementId: elementId,
-			targetX: targetX,
-			targetY: targetY
-		};
-		return _Utils_Tuple2(
-			$author$project$SmoothMovePorts$Model(updatedElements),
-			command);
-	});
-var $author$project$SmoothMovePorts$animateTo = F4(
-	function (elementId, targetX, targetY, model) {
-		return A5($author$project$SmoothMovePorts$animateToWithConfig, $author$project$SmoothMovePorts$defaultConfig, elementId, targetX, targetY, model);
-	});
-var $elm$core$String$fromFloat = _String_fromNumber;
-var $author$project$SmoothMovePorts$encodeAnimationCommand = function (cmd) {
-	return A2(
-		$elm$core$String$join,
-		':',
-		_List_fromArray(
-			[
-				cmd.elementId,
-				$elm$core$String$fromFloat(cmd.targetX),
-				$elm$core$String$fromFloat(cmd.targetY),
-				$elm$core$String$fromFloat(cmd.duration),
-				cmd.easing,
-				cmd.axis
-			]));
+	}
 };
-var $elm$json$Json$Decode$decodeValue = _Json_run;
-var $author$project$SmoothMovePorts$handlePositionUpdate = F2(
-	function (positionUpdate, _v0) {
-		var elements = _v0.a;
-		var y = positionUpdate.y;
-		var x = positionUpdate.x;
-		var elementId = positionUpdate.elementId;
-		var animating = positionUpdate.isAnimating;
-		var _v1 = A2($elm$core$Dict$get, elementId, elements);
-		if (_v1.$ === 'Just') {
-			var elementData = _v1.a;
-			var updatedElementData = _Utils_update(
-				elementData,
-				{currentX: x, currentY: y, isAnimating: animating});
-			var updatedElements = A3($elm$core$Dict$insert, elementId, updatedElementData, elements);
-			return $author$project$SmoothMovePorts$Model(updatedElements);
+var $elm$core$Dict$moveRedLeft = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var lLeft = _v1.d;
+			var lRight = _v1.e;
+			var _v2 = dict.e;
+			var rClr = _v2.a;
+			var rK = _v2.b;
+			var rV = _v2.c;
+			var rLeft = _v2.d;
+			var _v3 = rLeft.a;
+			var rlK = rLeft.b;
+			var rlV = rLeft.c;
+			var rlL = rLeft.d;
+			var rlR = rLeft.e;
+			var rRight = _v2.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				$elm$core$Dict$Red,
+				rlK,
+				rlV,
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					rlL),
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rlR, rRight));
 		} else {
-			var newElementData = {config: $author$project$SmoothMovePorts$defaultConfig, currentX: x, currentY: y, isAnimating: animating, targetX: x, targetY: y};
-			var updatedElements = A3($elm$core$Dict$insert, elementId, newElementData, elements);
-			return $author$project$SmoothMovePorts$Model(updatedElements);
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v4 = dict.d;
+			var lClr = _v4.a;
+			var lK = _v4.b;
+			var lV = _v4.c;
+			var lLeft = _v4.d;
+			var lRight = _v4.e;
+			var _v5 = dict.e;
+			var rClr = _v5.a;
+			var rK = _v5.b;
+			var rV = _v5.c;
+			var rLeft = _v5.d;
+			var rRight = _v5.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$moveRedRight = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var _v2 = _v1.d;
+			var _v3 = _v2.a;
+			var llK = _v2.b;
+			var llV = _v2.c;
+			var llLeft = _v2.d;
+			var llRight = _v2.e;
+			var lRight = _v1.e;
+			var _v4 = dict.e;
+			var rClr = _v4.a;
+			var rK = _v4.b;
+			var rV = _v4.c;
+			var rLeft = _v4.d;
+			var rRight = _v4.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				$elm$core$Dict$Red,
+				lK,
+				lV,
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					lRight,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight)));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v5 = dict.d;
+			var lClr = _v5.a;
+			var lK = _v5.b;
+			var lV = _v5.c;
+			var lLeft = _v5.d;
+			var lRight = _v5.e;
+			var _v6 = dict.e;
+			var rClr = _v6.a;
+			var rK = _v6.b;
+			var rV = _v6.c;
+			var rLeft = _v6.d;
+			var rRight = _v6.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$removeHelpPrepEQGT = F7(
+	function (targetKey, dict, color, key, value, left, right) {
+		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+			var _v1 = left.a;
+			var lK = left.b;
+			var lV = left.c;
+			var lLeft = left.d;
+			var lRight = left.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				lK,
+				lV,
+				lLeft,
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, lRight, right));
+		} else {
+			_v2$2:
+			while (true) {
+				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
+					if (right.d.$ === 'RBNode_elm_builtin') {
+						if (right.d.a.$ === 'Black') {
+							var _v3 = right.a;
+							var _v4 = right.d;
+							var _v5 = _v4.a;
+							return $elm$core$Dict$moveRedRight(dict);
+						} else {
+							break _v2$2;
+						}
+					} else {
+						var _v6 = right.a;
+						var _v7 = right.d;
+						return $elm$core$Dict$moveRedRight(dict);
+					}
+				} else {
+					break _v2$2;
+				}
+			}
+			return dict;
 		}
 	});
-var $author$project$SmoothMovePorts$PositionUpdate = F4(
-	function (elementId, x, y, isAnimating) {
-		return {elementId: elementId, isAnimating: isAnimating, x: x, y: y};
+var $elm$core$Dict$removeMin = function (dict) {
+	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+		var color = dict.a;
+		var key = dict.b;
+		var value = dict.c;
+		var left = dict.d;
+		var lColor = left.a;
+		var lLeft = left.d;
+		var right = dict.e;
+		if (lColor.$ === 'Black') {
+			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+				var _v3 = lLeft.a;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					key,
+					value,
+					$elm$core$Dict$removeMin(left),
+					right);
+			} else {
+				var _v4 = $elm$core$Dict$moveRedLeft(dict);
+				if (_v4.$ === 'RBNode_elm_builtin') {
+					var nColor = _v4.a;
+					var nKey = _v4.b;
+					var nValue = _v4.c;
+					var nLeft = _v4.d;
+					var nRight = _v4.e;
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						$elm$core$Dict$removeMin(nLeft),
+						nRight);
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			}
+		} else {
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				value,
+				$elm$core$Dict$removeMin(left),
+				right);
+		}
+	} else {
+		return $elm$core$Dict$RBEmpty_elm_builtin;
+	}
+};
+var $elm$core$Dict$removeHelp = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_cmp(targetKey, key) < 0) {
+				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
+					var _v4 = left.a;
+					var lLeft = left.d;
+					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+						var _v6 = lLeft.a;
+						return A5(
+							$elm$core$Dict$RBNode_elm_builtin,
+							color,
+							key,
+							value,
+							A2($elm$core$Dict$removeHelp, targetKey, left),
+							right);
+					} else {
+						var _v7 = $elm$core$Dict$moveRedLeft(dict);
+						if (_v7.$ === 'RBNode_elm_builtin') {
+							var nColor = _v7.a;
+							var nKey = _v7.b;
+							var nValue = _v7.c;
+							var nLeft = _v7.d;
+							var nRight = _v7.e;
+							return A5(
+								$elm$core$Dict$balance,
+								nColor,
+								nKey,
+								nValue,
+								A2($elm$core$Dict$removeHelp, targetKey, nLeft),
+								nRight);
+						} else {
+							return $elm$core$Dict$RBEmpty_elm_builtin;
+						}
+					}
+				} else {
+					return A5(
+						$elm$core$Dict$RBNode_elm_builtin,
+						color,
+						key,
+						value,
+						A2($elm$core$Dict$removeHelp, targetKey, left),
+						right);
+				}
+			} else {
+				return A2(
+					$elm$core$Dict$removeHelpEQGT,
+					targetKey,
+					A7($elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
+			}
+		}
 	});
-var $elm$json$Json$Decode$bool = _Json_decodeBool;
+var $elm$core$Dict$removeHelpEQGT = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBNode_elm_builtin') {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_eq(targetKey, key)) {
+				var _v1 = $elm$core$Dict$getMin(right);
+				if (_v1.$ === 'RBNode_elm_builtin') {
+					var minKey = _v1.b;
+					var minValue = _v1.c;
+					return A5(
+						$elm$core$Dict$balance,
+						color,
+						minKey,
+						minValue,
+						left,
+						$elm$core$Dict$removeMin(right));
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			} else {
+				return A5(
+					$elm$core$Dict$balance,
+					color,
+					key,
+					value,
+					left,
+					A2($elm$core$Dict$removeHelp, targetKey, right));
+			}
+		} else {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		}
+	});
+var $elm$core$Dict$remove = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$removeHelp, key, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $elm$core$Dict$update = F3(
+	function (targetKey, alter, dictionary) {
+		var _v0 = alter(
+			A2($elm$core$Dict$get, targetKey, dictionary));
+		if (_v0.$ === 'Just') {
+			var value = _v0.a;
+			return A3($elm$core$Dict$insert, targetKey, value, dictionary);
+		} else {
+			return A2($elm$core$Dict$remove, targetKey, dictionary);
+		}
+	});
+var $author$project$Move$Ports$handleAnimationComplete = F2(
+	function (elementId, _v0) {
+		var elementsDict = _v0.a;
+		var updatedDict = A3(
+			$elm$core$Dict$update,
+			elementId,
+			$elm$core$Maybe$map(
+				function (data) {
+					return _Utils_update(
+						data,
+						{currentX: data.targetX, currentY: data.targetY, isAnimating: false});
+				}),
+			elementsDict);
+		return $author$project$Move$Ports$Model(updatedDict);
+	});
+var $author$project$Move$Ports$handlePositionUpdate = F2(
+	function (update, _v0) {
+		var elementsDict = _v0.a;
+		var updatedDict = A3(
+			$elm$core$Dict$update,
+			update.elementId,
+			$elm$core$Maybe$map(
+				function (data) {
+					return _Utils_update(
+						data,
+						{currentX: update.x, currentY: update.y});
+				}),
+			elementsDict);
+		return $author$project$Move$Ports$Model(updatedDict);
+	});
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $author$project$Move$Ports$PositionUpdate = F3(
+	function (elementId, x, y) {
+		return {elementId: elementId, x: x, y: y};
+	});
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
-var $elm$json$Json$Decode$map4 = _Json_map4;
-var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$SmoothMovePorts$positionUpdateDecoder = A5(
-	$elm$json$Json$Decode$map4,
-	$author$project$SmoothMovePorts$PositionUpdate,
+var $elm$json$Json$Decode$map3 = _Json_map3;
+var $author$project$Move$Ports$positionUpdateDecoder = A4(
+	$elm$json$Json$Decode$map3,
+	$author$project$Move$Ports$PositionUpdate,
 	A2($elm$json$Json$Decode$field, 'elementId', $elm$json$Json$Decode$string),
 	A2($elm$json$Json$Decode$field, 'x', $elm$json$Json$Decode$float),
-	A2($elm$json$Json$Decode$field, 'y', $elm$json$Json$Decode$float),
-	A2($elm$json$Json$Decode$field, 'isAnimating', $elm$json$Json$Decode$bool));
-var $author$project$SmoothMovePorts$handlePositionUpdateFromJson = F2(
-	function (value, model) {
-		var _v0 = A2($elm$json$Json$Decode$decodeValue, $author$project$SmoothMovePorts$positionUpdateDecoder, value);
-		if (_v0.$ === 'Ok') {
-			var positionUpdate = _v0.a;
-			return $elm$core$Result$Ok(
-				A2($author$project$SmoothMovePorts$handlePositionUpdate, positionUpdate, model));
-		} else {
-			var error = _v0.a;
-			return $elm$core$Result$Err(error);
-		}
-	});
+	A2($elm$json$Json$Decode$field, 'y', $elm$json$Json$Decode$float));
+var $author$project$Move$Ports$handlePositionUpdateFromJson = function (value) {
+	return A2($elm$json$Json$Decode$decodeValue, $author$project$Move$Ports$positionUpdateDecoder, value);
+};
 var $author$project$ElmUI$Ports$Multiple$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'Scatter':
-				var _v1 = A4($author$project$SmoothMovePorts$animateTo, 'element-a', 50.0, 80.0, model.animations);
-				var newAnimations1 = _v1.a;
-				var cmd1 = _v1.b;
-				var _v2 = A4($author$project$SmoothMovePorts$animateTo, 'element-b', 350.0, 120.0, newAnimations1);
-				var newAnimations2 = _v2.a;
-				var cmd2 = _v2.b;
-				var _v3 = A4($author$project$SmoothMovePorts$animateTo, 'element-c', 120.0, 250.0, newAnimations2);
-				var newAnimations3 = _v3.a;
-				var cmd3 = _v3.b;
-				var _v4 = A4($author$project$SmoothMovePorts$animateTo, 'element-d', 300.0, 280.0, newAnimations3);
-				var newAnimations4 = _v4.a;
-				var cmd4 = _v4.b;
-				var _v5 = A4($author$project$SmoothMovePorts$animateTo, 'element-e', 80.0, 180.0, newAnimations4);
-				var newAnimations5 = _v5.a;
-				var cmd5 = _v5.b;
-				var _v6 = A4($author$project$SmoothMovePorts$animateTo, 'element-f', 380.0, 200.0, newAnimations5);
-				var newAnimations6 = _v6.a;
-				var cmd6 = _v6.b;
+				var scatterSpecs = _List_fromArray(
+					[
+						{
+						elementId: 'element-a',
+						target: A2($author$project$Move$Ports$Position, 50.0, 80.0)
+					},
+						{
+						elementId: 'element-b',
+						target: A2($author$project$Move$Ports$Position, 350.0, 120.0)
+					},
+						{
+						elementId: 'element-c',
+						target: A2($author$project$Move$Ports$Position, 120.0, 250.0)
+					},
+						{
+						elementId: 'element-d',
+						target: A2($author$project$Move$Ports$Position, 300.0, 280.0)
+					},
+						{
+						elementId: 'element-e',
+						target: A2($author$project$Move$Ports$Position, 80.0, 180.0)
+					},
+						{
+						elementId: 'element-f',
+						target: A2($author$project$Move$Ports$Position, 380.0, 200.0)
+					}
+					]);
+				var _v1 = A3($author$project$Move$Ports$animateBatch, $author$project$Move$defaultConfig, scatterSpecs, model.animations);
+				var newAnimations = _v1.a;
+				var commands = _v1.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animations: newAnimations6}),
+						{animations: newAnimations}),
 					$elm$core$Platform$Cmd$batch(
-						_List_fromArray(
-							[
-								$author$project$ElmUI$Ports$Multiple$Main$animateElement(
-								$author$project$SmoothMovePorts$encodeAnimationCommand(cmd1)),
-								$author$project$ElmUI$Ports$Multiple$Main$animateElement(
-								$author$project$SmoothMovePorts$encodeAnimationCommand(cmd2)),
-								$author$project$ElmUI$Ports$Multiple$Main$animateElement(
-								$author$project$SmoothMovePorts$encodeAnimationCommand(cmd3)),
-								$author$project$ElmUI$Ports$Multiple$Main$animateElement(
-								$author$project$SmoothMovePorts$encodeAnimationCommand(cmd4)),
-								$author$project$ElmUI$Ports$Multiple$Main$animateElement(
-								$author$project$SmoothMovePorts$encodeAnimationCommand(cmd5)),
-								$author$project$ElmUI$Ports$Multiple$Main$animateElement(
-								$author$project$SmoothMovePorts$encodeAnimationCommand(cmd6))
-							])));
+						A2(
+							$elm$core$List$map,
+							A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Multiple$Main$animateElement, $author$project$Move$Ports$encodeAnimationCommand),
+							commands)));
 			case 'Reset':
-				var _v7 = A4($author$project$SmoothMovePorts$animateTo, 'element-a', 50.0, 80.0, model.animations);
-				var newAnimations1 = _v7.a;
-				var cmd1 = _v7.b;
-				var _v8 = A4($author$project$SmoothMovePorts$animateTo, 'element-b', 380.0, 50.0, newAnimations1);
-				var newAnimations2 = _v8.a;
-				var cmd2 = _v8.b;
-				var _v9 = A4($author$project$SmoothMovePorts$animateTo, 'element-c', 120.0, 220.0, newAnimations2);
-				var newAnimations3 = _v9.a;
-				var cmd3 = _v9.b;
-				var _v10 = A4($author$project$SmoothMovePorts$animateTo, 'element-d', 350.0, 180.0, newAnimations3);
-				var newAnimations4 = _v10.a;
-				var cmd4 = _v10.b;
-				var _v11 = A4($author$project$SmoothMovePorts$animateTo, 'element-e', 200.0, 40.0, newAnimations4);
-				var newAnimations5 = _v11.a;
-				var cmd5 = _v11.b;
-				var _v12 = A4($author$project$SmoothMovePorts$animateTo, 'element-f', 80.0, 140.0, newAnimations5);
-				var newAnimations6 = _v12.a;
-				var cmd6 = _v12.b;
+				var resetSpecs = _List_fromArray(
+					[
+						{
+						elementId: 'element-a',
+						target: A2($author$project$Move$Ports$Position, 50.0, 80.0)
+					},
+						{
+						elementId: 'element-b',
+						target: A2($author$project$Move$Ports$Position, 380.0, 50.0)
+					},
+						{
+						elementId: 'element-c',
+						target: A2($author$project$Move$Ports$Position, 120.0, 220.0)
+					},
+						{
+						elementId: 'element-d',
+						target: A2($author$project$Move$Ports$Position, 350.0, 180.0)
+					},
+						{
+						elementId: 'element-e',
+						target: A2($author$project$Move$Ports$Position, 200.0, 40.0)
+					},
+						{
+						elementId: 'element-f',
+						target: A2($author$project$Move$Ports$Position, 80.0, 140.0)
+					}
+					]);
+				var _v2 = A3($author$project$Move$Ports$animateBatch, $author$project$Move$defaultConfig, resetSpecs, model.animations);
+				var newAnimations = _v2.a;
+				var commands = _v2.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animations: newAnimations6}),
+						{animations: newAnimations}),
 					$elm$core$Platform$Cmd$batch(
-						_List_fromArray(
-							[
-								$author$project$ElmUI$Ports$Multiple$Main$animateElement(
-								$author$project$SmoothMovePorts$encodeAnimationCommand(cmd1)),
-								$author$project$ElmUI$Ports$Multiple$Main$animateElement(
-								$author$project$SmoothMovePorts$encodeAnimationCommand(cmd2)),
-								$author$project$ElmUI$Ports$Multiple$Main$animateElement(
-								$author$project$SmoothMovePorts$encodeAnimationCommand(cmd3)),
-								$author$project$ElmUI$Ports$Multiple$Main$animateElement(
-								$author$project$SmoothMovePorts$encodeAnimationCommand(cmd4)),
-								$author$project$ElmUI$Ports$Multiple$Main$animateElement(
-								$author$project$SmoothMovePorts$encodeAnimationCommand(cmd5)),
-								$author$project$ElmUI$Ports$Multiple$Main$animateElement(
-								$author$project$SmoothMovePorts$encodeAnimationCommand(cmd6))
-							])));
+						A2(
+							$elm$core$List$map,
+							A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Multiple$Main$animateElement, $author$project$Move$Ports$encodeAnimationCommand),
+							commands)));
 			case 'Circle':
 				var radius = 50.0;
 				var centerY = 150.0;
 				var centerX = 225.0;
-				var _v13 = A4($author$project$SmoothMovePorts$animateTo, 'element-a', centerX, centerY - radius, model.animations);
-				var newAnimations1 = _v13.a;
-				var cmd1 = _v13.b;
-				var _v14 = A4($author$project$SmoothMovePorts$animateTo, 'element-b', centerX + (radius * 0.866), centerY - (radius / 2), newAnimations1);
-				var newAnimations2 = _v14.a;
-				var cmd2 = _v14.b;
-				var _v15 = A4($author$project$SmoothMovePorts$animateTo, 'element-c', centerX + (radius * 0.866), centerY + (radius / 2), newAnimations2);
-				var newAnimations3 = _v15.a;
-				var cmd3 = _v15.b;
-				var _v16 = A4($author$project$SmoothMovePorts$animateTo, 'element-d', centerX, centerY + radius, newAnimations3);
-				var newAnimations4 = _v16.a;
-				var cmd4 = _v16.b;
-				var _v17 = A4($author$project$SmoothMovePorts$animateTo, 'element-e', centerX - (radius * 0.866), centerY + (radius / 2), newAnimations4);
-				var newAnimations5 = _v17.a;
-				var cmd5 = _v17.b;
-				var _v18 = A4($author$project$SmoothMovePorts$animateTo, 'element-f', centerX - (radius * 0.866), centerY - (radius / 2), newAnimations5);
-				var newAnimations6 = _v18.a;
-				var cmd6 = _v18.b;
+				var circleSpecs = _List_fromArray(
+					[
+						{
+						elementId: 'element-a',
+						target: A2($author$project$Move$Ports$Position, centerX, centerY - radius)
+					},
+						{
+						elementId: 'element-b',
+						target: A2($author$project$Move$Ports$Position, centerX + (radius * 0.866), centerY - (radius / 2))
+					},
+						{
+						elementId: 'element-c',
+						target: A2($author$project$Move$Ports$Position, centerX + (radius * 0.866), centerY + (radius / 2))
+					},
+						{
+						elementId: 'element-d',
+						target: A2($author$project$Move$Ports$Position, centerX, centerY + radius)
+					},
+						{
+						elementId: 'element-e',
+						target: A2($author$project$Move$Ports$Position, centerX - (radius * 0.866), centerY + (radius / 2))
+					},
+						{
+						elementId: 'element-f',
+						target: A2($author$project$Move$Ports$Position, centerX - (radius * 0.866), centerY - (radius / 2))
+					}
+					]);
+				var _v3 = A3($author$project$Move$Ports$animateBatch, $author$project$Move$defaultConfig, circleSpecs, model.animations);
+				var newAnimations = _v3.a;
+				var commands = _v3.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animations: newAnimations6}),
+						{animations: newAnimations}),
 					$elm$core$Platform$Cmd$batch(
-						_List_fromArray(
-							[
-								$author$project$ElmUI$Ports$Multiple$Main$animateElement(
-								$author$project$SmoothMovePorts$encodeAnimationCommand(cmd1)),
-								$author$project$ElmUI$Ports$Multiple$Main$animateElement(
-								$author$project$SmoothMovePorts$encodeAnimationCommand(cmd2)),
-								$author$project$ElmUI$Ports$Multiple$Main$animateElement(
-								$author$project$SmoothMovePorts$encodeAnimationCommand(cmd3)),
-								$author$project$ElmUI$Ports$Multiple$Main$animateElement(
-								$author$project$SmoothMovePorts$encodeAnimationCommand(cmd4)),
-								$author$project$ElmUI$Ports$Multiple$Main$animateElement(
-								$author$project$SmoothMovePorts$encodeAnimationCommand(cmd5)),
-								$author$project$ElmUI$Ports$Multiple$Main$animateElement(
-								$author$project$SmoothMovePorts$encodeAnimationCommand(cmd6))
-							])));
+						A2(
+							$elm$core$List$map,
+							A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Multiple$Main$animateElement, $author$project$Move$Ports$encodeAnimationCommand),
+							commands)));
 			case 'StopAll':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			default:
+			case 'PositionUpdateMsg':
 				var value = msg.a;
-				var _v19 = A2($author$project$SmoothMovePorts$handlePositionUpdateFromJson, value, model.animations);
-				if (_v19.$ === 'Ok') {
-					var newAnimations = _v19.a;
+				var _v4 = $author$project$Move$Ports$handlePositionUpdateFromJson(value);
+				if (_v4.$ === 'Ok') {
+					var positionUpdate = _v4.a;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{animations: newAnimations}),
+							{
+								animations: A2($author$project$Move$Ports$handlePositionUpdate, positionUpdate, model.animations)
+							}),
 						$elm$core$Platform$Cmd$none);
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
+			default:
+				var elementId = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							animations: A2($author$project$Move$Ports$handleAnimationComplete, elementId, model.animations)
+						}),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Common$UI$Basic = {$: 'Basic'};
@@ -5739,6 +6264,7 @@ var $mdgriffith$elm_ui$Internal$Model$floatClass = function (x) {
 	return $elm$core$String$fromInt(
 		$elm$core$Basics$round(x * 255));
 };
+var $elm$core$String$fromFloat = _String_fromNumber;
 var $mdgriffith$elm_ui$Internal$Model$formatColor = function (_v0) {
 	var red = _v0.a;
 	var green = _v0.b;
@@ -6270,14 +6796,6 @@ var $elm$core$Tuple$mapFirst = F2(
 		return _Utils_Tuple2(
 			func(x),
 			y);
-	});
-var $elm$core$Tuple$mapSecond = F2(
-	function (func, _v0) {
-		var x = _v0.a;
-		var y = _v0.b;
-		return _Utils_Tuple2(
-			x,
-			func(y));
 	});
 var $mdgriffith$elm_ui$Internal$Model$renderFocusStyle = function (focus) {
 	return _List_fromArray(
@@ -8469,40 +8987,6 @@ var $elm$json$Json$Encode$list = F2(
 				_Json_addEntry(func),
 				_Json_emptyArray(_Utils_Tuple0),
 				entries));
-	});
-var $elm$json$Json$Encode$object = function (pairs) {
-	return _Json_wrap(
-		A3(
-			$elm$core$List$foldl,
-			F2(
-				function (_v0, obj) {
-					var k = _v0.a;
-					var v = _v0.b;
-					return A3(_Json_addField, k, v, obj);
-				}),
-			_Json_emptyObject(_Utils_Tuple0),
-			pairs));
-};
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
 	});
 var $mdgriffith$elm_ui$Internal$Model$fontName = function (font) {
 	switch (font.$) {
@@ -11798,14 +12282,19 @@ var $mdgriffith$elm_ui$Element$el = F2(
 				_List_fromArray(
 					[child])));
 	});
+var $author$project$Move$Ports$getPosition = F2(
+	function (elementId, _v0) {
+		var elementsDict = _v0.a;
+		return A2(
+			$elm$core$Maybe$map,
+			function (data) {
+				return {x: data.currentX, y: data.currentY};
+			},
+			A2($elm$core$Dict$get, elementId, elementsDict));
+	});
 var $elm$core$Basics$always = F2(
 	function (a, _v0) {
 		return a;
-	});
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
 	});
 var $mdgriffith$elm_ui$Internal$Model$unstyled = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Unstyled, $elm$core$Basics$always);
 var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
@@ -11871,25 +12360,19 @@ var $author$project$Common$UI$htmlActionButtons = function (buttons) {
 					]),
 				htmlButtons)));
 };
-var $elm$core$Dict$values = function (dict) {
-	return A3(
-		$elm$core$Dict$foldr,
-		F3(
-			function (key, value, valueList) {
-				return A2($elm$core$List$cons, value, valueList);
-			}),
-		_List_Nil,
-		dict);
-};
-var $author$project$SmoothMovePorts$isAnimating = function (_v0) {
-	var elements = _v0.a;
-	return A2(
-		$elm$core$List$any,
-		function ($) {
-			return $.isAnimating;
-		},
-		$elm$core$Dict$values(elements));
-};
+var $author$project$Move$Ports$isAnimating = F2(
+	function (elementId, _v0) {
+		var elementsDict = _v0.a;
+		return A2(
+			$elm$core$Maybe$withDefault,
+			false,
+			A2(
+				$elm$core$Maybe$map,
+				function ($) {
+					return $.isAnimating;
+				},
+				A2($elm$core$Dict$get, elementId, elementsDict)));
+	});
 var $mdgriffith$elm_ui$Internal$Model$Max = F2(
 	function (a, b) {
 		return {$: 'Max', a: a, b: b};
@@ -12000,29 +12483,35 @@ var $author$project$Common$Colors$warningDark = A3($mdgriffith$elm_ui$Element$rg
 var $author$project$ElmUI$Ports$Multiple$Main$viewContent = function (model) {
 	var positionF = A2(
 		$elm$core$Maybe$withDefault,
-		{x: 181, y: 130},
-		A2($author$project$SmoothMovePorts$getPosition, 'element-f', model.animations));
+		A2($author$project$Move$Ports$Position, 181, 130),
+		A2($author$project$Move$Ports$getPosition, 'element-f', model.animations));
 	var positionE = A2(
 		$elm$core$Maybe$withDefault,
-		{x: 181, y: 170},
-		A2($author$project$SmoothMovePorts$getPosition, 'element-e', model.animations));
+		A2($author$project$Move$Ports$Position, 181, 170),
+		A2($author$project$Move$Ports$getPosition, 'element-e', model.animations));
 	var positionD = A2(
 		$elm$core$Maybe$withDefault,
-		{x: 225, y: 200},
-		A2($author$project$SmoothMovePorts$getPosition, 'element-d', model.animations));
+		A2($author$project$Move$Ports$Position, 225, 200),
+		A2($author$project$Move$Ports$getPosition, 'element-d', model.animations));
 	var positionC = A2(
 		$elm$core$Maybe$withDefault,
-		{x: 269, y: 170},
-		A2($author$project$SmoothMovePorts$getPosition, 'element-c', model.animations));
+		A2($author$project$Move$Ports$Position, 269, 170),
+		A2($author$project$Move$Ports$getPosition, 'element-c', model.animations));
 	var positionB = A2(
 		$elm$core$Maybe$withDefault,
-		{x: 269, y: 130},
-		A2($author$project$SmoothMovePorts$getPosition, 'element-b', model.animations));
+		A2($author$project$Move$Ports$Position, 269, 130),
+		A2($author$project$Move$Ports$getPosition, 'element-b', model.animations));
 	var positionA = A2(
 		$elm$core$Maybe$withDefault,
-		{x: 225, y: 100},
-		A2($author$project$SmoothMovePorts$getPosition, 'element-a', model.animations));
-	var isAnimating = $author$project$SmoothMovePorts$isAnimating(model.animations);
+		A2($author$project$Move$Ports$Position, 225, 100),
+		A2($author$project$Move$Ports$getPosition, 'element-a', model.animations));
+	var anyElementAnimating = A2(
+		$elm$core$List$any,
+		function (elementId) {
+			return A2($author$project$Move$Ports$isAnimating, elementId, model.animations);
+		},
+		_List_fromArray(
+			['element-a', 'element-b', 'element-c', 'element-d', 'element-e', 'element-f']));
 	return _List_fromArray(
 		[
 			$author$project$Common$UI$backButton,

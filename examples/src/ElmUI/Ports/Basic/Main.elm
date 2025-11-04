@@ -35,20 +35,25 @@ import Element.Input as Input
 import Html
 import Html.Attributes
 import Json.Decode as Decode
-import SmoothMovePorts
+import Json.Encode as Encode
+import Move exposing (defaultConfig)
+import Move.Ports exposing (Position, Model, init, setPosition, animateTo, getPosition, transformElement, handlePositionUpdate, handleAnimationComplete, handlePositionUpdateFromJson, encodeAnimationCommand, subscriptions, isAnimating)
 
 
 
 -- PORTS
 
 
-port animateElement : String -> Cmd msg
+port animateElement : Encode.Value -> Cmd msg
 
 
-port stopElementAnimation : String -> Cmd msg
+port stopElement : Encode.Value -> Cmd msg
 
 
 port positionUpdates : (Decode.Value -> msg) -> Sub msg
+
+
+port animationComplete : (String -> msg) -> Sub msg
 
 
 
@@ -70,7 +75,7 @@ main =
 
 
 type alias Model =
-    { animations : SmoothMovePorts.Model
+    { animations : Move.Ports.Model
     }
 
 
@@ -83,8 +88,8 @@ init _ =
     let
         -- Initialize with starting position
         initialAnimations =
-            SmoothMovePorts.init
-                |> SmoothMovePorts.setPosition "moving-box" 0 0
+            Move.Ports.init
+                |> Move.Ports.setPosition "moving-box" (Position 0 0)
     in
     ( { animations = initialAnimations }
     , Cmd.none
@@ -100,6 +105,7 @@ type Msg
     | MoveToCenter
     | StopAnimation
     | PositionUpdateMsg Decode.Value
+    | AnimationCompleteMsg String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -107,39 +113,57 @@ update msg model =
     case msg of
         MoveToCorner ->
             let
-                ( newAnimations, command ) =
-                    SmoothMovePorts.animateTo "moving-box" 100 100 model.animations
+                ( newAnimations, maybeCommand ) =
+                    animateTo "moving-box" (Position 100 100) model.animations
             in
-            ( { model | animations = newAnimations }
-            , animateElement (SmoothMovePorts.encodeAnimationCommand command)
-            )
+            case maybeCommand of
+                Just command ->
+                    ( { model | animations = newAnimations }
+                    , animateElement (encodeAnimationCommand command)
+                    )
+                
+                Nothing ->
+                    ( { model | animations = newAnimations }, Cmd.none )
 
         MoveToCenter ->
             let
-                ( newAnimations, command ) =
-                    SmoothMovePorts.animateTo "moving-box" 300 200 model.animations
+                ( newAnimations, maybeCommand ) =
+                    animateTo "moving-box" (Position 300 200) model.animations
             in
-            ( { model | animations = newAnimations }
-            , animateElement (SmoothMovePorts.encodeAnimationCommand command)
-            )
+            case maybeCommand of
+                Just command ->
+                    ( { model | animations = newAnimations }
+                    , animateElement (encodeAnimationCommand command)
+                    )
+                
+                Nothing ->
+                    ( { model | animations = newAnimations }, Cmd.none )
 
         StopAnimation ->
             let
-                ( newAnimations, command ) =
-                    SmoothMovePorts.animateTo "moving-box" 0 0 model.animations
+                ( newAnimations, maybeCommand ) =
+                    animateTo "moving-box" (Position 0 0) model.animations
             in
-            ( { model | animations = newAnimations }
-            , animateElement (SmoothMovePorts.encodeAnimationCommand command)
-            )
+            case maybeCommand of
+                Just command ->
+                    ( { model | animations = newAnimations }
+                    , animateElement (encodeAnimationCommand command)
+                    )
+                
+                Nothing ->
+                    ( { model | animations = newAnimations }, Cmd.none )
 
         PositionUpdateMsg value ->
             -- Handle position update with automatic decoding
-            case SmoothMovePorts.handlePositionUpdateFromJson value model.animations of
-                Ok newAnimations ->
-                    ( { model | animations = newAnimations }, Cmd.none )
+            case handlePositionUpdateFromJson value of
+                Ok positionUpdate ->
+                    ( { model | animations = handlePositionUpdate positionUpdate model.animations }, Cmd.none )
 
                 Err _ ->
                     ( model, Cmd.none )
+
+        AnimationCompleteMsg elementId ->
+            ( { model | animations = handleAnimationComplete elementId model.animations }, Cmd.none )
 
 
 
@@ -147,8 +171,12 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    positionUpdates PositionUpdateMsg
+subscriptions model =
+    Move.Ports.subscriptions
+        { positionUpdates = positionUpdates PositionUpdateMsg
+        , animationComplete = animationComplete AnimationCompleteMsg
+        }
+        model.animations
 
 
 
@@ -167,11 +195,11 @@ viewContent : Model -> List (Element Msg)
 viewContent model =
     let
         position =
-            SmoothMovePorts.getPosition "moving-box" model.animations
-                |> Maybe.withDefault { x = 0, y = 0 }
+            getPosition "moving-box" model.animations
+                |> Maybe.withDefault (Position 0 0)
 
-        isAnimating =
-            SmoothMovePorts.isAnimating model.animations
+        boxIsAnimating =
+            isAnimating "moving-box" model.animations
     in
     [ UI.backButton
     , UI.pageHeader "SmoothMovePorts Basic Example"

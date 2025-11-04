@@ -28,7 +28,8 @@ import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes
-import SmoothMoveCSS
+import Move exposing (defaultConfig)
+import Move.CSS exposing (Position, Model, init, setPosition, animateTo, animateToX, animateToY, getPosition, transform, transformElement, transition, onTransitionEnd)
 
 
 
@@ -50,14 +51,8 @@ main =
 
 
 type alias Model =
-    { positions : 
-        { elementA : { x : Float, y : Float }
-        , elementB : { x : Float, y : Float }
-        , elementC : { x : Float, y : Float }
-        , elementD : { x : Float, y : Float }
-        , elementE : { x : Float, y : Float }
-        , elementF : { x : Float, y : Float }
-        }
+    { animations : Move.CSS.Model
+    , isAnimating : Bool
     }
 
 
@@ -67,14 +62,18 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { positions = 
-          { elementA = { x = 150, y = 100 }
-          , elementB = { x = 200, y = 150 }
-          , elementC = { x = 100, y = 200 }
-          , elementD = { x = 250, y = 200 }
-          , elementE = { x = 300, y = 100 }
-          , elementF = { x = 180, y = 50 }
-          }
+    let
+        initialAnimations =
+            Move.CSS.init
+                |> setPosition "elementA" (Position 150 100)
+                |> setPosition "elementB" (Position 200 150)
+                |> setPosition "elementC" (Position 100 200)
+                |> setPosition "elementD" (Position 250 200)
+                |> setPosition "elementE" (Position 300 100)
+                |> setPosition "elementF" (Position 180 50)
+    in
+    ( { animations = initialAnimations
+      , isAnimating = False
       }
     , Cmd.none 
     )
@@ -88,33 +87,44 @@ type Msg
     = ScatterElements
     | ResetPositions
     | CircleFormation
+    | AnimationComplete
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ScatterElements ->
-            ( { model | positions = 
-                  { elementA = { x = 80, y = 60 }
-                  , elementB = { x = 320, y = 80 }
-                  , elementC = { x = 40, y = 300 }
-                  , elementD = { x = 380, y = 260 }
-                  , elementE = { x = 60, y = 120 }
-                  , elementF = { x = 350, y = 320 }
-                  }
+            let
+                updatedAnimations =
+                    model.animations
+                        |> animateTo "elementA" (Position 80 60)
+                        |> animateTo "elementB" (Position 320 80)
+                        |> animateTo "elementC" (Position 40 300)
+                        |> animateTo "elementD" (Position 380 260)
+                        |> animateTo "elementE" (Position 60 120)
+                        |> animateTo "elementF" (Position 350 320)
+            in
+            ( { model 
+                | animations = updatedAnimations
+                , isAnimating = True
               }
             , Cmd.none 
             )
 
         ResetPositions ->
-            ( { model | positions = 
-                  { elementA = { x = 150, y = 100 }
-                  , elementB = { x = 200, y = 150 }
-                  , elementC = { x = 100, y = 200 }
-                  , elementD = { x = 250, y = 200 }
-                  , elementE = { x = 300, y = 100 }
-                  , elementF = { x = 180, y = 50 }
-                  }
+            let
+                updatedAnimations =
+                    model.animations
+                        |> animateTo "elementA" (Position 150 100)
+                        |> animateTo "elementB" (Position 200 150)
+                        |> animateTo "elementC" (Position 100 200)
+                        |> animateTo "elementD" (Position 250 200)
+                        |> animateTo "elementE" (Position 300 100)
+                        |> animateTo "elementF" (Position 180 50)
+            in
+            ( { model 
+                | animations = updatedAnimations
+                , isAnimating = True
               }
             , Cmd.none 
             )
@@ -129,17 +139,26 @@ update msg model =
 
                 radius =
                     90
+                
+                updatedAnimations =
+                    model.animations
+                        |> animateTo "elementA" (Position (centerX + radius) centerY) -- 0°
+                        |> animateTo "elementB" (Position (centerX + radius * 0.5) (centerY + radius * 0.866)) -- 60°
+                        |> animateTo "elementC" (Position (centerX - radius * 0.5) (centerY + radius * 0.866)) -- 120°
+                        |> animateTo "elementD" (Position (centerX - radius) centerY) -- 180°
+                        |> animateTo "elementE" (Position (centerX - radius * 0.5) (centerY - radius * 0.866)) -- 240°
+                        |> animateTo "elementF" (Position (centerX + radius * 0.5) (centerY - radius * 0.866)) -- 300°
             in
-            ( { model | positions = 
-                  { elementA = { x = centerX + radius, y = centerY } -- 0°
-                  , elementB = { x = centerX + radius * 0.5, y = centerY + radius * 0.866 } -- 60°
-                  , elementC = { x = centerX - radius * 0.5, y = centerY + radius * 0.866 } -- 120°
-                  , elementD = { x = centerX - radius, y = centerY } -- 180°
-                  , elementE = { x = centerX - radius * 0.5, y = centerY - radius * 0.866 } -- 240°
-                  , elementF = { x = centerX + radius * 0.5, y = centerY - radius * 0.866 } -- 300°
-                  }
+            ( { model 
+                | animations = updatedAnimations
+                , isAnimating = True
               }
             , Cmd.none 
+            )
+
+        AnimationComplete ->
+            ( { model | isAnimating = False }
+            , Cmd.none
             )
 
 
@@ -168,15 +187,19 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     let
-        positionA = model.positions.elementA
-        positionB = model.positions.elementB  
-        positionC = model.positions.elementC
-        positionD = model.positions.elementD
-        positionE = model.positions.elementE
-        positionF = model.positions.elementF
+        positionA = getPosition "elementA" model.animations |> Maybe.withDefault (Position 0 0)
+        positionB = getPosition "elementB" model.animations |> Maybe.withDefault (Position 0 0)  
+        positionC = getPosition "elementC" model.animations |> Maybe.withDefault (Position 0 0)
+        positionD = getPosition "elementD" model.animations |> Maybe.withDefault (Position 0 0)
+        positionE = getPosition "elementE" model.animations |> Maybe.withDefault (Position 0 0)
+        positionF = getPosition "elementF" model.animations |> Maybe.withDefault (Position 0 0)
 
         -- Generate CSS transition styles for smooth animation
-        cssTransition = SmoothMoveCSS.transition SmoothMoveCSS.defaultConfig
+        cssTransition = 
+            if model.isAnimating then
+                transition defaultConfig
+            else
+                "none"
     in
     [ UI.backButton
     , UI.pageHeader "SmoothMoveCSS Multiple Example"
@@ -268,7 +291,7 @@ viewContent model =
                     , Html.Attributes.style "height" "50px"
                     , Html.Attributes.style "background" "linear-gradient(135deg, #3B82F6, #2563EB)"
                     , Html.Attributes.style "border-radius" "12px"
-                    , Html.Attributes.style "transform" (SmoothMoveCSS.transform positionA.x positionA.y)
+                    , Html.Attributes.style "transform" (transformElement "elementA" model.animations)
                     , Html.Attributes.style "transition" cssTransition
                     , Html.Attributes.style "display" "flex"
                     , Html.Attributes.style "align-items" "center"
@@ -276,6 +299,7 @@ viewContent model =
                     , Html.Attributes.style "color" "white"
                     , Html.Attributes.style "font-weight" "600"
                     , Html.Attributes.style "font-size" "16px"
+                    , onTransitionEnd AnimationComplete
                     ]
                     [ Html.text "A" ]
                 , -- Element B (Green) - CSS transition managed
@@ -286,7 +310,7 @@ viewContent model =
                     , Html.Attributes.style "height" "50px"
                     , Html.Attributes.style "background" "linear-gradient(135deg, #10B981, #059669)"
                     , Html.Attributes.style "border-radius" "12px"
-                    , Html.Attributes.style "transform" (SmoothMoveCSS.transform positionB.x positionB.y)
+                    , Html.Attributes.style "transform" (transformElement "elementB" model.animations)
                     , Html.Attributes.style "transition" cssTransition
                     , Html.Attributes.style "display" "flex"
                     , Html.Attributes.style "align-items" "center"
@@ -304,7 +328,7 @@ viewContent model =
                     , Html.Attributes.style "height" "50px"
                     , Html.Attributes.style "background" "linear-gradient(135deg, #A855F7, #9333EA)"
                     , Html.Attributes.style "border-radius" "12px"
-                    , Html.Attributes.style "transform" (SmoothMoveCSS.transform positionC.x positionC.y)
+                    , Html.Attributes.style "transform" (transformElement "elementC" model.animations)
                     , Html.Attributes.style "transition" cssTransition
                     , Html.Attributes.style "display" "flex"
                     , Html.Attributes.style "align-items" "center"
@@ -322,7 +346,7 @@ viewContent model =
                     , Html.Attributes.style "height" "50px"
                     , Html.Attributes.style "background" "linear-gradient(135deg, #F97316, #EA580C)"
                     , Html.Attributes.style "border-radius" "12px"
-                    , Html.Attributes.style "transform" (SmoothMoveCSS.transform positionD.x positionD.y)
+                    , Html.Attributes.style "transform" (transformElement "elementD" model.animations)
                     , Html.Attributes.style "transition" cssTransition
                     , Html.Attributes.style "display" "flex"
                     , Html.Attributes.style "align-items" "center"
@@ -340,7 +364,7 @@ viewContent model =
                     , Html.Attributes.style "height" "50px"
                     , Html.Attributes.style "background" "linear-gradient(135deg, #EF4444, #DC2626)"
                     , Html.Attributes.style "border-radius" "12px"
-                    , Html.Attributes.style "transform" (SmoothMoveCSS.transform positionE.x positionE.y)
+                    , Html.Attributes.style "transform" (transformElement "elementE" model.animations)
                     , Html.Attributes.style "transition" cssTransition
                     , Html.Attributes.style "display" "flex"
                     , Html.Attributes.style "align-items" "center"
@@ -358,7 +382,7 @@ viewContent model =
                     , Html.Attributes.style "height" "50px"
                     , Html.Attributes.style "background" "linear-gradient(135deg, #EC4899, #DB2777)"
                     , Html.Attributes.style "border-radius" "12px"
-                    , Html.Attributes.style "transform" (SmoothMoveCSS.transform positionF.x positionF.y)
+                    , Html.Attributes.style "transform" (transformElement "elementF" model.animations)
                     , Html.Attributes.style "transition" cssTransition
                     , Html.Attributes.style "display" "flex"
                     , Html.Attributes.style "align-items" "center"

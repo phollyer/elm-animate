@@ -1,6 +1,6 @@
 module ElmUI.CSS.Basic.Main exposing (main)
 
-{-| SmoothMoveCSS Basic Example using ElmUI - Native browser CSS transitions for optimal performance
+{-| Move.CSS Basic Example using ElmUI - Native browser CSS transitions for optimal performance
 
 This approach uses browser-native CSS transitions for hardware acceleration and battery efficiency.
 Perfect for simple transitions where you want maximum performance with minimal JavaScript overhead.
@@ -17,8 +17,8 @@ BENEFITS:
 USAGE:
 
   - Update position in your model when you want to animate
-  - Use SmoothMoveCSS.transform to generate CSS transform styles
-  - Use SmoothMoveCSS.transition to generate CSS transition styles
+  - Use Move.CSS.transform to generate CSS transform styles
+  - Use Move.CSS.transition to generate CSS transition styles
   - Browser handles all animation timing and optimization
 
 -}
@@ -31,7 +31,8 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
-import SmoothMoveCSS
+import Move exposing (defaultConfig)
+import Move.CSS exposing (Position, Model, init, setPosition, animateTo, animateToX, animateToY, getPosition, transform, transformElement, transition, onTransitionEnd)
 
 
 
@@ -53,7 +54,7 @@ main =
 
 
 type alias Model =
-    { animations : SmoothMoveCSS.Model
+    { animations : Move.CSS.Model
     , isAnimating : Bool
     }
 
@@ -66,8 +67,8 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         initialAnimations =
-            SmoothMoveCSS.init
-                |> SmoothMoveCSS.setPosition "box" 0 0
+            Move.CSS.init
+                |> setPosition "box" (Position 0 0)
     in
     ( { animations = initialAnimations
       , isAnimating = False
@@ -96,7 +97,7 @@ update msg model =
     case msg of
         MoveToCorner ->
             ( { model 
-                | animations = SmoothMoveCSS.animateTo "box" 100 100 model.animations
+                | animations = animateTo "box" (Position 100 100) model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -104,7 +105,7 @@ update msg model =
 
         MoveToCenter ->
             ( { model 
-                | animations = SmoothMoveCSS.animateTo "box" 300 200 model.animations
+                | animations = animateTo "box" (Position 300 200) model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -112,7 +113,7 @@ update msg model =
 
         MoveLeft ->
             ( { model 
-                | animations = SmoothMoveCSS.animateToX "box" 50 model.animations
+                | animations = animateToX "box" 50 model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -120,7 +121,7 @@ update msg model =
 
         MoveRight ->
             ( { model 
-                | animations = SmoothMoveCSS.animateToX "box" 450 model.animations
+                | animations = animateToX "box" 450 model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -128,7 +129,7 @@ update msg model =
 
         MoveUp ->
             ( { model 
-                | animations = SmoothMoveCSS.animateToY "box" 50 model.animations
+                | animations = animateToY "box" 50 model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -136,7 +137,7 @@ update msg model =
 
         MoveDown ->
             ( { model 
-                | animations = SmoothMoveCSS.animateToY "box" 350 model.animations
+                | animations = animateToY "box" 350 model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -144,7 +145,7 @@ update msg model =
 
         StopAnimation ->
             ( { model 
-                | animations = SmoothMoveCSS.animateTo "box" 0 0 model.animations
+                | animations = animateTo "box" (Position 0 0) model.animations
                 , isAnimating = True
               }
             , Cmd.none
@@ -184,7 +185,7 @@ viewContent model =
         , Font.color Colors.textMedium
         , centerX
         ]
-        (case SmoothMoveCSS.getPosition "box" model.animations of
+        (case getPosition "box" model.animations of
             Just pos ->
                 text ("Position: (" ++ String.fromInt (round pos.x) ++ ", " ++ String.fromInt (round pos.y) ++ ")")
             
@@ -229,16 +230,16 @@ viewContent model =
             , htmlAttribute (Html.Attributes.style "position" "absolute")
 
             -- Apply CSS transition styles directly - browser handles the animation!
-            , htmlAttribute (Html.Attributes.style "transform" (SmoothMoveCSS.transformElement "box" model.animations))
+            , htmlAttribute (Html.Attributes.style "transform" (transformElement "box" model.animations))
             , htmlAttribute (Html.Attributes.style "transition" 
                 (if model.isAnimating then
-                    SmoothMoveCSS.transition SmoothMoveCSS.defaultConfig
+                    transition defaultConfig
                  else
                     "none"
                 ))
             
             -- CSS transition event handler - fires when animation completes
-            , htmlAttribute (SmoothMoveCSS.onTransitionEnd AnimationComplete)
+            , htmlAttribute (onTransitionEnd AnimationComplete)
             ]
             (text "")
         )
