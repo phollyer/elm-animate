@@ -12,15 +12,16 @@ module Scroll.Container.Cmd exposing
     , scrollToCenter, scrollToCenterWithConfig, jumpToCenter, jumpToCenterWithConfig
     , scrollToCenterX, scrollToCenterXWithConfig, jumpToCenterX, jumpToCenterXWithConfig
     , scrollToCenterY, scrollToCenterYWithConfig, jumpToCenterY, jumpToCenterYWithConfig
+    , XCoordinate, YCoordinate
+    , scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
     , PercX, PercY
     , scrollToPercentage, scrollToPercentageWithConfig, jumpToPercentage, jumpToPercentageWithConfig
     , scrollToPercentageX, scrollToPercentageXWithConfig, jumpToPercentageX, jumpToPercentageXWithConfig
     , scrollToPercentageY, scrollToPercentageYWithConfig, jumpToPercentageY, jumpToPercentageYWithConfig
-    , ScrollDeltaX, ScrollDeltaY, ViewportMultiplierX, ViewportMultiplierY
+    , ScrollDeltaX, ScrollDeltaY
     , scrollBy, scrollByWithConfig, jumpBy, jumpByWithConfig
+    , ViewportMultiplierX, ViewportMultiplierY
     , scrollByViewportSize, scrollByViewportSizeWithConfig, jumpByViewportSize, jumpByViewportSizeWithConfig
-    , XCoordinate, YCoordinate
-    , scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
     )
 
 {-| This module provides smooth scrolling operations for DOM containers using Commands.
@@ -168,6 +169,19 @@ _[↑ Center Positioning](#center-positioning) | [↑ Position-Targeting Functio
 # Advanced Positioning Functions
 
 
+## Coordinate Targeting
+
+Scroll or jump to specific pixel coordinates within the container. Coordinates are automatically clamped to valid ranges.
+
+The `axis` field in [Config](Scroll#Config) controls which axes are used for coordinate targeting.
+
+@docs XCoordinate, YCoordinate
+
+@docs scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
+
+_[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning Functions](#advanced-positioning-functions) | [↑ Documentation Index](#documentation-index)_
+
+
 ## Percentage-Based Positioning
 
 Position within the container using percentages (0-100). Values outside this range are automatically clamped.
@@ -196,36 +210,25 @@ _[↑ Percentage-Based Positioning](#percentage-based-positioning) | [↑ Advanc
 
 ## Relative Movement
 
-Move relative to the current scroll position within the container.
 
-The `axis` field in [Config](Scroll#Config) controls which axes are affected by the relative movement.
+### Pixel Offsets
 
-@docs ScrollDeltaX, ScrollDeltaY, ViewportMultiplierX, ViewportMultiplierY
+Move relative to the current scroll position within the container by specific pixel amounts.
 
-
-### Pixel-Based Movement
+@docs ScrollDeltaX, ScrollDeltaY
 
 @docs scrollBy, scrollByWithConfig, jumpBy, jumpByWithConfig
 
 
-### Viewport-Based Movement
+### Viewport Multiples
+
+Move relative to the current scroll position within the container by multiples of the viewport size.
+
+@docs ViewportMultiplierX, ViewportMultiplierY
 
 @docs scrollByViewportSize, scrollByViewportSizeWithConfig, jumpByViewportSize, jumpByViewportSizeWithConfig
 
 _[↑ Relative Movement](#relative-movement) | [↑ Advanced Positioning Functions](#advanced-positioning-functions) | [↑ Documentation Index](#documentation-index)_
-
-
-## Coordinate Targeting
-
-Scroll or jump to specific pixel coordinates within the container. Coordinates are automatically clamped to valid ranges.
-
-The `axis` field in [Config](Scroll#Config) controls which axes are used for coordinate targeting.
-
-@docs XCoordinate, YCoordinate
-
-@docs scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
-
-_[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning Functions](#advanced-positioning-functions) | [↑ Documentation Index](#documentation-index)_
 
 -}
 

@@ -12,15 +12,16 @@ module Scroll.Document.Cmd exposing
     , scrollToCenter, scrollToCenterWithConfig, jumpToCenter, jumpToCenterWithConfig
     , scrollToCenterX, scrollToCenterXWithConfig, jumpToCenterX, jumpToCenterXWithConfig
     , scrollToCenterY, scrollToCenterYWithConfig, jumpToCenterY, jumpToCenterYWithConfig
+    , XCoordinate, YCoordinate
+    , scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
     , PercX, PercY
     , scrollToPercentage, scrollToPercentageWithConfig, jumpToPercentage, jumpToPercentageWithConfig
     , scrollToPercentageX, scrollToPercentageXWithConfig, jumpToPercentageX, jumpToPercentageXWithConfig
     , scrollToPercentageY, scrollToPercentageYWithConfig, jumpToPercentageY, jumpToPercentageYWithConfig
-    , ScrollDeltaX, ScrollDeltaY, ViewportMultiplierX, ViewportMultiplierY
+    , ScrollDeltaX, ScrollDeltaY
     , scrollBy, scrollByWithConfig, jumpBy, jumpByWithConfig
+    , ViewportMultiplierX, ViewportMultiplierY
     , scrollByViewportSize, scrollByViewportSizeWithConfig, jumpByViewportSize, jumpByViewportSizeWithConfig
-    , XCoordinate, YCoordinate
-    , scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
     )
 
 {-| This module provides smooth scrolling operations for the main document body using commands.
@@ -50,9 +51,9 @@ module Scroll.Document.Cmd exposing
       - [Corners](#corners) - All four corner positions
       - [Center Positioning](#center-positioning) - Center elements in viewport
   - **[Advanced Positioning Functions](#advanced-positioning-functions)** - Sophisticated positioning
+      - [Coordinate Targeting](#coordinate-targeting) - Direct coordinate positioning
       - [Percentage-Based Positioning](#percentage-based-positioning) - Position by percentage
       - [Relative Movement](#relative-movement) - Move by pixel amounts or viewport sizes
-      - [Coordinate Targeting](#coordinate-targeting) - Direct coordinate positioning
 
 
 # Element-Targeting Functions
@@ -156,6 +157,17 @@ _[↑ Center Positioning](#center-positioning) | [↑ Position-Targeting Functio
 # Advanced Positioning Functions
 
 
+## Coordinate Targeting
+
+Scroll to specific pixel coordinates within the document.
+
+@docs XCoordinate, YCoordinate
+
+@docs scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
+
+_[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning Functions](#advanced-positioning-functions) | [↑ Documentation Index](#documentation-index)_
+
+
 ## Percentage-Based Positioning
 
 Scroll to positions defined as percentages of the total scrollable area.
@@ -173,23 +185,20 @@ _[↑ Percentage-Based Positioning](#percentage-based-positioning) | [↑ Advanc
 
 Scroll relative to the current position by pixel offsets or viewport multiples.
 
-@docs ScrollDeltaX, ScrollDeltaY, ViewportMultiplierX, ViewportMultiplierY
+
+### Pixel Offsets
+
+@docs ScrollDeltaX, ScrollDeltaY
 
 @docs scrollBy, scrollByWithConfig, jumpBy, jumpByWithConfig
+
+
+### Viewport Multiples
+
+@docs ViewportMultiplierX, ViewportMultiplierY
 @docs scrollByViewportSize, scrollByViewportSizeWithConfig, jumpByViewportSize, jumpByViewportSizeWithConfig
 
 _[↑ Relative Movement](#relative-movement) | [↑ Advanced Positioning Functions](#advanced-positioning-functions) | [↑ Documentation Index](#documentation-index)_
-
-
-## Coordinate Targeting
-
-Scroll to specific pixel coordinates within the document.
-
-@docs XCoordinate, YCoordinate
-
-@docs scrollToCoordinates, scrollToCoordinatesWithConfig, jumpToCoordinates, jumpToCoordinatesWithConfig
-
-_[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning Functions](#advanced-positioning-functions) | [↑ Documentation Index](#documentation-index)_
 
 -}
 
