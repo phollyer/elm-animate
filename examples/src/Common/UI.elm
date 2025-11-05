@@ -5,7 +5,6 @@ module Common.UI exposing
     , backButton
     , bulletPoint
     , contentBlock
-    , contentBlockHtml
     , contentSection
     , createDocument
     , getCardColor
@@ -388,21 +387,6 @@ contentBlock num description =
         )
 
 
-{-| HTML version of content block for HTML examples
--}
-contentBlockHtml : Int -> String -> Html.Html msg
-contentBlockHtml num description =
-    Html.div [ Html.Attributes.class "content-block" ]
-        [ Html.h3 [] [ Html.text ("Content Block " ++ String.fromInt num) ]
-        , Html.p [] [ Html.text description ]
-        , Html.ul []
-            [ Html.li [] [ Html.text "Each block adds to the scrollable height" ]
-            , Html.li [] [ Html.text "The gradient background shows scroll position" ]
-            , Html.li [] [ Html.text "Smooth scrolling animates between positions" ]
-            ]
-        ]
-
-
 bulletPoint : String -> Element msg
 bulletPoint text_ =
     row
@@ -466,7 +450,6 @@ getCardColor cardNum =
 
 
 
--- Emerald
 -- HTML-BASED BUTTON GROUPS
 
 
