@@ -17,7 +17,7 @@ FEATURES:
 USAGE EXAMPLES:
 
   - Dashboard widgets arranging into grid layouts
-  - Game pieces moving in coordinated formations  
+  - Game pieces moving in coordinated formations
   - Data visualization elements reorganizing
   - UI components transitioning between layouts
   - Interactive storytelling with character movement
@@ -26,6 +26,8 @@ USAGE EXAMPLES:
 
 -- Common UI imports
 
+import Anim exposing (Position, defaultConfig)
+import Anim.Sub exposing (Model, animateTo, animateToX, animateToY, getPosition, init, step, styleProperties, subscriptions)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -36,8 +38,6 @@ import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes
-import Anim exposing (Position, defaultConfig)
-import Anim.Sub exposing (Model, init, step, subscriptions, animateTo, animateToX, animateToY, getPosition, styleProperties)
 
 
 
@@ -73,7 +73,7 @@ init _ =
     ( { animations = Anim.Sub.init
       , isAnimating = False
       }
-    , Cmd.none 
+    , Cmd.none
     )
 
 
@@ -102,11 +102,11 @@ update msg model =
                         |> animateTo "elementE" (Position 60 120)
                         |> animateTo "elementF" (Position 350 320)
             in
-            ( { model 
+            ( { model
                 | animations = updatedAnimations
                 , isAnimating = True
               }
-            , Cmd.none 
+            , Cmd.none
             )
 
         ResetPositions ->
@@ -120,11 +120,11 @@ update msg model =
                         |> animateTo "elementE" (Position 300 100)
                         |> animateTo "elementF" (Position 180 50)
             in
-            ( { model 
+            ( { model
                 | animations = updatedAnimations
                 , isAnimating = True
               }
-            , Cmd.none 
+            , Cmd.none
             )
 
         CircleFormation ->
@@ -137,21 +137,28 @@ update msg model =
 
                 radius =
                     90
-                
+
                 updatedAnimations =
                     model.animations
-                        |> animateTo "elementA" (Position (centerX + radius) centerY) -- 0°
-                        |> animateTo "elementB" (Position (centerX + radius * 0.5) (centerY + radius * 0.866)) -- 60°
-                        |> animateTo "elementC" (Position (centerX - radius * 0.5) (centerY + radius * 0.866)) -- 120°
-                        |> animateTo "elementD" (Position (centerX - radius) centerY) -- 180°
-                        |> animateTo "elementE" (Position (centerX - radius * 0.5) (centerY - radius * 0.866)) -- 240°
-                        |> animateTo "elementF" (Position (centerX + radius * 0.5) (centerY - radius * 0.866)) -- 300°
+                        |> animateTo "elementA" (Position (centerX + radius) centerY)
+                        -- 0°
+                        |> animateTo "elementB" (Position (centerX + radius * 0.5) (centerY + radius * 0.866))
+                        -- 60°
+                        |> animateTo "elementC" (Position (centerX - radius * 0.5) (centerY + radius * 0.866))
+                        -- 120°
+                        |> animateTo "elementD" (Position (centerX - radius) centerY)
+                        -- 180°
+                        |> animateTo "elementE" (Position (centerX - radius * 0.5) (centerY - radius * 0.866))
+                        -- 240°
+                        |> animateTo "elementF" (Position (centerX + radius * 0.5) (centerY - radius * 0.866))
+
+                -- 300°
             in
-            ( { model 
+            ( { model
                 | animations = updatedAnimations
                 , isAnimating = True
               }
-            , Cmd.none 
+            , Cmd.none
             )
 
         AnimationFrame deltaTime ->
@@ -185,12 +192,23 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     let
-        positionA = getPosition "elementA" model.animations
-        positionB = getPosition "elementB" model.animations
-        positionC = getPosition "elementC" model.animations
-        positionD = getPosition "elementD" model.animations
-        positionE = getPosition "elementE" model.animations
-        positionF = getPosition "elementF" model.animations
+        positionA =
+            getPosition "elementA" model.animations
+
+        positionB =
+            getPosition "elementB" model.animations
+
+        positionC =
+            getPosition "elementC" model.animations
+
+        positionD =
+            getPosition "elementD" model.animations
+
+        positionE =
+            getPosition "elementE" model.animations
+
+        positionF =
+            getPosition "elementF" model.animations
     in
     [ UI.backButton
     , UI.pageHeader "Subscription-Based Choreography Animations"
@@ -200,7 +218,7 @@ viewContent model =
         , Font.color Colors.textMedium
         , centerX
         ]
-        (text ("Coordinated choreography with 6 elements in formation patterns"))
+        (text "Coordinated choreography with 6 elements in formation patterns")
     , -- Control buttons
       UI.htmlActionButtons
         [ ( UI.Primary, ScatterElements, "Scatter Formation" )
@@ -224,11 +242,11 @@ viewContent model =
         , htmlAttribute (Html.Attributes.style "overflow" "hidden")
         ]
         (column []
-            [ -- Element A (Blue) 
+            [ -- Element A (Blue)
               animatedBox "elementA" "A" (rgb255 59 130 246) (rgb255 37 99 235) model
             , -- Element B (Green)
               animatedBox "elementB" "B" (rgb255 16 185 129) (rgb255 5 150 105) model
-            , -- Element C (Purple) 
+            , -- Element C (Purple)
               animatedBox "elementC" "C" (rgb255 168 85 247) (rgb255 147 51 234) model
             , -- Element D (Orange)
               animatedBox "elementD" "D" (rgb255 249 115 22) (rgb255 234 88 12) model
@@ -247,19 +265,20 @@ animatedBox : String -> String -> Element.Color -> Element.Color -> Model -> Ele
 animatedBox elementId label color1 color2 model =
     el
         ([ width (px 50)
-        , height (px 50)
-        , Background.gradient 
-            { angle = 2.356  -- 135 degrees in radians
+         , height (px 50)
+         , Background.gradient
+            { angle = 2.356 -- 135 degrees in radians
             , steps = [ color1, color2 ]
             }
-        , Border.rounded 12
-        , Font.color (rgb255 255 255 255)
-        , Font.semiBold
-        , Font.size 16
-        , htmlAttribute (Html.Attributes.id elementId)
-        , htmlAttribute (Html.Attributes.style "position" "absolute")
-        ] 
-        ++ (styleProperties elementId model.animations
-            |> List.map (\(prop, value) -> htmlAttribute (Html.Attributes.style prop value)))
+         , Border.rounded 12
+         , Font.color (rgb255 255 255 255)
+         , Font.semiBold
+         , Font.size 16
+         , htmlAttribute (Html.Attributes.id elementId)
+         , htmlAttribute (Html.Attributes.style "position" "absolute")
+         ]
+            ++ (styleProperties elementId model.animations
+                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+               )
         )
         (el [ centerX, centerY ] (text label))

@@ -7,7 +7,7 @@ Perfect for hover effects, emphasis animations, and dynamic sizing.
 
 FEATURES:
 
-  - ✅ Smooth scale up/down animations  
+  - ✅ Smooth scale up/down animations
   - ✅ Hardware-accelerated transform scaling
   - ✅ Multiple scale factors and timing
   - ✅ Bounce and emphasis effects
@@ -15,6 +15,8 @@ FEATURES:
 
 -}
 
+import Anim exposing (ScaleValue, defaultConfig)
+import Anim.CSS exposing (Model, animateScale, init, onTransitionEnd, styleProperties, transitionStyles)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -23,8 +25,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
-import Anim exposing (ScaleValue, defaultConfig)
-import Anim.CSS exposing (Model, init, animateScale, styleProperties, transitionStyles, onTransitionEnd)
+
 
 
 -- MAIN
@@ -40,12 +41,14 @@ main =
         }
 
 
+
 -- MODEL
 
 
 type alias Model =
     { animations : Anim.CSS.Model
     }
+
 
 
 -- INIT
@@ -68,6 +71,7 @@ type Msg
     | AnimationComplete
 
 
+
 -- UPDATE
 
 
@@ -75,35 +79,35 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ScaleUp ->
-            ( { model 
+            ( { model
                 | animations = animateScale "box" { x = 1.5, y = 1.5 } model.animations
               }
             , Cmd.none
             )
 
         ScaleDown ->
-            ( { model 
+            ( { model
                 | animations = animateScale "box" { x = 0.7, y = 0.7 } model.animations
               }
             , Cmd.none
             )
 
         ScaleReset ->
-            ( { model 
+            ( { model
                 | animations = animateScale "box" { x = 1.0, y = 1.0 } model.animations
               }
             , Cmd.none
             )
 
         ScaleWide ->
-            ( { model 
+            ( { model
                 | animations = animateScale "box" { x = 1.8, y = 0.6 } model.animations
               }
             , Cmd.none
             )
 
         ScaleTall ->
-            ( { model 
+            ( { model
                 | animations = animateScale "box" { x = 0.6, y = 1.8 } model.animations
               }
             , Cmd.none
@@ -113,12 +117,14 @@ update msg model =
             ( model, Cmd.none )
 
 
+
 -- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.none
+
 
 
 -- VIEW
@@ -153,33 +159,33 @@ viewContent model =
         ]
     , -- Animation area with box
       el
-            [ width (fill |> maximum 600)
-            , height (px 400)
-            , Background.color Colors.backgroundWhite
-            , Border.rounded 12
-            , Border.shadow
-                { offset = ( 0, 4 )
-                , size = 0
-                , blur = 8
-                , color = Element.rgba 0 0 0 0.1
-                }
-            , centerX
-            , htmlAttribute (Html.Attributes.style "position" "relative")
-            , htmlAttribute (Html.Attributes.style "overflow" "visible")
-            , htmlAttribute (Html.Attributes.style "display" "flex")
-            , htmlAttribute (Html.Attributes.style "flex-direction" "column")
-            , htmlAttribute (Html.Attributes.style "align-items" "center")
-            , htmlAttribute (Html.Attributes.style "justify-content" "space-around")
-            , htmlAttribute (Html.Attributes.style "padding" "40px")
+        [ width (fill |> maximum 600)
+        , height (px 400)
+        , Background.color Colors.backgroundWhite
+        , Border.rounded 12
+        , Border.shadow
+            { offset = ( 0, 4 )
+            , size = 0
+            , blur = 8
+            , color = Element.rgba 0 0 0 0.1
+            }
+        , centerX
+        , htmlAttribute (Html.Attributes.style "position" "relative")
+        , htmlAttribute (Html.Attributes.style "overflow" "visible")
+        , htmlAttribute (Html.Attributes.style "display" "flex")
+        , htmlAttribute (Html.Attributes.style "flex-direction" "column")
+        , htmlAttribute (Html.Attributes.style "align-items" "center")
+        , htmlAttribute (Html.Attributes.style "justify-content" "space-around")
+        , htmlAttribute (Html.Attributes.style "padding" "40px")
+        ]
+        (el
+            [ centerX
+            , Element.centerY
+            , width (px 200)
+            , height (px 200)
             ]
-            (el
-                [ centerX
-                , Element.centerY
-                , width (px 200)
-                , height (px 200)
-                ]
-                (animatedBox "box" "Scale Demo" Colors.primary model)
-            )
+            (animatedBox "box" "Scale Demo" Colors.primary model)
+        )
     ]
 
 
@@ -187,28 +193,32 @@ animatedBox : String -> String -> Element.Color -> Model -> Element Msg
 animatedBox elementId label color model =
     el
         ([ width (px 150)
-        , height (px 150)
-        , Background.color color
-        , Border.rounded 12
-        , centerX
-        , htmlAttribute (Html.Attributes.id elementId)
-        , htmlAttribute (Html.Attributes.style "transform-origin" "center")
-        , htmlAttribute (Html.Attributes.style "display" "flex")
-        , htmlAttribute (Html.Attributes.style "align-items" "center")
-        , htmlAttribute (Html.Attributes.style "justify-content" "center")
-        ] 
-        ++ (styleProperties elementId model.animations
-            |> List.map (\(prop, value) -> htmlAttribute (Html.Attributes.style prop value)))
-        ++ [ htmlAttribute (Html.Attributes.style "transition" 
-                (transitionStyles elementId model.animations))
-        , htmlAttribute (onTransitionEnd AnimationComplete)
-        ])
-        (el 
+         , height (px 150)
+         , Background.color color
+         , Border.rounded 12
+         , centerX
+         , htmlAttribute (Html.Attributes.id elementId)
+         , htmlAttribute (Html.Attributes.style "transform-origin" "center")
+         , htmlAttribute (Html.Attributes.style "display" "flex")
+         , htmlAttribute (Html.Attributes.style "align-items" "center")
+         , htmlAttribute (Html.Attributes.style "justify-content" "center")
+         ]
+            ++ (styleProperties elementId model.animations
+                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+               )
+            ++ [ htmlAttribute
+                    (Html.Attributes.style "transition"
+                        (transitionStyles elementId model.animations)
+                    )
+               , htmlAttribute (onTransitionEnd AnimationComplete)
+               ]
+        )
+        (el
             [ centerX
             , Element.centerY
             , Font.color Colors.backgroundWhite
             , Font.bold
             , Font.size 16
-            ] 
+            ]
             (text label)
         )

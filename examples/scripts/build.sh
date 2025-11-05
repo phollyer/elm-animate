@@ -11,6 +11,17 @@ echo "🚀 Building Elm Smooth Move Examples..."
 # Change to examples directory (parent of scripts)
 cd "$(dirname "$0")/.."
 
+# Format all files first
+echo ""
+echo "🎨 Formatting code before build..."
+if ./scripts/format.sh; then
+    echo "✅ Code formatting completed successfully"
+else
+    echo "❌ Code formatting failed"
+    exit 1
+fi
+echo ""
+
 # Track build results
 FAILED_BUILDS=()
 SUCCESSFUL_BUILDS=()
@@ -42,12 +53,12 @@ echo "🎨 Building ElmUI examples..."
 
 # ElmUI Scroll examples (Task-based API)
 echo "  📜 ElmUI Scroll examples (Anim.Scroll - Task-based API)..."
-build_example "src/ElmUI/Scroll/DocumentY/Main.elm" "src/ElmUI/Scroll/DocumentY/index.js" "ElmUI.Scroll.DocumentY.Main"
-build_example "src/ElmUI/Scroll/ContainerY/Main.elm" "src/ElmUI/Scroll/ContainerY/index.js" "ElmUI.Scroll.ContainerY.Main"
-build_example "src/ElmUI/Scroll/DocumentX/Main.elm" "src/ElmUI/Scroll/DocumentX/index.js" "ElmUI.Scroll.DocumentX.Main"
-build_example "src/ElmUI/Scroll/ContainerX/Main.elm" "src/ElmUI/Scroll/ContainerX/index.js" "ElmUI.Scroll.ContainerX.Main"
-build_example "src/ElmUI/Scroll/DocumentXY/Main.elm" "src/ElmUI/Scroll/DocumentXY/index.js" "ElmUI.Scroll.DocumentXY.Main"
-build_example "src/ElmUI/Scroll/ContainerXY/Main.elm" "src/ElmUI/Scroll/ContainerXY/index.js" "ElmUI.Scroll.ContainerXY.Main"
+build_example "src/ElmUI/Scroll/Document/Position/X/Main.elm" "src/ElmUI/Scroll/Document/Position/X/index.js" "ElmUI.Scroll.Document.Position.X.Main"
+build_example "src/ElmUI/Scroll/Document/Position/Y/Main.elm" "src/ElmUI/Scroll/Document/Position/Y/index.js" "ElmUI.Scroll.Document.Position.Y.Main"
+build_example "src/ElmUI/Scroll/Document/Position/Both/Main.elm" "src/ElmUI/Scroll/Document/Position/Both/index.js" "ElmUI.Scroll.Document.Position.Both.Main"
+build_example "src/ElmUI/Scroll/Container/Position/X/Main.elm" "src/ElmUI/Scroll/Container/Position/X/index.js" "ElmUI.Scroll.Container.Position.X.Main"
+build_example "src/ElmUI/Scroll/Container/Position/Y/Main.elm" "src/ElmUI/Scroll/Container/Position/Y/index.js" "ElmUI.Scroll.Container.Position.Y.Main"
+build_example "src/ElmUI/Scroll/Container/Position/Both/Main.elm" "src/ElmUI/Scroll/Container/Position/Both/index.js" "ElmUI.Scroll.Container.Position.Both.Main"
 build_example "src/ElmUI/Scroll/ScrollIntoView/Main.elm" "src/ElmUI/Scroll/ScrollIntoView/index.js" "ElmUI.Scroll.ScrollIntoView.Main"
 
 # ElmUI CSS examples (CSS Transition-based API)

@@ -22,6 +22,8 @@ USAGE:
 
 -}
 
+import Anim exposing (Position, defaultConfig)
+import Anim.Sub exposing (Model, animateTo, animateToX, animateToY, getPosition, init, step, subscriptions, transform)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -30,8 +32,6 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
-import Anim exposing (Position, defaultConfig)
-import Anim.Sub exposing (Model, init, step, subscriptions, animateTo, animateToX, animateToY, getPosition, transform)
 
 
 
@@ -88,56 +88,56 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         MoveToCorner ->
-            ( { model 
+            ( { model
                 | animations = animateTo "box" (Position 100 100) model.animations
               }
             , Cmd.none
             )
 
         MoveToCenter ->
-            ( { model 
+            ( { model
                 | animations = animateTo "box" (Position 225 175) model.animations
               }
             , Cmd.none
             )
 
         MoveLeft ->
-            ( { model 
+            ( { model
                 | animations = animateToX "box" 0 model.animations
               }
             , Cmd.none
             )
 
         MoveRight ->
-            ( { model 
-                | animations = animateToX "box" 450 model.animations  -- 500px container - 50px box = 450px for right edge
+            ( { model
+                | animations = animateToX "box" 450 model.animations -- 500px container - 50px box = 450px for right edge
               }
             , Cmd.none
             )
 
         MoveUp ->
-            ( { model 
+            ( { model
                 | animations = animateToY "box" 0 model.animations
               }
             , Cmd.none
             )
 
         MoveDown ->
-            ( { model 
-                | animations = animateToY "box" 350 model.animations  -- 400px container - 50px box = 350px for bottom edge
+            ( { model
+                | animations = animateToY "box" 350 model.animations -- 400px container - 50px box = 350px for bottom edge
               }
             , Cmd.none
             )
 
         StopAnimation ->
-            ( { model 
+            ( { model
                 | animations = animateTo "box" (Position 0 0) model.animations
               }
             , Cmd.none
             )
 
         AnimationFrame deltaTime ->
-            ( { model 
+            ( { model
                 | animations = step deltaTime model.animations
               }
             , Cmd.none
@@ -151,6 +151,9 @@ update msg model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Anim.Sub.subscriptions AnimationFrame model.animations
+
+
+
 -- VIEW
 
 
@@ -170,9 +173,10 @@ viewContent model =
         , centerX
         ]
         (let
-            pos = getPosition "box" model.animations |> Maybe.withDefault { x = 0, y = 0 }
+            pos =
+                getPosition "box" model.animations |> Maybe.withDefault { x = 0, y = 0 }
          in
-            text ("Position: (" ++ String.fromInt (round pos.x) ++ ", " ++ String.fromInt (round pos.y) ++ ")")
+         text ("Position: (" ++ String.fromInt (round pos.x) ++ ", " ++ String.fromInt (round pos.y) ++ ")")
         )
     , -- Buttons for predefined moves
       UI.htmlActionButtons
@@ -180,7 +184,7 @@ viewContent model =
         , ( UI.Success, MoveToCenter, "Move to (300, 200)" )
         , ( UI.Purple, StopAnimation, "Return to Origin" )
         ]
-    , -- Axis-specific movement buttons  
+    , -- Axis-specific movement buttons
       UI.htmlActionButtons
         [ ( UI.Warning, MoveLeft, "← Move Left" )
         , ( UI.Warning, MoveRight, "Move Right →" )

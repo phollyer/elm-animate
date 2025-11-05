@@ -1,20 +1,19 @@
-module Common.UI exposing 
-    ( LayoutType(..)
-    , ButtonStyle(..)
-    , createDocument
+module Common.UI exposing
+    ( ButtonStyle(..)
+    , LayoutType(..)
+    , actionButton
     , backButton
+    , bulletPoint
+    , contentBlock
+    , contentBlockHtml
+    , contentSection
+    , createDocument
+    , getCardColor
+    , highlight
+    , htmlActionButtons
     , pageHeader
     , techInfo
     , techParagraph
-    , highlight
-    , actionButton
-    , contentSection
-    , contentSectionSimple
-    , contentBlock
-    , contentBlockHtml
-    , bulletPoint
-    , getCardColor
-    , htmlActionButtons
     )
 
 import Browser exposing (Document)
@@ -35,28 +34,10 @@ import Html.Events
 
 type LayoutType
     = Basic
-    | Horizontal
-    | HorizontalCustomWidth Float
     | Diagonal
     | Container
     | HorizontalContainer
 
-
-
-
--- LAYOUT WIDTH CALCULATIONS
-
-
-{-| Calculate the total width needed for horizontal layouts based on content dimensions
--}
-calculateHorizontalWidth : { sectionCount : Int, sectionWidth : Int, spacing : Int, containerPaddingX : Int, layoutPaddingX : Int } -> Int
-calculateHorizontalWidth { sectionCount, sectionWidth, spacing, containerPaddingX, layoutPaddingX } =
-    let
-        totalSectionWidth = sectionCount * sectionWidth
-        totalSpacingWidth = (sectionCount - 1) * spacing  -- gaps between sections
-        totalPaddingWidth = containerPaddingX + layoutPaddingX
-    in
-    totalSectionWidth + totalSpacingWidth + totalPaddingWidth
 
 
 -- DOCUMENT HELPERS
@@ -65,12 +46,8 @@ calculateHorizontalWidth { sectionCount, sectionWidth, spacing, containerPadding
 createDocument : String -> LayoutType -> List (Element msg) -> Document msg
 createDocument title layoutType content =
     { title = title
-    , body =
-        [ layout (getLayoutAttributes layoutType) (mainContent content)
-        ]
+    , body = [ layout (getLayoutAttributes layoutType) (mainContent content) ]
     }
-
-
 
 
 getLayoutAttributes : LayoutType -> List (Element.Attribute msg)
@@ -91,28 +68,6 @@ getLayoutAttributes layoutType =
             case layoutType of
                 Basic ->
                     [ htmlAttribute (Html.Attributes.class "responsive-layout") ]
-
-                Horizontal ->
-                    let
-                        -- HorizontalBasic example: 4 sections × 300px + spacing 40px + container padding 40px + layout padding 80px
-                        calculatedWidth = calculateHorizontalWidth
-                            { sectionCount = 4
-                            , sectionWidth = 300
-                            , spacing = 40
-                            , containerPaddingX = 40  -- paddingXY 20 20 = 20px left + 20px right
-                            , layoutPaddingX = 80     -- paddingXY 40 20 = 40px left + 40px right
-                            }
-                    in
-                    [ width (px calculatedWidth)
-                    , height fill
-                    , htmlAttribute (Html.Attributes.class "horizontal-layout responsive-layout")
-                    ]
-
-                HorizontalCustomWidth customWidth ->
-                    [ width (px (round customWidth))
-                    , height fill
-                    , htmlAttribute (Html.Attributes.class "horizontal-layout responsive-layout")
-                    ]
 
                 Diagonal ->
                     [ width fill
@@ -145,7 +100,6 @@ backButton =
         , Font.color Colors.backgroundWhite
         , Font.semiBold
         , Border.rounded 8
-        , htmlAttribute (Html.Attributes.id "top")
         ]
         { url = "../../index.html"
         , label = text "← Back to Examples"
@@ -290,48 +244,63 @@ actionButton style onPress label =
 
 {-| Flexible content section that works for all use cases
 -}
-contentSection : 
+contentSection :
     { id : String
     , title : String
     , titleColor : Maybe Element.Color
     , content : List String
-    , buttons : List (( ButtonStyle, msg, String ))
-    , width : Maybe Int  -- Nothing for full width, Just px for fixed width
+    , buttons : List ( ButtonStyle, msg, String )
+    , width : Maybe Int -- Nothing for full width, Just px for fixed width
     , centerTitle : Bool
     }
     -> Element msg
 contentSection config =
     let
-        widthAttr = 
+        widthAttr =
             case config.width of
-                Nothing -> [ width fill, centerX ]
-                Just px -> [ width (Element.px px), height fill ]
-                
-        titleColor = 
+                Nothing ->
+                    [ width fill
+                    , centerX
+                    ]
+
+                Just px ->
+                    [ width (Element.px px)
+                    , height fill
+                    ]
+
+        titleColor =
             Maybe.withDefault Colors.textDark config.titleColor
-            
+
         titleAlignment =
-            if config.centerTitle then [ centerX ] else []
+            if config.centerTitle then
+                [ centerX ]
+
+            else
+                []
     in
     column
         ([ spacing 20
-        , htmlAttribute (Html.Attributes.id config.id)
-        , htmlAttribute (Html.Attributes.class "responsive-paragraph")
-        , Background.color Colors.backgroundWhite
-        , paddingXY 32 24
-        , Border.rounded 12
-        , Border.shadow
+         , htmlAttribute (Html.Attributes.id config.id)
+         , htmlAttribute (Html.Attributes.class "responsive-paragraph")
+         , Background.color Colors.backgroundWhite
+         , paddingXY 32 24
+         , Border.rounded 12
+         , Border.shadow
             { offset = ( 0, 4 )
             , size = 0
             , blur = 8
             , color = Element.rgba 0 0 0 0.1
             }
-        ] ++ widthAttr)
+         ]
+            ++ widthAttr
+        )
         ([ el
             ([ Font.size 24
-            , Font.semiBold
-            , Font.color titleColor
-            ] ++ titleAlignment)
+             , Font.semiBold
+             , Font.color titleColor
+             ]
+                ++ titleAlignment
+            )
             (text config.title)
          , case config.width of
             Nothing ->
@@ -342,6 +311,7 @@ contentSection config =
                     , width (maximum 1200 fill)
                     ]
                     (List.map (\line -> text line) config.content)
+
             Just _ ->
                 column
                     [ spacing 16
@@ -359,23 +329,8 @@ contentSection config =
                         config.content
                     )
          ]
-            ++ [ htmlActionButtons config.buttons]
+            ++ [ htmlActionButtons config.buttons ]
         )
-
-
-{-| Simple wrapper for backward compatibility and basic usage
--}
-contentSectionSimple : String -> String -> List String -> List (( ButtonStyle, msg, String )) -> Element msg
-contentSectionSimple id title content buttons =
-    contentSection
-        { id = id
-        , title = title
-        , titleColor = Nothing
-        , content = content
-        , buttons = buttons
-        , width = Nothing
-        , centerTitle = False
-        }
 
 
 
@@ -472,11 +427,6 @@ bulletPoint text_ =
 
 
 -- SMALL ACTION BUTTON (for continue buttons)
-
-
-
-
-
 -- CARD COLORS FOR HORIZONTAL CONTAINER
 
 
@@ -517,12 +467,6 @@ getCardColor cardNum =
 
 
 -- Emerald
-
-
-
-
-
-
 -- HTML-BASED BUTTON GROUPS
 
 
@@ -532,7 +476,7 @@ All styling is handled by the ui-components.css file
 htmlActionButtons : List ( ButtonStyle, msg, String ) -> Element msg
 htmlActionButtons buttons =
     let
-        createHtmlButton (style, onPress, label) =
+        createHtmlButton ( style, onPress, label ) =
             Html.button
                 [ Html.Events.onClick onPress
                 , Html.Attributes.class ("ui-action-button " ++ getButtonStyleClass style)
@@ -541,16 +485,24 @@ htmlActionButtons buttons =
 
         getButtonStyleClass style =
             case style of
-                Primary -> "primary"
-                Success -> "success" 
-                Purple -> "purple"
-                Warning -> "warning"
-                
-        htmlButtons = List.map createHtmlButton buttons
+                Primary ->
+                    "primary"
+
+                Success ->
+                    "success"
+
+                Purple ->
+                    "purple"
+
+                Warning ->
+                    "warning"
+
+        htmlButtons =
+            List.map createHtmlButton buttons
     in
-    Element.el [ centerX ] <| 
-    Element.html
-        (Html.div
-            [ Html.Attributes.class "ui-button-group" ]
-            htmlButtons
-        )
+    Element.el [ centerX ] <|
+        Element.html
+            (Html.div
+                [ Html.Attributes.class "ui-button-group" ]
+                htmlButtons
+            )

@@ -17,7 +17,7 @@ FEATURES:
 USAGE EXAMPLES:
 
   - Dashboard widgets arranging into grid layouts
-  - Game pieces moving in coordinated formations  
+  - Game pieces moving in coordinated formations
   - Data visualization elements reorganizing
   - UI components transitioning between layouts
   - Interactive storytelling with character movement
@@ -26,6 +26,8 @@ USAGE EXAMPLES:
 
 -- Common UI imports
 
+import Anim exposing (Position, defaultConfig)
+import Anim.CSS exposing (Model, animatePosition, animateToX, animateToY, getCurrentPosition, init, onTransitionEnd, styleProperties, transitionStyles)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -36,8 +38,6 @@ import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes
-import Anim exposing (Position, defaultConfig)
-import Anim.CSS exposing (Model, init, animatePosition, animateToX, animateToY, getCurrentPosition, styleProperties, transitionStyles, onTransitionEnd)
 
 
 
@@ -50,7 +50,7 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = \_ -> Sub.none
         }
 
 
@@ -73,7 +73,7 @@ init _ =
     ( { animations = Anim.CSS.init
       , isAnimating = False
       }
-    , Cmd.none 
+    , Cmd.none
     )
 
 
@@ -102,11 +102,11 @@ update msg model =
                         |> animatePosition "elementE" (Position 60 120)
                         |> animatePosition "elementF" (Position 350 320)
             in
-            ( { model 
+            ( { model
                 | animations = updatedAnimations
                 , isAnimating = True
               }
-            , Cmd.none 
+            , Cmd.none
             )
 
         ResetPositions ->
@@ -120,11 +120,11 @@ update msg model =
                         |> animatePosition "elementE" (Position 300 100)
                         |> animatePosition "elementF" (Position 180 50)
             in
-            ( { model 
+            ( { model
                 | animations = updatedAnimations
                 , isAnimating = True
               }
-            , Cmd.none 
+            , Cmd.none
             )
 
         CircleFormation ->
@@ -137,21 +137,28 @@ update msg model =
 
                 radius =
                     90
-                
+
                 updatedAnimations =
                     model.animations
-                        |> animatePosition "elementA" (Position (centerX + radius) centerY) -- 0°
-                        |> animatePosition "elementB" (Position (centerX + radius * 0.5) (centerY + radius * 0.866)) -- 60°
-                        |> animatePosition "elementC" (Position (centerX - radius * 0.5) (centerY + radius * 0.866)) -- 120°
-                        |> animatePosition "elementD" (Position (centerX - radius) centerY) -- 180°
-                        |> animatePosition "elementE" (Position (centerX - radius * 0.5) (centerY - radius * 0.866)) -- 240°
-                        |> animatePosition "elementF" (Position (centerX + radius * 0.5) (centerY - radius * 0.866)) -- 300°
+                        |> animatePosition "elementA" (Position (centerX + radius) centerY)
+                        -- 0°
+                        |> animatePosition "elementB" (Position (centerX + radius * 0.5) (centerY + radius * 0.866))
+                        -- 60°
+                        |> animatePosition "elementC" (Position (centerX - radius * 0.5) (centerY + radius * 0.866))
+                        -- 120°
+                        |> animatePosition "elementD" (Position (centerX - radius) centerY)
+                        -- 180°
+                        |> animatePosition "elementE" (Position (centerX - radius * 0.5) (centerY - radius * 0.866))
+                        -- 240°
+                        |> animatePosition "elementF" (Position (centerX + radius * 0.5) (centerY - radius * 0.866))
+
+                -- 300°
             in
-            ( { model 
+            ( { model
                 | animations = updatedAnimations
                 , isAnimating = True
               }
-            , Cmd.none 
+            , Cmd.none
             )
 
         AnimationComplete ->
@@ -161,16 +168,6 @@ update msg model =
 
 
 
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
-
-
-
--- No subscriptions needed for CSS transitions!
 -- VIEW
 
 
@@ -192,7 +189,7 @@ viewContent model =
         , Font.color Colors.textMedium
         , centerX
         ]
-        (text ("Coordinated choreography with 6 elements in formation patterns"))
+        (text "Coordinated choreography with 6 elements in formation patterns")
     , -- Control buttons
       UI.htmlActionButtons
         [ ( UI.Primary, ScatterElements, "Scatter Formation" )
@@ -216,11 +213,11 @@ viewContent model =
         , htmlAttribute (Html.Attributes.style "overflow" "hidden")
         ]
         (column []
-            [ -- Element A (Blue) 
+            [ -- Element A (Blue)
               animatedBox "elementA" "A" (rgb255 59 130 246) (rgb255 37 99 235) model
             , -- Element B (Green)
               animatedBox "elementB" "B" (rgb255 16 185 129) (rgb255 5 150 105) model
-            , -- Element C (Purple) 
+            , -- Element C (Purple)
               animatedBox "elementC" "C" (rgb255 168 85 247) (rgb255 147 51 234) model
             , -- Element D (Orange)
               animatedBox "elementD" "D" (rgb255 249 115 22) (rgb255 234 88 12) model
@@ -228,7 +225,8 @@ viewContent model =
               animatedBox "elementE" "E" (rgb255 239 68 68) (rgb255 220 38 38) model
             , -- Element F (Pink)
               animatedBox "elementF" "F" (rgb255 236 72 153) (rgb255 219 39 119) model
-            ])
+            ]
+        )
     ]
 
 
@@ -238,26 +236,31 @@ animatedBox : String -> String -> Element.Color -> Element.Color -> Model -> Ele
 animatedBox elementId label color1 color2 model =
     el
         ([ width (px 50)
-        , height (px 50)
-        , Background.gradient 
-            { angle = 2.356  -- 135 degrees in radians
+         , height (px 50)
+         , Background.gradient
+            { angle = 2.356 -- 135 degrees in radians
             , steps = [ color1, color2 ]
             }
-        , Border.rounded 12
-        , Font.color (rgb255 255 255 255)
-        , Font.semiBold
-        , Font.size 16
-        , htmlAttribute (Html.Attributes.id elementId)
-        , htmlAttribute (Html.Attributes.style "position" "absolute")
-        ] 
-        ++ (styleProperties elementId model.animations
-            |> List.map (\(prop, value) -> htmlAttribute (Html.Attributes.style prop value)))
-        ++ [ htmlAttribute (Html.Attributes.style "transition" 
-                (if model.isAnimating then
-                    transitionStyles elementId model.animations
-                 else
-                    "none"
-                ))
-        , htmlAttribute (onTransitionEnd AnimationComplete)
-        ])
+         , Border.rounded 12
+         , Font.color (rgb255 255 255 255)
+         , Font.semiBold
+         , Font.size 16
+         , htmlAttribute (Html.Attributes.id elementId)
+         , htmlAttribute (Html.Attributes.style "position" "absolute")
+         ]
+            ++ (styleProperties elementId model.animations
+                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+               )
+            ++ [ htmlAttribute
+                    (Html.Attributes.style "transition"
+                        (if model.isAnimating then
+                            transitionStyles elementId model.animations
+
+                         else
+                            "none"
+                        )
+                    )
+               , htmlAttribute (onTransitionEnd AnimationComplete)
+               ]
+        )
         (el [ centerX, centerY ] (text label))

@@ -15,6 +15,8 @@ FEATURES:
 
 -}
 
+import Anim exposing (ColorValue(..), defaultConfig)
+import Anim.CSS exposing (Model, animateBackgroundColor, init, onTransitionEnd, styleProperties, transitionStyles)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -23,8 +25,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
-import Anim exposing (ColorValue(..), defaultConfig)
-import Anim.CSS exposing (Model, init, animateBackgroundColor, styleProperties, transitionStyles, onTransitionEnd)
+
 
 
 -- MAIN
@@ -40,12 +41,14 @@ main =
         }
 
 
+
 -- MODEL
 
 
 type alias Model =
     { animations : Anim.CSS.Model
     }
+
 
 
 -- INIT
@@ -69,6 +72,7 @@ type Msg
     | AnimationComplete
 
 
+
 -- UPDATE
 
 
@@ -76,42 +80,42 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ChangeToBlue ->
-            ( { model 
+            ( { model
                 | animations = animateBackgroundColor "box" (Hex "#3498db") model.animations
               }
             , Cmd.none
             )
 
         ChangeToGreen ->
-            ( { model 
+            ( { model
                 | animations = animateBackgroundColor "box" (Hex "#2ecc71") model.animations
               }
             , Cmd.none
             )
 
         ChangeToOrange ->
-            ( { model 
+            ( { model
                 | animations = animateBackgroundColor "box" (Hex "#f39c12") model.animations
               }
             , Cmd.none
             )
 
         ChangeToRed ->
-            ( { model 
+            ( { model
                 | animations = animateBackgroundColor "box" (Hex "#e74c3c") model.animations
               }
             , Cmd.none
             )
 
         ChangeToPurple ->
-            ( { model 
+            ( { model
                 | animations = animateBackgroundColor "box" (Hex "#9b59b6") model.animations
               }
             , Cmd.none
             )
 
         ResetColor ->
-            ( { model 
+            ( { model
                 | animations = animateBackgroundColor "box" (Hex "#95a5a6") model.animations
               }
             , Cmd.none
@@ -121,12 +125,14 @@ update msg model =
             ( model, Cmd.none )
 
 
+
 -- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.none
+
 
 
 -- VIEW
@@ -162,36 +168,40 @@ viewContent model =
         ]
     , -- Animation area with single colored box
       el
-            [ width (fill |> maximum 600)
-            , height (px 350)
-            , Background.color Colors.backgroundWhite
-            , Border.rounded 12
-            , Border.shadow
-                { offset = ( 0, 4 )
-                , size = 0
-                , blur = 8
-                , color = Element.rgba 0 0 0 0.1
-                }
-            , centerX
-            , htmlAttribute (Html.Attributes.style "position" "relative")
-            , htmlAttribute (Html.Attributes.style "overflow" "hidden")
-            ]
-            (el
-                ([ centerX
-                , centerY
-                , width (px 150)
-                , height (px 150)
-                , Background.color (rgb 0.8 0.8 0.8)
-                , Border.rounded 8
-                , htmlAttribute (Html.Attributes.id "box")
-                , htmlAttribute (Html.Attributes.style "background-color" "#95a5a6") -- Default gray
-                ] 
+        [ width (fill |> maximum 600)
+        , height (px 350)
+        , Background.color Colors.backgroundWhite
+        , Border.rounded 12
+        , Border.shadow
+            { offset = ( 0, 4 )
+            , size = 0
+            , blur = 8
+            , color = Element.rgba 0 0 0 0.1
+            }
+        , centerX
+        , htmlAttribute (Html.Attributes.style "position" "relative")
+        , htmlAttribute (Html.Attributes.style "overflow" "hidden")
+        ]
+        (el
+            ([ centerX
+             , centerY
+             , width (px 150)
+             , height (px 150)
+             , Background.color (rgb 0.8 0.8 0.8)
+             , Border.rounded 8
+             , htmlAttribute (Html.Attributes.id "box")
+             , htmlAttribute (Html.Attributes.style "background-color" "#95a5a6") -- Default gray
+             ]
                 ++ (styleProperties "box" model.animations
-                    |> List.map (\(prop, value) -> htmlAttribute (Html.Attributes.style prop value)))
-                ++ [ htmlAttribute (Html.Attributes.style "transition" 
-                        (transitionStyles "box" model.animations))
-                , htmlAttribute (onTransitionEnd AnimationComplete)
-                ])
-                (el [ centerX, centerY ] (text "Color"))
+                        |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+                   )
+                ++ [ htmlAttribute
+                        (Html.Attributes.style "transition"
+                            (transitionStyles "box" model.animations)
+                        )
+                   , htmlAttribute (onTransitionEnd AnimationComplete)
+                   ]
             )
+            (el [ centerX, centerY ] (text "Color"))
+        )
     ]

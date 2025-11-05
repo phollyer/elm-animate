@@ -15,6 +15,8 @@ FEATURES:
 
 -}
 
+import Anim exposing (ColorValue(..), Position, RotationValue, ScaleValue, defaultConfig)
+import Anim.Sub exposing (Model, animateBackgroundColor, animateOpacity, animateRotation, animateScale, animateTo, init, step, styleProperties, subscriptions)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -23,8 +25,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
-import Anim exposing (Position, ScaleValue, RotationValue, ColorValue(..), defaultConfig)
-import Anim.Sub exposing (Model, init, step, subscriptions, animateTo, animateScale, animateRotation, animateOpacity, animateBackgroundColor, styleProperties)
+
 
 
 -- MAIN
@@ -40,6 +41,7 @@ main =
         }
 
 
+
 -- MODEL
 
 
@@ -51,11 +53,12 @@ type alias Model =
 type Msg
     = StartComplexAnimation String
     | StartFadeMove String
-    | StartSpinScale String  
+    | StartSpinScale String
     | StartColorMorph String
     | StartFullTransform String
     | ResetAll
     | AnimationFrame Float
+
 
 
 -- UPDATE
@@ -67,7 +70,7 @@ update msg model =
         StartComplexAnimation elementId ->
             -- Combine position + scale + rotation
             let
-                animations = 
+                animations =
                     model.animations
                         |> animateTo elementId (Position 200 100)
                         |> animateScale elementId { x = 1.5, y = 1.9 }
@@ -78,7 +81,7 @@ update msg model =
         StartFadeMove elementId ->
             -- Combine opacity + position
             let
-                animations = 
+                animations =
                     model.animations
                         |> animateOpacity elementId 0.3
                         |> animateTo elementId (Position 250 80)
@@ -88,12 +91,11 @@ update msg model =
         StartSpinScale elementId ->
             -- Combine rotation + scale + color
             let
-                animations = 
+                animations =
                     model.animations
                         |> animateRotation elementId 180
                         |> animateScale elementId { x = 0.8, y = 0.8 }
                         |> animateBackgroundColor elementId (Hex "#e74c3c")
-                    
             in
             ( { model | animations = animations }, Cmd.none )
 
@@ -111,14 +113,13 @@ update msg model =
         StartFullTransform elementId ->
             -- All properties at once!
             let
-                animations = 
-                    model.animations 
+                animations =
+                    model.animations
                         |> animateTo elementId (Position 200 200)
                         |> animateScale elementId { x = 1.3, y = 1.3 }
                         |> animateRotation elementId 270
                         |> animateOpacity elementId 0.7
                         |> animateBackgroundColor elementId (Hex "#9b59b6")
-                    
             in
             ( { model | animations = animations }, Cmd.none )
 
@@ -138,6 +139,7 @@ update msg model =
             ( { model | animations = step deltaTime model.animations }, Cmd.none )
 
 
+
 -- INIT
 
 
@@ -145,12 +147,14 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         -- Set initial position for the mixed-box element at origin
-        initialAnimations = animateTo "mixed-box" (Position 0 0) Anim.Sub.init
+        initialAnimations =
+            animateTo "mixed-box" (Position 0 0) Anim.Sub.init
     in
     ( { animations = initialAnimations
       }
     , Cmd.none
     )
+
 
 
 -- SUBSCRIPTIONS
@@ -159,6 +163,7 @@ init _ =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Anim.Sub.subscriptions AnimationFrame model.animations
+
 
 
 -- VIEW
@@ -194,48 +199,49 @@ viewContent model =
         ]
     , -- Animation area
       el
-            [ width (fill |> maximum 600)
-            , height (px 400)
-            , Background.color Colors.backgroundWhite
-            , Border.rounded 12
-            , Border.shadow
-                { offset = ( 0, 4 )
-                , size = 0
-                , blur = 8
-                , color = Element.rgba 0 0 0 0.1
-                }
-            , centerX
-            , htmlAttribute (Html.Attributes.style "position" "relative")
-            , htmlAttribute (Html.Attributes.style "overflow" "visible")
-            ]
-            (mixedAnimationBox model)
+        [ width (fill |> maximum 600)
+        , height (px 400)
+        , Background.color Colors.backgroundWhite
+        , Border.rounded 12
+        , Border.shadow
+            { offset = ( 0, 4 )
+            , size = 0
+            , blur = 8
+            , color = Element.rgba 0 0 0 0.1
+            }
+        , centerX
+        , htmlAttribute (Html.Attributes.style "position" "relative")
+        , htmlAttribute (Html.Attributes.style "overflow" "visible")
         ]
+        (mixedAnimationBox model)
+    ]
 
 
 mixedAnimationBox : Model -> Element Msg
 mixedAnimationBox model =
     el
         ([ width (px 80)
-        , height (px 80)
-        , Border.rounded 12
-        , htmlAttribute (Html.Attributes.id "mixed-box")
-        , htmlAttribute (Html.Attributes.style "position" "absolute")
-        , htmlAttribute (Html.Attributes.style "background-color" "#3498db") -- Default blue
-        , htmlAttribute (Html.Attributes.style "transform-origin" "center")
-        , htmlAttribute (Html.Attributes.style "display" "flex")
-        , htmlAttribute (Html.Attributes.style "align-items" "center")
-        , htmlAttribute (Html.Attributes.style "justify-content" "center")
-        ] 
-        ++ (styleProperties "mixed-box" model.animations
-            |> List.map (\(prop, value) -> htmlAttribute (Html.Attributes.style prop value)))
+         , height (px 80)
+         , Border.rounded 12
+         , htmlAttribute (Html.Attributes.id "mixed-box")
+         , htmlAttribute (Html.Attributes.style "position" "absolute")
+         , htmlAttribute (Html.Attributes.style "background-color" "#3498db") -- Default blue
+         , htmlAttribute (Html.Attributes.style "transform-origin" "center")
+         , htmlAttribute (Html.Attributes.style "display" "flex")
+         , htmlAttribute (Html.Attributes.style "align-items" "center")
+         , htmlAttribute (Html.Attributes.style "justify-content" "center")
+         ]
+            ++ (styleProperties "mixed-box" model.animations
+                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+               )
         )
-        (el 
+        (el
             [ centerX
             , Element.centerY
             , Font.color Colors.backgroundWhite
             , Font.bold
             , Font.size 14
             , htmlAttribute (Html.Attributes.style "text-shadow" "0 1px 2px rgba(0,0,0,0.5)")
-            ] 
+            ]
             (text "MIX")
         )

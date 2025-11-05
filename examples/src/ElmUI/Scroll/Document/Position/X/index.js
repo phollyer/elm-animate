@@ -5198,17 +5198,20 @@ var $elm$core$Task$perform = F2(
 var $elm$browser$Browser$document = _Browser_document;
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$ElmUI$Scroll$DocumentY$Main$init = function (_v0) {
+var $author$project$ElmUI$Scroll$Document$Position$X$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{},
+		{sectionCount: 4},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$ElmUI$Scroll$DocumentY$Main$subscriptions = function (_v0) {
+var $author$project$ElmUI$Scroll$Document$Position$X$Main$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$none;
 };
-var $author$project$ElmUI$Scroll$DocumentY$Main$NoOp = {$: 'NoOp'};
+var $author$project$ElmUI$Scroll$Document$Position$X$Main$NoOp = {$: 'NoOp'};
+var $author$project$Scroll$XWithOffset = function (a) {
+	return {$: 'XWithOffset', a: a};
+};
 var $author$project$Scroll$Duration = function (a) {
 	return {$: 'Duration', a: a};
 };
@@ -5286,7 +5289,7 @@ var $author$project$Internal$AnimationCore$animationSteps = F4(
 			},
 			weights);
 	});
-var $author$project$Scroll$Internal$getOffsetY = function (axis) {
+var $author$project$Scroll$Internal$getOffsetX = function (axis) {
 	switch (axis.$) {
 		case 'X':
 			return 0.0;
@@ -5295,13 +5298,13 @@ var $author$project$Scroll$Internal$getOffsetY = function (axis) {
 		case 'Both':
 			return 0.0;
 		case 'XWithOffset':
-			return 0.0;
-		case 'YWithOffset':
 			var offset = axis.a;
 			return offset;
+		case 'YWithOffset':
+			return 0.0;
 		default:
-			var offsetY = axis.b;
-			return offsetY;
+			var offsetX = axis.a;
+			return offsetX;
 	}
 };
 var $elm$browser$Browser$Dom$getViewport = _Browser_withWindow(_Browser_getViewport);
@@ -5322,77 +5325,77 @@ var $author$project$Scroll$Internal$timingToSpeed = F2(
 				$elm$core$Basics$round(distance / (milliseconds * 0.06)));
 		}
 	});
-var $author$project$Scroll$Document$Task$scrollToBottomWithConfig = function (config) {
+var $author$project$Scroll$Document$Task$scrollToLeftEdgeWithConfig = function (config) {
+	return A2(
+		$elm$core$Task$andThen,
+		function (_v0) {
+			var viewport = _v0.viewport;
+			var targetX = $author$project$Scroll$Internal$getOffsetX(config.axis);
+			var steps = A4(
+				$author$project$Internal$AnimationCore$animationSteps,
+				A2(
+					$author$project$Scroll$Internal$timingToSpeed,
+					config.timing,
+					$elm$core$Basics$abs(viewport.x - targetX)),
+				config.easing,
+				viewport.x,
+				targetX);
+			return $elm$core$Task$sequence(
+				A2(
+					$elm$core$List$map,
+					function (x) {
+						return A2($elm$browser$Browser$Dom$setViewport, x, viewport.y);
+					},
+					steps));
+		},
+		$elm$browser$Browser$Dom$getViewport);
+};
+var $author$project$Scroll$Document$Cmd$scrollToLeftEdgeWithConfig = F2(
+	function (msg, config) {
+		return A2(
+			$elm$core$Task$attempt,
+			$elm$core$Basics$always(msg),
+			$author$project$Scroll$Document$Task$scrollToLeftEdgeWithConfig(config));
+	});
+var $author$project$Scroll$Document$Cmd$scrollToLeftEdge = function (msg) {
+	return A2($author$project$Scroll$Document$Cmd$scrollToLeftEdgeWithConfig, msg, $author$project$Scroll$defaultConfig);
+};
+var $author$project$Scroll$Document$Task$scrollToRightEdgeWithConfig = function (config) {
 	return A2(
 		$elm$core$Task$andThen,
 		function (_v0) {
 			var scene = _v0.scene;
 			var viewport = _v0.viewport;
-			var maxY = scene.height - viewport.height;
-			var targetY = maxY - $author$project$Scroll$Internal$getOffsetY(config.axis);
+			var maxX = scene.width - viewport.width;
+			var targetX = maxX - $author$project$Scroll$Internal$getOffsetX(config.axis);
 			var steps = A4(
 				$author$project$Internal$AnimationCore$animationSteps,
 				A2(
 					$author$project$Scroll$Internal$timingToSpeed,
 					config.timing,
-					$elm$core$Basics$abs(targetY - viewport.y)),
+					$elm$core$Basics$abs(targetX - viewport.x)),
 				config.easing,
-				viewport.y,
-				targetY);
+				viewport.x,
+				targetX);
 			return $elm$core$Task$sequence(
 				A2(
 					$elm$core$List$map,
-					function (y) {
-						return A2($elm$browser$Browser$Dom$setViewport, viewport.x, y);
+					function (x) {
+						return A2($elm$browser$Browser$Dom$setViewport, x, viewport.y);
 					},
 					steps));
 		},
 		$elm$browser$Browser$Dom$getViewport);
 };
-var $author$project$Scroll$Document$Cmd$scrollToBottomWithConfig = F2(
+var $author$project$Scroll$Document$Cmd$scrollToRightEdgeWithConfig = F2(
 	function (msg, config) {
 		return A2(
 			$elm$core$Task$attempt,
 			$elm$core$Basics$always(msg),
-			$author$project$Scroll$Document$Task$scrollToBottomWithConfig(config));
+			$author$project$Scroll$Document$Task$scrollToRightEdgeWithConfig(config));
 	});
-var $author$project$Scroll$Document$Cmd$scrollToBottom = function (msg) {
-	return A2($author$project$Scroll$Document$Cmd$scrollToBottomWithConfig, msg, $author$project$Scroll$defaultConfig);
-};
-var $author$project$Scroll$Document$Task$scrollToTopWithConfig = function (config) {
-	return A2(
-		$elm$core$Task$andThen,
-		function (_v0) {
-			var viewport = _v0.viewport;
-			var targetY = $author$project$Scroll$Internal$getOffsetY(config.axis);
-			var steps = A4(
-				$author$project$Internal$AnimationCore$animationSteps,
-				A2(
-					$author$project$Scroll$Internal$timingToSpeed,
-					config.timing,
-					$elm$core$Basics$abs(viewport.y - targetY)),
-				config.easing,
-				viewport.y,
-				targetY);
-			return $elm$core$Task$sequence(
-				A2(
-					$elm$core$List$map,
-					function (y) {
-						return A2($elm$browser$Browser$Dom$setViewport, viewport.x, y);
-					},
-					steps));
-		},
-		$elm$browser$Browser$Dom$getViewport);
-};
-var $author$project$Scroll$Document$Cmd$scrollToTopWithConfig = F2(
-	function (msg, config) {
-		return A2(
-			$elm$core$Task$attempt,
-			$elm$core$Basics$always(msg),
-			$author$project$Scroll$Document$Task$scrollToTopWithConfig(config));
-	});
-var $author$project$Scroll$Document$Cmd$scrollToTop = function (msg) {
-	return A2($author$project$Scroll$Document$Cmd$scrollToTopWithConfig, msg, $author$project$Scroll$defaultConfig);
+var $author$project$Scroll$Document$Cmd$scrollToRightEdge = function (msg) {
+	return A2($author$project$Scroll$Document$Cmd$scrollToRightEdgeWithConfig, msg, $author$project$Scroll$defaultConfig);
 };
 var $author$project$Scroll$Internal$DocumentBody = {$: 'DocumentBody'};
 var $author$project$Internal$AnimationCore$animationStepsWithFrames = F4(
@@ -5432,7 +5435,7 @@ var $author$project$Scroll$Internal$getAxisDirection = function (axis) {
 			return $author$project$Scroll$Internal$BothDirection;
 	}
 };
-var $author$project$Scroll$Internal$getOffsetX = function (axis) {
+var $author$project$Scroll$Internal$getOffsetY = function (axis) {
 	switch (axis.$) {
 		case 'X':
 			return 0.0;
@@ -5441,13 +5444,13 @@ var $author$project$Scroll$Internal$getOffsetX = function (axis) {
 		case 'Both':
 			return 0.0;
 		case 'XWithOffset':
+			return 0.0;
+		case 'YWithOffset':
 			var offset = axis.a;
 			return offset;
-		case 'YWithOffset':
-			return 0.0;
 		default:
-			var offsetX = axis.a;
-			return offsetX;
+			var offsetY = axis.b;
+			return offsetY;
 	}
 };
 var $author$project$Scroll$Internal$getTargetPositions = F4(
@@ -5622,34 +5625,49 @@ var $author$project$Scroll$Document$Cmd$scrollWithConfig = F3(
 			$elm$core$Basics$always(msg),
 			A2($author$project$Scroll$Document$Task$scrollWithConfig, elementId, config));
 	});
-var $author$project$ElmUI$Scroll$DocumentY$Main$update = F2(
+var $author$project$ElmUI$Scroll$Document$Position$X$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'NoOp':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			case 'ScrollToParagraphOne':
+			case 'ScrollToSection':
+				var id = msg.a;
 				return _Utils_Tuple2(
 					model,
-					A3($author$project$Scroll$Document$Cmd$scrollWithConfig, 'paragraph-one', $author$project$ElmUI$Scroll$DocumentY$Main$NoOp, $author$project$Scroll$defaultConfig));
-			case 'ScrollToParagraphTwo':
+					A3(
+						$author$project$Scroll$Document$Cmd$scrollWithConfig,
+						id,
+						$author$project$ElmUI$Scroll$Document$Position$X$Main$NoOp,
+						_Utils_update(
+							$author$project$Scroll$defaultConfig,
+							{
+								axis: $author$project$Scroll$XWithOffset(20)
+							})));
+			case 'ScrollToStart':
 				return _Utils_Tuple2(
 					model,
-					A3($author$project$Scroll$Document$Cmd$scrollWithConfig, 'paragraph-two', $author$project$ElmUI$Scroll$DocumentY$Main$NoOp, $author$project$Scroll$defaultConfig));
-			case 'ScrollToParagraphThree':
+					$author$project$Scroll$Document$Cmd$scrollToLeftEdge($author$project$ElmUI$Scroll$Document$Position$X$Main$NoOp));
+			case 'ScrollToEnd':
 				return _Utils_Tuple2(
 					model,
-					A3($author$project$Scroll$Document$Cmd$scrollWithConfig, 'paragraph-three', $author$project$ElmUI$Scroll$DocumentY$Main$NoOp, $author$project$Scroll$defaultConfig));
-			case 'ScrollToTop':
+					$author$project$Scroll$Document$Cmd$scrollToRightEdge($author$project$ElmUI$Scroll$Document$Position$X$Main$NoOp));
+			case 'AddSection':
 				return _Utils_Tuple2(
-					model,
-					$author$project$Scroll$Document$Cmd$scrollToTop($author$project$ElmUI$Scroll$DocumentY$Main$NoOp));
+					_Utils_update(
+						model,
+						{sectionCount: model.sectionCount + 1}),
+					$elm$core$Platform$Cmd$none);
 			default:
 				return _Utils_Tuple2(
-					model,
-					$author$project$Scroll$Document$Cmd$scrollToBottom($author$project$ElmUI$Scroll$DocumentY$Main$NoOp));
+					_Utils_update(
+						model,
+						{
+							sectionCount: A2($elm$core$Basics$max, 1, model.sectionCount) - 1
+						}),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
-var $author$project$Common$UI$Basic = {$: 'Basic'};
+var $author$project$Common$UI$HorizontalContainer = {$: 'HorizontalContainer'};
 var $mdgriffith$elm_ui$Internal$Model$Rgba = F4(
 	function (a, b, c, d) {
 		return {$: 'Rgba', a: a, b: b, c: c, d: d};
@@ -5660,17 +5678,6 @@ var $mdgriffith$elm_ui$Element$rgb255 = F3(
 	});
 var $author$project$Common$Colors$backgroundLight = A3($mdgriffith$elm_ui$Element$rgb255, 248, 250, 252);
 var $author$project$Common$Colors$backgroundMedium = A3($mdgriffith$elm_ui$Element$rgb255, 226, 232, 240);
-var $author$project$Common$UI$calculateHorizontalWidth = function (_v0) {
-	var sectionCount = _v0.sectionCount;
-	var sectionWidth = _v0.sectionWidth;
-	var spacing = _v0.spacing;
-	var containerPaddingX = _v0.containerPaddingX;
-	var layoutPaddingX = _v0.layoutPaddingX;
-	var totalSpacingWidth = (sectionCount - 1) * spacing;
-	var totalSectionWidth = sectionCount * sectionWidth;
-	var totalPaddingWidth = containerPaddingX + layoutPaddingX;
-	return (totalSectionWidth + totalSpacingWidth) + totalPaddingWidth;
-};
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -5813,10 +5820,6 @@ var $mdgriffith$elm_ui$Element$paddingXY = F2(
 					xFloat));
 		}
 	});
-var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
-	return {$: 'Px', a: a};
-};
-var $mdgriffith$elm_ui$Element$px = $mdgriffith$elm_ui$Internal$Model$Px;
 var $mdgriffith$elm_ui$Internal$Model$Width = function (a) {
 	return {$: 'Width', a: a};
 };
@@ -5829,28 +5832,6 @@ var $author$project$Common$UI$getLayoutAttributes = function (layoutType) {
 					[
 						$mdgriffith$elm_ui$Element$htmlAttribute(
 						$elm$html$Html$Attributes$class('responsive-layout'))
-					]);
-			case 'Horizontal':
-				var calculatedWidth = $author$project$Common$UI$calculateHorizontalWidth(
-					{containerPaddingX: 40, layoutPaddingX: 80, sectionCount: 4, sectionWidth: 300, spacing: 40});
-				return _List_fromArray(
-					[
-						$mdgriffith$elm_ui$Element$width(
-						$mdgriffith$elm_ui$Element$px(calculatedWidth)),
-						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						$elm$html$Html$Attributes$class('horizontal-layout responsive-layout'))
-					]);
-			case 'HorizontalCustomWidth':
-				var customWidth = layoutType.a;
-				return _List_fromArray(
-					[
-						$mdgriffith$elm_ui$Element$width(
-						$mdgriffith$elm_ui$Element$px(
-							$elm$core$Basics$round(customWidth))),
-						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						$elm$html$Html$Attributes$class('horizontal-layout responsive-layout'))
 					]);
 			case 'Diagonal':
 				return _List_fromArray(
@@ -11783,13 +11764,8 @@ var $author$project$Common$UI$createDocument = F3(
 			title: title
 		};
 	});
-var $author$project$Common$UI$Primary = {$: 'Primary'};
-var $author$project$Common$UI$Purple = {$: 'Purple'};
-var $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToBottom = {$: 'ScrollToBottom'};
-var $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToParagraphOne = {$: 'ScrollToParagraphOne'};
-var $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToParagraphThree = {$: 'ScrollToParagraphThree'};
-var $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToParagraphTwo = {$: 'ScrollToParagraphTwo'};
-var $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToTop = {$: 'ScrollToTop'};
+var $author$project$ElmUI$Scroll$Document$Position$X$Main$AddSection = {$: 'AddSection'};
+var $author$project$ElmUI$Scroll$Document$Position$X$Main$RemoveSection = {$: 'RemoveSection'};
 var $author$project$Common$UI$Success = {$: 'Success'};
 var $author$project$Common$UI$Warning = {$: 'Warning'};
 var $mdgriffith$elm_ui$Internal$Model$Left = {$: 'Left'};
@@ -11805,7 +11781,6 @@ var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
 			'color',
 			fontColor));
 };
-var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
@@ -11895,24 +11870,14 @@ var $author$project$Common$UI$backButton = A2(
 			}),
 			$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$backgroundWhite),
 			$mdgriffith$elm_ui$Element$Font$semiBold,
-			$mdgriffith$elm_ui$Element$Border$rounded(8),
-			$mdgriffith$elm_ui$Element$htmlAttribute(
-			$elm$html$Html$Attributes$id('top'))
+			$mdgriffith$elm_ui$Element$Border$rounded(8)
 		]),
 	{
 		label: $mdgriffith$elm_ui$Element$text('← Back to Examples'),
 		url: '../../index.html'
 	});
-var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$bgColor,
-		A3(
-			$mdgriffith$elm_ui$Internal$Model$Colored,
-			'bg-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(clr),
-			'background-color',
-			clr));
-};
+var $mdgriffith$elm_ui$Internal$Flag$fontAlignment = $mdgriffith$elm_ui$Internal$Flag$flag(12);
+var $mdgriffith$elm_ui$Element$Font$center = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontAlignment, $mdgriffith$elm_ui$Internal$Style$classes.textCenter);
 var $mdgriffith$elm_ui$Element$el = F2(
 	function (attrs, child) {
 		return A4(
@@ -11930,6 +11895,16 @@ var $mdgriffith$elm_ui$Element$el = F2(
 				_List_fromArray(
 					[child])));
 	});
+var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$bgColor,
+		A3(
+			$mdgriffith$elm_ui$Internal$Model$Colored,
+			'bg-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(clr),
+			'background-color',
+			clr));
+};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $mdgriffith$elm_ui$Internal$Model$unstyled = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Unstyled, $elm$core$Basics$always);
 var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
@@ -11994,6 +11969,7 @@ var $author$project$Common$UI$htmlActionButtons = function (buttons) {
 					]),
 				htmlButtons)));
 };
+var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $mdgriffith$elm_ui$Internal$Model$Max = F2(
 	function (a, b) {
 		return {$: 'Max', a: a, b: b};
@@ -12024,6 +12000,10 @@ var $mdgriffith$elm_ui$Element$paragraph = F2(
 						attrs))),
 			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
 	});
+var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
+	return {$: 'Px', a: a};
+};
+var $mdgriffith$elm_ui$Element$px = $mdgriffith$elm_ui$Internal$Model$Px;
 var $mdgriffith$elm_ui$Element$rgba = $mdgriffith$elm_ui$Internal$Model$Rgba;
 var $mdgriffith$elm_ui$Internal$Model$boxShadowClass = function (shadow) {
 	return $elm$core$String$concat(
@@ -12167,11 +12147,122 @@ var $author$project$Common$UI$contentSection = function (config) {
 					$author$project$Common$UI$htmlActionButtons(config.buttons)
 				])));
 };
-var $author$project$Common$UI$contentSectionSimple = F4(
-	function (id, title, content, buttons) {
-		return $author$project$Common$UI$contentSection(
-			{buttons: buttons, centerTitle: false, content: content, id: id, title: title, titleColor: $elm$core$Maybe$Nothing, width: $elm$core$Maybe$Nothing});
+var $author$project$Common$UI$Primary = {$: 'Primary'};
+var $author$project$ElmUI$Scroll$Document$Position$X$Main$ScrollToEnd = {$: 'ScrollToEnd'};
+var $author$project$ElmUI$Scroll$Document$Position$X$Main$ScrollToSection = function (a) {
+	return {$: 'ScrollToSection', a: a};
+};
+var $author$project$ElmUI$Scroll$Document$Position$X$Main$ScrollToStart = {$: 'ScrollToStart'};
+var $author$project$Common$UI$Purple = {$: 'Purple'};
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $author$project$ElmUI$Scroll$Document$Position$X$Main$getButtonStyle = function (index) {
+	var _v0 = A2($elm$core$Basics$modBy, 4, index);
+	switch (_v0) {
+		case 0:
+			return $author$project$Common$UI$Success;
+		case 1:
+			return $author$project$Common$UI$Primary;
+		case 2:
+			return $author$project$Common$UI$Purple;
+		default:
+			return $author$project$Common$UI$Warning;
+	}
+};
+var $author$project$ElmUI$Scroll$Document$Position$X$Main$generateSectionButtons = F2(
+	function (currentSection, totalSections) {
+		var startButton = _List_fromArray(
+			[
+				_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$Document$Position$X$Main$ScrollToStart, 'Start')
+			]);
+		var sectionButtons = A2(
+			$elm$core$List$map,
+			function (n) {
+				return _Utils_Tuple3(
+					$author$project$ElmUI$Scroll$Document$Position$X$Main$getButtonStyle(n),
+					$author$project$ElmUI$Scroll$Document$Position$X$Main$ScrollToSection(
+						'section-' + $elm$core$String$fromInt(n)),
+					'Section ' + $elm$core$String$fromInt(n));
+			},
+			A2(
+				$elm$core$List$filter,
+				function (n) {
+					return !_Utils_eq(n, currentSection);
+				},
+				A2($elm$core$List$range, 1, totalSections)));
+		var endButton = _List_fromArray(
+			[
+				_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$Document$Position$X$Main$ScrollToEnd, 'End')
+			]);
+		return _Utils_ap(
+			startButton,
+			_Utils_ap(sectionButtons, endButton));
 	});
+var $author$project$Common$Colors$purple = A3($mdgriffith$elm_ui$Element$rgb255, 168, 85, 247);
+var $author$project$Common$Colors$success = A3($mdgriffith$elm_ui$Element$rgb255, 16, 185, 129);
+var $author$project$Common$Colors$warning = A3($mdgriffith$elm_ui$Element$rgb255, 245, 158, 11);
+var $author$project$ElmUI$Scroll$Document$Position$X$Main$getTitleColor = function (index) {
+	var _v0 = A2($elm$core$Basics$modBy, 4, index);
+	switch (_v0) {
+		case 0:
+			return $author$project$Common$Colors$success;
+		case 1:
+			return $author$project$Common$Colors$primary;
+		case 2:
+			return $author$project$Common$Colors$purple;
+		default:
+			return $author$project$Common$Colors$warning;
+	}
+};
+var $author$project$ElmUI$Scroll$Document$Position$X$Main$generateSection = F2(
+	function (sectionNum, totalSections) {
+		return $author$project$Common$UI$contentSection(
+			{
+				buttons: A2($author$project$ElmUI$Scroll$Document$Position$X$Main$generateSectionButtons, sectionNum, totalSections),
+				centerTitle: true,
+				content: _List_fromArray(
+					[
+						'This is section ' + ($elm$core$String$fromInt(sectionNum) + ' of our horizontal scrolling example.'),
+						'Use the add/remove buttons to change the number of sections dynamically.'
+					]),
+				id: 'section-' + $elm$core$String$fromInt(sectionNum),
+				title: 'Section ' + $elm$core$String$fromInt(sectionNum),
+				titleColor: $elm$core$Maybe$Just(
+					$author$project$ElmUI$Scroll$Document$Position$X$Main$getTitleColor(sectionNum)),
+				width: $elm$core$Maybe$Just(300)
+			});
+	});
+var $author$project$ElmUI$Scroll$Document$Position$X$Main$generateStartSection = function (totalSections) {
+	var sectionButtons = A2(
+		$elm$core$List$map,
+		function (n) {
+			return _Utils_Tuple3(
+				$author$project$ElmUI$Scroll$Document$Position$X$Main$getButtonStyle(n),
+				$author$project$ElmUI$Scroll$Document$Position$X$Main$ScrollToSection(
+					'section-' + $elm$core$String$fromInt(n)),
+				'Section ' + $elm$core$String$fromInt(n));
+		},
+		A2($elm$core$List$range, 1, totalSections));
+	var endButton = _List_fromArray(
+		[
+			_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$Document$Position$X$Main$ScrollToEnd, 'End')
+		]);
+	return $author$project$Common$UI$contentSection(
+		{
+			buttons: _Utils_ap(sectionButtons, endButton),
+			centerTitle: true,
+			content: _List_fromArray(
+				[
+					'Welcome to the horizontal scrolling demonstration!',
+					'This is the starting point of our X axis scrolling example.',
+					'Current sections: ' + $elm$core$String$fromInt(totalSections),
+					'Click the buttons below to begin the horizontal journey through the sections.'
+				]),
+			id: 'start',
+			title: '🚀 Start Here',
+			titleColor: $elm$core$Maybe$Just($author$project$Common$Colors$primary),
+			width: $elm$core$Maybe$Just(300)
+		});
+};
 var $author$project$Common$UI$pageHeader = function (title) {
 	return A2(
 		$mdgriffith$elm_ui$Element$paragraph,
@@ -12188,105 +12279,86 @@ var $author$project$Common$UI$pageHeader = function (title) {
 				$mdgriffith$elm_ui$Element$text(title)
 			]));
 };
-var $author$project$ElmUI$Scroll$DocumentY$Main$viewContent = function (model) {
+var $mdgriffith$elm_ui$Internal$Model$AsRow = {$: 'AsRow'};
+var $mdgriffith$elm_ui$Internal$Model$asRow = $mdgriffith$elm_ui$Internal$Model$AsRow;
+var $mdgriffith$elm_ui$Element$row = F2(
+	function (attrs, children) {
+		return A4(
+			$mdgriffith$elm_ui$Internal$Model$element,
+			$mdgriffith$elm_ui$Internal$Model$asRow,
+			$mdgriffith$elm_ui$Internal$Model$div,
+			A2(
+				$elm$core$List$cons,
+				$mdgriffith$elm_ui$Internal$Model$htmlClass($mdgriffith$elm_ui$Internal$Style$classes.contentLeft + (' ' + $mdgriffith$elm_ui$Internal$Style$classes.contentCenterY)),
+				A2(
+					$elm$core$List$cons,
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
+					A2(
+						$elm$core$List$cons,
+						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$shrink),
+						attrs))),
+			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
+	});
+var $author$project$ElmUI$Scroll$Document$Position$X$Main$viewContent = function (model) {
 	return _List_fromArray(
 		[
 			$author$project$Common$UI$backButton,
-			$author$project$Common$UI$pageHeader('SmoothMoveScroll Document Example'),
+			$author$project$Common$UI$pageHeader('Horizontal X Axis Scrolling'),
 			A2(
-			$mdgriffith$elm_ui$Element$el,
-			_List_fromArray(
-				[$mdgriffith$elm_ui$Element$centerX]),
-			$author$project$Common$UI$htmlActionButtons(
-				_List_fromArray(
-					[
-						_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToParagraphOne, 'Scroll to Paragraph One ↓'),
-						_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToParagraphTwo, 'Scroll to Paragraph Two ↓'),
-						_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToParagraphThree, 'Scroll to Paragraph Three ↓'),
-						_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToBottom, 'Scroll to Bottom ↓')
-					]))),
-			A2(
-			$mdgriffith$elm_ui$Element$el,
+			$mdgriffith$elm_ui$Element$column,
 			_List_fromArray(
 				[
-					$mdgriffith$elm_ui$Element$height(
-					$mdgriffith$elm_ui$Element$px(100))
-				]),
-			$mdgriffith$elm_ui$Element$text('')),
-			A4(
-			$author$project$Common$UI$contentSectionSimple,
-			'paragraph-one',
-			'Paragraph One',
-			_List_fromArray(
-				['This is the first paragraph of our example. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ', 'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. ', 'Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.']),
-			_List_fromArray(
-				[
-					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToTop, 'Scroll to Top ↑'),
-					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToParagraphTwo, 'Scroll to Paragraph Two ↓'),
-					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToParagraphThree, 'Scroll to Paragraph Three ↓'),
-					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToBottom, 'Scroll to Bottom ↓')
-				])),
-			A2(
-			$mdgriffith$elm_ui$Element$el,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$height(
-					$mdgriffith$elm_ui$Element$px(200))
-				]),
-			$mdgriffith$elm_ui$Element$text('')),
-			A4(
-			$author$project$Common$UI$contentSectionSimple,
-			'paragraph-two',
-			'Paragraph Two',
-			_List_fromArray(
-				['This is the second paragraph. Totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.', 'Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.', 'Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.']),
-			_List_fromArray(
-				[
-					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToTop, 'Scroll to Top ↑'),
-					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToParagraphOne, 'Scroll to Paragraph One ↑'),
-					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToParagraphThree, 'Scroll to Paragraph Three ↓'),
-					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToBottom, 'Scroll to Bottom ↓')
-				])),
-			A2(
-			$mdgriffith$elm_ui$Element$el,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$height(
-					$mdgriffith$elm_ui$Element$px(100))
-				]),
-			$mdgriffith$elm_ui$Element$text('')),
-			A4(
-			$author$project$Common$UI$contentSectionSimple,
-			'paragraph-three',
-			'Paragraph Three',
-			_List_fromArray(
-				['This is the third and final paragraph. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam.', 'Nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur.', 'Vel illum qui dolorem eum fugiat quo voluptas nulla pariatur? At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti.']),
-			_List_fromArray(
-				[
-					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToTop, 'Scroll to Top ↑'),
-					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToParagraphOne, 'Scroll to Paragraph One ↑'),
-					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToParagraphTwo, 'Scroll to Paragraph Two ↑'),
-					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$DocumentY$Main$ScrollToBottom, 'Scroll to Bottom ↓')
-				])),
-			A2(
-			$mdgriffith$elm_ui$Element$el,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$height(
-					$mdgriffith$elm_ui$Element$px(500)),
+					$mdgriffith$elm_ui$Element$spacing(8),
 					$mdgriffith$elm_ui$Element$centerX
 				]),
-			$mdgriffith$elm_ui$Element$text('...'))
+			_List_fromArray(
+				[
+					A2(
+					$mdgriffith$elm_ui$Element$paragraph,
+					_List_fromArray(
+						[$mdgriffith$elm_ui$Element$Font$center]),
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$text('Add or remove sections to increase or decrease the page width.')
+						])),
+					A2(
+					$mdgriffith$elm_ui$Element$el,
+					_List_fromArray(
+						[$mdgriffith$elm_ui$Element$centerX]),
+					$author$project$Common$UI$htmlActionButtons(
+						_List_fromArray(
+							[
+								_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Scroll$Document$Position$X$Main$AddSection, '+ Add Section'),
+								_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$Document$Position$X$Main$RemoveSection, '− Remove Section')
+							])))
+				])),
+			A2(
+			$mdgriffith$elm_ui$Element$row,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$spacing(40)
+				]),
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$author$project$ElmUI$Scroll$Document$Position$X$Main$generateStartSection(model.sectionCount)
+					]),
+				A2(
+					$elm$core$List$map,
+					function (n) {
+						return A2($author$project$ElmUI$Scroll$Document$Position$X$Main$generateSection, n, model.sectionCount);
+					},
+					A2($elm$core$List$range, 1, model.sectionCount))))
 		]);
 };
-var $author$project$ElmUI$Scroll$DocumentY$Main$view = function (model) {
+var $author$project$ElmUI$Scroll$Document$Position$X$Main$view = function (model) {
 	return A3(
 		$author$project$Common$UI$createDocument,
-		'SmoothMoveScroll Basic ElmUI Example',
-		$author$project$Common$UI$Basic,
-		$author$project$ElmUI$Scroll$DocumentY$Main$viewContent(model));
+		'SmoothMoveScroll Horizontal ElmUI Example',
+		$author$project$Common$UI$HorizontalContainer,
+		$author$project$ElmUI$Scroll$Document$Position$X$Main$viewContent(model));
 };
-var $author$project$ElmUI$Scroll$DocumentY$Main$main = $elm$browser$Browser$document(
-	{init: $author$project$ElmUI$Scroll$DocumentY$Main$init, subscriptions: $author$project$ElmUI$Scroll$DocumentY$Main$subscriptions, update: $author$project$ElmUI$Scroll$DocumentY$Main$update, view: $author$project$ElmUI$Scroll$DocumentY$Main$view});
-_Platform_export({'ElmUI':{'Scroll':{'DocumentY':{'Main':{'init':$author$project$ElmUI$Scroll$DocumentY$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}}}}});}(this));
+var $author$project$ElmUI$Scroll$Document$Position$X$Main$main = $elm$browser$Browser$document(
+	{init: $author$project$ElmUI$Scroll$Document$Position$X$Main$init, subscriptions: $author$project$ElmUI$Scroll$Document$Position$X$Main$subscriptions, update: $author$project$ElmUI$Scroll$Document$Position$X$Main$update, view: $author$project$ElmUI$Scroll$Document$Position$X$Main$view});
+_Platform_export({'ElmUI':{'Scroll':{'Document':{'Position':{'X':{'Main':{'init':$author$project$ElmUI$Scroll$Document$Position$X$Main$main(
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}}}}}}});}(this));

@@ -22,6 +22,8 @@ USAGE:
 
 -}
 
+import Anim exposing (Position, defaultConfig)
+import Anim.CSS exposing (Model, animatePosition, animateToX, animateToY, getCurrentPosition, init, styleProperties, transitionStyles)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -30,8 +32,6 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
-import Anim exposing (Position, defaultConfig)
-import Anim.CSS exposing (Model, init, animatePosition, animateToX, animateToY, getCurrentPosition, styleProperties, transitionStyles)
 
 
 
@@ -90,7 +90,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         MoveToCorner ->
-            ( { model 
+            ( { model
                 | animations = animatePosition "box" (Position 100 100) model.animations
                 , isAnimating = True
               }
@@ -98,7 +98,7 @@ update msg model =
             )
 
         MoveToCenter ->
-            ( { model 
+            ( { model
                 | animations = animatePosition "box" (Position 300 200) model.animations
                 , isAnimating = True
               }
@@ -106,7 +106,7 @@ update msg model =
             )
 
         MoveLeft ->
-            ( { model 
+            ( { model
                 | animations = animateToX "box" 0 model.animations
                 , isAnimating = True
               }
@@ -114,15 +114,15 @@ update msg model =
             )
 
         MoveRight ->
-            ( { model 
-                | animations = animateToX "box" 450 model.animations  -- 500px container - 50px box = 450px for right edge
+            ( { model
+                | animations = animateToX "box" 450 model.animations -- 500px container - 50px box = 450px for right edge
                 , isAnimating = True
               }
             , Cmd.none
             )
 
         MoveUp ->
-            ( { model 
+            ( { model
                 | animations = animateToY "box" 0 model.animations
                 , isAnimating = True
               }
@@ -130,15 +130,15 @@ update msg model =
             )
 
         MoveDown ->
-            ( { model 
-                | animations = animateToY "box" 350 model.animations  -- 400px container - 50px box = 350px for bottom edge
+            ( { model
+                | animations = animateToY "box" 350 model.animations -- 400px container - 50px box = 350px for bottom edge
                 , isAnimating = True
               }
             , Cmd.none
             )
 
         StopAnimation ->
-            ( { model 
+            ( { model
                 | animations = animatePosition "box" (Position 0 0) model.animations
                 , isAnimating = True
               }
@@ -158,6 +158,7 @@ update msg model =
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.none
+
 
 
 -- No subscriptions needed for CSS transitions!
@@ -180,9 +181,10 @@ viewContent model =
         , centerX
         ]
         (let
-            pos = getCurrentPosition "box" model.animations
+            pos =
+                getCurrentPosition "box" model.animations
          in
-            text ("Position: (" ++ String.fromInt (round pos.x) ++ ", " ++ String.fromInt (round pos.y) ++ ")")
+         text ("Position: (" ++ String.fromInt (round pos.x) ++ ", " ++ String.fromInt (round pos.y) ++ ")")
         )
     , -- Buttons for predefined moves
       UI.htmlActionButtons
@@ -190,7 +192,7 @@ viewContent model =
         , ( UI.Success, MoveToCenter, "Move to (300, 200)" )
         , ( UI.Purple, StopAnimation, "Return to Origin" )
         ]
-    , -- Axis-specific movement buttons  
+    , -- Axis-specific movement buttons
       UI.htmlActionButtons
         [ ( UI.Warning, MoveLeft, "← Move Left" )
         , ( UI.Warning, MoveRight, "Move Right →" )
@@ -215,26 +217,31 @@ viewContent model =
         ]
         (el
             ([ width (px 50)
-            , height (px 50)
-            , Background.color Colors.primary
-            , Border.rounded 8
-            , htmlAttribute (Html.Attributes.id "box")
-            , htmlAttribute (Html.Attributes.style "position" "absolute")
-            
-            -- Apply CSS styles from animation model - browser handles the animation!
-            ] 
-            ++ (styleProperties "box" model.animations
-                |> List.map (\(prop, value) -> htmlAttribute (Html.Attributes.style prop value)))
-            ++ [ htmlAttribute (Html.Attributes.style "transition" 
-                    (if model.isAnimating then
-                        transitionStyles "box" model.animations
-                     else
-                        "none"
-                    ))
-            
-            -- CSS transition event handler - fires when animation completes  
-            , htmlAttribute (Html.Attributes.attribute "ontransitionend" "this.dispatchEvent(new CustomEvent('animation-complete'))")
-            ])
+             , height (px 50)
+             , Background.color Colors.primary
+             , Border.rounded 8
+             , htmlAttribute (Html.Attributes.id "box")
+             , htmlAttribute (Html.Attributes.style "position" "absolute")
+
+             -- Apply CSS styles from animation model - browser handles the animation!
+             ]
+                ++ (styleProperties "box" model.animations
+                        |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+                   )
+                ++ [ htmlAttribute
+                        (Html.Attributes.style "transition"
+                            (if model.isAnimating then
+                                transitionStyles "box" model.animations
+
+                             else
+                                "none"
+                            )
+                        )
+
+                   -- CSS transition event handler - fires when animation completes
+                   , htmlAttribute (Html.Attributes.attribute "ontransitionend" "this.dispatchEvent(new CustomEvent('animation-complete'))")
+                   ]
+            )
             (text "")
         )
     ]

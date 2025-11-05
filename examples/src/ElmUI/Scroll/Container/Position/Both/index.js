@@ -5198,7 +5198,7 @@ var $elm$core$Task$perform = F2(
 var $elm$browser$Browser$document = _Browser_document;
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$ElmUI$Scroll$ContainerXY$Main$init = function (_v0) {
+var $author$project$ElmUI$Scroll$Container$Position$Both$Main$init = function (_v0) {
 	return _Utils_Tuple2(
 		{},
 		$elm$core$Platform$Cmd$none);
@@ -5209,7 +5209,7 @@ var $author$project$Scroll$BothWithOffset = F2(
 	function (a, b) {
 		return {$: 'BothWithOffset', a: a, b: b};
 	});
-var $author$project$ElmUI$Scroll$ContainerXY$Main$NoOp = {$: 'NoOp'};
+var $author$project$ElmUI$Scroll$Container$Position$Both$Main$NoOp = {$: 'NoOp'};
 var $author$project$Scroll$Duration = function (a) {
 	return {$: 'Duration', a: a};
 };
@@ -5559,7 +5559,7 @@ var $author$project$Scroll$Container$Cmd$scrollWithConfig = F4(
 			$elm$core$Basics$always(msg),
 			A3($author$project$Scroll$Container$Task$scrollWithConfig, containerId, elementId, config));
 	});
-var $author$project$ElmUI$Scroll$ContainerXY$Main$update = F2(
+var $author$project$ElmUI$Scroll$Container$Position$Both$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'NoOp':
@@ -5571,7 +5571,7 @@ var $author$project$ElmUI$Scroll$ContainerXY$Main$update = F2(
 						$author$project$Scroll$Container$Cmd$scrollWithConfig,
 						'scroll-container',
 						'top-left-element',
-						$author$project$ElmUI$Scroll$ContainerXY$Main$NoOp,
+						$author$project$ElmUI$Scroll$Container$Position$Both$Main$NoOp,
 						_Utils_update(
 							$author$project$Scroll$defaultConfig,
 							{
@@ -5584,7 +5584,7 @@ var $author$project$ElmUI$Scroll$ContainerXY$Main$update = F2(
 						$author$project$Scroll$Container$Cmd$scrollWithConfig,
 						'scroll-container',
 						'top-right-element',
-						$author$project$ElmUI$Scroll$ContainerXY$Main$NoOp,
+						$author$project$ElmUI$Scroll$Container$Position$Both$Main$NoOp,
 						_Utils_update(
 							$author$project$Scroll$defaultConfig,
 							{
@@ -5597,7 +5597,7 @@ var $author$project$ElmUI$Scroll$ContainerXY$Main$update = F2(
 						$author$project$Scroll$Container$Cmd$scrollWithConfig,
 						'scroll-container',
 						'bottom-left-element',
-						$author$project$ElmUI$Scroll$ContainerXY$Main$NoOp,
+						$author$project$ElmUI$Scroll$Container$Position$Both$Main$NoOp,
 						_Utils_update(
 							$author$project$Scroll$defaultConfig,
 							{
@@ -5610,7 +5610,7 @@ var $author$project$ElmUI$Scroll$ContainerXY$Main$update = F2(
 						$author$project$Scroll$Container$Cmd$scrollWithConfig,
 						'scroll-container',
 						'bottom-right-element',
-						$author$project$ElmUI$Scroll$ContainerXY$Main$NoOp,
+						$author$project$ElmUI$Scroll$Container$Position$Both$Main$NoOp,
 						_Utils_update(
 							$author$project$Scroll$defaultConfig,
 							{
@@ -5623,7 +5623,7 @@ var $author$project$ElmUI$Scroll$ContainerXY$Main$update = F2(
 						$author$project$Scroll$Container$Cmd$scrollWithConfig,
 						'scroll-container',
 						'center-element',
-						$author$project$ElmUI$Scroll$ContainerXY$Main$NoOp,
+						$author$project$ElmUI$Scroll$Container$Position$Both$Main$NoOp,
 						_Utils_update(
 							$author$project$Scroll$defaultConfig,
 							{
@@ -5642,17 +5642,6 @@ var $mdgriffith$elm_ui$Element$rgb255 = F3(
 	});
 var $author$project$Common$Colors$backgroundLight = A3($mdgriffith$elm_ui$Element$rgb255, 248, 250, 252);
 var $author$project$Common$Colors$backgroundMedium = A3($mdgriffith$elm_ui$Element$rgb255, 226, 232, 240);
-var $author$project$Common$UI$calculateHorizontalWidth = function (_v0) {
-	var sectionCount = _v0.sectionCount;
-	var sectionWidth = _v0.sectionWidth;
-	var spacing = _v0.spacing;
-	var containerPaddingX = _v0.containerPaddingX;
-	var layoutPaddingX = _v0.layoutPaddingX;
-	var totalSpacingWidth = (sectionCount - 1) * spacing;
-	var totalSectionWidth = sectionCount * sectionWidth;
-	var totalPaddingWidth = containerPaddingX + layoutPaddingX;
-	return (totalSectionWidth + totalSpacingWidth) + totalPaddingWidth;
-};
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -5795,10 +5784,6 @@ var $mdgriffith$elm_ui$Element$paddingXY = F2(
 					xFloat));
 		}
 	});
-var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
-	return {$: 'Px', a: a};
-};
-var $mdgriffith$elm_ui$Element$px = $mdgriffith$elm_ui$Internal$Model$Px;
 var $mdgriffith$elm_ui$Internal$Model$Width = function (a) {
 	return {$: 'Width', a: a};
 };
@@ -5811,28 +5796,6 @@ var $author$project$Common$UI$getLayoutAttributes = function (layoutType) {
 					[
 						$mdgriffith$elm_ui$Element$htmlAttribute(
 						$elm$html$Html$Attributes$class('responsive-layout'))
-					]);
-			case 'Horizontal':
-				var calculatedWidth = $author$project$Common$UI$calculateHorizontalWidth(
-					{containerPaddingX: 40, layoutPaddingX: 80, sectionCount: 4, sectionWidth: 300, spacing: 40});
-				return _List_fromArray(
-					[
-						$mdgriffith$elm_ui$Element$width(
-						$mdgriffith$elm_ui$Element$px(calculatedWidth)),
-						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						$elm$html$Html$Attributes$class('horizontal-layout responsive-layout'))
-					]);
-			case 'HorizontalCustomWidth':
-				var customWidth = layoutType.a;
-				return _List_fromArray(
-					[
-						$mdgriffith$elm_ui$Element$width(
-						$mdgriffith$elm_ui$Element$px(
-							$elm$core$Basics$round(customWidth))),
-						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						$elm$html$Html$Attributes$class('horizontal-layout responsive-layout'))
 					]);
 			case 'Diagonal':
 				return _List_fromArray(
@@ -11767,11 +11730,11 @@ var $author$project$Common$UI$createDocument = F3(
 	});
 var $author$project$Common$UI$Primary = {$: 'Primary'};
 var $author$project$Common$UI$Purple = {$: 'Purple'};
-var $author$project$ElmUI$Scroll$ContainerXY$Main$ScrollToBottomLeft = {$: 'ScrollToBottomLeft'};
-var $author$project$ElmUI$Scroll$ContainerXY$Main$ScrollToBottomRight = {$: 'ScrollToBottomRight'};
-var $author$project$ElmUI$Scroll$ContainerXY$Main$ScrollToCenter = {$: 'ScrollToCenter'};
-var $author$project$ElmUI$Scroll$ContainerXY$Main$ScrollToTopLeft = {$: 'ScrollToTopLeft'};
-var $author$project$ElmUI$Scroll$ContainerXY$Main$ScrollToTopRight = {$: 'ScrollToTopRight'};
+var $author$project$ElmUI$Scroll$Container$Position$Both$Main$ScrollToBottomLeft = {$: 'ScrollToBottomLeft'};
+var $author$project$ElmUI$Scroll$Container$Position$Both$Main$ScrollToBottomRight = {$: 'ScrollToBottomRight'};
+var $author$project$ElmUI$Scroll$Container$Position$Both$Main$ScrollToCenter = {$: 'ScrollToCenter'};
+var $author$project$ElmUI$Scroll$Container$Position$Both$Main$ScrollToTopLeft = {$: 'ScrollToTopLeft'};
+var $author$project$ElmUI$Scroll$Container$Position$Both$Main$ScrollToTopRight = {$: 'ScrollToTopRight'};
 var $author$project$Common$UI$Success = {$: 'Success'};
 var $author$project$Common$UI$Warning = {$: 'Warning'};
 var $mdgriffith$elm_ui$Internal$Model$Left = {$: 'Left'};
@@ -11787,7 +11750,6 @@ var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
 			'color',
 			fontColor));
 };
-var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
@@ -11877,9 +11839,7 @@ var $author$project$Common$UI$backButton = A2(
 			}),
 			$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$backgroundWhite),
 			$mdgriffith$elm_ui$Element$Font$semiBold,
-			$mdgriffith$elm_ui$Element$Border$rounded(8),
-			$mdgriffith$elm_ui$Element$htmlAttribute(
-			$elm$html$Html$Attributes$id('top'))
+			$mdgriffith$elm_ui$Element$Border$rounded(8)
 		]),
 	{
 		label: $mdgriffith$elm_ui$Element$text('← Back to Examples'),
@@ -11988,6 +11948,7 @@ var $author$project$Common$UI$htmlActionButtons = function (buttons) {
 					]),
 				htmlButtons)));
 };
+var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $mdgriffith$elm_ui$Internal$Model$Empty = {$: 'Empty'};
 var $mdgriffith$elm_ui$Element$none = $mdgriffith$elm_ui$Internal$Model$Empty;
 var $mdgriffith$elm_ui$Internal$Model$Describe = function (a) {
@@ -12030,6 +11991,10 @@ var $author$project$Common$UI$pageHeader = function (title) {
 			]));
 };
 var $author$project$Common$Colors$purple = A3($mdgriffith$elm_ui$Element$rgb255, 168, 85, 247);
+var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
+	return {$: 'Px', a: a};
+};
+var $mdgriffith$elm_ui$Element$px = $mdgriffith$elm_ui$Internal$Model$Px;
 var $author$project$Common$Colors$red = A3($mdgriffith$elm_ui$Element$rgb255, 245, 101, 101);
 var $mdgriffith$elm_ui$Internal$Model$AsRow = {$: 'AsRow'};
 var $mdgriffith$elm_ui$Internal$Model$asRow = $mdgriffith$elm_ui$Internal$Model$AsRow;
@@ -12064,7 +12029,7 @@ var $mdgriffith$elm_ui$Element$Font$size = function (i) {
 		$mdgriffith$elm_ui$Internal$Flag$fontSize,
 		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
 };
-var $author$project$ElmUI$Scroll$ContainerXY$Main$viewCornerElement = F3(
+var $author$project$ElmUI$Scroll$Container$Position$Both$Main$viewCornerElement = F3(
 	function (elementId, labelText, color) {
 		return A2(
 			$mdgriffith$elm_ui$Element$column,
@@ -12148,7 +12113,7 @@ var $mdgriffith$elm_ui$Element$Border$width = function (v) {
 			v,
 			v));
 };
-var $author$project$ElmUI$Scroll$ContainerXY$Main$viewContent = function (model) {
+var $author$project$ElmUI$Scroll$Container$Position$Both$Main$viewContent = function (model) {
 	return _List_fromArray(
 		[
 			$author$project$Common$UI$backButton,
@@ -12156,11 +12121,11 @@ var $author$project$ElmUI$Scroll$ContainerXY$Main$viewContent = function (model)
 			$author$project$Common$UI$htmlActionButtons(
 			_List_fromArray(
 				[
-					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$ContainerXY$Main$ScrollToTopLeft, 'Top Left'),
-					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Scroll$ContainerXY$Main$ScrollToTopRight, 'Top Right'),
-					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$ContainerXY$Main$ScrollToBottomLeft, 'Bottom Left'),
-					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$ContainerXY$Main$ScrollToBottomRight, 'Bottom Right'),
-					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$ContainerXY$Main$ScrollToCenter, 'Center')
+					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$Container$Position$Both$Main$ScrollToTopLeft, 'Top Left'),
+					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Scroll$Container$Position$Both$Main$ScrollToTopRight, 'Top Right'),
+					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Scroll$Container$Position$Both$Main$ScrollToBottomLeft, 'Bottom Left'),
+					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Scroll$Container$Position$Both$Main$ScrollToBottomRight, 'Bottom Right'),
+					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Scroll$Container$Position$Both$Main$ScrollToCenter, 'Center')
 				])),
 			A2(
 			$mdgriffith$elm_ui$Element$el,
@@ -12210,7 +12175,7 @@ var $author$project$ElmUI$Scroll$ContainerXY$Main$viewContent = function (model)
 									]),
 								_List_fromArray(
 									[
-										A3($author$project$ElmUI$Scroll$ContainerXY$Main$viewCornerElement, 'top-left-element', '🔵 Top Left', $author$project$Common$Colors$primary),
+										A3($author$project$ElmUI$Scroll$Container$Position$Both$Main$viewCornerElement, 'top-left-element', '🔵 Top Left', $author$project$Common$Colors$primary),
 										A2(
 										$mdgriffith$elm_ui$Element$el,
 										_List_fromArray(
@@ -12218,7 +12183,7 @@ var $author$project$ElmUI$Scroll$ContainerXY$Main$viewContent = function (model)
 												$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
 											]),
 										$mdgriffith$elm_ui$Element$none),
-										A3($author$project$ElmUI$Scroll$ContainerXY$Main$viewCornerElement, 'top-right-element', '🟢 Top Right', $author$project$Common$Colors$success)
+										A3($author$project$ElmUI$Scroll$Container$Position$Both$Main$viewCornerElement, 'top-right-element', '🟢 Top Right', $author$project$Common$Colors$success)
 									])),
 								A2(
 								$mdgriffith$elm_ui$Element$row,
@@ -12237,7 +12202,7 @@ var $author$project$ElmUI$Scroll$ContainerXY$Main$viewContent = function (model)
 												$mdgriffith$elm_ui$Element$px(300))
 											]),
 										$mdgriffith$elm_ui$Element$none),
-										A3($author$project$ElmUI$Scroll$ContainerXY$Main$viewCornerElement, 'center-element', '🟡 Center', $author$project$Common$Colors$warning),
+										A3($author$project$ElmUI$Scroll$Container$Position$Both$Main$viewCornerElement, 'center-element', '🟡 Center', $author$project$Common$Colors$warning),
 										A2(
 										$mdgriffith$elm_ui$Element$el,
 										_List_fromArray(
@@ -12255,7 +12220,7 @@ var $author$project$ElmUI$Scroll$ContainerXY$Main$viewContent = function (model)
 									]),
 								_List_fromArray(
 									[
-										A3($author$project$ElmUI$Scroll$ContainerXY$Main$viewCornerElement, 'bottom-left-element', '🟣 Bottom Left', $author$project$Common$Colors$purple),
+										A3($author$project$ElmUI$Scroll$Container$Position$Both$Main$viewCornerElement, 'bottom-left-element', '🟣 Bottom Left', $author$project$Common$Colors$purple),
 										A2(
 										$mdgriffith$elm_ui$Element$el,
 										_List_fromArray(
@@ -12263,27 +12228,27 @@ var $author$project$ElmUI$Scroll$ContainerXY$Main$viewContent = function (model)
 												$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
 											]),
 										$mdgriffith$elm_ui$Element$none),
-										A3($author$project$ElmUI$Scroll$ContainerXY$Main$viewCornerElement, 'bottom-right-element', '🔴 Bottom Right', $author$project$Common$Colors$red)
+										A3($author$project$ElmUI$Scroll$Container$Position$Both$Main$viewCornerElement, 'bottom-right-element', '🔴 Bottom Right', $author$project$Common$Colors$red)
 									]))
 							]))
 					])))
 		]);
 };
-var $author$project$ElmUI$Scroll$ContainerXY$Main$view = function (model) {
+var $author$project$ElmUI$Scroll$Container$Position$Both$Main$view = function (model) {
 	return A3(
 		$author$project$Common$UI$createDocument,
 		'SmoothMoveScroll Container XY - ElmUI Example',
 		$author$project$Common$UI$Container,
-		$author$project$ElmUI$Scroll$ContainerXY$Main$viewContent(model));
+		$author$project$ElmUI$Scroll$Container$Position$Both$Main$viewContent(model));
 };
-var $author$project$ElmUI$Scroll$ContainerXY$Main$main = $elm$browser$Browser$document(
+var $author$project$ElmUI$Scroll$Container$Position$Both$Main$main = $elm$browser$Browser$document(
 	{
-		init: $author$project$ElmUI$Scroll$ContainerXY$Main$init,
+		init: $author$project$ElmUI$Scroll$Container$Position$Both$Main$init,
 		subscriptions: function (_v0) {
 			return $elm$core$Platform$Sub$none;
 		},
-		update: $author$project$ElmUI$Scroll$ContainerXY$Main$update,
-		view: $author$project$ElmUI$Scroll$ContainerXY$Main$view
+		update: $author$project$ElmUI$Scroll$Container$Position$Both$Main$update,
+		view: $author$project$ElmUI$Scroll$Container$Position$Both$Main$view
 	});
-_Platform_export({'ElmUI':{'Scroll':{'ContainerXY':{'Main':{'init':$author$project$ElmUI$Scroll$ContainerXY$Main$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}}}}});}(this));
+_Platform_export({'ElmUI':{'Scroll':{'Container':{'Position':{'Both':{'Main':{'init':$author$project$ElmUI$Scroll$Container$Position$Both$Main$main(
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}}}}}}});}(this));

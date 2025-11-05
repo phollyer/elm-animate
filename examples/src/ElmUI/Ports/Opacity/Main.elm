@@ -15,6 +15,8 @@ FEATURES:
 
 -}
 
+import Anim exposing (defaultConfig)
+import Anim.Ports exposing (Model, animateOpacity, encodeAnimationCommand, handlePropertyUpdateFromJson, init, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -25,8 +27,7 @@ import Element.Font as Font
 import Html.Attributes
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Anim exposing (defaultConfig)
-import Anim.Ports exposing (Model, init, animateOpacity, styleProperties, encodeAnimationCommand, handlePropertyUpdateFromJson)
+
 
 
 -- PORTS
@@ -58,6 +59,7 @@ main =
         }
 
 
+
 -- MODEL
 
 
@@ -65,6 +67,7 @@ type alias Model =
     { animations : Anim.Ports.Model
     , isVisible : Bool
     }
+
 
 
 -- INIT
@@ -87,6 +90,7 @@ type Msg
     | PositionUpdateReceived (Result Decode.Error Anim.Ports.PropertyUpdate)
 
 
+
 -- UPDATE
 
 
@@ -103,6 +107,7 @@ update msg model =
                     ( { model | animations = newModel, isVisible = True }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -116,14 +121,23 @@ update msg model =
                     ( { model | animations = newModel, isVisible = False }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
         FadeToggle ->
             -- Toggle between fully visible (1.0) and fully invisible (0.0)
             let
-                newOpacity = if model.isVisible then 0.0 else 1.0
-                newVisible = not model.isVisible
+                newOpacity =
+                    if model.isVisible then
+                        0.0
+
+                    else
+                        1.0
+
+                newVisible =
+                    not model.isVisible
+
                 ( newModel, maybeCommand ) =
                     animateOpacity "box" newOpacity model.animations
             in
@@ -132,6 +146,7 @@ update msg model =
                     ( { model | animations = newModel, isVisible = newVisible }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -144,8 +159,10 @@ update msg model =
                     ( { model | animations = Anim.Ports.handlePropertyUpdate propertyUpdate model.animations }
                     , Cmd.none
                     )
+
                 Err _ ->
                     ( model, Cmd.none )
+
 
 
 -- SUBSCRIPTIONS
@@ -157,6 +174,7 @@ subscriptions model =
         [ positionUpdates (PositionUpdateReceived << handlePropertyUpdateFromJson)
         , animationComplete AnimationComplete
         ]
+
 
 
 -- VIEW
@@ -189,28 +207,28 @@ viewContent model =
         ]
     , -- Animation area with boxes
       el
-            [ width (fill |> maximum 600)
-            , height (px 300)
-            , Background.color Colors.backgroundWhite
-            , Border.rounded 12
-            , Border.shadow
-                { offset = ( 0, 4 )
-                , size = 0
-                , blur = 8
-                , color = Element.rgba 0 0 0 0.1
-                }
-            , centerX
-            , htmlAttribute (Html.Attributes.style "position" "relative")
-            , htmlAttribute (Html.Attributes.style "overflow" "hidden")
+        [ width (fill |> maximum 600)
+        , height (px 300)
+        , Background.color Colors.backgroundWhite
+        , Border.rounded 12
+        , Border.shadow
+            { offset = ( 0, 4 )
+            , size = 0
+            , blur = 8
+            , color = Element.rgba 0 0 0 0.1
+            }
+        , centerX
+        , htmlAttribute (Html.Attributes.style "position" "relative")
+        , htmlAttribute (Html.Attributes.style "overflow" "hidden")
+        ]
+        (el
+            [ centerX
+            , Element.centerY
+            , width (px 200)
+            , height (px 200)
             ]
-            (el
-                [ centerX
-                , Element.centerY
-                , width (px 200)
-                , height (px 200)
-                ]
-                (animatedBox "box" "Opacity Demo" Colors.primary model)
-            )
+            (animatedBox "box" "Opacity Demo" Colors.primary model)
+        )
     ]
 
 
@@ -218,24 +236,25 @@ animatedBox : String -> String -> Element.Color -> Model -> Element Msg
 animatedBox elementId label color model =
     el
         ([ width (px 150)
-        , height (px 150)
-        , Background.color color
-        , Border.rounded 12
-        , centerX
-        , htmlAttribute (Html.Attributes.id elementId)
-        , htmlAttribute (Html.Attributes.style "display" "flex")
-        , htmlAttribute (Html.Attributes.style "align-items" "center")
-        , htmlAttribute (Html.Attributes.style "justify-content" "center")
-        ] 
-        ++ (styleProperties elementId model.animations
-            |> List.map (\(prop, value) -> htmlAttribute (Html.Attributes.style prop value)))
+         , height (px 150)
+         , Background.color color
+         , Border.rounded 12
+         , centerX
+         , htmlAttribute (Html.Attributes.id elementId)
+         , htmlAttribute (Html.Attributes.style "display" "flex")
+         , htmlAttribute (Html.Attributes.style "align-items" "center")
+         , htmlAttribute (Html.Attributes.style "justify-content" "center")
+         ]
+            ++ (styleProperties elementId model.animations
+                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+               )
         )
-        (el 
+        (el
             [ centerX
             , Element.centerY
             , Font.color Colors.backgroundWhite
             , Font.bold
             , Font.size 16
-            ] 
+            ]
             (text label)
         )

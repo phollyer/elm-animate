@@ -1,4 +1,4 @@
-module ElmUI.Scroll.DocumentXY.Main exposing (main)
+module ElmUI.Scroll.Document.Position.Both.Main exposing (main)
 
 import Browser exposing (Document)
 import Common.Colors as Colors
@@ -23,7 +23,7 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = (\_ -> Sub.none)
+        , subscriptions = \_ -> Sub.none
         }
 
 
@@ -40,12 +40,13 @@ init _ =
     ( {}, Cmd.none )
 
 
-
 scrollTo : String -> Cmd Msg
 scrollTo targetId =
     Scroll.scrollWithConfig targetId NoOp <|
         { defaultConfig | axis = BothWithOffset 0 0 }
-        
+
+
+
 -- UPDATE
 
 
@@ -64,8 +65,8 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        ScrollToTopLeft ->  
-            ( model , scrollTo "top-left" )
+        ScrollToTopLeft ->
+            ( model, scrollTo "top-left" )
 
         ScrollToTopRight ->
             ( model, scrollTo "top-right" )
@@ -191,7 +192,7 @@ viewSimpleGrid =
 viewCard : String -> String -> Element.Color -> List String -> Element Msg
 viewCard targetId title color contentLines =
     column
-        [ width (fill |> maximum 500)  
+        [ width (fill |> maximum 500)
         , spacing 16
         , htmlAttribute (Html.Attributes.id targetId)
         , htmlAttribute (Html.Attributes.class "responsive-paragraph")
@@ -247,9 +248,12 @@ viewCard targetId title color contentLines =
                 [ spacing 12
                 , width fill
                 ]
-                (List.map (\(style, msg, label) ->
-                    UI.actionButton style msg label
-                ) (getNavigationButtons targetId))
+                (List.map
+                    (\( style, msg, label ) ->
+                        UI.actionButton style msg label
+                    )
+                    (getNavigationButtons targetId)
+                )
             ]
         ]
 
@@ -263,34 +267,34 @@ getNavigationButtons currentId =
             , ( UI.Warning, ScrollToBottomLeft, "↙ BL" )
             , ( UI.Primary, ScrollToBottomRight, "↘ BR" )
             ]
-        
+
         "top-right" ->
             [ ( UI.Primary, ScrollToTopLeft, "↖ TL" )
             , ( UI.Purple, ScrollToCenter, "🎯 C" )
             , ( UI.Warning, ScrollToBottomLeft, "↙ BL" )
             , ( UI.Success, ScrollToBottomRight, "↘ BR" )
             ]
-        
+
         "center" ->
             [ ( UI.Primary, ScrollToTopLeft, "↖ TL" )
             , ( UI.Success, ScrollToTopRight, "↗ TR" )
             , ( UI.Warning, ScrollToBottomLeft, "↙ BL" )
             , ( UI.Purple, ScrollToBottomRight, "↘ BR" )
             ]
-        
+
         "bottom-left" ->
             [ ( UI.Primary, ScrollToTopLeft, "↖ TL" )
             , ( UI.Success, ScrollToTopRight, "↗ TR" )
             , ( UI.Purple, ScrollToCenter, "🎯 C" )
             , ( UI.Warning, ScrollToBottomRight, "↘ BR" )
             ]
-        
+
         "bottom-right" ->
             [ ( UI.Primary, ScrollToTopLeft, "↖ TL" )
             , ( UI.Success, ScrollToTopRight, "↗ TR" )
             , ( UI.Purple, ScrollToCenter, "🎯 C" )
             , ( UI.Warning, ScrollToBottomLeft, "↙ BL" )
             ]
-        
+
         _ ->
             []

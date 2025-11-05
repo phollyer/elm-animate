@@ -15,6 +15,8 @@ FEATURES:
 
 -}
 
+import Anim exposing (ColorValue(..), Position, RotationValue, ScaleValue, defaultConfig)
+import Anim.Ports exposing (Model, animateBackgroundColor, animateOpacity, animateRotation, animateScale, animateTo, encodeAnimationCommand, handlePropertyUpdateFromJson, init, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -25,8 +27,6 @@ import Element.Font as Font
 import Html.Attributes
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Anim exposing (Position, ScaleValue, RotationValue, ColorValue(..), defaultConfig)
-import Anim.Ports exposing (Model, init, animateTo, animateScale, animateRotation, animateOpacity, animateBackgroundColor, styleProperties, encodeAnimationCommand, handlePropertyUpdateFromJson)
 
 
 
@@ -44,6 +44,8 @@ port positionUpdates : (Decode.Value -> msg) -> Sub msg
 
 port animationComplete : (String -> msg) -> Sub msg
 
+
+
 -- MAIN
 
 
@@ -57,6 +59,7 @@ main =
         }
 
 
+
 -- MODEL
 
 
@@ -68,12 +71,13 @@ type alias Model =
 type Msg
     = StartComplexAnimation String
     | StartFadeMove String
-    | StartSpinScale String  
+    | StartSpinScale String
     | StartColorMorph String
     | StartFullTransform String
     | ResetAll
     | AnimationComplete String
     | PositionUpdateReceived (Result Decode.Error Anim.Ports.PropertyUpdate)
+
 
 
 -- UPDATE
@@ -85,11 +89,16 @@ update msg model =
         StartComplexAnimation elementId ->
             -- Combine position + scale + rotation
             let
-                ( model1, maybeCmd1 ) = animateTo elementId (Position 200 100) model.animations
-                ( model2, maybeCmd2 ) = animateScale elementId { x = 1.5, y = 1.9 } model1
-                ( model3, maybeCmd3 ) = animateRotation elementId 90 model2
-                
-                commands = 
+                ( model1, maybeCmd1 ) =
+                    animateTo elementId (Position 200 100) model.animations
+
+                ( model2, maybeCmd2 ) =
+                    animateScale elementId { x = 1.5, y = 1.9 } model1
+
+                ( model3, maybeCmd3 ) =
+                    animateRotation elementId 90 model2
+
+                commands =
                     [ maybeCmd1, maybeCmd2, maybeCmd3 ]
                         |> List.filterMap identity
                         |> List.map (animateElement << encodeAnimationCommand)
@@ -99,10 +108,13 @@ update msg model =
         StartFadeMove elementId ->
             -- Combine opacity + position
             let
-                ( model1, maybeCmd1 ) = animateOpacity elementId 0.3 model.animations
-                ( model2, maybeCmd2 ) = animateTo elementId (Position 250 80) model1
-                
-                commands = 
+                ( model1, maybeCmd1 ) =
+                    animateOpacity elementId 0.3 model.animations
+
+                ( model2, maybeCmd2 ) =
+                    animateTo elementId (Position 250 80) model1
+
+                commands =
                     [ maybeCmd1, maybeCmd2 ]
                         |> List.filterMap identity
                         |> List.map (animateElement << encodeAnimationCommand)
@@ -112,11 +124,16 @@ update msg model =
         StartSpinScale elementId ->
             -- Combine rotation + scale + color
             let
-                ( model1, maybeCmd1 ) = animateRotation elementId 180 model.animations
-                ( model2, maybeCmd2 ) = animateScale elementId { x = 0.8, y = 0.8 } model1
-                ( model3, maybeCmd3 ) = animateBackgroundColor elementId (Hex "#e74c3c") model2
-                
-                commands = 
+                ( model1, maybeCmd1 ) =
+                    animateRotation elementId 180 model.animations
+
+                ( model2, maybeCmd2 ) =
+                    animateScale elementId { x = 0.8, y = 0.8 } model1
+
+                ( model3, maybeCmd3 ) =
+                    animateBackgroundColor elementId (Hex "#e74c3c") model2
+
+                commands =
                     [ maybeCmd1, maybeCmd2, maybeCmd3 ]
                         |> List.filterMap identity
                         |> List.map (animateElement << encodeAnimationCommand)
@@ -126,11 +143,16 @@ update msg model =
         StartColorMorph elementId ->
             -- Combine color + scale + opacity
             let
-                ( model1, maybeCmd1 ) = animateBackgroundColor elementId (Hsl { h = 142, s = 71, l = 45 }) model.animations
-                ( model2, maybeCmd2 ) = animateScale elementId { x = 2.0, y = 0.5 } model1
-                ( model3, maybeCmd3 ) = animateOpacity elementId 0.8 model2
-                
-                commands = 
+                ( model1, maybeCmd1 ) =
+                    animateBackgroundColor elementId (Hsl { h = 142, s = 71, l = 45 }) model.animations
+
+                ( model2, maybeCmd2 ) =
+                    animateScale elementId { x = 2.0, y = 0.5 } model1
+
+                ( model3, maybeCmd3 ) =
+                    animateOpacity elementId 0.8 model2
+
+                commands =
                     [ maybeCmd1, maybeCmd2, maybeCmd3 ]
                         |> List.filterMap identity
                         |> List.map (animateElement << encodeAnimationCommand)
@@ -140,13 +162,22 @@ update msg model =
         StartFullTransform elementId ->
             -- All properties at once with proper Ports pattern!
             let
-                ( model1, maybeCmd1 ) = animateTo elementId (Position 200 200) model.animations
-                ( model2, maybeCmd2 ) = animateScale elementId { x = 1.3, y = 1.3 } model1
-                ( model3, maybeCmd3 ) = animateRotation elementId 270 model2
-                ( model4, maybeCmd4 ) = animateOpacity elementId 0.7 model3
-                ( model5, maybeCmd5 ) = animateBackgroundColor elementId (Hex "#9b59b6") model4
-                
-                commands = 
+                ( model1, maybeCmd1 ) =
+                    animateTo elementId (Position 200 200) model.animations
+
+                ( model2, maybeCmd2 ) =
+                    animateScale elementId { x = 1.3, y = 1.3 } model1
+
+                ( model3, maybeCmd3 ) =
+                    animateRotation elementId 270 model2
+
+                ( model4, maybeCmd4 ) =
+                    animateOpacity elementId 0.7 model3
+
+                ( model5, maybeCmd5 ) =
+                    animateBackgroundColor elementId (Hex "#9b59b6") model4
+
+                commands =
                     [ maybeCmd1, maybeCmd2, maybeCmd3, maybeCmd4, maybeCmd5 ]
                         |> List.filterMap identity
                         |> List.map (animateElement << encodeAnimationCommand)
@@ -155,13 +186,22 @@ update msg model =
 
         ResetAll ->
             let
-                ( model1, maybeCmd1 ) = animateTo "mixed-box" (Position 0 0) model.animations
-                ( model2, maybeCmd2 ) = animateScale "mixed-box" { x = 1.0, y = 1.0 } model1
-                ( model3, maybeCmd3 ) = animateRotation "mixed-box" 0 model2
-                ( model4, maybeCmd4 ) = animateOpacity "mixed-box" 1.0 model3
-                ( model5, maybeCmd5 ) = animateBackgroundColor "mixed-box" (Hex "#3498db") model4
-                
-                commands = 
+                ( model1, maybeCmd1 ) =
+                    animateTo "mixed-box" (Position 0 0) model.animations
+
+                ( model2, maybeCmd2 ) =
+                    animateScale "mixed-box" { x = 1.0, y = 1.0 } model1
+
+                ( model3, maybeCmd3 ) =
+                    animateRotation "mixed-box" 0 model2
+
+                ( model4, maybeCmd4 ) =
+                    animateOpacity "mixed-box" 1.0 model3
+
+                ( model5, maybeCmd5 ) =
+                    animateBackgroundColor "mixed-box" (Hex "#3498db") model4
+
+                commands =
                     [ maybeCmd1, maybeCmd2, maybeCmd3, maybeCmd4, maybeCmd5 ]
                         |> List.filterMap identity
                         |> List.map (animateElement << encodeAnimationCommand)
@@ -177,8 +217,10 @@ update msg model =
                     ( { model | animations = Anim.Ports.handlePropertyUpdate propertyUpdate model.animations }
                     , Cmd.none
                     )
+
                 Err _ ->
                     ( model, Cmd.none )
+
 
 
 -- INIT
@@ -192,6 +234,7 @@ init _ =
     )
 
 
+
 -- SUBSCRIPTIONS
 
 
@@ -201,6 +244,7 @@ subscriptions model =
         [ positionUpdates (PositionUpdateReceived << handlePropertyUpdateFromJson)
         , animationComplete AnimationComplete
         ]
+
 
 
 -- VIEW
@@ -236,48 +280,49 @@ viewContent model =
         ]
     , -- Animation area
       el
-            [ width (fill |> maximum 600)
-            , height (px 400)
-            , Background.color Colors.backgroundWhite
-            , Border.rounded 12
-            , Border.shadow
-                { offset = ( 0, 4 )
-                , size = 0
-                , blur = 8
-                , color = Element.rgba 0 0 0 0.1
-                }
-            , centerX
-            , htmlAttribute (Html.Attributes.style "position" "relative")
-            , htmlAttribute (Html.Attributes.style "overflow" "visible")
-            ]
-            (mixedAnimationBox model)
+        [ width (fill |> maximum 600)
+        , height (px 400)
+        , Background.color Colors.backgroundWhite
+        , Border.rounded 12
+        , Border.shadow
+            { offset = ( 0, 4 )
+            , size = 0
+            , blur = 8
+            , color = Element.rgba 0 0 0 0.1
+            }
+        , centerX
+        , htmlAttribute (Html.Attributes.style "position" "relative")
+        , htmlAttribute (Html.Attributes.style "overflow" "visible")
         ]
+        (mixedAnimationBox model)
+    ]
 
 
 mixedAnimationBox : Model -> Element Msg
 mixedAnimationBox model =
     el
         ([ width (px 80)
-        , height (px 80)
-        , Border.rounded 12
-        , htmlAttribute (Html.Attributes.id "mixed-box")
-        , htmlAttribute (Html.Attributes.style "position" "absolute")
-        , htmlAttribute (Html.Attributes.style "background-color" "#3498db") -- Default blue
-        , htmlAttribute (Html.Attributes.style "transform-origin" "center")
-        , htmlAttribute (Html.Attributes.style "display" "flex")
-        , htmlAttribute (Html.Attributes.style "align-items" "center")
-        , htmlAttribute (Html.Attributes.style "justify-content" "center")
-        ] 
-        ++ (styleProperties "mixed-box" model.animations
-            |> List.map (\(prop, value) -> htmlAttribute (Html.Attributes.style prop value)))
+         , height (px 80)
+         , Border.rounded 12
+         , htmlAttribute (Html.Attributes.id "mixed-box")
+         , htmlAttribute (Html.Attributes.style "position" "absolute")
+         , htmlAttribute (Html.Attributes.style "background-color" "#3498db") -- Default blue
+         , htmlAttribute (Html.Attributes.style "transform-origin" "center")
+         , htmlAttribute (Html.Attributes.style "display" "flex")
+         , htmlAttribute (Html.Attributes.style "align-items" "center")
+         , htmlAttribute (Html.Attributes.style "justify-content" "center")
+         ]
+            ++ (styleProperties "mixed-box" model.animations
+                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+               )
         )
-        (el 
+        (el
             [ centerX
             , Element.centerY
             , Font.color Colors.backgroundWhite
             , Font.bold
             , Font.size 14
             , htmlAttribute (Html.Attributes.style "text-shadow" "0 1px 2px rgba(0,0,0,0.5)")
-            ] 
+            ]
             (text "MIX")
         )

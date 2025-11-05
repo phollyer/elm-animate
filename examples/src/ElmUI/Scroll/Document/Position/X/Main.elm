@@ -1,11 +1,11 @@
-module ElmUI.Scroll.DocumentX.Main exposing (main)
+module ElmUI.Scroll.Document.Position.X.Main exposing (main)
 
 import Browser exposing (Document)
 import Browser.Dom
 import Browser.Events
 import Common.Colors as Colors
 import Common.UI as UI
-import Element exposing (Element, alignLeft, alignRight, scrollbarX, centerX, centerY, column, el, explain, fill, height, htmlAttribute, layout, link, maximum, padding, paddingEach, paddingXY, paragraph, px, rgb255, row, spacing, text, width)
+import Element exposing (Element, alignLeft, alignRight, centerX, centerY, column, el, explain, fill, height, htmlAttribute, layout, link, maximum, padding, paddingEach, paddingXY, paragraph, px, rgb255, row, scrollbarX, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -68,7 +68,7 @@ update msg model =
         ScrollToSection id ->
             ( model
             , Scroll.scrollWithConfig id NoOp <|
-                 { defaultConfig | axis = XWithOffset 20 } 
+                { defaultConfig | axis = XWithOffset 20 }
             )
 
         ScrollToStart ->
@@ -100,27 +100,45 @@ subscriptions model =
 getButtonStyle : Int -> UI.ButtonStyle
 getButtonStyle index =
     case modBy 4 index of
-        0 -> UI.Success
-        1 -> UI.Primary
-        2 -> UI.Purple
-        _ -> UI.Warning
+        0 ->
+            UI.Success
+
+        1 ->
+            UI.Primary
+
+        2 ->
+            UI.Purple
+
+        _ ->
+            UI.Warning
 
 
 getTitleColor : Int -> Element.Color
 getTitleColor index =
     case modBy 4 index of
-        0 -> Colors.success
-        1 -> Colors.primary
-        2 -> Colors.purple
-        _ -> Colors.warning
+        0 ->
+            Colors.success
+
+        1 ->
+            Colors.primary
+
+        2 ->
+            Colors.purple
+
+        _ ->
+            Colors.warning
 
 
 generateSectionButtons : Int -> Int -> List ( UI.ButtonStyle, Msg, String )
 generateSectionButtons currentSection totalSections =
     let
-        startButton = [ ( UI.Primary, ScrollToStart, "Start" ) ]
-        endButton = [ ( UI.Warning, ScrollToEnd, "End" ) ]
-        sectionButtons = 
+        startButton =
+            [ ( UI.Primary, ScrollToStart, "Start" ) ]
+
+        endButton =
+            [ ( UI.Warning, ScrollToEnd, "End" ) ]
+
+        sectionButtons =
             List.range 1 totalSections
                 |> List.filter (\n -> n /= currentSection)
                 --|> List.take 3  -- Limit to 3 other sections to avoid too many buttons
@@ -131,11 +149,11 @@ generateSectionButtons currentSection totalSections =
 
 generateSection : Int -> Int -> Element Msg
 generateSection sectionNum totalSections =
-    UI.contentSection 
+    UI.contentSection
         { id = "section-" ++ String.fromInt sectionNum
         , title = "Section " ++ String.fromInt sectionNum
         , titleColor = Just (getTitleColor sectionNum)
-        , content = 
+        , content =
             [ "This is section " ++ String.fromInt sectionNum ++ " of our horizontal scrolling example."
             , "Use the add/remove buttons to change the number of sections dynamically."
             ]
@@ -148,16 +166,18 @@ generateSection sectionNum totalSections =
 generateStartSection : Int -> Element Msg
 generateStartSection totalSections =
     let
-        sectionButtons = 
-            List.range 1 (totalSections)  
+        sectionButtons =
+            List.range 1 totalSections
                 |> List.map (\n -> ( getButtonStyle n, ScrollToSection ("section-" ++ String.fromInt n), "Section " ++ String.fromInt n ))
-        endButton = [ ( UI.Warning, ScrollToEnd, "End" ) ]
+
+        endButton =
+            [ ( UI.Warning, ScrollToEnd, "End" ) ]
     in
-    UI.contentSection 
+    UI.contentSection
         { id = "start"
         , title = "🚀 Start Here"
         , titleColor = Just Colors.primary
-        , content = 
+        , content =
             [ "Welcome to the horizontal scrolling demonstration!"
             , "This is the starting point of our X axis scrolling example."
             , "Current sections: " ++ String.fromInt totalSections
@@ -178,28 +198,26 @@ viewContent : Model -> List (Element Msg)
 viewContent model =
     [ -- Back Button
       UI.backButton
-        , -- Header
-          UI.pageHeader "Horizontal X Axis Scrolling"
-        
-        , -- Add/Remove Section Controls
-        column
-            [ spacing 8, centerX ]
-            [ paragraph
-                [Font.center]
-                [text "Add or remove sections to increase or decrease the page width."]
+    , -- Header
+      UI.pageHeader "Horizontal X Axis Scrolling"
+    , -- Add/Remove Section Controls
+      column
+        [ spacing 8, centerX ]
+        [ paragraph
+            [ Font.center ]
+            [ text "Add or remove sections to increase or decrease the page width." ]
         , el [ centerX ] <|
             UI.htmlActionButtons
                 [ ( UI.Success, AddSection, "+ Add Section" )
                 , ( UI.Warning, RemoveSection, "− Remove Section" )
                 ]
         ]
-
     , -- Horizontal Content Container
       row
         [ spacing 40 ]
-        ([ generateStartSection model.sectionCount ] ++
-         (List.range 1 model.sectionCount
-          |> List.map (\n -> generateSection n model.sectionCount)
-         )
+        ([ generateStartSection model.sectionCount ]
+            ++ (List.range 1 model.sectionCount
+                    |> List.map (\n -> generateSection n model.sectionCount)
+               )
         )
     ]

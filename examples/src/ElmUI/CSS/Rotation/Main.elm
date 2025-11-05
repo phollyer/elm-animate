@@ -15,6 +15,8 @@ FEATURES:
 
 -}
 
+import Anim exposing (RotationValue, defaultConfig)
+import Anim.CSS exposing (Model, animateRotation, init, onTransitionEnd, styleProperties, transitionStyles)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -23,8 +25,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
-import Anim exposing (RotationValue, defaultConfig)
-import Anim.CSS exposing (Model, init, animateRotation, styleProperties, transitionStyles, onTransitionEnd)
+
 
 
 -- MAIN
@@ -38,6 +39,7 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
+
 
 
 -- MODEL
@@ -58,6 +60,7 @@ type Msg
     | AnimationComplete
 
 
+
 -- UPDATE
 
 
@@ -65,42 +68,42 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Rotate45 ->
-            ( { model 
+            ( { model
                 | animations = animateRotation "box" 45 model.animations
               }
             , Cmd.none
             )
 
         Rotate90 ->
-            ( { model 
+            ( { model
                 | animations = animateRotation "box" 90 model.animations
               }
             , Cmd.none
             )
 
         Rotate180 ->
-            ( { model 
+            ( { model
                 | animations = animateRotation "box" 180 model.animations
               }
             , Cmd.none
             )
 
         RotateLeft ->
-            ( { model 
+            ( { model
                 | animations = animateRotation "box" -90 model.animations
               }
             , Cmd.none
             )
 
         RotateRight ->
-            ( { model 
+            ( { model
                 | animations = animateRotation "box" 90 model.animations
               }
             , Cmd.none
             )
 
         ResetRotation ->
-            ( { model 
+            ( { model
                 | animations = animateRotation "box" 0 model.animations
               }
             , Cmd.none
@@ -108,6 +111,7 @@ update msg model =
 
         AnimationComplete ->
             ( model, Cmd.none )
+
 
 
 -- INIT
@@ -121,12 +125,14 @@ init _ =
     )
 
 
+
 -- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.none
+
 
 
 -- VIEW
@@ -161,33 +167,33 @@ viewContent model =
         ]
     , -- Animation area with boxes
       el
-            [ width (fill |> maximum 600)
-            , height (px 400)
-            , Background.color Colors.backgroundWhite
-            , Border.rounded 12
-            , Border.shadow
-                { offset = ( 0, 4 )
-                , size = 0
-                , blur = 8
-                , color = Element.rgba 0 0 0 0.1
-                }
-            , centerX
-            , htmlAttribute (Html.Attributes.style "position" "relative")
-            , htmlAttribute (Html.Attributes.style "overflow" "visible")
-            , htmlAttribute (Html.Attributes.style "display" "flex")
-            , htmlAttribute (Html.Attributes.style "flex-direction" "column")
-            , htmlAttribute (Html.Attributes.style "align-items" "center")
-            , htmlAttribute (Html.Attributes.style "justify-content" "space-around")
-            , htmlAttribute (Html.Attributes.style "padding" "40px")
+        [ width (fill |> maximum 600)
+        , height (px 400)
+        , Background.color Colors.backgroundWhite
+        , Border.rounded 12
+        , Border.shadow
+            { offset = ( 0, 4 )
+            , size = 0
+            , blur = 8
+            , color = Element.rgba 0 0 0 0.1
+            }
+        , centerX
+        , htmlAttribute (Html.Attributes.style "position" "relative")
+        , htmlAttribute (Html.Attributes.style "overflow" "visible")
+        , htmlAttribute (Html.Attributes.style "display" "flex")
+        , htmlAttribute (Html.Attributes.style "flex-direction" "column")
+        , htmlAttribute (Html.Attributes.style "align-items" "center")
+        , htmlAttribute (Html.Attributes.style "justify-content" "space-around")
+        , htmlAttribute (Html.Attributes.style "padding" "40px")
+        ]
+        (el
+            [ centerX
+            , Element.centerY
+            , width (px 200)
+            , height (px 200)
             ]
-            (el
-                [ centerX
-                , Element.centerY
-                , width (px 200)
-                , height (px 200)
-                ]
-                (rotatingElement "box" "→" "Rotation Demo" Colors.primary model)
-            )
+            (rotatingElement "box" "→" "Rotation Demo" Colors.primary model)
+        )
     ]
 
 
@@ -195,33 +201,37 @@ rotatingElement : String -> String -> String -> Element.Color -> Model -> Elemen
 rotatingElement elementId symbol label color model =
     el
         ([ width (px 150)
-        , height (px 150)
-        , Background.color color
-        , Border.rounded 12
-        , centerX
-        , htmlAttribute (Html.Attributes.id elementId)
-        , htmlAttribute (Html.Attributes.style "transform-origin" "center")
-        , htmlAttribute (Html.Attributes.style "display" "flex")
-        , htmlAttribute (Html.Attributes.style "align-items" "center")
-        , htmlAttribute (Html.Attributes.style "justify-content" "center")
-        ] 
-        ++ (styleProperties elementId model.animations
-            |> List.map (\(prop, value) -> htmlAttribute (Html.Attributes.style prop value)))
-        ++ [ htmlAttribute (Html.Attributes.style "transition" 
-                (transitionStyles elementId model.animations))
-        , htmlAttribute (onTransitionEnd AnimationComplete)
-        ])
+         , height (px 150)
+         , Background.color color
+         , Border.rounded 12
+         , centerX
+         , htmlAttribute (Html.Attributes.id elementId)
+         , htmlAttribute (Html.Attributes.style "transform-origin" "center")
+         , htmlAttribute (Html.Attributes.style "display" "flex")
+         , htmlAttribute (Html.Attributes.style "align-items" "center")
+         , htmlAttribute (Html.Attributes.style "justify-content" "center")
+         ]
+            ++ (styleProperties elementId model.animations
+                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+               )
+            ++ [ htmlAttribute
+                    (Html.Attributes.style "transition"
+                        (transitionStyles elementId model.animations)
+                    )
+               , htmlAttribute (onTransitionEnd AnimationComplete)
+               ]
+        )
         (column
             [ centerX
             , Element.centerY
             , spacing 8
             ]
-            [ el 
+            [ el
                 [ centerX
                 , Font.color Colors.backgroundWhite
                 , Font.bold
                 , Font.size 32
-                ] 
+                ]
                 (text symbol)
             , el
                 [ centerX

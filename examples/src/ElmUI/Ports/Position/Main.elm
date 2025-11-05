@@ -7,7 +7,7 @@ Perfect for high-performance animations with hardware acceleration and full plat
 
 FEATURES:
 
-  - ✅ Smooth position animations (X and Y coordinates) via JavaScript ports  
+  - ✅ Smooth position animations (X and Y coordinates) via JavaScript ports
   - ✅ Independent axis movement (animateToX, animateToY)
   - ✅ Web Animations API integration for optimal performance
   - ✅ Predefined position targets and directional movement
@@ -22,6 +22,8 @@ USAGE:
 
 -}
 
+import Anim exposing (Position, defaultConfig)
+import Anim.Ports exposing (Model, animateTo, animateToX, animateToY, encodeAnimationCommand, getPosition, handlePropertyUpdateFromJson, init, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -32,8 +34,6 @@ import Element.Font as Font
 import Html.Attributes
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Anim exposing (Position, defaultConfig)
-import Anim.Ports exposing (Model, init, animateTo, animateToX, animateToY, getPosition, styleProperties, encodeAnimationCommand, handlePropertyUpdateFromJson)
 
 
 
@@ -118,6 +118,7 @@ update msg model =
                     ( { model | animations = newModel, isAnimating = True }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -131,6 +132,7 @@ update msg model =
                     ( { model | animations = newModel, isAnimating = True }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -144,19 +146,23 @@ update msg model =
                     ( { model | animations = newModel, isAnimating = True }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
         MoveRight ->
             let
                 ( newModel, maybeCommand ) =
-                    animateToX "box" 450 model.animations  -- 500px container - 50px box = 450px for right edge
+                    animateToX "box" 450 model.animations
+
+                -- 500px container - 50px box = 450px for right edge
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel, isAnimating = True }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -170,19 +176,23 @@ update msg model =
                     ( { model | animations = newModel, isAnimating = True }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
         MoveDown ->
             let
                 ( newModel, maybeCommand ) =
-                    animateToY "box" 350 model.animations  -- 400px container - 50px box = 350px for bottom edge
+                    animateToY "box" 350 model.animations
+
+                -- 400px container - 50px box = 350px for bottom edge
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel, isAnimating = True }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -196,6 +206,7 @@ update msg model =
                     ( { model | animations = newModel, isAnimating = True }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -210,6 +221,7 @@ update msg model =
                     ( { model | animations = Anim.Ports.handlePropertyUpdate propertyUpdate model.animations }
                     , Cmd.none
                     )
+
                 Err _ ->
                     ( model, Cmd.none )
 
@@ -224,6 +236,9 @@ subscriptions model =
         [ positionUpdates (PositionUpdateReceived << handlePropertyUpdateFromJson)
         , animationComplete AnimationComplete
         ]
+
+
+
 -- VIEW
 
 
@@ -235,7 +250,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButton
-    , UI.pageHeader "Ports Position Animations"  
+    , UI.pageHeader "Ports Position Animations"
     , -- Position display
       el
         [ Font.size 14
@@ -245,6 +260,7 @@ viewContent model =
         (case getPosition "box" model.animations of
             Just position ->
                 text ("Position: (" ++ String.fromFloat position.x ++ ", " ++ String.fromFloat position.y ++ ")")
+
             Nothing ->
                 text "Position: (0, 0)"
         )
@@ -254,7 +270,7 @@ viewContent model =
         , ( UI.Success, MoveToCenter, "Move to (300, 200)" )
         , ( UI.Purple, StopAnimation, "Return to Origin" )
         ]
-    , -- Axis-specific movement buttons  
+    , -- Axis-specific movement buttons
       UI.htmlActionButtons
         [ ( UI.Warning, MoveLeft, "← Move Left" )
         , ( UI.Warning, MoveRight, "Move Right →" )
@@ -279,14 +295,15 @@ viewContent model =
         ]
         (el
             ([ width (px 50)
-            , height (px 50)
-            , Background.color Colors.primary
-            , Border.rounded 8
-            , htmlAttribute (Html.Attributes.id "box")
-            , htmlAttribute (Html.Attributes.style "position" "absolute")
-            ] 
-            ++ (styleProperties "box" model.animations
-                |> List.map (\(prop, value) -> htmlAttribute (Html.Attributes.style prop value)))
+             , height (px 50)
+             , Background.color Colors.primary
+             , Border.rounded 8
+             , htmlAttribute (Html.Attributes.id "box")
+             , htmlAttribute (Html.Attributes.style "position" "absolute")
+             ]
+                ++ (styleProperties "box" model.animations
+                        |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+                   )
             )
             (text "")
         )

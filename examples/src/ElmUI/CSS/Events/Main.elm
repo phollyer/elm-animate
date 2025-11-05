@@ -8,7 +8,7 @@ Learn how to coordinate animations and update your UI based on transition lifecy
 EVENT TYPES:
 
   - ✅ transitionstart - Fired when a transition starts
-  - ✅ transitionend - Fired when a transition completes  
+  - ✅ transitionend - Fired when a transition completes
   - ✅ transitionrun - Fired when a transition is created (even if delayed)
   - ✅ transitioncancel - Fired when a transition is interrupted
 
@@ -23,6 +23,8 @@ BENEFITS:
 
 -}
 
+import Anim exposing (Position, defaultConfig)
+import Anim.CSS exposing (Model, animatePosition, animateToX, animateToY, getCurrentPosition, init, onTransitionCancel, onTransitionEnd, onTransitionRun, onTransitionStart, styleProperties, transitionStyles)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -32,8 +34,6 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Html.Attributes
-import Anim exposing (Position, defaultConfig)
-import Anim.CSS exposing (Model, init, animatePosition, animateToX, animateToY, getCurrentPosition, styleProperties, transitionStyles, onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel)
 
 
 
@@ -72,7 +72,7 @@ type alias EventLogEntry =
 
 type EventType
     = TransitionStart
-    | TransitionEnd  
+    | TransitionEnd
     | TransitionRun
     | TransitionCancel
 
@@ -112,7 +112,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         MoveToCorner ->
-            ( { model 
+            ( { model
                 | animations = animatePosition "box" (Position 100 100) model.animations
                 , isAnimating = True
               }
@@ -120,7 +120,7 @@ update msg model =
             )
 
         MoveToCenter ->
-            ( { model 
+            ( { model
                 | animations = animatePosition "box" (Position 300 200) model.animations
                 , isAnimating = True
               }
@@ -128,7 +128,7 @@ update msg model =
             )
 
         MoveToOpposite ->
-            ( { model 
+            ( { model
                 | animations = animatePosition "box" (Position 400 50) model.animations
                 , isAnimating = True
               }
@@ -136,7 +136,7 @@ update msg model =
             )
 
         StopAnimation ->
-            ( { model 
+            ( { model
                 | animations = animatePosition "box" (Position 0 0) model.animations
                 , isAnimating = True
               }
@@ -178,20 +178,20 @@ addEventToLog eventType model =
     let
         currentPosition =
             getCurrentPosition "box" model.animations
-        
+
         newEntry =
             { id = model.eventCounter
             , eventType = eventType
-            , timestamp = model.eventCounter  -- Simple counter for demo
+            , timestamp = model.eventCounter -- Simple counter for demo
             , position = currentPosition
             }
-        
+
         -- Keep only the last 10 events for display
-        newLog = 
+        newLog =
             (newEntry :: model.eventLog)
                 |> List.take 10
     in
-    { model 
+    { model
         | eventLog = newLog
         , eventCounter = model.eventCounter + 1
     }
@@ -203,9 +203,11 @@ addEventToLog eventType model =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.none  -- No subscriptions needed - CSS events handle everything!
+    Sub.none
 
 
+
+-- No subscriptions needed - CSS events handle everything!
 -- VIEW
 
 
@@ -219,7 +221,7 @@ viewContent model =
     [ UI.backButton
     , UI.pageHeader "SmoothMoveCSS Events Example"
     , -- Current status display
-      column 
+      column
         [ spacing 8, centerX ]
         [ el
             [ Font.size 14
@@ -227,17 +229,31 @@ viewContent model =
             , centerX
             ]
             (let
-                pos = getCurrentPosition "box" model.animations
+                pos =
+                    getCurrentPosition "box" model.animations
              in
-                text ("Position: (" ++ String.fromInt (round pos.x) ++ ", " ++ String.fromInt (round pos.y) ++ ")")
+             text ("Position: (" ++ String.fromInt (round pos.x) ++ ", " ++ String.fromInt (round pos.y) ++ ")")
             )
         , el
             [ Font.size 14
-            , Font.color (if model.isAnimating then Colors.warning else Colors.success)
+            , Font.color
+                (if model.isAnimating then
+                    Colors.warning
+
+                 else
+                    Colors.success
+                )
             , centerX
             , Font.medium
             ]
-            (text (if model.isAnimating then "🎬 Animating..." else "✅ Animation Complete"))
+            (text
+                (if model.isAnimating then
+                    "🎬 Animating..."
+
+                 else
+                    "✅ Animation Complete"
+                )
+            )
         ]
     , -- Control buttons
       UI.htmlActionButtons
@@ -264,51 +280,55 @@ viewContent model =
         ]
         (el
             ([ width (px 50)
-            , height (px 50)
-            , Background.color Colors.primary
-            , Border.rounded 8
-            , htmlAttribute (Html.Attributes.id "box")
-            , htmlAttribute (Html.Attributes.style "position" "absolute")
-            
-            -- Apply CSS styles from animation model
-            ] 
-            ++ (styleProperties "box" model.animations
-                |> List.map (\(prop, value) -> htmlAttribute (Html.Attributes.style prop value)))
-            ++ [ htmlAttribute (Html.Attributes.style "transition" 
-                    (if model.isAnimating then
-                        transitionStyles "box" model.animations
-                     else
-                        "none"
-                    ))
-            
-            -- All CSS transition event handlers
-            , htmlAttribute (onTransitionStart OnTransitionStart)
-            , htmlAttribute (onTransitionEnd OnTransitionEnd)
-            , htmlAttribute (onTransitionRun OnTransitionRun)
-            , htmlAttribute (onTransitionCancel OnTransitionCancel)
-            ])
+             , height (px 50)
+             , Background.color Colors.primary
+             , Border.rounded 8
+             , htmlAttribute (Html.Attributes.id "box")
+             , htmlAttribute (Html.Attributes.style "position" "absolute")
+
+             -- Apply CSS styles from animation model
+             ]
+                ++ (styleProperties "box" model.animations
+                        |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+                   )
+                ++ [ htmlAttribute
+                        (Html.Attributes.style "transition"
+                            (if model.isAnimating then
+                                transitionStyles "box" model.animations
+
+                             else
+                                "none"
+                            )
+                        )
+
+                   -- All CSS transition event handlers
+                   , htmlAttribute (onTransitionStart OnTransitionStart)
+                   , htmlAttribute (onTransitionEnd OnTransitionEnd)
+                   , htmlAttribute (onTransitionRun OnTransitionRun)
+                   , htmlAttribute (onTransitionCancel OnTransitionCancel)
+                   ]
+            )
             (text "📦")
         )
     , -- Event log section
-      column 
+      column
         [ spacing 12, width (fill |> maximum 600), centerX ]
         [ -- Event log header with clear button
-        UI.htmlActionButtons
-                [ ( UI.Primary, ClearEventLog, "Clear Log" )]
-          ,el 
-                [ Font.size 18, Element.centerX, Font.medium, Font.color Colors.textDark ]
-                (text "🎯 Event Log")
-            
-            
+          UI.htmlActionButtons
+            [ ( UI.Primary, ClearEventLog, "Clear Log" ) ]
+        , el
+            [ Font.size 18, Element.centerX, Font.medium, Font.color Colors.textDark ]
+            (text "🎯 Event Log")
         , -- Event log display
           if List.isEmpty model.eventLog then
-            el 
-              [ Font.size 14, Font.color Colors.textMedium, centerX, padding 20 ]
-              (text "No events yet. Click a button to start animating!")
+            el
+                [ Font.size 14, Font.color Colors.textMedium, centerX, padding 20 ]
+                (text "No events yet. Click a button to start animating!")
+
           else
-            column 
-              [ spacing 6, width fill ]
-              (List.map (viewEventEntry model.eventCounter) model.eventLog)
+            column
+                [ spacing 6, width fill ]
+                (List.map (viewEventEntry model.eventCounter) model.eventLog)
         ]
     ]
 
@@ -316,31 +336,52 @@ viewContent model =
 viewEventEntry : Int -> EventLogEntry -> Element Msg
 viewEventEntry currentCounter entry =
     let
-        eventTypeInfo = getEventTypeInfo entry.eventType
-        isRecent = (currentCounter - entry.id) <= 1
+        eventTypeInfo =
+            getEventTypeInfo entry.eventType
+
+        isRecent =
+            (currentCounter - entry.id) <= 1
     in
     el
         [ width fill
         , padding 8
-        , Background.color (if isRecent then eventTypeInfo.bgColor else Colors.backgroundLight)
+        , Background.color
+            (if isRecent then
+                eventTypeInfo.bgColor
+
+             else
+                Colors.backgroundLight
+            )
         , Border.rounded 6
-        , Border.width (if isRecent then 2 else 1)
-        , Border.color (if isRecent then eventTypeInfo.borderColor else Colors.borderLight)
+        , Border.width
+            (if isRecent then
+                2
+
+             else
+                1
+            )
+        , Border.color
+            (if isRecent then
+                eventTypeInfo.borderColor
+
+             else
+                Colors.borderLight
+            )
         ]
         (Element.row
             [ width fill, spacing 12 ]
             [ el [ Font.size 16 ] (text eventTypeInfo.icon)
-            , column 
+            , column
                 [ spacing 2, width fill ]
-                [ el 
-                    [ Font.size 14, Font.medium, Font.color eventTypeInfo.textColor ] 
+                [ el
+                    [ Font.size 14, Font.medium, Font.color eventTypeInfo.textColor ]
                     (text eventTypeInfo.name)
-                , el 
-                    [ Font.size 12, Font.color Colors.textMedium ] 
+                , el
+                    [ Font.size 12, Font.color Colors.textMedium ]
                     (text ("Position: (" ++ String.fromInt (round entry.position.x) ++ ", " ++ String.fromInt (round entry.position.y) ++ ")"))
                 ]
-            , el 
-                [ Font.size 12, Font.color Colors.textLight ] 
+            , el
+                [ Font.size 12, Font.color Colors.textLight ]
                 (text ("#" ++ String.fromInt entry.id))
             ]
         )
@@ -365,7 +406,7 @@ getEventTypeInfo eventType =
             , bgColor = Element.rgba255 59 130 246 0.1
             , borderColor = Colors.primary
             }
-        
+
         TransitionEnd ->
             { name = "transitionend"
             , icon = "✅"
@@ -373,7 +414,7 @@ getEventTypeInfo eventType =
             , bgColor = Element.rgba255 16 185 129 0.1
             , borderColor = Colors.success
             }
-        
+
         TransitionRun ->
             { name = "transitionrun"
             , icon = "⚡"
@@ -381,7 +422,7 @@ getEventTypeInfo eventType =
             , bgColor = Element.rgba255 245 158 11 0.1
             , borderColor = Colors.warning
             }
-        
+
         TransitionCancel ->
             { name = "transitioncancel"
             , icon = "🚫"

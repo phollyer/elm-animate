@@ -15,6 +15,8 @@ FEATURES:
 
 -}
 
+import Anim exposing (RotationValue, defaultConfig)
+import Anim.Ports exposing (Model, animateRotation, encodeAnimationCommand, handlePropertyUpdateFromJson, init, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -25,8 +27,7 @@ import Element.Font as Font
 import Html.Attributes
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Anim exposing (RotationValue, defaultConfig)
-import Anim.Ports exposing (Model, init, animateRotation, styleProperties, encodeAnimationCommand, handlePropertyUpdateFromJson)
+
 
 
 -- PORTS
@@ -58,6 +59,7 @@ main =
         }
 
 
+
 -- MODEL
 
 
@@ -77,6 +79,7 @@ type Msg
     | PositionUpdateReceived (Result Decode.Error Anim.Ports.PropertyUpdate)
 
 
+
 -- UPDATE
 
 
@@ -93,6 +96,7 @@ update msg model =
                     ( { model | animations = newModel }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -106,6 +110,7 @@ update msg model =
                     ( { model | animations = newModel }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -119,6 +124,7 @@ update msg model =
                     ( { model | animations = newModel }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -132,6 +138,7 @@ update msg model =
                     ( { model | animations = newModel }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -145,6 +152,7 @@ update msg model =
                     ( { model | animations = newModel }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -158,6 +166,7 @@ update msg model =
                     ( { model | animations = newModel }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -170,8 +179,10 @@ update msg model =
                     ( { model | animations = Anim.Ports.handlePropertyUpdate propertyUpdate model.animations }
                     , Cmd.none
                     )
+
                 Err _ ->
                     ( model, Cmd.none )
+
 
 
 -- INIT
@@ -185,6 +196,7 @@ init _ =
     )
 
 
+
 -- SUBSCRIPTIONS
 
 
@@ -194,6 +206,7 @@ subscriptions model =
         [ positionUpdates (PositionUpdateReceived << handlePropertyUpdateFromJson)
         , animationComplete AnimationComplete
         ]
+
 
 
 -- VIEW
@@ -228,33 +241,33 @@ viewContent model =
         ]
     , -- Animation area with boxes
       el
-            [ width (fill |> maximum 600)
-            , height (px 400)
-            , Background.color Colors.backgroundWhite
-            , Border.rounded 12
-            , Border.shadow
-                { offset = ( 0, 4 )
-                , size = 0
-                , blur = 8
-                , color = Element.rgba 0 0 0 0.1
-                }
-            , centerX
-            , htmlAttribute (Html.Attributes.style "position" "relative")
-            , htmlAttribute (Html.Attributes.style "overflow" "visible")
-            , htmlAttribute (Html.Attributes.style "display" "flex")
-            , htmlAttribute (Html.Attributes.style "flex-direction" "column")
-            , htmlAttribute (Html.Attributes.style "align-items" "center")
-            , htmlAttribute (Html.Attributes.style "justify-content" "space-around")
-            , htmlAttribute (Html.Attributes.style "padding" "40px")
+        [ width (fill |> maximum 600)
+        , height (px 400)
+        , Background.color Colors.backgroundWhite
+        , Border.rounded 12
+        , Border.shadow
+            { offset = ( 0, 4 )
+            , size = 0
+            , blur = 8
+            , color = Element.rgba 0 0 0 0.1
+            }
+        , centerX
+        , htmlAttribute (Html.Attributes.style "position" "relative")
+        , htmlAttribute (Html.Attributes.style "overflow" "visible")
+        , htmlAttribute (Html.Attributes.style "display" "flex")
+        , htmlAttribute (Html.Attributes.style "flex-direction" "column")
+        , htmlAttribute (Html.Attributes.style "align-items" "center")
+        , htmlAttribute (Html.Attributes.style "justify-content" "space-around")
+        , htmlAttribute (Html.Attributes.style "padding" "40px")
+        ]
+        (el
+            [ centerX
+            , Element.centerY
+            , width (px 200)
+            , height (px 200)
             ]
-            (el
-                [ centerX
-                , Element.centerY
-                , width (px 200)
-                , height (px 200)
-                ]
-                (rotatingElement "box" "→" "Rotation Demo" Colors.primary model)
-            )
+            (rotatingElement "box" "→" "Rotation Demo" Colors.primary model)
+        )
     ]
 
 
@@ -262,30 +275,31 @@ rotatingElement : String -> String -> String -> Element.Color -> Model -> Elemen
 rotatingElement elementId symbol label color model =
     el
         ([ width (px 150)
-        , height (px 150)
-        , Background.color color
-        , Border.rounded 12
-        , centerX
-        , htmlAttribute (Html.Attributes.id elementId)
-        , htmlAttribute (Html.Attributes.style "transform-origin" "center")
-        , htmlAttribute (Html.Attributes.style "display" "flex")
-        , htmlAttribute (Html.Attributes.style "align-items" "center")
-        , htmlAttribute (Html.Attributes.style "justify-content" "center")
-        ] 
-        ++ (styleProperties elementId model.animations
-            |> List.map (\(prop, value) -> htmlAttribute (Html.Attributes.style prop value)))
+         , height (px 150)
+         , Background.color color
+         , Border.rounded 12
+         , centerX
+         , htmlAttribute (Html.Attributes.id elementId)
+         , htmlAttribute (Html.Attributes.style "transform-origin" "center")
+         , htmlAttribute (Html.Attributes.style "display" "flex")
+         , htmlAttribute (Html.Attributes.style "align-items" "center")
+         , htmlAttribute (Html.Attributes.style "justify-content" "center")
+         ]
+            ++ (styleProperties elementId model.animations
+                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+               )
         )
         (column
             [ centerX
             , Element.centerY
             , spacing 8
             ]
-            [ el 
+            [ el
                 [ centerX
                 , Font.color Colors.backgroundWhite
                 , Font.bold
                 , Font.size 32
-                ] 
+                ]
                 (text symbol)
             , el
                 [ centerX

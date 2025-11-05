@@ -12023,8 +12023,6 @@ var $mdgriffith$elm_ui$Element$Background$gradient = function (_v0) {
 		}
 	}
 };
-var $mdgriffith$elm_ui$Element$htmlAttribute = $mdgriffith$elm_ui$Internal$Model$Attr;
-var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
@@ -12114,9 +12112,7 @@ var $author$project$Common$UI$backButton = A2(
 			}),
 			$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$backgroundWhite),
 			$mdgriffith$elm_ui$Element$Font$semiBold,
-			$mdgriffith$elm_ui$Element$Border$rounded(8),
-			$mdgriffith$elm_ui$Element$htmlAttribute(
-			$elm$html$Html$Attributes$id('top'))
+			$mdgriffith$elm_ui$Element$Border$rounded(8)
 		]),
 	{
 		label: $mdgriffith$elm_ui$Element$text('← Back to Examples'),
@@ -12293,6 +12289,7 @@ var $author$project$Common$UI$htmlActionButtons = function (buttons) {
 };
 var $mdgriffith$elm_ui$Internal$Model$Empty = {$: 'Empty'};
 var $mdgriffith$elm_ui$Element$none = $mdgriffith$elm_ui$Internal$Model$Empty;
+var $mdgriffith$elm_ui$Element$htmlAttribute = $mdgriffith$elm_ui$Internal$Model$Attr;
 var $mdgriffith$elm_ui$Internal$Model$Describe = function (a) {
 	return {$: 'Describe', a: a};
 };
@@ -12361,6 +12358,7 @@ var $mdgriffith$elm_ui$Element$Font$size = function (i) {
 var $mdgriffith$elm_ui$Element$Font$bold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.bold);
 var $mdgriffith$elm_ui$Internal$Flag$borderStyle = $mdgriffith$elm_ui$Internal$Flag$flag(11);
 var $mdgriffith$elm_ui$Element$Border$dashed = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$borderStyle, $mdgriffith$elm_ui$Internal$Style$classes.borderDashed);
+var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $author$project$ElmUI$Scroll$ScrollIntoView$Main$targetElementWithButtons = F6(
 	function (elementId, label, w, h, color, buttons) {
 		return A2(

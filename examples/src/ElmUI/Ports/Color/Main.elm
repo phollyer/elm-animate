@@ -15,6 +15,8 @@ FEATURES:
 
 -}
 
+import Anim exposing (ColorValue(..), defaultConfig)
+import Anim.Ports exposing (Model, animateBackgroundColor, encodeAnimationCommand, handlePropertyUpdateFromJson, init, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -25,8 +27,6 @@ import Element.Font as Font
 import Html.Attributes
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Anim exposing (ColorValue(..), defaultConfig)
-import Anim.Ports exposing (Model, init, animateBackgroundColor, styleProperties, encodeAnimationCommand, handlePropertyUpdateFromJson)
 
 
 
@@ -44,6 +44,8 @@ port positionUpdates : (Decode.Value -> msg) -> Sub msg
 
 port animationComplete : (String -> msg) -> Sub msg
 
+
+
 -- MAIN
 
 
@@ -57,12 +59,14 @@ main =
         }
 
 
+
 -- MODEL
 
 
 type alias Model =
     { animations : Anim.Ports.Model
     }
+
 
 
 -- INIT
@@ -87,6 +91,7 @@ type Msg
     | PositionUpdateReceived (Result Decode.Error Anim.Ports.PropertyUpdate)
 
 
+
 -- UPDATE
 
 
@@ -103,6 +108,7 @@ update msg model =
                     ( { model | animations = newModel }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -116,6 +122,7 @@ update msg model =
                     ( { model | animations = newModel }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -129,6 +136,7 @@ update msg model =
                     ( { model | animations = newModel }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -142,6 +150,7 @@ update msg model =
                     ( { model | animations = newModel }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -155,6 +164,7 @@ update msg model =
                     ( { model | animations = newModel }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -168,6 +178,7 @@ update msg model =
                     ( { model | animations = newModel }
                     , animateElement (encodeAnimationCommand command)
                     )
+
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -180,8 +191,10 @@ update msg model =
                     ( { model | animations = Anim.Ports.handlePropertyUpdate propertyUpdate model.animations }
                     , Cmd.none
                     )
+
                 Err _ ->
                     ( model, Cmd.none )
+
 
 
 -- SUBSCRIPTIONS
@@ -193,6 +206,7 @@ subscriptions model =
         [ positionUpdates (PositionUpdateReceived << handlePropertyUpdateFromJson)
         , animationComplete AnimationComplete
         ]
+
 
 
 -- VIEW
@@ -228,33 +242,34 @@ viewContent model =
         ]
     , -- Animation area with single colored box
       el
-            [ width (fill |> maximum 600)
-            , height (px 350)
-            , Background.color Colors.backgroundWhite
-            , Border.rounded 12
-            , Border.shadow
-                { offset = ( 0, 4 )
-                , size = 0
-                , blur = 8
-                , color = Element.rgba 0 0 0 0.1
-                }
-            , centerX
-            , htmlAttribute (Html.Attributes.style "position" "relative")
-            , htmlAttribute (Html.Attributes.style "overflow" "hidden")
-            ]
-            (el
-                ([ centerX
-                , centerY
-                , width (px 150)
-                , height (px 150)
-                , Background.color (rgb 0.8 0.8 0.8)
-                , Border.rounded 8
-                , htmlAttribute (Html.Attributes.id "box")
-                , htmlAttribute (Html.Attributes.style "background-color" "#95a5a6") -- Default gray
-                ] 
+        [ width (fill |> maximum 600)
+        , height (px 350)
+        , Background.color Colors.backgroundWhite
+        , Border.rounded 12
+        , Border.shadow
+            { offset = ( 0, 4 )
+            , size = 0
+            , blur = 8
+            , color = Element.rgba 0 0 0 0.1
+            }
+        , centerX
+        , htmlAttribute (Html.Attributes.style "position" "relative")
+        , htmlAttribute (Html.Attributes.style "overflow" "hidden")
+        ]
+        (el
+            ([ centerX
+             , centerY
+             , width (px 150)
+             , height (px 150)
+             , Background.color (rgb 0.8 0.8 0.8)
+             , Border.rounded 8
+             , htmlAttribute (Html.Attributes.id "box")
+             , htmlAttribute (Html.Attributes.style "background-color" "#95a5a6") -- Default gray
+             ]
                 ++ (styleProperties "box" model.animations
-                    |> List.map (\(prop, value) -> htmlAttribute (Html.Attributes.style prop value)))
-                )
-                (el [ centerX, centerY ] (text "Color"))
+                        |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+                   )
             )
+            (el [ centerX, centerY ] (text "Color"))
+        )
     ]

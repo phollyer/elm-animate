@@ -6193,17 +6193,6 @@ var $mdgriffith$elm_ui$Element$rgb255 = F3(
 	});
 var $author$project$Common$Colors$backgroundLight = A3($mdgriffith$elm_ui$Element$rgb255, 248, 250, 252);
 var $author$project$Common$Colors$backgroundMedium = A3($mdgriffith$elm_ui$Element$rgb255, 226, 232, 240);
-var $author$project$Common$UI$calculateHorizontalWidth = function (_v0) {
-	var sectionCount = _v0.sectionCount;
-	var sectionWidth = _v0.sectionWidth;
-	var spacing = _v0.spacing;
-	var containerPaddingX = _v0.containerPaddingX;
-	var layoutPaddingX = _v0.layoutPaddingX;
-	var totalSpacingWidth = (sectionCount - 1) * spacing;
-	var totalSectionWidth = sectionCount * sectionWidth;
-	var totalPaddingWidth = containerPaddingX + layoutPaddingX;
-	return (totalSectionWidth + totalSpacingWidth) + totalPaddingWidth;
-};
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -6346,10 +6335,6 @@ var $mdgriffith$elm_ui$Element$paddingXY = F2(
 					xFloat));
 		}
 	});
-var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
-	return {$: 'Px', a: a};
-};
-var $mdgriffith$elm_ui$Element$px = $mdgriffith$elm_ui$Internal$Model$Px;
 var $mdgriffith$elm_ui$Internal$Model$Width = function (a) {
 	return {$: 'Width', a: a};
 };
@@ -6362,28 +6347,6 @@ var $author$project$Common$UI$getLayoutAttributes = function (layoutType) {
 					[
 						$mdgriffith$elm_ui$Element$htmlAttribute(
 						$elm$html$Html$Attributes$class('responsive-layout'))
-					]);
-			case 'Horizontal':
-				var calculatedWidth = $author$project$Common$UI$calculateHorizontalWidth(
-					{containerPaddingX: 40, layoutPaddingX: 80, sectionCount: 4, sectionWidth: 300, spacing: 40});
-				return _List_fromArray(
-					[
-						$mdgriffith$elm_ui$Element$width(
-						$mdgriffith$elm_ui$Element$px(calculatedWidth)),
-						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						$elm$html$Html$Attributes$class('horizontal-layout responsive-layout'))
-					]);
-			case 'HorizontalCustomWidth':
-				var customWidth = layoutType.a;
-				return _List_fromArray(
-					[
-						$mdgriffith$elm_ui$Element$width(
-						$mdgriffith$elm_ui$Element$px(
-							$elm$core$Basics$round(customWidth))),
-						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						$elm$html$Html$Attributes$class('horizontal-layout responsive-layout'))
 					]);
 			case 'Diagonal':
 				return _List_fromArray(
@@ -12218,6 +12181,10 @@ var $mdgriffith$elm_ui$Element$el = F2(
 					[child])));
 	});
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
+	return {$: 'Px', a: a};
+};
+var $mdgriffith$elm_ui$Element$px = $mdgriffith$elm_ui$Internal$Model$Px;
 var $mdgriffith$elm_ui$Internal$Flag$borderRound = $mdgriffith$elm_ui$Internal$Flag$flag(17);
 var $mdgriffith$elm_ui$Element$Border$rounded = function (radius) {
 	return A2(
@@ -12531,9 +12498,7 @@ var $author$project$Common$UI$backButton = A2(
 			}),
 			$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$backgroundWhite),
 			$mdgriffith$elm_ui$Element$Font$semiBold,
-			$mdgriffith$elm_ui$Element$Border$rounded(8),
-			$mdgriffith$elm_ui$Element$htmlAttribute(
-			$elm$html$Html$Attributes$id('top'))
+			$mdgriffith$elm_ui$Element$Border$rounded(8)
 		]),
 	{
 		label: $mdgriffith$elm_ui$Element$text('← Back to Examples'),

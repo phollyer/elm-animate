@@ -1,4 +1,4 @@
-module ElmUI.Scroll.ContainerY.Main exposing (main)
+module ElmUI.Scroll.Container.Position.Y.Main exposing (main)
 
 import Browser exposing (Document)
 import Common.Colors as Colors
@@ -97,7 +97,7 @@ viewContent model =
       el [ width fill, htmlAttribute (Html.Attributes.class "scroll-container-wrapper") ] <|
         el
             [ htmlAttribute (Html.Attributes.id "scroll-container")
-             , width fill
+            , width fill
             , height (px 600)
             , Border.width 2
             , Border.color Colors.borderMedium
@@ -110,6 +110,7 @@ viewContent model =
                 , color = rgba255 0 0 0 0.1
                 }
             , scrollbarY
+
             --, clipY
             ]
             (Element.column
@@ -283,5 +284,3 @@ viewContent model =
 
 
 -- HELPER FUNCTIONS
-
-
