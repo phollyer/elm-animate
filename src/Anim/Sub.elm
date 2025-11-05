@@ -108,7 +108,7 @@ subscriptions, supporting comprehensive animation properties.
 
 -}
 
-import Anim exposing (AnimationTarget(..), ColorValue(..), Config, EasePreset(..), Easing(..), FilterValue(..), Position, RotationValue, ScaleValue, Timing(..))
+import Anim exposing (AnimationTarget(..), ColorValue(..), Config, EasePreset(..), Easing(..), FilterValue(..), Position, RotationValue, ScaleValue, Timing(..), defaultConfig)
 import Anim.Internal exposing (calculateDistance, easingToEaseFunction)
 import Browser.Events
 import Dict exposing (Dict)
@@ -314,21 +314,6 @@ interpolateFilter start target progress =
 init : Model
 init =
     Model Dict.empty
-
-
-{-| Default configuration for animations
-
-    defaultConfig =
-        { timing = Duration 400
-        , easing = EasePreset EaseOut
-        }
-
--}
-defaultConfig : Config
-defaultConfig =
-    { timing = Duration 400
-    , easing = EasePreset EaseOut
-    }
 
 
 {-| Start animating an element to a target animation property using default config.

@@ -21,7 +21,6 @@ module Anim.Ports exposing
     , animateRotationWithConfig
     , animateBackgroundColor
     , animateBackgroundColorWithConfig
-    , defaultConfig
     , animateBatch
     , getPosition
     , getAllPositions
@@ -101,11 +100,6 @@ with `npm install smooth-move-ports` and include it in your HTML.
 @docs animateRotationWithConfig
 @docs animateBackgroundColor
 @docs animateBackgroundColorWithConfig
-
-
-# Configuration
-
-@docs defaultConfig
 
 
 # Batch Operations
@@ -245,7 +239,7 @@ while PositionUpdate messages flow back from JavaScript to update your Elm model
 
 -}
 
-import Anim exposing (AnimationTarget(..), ColorValue(..), Config, EasePreset(..), Easing(..), FilterValue(..), Position, RotationValue, ScaleValue, Timing(..))
+import Anim exposing (AnimationTarget(..), ColorValue(..), Config, EasePreset(..), Easing(..), FilterValue(..), Position, RotationValue, ScaleValue, Timing(..), defaultConfig)
 import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
@@ -378,21 +372,6 @@ subscriptions ports_ (Model elementsDict) =
 
     else
         Sub.none
-
-
-{-| Default configuration using Web Animations API optimized settings
-
-    defaultConfig =
-        { timing = Duration 400
-        , easing = EasePreset EaseOut
-        }
-
--}
-defaultConfig : Config
-defaultConfig =
-    { timing = Duration 400
-    , easing = EasePreset EaseOut
-    }
 
 
 
