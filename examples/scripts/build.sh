@@ -33,21 +33,15 @@ build_example() {
     fi
 }
 
-# Build HTML examples
-echo ""
-echo "📦 Building HTML examples..."
-build_example "src/HTML/SmoothMoveScroll/Basic.elm" "src/HTML/SmoothMoveScroll/basic.js" "HTML.SmoothMoveScroll.Basic"
-build_example "src/HTML/SmoothMoveScroll/Container.elm" "src/HTML/SmoothMoveScroll/container.js" "HTML.SmoothMoveScroll.Container"
-build_example "src/HTML/SmoothMoveSub/Basic.elm" "src/HTML/SmoothMoveSub/basic.js" "HTML.SmoothMoveSub.Basic"
-build_example "src/HTML/SmoothMoveSub/Multiple.elm" "src/HTML/SmoothMoveSub/multiple.js" "HTML.SmoothMoveSub.Multiple"
-build_example "src/HTML/SmoothMoveCSS/Basic.elm" "src/HTML/SmoothMoveCSS/basic.js" "HTML.SmoothMoveCSS.Basic"
-build_example "src/HTML/SmoothMoveCSS/Multiple.elm" "src/HTML/SmoothMoveCSS/multiple.js" "HTML.SmoothMoveCSS.Multiple"
-build_example "src/HTML/SmoothMovePorts/Basic.elm" "src/HTML/SmoothMovePorts/basic.js" "HTML.SmoothMovePorts.Basic"
-build_example "src/HTML/SmoothMovePorts/Multiple.elm" "src/HTML/SmoothMovePorts/multiple.js" "HTML.SmoothMovePorts.Multiple"
+# Note: HTML examples have been consolidated into ElmUI examples
+# All examples now use the ElmUI framework for consistent UI patterns
 
 # Build ElmUI examples
 echo ""
 echo "🎨 Building ElmUI examples..."
+
+# ElmUI Scroll examples (Task-based API)
+echo "  📜 ElmUI Scroll examples (Anim.Scroll - Task-based API)..."
 build_example "src/ElmUI/Scroll/DocumentY/Main.elm" "src/ElmUI/Scroll/DocumentY/index.js" "ElmUI.Scroll.DocumentY.Main"
 build_example "src/ElmUI/Scroll/ContainerY/Main.elm" "src/ElmUI/Scroll/ContainerY/index.js" "ElmUI.Scroll.ContainerY.Main"
 build_example "src/ElmUI/Scroll/DocumentX/Main.elm" "src/ElmUI/Scroll/DocumentX/index.js" "ElmUI.Scroll.DocumentX.Main"
@@ -55,12 +49,36 @@ build_example "src/ElmUI/Scroll/ContainerX/Main.elm" "src/ElmUI/Scroll/Container
 build_example "src/ElmUI/Scroll/DocumentXY/Main.elm" "src/ElmUI/Scroll/DocumentXY/index.js" "ElmUI.Scroll.DocumentXY.Main"
 build_example "src/ElmUI/Scroll/ContainerXY/Main.elm" "src/ElmUI/Scroll/ContainerXY/index.js" "ElmUI.Scroll.ContainerXY.Main"
 build_example "src/ElmUI/Scroll/ScrollIntoView/Main.elm" "src/ElmUI/Scroll/ScrollIntoView/index.js" "ElmUI.Scroll.ScrollIntoView.Main"
-build_example "src/ElmUI/Sub/Basic/Main.elm" "src/ElmUI/Sub/Basic/index.js" "ElmUI.Sub.Basic.Main"
-build_example "src/ElmUI/Sub/Multiple/Main.elm" "src/ElmUI/Sub/Multiple/index.js" "ElmUI.Sub.Multiple.Main"
-build_example "src/ElmUI/CSS/Basic/Main.elm" "src/ElmUI/CSS/Basic/index.js" "ElmUI.CSS.Basic.Main"
-build_example "src/ElmUI/CSS/Multiple/Main.elm" "src/ElmUI/CSS/Multiple/index.js" "ElmUI.CSS.Multiple.Main"
-build_example "src/ElmUI/Ports/Basic/Main.elm" "src/ElmUI/Ports/Basic/index.js" "ElmUI.Ports.Basic.Main"
-build_example "src/ElmUI/Ports/Multiple/Main.elm" "src/ElmUI/Ports/Multiple/index.js" "ElmUI.Ports.Multiple.Main"
+
+# ElmUI CSS examples (CSS Transition-based API)
+echo "  🎨 ElmUI CSS examples (Anim.CSS - Browser-native transitions)..."
+build_example "src/ElmUI/CSS/Position/Main.elm" "src/ElmUI/CSS/Position/index.js" "ElmUI.CSS.Position.Main"
+build_example "src/ElmUI/CSS/Opacity/Main.elm" "src/ElmUI/CSS/Opacity/index.js" "ElmUI.CSS.Opacity.Main"
+build_example "src/ElmUI/CSS/Scale/Main.elm" "src/ElmUI/CSS/Scale/index.js" "ElmUI.CSS.Scale.Main"
+build_example "src/ElmUI/CSS/Rotation/Main.elm" "src/ElmUI/CSS/Rotation/index.js" "ElmUI.CSS.Rotation.Main"
+build_example "src/ElmUI/CSS/Color/Main.elm" "src/ElmUI/CSS/Color/index.js" "ElmUI.CSS.Color.Main"
+build_example "src/ElmUI/CSS/Mixed/Main.elm" "src/ElmUI/CSS/Mixed/index.js" "ElmUI.CSS.Mixed.Main"
+build_example "src/ElmUI/CSS/Choreography/Main.elm" "src/ElmUI/CSS/Choreography/index.js" "ElmUI.CSS.Choreography.Main"
+
+# ElmUI Sub examples (Subscription-based API)
+echo "  ⚡ ElmUI Sub examples (Anim.Sub - Frame-rate independent timing)..."
+build_example "src/ElmUI/Sub/Position/Main.elm" "src/ElmUI/Sub/Position/index.js" "ElmUI.Sub.Position.Main"
+build_example "src/ElmUI/Sub/Opacity/Main.elm" "src/ElmUI/Sub/Opacity/index.js" "ElmUI.Sub.Opacity.Main"
+build_example "src/ElmUI/Sub/Scale/Main.elm" "src/ElmUI/Sub/Scale/index.js" "ElmUI.Sub.Scale.Main"
+build_example "src/ElmUI/Sub/Rotation/Main.elm" "src/ElmUI/Sub/Rotation/index.js" "ElmUI.Sub.Rotation.Main"
+build_example "src/ElmUI/Sub/Color/Main.elm" "src/ElmUI/Sub/Color/index.js" "ElmUI.Sub.Color.Main"
+build_example "src/ElmUI/Sub/Mixed/Main.elm" "src/ElmUI/Sub/Mixed/index.js" "ElmUI.Sub.Mixed.Main"
+build_example "src/ElmUI/Sub/Choreography/Main.elm" "src/ElmUI/Sub/Choreography/index.js" "ElmUI.Sub.Choreography.Main"
+
+# ElmUI Ports examples (JavaScript Web Animations API)
+echo "  🌐 ElmUI Ports examples (Anim.Ports - Web Animations API integration)..."
+build_example "src/ElmUI/Ports/Position/Main.elm" "src/ElmUI/Ports/Position/index.js" "ElmUI.Ports.Position.Main"
+build_example "src/ElmUI/Ports/Opacity/Main.elm" "src/ElmUI/Ports/Opacity/index.js" "ElmUI.Ports.Opacity.Main"
+build_example "src/ElmUI/Ports/Scale/Main.elm" "src/ElmUI/Ports/Scale/index.js" "ElmUI.Ports.Scale.Main"
+build_example "src/ElmUI/Ports/Rotation/Main.elm" "src/ElmUI/Ports/Rotation/index.js" "ElmUI.Ports.Rotation.Main"
+build_example "src/ElmUI/Ports/Color/Main.elm" "src/ElmUI/Ports/Color/index.js" "ElmUI.Ports.Color.Main"
+build_example "src/ElmUI/Ports/Mixed/Main.elm" "src/ElmUI/Ports/Mixed/index.js" "ElmUI.Ports.Mixed.Main"
+build_example "src/ElmUI/Ports/Choreography/Main.elm" "src/ElmUI/Ports/Choreography/index.js" "ElmUI.Ports.Choreography.Main"
 
 # Report results
 echo ""
@@ -72,15 +90,21 @@ if [ ${#FAILED_BUILDS[@]} -eq 0 ]; then
     echo ""
     echo "🎉 All examples built successfully!"
     echo "🌐 Open index.html to view the examples dashboard"
-    echo "📦 HTML examples available at:"
-    echo "   - http://localhost:8080/src/HTML/SmoothMoveScroll/basic.html"
-    echo "   - http://localhost:8080/src/HTML/SmoothMoveScroll/container.html"
-    echo "   - And more in src/HTML/"
+    echo ""
     echo "🎨 ElmUI examples available at:"
-    echo "   - http://localhost:8080/src/ElmUI/Scroll/DocumentY/index.html"
-    echo "   - http://localhost:8080/src/ElmUI/Scroll/ContainerY/index.html"
-    echo "   - http://localhost:8080/src/ElmUI/Scroll/DocumentX/index.html"
-    echo "   - And more in src/ElmUI/"
+    echo "   📜 Scroll (Task-based): src/ElmUI/Scroll/"
+    echo "   🎨 CSS (Transitions): src/ElmUI/CSS/"
+    echo "   ⚡ Sub (Subscriptions): src/ElmUI/Sub/"
+    echo "   🌐 Ports (Web Animations): src/ElmUI/Ports/"
+    echo ""
+    echo "   Animation properties covered:"
+    echo "   - Position (X/Y coordinates)"
+    echo "   - Opacity (fade in/out)"
+    echo "   - Scale (size transformations)"
+    echo "   - Rotation (angular animations)"
+    echo "   - Color (background transitions)"
+    echo "   - Mixed (multi-property coordination)"
+    echo "   - Choreography (6-element formations)"
 else
     echo ""
     echo "🚨 Some examples failed to build:"

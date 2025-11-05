@@ -184,14 +184,6 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    let
-        positionA = getCurrentPosition "elementA" model.animations
-        positionB = getCurrentPosition "elementB" model.animations
-        positionC = getCurrentPosition "elementC" model.animations
-        positionD = getCurrentPosition "elementD" model.animations
-        positionE = getCurrentPosition "elementE" model.animations
-        positionF = getCurrentPosition "elementF" model.animations
-    in
     [ UI.backButton
     , UI.pageHeader "CSS Choreography Animations"
     , -- Element status display

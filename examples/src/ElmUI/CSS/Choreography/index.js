@@ -12019,38 +12019,6 @@ var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
 			'background-color',
 			clr));
 };
-var $author$project$Anim$CSS$extractPosition = function (target) {
-	if (target.$ === 'ToPosition') {
-		var position = target.a;
-		return $elm$core$Maybe$Just(position);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Anim$CSS$getCurrentPosition = F2(
-	function (elementId, _v0) {
-		var animations = _v0.a;
-		var _v1 = A2($elm$core$Dict$get, elementId, animations);
-		if (_v1.$ === 'Just') {
-			var targets = _v1.a;
-			return A2(
-				$elm$core$Maybe$withDefault,
-				{x: 0, y: 0},
-				$elm$core$List$head(
-					A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractPosition, targets)));
-		} else {
-			return {x: 0, y: 0};
-		}
-	});
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$core$Basics$always = F2(
 	function (a, _v0) {
@@ -12187,12 +12155,6 @@ var $mdgriffith$elm_ui$Element$Border$shadow = function (almostShade) {
 };
 var $author$project$Common$Colors$textMedium = A3($mdgriffith$elm_ui$Element$rgb255, 71, 85, 105);
 var $author$project$ElmUI$CSS$Choreography$Main$viewContent = function (model) {
-	var positionF = A2($author$project$Anim$CSS$getCurrentPosition, 'elementF', model.animations);
-	var positionE = A2($author$project$Anim$CSS$getCurrentPosition, 'elementE', model.animations);
-	var positionD = A2($author$project$Anim$CSS$getCurrentPosition, 'elementD', model.animations);
-	var positionC = A2($author$project$Anim$CSS$getCurrentPosition, 'elementC', model.animations);
-	var positionB = A2($author$project$Anim$CSS$getCurrentPosition, 'elementB', model.animations);
-	var positionA = A2($author$project$Anim$CSS$getCurrentPosition, 'elementA', model.animations);
 	return _List_fromArray(
 		[
 			$author$project$Common$UI$backButton,
