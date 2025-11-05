@@ -5196,38 +5196,294 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$document = _Browser_document;
-var $author$project$Anim$CSS$Model = function (a) {
+var $author$project$Anim$Ports$Model = function (a) {
 	return {$: 'Model', a: a};
 };
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
-var $author$project$Anim$CSS$init = $author$project$Anim$CSS$Model($elm$core$Dict$empty);
+var $author$project$Anim$Ports$init = $author$project$Anim$Ports$Model($elm$core$Dict$empty);
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$ElmUI$CSS$Scale$Main$init = function (_v0) {
+var $author$project$ElmUI$Ports$Scale$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{animations: $author$project$Anim$CSS$init},
+		{animations: $author$project$Anim$Ports$init},
 		$elm$core$Platform$Cmd$none);
 };
+var $author$project$ElmUI$Ports$Scale$Main$AnimationComplete = function (a) {
+	return {$: 'AnimationComplete', a: a};
+};
+var $author$project$ElmUI$Ports$Scale$Main$PositionUpdateReceived = function (a) {
+	return {$: 'PositionUpdateReceived', a: a};
+};
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $author$project$ElmUI$Ports$Scale$Main$animationComplete = _Platform_incomingPort('animationComplete', $elm$json$Json$Decode$string);
 var $elm$core$Platform$Sub$batch = _Platform_batch;
-var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$ElmUI$CSS$Scale$Main$subscriptions = function (_v0) {
-	return $elm$core$Platform$Sub$none;
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $author$project$Anim$Ports$PropertyUpdate = F3(
+	function (elementId, propertyKey, target) {
+		return {elementId: elementId, propertyKey: propertyKey, target: target};
+	});
+var $author$project$Anim$ToBackgroundColor = function (a) {
+	return {$: 'ToBackgroundColor', a: a};
+};
+var $author$project$Anim$ToBorderColor = function (a) {
+	return {$: 'ToBorderColor', a: a};
+};
+var $author$project$Anim$ToBorderRadius = function (a) {
+	return {$: 'ToBorderRadius', a: a};
+};
+var $author$project$Anim$ToDimensions = function (a) {
+	return {$: 'ToDimensions', a: a};
+};
+var $author$project$Anim$ToFilter = function (a) {
+	return {$: 'ToFilter', a: a};
+};
+var $author$project$Anim$ToOpacity = function (a) {
+	return {$: 'ToOpacity', a: a};
+};
+var $author$project$Anim$ToPosition = function (a) {
+	return {$: 'ToPosition', a: a};
+};
+var $author$project$Anim$ToRotation = function (a) {
+	return {$: 'ToRotation', a: a};
 };
 var $author$project$Anim$ToScale = function (a) {
 	return {$: 'ToScale', a: a};
 };
-var $elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
-	});
+var $author$project$Anim$ToTextColor = function (a) {
+	return {$: 'ToTextColor', a: a};
+};
+var $elm$json$Json$Decode$andThen = _Json_andThen;
+var $author$project$Anim$Hex = function (a) {
+	return {$: 'Hex', a: a};
+};
+var $author$project$Anim$Hsl = function (a) {
+	return {$: 'Hsl', a: a};
+};
+var $author$project$Anim$Hsla = function (a) {
+	return {$: 'Hsla', a: a};
+};
+var $author$project$Anim$Rgb = function (a) {
+	return {$: 'Rgb', a: a};
+};
+var $author$project$Anim$Rgba = function (a) {
+	return {$: 'Rgba', a: a};
+};
+var $elm$json$Json$Decode$fail = _Json_fail;
+var $elm$json$Json$Decode$field = _Json_decodeField;
+var $elm$json$Json$Decode$float = _Json_decodeFloat;
+var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $elm$json$Json$Decode$map3 = _Json_map3;
+var $elm$json$Json$Decode$map4 = _Json_map4;
+var $author$project$Anim$Ports$colorValueDecoder = A2(
+	$elm$json$Json$Decode$andThen,
+	function (format) {
+		switch (format) {
+			case 'hex':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$Hex,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$string));
+			case 'rgb':
+				return A4(
+					$elm$json$Json$Decode$map3,
+					F3(
+						function (r, g, b) {
+							return $author$project$Anim$Rgb(
+								{b: b, g: g, r: r});
+						}),
+					A2($elm$json$Json$Decode$field, 'r', $elm$json$Json$Decode$int),
+					A2($elm$json$Json$Decode$field, 'g', $elm$json$Json$Decode$int),
+					A2($elm$json$Json$Decode$field, 'b', $elm$json$Json$Decode$int));
+			case 'rgba':
+				return A5(
+					$elm$json$Json$Decode$map4,
+					F4(
+						function (r, g, b, a) {
+							return $author$project$Anim$Rgba(
+								{a: a, b: b, g: g, r: r});
+						}),
+					A2($elm$json$Json$Decode$field, 'r', $elm$json$Json$Decode$int),
+					A2($elm$json$Json$Decode$field, 'g', $elm$json$Json$Decode$int),
+					A2($elm$json$Json$Decode$field, 'b', $elm$json$Json$Decode$int),
+					A2($elm$json$Json$Decode$field, 'a', $elm$json$Json$Decode$float));
+			case 'hsl':
+				return A4(
+					$elm$json$Json$Decode$map3,
+					F3(
+						function (h, s, l) {
+							return $author$project$Anim$Hsl(
+								{h: h, l: l, s: s});
+						}),
+					A2($elm$json$Json$Decode$field, 'h', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 's', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 'l', $elm$json$Json$Decode$float));
+			case 'hsla':
+				return A5(
+					$elm$json$Json$Decode$map4,
+					F4(
+						function (h, s, l, a) {
+							return $author$project$Anim$Hsla(
+								{a: a, h: h, l: l, s: s});
+						}),
+					A2($elm$json$Json$Decode$field, 'h', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 's', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 'l', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 'a', $elm$json$Json$Decode$float));
+			default:
+				return $elm$json$Json$Decode$fail('Unknown color format: ' + format);
+		}
+	},
+	A2($elm$json$Json$Decode$field, 'format', $elm$json$Json$Decode$string));
+var $author$project$Anim$Blur = function (a) {
+	return {$: 'Blur', a: a};
+};
+var $author$project$Anim$Brightness = function (a) {
+	return {$: 'Brightness', a: a};
+};
+var $author$project$Anim$Contrast = function (a) {
+	return {$: 'Contrast', a: a};
+};
+var $author$project$Anim$Grayscale = function (a) {
+	return {$: 'Grayscale', a: a};
+};
+var $author$project$Anim$Saturate = function (a) {
+	return {$: 'Saturate', a: a};
+};
+var $author$project$Anim$Ports$filterValueDecoder = A2(
+	$elm$json$Json$Decode$andThen,
+	function (filterType) {
+		switch (filterType) {
+			case 'blur':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$Blur,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'brightness':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$Brightness,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'contrast':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$Contrast,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'grayscale':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$Grayscale,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'saturate':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$Saturate,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			default:
+				return $elm$json$Json$Decode$fail('Unknown filter type: ' + filterType);
+		}
+	},
+	A2($elm$json$Json$Decode$field, 'type', $elm$json$Json$Decode$string));
+var $author$project$Anim$Ports$animationTargetDecoder = A2(
+	$elm$json$Json$Decode$andThen,
+	function (targetType) {
+		switch (targetType) {
+			case 'position':
+				return A3(
+					$elm$json$Json$Decode$map2,
+					F2(
+						function (x, y) {
+							return $author$project$Anim$ToPosition(
+								{x: x, y: y});
+						}),
+					A2($elm$json$Json$Decode$field, 'x', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 'y', $elm$json$Json$Decode$float));
+			case 'opacity':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToOpacity,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'scale':
+				return A3(
+					$elm$json$Json$Decode$map2,
+					F2(
+						function (x, y) {
+							return $author$project$Anim$ToScale(
+								{x: x, y: y});
+						}),
+					A2($elm$json$Json$Decode$field, 'x', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 'y', $elm$json$Json$Decode$float));
+			case 'rotation':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToRotation,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'background-color':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToBackgroundColor,
+					A2($elm$json$Json$Decode$field, 'value', $author$project$Anim$Ports$colorValueDecoder));
+			case 'text-color':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToTextColor,
+					A2($elm$json$Json$Decode$field, 'value', $author$project$Anim$Ports$colorValueDecoder));
+			case 'border-color':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToBorderColor,
+					A2($elm$json$Json$Decode$field, 'value', $author$project$Anim$Ports$colorValueDecoder));
+			case 'dimensions':
+				return A3(
+					$elm$json$Json$Decode$map2,
+					F2(
+						function (w, h) {
+							return $author$project$Anim$ToDimensions(
+								{height: h, width: w});
+						}),
+					A2($elm$json$Json$Decode$field, 'width', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 'height', $elm$json$Json$Decode$float));
+			case 'border-radius':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToBorderRadius,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'filter':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToFilter,
+					A2($elm$json$Json$Decode$field, 'value', $author$project$Anim$Ports$filterValueDecoder));
+			default:
+				return $elm$json$Json$Decode$fail('Unknown animation target type: ' + targetType);
+		}
+	},
+	A2($elm$json$Json$Decode$field, 'type', $elm$json$Json$Decode$string));
+var $author$project$Anim$Ports$propertyUpdateDecoder = A4(
+	$elm$json$Json$Decode$map3,
+	$author$project$Anim$Ports$PropertyUpdate,
+	A2($elm$json$Json$Decode$field, 'elementId', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'propertyKey', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'target', $author$project$Anim$Ports$animationTargetDecoder));
+var $author$project$Anim$Ports$handlePropertyUpdateFromJson = function (value) {
+	return A2($elm$json$Json$Decode$decodeValue, $author$project$Anim$Ports$propertyUpdateDecoder, value);
+};
+var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $author$project$ElmUI$Ports$Scale$Main$positionUpdates = _Platform_incomingPort('positionUpdates', $elm$json$Json$Decode$value);
+var $author$project$ElmUI$Ports$Scale$Main$subscriptions = function (model) {
+	return $elm$core$Platform$Sub$batch(
+		_List_fromArray(
+			[
+				$author$project$ElmUI$Ports$Scale$Main$positionUpdates(
+				A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Scale$Main$PositionUpdateReceived, $author$project$Anim$Ports$handlePropertyUpdateFromJson)),
+				$author$project$ElmUI$Ports$Scale$Main$animationComplete($author$project$ElmUI$Ports$Scale$Main$AnimationComplete)
+			]));
+};
+var $author$project$ElmUI$Ports$Scale$Main$animateElement = _Platform_outgoingPort('animateElement', $elm$core$Basics$identity);
 var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -5260,44 +5516,20 @@ var $elm$core$Dict$get = F2(
 			}
 		}
 	});
-var $author$project$Anim$CSS$getSpecificTargetType = function (target) {
+var $author$project$Anim$Ports$getPropertyKey = function (target) {
 	switch (target.$) {
 		case 'ToPosition':
 			return 'position';
+		case 'ToOpacity':
+			return 'opacity';
 		case 'ToScale':
 			return 'scale';
 		case 'ToRotation':
 			return 'rotation';
-		case 'ToOpacity':
-			return 'opacity';
 		case 'ToBackgroundColor':
 			return 'background-color';
 		case 'ToTextColor':
-			return 'color';
-		case 'ToBorderColor':
-			return 'border-color';
-		case 'ToDimensions':
-			return 'dimensions';
-		case 'ToBorderRadius':
-			return 'border-radius';
-		default:
-			return 'filter';
-	}
-};
-var $author$project$Anim$CSS$getTargetType = function (target) {
-	switch (target.$) {
-		case 'ToPosition':
-			return 'transform';
-		case 'ToScale':
-			return 'transform';
-		case 'ToRotation':
-			return 'transform';
-		case 'ToOpacity':
-			return 'opacity';
-		case 'ToBackgroundColor':
-			return 'background-color';
-		case 'ToTextColor':
-			return 'color';
+			return 'text-color';
 		case 'ToBorderColor':
 			return 'border-color';
 		case 'ToDimensions':
@@ -5416,19 +5648,6 @@ var $elm$core$Dict$insert = F3(
 			return x;
 		}
 	});
-var $author$project$Anim$CSS$isTransformTarget = function (target) {
-	switch (target.$) {
-		case 'ToPosition':
-			return true;
-		case 'ToScale':
-			return true;
-		case 'ToRotation':
-			return true;
-		default:
-			return false;
-	}
-};
-var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
 		if (maybe.$ === 'Just') {
@@ -5438,110 +5657,529 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
-var $author$project$Anim$CSS$animate = F3(
-	function (elementId, target, _v0) {
-		var animations = _v0.a;
-		var currentTargets = A2(
+var $author$project$Anim$Ports$animateWithConfig = F4(
+	function (config, elementId, target, _v0) {
+		var elementsDict = _v0.a;
+		var propertyKey = $author$project$Anim$Ports$getPropertyKey(target);
+		var currentElementData = A2(
 			$elm$core$Maybe$withDefault,
-			_List_Nil,
-			A2($elm$core$Dict$get, elementId, animations));
-		var newTargets = $author$project$Anim$CSS$isTransformTarget(target) ? A2(
-			$elm$core$List$cons,
-			target,
-			A2(
-				$elm$core$List$filter,
-				function (t) {
-					return !_Utils_eq(
-						$author$project$Anim$CSS$getSpecificTargetType(t),
-						$author$project$Anim$CSS$getSpecificTargetType(target));
-				},
-				currentTargets)) : A2(
-			$elm$core$List$cons,
-			target,
-			A2(
-				$elm$core$List$filter,
-				function (t) {
-					return !_Utils_eq(
-						$author$project$Anim$CSS$getTargetType(t),
-						$author$project$Anim$CSS$getTargetType(target));
-				},
-				currentTargets));
-		return $author$project$Anim$CSS$Model(
-			A3($elm$core$Dict$insert, elementId, newTargets, animations));
+			{animating: $elm$core$Dict$empty, properties: $elm$core$Dict$empty},
+			A2($elm$core$Dict$get, elementId, elementsDict));
+		var updatedAnimating = A3($elm$core$Dict$insert, propertyKey, true, currentElementData.animating);
+		var updatedProperties = A3($elm$core$Dict$insert, propertyKey, target, currentElementData.properties);
+		var elementData = {animating: updatedAnimating, properties: updatedProperties};
+		var updatedDict = A3($elm$core$Dict$insert, elementId, elementData, elementsDict);
+		var animationCommand = {config: config, elementId: elementId, target: target};
+		return _Utils_Tuple2(
+			$author$project$Anim$Ports$Model(updatedDict),
+			$elm$core$Maybe$Just(animationCommand));
 	});
-var $author$project$Anim$CSS$animateScale = F3(
+var $author$project$Anim$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
+var $author$project$Anim$EaseOut = {$: 'EaseOut'};
+var $author$project$Anim$EasePreset = function (a) {
+	return {$: 'EasePreset', a: a};
+};
+var $author$project$Anim$Ports$defaultConfig = {
+	easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
+	timing: $author$project$Anim$Duration(400)
+};
+var $author$project$Anim$Ports$animate = F3(
+	function (elementId, target, model) {
+		return A4($author$project$Anim$Ports$animateWithConfig, $author$project$Anim$Ports$defaultConfig, elementId, target, model);
+	});
+var $author$project$Anim$Ports$animateScale = F3(
 	function (elementId, scale, model) {
 		return A3(
-			$author$project$Anim$CSS$animate,
+			$author$project$Anim$Ports$animate,
 			elementId,
 			$author$project$Anim$ToScale(scale),
 			model);
 	});
-var $author$project$ElmUI$CSS$Scale$Main$update = F2(
+var $elm$json$Json$Encode$float = _Json_wrap;
+var $elm$json$Json$Encode$int = _Json_wrap;
+var $elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, obj) {
+					var k = _v0.a;
+					var v = _v0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$Anim$Ports$encodeColorValue = function (colorValue) {
+	switch (colorValue.$) {
+		case 'Hex':
+			var hexStr = colorValue.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('hex')),
+						_Utils_Tuple2(
+						'value',
+						$elm$json$Json$Encode$string(hexStr))
+					]));
+		case 'Rgb':
+			var rgb = colorValue.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('rgb')),
+						_Utils_Tuple2(
+						'r',
+						$elm$json$Json$Encode$int(rgb.r)),
+						_Utils_Tuple2(
+						'g',
+						$elm$json$Json$Encode$int(rgb.g)),
+						_Utils_Tuple2(
+						'b',
+						$elm$json$Json$Encode$int(rgb.b))
+					]));
+		case 'Rgba':
+			var rgba = colorValue.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('rgba')),
+						_Utils_Tuple2(
+						'r',
+						$elm$json$Json$Encode$int(rgba.r)),
+						_Utils_Tuple2(
+						'g',
+						$elm$json$Json$Encode$int(rgba.g)),
+						_Utils_Tuple2(
+						'b',
+						$elm$json$Json$Encode$int(rgba.b)),
+						_Utils_Tuple2(
+						'a',
+						$elm$json$Json$Encode$float(rgba.a))
+					]));
+		case 'Hsl':
+			var hsl = colorValue.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('hsl')),
+						_Utils_Tuple2(
+						'h',
+						$elm$json$Json$Encode$float(hsl.h)),
+						_Utils_Tuple2(
+						's',
+						$elm$json$Json$Encode$float(hsl.s)),
+						_Utils_Tuple2(
+						'l',
+						$elm$json$Json$Encode$float(hsl.l))
+					]));
+		default:
+			var hsla = colorValue.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('hsla')),
+						_Utils_Tuple2(
+						'h',
+						$elm$json$Json$Encode$float(hsla.h)),
+						_Utils_Tuple2(
+						's',
+						$elm$json$Json$Encode$float(hsla.s)),
+						_Utils_Tuple2(
+						'l',
+						$elm$json$Json$Encode$float(hsla.l)),
+						_Utils_Tuple2(
+						'a',
+						$elm$json$Json$Encode$float(hsla.a))
+					]));
+	}
+};
+var $author$project$Anim$Ports$encodeFilterValue = function (filterValue) {
+	switch (filterValue.$) {
+		case 'Blur':
+			var radius = filterValue.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('blur')),
+						_Utils_Tuple2(
+						'value',
+						$elm$json$Json$Encode$float(radius))
+					]));
+		case 'Brightness':
+			var value = filterValue.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('brightness')),
+						_Utils_Tuple2(
+						'value',
+						$elm$json$Json$Encode$float(value))
+					]));
+		case 'Contrast':
+			var value = filterValue.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('contrast')),
+						_Utils_Tuple2(
+						'value',
+						$elm$json$Json$Encode$float(value))
+					]));
+		case 'Grayscale':
+			var value = filterValue.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('grayscale')),
+						_Utils_Tuple2(
+						'value',
+						$elm$json$Json$Encode$float(value))
+					]));
+		default:
+			var value = filterValue.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('saturate')),
+						_Utils_Tuple2(
+						'value',
+						$elm$json$Json$Encode$float(value))
+					]));
+	}
+};
+var $author$project$Anim$Ports$encodeAnimationCommand = function (command) {
+	var targetValue = function () {
+		var _v3 = command.target;
+		switch (_v3.$) {
+			case 'ToPosition':
+				var pos = _v3.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('position')),
+							_Utils_Tuple2(
+							'x',
+							$elm$json$Json$Encode$float(pos.x)),
+							_Utils_Tuple2(
+							'y',
+							$elm$json$Json$Encode$float(pos.y))
+						]));
+			case 'ToOpacity':
+				var value = _v3.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('opacity')),
+							_Utils_Tuple2(
+							'value',
+							$elm$json$Json$Encode$float(value))
+						]));
+			case 'ToScale':
+				var scale = _v3.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('scale')),
+							_Utils_Tuple2(
+							'x',
+							$elm$json$Json$Encode$float(scale.x)),
+							_Utils_Tuple2(
+							'y',
+							$elm$json$Json$Encode$float(scale.y))
+						]));
+			case 'ToRotation':
+				var degrees = _v3.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('rotation')),
+							_Utils_Tuple2(
+							'value',
+							$elm$json$Json$Encode$float(degrees))
+						]));
+			case 'ToBackgroundColor':
+				var colorValue = _v3.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('backgroundColor')),
+							_Utils_Tuple2(
+							'value',
+							$author$project$Anim$Ports$encodeColorValue(colorValue))
+						]));
+			case 'ToTextColor':
+				var colorValue = _v3.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('textColor')),
+							_Utils_Tuple2(
+							'value',
+							$author$project$Anim$Ports$encodeColorValue(colorValue))
+						]));
+			case 'ToBorderColor':
+				var colorValue = _v3.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('borderColor')),
+							_Utils_Tuple2(
+							'value',
+							$author$project$Anim$Ports$encodeColorValue(colorValue))
+						]));
+			case 'ToDimensions':
+				var dim = _v3.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('dimensions')),
+							_Utils_Tuple2(
+							'width',
+							$elm$json$Json$Encode$float(dim.width)),
+							_Utils_Tuple2(
+							'height',
+							$elm$json$Json$Encode$float(dim.height))
+						]));
+			case 'ToBorderRadius':
+				var radius = _v3.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('borderRadius')),
+							_Utils_Tuple2(
+							'value',
+							$elm$json$Json$Encode$float(radius))
+						]));
+			default:
+				var filter = _v3.a;
+				return $elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('filter')),
+							_Utils_Tuple2(
+							'value',
+							$author$project$Anim$Ports$encodeFilterValue(filter))
+						]));
+		}
+	}();
+	var easing = function () {
+		var _v1 = command.config.easing;
+		switch (_v1.$) {
+			case 'EasePreset':
+				var preset = _v1.a;
+				switch (preset.$) {
+					case 'Linear':
+						return 'linear';
+					case 'EaseIn':
+						return 'ease-in';
+					case 'EaseOut':
+						return 'ease-out';
+					default:
+						return 'ease-in-out';
+				}
+			case 'EaseString':
+				var str = _v1.a;
+				return str;
+			default:
+				return 'ease-out';
+		}
+	}();
+	var duration = function () {
+		var _v0 = command.config.timing;
+		if (_v0.$ === 'Duration') {
+			var ms = _v0.a;
+			return ms;
+		} else {
+			return 500.0;
+		}
+	}();
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'elementId',
+				$elm$json$Json$Encode$string(command.elementId)),
+				_Utils_Tuple2('target', targetValue),
+				_Utils_Tuple2(
+				'duration',
+				$elm$json$Json$Encode$float(duration)),
+				_Utils_Tuple2(
+				'easing',
+				$elm$json$Json$Encode$string(easing))
+			]));
+};
+var $author$project$Anim$Ports$handlePropertyUpdate = F2(
+	function (update, _v0) {
+		var elementsDict = _v0.a;
+		var currentElementData = A2(
+			$elm$core$Maybe$withDefault,
+			{animating: $elm$core$Dict$empty, properties: $elm$core$Dict$empty},
+			A2($elm$core$Dict$get, update.elementId, elementsDict));
+		var updatedProperties = A3($elm$core$Dict$insert, update.propertyKey, update.target, currentElementData.properties);
+		var elementData = _Utils_update(
+			currentElementData,
+			{properties: updatedProperties});
+		var updatedDict = A3($elm$core$Dict$insert, update.elementId, elementData, elementsDict);
+		return $author$project$Anim$Ports$Model(updatedDict);
+	});
+var $author$project$ElmUI$Ports$Scale$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'ScaleUp':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							animations: A3(
-								$author$project$Anim$CSS$animateScale,
-								'box',
-								{x: 1.5, y: 1.5},
-								model.animations)
-						}),
-					$elm$core$Platform$Cmd$none);
+				var _v1 = A3(
+					$author$project$Anim$Ports$animateScale,
+					'box',
+					{x: 1.5, y: 1.5},
+					model.animations);
+				var newModel = _v1.a;
+				var maybeCommand = _v1.b;
+				if (maybeCommand.$ === 'Just') {
+					var command = maybeCommand.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{animations: newModel}),
+						$author$project$ElmUI$Ports$Scale$Main$animateElement(
+							$author$project$Anim$Ports$encodeAnimationCommand(command)));
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
 			case 'ScaleDown':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							animations: A3(
-								$author$project$Anim$CSS$animateScale,
-								'box',
-								{x: 0.7, y: 0.7},
-								model.animations)
-						}),
-					$elm$core$Platform$Cmd$none);
+				var _v3 = A3(
+					$author$project$Anim$Ports$animateScale,
+					'box',
+					{x: 0.7, y: 0.7},
+					model.animations);
+				var newModel = _v3.a;
+				var maybeCommand = _v3.b;
+				if (maybeCommand.$ === 'Just') {
+					var command = maybeCommand.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{animations: newModel}),
+						$author$project$ElmUI$Ports$Scale$Main$animateElement(
+							$author$project$Anim$Ports$encodeAnimationCommand(command)));
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
 			case 'ScaleReset':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							animations: A3(
-								$author$project$Anim$CSS$animateScale,
-								'box',
-								{x: 1.0, y: 1.0},
-								model.animations)
-						}),
-					$elm$core$Platform$Cmd$none);
+				var _v5 = A3(
+					$author$project$Anim$Ports$animateScale,
+					'box',
+					{x: 1.0, y: 1.0},
+					model.animations);
+				var newModel = _v5.a;
+				var maybeCommand = _v5.b;
+				if (maybeCommand.$ === 'Just') {
+					var command = maybeCommand.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{animations: newModel}),
+						$author$project$ElmUI$Ports$Scale$Main$animateElement(
+							$author$project$Anim$Ports$encodeAnimationCommand(command)));
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
 			case 'ScaleWide':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							animations: A3(
-								$author$project$Anim$CSS$animateScale,
-								'box',
-								{x: 1.8, y: 0.6},
-								model.animations)
-						}),
-					$elm$core$Platform$Cmd$none);
+				var _v7 = A3(
+					$author$project$Anim$Ports$animateScale,
+					'box',
+					{x: 1.8, y: 0.6},
+					model.animations);
+				var newModel = _v7.a;
+				var maybeCommand = _v7.b;
+				if (maybeCommand.$ === 'Just') {
+					var command = maybeCommand.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{animations: newModel}),
+						$author$project$ElmUI$Ports$Scale$Main$animateElement(
+							$author$project$Anim$Ports$encodeAnimationCommand(command)));
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
 			case 'ScaleTall':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							animations: A3(
-								$author$project$Anim$CSS$animateScale,
-								'box',
-								{x: 0.6, y: 1.8},
-								model.animations)
-						}),
-					$elm$core$Platform$Cmd$none);
-			default:
+				var _v9 = A3(
+					$author$project$Anim$Ports$animateScale,
+					'box',
+					{x: 0.6, y: 1.8},
+					model.animations);
+				var newModel = _v9.a;
+				var maybeCommand = _v9.b;
+				if (maybeCommand.$ === 'Just') {
+					var command = maybeCommand.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{animations: newModel}),
+						$author$project$ElmUI$Ports$Scale$Main$animateElement(
+							$author$project$Anim$Ports$encodeAnimationCommand(command)));
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
+			case 'AnimationComplete':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			default:
+				var result = msg.a;
+				if (result.$ === 'Ok') {
+					var propertyUpdate = result.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								animations: A2($author$project$Anim$Ports$handlePropertyUpdate, propertyUpdate, model.animations)
+							}),
+						$elm$core$Platform$Cmd$none);
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
 		}
 	});
 var $author$project$Common$UI$Basic = {$: 'Basic'};
@@ -5566,7 +6204,6 @@ var $author$project$Common$UI$calculateHorizontalWidth = function (_v0) {
 	var totalPaddingWidth = containerPaddingX + layoutPaddingX;
 	return (totalSectionWidth + totalSpacingWidth) + totalPaddingWidth;
 };
-var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -8351,19 +8988,6 @@ var $elm$json$Json$Encode$list = F2(
 				_Json_emptyArray(_Utils_Tuple0),
 				entries));
 	});
-var $elm$json$Json$Encode$object = function (pairs) {
-	return _Json_wrap(
-		A3(
-			$elm$core$List$foldl,
-			F2(
-				function (_v0, obj) {
-					var k = _v0.a;
-					var v = _v0.b;
-					return A3(_Json_addField, k, v, obj);
-				}),
-			_Json_emptyObject(_Utils_Tuple0),
-			pairs));
-};
 var $elm$core$List$any = F2(
 	function (isOkay, list) {
 		any:
@@ -9118,6 +9742,17 @@ var $mdgriffith$elm_ui$Internal$Model$adjust = F3(
 	function (size, height, vertical) {
 		return {height: height / size, size: size, vertical: vertical};
 	});
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
 var $elm$core$List$maximum = function (list) {
 	if (list.b) {
 		var x = list.a;
@@ -9138,6 +9773,7 @@ var $elm$core$List$minimum = function (list) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
+var $elm$core$Basics$neq = _Utils_notEqual;
 var $mdgriffith$elm_ui$Internal$Model$convertAdjustment = function (adjustment) {
 	var lines = _List_fromArray(
 		[adjustment.capital, adjustment.baseline, adjustment.descender, adjustment.lowercase]);
@@ -11525,14 +12161,13 @@ var $author$project$Common$UI$createDocument = F3(
 	});
 var $author$project$Common$UI$Primary = {$: 'Primary'};
 var $author$project$Common$UI$Purple = {$: 'Purple'};
-var $author$project$ElmUI$CSS$Scale$Main$ScaleDown = {$: 'ScaleDown'};
-var $author$project$ElmUI$CSS$Scale$Main$ScaleReset = {$: 'ScaleReset'};
-var $author$project$ElmUI$CSS$Scale$Main$ScaleTall = {$: 'ScaleTall'};
-var $author$project$ElmUI$CSS$Scale$Main$ScaleUp = {$: 'ScaleUp'};
-var $author$project$ElmUI$CSS$Scale$Main$ScaleWide = {$: 'ScaleWide'};
+var $author$project$ElmUI$Ports$Scale$Main$ScaleDown = {$: 'ScaleDown'};
+var $author$project$ElmUI$Ports$Scale$Main$ScaleReset = {$: 'ScaleReset'};
+var $author$project$ElmUI$Ports$Scale$Main$ScaleTall = {$: 'ScaleTall'};
+var $author$project$ElmUI$Ports$Scale$Main$ScaleUp = {$: 'ScaleUp'};
+var $author$project$ElmUI$Ports$Scale$Main$ScaleWide = {$: 'ScaleWide'};
 var $author$project$Common$UI$Success = {$: 'Success'};
 var $author$project$Common$UI$Warning = {$: 'Warning'};
-var $author$project$ElmUI$CSS$Scale$Main$AnimationComplete = {$: 'AnimationComplete'};
 var $author$project$Common$Colors$backgroundWhite = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
 var $mdgriffith$elm_ui$Internal$Model$Class = F2(
 	function (a, b) {
@@ -11583,23 +12218,6 @@ var $mdgriffith$elm_ui$Element$el = F2(
 					[child])));
 	});
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $author$project$Anim$CSS$onTransitionEnd = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'transitionend',
-		$elm$json$Json$Decode$succeed(msg));
-};
 var $mdgriffith$elm_ui$Internal$Flag$borderRound = $mdgriffith$elm_ui$Internal$Flag$flag(17);
 var $mdgriffith$elm_ui$Element$Border$rounded = function (radius) {
 	return A2(
@@ -11619,80 +12237,11 @@ var $mdgriffith$elm_ui$Element$Font$size = function (i) {
 };
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$Anim$CSS$extractRotation = function (target) {
-	if (target.$ === 'ToRotation') {
-		return $elm$core$Maybe$Just(target);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Anim$CSS$extractScale = function (target) {
-	if (target.$ === 'ToScale') {
-		return $elm$core$Maybe$Just(target);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Anim$CSS$extractTranslate = function (target) {
-	if (target.$ === 'ToPosition') {
-		return $elm$core$Maybe$Just(target);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Anim$CSS$transformToString = function (target) {
-	switch (target.$) {
-		case 'ToPosition':
-			var pos = target.a;
-			return 'translate3d(' + ($elm$core$String$fromFloat(pos.x) + ('px, ' + ($elm$core$String$fromFloat(pos.y) + 'px, 0)')));
-		case 'ToScale':
-			var scale = target.a;
-			return 'scale(' + ($elm$core$String$fromFloat(scale.x) + (', ' + ($elm$core$String$fromFloat(scale.y) + ')')));
-		case 'ToRotation':
-			var degrees = target.a;
-			return 'rotate(' + ($elm$core$String$fromFloat(degrees) + 'deg)');
-		default:
-			return '';
-	}
-};
-var $author$project$Anim$CSS$combineTransforms = function (targets) {
-	var scales = A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractScale, targets);
-	var rotations = A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractRotation, targets);
-	var positions = A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractTranslate, targets);
-	var orderedTransforms = _Utils_ap(
-		A2($elm$core$List$map, $author$project$Anim$CSS$transformToString, positions),
-		_Utils_ap(
-			A2($elm$core$List$map, $author$project$Anim$CSS$transformToString, scales),
-			A2($elm$core$List$map, $author$project$Anim$CSS$transformToString, rotations)));
-	return A2($elm$core$String$join, ' ', orderedTransforms);
-};
-var $elm$core$List$partition = F2(
-	function (pred, list) {
-		var step = F2(
-			function (x, _v0) {
-				var trues = _v0.a;
-				var falses = _v0.b;
-				return pred(x) ? _Utils_Tuple2(
-					A2($elm$core$List$cons, x, trues),
-					falses) : _Utils_Tuple2(
-					trues,
-					A2($elm$core$List$cons, x, falses));
-			});
-		return A3(
-			$elm$core$List$foldr,
-			step,
-			_Utils_Tuple2(_List_Nil, _List_Nil),
-			list);
-	});
-var $elm$core$Basics$clamp = F3(
-	function (low, high, number) {
-		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
-	});
-var $author$project$Anim$CSS$colorToString = function (color) {
+var $author$project$Anim$Ports$colorValueToCss = function (color) {
 	switch (color.$) {
 		case 'Hex':
-			var hexString = color.a;
-			return hexString;
+			var hex = color.a;
+			return hex;
 		case 'Rgb':
 			var rgb = color.a;
 			return 'rgb(' + ($elm$core$String$fromInt(rgb.r) + (', ' + ($elm$core$String$fromInt(rgb.g) + (', ' + ($elm$core$String$fromInt(rgb.b) + ')')))));
@@ -11707,88 +12256,156 @@ var $author$project$Anim$CSS$colorToString = function (color) {
 			return 'hsla(' + ($elm$core$String$fromFloat(hsla.h) + (', ' + ($elm$core$String$fromFloat(hsla.s) + ('%, ' + ($elm$core$String$fromFloat(hsla.l) + ('%, ' + ($elm$core$String$fromFloat(hsla.a) + ')')))))));
 	}
 };
-var $author$project$Anim$CSS$filterToString = function (filter) {
+var $author$project$Anim$Ports$filterValueToCss = function (filter) {
 	switch (filter.$) {
 		case 'Blur':
-			var radius = filter.a;
-			return 'blur(' + ($elm$core$String$fromFloat(radius) + 'px)');
+			var blur = filter.a;
+			return 'blur(' + ($elm$core$String$fromFloat(blur) + 'px)');
 		case 'Brightness':
-			var value = filter.a;
-			return 'brightness(' + ($elm$core$String$fromFloat(value) + ')');
+			var brightness = filter.a;
+			return 'brightness(' + ($elm$core$String$fromFloat(brightness) + ')');
 		case 'Contrast':
-			var value = filter.a;
-			return 'contrast(' + ($elm$core$String$fromFloat(value) + ')');
+			var contrast = filter.a;
+			return 'contrast(' + ($elm$core$String$fromFloat(contrast) + ')');
 		case 'Grayscale':
-			var value = filter.a;
-			return 'grayscale(' + ($elm$core$String$fromFloat(
-				A3($elm$core$Basics$clamp, 0.0, 1.0, value)) + ')');
+			var grayscale = filter.a;
+			return 'grayscale(' + ($elm$core$String$fromFloat(grayscale) + ')');
 		default:
-			var value = filter.a;
-			return 'saturate(' + ($elm$core$String$fromFloat(value) + ')');
+			var saturate = filter.a;
+			return 'saturate(' + ($elm$core$String$fromFloat(saturate) + ')');
 	}
 };
-var $author$project$Anim$CSS$targetToProperty = function (target) {
+var $author$project$Anim$Ports$transformElement = function (position) {
+	return 'translate(' + ($elm$core$String$fromFloat(position.x) + ('px, ' + ($elm$core$String$fromFloat(position.y) + 'px)')));
+};
+var $author$project$Anim$Ports$animationTargetToCssProperty = function (target) {
 	switch (target.$) {
+		case 'ToPosition':
+			var position = target.a;
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'transform',
+					$author$project$Anim$Ports$transformElement(position))
+				]);
 		case 'ToOpacity':
-			var value = target.a;
-			return _Utils_Tuple2(
-				'opacity',
-				$elm$core$String$fromFloat(
-					A3($elm$core$Basics$clamp, 0.0, 1.0, value)));
+			var opacity = target.a;
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'opacity',
+					$elm$core$String$fromFloat(opacity))
+				]);
+		case 'ToScale':
+			var scale = target.a;
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'transform',
+					'scale(' + ($elm$core$String$fromFloat(scale.x) + (', ' + ($elm$core$String$fromFloat(scale.y) + ')'))))
+				]);
+		case 'ToRotation':
+			var rotation = target.a;
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'transform',
+					'rotate(' + ($elm$core$String$fromFloat(rotation) + 'deg)'))
+				]);
 		case 'ToBackgroundColor':
 			var color = target.a;
-			return _Utils_Tuple2(
-				'background-color',
-				$author$project$Anim$CSS$colorToString(color));
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'background-color',
+					$author$project$Anim$Ports$colorValueToCss(color))
+				]);
 		case 'ToTextColor':
 			var color = target.a;
-			return _Utils_Tuple2(
-				'color',
-				$author$project$Anim$CSS$colorToString(color));
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'color',
+					$author$project$Anim$Ports$colorValueToCss(color))
+				]);
 		case 'ToBorderColor':
 			var color = target.a;
-			return _Utils_Tuple2(
-				'border-color',
-				$author$project$Anim$CSS$colorToString(color));
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'border-color',
+					$author$project$Anim$Ports$colorValueToCss(color))
+				]);
 		case 'ToDimensions':
 			var dimensions = target.a;
-			return _Utils_Tuple2(
-				'width',
-				$elm$core$String$fromFloat(dimensions.width) + 'px');
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'width',
+					$elm$core$String$fromFloat(dimensions.width) + 'px'),
+					_Utils_Tuple2(
+					'height',
+					$elm$core$String$fromFloat(dimensions.height) + 'px')
+				]);
 		case 'ToBorderRadius':
 			var radius = target.a;
-			return _Utils_Tuple2(
-				'border-radius',
-				$elm$core$String$fromFloat(radius) + 'px');
-		case 'ToFilter':
-			var filter = target.a;
-			return _Utils_Tuple2(
-				'filter',
-				$author$project$Anim$CSS$filterToString(filter));
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'border-radius',
+					$elm$core$String$fromFloat(radius) + 'px')
+				]);
 		default:
-			return _Utils_Tuple2('', '');
+			var filter = target.a;
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'filter',
+					$author$project$Anim$Ports$filterValueToCss(filter))
+				]);
 	}
 };
-var $author$project$Anim$CSS$groupAndCombineTargets = function (targets) {
-	var _v0 = A2($elm$core$List$partition, $author$project$Anim$CSS$isTransformTarget, targets);
-	var transformTargets = _v0.a;
-	var otherTargets = _v0.b;
-	var otherProperties = A2($elm$core$List$map, $author$project$Anim$CSS$targetToProperty, otherTargets);
-	var transformProperty = $elm$core$List$isEmpty(transformTargets) ? _List_Nil : _List_fromArray(
-		[
-			_Utils_Tuple2(
-			'transform',
-			$author$project$Anim$CSS$combineTransforms(transformTargets))
-		]);
-	return _Utils_ap(transformProperty, otherProperties);
-};
-var $author$project$Anim$CSS$styleProperties = F2(
+var $elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3($elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
+var $author$project$Anim$Ports$styleProperties = F2(
 	function (elementId, _v0) {
-		var animations = _v0.a;
-		var _v1 = A2($elm$core$Dict$get, elementId, animations);
+		var elementsDict = _v0.a;
+		var _v1 = A2($elm$core$Dict$get, elementId, elementsDict);
 		if (_v1.$ === 'Just') {
-			var targets = _v1.a;
-			return $author$project$Anim$CSS$groupAndCombineTargets(targets);
+			var elementData = _v1.a;
+			return A3(
+				$elm$core$Dict$foldl,
+				F3(
+					function (_v2, target, acc) {
+						return _Utils_ap(
+							$author$project$Anim$Ports$animationTargetToCssProperty(target),
+							acc);
+					}),
+				_List_Nil,
+				elementData.properties);
 		} else {
 			return _List_Nil;
 		}
@@ -11799,57 +12416,7 @@ var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
 var $mdgriffith$elm_ui$Element$text = function (content) {
 	return $mdgriffith$elm_ui$Internal$Model$Text(content);
 };
-var $author$project$Anim$Duration = function (a) {
-	return {$: 'Duration', a: a};
-};
-var $author$project$Anim$EaseOut = {$: 'EaseOut'};
-var $author$project$Anim$EasePreset = function (a) {
-	return {$: 'EasePreset', a: a};
-};
-var $author$project$Anim$defaultConfig = {
-	easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
-	timing: $author$project$Anim$Duration(400)
-};
-var $author$project$Anim$Internal$easingToString = function (easing) {
-	switch (easing.$) {
-		case 'EaseString':
-			var string = easing.a;
-			return string;
-		case 'EasePreset':
-			var preset = easing.a;
-			switch (preset.$) {
-				case 'Linear':
-					return 'linear';
-				case 'EaseOut':
-					return 'ease-out';
-				case 'EaseIn':
-					return 'ease-in';
-				default:
-					return 'ease-in-out';
-			}
-		default:
-			return 'ease-out';
-	}
-};
-var $author$project$Anim$Internal$timingToMilliseconds = F2(
-	function (timing, distance) {
-		if (timing.$ === 'Speed') {
-			var pixelsPerSecond = timing.a;
-			return (distance / pixelsPerSecond) * 1000;
-		} else {
-			var milliseconds = timing.a;
-			return milliseconds;
-		}
-	});
-var $author$project$Anim$CSS$transitionStyles = F2(
-	function (_v0, _v1) {
-		var config = $author$project$Anim$defaultConfig;
-		var duration = $author$project$Anim$Internal$timingToMilliseconds(config.timing);
-		var easing = $author$project$Anim$Internal$easingToString(config.easing);
-		return 'all ' + ($elm$core$String$fromFloat(
-			duration(1.0)) + ('ms ' + easing));
-	});
-var $author$project$ElmUI$CSS$Scale$Main$animatedBox = F4(
+var $author$project$ElmUI$Ports$Scale$Main$animatedBox = F4(
 	function (elementId, label, color, model) {
 		return A2(
 			$mdgriffith$elm_ui$Element$el,
@@ -11874,26 +12441,15 @@ var $author$project$ElmUI$CSS$Scale$Main$animatedBox = F4(
 						$mdgriffith$elm_ui$Element$htmlAttribute(
 						A2($elm$html$Html$Attributes$style, 'justify-content', 'center'))
 					]),
-				_Utils_ap(
-					A2(
-						$elm$core$List$map,
-						function (_v0) {
-							var prop = _v0.a;
-							var value = _v0.b;
-							return $mdgriffith$elm_ui$Element$htmlAttribute(
-								A2($elm$html$Html$Attributes$style, prop, value));
-						},
-						A2($author$project$Anim$CSS$styleProperties, elementId, model.animations)),
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$htmlAttribute(
-							A2(
-								$elm$html$Html$Attributes$style,
-								'transition',
-								A2($author$project$Anim$CSS$transitionStyles, elementId, model.animations))),
-							$mdgriffith$elm_ui$Element$htmlAttribute(
-							$author$project$Anim$CSS$onTransitionEnd($author$project$ElmUI$CSS$Scale$Main$AnimationComplete))
-						]))),
+				A2(
+					$elm$core$List$map,
+					function (_v0) {
+						var prop = _v0.a;
+						var value = _v0.b;
+						return $mdgriffith$elm_ui$Element$htmlAttribute(
+							A2($elm$html$Html$Attributes$style, prop, value));
+					},
+					A2($author$project$Anim$Ports$styleProperties, elementId, model.animations))),
 			A2(
 				$mdgriffith$elm_ui$Element$el,
 				_List_fromArray(
@@ -11988,13 +12544,19 @@ var $elm$core$Basics$always = F2(
 	function (a, _v0) {
 		return a;
 	});
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
 var $mdgriffith$elm_ui$Internal$Model$unstyled = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Unstyled, $elm$core$Basics$always);
 var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
 var $elm$html$Html$Events$onClick = function (msg) {
 	return A2(
 		$elm$html$Html$Events$on,
@@ -12118,11 +12680,11 @@ var $mdgriffith$elm_ui$Element$Border$shadow = function (almostShade) {
 			$mdgriffith$elm_ui$Internal$Model$formatBoxShadow(shade)));
 };
 var $author$project$Common$Colors$textMedium = A3($mdgriffith$elm_ui$Element$rgb255, 71, 85, 105);
-var $author$project$ElmUI$CSS$Scale$Main$viewContent = function (model) {
+var $author$project$ElmUI$Ports$Scale$Main$viewContent = function (model) {
 	return _List_fromArray(
 		[
 			$author$project$Common$UI$backButton,
-			$author$project$Common$UI$pageHeader('CSS Scale Animations'),
+			$author$project$Common$UI$pageHeader('Ports Scale Animations'),
 			A2(
 			$mdgriffith$elm_ui$Element$el,
 			_List_fromArray(
@@ -12135,11 +12697,11 @@ var $author$project$ElmUI$CSS$Scale$Main$viewContent = function (model) {
 			$author$project$Common$UI$htmlActionButtons(
 			_List_fromArray(
 				[
-					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$CSS$Scale$Main$ScaleUp, 'Scale Up'),
-					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$CSS$Scale$Main$ScaleDown, 'Scale Down'),
-					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$CSS$Scale$Main$ScaleWide, 'Wide'),
-					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$CSS$Scale$Main$ScaleTall, 'Tall'),
-					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$CSS$Scale$Main$ScaleReset, 'Reset')
+					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Ports$Scale$Main$ScaleUp, 'Scale Up'),
+					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Ports$Scale$Main$ScaleDown, 'Scale Down'),
+					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Ports$Scale$Main$ScaleWide, 'Wide'),
+					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Ports$Scale$Main$ScaleTall, 'Tall'),
+					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Ports$Scale$Main$ScaleReset, 'Reset')
 				])),
 			A2(
 			$mdgriffith$elm_ui$Element$el,
@@ -12185,17 +12747,17 @@ var $author$project$ElmUI$CSS$Scale$Main$viewContent = function (model) {
 						$mdgriffith$elm_ui$Element$height(
 						$mdgriffith$elm_ui$Element$px(200))
 					]),
-				A4($author$project$ElmUI$CSS$Scale$Main$animatedBox, 'box', 'Scale Demo', $author$project$Common$Colors$primary, model)))
+				A4($author$project$ElmUI$Ports$Scale$Main$animatedBox, 'box', 'Scale Demo', $author$project$Common$Colors$primary, model)))
 		]);
 };
-var $author$project$ElmUI$CSS$Scale$Main$view = function (model) {
+var $author$project$ElmUI$Ports$Scale$Main$view = function (model) {
 	return A3(
 		$author$project$Common$UI$createDocument,
-		'Anim.CSS Scale ElmUI Example',
+		'Anim.Ports Scale ElmUI Example',
 		$author$project$Common$UI$Basic,
-		$author$project$ElmUI$CSS$Scale$Main$viewContent(model));
+		$author$project$ElmUI$Ports$Scale$Main$viewContent(model));
 };
-var $author$project$ElmUI$CSS$Scale$Main$main = $elm$browser$Browser$document(
-	{init: $author$project$ElmUI$CSS$Scale$Main$init, subscriptions: $author$project$ElmUI$CSS$Scale$Main$subscriptions, update: $author$project$ElmUI$CSS$Scale$Main$update, view: $author$project$ElmUI$CSS$Scale$Main$view});
-_Platform_export({'ElmUI':{'CSS':{'Scale':{'Main':{'init':$author$project$ElmUI$CSS$Scale$Main$main(
+var $author$project$ElmUI$Ports$Scale$Main$main = $elm$browser$Browser$document(
+	{init: $author$project$ElmUI$Ports$Scale$Main$init, subscriptions: $author$project$ElmUI$Ports$Scale$Main$subscriptions, update: $author$project$ElmUI$Ports$Scale$Main$update, view: $author$project$ElmUI$Ports$Scale$Main$view});
+_Platform_export({'ElmUI':{'Ports':{'Scale':{'Main':{'init':$author$project$ElmUI$Ports$Scale$Main$main(
 	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}}}}});}(this));

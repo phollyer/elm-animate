@@ -5204,86 +5204,290 @@ var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $author$project$Anim$Ports$init = $author$project$Anim$Ports$Model($elm$core$Dict$empty);
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$ElmUI$Ports$Multiple$Main$init = function (_v0) {
+var $author$project$ElmUI$Ports$Choreography$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{animations: $author$project$Anim$Ports$init},
+		{animations: $author$project$Anim$Ports$init, isAnimating: false},
 		$elm$core$Platform$Cmd$none);
 };
-var $author$project$ElmUI$Ports$Multiple$Main$AnimationCompleteMsg = function (a) {
-	return {$: 'AnimationCompleteMsg', a: a};
+var $author$project$ElmUI$Ports$Choreography$Main$AnimationComplete = function (a) {
+	return {$: 'AnimationComplete', a: a};
 };
-var $author$project$ElmUI$Ports$Multiple$Main$PositionUpdateMsg = function (a) {
-	return {$: 'PositionUpdateMsg', a: a};
+var $author$project$ElmUI$Ports$Choreography$Main$PositionUpdateReceived = function (a) {
+	return {$: 'PositionUpdateReceived', a: a};
 };
 var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$ElmUI$Ports$Multiple$Main$animationComplete = _Platform_incomingPort('animationComplete', $elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $author$project$ElmUI$Ports$Multiple$Main$positionUpdates = _Platform_incomingPort('positionUpdates', $elm$json$Json$Decode$value);
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
+var $author$project$ElmUI$Ports$Choreography$Main$animationComplete = _Platform_incomingPort('animationComplete', $elm$json$Json$Decode$string);
 var $elm$core$Platform$Sub$batch = _Platform_batch;
-var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $elm$core$Dict$values = function (dict) {
-	return A3(
-		$elm$core$Dict$foldr,
-		F3(
-			function (key, value, valueList) {
-				return A2($elm$core$List$cons, value, valueList);
-			}),
-		_List_Nil,
-		dict);
-};
-var $author$project$Anim$Ports$subscriptions = F2(
-	function (ports_, _v0) {
-		var elementsDict = _v0.a;
-		var hasActiveAnimations = A2(
-			$elm$core$List$any,
-			function (elementData) {
-				return A2(
-					$elm$core$List$any,
-					$elm$core$Basics$identity,
-					$elm$core$Dict$values(elementData.animating));
-			},
-			$elm$core$Dict$values(elementsDict));
-		return hasActiveAnimations ? $elm$core$Platform$Sub$batch(
-			_List_fromArray(
-				[ports_.propertyUpdates, ports_.animationComplete])) : $elm$core$Platform$Sub$none;
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
 	});
-var $author$project$ElmUI$Ports$Multiple$Main$subscriptions = function (model) {
-	return A2(
-		$author$project$Anim$Ports$subscriptions,
-		{
-			animationComplete: $author$project$ElmUI$Ports$Multiple$Main$animationComplete($author$project$ElmUI$Ports$Multiple$Main$AnimationCompleteMsg),
-			propertyUpdates: $author$project$ElmUI$Ports$Multiple$Main$positionUpdates($author$project$ElmUI$Ports$Multiple$Main$PositionUpdateMsg)
-		},
-		model.animations);
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $author$project$Anim$Ports$PropertyUpdate = F3(
+	function (elementId, propertyKey, target) {
+		return {elementId: elementId, propertyKey: propertyKey, target: target};
+	});
+var $author$project$Anim$ToBackgroundColor = function (a) {
+	return {$: 'ToBackgroundColor', a: a};
+};
+var $author$project$Anim$ToBorderColor = function (a) {
+	return {$: 'ToBorderColor', a: a};
+};
+var $author$project$Anim$ToBorderRadius = function (a) {
+	return {$: 'ToBorderRadius', a: a};
+};
+var $author$project$Anim$ToDimensions = function (a) {
+	return {$: 'ToDimensions', a: a};
+};
+var $author$project$Anim$ToFilter = function (a) {
+	return {$: 'ToFilter', a: a};
+};
+var $author$project$Anim$ToOpacity = function (a) {
+	return {$: 'ToOpacity', a: a};
+};
+var $author$project$Anim$ToPosition = function (a) {
+	return {$: 'ToPosition', a: a};
+};
+var $author$project$Anim$ToRotation = function (a) {
+	return {$: 'ToRotation', a: a};
+};
+var $author$project$Anim$ToScale = function (a) {
+	return {$: 'ToScale', a: a};
+};
+var $author$project$Anim$ToTextColor = function (a) {
+	return {$: 'ToTextColor', a: a};
+};
+var $elm$json$Json$Decode$andThen = _Json_andThen;
+var $author$project$Anim$Hex = function (a) {
+	return {$: 'Hex', a: a};
+};
+var $author$project$Anim$Hsl = function (a) {
+	return {$: 'Hsl', a: a};
+};
+var $author$project$Anim$Hsla = function (a) {
+	return {$: 'Hsla', a: a};
+};
+var $author$project$Anim$Rgb = function (a) {
+	return {$: 'Rgb', a: a};
+};
+var $author$project$Anim$Rgba = function (a) {
+	return {$: 'Rgba', a: a};
+};
+var $elm$json$Json$Decode$fail = _Json_fail;
+var $elm$json$Json$Decode$field = _Json_decodeField;
+var $elm$json$Json$Decode$float = _Json_decodeFloat;
+var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $elm$json$Json$Decode$map3 = _Json_map3;
+var $elm$json$Json$Decode$map4 = _Json_map4;
+var $author$project$Anim$Ports$colorValueDecoder = A2(
+	$elm$json$Json$Decode$andThen,
+	function (format) {
+		switch (format) {
+			case 'hex':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$Hex,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$string));
+			case 'rgb':
+				return A4(
+					$elm$json$Json$Decode$map3,
+					F3(
+						function (r, g, b) {
+							return $author$project$Anim$Rgb(
+								{b: b, g: g, r: r});
+						}),
+					A2($elm$json$Json$Decode$field, 'r', $elm$json$Json$Decode$int),
+					A2($elm$json$Json$Decode$field, 'g', $elm$json$Json$Decode$int),
+					A2($elm$json$Json$Decode$field, 'b', $elm$json$Json$Decode$int));
+			case 'rgba':
+				return A5(
+					$elm$json$Json$Decode$map4,
+					F4(
+						function (r, g, b, a) {
+							return $author$project$Anim$Rgba(
+								{a: a, b: b, g: g, r: r});
+						}),
+					A2($elm$json$Json$Decode$field, 'r', $elm$json$Json$Decode$int),
+					A2($elm$json$Json$Decode$field, 'g', $elm$json$Json$Decode$int),
+					A2($elm$json$Json$Decode$field, 'b', $elm$json$Json$Decode$int),
+					A2($elm$json$Json$Decode$field, 'a', $elm$json$Json$Decode$float));
+			case 'hsl':
+				return A4(
+					$elm$json$Json$Decode$map3,
+					F3(
+						function (h, s, l) {
+							return $author$project$Anim$Hsl(
+								{h: h, l: l, s: s});
+						}),
+					A2($elm$json$Json$Decode$field, 'h', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 's', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 'l', $elm$json$Json$Decode$float));
+			case 'hsla':
+				return A5(
+					$elm$json$Json$Decode$map4,
+					F4(
+						function (h, s, l, a) {
+							return $author$project$Anim$Hsla(
+								{a: a, h: h, l: l, s: s});
+						}),
+					A2($elm$json$Json$Decode$field, 'h', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 's', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 'l', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 'a', $elm$json$Json$Decode$float));
+			default:
+				return $elm$json$Json$Decode$fail('Unknown color format: ' + format);
+		}
+	},
+	A2($elm$json$Json$Decode$field, 'format', $elm$json$Json$Decode$string));
+var $author$project$Anim$Blur = function (a) {
+	return {$: 'Blur', a: a};
+};
+var $author$project$Anim$Brightness = function (a) {
+	return {$: 'Brightness', a: a};
+};
+var $author$project$Anim$Contrast = function (a) {
+	return {$: 'Contrast', a: a};
+};
+var $author$project$Anim$Grayscale = function (a) {
+	return {$: 'Grayscale', a: a};
+};
+var $author$project$Anim$Saturate = function (a) {
+	return {$: 'Saturate', a: a};
+};
+var $author$project$Anim$Ports$filterValueDecoder = A2(
+	$elm$json$Json$Decode$andThen,
+	function (filterType) {
+		switch (filterType) {
+			case 'blur':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$Blur,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'brightness':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$Brightness,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'contrast':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$Contrast,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'grayscale':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$Grayscale,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'saturate':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$Saturate,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			default:
+				return $elm$json$Json$Decode$fail('Unknown filter type: ' + filterType);
+		}
+	},
+	A2($elm$json$Json$Decode$field, 'type', $elm$json$Json$Decode$string));
+var $author$project$Anim$Ports$animationTargetDecoder = A2(
+	$elm$json$Json$Decode$andThen,
+	function (targetType) {
+		switch (targetType) {
+			case 'position':
+				return A3(
+					$elm$json$Json$Decode$map2,
+					F2(
+						function (x, y) {
+							return $author$project$Anim$ToPosition(
+								{x: x, y: y});
+						}),
+					A2($elm$json$Json$Decode$field, 'x', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 'y', $elm$json$Json$Decode$float));
+			case 'opacity':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToOpacity,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'scale':
+				return A3(
+					$elm$json$Json$Decode$map2,
+					F2(
+						function (x, y) {
+							return $author$project$Anim$ToScale(
+								{x: x, y: y});
+						}),
+					A2($elm$json$Json$Decode$field, 'x', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 'y', $elm$json$Json$Decode$float));
+			case 'rotation':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToRotation,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'background-color':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToBackgroundColor,
+					A2($elm$json$Json$Decode$field, 'value', $author$project$Anim$Ports$colorValueDecoder));
+			case 'text-color':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToTextColor,
+					A2($elm$json$Json$Decode$field, 'value', $author$project$Anim$Ports$colorValueDecoder));
+			case 'border-color':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToBorderColor,
+					A2($elm$json$Json$Decode$field, 'value', $author$project$Anim$Ports$colorValueDecoder));
+			case 'dimensions':
+				return A3(
+					$elm$json$Json$Decode$map2,
+					F2(
+						function (w, h) {
+							return $author$project$Anim$ToDimensions(
+								{height: h, width: w});
+						}),
+					A2($elm$json$Json$Decode$field, 'width', $elm$json$Json$Decode$float),
+					A2($elm$json$Json$Decode$field, 'height', $elm$json$Json$Decode$float));
+			case 'border-radius':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToBorderRadius,
+					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
+			case 'filter':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Anim$ToFilter,
+					A2($elm$json$Json$Decode$field, 'value', $author$project$Anim$Ports$filterValueDecoder));
+			default:
+				return $elm$json$Json$Decode$fail('Unknown animation target type: ' + targetType);
+		}
+	},
+	A2($elm$json$Json$Decode$field, 'type', $elm$json$Json$Decode$string));
+var $author$project$Anim$Ports$propertyUpdateDecoder = A4(
+	$elm$json$Json$Decode$map3,
+	$author$project$Anim$Ports$PropertyUpdate,
+	A2($elm$json$Json$Decode$field, 'elementId', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'propertyKey', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'target', $author$project$Anim$Ports$animationTargetDecoder));
+var $author$project$Anim$Ports$handlePropertyUpdateFromJson = function (value) {
+	return A2($elm$json$Json$Decode$decodeValue, $author$project$Anim$Ports$propertyUpdateDecoder, value);
+};
+var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $author$project$ElmUI$Ports$Choreography$Main$positionUpdates = _Platform_incomingPort('positionUpdates', $elm$json$Json$Decode$value);
+var $author$project$ElmUI$Ports$Choreography$Main$subscriptions = function (model) {
+	return $elm$core$Platform$Sub$batch(
+		_List_fromArray(
+			[
+				$author$project$ElmUI$Ports$Choreography$Main$positionUpdates(
+				A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Choreography$Main$PositionUpdateReceived, $author$project$Anim$Ports$handlePropertyUpdateFromJson)),
+				$author$project$ElmUI$Ports$Choreography$Main$animationComplete($author$project$ElmUI$Ports$Choreography$Main$AnimationComplete)
+			]));
 };
 var $author$project$Anim$Position = F2(
 	function (x, y) {
 		return {x: x, y: y};
 	});
-var $author$project$Anim$ToPosition = function (a) {
-	return {$: 'ToPosition', a: a};
-};
+var $author$project$ElmUI$Ports$Choreography$Main$animateElement = _Platform_outgoingPort('animateElement', $elm$core$Basics$identity);
 var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -5474,55 +5678,6 @@ var $author$project$Anim$Ports$animateWithConfig = F4(
 			$author$project$Anim$Ports$Model(updatedDict),
 			$elm$core$Maybe$Just(animationCommand));
 	});
-var $author$project$Anim$Ports$animateToWithConfig = F4(
-	function (config, elementId, position, model) {
-		return A4(
-			$author$project$Anim$Ports$animateWithConfig,
-			config,
-			elementId,
-			$author$project$Anim$ToPosition(position),
-			model);
-	});
-var $elm$core$Tuple$mapSecond = F2(
-	function (func, _v0) {
-		var x = _v0.a;
-		var y = _v0.b;
-		return _Utils_Tuple2(
-			x,
-			func(y));
-	});
-var $author$project$Anim$Ports$animateBatch = F3(
-	function (config, specs, model) {
-		return A2(
-			$elm$core$Tuple$mapSecond,
-			$elm$core$List$reverse,
-			A3(
-				$elm$core$List$foldl,
-				F2(
-					function (spec, _v0) {
-						var currentModel = _v0.a;
-						var commands = _v0.b;
-						var _v1 = A4($author$project$Anim$Ports$animateToWithConfig, config, spec.elementId, spec.target, currentModel);
-						var newModel = _v1.a;
-						var maybeCommand = _v1.b;
-						if (maybeCommand.$ === 'Just') {
-							var command = maybeCommand.a;
-							return _Utils_Tuple2(
-								newModel,
-								A2($elm$core$List$cons, command, commands));
-						} else {
-							return _Utils_Tuple2(newModel, commands);
-						}
-					}),
-				_Utils_Tuple2(model, _List_Nil),
-				specs));
-	});
-var $author$project$ElmUI$Ports$Multiple$Main$animateElement = _Platform_outgoingPort('animateElement', $elm$core$Basics$identity);
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
 var $author$project$Anim$Duration = function (a) {
 	return {$: 'Duration', a: a};
 };
@@ -5530,10 +5685,22 @@ var $author$project$Anim$EaseOut = {$: 'EaseOut'};
 var $author$project$Anim$EasePreset = function (a) {
 	return {$: 'EasePreset', a: a};
 };
-var $author$project$Anim$defaultConfig = {
+var $author$project$Anim$Ports$defaultConfig = {
 	easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
 	timing: $author$project$Anim$Duration(400)
 };
+var $author$project$Anim$Ports$animate = F3(
+	function (elementId, target, model) {
+		return A4($author$project$Anim$Ports$animateWithConfig, $author$project$Anim$Ports$defaultConfig, elementId, target, model);
+	});
+var $author$project$Anim$Ports$animateTo = F3(
+	function (elementId, position, model) {
+		return A3(
+			$author$project$Anim$Ports$animate,
+			elementId,
+			$author$project$Anim$ToPosition(position),
+			model);
+	});
 var $elm$json$Json$Encode$float = _Json_wrap;
 var $elm$json$Json$Encode$int = _Json_wrap;
 var $elm$json$Json$Encode$object = function (pairs) {
@@ -5889,6 +6056,24 @@ var $author$project$Anim$Ports$encodeAnimationCommand = function (command) {
 				$elm$json$Json$Encode$string(easing))
 			]));
 };
+var $elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _v0 = f(mx);
+		if (_v0.$ === 'Just') {
+			var x = _v0.a;
+			return A2($elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var $elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			$elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
 var $author$project$Anim$Ports$handlePropertyUpdate = F2(
 	function (update, _v0) {
 		var elementsDict = _v0.a;
@@ -5903,385 +6088,190 @@ var $author$project$Anim$Ports$handlePropertyUpdate = F2(
 		var updatedDict = A3($elm$core$Dict$insert, update.elementId, elementData, elementsDict);
 		return $author$project$Anim$Ports$Model(updatedDict);
 	});
-var $elm$json$Json$Decode$decodeValue = _Json_run;
-var $author$project$Anim$Ports$PropertyUpdate = F3(
-	function (elementId, propertyKey, target) {
-		return {elementId: elementId, propertyKey: propertyKey, target: target};
-	});
-var $author$project$Anim$ToBackgroundColor = function (a) {
-	return {$: 'ToBackgroundColor', a: a};
-};
-var $author$project$Anim$ToBorderColor = function (a) {
-	return {$: 'ToBorderColor', a: a};
-};
-var $author$project$Anim$ToBorderRadius = function (a) {
-	return {$: 'ToBorderRadius', a: a};
-};
-var $author$project$Anim$ToDimensions = function (a) {
-	return {$: 'ToDimensions', a: a};
-};
-var $author$project$Anim$ToFilter = function (a) {
-	return {$: 'ToFilter', a: a};
-};
-var $author$project$Anim$ToOpacity = function (a) {
-	return {$: 'ToOpacity', a: a};
-};
-var $author$project$Anim$ToRotation = function (a) {
-	return {$: 'ToRotation', a: a};
-};
-var $author$project$Anim$ToScale = function (a) {
-	return {$: 'ToScale', a: a};
-};
-var $author$project$Anim$ToTextColor = function (a) {
-	return {$: 'ToTextColor', a: a};
-};
-var $elm$json$Json$Decode$andThen = _Json_andThen;
-var $author$project$Anim$Hex = function (a) {
-	return {$: 'Hex', a: a};
-};
-var $author$project$Anim$Hsl = function (a) {
-	return {$: 'Hsl', a: a};
-};
-var $author$project$Anim$Hsla = function (a) {
-	return {$: 'Hsla', a: a};
-};
-var $author$project$Anim$Rgb = function (a) {
-	return {$: 'Rgb', a: a};
-};
-var $author$project$Anim$Rgba = function (a) {
-	return {$: 'Rgba', a: a};
-};
-var $elm$json$Json$Decode$fail = _Json_fail;
-var $elm$json$Json$Decode$field = _Json_decodeField;
-var $elm$json$Json$Decode$float = _Json_decodeFloat;
-var $elm$json$Json$Decode$int = _Json_decodeInt;
-var $elm$json$Json$Decode$map3 = _Json_map3;
-var $elm$json$Json$Decode$map4 = _Json_map4;
-var $author$project$Anim$Ports$colorValueDecoder = A2(
-	$elm$json$Json$Decode$andThen,
-	function (format) {
-		switch (format) {
-			case 'hex':
-				return A2(
-					$elm$json$Json$Decode$map,
-					$author$project$Anim$Hex,
-					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$string));
-			case 'rgb':
-				return A4(
-					$elm$json$Json$Decode$map3,
-					F3(
-						function (r, g, b) {
-							return $author$project$Anim$Rgb(
-								{b: b, g: g, r: r});
-						}),
-					A2($elm$json$Json$Decode$field, 'r', $elm$json$Json$Decode$int),
-					A2($elm$json$Json$Decode$field, 'g', $elm$json$Json$Decode$int),
-					A2($elm$json$Json$Decode$field, 'b', $elm$json$Json$Decode$int));
-			case 'rgba':
-				return A5(
-					$elm$json$Json$Decode$map4,
-					F4(
-						function (r, g, b, a) {
-							return $author$project$Anim$Rgba(
-								{a: a, b: b, g: g, r: r});
-						}),
-					A2($elm$json$Json$Decode$field, 'r', $elm$json$Json$Decode$int),
-					A2($elm$json$Json$Decode$field, 'g', $elm$json$Json$Decode$int),
-					A2($elm$json$Json$Decode$field, 'b', $elm$json$Json$Decode$int),
-					A2($elm$json$Json$Decode$field, 'a', $elm$json$Json$Decode$float));
-			case 'hsl':
-				return A4(
-					$elm$json$Json$Decode$map3,
-					F3(
-						function (h, s, l) {
-							return $author$project$Anim$Hsl(
-								{h: h, l: l, s: s});
-						}),
-					A2($elm$json$Json$Decode$field, 'h', $elm$json$Json$Decode$float),
-					A2($elm$json$Json$Decode$field, 's', $elm$json$Json$Decode$float),
-					A2($elm$json$Json$Decode$field, 'l', $elm$json$Json$Decode$float));
-			case 'hsla':
-				return A5(
-					$elm$json$Json$Decode$map4,
-					F4(
-						function (h, s, l, a) {
-							return $author$project$Anim$Hsla(
-								{a: a, h: h, l: l, s: s});
-						}),
-					A2($elm$json$Json$Decode$field, 'h', $elm$json$Json$Decode$float),
-					A2($elm$json$Json$Decode$field, 's', $elm$json$Json$Decode$float),
-					A2($elm$json$Json$Decode$field, 'l', $elm$json$Json$Decode$float),
-					A2($elm$json$Json$Decode$field, 'a', $elm$json$Json$Decode$float));
-			default:
-				return $elm$json$Json$Decode$fail('Unknown color format: ' + format);
-		}
-	},
-	A2($elm$json$Json$Decode$field, 'format', $elm$json$Json$Decode$string));
-var $author$project$Anim$Blur = function (a) {
-	return {$: 'Blur', a: a};
-};
-var $author$project$Anim$Brightness = function (a) {
-	return {$: 'Brightness', a: a};
-};
-var $author$project$Anim$Contrast = function (a) {
-	return {$: 'Contrast', a: a};
-};
-var $author$project$Anim$Grayscale = function (a) {
-	return {$: 'Grayscale', a: a};
-};
-var $author$project$Anim$Saturate = function (a) {
-	return {$: 'Saturate', a: a};
-};
-var $author$project$Anim$Ports$filterValueDecoder = A2(
-	$elm$json$Json$Decode$andThen,
-	function (filterType) {
-		switch (filterType) {
-			case 'blur':
-				return A2(
-					$elm$json$Json$Decode$map,
-					$author$project$Anim$Blur,
-					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
-			case 'brightness':
-				return A2(
-					$elm$json$Json$Decode$map,
-					$author$project$Anim$Brightness,
-					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
-			case 'contrast':
-				return A2(
-					$elm$json$Json$Decode$map,
-					$author$project$Anim$Contrast,
-					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
-			case 'grayscale':
-				return A2(
-					$elm$json$Json$Decode$map,
-					$author$project$Anim$Grayscale,
-					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
-			case 'saturate':
-				return A2(
-					$elm$json$Json$Decode$map,
-					$author$project$Anim$Saturate,
-					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
-			default:
-				return $elm$json$Json$Decode$fail('Unknown filter type: ' + filterType);
-		}
-	},
-	A2($elm$json$Json$Decode$field, 'type', $elm$json$Json$Decode$string));
-var $author$project$Anim$Ports$animationTargetDecoder = A2(
-	$elm$json$Json$Decode$andThen,
-	function (targetType) {
-		switch (targetType) {
-			case 'position':
-				return A3(
-					$elm$json$Json$Decode$map2,
-					F2(
-						function (x, y) {
-							return $author$project$Anim$ToPosition(
-								{x: x, y: y});
-						}),
-					A2($elm$json$Json$Decode$field, 'x', $elm$json$Json$Decode$float),
-					A2($elm$json$Json$Decode$field, 'y', $elm$json$Json$Decode$float));
-			case 'opacity':
-				return A2(
-					$elm$json$Json$Decode$map,
-					$author$project$Anim$ToOpacity,
-					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
-			case 'scale':
-				return A3(
-					$elm$json$Json$Decode$map2,
-					F2(
-						function (x, y) {
-							return $author$project$Anim$ToScale(
-								{x: x, y: y});
-						}),
-					A2($elm$json$Json$Decode$field, 'x', $elm$json$Json$Decode$float),
-					A2($elm$json$Json$Decode$field, 'y', $elm$json$Json$Decode$float));
-			case 'rotation':
-				return A2(
-					$elm$json$Json$Decode$map,
-					$author$project$Anim$ToRotation,
-					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
-			case 'background-color':
-				return A2(
-					$elm$json$Json$Decode$map,
-					$author$project$Anim$ToBackgroundColor,
-					A2($elm$json$Json$Decode$field, 'value', $author$project$Anim$Ports$colorValueDecoder));
-			case 'text-color':
-				return A2(
-					$elm$json$Json$Decode$map,
-					$author$project$Anim$ToTextColor,
-					A2($elm$json$Json$Decode$field, 'value', $author$project$Anim$Ports$colorValueDecoder));
-			case 'border-color':
-				return A2(
-					$elm$json$Json$Decode$map,
-					$author$project$Anim$ToBorderColor,
-					A2($elm$json$Json$Decode$field, 'value', $author$project$Anim$Ports$colorValueDecoder));
-			case 'dimensions':
-				return A3(
-					$elm$json$Json$Decode$map2,
-					F2(
-						function (w, h) {
-							return $author$project$Anim$ToDimensions(
-								{height: h, width: w});
-						}),
-					A2($elm$json$Json$Decode$field, 'width', $elm$json$Json$Decode$float),
-					A2($elm$json$Json$Decode$field, 'height', $elm$json$Json$Decode$float));
-			case 'border-radius':
-				return A2(
-					$elm$json$Json$Decode$map,
-					$author$project$Anim$ToBorderRadius,
-					A2($elm$json$Json$Decode$field, 'value', $elm$json$Json$Decode$float));
-			case 'filter':
-				return A2(
-					$elm$json$Json$Decode$map,
-					$author$project$Anim$ToFilter,
-					A2($elm$json$Json$Decode$field, 'value', $author$project$Anim$Ports$filterValueDecoder));
-			default:
-				return $elm$json$Json$Decode$fail('Unknown animation target type: ' + targetType);
-		}
-	},
-	A2($elm$json$Json$Decode$field, 'type', $elm$json$Json$Decode$string));
-var $author$project$Anim$Ports$propertyUpdateDecoder = A4(
-	$elm$json$Json$Decode$map3,
-	$author$project$Anim$Ports$PropertyUpdate,
-	A2($elm$json$Json$Decode$field, 'elementId', $elm$json$Json$Decode$string),
-	A2($elm$json$Json$Decode$field, 'propertyKey', $elm$json$Json$Decode$string),
-	A2($elm$json$Json$Decode$field, 'target', $author$project$Anim$Ports$animationTargetDecoder));
-var $author$project$Anim$Ports$handlePropertyUpdateFromJson = function (value) {
-	return A2($elm$json$Json$Decode$decodeValue, $author$project$Anim$Ports$propertyUpdateDecoder, value);
-};
-var $author$project$ElmUI$Ports$Multiple$Main$update = F2(
+var $author$project$ElmUI$Ports$Choreography$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
-			case 'Scatter':
-				var scatterSpecs = _List_fromArray(
-					[
-						{
-						elementId: 'element-a',
-						target: A2($author$project$Anim$Position, 50.0, 80.0)
-					},
-						{
-						elementId: 'element-b',
-						target: A2($author$project$Anim$Position, 350.0, 120.0)
-					},
-						{
-						elementId: 'element-c',
-						target: A2($author$project$Anim$Position, 120.0, 250.0)
-					},
-						{
-						elementId: 'element-d',
-						target: A2($author$project$Anim$Position, 300.0, 280.0)
-					},
-						{
-						elementId: 'element-e',
-						target: A2($author$project$Anim$Position, 80.0, 180.0)
-					},
-						{
-						elementId: 'element-f',
-						target: A2($author$project$Anim$Position, 380.0, 200.0)
-					}
-					]);
-				var _v1 = A3($author$project$Anim$Ports$animateBatch, $author$project$Anim$defaultConfig, scatterSpecs, model.animations);
-				var newAnimations = _v1.a;
-				var commands = _v1.b;
+			case 'ScatterElements':
+				var _v1 = A3(
+					$author$project$Anim$Ports$animateTo,
+					'elementA',
+					A2($author$project$Anim$Position, 80, 60),
+					model.animations);
+				var model1 = _v1.a;
+				var maybeCmd1 = _v1.b;
+				var _v2 = A3(
+					$author$project$Anim$Ports$animateTo,
+					'elementB',
+					A2($author$project$Anim$Position, 320, 80),
+					model1);
+				var model2 = _v2.a;
+				var maybeCmd2 = _v2.b;
+				var _v3 = A3(
+					$author$project$Anim$Ports$animateTo,
+					'elementC',
+					A2($author$project$Anim$Position, 40, 300),
+					model2);
+				var model3 = _v3.a;
+				var maybeCmd3 = _v3.b;
+				var _v4 = A3(
+					$author$project$Anim$Ports$animateTo,
+					'elementD',
+					A2($author$project$Anim$Position, 380, 260),
+					model3);
+				var model4 = _v4.a;
+				var maybeCmd4 = _v4.b;
+				var _v5 = A3(
+					$author$project$Anim$Ports$animateTo,
+					'elementE',
+					A2($author$project$Anim$Position, 60, 120),
+					model4);
+				var model5 = _v5.a;
+				var maybeCmd5 = _v5.b;
+				var _v6 = A3(
+					$author$project$Anim$Ports$animateTo,
+					'elementF',
+					A2($author$project$Anim$Position, 350, 320),
+					model5);
+				var model6 = _v6.a;
+				var maybeCmd6 = _v6.b;
+				var commands = A2(
+					$elm$core$List$map,
+					A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Choreography$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
+					A2(
+						$elm$core$List$filterMap,
+						$elm$core$Basics$identity,
+						_List_fromArray(
+							[maybeCmd1, maybeCmd2, maybeCmd3, maybeCmd4, maybeCmd5, maybeCmd6])));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animations: newAnimations}),
-					$elm$core$Platform$Cmd$batch(
-						A2(
-							$elm$core$List$map,
-							A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Multiple$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
-							commands)));
-			case 'Reset':
-				var resetSpecs = _List_fromArray(
-					[
-						{
-						elementId: 'element-a',
-						target: A2($author$project$Anim$Position, 50.0, 80.0)
-					},
-						{
-						elementId: 'element-b',
-						target: A2($author$project$Anim$Position, 380.0, 50.0)
-					},
-						{
-						elementId: 'element-c',
-						target: A2($author$project$Anim$Position, 120.0, 220.0)
-					},
-						{
-						elementId: 'element-d',
-						target: A2($author$project$Anim$Position, 350.0, 180.0)
-					},
-						{
-						elementId: 'element-e',
-						target: A2($author$project$Anim$Position, 200.0, 40.0)
-					},
-						{
-						elementId: 'element-f',
-						target: A2($author$project$Anim$Position, 80.0, 140.0)
-					}
-					]);
-				var _v2 = A3($author$project$Anim$Ports$animateBatch, $author$project$Anim$defaultConfig, resetSpecs, model.animations);
-				var newAnimations = _v2.a;
-				var commands = _v2.b;
+						{animations: model6, isAnimating: true}),
+					$elm$core$Platform$Cmd$batch(commands));
+			case 'ResetPositions':
+				var _v7 = A3(
+					$author$project$Anim$Ports$animateTo,
+					'elementA',
+					A2($author$project$Anim$Position, 150, 100),
+					model.animations);
+				var model1 = _v7.a;
+				var maybeCmd1 = _v7.b;
+				var _v8 = A3(
+					$author$project$Anim$Ports$animateTo,
+					'elementB',
+					A2($author$project$Anim$Position, 200, 150),
+					model1);
+				var model2 = _v8.a;
+				var maybeCmd2 = _v8.b;
+				var _v9 = A3(
+					$author$project$Anim$Ports$animateTo,
+					'elementC',
+					A2($author$project$Anim$Position, 100, 200),
+					model2);
+				var model3 = _v9.a;
+				var maybeCmd3 = _v9.b;
+				var _v10 = A3(
+					$author$project$Anim$Ports$animateTo,
+					'elementD',
+					A2($author$project$Anim$Position, 250, 200),
+					model3);
+				var model4 = _v10.a;
+				var maybeCmd4 = _v10.b;
+				var _v11 = A3(
+					$author$project$Anim$Ports$animateTo,
+					'elementE',
+					A2($author$project$Anim$Position, 300, 100),
+					model4);
+				var model5 = _v11.a;
+				var maybeCmd5 = _v11.b;
+				var _v12 = A3(
+					$author$project$Anim$Ports$animateTo,
+					'elementF',
+					A2($author$project$Anim$Position, 180, 50),
+					model5);
+				var model6 = _v12.a;
+				var maybeCmd6 = _v12.b;
+				var commands = A2(
+					$elm$core$List$map,
+					A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Choreography$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
+					A2(
+						$elm$core$List$filterMap,
+						$elm$core$Basics$identity,
+						_List_fromArray(
+							[maybeCmd1, maybeCmd2, maybeCmd3, maybeCmd4, maybeCmd5, maybeCmd6])));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animations: newAnimations}),
-					$elm$core$Platform$Cmd$batch(
-						A2(
-							$elm$core$List$map,
-							A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Multiple$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
-							commands)));
-			case 'Circle':
-				var radius = 50.0;
-				var centerY = 150.0;
-				var centerX = 225.0;
-				var circleSpecs = _List_fromArray(
-					[
-						{
-						elementId: 'element-a',
-						target: A2($author$project$Anim$Position, centerX, centerY - radius)
-					},
-						{
-						elementId: 'element-b',
-						target: A2($author$project$Anim$Position, centerX + (radius * 0.866), centerY - (radius / 2))
-					},
-						{
-						elementId: 'element-c',
-						target: A2($author$project$Anim$Position, centerX + (radius * 0.866), centerY + (radius / 2))
-					},
-						{
-						elementId: 'element-d',
-						target: A2($author$project$Anim$Position, centerX, centerY + radius)
-					},
-						{
-						elementId: 'element-e',
-						target: A2($author$project$Anim$Position, centerX - (radius * 0.866), centerY + (radius / 2))
-					},
-						{
-						elementId: 'element-f',
-						target: A2($author$project$Anim$Position, centerX - (radius * 0.866), centerY - (radius / 2))
-					}
-					]);
-				var _v3 = A3($author$project$Anim$Ports$animateBatch, $author$project$Anim$defaultConfig, circleSpecs, model.animations);
-				var newAnimations = _v3.a;
-				var commands = _v3.b;
+						{animations: model6, isAnimating: true}),
+					$elm$core$Platform$Cmd$batch(commands));
+			case 'CircleFormation':
+				var radius = 90;
+				var centerY = 180;
+				var centerX = 225;
+				var _v13 = A3(
+					$author$project$Anim$Ports$animateTo,
+					'elementA',
+					A2($author$project$Anim$Position, centerX + radius, centerY),
+					model.animations);
+				var model1 = _v13.a;
+				var maybeCmd1 = _v13.b;
+				var _v14 = A3(
+					$author$project$Anim$Ports$animateTo,
+					'elementB',
+					A2($author$project$Anim$Position, centerX + (radius * 0.5), centerY + (radius * 0.866)),
+					model1);
+				var model2 = _v14.a;
+				var maybeCmd2 = _v14.b;
+				var _v15 = A3(
+					$author$project$Anim$Ports$animateTo,
+					'elementC',
+					A2($author$project$Anim$Position, centerX - (radius * 0.5), centerY + (radius * 0.866)),
+					model2);
+				var model3 = _v15.a;
+				var maybeCmd3 = _v15.b;
+				var _v16 = A3(
+					$author$project$Anim$Ports$animateTo,
+					'elementD',
+					A2($author$project$Anim$Position, centerX - radius, centerY),
+					model3);
+				var model4 = _v16.a;
+				var maybeCmd4 = _v16.b;
+				var _v17 = A3(
+					$author$project$Anim$Ports$animateTo,
+					'elementE',
+					A2($author$project$Anim$Position, centerX - (radius * 0.5), centerY - (radius * 0.866)),
+					model4);
+				var model5 = _v17.a;
+				var maybeCmd5 = _v17.b;
+				var _v18 = A3(
+					$author$project$Anim$Ports$animateTo,
+					'elementF',
+					A2($author$project$Anim$Position, centerX + (radius * 0.5), centerY - (radius * 0.866)),
+					model5);
+				var model6 = _v18.a;
+				var maybeCmd6 = _v18.b;
+				var commands = A2(
+					$elm$core$List$map,
+					A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Choreography$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
+					A2(
+						$elm$core$List$filterMap,
+						$elm$core$Basics$identity,
+						_List_fromArray(
+							[maybeCmd1, maybeCmd2, maybeCmd3, maybeCmd4, maybeCmd5, maybeCmd6])));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animations: newAnimations}),
-					$elm$core$Platform$Cmd$batch(
-						A2(
-							$elm$core$List$map,
-							A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Multiple$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
-							commands)));
-			case 'StopAll':
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			case 'PositionUpdateMsg':
-				var value = msg.a;
-				var _v4 = $author$project$Anim$Ports$handlePropertyUpdateFromJson(value);
-				if (_v4.$ === 'Ok') {
-					var propertyUpdate = _v4.a;
+						{animations: model6, isAnimating: true}),
+					$elm$core$Platform$Cmd$batch(commands));
+			case 'AnimationComplete':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{isAnimating: false}),
+					$elm$core$Platform$Cmd$none);
+			default:
+				var result = msg.a;
+				if (result.$ === 'Ok') {
+					var propertyUpdate = result.a;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -6292,9 +6282,6 @@ var $author$project$ElmUI$Ports$Multiple$Main$update = F2(
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
-			default:
-				var elementId = msg.a;
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Common$UI$Basic = {$: 'Basic'};
@@ -6846,24 +6833,6 @@ var $mdgriffith$elm_ui$Internal$Model$Style = F2(
 var $mdgriffith$elm_ui$Internal$Style$dot = function (c) {
 	return '.' + c;
 };
-var $elm$core$List$maybeCons = F3(
-	function (f, mx, xs) {
-		var _v0 = f(mx);
-		if (_v0.$ === 'Just') {
-			var x = _v0.a;
-			return A2($elm$core$List$cons, x, xs);
-		} else {
-			return xs;
-		}
-	});
-var $elm$core$List$filterMap = F2(
-	function (f, xs) {
-		return A3(
-			$elm$core$List$foldr,
-			$elm$core$List$maybeCons(f),
-			_List_Nil,
-			xs);
-	});
 var $mdgriffith$elm_ui$Internal$Model$formatBoxShadow = function (shadow) {
 	return A2(
 		$elm$core$String$join,
@@ -6903,6 +6872,14 @@ var $elm$core$Tuple$mapFirst = F2(
 		return _Utils_Tuple2(
 			func(x),
 			y);
+	});
+var $elm$core$Tuple$mapSecond = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			x,
+			func(y));
 	});
 var $mdgriffith$elm_ui$Internal$Model$renderFocusStyle = function (focus) {
 	return _List_fromArray(
@@ -9094,6 +9071,27 @@ var $elm$json$Json$Encode$list = F2(
 				_Json_addEntry(func),
 				_Json_emptyArray(_Utils_Tuple0),
 				entries));
+	});
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
 	});
 var $mdgriffith$elm_ui$Internal$Model$fontName = function (font) {
 	switch (font.$) {
@@ -12245,15 +12243,17 @@ var $author$project$Common$UI$createDocument = F3(
 			title: title
 		};
 	});
-var $author$project$ElmUI$Ports$Multiple$Main$Circle = {$: 'Circle'};
+var $author$project$ElmUI$Ports$Choreography$Main$CircleFormation = {$: 'CircleFormation'};
 var $author$project$Common$UI$Primary = {$: 'Primary'};
 var $author$project$Common$UI$Purple = {$: 'Purple'};
-var $author$project$ElmUI$Ports$Multiple$Main$Reset = {$: 'Reset'};
-var $author$project$ElmUI$Ports$Multiple$Main$Scatter = {$: 'Scatter'};
+var $author$project$ElmUI$Ports$Choreography$Main$ResetPositions = {$: 'ResetPositions'};
+var $author$project$ElmUI$Ports$Choreography$Main$ScatterElements = {$: 'ScatterElements'};
 var $author$project$Common$UI$Success = {$: 'Success'};
-var $mdgriffith$elm_ui$Internal$Model$Left = {$: 'Left'};
-var $mdgriffith$elm_ui$Element$alignLeft = $mdgriffith$elm_ui$Internal$Model$AlignX($mdgriffith$elm_ui$Internal$Model$Left);
-var $author$project$Common$Colors$backgroundWhite = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
+var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
+	return {$: 'AlignY', a: a};
+};
+var $mdgriffith$elm_ui$Internal$Model$CenterY = {$: 'CenterY'};
+var $mdgriffith$elm_ui$Element$centerY = $mdgriffith$elm_ui$Internal$Model$AlignY($mdgriffith$elm_ui$Internal$Model$CenterY);
 var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
 	return A2(
 		$mdgriffith$elm_ui$Internal$Model$StyleClass,
@@ -12264,7 +12264,273 @@ var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
 			'color',
 			fontColor));
 };
+var $mdgriffith$elm_ui$Element$el = F2(
+	function (attrs, child) {
+		return A4(
+			$mdgriffith$elm_ui$Internal$Model$element,
+			$mdgriffith$elm_ui$Internal$Model$asEl,
+			$mdgriffith$elm_ui$Internal$Model$div,
+			A2(
+				$elm$core$List$cons,
+				$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
+				A2(
+					$elm$core$List$cons,
+					$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$shrink),
+					attrs)),
+			$mdgriffith$elm_ui$Internal$Model$Unkeyed(
+				_List_fromArray(
+					[child])));
+	});
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $mdgriffith$elm_ui$Internal$Flag$borderRound = $mdgriffith$elm_ui$Internal$Flag$flag(17);
+var $mdgriffith$elm_ui$Element$Border$rounded = function (radius) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$borderRound,
+		A3(
+			$mdgriffith$elm_ui$Internal$Model$Single,
+			'br-' + $elm$core$String$fromInt(radius),
+			'border-radius',
+			$elm$core$String$fromInt(radius) + 'px'));
+};
+var $mdgriffith$elm_ui$Internal$Model$Class = F2(
+	function (a, b) {
+		return {$: 'Class', a: a, b: b};
+	});
+var $mdgriffith$elm_ui$Internal$Flag$fontWeight = $mdgriffith$elm_ui$Internal$Flag$flag(13);
+var $mdgriffith$elm_ui$Element$Font$semiBold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textSemiBold);
+var $mdgriffith$elm_ui$Element$Font$size = function (i) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$fontSize,
+		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
+};
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $author$project$Anim$Ports$colorValueToCss = function (color) {
+	switch (color.$) {
+		case 'Hex':
+			var hex = color.a;
+			return hex;
+		case 'Rgb':
+			var rgb = color.a;
+			return 'rgb(' + ($elm$core$String$fromInt(rgb.r) + (', ' + ($elm$core$String$fromInt(rgb.g) + (', ' + ($elm$core$String$fromInt(rgb.b) + ')')))));
+		case 'Rgba':
+			var rgba = color.a;
+			return 'rgba(' + ($elm$core$String$fromInt(rgba.r) + (', ' + ($elm$core$String$fromInt(rgba.g) + (', ' + ($elm$core$String$fromInt(rgba.b) + (', ' + ($elm$core$String$fromFloat(rgba.a) + ')')))))));
+		case 'Hsl':
+			var hsl = color.a;
+			return 'hsl(' + ($elm$core$String$fromFloat(hsl.h) + (', ' + ($elm$core$String$fromFloat(hsl.s) + ('%, ' + ($elm$core$String$fromFloat(hsl.l) + '%)')))));
+		default:
+			var hsla = color.a;
+			return 'hsla(' + ($elm$core$String$fromFloat(hsla.h) + (', ' + ($elm$core$String$fromFloat(hsla.s) + ('%, ' + ($elm$core$String$fromFloat(hsla.l) + ('%, ' + ($elm$core$String$fromFloat(hsla.a) + ')')))))));
+	}
+};
+var $author$project$Anim$Ports$filterValueToCss = function (filter) {
+	switch (filter.$) {
+		case 'Blur':
+			var blur = filter.a;
+			return 'blur(' + ($elm$core$String$fromFloat(blur) + 'px)');
+		case 'Brightness':
+			var brightness = filter.a;
+			return 'brightness(' + ($elm$core$String$fromFloat(brightness) + ')');
+		case 'Contrast':
+			var contrast = filter.a;
+			return 'contrast(' + ($elm$core$String$fromFloat(contrast) + ')');
+		case 'Grayscale':
+			var grayscale = filter.a;
+			return 'grayscale(' + ($elm$core$String$fromFloat(grayscale) + ')');
+		default:
+			var saturate = filter.a;
+			return 'saturate(' + ($elm$core$String$fromFloat(saturate) + ')');
+	}
+};
+var $author$project$Anim$Ports$transformElement = function (position) {
+	return 'translate(' + ($elm$core$String$fromFloat(position.x) + ('px, ' + ($elm$core$String$fromFloat(position.y) + 'px)')));
+};
+var $author$project$Anim$Ports$animationTargetToCssProperty = function (target) {
+	switch (target.$) {
+		case 'ToPosition':
+			var position = target.a;
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'transform',
+					$author$project$Anim$Ports$transformElement(position))
+				]);
+		case 'ToOpacity':
+			var opacity = target.a;
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'opacity',
+					$elm$core$String$fromFloat(opacity))
+				]);
+		case 'ToScale':
+			var scale = target.a;
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'transform',
+					'scale(' + ($elm$core$String$fromFloat(scale.x) + (', ' + ($elm$core$String$fromFloat(scale.y) + ')'))))
+				]);
+		case 'ToRotation':
+			var rotation = target.a;
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'transform',
+					'rotate(' + ($elm$core$String$fromFloat(rotation) + 'deg)'))
+				]);
+		case 'ToBackgroundColor':
+			var color = target.a;
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'background-color',
+					$author$project$Anim$Ports$colorValueToCss(color))
+				]);
+		case 'ToTextColor':
+			var color = target.a;
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'color',
+					$author$project$Anim$Ports$colorValueToCss(color))
+				]);
+		case 'ToBorderColor':
+			var color = target.a;
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'border-color',
+					$author$project$Anim$Ports$colorValueToCss(color))
+				]);
+		case 'ToDimensions':
+			var dimensions = target.a;
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'width',
+					$elm$core$String$fromFloat(dimensions.width) + 'px'),
+					_Utils_Tuple2(
+					'height',
+					$elm$core$String$fromFloat(dimensions.height) + 'px')
+				]);
+		case 'ToBorderRadius':
+			var radius = target.a;
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'border-radius',
+					$elm$core$String$fromFloat(radius) + 'px')
+				]);
+		default:
+			var filter = target.a;
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'filter',
+					$author$project$Anim$Ports$filterValueToCss(filter))
+				]);
+	}
+};
+var $elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3($elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
+var $author$project$Anim$Ports$styleProperties = F2(
+	function (elementId, _v0) {
+		var elementsDict = _v0.a;
+		var _v1 = A2($elm$core$Dict$get, elementId, elementsDict);
+		if (_v1.$ === 'Just') {
+			var elementData = _v1.a;
+			return A3(
+				$elm$core$Dict$foldl,
+				F3(
+					function (_v2, target, acc) {
+						return _Utils_ap(
+							$author$project$Anim$Ports$animationTargetToCssProperty(target),
+							acc);
+					}),
+				_List_Nil,
+				elementData.properties);
+		} else {
+			return _List_Nil;
+		}
+	});
+var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
+	return {$: 'Text', a: a};
+};
+var $mdgriffith$elm_ui$Element$text = function (content) {
+	return $mdgriffith$elm_ui$Internal$Model$Text(content);
+};
+var $author$project$ElmUI$Ports$Choreography$Main$animatedBox = F5(
+	function (elementId, label, color1, color2, model) {
+		return A2(
+			$mdgriffith$elm_ui$Element$el,
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$mdgriffith$elm_ui$Element$width(
+						$mdgriffith$elm_ui$Element$px(50)),
+						$mdgriffith$elm_ui$Element$height(
+						$mdgriffith$elm_ui$Element$px(50)),
+						$mdgriffith$elm_ui$Element$Background$gradient(
+						{
+							angle: 2.356,
+							steps: _List_fromArray(
+								[color1, color2])
+						}),
+						$mdgriffith$elm_ui$Element$Border$rounded(12),
+						$mdgriffith$elm_ui$Element$Font$color(
+						A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255)),
+						$mdgriffith$elm_ui$Element$Font$semiBold,
+						$mdgriffith$elm_ui$Element$Font$size(16),
+						$mdgriffith$elm_ui$Element$htmlAttribute(
+						$elm$html$Html$Attributes$id(elementId)),
+						$mdgriffith$elm_ui$Element$htmlAttribute(
+						A2($elm$html$Html$Attributes$style, 'position', 'absolute'))
+					]),
+				A2(
+					$elm$core$List$map,
+					function (_v0) {
+						var prop = _v0.a;
+						var value = _v0.b;
+						return $mdgriffith$elm_ui$Element$htmlAttribute(
+							A2($elm$html$Html$Attributes$style, prop, value));
+					},
+					A2($author$project$Anim$Ports$styleProperties, elementId, model.animations))),
+			A2(
+				$mdgriffith$elm_ui$Element$el,
+				_List_fromArray(
+					[$mdgriffith$elm_ui$Element$centerX, $mdgriffith$elm_ui$Element$centerY]),
+				$mdgriffith$elm_ui$Element$text(label)));
+	});
+var $mdgriffith$elm_ui$Internal$Model$Left = {$: 'Left'};
+var $mdgriffith$elm_ui$Element$alignLeft = $mdgriffith$elm_ui$Internal$Model$AlignX($mdgriffith$elm_ui$Internal$Model$Left);
+var $author$project$Common$Colors$backgroundWhite = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
 var $elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
@@ -12317,29 +12583,6 @@ var $mdgriffith$elm_ui$Element$padding = function (x) {
 };
 var $author$project$Common$Colors$primary = A3($mdgriffith$elm_ui$Element$rgb255, 59, 130, 246);
 var $author$project$Common$Colors$primaryLight = A3($mdgriffith$elm_ui$Element$rgb255, 147, 197, 253);
-var $mdgriffith$elm_ui$Internal$Flag$borderRound = $mdgriffith$elm_ui$Internal$Flag$flag(17);
-var $mdgriffith$elm_ui$Element$Border$rounded = function (radius) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$borderRound,
-		A3(
-			$mdgriffith$elm_ui$Internal$Model$Single,
-			'br-' + $elm$core$String$fromInt(radius),
-			'border-radius',
-			$elm$core$String$fromInt(radius) + 'px'));
-};
-var $mdgriffith$elm_ui$Internal$Model$Class = F2(
-	function (a, b) {
-		return {$: 'Class', a: a, b: b};
-	});
-var $mdgriffith$elm_ui$Internal$Flag$fontWeight = $mdgriffith$elm_ui$Internal$Flag$flag(13);
-var $mdgriffith$elm_ui$Element$Font$semiBold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textSemiBold);
-var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
-	return {$: 'Text', a: a};
-};
-var $mdgriffith$elm_ui$Element$text = function (content) {
-	return $mdgriffith$elm_ui$Internal$Model$Text(content);
-};
 var $author$project$Common$UI$backButton = A2(
 	$mdgriffith$elm_ui$Element$link,
 	_List_fromArray(
@@ -12372,23 +12615,6 @@ var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
 			'background-color',
 			clr));
 };
-var $mdgriffith$elm_ui$Element$el = F2(
-	function (attrs, child) {
-		return A4(
-			$mdgriffith$elm_ui$Internal$Model$element,
-			$mdgriffith$elm_ui$Internal$Model$asEl,
-			$mdgriffith$elm_ui$Internal$Model$div,
-			A2(
-				$elm$core$List$cons,
-				$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
-				A2(
-					$elm$core$List$cons,
-					$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$shrink),
-					attrs)),
-			$mdgriffith$elm_ui$Internal$Model$Unkeyed(
-				_List_fromArray(
-					[child])));
-	});
 var $elm$core$Maybe$andThen = F2(
 	function (callback, maybeValue) {
 		if (maybeValue.$ === 'Just') {
@@ -12418,13 +12644,13 @@ var $author$project$Anim$Ports$getPosition = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
+var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$core$Basics$always = F2(
 	function (a, _v0) {
 		return a;
 	});
 var $mdgriffith$elm_ui$Internal$Model$unstyled = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Unstyled, $elm$core$Basics$always);
 var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
-var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -12486,26 +12712,6 @@ var $author$project$Common$UI$htmlActionButtons = function (buttons) {
 					]),
 				htmlButtons)));
 };
-var $elm$core$Dict$isEmpty = function (dict) {
-	if (dict.$ === 'RBEmpty_elm_builtin') {
-		return true;
-	} else {
-		return false;
-	}
-};
-var $author$project$Anim$Ports$isAnimating = F2(
-	function (elementId, _v0) {
-		var elementsDict = _v0.a;
-		return A2(
-			$elm$core$Maybe$withDefault,
-			false,
-			A2(
-				$elm$core$Maybe$map,
-				function (elementData) {
-					return !$elm$core$Dict$isEmpty(elementData.animating);
-				},
-				A2($elm$core$Dict$get, elementId, elementsDict)));
-	});
 var $mdgriffith$elm_ui$Internal$Model$Max = F2(
 	function (a, b) {
 		return {$: 'Max', a: a, b: b};
@@ -12514,7 +12720,6 @@ var $mdgriffith$elm_ui$Element$maximum = F2(
 	function (i, l) {
 		return A2($mdgriffith$elm_ui$Internal$Model$Max, i, l);
 	});
-var $mdgriffith$elm_ui$Element$Font$medium = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textMedium);
 var $mdgriffith$elm_ui$Internal$Model$Describe = function (a) {
 	return {$: 'Describe', a: a};
 };
@@ -12554,28 +12759,7 @@ var $author$project$Common$UI$pageHeader = function (title) {
 				$mdgriffith$elm_ui$Element$text(title)
 			]));
 };
-var $author$project$Common$Colors$purple = A3($mdgriffith$elm_ui$Element$rgb255, 168, 85, 247);
 var $mdgriffith$elm_ui$Element$rgba = $mdgriffith$elm_ui$Internal$Model$Rgba;
-var $mdgriffith$elm_ui$Internal$Model$AsRow = {$: 'AsRow'};
-var $mdgriffith$elm_ui$Internal$Model$asRow = $mdgriffith$elm_ui$Internal$Model$AsRow;
-var $mdgriffith$elm_ui$Element$row = F2(
-	function (attrs, children) {
-		return A4(
-			$mdgriffith$elm_ui$Internal$Model$element,
-			$mdgriffith$elm_ui$Internal$Model$asRow,
-			$mdgriffith$elm_ui$Internal$Model$div,
-			A2(
-				$elm$core$List$cons,
-				$mdgriffith$elm_ui$Internal$Model$htmlClass($mdgriffith$elm_ui$Internal$Style$classes.contentLeft + (' ' + $mdgriffith$elm_ui$Internal$Style$classes.contentCenterY)),
-				A2(
-					$elm$core$List$cons,
-					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
-					A2(
-						$elm$core$List$cons,
-						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$shrink),
-						attrs))),
-			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
-	});
 var $mdgriffith$elm_ui$Internal$Model$boxShadowClass = function (shadow) {
 	return $elm$core$String$concat(
 		_List_fromArray(
@@ -12600,275 +12784,33 @@ var $mdgriffith$elm_ui$Element$Border$shadow = function (almostShade) {
 			'box-shadow',
 			$mdgriffith$elm_ui$Internal$Model$formatBoxShadow(shade)));
 };
-var $mdgriffith$elm_ui$Element$Font$size = function (i) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$fontSize,
-		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
-};
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$Common$Colors$success = A3($mdgriffith$elm_ui$Element$rgb255, 16, 185, 129);
-var $author$project$Common$Colors$successDark = A3($mdgriffith$elm_ui$Element$rgb255, 5, 150, 105);
 var $author$project$Common$Colors$textMedium = A3($mdgriffith$elm_ui$Element$rgb255, 71, 85, 105);
-var $author$project$Common$Colors$warning = A3($mdgriffith$elm_ui$Element$rgb255, 245, 158, 11);
-var $author$project$Common$Colors$warningDark = A3($mdgriffith$elm_ui$Element$rgb255, 217, 119, 6);
-var $author$project$ElmUI$Ports$Multiple$Main$viewContent = function (model) {
-	var positionF = A2(
-		$elm$core$Maybe$withDefault,
-		A2($author$project$Anim$Position, 181, 130),
-		A2($author$project$Anim$Ports$getPosition, 'element-f', model.animations));
-	var positionE = A2(
-		$elm$core$Maybe$withDefault,
-		A2($author$project$Anim$Position, 181, 170),
-		A2($author$project$Anim$Ports$getPosition, 'element-e', model.animations));
-	var positionD = A2(
-		$elm$core$Maybe$withDefault,
-		A2($author$project$Anim$Position, 225, 200),
-		A2($author$project$Anim$Ports$getPosition, 'element-d', model.animations));
-	var positionC = A2(
-		$elm$core$Maybe$withDefault,
-		A2($author$project$Anim$Position, 269, 170),
-		A2($author$project$Anim$Ports$getPosition, 'element-c', model.animations));
-	var positionB = A2(
-		$elm$core$Maybe$withDefault,
-		A2($author$project$Anim$Position, 269, 130),
-		A2($author$project$Anim$Ports$getPosition, 'element-b', model.animations));
-	var positionA = A2(
-		$elm$core$Maybe$withDefault,
-		A2($author$project$Anim$Position, 225, 100),
-		A2($author$project$Anim$Ports$getPosition, 'element-a', model.animations));
-	var anyElementAnimating = A2(
-		$elm$core$List$any,
-		function (elementId) {
-			return A2($author$project$Anim$Ports$isAnimating, elementId, model.animations);
-		},
-		_List_fromArray(
-			['element-a', 'element-b', 'element-c', 'element-d', 'element-e', 'element-f']));
+var $author$project$ElmUI$Ports$Choreography$Main$viewContent = function (model) {
+	var positionF = A2($author$project$Anim$Ports$getPosition, 'elementF', model.animations);
+	var positionE = A2($author$project$Anim$Ports$getPosition, 'elementE', model.animations);
+	var positionD = A2($author$project$Anim$Ports$getPosition, 'elementD', model.animations);
+	var positionC = A2($author$project$Anim$Ports$getPosition, 'elementC', model.animations);
+	var positionB = A2($author$project$Anim$Ports$getPosition, 'elementB', model.animations);
+	var positionA = A2($author$project$Anim$Ports$getPosition, 'elementA', model.animations);
 	return _List_fromArray(
 		[
 			$author$project$Common$UI$backButton,
-			$author$project$Common$UI$pageHeader('SmoothMovePorts Multiple Example'),
+			$author$project$Common$UI$pageHeader('Ports Choreography Animations'),
 			A2(
-			$mdgriffith$elm_ui$Element$column,
+			$mdgriffith$elm_ui$Element$el,
 			_List_fromArray(
 				[
-					$mdgriffith$elm_ui$Element$spacing(20),
+					$mdgriffith$elm_ui$Element$Font$size(14),
+					$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium),
 					$mdgriffith$elm_ui$Element$centerX
 				]),
+			$mdgriffith$elm_ui$Element$text('Coordinated choreography with 6 elements in formation patterns')),
+			$author$project$Common$UI$htmlActionButtons(
 			_List_fromArray(
 				[
-					A2(
-					$mdgriffith$elm_ui$Element$row,
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$spacing(25),
-							$mdgriffith$elm_ui$Element$centerX
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$mdgriffith$elm_ui$Element$column,
-							_List_fromArray(
-								[
-									$mdgriffith$elm_ui$Element$spacing(6)
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$mdgriffith$elm_ui$Element$el,
-									_List_fromArray(
-										[
-											$mdgriffith$elm_ui$Element$Font$size(14),
-											$mdgriffith$elm_ui$Element$Font$medium,
-											$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$primary)
-										]),
-									$mdgriffith$elm_ui$Element$text('A')),
-									A2(
-									$mdgriffith$elm_ui$Element$el,
-									_List_fromArray(
-										[
-											$mdgriffith$elm_ui$Element$Font$size(10),
-											$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium)
-										]),
-									$mdgriffith$elm_ui$Element$text(
-										'(' + ($elm$core$String$fromInt(
-											$elm$core$Basics$round(positionA.x)) + (',' + ($elm$core$String$fromInt(
-											$elm$core$Basics$round(positionA.y)) + ')')))))
-								])),
-							A2(
-							$mdgriffith$elm_ui$Element$column,
-							_List_fromArray(
-								[
-									$mdgriffith$elm_ui$Element$spacing(6)
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$mdgriffith$elm_ui$Element$el,
-									_List_fromArray(
-										[
-											$mdgriffith$elm_ui$Element$Font$size(14),
-											$mdgriffith$elm_ui$Element$Font$medium,
-											$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$success)
-										]),
-									$mdgriffith$elm_ui$Element$text('B')),
-									A2(
-									$mdgriffith$elm_ui$Element$el,
-									_List_fromArray(
-										[
-											$mdgriffith$elm_ui$Element$Font$size(10),
-											$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium)
-										]),
-									$mdgriffith$elm_ui$Element$text(
-										'(' + ($elm$core$String$fromInt(
-											$elm$core$Basics$round(positionB.x)) + (',' + ($elm$core$String$fromInt(
-											$elm$core$Basics$round(positionB.y)) + ')')))))
-								])),
-							A2(
-							$mdgriffith$elm_ui$Element$column,
-							_List_fromArray(
-								[
-									$mdgriffith$elm_ui$Element$spacing(6)
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$mdgriffith$elm_ui$Element$el,
-									_List_fromArray(
-										[
-											$mdgriffith$elm_ui$Element$Font$size(14),
-											$mdgriffith$elm_ui$Element$Font$medium,
-											$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$purple)
-										]),
-									$mdgriffith$elm_ui$Element$text('C')),
-									A2(
-									$mdgriffith$elm_ui$Element$el,
-									_List_fromArray(
-										[
-											$mdgriffith$elm_ui$Element$Font$size(10),
-											$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium)
-										]),
-									$mdgriffith$elm_ui$Element$text(
-										'(' + ($elm$core$String$fromInt(
-											$elm$core$Basics$round(positionC.x)) + (',' + ($elm$core$String$fromInt(
-											$elm$core$Basics$round(positionC.y)) + ')')))))
-								]))
-						])),
-					A2(
-					$mdgriffith$elm_ui$Element$row,
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$spacing(25),
-							$mdgriffith$elm_ui$Element$centerX
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$mdgriffith$elm_ui$Element$column,
-							_List_fromArray(
-								[
-									$mdgriffith$elm_ui$Element$spacing(6)
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$mdgriffith$elm_ui$Element$el,
-									_List_fromArray(
-										[
-											$mdgriffith$elm_ui$Element$Font$size(14),
-											$mdgriffith$elm_ui$Element$Font$medium,
-											$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$warning)
-										]),
-									$mdgriffith$elm_ui$Element$text('D')),
-									A2(
-									$mdgriffith$elm_ui$Element$el,
-									_List_fromArray(
-										[
-											$mdgriffith$elm_ui$Element$Font$size(10),
-											$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium)
-										]),
-									$mdgriffith$elm_ui$Element$text(
-										'(' + ($elm$core$String$fromInt(
-											$elm$core$Basics$round(positionD.x)) + (',' + ($elm$core$String$fromInt(
-											$elm$core$Basics$round(positionD.y)) + ')')))))
-								])),
-							A2(
-							$mdgriffith$elm_ui$Element$column,
-							_List_fromArray(
-								[
-									$mdgriffith$elm_ui$Element$spacing(6)
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$mdgriffith$elm_ui$Element$el,
-									_List_fromArray(
-										[
-											$mdgriffith$elm_ui$Element$Font$size(14),
-											$mdgriffith$elm_ui$Element$Font$medium,
-											$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$warningDark)
-										]),
-									$mdgriffith$elm_ui$Element$text('E')),
-									A2(
-									$mdgriffith$elm_ui$Element$el,
-									_List_fromArray(
-										[
-											$mdgriffith$elm_ui$Element$Font$size(10),
-											$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium)
-										]),
-									$mdgriffith$elm_ui$Element$text(
-										'(' + ($elm$core$String$fromInt(
-											$elm$core$Basics$round(positionE.x)) + (',' + ($elm$core$String$fromInt(
-											$elm$core$Basics$round(positionE.y)) + ')')))))
-								])),
-							A2(
-							$mdgriffith$elm_ui$Element$column,
-							_List_fromArray(
-								[
-									$mdgriffith$elm_ui$Element$spacing(6)
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$mdgriffith$elm_ui$Element$el,
-									_List_fromArray(
-										[
-											$mdgriffith$elm_ui$Element$Font$size(14),
-											$mdgriffith$elm_ui$Element$Font$medium,
-											$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$successDark)
-										]),
-									$mdgriffith$elm_ui$Element$text('F')),
-									A2(
-									$mdgriffith$elm_ui$Element$el,
-									_List_fromArray(
-										[
-											$mdgriffith$elm_ui$Element$Font$size(10),
-											$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium)
-										]),
-									$mdgriffith$elm_ui$Element$text(
-										'(' + ($elm$core$String$fromInt(
-											$elm$core$Basics$round(positionF.x)) + (',' + ($elm$core$String$fromInt(
-											$elm$core$Basics$round(positionF.y)) + ')')))))
-								]))
-						]))
-				])),
-			A2(
-			$mdgriffith$elm_ui$Element$column,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$spacing(15),
-					$mdgriffith$elm_ui$Element$centerX
-				]),
-			_List_fromArray(
-				[
-					$author$project$Common$UI$htmlActionButtons(
-					_List_fromArray(
-						[
-							_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Ports$Multiple$Main$Scatter, 'Scatter'),
-							_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Ports$Multiple$Main$Circle, 'Circle Formation'),
-							_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Ports$Multiple$Main$Reset, 'Reset')
-						]))
+					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Ports$Choreography$Main$ScatterElements, 'Scatter Formation'),
+					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Ports$Choreography$Main$CircleFormation, 'Circle Formation'),
+					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Ports$Choreography$Main$ResetPositions, 'Reset Formation')
 				])),
 			A2(
 			$mdgriffith$elm_ui$Element$el,
@@ -12893,202 +12835,64 @@ var $author$project$ElmUI$Ports$Multiple$Main$viewContent = function (model) {
 					$mdgriffith$elm_ui$Element$htmlAttribute(
 					A2($elm$html$Html$Attributes$style, 'overflow', 'hidden'))
 				]),
-			$mdgriffith$elm_ui$Element$html(
-				A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							A2($elm$html$Html$Attributes$style, 'position', 'relative'),
-							A2($elm$html$Html$Attributes$style, 'width', '100%'),
-							A2($elm$html$Html$Attributes$style, 'height', '100%')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$id('element-a'),
-									A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
-									A2($elm$html$Html$Attributes$style, 'width', '50px'),
-									A2($elm$html$Html$Attributes$style, 'height', '50px'),
-									A2($elm$html$Html$Attributes$style, 'background', 'linear-gradient(135deg, #3B82F6, #2563EB)'),
-									A2($elm$html$Html$Attributes$style, 'border-radius', '12px'),
-									A2(
-									$elm$html$Html$Attributes$style,
-									'left',
-									$elm$core$String$fromFloat(positionA.x) + 'px'),
-									A2(
-									$elm$html$Html$Attributes$style,
-									'top',
-									$elm$core$String$fromFloat(positionA.y) + 'px'),
-									A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-									A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
-									A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-									A2($elm$html$Html$Attributes$style, 'color', 'white'),
-									A2($elm$html$Html$Attributes$style, 'font-weight', '600'),
-									A2($elm$html$Html$Attributes$style, 'font-size', '16px')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text('A')
-								])),
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$id('element-b'),
-									A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
-									A2($elm$html$Html$Attributes$style, 'width', '50px'),
-									A2($elm$html$Html$Attributes$style, 'height', '50px'),
-									A2($elm$html$Html$Attributes$style, 'background', 'linear-gradient(135deg, #10B981, #059669)'),
-									A2($elm$html$Html$Attributes$style, 'border-radius', '12px'),
-									A2(
-									$elm$html$Html$Attributes$style,
-									'left',
-									$elm$core$String$fromFloat(positionB.x) + 'px'),
-									A2(
-									$elm$html$Html$Attributes$style,
-									'top',
-									$elm$core$String$fromFloat(positionB.y) + 'px'),
-									A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-									A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
-									A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-									A2($elm$html$Html$Attributes$style, 'color', 'white'),
-									A2($elm$html$Html$Attributes$style, 'font-weight', '600'),
-									A2($elm$html$Html$Attributes$style, 'font-size', '16px')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text('B')
-								])),
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$id('element-c'),
-									A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
-									A2($elm$html$Html$Attributes$style, 'width', '50px'),
-									A2($elm$html$Html$Attributes$style, 'height', '50px'),
-									A2($elm$html$Html$Attributes$style, 'background', 'linear-gradient(135deg, #A855F7, #9333EA)'),
-									A2($elm$html$Html$Attributes$style, 'border-radius', '12px'),
-									A2(
-									$elm$html$Html$Attributes$style,
-									'left',
-									$elm$core$String$fromFloat(positionC.x) + 'px'),
-									A2(
-									$elm$html$Html$Attributes$style,
-									'top',
-									$elm$core$String$fromFloat(positionC.y) + 'px'),
-									A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-									A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
-									A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-									A2($elm$html$Html$Attributes$style, 'color', 'white'),
-									A2($elm$html$Html$Attributes$style, 'font-weight', '600'),
-									A2($elm$html$Html$Attributes$style, 'font-size', '16px')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text('C')
-								])),
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$id('element-d'),
-									A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
-									A2($elm$html$Html$Attributes$style, 'width', '50px'),
-									A2($elm$html$Html$Attributes$style, 'height', '50px'),
-									A2($elm$html$Html$Attributes$style, 'background', 'linear-gradient(135deg, #F97316, #EA580C)'),
-									A2($elm$html$Html$Attributes$style, 'border-radius', '12px'),
-									A2(
-									$elm$html$Html$Attributes$style,
-									'left',
-									$elm$core$String$fromFloat(positionD.x) + 'px'),
-									A2(
-									$elm$html$Html$Attributes$style,
-									'top',
-									$elm$core$String$fromFloat(positionD.y) + 'px'),
-									A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-									A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
-									A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-									A2($elm$html$Html$Attributes$style, 'color', 'white'),
-									A2($elm$html$Html$Attributes$style, 'font-weight', '600'),
-									A2($elm$html$Html$Attributes$style, 'font-size', '16px')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text('D')
-								])),
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$id('element-e'),
-									A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
-									A2($elm$html$Html$Attributes$style, 'width', '50px'),
-									A2($elm$html$Html$Attributes$style, 'height', '50px'),
-									A2($elm$html$Html$Attributes$style, 'background', 'linear-gradient(135deg, #EF4444, #DC2626)'),
-									A2($elm$html$Html$Attributes$style, 'border-radius', '12px'),
-									A2(
-									$elm$html$Html$Attributes$style,
-									'left',
-									$elm$core$String$fromFloat(positionE.x) + 'px'),
-									A2(
-									$elm$html$Html$Attributes$style,
-									'top',
-									$elm$core$String$fromFloat(positionE.y) + 'px'),
-									A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-									A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
-									A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-									A2($elm$html$Html$Attributes$style, 'color', 'white'),
-									A2($elm$html$Html$Attributes$style, 'font-weight', '600'),
-									A2($elm$html$Html$Attributes$style, 'font-size', '16px')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text('E')
-								])),
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$id('element-f'),
-									A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
-									A2($elm$html$Html$Attributes$style, 'width', '50px'),
-									A2($elm$html$Html$Attributes$style, 'height', '50px'),
-									A2($elm$html$Html$Attributes$style, 'background', 'linear-gradient(135deg, #06B6D4, #0891B2)'),
-									A2($elm$html$Html$Attributes$style, 'border-radius', '12px'),
-									A2(
-									$elm$html$Html$Attributes$style,
-									'left',
-									$elm$core$String$fromFloat(positionF.x) + 'px'),
-									A2(
-									$elm$html$Html$Attributes$style,
-									'top',
-									$elm$core$String$fromFloat(positionF.y) + 'px'),
-									A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-									A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
-									A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-									A2($elm$html$Html$Attributes$style, 'color', 'white'),
-									A2($elm$html$Html$Attributes$style, 'font-weight', '600'),
-									A2($elm$html$Html$Attributes$style, 'font-size', '16px')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text('F')
-								]))
-						]))))
+			A2(
+				$mdgriffith$elm_ui$Element$column,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A5(
+						$author$project$ElmUI$Ports$Choreography$Main$animatedBox,
+						'elementA',
+						'A',
+						A3($mdgriffith$elm_ui$Element$rgb255, 59, 130, 246),
+						A3($mdgriffith$elm_ui$Element$rgb255, 37, 99, 235),
+						model),
+						A5(
+						$author$project$ElmUI$Ports$Choreography$Main$animatedBox,
+						'elementB',
+						'B',
+						A3($mdgriffith$elm_ui$Element$rgb255, 16, 185, 129),
+						A3($mdgriffith$elm_ui$Element$rgb255, 5, 150, 105),
+						model),
+						A5(
+						$author$project$ElmUI$Ports$Choreography$Main$animatedBox,
+						'elementC',
+						'C',
+						A3($mdgriffith$elm_ui$Element$rgb255, 168, 85, 247),
+						A3($mdgriffith$elm_ui$Element$rgb255, 147, 51, 234),
+						model),
+						A5(
+						$author$project$ElmUI$Ports$Choreography$Main$animatedBox,
+						'elementD',
+						'D',
+						A3($mdgriffith$elm_ui$Element$rgb255, 249, 115, 22),
+						A3($mdgriffith$elm_ui$Element$rgb255, 234, 88, 12),
+						model),
+						A5(
+						$author$project$ElmUI$Ports$Choreography$Main$animatedBox,
+						'elementE',
+						'E',
+						A3($mdgriffith$elm_ui$Element$rgb255, 239, 68, 68),
+						A3($mdgriffith$elm_ui$Element$rgb255, 220, 38, 38),
+						model),
+						A5(
+						$author$project$ElmUI$Ports$Choreography$Main$animatedBox,
+						'elementF',
+						'F',
+						A3($mdgriffith$elm_ui$Element$rgb255, 236, 72, 153),
+						A3($mdgriffith$elm_ui$Element$rgb255, 219, 39, 119),
+						model)
+					])))
 		]);
 };
-var $author$project$ElmUI$Ports$Multiple$Main$view = function (model) {
+var $author$project$ElmUI$Ports$Choreography$Main$view = function (model) {
 	return A3(
 		$author$project$Common$UI$createDocument,
-		'SmoothMovePorts Multiple ElmUI Example',
+		'Anim.Ports Choreography ElmUI Example',
 		$author$project$Common$UI$Basic,
-		$author$project$ElmUI$Ports$Multiple$Main$viewContent(model));
+		$author$project$ElmUI$Ports$Choreography$Main$viewContent(model));
 };
-var $author$project$ElmUI$Ports$Multiple$Main$main = $elm$browser$Browser$document(
-	{init: $author$project$ElmUI$Ports$Multiple$Main$init, subscriptions: $author$project$ElmUI$Ports$Multiple$Main$subscriptions, update: $author$project$ElmUI$Ports$Multiple$Main$update, view: $author$project$ElmUI$Ports$Multiple$Main$view});
-_Platform_export({'ElmUI':{'Ports':{'Multiple':{'Main':{'init':$author$project$ElmUI$Ports$Multiple$Main$main(
+var $author$project$ElmUI$Ports$Choreography$Main$main = $elm$browser$Browser$document(
+	{init: $author$project$ElmUI$Ports$Choreography$Main$init, subscriptions: $author$project$ElmUI$Ports$Choreography$Main$subscriptions, update: $author$project$ElmUI$Ports$Choreography$Main$update, view: $author$project$ElmUI$Ports$Choreography$Main$view});
+_Platform_export({'ElmUI':{'Ports':{'Choreography':{'Main':{'init':$author$project$ElmUI$Ports$Choreography$Main$main(
 	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}}}}});}(this));

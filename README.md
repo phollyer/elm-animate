@@ -1,52 +1,47 @@
-# Elm Smooth Move
+# Smooth Animations And Scrolling
 
-A comprehensive Elm package providing **4 different animation modules** for smooth DOM element movement. Choose the approach that best fits your performance needs and use case.
+A comprehensive Elm package providing **3 different animation modules** for smooth animations, and
+**4 different scrolling modules** for Document and Container scrolling. 
+Choose the approach that best fits your performance needs and use case.
 
-> **Credits**: This package builds upon the excellent foundation of [`linuss/smooth-scroll`](https://package.elm-lang.org/packages/linuss/smooth-scroll/latest/) by expanding it into a multi-approach animation library.
+> **Credits**: This package builds upon the excellent foundation of [`linuss/smooth-scroll`](https://package.elm-lang.org/packages/linuss/smooth-scroll/latest/) by expanding it into a multi-approach animation and scrolling library.
 
 ## 🎯 Animation Modules
 
-### 1. **SmoothMoveScroll** - Document & Container Scrolling  
-**API Style:** Simple `Cmd msg` or advanced `Task` composition  
-**Benefits:** Simple integration, X and Y axes scrolling   
-**Drawbacks:** Limited to scrolling operations only  
-```elm
-scrollCmd NoOp "target-element-id"  -- returns `Cmd msg`
-scrollTask "target-element-id" -- returns `Task Dom.Error (List ())`
-```
+All 3 modules provide virtually identical API's, it is the underlying implementations that differ. This is deliberate so that it becomes fairly easy to swap one out for another, should your requirements change.
 
-### 2. **SmoothMoveCSS** - CSS Transition-Based
+
+### 1. **Anim.CSS** - Transition-Based
 **API Style:** Model-based state with CSS generation, browser handles animation  
 **Benefits:** "Fire and forget", hardware acceleration, multiple elements, battery efficient  
 **Drawbacks:** No access to intermediate values, limited control once started  
 ```elm
 -- Update the position in your model
-{ model | smoothMove = SmoothMoveCSS.animateTo "my-element" 100 200 model.smoothMove }
+{ model | animations = CSS.animateTo "my-element" 100 200 model.animations }
 
 -- Apply in your view  
 div 
-    [ style "transform" (SmoothMoveCSS.transformElement "my-element" model.smoothMove)
-    , style "transition" (SmoothMoveCSS.transition SmoothMoveCSS.defaultConfig) 
+    [ style "transform" (CSS.transformElement "my-element" model.animations)
+    , style "transition" (CSS.transition CSS.defaultConfig) 
     ] 
     [ text "Smooth!" ]
 ```
-
-### 3. **SmoothMoveSub** - Subscription-Based Positioning  
+### 2. **Anim.Sub** - Subscription-Based  
 **API Style:** Subscription-driven with model state  
 **Benefits:** Full programmatic control, access to current positions, mid-animation changes  
 **Drawbacks:** Requires subscription management, more complex setup  
 ```elm
 -- Update the position in your model
-{ model | smoothMove = SmoothMoveSub.animateTo "my-element" 100 200 model.smoothMove }
+{ model | animations = Sub.animateTo "my-element" 100 200 model.animations }
 
 -- Apply in your view
 div 
-    [ style "transform" (SmoothMoveSub.transformElement "my-element" model.smoothMove) ] 
+    [ style "transform" (Sub.transformElement "my-element" model.animations) ] 
     [ text "Smooth!" ]
 
 ```
 
-### 4. **SmoothMovePorts** - Web Animations API
+### 3. **Anim.Ports** - Web Animations API
 **API Style:** JavaScript integration with ports  
 **Benefits:** Maximum performance, complex animation sequences, Web Animations API access  
 **Drawbacks:** Requires JavaScript setup, more complex architecture  
@@ -54,18 +49,66 @@ div
 ```elm
 -- Update the position in your model
 let
-    ( newSmoothMove, cmd ) = 
-        SmoothMovePorts.animateTo "my-element" 100 200 model.smoothMove
+    ( animations, cmd ) = 
+        Ports.animateTo "my-element" 100 200 model.animations
 in 
-({ model | smoothMove = newSmoothMove }
+({ model | animations = animations }
 , cmd
 )
 
 -- Apply in your view
 div 
-    [ style "transform" (SmoothMovePorts.transformElement "my-element" model.smoothMove) ] 
+    [ style "transform" (Ports.transformElement "my-element" model.animations) ] 
     [ text "Smooth!" ]
 ```
+
+
+## 🎯 Scrolling Modules
+
+### Container
+
+
+### 1. **Scroll.Container.Cmd** - Container Scrolling  
+**API Style:** Simple `Cmd msg`   
+**Benefits:** Simple integration, X, Y and Both axes scrolling   
+**Drawbacks:** Limited to scrolling operations only, no Error handling  
+```elm
+scrollCmd NoOp "target-element-id"  -- returns `Cmd msg`
+scrollTask "target-element-id" -- returns `Task Dom.Error (List ())`
+```
+
+### 2. **Scroll.Container.Task** - Container Scrolling  
+**API Style:** Simple `Cmd msg`   
+**Benefits:** Simple integration, X, Y and Both axes scrolling   
+**Drawbacks:** Limited to scrolling operations only, no Error handling  
+```elm
+scrollCmd NoOp "target-element-id"  -- returns `Cmd msg`
+scrollTask "target-element-id" -- returns `Task Dom.Error (List ())`
+```
+
+### Document
+
+
+### 1. **Container.Cmd** - Container Scrolling  
+**API Style:** Simple `Cmd msg`   
+**Benefits:** Simple integration, X, Y and Both axes scrolling   
+**Drawbacks:** Limited to scrolling operations only, no Error handling  
+```elm
+scrollCmd NoOp "target-element-id"  -- returns `Cmd msg`
+scrollTask "target-element-id" -- returns `Task Dom.Error (List ())`
+```
+
+### 2. **Container.Task** - Container Scrolling  
+**API Style:** Simple `Cmd msg`   
+**Benefits:** Simple integration, X, Y and Both axes scrolling   
+**Drawbacks:** Limited to scrolling operations only, no Error handling  
+```elm
+scrollCmd NoOp "target-element-id"  -- returns `Cmd msg`
+scrollTask "target-element-id" -- returns `Task Dom.Error (List ())`
+```
+
+###  need own Bed
+:
 
 ## 🚀 Quick Start
 

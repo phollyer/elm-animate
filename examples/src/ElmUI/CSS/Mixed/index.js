@@ -5542,13 +5542,13 @@ var $author$project$ElmUI$CSS$Mixed$Main$update = F2(
 			case 'StartComplexAnimation':
 				var elementId = msg.a;
 				var animations = A3(
-					$author$project$Anim$CSS$animateScale,
+					$author$project$Anim$CSS$animateRotation,
 					elementId,
-					{x: 1.5, y: 1.9},
+					90,
 					A3(
-						$author$project$Anim$CSS$animateRotation,
+						$author$project$Anim$CSS$animateScale,
 						elementId,
-						90,
+						{x: 1.5, y: 1.9},
 						A3(
 							$author$project$Anim$CSS$animatePosition,
 							elementId,

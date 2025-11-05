@@ -5264,6 +5264,30 @@ var $elm$core$Dict$get = F2(
 			}
 		}
 	});
+var $author$project$Anim$CSS$getSpecificTargetType = function (target) {
+	switch (target.$) {
+		case 'ToPosition':
+			return 'position';
+		case 'ToScale':
+			return 'scale';
+		case 'ToRotation':
+			return 'rotation';
+		case 'ToOpacity':
+			return 'opacity';
+		case 'ToBackgroundColor':
+			return 'background-color';
+		case 'ToTextColor':
+			return 'color';
+		case 'ToBorderColor':
+			return 'border-color';
+		case 'ToDimensions':
+			return 'dimensions';
+		case 'ToBorderRadius':
+			return 'border-radius';
+		default:
+			return 'filter';
+	}
+};
 var $author$project$Anim$CSS$getTargetType = function (target) {
 	switch (target.$) {
 		case 'ToPosition':
@@ -5281,7 +5305,7 @@ var $author$project$Anim$CSS$getTargetType = function (target) {
 		case 'ToBorderColor':
 			return 'border-color';
 		case 'ToDimensions':
-			return 'width';
+			return 'dimensions';
 		case 'ToBorderRadius':
 			return 'border-radius';
 		default:
@@ -5396,6 +5420,18 @@ var $elm$core$Dict$insert = F3(
 			return x;
 		}
 	});
+var $author$project$Anim$CSS$isTransformTarget = function (target) {
+	switch (target.$) {
+		case 'ToPosition':
+			return true;
+		case 'ToScale':
+			return true;
+		case 'ToRotation':
+			return true;
+		default:
+			return false;
+	}
+};
 var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
@@ -5413,7 +5449,17 @@ var $author$project$Anim$CSS$animate = F3(
 			$elm$core$Maybe$withDefault,
 			_List_Nil,
 			A2($elm$core$Dict$get, elementId, animations));
-		var newTargets = A2(
+		var newTargets = $author$project$Anim$CSS$isTransformTarget(target) ? A2(
+			$elm$core$List$cons,
+			target,
+			A2(
+				$elm$core$List$filter,
+				function (t) {
+					return !_Utils_eq(
+						$author$project$Anim$CSS$getSpecificTargetType(t),
+						$author$project$Anim$CSS$getSpecificTargetType(target));
+				},
+				currentTargets)) : A2(
 			$elm$core$List$cons,
 			target,
 			A2(
@@ -11851,6 +11897,27 @@ var $mdgriffith$elm_ui$Element$Font$size = function (i) {
 };
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $author$project$Anim$CSS$extractRotation = function (target) {
+	if (target.$ === 'ToRotation') {
+		return $elm$core$Maybe$Just(target);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$CSS$extractScale = function (target) {
+	if (target.$ === 'ToScale') {
+		return $elm$core$Maybe$Just(target);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$CSS$extractTranslate = function (target) {
+	if (target.$ === 'ToPosition') {
+		return $elm$core$Maybe$Just(target);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Anim$CSS$transformToString = function (target) {
 	switch (target.$) {
 		case 'ToPosition':
@@ -11867,22 +11934,15 @@ var $author$project$Anim$CSS$transformToString = function (target) {
 	}
 };
 var $author$project$Anim$CSS$combineTransforms = function (targets) {
-	return A2(
-		$elm$core$String$join,
-		' ',
-		A2($elm$core$List$map, $author$project$Anim$CSS$transformToString, targets));
-};
-var $author$project$Anim$CSS$isTransformTarget = function (target) {
-	switch (target.$) {
-		case 'ToPosition':
-			return true;
-		case 'ToScale':
-			return true;
-		case 'ToRotation':
-			return true;
-		default:
-			return false;
-	}
+	var scales = A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractScale, targets);
+	var rotations = A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractRotation, targets);
+	var positions = A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractTranslate, targets);
+	var orderedTransforms = _Utils_ap(
+		A2($elm$core$List$map, $author$project$Anim$CSS$transformToString, positions),
+		_Utils_ap(
+			A2($elm$core$List$map, $author$project$Anim$CSS$transformToString, scales),
+			A2($elm$core$List$map, $author$project$Anim$CSS$transformToString, rotations)));
+	return A2($elm$core$String$join, ' ', orderedTransforms);
 };
 var $elm$core$List$partition = F2(
 	function (pred, list) {

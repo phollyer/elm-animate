@@ -5196,37 +5196,299 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$document = _Browser_document;
-var $author$project$Anim$CSS$Model = function (a) {
+var $author$project$Anim$Sub$Model = function (a) {
 	return {$: 'Model', a: a};
 };
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
-var $author$project$Anim$CSS$init = $author$project$Anim$CSS$Model($elm$core$Dict$empty);
+var $author$project$Anim$Sub$init = $author$project$Anim$Sub$Model($elm$core$Dict$empty);
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$ElmUI$CSS$Scale$Main$init = function (_v0) {
+var $author$project$ElmUI$Sub$Position$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{animations: $author$project$Anim$CSS$init},
+		{animations: $author$project$Anim$Sub$init},
 		$elm$core$Platform$Cmd$none);
 };
+var $author$project$ElmUI$Sub$Position$Main$AnimationFrame = function (a) {
+	return {$: 'AnimationFrame', a: a};
+};
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$ElmUI$CSS$Scale$Main$subscriptions = function (_v0) {
-	return $elm$core$Platform$Sub$none;
+var $elm$browser$Browser$AnimationManager$Delta = function (a) {
+	return {$: 'Delta', a: a};
 };
-var $author$project$Anim$ToScale = function (a) {
-	return {$: 'ToScale', a: a};
+var $elm$browser$Browser$AnimationManager$State = F3(
+	function (subs, request, oldTime) {
+		return {oldTime: oldTime, request: request, subs: subs};
+	});
+var $elm$browser$Browser$AnimationManager$init = $elm$core$Task$succeed(
+	A3($elm$browser$Browser$AnimationManager$State, _List_Nil, $elm$core$Maybe$Nothing, 0));
+var $elm$core$Process$kill = _Scheduler_kill;
+var $elm$browser$Browser$AnimationManager$now = _Browser_now(_Utils_Tuple0);
+var $elm$browser$Browser$AnimationManager$rAF = _Browser_rAF(_Utils_Tuple0);
+var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
+var $elm$core$Process$spawn = _Scheduler_spawn;
+var $elm$browser$Browser$AnimationManager$onEffects = F3(
+	function (router, subs, _v0) {
+		var request = _v0.request;
+		var oldTime = _v0.oldTime;
+		var _v1 = _Utils_Tuple2(request, subs);
+		if (_v1.a.$ === 'Nothing') {
+			if (!_v1.b.b) {
+				var _v2 = _v1.a;
+				return $elm$browser$Browser$AnimationManager$init;
+			} else {
+				var _v4 = _v1.a;
+				return A2(
+					$elm$core$Task$andThen,
+					function (pid) {
+						return A2(
+							$elm$core$Task$andThen,
+							function (time) {
+								return $elm$core$Task$succeed(
+									A3(
+										$elm$browser$Browser$AnimationManager$State,
+										subs,
+										$elm$core$Maybe$Just(pid),
+										time));
+							},
+							$elm$browser$Browser$AnimationManager$now);
+					},
+					$elm$core$Process$spawn(
+						A2(
+							$elm$core$Task$andThen,
+							$elm$core$Platform$sendToSelf(router),
+							$elm$browser$Browser$AnimationManager$rAF)));
+			}
+		} else {
+			if (!_v1.b.b) {
+				var pid = _v1.a.a;
+				return A2(
+					$elm$core$Task$andThen,
+					function (_v3) {
+						return $elm$browser$Browser$AnimationManager$init;
+					},
+					$elm$core$Process$kill(pid));
+			} else {
+				return $elm$core$Task$succeed(
+					A3($elm$browser$Browser$AnimationManager$State, subs, request, oldTime));
+			}
+		}
+	});
+var $elm$time$Time$Posix = function (a) {
+	return {$: 'Posix', a: a};
 };
-var $elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
+var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
+var $elm$browser$Browser$AnimationManager$onSelfMsg = F3(
+	function (router, newTime, _v0) {
+		var subs = _v0.subs;
+		var oldTime = _v0.oldTime;
+		var send = function (sub) {
+			if (sub.$ === 'Time') {
+				var tagger = sub.a;
+				return A2(
+					$elm$core$Platform$sendToApp,
+					router,
+					tagger(
+						$elm$time$Time$millisToPosix(newTime)));
+			} else {
+				var tagger = sub.a;
+				return A2(
+					$elm$core$Platform$sendToApp,
+					router,
+					tagger(newTime - oldTime));
+			}
+		};
+		return A2(
+			$elm$core$Task$andThen,
+			function (pid) {
+				return A2(
+					$elm$core$Task$andThen,
+					function (_v1) {
+						return $elm$core$Task$succeed(
+							A3(
+								$elm$browser$Browser$AnimationManager$State,
+								subs,
+								$elm$core$Maybe$Just(pid),
+								newTime));
+					},
+					$elm$core$Task$sequence(
+						A2($elm$core$List$map, send, subs)));
+			},
+			$elm$core$Process$spawn(
+				A2(
+					$elm$core$Task$andThen,
+					$elm$core$Platform$sendToSelf(router),
+					$elm$browser$Browser$AnimationManager$rAF)));
+	});
+var $elm$browser$Browser$AnimationManager$Time = function (a) {
+	return {$: 'Time', a: a};
+};
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$browser$Browser$AnimationManager$subMap = F2(
+	function (func, sub) {
+		if (sub.$ === 'Time') {
+			var tagger = sub.a;
+			return $elm$browser$Browser$AnimationManager$Time(
+				A2($elm$core$Basics$composeL, func, tagger));
+		} else {
+			var tagger = sub.a;
+			return $elm$browser$Browser$AnimationManager$Delta(
+				A2($elm$core$Basics$composeL, func, tagger));
+		}
+	});
+_Platform_effectManagers['Browser.AnimationManager'] = _Platform_createManager($elm$browser$Browser$AnimationManager$init, $elm$browser$Browser$AnimationManager$onEffects, $elm$browser$Browser$AnimationManager$onSelfMsg, 0, $elm$browser$Browser$AnimationManager$subMap);
+var $elm$browser$Browser$AnimationManager$subscription = _Platform_leaf('Browser.AnimationManager');
+var $elm$browser$Browser$AnimationManager$onAnimationFrameDelta = function (tagger) {
+	return $elm$browser$Browser$AnimationManager$subscription(
+		$elm$browser$Browser$AnimationManager$Delta(tagger));
+};
+var $elm$browser$Browser$Events$onAnimationFrameDelta = $elm$browser$Browser$AnimationManager$onAnimationFrameDelta;
+var $elm$core$Dict$values = function (dict) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2($elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
+};
+var $author$project$Anim$Sub$subscriptions = F2(
+	function (toMsg, _v0) {
+		var elementsDict = _v0.a;
+		var hasActiveAnimations = A2(
+			$elm$core$List$any,
+			function (elementData) {
+				var _v1 = elementData.animation;
+				if (_v1.$ === 'Just') {
+					return true;
+				} else {
+					return false;
+				}
+			},
+			$elm$core$Dict$values(elementsDict));
+		return hasActiveAnimations ? $elm$browser$Browser$Events$onAnimationFrameDelta(toMsg) : $elm$core$Platform$Sub$none;
+	});
+var $author$project$ElmUI$Sub$Position$Main$subscriptions = function (model) {
+	return A2($author$project$Anim$Sub$subscriptions, $author$project$ElmUI$Sub$Position$Main$AnimationFrame, model.animations);
+};
+var $author$project$Anim$Position = F2(
+	function (x, y) {
+		return {x: x, y: y};
+	});
+var $author$project$Anim$ToPosition = function (a) {
+	return {$: 'ToPosition', a: a};
+};
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var $elm$core$Basics$sqrt = _Basics_sqrt;
+var $author$project$Anim$Internal$calculateDistance = F2(
+	function (from, to) {
+		var dy = to.y - from.y;
+		var dx = to.x - from.x;
+		return $elm$core$Basics$sqrt((dx * dx) + (dy * dy));
+	});
+var $author$project$Anim$Sub$calculateTargetDistance = F2(
+	function (start, target) {
+		var _v0 = _Utils_Tuple2(start, target);
+		_v0$6:
+		while (true) {
+			switch (_v0.a.$) {
+				case 'ToPosition':
+					if (_v0.b.$ === 'ToPosition') {
+						var startPos = _v0.a.a;
+						var targetPos = _v0.b.a;
+						return A2($author$project$Anim$Internal$calculateDistance, startPos, targetPos);
+					} else {
+						break _v0$6;
+					}
+				case 'ToOpacity':
+					if (_v0.b.$ === 'ToOpacity') {
+						var startOp = _v0.a.a;
+						var targetOp = _v0.b.a;
+						return $elm$core$Basics$abs(targetOp - startOp) * 100;
+					} else {
+						break _v0$6;
+					}
+				case 'ToScale':
+					if (_v0.b.$ === 'ToScale') {
+						var startScale = _v0.a.a;
+						var targetScale = _v0.b.a;
+						return ($elm$core$Basics$abs(targetScale.x - startScale.x) * 100) + ($elm$core$Basics$abs(targetScale.y - startScale.y) * 100);
+					} else {
+						break _v0$6;
+					}
+				case 'ToRotation':
+					if (_v0.b.$ === 'ToRotation') {
+						var startRot = _v0.a.a;
+						var targetRot = _v0.b.a;
+						return $elm$core$Basics$abs(targetRot - startRot);
+					} else {
+						break _v0$6;
+					}
+				case 'ToDimensions':
+					if (_v0.b.$ === 'ToDimensions') {
+						var startDim = _v0.a.a;
+						var targetDim = _v0.b.a;
+						return $elm$core$Basics$abs(targetDim.width - startDim.width) + $elm$core$Basics$abs(targetDim.height - startDim.height);
+					} else {
+						break _v0$6;
+					}
+				case 'ToBorderRadius':
+					if (_v0.b.$ === 'ToBorderRadius') {
+						var startRadius = _v0.a.a;
+						var targetRadius = _v0.b.a;
+						return $elm$core$Basics$abs(targetRadius - startRadius);
+					} else {
+						break _v0$6;
+					}
+				default:
+					break _v0$6;
+			}
+		}
+		return 100;
+	});
+var $author$project$Anim$Sub$calculateAnimationDuration = F3(
+	function (config, startValue, targetValue) {
+		var _v0 = config.timing;
+		if (_v0.$ === 'Duration') {
+			var ms = _v0.a;
+			return ms;
+		} else {
+			var pixelsPerSecond = _v0.a;
+			var distance = A2($author$project$Anim$Sub$calculateTargetDistance, startValue, targetValue);
+			return A2($elm$core$Basics$max, 100, (distance * 1000) / pixelsPerSecond);
+		}
 	});
 var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$get = F2(
@@ -5260,44 +5522,90 @@ var $elm$core$Dict$get = F2(
 			}
 		}
 	});
-var $author$project$Anim$CSS$getSpecificTargetType = function (target) {
+var $author$project$Anim$Brightness = function (a) {
+	return {$: 'Brightness', a: a};
+};
+var $author$project$Anim$Rgb = function (a) {
+	return {$: 'Rgb', a: a};
+};
+var $author$project$Anim$Rgba = function (a) {
+	return {$: 'Rgba', a: a};
+};
+var $author$project$Anim$ToBackgroundColor = function (a) {
+	return {$: 'ToBackgroundColor', a: a};
+};
+var $author$project$Anim$ToBorderColor = function (a) {
+	return {$: 'ToBorderColor', a: a};
+};
+var $author$project$Anim$ToBorderRadius = function (a) {
+	return {$: 'ToBorderRadius', a: a};
+};
+var $author$project$Anim$ToDimensions = function (a) {
+	return {$: 'ToDimensions', a: a};
+};
+var $author$project$Anim$ToFilter = function (a) {
+	return {$: 'ToFilter', a: a};
+};
+var $author$project$Anim$ToOpacity = function (a) {
+	return {$: 'ToOpacity', a: a};
+};
+var $author$project$Anim$ToRotation = function (a) {
+	return {$: 'ToRotation', a: a};
+};
+var $author$project$Anim$ToScale = function (a) {
+	return {$: 'ToScale', a: a};
+};
+var $author$project$Anim$ToTextColor = function (a) {
+	return {$: 'ToTextColor', a: a};
+};
+var $author$project$Anim$Sub$getDefaultValue = function (target) {
+	switch (target.$) {
+		case 'ToPosition':
+			return $author$project$Anim$ToPosition(
+				{x: 0, y: 0});
+		case 'ToOpacity':
+			return $author$project$Anim$ToOpacity(1.0);
+		case 'ToScale':
+			return $author$project$Anim$ToScale(
+				{x: 1.0, y: 1.0});
+		case 'ToRotation':
+			return $author$project$Anim$ToRotation(0.0);
+		case 'ToBackgroundColor':
+			return $author$project$Anim$ToBackgroundColor(
+				$author$project$Anim$Rgba(
+					{a: 0, b: 0, g: 0, r: 0}));
+		case 'ToTextColor':
+			return $author$project$Anim$ToTextColor(
+				$author$project$Anim$Rgb(
+					{b: 0, g: 0, r: 0}));
+		case 'ToBorderColor':
+			return $author$project$Anim$ToBorderColor(
+				$author$project$Anim$Rgba(
+					{a: 0, b: 0, g: 0, r: 0}));
+		case 'ToDimensions':
+			return $author$project$Anim$ToDimensions(
+				{height: 0, width: 0});
+		case 'ToBorderRadius':
+			return $author$project$Anim$ToBorderRadius(0.0);
+		default:
+			return $author$project$Anim$ToFilter(
+				$author$project$Anim$Brightness(1.0));
+	}
+};
+var $author$project$Anim$Sub$getPropertyKey = function (target) {
 	switch (target.$) {
 		case 'ToPosition':
 			return 'position';
+		case 'ToOpacity':
+			return 'opacity';
 		case 'ToScale':
 			return 'scale';
 		case 'ToRotation':
 			return 'rotation';
-		case 'ToOpacity':
-			return 'opacity';
 		case 'ToBackgroundColor':
 			return 'background-color';
 		case 'ToTextColor':
-			return 'color';
-		case 'ToBorderColor':
-			return 'border-color';
-		case 'ToDimensions':
-			return 'dimensions';
-		case 'ToBorderRadius':
-			return 'border-radius';
-		default:
-			return 'filter';
-	}
-};
-var $author$project$Anim$CSS$getTargetType = function (target) {
-	switch (target.$) {
-		case 'ToPosition':
-			return 'transform';
-		case 'ToScale':
-			return 'transform';
-		case 'ToRotation':
-			return 'transform';
-		case 'ToOpacity':
-			return 'opacity';
-		case 'ToBackgroundColor':
-			return 'background-color';
-		case 'ToTextColor':
-			return 'color';
+			return 'text-color';
 		case 'ToBorderColor':
 			return 'border-color';
 		case 'ToDimensions':
@@ -5416,19 +5724,6 @@ var $elm$core$Dict$insert = F3(
 			return x;
 		}
 	});
-var $author$project$Anim$CSS$isTransformTarget = function (target) {
-	switch (target.$) {
-		case 'ToPosition':
-			return true;
-		case 'ToScale':
-			return true;
-		case 'ToRotation':
-			return true;
-		default:
-			return false;
-	}
-};
-var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
 		if (maybe.$ === 'Just') {
@@ -5438,110 +5733,528 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
-var $author$project$Anim$CSS$animate = F3(
-	function (elementId, target, _v0) {
-		var animations = _v0.a;
-		var currentTargets = A2(
+var $author$project$Anim$Sub$animateWithConfig = F4(
+	function (config, elementId, target, _v0) {
+		var elementsDict = _v0.a;
+		var propertyKey = $author$project$Anim$Sub$getPropertyKey(target);
+		var currentElementData = A2(
 			$elm$core$Maybe$withDefault,
-			_List_Nil,
-			A2($elm$core$Dict$get, elementId, animations));
-		var newTargets = $author$project$Anim$CSS$isTransformTarget(target) ? A2(
-			$elm$core$List$cons,
-			target,
-			A2(
-				$elm$core$List$filter,
-				function (t) {
-					return !_Utils_eq(
-						$author$project$Anim$CSS$getSpecificTargetType(t),
-						$author$project$Anim$CSS$getSpecificTargetType(target));
-				},
-				currentTargets)) : A2(
-			$elm$core$List$cons,
-			target,
-			A2(
-				$elm$core$List$filter,
-				function (t) {
-					return !_Utils_eq(
-						$author$project$Anim$CSS$getTargetType(t),
-						$author$project$Anim$CSS$getTargetType(target));
-				},
-				currentTargets));
-		return $author$project$Anim$CSS$Model(
-			A3($elm$core$Dict$insert, elementId, newTargets, animations));
+			{animation: $elm$core$Maybe$Nothing, properties: $elm$core$Dict$empty},
+			A2($elm$core$Dict$get, elementId, elementsDict));
+		var currentValue = A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Anim$Sub$getDefaultValue(target),
+			A2($elm$core$Dict$get, propertyKey, currentElementData.properties));
+		var duration = A3($author$project$Anim$Sub$calculateAnimationDuration, config, currentValue, target);
+		var updatedProperties = A3($elm$core$Dict$insert, propertyKey, currentValue, currentElementData.properties);
+		var animationState = {config: config, duration: duration, startValue: currentValue, startedAt: 0, target: target};
+		var elementData = {
+			animation: $elm$core$Maybe$Just(animationState),
+			properties: updatedProperties
+		};
+		var updatedDict = A3($elm$core$Dict$insert, elementId, elementData, elementsDict);
+		return $author$project$Anim$Sub$Model(updatedDict);
 	});
-var $author$project$Anim$CSS$animateScale = F3(
-	function (elementId, scale, model) {
+var $author$project$Anim$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
+var $author$project$Anim$EaseOut = {$: 'EaseOut'};
+var $author$project$Anim$EasePreset = function (a) {
+	return {$: 'EasePreset', a: a};
+};
+var $author$project$Anim$Sub$defaultConfig = {
+	easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
+	timing: $author$project$Anim$Duration(400)
+};
+var $author$project$Anim$Sub$animate = F3(
+	function (elementId, target, model) {
+		return A4($author$project$Anim$Sub$animateWithConfig, $author$project$Anim$Sub$defaultConfig, elementId, target, model);
+	});
+var $author$project$Anim$Sub$animateTo = F3(
+	function (elementId, position, model) {
 		return A3(
-			$author$project$Anim$CSS$animate,
+			$author$project$Anim$Sub$animate,
 			elementId,
-			$author$project$Anim$ToScale(scale),
+			$author$project$Anim$ToPosition(position),
 			model);
 	});
-var $author$project$ElmUI$CSS$Scale$Main$update = F2(
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$Anim$Sub$getCurrentAnimationValue = function (animState) {
+	return animState.target;
+};
+var $author$project$Anim$Sub$getCurrentValue = F3(
+	function (elementId, propertyKey, _v0) {
+		var elementsDict = _v0.a;
+		return A2(
+			$elm$core$Maybe$andThen,
+			function (elementData) {
+				var _v1 = elementData.animation;
+				if (_v1.$ === 'Just') {
+					var animState = _v1.a;
+					return _Utils_eq(
+						$author$project$Anim$Sub$getPropertyKey(animState.target),
+						propertyKey) ? $elm$core$Maybe$Just(
+						$author$project$Anim$Sub$getCurrentAnimationValue(animState)) : A2($elm$core$Dict$get, propertyKey, elementData.properties);
+				} else {
+					return A2($elm$core$Dict$get, propertyKey, elementData.properties);
+				}
+			},
+			A2($elm$core$Dict$get, elementId, elementsDict));
+	});
+var $author$project$Anim$Sub$getPosition = F2(
+	function (elementId, model) {
+		var _v0 = A3($author$project$Anim$Sub$getCurrentValue, elementId, 'position', model);
+		if ((_v0.$ === 'Just') && (_v0.a.$ === 'ToPosition')) {
+			var position = _v0.a.a;
+			return $elm$core$Maybe$Just(position);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$Anim$Sub$animateToX = F3(
+	function (elementId, targetX, model) {
+		var currentPos = A2(
+			$elm$core$Maybe$withDefault,
+			{x: 0, y: 0},
+			A2($author$project$Anim$Sub$getPosition, elementId, model));
+		var newPosition = _Utils_update(
+			currentPos,
+			{x: targetX});
+		return A3(
+			$author$project$Anim$Sub$animate,
+			elementId,
+			$author$project$Anim$ToPosition(newPosition),
+			model);
+	});
+var $author$project$Anim$Sub$animateToY = F3(
+	function (elementId, targetY, model) {
+		var currentPos = A2(
+			$elm$core$Maybe$withDefault,
+			{x: 0, y: 0},
+			A2($author$project$Anim$Sub$getPosition, elementId, model));
+		var newPosition = _Utils_update(
+			currentPos,
+			{y: targetY});
+		return A3(
+			$author$project$Anim$Sub$animate,
+			elementId,
+			$author$project$Anim$ToPosition(newPosition),
+			model);
+	});
+var $elm_community$easing_functions$Ease$inOut = F3(
+	function (e1, e2, time) {
+		return (time < 0.5) ? (e1(time * 2) / 2) : (0.5 + (e2((time - 0.5) * 2) / 2));
+	});
+var $elm$core$Basics$pow = _Basics_pow;
+var $elm_community$easing_functions$Ease$inQuint = function (time) {
+	return A2($elm$core$Basics$pow, time, 5);
+};
+var $elm_community$easing_functions$Ease$flip = F2(
+	function (easing, time) {
+		return 1 - easing(1 - time);
+	});
+var $elm_community$easing_functions$Ease$outQuint = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inQuint);
+var $elm_community$easing_functions$Ease$inOutQuint = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inQuint, $elm_community$easing_functions$Ease$outQuint);
+var $elm_community$easing_functions$Ease$linear = $elm$core$Basics$identity;
+var $author$project$Anim$Internal$easingToEaseFunction = function (easing) {
+	switch (easing.$) {
+		case 'EaseFunction':
+			var easeFunction = easing.a;
+			return easeFunction;
+		case 'EasePreset':
+			var preset = easing.a;
+			switch (preset.$) {
+				case 'Linear':
+					return $elm_community$easing_functions$Ease$linear;
+				case 'EaseOut':
+					return $elm_community$easing_functions$Ease$outQuint;
+				case 'EaseIn':
+					return $elm_community$easing_functions$Ease$inQuint;
+				default:
+					return $elm_community$easing_functions$Ease$inOutQuint;
+			}
+		default:
+			return $elm_community$easing_functions$Ease$outQuint;
+	}
+};
+var $elm$core$Basics$ge = _Utils_ge;
+var $author$project$Anim$Hsl = function (a) {
+	return {$: 'Hsl', a: a};
+};
+var $author$project$Anim$Hsla = function (a) {
+	return {$: 'Hsla', a: a};
+};
+var $elm$core$Basics$round = _Basics_round;
+var $author$project$Anim$Sub$interpolateColor = F3(
+	function (start, target, progress) {
+		var _v0 = _Utils_Tuple2(start, target);
+		_v0$4:
+		while (true) {
+			switch (_v0.a.$) {
+				case 'Rgb':
+					if (_v0.b.$ === 'Rgb') {
+						var startRgb = _v0.a.a;
+						var targetRgb = _v0.b.a;
+						return $author$project$Anim$Rgb(
+							{
+								b: $elm$core$Basics$round(startRgb.b + ((targetRgb.b - startRgb.b) * progress)),
+								g: $elm$core$Basics$round(startRgb.g + ((targetRgb.g - startRgb.g) * progress)),
+								r: $elm$core$Basics$round(startRgb.r + ((targetRgb.r - startRgb.r) * progress))
+							});
+					} else {
+						break _v0$4;
+					}
+				case 'Rgba':
+					if (_v0.b.$ === 'Rgba') {
+						var startRgba = _v0.a.a;
+						var targetRgba = _v0.b.a;
+						return $author$project$Anim$Rgba(
+							{
+								a: startRgba.a + ((targetRgba.a - startRgba.a) * progress),
+								b: $elm$core$Basics$round(startRgba.b + ((targetRgba.b - startRgba.b) * progress)),
+								g: $elm$core$Basics$round(startRgba.g + ((targetRgba.g - startRgba.g) * progress)),
+								r: $elm$core$Basics$round(startRgba.r + ((targetRgba.r - startRgba.r) * progress))
+							});
+					} else {
+						break _v0$4;
+					}
+				case 'Hsl':
+					if (_v0.b.$ === 'Hsl') {
+						var startHsl = _v0.a.a;
+						var targetHsl = _v0.b.a;
+						return $author$project$Anim$Hsl(
+							{h: startHsl.h + ((targetHsl.h - startHsl.h) * progress), l: startHsl.l + ((targetHsl.l - startHsl.l) * progress), s: startHsl.s + ((targetHsl.s - startHsl.s) * progress)});
+					} else {
+						break _v0$4;
+					}
+				case 'Hsla':
+					if (_v0.b.$ === 'Hsla') {
+						var startHsla = _v0.a.a;
+						var targetHsla = _v0.b.a;
+						return $author$project$Anim$Hsla(
+							{a: startHsla.a + ((targetHsla.a - startHsla.a) * progress), h: startHsla.h + ((targetHsla.h - startHsla.h) * progress), l: startHsla.l + ((targetHsla.l - startHsla.l) * progress), s: startHsla.s + ((targetHsla.s - startHsla.s) * progress)});
+					} else {
+						break _v0$4;
+					}
+				default:
+					break _v0$4;
+			}
+		}
+		return target;
+	});
+var $author$project$Anim$Blur = function (a) {
+	return {$: 'Blur', a: a};
+};
+var $author$project$Anim$Contrast = function (a) {
+	return {$: 'Contrast', a: a};
+};
+var $author$project$Anim$Grayscale = function (a) {
+	return {$: 'Grayscale', a: a};
+};
+var $author$project$Anim$Saturate = function (a) {
+	return {$: 'Saturate', a: a};
+};
+var $author$project$Anim$Sub$interpolateFilter = F3(
+	function (start, target, progress) {
+		var _v0 = _Utils_Tuple2(start, target);
+		_v0$5:
+		while (true) {
+			switch (_v0.a.$) {
+				case 'Blur':
+					if (_v0.b.$ === 'Blur') {
+						var startBlur = _v0.a.a;
+						var targetBlur = _v0.b.a;
+						return $author$project$Anim$Blur(startBlur + ((targetBlur - startBlur) * progress));
+					} else {
+						break _v0$5;
+					}
+				case 'Brightness':
+					if (_v0.b.$ === 'Brightness') {
+						var startBrightness = _v0.a.a;
+						var targetBrightness = _v0.b.a;
+						return $author$project$Anim$Brightness(startBrightness + ((targetBrightness - startBrightness) * progress));
+					} else {
+						break _v0$5;
+					}
+				case 'Contrast':
+					if (_v0.b.$ === 'Contrast') {
+						var startContrast = _v0.a.a;
+						var targetContrast = _v0.b.a;
+						return $author$project$Anim$Contrast(startContrast + ((targetContrast - startContrast) * progress));
+					} else {
+						break _v0$5;
+					}
+				case 'Grayscale':
+					if (_v0.b.$ === 'Grayscale') {
+						var startGrayscale = _v0.a.a;
+						var targetGrayscale = _v0.b.a;
+						return $author$project$Anim$Grayscale(startGrayscale + ((targetGrayscale - startGrayscale) * progress));
+					} else {
+						break _v0$5;
+					}
+				default:
+					if (_v0.b.$ === 'Saturate') {
+						var startSaturate = _v0.a.a;
+						var targetSaturate = _v0.b.a;
+						return $author$project$Anim$Saturate(startSaturate + ((targetSaturate - startSaturate) * progress));
+					} else {
+						break _v0$5;
+					}
+			}
+		}
+		return target;
+	});
+var $author$project$Anim$Sub$interpolateTarget = F3(
+	function (start, target, progress) {
+		var _v0 = _Utils_Tuple2(start, target);
+		_v0$10:
+		while (true) {
+			switch (_v0.a.$) {
+				case 'ToPosition':
+					if (_v0.b.$ === 'ToPosition') {
+						var startPos = _v0.a.a;
+						var targetPos = _v0.b.a;
+						return $author$project$Anim$ToPosition(
+							{x: startPos.x + ((targetPos.x - startPos.x) * progress), y: startPos.y + ((targetPos.y - startPos.y) * progress)});
+					} else {
+						break _v0$10;
+					}
+				case 'ToOpacity':
+					if (_v0.b.$ === 'ToOpacity') {
+						var startOp = _v0.a.a;
+						var targetOp = _v0.b.a;
+						return $author$project$Anim$ToOpacity(startOp + ((targetOp - startOp) * progress));
+					} else {
+						break _v0$10;
+					}
+				case 'ToScale':
+					if (_v0.b.$ === 'ToScale') {
+						var startScale = _v0.a.a;
+						var targetScale = _v0.b.a;
+						return $author$project$Anim$ToScale(
+							{x: startScale.x + ((targetScale.x - startScale.x) * progress), y: startScale.y + ((targetScale.y - startScale.y) * progress)});
+					} else {
+						break _v0$10;
+					}
+				case 'ToRotation':
+					if (_v0.b.$ === 'ToRotation') {
+						var startRot = _v0.a.a;
+						var targetRot = _v0.b.a;
+						return $author$project$Anim$ToRotation(startRot + ((targetRot - startRot) * progress));
+					} else {
+						break _v0$10;
+					}
+				case 'ToBackgroundColor':
+					if (_v0.b.$ === 'ToBackgroundColor') {
+						var startColor = _v0.a.a;
+						var targetColor = _v0.b.a;
+						return $author$project$Anim$ToBackgroundColor(
+							A3($author$project$Anim$Sub$interpolateColor, startColor, targetColor, progress));
+					} else {
+						break _v0$10;
+					}
+				case 'ToTextColor':
+					if (_v0.b.$ === 'ToTextColor') {
+						var startColor = _v0.a.a;
+						var targetColor = _v0.b.a;
+						return $author$project$Anim$ToTextColor(
+							A3($author$project$Anim$Sub$interpolateColor, startColor, targetColor, progress));
+					} else {
+						break _v0$10;
+					}
+				case 'ToBorderColor':
+					if (_v0.b.$ === 'ToBorderColor') {
+						var startColor = _v0.a.a;
+						var targetColor = _v0.b.a;
+						return $author$project$Anim$ToBorderColor(
+							A3($author$project$Anim$Sub$interpolateColor, startColor, targetColor, progress));
+					} else {
+						break _v0$10;
+					}
+				case 'ToDimensions':
+					if (_v0.b.$ === 'ToDimensions') {
+						var startDim = _v0.a.a;
+						var targetDim = _v0.b.a;
+						return $author$project$Anim$ToDimensions(
+							{height: startDim.height + ((targetDim.height - startDim.height) * progress), width: startDim.width + ((targetDim.width - startDim.width) * progress)});
+					} else {
+						break _v0$10;
+					}
+				case 'ToBorderRadius':
+					if (_v0.b.$ === 'ToBorderRadius') {
+						var startRadius = _v0.a.a;
+						var targetRadius = _v0.b.a;
+						return $author$project$Anim$ToBorderRadius(startRadius + ((targetRadius - startRadius) * progress));
+					} else {
+						break _v0$10;
+					}
+				default:
+					if (_v0.b.$ === 'ToFilter') {
+						var startFilter = _v0.a.a;
+						var targetFilter = _v0.b.a;
+						return $author$project$Anim$ToFilter(
+							A3($author$project$Anim$Sub$interpolateFilter, startFilter, targetFilter, progress));
+					} else {
+						break _v0$10;
+					}
+			}
+		}
+		return target;
+	});
+var $elm$core$Dict$map = F2(
+	function (func, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				A2(func, key, value),
+				A2($elm$core$Dict$map, func, left),
+				A2($elm$core$Dict$map, func, right));
+		}
+	});
+var $elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var $author$project$Anim$Sub$step = F2(
+	function (delta, _v0) {
+		var elementsDict = _v0.a;
+		var updateElement = function (elementData) {
+			var _v2 = elementData.animation;
+			if (_v2.$ === 'Nothing') {
+				return elementData;
+			} else {
+				var animState = _v2.a;
+				var propertyKey = $author$project$Anim$Sub$getPropertyKey(animState.target);
+				var newStartedAt = (!animState.startedAt) ? delta : animState.startedAt;
+				var updatedAnimState = _Utils_update(
+					animState,
+					{startedAt: newStartedAt});
+				var elapsed = (!animState.startedAt) ? 0 : (delta - newStartedAt);
+				var progress = (animState.duration <= 0) ? 1.0 : A2($elm$core$Basics$min, 1.0, elapsed / animState.duration);
+				var easedProgress = A2($author$project$Anim$Internal$easingToEaseFunction, animState.config.easing, progress);
+				var currentValue = A3($author$project$Anim$Sub$interpolateTarget, animState.startValue, animState.target, easedProgress);
+				if (progress >= 1.0) {
+					var updatedProperties = A3($elm$core$Dict$insert, propertyKey, animState.target, elementData.properties);
+					return _Utils_update(
+						elementData,
+						{animation: $elm$core$Maybe$Nothing, properties: updatedProperties});
+				} else {
+					var updatedProperties = A3($elm$core$Dict$insert, propertyKey, currentValue, elementData.properties);
+					return _Utils_update(
+						elementData,
+						{
+							animation: $elm$core$Maybe$Just(updatedAnimState),
+							properties: updatedProperties
+						});
+				}
+			}
+		};
+		var updatedDict = A2(
+			$elm$core$Dict$map,
+			F2(
+				function (_v1, elementData) {
+					return updateElement(elementData);
+				}),
+			elementsDict);
+		return $author$project$Anim$Sub$Model(updatedDict);
+	});
+var $author$project$ElmUI$Sub$Position$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
-			case 'ScaleUp':
+			case 'MoveToCorner':
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
 							animations: A3(
-								$author$project$Anim$CSS$animateScale,
+								$author$project$Anim$Sub$animateTo,
 								'box',
-								{x: 1.5, y: 1.5},
+								A2($author$project$Anim$Position, 100, 100),
 								model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
-			case 'ScaleDown':
+			case 'MoveToCenter':
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
 							animations: A3(
-								$author$project$Anim$CSS$animateScale,
+								$author$project$Anim$Sub$animateTo,
 								'box',
-								{x: 0.7, y: 0.7},
+								A2($author$project$Anim$Position, 225, 175),
 								model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
-			case 'ScaleReset':
+			case 'MoveLeft':
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$CSS$animateScale,
-								'box',
-								{x: 1.0, y: 1.0},
-								model.animations)
+							animations: A3($author$project$Anim$Sub$animateToX, 'box', 0, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
-			case 'ScaleWide':
+			case 'MoveRight':
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$CSS$animateScale,
-								'box',
-								{x: 1.8, y: 0.6},
-								model.animations)
+							animations: A3($author$project$Anim$Sub$animateToX, 'box', 450, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
-			case 'ScaleTall':
+			case 'MoveUp':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							animations: A3($author$project$Anim$Sub$animateToY, 'box', 0, model.animations)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'MoveDown':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							animations: A3($author$project$Anim$Sub$animateToY, 'box', 350, model.animations)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'StopAnimation':
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
 							animations: A3(
-								$author$project$Anim$CSS$animateScale,
+								$author$project$Anim$Sub$animateTo,
 								'box',
-								{x: 0.6, y: 1.8},
+								A2($author$project$Anim$Position, 0, 0),
 								model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			default:
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				var deltaTime = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							animations: A2($author$project$Anim$Sub$step, deltaTime, model.animations)
+						}),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Common$UI$Basic = {$: 'Basic'};
@@ -5604,7 +6317,6 @@ var $mdgriffith$elm_ui$Internal$Flag$flag = function (i) {
 };
 var $mdgriffith$elm_ui$Internal$Flag$bgColor = $mdgriffith$elm_ui$Internal$Flag$flag(8);
 var $mdgriffith$elm_ui$Internal$Flag$bgGradient = $mdgriffith$elm_ui$Internal$Flag$flag(10);
-var $elm$core$Basics$round = _Basics_round;
 var $mdgriffith$elm_ui$Internal$Model$floatClass = function (x) {
 	return $elm$core$String$fromInt(
 		$elm$core$Basics$round(x * 255));
@@ -8364,27 +9076,6 @@ var $elm$json$Json$Encode$object = function (pairs) {
 			_Json_emptyObject(_Utils_Tuple0),
 			pairs));
 };
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
 var $mdgriffith$elm_ui$Internal$Model$fontName = function (font) {
 	switch (font.$) {
 		case 'Serif':
@@ -8426,13 +9117,6 @@ var $mdgriffith$elm_ui$Internal$Model$hasSmallCaps = function (typeface) {
 	} else {
 		return false;
 	}
-};
-var $elm$core$Basics$min = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) < 0) ? x : y;
-	});
-var $elm$core$Basics$negate = function (n) {
-	return -n;
 };
 var $mdgriffith$elm_ui$Internal$Model$renderProps = F3(
 	function (force, _v0, existing) {
@@ -9118,6 +9802,17 @@ var $mdgriffith$elm_ui$Internal$Model$adjust = F3(
 	function (size, height, vertical) {
 		return {height: height / size, size: size, vertical: vertical};
 	});
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
 var $elm$core$List$maximum = function (list) {
 	if (list.b) {
 		var x = list.a;
@@ -9138,6 +9833,7 @@ var $elm$core$List$minimum = function (list) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
+var $elm$core$Basics$neq = _Utils_notEqual;
 var $mdgriffith$elm_ui$Internal$Model$convertAdjustment = function (adjustment) {
 	var lines = _List_fromArray(
 		[adjustment.capital, adjustment.baseline, adjustment.descender, adjustment.lowercase]);
@@ -10268,7 +10964,6 @@ var $mdgriffith$elm_ui$Internal$Model$renderWidth = function (w) {
 	}
 };
 var $mdgriffith$elm_ui$Internal$Flag$borderWidth = $mdgriffith$elm_ui$Internal$Flag$flag(27);
-var $elm$core$Basics$ge = _Utils_ge;
 var $mdgriffith$elm_ui$Internal$Model$skippable = F2(
 	function (flag, style) {
 		if (_Utils_eq(flag, $mdgriffith$elm_ui$Internal$Flag$borderWidth)) {
@@ -11523,38 +12218,20 @@ var $author$project$Common$UI$createDocument = F3(
 			title: title
 		};
 	});
+var $author$project$ElmUI$Sub$Position$Main$MoveDown = {$: 'MoveDown'};
+var $author$project$ElmUI$Sub$Position$Main$MoveLeft = {$: 'MoveLeft'};
+var $author$project$ElmUI$Sub$Position$Main$MoveRight = {$: 'MoveRight'};
+var $author$project$ElmUI$Sub$Position$Main$MoveToCenter = {$: 'MoveToCenter'};
+var $author$project$ElmUI$Sub$Position$Main$MoveToCorner = {$: 'MoveToCorner'};
+var $author$project$ElmUI$Sub$Position$Main$MoveUp = {$: 'MoveUp'};
 var $author$project$Common$UI$Primary = {$: 'Primary'};
 var $author$project$Common$UI$Purple = {$: 'Purple'};
-var $author$project$ElmUI$CSS$Scale$Main$ScaleDown = {$: 'ScaleDown'};
-var $author$project$ElmUI$CSS$Scale$Main$ScaleReset = {$: 'ScaleReset'};
-var $author$project$ElmUI$CSS$Scale$Main$ScaleTall = {$: 'ScaleTall'};
-var $author$project$ElmUI$CSS$Scale$Main$ScaleUp = {$: 'ScaleUp'};
-var $author$project$ElmUI$CSS$Scale$Main$ScaleWide = {$: 'ScaleWide'};
+var $author$project$ElmUI$Sub$Position$Main$StopAnimation = {$: 'StopAnimation'};
 var $author$project$Common$UI$Success = {$: 'Success'};
 var $author$project$Common$UI$Warning = {$: 'Warning'};
-var $author$project$ElmUI$CSS$Scale$Main$AnimationComplete = {$: 'AnimationComplete'};
+var $mdgriffith$elm_ui$Internal$Model$Left = {$: 'Left'};
+var $mdgriffith$elm_ui$Element$alignLeft = $mdgriffith$elm_ui$Internal$Model$AlignX($mdgriffith$elm_ui$Internal$Model$Left);
 var $author$project$Common$Colors$backgroundWhite = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
-var $mdgriffith$elm_ui$Internal$Model$Class = F2(
-	function (a, b) {
-		return {$: 'Class', a: a, b: b};
-	});
-var $mdgriffith$elm_ui$Internal$Flag$fontWeight = $mdgriffith$elm_ui$Internal$Flag$flag(13);
-var $mdgriffith$elm_ui$Element$Font$bold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.bold);
-var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
-	return {$: 'AlignY', a: a};
-};
-var $mdgriffith$elm_ui$Internal$Model$CenterY = {$: 'CenterY'};
-var $mdgriffith$elm_ui$Element$centerY = $mdgriffith$elm_ui$Internal$Model$AlignY($mdgriffith$elm_ui$Internal$Model$CenterY);
-var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$bgColor,
-		A3(
-			$mdgriffith$elm_ui$Internal$Model$Colored,
-			'bg-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(clr),
-			'background-color',
-			clr));
-};
 var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
 	return A2(
 		$mdgriffith$elm_ui$Internal$Model$StyleClass,
@@ -11565,349 +12242,7 @@ var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
 			'color',
 			fontColor));
 };
-var $mdgriffith$elm_ui$Element$el = F2(
-	function (attrs, child) {
-		return A4(
-			$mdgriffith$elm_ui$Internal$Model$element,
-			$mdgriffith$elm_ui$Internal$Model$asEl,
-			$mdgriffith$elm_ui$Internal$Model$div,
-			A2(
-				$elm$core$List$cons,
-				$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
-				A2(
-					$elm$core$List$cons,
-					$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$shrink),
-					attrs)),
-			$mdgriffith$elm_ui$Internal$Model$Unkeyed(
-				_List_fromArray(
-					[child])));
-	});
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $author$project$Anim$CSS$onTransitionEnd = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'transitionend',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $mdgriffith$elm_ui$Internal$Flag$borderRound = $mdgriffith$elm_ui$Internal$Flag$flag(17);
-var $mdgriffith$elm_ui$Element$Border$rounded = function (radius) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$borderRound,
-		A3(
-			$mdgriffith$elm_ui$Internal$Model$Single,
-			'br-' + $elm$core$String$fromInt(radius),
-			'border-radius',
-			$elm$core$String$fromInt(radius) + 'px'));
-};
-var $mdgriffith$elm_ui$Element$Font$size = function (i) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$fontSize,
-		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
-};
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$Anim$CSS$extractRotation = function (target) {
-	if (target.$ === 'ToRotation') {
-		return $elm$core$Maybe$Just(target);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Anim$CSS$extractScale = function (target) {
-	if (target.$ === 'ToScale') {
-		return $elm$core$Maybe$Just(target);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Anim$CSS$extractTranslate = function (target) {
-	if (target.$ === 'ToPosition') {
-		return $elm$core$Maybe$Just(target);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Anim$CSS$transformToString = function (target) {
-	switch (target.$) {
-		case 'ToPosition':
-			var pos = target.a;
-			return 'translate3d(' + ($elm$core$String$fromFloat(pos.x) + ('px, ' + ($elm$core$String$fromFloat(pos.y) + 'px, 0)')));
-		case 'ToScale':
-			var scale = target.a;
-			return 'scale(' + ($elm$core$String$fromFloat(scale.x) + (', ' + ($elm$core$String$fromFloat(scale.y) + ')')));
-		case 'ToRotation':
-			var degrees = target.a;
-			return 'rotate(' + ($elm$core$String$fromFloat(degrees) + 'deg)');
-		default:
-			return '';
-	}
-};
-var $author$project$Anim$CSS$combineTransforms = function (targets) {
-	var scales = A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractScale, targets);
-	var rotations = A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractRotation, targets);
-	var positions = A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractTranslate, targets);
-	var orderedTransforms = _Utils_ap(
-		A2($elm$core$List$map, $author$project$Anim$CSS$transformToString, positions),
-		_Utils_ap(
-			A2($elm$core$List$map, $author$project$Anim$CSS$transformToString, scales),
-			A2($elm$core$List$map, $author$project$Anim$CSS$transformToString, rotations)));
-	return A2($elm$core$String$join, ' ', orderedTransforms);
-};
-var $elm$core$List$partition = F2(
-	function (pred, list) {
-		var step = F2(
-			function (x, _v0) {
-				var trues = _v0.a;
-				var falses = _v0.b;
-				return pred(x) ? _Utils_Tuple2(
-					A2($elm$core$List$cons, x, trues),
-					falses) : _Utils_Tuple2(
-					trues,
-					A2($elm$core$List$cons, x, falses));
-			});
-		return A3(
-			$elm$core$List$foldr,
-			step,
-			_Utils_Tuple2(_List_Nil, _List_Nil),
-			list);
-	});
-var $elm$core$Basics$clamp = F3(
-	function (low, high, number) {
-		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
-	});
-var $author$project$Anim$CSS$colorToString = function (color) {
-	switch (color.$) {
-		case 'Hex':
-			var hexString = color.a;
-			return hexString;
-		case 'Rgb':
-			var rgb = color.a;
-			return 'rgb(' + ($elm$core$String$fromInt(rgb.r) + (', ' + ($elm$core$String$fromInt(rgb.g) + (', ' + ($elm$core$String$fromInt(rgb.b) + ')')))));
-		case 'Rgba':
-			var rgba = color.a;
-			return 'rgba(' + ($elm$core$String$fromInt(rgba.r) + (', ' + ($elm$core$String$fromInt(rgba.g) + (', ' + ($elm$core$String$fromInt(rgba.b) + (', ' + ($elm$core$String$fromFloat(rgba.a) + ')')))))));
-		case 'Hsl':
-			var hsl = color.a;
-			return 'hsl(' + ($elm$core$String$fromFloat(hsl.h) + (', ' + ($elm$core$String$fromFloat(hsl.s) + ('%, ' + ($elm$core$String$fromFloat(hsl.l) + '%)')))));
-		default:
-			var hsla = color.a;
-			return 'hsla(' + ($elm$core$String$fromFloat(hsla.h) + (', ' + ($elm$core$String$fromFloat(hsla.s) + ('%, ' + ($elm$core$String$fromFloat(hsla.l) + ('%, ' + ($elm$core$String$fromFloat(hsla.a) + ')')))))));
-	}
-};
-var $author$project$Anim$CSS$filterToString = function (filter) {
-	switch (filter.$) {
-		case 'Blur':
-			var radius = filter.a;
-			return 'blur(' + ($elm$core$String$fromFloat(radius) + 'px)');
-		case 'Brightness':
-			var value = filter.a;
-			return 'brightness(' + ($elm$core$String$fromFloat(value) + ')');
-		case 'Contrast':
-			var value = filter.a;
-			return 'contrast(' + ($elm$core$String$fromFloat(value) + ')');
-		case 'Grayscale':
-			var value = filter.a;
-			return 'grayscale(' + ($elm$core$String$fromFloat(
-				A3($elm$core$Basics$clamp, 0.0, 1.0, value)) + ')');
-		default:
-			var value = filter.a;
-			return 'saturate(' + ($elm$core$String$fromFloat(value) + ')');
-	}
-};
-var $author$project$Anim$CSS$targetToProperty = function (target) {
-	switch (target.$) {
-		case 'ToOpacity':
-			var value = target.a;
-			return _Utils_Tuple2(
-				'opacity',
-				$elm$core$String$fromFloat(
-					A3($elm$core$Basics$clamp, 0.0, 1.0, value)));
-		case 'ToBackgroundColor':
-			var color = target.a;
-			return _Utils_Tuple2(
-				'background-color',
-				$author$project$Anim$CSS$colorToString(color));
-		case 'ToTextColor':
-			var color = target.a;
-			return _Utils_Tuple2(
-				'color',
-				$author$project$Anim$CSS$colorToString(color));
-		case 'ToBorderColor':
-			var color = target.a;
-			return _Utils_Tuple2(
-				'border-color',
-				$author$project$Anim$CSS$colorToString(color));
-		case 'ToDimensions':
-			var dimensions = target.a;
-			return _Utils_Tuple2(
-				'width',
-				$elm$core$String$fromFloat(dimensions.width) + 'px');
-		case 'ToBorderRadius':
-			var radius = target.a;
-			return _Utils_Tuple2(
-				'border-radius',
-				$elm$core$String$fromFloat(radius) + 'px');
-		case 'ToFilter':
-			var filter = target.a;
-			return _Utils_Tuple2(
-				'filter',
-				$author$project$Anim$CSS$filterToString(filter));
-		default:
-			return _Utils_Tuple2('', '');
-	}
-};
-var $author$project$Anim$CSS$groupAndCombineTargets = function (targets) {
-	var _v0 = A2($elm$core$List$partition, $author$project$Anim$CSS$isTransformTarget, targets);
-	var transformTargets = _v0.a;
-	var otherTargets = _v0.b;
-	var otherProperties = A2($elm$core$List$map, $author$project$Anim$CSS$targetToProperty, otherTargets);
-	var transformProperty = $elm$core$List$isEmpty(transformTargets) ? _List_Nil : _List_fromArray(
-		[
-			_Utils_Tuple2(
-			'transform',
-			$author$project$Anim$CSS$combineTransforms(transformTargets))
-		]);
-	return _Utils_ap(transformProperty, otherProperties);
-};
-var $author$project$Anim$CSS$styleProperties = F2(
-	function (elementId, _v0) {
-		var animations = _v0.a;
-		var _v1 = A2($elm$core$Dict$get, elementId, animations);
-		if (_v1.$ === 'Just') {
-			var targets = _v1.a;
-			return $author$project$Anim$CSS$groupAndCombineTargets(targets);
-		} else {
-			return _List_Nil;
-		}
-	});
-var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
-	return {$: 'Text', a: a};
-};
-var $mdgriffith$elm_ui$Element$text = function (content) {
-	return $mdgriffith$elm_ui$Internal$Model$Text(content);
-};
-var $author$project$Anim$Duration = function (a) {
-	return {$: 'Duration', a: a};
-};
-var $author$project$Anim$EaseOut = {$: 'EaseOut'};
-var $author$project$Anim$EasePreset = function (a) {
-	return {$: 'EasePreset', a: a};
-};
-var $author$project$Anim$defaultConfig = {
-	easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
-	timing: $author$project$Anim$Duration(400)
-};
-var $author$project$Anim$Internal$easingToString = function (easing) {
-	switch (easing.$) {
-		case 'EaseString':
-			var string = easing.a;
-			return string;
-		case 'EasePreset':
-			var preset = easing.a;
-			switch (preset.$) {
-				case 'Linear':
-					return 'linear';
-				case 'EaseOut':
-					return 'ease-out';
-				case 'EaseIn':
-					return 'ease-in';
-				default:
-					return 'ease-in-out';
-			}
-		default:
-			return 'ease-out';
-	}
-};
-var $author$project$Anim$Internal$timingToMilliseconds = F2(
-	function (timing, distance) {
-		if (timing.$ === 'Speed') {
-			var pixelsPerSecond = timing.a;
-			return (distance / pixelsPerSecond) * 1000;
-		} else {
-			var milliseconds = timing.a;
-			return milliseconds;
-		}
-	});
-var $author$project$Anim$CSS$transitionStyles = F2(
-	function (_v0, _v1) {
-		var config = $author$project$Anim$defaultConfig;
-		var duration = $author$project$Anim$Internal$timingToMilliseconds(config.timing);
-		var easing = $author$project$Anim$Internal$easingToString(config.easing);
-		return 'all ' + ($elm$core$String$fromFloat(
-			duration(1.0)) + ('ms ' + easing));
-	});
-var $author$project$ElmUI$CSS$Scale$Main$animatedBox = F4(
-	function (elementId, label, color, model) {
-		return A2(
-			$mdgriffith$elm_ui$Element$el,
-			_Utils_ap(
-				_List_fromArray(
-					[
-						$mdgriffith$elm_ui$Element$width(
-						$mdgriffith$elm_ui$Element$px(150)),
-						$mdgriffith$elm_ui$Element$height(
-						$mdgriffith$elm_ui$Element$px(150)),
-						$mdgriffith$elm_ui$Element$Background$color(color),
-						$mdgriffith$elm_ui$Element$Border$rounded(12),
-						$mdgriffith$elm_ui$Element$centerX,
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						$elm$html$Html$Attributes$id(elementId)),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						A2($elm$html$Html$Attributes$style, 'transform-origin', 'center')),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						A2($elm$html$Html$Attributes$style, 'display', 'flex')),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						A2($elm$html$Html$Attributes$style, 'align-items', 'center')),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						A2($elm$html$Html$Attributes$style, 'justify-content', 'center'))
-					]),
-				_Utils_ap(
-					A2(
-						$elm$core$List$map,
-						function (_v0) {
-							var prop = _v0.a;
-							var value = _v0.b;
-							return $mdgriffith$elm_ui$Element$htmlAttribute(
-								A2($elm$html$Html$Attributes$style, prop, value));
-						},
-						A2($author$project$Anim$CSS$styleProperties, elementId, model.animations)),
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$htmlAttribute(
-							A2(
-								$elm$html$Html$Attributes$style,
-								'transition',
-								A2($author$project$Anim$CSS$transitionStyles, elementId, model.animations))),
-							$mdgriffith$elm_ui$Element$htmlAttribute(
-							$author$project$Anim$CSS$onTransitionEnd($author$project$ElmUI$CSS$Scale$Main$AnimationComplete))
-						]))),
-			A2(
-				$mdgriffith$elm_ui$Element$el,
-				_List_fromArray(
-					[
-						$mdgriffith$elm_ui$Element$centerX,
-						$mdgriffith$elm_ui$Element$centerY,
-						$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$backgroundWhite),
-						$mdgriffith$elm_ui$Element$Font$bold,
-						$mdgriffith$elm_ui$Element$Font$size(16)
-					]),
-				$mdgriffith$elm_ui$Element$text(label)));
-	});
-var $mdgriffith$elm_ui$Internal$Model$Left = {$: 'Left'};
-var $mdgriffith$elm_ui$Element$alignLeft = $mdgriffith$elm_ui$Internal$Model$AlignX($mdgriffith$elm_ui$Internal$Model$Left);
 var $elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
@@ -11960,7 +12295,29 @@ var $mdgriffith$elm_ui$Element$padding = function (x) {
 };
 var $author$project$Common$Colors$primary = A3($mdgriffith$elm_ui$Element$rgb255, 59, 130, 246);
 var $author$project$Common$Colors$primaryLight = A3($mdgriffith$elm_ui$Element$rgb255, 147, 197, 253);
+var $mdgriffith$elm_ui$Internal$Flag$borderRound = $mdgriffith$elm_ui$Internal$Flag$flag(17);
+var $mdgriffith$elm_ui$Element$Border$rounded = function (radius) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$borderRound,
+		A3(
+			$mdgriffith$elm_ui$Internal$Model$Single,
+			'br-' + $elm$core$String$fromInt(radius),
+			'border-radius',
+			$elm$core$String$fromInt(radius) + 'px'));
+};
+var $mdgriffith$elm_ui$Internal$Model$Class = F2(
+	function (a, b) {
+		return {$: 'Class', a: a, b: b};
+	});
+var $mdgriffith$elm_ui$Internal$Flag$fontWeight = $mdgriffith$elm_ui$Internal$Flag$flag(13);
 var $mdgriffith$elm_ui$Element$Font$semiBold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textSemiBold);
+var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
+	return {$: 'Text', a: a};
+};
+var $mdgriffith$elm_ui$Element$text = function (content) {
+	return $mdgriffith$elm_ui$Internal$Model$Text(content);
+};
 var $author$project$Common$UI$backButton = A2(
 	$mdgriffith$elm_ui$Element$link,
 	_List_fromArray(
@@ -11983,18 +12340,51 @@ var $author$project$Common$UI$backButton = A2(
 		label: $mdgriffith$elm_ui$Element$text('← Back to Examples'),
 		url: '../../index.html'
 	});
+var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$bgColor,
+		A3(
+			$mdgriffith$elm_ui$Internal$Model$Colored,
+			'bg-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(clr),
+			'background-color',
+			clr));
+};
+var $mdgriffith$elm_ui$Element$el = F2(
+	function (attrs, child) {
+		return A4(
+			$mdgriffith$elm_ui$Internal$Model$element,
+			$mdgriffith$elm_ui$Internal$Model$asEl,
+			$mdgriffith$elm_ui$Internal$Model$div,
+			A2(
+				$elm$core$List$cons,
+				$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
+				A2(
+					$elm$core$List$cons,
+					$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$shrink),
+					attrs)),
+			$mdgriffith$elm_ui$Internal$Model$Unkeyed(
+				_List_fromArray(
+					[child])));
+	});
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$core$Basics$always = F2(
 	function (a, _v0) {
 		return a;
 	});
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
 var $mdgriffith$elm_ui$Internal$Model$unstyled = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Unstyled, $elm$core$Basics$always);
 var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
 var $elm$html$Html$Events$onClick = function (msg) {
 	return A2(
 		$elm$html$Html$Events$on,
@@ -12117,36 +12507,69 @@ var $mdgriffith$elm_ui$Element$Border$shadow = function (almostShade) {
 			'box-shadow',
 			$mdgriffith$elm_ui$Internal$Model$formatBoxShadow(shade)));
 };
+var $mdgriffith$elm_ui$Element$Font$size = function (i) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$fontSize,
+		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
+};
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Common$Colors$textMedium = A3($mdgriffith$elm_ui$Element$rgb255, 71, 85, 105);
-var $author$project$ElmUI$CSS$Scale$Main$viewContent = function (model) {
+var $author$project$Anim$Sub$transform = F2(
+	function (elementId, model) {
+		var _v0 = A2($author$project$Anim$Sub$getPosition, elementId, model);
+		if (_v0.$ === 'Just') {
+			var position = _v0.a;
+			return 'translate(' + ($elm$core$String$fromFloat(position.x) + ('px, ' + ($elm$core$String$fromFloat(position.y) + 'px)')));
+		} else {
+			return 'translate(0px, 0px)';
+		}
+	});
+var $author$project$ElmUI$Sub$Position$Main$viewContent = function (model) {
 	return _List_fromArray(
 		[
 			$author$project$Common$UI$backButton,
-			$author$project$Common$UI$pageHeader('CSS Scale Animations'),
+			$author$project$Common$UI$pageHeader('Subscription-Based Position Animations'),
 			A2(
 			$mdgriffith$elm_ui$Element$el,
 			_List_fromArray(
 				[
-					$mdgriffith$elm_ui$Element$Font$size(16),
+					$mdgriffith$elm_ui$Element$Font$size(14),
 					$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium),
 					$mdgriffith$elm_ui$Element$centerX
 				]),
-			$mdgriffith$elm_ui$Element$text('Smooth size transformations using browser-native CSS transitions')),
+			function () {
+				var pos = A2(
+					$elm$core$Maybe$withDefault,
+					{x: 0, y: 0},
+					A2($author$project$Anim$Sub$getPosition, 'box', model.animations));
+				return $mdgriffith$elm_ui$Element$text(
+					'Position: (' + ($elm$core$String$fromInt(
+						$elm$core$Basics$round(pos.x)) + (', ' + ($elm$core$String$fromInt(
+						$elm$core$Basics$round(pos.y)) + ')'))));
+			}()),
 			$author$project$Common$UI$htmlActionButtons(
 			_List_fromArray(
 				[
-					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$CSS$Scale$Main$ScaleUp, 'Scale Up'),
-					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$CSS$Scale$Main$ScaleDown, 'Scale Down'),
-					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$CSS$Scale$Main$ScaleWide, 'Wide'),
-					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$CSS$Scale$Main$ScaleTall, 'Tall'),
-					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$CSS$Scale$Main$ScaleReset, 'Reset')
+					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Sub$Position$Main$MoveToCorner, 'Move to (100, 100)'),
+					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Sub$Position$Main$MoveToCenter, 'Move to (300, 200)'),
+					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Sub$Position$Main$StopAnimation, 'Return to Origin')
+				])),
+			$author$project$Common$UI$htmlActionButtons(
+			_List_fromArray(
+				[
+					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Sub$Position$Main$MoveLeft, '← Move Left'),
+					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Sub$Position$Main$MoveRight, 'Move Right →'),
+					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Sub$Position$Main$MoveUp, '↑ Move Up'),
+					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Sub$Position$Main$MoveDown, 'Move Down ↓')
 				])),
 			A2(
 			$mdgriffith$elm_ui$Element$el,
 			_List_fromArray(
 				[
 					$mdgriffith$elm_ui$Element$width(
-					A2($mdgriffith$elm_ui$Element$maximum, 600, $mdgriffith$elm_ui$Element$fill)),
+					A2($mdgriffith$elm_ui$Element$maximum, 500, $mdgriffith$elm_ui$Element$fill)),
 					$mdgriffith$elm_ui$Element$height(
 					$mdgriffith$elm_ui$Element$px(400)),
 					$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundWhite),
@@ -12162,40 +12585,39 @@ var $author$project$ElmUI$CSS$Scale$Main$viewContent = function (model) {
 					$mdgriffith$elm_ui$Element$htmlAttribute(
 					A2($elm$html$Html$Attributes$style, 'position', 'relative')),
 					$mdgriffith$elm_ui$Element$htmlAttribute(
-					A2($elm$html$Html$Attributes$style, 'overflow', 'visible')),
-					$mdgriffith$elm_ui$Element$htmlAttribute(
-					A2($elm$html$Html$Attributes$style, 'display', 'flex')),
-					$mdgriffith$elm_ui$Element$htmlAttribute(
-					A2($elm$html$Html$Attributes$style, 'flex-direction', 'column')),
-					$mdgriffith$elm_ui$Element$htmlAttribute(
-					A2($elm$html$Html$Attributes$style, 'align-items', 'center')),
-					$mdgriffith$elm_ui$Element$htmlAttribute(
-					A2($elm$html$Html$Attributes$style, 'justify-content', 'space-around')),
-					$mdgriffith$elm_ui$Element$htmlAttribute(
-					A2($elm$html$Html$Attributes$style, 'padding', '40px'))
+					A2($elm$html$Html$Attributes$style, 'overflow', 'hidden'))
 				]),
 			A2(
 				$mdgriffith$elm_ui$Element$el,
 				_List_fromArray(
 					[
-						$mdgriffith$elm_ui$Element$centerX,
-						$mdgriffith$elm_ui$Element$centerY,
 						$mdgriffith$elm_ui$Element$width(
-						$mdgriffith$elm_ui$Element$px(200)),
+						$mdgriffith$elm_ui$Element$px(50)),
 						$mdgriffith$elm_ui$Element$height(
-						$mdgriffith$elm_ui$Element$px(200))
+						$mdgriffith$elm_ui$Element$px(50)),
+						$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$primary),
+						$mdgriffith$elm_ui$Element$Border$rounded(8),
+						$mdgriffith$elm_ui$Element$htmlAttribute(
+						$elm$html$Html$Attributes$id('box')),
+						$mdgriffith$elm_ui$Element$htmlAttribute(
+						A2($elm$html$Html$Attributes$style, 'position', 'absolute')),
+						$mdgriffith$elm_ui$Element$htmlAttribute(
+						A2(
+							$elm$html$Html$Attributes$style,
+							'transform',
+							A2($author$project$Anim$Sub$transform, 'box', model.animations)))
 					]),
-				A4($author$project$ElmUI$CSS$Scale$Main$animatedBox, 'box', 'Scale Demo', $author$project$Common$Colors$primary, model)))
+				$mdgriffith$elm_ui$Element$text('')))
 		]);
 };
-var $author$project$ElmUI$CSS$Scale$Main$view = function (model) {
+var $author$project$ElmUI$Sub$Position$Main$view = function (model) {
 	return A3(
 		$author$project$Common$UI$createDocument,
-		'Anim.CSS Scale ElmUI Example',
+		'Anim.Sub Position ElmUI Example',
 		$author$project$Common$UI$Basic,
-		$author$project$ElmUI$CSS$Scale$Main$viewContent(model));
+		$author$project$ElmUI$Sub$Position$Main$viewContent(model));
 };
-var $author$project$ElmUI$CSS$Scale$Main$main = $elm$browser$Browser$document(
-	{init: $author$project$ElmUI$CSS$Scale$Main$init, subscriptions: $author$project$ElmUI$CSS$Scale$Main$subscriptions, update: $author$project$ElmUI$CSS$Scale$Main$update, view: $author$project$ElmUI$CSS$Scale$Main$view});
-_Platform_export({'ElmUI':{'CSS':{'Scale':{'Main':{'init':$author$project$ElmUI$CSS$Scale$Main$main(
+var $author$project$ElmUI$Sub$Position$Main$main = $elm$browser$Browser$document(
+	{init: $author$project$ElmUI$Sub$Position$Main$init, subscriptions: $author$project$ElmUI$Sub$Position$Main$subscriptions, update: $author$project$ElmUI$Sub$Position$Main$update, view: $author$project$ElmUI$Sub$Position$Main$view});
+_Platform_export({'ElmUI':{'Sub':{'Position':{'Main':{'init':$author$project$ElmUI$Sub$Position$Main$main(
 	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}}}}});}(this));
