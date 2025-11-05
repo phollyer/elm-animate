@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim exposing (RotationValue, defaultConfig)
-import Anim.Sub exposing (Model, animateRotation, init, step, styleProperties, subscriptions)
+import Anim exposing (RotationValue)
+import Anim.Sub exposing (Model, animate, init, step, styleProperties, subscriptions)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -68,43 +68,79 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Rotate45 ->
+            let
+                animation =
+                    Anim.rotation "box" 45
+                        |> Anim.degreesPerSecond 180.0
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateRotation "box" 45 model.animations
+                | animations = animate animation model.animations
               }
             , Cmd.none
             )
 
         Rotate90 ->
+            let
+                animation =
+                    Anim.rotation "box" 90
+                        |> Anim.degreesPerSecond 180.0
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateRotation "box" 90 model.animations
+                | animations = animate animation model.animations
               }
             , Cmd.none
             )
 
         Rotate180 ->
+            let
+                animation =
+                    Anim.rotation "box" 180
+                        |> Anim.degreesPerSecond 200.0
+                        |> Anim.easeInOut
+            in
             ( { model
-                | animations = animateRotation "box" 180 model.animations
+                | animations = animate animation model.animations
               }
             , Cmd.none
             )
 
         RotateLeft ->
+            let
+                animation =
+                    Anim.rotation "box" -90
+                        |> Anim.degreesPerSecond 150.0
+                        |> Anim.easeIn
+            in
             ( { model
-                | animations = animateRotation "box" -90 model.animations
+                | animations = animate animation model.animations
               }
             , Cmd.none
             )
 
         RotateRight ->
+            let
+                animation =
+                    Anim.rotation "box" 90
+                        |> Anim.degreesPerSecond 150.0
+                        |> Anim.easeIn
+            in
             ( { model
-                | animations = animateRotation "box" 90 model.animations
+                | animations = animate animation model.animations
               }
             , Cmd.none
             )
 
         ResetRotation ->
+            let
+                animation =
+                    Anim.rotation "box" 0
+                        |> Anim.degreesPerSecond 180.0
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateRotation "box" 0 model.animations
+                | animations = animate animation model.animations
               }
             , Cmd.none
             )

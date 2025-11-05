@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim exposing (defaultConfig)
-import Anim.Ports exposing (Model, animateOpacity, encodeAnimationCommand, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
+import Anim
+import Anim.Ports exposing (Model, animate, encodeAnimationCommand, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -99,13 +99,18 @@ update msg model =
     case msg of
         FadeIn ->
             let
+                animation =
+                    Anim.opacity "box" 1.0
+                        |> Anim.opacityPerSecond 2.0
+                        |> Anim.easeOut
+
                 ( newModel, maybeCommand ) =
-                    animateOpacity "box" 1.0 model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel, isVisible = True }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , sendAnimationCommand animateElement command
                     )
 
                 Nothing ->
@@ -113,13 +118,18 @@ update msg model =
 
         FadeOut ->
             let
+                animation =
+                    Anim.opacity "box" 0.0
+                        |> Anim.opacityPerSecond 2.0
+                        |> Anim.easeIn
+
                 ( newModel, maybeCommand ) =
-                    animateOpacity "box" 0.0 model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel, isVisible = False }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , sendAnimationCommand animateElement command
                     )
 
                 Nothing ->
@@ -138,13 +148,18 @@ update msg model =
                 newVisible =
                     not model.isVisible
 
+                animation =
+                    Anim.opacity "box" newOpacity
+                        |> Anim.opacityPerSecond 1.5
+                        |> Anim.easeInOut
+
                 ( newModel, maybeCommand ) =
-                    animateOpacity "box" newOpacity model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel, isVisible = newVisible }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , sendAnimationCommand animateElement command
                     )
 
                 Nothing ->

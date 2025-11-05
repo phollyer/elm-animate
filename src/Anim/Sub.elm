@@ -5,23 +5,8 @@ module Anim.Sub exposing
     , subscriptions
     , TargetId
     , animate
-    , animateWithConfig
     , getCurrentValue
     , setValue
-    , animateTo
-    , animateToX
-    , animateToY
-    , animateToWithConfig
-    , animateToXWithConfig
-    , animateToYWithConfig
-    , animateOpacity
-    , animateOpacityWithConfig
-    , animateScale
-    , animateScaleWithConfig
-    , animateRotation
-    , animateRotationWithConfig
-    , animateBackgroundColor
-    , animateBackgroundColorWithConfig
     , getPosition
     , getAllPositions
     , setPosition
@@ -68,27 +53,8 @@ subscriptions, supporting comprehensive animation properties.
 
 @docs TargetId
 @docs animate
-@docs animateWithConfig
 @docs getCurrentValue
 @docs setValue
-
-
-# Property-Specific Animation
-
-@docs animateTo
-@docs animateToX
-@docs animateToY
-@docs animateToWithConfig
-@docs animateToXWithConfig
-@docs animateToYWithConfig
-@docs animateOpacity
-@docs animateOpacityWithConfig
-@docs animateScale
-@docs animateScaleWithConfig
-@docs animateRotation
-@docs animateRotationWithConfig
-@docs animateBackgroundColor
-@docs animateBackgroundColorWithConfig
 
 
 # Value Management
@@ -108,8 +74,8 @@ subscriptions, supporting comprehensive animation properties.
 
 -}
 
-import Anim exposing (AnimationTarget(..), ColorValue(..), Config, EasePreset(..), Easing(..), FilterValue(..), Position, RotationValue, ScaleValue, Timing(..), defaultConfig)
-import Anim.Internal exposing (calculateDistance, easingToEaseFunction)
+import Anim exposing (Animation, AnimationTarget(..), ColorValue(..), EasePreset(..), Easing(..), FilterValue(..), Position, Timing(..), getAnimationData)
+import Anim.Internal exposing (animationToMilliseconds, calculateDistance, easingToEaseFunction)
 import Browser.Events
 import Dict exposing (Dict)
 
@@ -129,7 +95,8 @@ type alias AnimationState =
     , startValue : AnimationTarget
     , startedAt : Float
     , duration : Float
-    , config : Config
+    , easing : Easing
+    , delayMs : Int
     }
 
 
@@ -316,35 +283,39 @@ init =
     Model Dict.empty
 
 
-{-| Start animating an element to a target animation property using default config.
+{-| Start animating an element using the new fluent Animation API.
 
-This is the general-purpose animation function that can handle any AnimationTarget type.
+This is the main animation function that accepts Animation objects created with the builder pattern.
 
-    import Anim exposing (AnimationTarget(..))
+    import Anim
 
-    newModel =
-        Anim.Sub.animate "my-element" (ToOpacity 0.5) model.animSubModel
-
--}
-animate : TargetId -> AnimationTarget -> Model -> Model
-animate elementId target model =
-    animateWithConfig elementId target defaultConfig model
-
-
-{-| Start animating an element to a target animation property with custom configuration.
-
-    import Anim exposing (AnimationTarget(..), EasePreset(..), Easing(..), Timing(..), defaultConfig)
-
-    config =
-        { defaultConfig | timing = Duration 800, easing = EasePreset EaseInOut }
+    animation =
+        Anim.opacity "my-element" 0.5
+            |> Anim.opacityPerSecond 2.0
+            |> Anim.easeInOut
 
     newModel =
-        Anim.Sub.animateWithConfig config "my-element" (ToScale { x = 2.0, y = 2.0 }) model.animSubModel
+        Anim.Sub.animate animation model.animSubModel
 
 -}
-animateWithConfig : TargetId -> AnimationTarget -> Config -> Model -> Model
-animateWithConfig elementId target config (Model elementsDict) =
+animate : Animation -> Model -> Model
+animate animation (Model elementsDict) =
     let
+        animData =
+            getAnimationData animation
+
+        elementId =
+            animData.elementId
+
+        target =
+            animData.target
+
+        easing =
+            animData.easing
+
+        delayMs =
+            animData.delayMs
+
         propertyKey =
             getPropertyKey target
 
@@ -356,15 +327,19 @@ animateWithConfig elementId target config (Model elementsDict) =
             Dict.get propertyKey currentElementData.properties
                 |> Maybe.withDefault (getDefaultValue target)
 
+        distance =
+            calculateTargetDistance currentValue target
+
         duration =
-            calculateAnimationDuration config currentValue target
+            animationToMilliseconds animation distance
 
         animationState =
             { target = target
             , startValue = currentValue
             , startedAt = 0
             , duration = duration
-            , config = config
+            , easing = easing
+            , delayMs = delayMs
             }
 
         updatedProperties =
@@ -417,23 +392,8 @@ getDefaultValue target =
             ToFilter (Brightness 1.0)
 
 
-{-| Calculate animation duration based on config and distance.
--}
-calculateAnimationDuration : Config -> AnimationTarget -> AnimationTarget -> Float
-calculateAnimationDuration config startValue targetValue =
-    case config.timing of
-        Duration ms ->
-            toFloat ms
-
-        Speed pixelsPerSecond ->
-            let
-                distance =
-                    calculateTargetDistance startValue targetValue
-            in
-            max 100 (distance * 1000 / pixelsPerSecond)
-
-
-{-| Calculate distance between two AnimationTarget values.
+{-| Calculate distance between two AnimationTarget values using natural units.
+No more artificial scaling - each property uses its natural measurement.
 -}
 calculateTargetDistance : AnimationTarget -> AnimationTarget -> Float
 calculateTargetDistance start target =
@@ -442,10 +402,10 @@ calculateTargetDistance start target =
             calculateDistance startPos targetPos
 
         ( ToOpacity startOp, ToOpacity targetOp ) ->
-            abs (targetOp - startOp) * 100
+            abs (targetOp - startOp)
 
         ( ToScale startScale, ToScale targetScale ) ->
-            abs (targetScale.x - startScale.x) * 100 + abs (targetScale.y - startScale.y) * 100
+            abs (targetScale.x - startScale.x) + abs (targetScale.y - startScale.y)
 
         ( ToRotation startRot, ToRotation targetRot ) ->
             abs (targetRot - startRot)
@@ -456,237 +416,207 @@ calculateTargetDistance start target =
         ( ToBorderRadius startRadius, ToBorderRadius targetRadius ) ->
             abs (targetRadius - startRadius)
 
+        ( ToBackgroundColor startColor, ToBackgroundColor targetColor ) ->
+            calculateColorDistance startColor targetColor
+
         _ ->
-            100
+            1.0
 
 
-
--- Default distance for color/filter animations
--- PROPERTY-SPECIFIC CONVENIENCE FUNCTIONS
-
-
-{-| Animate element opacity with default configuration.
-
-    newModel =
-        Anim.Sub.animateOpacity "my-element" 0.5 model.animSubModel
-
+{-| Calculate perceptual distance between two colors.
+Returns a value roughly between 0-100 representing perceived color difference.
 -}
-animateOpacity : TargetId -> Float -> Model -> Model
-animateOpacity elementId opacity model =
-    animate elementId (ToOpacity opacity) model
+calculateColorDistance : ColorValue -> ColorValue -> Float
+calculateColorDistance startColor targetColor =
+    case ( startColor, targetColor ) of
+        ( Hex startHex, Hex targetHex ) ->
+            calculateHexColorDistance startHex targetHex
+
+        ( Rgb startRgb, Rgb targetRgb ) ->
+            calculateRgbColorDistance startRgb targetRgb
+
+        ( Rgba startRgba, Rgba targetRgba ) ->
+            calculateRgbaColorDistance startRgba targetRgba
+
+        -- Mixed color types: convert to RGB for comparison
+        ( Hex startHex, Rgb targetRgb ) ->
+            let
+                startRgb =
+                    hexToRgb startHex
+            in
+            calculateRgbColorDistance startRgb targetRgb
+
+        ( Rgb startRgb, Hex targetHex ) ->
+            let
+                targetRgb =
+                    hexToRgb targetHex
+            in
+            calculateRgbColorDistance startRgb targetRgb
+
+        _ ->
+            50.0
 
 
-{-| Animate element opacity with custom configuration.
 
-    config =
-        { defaultConfig | timing = Duration 800 }
+-- Default moderate color distance for mixed/unsupported combinations
 
-    newModel =
-        Anim.Sub.animateOpacityWithConfig config "my-element" 0.5 model.animSubModel
 
+{-| Calculate RGB color distance using simple Euclidean distance in RGB space.
 -}
-animateOpacityWithConfig : TargetId -> Float -> Config -> Model -> Model
-animateOpacityWithConfig elementId opacity config model =
-    animateWithConfig elementId (ToOpacity opacity) config model
-
-
-{-| Animate element scale with default configuration.
-
-    newModel =
-        Anim.Sub.animateScale "my-element" { x = 1.5, y = 1.5 } model.animSubModel
-
--}
-animateScale : TargetId -> ScaleValue -> Model -> Model
-animateScale elementId scale model =
-    animate elementId (ToScale scale) model
-
-
-{-| Animate element scale with custom configuration.
-
-    config =
-        { defaultConfig | timing = Duration 600, easing = EasePreset EaseInOut }
-
-    newModel =
-        Anim.Sub.animateScaleWithConfig config "my-element" { x = 2.0, y = 2.0 } model.animSubModel
-
--}
-animateScaleWithConfig : TargetId -> ScaleValue -> Config -> Model -> Model
-animateScaleWithConfig elementId scale config model =
-    animateWithConfig elementId (ToScale scale) config model
-
-
-{-| Animate element rotation with default configuration.
-
-    newModel =
-        Anim.Sub.animateRotation "my-element" 90.0 model.animSubModel
-
--}
-animateRotation : TargetId -> RotationValue -> Model -> Model
-animateRotation elementId rotation model =
-    animate elementId (ToRotation rotation) model
-
-
-{-| Animate element rotation with custom configuration.
-
-    config =
-        { defaultConfig | timing = Duration 1000 }
-
-    newModel =
-        Anim.Sub.animateRotationWithConfig config "my-element" 180.0 model.animSubModel
-
--}
-animateRotationWithConfig : TargetId -> RotationValue -> Config -> Model -> Model
-animateRotationWithConfig elementId rotation config model =
-    animateWithConfig elementId (ToRotation rotation) config model
-
-
-{-| Animate element background color with default configuration.
-
-    import Anim exposing (ColorValue(..))
-
-    newModel =
-        Anim.Sub.animateBackgroundColor "my-element" (Rgb { r = 255, g = 0, b = 0 }) model.animSubModel
-
--}
-animateBackgroundColor : TargetId -> ColorValue -> Model -> Model
-animateBackgroundColor elementId color model =
-    animate elementId (ToBackgroundColor color) model
-
-
-{-| Animate element background color with custom configuration.
-
-    import Anim exposing (ColorValue(..), EasePreset(..), Easing(..), Timing(..), defaultConfig)
-
-    config =
-        { defaultConfig | timing = Duration 500, easing = EasePreset EaseInOut }
-
-    newModel =
-        Anim.Sub.animateBackgroundColorWithConfig config "my-element" (Hsl { h = 120, s = 100, l = 50 }) model.animSubModel
-
--}
-animateBackgroundColorWithConfig : TargetId -> ColorValue -> Config -> Model -> Model
-animateBackgroundColorWithConfig elementId color config model =
-    animateWithConfig elementId (ToBackgroundColor color) config model
-
-
-{-| Start animating an element to a target position using default config
-
-If the element is already animating, it will smoothly transition to the new target.
-If the element has no current position, it starts from (0, 0).
-
-    import Anim.Sub
-
-    newModel =
-        Anim.Sub.animateTo "my-element" { x = 200, y = 300 } model.animSubModel
-
--}
-animateTo : TargetId -> Position -> Model -> Model
-animateTo elementId position model =
-    animate elementId (ToPosition position) model
-
-
-{-| Start animating an element horizontally to a target X position
-
-Only the X coordinate will change - Y position remains at current value.
-
-    newModel =
-        Anim.Sub.animateToX "my-element" 200 model.moveSubModel
-
--}
-animateToX : TargetId -> Float -> Model -> Model
-animateToX elementId targetX model =
+calculateRgbColorDistance : { r : Int, g : Int, b : Int } -> { r : Int, g : Int, b : Int } -> Float
+calculateRgbColorDistance start target =
     let
-        currentPos =
-            getPosition elementId model
-                |> Maybe.withDefault { x = 0, y = 0 }
+        dr =
+            toFloat (target.r - start.r)
 
-        newPosition =
-            { currentPos | x = targetX }
+        dg =
+            toFloat (target.g - start.g)
+
+        db =
+            toFloat (target.b - start.b)
+
+        distance =
+            sqrt (dr * dr + dg * dg + db * db)
     in
-    animate elementId (ToPosition newPosition) model
+    -- Normalize to 0-100 range (max RGB distance is ~441)
+    distance / 4.41
 
 
-{-| Start animating an element vertically to a target Y position
-
-Only the Y coordinate will change - X position remains at current value.
-
-    newModel =
-        Anim.Sub.animateToY "my-element" 300 model.moveSubModel
-
+{-| Calculate RGBA color distance, including alpha channel.
 -}
-animateToY : TargetId -> Float -> Model -> Model
-animateToY elementId targetY model =
+calculateRgbaColorDistance : { r : Int, g : Int, b : Int, a : Float } -> { r : Int, g : Int, b : Int, a : Float } -> Float
+calculateRgbaColorDistance start target =
     let
-        currentPos =
-            getPosition elementId model
-                |> Maybe.withDefault { x = 0, y = 0 }
+        rgbDistance =
+            calculateRgbColorDistance { r = start.r, g = start.g, b = start.b } { r = target.r, g = target.g, b = target.b }
 
-        newPosition =
-            { currentPos | y = targetY }
+        alphaDistance =
+            abs (target.a - start.a) * 100
     in
-    animate elementId (ToPosition newPosition) model
+    (rgbDistance + alphaDistance) / 2
 
 
-{-| Start animating an element to a target position with custom configuration
-
-    config =
-        { defaultConfig | timing = Speed 600.0, easing = EasePreset EaseOutQuint }
-
-    newModel =
-        Anim.Sub.animateToWithConfig config "my-element" { x = 100, y = 150 } model.moveSubModel
-
+{-| Calculate hex color distance by converting to RGB first.
 -}
-animateToWithConfig : TargetId -> Position -> Config -> Model -> Model
-animateToWithConfig elementId position config model =
-    animateWithConfig elementId (ToPosition position) config model
-
-
-{-| Start animating an element horizontally to a target X position with custom configuration
-
-Only the X coordinate will change - Y position remains at current value.
-
-    config =
-        { defaultConfig | timing = Speed 600.0, easing = EasePreset EaseOutQuint }
-
-    newModel =
-        Anim.Sub.animateToXWithConfig config "my-element" 200 model.moveSubModel
-
--}
-animateToXWithConfig : TargetId -> Float -> Config -> Model -> Model
-animateToXWithConfig elementId targetX config model =
+calculateHexColorDistance : String -> String -> Float
+calculateHexColorDistance startHex targetHex =
     let
-        currentPos =
-            getPosition elementId model
-                |> Maybe.withDefault { x = 0, y = 0 }
+        startRgb =
+            hexToRgb startHex
 
-        newPosition =
-            { currentPos | x = targetX }
+        targetRgb =
+            hexToRgb targetHex
     in
-    animateWithConfig elementId (ToPosition newPosition) config model
+    calculateRgbColorDistance startRgb targetRgb
 
 
-{-| Start animating an element vertically to a target Y position with custom configuration
-
-Only the Y coordinate will change - X position remains at current value.
-
-    config =
-        { defaultConfig | timing = Speed 600.0, easing = EasePreset EaseOutQuint }
-
-    newModel =
-        Anim.Sub.animateToYWithConfig config "my-element" 300 model.moveSubModel
-
+{-| Convert hex color string to RGB record.
+Simplified conversion - assumes valid 6-character hex strings.
 -}
-animateToYWithConfig : TargetId -> Float -> Config -> Model -> Model
-animateToYWithConfig elementId targetY config model =
+hexToRgb : String -> { r : Int, g : Int, b : Int }
+hexToRgb hex =
     let
-        currentPos =
-            getPosition elementId model
-                |> Maybe.withDefault { x = 0, y = 0 }
+        cleanHex =
+            String.replace "#" "" hex
 
-        newPosition =
-            { currentPos | y = targetY }
+        r =
+            String.slice 0 2 cleanHex |> hexStringToInt
+
+        g =
+            String.slice 2 4 cleanHex |> hexStringToInt
+
+        b =
+            String.slice 4 6 cleanHex |> hexStringToInt
     in
-    animateWithConfig elementId (ToPosition newPosition) config model
+    { r = r, g = g, b = b }
+
+
+{-| Convert hex string to integer.
+Simplified - handles basic hex conversion.
+-}
+hexStringToInt : String -> Int
+hexStringToInt hexStr =
+    case String.toList hexStr of
+        [ h1, h2 ] ->
+            hexCharToInt h1 * 16 + hexCharToInt h2
+
+        _ ->
+            0
+
+
+{-| Convert hex character to integer.
+-}
+hexCharToInt : Char -> Int
+hexCharToInt char =
+    case char of
+        '0' ->
+            0
+
+        '1' ->
+            1
+
+        '2' ->
+            2
+
+        '3' ->
+            3
+
+        '4' ->
+            4
+
+        '5' ->
+            5
+
+        '6' ->
+            6
+
+        '7' ->
+            7
+
+        '8' ->
+            8
+
+        '9' ->
+            9
+
+        'A' ->
+            10
+
+        'B' ->
+            11
+
+        'C' ->
+            12
+
+        'D' ->
+            13
+
+        'E' ->
+            14
+
+        'F' ->
+            15
+
+        'a' ->
+            10
+
+        'b' ->
+            11
+
+        'c' ->
+            12
+
+        'd' ->
+            13
+
+        'e' ->
+            14
+
+        'f' ->
+            15
+
+        _ ->
+            0
 
 
 {-| Manually set an element's position without animation
@@ -940,7 +870,7 @@ step delta (Model elementsDict) =
                                 min 1.0 (elapsed / animState.duration)
 
                         easedProgress =
-                            easingToEaseFunction animState.config.easing progress
+                            easingToEaseFunction animState.easing progress
 
                         currentValue =
                             interpolateTarget animState.startValue animState.target easedProgress

@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim exposing (ScaleValue, defaultConfig)
-import Anim.CSS exposing (Model, animateScale, init, onTransitionEnd, styleProperties, transitionStyles)
+import Anim exposing (ScaleValue)
+import Anim.CSS exposing (Model, animate, init, onTransitionEnd, styleProperties, transitionStyles)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -47,6 +47,7 @@ main =
 
 type alias Model =
     { animations : Anim.CSS.Model
+    , activeAnimation : Maybe Anim.Animation
     }
 
 
@@ -57,6 +58,7 @@ type alias Model =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations = Anim.CSS.init
+      , activeAnimation = Nothing
       }
     , Cmd.none
     )
@@ -79,42 +81,77 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ScaleUp ->
+            let
+                animation =
+                    Anim.scale "box" { x = 1.5, y = 1.5 }
+                        |> Anim.scaleDuration 400
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateScale "box" { x = 1.5, y = 1.5 } model.animations
+                | animations = animate animation model.animations
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         ScaleDown ->
+            let
+                animation =
+                    Anim.scale "box" { x = 0.7, y = 0.7 }
+                        |> Anim.scaleDuration 400
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateScale "box" { x = 0.7, y = 0.7 } model.animations
+                | animations = animate animation model.animations
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         ScaleReset ->
+            let
+                animation =
+                    Anim.scale "box" { x = 1.0, y = 1.0 }
+                        |> Anim.scaleDuration 600
+                        |> Anim.easeInOut
+            in
             ( { model
-                | animations = animateScale "box" { x = 1.0, y = 1.0 } model.animations
+                | animations = animate animation model.animations
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         ScaleWide ->
+            let
+                animation =
+                    Anim.scale "box" { x = 1.8, y = 0.6 }
+                        |> Anim.scaleDuration 500
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateScale "box" { x = 1.8, y = 0.6 } model.animations
+                | animations = animate animation model.animations
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         ScaleTall ->
+            let
+                animation =
+                    Anim.scale "box" { x = 0.6, y = 1.8 }
+                        |> Anim.scaleDuration 500
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateScale "box" { x = 0.6, y = 1.8 } model.animations
+                | animations = animate animation model.animations
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         AnimationComplete ->
-            ( model, Cmd.none )
+            ( { model | activeAnimation = Nothing }, Cmd.none )
 
 
 
@@ -208,7 +245,13 @@ animatedBox elementId label color model =
                )
             ++ [ htmlAttribute
                     (Html.Attributes.style "transition"
-                        (transitionStyles elementId model.animations)
+                        (case model.activeAnimation of
+                            Just animation ->
+                                transitionStyles animation
+
+                            Nothing ->
+                                "none"
+                        )
                     )
                , htmlAttribute (onTransitionEnd AnimationComplete)
                ]

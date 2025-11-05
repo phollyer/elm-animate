@@ -22,8 +22,8 @@ USAGE:
 
 -}
 
-import Anim exposing (Position, defaultConfig)
-import Anim.CSS exposing (Model, animatePosition, animateToX, animateToY, getCurrentPosition, init, styleProperties, transitionStyles)
+import Anim
+import Anim.CSS exposing (Model, animate, getCurrentPosition, init, styleProperties, transitionStyles)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -55,6 +55,7 @@ main =
 type alias Model =
     { animations : Anim.CSS.Model
     , isAnimating : Bool
+    , activeAnimation : Maybe Anim.Animation
     }
 
 
@@ -66,6 +67,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations = Anim.CSS.init
       , isAnimating = False
+      , activeAnimation = Nothing
       }
     , Cmd.none
     )
@@ -90,63 +92,127 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         MoveToCorner ->
+            let
+                animation =
+                    Anim.position "box" { x = 100, y = 100 }
+                        |> Anim.duration 700
+                        |> Anim.easeInOut
+            in
             ( { model
-                | animations = animatePosition "box" (Position 100 100) model.animations
+                | animations = animate animation model.animations
                 , isAnimating = True
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         MoveToCenter ->
+            let
+                animation =
+                    Anim.position "box" { x = 300, y = 200 }
+                        |> Anim.duration 700
+                        |> Anim.easeInOut
+            in
             ( { model
-                | animations = animatePosition "box" (Position 300 200) model.animations
+                | animations = animate animation model.animations
                 , isAnimating = True
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         MoveLeft ->
+            let
+                currentPos =
+                    getCurrentPosition "box" model.animations
+
+                animation =
+                    Anim.position "box" { x = 0, y = currentPos.y }
+                        |> Anim.duration 400
+                        |> Anim.easeIn
+            in
             ( { model
-                | animations = animateToX "box" 0 model.animations
+                | animations = animate animation model.animations
                 , isAnimating = True
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         MoveRight ->
-            ( { model
-                | animations = animateToX "box" 450 model.animations -- 500px container - 50px box = 450px for right edge
-                , isAnimating = True
-              }
-            , Cmd.none
-            )
+            let
+                currentPos =
+                    getCurrentPosition "box" model.animations
 
-        MoveUp ->
+                animation =
+                    Anim.position "box" { x = 450, y = currentPos.y }
+                        |> Anim.duration 400
+                        |> Anim.easeIn
+            in
             ( { model
-                | animations = animateToY "box" 0 model.animations
+                | animations = animate animation model.animations
                 , isAnimating = True
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         MoveDown ->
+            let
+                currentPos =
+                    getCurrentPosition "box" model.animations
+
+                animation =
+                    Anim.position "box" { x = currentPos.x, y = 350 }
+                        |> Anim.duration 400
+                        |> Anim.easeIn
+            in
             ( { model
-                | animations = animateToY "box" 350 model.animations -- 400px container - 50px box = 350px for bottom edge
+                | animations = animate animation model.animations
                 , isAnimating = True
+                , activeAnimation = Just animation
+              }
+            , Cmd.none
+            )
+
+        MoveUp ->
+            let
+                currentPos =
+                    getCurrentPosition "box" model.animations
+
+                animation =
+                    Anim.position "box" { x = currentPos.x, y = 50 }
+                        |> Anim.duration 400
+                        |> Anim.easeIn
+            in
+            ( { model
+                | animations = animate animation model.animations
+                , isAnimating = True
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         StopAnimation ->
+            let
+                animation =
+                    Anim.position "box" { x = 0, y = 0 }
+                        |> Anim.duration 400
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animatePosition "box" (Position 0 0) model.animations
+                | animations = animate animation model.animations
                 , isAnimating = True
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         AnimationComplete ->
-            ( { model | isAnimating = False }
+            ( { model
+                | isAnimating = False
+                , activeAnimation = Nothing
+              }
             , Cmd.none
             )
 
@@ -230,11 +296,12 @@ viewContent model =
                    )
                 ++ [ htmlAttribute
                         (Html.Attributes.style "transition"
-                            (if model.isAnimating then
-                                transitionStyles "box" model.animations
+                            (case model.activeAnimation of
+                                Just animation ->
+                                    transitionStyles animation
 
-                             else
-                                "none"
+                                Nothing ->
+                                    "none"
                             )
                         )
 

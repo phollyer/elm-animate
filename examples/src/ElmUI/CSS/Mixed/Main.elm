@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim exposing (ColorValue(..), Position, RotationValue, ScaleValue, defaultConfig)
-import Anim.CSS exposing (Model, animateBackgroundColor, animateOpacity, animatePosition, animateRotation, animateScale, init, onTransitionEnd, styleProperties, transitionStyles)
+import Anim exposing (ColorValue(..), Position, RotationValue, ScaleValue)
+import Anim.CSS exposing (Model, animate, init, onTransitionEnd, styleProperties, transitionStyles)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -47,6 +47,7 @@ main =
 
 type alias Model =
     { animations : Anim.CSS.Model
+    , activeAnimation : Maybe Anim.Animation
     }
 
 
@@ -147,10 +148,16 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         -- Set initial position for the mixed-box element at origin
+        initialAnimation =
+            Anim.position "mixed-box" { x = 0, y = 0 }
+                |> Anim.duration 0
+                |> Anim.linear
+
         initialAnimations =
-            animatePosition "mixed-box" (Position 0 0) Anim.CSS.init
+            animate initialAnimation Anim.CSS.init
     in
     ( { animations = initialAnimations
+      , activeAnimation = Nothing
       }
     , Cmd.none
     )

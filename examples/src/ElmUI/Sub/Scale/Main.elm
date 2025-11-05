@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim exposing (ScaleValue, defaultConfig)
-import Anim.Sub exposing (Model, animateScale, init, step, styleProperties, subscriptions)
+import Anim exposing (ScaleValue)
+import Anim.Sub exposing (Model, animate, init, step, styleProperties, subscriptions)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -79,36 +79,66 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ScaleUp ->
+            let
+                animation =
+                    Anim.scale "box" { x = 1.5, y = 1.5 }
+                        |> Anim.scalePerSecond 2.0
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateScale "box" { x = 1.5, y = 1.5 } model.animations
+                | animations = animate animation model.animations
               }
             , Cmd.none
             )
 
         ScaleDown ->
+            let
+                animation =
+                    Anim.scale "box" { x = 0.7, y = 0.7 }
+                        |> Anim.scalePerSecond 2.0
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateScale "box" { x = 0.7, y = 0.7 } model.animations
+                | animations = animate animation model.animations
               }
             , Cmd.none
             )
 
         ScaleReset ->
+            let
+                animation =
+                    Anim.scale "box" { x = 1.0, y = 1.0 }
+                        |> Anim.scalePerSecond 1.5
+                        |> Anim.easeInOut
+            in
             ( { model
-                | animations = animateScale "box" { x = 1.0, y = 1.0 } model.animations
+                | animations = animate animation model.animations
               }
             , Cmd.none
             )
 
         ScaleWide ->
+            let
+                animation =
+                    Anim.scale "box" { x = 1.8, y = 0.6 }
+                        |> Anim.scalePerSecond 2.5
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateScale "box" { x = 1.8, y = 0.6 } model.animations
+                | animations = animate animation model.animations
               }
             , Cmd.none
             )
 
         ScaleTall ->
+            let
+                animation =
+                    Anim.scale "box" { x = 0.6, y = 1.8 }
+                        |> Anim.scalePerSecond 2.5
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateScale "box" { x = 0.6, y = 1.8 } model.animations
+                | animations = animate animation model.animations
               }
             , Cmd.none
             )

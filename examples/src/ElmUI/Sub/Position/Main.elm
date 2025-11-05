@@ -22,8 +22,8 @@ USAGE:
 
 -}
 
-import Anim exposing (Position, defaultConfig)
-import Anim.Sub exposing (Model, animateTo, animateToX, animateToY, getPosition, init, step, subscriptions, transform)
+import Anim exposing (Position)
+import Anim.Sub exposing (Model, animate, getPosition, init, step, subscriptions, transform)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -88,50 +88,108 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         MoveToCorner ->
+            let
+                animation =
+                    Anim.position "box" { x = 100, y = 100 }
+                        |> Anim.pixelsPerSecond 200.0
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateTo "box" (Position 100 100) model.animations
+                | animations = animate animation model.animations
               }
             , Cmd.none
             )
 
         MoveToCenter ->
+            let
+                animation =
+                    Anim.position "box" { x = 225, y = 175 }
+                        |> Anim.pixelsPerSecond 200.0
+                        |> Anim.easeInOut
+            in
             ( { model
-                | animations = animateTo "box" (Position 225 175) model.animations
+                | animations = animate animation model.animations
               }
             , Cmd.none
             )
 
         MoveLeft ->
+            let
+                currentPos =
+                    getPosition "box" model.animations
+                        |> Maybe.withDefault { x = 0, y = 0 }
+
+                animation =
+                    Anim.position "box" { x = 0, y = currentPos.y }
+                        |> Anim.pixelsPerSecond 300.0
+                        |> Anim.easeIn
+            in
             ( { model
-                | animations = animateToX "box" 0 model.animations
+                | animations = animate animation model.animations
               }
             , Cmd.none
             )
 
         MoveRight ->
+            let
+                currentPos =
+                    getPosition "box" model.animations
+                        |> Maybe.withDefault { x = 0, y = 0 }
+
+                animation =
+                    Anim.position "box" { x = 450, y = currentPos.y }
+                        |> Anim.pixelsPerSecond 300.0
+                        |> Anim.easeIn
+            in
             ( { model
-                | animations = animateToX "box" 450 model.animations -- 500px container - 50px box = 450px for right edge
+                | animations = animate animation model.animations
               }
             , Cmd.none
             )
 
         MoveUp ->
+            let
+                currentPos =
+                    getPosition "box" model.animations
+                        |> Maybe.withDefault { x = 0, y = 0 }
+
+                animation =
+                    Anim.position "box" { x = currentPos.x, y = 0 }
+                        |> Anim.pixelsPerSecond 250.0
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateToY "box" 0 model.animations
+                | animations = animate animation model.animations
               }
             , Cmd.none
             )
 
         MoveDown ->
+            let
+                currentPos =
+                    getPosition "box" model.animations
+                        |> Maybe.withDefault { x = 0, y = 0 }
+
+                animation =
+                    Anim.position "box" { x = currentPos.x, y = 350 }
+                        |> Anim.pixelsPerSecond 250.0
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateToY "box" 350 model.animations -- 400px container - 50px box = 350px for bottom edge
+                | animations = animate animation model.animations
               }
             , Cmd.none
             )
 
         StopAnimation ->
+            let
+                animation =
+                    Anim.position "box" { x = 0, y = 0 }
+                        |> Anim.pixelsPerSecond 400.0
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateTo "box" (Position 0 0) model.animations
+                | animations = animate animation model.animations
               }
             , Cmd.none
             )

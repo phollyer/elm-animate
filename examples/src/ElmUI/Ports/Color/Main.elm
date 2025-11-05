@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim exposing (ColorValue(..), defaultConfig)
-import Anim.Ports exposing (Model, animateBackgroundColor, encodeAnimationCommand, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
+import Anim exposing (ColorValue(..), easeInOut)
+import Anim.Ports exposing (Model, animate, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -100,13 +100,18 @@ update msg model =
     case msg of
         ChangeToBlue ->
             let
+                animation =
+                    Anim.backgroundColor "box" (Hex "#3498db")
+                        |> Anim.backgroundColorDuration 1000
+                        |> easeInOut
+
                 ( newModel, maybeCommand ) =
-                    animateBackgroundColor "box" (Hex "#3498db") model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , sendAnimationCommand animateElement command
                     )
 
                 Nothing ->
@@ -114,13 +119,18 @@ update msg model =
 
         ChangeToGreen ->
             let
+                animation =
+                    Anim.backgroundColor "box" (Hex "#2ecc71")
+                        |> Anim.backgroundColorDuration 1000
+                        |> easeInOut
+
                 ( newModel, maybeCommand ) =
-                    animateBackgroundColor "box" (Hex "#2ecc71") model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , sendAnimationCommand animateElement command
                     )
 
                 Nothing ->
@@ -128,13 +138,18 @@ update msg model =
 
         ChangeToOrange ->
             let
+                animation =
+                    Anim.backgroundColor "box" (Hex "#f39c12")
+                        |> Anim.backgroundColorDuration 1000
+                        |> easeInOut
+
                 ( newModel, maybeCommand ) =
-                    animateBackgroundColor "box" (Hex "#f39c12") model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , sendAnimationCommand animateElement command
                     )
 
                 Nothing ->
@@ -142,13 +157,18 @@ update msg model =
 
         ChangeToRed ->
             let
+                animation =
+                    Anim.backgroundColor "box" (Hex "#e74c3c")
+                        |> Anim.backgroundColorDuration 1000
+                        |> easeInOut
+
                 ( newModel, maybeCommand ) =
-                    animateBackgroundColor "box" (Hex "#e74c3c") model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , sendAnimationCommand animateElement command
                     )
 
                 Nothing ->
@@ -156,13 +176,18 @@ update msg model =
 
         ChangeToPurple ->
             let
+                animation =
+                    Anim.backgroundColor "box" (Hex "#9b59b6")
+                        |> Anim.backgroundColorDuration 1000
+                        |> easeInOut
+
                 ( newModel, maybeCommand ) =
-                    animateBackgroundColor "box" (Hex "#9b59b6") model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , sendAnimationCommand animateElement command
                     )
 
                 Nothing ->
@@ -170,13 +195,18 @@ update msg model =
 
         ResetColor ->
             let
+                animation =
+                    Anim.backgroundColor "box" (Hex "#95a5a6")
+                        |> Anim.backgroundColorDuration 1000
+                        |> easeInOut
+
                 ( newModel, maybeCommand ) =
-                    animateBackgroundColor "box" (Hex "#95a5a6") model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , sendAnimationCommand animateElement command
                     )
 
                 Nothing ->

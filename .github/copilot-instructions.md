@@ -32,6 +32,12 @@ elm make src/HTML/SmoothMoveScroll/Basic.elm --output=../index.html  # ❌ NEVER
 
 If you accidentally overwrite a dashboard file, it must be restored manually from git or recreated.
 
+## ⚠️ CRITICAL REFACTORING RULES ⚠️
+
+- **Never** account for backward compatibility unless explicitly instructed by the user
+- **Always** remove deprecated functions and comments when refactoring
+
+
 ## Project Overview
 This is an Elm 0.19 package that provides multiple animation approaches for smooth DOM element movement. The package offers 4 different animation systems, each optimized for different use cases and performance requirements. The core architecture separates public APIs from internal animation logic (`Internal/AnimationCore.elm`).
 

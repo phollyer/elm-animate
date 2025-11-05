@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim exposing (ColorValue(..), defaultConfig)
-import Anim.CSS exposing (Model, animateBackgroundColor, init, onTransitionEnd, styleProperties, transitionStyles)
+import Anim exposing (ColorValue(..))
+import Anim.CSS exposing (Model, animate, init, onTransitionEnd, styleProperties, transitionStyles)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -47,6 +47,7 @@ main =
 
 type alias Model =
     { animations : Anim.CSS.Model
+    , activeAnimation : Maybe Anim.Animation
     }
 
 
@@ -57,6 +58,7 @@ type alias Model =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations = Anim.CSS.init
+      , activeAnimation = Nothing
       }
     , Cmd.none
     )
@@ -80,49 +82,91 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ChangeToBlue ->
+            let
+                animation =
+                    Anim.backgroundColor "box" (Hex "#3498db")
+                        |> Anim.backgroundColorDuration 600
+                        |> Anim.easeInOut
+            in
             ( { model
-                | animations = animateBackgroundColor "box" (Hex "#3498db") model.animations
+                | animations = animate animation model.animations
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         ChangeToGreen ->
+            let
+                animation =
+                    Anim.backgroundColor "box" (Hex "#2ecc71")
+                        |> Anim.backgroundColorDuration 600
+                        |> Anim.easeInOut
+            in
             ( { model
-                | animations = animateBackgroundColor "box" (Hex "#2ecc71") model.animations
+                | animations = animate animation model.animations
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         ChangeToOrange ->
+            let
+                animation =
+                    Anim.backgroundColor "box" (Hex "#f39c12")
+                        |> Anim.backgroundColorDuration 600
+                        |> Anim.easeInOut
+            in
             ( { model
-                | animations = animateBackgroundColor "box" (Hex "#f39c12") model.animations
+                | animations = animate animation model.animations
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         ChangeToRed ->
+            let
+                animation =
+                    Anim.backgroundColor "box" (Hex "#e74c3c")
+                        |> Anim.backgroundColorDuration 600
+                        |> Anim.easeInOut
+            in
             ( { model
-                | animations = animateBackgroundColor "box" (Hex "#e74c3c") model.animations
+                | animations = animate animation model.animations
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         ChangeToPurple ->
+            let
+                animation =
+                    Anim.backgroundColor "box" (Hex "#9b59b6")
+                        |> Anim.backgroundColorDuration 600
+                        |> Anim.easeInOut
+            in
             ( { model
-                | animations = animateBackgroundColor "box" (Hex "#9b59b6") model.animations
+                | animations = animate animation model.animations
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         ResetColor ->
+            let
+                animation =
+                    Anim.backgroundColor "box" (Hex "#95a5a6")
+                        |> Anim.backgroundColorDuration 600
+                        |> Anim.easeInOut
+            in
             ( { model
-                | animations = animateBackgroundColor "box" (Hex "#95a5a6") model.animations
+                | animations = animate animation model.animations
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         AnimationComplete ->
-            ( model, Cmd.none )
+            ( { model | activeAnimation = Nothing }, Cmd.none )
 
 
 
@@ -197,7 +241,13 @@ viewContent model =
                    )
                 ++ [ htmlAttribute
                         (Html.Attributes.style "transition"
-                            (transitionStyles "box" model.animations)
+                            (case model.activeAnimation of
+                                Just animation ->
+                                    transitionStyles animation
+
+                                Nothing ->
+                                    "none"
+                            )
                         )
                    , htmlAttribute (onTransitionEnd AnimationComplete)
                    ]

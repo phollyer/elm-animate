@@ -5206,7 +5206,7 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$ElmUI$CSS$Color$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{animations: $author$project$Anim$CSS$init},
+		{activeAnimation: $elm$core$Maybe$Nothing, animations: $author$project$Anim$CSS$init},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -5216,9 +5216,6 @@ var $author$project$ElmUI$CSS$Color$Main$subscriptions = function (_v0) {
 };
 var $author$project$Anim$Hex = function (a) {
 	return {$: 'Hex', a: a};
-};
-var $author$project$Anim$ToBackgroundColor = function (a) {
-	return {$: 'ToBackgroundColor', a: a};
 };
 var $elm$core$List$filter = F2(
 	function (isGood, list) {
@@ -5263,6 +5260,10 @@ var $elm$core$Dict$get = F2(
 			}
 		}
 	});
+var $author$project$Anim$getAnimationData = function (_v0) {
+	var data = _v0.a;
+	return data;
+};
 var $author$project$Anim$CSS$getSpecificTargetType = function (target) {
 	switch (target.$) {
 		case 'ToPosition':
@@ -5441,13 +5442,16 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
-var $author$project$Anim$CSS$animate = F3(
-	function (elementId, target, _v0) {
+var $author$project$Anim$CSS$animate = F2(
+	function (animation, _v0) {
 		var animations = _v0.a;
+		var animationData = $author$project$Anim$getAnimationData(animation);
+		var elementId = animationData.elementId;
 		var currentTargets = A2(
 			$elm$core$Maybe$withDefault,
 			_List_Nil,
 			A2($elm$core$Dict$get, elementId, animations));
+		var target = animationData.target;
 		var newTargets = $author$project$Anim$CSS$isTransformTarget(target) ? A2(
 			$elm$core$List$cons,
 			target,
@@ -5472,91 +5476,161 @@ var $author$project$Anim$CSS$animate = F3(
 		return $author$project$Anim$CSS$Model(
 			A3($elm$core$Dict$insert, elementId, newTargets, animations));
 	});
-var $author$project$Anim$CSS$animateBackgroundColor = F3(
-	function (elementId, color, model) {
-		return A3(
-			$author$project$Anim$CSS$animate,
-			elementId,
-			$author$project$Anim$ToBackgroundColor(color),
-			model);
+var $author$project$Anim$BackgroundColorBuilder = F2(
+	function (a, b) {
+		return {$: 'BackgroundColorBuilder', a: a, b: b};
 	});
+var $author$project$Anim$backgroundColor = F2(
+	function (elementId, value) {
+		return A2($author$project$Anim$BackgroundColorBuilder, elementId, value);
+	});
+var $author$project$Anim$Animation = function (a) {
+	return {$: 'Animation', a: a};
+};
+var $author$project$Anim$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
+var $author$project$Anim$EaseOut = {$: 'EaseOut'};
+var $author$project$Anim$EasePreset = function (a) {
+	return {$: 'EasePreset', a: a};
+};
+var $author$project$Anim$ToBackgroundColor = function (a) {
+	return {$: 'ToBackgroundColor', a: a};
+};
+var $author$project$Anim$backgroundColorDuration = F2(
+	function (ms, _v0) {
+		var elementId = _v0.a;
+		var value = _v0.b;
+		return $author$project$Anim$Animation(
+			{
+				delayMs: 0,
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
+				elementId: elementId,
+				target: $author$project$Anim$ToBackgroundColor(value),
+				timing: $author$project$Anim$Duration(ms)
+			});
+	});
+var $author$project$Anim$EaseInOut = {$: 'EaseInOut'};
+var $author$project$Anim$easeInOut = function (_v0) {
+	var data = _v0.a;
+	return $author$project$Anim$Animation(
+		_Utils_update(
+			data,
+			{
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseInOut)
+			}));
+};
 var $author$project$ElmUI$CSS$Color$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'ChangeToBlue':
+				var animation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$backgroundColorDuration,
+						600,
+						A2(
+							$author$project$Anim$backgroundColor,
+							'box',
+							$author$project$Anim$Hex('#3498db'))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$CSS$animateBackgroundColor,
-								'box',
-								$author$project$Anim$Hex('#3498db'),
-								model.animations)
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'ChangeToGreen':
+				var animation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$backgroundColorDuration,
+						600,
+						A2(
+							$author$project$Anim$backgroundColor,
+							'box',
+							$author$project$Anim$Hex('#2ecc71'))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$CSS$animateBackgroundColor,
-								'box',
-								$author$project$Anim$Hex('#2ecc71'),
-								model.animations)
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'ChangeToOrange':
+				var animation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$backgroundColorDuration,
+						600,
+						A2(
+							$author$project$Anim$backgroundColor,
+							'box',
+							$author$project$Anim$Hex('#f39c12'))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$CSS$animateBackgroundColor,
-								'box',
-								$author$project$Anim$Hex('#f39c12'),
-								model.animations)
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'ChangeToRed':
+				var animation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$backgroundColorDuration,
+						600,
+						A2(
+							$author$project$Anim$backgroundColor,
+							'box',
+							$author$project$Anim$Hex('#e74c3c'))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$CSS$animateBackgroundColor,
-								'box',
-								$author$project$Anim$Hex('#e74c3c'),
-								model.animations)
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'ChangeToPurple':
+				var animation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$backgroundColorDuration,
+						600,
+						A2(
+							$author$project$Anim$backgroundColor,
+							'box',
+							$author$project$Anim$Hex('#9b59b6'))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$CSS$animateBackgroundColor,
-								'box',
-								$author$project$Anim$Hex('#9b59b6'),
-								model.animations)
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'ResetColor':
+				var animation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$backgroundColorDuration,
+						600,
+						A2(
+							$author$project$Anim$backgroundColor,
+							'box',
+							$author$project$Anim$Hex('#95a5a6'))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$CSS$animateBackgroundColor,
-								'box',
-								$author$project$Anim$Hex('#95a5a6'),
-								model.animations)
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			default:
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{activeAnimation: $elm$core$Maybe$Nothing}),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Common$UI$Basic = {$: 'Basic'};
@@ -11933,17 +12007,41 @@ var $author$project$Anim$CSS$styleProperties = F2(
 		}
 	});
 var $author$project$Common$Colors$textMedium = A3($mdgriffith$elm_ui$Element$rgb255, 71, 85, 105);
-var $author$project$Anim$Duration = function (a) {
-	return {$: 'Duration', a: a};
+var $author$project$Anim$getTiming = function (_v0) {
+	var data = _v0.a;
+	return data.timing;
 };
-var $author$project$Anim$EaseOut = {$: 'EaseOut'};
-var $author$project$Anim$EasePreset = function (a) {
-	return {$: 'EasePreset', a: a};
-};
-var $author$project$Anim$defaultConfig = {
-	easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
-	timing: $author$project$Anim$Duration(400)
-};
+var $author$project$Anim$Internal$getAnimationTiming = $author$project$Anim$getTiming;
+var $author$project$Anim$Internal$animationToMilliseconds = F2(
+	function (animation, distance) {
+		var timing = $author$project$Anim$Internal$getAnimationTiming(animation);
+		switch (timing.$) {
+			case 'Duration':
+				var milliseconds = timing.a;
+				return milliseconds;
+			case 'PixelsPerSecond':
+				var pps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / pps);
+			case 'DegreesPerSecond':
+				var dps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / dps);
+			case 'ColorStepsPerSecond':
+				var cps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / cps);
+			case 'OpacityPerSecond':
+				var ops = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / ops);
+			case 'ScalePerSecond':
+				var sps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / sps);
+			case 'DimensionsPerSecond':
+				var dps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / dps);
+			default:
+				var fps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / fps);
+		}
+	});
 var $author$project$Anim$Internal$easingToString = function (easing) {
 	switch (easing.$) {
 		case 'EaseString':
@@ -11965,24 +12063,12 @@ var $author$project$Anim$Internal$easingToString = function (easing) {
 			return 'ease-out';
 	}
 };
-var $author$project$Anim$Internal$timingToMilliseconds = F2(
-	function (timing, distance) {
-		if (timing.$ === 'Speed') {
-			var pixelsPerSecond = timing.a;
-			return (distance / pixelsPerSecond) * 1000;
-		} else {
-			var milliseconds = timing.a;
-			return milliseconds;
-		}
-	});
-var $author$project$Anim$CSS$transitionStyles = F2(
-	function (_v0, _v1) {
-		var config = $author$project$Anim$defaultConfig;
-		var duration = $author$project$Anim$Internal$timingToMilliseconds(config.timing);
-		var easing = $author$project$Anim$Internal$easingToString(config.easing);
-		return 'all ' + ($elm$core$String$fromFloat(
-			duration(1.0)) + ('ms ' + easing));
-	});
+var $author$project$Anim$CSS$transitionStyles = function (animation) {
+	var duration = A2($author$project$Anim$Internal$animationToMilliseconds, animation, 1.0);
+	var animationData = $author$project$Anim$getAnimationData(animation);
+	var easing = $author$project$Anim$Internal$easingToString(animationData.easing);
+	return 'all ' + ($elm$core$String$fromFloat(duration) + ('ms ' + easing));
+};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$core$Basics$always = F2(
 	function (a, _v0) {
@@ -12127,7 +12213,15 @@ var $author$project$ElmUI$CSS$Color$Main$viewContent = function (model) {
 								A2(
 									$elm$html$Html$Attributes$style,
 									'transition',
-									A2($author$project$Anim$CSS$transitionStyles, 'box', model.animations))),
+									function () {
+										var _v1 = model.activeAnimation;
+										if (_v1.$ === 'Just') {
+											var animation = _v1.a;
+											return $author$project$Anim$CSS$transitionStyles(animation);
+										} else {
+											return 'none';
+										}
+									}())),
 								$mdgriffith$elm_ui$Element$htmlAttribute(
 								$author$project$Anim$CSS$onTransitionEnd($author$project$ElmUI$CSS$Color$Main$AnimationComplete))
 							]))),

@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim exposing (ColorValue(..), defaultConfig)
-import Anim.Sub exposing (Model, animateBackgroundColor, init, step, styleProperties, subscriptions)
+import Anim exposing (ColorValue(..), easeInOut)
+import Anim.Sub exposing (Model, init, step, styleProperties, subscriptions)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -81,42 +81,66 @@ update msg model =
     case msg of
         ChangeToBlue ->
             ( { model
-                | animations = animateBackgroundColor "box" (Hex "#3498db") model.animations
+                | animations =
+                    Anim.backgroundColor "box" (Hex "#3498db")
+                        |> Anim.backgroundColorDuration 1000
+                        |> easeInOut
+                        |> (\animation -> Anim.Sub.animate animation model.animations)
               }
             , Cmd.none
             )
 
         ChangeToGreen ->
             ( { model
-                | animations = animateBackgroundColor "box" (Hex "#2ecc71") model.animations
+                | animations =
+                    Anim.backgroundColor "box" (Hex "#2ecc71")
+                        |> Anim.backgroundColorDuration 1000
+                        |> easeInOut
+                        |> (\animation -> Anim.Sub.animate animation model.animations)
               }
             , Cmd.none
             )
 
         ChangeToOrange ->
             ( { model
-                | animations = animateBackgroundColor "box" (Hex "#f39c12") model.animations
+                | animations =
+                    Anim.backgroundColor "box" (Hex "#f39c12")
+                        |> Anim.backgroundColorDuration 1000
+                        |> easeInOut
+                        |> (\animation -> Anim.Sub.animate animation model.animations)
               }
             , Cmd.none
             )
 
         ChangeToRed ->
             ( { model
-                | animations = animateBackgroundColor "box" (Hex "#e74c3c") model.animations
+                | animations =
+                    Anim.backgroundColor "box" (Hex "#e74c3c")
+                        |> Anim.backgroundColorDuration 1000
+                        |> easeInOut
+                        |> (\animation -> Anim.Sub.animate animation model.animations)
               }
             , Cmd.none
             )
 
         ChangeToPurple ->
             ( { model
-                | animations = animateBackgroundColor "box" (Hex "#9b59b6") model.animations
+                | animations =
+                    Anim.backgroundColor "box" (Hex "#9b59b6")
+                        |> Anim.backgroundColorDuration 1000
+                        |> easeInOut
+                        |> (\animation -> Anim.Sub.animate animation model.animations)
               }
             , Cmd.none
             )
 
         ResetColor ->
             ( { model
-                | animations = animateBackgroundColor "box" (Hex "#95a5a6") model.animations
+                | animations =
+                    Anim.backgroundColor "box" (Hex "#95a5a6")
+                        |> Anim.backgroundColorDuration 1000
+                        |> easeInOut
+                        |> (\animation -> Anim.Sub.animate animation model.animations)
               }
             , Cmd.none
             )

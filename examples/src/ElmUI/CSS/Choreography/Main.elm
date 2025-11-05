@@ -26,8 +26,8 @@ USAGE EXAMPLES:
 
 -- Common UI imports
 
-import Anim exposing (Position, defaultConfig)
-import Anim.CSS exposing (Model, animatePosition, animateToX, animateToY, getCurrentPosition, init, onTransitionEnd, styleProperties, transitionStyles)
+import Anim exposing (Position)
+import Anim.CSS exposing (Model, animate, getCurrentPosition, init, onTransitionEnd, styleProperties, transitionStyles)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -61,6 +61,7 @@ main =
 type alias Model =
     { animations : Anim.CSS.Model
     , isAnimating : Bool
+    , activeAnimation : Maybe Anim.Animation
     }
 
 
@@ -72,6 +73,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations = Anim.CSS.init
       , isAnimating = False
+      , activeAnimation = Nothing
       }
     , Cmd.none
     )

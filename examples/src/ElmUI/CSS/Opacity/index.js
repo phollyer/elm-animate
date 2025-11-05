@@ -5214,9 +5214,6 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$ElmUI$CSS$Opacity$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
 };
-var $author$project$Anim$ToOpacity = function (a) {
-	return {$: 'ToOpacity', a: a};
-};
 var $elm$core$List$filter = F2(
 	function (isGood, list) {
 		return A3(
@@ -5260,6 +5257,10 @@ var $elm$core$Dict$get = F2(
 			}
 		}
 	});
+var $author$project$Anim$getAnimationData = function (_v0) {
+	var data = _v0.a;
+	return data;
+};
 var $author$project$Anim$CSS$getSpecificTargetType = function (target) {
 	switch (target.$) {
 		case 'ToPosition':
@@ -5438,13 +5439,16 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
-var $author$project$Anim$CSS$animate = F3(
-	function (elementId, target, _v0) {
+var $author$project$Anim$CSS$animate = F2(
+	function (animation, _v0) {
 		var animations = _v0.a;
+		var animationData = $author$project$Anim$getAnimationData(animation);
+		var elementId = animationData.elementId;
 		var currentTargets = A2(
 			$elm$core$Maybe$withDefault,
 			_List_Nil,
 			A2($elm$core$Dict$get, elementId, animations));
+		var target = animationData.target;
 		var newTargets = $author$project$Anim$CSS$isTransformTarget(target) ? A2(
 			$elm$core$List$cons,
 			target,
@@ -5469,44 +5473,114 @@ var $author$project$Anim$CSS$animate = F3(
 		return $author$project$Anim$CSS$Model(
 			A3($elm$core$Dict$insert, elementId, newTargets, animations));
 	});
-var $author$project$Anim$CSS$animateOpacity = F3(
-	function (elementId, opacity, model) {
-		return A3(
-			$author$project$Anim$CSS$animate,
-			elementId,
-			$author$project$Anim$ToOpacity(opacity),
-			model);
-	});
+var $author$project$Anim$Animation = function (a) {
+	return {$: 'Animation', a: a};
+};
+var $author$project$Anim$EaseIn = {$: 'EaseIn'};
+var $author$project$Anim$EasePreset = function (a) {
+	return {$: 'EasePreset', a: a};
+};
+var $author$project$Anim$easeIn = function (_v0) {
+	var data = _v0.a;
+	return $author$project$Anim$Animation(
+		_Utils_update(
+			data,
+			{
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseIn)
+			}));
+};
+var $author$project$Anim$EaseInOut = {$: 'EaseInOut'};
+var $author$project$Anim$easeInOut = function (_v0) {
+	var data = _v0.a;
+	return $author$project$Anim$Animation(
+		_Utils_update(
+			data,
+			{
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseInOut)
+			}));
+};
+var $author$project$Anim$EaseOut = {$: 'EaseOut'};
+var $author$project$Anim$easeOut = function (_v0) {
+	var data = _v0.a;
+	return $author$project$Anim$Animation(
+		_Utils_update(
+			data,
+			{
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut)
+			}));
+};
 var $elm$core$Basics$not = _Basics_not;
+var $author$project$Anim$OpacityBuilder = F2(
+	function (a, b) {
+		return {$: 'OpacityBuilder', a: a, b: b};
+	});
+var $author$project$Anim$opacity = F2(
+	function (elementId, value) {
+		return A2($author$project$Anim$OpacityBuilder, elementId, value);
+	});
+var $author$project$Anim$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
+var $author$project$Anim$ToOpacity = function (a) {
+	return {$: 'ToOpacity', a: a};
+};
+var $author$project$Anim$opacityDuration = F2(
+	function (ms, _v0) {
+		var elementId = _v0.a;
+		var value = _v0.b;
+		return $author$project$Anim$Animation(
+			{
+				delayMs: 0,
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
+				elementId: elementId,
+				target: $author$project$Anim$ToOpacity(value),
+				timing: $author$project$Anim$Duration(ms)
+			});
+	});
 var $author$project$ElmUI$CSS$Opacity$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'FadeIn':
+				var animation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$opacityDuration,
+						600,
+						A2($author$project$Anim$opacity, 'box', 1.0)));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3($author$project$Anim$CSS$animateOpacity, 'box', 1.0, model.animations),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations),
 							isVisible: true
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'FadeOut':
+				var animation = $author$project$Anim$easeIn(
+					A2(
+						$author$project$Anim$opacityDuration,
+						400,
+						A2($author$project$Anim$opacity, 'box', 0.0)));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3($author$project$Anim$CSS$animateOpacity, 'box', 0.0, model.animations),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations),
 							isVisible: false
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'FadeToggle':
 				var newVisible = !model.isVisible;
 				var newOpacity = model.isVisible ? 0.0 : 1.0;
+				var animation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$opacityDuration,
+						500,
+						A2($author$project$Anim$opacity, 'box', newOpacity)));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3($author$project$Anim$CSS$animateOpacity, 'box', newOpacity, model.animations),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations),
 							isVisible: newVisible
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -11732,56 +11806,6 @@ var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
 var $mdgriffith$elm_ui$Element$text = function (content) {
 	return $mdgriffith$elm_ui$Internal$Model$Text(content);
 };
-var $author$project$Anim$Duration = function (a) {
-	return {$: 'Duration', a: a};
-};
-var $author$project$Anim$EaseOut = {$: 'EaseOut'};
-var $author$project$Anim$EasePreset = function (a) {
-	return {$: 'EasePreset', a: a};
-};
-var $author$project$Anim$defaultConfig = {
-	easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
-	timing: $author$project$Anim$Duration(400)
-};
-var $author$project$Anim$Internal$easingToString = function (easing) {
-	switch (easing.$) {
-		case 'EaseString':
-			var string = easing.a;
-			return string;
-		case 'EasePreset':
-			var preset = easing.a;
-			switch (preset.$) {
-				case 'Linear':
-					return 'linear';
-				case 'EaseOut':
-					return 'ease-out';
-				case 'EaseIn':
-					return 'ease-in';
-				default:
-					return 'ease-in-out';
-			}
-		default:
-			return 'ease-out';
-	}
-};
-var $author$project$Anim$Internal$timingToMilliseconds = F2(
-	function (timing, distance) {
-		if (timing.$ === 'Speed') {
-			var pixelsPerSecond = timing.a;
-			return (distance / pixelsPerSecond) * 1000;
-		} else {
-			var milliseconds = timing.a;
-			return milliseconds;
-		}
-	});
-var $author$project$Anim$CSS$transitionStyles = F2(
-	function (_v0, _v1) {
-		var config = $author$project$Anim$defaultConfig;
-		var duration = $author$project$Anim$Internal$timingToMilliseconds(config.timing);
-		var easing = $author$project$Anim$Internal$easingToString(config.easing);
-		return 'all ' + ($elm$core$String$fromFloat(
-			duration(1.0)) + ('ms ' + easing));
-	});
 var $author$project$ElmUI$CSS$Opacity$Main$animatedBox = F4(
 	function (elementId, label, color, model) {
 		return A2(
@@ -11818,10 +11842,7 @@ var $author$project$ElmUI$CSS$Opacity$Main$animatedBox = F4(
 					_List_fromArray(
 						[
 							$mdgriffith$elm_ui$Element$htmlAttribute(
-							A2(
-								$elm$html$Html$Attributes$style,
-								'transition',
-								A2($author$project$Anim$CSS$transitionStyles, elementId, model.animations))),
+							A2($elm$html$Html$Attributes$style, 'transition', 'opacity 500ms ease-in-out')),
 							$mdgriffith$elm_ui$Element$htmlAttribute(
 							$author$project$Anim$CSS$onTransitionEnd($author$project$ElmUI$CSS$Opacity$Main$AnimationComplete))
 						]))),

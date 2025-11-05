@@ -5206,16 +5206,13 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$ElmUI$CSS$Scale$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{animations: $author$project$Anim$CSS$init},
+		{activeAnimation: $elm$core$Maybe$Nothing, animations: $author$project$Anim$CSS$init},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$ElmUI$CSS$Scale$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
-};
-var $author$project$Anim$ToScale = function (a) {
-	return {$: 'ToScale', a: a};
 };
 var $elm$core$List$filter = F2(
 	function (isGood, list) {
@@ -5260,6 +5257,10 @@ var $elm$core$Dict$get = F2(
 			}
 		}
 	});
+var $author$project$Anim$getAnimationData = function (_v0) {
+	var data = _v0.a;
+	return data;
+};
 var $author$project$Anim$CSS$getSpecificTargetType = function (target) {
 	switch (target.$) {
 		case 'ToPosition':
@@ -5438,13 +5439,16 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
-var $author$project$Anim$CSS$animate = F3(
-	function (elementId, target, _v0) {
+var $author$project$Anim$CSS$animate = F2(
+	function (animation, _v0) {
 		var animations = _v0.a;
+		var animationData = $author$project$Anim$getAnimationData(animation);
+		var elementId = animationData.elementId;
 		var currentTargets = A2(
 			$elm$core$Maybe$withDefault,
 			_List_Nil,
 			A2($elm$core$Dict$get, elementId, animations));
+		var target = animationData.target;
 		var newTargets = $author$project$Anim$CSS$isTransformTarget(target) ? A2(
 			$elm$core$List$cons,
 			target,
@@ -5469,79 +5473,153 @@ var $author$project$Anim$CSS$animate = F3(
 		return $author$project$Anim$CSS$Model(
 			A3($elm$core$Dict$insert, elementId, newTargets, animations));
 	});
-var $author$project$Anim$CSS$animateScale = F3(
-	function (elementId, scale, model) {
-		return A3(
-			$author$project$Anim$CSS$animate,
-			elementId,
-			$author$project$Anim$ToScale(scale),
-			model);
+var $author$project$Anim$Animation = function (a) {
+	return {$: 'Animation', a: a};
+};
+var $author$project$Anim$EaseInOut = {$: 'EaseInOut'};
+var $author$project$Anim$EasePreset = function (a) {
+	return {$: 'EasePreset', a: a};
+};
+var $author$project$Anim$easeInOut = function (_v0) {
+	var data = _v0.a;
+	return $author$project$Anim$Animation(
+		_Utils_update(
+			data,
+			{
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseInOut)
+			}));
+};
+var $author$project$Anim$EaseOut = {$: 'EaseOut'};
+var $author$project$Anim$easeOut = function (_v0) {
+	var data = _v0.a;
+	return $author$project$Anim$Animation(
+		_Utils_update(
+			data,
+			{
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut)
+			}));
+};
+var $author$project$Anim$ScaleBuilder = F2(
+	function (a, b) {
+		return {$: 'ScaleBuilder', a: a, b: b};
+	});
+var $author$project$Anim$scale = F2(
+	function (elementId, value) {
+		return A2($author$project$Anim$ScaleBuilder, elementId, value);
+	});
+var $author$project$Anim$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
+var $author$project$Anim$ToScale = function (a) {
+	return {$: 'ToScale', a: a};
+};
+var $author$project$Anim$scaleDuration = F2(
+	function (ms, _v0) {
+		var elementId = _v0.a;
+		var value = _v0.b;
+		return $author$project$Anim$Animation(
+			{
+				delayMs: 0,
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
+				elementId: elementId,
+				target: $author$project$Anim$ToScale(value),
+				timing: $author$project$Anim$Duration(ms)
+			});
 	});
 var $author$project$ElmUI$CSS$Scale$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'ScaleUp':
+				var animation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$scaleDuration,
+						400,
+						A2(
+							$author$project$Anim$scale,
+							'box',
+							{x: 1.5, y: 1.5})));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$CSS$animateScale,
-								'box',
-								{x: 1.5, y: 1.5},
-								model.animations)
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'ScaleDown':
+				var animation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$scaleDuration,
+						400,
+						A2(
+							$author$project$Anim$scale,
+							'box',
+							{x: 0.7, y: 0.7})));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$CSS$animateScale,
-								'box',
-								{x: 0.7, y: 0.7},
-								model.animations)
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'ScaleReset':
+				var animation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$scaleDuration,
+						600,
+						A2(
+							$author$project$Anim$scale,
+							'box',
+							{x: 1.0, y: 1.0})));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$CSS$animateScale,
-								'box',
-								{x: 1.0, y: 1.0},
-								model.animations)
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'ScaleWide':
+				var animation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$scaleDuration,
+						500,
+						A2(
+							$author$project$Anim$scale,
+							'box',
+							{x: 1.8, y: 0.6})));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$CSS$animateScale,
-								'box',
-								{x: 1.8, y: 0.6},
-								model.animations)
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'ScaleTall':
+				var animation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$scaleDuration,
+						500,
+						A2(
+							$author$project$Anim$scale,
+							'box',
+							{x: 0.6, y: 1.8})));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$CSS$animateScale,
-								'box',
-								{x: 0.6, y: 1.8},
-								model.animations)
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			default:
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{activeAnimation: $elm$core$Maybe$Nothing}),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Common$UI$Basic = {$: 'Basic'};
@@ -11766,17 +11844,41 @@ var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
 var $mdgriffith$elm_ui$Element$text = function (content) {
 	return $mdgriffith$elm_ui$Internal$Model$Text(content);
 };
-var $author$project$Anim$Duration = function (a) {
-	return {$: 'Duration', a: a};
+var $author$project$Anim$getTiming = function (_v0) {
+	var data = _v0.a;
+	return data.timing;
 };
-var $author$project$Anim$EaseOut = {$: 'EaseOut'};
-var $author$project$Anim$EasePreset = function (a) {
-	return {$: 'EasePreset', a: a};
-};
-var $author$project$Anim$defaultConfig = {
-	easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
-	timing: $author$project$Anim$Duration(400)
-};
+var $author$project$Anim$Internal$getAnimationTiming = $author$project$Anim$getTiming;
+var $author$project$Anim$Internal$animationToMilliseconds = F2(
+	function (animation, distance) {
+		var timing = $author$project$Anim$Internal$getAnimationTiming(animation);
+		switch (timing.$) {
+			case 'Duration':
+				var milliseconds = timing.a;
+				return milliseconds;
+			case 'PixelsPerSecond':
+				var pps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / pps);
+			case 'DegreesPerSecond':
+				var dps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / dps);
+			case 'ColorStepsPerSecond':
+				var cps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / cps);
+			case 'OpacityPerSecond':
+				var ops = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / ops);
+			case 'ScalePerSecond':
+				var sps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / sps);
+			case 'DimensionsPerSecond':
+				var dps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / dps);
+			default:
+				var fps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / fps);
+		}
+	});
 var $author$project$Anim$Internal$easingToString = function (easing) {
 	switch (easing.$) {
 		case 'EaseString':
@@ -11798,24 +11900,12 @@ var $author$project$Anim$Internal$easingToString = function (easing) {
 			return 'ease-out';
 	}
 };
-var $author$project$Anim$Internal$timingToMilliseconds = F2(
-	function (timing, distance) {
-		if (timing.$ === 'Speed') {
-			var pixelsPerSecond = timing.a;
-			return (distance / pixelsPerSecond) * 1000;
-		} else {
-			var milliseconds = timing.a;
-			return milliseconds;
-		}
-	});
-var $author$project$Anim$CSS$transitionStyles = F2(
-	function (_v0, _v1) {
-		var config = $author$project$Anim$defaultConfig;
-		var duration = $author$project$Anim$Internal$timingToMilliseconds(config.timing);
-		var easing = $author$project$Anim$Internal$easingToString(config.easing);
-		return 'all ' + ($elm$core$String$fromFloat(
-			duration(1.0)) + ('ms ' + easing));
-	});
+var $author$project$Anim$CSS$transitionStyles = function (animation) {
+	var duration = A2($author$project$Anim$Internal$animationToMilliseconds, animation, 1.0);
+	var animationData = $author$project$Anim$getAnimationData(animation);
+	var easing = $author$project$Anim$Internal$easingToString(animationData.easing);
+	return 'all ' + ($elm$core$String$fromFloat(duration) + ('ms ' + easing));
+};
 var $author$project$ElmUI$CSS$Scale$Main$animatedBox = F4(
 	function (elementId, label, color, model) {
 		return A2(
@@ -11857,7 +11947,15 @@ var $author$project$ElmUI$CSS$Scale$Main$animatedBox = F4(
 							A2(
 								$elm$html$Html$Attributes$style,
 								'transition',
-								A2($author$project$Anim$CSS$transitionStyles, elementId, model.animations))),
+								function () {
+									var _v1 = model.activeAnimation;
+									if (_v1.$ === 'Just') {
+										var animation = _v1.a;
+										return $author$project$Anim$CSS$transitionStyles(animation);
+									} else {
+										return 'none';
+									}
+								}())),
 							$mdgriffith$elm_ui$Element$htmlAttribute(
 							$author$project$Anim$CSS$onTransitionEnd($author$project$ElmUI$CSS$Scale$Main$AnimationComplete))
 						]))),

@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim exposing (ScaleValue, defaultConfig)
-import Anim.Ports exposing (Model, animateScale, encodeAnimationCommand, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
+import Anim
+import Anim.Ports exposing (Model, animate, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -99,13 +99,18 @@ update msg model =
     case msg of
         ScaleUp ->
             let
+                animation =
+                    Anim.scale "box" { x = 1.3, y = 1.3 }
+                        |> Anim.scalePerSecond 2.0
+                        |> Anim.easeOut
+
                 ( newModel, maybeCommand ) =
-                    animateScale "box" { x = 1.5, y = 1.5 } model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , sendAnimationCommand animateElement command
                     )
 
                 Nothing ->
@@ -113,13 +118,18 @@ update msg model =
 
         ScaleDown ->
             let
+                animation =
+                    Anim.scale "box" { x = 0.7, y = 0.7 }
+                        |> Anim.scalePerSecond 3.0
+                        |> Anim.easeIn
+
                 ( newModel, maybeCommand ) =
-                    animateScale "box" { x = 0.7, y = 0.7 } model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , sendAnimationCommand animateElement command
                     )
 
                 Nothing ->
@@ -127,13 +137,18 @@ update msg model =
 
         ScaleReset ->
             let
+                animation =
+                    Anim.scale "box" { x = 1.0, y = 1.0 }
+                        |> Anim.scaleDuration 800
+                        |> Anim.easeInOut
+
                 ( newModel, maybeCommand ) =
-                    animateScale "box" { x = 1.0, y = 1.0 } model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , sendAnimationCommand animateElement command
                     )
 
                 Nothing ->
@@ -141,13 +156,18 @@ update msg model =
 
         ScaleWide ->
             let
+                animation =
+                    Anim.scale "box" { x = 2.0, y = 0.8 }
+                        |> Anim.scaleDuration 1200
+                        |> Anim.easeOut
+
                 ( newModel, maybeCommand ) =
-                    animateScale "box" { x = 1.8, y = 0.6 } model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , sendAnimationCommand animateElement command
                     )
 
                 Nothing ->
@@ -155,13 +175,18 @@ update msg model =
 
         ScaleTall ->
             let
+                animation =
+                    Anim.scale "box" { x = 0.6, y = 1.8 }
+                        |> Anim.scalePerSecond 1.5
+                        |> Anim.easeInOut
+
                 ( newModel, maybeCommand ) =
-                    animateScale "box" { x = 0.6, y = 1.8 } model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , sendAnimationCommand animateElement command
                     )
 
                 Nothing ->

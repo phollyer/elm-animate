@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim exposing (RotationValue, defaultConfig)
-import Anim.Ports exposing (Model, animateRotation, encodeAnimationCommand, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
+import Anim exposing (RotationValue, easeInOut)
+import Anim.Ports exposing (Model, animate, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -88,13 +88,18 @@ update msg model =
     case msg of
         Rotate45 ->
             let
+                animation =
+                    Anim.rotation "box" 45
+                        |> Anim.rotationDuration 1000
+                        |> easeInOut
+
                 ( newModel, maybeCommand ) =
-                    animateRotation "box" 45 model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , sendAnimationCommand animateElement command
                     )
 
                 Nothing ->
@@ -102,13 +107,18 @@ update msg model =
 
         Rotate90 ->
             let
+                animation =
+                    Anim.rotation "box" 90
+                        |> Anim.rotationDuration 1000
+                        |> easeInOut
+
                 ( newModel, maybeCommand ) =
-                    animateRotation "box" 90 model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , sendAnimationCommand animateElement command
                     )
 
                 Nothing ->
@@ -116,13 +126,18 @@ update msg model =
 
         Rotate180 ->
             let
+                animation =
+                    Anim.rotation "box" 180
+                        |> Anim.rotationDuration 1000
+                        |> easeInOut
+
                 ( newModel, maybeCommand ) =
-                    animateRotation "box" 180 model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , sendAnimationCommand animateElement command
                     )
 
                 Nothing ->
@@ -130,13 +145,18 @@ update msg model =
 
         RotateLeft ->
             let
+                animation =
+                    Anim.rotation "box" -90
+                        |> Anim.rotationDuration 1000
+                        |> easeInOut
+
                 ( newModel, maybeCommand ) =
-                    animateRotation "box" -90 model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , sendAnimationCommand animateElement command
                     )
 
                 Nothing ->
@@ -144,13 +164,18 @@ update msg model =
 
         RotateRight ->
             let
+                animation =
+                    Anim.rotation "box" 90
+                        |> Anim.rotationDuration 1000
+                        |> easeInOut
+
                 ( newModel, maybeCommand ) =
-                    animateRotation "box" 90 model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , sendAnimationCommand animateElement command
                     )
 
                 Nothing ->
@@ -158,13 +183,18 @@ update msg model =
 
         ResetRotation ->
             let
+                animation =
+                    Anim.rotation "box" 0
+                        |> Anim.rotationDuration 1000
+                        |> easeInOut
+
                 ( newModel, maybeCommand ) =
-                    animateRotation "box" 0 model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , sendAnimationCommand animateElement command
                     )
 
                 Nothing ->

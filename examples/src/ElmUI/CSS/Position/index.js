@@ -5206,20 +5206,13 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$ElmUI$CSS$Position$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{animations: $author$project$Anim$CSS$init, isAnimating: false},
+		{activeAnimation: $elm$core$Maybe$Nothing, animations: $author$project$Anim$CSS$init, isAnimating: false},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$ElmUI$CSS$Position$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
-};
-var $author$project$Anim$Position = F2(
-	function (x, y) {
-		return {x: x, y: y};
-	});
-var $author$project$Anim$ToPosition = function (a) {
-	return {$: 'ToPosition', a: a};
 };
 var $elm$core$List$filter = F2(
 	function (isGood, list) {
@@ -5264,6 +5257,10 @@ var $elm$core$Dict$get = F2(
 			}
 		}
 	});
+var $author$project$Anim$getAnimationData = function (_v0) {
+	var data = _v0.a;
+	return data;
+};
 var $author$project$Anim$CSS$getSpecificTargetType = function (target) {
 	switch (target.$) {
 		case 'ToPosition':
@@ -5442,13 +5439,16 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
-var $author$project$Anim$CSS$animate = F3(
-	function (elementId, target, _v0) {
+var $author$project$Anim$CSS$animate = F2(
+	function (animation, _v0) {
 		var animations = _v0.a;
+		var animationData = $author$project$Anim$getAnimationData(animation);
+		var elementId = animationData.elementId;
 		var currentTargets = A2(
 			$elm$core$Maybe$withDefault,
 			_List_Nil,
 			A2($elm$core$Dict$get, elementId, animations));
+		var target = animationData.target;
 		var newTargets = $author$project$Anim$CSS$isTransformTarget(target) ? A2(
 			$elm$core$List$cons,
 			target,
@@ -5473,14 +5473,61 @@ var $author$project$Anim$CSS$animate = F3(
 		return $author$project$Anim$CSS$Model(
 			A3($elm$core$Dict$insert, elementId, newTargets, animations));
 	});
-var $author$project$Anim$CSS$animatePosition = F3(
-	function (elementId, position, model) {
-		return A3(
-			$author$project$Anim$CSS$animate,
-			elementId,
-			$author$project$Anim$ToPosition(position),
-			model);
+var $author$project$Anim$Animation = function (a) {
+	return {$: 'Animation', a: a};
+};
+var $author$project$Anim$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
+var $author$project$Anim$EaseOut = {$: 'EaseOut'};
+var $author$project$Anim$EasePreset = function (a) {
+	return {$: 'EasePreset', a: a};
+};
+var $author$project$Anim$ToPosition = function (a) {
+	return {$: 'ToPosition', a: a};
+};
+var $author$project$Anim$duration = F2(
+	function (ms, _v0) {
+		var elementId = _v0.a;
+		var pos = _v0.b;
+		return $author$project$Anim$Animation(
+			{
+				delayMs: 0,
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
+				elementId: elementId,
+				target: $author$project$Anim$ToPosition(pos),
+				timing: $author$project$Anim$Duration(ms)
+			});
 	});
+var $author$project$Anim$EaseIn = {$: 'EaseIn'};
+var $author$project$Anim$easeIn = function (_v0) {
+	var data = _v0.a;
+	return $author$project$Anim$Animation(
+		_Utils_update(
+			data,
+			{
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseIn)
+			}));
+};
+var $author$project$Anim$EaseInOut = {$: 'EaseInOut'};
+var $author$project$Anim$easeInOut = function (_v0) {
+	var data = _v0.a;
+	return $author$project$Anim$Animation(
+		_Utils_update(
+			data,
+			{
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseInOut)
+			}));
+};
+var $author$project$Anim$easeOut = function (_v0) {
+	var data = _v0.a;
+	return $author$project$Anim$Animation(
+		_Utils_update(
+			data,
+			{
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut)
+			}));
+};
 var $author$project$Anim$CSS$extractPosition = function (target) {
 	if (target.$ === 'ToPosition') {
 		var position = target.a;
@@ -5531,97 +5578,144 @@ var $author$project$Anim$CSS$getCurrentPosition = F2(
 			return {x: 0, y: 0};
 		}
 	});
-var $author$project$Anim$CSS$animateToX = F3(
-	function (elementId, targetX, model) {
-		var currentPosition = A2($author$project$Anim$CSS$getCurrentPosition, elementId, model);
-		var newPosition = _Utils_update(
-			currentPosition,
-			{x: targetX});
-		return A3($author$project$Anim$CSS$animatePosition, elementId, newPosition, model);
+var $author$project$Anim$PositionBuilder = F2(
+	function (a, b) {
+		return {$: 'PositionBuilder', a: a, b: b};
 	});
-var $author$project$Anim$CSS$animateToY = F3(
-	function (elementId, targetY, model) {
-		var currentPosition = A2($author$project$Anim$CSS$getCurrentPosition, elementId, model);
-		var newPosition = _Utils_update(
-			currentPosition,
-			{y: targetY});
-		return A3($author$project$Anim$CSS$animatePosition, elementId, newPosition, model);
+var $author$project$Anim$position = F2(
+	function (elementId, pos) {
+		return A2($author$project$Anim$PositionBuilder, elementId, pos);
 	});
 var $author$project$ElmUI$CSS$Position$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'MoveToCorner':
+				var animation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$duration,
+						700,
+						A2(
+							$author$project$Anim$position,
+							'box',
+							{x: 100, y: 100})));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$CSS$animatePosition,
-								'box',
-								A2($author$project$Anim$Position, 100, 100),
-								model.animations),
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations),
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'MoveToCenter':
+				var animation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$duration,
+						700,
+						A2(
+							$author$project$Anim$position,
+							'box',
+							{x: 300, y: 200})));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$CSS$animatePosition,
-								'box',
-								A2($author$project$Anim$Position, 300, 200),
-								model.animations),
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations),
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'MoveLeft':
+				var currentPos = A2($author$project$Anim$CSS$getCurrentPosition, 'box', model.animations);
+				var animation = $author$project$Anim$easeIn(
+					A2(
+						$author$project$Anim$duration,
+						400,
+						A2(
+							$author$project$Anim$position,
+							'box',
+							{x: 0, y: currentPos.y})));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3($author$project$Anim$CSS$animateToX, 'box', 0, model.animations),
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations),
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'MoveRight':
+				var currentPos = A2($author$project$Anim$CSS$getCurrentPosition, 'box', model.animations);
+				var animation = $author$project$Anim$easeIn(
+					A2(
+						$author$project$Anim$duration,
+						400,
+						A2(
+							$author$project$Anim$position,
+							'box',
+							{x: 450, y: currentPos.y})));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3($author$project$Anim$CSS$animateToX, 'box', 450, model.animations),
-							isAnimating: true
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'MoveUp':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							animations: A3($author$project$Anim$CSS$animateToY, 'box', 0, model.animations),
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations),
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'MoveDown':
+				var currentPos = A2($author$project$Anim$CSS$getCurrentPosition, 'box', model.animations);
+				var animation = $author$project$Anim$easeIn(
+					A2(
+						$author$project$Anim$duration,
+						400,
+						A2(
+							$author$project$Anim$position,
+							'box',
+							{x: currentPos.x, y: 350})));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3($author$project$Anim$CSS$animateToY, 'box', 350, model.animations),
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations),
+							isAnimating: true
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'MoveUp':
+				var currentPos = A2($author$project$Anim$CSS$getCurrentPosition, 'box', model.animations);
+				var animation = $author$project$Anim$easeIn(
+					A2(
+						$author$project$Anim$duration,
+						400,
+						A2(
+							$author$project$Anim$position,
+							'box',
+							{x: currentPos.x, y: 50})));
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations),
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'StopAnimation':
+				var animation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$duration,
+						400,
+						A2(
+							$author$project$Anim$position,
+							'box',
+							{x: 0, y: 0})));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$CSS$animatePosition,
-								'box',
-								A2($author$project$Anim$Position, 0, 0),
-								model.animations),
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations),
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -5629,7 +5723,7 @@ var $author$project$ElmUI$CSS$Position$Main$update = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{isAnimating: false}),
+						{activeAnimation: $elm$core$Maybe$Nothing, isAnimating: false}),
 					$elm$core$Platform$Cmd$none);
 		}
 	});
@@ -11964,17 +12058,41 @@ var $author$project$Anim$CSS$styleProperties = F2(
 		}
 	});
 var $author$project$Common$Colors$textMedium = A3($mdgriffith$elm_ui$Element$rgb255, 71, 85, 105);
-var $author$project$Anim$Duration = function (a) {
-	return {$: 'Duration', a: a};
+var $author$project$Anim$getTiming = function (_v0) {
+	var data = _v0.a;
+	return data.timing;
 };
-var $author$project$Anim$EaseOut = {$: 'EaseOut'};
-var $author$project$Anim$EasePreset = function (a) {
-	return {$: 'EasePreset', a: a};
-};
-var $author$project$Anim$defaultConfig = {
-	easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
-	timing: $author$project$Anim$Duration(400)
-};
+var $author$project$Anim$Internal$getAnimationTiming = $author$project$Anim$getTiming;
+var $author$project$Anim$Internal$animationToMilliseconds = F2(
+	function (animation, distance) {
+		var timing = $author$project$Anim$Internal$getAnimationTiming(animation);
+		switch (timing.$) {
+			case 'Duration':
+				var milliseconds = timing.a;
+				return milliseconds;
+			case 'PixelsPerSecond':
+				var pps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / pps);
+			case 'DegreesPerSecond':
+				var dps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / dps);
+			case 'ColorStepsPerSecond':
+				var cps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / cps);
+			case 'OpacityPerSecond':
+				var ops = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / ops);
+			case 'ScalePerSecond':
+				var sps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / sps);
+			case 'DimensionsPerSecond':
+				var dps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / dps);
+			default:
+				var fps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / fps);
+		}
+	});
 var $author$project$Anim$Internal$easingToString = function (easing) {
 	switch (easing.$) {
 		case 'EaseString':
@@ -11996,24 +12114,12 @@ var $author$project$Anim$Internal$easingToString = function (easing) {
 			return 'ease-out';
 	}
 };
-var $author$project$Anim$Internal$timingToMilliseconds = F2(
-	function (timing, distance) {
-		if (timing.$ === 'Speed') {
-			var pixelsPerSecond = timing.a;
-			return (distance / pixelsPerSecond) * 1000;
-		} else {
-			var milliseconds = timing.a;
-			return milliseconds;
-		}
-	});
-var $author$project$Anim$CSS$transitionStyles = F2(
-	function (_v0, _v1) {
-		var config = $author$project$Anim$defaultConfig;
-		var duration = $author$project$Anim$Internal$timingToMilliseconds(config.timing);
-		var easing = $author$project$Anim$Internal$easingToString(config.easing);
-		return 'all ' + ($elm$core$String$fromFloat(
-			duration(1.0)) + ('ms ' + easing));
-	});
+var $author$project$Anim$CSS$transitionStyles = function (animation) {
+	var duration = A2($author$project$Anim$Internal$animationToMilliseconds, animation, 1.0);
+	var animationData = $author$project$Anim$getAnimationData(animation);
+	var easing = $author$project$Anim$Internal$easingToString(animationData.easing);
+	return 'all ' + ($elm$core$String$fromFloat(duration) + ('ms ' + easing));
+};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$core$Basics$always = F2(
 	function (a, _v0) {
@@ -12177,7 +12283,15 @@ var $author$project$ElmUI$CSS$Position$Main$viewContent = function (model) {
 								A2(
 									$elm$html$Html$Attributes$style,
 									'transition',
-									model.isAnimating ? A2($author$project$Anim$CSS$transitionStyles, 'box', model.animations) : 'none')),
+									function () {
+										var _v1 = model.activeAnimation;
+										if (_v1.$ === 'Just') {
+											var animation = _v1.a;
+											return $author$project$Anim$CSS$transitionStyles(animation);
+										} else {
+											return 'none';
+										}
+									}())),
 								$mdgriffith$elm_ui$Element$htmlAttribute(
 								A2($elm$html$Html$Attributes$attribute, 'ontransitionend', 'this.dispatchEvent(new CustomEvent(\'animation-complete\'))'))
 							]))),

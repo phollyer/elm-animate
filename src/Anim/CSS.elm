@@ -2,13 +2,6 @@ module Anim.CSS exposing
     ( Model
     , init
     , animate
-    , animateOpacity
-    , animatePosition
-    , animateToX
-    , animateToY
-    , animateScale
-    , animateRotation
-    , animateBackgroundColor
     , getCurrentPosition
     , styleProperties
     , transitionStyles
@@ -20,6 +13,39 @@ module Anim.CSS exposing
 
 {-| CSS-based animation system using native browser transitions.
 
+This module provides a way to animate elements using browser-native CSS transitions for optimal performance and battery efficiency. Use the fluent Animation builder API from the core Anim module to create animations, then apply them with this module's functions.
+
+**Basic Usage:**
+
+    import Anim
+    import Anim.CSS as CSS
+
+
+    -- Create animations using the builder pattern
+    fadeAnimation =
+        Anim.opacity "my-element" 0.5
+            |> Anim.opacityDuration 300
+            |> Anim.easeInOut
+
+    positionAnimation =
+        Anim.position "my-element" { x = 100, y = 200 }
+            |> Anim.pixelsPerSecond 200.0
+            |> Anim.easeOut
+
+    -- Apply animations
+    model1 =
+        CSS.animate fadeAnimation model.cssModel
+
+    model2 =
+        CSS.animate positionAnimation model1
+
+    -- Generate CSS styles
+    transitionStyle =
+        CSS.transitionStyles fadeAnimation
+
+    elementStyles =
+        CSS.styleProperties "my-element" model2
+
 
 # Model
 
@@ -30,13 +56,6 @@ module Anim.CSS exposing
 # Animation
 
 @docs animate
-@docs animateOpacity
-@docs animatePosition
-@docs animateToX
-@docs animateToY
-@docs animateScale
-@docs animateRotation
-@docs animateBackgroundColor
 @docs getCurrentPosition
 
 
@@ -55,7 +74,7 @@ module Anim.CSS exposing
 
 -}
 
-import Anim exposing (AnimationTarget(..), ColorValue(..), FilterValue(..), Position, RotationValue, ScaleValue, defaultConfig)
+import Anim exposing (Animation, AnimationTarget(..), ColorValue(..), FilterValue(..), Position, getAnimationData)
 import Anim.Internal as Internal
 import Dict exposing (Dict)
 import Html
@@ -84,11 +103,29 @@ init =
 -- ANIMATION FUNCTIONS
 
 
-{-| Animate an element to a specific animation target.
+{-| Animate an element using the new Animation builder API.
+
+    animation =
+        Anim.position "my-element" { x = 100, y = 200 }
+            |> Anim.duration 500
+            |> Anim.easeOut
+
+    newModel =
+        animate animation model
+
 -}
-animate : String -> AnimationTarget -> Model -> Model
-animate elementId target (Model animations) =
+animate : Animation -> Model -> Model
+animate animation (Model animations) =
     let
+        animationData =
+            getAnimationData animation
+
+        elementId =
+            animationData.elementId
+
+        target =
+            animationData.target
+
         currentTargets =
             Dict.get elementId animations |> Maybe.withDefault []
 
@@ -101,69 +138,6 @@ animate elementId target (Model animations) =
                 target :: List.filter (\t -> getTargetType t /= getTargetType target) currentTargets
     in
     Model (Dict.insert elementId newTargets animations)
-
-
-{-| Animate element opacity.
--}
-animateOpacity : String -> Float -> Model -> Model
-animateOpacity elementId opacity model =
-    animate elementId (ToOpacity opacity) model
-
-
-{-| Animate element position.
--}
-animatePosition : String -> Position -> Model -> Model
-animatePosition elementId position model =
-    animate elementId (ToPosition position) model
-
-
-{-| Animate element scale.
--}
-animateScale : String -> ScaleValue -> Model -> Model
-animateScale elementId scale model =
-    animate elementId (ToScale scale) model
-
-
-{-| Animate element rotation.
--}
-animateRotation : String -> RotationValue -> Model -> Model
-animateRotation elementId degrees model =
-    animate elementId (ToRotation degrees) model
-
-
-{-| Animate element background color.
--}
-animateBackgroundColor : String -> ColorValue -> Model -> Model
-animateBackgroundColor elementId color model =
-    animate elementId (ToBackgroundColor color) model
-
-
-{-| Animate element to a specific X coordinate, preserving current Y position.
--}
-animateToX : String -> Float -> Model -> Model
-animateToX elementId targetX model =
-    let
-        currentPosition =
-            getCurrentPosition elementId model
-
-        newPosition =
-            { currentPosition | x = targetX }
-    in
-    animatePosition elementId newPosition model
-
-
-{-| Animate element to a specific Y coordinate, preserving current X position.
--}
-animateToY : String -> Float -> Model -> Model
-animateToY elementId targetY model =
-    let
-        currentPosition =
-            getCurrentPosition elementId model
-
-        newPosition =
-            { currentPosition | y = targetY }
-    in
-    animatePosition elementId newPosition model
 
 
 {-| Get the current position of an element from the animation model.
@@ -210,21 +184,32 @@ styleProperties elementId (Model animations) =
             []
 
 
-{-| Generate CSS transition styles.
+{-| Generate CSS transition styles for an animation.
+
+Use this function to generate the CSS transition property for smooth animations:
+
+    animation =
+        Anim.opacity "my-element" 0.5
+            |> Anim.opacityDuration 500
+            |> Anim.easeInOut
+
+    styles =
+        transitionStyles animation
+
 -}
-transitionStyles : String -> Model -> String
-transitionStyles _ _ =
+transitionStyles : Animation -> String
+transitionStyles animation =
     let
-        config =
-            defaultConfig
+        animationData =
+            getAnimationData animation
 
         duration =
-            Internal.timingToMilliseconds config.timing
+            Internal.animationToMilliseconds animation 1.0
 
         easing =
-            Internal.easingToString config.easing
+            Internal.easingToString animationData.easing
     in
-    "all " ++ String.fromFloat (duration 1.0) ++ "ms " ++ easing
+    "all " ++ String.fromFloat duration ++ "ms " ++ easing
 
 
 

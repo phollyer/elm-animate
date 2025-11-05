@@ -4,43 +4,28 @@ module Anim.Ports exposing
     , subscriptions
     , TargetId
     , animate
-    , animateWithConfig
     , getCurrentValue
     , setValue
-    , animateTo
-    , animateToX
-    , animateToY
-    , animateToWithConfig
-    , animateToXWithConfig
-    , animateToYWithConfig
-    , animateOpacity
-    , animateOpacityWithConfig
-    , animateScale
-    , animateScaleWithConfig
-    , animateRotation
-    , animateRotationWithConfig
-    , animateBackgroundColor
-    , animateBackgroundColorWithConfig
-    , animateBatch
-    , animateToMultiple
-    , batchAnimationCommands
-    , sendAnimationCommand
     , getPosition
     , getAllPositions
     , stopAnimation
-    , stopBatch
     , isAnimating
     , transform
     , transformElement
     , styleProperties
+    , batchAnimationCommands, sendAnimationCommand
     , AnimationCommand
-    , AnimationSpec
     , PropertyUpdate
     , handlePropertyUpdate
+    , handleCurrentValueUpdate
     , handlePropertyUpdateFromJson
     , encodeAnimationCommand
     , encodeStopCommand
     , propertyUpdateDecoder
+    , animateMultiple
+    -- , sendAnimationCommand  -- Temporarily commented out
+    -- Removed old Config-based functions: animateToWithConfig, animateToXWithConfig, animateToYWithConfig, animateBatch
+    -- Use new builder pattern API with animate function instead
     )
 
 {-| Port-based animations using JavaScript's Web Animations API for high-performance element movement.
@@ -77,43 +62,12 @@ with `npm install smooth-move-ports` and include it in your HTML.
 @docs subscriptions
 
 
-# Comprehensive Animation
+# Animation API
 
 @docs TargetId
 @docs animate
-@docs animateWithConfig
 @docs getCurrentValue
 @docs setValue
-
-
-# Property-Specific Animation
-
-@docs animateTo
-@docs animateToX
-@docs animateToY
-@docs animateToWithConfig
-@docs animateToXWithConfig
-@docs animateToYWithConfig
-@docs animateOpacity
-@docs animateOpacityWithConfig
-@docs animateScale
-@docs animateScaleWithConfig
-@docs animateRotation
-@docs animateRotationWithConfig
-@docs animateBackgroundColor
-@docs animateBackgroundColorWithConfig
-
-
-# Batch Operations
-
-@docs animateBatch
-@docs animateToMultiple
-
-
-# Command Helpers
-
-@docs batchAnimationCommands
-@docs sendAnimationCommand
 
 
 # Value Management
@@ -121,7 +75,6 @@ with `npm install smooth-move-ports` and include it in your HTML.
 @docs getPosition
 @docs getAllPositions
 @docs stopAnimation
-@docs stopBatch
 @docs isAnimating
 
 
@@ -135,12 +88,16 @@ with `npm install smooth-move-ports` and include it in your HTML.
 # Port Integration Helpers
 
 
+## Command Helpers
+
+@docs batchAnimationCommands, sendAnimationCommand
+
+
 ## Port Data Types
 
 Types for communicating with JavaScript through ports.
 
 @docs AnimationCommand
-@docs AnimationSpec
 @docs PropertyUpdate
 
 
@@ -149,6 +106,7 @@ Types for communicating with JavaScript through ports.
 Functions to process incoming messages from JavaScript ports.
 
 @docs handlePropertyUpdate
+@docs handleCurrentValueUpdate
 @docs handlePropertyUpdateFromJson
 
 
@@ -248,7 +206,8 @@ while PositionUpdate messages flow back from JavaScript to update your Elm model
 
 -}
 
-import Anim exposing (AnimationTarget(..), ColorValue(..), Config, EasePreset(..), Easing(..), FilterValue(..), Position, RotationValue, ScaleValue, Timing(..), defaultConfig)
+import Anim exposing (Animation, AnimationTarget(..), ColorValue(..), EasePreset(..), Easing(..), ElementBuilder, FilterValue(..), Position, Timing(..), getAnimationData, toAnimations)
+import Anim.Internal exposing (animationToMilliseconds)
 import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
@@ -267,8 +226,9 @@ type alias TargetId =
 {-| Element state for port-based comprehensive animations
 -}
 type alias ElementData =
-    { properties : Dict String AnimationTarget
-    , animating : Dict String Bool
+    { properties : Dict String AnimationTarget -- Target values we're animating to
+    , animating : Dict String Bool -- Which properties are currently animating
+    , currentValues : Dict String AnimationTarget -- Current values from JavaScript (for distance calculation)
     }
 
 
@@ -392,37 +352,44 @@ subscriptions ports_ (Model elementsDict) =
 This is the general-purpose animation function that can handle any AnimationTarget type.
 Returns the updated model and optionally an AnimationCommand to send through your port.
 
-    import Anim exposing (AnimationTarget(..))
+    import Anim
+
+    animation =
+        Anim.opacity "my-element" 0.5
+            |> Anim.duration 500
+            |> Anim.easeOut
 
     ( newModel, maybeCommand ) =
-        Anim.Ports.animate "my-element" (ToOpacity 0.5) model.animPortsModel
+        Anim.Ports.animate animation model.animPortsModel
 
 -}
-animate : TargetId -> AnimationTarget -> Model -> ( Model, Maybe AnimationCommand )
-animate elementId target model =
-    animateWithConfig elementId target defaultConfig model
-
-
-{-| Start animating an element to a target animation property with custom configuration.
-
-    import Anim exposing (AnimationTarget(..), EasePreset(..), Easing(..), Timing(..), defaultConfig)
-
-    config =
-        { defaultConfig | timing = Duration 800, easing = EasePreset EaseInOut }
-
-    ( newModel, maybeCommand ) =
-        Anim.Ports.animateWithConfig "my-element" (ToScale { x = 2.0, y = 2.0 }) config model.animPortsModel
-
--}
-animateWithConfig : TargetId -> AnimationTarget -> Config -> Model -> ( Model, Maybe AnimationCommand )
-animateWithConfig elementId target config (Model elementsDict) =
+animate : Animation -> Model -> ( Model, Maybe AnimationCommand )
+animate animation (Model elementsDict) =
     let
+        animData =
+            getAnimationData animation
+
+        elementId =
+            animData.elementId
+
+        target =
+            animData.target
+
+        timing =
+            animData.timing
+
+        easing =
+            animData.easing
+
+        delayMs =
+            animData.delayMs
+
         propertyKey =
             getPropertyKey target
 
         currentElementData =
             Dict.get elementId elementsDict
-                |> Maybe.withDefault { properties = Dict.empty, animating = Dict.empty }
+                |> Maybe.withDefault { properties = Dict.empty, animating = Dict.empty, currentValues = Dict.empty }
 
         updatedProperties =
             Dict.insert propertyKey target currentElementData.properties
@@ -433,126 +400,29 @@ animateWithConfig elementId target config (Model elementsDict) =
         elementData =
             { properties = updatedProperties
             , animating = updatedAnimating
+            , currentValues = currentElementData.currentValues
             }
 
         updatedDict =
             Dict.insert elementId elementData elementsDict
 
+        -- Calculate accurate duration using current values in model
+        distance =
+            calculateAccurateDistance elementId target (Model updatedDict)
+
+        duration =
+            animationToMilliseconds animation distance
+
         animationCommand =
             { elementId = elementId
             , target = target
-            , config = config
+            , timing = timing
+            , easing = easing
+            , delayMs = delayMs
+            , duration = duration
             }
     in
     ( Model updatedDict, Just animationCommand )
-
-
-
--- PROPERTY-SPECIFIC CONVENIENCE FUNCTIONS
-
-
-{-| Animate element opacity with default configuration.
-
-    ( newModel, maybeCommand ) =
-        Anim.Ports.animateOpacity "my-element" 0.5 model.animPortsModel
-
--}
-animateOpacity : TargetId -> Float -> Model -> ( Model, Maybe AnimationCommand )
-animateOpacity elementId opacity model =
-    animate elementId (ToOpacity opacity) model
-
-
-{-| Animate element opacity with custom configuration.
-
-    config =
-        { defaultConfig | timing = Duration 800 }
-
-    ( newModel, maybeCommand ) =
-        Anim.Ports.animateOpacityWithConfig "my-element" 0.5 config model.animPortsModel
-
--}
-animateOpacityWithConfig : TargetId -> Float -> Config -> Model -> ( Model, Maybe AnimationCommand )
-animateOpacityWithConfig elementId opacity config model =
-    animateWithConfig elementId (ToOpacity opacity) config model
-
-
-{-| Animate element scale with default configuration.
-
-    ( newModel, maybeCommand ) =
-        Anim.Ports.animateScale "my-element" { x = 1.5, y = 1.5 } model.animPortsModel
-
--}
-animateScale : TargetId -> ScaleValue -> Model -> ( Model, Maybe AnimationCommand )
-animateScale elementId scale model =
-    animate elementId (ToScale scale) model
-
-
-{-| Animate element scale with custom configuration.
-
-    config =
-        { defaultConfig | timing = Duration 600, easing = EasePreset EaseInOut }
-
-    ( newModel, maybeCommand ) =
-        Anim.Ports.animateScaleWithConfig "my-element" { x = 2.0, y = 2.0 } config model.animPortsModel
-
--}
-animateScaleWithConfig : TargetId -> ScaleValue -> Config -> Model -> ( Model, Maybe AnimationCommand )
-animateScaleWithConfig elementId scale config model =
-    animateWithConfig elementId (ToScale scale) config model
-
-
-{-| Animate element rotation with default configuration.
-
-    ( newModel, maybeCommand ) =
-        Anim.Ports.animateRotation "my-element" 90.0 model.animPortsModel
-
--}
-animateRotation : TargetId -> RotationValue -> Model -> ( Model, Maybe AnimationCommand )
-animateRotation elementId rotation model =
-    animate elementId (ToRotation rotation) model
-
-
-{-| Animate element rotation with custom configuration.
-
-    config =
-        { defaultConfig | timing = Duration 1000 }
-
-    ( newModel, maybeCommand ) =
-        Anim.Ports.animateRotationWithConfig "my-element" 180.0 config model.animPortsModel
-
--}
-animateRotationWithConfig : TargetId -> RotationValue -> Config -> Model -> ( Model, Maybe AnimationCommand )
-animateRotationWithConfig elementId rotation config model =
-    animateWithConfig elementId (ToRotation rotation) config model
-
-
-{-| Animate element background color with default configuration.
-
-    import Anim exposing (ColorValue(..))
-
-    ( newModel, maybeCommand ) =
-        Anim.Ports.animateBackgroundColor "my-element" (Rgb { r = 255, g = 0, b = 0 }) model.animPortsModel
-
--}
-animateBackgroundColor : TargetId -> ColorValue -> Model -> ( Model, Maybe AnimationCommand )
-animateBackgroundColor elementId color model =
-    animate elementId (ToBackgroundColor color) model
-
-
-{-| Animate element background color with custom configuration.
-
-    import Anim exposing (ColorValue(..), EasePreset(..), Easing(..), Timing(..), defaultConfig)
-
-    config =
-        { defaultConfig | timing = Duration 500, easing = EasePreset EaseInOut }
-
-    ( newModel, maybeCommand ) =
-        Anim.Ports.animateBackgroundColorWithConfig "my-element" (Hsl { h = 120, s = 100, l = 50 }) config model.animPortsModel
-
--}
-animateBackgroundColorWithConfig : TargetId -> ColorValue -> Config -> Model -> ( Model, Maybe AnimationCommand )
-animateBackgroundColorWithConfig elementId color config model =
-    animateWithConfig elementId (ToBackgroundColor color) config model
 
 
 {-| Animation command data to send to JavaScript
@@ -565,15 +435,10 @@ Use this with your own port:
 type alias AnimationCommand =
     { elementId : String
     , target : AnimationTarget
-    , config : Config
-    }
-
-
-{-| Animation specification for batch operations
--}
-type alias AnimationSpec =
-    { elementId : String
-    , target : Position
+    , timing : Timing
+    , easing : Easing
+    , delayMs : Int
+    , duration : Float -- in milliseconds
     }
 
 
@@ -589,93 +454,6 @@ type alias PropertyUpdate =
     }
 
 
-{-| Start animating an element to a target position using default config
-
-    -- Create the animation command
-    animationCmd =
-        Move.Ports.animateTo "my-element" 200 300 model.movePortsModel
-
-    -- Send it through your port
-    case animationCmd of
-        ( newModel, Just command ) ->
-            ( { model | movePortsModel = newModel }, animateElementPort command )
-
-        ( newModel, Nothing ) ->
-            ( { model | movePortsModel = newModel }, Cmd.none )
-
--}
-animateTo : TargetId -> Position -> Model -> ( Model, Maybe AnimationCommand )
-animateTo elementId position model =
-    animate elementId (ToPosition position) model
-
-
-{-| Start animating an element horizontally to a target X position
-
-Only the X coordinate will change - Y position remains at current value.
-
--}
-animateToX : TargetId -> Float -> Model -> ( Model, Maybe AnimationCommand )
-animateToX elementId targetX model =
-    let
-        currentPos =
-            getPosition elementId model
-                |> Maybe.withDefault { x = 0, y = 0 }
-
-        newPosition =
-            { currentPos | x = targetX }
-    in
-    animate elementId (ToPosition newPosition) model
-
-
-{-| Start animating an element vertically to a target Y position
-
-Only the Y coordinate will change - X position remains at current value.
-
--}
-animateToY : TargetId -> Float -> Model -> ( Model, Maybe AnimationCommand )
-animateToY elementId targetY model =
-    let
-        currentPos =
-            getPosition elementId model
-                |> Maybe.withDefault { x = 0, y = 0 }
-
-        newPosition =
-            { currentPos | y = targetY }
-    in
-    animate elementId (ToPosition newPosition) model
-
-
-{-| Animate multiple elements to their target positions simultaneously
-
-Takes a list of (elementId, position) pairs and returns the updated model with all animation commands batched together.
-This is useful for choreographed animations where multiple elements need to move in coordination.
-
-    positions =
-        [ ( "element1", { x = 100, y = 50 } )
-        , ( "element2", { x = 200, y = 100 } )
-        , ( "element3", { x = 150, y = 150 } )
-        ]
-
-    ( newModel, commands ) =
-        animateToMultiple positions model
-
-The returned commands are already batched and ready to use in your update function.
-
--}
-animateToMultiple : List ( TargetId, Position ) -> Model -> ( Model, List AnimationCommand )
-animateToMultiple elementPositions initialModel =
-    let
-        processAnimation ( elementId, position ) ( accModel, accCommands ) =
-            case animateTo elementId position accModel of
-                ( updatedModel, Just command ) ->
-                    ( updatedModel, command :: accCommands )
-
-                ( updatedModel, Nothing ) ->
-                    ( updatedModel, accCommands )
-    in
-    List.foldl processAnimation ( initialModel, [] ) elementPositions
-
-
 
 -- COMMAND HELPERS
 
@@ -684,137 +462,98 @@ animateToMultiple elementPositions initialModel =
 Reduces the verbose pattern of mapping and batching animation commands.
 
 Usage:
-batchAnimationCommands (animateElement << encodeAnimationCommand) animationCommands
+
+    batchAnimationCommands yourPortFunction animationCommands
 
 Instead of:
-animationCommands
-|> List.map (animateElement << encodeAnimationCommand)
-|> Cmd.batch
+
+    animationCommands
+        |> List.map (yourPortFunction << encodeAnimationCommand)
+        |> Cmd.batch
 
 -}
-batchAnimationCommands : (command -> Cmd msg) -> List command -> Cmd msg
+batchAnimationCommands : (Encode.Value -> Cmd msg) -> List AnimationCommand -> Cmd msg
 batchAnimationCommands portFunction commands =
     commands
-        |> List.map portFunction
+        |> List.map (portFunction << encodeAnimationCommand)
         |> Cmd.batch
 
 
-{-| Helper function to send a single animation command.
-Reduces the verbose pattern of encoding and sending single commands.
+{-| Send an animation command through a port
 
-Usage:
-sendAnimationCommand animateElement encodeAnimationCommand command
+A sprinkle of syntactic sugar!
+
+    sendAnimationCommand yourPortFunction command
 
 Instead of:
-animateElement (encodeAnimationCommand command)
+
+    yourPortFunction <|
+        encodeAnimationCommand command
 
 -}
-sendAnimationCommand : (encoded -> Cmd msg) -> (command -> encoded) -> command -> Cmd msg
-sendAnimationCommand portFunction encoder command =
-    portFunction (encoder command)
+sendAnimationCommand : (Encode.Value -> Cmd msg) -> AnimationCommand -> Cmd msg
+sendAnimationCommand portFunction command =
+    portFunction (encodeAnimationCommand command)
 
 
-{-| Start animating an element to a target position with custom configuration
+{-| Animate multiple properties of a single element simultaneously.
 
-    config =
-        { defaultConfig | timing = Duration 600, easing = EasePreset EaseInOut }
+This is the clean way to handle multi-property animations with the new builder API.
 
-    ( newModel, maybeCommand ) =
-        Move.Ports.animateToWithConfig "my-element" { x = 100, y = 150 } config model.movePortsModel
+    element "my-box"
+        |> withPosition { x = 100, y = 200 }
+        |> withScale { x = 1.5, y = 1.5 }
+        |> withRotation 45
+        |> animateMultiple model.animations
+            { duration = 1000
+            , easing = EaseInOut
+            , portFunction = yourPortFunction
+            }
 
--}
-animateToWithConfig : TargetId -> Position -> Config -> Model -> ( Model, Maybe AnimationCommand )
-animateToWithConfig elementId position config model =
-    animateWithConfig elementId (ToPosition position) config model
-
-
-{-| Start animating an element horizontally with custom configuration
-
-    config =
-        { defaultConfig | timing = Speed 600.0, easing = EasePreset EaseInOut }
-
-    ( newModel, maybeCommand ) =
-        Move.Ports.animateToXWithConfig "my-element" 200 config model.movePortsModel
+Returns the updated model and the batch command to send all animations.
 
 -}
-animateToXWithConfig : TargetId -> Float -> Config -> Model -> ( Model, Maybe AnimationCommand )
-animateToXWithConfig elementId targetX config model =
+animateMultiple :
+    Model
+    -> { duration : Int, easing : Easing, portFunction : Encode.Value -> Cmd msg }
+    -> ElementBuilder
+    -> ( Model, Cmd msg )
+animateMultiple model config elementBuilder =
     let
-        currentPos =
-            getPosition elementId model
-                |> Maybe.withDefault { x = 0, y = 0 }
+        animations =
+            toAnimations
+                { duration = config.duration
+                , easing = config.easing
+                }
+                elementBuilder
 
-        newPosition =
-            { currentPos | x = targetX }
+        ( newModel, commands ) =
+            List.foldl
+                (\animation ( accModel, accCommands ) ->
+                    let
+                        ( updatedModel, maybeCommand ) =
+                            animate animation accModel
+                    in
+                    case maybeCommand of
+                        Just command ->
+                            ( updatedModel, command :: accCommands )
+
+                        Nothing ->
+                            ( updatedModel, accCommands )
+                )
+                ( model, [] )
+                animations
+
+        batchCmd =
+            batchAnimationCommands config.portFunction commands
     in
-    animateWithConfig elementId (ToPosition newPosition) config model
+    ( newModel, batchCmd )
 
 
-{-| Start animating an element vertically with custom configuration
-
-    config =
-        { defaultConfig | timing = Duration 600, easing = EasePreset EaseInOut }
+{-| Stop animating an element
 
     ( newModel, maybeCommand ) =
-        Move.Ports.animateToYWithConfig "my-element" 300 config model.movePortsModel
-
-Only the Y coordinate will change - X position remains at current value.
-
--}
-animateToYWithConfig : TargetId -> Float -> Config -> Model -> ( Model, Maybe AnimationCommand )
-animateToYWithConfig elementId targetY config model =
-    let
-        currentPos =
-            getPosition elementId model
-                |> Maybe.withDefault { x = 0, y = 0 }
-
-        newPosition =
-            { currentPos | y = targetY }
-    in
-    animateWithConfig elementId (ToPosition newPosition) config model
-
-
-{-| Animate multiple elements with the same configuration
-
-Returns a list of animation commands to send through your port.
-
-    animations =
-        [ { elementId = "element-1", target = Position 100 200 }
-        , { elementId = "element-2", target = Position 300 400 }
-        ]
-
-    ( newModel, commands ) =
-        Move.Ports.animateBatch defaultConfig animations model.movePortsModel
-
--}
-animateBatch : Config -> List AnimationSpec -> Model -> ( Model, List AnimationCommand )
-animateBatch config specs model =
-    List.foldl
-        (\spec ( currentModel, commands ) ->
-            let
-                ( newModel, maybeCommand ) =
-                    animateToWithConfig spec.elementId spec.target config currentModel
-            in
-            case maybeCommand of
-                Just command ->
-                    ( newModel, command :: commands )
-
-                Nothing ->
-                    ( newModel, commands )
-        )
-        ( model, [] )
-        specs
-        |> Tuple.mapSecond List.reverse
-
-
-{-| Stop animation for an element (returns stop command for your port)
-
-    case Move.Ports.stopAnimation "my-element" model.movePortsModel of
-        ( newModel, Just stopCmd ) ->
-            ( { model | movePortsModel = newModel }, stopElementPort stopCmd )
-
-        ( newModel, Nothing ) ->
-            ( { model | movePortsModel = newModel }, Cmd.none )
+        Move.Ports.stopAnimation "my-element" model.movePortsModel
 
 -}
 stopAnimation : TargetId -> Model -> ( Model, Maybe String )
@@ -832,35 +571,6 @@ stopAnimation elementId (Model elementsDict) =
 
         Nothing ->
             ( Model elementsDict, Nothing )
-
-
-{-| Stop animations for multiple elements
-
-    elementIds =
-        [ "element-1", "element-2", "element-3" ]
-
-    ( newModel, stopCommands ) =
-        Move.Ports.stopBatch elementIds model.movePortsModel
-
--}
-stopBatch : List TargetId -> Model -> ( Model, List String )
-stopBatch elementIds model =
-    List.foldl
-        (\elementId ( currentModel, commands ) ->
-            let
-                ( newModel, maybeCommand ) =
-                    stopAnimation elementId currentModel
-            in
-            case maybeCommand of
-                Just command ->
-                    ( newModel, command :: commands )
-
-                Nothing ->
-                    ( newModel, commands )
-        )
-        ( model, [] )
-        elementIds
-        |> Tuple.mapSecond List.reverse
 
 
 {-| Check if an element is currently animating
@@ -938,7 +648,7 @@ setValue elementId target (Model elementsDict) =
 
         currentElementData =
             Dict.get elementId elementsDict
-                |> Maybe.withDefault { properties = Dict.empty, animating = Dict.empty }
+                |> Maybe.withDefault { properties = Dict.empty, animating = Dict.empty, currentValues = Dict.empty }
 
         updatedProperties =
             Dict.insert propertyKey target currentElementData.properties
@@ -950,6 +660,7 @@ setValue elementId target (Model elementsDict) =
         elementData =
             { properties = updatedProperties
             , animating = updatedAnimating
+            , currentValues = currentElementData.currentValues
             }
 
         updatedDict =
@@ -1142,7 +853,7 @@ handlePropertyUpdate update (Model elementsDict) =
     let
         currentElementData =
             Dict.get update.elementId elementsDict
-                |> Maybe.withDefault { properties = Dict.empty, animating = Dict.empty }
+                |> Maybe.withDefault { properties = Dict.empty, animating = Dict.empty, currentValues = Dict.empty }
 
         updatedProperties =
             Dict.insert update.propertyKey update.target currentElementData.properties
@@ -1154,6 +865,233 @@ handlePropertyUpdate update (Model elementsDict) =
             Dict.insert update.elementId elementData elementsDict
     in
     Model updatedDict
+
+
+{-| Handle current property values sent from JavaScript
+
+This function updates the current property values stored in the model,
+which are used for accurate distance calculations in timing.
+
+    -- JavaScript sends current DOM values
+    currentValues =
+        { elementId = "my-element"
+        , propertyKey = "position"
+        , target = ToPosition { x = 150, y = 200 } -- Current position from DOM
+        }
+
+    newModel =
+        handleCurrentValueUpdate currentValues model
+
+-}
+handleCurrentValueUpdate : PropertyUpdate -> Model -> Model
+handleCurrentValueUpdate update (Model elementsDict) =
+    let
+        currentElementData =
+            Dict.get update.elementId elementsDict
+                |> Maybe.withDefault { properties = Dict.empty, animating = Dict.empty, currentValues = Dict.empty }
+
+        updatedCurrentValues =
+            Dict.insert update.propertyKey update.target currentElementData.currentValues
+
+        elementData =
+            { currentElementData | currentValues = updatedCurrentValues }
+
+        updatedDict =
+            Dict.insert update.elementId elementData elementsDict
+    in
+    Model updatedDict
+
+
+{-| Calculate accurate distance between current and target values for timing calculations.
+
+This function computes the actual distance that will be animated, using the current
+values stored in the model (sent from JavaScript) and the target values.
+
+    distance =
+        calculateAccurateDistance elementId target model
+
+-}
+calculateAccurateDistance : TargetId -> AnimationTarget -> Model -> Float
+calculateAccurateDistance elementId target (Model elementsDict) =
+    let
+        propertyKey =
+            getPropertyKey target
+
+        maybeCurrentValue =
+            Dict.get elementId elementsDict
+                |> Maybe.andThen (\elementData -> Dict.get propertyKey elementData.currentValues)
+    in
+    case ( maybeCurrentValue, target ) of
+        ( Just (ToPosition currentPos), ToPosition targetPos ) ->
+            -- Calculate Euclidean distance for position
+            let
+                dx =
+                    targetPos.x - currentPos.x
+
+                dy =
+                    targetPos.y - currentPos.y
+            in
+            sqrt (dx * dx + dy * dy)
+
+        ( Just (ToOpacity currentOpacity), ToOpacity targetOpacity ) ->
+            abs (targetOpacity - currentOpacity)
+
+        ( Just (ToScale currentScale), ToScale targetScale ) ->
+            -- Calculate combined scale distance
+            let
+                dx =
+                    targetScale.x - currentScale.x
+
+                dy =
+                    targetScale.y - currentScale.y
+            in
+            sqrt (dx * dx + dy * dy)
+
+        ( Just (ToRotation currentRotation), ToRotation targetRotation ) ->
+            abs (targetRotation - currentRotation)
+
+        ( Just (ToBackgroundColor currentColor), ToBackgroundColor targetColor ) ->
+            calculateColorDistance currentColor targetColor
+
+        ( Just (ToTextColor currentColor), ToTextColor targetColor ) ->
+            calculateColorDistance currentColor targetColor
+
+        ( Just (ToBorderColor currentColor), ToBorderColor targetColor ) ->
+            calculateColorDistance currentColor targetColor
+
+        ( Just (ToDimensions currentDim), ToDimensions targetDim ) ->
+            -- Calculate combined dimension distance
+            let
+                dw =
+                    targetDim.width - currentDim.width
+
+                dh =
+                    targetDim.height - currentDim.height
+            in
+            sqrt (dw * dw + dh * dh)
+
+        ( Just (ToBorderRadius currentRadius), ToBorderRadius targetRadius ) ->
+            abs (targetRadius - currentRadius)
+
+        ( Just (ToFilter currentFilter), ToFilter targetFilter ) ->
+            calculateFilterDistance currentFilter targetFilter
+
+        _ ->
+            -- Fallback to reasonable estimates if current value not available
+            getEstimatedDistance target
+
+
+{-| Helper function to calculate color distance between two ColorValue types.
+-}
+calculateColorDistance : ColorValue -> ColorValue -> Float
+calculateColorDistance currentColor targetColor =
+    let
+        -- Convert both colors to RGB for distance calculation
+        currentRgb =
+            colorToRgb currentColor
+
+        targetRgb =
+            colorToRgb targetColor
+
+        dr =
+            toFloat (targetRgb.r - currentRgb.r)
+
+        dg =
+            toFloat (targetRgb.g - currentRgb.g)
+
+        db =
+            toFloat (targetRgb.b - currentRgb.b)
+    in
+    -- RGB Euclidean distance, normalized to 0-100 range
+    sqrt (dr * dr + dg * dg + db * db) / 4.41
+
+
+{-| Helper function to calculate filter distance between two FilterValue types.
+-}
+calculateFilterDistance : FilterValue -> FilterValue -> Float
+calculateFilterDistance currentFilter targetFilter =
+    case ( currentFilter, targetFilter ) of
+        ( Blur currentValue, Blur targetValue ) ->
+            abs (targetValue - currentValue)
+
+        ( Brightness currentValue, Brightness targetValue ) ->
+            abs (targetValue - currentValue)
+
+        ( Contrast currentValue, Contrast targetValue ) ->
+            abs (targetValue - currentValue)
+
+        ( Grayscale currentValue, Grayscale targetValue ) ->
+            abs (targetValue - currentValue)
+
+        ( Saturate currentValue, Saturate targetValue ) ->
+            abs (targetValue - currentValue)
+
+        _ ->
+            -- Different filter types - use estimated distance
+            1.0
+
+
+{-| Convert ColorValue to RGB record for distance calculations.
+-}
+colorToRgb : ColorValue -> { r : Int, g : Int, b : Int }
+colorToRgb color =
+    case color of
+        Hex _ ->
+            -- Simple hex parsing - this is a basic implementation
+            -- In a real implementation, you'd want more robust hex parsing
+            { r = 128, g = 128, b = 128 }
+
+        Rgb rgb ->
+            rgb
+
+        Rgba rgba ->
+            { r = rgba.r, g = rgba.g, b = rgba.b }
+
+        Hsl _ ->
+            -- HSL to RGB conversion - simplified implementation
+            -- In a real implementation, you'd want proper HSL->RGB conversion
+            { r = 128, g = 128, b = 128 }
+
+        Hsla _ ->
+            -- HSLA to RGB conversion - simplified implementation
+            { r = 128, g = 128, b = 128 }
+
+
+{-| Get estimated distance for timing calculations when current values are not available.
+This is a fallback for when JavaScript hasn't sent current DOM values yet.
+-}
+getEstimatedDistance : AnimationTarget -> Float
+getEstimatedDistance target =
+    case target of
+        ToPosition _ ->
+            100.0
+
+        ToOpacity _ ->
+            0.5
+
+        ToScale _ ->
+            1.0
+
+        ToRotation _ ->
+            90.0
+
+        ToBackgroundColor _ ->
+            50.0
+
+        ToTextColor _ ->
+            50.0
+
+        ToBorderColor _ ->
+            50.0
+
+        ToDimensions _ ->
+            100.0
+
+        ToBorderRadius _ ->
+            10.0
+
+        ToFilter _ ->
+            1.0
 
 
 {-| Handle position update from JSON value received through port
@@ -1262,18 +1200,8 @@ encodeFilterValue filterValue =
 encodeAnimationCommand : AnimationCommand -> Encode.Value
 encodeAnimationCommand command =
     let
-        duration =
-            case command.config.timing of
-                Duration ms ->
-                    toFloat ms
-
-                Speed _ ->
-                    -- For encoding, we'll use a default duration of 500ms for speed-based timing
-                    -- JavaScript can override this based on actual distance
-                    500.0
-
         easing =
-            case command.config.easing of
+            case command.easing of
                 EasePreset preset ->
                     case preset of
                         Linear ->
@@ -1364,7 +1292,7 @@ encodeAnimationCommand command =
     Encode.object
         [ ( "elementId", Encode.string command.elementId )
         , ( "target", targetValue )
-        , ( "duration", Encode.float duration )
+        , ( "duration", Encode.float command.duration )
         , ( "easing", Encode.string easing )
         ]
 

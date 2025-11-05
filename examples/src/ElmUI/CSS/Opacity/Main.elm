@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim exposing (defaultConfig)
-import Anim.CSS exposing (Model, animateOpacity, init, onTransitionEnd, styleProperties, transitionStyles)
+import Anim
+import Anim.CSS exposing (Model, animate, init, onTransitionEnd, styleProperties, transitionStyles)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -79,16 +79,28 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         FadeIn ->
+            let
+                animation =
+                    Anim.opacity "box" 1.0
+                        |> Anim.opacityDuration 600
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateOpacity "box" 1.0 model.animations
+                | animations = animate animation model.animations
                 , isVisible = True
               }
             , Cmd.none
             )
 
         FadeOut ->
+            let
+                animation =
+                    Anim.opacity "box" 0.0
+                        |> Anim.opacityDuration 400
+                        |> Anim.easeIn
+            in
             ( { model
-                | animations = animateOpacity "box" 0.0 model.animations
+                | animations = animate animation model.animations
                 , isVisible = False
               }
             , Cmd.none
@@ -106,9 +118,14 @@ update msg model =
 
                 newVisible =
                     not model.isVisible
+
+                animation =
+                    Anim.opacity "box" newOpacity
+                        |> Anim.opacityDuration 500
+                        |> Anim.easeInOut
             in
             ( { model
-                | animations = animateOpacity "box" newOpacity model.animations
+                | animations = animate animation model.animations
                 , isVisible = newVisible
               }
             , Cmd.none
@@ -201,7 +218,8 @@ animatedBox elementId label color model =
                )
             ++ [ htmlAttribute
                     (Html.Attributes.style "transition"
-                        (transitionStyles elementId model.animations)
+                        -- Apply a standard transition for opacity animations
+                        "opacity 500ms ease-in-out"
                     )
                , htmlAttribute (onTransitionEnd AnimationComplete)
                ]

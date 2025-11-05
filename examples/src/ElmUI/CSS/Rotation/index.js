@@ -5206,16 +5206,13 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$ElmUI$CSS$Rotation$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{animations: $author$project$Anim$CSS$init},
+		{activeAnimation: $elm$core$Maybe$Nothing, animations: $author$project$Anim$CSS$init},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$ElmUI$CSS$Rotation$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
-};
-var $author$project$Anim$ToRotation = function (a) {
-	return {$: 'ToRotation', a: a};
 };
 var $elm$core$List$filter = F2(
 	function (isGood, list) {
@@ -5260,6 +5257,10 @@ var $elm$core$Dict$get = F2(
 			}
 		}
 	});
+var $author$project$Anim$getAnimationData = function (_v0) {
+	var data = _v0.a;
+	return data;
+};
 var $author$project$Anim$CSS$getSpecificTargetType = function (target) {
 	switch (target.$) {
 		case 'ToPosition':
@@ -5438,13 +5439,16 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
-var $author$project$Anim$CSS$animate = F3(
-	function (elementId, target, _v0) {
+var $author$project$Anim$CSS$animate = F2(
+	function (animation, _v0) {
 		var animations = _v0.a;
+		var animationData = $author$project$Anim$getAnimationData(animation);
+		var elementId = animationData.elementId;
 		var currentTargets = A2(
 			$elm$core$Maybe$withDefault,
 			_List_Nil,
 			A2($elm$core$Dict$get, elementId, animations));
+		var target = animationData.target;
 		var newTargets = $author$project$Anim$CSS$isTransformTarget(target) ? A2(
 			$elm$core$List$cons,
 			target,
@@ -5469,70 +5473,165 @@ var $author$project$Anim$CSS$animate = F3(
 		return $author$project$Anim$CSS$Model(
 			A3($elm$core$Dict$insert, elementId, newTargets, animations));
 	});
-var $author$project$Anim$CSS$animateRotation = F3(
-	function (elementId, degrees, model) {
-		return A3(
-			$author$project$Anim$CSS$animate,
-			elementId,
-			$author$project$Anim$ToRotation(degrees),
-			model);
-	});
+var $author$project$Anim$Animation = function (a) {
+	return {$: 'Animation', a: a};
+};
+var $author$project$Anim$EaseIn = {$: 'EaseIn'};
+var $author$project$Anim$EasePreset = function (a) {
+	return {$: 'EasePreset', a: a};
+};
+var $author$project$Anim$easeIn = function (_v0) {
+	var data = _v0.a;
+	return $author$project$Anim$Animation(
+		_Utils_update(
+			data,
+			{
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseIn)
+			}));
+};
+var $author$project$Anim$EaseInOut = {$: 'EaseInOut'};
+var $author$project$Anim$easeInOut = function (_v0) {
+	var data = _v0.a;
+	return $author$project$Anim$Animation(
+		_Utils_update(
+			data,
+			{
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseInOut)
+			}));
+};
+var $author$project$Anim$EaseOut = {$: 'EaseOut'};
+var $author$project$Anim$easeOut = function (_v0) {
+	var data = _v0.a;
+	return $author$project$Anim$Animation(
+		_Utils_update(
+			data,
+			{
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut)
+			}));
+};
 var $elm$core$Basics$negate = function (n) {
 	return -n;
 };
+var $author$project$Anim$RotationBuilder = F2(
+	function (a, b) {
+		return {$: 'RotationBuilder', a: a, b: b};
+	});
+var $author$project$Anim$rotation = F2(
+	function (elementId, value) {
+		return A2($author$project$Anim$RotationBuilder, elementId, value);
+	});
+var $author$project$Anim$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
+var $author$project$Anim$ToRotation = function (a) {
+	return {$: 'ToRotation', a: a};
+};
+var $author$project$Anim$rotationDuration = F2(
+	function (ms, _v0) {
+		var elementId = _v0.a;
+		var value = _v0.b;
+		return $author$project$Anim$Animation(
+			{
+				delayMs: 0,
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
+				elementId: elementId,
+				target: $author$project$Anim$ToRotation(value),
+				timing: $author$project$Anim$Duration(ms)
+			});
+	});
 var $author$project$ElmUI$CSS$Rotation$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'Rotate45':
+				var animation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$rotationDuration,
+						500,
+						A2($author$project$Anim$rotation, 'box', 45)));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3($author$project$Anim$CSS$animateRotation, 'box', 45, model.animations)
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Rotate90':
+				var animation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$rotationDuration,
+						500,
+						A2($author$project$Anim$rotation, 'box', 90)));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3($author$project$Anim$CSS$animateRotation, 'box', 90, model.animations)
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Rotate180':
+				var animation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$rotationDuration,
+						700,
+						A2($author$project$Anim$rotation, 'box', 180)));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3($author$project$Anim$CSS$animateRotation, 'box', 180, model.animations)
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'RotateLeft':
+				var animation = $author$project$Anim$easeIn(
+					A2(
+						$author$project$Anim$rotationDuration,
+						400,
+						A2($author$project$Anim$rotation, 'box', -90)));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3($author$project$Anim$CSS$animateRotation, 'box', -90, model.animations)
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'RotateRight':
+				var animation = $author$project$Anim$easeIn(
+					A2(
+						$author$project$Anim$rotationDuration,
+						400,
+						A2($author$project$Anim$rotation, 'box', 90)));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3($author$project$Anim$CSS$animateRotation, 'box', 90, model.animations)
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'ResetRotation':
+				var animation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$rotationDuration,
+						600,
+						A2($author$project$Anim$rotation, 'box', 0)));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3($author$project$Anim$CSS$animateRotation, 'box', 0, model.animations)
+							activeAnimation: $elm$core$Maybe$Just(animation),
+							animations: A2($author$project$Anim$CSS$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			default:
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{activeAnimation: $elm$core$Maybe$Nothing}),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Common$UI$Basic = {$: 'Basic'};
@@ -11877,17 +11976,41 @@ var $author$project$Anim$CSS$styleProperties = F2(
 			return _List_Nil;
 		}
 	});
-var $author$project$Anim$Duration = function (a) {
-	return {$: 'Duration', a: a};
+var $author$project$Anim$getTiming = function (_v0) {
+	var data = _v0.a;
+	return data.timing;
 };
-var $author$project$Anim$EaseOut = {$: 'EaseOut'};
-var $author$project$Anim$EasePreset = function (a) {
-	return {$: 'EasePreset', a: a};
-};
-var $author$project$Anim$defaultConfig = {
-	easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
-	timing: $author$project$Anim$Duration(400)
-};
+var $author$project$Anim$Internal$getAnimationTiming = $author$project$Anim$getTiming;
+var $author$project$Anim$Internal$animationToMilliseconds = F2(
+	function (animation, distance) {
+		var timing = $author$project$Anim$Internal$getAnimationTiming(animation);
+		switch (timing.$) {
+			case 'Duration':
+				var milliseconds = timing.a;
+				return milliseconds;
+			case 'PixelsPerSecond':
+				var pps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / pps);
+			case 'DegreesPerSecond':
+				var dps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / dps);
+			case 'ColorStepsPerSecond':
+				var cps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / cps);
+			case 'OpacityPerSecond':
+				var ops = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / ops);
+			case 'ScalePerSecond':
+				var sps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / sps);
+			case 'DimensionsPerSecond':
+				var dps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / dps);
+			default:
+				var fps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / fps);
+		}
+	});
 var $author$project$Anim$Internal$easingToString = function (easing) {
 	switch (easing.$) {
 		case 'EaseString':
@@ -11909,24 +12032,12 @@ var $author$project$Anim$Internal$easingToString = function (easing) {
 			return 'ease-out';
 	}
 };
-var $author$project$Anim$Internal$timingToMilliseconds = F2(
-	function (timing, distance) {
-		if (timing.$ === 'Speed') {
-			var pixelsPerSecond = timing.a;
-			return (distance / pixelsPerSecond) * 1000;
-		} else {
-			var milliseconds = timing.a;
-			return milliseconds;
-		}
-	});
-var $author$project$Anim$CSS$transitionStyles = F2(
-	function (_v0, _v1) {
-		var config = $author$project$Anim$defaultConfig;
-		var duration = $author$project$Anim$Internal$timingToMilliseconds(config.timing);
-		var easing = $author$project$Anim$Internal$easingToString(config.easing);
-		return 'all ' + ($elm$core$String$fromFloat(
-			duration(1.0)) + ('ms ' + easing));
-	});
+var $author$project$Anim$CSS$transitionStyles = function (animation) {
+	var duration = A2($author$project$Anim$Internal$animationToMilliseconds, animation, 1.0);
+	var animationData = $author$project$Anim$getAnimationData(animation);
+	var easing = $author$project$Anim$Internal$easingToString(animationData.easing);
+	return 'all ' + ($elm$core$String$fromFloat(duration) + ('ms ' + easing));
+};
 var $author$project$ElmUI$CSS$Rotation$Main$rotatingElement = F5(
 	function (elementId, symbol, label, color, model) {
 		return A2(
@@ -11968,7 +12079,15 @@ var $author$project$ElmUI$CSS$Rotation$Main$rotatingElement = F5(
 							A2(
 								$elm$html$Html$Attributes$style,
 								'transition',
-								A2($author$project$Anim$CSS$transitionStyles, elementId, model.animations))),
+								function () {
+									var _v1 = model.activeAnimation;
+									if (_v1.$ === 'Just') {
+										var animation = _v1.a;
+										return $author$project$Anim$CSS$transitionStyles(animation);
+									} else {
+										return 'none';
+									}
+								}())),
 							$mdgriffith$elm_ui$Element$htmlAttribute(
 							$author$project$Anim$CSS$onTransitionEnd($author$project$ElmUI$CSS$Rotation$Main$AnimationComplete))
 						]))),

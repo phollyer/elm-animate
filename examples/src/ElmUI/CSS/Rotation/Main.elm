@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim exposing (RotationValue, defaultConfig)
-import Anim.CSS exposing (Model, animateRotation, init, onTransitionEnd, styleProperties, transitionStyles)
+import Anim exposing (RotationValue)
+import Anim.CSS exposing (Model, animate, init, onTransitionEnd, styleProperties, transitionStyles)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -47,6 +47,7 @@ main =
 
 type alias Model =
     { animations : Anim.CSS.Model
+    , activeAnimation : Maybe Anim.Animation
     }
 
 
@@ -68,49 +69,91 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Rotate45 ->
+            let
+                animation =
+                    Anim.rotation "box" 45
+                        |> Anim.rotationDuration 500
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateRotation "box" 45 model.animations
+                | animations = animate animation model.animations
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         Rotate90 ->
+            let
+                animation =
+                    Anim.rotation "box" 90
+                        |> Anim.rotationDuration 500
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateRotation "box" 90 model.animations
+                | animations = animate animation model.animations
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         Rotate180 ->
+            let
+                animation =
+                    Anim.rotation "box" 180
+                        |> Anim.rotationDuration 700
+                        |> Anim.easeInOut
+            in
             ( { model
-                | animations = animateRotation "box" 180 model.animations
+                | animations = animate animation model.animations
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         RotateLeft ->
+            let
+                animation =
+                    Anim.rotation "box" -90
+                        |> Anim.rotationDuration 400
+                        |> Anim.easeIn
+            in
             ( { model
-                | animations = animateRotation "box" -90 model.animations
+                | animations = animate animation model.animations
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         RotateRight ->
+            let
+                animation =
+                    Anim.rotation "box" 90
+                        |> Anim.rotationDuration 400
+                        |> Anim.easeIn
+            in
             ( { model
-                | animations = animateRotation "box" 90 model.animations
+                | animations = animate animation model.animations
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         ResetRotation ->
+            let
+                animation =
+                    Anim.rotation "box" 0
+                        |> Anim.rotationDuration 600
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateRotation "box" 0 model.animations
+                | animations = animate animation model.animations
+                , activeAnimation = Just animation
               }
             , Cmd.none
             )
 
         AnimationComplete ->
-            ( model, Cmd.none )
+            ( { model | activeAnimation = Nothing }, Cmd.none )
 
 
 
@@ -120,6 +163,7 @@ update msg model =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations = Anim.CSS.init
+      , activeAnimation = Nothing
       }
     , Cmd.none
     )
@@ -216,7 +260,13 @@ rotatingElement elementId symbol label color model =
                )
             ++ [ htmlAttribute
                     (Html.Attributes.style "transition"
-                        (transitionStyles elementId model.animations)
+                        (case model.activeAnimation of
+                            Just animation ->
+                                transitionStyles animation
+
+                            Nothing ->
+                                "none"
+                        )
                     )
                , htmlAttribute (onTransitionEnd AnimationComplete)
                ]

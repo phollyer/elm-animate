@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim exposing (ColorValue(..), Position, RotationValue, ScaleValue, defaultConfig)
-import Anim.Ports exposing (Model, animateBackgroundColor, animateOpacity, animateRotation, animateScale, animateTo, batchAnimationCommands, encodeAnimationCommand, handlePropertyUpdateFromJson, init, styleProperties)
+import Anim exposing (ColorValue(..), EasePreset(..), Easing(..), Position, RotationValue, ScaleValue, element, withPosition, withOpacity, withScale, withRotation, withBackgroundColor)
+import Anim.Ports exposing (Model, animateMultiple, handlePropertyUpdateFromJson, init, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -89,124 +89,100 @@ update msg model =
         StartComplexAnimation elementId ->
             -- Combine position + scale + rotation
             let
-                ( model1, maybeCmd1 ) =
-                    animateTo elementId (Position 200 100) model.animations
-
-                ( model2, maybeCmd2 ) =
-                    animateScale elementId { x = 1.5, y = 1.9 } model1
-
-                ( model3, maybeCmd3 ) =
-                    animateRotation elementId 90 model2
-
-                commands =
-                    [ maybeCmd1, maybeCmd2, maybeCmd3 ]
-                        |> List.filterMap identity
-                        |> batchAnimationCommands (animateElement << encodeAnimationCommand)
+                ( newModel, cmd ) =
+                    element elementId
+                        |> withPosition (Position 200 100)
+                        |> withScale { x = 1.5, y = 1.9 }
+                        |> withRotation 90
+                        |> animateMultiple model.animations
+                            { duration = 1000
+                            , easing = EasePreset EaseInOut
+                            , portFunction = animateElement
+                            }
             in
-            ( { model | animations = model3 }, commands )
+            ( { model | animations = newModel }, cmd )
 
         StartFadeMove elementId ->
             -- Combine opacity + position
             let
-                ( model1, maybeCmd1 ) =
-                    animateOpacity elementId 0.3 model.animations
-
-                ( model2, maybeCmd2 ) =
-                    animateTo elementId (Position 250 80) model1
-
-                commands =
-                    [ maybeCmd1, maybeCmd2 ]
-                        |> List.filterMap identity
-                        |> batchAnimationCommands (animateElement << encodeAnimationCommand)
+                ( newModel, cmd ) =
+                    element elementId
+                        |> withOpacity 0.3
+                        |> withPosition (Position 250 80)
+                        |> animateMultiple model.animations
+                            { duration = 1000
+                            , easing = EasePreset EaseInOut
+                            , portFunction = animateElement
+                            }
             in
-            ( { model | animations = model2 }, commands )
+            ( { model | animations = newModel }, cmd )
 
         StartSpinScale elementId ->
             -- Combine rotation + scale + color
             let
-                ( model1, maybeCmd1 ) =
-                    animateRotation elementId 180 model.animations
-
-                ( model2, maybeCmd2 ) =
-                    animateScale elementId { x = 0.8, y = 0.8 } model1
-
-                ( model3, maybeCmd3 ) =
-                    animateBackgroundColor elementId (Hex "#e74c3c") model2
-
-                commands =
-                    [ maybeCmd1, maybeCmd2, maybeCmd3 ]
-                        |> List.filterMap identity
-                        |> batchAnimationCommands (animateElement << encodeAnimationCommand)
+                ( newModel, cmd ) =
+                    element elementId
+                        |> withRotation 180
+                        |> withScale { x = 0.8, y = 0.8 }
+                        |> withBackgroundColor (Hex "#e74c3c")
+                        |> animateMultiple model.animations
+                            { duration = 1000
+                            , easing = EasePreset EaseInOut
+                            , portFunction = animateElement
+                            }
             in
-            ( { model | animations = model3 }, commands )
+            ( { model | animations = newModel }, cmd )
 
         StartColorMorph elementId ->
             -- Combine color + scale + opacity
             let
-                ( model1, maybeCmd1 ) =
-                    animateBackgroundColor elementId (Hsl { h = 142, s = 71, l = 45 }) model.animations
-
-                ( model2, maybeCmd2 ) =
-                    animateScale elementId { x = 2.0, y = 0.5 } model1
-
-                ( model3, maybeCmd3 ) =
-                    animateOpacity elementId 0.8 model2
-
-                commands =
-                    [ maybeCmd1, maybeCmd2, maybeCmd3 ]
-                        |> List.filterMap identity
-                        |> batchAnimationCommands (animateElement << encodeAnimationCommand)
+                ( newModel, cmd ) =
+                    element elementId
+                        |> withBackgroundColor (Hsl { h = 142, s = 71, l = 45 })
+                        |> withScale { x = 2.0, y = 0.5 }
+                        |> withOpacity 0.8
+                        |> animateMultiple model.animations
+                            { duration = 1000
+                            , easing = EasePreset EaseInOut
+                            , portFunction = animateElement
+                            }
             in
-            ( { model | animations = model3 }, commands )
+            ( { model | animations = newModel }, cmd )
 
         StartFullTransform elementId ->
-            -- All properties at once with proper Ports pattern!
+            -- All properties at once with elegant multi-property builder!
             let
-                ( model1, maybeCmd1 ) =
-                    animateTo elementId (Position 200 200) model.animations
-
-                ( model2, maybeCmd2 ) =
-                    animateScale elementId { x = 1.3, y = 1.3 } model1
-
-                ( model3, maybeCmd3 ) =
-                    animateRotation elementId 270 model2
-
-                ( model4, maybeCmd4 ) =
-                    animateOpacity elementId 0.7 model3
-
-                ( model5, maybeCmd5 ) =
-                    animateBackgroundColor elementId (Hex "#9b59b6") model4
-
-                commands =
-                    [ maybeCmd1, maybeCmd2, maybeCmd3, maybeCmd4, maybeCmd5 ]
-                        |> List.filterMap identity
-                        |> batchAnimationCommands (animateElement << encodeAnimationCommand)
+                ( newModel, cmd ) =
+                    element elementId
+                        |> withPosition (Position 200 200)
+                        |> withScale { x = 1.3, y = 1.3 }
+                        |> withRotation 270
+                        |> withOpacity 0.7
+                        |> withBackgroundColor (Hex "#9b59b6")
+                        |> animateMultiple model.animations
+                            { duration = 1000
+                            , easing = EasePreset EaseInOut
+                            , portFunction = animateElement
+                            }
             in
-            ( { model | animations = model5 }, commands )
+            ( { model | animations = newModel }, cmd )
 
         ResetAll ->
             let
-                ( model1, maybeCmd1 ) =
-                    animateTo "mixed-box" (Position 0 0) model.animations
-
-                ( model2, maybeCmd2 ) =
-                    animateScale "mixed-box" { x = 1.0, y = 1.0 } model1
-
-                ( model3, maybeCmd3 ) =
-                    animateRotation "mixed-box" 0 model2
-
-                ( model4, maybeCmd4 ) =
-                    animateOpacity "mixed-box" 1.0 model3
-
-                ( model5, maybeCmd5 ) =
-                    animateBackgroundColor "mixed-box" (Hex "#3498db") model4
-
-                commands =
-                    [ maybeCmd1, maybeCmd2, maybeCmd3, maybeCmd4, maybeCmd5 ]
-                        |> List.filterMap identity
-                        |> batchAnimationCommands (animateElement << encodeAnimationCommand)
+                ( newModel, cmd ) =
+                    element "mixed-box"
+                        |> withPosition (Position 0 0)
+                        |> withScale { x = 1.0, y = 1.0 }
+                        |> withRotation 0
+                        |> withOpacity 1.0
+                        |> withBackgroundColor (Hex "#3498db")
+                        |> animateMultiple model.animations
+                            { duration = 800
+                            , easing = EasePreset EaseInOut
+                            , portFunction = animateElement
+                            }
             in
-            ( { model | animations = model5 }, commands )
+            ( { model | animations = newModel }, cmd )
 
         AnimationComplete _ ->
             ( model, Cmd.none )

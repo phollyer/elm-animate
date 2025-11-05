@@ -5398,9 +5398,41 @@ var $author$project$Anim$Sub$subscriptions = F2(
 var $author$project$ElmUI$Sub$Scale$Main$subscriptions = function (model) {
 	return A2($author$project$Anim$Sub$subscriptions, $author$project$ElmUI$Sub$Scale$Main$AnimationFrame, model.animations);
 };
-var $author$project$Anim$ToScale = function (a) {
-	return {$: 'ToScale', a: a};
+var $author$project$Anim$getTiming = function (_v0) {
+	var data = _v0.a;
+	return data.timing;
 };
+var $author$project$Anim$Internal$getAnimationTiming = $author$project$Anim$getTiming;
+var $author$project$Anim$Internal$animationToMilliseconds = F2(
+	function (animation, distance) {
+		var timing = $author$project$Anim$Internal$getAnimationTiming(animation);
+		switch (timing.$) {
+			case 'Duration':
+				var milliseconds = timing.a;
+				return milliseconds;
+			case 'PixelsPerSecond':
+				var pps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / pps);
+			case 'DegreesPerSecond':
+				var dps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / dps);
+			case 'ColorStepsPerSecond':
+				var cps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / cps);
+			case 'OpacityPerSecond':
+				var ops = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / ops);
+			case 'ScalePerSecond':
+				var sps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / sps);
+			case 'DimensionsPerSecond':
+				var dps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / dps);
+			default:
+				var fps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / fps);
+		}
+	});
 var $elm$core$Basics$negate = function (n) {
 	return -n;
 };
@@ -5408,6 +5440,159 @@ var $elm$core$Basics$abs = function (n) {
 	return (n < 0) ? (-n) : n;
 };
 var $elm$core$Basics$sqrt = _Basics_sqrt;
+var $author$project$Anim$Sub$calculateRgbColorDistance = F2(
+	function (start, target) {
+		var dr = target.r - start.r;
+		var dg = target.g - start.g;
+		var db = target.b - start.b;
+		var distance = $elm$core$Basics$sqrt(((dr * dr) + (dg * dg)) + (db * db));
+		return distance / 4.41;
+	});
+var $author$project$Anim$Sub$hexCharToInt = function (_char) {
+	switch (_char.valueOf()) {
+		case '0':
+			return 0;
+		case '1':
+			return 1;
+		case '2':
+			return 2;
+		case '3':
+			return 3;
+		case '4':
+			return 4;
+		case '5':
+			return 5;
+		case '6':
+			return 6;
+		case '7':
+			return 7;
+		case '8':
+			return 8;
+		case '9':
+			return 9;
+		case 'A':
+			return 10;
+		case 'B':
+			return 11;
+		case 'C':
+			return 12;
+		case 'D':
+			return 13;
+		case 'E':
+			return 14;
+		case 'F':
+			return 15;
+		case 'a':
+			return 10;
+		case 'b':
+			return 11;
+		case 'c':
+			return 12;
+		case 'd':
+			return 13;
+		case 'e':
+			return 14;
+		case 'f':
+			return 15;
+		default:
+			return 0;
+	}
+};
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
+var $author$project$Anim$Sub$hexStringToInt = function (hexStr) {
+	var _v0 = $elm$core$String$toList(hexStr);
+	if ((_v0.b && _v0.b.b) && (!_v0.b.b.b)) {
+		var h1 = _v0.a;
+		var _v1 = _v0.b;
+		var h2 = _v1.a;
+		return ($author$project$Anim$Sub$hexCharToInt(h1) * 16) + $author$project$Anim$Sub$hexCharToInt(h2);
+	} else {
+		return 0;
+	}
+};
+var $elm$core$String$replace = F3(
+	function (before, after, string) {
+		return A2(
+			$elm$core$String$join,
+			after,
+			A2($elm$core$String$split, before, string));
+	});
+var $author$project$Anim$Sub$hexToRgb = function (hex) {
+	var cleanHex = A3($elm$core$String$replace, '#', '', hex);
+	var g = $author$project$Anim$Sub$hexStringToInt(
+		A3($elm$core$String$slice, 2, 4, cleanHex));
+	var r = $author$project$Anim$Sub$hexStringToInt(
+		A3($elm$core$String$slice, 0, 2, cleanHex));
+	var b = $author$project$Anim$Sub$hexStringToInt(
+		A3($elm$core$String$slice, 4, 6, cleanHex));
+	return {b: b, g: g, r: r};
+};
+var $author$project$Anim$Sub$calculateHexColorDistance = F2(
+	function (startHex, targetHex) {
+		var targetRgb = $author$project$Anim$Sub$hexToRgb(targetHex);
+		var startRgb = $author$project$Anim$Sub$hexToRgb(startHex);
+		return A2($author$project$Anim$Sub$calculateRgbColorDistance, startRgb, targetRgb);
+	});
+var $author$project$Anim$Sub$calculateRgbaColorDistance = F2(
+	function (start, target) {
+		var rgbDistance = A2(
+			$author$project$Anim$Sub$calculateRgbColorDistance,
+			{b: start.b, g: start.g, r: start.r},
+			{b: target.b, g: target.g, r: target.r});
+		var alphaDistance = $elm$core$Basics$abs(target.a - start.a) * 100;
+		return (rgbDistance + alphaDistance) / 2;
+	});
+var $author$project$Anim$Sub$calculateColorDistance = F2(
+	function (startColor, targetColor) {
+		var _v0 = _Utils_Tuple2(startColor, targetColor);
+		_v0$5:
+		while (true) {
+			switch (_v0.a.$) {
+				case 'Rgba':
+					if (_v0.b.$ === 'Rgba') {
+						var startRgba = _v0.a.a;
+						var targetRgba = _v0.b.a;
+						return A2($author$project$Anim$Sub$calculateRgbaColorDistance, startRgba, targetRgba);
+					} else {
+						break _v0$5;
+					}
+				case 'Hex':
+					switch (_v0.b.$) {
+						case 'Hex':
+							var startHex = _v0.a.a;
+							var targetHex = _v0.b.a;
+							return A2($author$project$Anim$Sub$calculateHexColorDistance, startHex, targetHex);
+						case 'Rgb':
+							var startHex = _v0.a.a;
+							var targetRgb = _v0.b.a;
+							var startRgb = $author$project$Anim$Sub$hexToRgb(startHex);
+							return A2($author$project$Anim$Sub$calculateRgbColorDistance, startRgb, targetRgb);
+						default:
+							break _v0$5;
+					}
+				case 'Rgb':
+					switch (_v0.b.$) {
+						case 'Rgb':
+							var startRgb = _v0.a.a;
+							var targetRgb = _v0.b.a;
+							return A2($author$project$Anim$Sub$calculateRgbColorDistance, startRgb, targetRgb);
+						case 'Hex':
+							var startRgb = _v0.a.a;
+							var targetHex = _v0.b.a;
+							var targetRgb = $author$project$Anim$Sub$hexToRgb(targetHex);
+							return A2($author$project$Anim$Sub$calculateRgbColorDistance, startRgb, targetRgb);
+						default:
+							break _v0$5;
+					}
+				default:
+					break _v0$5;
+			}
+		}
+		return 50.0;
+	});
 var $author$project$Anim$Internal$calculateDistance = F2(
 	function (from, to) {
 		var dy = to.y - from.y;
@@ -5417,7 +5602,7 @@ var $author$project$Anim$Internal$calculateDistance = F2(
 var $author$project$Anim$Sub$calculateTargetDistance = F2(
 	function (start, target) {
 		var _v0 = _Utils_Tuple2(start, target);
-		_v0$6:
+		_v0$7:
 		while (true) {
 			switch (_v0.a.$) {
 				case 'ToPosition':
@@ -5426,23 +5611,23 @@ var $author$project$Anim$Sub$calculateTargetDistance = F2(
 						var targetPos = _v0.b.a;
 						return A2($author$project$Anim$Internal$calculateDistance, startPos, targetPos);
 					} else {
-						break _v0$6;
+						break _v0$7;
 					}
 				case 'ToOpacity':
 					if (_v0.b.$ === 'ToOpacity') {
 						var startOp = _v0.a.a;
 						var targetOp = _v0.b.a;
-						return $elm$core$Basics$abs(targetOp - startOp) * 100;
+						return $elm$core$Basics$abs(targetOp - startOp);
 					} else {
-						break _v0$6;
+						break _v0$7;
 					}
 				case 'ToScale':
 					if (_v0.b.$ === 'ToScale') {
 						var startScale = _v0.a.a;
 						var targetScale = _v0.b.a;
-						return ($elm$core$Basics$abs(targetScale.x - startScale.x) * 100) + ($elm$core$Basics$abs(targetScale.y - startScale.y) * 100);
+						return $elm$core$Basics$abs(targetScale.x - startScale.x) + $elm$core$Basics$abs(targetScale.y - startScale.y);
 					} else {
-						break _v0$6;
+						break _v0$7;
 					}
 				case 'ToRotation':
 					if (_v0.b.$ === 'ToRotation') {
@@ -5450,7 +5635,7 @@ var $author$project$Anim$Sub$calculateTargetDistance = F2(
 						var targetRot = _v0.b.a;
 						return $elm$core$Basics$abs(targetRot - startRot);
 					} else {
-						break _v0$6;
+						break _v0$7;
 					}
 				case 'ToDimensions':
 					if (_v0.b.$ === 'ToDimensions') {
@@ -5458,7 +5643,7 @@ var $author$project$Anim$Sub$calculateTargetDistance = F2(
 						var targetDim = _v0.b.a;
 						return $elm$core$Basics$abs(targetDim.width - startDim.width) + $elm$core$Basics$abs(targetDim.height - startDim.height);
 					} else {
-						break _v0$6;
+						break _v0$7;
 					}
 				case 'ToBorderRadius':
 					if (_v0.b.$ === 'ToBorderRadius') {
@@ -5466,25 +5651,21 @@ var $author$project$Anim$Sub$calculateTargetDistance = F2(
 						var targetRadius = _v0.b.a;
 						return $elm$core$Basics$abs(targetRadius - startRadius);
 					} else {
-						break _v0$6;
+						break _v0$7;
+					}
+				case 'ToBackgroundColor':
+					if (_v0.b.$ === 'ToBackgroundColor') {
+						var startColor = _v0.a.a;
+						var targetColor = _v0.b.a;
+						return A2($author$project$Anim$Sub$calculateColorDistance, startColor, targetColor);
+					} else {
+						break _v0$7;
 					}
 				default:
-					break _v0$6;
+					break _v0$7;
 			}
 		}
-		return 100;
-	});
-var $author$project$Anim$Sub$calculateAnimationDuration = F3(
-	function (config, startValue, targetValue) {
-		var _v0 = config.timing;
-		if (_v0.$ === 'Duration') {
-			var ms = _v0.a;
-			return ms;
-		} else {
-			var pixelsPerSecond = _v0.a;
-			var distance = A2($author$project$Anim$Sub$calculateTargetDistance, startValue, targetValue);
-			return A2($elm$core$Basics$max, 100, (distance * 1000) / pixelsPerSecond);
-		}
+		return 1.0;
 	});
 var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$get = F2(
@@ -5518,6 +5699,10 @@ var $elm$core$Dict$get = F2(
 			}
 		}
 	});
+var $author$project$Anim$getAnimationData = function (_v0) {
+	var data = _v0.a;
+	return data;
+};
 var $author$project$Anim$Brightness = function (a) {
 	return {$: 'Brightness', a: a};
 };
@@ -5550,6 +5735,9 @@ var $author$project$Anim$ToPosition = function (a) {
 };
 var $author$project$Anim$ToRotation = function (a) {
 	return {$: 'ToRotation', a: a};
+};
+var $author$project$Anim$ToScale = function (a) {
+	return {$: 'ToScale', a: a};
 };
 var $author$project$Anim$ToTextColor = function (a) {
 	return {$: 'ToTextColor', a: a};
@@ -5729,21 +5917,27 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
-var $author$project$Anim$Sub$animateWithConfig = F4(
-	function (elementId, target, config, _v0) {
+var $author$project$Anim$Sub$animate = F2(
+	function (animation, _v0) {
 		var elementsDict = _v0.a;
-		var propertyKey = $author$project$Anim$Sub$getPropertyKey(target);
+		var animData = $author$project$Anim$getAnimationData(animation);
+		var delayMs = animData.delayMs;
+		var easing = animData.easing;
+		var elementId = animData.elementId;
 		var currentElementData = A2(
 			$elm$core$Maybe$withDefault,
 			{animation: $elm$core$Maybe$Nothing, properties: $elm$core$Dict$empty},
 			A2($elm$core$Dict$get, elementId, elementsDict));
+		var target = animData.target;
+		var propertyKey = $author$project$Anim$Sub$getPropertyKey(target);
 		var currentValue = A2(
 			$elm$core$Maybe$withDefault,
 			$author$project$Anim$Sub$getDefaultValue(target),
 			A2($elm$core$Dict$get, propertyKey, currentElementData.properties));
-		var duration = A3($author$project$Anim$Sub$calculateAnimationDuration, config, currentValue, target);
+		var distance = A2($author$project$Anim$Sub$calculateTargetDistance, currentValue, target);
+		var duration = A2($author$project$Anim$Internal$animationToMilliseconds, animation, distance);
+		var animationState = {delayMs: delayMs, duration: duration, easing: easing, startValue: currentValue, startedAt: 0, target: target};
 		var updatedProperties = A3($elm$core$Dict$insert, propertyKey, currentValue, currentElementData.properties);
-		var animationState = {config: config, duration: duration, startValue: currentValue, startedAt: 0, target: target};
 		var elementData = {
 			animation: $elm$core$Maybe$Just(animationState),
 			properties: updatedProperties
@@ -5751,28 +5945,55 @@ var $author$project$Anim$Sub$animateWithConfig = F4(
 		var updatedDict = A3($elm$core$Dict$insert, elementId, elementData, elementsDict);
 		return $author$project$Anim$Sub$Model(updatedDict);
 	});
-var $author$project$Anim$Duration = function (a) {
-	return {$: 'Duration', a: a};
+var $author$project$Anim$Animation = function (a) {
+	return {$: 'Animation', a: a};
 };
-var $author$project$Anim$EaseOut = {$: 'EaseOut'};
+var $author$project$Anim$EaseInOut = {$: 'EaseInOut'};
 var $author$project$Anim$EasePreset = function (a) {
 	return {$: 'EasePreset', a: a};
 };
-var $author$project$Anim$defaultConfig = {
-	easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
-	timing: $author$project$Anim$Duration(400)
+var $author$project$Anim$easeInOut = function (_v0) {
+	var data = _v0.a;
+	return $author$project$Anim$Animation(
+		_Utils_update(
+			data,
+			{
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseInOut)
+			}));
 };
-var $author$project$Anim$Sub$animate = F3(
-	function (elementId, target, model) {
-		return A4($author$project$Anim$Sub$animateWithConfig, elementId, target, $author$project$Anim$defaultConfig, model);
+var $author$project$Anim$EaseOut = {$: 'EaseOut'};
+var $author$project$Anim$easeOut = function (_v0) {
+	var data = _v0.a;
+	return $author$project$Anim$Animation(
+		_Utils_update(
+			data,
+			{
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut)
+			}));
+};
+var $author$project$Anim$ScaleBuilder = F2(
+	function (a, b) {
+		return {$: 'ScaleBuilder', a: a, b: b};
 	});
-var $author$project$Anim$Sub$animateScale = F3(
-	function (elementId, scale, model) {
-		return A3(
-			$author$project$Anim$Sub$animate,
-			elementId,
-			$author$project$Anim$ToScale(scale),
-			model);
+var $author$project$Anim$scale = F2(
+	function (elementId, value) {
+		return A2($author$project$Anim$ScaleBuilder, elementId, value);
+	});
+var $author$project$Anim$ScalePerSecond = function (a) {
+	return {$: 'ScalePerSecond', a: a};
+};
+var $author$project$Anim$scalePerSecond = F2(
+	function (speed, _v0) {
+		var elementId = _v0.a;
+		var value = _v0.b;
+		return $author$project$Anim$Animation(
+			{
+				delayMs: 0,
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
+				elementId: elementId,
+				target: $author$project$Anim$ToScale(value),
+				timing: $author$project$Anim$ScalePerSecond(speed)
+			});
 	});
 var $elm_community$easing_functions$Ease$inOut = F3(
 	function (e1, e2, time) {
@@ -6073,7 +6294,7 @@ var $author$project$Anim$Sub$step = F2(
 					{startedAt: newStartedAt});
 				var elapsed = (!animState.startedAt) ? 0 : (delta - newStartedAt);
 				var progress = (animState.duration <= 0) ? 1.0 : A2($elm$core$Basics$min, 1.0, elapsed / animState.duration);
-				var easedProgress = A2($author$project$Anim$Internal$easingToEaseFunction, animState.config.easing, progress);
+				var easedProgress = A2($author$project$Anim$Internal$easingToEaseFunction, animState.easing, progress);
 				var currentValue = A3($author$project$Anim$Sub$interpolateTarget, animState.startValue, animState.target, easedProgress);
 				if (progress >= 1.0) {
 					var updatedProperties = A3($elm$core$Dict$insert, propertyKey, animState.target, elementData.properties);
@@ -6104,63 +6325,83 @@ var $author$project$ElmUI$Sub$Scale$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'ScaleUp':
+				var animation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$scalePerSecond,
+						2.0,
+						A2(
+							$author$project$Anim$scale,
+							'box',
+							{x: 1.5, y: 1.5})));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$Sub$animateScale,
-								'box',
-								{x: 1.5, y: 1.5},
-								model.animations)
+							animations: A2($author$project$Anim$Sub$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'ScaleDown':
+				var animation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$scalePerSecond,
+						2.0,
+						A2(
+							$author$project$Anim$scale,
+							'box',
+							{x: 0.7, y: 0.7})));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$Sub$animateScale,
-								'box',
-								{x: 0.7, y: 0.7},
-								model.animations)
+							animations: A2($author$project$Anim$Sub$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'ScaleReset':
+				var animation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$scalePerSecond,
+						1.5,
+						A2(
+							$author$project$Anim$scale,
+							'box',
+							{x: 1.0, y: 1.0})));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$Sub$animateScale,
-								'box',
-								{x: 1.0, y: 1.0},
-								model.animations)
+							animations: A2($author$project$Anim$Sub$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'ScaleWide':
+				var animation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$scalePerSecond,
+						2.5,
+						A2(
+							$author$project$Anim$scale,
+							'box',
+							{x: 1.8, y: 0.6})));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$Sub$animateScale,
-								'box',
-								{x: 1.8, y: 0.6},
-								model.animations)
+							animations: A2($author$project$Anim$Sub$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'ScaleTall':
+				var animation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$scalePerSecond,
+						2.5,
+						A2(
+							$author$project$Anim$scale,
+							'box',
+							{x: 0.6, y: 1.8})));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$Sub$animateScale,
-								'box',
-								{x: 0.6, y: 1.8},
-								model.animations)
+							animations: A2($author$project$Anim$Sub$animate, animation, model.animations)
 						}),
 					$elm$core$Platform$Cmd$none);
 			default:

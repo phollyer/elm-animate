@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim exposing (defaultConfig)
-import Anim.Sub exposing (Model, animateOpacity, init, step, styleProperties, subscriptions)
+import Anim
+import Anim.Sub exposing (Model, animate, init, step, styleProperties, subscriptions)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -79,16 +79,28 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         FadeIn ->
+            let
+                animation =
+                    Anim.opacity "box" 1.0
+                        |> Anim.opacityPerSecond 2.0
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateOpacity "box" 1.0 model.animations
+                | animations = animate animation model.animations
                 , isVisible = True
               }
             , Cmd.none
             )
 
         FadeOut ->
+            let
+                animation =
+                    Anim.opacity "box" 0.0
+                        |> Anim.opacityPerSecond 2.0
+                        |> Anim.easeOut
+            in
             ( { model
-                | animations = animateOpacity "box" 0.0 model.animations
+                | animations = animate animation model.animations
                 , isVisible = False
               }
             , Cmd.none
@@ -106,9 +118,14 @@ update msg model =
 
                 newVisible =
                     not model.isVisible
+
+                animation =
+                    Anim.opacity "box" newOpacity
+                        |> Anim.opacityPerSecond 3.0
+                        |> Anim.easeInOut
             in
             ( { model
-                | animations = animateOpacity "box" newOpacity model.animations
+                | animations = animate animation model.animations
                 , isVisible = newVisible
               }
             , Cmd.none

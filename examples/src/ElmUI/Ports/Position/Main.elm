@@ -22,8 +22,8 @@ USAGE:
 
 -}
 
-import Anim exposing (Position, defaultConfig)
-import Anim.Ports exposing (Model, animateTo, animateToX, animateToY, encodeAnimationCommand, getPosition, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
+import Anim
+import Anim.Ports exposing (Model, animate, encodeAnimationCommand, getPosition, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -110,13 +110,18 @@ update msg model =
     case msg of
         MoveToCorner ->
             let
+                animation =
+                    Anim.position "box" { x = 100, y = 100 }
+                        |> Anim.pixelsPerSecond 300.0
+                        |> Anim.easeOut
+
                 ( newModel, maybeCommand ) =
-                    animateTo "box" (Position 100 100) model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel, isAnimating = True }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , animateElement (encodeAnimationCommand command)
                     )
 
                 Nothing ->
@@ -124,13 +129,18 @@ update msg model =
 
         MoveToCenter ->
             let
+                animation =
+                    Anim.position "box" { x = 300, y = 200 }
+                        |> Anim.pixelsPerSecond 400.0
+                        |> Anim.easeInOut
+
                 ( newModel, maybeCommand ) =
-                    animateTo "box" (Position 300 200) model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel, isAnimating = True }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , animateElement (encodeAnimationCommand command)
                     )
 
                 Nothing ->
@@ -138,13 +148,22 @@ update msg model =
 
         MoveLeft ->
             let
+                currentPos =
+                    getPosition "box" model.animations
+                        |> Maybe.withDefault { x = 0, y = 0 }
+
+                animation =
+                    Anim.position "box" { x = 0, y = currentPos.y }
+                        |> Anim.pixelsPerSecond 350.0
+                        |> Anim.easeIn
+
                 ( newModel, maybeCommand ) =
-                    animateToX "box" 0 model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel, isAnimating = True }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , animateElement (encodeAnimationCommand command)
                     )
 
                 Nothing ->
@@ -152,15 +171,23 @@ update msg model =
 
         MoveRight ->
             let
-                ( newModel, maybeCommand ) =
-                    animateToX "box" 450 model.animations
+                currentPos =
+                    getPosition "box" model.animations
+                        |> Maybe.withDefault { x = 0, y = 0 }
+
+                animation =
+                    Anim.position "box" { x = 450, y = currentPos.y }
+                        |> Anim.pixelsPerSecond 350.0
+                        |> Anim.easeIn
 
                 -- 500px container - 50px box = 450px for right edge
+                ( newModel, maybeCommand ) =
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel, isAnimating = True }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , animateElement (encodeAnimationCommand command)
                     )
 
                 Nothing ->
@@ -168,13 +195,22 @@ update msg model =
 
         MoveUp ->
             let
+                currentPos =
+                    getPosition "box" model.animations
+                        |> Maybe.withDefault { x = 0, y = 0 }
+
+                animation =
+                    Anim.position "box" { x = currentPos.x, y = 0 }
+                        |> Anim.pixelsPerSecond 300.0
+                        |> Anim.easeOut
+
                 ( newModel, maybeCommand ) =
-                    animateToY "box" 0 model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel, isAnimating = True }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , animateElement (encodeAnimationCommand command)
                     )
 
                 Nothing ->
@@ -182,15 +218,23 @@ update msg model =
 
         MoveDown ->
             let
-                ( newModel, maybeCommand ) =
-                    animateToY "box" 350 model.animations
+                currentPos =
+                    getPosition "box" model.animations
+                        |> Maybe.withDefault { x = 0, y = 0 }
+
+                animation =
+                    Anim.position "box" { x = currentPos.x, y = 350 }
+                        |> Anim.pixelsPerSecond 300.0
+                        |> Anim.easeOut
 
                 -- 400px container - 50px box = 350px for bottom edge
+                ( newModel, maybeCommand ) =
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel, isAnimating = True }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , animateElement (encodeAnimationCommand command)
                     )
 
                 Nothing ->
@@ -198,13 +242,18 @@ update msg model =
 
         StopAnimation ->
             let
+                animation =
+                    Anim.position "box" { x = 0, y = 0 }
+                        |> Anim.pixelsPerSecond 200.0
+                        |> Anim.easeInOut
+
                 ( newModel, maybeCommand ) =
-                    animateTo "box" (Position 0 0) model.animations
+                    animate animation model.animations
             in
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel, isAnimating = True }
-                    , sendAnimationCommand animateElement encodeAnimationCommand command
+                    , animateElement (encodeAnimationCommand command)
                     )
 
                 Nothing ->
