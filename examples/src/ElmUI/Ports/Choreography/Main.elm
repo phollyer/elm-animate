@@ -27,7 +27,7 @@ USAGE EXAMPLES:
 -- Common UI imports
 
 import Anim exposing (Position, defaultConfig)
-import Anim.Ports exposing (Model, animateTo, animateToX, animateToY, encodeAnimationCommand, getPosition, handlePropertyUpdateFromJson, init, styleProperties)
+import Anim.Ports exposing (Model, animateTo, animateToMultiple, animateToX, animateToY, encodeAnimationCommand, getPosition, handlePropertyUpdateFromJson, init, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -112,60 +112,48 @@ update msg model =
     case msg of
         ScatterElements ->
             let
-                ( model1, maybeCmd1 ) =
-                    animateTo "elementA" (Position 80 60) model.animations
+                scatterPositions =
+                    [ ( "elementA", Position 80 60 )
+                    , ( "elementB", Position 320 80 )
+                    , ( "elementC", Position 40 300 )
+                    , ( "elementD", Position 380 260 )
+                    , ( "elementE", Position 60 120 )
+                    , ( "elementF", Position 350 320 )
+                    ]
 
-                ( model2, maybeCmd2 ) =
-                    animateTo "elementB" (Position 320 80) model1
+                ( updatedAnimations, animationCommands ) =
+                    animateToMultiple scatterPositions model.animations
 
-                ( model3, maybeCmd3 ) =
-                    animateTo "elementC" (Position 40 300) model2
-
-                ( model4, maybeCmd4 ) =
-                    animateTo "elementD" (Position 380 260) model3
-
-                ( model5, maybeCmd5 ) =
-                    animateTo "elementE" (Position 60 120) model4
-
-                ( model6, maybeCmd6 ) =
-                    animateTo "elementF" (Position 350 320) model5
-
-                commands =
-                    [ maybeCmd1, maybeCmd2, maybeCmd3, maybeCmd4, maybeCmd5, maybeCmd6 ]
-                        |> List.filterMap identity
+                batchedCommand =
+                    animationCommands
                         |> List.map (animateElement << encodeAnimationCommand)
+                        |> Cmd.batch
             in
-            ( { model | animations = model6, isAnimating = True }
-            , Cmd.batch commands
+            ( { model | animations = updatedAnimations, isAnimating = True }
+            , batchedCommand
             )
 
         ResetPositions ->
             let
-                ( model1, maybeCmd1 ) =
-                    animateTo "elementA" (Position 150 100) model.animations
+                resetPositions =
+                    [ ( "elementA", Position 150 100 )
+                    , ( "elementB", Position 200 150 )
+                    , ( "elementC", Position 100 200 )
+                    , ( "elementD", Position 250 200 )
+                    , ( "elementE", Position 300 100 )
+                    , ( "elementF", Position 180 50 )
+                    ]
 
-                ( model2, maybeCmd2 ) =
-                    animateTo "elementB" (Position 200 150) model1
+                ( updatedAnimations, animationCommands ) =
+                    animateToMultiple resetPositions model.animations
 
-                ( model3, maybeCmd3 ) =
-                    animateTo "elementC" (Position 100 200) model2
-
-                ( model4, maybeCmd4 ) =
-                    animateTo "elementD" (Position 250 200) model3
-
-                ( model5, maybeCmd5 ) =
-                    animateTo "elementE" (Position 300 100) model4
-
-                ( model6, maybeCmd6 ) =
-                    animateTo "elementF" (Position 180 50) model5
-
-                commands =
-                    [ maybeCmd1, maybeCmd2, maybeCmd3, maybeCmd4, maybeCmd5, maybeCmd6 ]
-                        |> List.filterMap identity
+                batchedCommand =
+                    animationCommands
                         |> List.map (animateElement << encodeAnimationCommand)
+                        |> Cmd.batch
             in
-            ( { model | animations = model6, isAnimating = True }
-            , Cmd.batch commands
+            ( { model | animations = updatedAnimations, isAnimating = True }
+            , batchedCommand
             )
 
         CircleFormation ->
@@ -174,42 +162,30 @@ update msg model =
                     225
 
                 centerY =
-                    180
+                    175
 
                 radius =
                     90
 
-                ( model1, maybeCmd1 ) =
-                    animateTo "elementA" (Position (centerX + radius) centerY) model.animations
+                circlePositions =
+                    [ ( "elementA", Position (centerX + radius) centerY ) -- 0°
+                    , ( "elementB", Position (centerX + radius * 0.5) (centerY + radius * 0.866) ) -- 60°
+                    , ( "elementC", Position (centerX - radius * 0.5) (centerY + radius * 0.866) ) -- 120°
+                    , ( "elementD", Position (centerX - radius) centerY ) -- 180°
+                    , ( "elementE", Position (centerX - radius * 0.5) (centerY - radius * 0.866) ) -- 240°
+                    , ( "elementF", Position (centerX + radius * 0.5) (centerY - radius * 0.866) ) -- 300°
+                    ]
 
-                -- 0°
-                ( model2, maybeCmd2 ) =
-                    animateTo "elementB" (Position (centerX + radius * 0.5) (centerY + radius * 0.866)) model1
+                ( updatedAnimations, animationCommands ) =
+                    animateToMultiple circlePositions model.animations
 
-                -- 60°
-                ( model3, maybeCmd3 ) =
-                    animateTo "elementC" (Position (centerX - radius * 0.5) (centerY + radius * 0.866)) model2
-
-                -- 120°
-                ( model4, maybeCmd4 ) =
-                    animateTo "elementD" (Position (centerX - radius) centerY) model3
-
-                -- 180°
-                ( model5, maybeCmd5 ) =
-                    animateTo "elementE" (Position (centerX - radius * 0.5) (centerY - radius * 0.866)) model4
-
-                -- 240°
-                ( model6, maybeCmd6 ) =
-                    animateTo "elementF" (Position (centerX + radius * 0.5) (centerY - radius * 0.866)) model5
-
-                -- 300°
-                commands =
-                    [ maybeCmd1, maybeCmd2, maybeCmd3, maybeCmd4, maybeCmd5, maybeCmd6 ]
-                        |> List.filterMap identity
+                batchedCommand =
+                    animationCommands
                         |> List.map (animateElement << encodeAnimationCommand)
+                        |> Cmd.batch
             in
-            ( { model | animations = model6, isAnimating = True }
-            , Cmd.batch commands
+            ( { model | animations = updatedAnimations, isAnimating = True }
+            , batchedCommand
             )
 
         AnimationComplete _ ->

@@ -39,6 +39,7 @@ module Anim.Ports exposing
     , encodeAnimationCommand
     , encodeStopCommand
     , propertyUpdateDecoder
+    , animateToMultiple
     )
 
 {-| Port-based animations using JavaScript's Web Animations API for high-performance element movement.
@@ -654,6 +655,37 @@ animateToY elementId targetY model =
             { currentPos | y = targetY }
     in
     animate elementId (ToPosition newPosition) model
+
+
+{-| Animate multiple elements to their target positions simultaneously
+
+Takes a list of (elementId, position) pairs and returns the updated model with all animation commands batched together.
+This is useful for choreographed animations where multiple elements need to move in coordination.
+
+    positions =
+        [ ( "element1", { x = 100, y = 50 } )
+        , ( "element2", { x = 200, y = 100 } )
+        , ( "element3", { x = 150, y = 150 } )
+        ]
+
+    ( newModel, commands ) =
+        animateToMultiple positions model
+
+The returned commands are already batched and ready to use in your update function.
+
+-}
+animateToMultiple : List ( TargetId, Position ) -> Model -> ( Model, List AnimationCommand )
+animateToMultiple elementPositions initialModel =
+    let
+        processAnimation ( elementId, position ) ( accModel, accCommands ) =
+            case animateTo elementId position accModel of
+                ( updatedModel, Just command ) ->
+                    ( updatedModel, command :: accCommands )
+
+                ( updatedModel, Nothing ) ->
+                    ( updatedModel, accCommands )
+    in
+    List.foldl processAnimation ( initialModel, [] ) elementPositions
 
 
 {-| Start animating an element to a target position with custom configuration

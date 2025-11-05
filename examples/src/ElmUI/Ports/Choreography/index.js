@@ -5701,6 +5701,33 @@ var $author$project$Anim$Ports$animateTo = F3(
 			$author$project$Anim$ToPosition(position),
 			model);
 	});
+var $author$project$Anim$Ports$animateToMultiple = F2(
+	function (elementPositions, initialModel) {
+		var processAnimation = F2(
+			function (_v2, _v3) {
+				var elementId = _v2.a;
+				var position = _v2.b;
+				var accModel = _v3.a;
+				var accCommands = _v3.b;
+				var _v0 = A3($author$project$Anim$Ports$animateTo, elementId, position, accModel);
+				if (_v0.b.$ === 'Just') {
+					var updatedModel = _v0.a;
+					var command = _v0.b.a;
+					return _Utils_Tuple2(
+						updatedModel,
+						A2($elm$core$List$cons, command, accCommands));
+				} else {
+					var updatedModel = _v0.a;
+					var _v1 = _v0.b;
+					return _Utils_Tuple2(updatedModel, accCommands);
+				}
+			});
+		return A3(
+			$elm$core$List$foldl,
+			processAnimation,
+			_Utils_Tuple2(initialModel, _List_Nil),
+			elementPositions);
+	});
 var $elm$json$Json$Encode$float = _Json_wrap;
 var $elm$json$Json$Encode$int = _Json_wrap;
 var $elm$json$Json$Encode$object = function (pairs) {
@@ -6056,24 +6083,6 @@ var $author$project$Anim$Ports$encodeAnimationCommand = function (command) {
 				$elm$json$Json$Encode$string(easing))
 			]));
 };
-var $elm$core$List$maybeCons = F3(
-	function (f, mx, xs) {
-		var _v0 = f(mx);
-		if (_v0.$ === 'Just') {
-			var x = _v0.a;
-			return A2($elm$core$List$cons, x, xs);
-		} else {
-			return xs;
-		}
-	});
-var $elm$core$List$filterMap = F2(
-	function (f, xs) {
-		return A3(
-			$elm$core$List$foldr,
-			$elm$core$List$maybeCons(f),
-			_List_Nil,
-			xs);
-	});
 var $author$project$Anim$Ports$handlePropertyUpdate = F2(
 	function (update, _v0) {
 		var elementsDict = _v0.a;
@@ -6092,176 +6101,113 @@ var $author$project$ElmUI$Ports$Choreography$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'ScatterElements':
-				var _v1 = A3(
-					$author$project$Anim$Ports$animateTo,
-					'elementA',
-					A2($author$project$Anim$Position, 80, 60),
-					model.animations);
-				var model1 = _v1.a;
-				var maybeCmd1 = _v1.b;
-				var _v2 = A3(
-					$author$project$Anim$Ports$animateTo,
-					'elementB',
-					A2($author$project$Anim$Position, 320, 80),
-					model1);
-				var model2 = _v2.a;
-				var maybeCmd2 = _v2.b;
-				var _v3 = A3(
-					$author$project$Anim$Ports$animateTo,
-					'elementC',
-					A2($author$project$Anim$Position, 40, 300),
-					model2);
-				var model3 = _v3.a;
-				var maybeCmd3 = _v3.b;
-				var _v4 = A3(
-					$author$project$Anim$Ports$animateTo,
-					'elementD',
-					A2($author$project$Anim$Position, 380, 260),
-					model3);
-				var model4 = _v4.a;
-				var maybeCmd4 = _v4.b;
-				var _v5 = A3(
-					$author$project$Anim$Ports$animateTo,
-					'elementE',
-					A2($author$project$Anim$Position, 60, 120),
-					model4);
-				var model5 = _v5.a;
-				var maybeCmd5 = _v5.b;
-				var _v6 = A3(
-					$author$project$Anim$Ports$animateTo,
-					'elementF',
-					A2($author$project$Anim$Position, 350, 320),
-					model5);
-				var model6 = _v6.a;
-				var maybeCmd6 = _v6.b;
-				var commands = A2(
-					$elm$core$List$map,
-					A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Choreography$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
+				var scatterPositions = _List_fromArray(
+					[
+						_Utils_Tuple2(
+						'elementA',
+						A2($author$project$Anim$Position, 80, 60)),
+						_Utils_Tuple2(
+						'elementB',
+						A2($author$project$Anim$Position, 320, 80)),
+						_Utils_Tuple2(
+						'elementC',
+						A2($author$project$Anim$Position, 40, 300)),
+						_Utils_Tuple2(
+						'elementD',
+						A2($author$project$Anim$Position, 380, 260)),
+						_Utils_Tuple2(
+						'elementE',
+						A2($author$project$Anim$Position, 60, 120)),
+						_Utils_Tuple2(
+						'elementF',
+						A2($author$project$Anim$Position, 350, 320))
+					]);
+				var _v1 = A2($author$project$Anim$Ports$animateToMultiple, scatterPositions, model.animations);
+				var updatedAnimations = _v1.a;
+				var animationCommands = _v1.b;
+				var batchedCommand = $elm$core$Platform$Cmd$batch(
 					A2(
-						$elm$core$List$filterMap,
-						$elm$core$Basics$identity,
-						_List_fromArray(
-							[maybeCmd1, maybeCmd2, maybeCmd3, maybeCmd4, maybeCmd5, maybeCmd6])));
+						$elm$core$List$map,
+						A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Choreography$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
+						animationCommands));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animations: model6, isAnimating: true}),
-					$elm$core$Platform$Cmd$batch(commands));
+						{animations: updatedAnimations, isAnimating: true}),
+					batchedCommand);
 			case 'ResetPositions':
-				var _v7 = A3(
-					$author$project$Anim$Ports$animateTo,
-					'elementA',
-					A2($author$project$Anim$Position, 150, 100),
-					model.animations);
-				var model1 = _v7.a;
-				var maybeCmd1 = _v7.b;
-				var _v8 = A3(
-					$author$project$Anim$Ports$animateTo,
-					'elementB',
-					A2($author$project$Anim$Position, 200, 150),
-					model1);
-				var model2 = _v8.a;
-				var maybeCmd2 = _v8.b;
-				var _v9 = A3(
-					$author$project$Anim$Ports$animateTo,
-					'elementC',
-					A2($author$project$Anim$Position, 100, 200),
-					model2);
-				var model3 = _v9.a;
-				var maybeCmd3 = _v9.b;
-				var _v10 = A3(
-					$author$project$Anim$Ports$animateTo,
-					'elementD',
-					A2($author$project$Anim$Position, 250, 200),
-					model3);
-				var model4 = _v10.a;
-				var maybeCmd4 = _v10.b;
-				var _v11 = A3(
-					$author$project$Anim$Ports$animateTo,
-					'elementE',
-					A2($author$project$Anim$Position, 300, 100),
-					model4);
-				var model5 = _v11.a;
-				var maybeCmd5 = _v11.b;
-				var _v12 = A3(
-					$author$project$Anim$Ports$animateTo,
-					'elementF',
-					A2($author$project$Anim$Position, 180, 50),
-					model5);
-				var model6 = _v12.a;
-				var maybeCmd6 = _v12.b;
-				var commands = A2(
-					$elm$core$List$map,
-					A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Choreography$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
+				var resetPositions = _List_fromArray(
+					[
+						_Utils_Tuple2(
+						'elementA',
+						A2($author$project$Anim$Position, 150, 100)),
+						_Utils_Tuple2(
+						'elementB',
+						A2($author$project$Anim$Position, 200, 150)),
+						_Utils_Tuple2(
+						'elementC',
+						A2($author$project$Anim$Position, 100, 200)),
+						_Utils_Tuple2(
+						'elementD',
+						A2($author$project$Anim$Position, 250, 200)),
+						_Utils_Tuple2(
+						'elementE',
+						A2($author$project$Anim$Position, 300, 100)),
+						_Utils_Tuple2(
+						'elementF',
+						A2($author$project$Anim$Position, 180, 50))
+					]);
+				var _v2 = A2($author$project$Anim$Ports$animateToMultiple, resetPositions, model.animations);
+				var updatedAnimations = _v2.a;
+				var animationCommands = _v2.b;
+				var batchedCommand = $elm$core$Platform$Cmd$batch(
 					A2(
-						$elm$core$List$filterMap,
-						$elm$core$Basics$identity,
-						_List_fromArray(
-							[maybeCmd1, maybeCmd2, maybeCmd3, maybeCmd4, maybeCmd5, maybeCmd6])));
+						$elm$core$List$map,
+						A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Choreography$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
+						animationCommands));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animations: model6, isAnimating: true}),
-					$elm$core$Platform$Cmd$batch(commands));
+						{animations: updatedAnimations, isAnimating: true}),
+					batchedCommand);
 			case 'CircleFormation':
 				var radius = 90;
-				var centerY = 180;
+				var centerY = 175;
 				var centerX = 225;
-				var _v13 = A3(
-					$author$project$Anim$Ports$animateTo,
-					'elementA',
-					A2($author$project$Anim$Position, centerX + radius, centerY),
-					model.animations);
-				var model1 = _v13.a;
-				var maybeCmd1 = _v13.b;
-				var _v14 = A3(
-					$author$project$Anim$Ports$animateTo,
-					'elementB',
-					A2($author$project$Anim$Position, centerX + (radius * 0.5), centerY + (radius * 0.866)),
-					model1);
-				var model2 = _v14.a;
-				var maybeCmd2 = _v14.b;
-				var _v15 = A3(
-					$author$project$Anim$Ports$animateTo,
-					'elementC',
-					A2($author$project$Anim$Position, centerX - (radius * 0.5), centerY + (radius * 0.866)),
-					model2);
-				var model3 = _v15.a;
-				var maybeCmd3 = _v15.b;
-				var _v16 = A3(
-					$author$project$Anim$Ports$animateTo,
-					'elementD',
-					A2($author$project$Anim$Position, centerX - radius, centerY),
-					model3);
-				var model4 = _v16.a;
-				var maybeCmd4 = _v16.b;
-				var _v17 = A3(
-					$author$project$Anim$Ports$animateTo,
-					'elementE',
-					A2($author$project$Anim$Position, centerX - (radius * 0.5), centerY - (radius * 0.866)),
-					model4);
-				var model5 = _v17.a;
-				var maybeCmd5 = _v17.b;
-				var _v18 = A3(
-					$author$project$Anim$Ports$animateTo,
-					'elementF',
-					A2($author$project$Anim$Position, centerX + (radius * 0.5), centerY - (radius * 0.866)),
-					model5);
-				var model6 = _v18.a;
-				var maybeCmd6 = _v18.b;
-				var commands = A2(
-					$elm$core$List$map,
-					A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Choreography$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
+				var circlePositions = _List_fromArray(
+					[
+						_Utils_Tuple2(
+						'elementA',
+						A2($author$project$Anim$Position, centerX + radius, centerY)),
+						_Utils_Tuple2(
+						'elementB',
+						A2($author$project$Anim$Position, centerX + (radius * 0.5), centerY + (radius * 0.866))),
+						_Utils_Tuple2(
+						'elementC',
+						A2($author$project$Anim$Position, centerX - (radius * 0.5), centerY + (radius * 0.866))),
+						_Utils_Tuple2(
+						'elementD',
+						A2($author$project$Anim$Position, centerX - radius, centerY)),
+						_Utils_Tuple2(
+						'elementE',
+						A2($author$project$Anim$Position, centerX - (radius * 0.5), centerY - (radius * 0.866))),
+						_Utils_Tuple2(
+						'elementF',
+						A2($author$project$Anim$Position, centerX + (radius * 0.5), centerY - (radius * 0.866)))
+					]);
+				var _v3 = A2($author$project$Anim$Ports$animateToMultiple, circlePositions, model.animations);
+				var updatedAnimations = _v3.a;
+				var animationCommands = _v3.b;
+				var batchedCommand = $elm$core$Platform$Cmd$batch(
 					A2(
-						$elm$core$List$filterMap,
-						$elm$core$Basics$identity,
-						_List_fromArray(
-							[maybeCmd1, maybeCmd2, maybeCmd3, maybeCmd4, maybeCmd5, maybeCmd6])));
+						$elm$core$List$map,
+						A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Choreography$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
+						animationCommands));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animations: model6, isAnimating: true}),
-					$elm$core$Platform$Cmd$batch(commands));
+						{animations: updatedAnimations, isAnimating: true}),
+					batchedCommand);
 			case 'AnimationComplete':
 				return _Utils_Tuple2(
 					_Utils_update(
@@ -6796,6 +6742,24 @@ var $mdgriffith$elm_ui$Internal$Model$Style = F2(
 var $mdgriffith$elm_ui$Internal$Style$dot = function (c) {
 	return '.' + c;
 };
+var $elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _v0 = f(mx);
+		if (_v0.$ === 'Just') {
+			var x = _v0.a;
+			return A2($elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var $elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			$elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
 var $mdgriffith$elm_ui$Internal$Model$formatBoxShadow = function (shadow) {
 	return A2(
 		$elm$core$String$join,
