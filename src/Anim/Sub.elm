@@ -328,7 +328,7 @@ This is the general-purpose animation function that can handle any AnimationTarg
 -}
 animate : TargetId -> AnimationTarget -> Model -> Model
 animate elementId target model =
-    animateWithConfig defaultConfig elementId target model
+    animateWithConfig elementId target defaultConfig model
 
 
 {-| Start animating an element to a target animation property with custom configuration.
@@ -342,8 +342,8 @@ animate elementId target model =
         Anim.Sub.animateWithConfig config "my-element" (ToScale { x = 2.0, y = 2.0 }) model.animSubModel
 
 -}
-animateWithConfig : Config -> TargetId -> AnimationTarget -> Model -> Model
-animateWithConfig config elementId target (Model elementsDict) =
+animateWithConfig : TargetId -> AnimationTarget -> Config -> Model -> Model
+animateWithConfig elementId target config (Model elementsDict) =
     let
         propertyKey =
             getPropertyKey target
@@ -485,9 +485,9 @@ animateOpacity elementId opacity model =
         Anim.Sub.animateOpacityWithConfig config "my-element" 0.5 model.animSubModel
 
 -}
-animateOpacityWithConfig : Config -> TargetId -> Float -> Model -> Model
-animateOpacityWithConfig config elementId opacity model =
-    animateWithConfig config elementId (ToOpacity opacity) model
+animateOpacityWithConfig : TargetId -> Float -> Config -> Model -> Model
+animateOpacityWithConfig elementId opacity config model =
+    animateWithConfig elementId (ToOpacity opacity) config model
 
 
 {-| Animate element scale with default configuration.
@@ -510,9 +510,9 @@ animateScale elementId scale model =
         Anim.Sub.animateScaleWithConfig config "my-element" { x = 2.0, y = 2.0 } model.animSubModel
 
 -}
-animateScaleWithConfig : Config -> TargetId -> ScaleValue -> Model -> Model
-animateScaleWithConfig config elementId scale model =
-    animateWithConfig config elementId (ToScale scale) model
+animateScaleWithConfig : TargetId -> ScaleValue -> Config -> Model -> Model
+animateScaleWithConfig elementId scale config model =
+    animateWithConfig elementId (ToScale scale) config model
 
 
 {-| Animate element rotation with default configuration.
@@ -535,9 +535,9 @@ animateRotation elementId rotation model =
         Anim.Sub.animateRotationWithConfig config "my-element" 180.0 model.animSubModel
 
 -}
-animateRotationWithConfig : Config -> TargetId -> RotationValue -> Model -> Model
-animateRotationWithConfig config elementId rotation model =
-    animateWithConfig config elementId (ToRotation rotation) model
+animateRotationWithConfig : TargetId -> RotationValue -> Config -> Model -> Model
+animateRotationWithConfig elementId rotation config model =
+    animateWithConfig elementId (ToRotation rotation) config model
 
 
 {-| Animate element background color with default configuration.
@@ -564,9 +564,9 @@ animateBackgroundColor elementId color model =
         Anim.Sub.animateBackgroundColorWithConfig config "my-element" (Hsl { h = 120, s = 100, l = 50 }) model.animSubModel
 
 -}
-animateBackgroundColorWithConfig : Config -> TargetId -> ColorValue -> Model -> Model
-animateBackgroundColorWithConfig config elementId color model =
-    animateWithConfig config elementId (ToBackgroundColor color) model
+animateBackgroundColorWithConfig : TargetId -> ColorValue -> Config -> Model -> Model
+animateBackgroundColorWithConfig elementId color config model =
+    animateWithConfig elementId (ToBackgroundColor color) config model
 
 
 {-| Start animating an element to a target position using default config
@@ -636,9 +636,9 @@ animateToY elementId targetY model =
         Anim.Sub.animateToWithConfig config "my-element" { x = 100, y = 150 } model.moveSubModel
 
 -}
-animateToWithConfig : Config -> TargetId -> Position -> Model -> Model
-animateToWithConfig config elementId position model =
-    animateWithConfig config elementId (ToPosition position) model
+animateToWithConfig : TargetId -> Position -> Config -> Model -> Model
+animateToWithConfig elementId position config model =
+    animateWithConfig elementId (ToPosition position) config model
 
 
 {-| Start animating an element horizontally to a target X position with custom configuration
@@ -652,8 +652,8 @@ Only the X coordinate will change - Y position remains at current value.
         Anim.Sub.animateToXWithConfig config "my-element" 200 model.moveSubModel
 
 -}
-animateToXWithConfig : Config -> TargetId -> Float -> Model -> Model
-animateToXWithConfig config elementId targetX model =
+animateToXWithConfig : TargetId -> Float -> Config -> Model -> Model
+animateToXWithConfig elementId targetX config model =
     let
         currentPos =
             getPosition elementId model
@@ -662,7 +662,7 @@ animateToXWithConfig config elementId targetX model =
         newPosition =
             { currentPos | x = targetX }
     in
-    animateWithConfig config elementId (ToPosition newPosition) model
+    animateWithConfig elementId (ToPosition newPosition) config model
 
 
 {-| Start animating an element vertically to a target Y position with custom configuration
@@ -676,8 +676,8 @@ Only the Y coordinate will change - X position remains at current value.
         Anim.Sub.animateToYWithConfig config "my-element" 300 model.moveSubModel
 
 -}
-animateToYWithConfig : Config -> TargetId -> Float -> Model -> Model
-animateToYWithConfig config elementId targetY model =
+animateToYWithConfig : TargetId -> Float -> Config -> Model -> Model
+animateToYWithConfig elementId targetY config model =
     let
         currentPos =
             getPosition elementId model
@@ -686,7 +686,7 @@ animateToYWithConfig config elementId targetY model =
         newPosition =
             { currentPos | y = targetY }
     in
-    animateWithConfig config elementId (ToPosition newPosition) model
+    animateWithConfig elementId (ToPosition newPosition) config model
 
 
 {-| Manually set an element's position without animation

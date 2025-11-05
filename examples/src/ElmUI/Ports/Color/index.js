@@ -5657,7 +5657,7 @@ var $elm$core$Maybe$withDefault = F2(
 		}
 	});
 var $author$project$Anim$Ports$animateWithConfig = F4(
-	function (config, elementId, target, _v0) {
+	function (elementId, target, config, _v0) {
 		var elementsDict = _v0.a;
 		var propertyKey = $author$project$Anim$Ports$getPropertyKey(target);
 		var currentElementData = A2(
@@ -5686,7 +5686,7 @@ var $author$project$Anim$defaultConfig = {
 };
 var $author$project$Anim$Ports$animate = F3(
 	function (elementId, target, model) {
-		return A4($author$project$Anim$Ports$animateWithConfig, $author$project$Anim$defaultConfig, elementId, target, model);
+		return A4($author$project$Anim$Ports$animateWithConfig, elementId, target, $author$project$Anim$defaultConfig, model);
 	});
 var $author$project$Anim$Ports$animateBackgroundColor = F3(
 	function (elementId, color, model) {

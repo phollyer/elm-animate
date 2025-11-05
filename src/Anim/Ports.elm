@@ -400,7 +400,7 @@ Returns the updated model and optionally an AnimationCommand to send through you
 -}
 animate : TargetId -> AnimationTarget -> Model -> ( Model, Maybe AnimationCommand )
 animate elementId target model =
-    animateWithConfig defaultConfig elementId target model
+    animateWithConfig elementId target defaultConfig model
 
 
 {-| Start animating an element to a target animation property with custom configuration.
@@ -411,11 +411,11 @@ animate elementId target model =
         { defaultConfig | timing = Duration 800, easing = EasePreset EaseInOut }
 
     ( newModel, maybeCommand ) =
-        Anim.Ports.animateWithConfig config "my-element" (ToScale { x = 2.0, y = 2.0 }) model.animPortsModel
+        Anim.Ports.animateWithConfig "my-element" (ToScale { x = 2.0, y = 2.0 }) config model.animPortsModel
 
 -}
-animateWithConfig : Config -> TargetId -> AnimationTarget -> Model -> ( Model, Maybe AnimationCommand )
-animateWithConfig config elementId target (Model elementsDict) =
+animateWithConfig : TargetId -> AnimationTarget -> Config -> Model -> ( Model, Maybe AnimationCommand )
+animateWithConfig elementId target config (Model elementsDict) =
     let
         propertyKey =
             getPropertyKey target
@@ -468,12 +468,12 @@ animateOpacity elementId opacity model =
         { defaultConfig | timing = Duration 800 }
 
     ( newModel, maybeCommand ) =
-        Anim.Ports.animateOpacityWithConfig config "my-element" 0.5 model.animPortsModel
+        Anim.Ports.animateOpacityWithConfig "my-element" 0.5 config model.animPortsModel
 
 -}
-animateOpacityWithConfig : Config -> TargetId -> Float -> Model -> ( Model, Maybe AnimationCommand )
-animateOpacityWithConfig config elementId opacity model =
-    animateWithConfig config elementId (ToOpacity opacity) model
+animateOpacityWithConfig : TargetId -> Float -> Config -> Model -> ( Model, Maybe AnimationCommand )
+animateOpacityWithConfig elementId opacity config model =
+    animateWithConfig elementId (ToOpacity opacity) config model
 
 
 {-| Animate element scale with default configuration.
@@ -493,12 +493,12 @@ animateScale elementId scale model =
         { defaultConfig | timing = Duration 600, easing = EasePreset EaseInOut }
 
     ( newModel, maybeCommand ) =
-        Anim.Ports.animateScaleWithConfig config "my-element" { x = 2.0, y = 2.0 } model.animPortsModel
+        Anim.Ports.animateScaleWithConfig "my-element" { x = 2.0, y = 2.0 } config model.animPortsModel
 
 -}
-animateScaleWithConfig : Config -> TargetId -> ScaleValue -> Model -> ( Model, Maybe AnimationCommand )
-animateScaleWithConfig config elementId scale model =
-    animateWithConfig config elementId (ToScale scale) model
+animateScaleWithConfig : TargetId -> ScaleValue -> Config -> Model -> ( Model, Maybe AnimationCommand )
+animateScaleWithConfig elementId scale config model =
+    animateWithConfig elementId (ToScale scale) config model
 
 
 {-| Animate element rotation with default configuration.
@@ -518,12 +518,12 @@ animateRotation elementId rotation model =
         { defaultConfig | timing = Duration 1000 }
 
     ( newModel, maybeCommand ) =
-        Anim.Ports.animateRotationWithConfig config "my-element" 180.0 model.animPortsModel
+        Anim.Ports.animateRotationWithConfig "my-element" 180.0 config model.animPortsModel
 
 -}
-animateRotationWithConfig : Config -> TargetId -> RotationValue -> Model -> ( Model, Maybe AnimationCommand )
-animateRotationWithConfig config elementId rotation model =
-    animateWithConfig config elementId (ToRotation rotation) model
+animateRotationWithConfig : TargetId -> RotationValue -> Config -> Model -> ( Model, Maybe AnimationCommand )
+animateRotationWithConfig elementId rotation config model =
+    animateWithConfig elementId (ToRotation rotation) config model
 
 
 {-| Animate element background color with default configuration.
@@ -547,12 +547,12 @@ animateBackgroundColor elementId color model =
         { defaultConfig | timing = Duration 500, easing = EasePreset EaseInOut }
 
     ( newModel, maybeCommand ) =
-        Anim.Ports.animateBackgroundColorWithConfig config "my-element" (Hsl { h = 120, s = 100, l = 50 }) model.animPortsModel
+        Anim.Ports.animateBackgroundColorWithConfig "my-element" (Hsl { h = 120, s = 100, l = 50 }) config model.animPortsModel
 
 -}
-animateBackgroundColorWithConfig : Config -> TargetId -> ColorValue -> Model -> ( Model, Maybe AnimationCommand )
-animateBackgroundColorWithConfig config elementId color model =
-    animateWithConfig config elementId (ToBackgroundColor color) model
+animateBackgroundColorWithConfig : TargetId -> ColorValue -> Config -> Model -> ( Model, Maybe AnimationCommand )
+animateBackgroundColorWithConfig elementId color config model =
+    animateWithConfig elementId (ToBackgroundColor color) config model
 
 
 {-| Animation command data to send to JavaScript
@@ -720,12 +720,12 @@ sendAnimationCommand portFunction encoder command =
         { defaultConfig | timing = Duration 600, easing = EasePreset EaseInOut }
 
     ( newModel, maybeCommand ) =
-        Move.Ports.animateToWithConfig config "my-element" { x = 100, y = 150 } model.movePortsModel
+        Move.Ports.animateToWithConfig "my-element" { x = 100, y = 150 } config model.movePortsModel
 
 -}
-animateToWithConfig : Config -> TargetId -> Position -> Model -> ( Model, Maybe AnimationCommand )
-animateToWithConfig config elementId position model =
-    animateWithConfig config elementId (ToPosition position) model
+animateToWithConfig : TargetId -> Position -> Config -> Model -> ( Model, Maybe AnimationCommand )
+animateToWithConfig elementId position config model =
+    animateWithConfig elementId (ToPosition position) config model
 
 
 {-| Start animating an element horizontally with custom configuration
@@ -734,11 +734,11 @@ animateToWithConfig config elementId position model =
         { defaultConfig | timing = Speed 600.0, easing = EasePreset EaseInOut }
 
     ( newModel, maybeCommand ) =
-        Move.Ports.animateToXWithConfig config "my-element" 200 model.movePortsModel
+        Move.Ports.animateToXWithConfig "my-element" 200 config model.movePortsModel
 
 -}
-animateToXWithConfig : Config -> TargetId -> Float -> Model -> ( Model, Maybe AnimationCommand )
-animateToXWithConfig config elementId targetX model =
+animateToXWithConfig : TargetId -> Float -> Config -> Model -> ( Model, Maybe AnimationCommand )
+animateToXWithConfig elementId targetX config model =
     let
         currentPos =
             getPosition elementId model
@@ -747,7 +747,7 @@ animateToXWithConfig config elementId targetX model =
         newPosition =
             { currentPos | x = targetX }
     in
-    animateWithConfig config elementId (ToPosition newPosition) model
+    animateWithConfig elementId (ToPosition newPosition) config model
 
 
 {-| Start animating an element vertically with custom configuration
@@ -756,13 +756,13 @@ animateToXWithConfig config elementId targetX model =
         { defaultConfig | timing = Duration 600, easing = EasePreset EaseInOut }
 
     ( newModel, maybeCommand ) =
-        Move.Ports.animateToYWithConfig config "my-element" 300 model.movePortsModel
+        Move.Ports.animateToYWithConfig "my-element" 300 config model.movePortsModel
 
 Only the Y coordinate will change - X position remains at current value.
 
 -}
-animateToYWithConfig : Config -> TargetId -> Float -> Model -> ( Model, Maybe AnimationCommand )
-animateToYWithConfig config elementId targetY model =
+animateToYWithConfig : TargetId -> Float -> Config -> Model -> ( Model, Maybe AnimationCommand )
+animateToYWithConfig elementId targetY config model =
     let
         currentPos =
             getPosition elementId model
@@ -771,7 +771,7 @@ animateToYWithConfig config elementId targetY model =
         newPosition =
             { currentPos | y = targetY }
     in
-    animateWithConfig config elementId (ToPosition newPosition) model
+    animateWithConfig elementId (ToPosition newPosition) config model
 
 
 {-| Animate multiple elements with the same configuration
@@ -793,7 +793,7 @@ animateBatch config specs model =
         (\spec ( currentModel, commands ) ->
             let
                 ( newModel, maybeCommand ) =
-                    animateToWithConfig config spec.elementId spec.target currentModel
+                    animateToWithConfig spec.elementId spec.target config currentModel
             in
             case maybeCommand of
                 Just command ->

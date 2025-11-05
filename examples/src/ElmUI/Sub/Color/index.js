@@ -5733,7 +5733,7 @@ var $elm$core$Maybe$withDefault = F2(
 		}
 	});
 var $author$project$Anim$Sub$animateWithConfig = F4(
-	function (config, elementId, target, _v0) {
+	function (elementId, target, config, _v0) {
 		var elementsDict = _v0.a;
 		var propertyKey = $author$project$Anim$Sub$getPropertyKey(target);
 		var currentElementData = A2(
@@ -5767,7 +5767,7 @@ var $author$project$Anim$defaultConfig = {
 };
 var $author$project$Anim$Sub$animate = F3(
 	function (elementId, target, model) {
-		return A4($author$project$Anim$Sub$animateWithConfig, $author$project$Anim$defaultConfig, elementId, target, model);
+		return A4($author$project$Anim$Sub$animateWithConfig, elementId, target, $author$project$Anim$defaultConfig, model);
 	});
 var $author$project$Anim$Sub$animateBackgroundColor = F3(
 	function (elementId, color, model) {
