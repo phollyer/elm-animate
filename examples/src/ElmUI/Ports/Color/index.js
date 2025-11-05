@@ -5680,13 +5680,13 @@ var $author$project$Anim$EaseOut = {$: 'EaseOut'};
 var $author$project$Anim$EasePreset = function (a) {
 	return {$: 'EasePreset', a: a};
 };
-var $author$project$Anim$Ports$defaultConfig = {
+var $author$project$Anim$defaultConfig = {
 	easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
 	timing: $author$project$Anim$Duration(400)
 };
 var $author$project$Anim$Ports$animate = F3(
 	function (elementId, target, model) {
-		return A4($author$project$Anim$Ports$animateWithConfig, $author$project$Anim$Ports$defaultConfig, elementId, target, model);
+		return A4($author$project$Anim$Ports$animateWithConfig, $author$project$Anim$defaultConfig, elementId, target, model);
 	});
 var $author$project$Anim$Ports$animateBackgroundColor = F3(
 	function (elementId, color, model) {
@@ -6066,6 +6066,11 @@ var $author$project$Anim$Ports$handlePropertyUpdate = F2(
 		var updatedDict = A3($elm$core$Dict$insert, update.elementId, elementData, elementsDict);
 		return $author$project$Anim$Ports$Model(updatedDict);
 	});
+var $author$project$Anim$Ports$sendAnimationCommand = F3(
+	function (portFunction, encoder, command) {
+		return portFunction(
+			encoder(command));
+	});
 var $author$project$ElmUI$Ports$Color$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -6083,8 +6088,7 @@ var $author$project$ElmUI$Ports$Color$Main$update = F2(
 						_Utils_update(
 							model,
 							{animations: newModel}),
-						$author$project$ElmUI$Ports$Color$Main$animateElement(
-							$author$project$Anim$Ports$encodeAnimationCommand(command)));
+						A3($author$project$Anim$Ports$sendAnimationCommand, $author$project$ElmUI$Ports$Color$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand, command));
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
@@ -6102,8 +6106,7 @@ var $author$project$ElmUI$Ports$Color$Main$update = F2(
 						_Utils_update(
 							model,
 							{animations: newModel}),
-						$author$project$ElmUI$Ports$Color$Main$animateElement(
-							$author$project$Anim$Ports$encodeAnimationCommand(command)));
+						A3($author$project$Anim$Ports$sendAnimationCommand, $author$project$ElmUI$Ports$Color$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand, command));
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
@@ -6121,8 +6124,7 @@ var $author$project$ElmUI$Ports$Color$Main$update = F2(
 						_Utils_update(
 							model,
 							{animations: newModel}),
-						$author$project$ElmUI$Ports$Color$Main$animateElement(
-							$author$project$Anim$Ports$encodeAnimationCommand(command)));
+						A3($author$project$Anim$Ports$sendAnimationCommand, $author$project$ElmUI$Ports$Color$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand, command));
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
@@ -6140,8 +6142,7 @@ var $author$project$ElmUI$Ports$Color$Main$update = F2(
 						_Utils_update(
 							model,
 							{animations: newModel}),
-						$author$project$ElmUI$Ports$Color$Main$animateElement(
-							$author$project$Anim$Ports$encodeAnimationCommand(command)));
+						A3($author$project$Anim$Ports$sendAnimationCommand, $author$project$ElmUI$Ports$Color$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand, command));
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
@@ -6159,8 +6160,7 @@ var $author$project$ElmUI$Ports$Color$Main$update = F2(
 						_Utils_update(
 							model,
 							{animations: newModel}),
-						$author$project$ElmUI$Ports$Color$Main$animateElement(
-							$author$project$Anim$Ports$encodeAnimationCommand(command)));
+						A3($author$project$Anim$Ports$sendAnimationCommand, $author$project$ElmUI$Ports$Color$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand, command));
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
@@ -6178,8 +6178,7 @@ var $author$project$ElmUI$Ports$Color$Main$update = F2(
 						_Utils_update(
 							model,
 							{animations: newModel}),
-						$author$project$ElmUI$Ports$Color$Main$animateElement(
-							$author$project$Anim$Ports$encodeAnimationCommand(command)));
+						A3($author$project$Anim$Ports$sendAnimationCommand, $author$project$ElmUI$Ports$Color$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand, command));
 				} else {
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}

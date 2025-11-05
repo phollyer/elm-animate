@@ -22,6 +22,9 @@ module Anim.Ports exposing
     , animateBackgroundColor
     , animateBackgroundColorWithConfig
     , animateBatch
+    , animateToMultiple
+    , batchAnimationCommands
+    , sendAnimationCommand
     , getPosition
     , getAllPositions
     , stopAnimation
@@ -38,7 +41,6 @@ module Anim.Ports exposing
     , encodeAnimationCommand
     , encodeStopCommand
     , propertyUpdateDecoder
-    , animateToMultiple
     )
 
 {-| Port-based animations using JavaScript's Web Animations API for high-performance element movement.
@@ -105,6 +107,13 @@ with `npm install smooth-move-ports` and include it in your HTML.
 # Batch Operations
 
 @docs animateBatch
+@docs animateToMultiple
+
+
+# Command Helpers
+
+@docs batchAnimationCommands
+@docs sendAnimationCommand
 
 
 # Value Management
@@ -665,6 +674,44 @@ animateToMultiple elementPositions initialModel =
                     ( updatedModel, accCommands )
     in
     List.foldl processAnimation ( initialModel, [] ) elementPositions
+
+
+
+-- COMMAND HELPERS
+
+
+{-| Helper function to batch multiple animation commands.
+Reduces the verbose pattern of mapping and batching animation commands.
+
+Usage:
+batchAnimationCommands (animateElement << encodeAnimationCommand) animationCommands
+
+Instead of:
+animationCommands
+|> List.map (animateElement << encodeAnimationCommand)
+|> Cmd.batch
+
+-}
+batchAnimationCommands : (command -> Cmd msg) -> List command -> Cmd msg
+batchAnimationCommands portFunction commands =
+    commands
+        |> List.map portFunction
+        |> Cmd.batch
+
+
+{-| Helper function to send a single animation command.
+Reduces the verbose pattern of encoding and sending single commands.
+
+Usage:
+sendAnimationCommand animateElement encodeAnimationCommand command
+
+Instead of:
+animateElement (encodeAnimationCommand command)
+
+-}
+sendAnimationCommand : (encoded -> Cmd msg) -> (command -> encoded) -> command -> Cmd msg
+sendAnimationCommand portFunction encoder command =
+    portFunction (encoder command)
 
 
 {-| Start animating an element to a target position with custom configuration

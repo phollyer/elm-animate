@@ -5758,13 +5758,13 @@ var $author$project$Anim$EaseOut = {$: 'EaseOut'};
 var $author$project$Anim$EasePreset = function (a) {
 	return {$: 'EasePreset', a: a};
 };
-var $author$project$Anim$Sub$defaultConfig = {
+var $author$project$Anim$defaultConfig = {
 	easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
 	timing: $author$project$Anim$Duration(400)
 };
 var $author$project$Anim$Sub$animate = F3(
 	function (elementId, target, model) {
-		return A4($author$project$Anim$Sub$animateWithConfig, $author$project$Anim$Sub$defaultConfig, elementId, target, model);
+		return A4($author$project$Anim$Sub$animateWithConfig, $author$project$Anim$defaultConfig, elementId, target, model);
 	});
 var $author$project$Anim$Sub$animateRotation = F3(
 	function (elementId, rotation, model) {

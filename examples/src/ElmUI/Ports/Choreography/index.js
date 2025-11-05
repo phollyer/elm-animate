@@ -5685,13 +5685,13 @@ var $author$project$Anim$EaseOut = {$: 'EaseOut'};
 var $author$project$Anim$EasePreset = function (a) {
 	return {$: 'EasePreset', a: a};
 };
-var $author$project$Anim$Ports$defaultConfig = {
+var $author$project$Anim$defaultConfig = {
 	easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
 	timing: $author$project$Anim$Duration(400)
 };
 var $author$project$Anim$Ports$animate = F3(
 	function (elementId, target, model) {
-		return A4($author$project$Anim$Ports$animateWithConfig, $author$project$Anim$Ports$defaultConfig, elementId, target, model);
+		return A4($author$project$Anim$Ports$animateWithConfig, $author$project$Anim$defaultConfig, elementId, target, model);
 	});
 var $author$project$Anim$Ports$animateTo = F3(
 	function (elementId, position, model) {
@@ -5727,6 +5727,11 @@ var $author$project$Anim$Ports$animateToMultiple = F2(
 			processAnimation,
 			_Utils_Tuple2(initialModel, _List_Nil),
 			elementPositions);
+	});
+var $author$project$Anim$Ports$batchAnimationCommands = F2(
+	function (portFunction, commands) {
+		return $elm$core$Platform$Cmd$batch(
+			A2($elm$core$List$map, portFunction, commands));
 	});
 var $elm$json$Json$Encode$float = _Json_wrap;
 var $elm$json$Json$Encode$int = _Json_wrap;
@@ -6125,11 +6130,10 @@ var $author$project$ElmUI$Ports$Choreography$Main$update = F2(
 				var _v1 = A2($author$project$Anim$Ports$animateToMultiple, scatterPositions, model.animations);
 				var updatedAnimations = _v1.a;
 				var animationCommands = _v1.b;
-				var batchedCommand = $elm$core$Platform$Cmd$batch(
-					A2(
-						$elm$core$List$map,
-						A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Choreography$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
-						animationCommands));
+				var batchedCommand = A2(
+					$author$project$Anim$Ports$batchAnimationCommands,
+					A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Choreography$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
+					animationCommands);
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -6160,11 +6164,10 @@ var $author$project$ElmUI$Ports$Choreography$Main$update = F2(
 				var _v2 = A2($author$project$Anim$Ports$animateToMultiple, resetPositions, model.animations);
 				var updatedAnimations = _v2.a;
 				var animationCommands = _v2.b;
-				var batchedCommand = $elm$core$Platform$Cmd$batch(
-					A2(
-						$elm$core$List$map,
-						A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Choreography$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
-						animationCommands));
+				var batchedCommand = A2(
+					$author$project$Anim$Ports$batchAnimationCommands,
+					A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Choreography$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
+					animationCommands);
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -6198,11 +6201,10 @@ var $author$project$ElmUI$Ports$Choreography$Main$update = F2(
 				var _v3 = A2($author$project$Anim$Ports$animateToMultiple, circlePositions, model.animations);
 				var updatedAnimations = _v3.a;
 				var animationCommands = _v3.b;
-				var batchedCommand = $elm$core$Platform$Cmd$batch(
-					A2(
-						$elm$core$List$map,
-						A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Choreography$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
-						animationCommands));
+				var batchedCommand = A2(
+					$author$project$Anim$Ports$batchAnimationCommands,
+					A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Choreography$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
+					animationCommands);
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,

@@ -5684,13 +5684,13 @@ var $author$project$Anim$EaseOut = {$: 'EaseOut'};
 var $author$project$Anim$EasePreset = function (a) {
 	return {$: 'EasePreset', a: a};
 };
-var $author$project$Anim$Ports$defaultConfig = {
+var $author$project$Anim$defaultConfig = {
 	easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
 	timing: $author$project$Anim$Duration(400)
 };
 var $author$project$Anim$Ports$animate = F3(
 	function (elementId, target, model) {
-		return A4($author$project$Anim$Ports$animateWithConfig, $author$project$Anim$Ports$defaultConfig, elementId, target, model);
+		return A4($author$project$Anim$Ports$animateWithConfig, $author$project$Anim$defaultConfig, elementId, target, model);
 	});
 var $author$project$Anim$Ports$animateBackgroundColor = F3(
 	function (elementId, color, model) {
@@ -5732,6 +5732,11 @@ var $author$project$Anim$Ports$animateTo = F3(
 			elementId,
 			$author$project$Anim$ToPosition(position),
 			model);
+	});
+var $author$project$Anim$Ports$batchAnimationCommands = F2(
+	function (portFunction, commands) {
+		return $elm$core$Platform$Cmd$batch(
+			A2($elm$core$List$map, portFunction, commands));
 	});
 var $elm$json$Json$Encode$float = _Json_wrap;
 var $elm$json$Json$Encode$int = _Json_wrap;
@@ -6143,7 +6148,7 @@ var $author$project$ElmUI$Ports$Mixed$Main$update = F2(
 				var model3 = _v3.a;
 				var maybeCmd3 = _v3.b;
 				var commands = A2(
-					$elm$core$List$map,
+					$author$project$Anim$Ports$batchAnimationCommands,
 					A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Mixed$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
 					A2(
 						$elm$core$List$filterMap,
@@ -6154,7 +6159,7 @@ var $author$project$ElmUI$Ports$Mixed$Main$update = F2(
 					_Utils_update(
 						model,
 						{animations: model3}),
-					$elm$core$Platform$Cmd$batch(commands));
+					commands);
 			case 'StartFadeMove':
 				var elementId = msg.a;
 				var _v4 = A3($author$project$Anim$Ports$animateOpacity, elementId, 0.3, model.animations);
@@ -6168,7 +6173,7 @@ var $author$project$ElmUI$Ports$Mixed$Main$update = F2(
 				var model2 = _v5.a;
 				var maybeCmd2 = _v5.b;
 				var commands = A2(
-					$elm$core$List$map,
+					$author$project$Anim$Ports$batchAnimationCommands,
 					A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Mixed$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
 					A2(
 						$elm$core$List$filterMap,
@@ -6179,7 +6184,7 @@ var $author$project$ElmUI$Ports$Mixed$Main$update = F2(
 					_Utils_update(
 						model,
 						{animations: model2}),
-					$elm$core$Platform$Cmd$batch(commands));
+					commands);
 			case 'StartSpinScale':
 				var elementId = msg.a;
 				var _v6 = A3($author$project$Anim$Ports$animateRotation, elementId, 180, model.animations);
@@ -6200,7 +6205,7 @@ var $author$project$ElmUI$Ports$Mixed$Main$update = F2(
 				var model3 = _v8.a;
 				var maybeCmd3 = _v8.b;
 				var commands = A2(
-					$elm$core$List$map,
+					$author$project$Anim$Ports$batchAnimationCommands,
 					A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Mixed$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
 					A2(
 						$elm$core$List$filterMap,
@@ -6211,7 +6216,7 @@ var $author$project$ElmUI$Ports$Mixed$Main$update = F2(
 					_Utils_update(
 						model,
 						{animations: model3}),
-					$elm$core$Platform$Cmd$batch(commands));
+					commands);
 			case 'StartColorMorph':
 				var elementId = msg.a;
 				var _v9 = A3(
@@ -6233,7 +6238,7 @@ var $author$project$ElmUI$Ports$Mixed$Main$update = F2(
 				var model3 = _v11.a;
 				var maybeCmd3 = _v11.b;
 				var commands = A2(
-					$elm$core$List$map,
+					$author$project$Anim$Ports$batchAnimationCommands,
 					A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Mixed$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
 					A2(
 						$elm$core$List$filterMap,
@@ -6244,7 +6249,7 @@ var $author$project$ElmUI$Ports$Mixed$Main$update = F2(
 					_Utils_update(
 						model,
 						{animations: model3}),
-					$elm$core$Platform$Cmd$batch(commands));
+					commands);
 			case 'StartFullTransform':
 				var elementId = msg.a;
 				var _v12 = A3(
@@ -6275,7 +6280,7 @@ var $author$project$ElmUI$Ports$Mixed$Main$update = F2(
 				var model5 = _v16.a;
 				var maybeCmd5 = _v16.b;
 				var commands = A2(
-					$elm$core$List$map,
+					$author$project$Anim$Ports$batchAnimationCommands,
 					A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Mixed$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
 					A2(
 						$elm$core$List$filterMap,
@@ -6286,7 +6291,7 @@ var $author$project$ElmUI$Ports$Mixed$Main$update = F2(
 					_Utils_update(
 						model,
 						{animations: model5}),
-					$elm$core$Platform$Cmd$batch(commands));
+					commands);
 			case 'ResetAll':
 				var _v17 = A3(
 					$author$project$Anim$Ports$animateTo,
@@ -6316,7 +6321,7 @@ var $author$project$ElmUI$Ports$Mixed$Main$update = F2(
 				var model5 = _v21.a;
 				var maybeCmd5 = _v21.b;
 				var commands = A2(
-					$elm$core$List$map,
+					$author$project$Anim$Ports$batchAnimationCommands,
 					A2($elm$core$Basics$composeL, $author$project$ElmUI$Ports$Mixed$Main$animateElement, $author$project$Anim$Ports$encodeAnimationCommand),
 					A2(
 						$elm$core$List$filterMap,
@@ -6327,7 +6332,7 @@ var $author$project$ElmUI$Ports$Mixed$Main$update = F2(
 					_Utils_update(
 						model,
 						{animations: model5}),
-					$elm$core$Platform$Cmd$batch(commands));
+					commands);
 			case 'AnimationComplete':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			default:

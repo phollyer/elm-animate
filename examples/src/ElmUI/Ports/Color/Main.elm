@@ -16,7 +16,7 @@ FEATURES:
 -}
 
 import Anim exposing (ColorValue(..), defaultConfig)
-import Anim.Ports exposing (Model, animateBackgroundColor, encodeAnimationCommand, handlePropertyUpdateFromJson, init, styleProperties)
+import Anim.Ports exposing (Model, animateBackgroundColor, encodeAnimationCommand, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -106,7 +106,7 @@ update msg model =
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , animateElement (encodeAnimationCommand command)
+                    , sendAnimationCommand animateElement encodeAnimationCommand command
                     )
 
                 Nothing ->
@@ -120,7 +120,7 @@ update msg model =
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , animateElement (encodeAnimationCommand command)
+                    , sendAnimationCommand animateElement encodeAnimationCommand command
                     )
 
                 Nothing ->
@@ -134,7 +134,7 @@ update msg model =
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , animateElement (encodeAnimationCommand command)
+                    , sendAnimationCommand animateElement encodeAnimationCommand command
                     )
 
                 Nothing ->
@@ -148,7 +148,7 @@ update msg model =
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , animateElement (encodeAnimationCommand command)
+                    , sendAnimationCommand animateElement encodeAnimationCommand command
                     )
 
                 Nothing ->
@@ -162,7 +162,7 @@ update msg model =
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , animateElement (encodeAnimationCommand command)
+                    , sendAnimationCommand animateElement encodeAnimationCommand command
                     )
 
                 Nothing ->
@@ -176,7 +176,7 @@ update msg model =
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel }
-                    , animateElement (encodeAnimationCommand command)
+                    , sendAnimationCommand animateElement encodeAnimationCommand command
                     )
 
                 Nothing ->

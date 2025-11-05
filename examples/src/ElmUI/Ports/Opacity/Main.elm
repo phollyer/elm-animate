@@ -16,7 +16,7 @@ FEATURES:
 -}
 
 import Anim exposing (defaultConfig)
-import Anim.Ports exposing (Model, animateOpacity, encodeAnimationCommand, handlePropertyUpdateFromJson, init, styleProperties)
+import Anim.Ports exposing (Model, animateOpacity, encodeAnimationCommand, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -105,7 +105,7 @@ update msg model =
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel, isVisible = True }
-                    , animateElement (encodeAnimationCommand command)
+                    , sendAnimationCommand animateElement encodeAnimationCommand command
                     )
 
                 Nothing ->
@@ -119,7 +119,7 @@ update msg model =
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel, isVisible = False }
-                    , animateElement (encodeAnimationCommand command)
+                    , sendAnimationCommand animateElement encodeAnimationCommand command
                     )
 
                 Nothing ->
@@ -144,7 +144,7 @@ update msg model =
             case maybeCommand of
                 Just command ->
                     ( { model | animations = newModel, isVisible = newVisible }
-                    , animateElement (encodeAnimationCommand command)
+                    , sendAnimationCommand animateElement encodeAnimationCommand command
                     )
 
                 Nothing ->

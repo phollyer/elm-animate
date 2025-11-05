@@ -16,7 +16,7 @@ FEATURES:
 -}
 
 import Anim exposing (ColorValue(..), Position, RotationValue, ScaleValue, defaultConfig)
-import Anim.Ports exposing (Model, animateBackgroundColor, animateOpacity, animateRotation, animateScale, animateTo, encodeAnimationCommand, handlePropertyUpdateFromJson, init, styleProperties)
+import Anim.Ports exposing (Model, animateBackgroundColor, animateOpacity, animateRotation, animateScale, animateTo, batchAnimationCommands, encodeAnimationCommand, handlePropertyUpdateFromJson, init, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -101,9 +101,9 @@ update msg model =
                 commands =
                     [ maybeCmd1, maybeCmd2, maybeCmd3 ]
                         |> List.filterMap identity
-                        |> List.map (animateElement << encodeAnimationCommand)
+                        |> batchAnimationCommands (animateElement << encodeAnimationCommand)
             in
-            ( { model | animations = model3 }, Cmd.batch commands )
+            ( { model | animations = model3 }, commands )
 
         StartFadeMove elementId ->
             -- Combine opacity + position
@@ -117,9 +117,9 @@ update msg model =
                 commands =
                     [ maybeCmd1, maybeCmd2 ]
                         |> List.filterMap identity
-                        |> List.map (animateElement << encodeAnimationCommand)
+                        |> batchAnimationCommands (animateElement << encodeAnimationCommand)
             in
-            ( { model | animations = model2 }, Cmd.batch commands )
+            ( { model | animations = model2 }, commands )
 
         StartSpinScale elementId ->
             -- Combine rotation + scale + color
@@ -136,9 +136,9 @@ update msg model =
                 commands =
                     [ maybeCmd1, maybeCmd2, maybeCmd3 ]
                         |> List.filterMap identity
-                        |> List.map (animateElement << encodeAnimationCommand)
+                        |> batchAnimationCommands (animateElement << encodeAnimationCommand)
             in
-            ( { model | animations = model3 }, Cmd.batch commands )
+            ( { model | animations = model3 }, commands )
 
         StartColorMorph elementId ->
             -- Combine color + scale + opacity
@@ -155,9 +155,9 @@ update msg model =
                 commands =
                     [ maybeCmd1, maybeCmd2, maybeCmd3 ]
                         |> List.filterMap identity
-                        |> List.map (animateElement << encodeAnimationCommand)
+                        |> batchAnimationCommands (animateElement << encodeAnimationCommand)
             in
-            ( { model | animations = model3 }, Cmd.batch commands )
+            ( { model | animations = model3 }, commands )
 
         StartFullTransform elementId ->
             -- All properties at once with proper Ports pattern!
@@ -180,9 +180,9 @@ update msg model =
                 commands =
                     [ maybeCmd1, maybeCmd2, maybeCmd3, maybeCmd4, maybeCmd5 ]
                         |> List.filterMap identity
-                        |> List.map (animateElement << encodeAnimationCommand)
+                        |> batchAnimationCommands (animateElement << encodeAnimationCommand)
             in
-            ( { model | animations = model5 }, Cmd.batch commands )
+            ( { model | animations = model5 }, commands )
 
         ResetAll ->
             let
@@ -204,9 +204,9 @@ update msg model =
                 commands =
                     [ maybeCmd1, maybeCmd2, maybeCmd3, maybeCmd4, maybeCmd5 ]
                         |> List.filterMap identity
-                        |> List.map (animateElement << encodeAnimationCommand)
+                        |> batchAnimationCommands (animateElement << encodeAnimationCommand)
             in
-            ( { model | animations = model5 }, Cmd.batch commands )
+            ( { model | animations = model5 }, commands )
 
         AnimationComplete _ ->
             ( model, Cmd.none )

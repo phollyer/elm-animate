@@ -27,7 +27,7 @@ USAGE EXAMPLES:
 -- Common UI imports
 
 import Anim exposing (Position, defaultConfig)
-import Anim.Ports exposing (Model, animateTo, animateToMultiple, animateToX, animateToY, encodeAnimationCommand, getPosition, handlePropertyUpdateFromJson, init, styleProperties)
+import Anim.Ports exposing (Model, animateTo, animateToMultiple, animateToX, animateToY, batchAnimationCommands, encodeAnimationCommand, getPosition, handlePropertyUpdateFromJson, init, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -125,9 +125,7 @@ update msg model =
                     animateToMultiple scatterPositions model.animations
 
                 batchedCommand =
-                    animationCommands
-                        |> List.map (animateElement << encodeAnimationCommand)
-                        |> Cmd.batch
+                    batchAnimationCommands (animateElement << encodeAnimationCommand) animationCommands
             in
             ( { model | animations = updatedAnimations, isAnimating = True }
             , batchedCommand
@@ -148,9 +146,7 @@ update msg model =
                     animateToMultiple resetPositions model.animations
 
                 batchedCommand =
-                    animationCommands
-                        |> List.map (animateElement << encodeAnimationCommand)
-                        |> Cmd.batch
+                    batchAnimationCommands (animateElement << encodeAnimationCommand) animationCommands
             in
             ( { model | animations = updatedAnimations, isAnimating = True }
             , batchedCommand
@@ -180,9 +176,7 @@ update msg model =
                     animateToMultiple circlePositions model.animations
 
                 batchedCommand =
-                    animationCommands
-                        |> List.map (animateElement << encodeAnimationCommand)
-                        |> Cmd.batch
+                    batchAnimationCommands (animateElement << encodeAnimationCommand) animationCommands
             in
             ( { model | animations = updatedAnimations, isAnimating = True }
             , batchedCommand
