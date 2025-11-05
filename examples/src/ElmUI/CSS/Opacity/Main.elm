@@ -151,7 +151,7 @@ viewContent model =
         ]
         (text "Smooth fade-in and fade-out effects using browser-native CSS transitions")
     , -- Opacity controls
-      UI.htmlActionButtons
+      UI.wrappedButtonRow
         [ ( UI.Success, FadeIn, "Fade In" )
         , ( UI.Warning, FadeOut, "Fade Out" )
         , ( UI.Primary, FadeToggle, "Toggle Visibility" )

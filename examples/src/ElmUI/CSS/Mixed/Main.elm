@@ -189,7 +189,7 @@ viewContent model =
         ]
         (text "Combining multiple CSS properties in single animations for complex transformations")
     , -- Mixed property animation controls
-      UI.htmlActionButtons
+      UI.wrappedButtonRow
         [ ( UI.Primary, StartComplexAnimation "mixed-box", "Move + Scale + Rotate" )
         , ( UI.Success, StartFadeMove "mixed-box", "Fade + Move" )
         , ( UI.Warning, StartSpinScale "mixed-box", "Spin + Scale + Color" )

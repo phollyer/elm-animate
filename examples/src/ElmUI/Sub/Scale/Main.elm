@@ -154,7 +154,7 @@ viewContent model =
         ]
         (text "Smooth size transformations using browser-native Subscription-Based transitions")
     , -- Scale controls
-      UI.htmlActionButtons
+      UI.wrappedButtonRow
         [ ( UI.Primary, ScaleUp, "Scale Up" )
         , ( UI.Warning, ScaleDown, "Scale Down" )
         , ( UI.Success, ScaleWide, "Wide" )

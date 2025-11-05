@@ -108,7 +108,7 @@ viewContent model =
             , centerX
             ]
             (text "Navigate Diagonally:")
-        , UI.htmlActionButtons
+        , UI.wrappedButtonRow
             [ ( UI.Primary, ScrollToTopLeft, "↖ Top Left" )
             , ( UI.Success, ScrollToTopRight, "↗ Top Right" )
             , ( UI.Purple, ScrollToCenter, "🎯 Center" )

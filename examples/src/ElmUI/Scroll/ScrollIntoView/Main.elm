@@ -131,7 +131,7 @@ viewContent model =
       UI.pageHeader "ScrollIntoView Example"
     , -- Navigation buttons
       el [] <|
-        UI.htmlActionButtons
+        UI.wrappedButtonRow
             [ ( UI.Primary, ScrollToElement "top-element", "→ Top" )
             , ( UI.Success, ScrollToElement "left-element", "→ Left" )
             , ( UI.Purple, ScrollToElement "center-element", "→ Center" )
@@ -330,7 +330,7 @@ targetElementWithButtons elementId label w h color buttons =
             [ el [ Font.size 16, Font.bold, centerX ] (text label)
             , column [ spacing 8, centerX ]
                 [ el [ Font.size 12, Font.bold, Font.color (rgb 0.4 0.4 0.4), centerX ] (text "Navigate to:")
-                , UI.htmlActionButtons buttons
+                , UI.wrappedButtonRow buttons
                 ]
             ]
         )

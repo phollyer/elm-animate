@@ -118,7 +118,7 @@ viewContent model =
 
     -- Buttons
     , el [ centerX ] <|
-        UI.htmlActionButtons
+        UI.wrappedButtonRow
             [ ( UI.Primary, ScrollToParagraphOne, "Scroll to Paragraph One ↓" )
             , ( UI.Success, ScrollToParagraphTwo, "Scroll to Paragraph Two ↓" )
             , ( UI.Purple, ScrollToParagraphThree, "Scroll to Paragraph Three ↓" )

@@ -12327,74 +12327,6 @@ var $mdgriffith$elm_ui$Element$el = F2(
 				_List_fromArray(
 					[child])));
 	});
-var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$core$Basics$always = F2(
-	function (a, _v0) {
-		return a;
-	});
-var $mdgriffith$elm_ui$Internal$Model$unstyled = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Unstyled, $elm$core$Basics$always);
-var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $author$project$Common$UI$htmlActionButtons = function (buttons) {
-	var getButtonStyleClass = function (style) {
-		switch (style.$) {
-			case 'Primary':
-				return 'primary';
-			case 'Success':
-				return 'success';
-			case 'Purple':
-				return 'purple';
-			default:
-				return 'warning';
-		}
-	};
-	var createHtmlButton = function (_v0) {
-		var style = _v0.a;
-		var onPress = _v0.b;
-		var label = _v0.c;
-		return A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick(onPress),
-					$elm$html$Html$Attributes$class(
-					'ui-action-button ' + getButtonStyleClass(style))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(label)
-				]));
-	};
-	var htmlButtons = A2($elm$core$List$map, createHtmlButton, buttons);
-	return A2(
-		$mdgriffith$elm_ui$Element$el,
-		_List_fromArray(
-			[$mdgriffith$elm_ui$Element$centerX]),
-		$mdgriffith$elm_ui$Element$html(
-			A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('ui-button-group')
-					]),
-				htmlButtons)));
-};
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $mdgriffith$elm_ui$Internal$Model$Max = F2(
 	function (a, b) {
@@ -12491,6 +12423,74 @@ var $author$project$Anim$Sub$transform = F2(
 			return 'translate(0px, 0px)';
 		}
 	});
+var $elm$html$Html$button = _VirtualDom_node('button');
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
+var $mdgriffith$elm_ui$Internal$Model$unstyled = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Unstyled, $elm$core$Basics$always);
+var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $author$project$Common$UI$wrappedButtonRow = function (buttons) {
+	var getButtonStyleClass = function (style) {
+		switch (style.$) {
+			case 'Primary':
+				return 'primary';
+			case 'Success':
+				return 'success';
+			case 'Purple':
+				return 'purple';
+			default:
+				return 'warning';
+		}
+	};
+	var createHtmlButton = function (_v0) {
+		var style = _v0.a;
+		var onPress = _v0.b;
+		var label = _v0.c;
+		return A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(onPress),
+					$elm$html$Html$Attributes$class(
+					'ui-action-button ' + getButtonStyleClass(style))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(label)
+				]));
+	};
+	var htmlButtons = A2($elm$core$List$map, createHtmlButton, buttons);
+	return A2(
+		$mdgriffith$elm_ui$Element$el,
+		_List_fromArray(
+			[$mdgriffith$elm_ui$Element$centerX]),
+		$mdgriffith$elm_ui$Element$html(
+			A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('ui-button-group')
+					]),
+				htmlButtons)));
+};
 var $author$project$ElmUI$Sub$Position$Main$viewContent = function (model) {
 	return _List_fromArray(
 		[
@@ -12514,14 +12514,14 @@ var $author$project$ElmUI$Sub$Position$Main$viewContent = function (model) {
 						$elm$core$Basics$round(pos.x)) + (', ' + ($elm$core$String$fromInt(
 						$elm$core$Basics$round(pos.y)) + ')'))));
 			}()),
-			$author$project$Common$UI$htmlActionButtons(
+			$author$project$Common$UI$wrappedButtonRow(
 			_List_fromArray(
 				[
 					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Sub$Position$Main$MoveToCorner, 'Move to (100, 100)'),
 					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Sub$Position$Main$MoveToCenter, 'Move to (300, 200)'),
 					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Sub$Position$Main$StopAnimation, 'Return to Origin')
 				])),
-			$author$project$Common$UI$htmlActionButtons(
+			$author$project$Common$UI$wrappedButtonRow(
 			_List_fromArray(
 				[
 					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$Sub$Position$Main$MoveLeft, '← Move Left'),

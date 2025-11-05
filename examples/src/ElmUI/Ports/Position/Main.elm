@@ -265,13 +265,13 @@ viewContent model =
                 text "Position: (0, 0)"
         )
     , -- Buttons for predefined moves
-      UI.htmlActionButtons
+      UI.wrappedButtonRow
         [ ( UI.Primary, MoveToCorner, "Move to (100, 100)" )
         , ( UI.Success, MoveToCenter, "Move to (300, 200)" )
         , ( UI.Purple, StopAnimation, "Return to Origin" )
         ]
     , -- Axis-specific movement buttons
-      UI.htmlActionButtons
+      UI.wrappedButtonRow
         [ ( UI.Warning, MoveLeft, "← Move Left" )
         , ( UI.Warning, MoveRight, "Move Right →" )
         , ( UI.Success, MoveUp, "↑ Move Up" )

@@ -120,7 +120,7 @@ viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButton
     , UI.pageHeader "Container Both Axis Scrolling"
-    , UI.htmlActionButtons
+    , UI.wrappedButtonRow
         [ ( UI.Primary, ScrollToTopLeft, "Top Left" )
         , ( UI.Success, ScrollToTopRight, "Top Right" )
         , ( UI.Purple, ScrollToBottomLeft, "Bottom Left" )

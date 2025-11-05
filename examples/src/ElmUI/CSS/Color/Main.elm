@@ -158,7 +158,7 @@ viewContent model =
         ]
         (text "Smooth color transitions using browser-native CSS animations")
     , -- Color controls
-      UI.htmlActionButtons
+      UI.wrappedButtonRow
         [ ( UI.Primary, ChangeToBlue, "Blue" )
         , ( UI.Success, ChangeToGreen, "Green" )
         , ( UI.Warning, ChangeToOrange, "Orange" )

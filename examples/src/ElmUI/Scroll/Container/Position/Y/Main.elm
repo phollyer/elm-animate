@@ -88,7 +88,7 @@ viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButton
     , UI.pageHeader "SmoothMoveScroll - Container Example"
-    , UI.htmlActionButtons
+    , UI.wrappedButtonRow
         [ ( UI.Primary, ScrollToTop, "Scroll to Top" )
         , ( UI.Success, ScrollToMiddle, "Scroll to Middle" )
         , ( UI.Purple, ScrollToBottom, "Scroll to Bottom" )

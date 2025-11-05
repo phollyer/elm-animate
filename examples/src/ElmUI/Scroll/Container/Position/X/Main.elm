@@ -109,7 +109,7 @@ viewContent model =
         [ spacing 16
         , centerX
         ]
-        [ UI.htmlActionButtons
+        [ UI.wrappedButtonRow
             (List.range 1 10
                 |> List.map
                     (\i ->

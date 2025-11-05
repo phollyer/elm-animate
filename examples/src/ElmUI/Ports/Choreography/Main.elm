@@ -284,7 +284,7 @@ viewContent model =
         ]
         (text "Coordinated choreography with 6 elements in formation patterns")
     , -- Control buttons
-      UI.htmlActionButtons
+      UI.wrappedButtonRow
         [ ( UI.Primary, ScatterElements, "Scatter Formation" )
         , ( UI.Success, CircleFormation, "Circle Formation" )
         , ( UI.Purple, ResetPositions, "Reset Formation" )

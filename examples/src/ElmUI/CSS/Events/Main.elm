@@ -256,7 +256,7 @@ viewContent model =
             )
         ]
     , -- Control buttons
-      UI.htmlActionButtons
+      UI.wrappedButtonRow
         [ ( UI.Primary, MoveToCorner, "Move to (100, 100)" )
         , ( UI.Success, MoveToCenter, "Move to (300, 200)" )
         , ( UI.Warning, MoveToOpposite, "Move to (400, 50)" )
@@ -314,7 +314,7 @@ viewContent model =
       column
         [ spacing 12, width (fill |> maximum 600), centerX ]
         [ -- Event log header with clear button
-          UI.htmlActionButtons
+          UI.wrappedButtonRow
             [ ( UI.Primary, ClearEventLog, "Clear Log" ) ]
         , el
             [ Font.size 18, Element.centerX, Font.medium, Font.color Colors.textDark ]

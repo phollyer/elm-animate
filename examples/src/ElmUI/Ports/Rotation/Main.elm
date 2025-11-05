@@ -232,7 +232,7 @@ viewContent model =
         ]
         (text "Smooth rotation transformations using hardware-accelerated CSS transforms")
     , -- Rotation controls
-      UI.htmlActionButtons
+      UI.wrappedButtonRow
         [ ( UI.Success, Rotate45, "45°" )
         , ( UI.Warning, Rotate90, "90°" )
         , ( UI.Primary, Rotate180, "180°" )

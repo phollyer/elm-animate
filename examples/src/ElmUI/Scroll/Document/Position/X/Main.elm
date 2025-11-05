@@ -207,7 +207,7 @@ viewContent model =
             [ Font.center ]
             [ text "Add or remove sections to increase or decrease the page width." ]
         , el [ centerX ] <|
-            UI.htmlActionButtons
+            UI.wrappedButtonRow
                 [ ( UI.Success, AddSection, "+ Add Section" )
                 , ( UI.Warning, RemoveSection, "− Remove Section" )
                 ]

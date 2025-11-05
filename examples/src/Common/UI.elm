@@ -9,10 +9,10 @@ module Common.UI exposing
     , createDocument
     , getCardColor
     , highlight
-    , htmlActionButtons
     , pageHeader
     , techInfo
     , techParagraph
+    , wrappedButtonRow
     )
 
 import Browser exposing (Document)
@@ -328,7 +328,7 @@ contentSection config =
                         config.content
                     )
          ]
-            ++ [ htmlActionButtons config.buttons ]
+            ++ [ wrappedButtonRow config.buttons ]
         )
 
 
@@ -455,9 +455,13 @@ getCardColor cardNum =
 
 {-| Create a button group using pure CSS classes
 All styling is handled by the ui-components.css file
+
+ElmUI's built-in `wrappedRow` is tricky to style responsively, so using HTML here is simpler.
+These will wrap correctly so that all buttons are centered horizontally, wrapped or not.
+
 -}
-htmlActionButtons : List ( ButtonStyle, msg, String ) -> Element msg
-htmlActionButtons buttons =
+wrappedButtonRow : List ( ButtonStyle, msg, String ) -> Element msg
+wrappedButtonRow buttons =
     let
         createHtmlButton ( style, onPress, label ) =
             Html.button
