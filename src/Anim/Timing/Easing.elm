@@ -97,167 +97,49 @@ import Json.Encode as Encode
 
 
 
--- The rest of the module content (type Easing, all functions, etc.) should be appended here from the previously validated, working version.
-{-| Quadratic ease out.
-
-{-| Unified easing system for all Anim animation types.-}
-
-easeOutQuad : Easing
-
-This module provides a serializable easing type that works across CSS transitions,easeOutQuad =
-
-Web Animations API via ports, and subscription-based animations.    EaseOutQuad
+-- EASING TYPE
 
 
-
-
-
-# Easing Type{-| Quadratic ease in-out.
-
+{-| Easing functions for animations.
 -}
-
-@docs EasingeaseInOutQuad : Easing
-
-easeInOutQuad =
-
-    EaseInOutQuad
-
-# Basic Easing Functions
-
-
-
-@docs linear, ease, easeIn, easeOut, easeInOut
-
--- CUBIC EASING
-
-
-
-# Sine Easing
-
-{-| Cubic ease in.
-
-@docs easeInSine, easeOutSine, easeInOutSine-}
-
-easeInCubic : Easing
-
-easeInCubic =
-
-# Quadratic Easing    EaseInCubic
-
-
-
-@docs easeInQuad, easeOutQuad, easeInOutQuad
-
-{-| Cubic ease out.
-
--}
-
-# Cubic EasingeaseOutCubic : Easing
-
-easeOutCubic =
-
-@docs easeInCubic, easeOutCubic, easeInOutCubic    EaseOutCubic
-
-
-
-
-
-# Quartic Easing{-| Cubic ease in-out.
-
--}
-
-@docs easeInQuart, easeOutQuart, easeInOutQuarteaseInOutCubic : Easing
-
-easeInOutCubic =
-
-    EaseInOutCubic
-
-# Quintic Easing
-
-
-
-@docs easeInQuint, easeOutQuint, easeInOutQuint
-
--- QUARTIC EASING
-
-
-
-# Exponential Easing
-
-{-| Quartic ease in.
-
-@docs easeInExpo, easeOutExpo, easeInOutExpo-}
-
-easeInQuart : Easing
-
-easeInQuart =
-
-# Circular Easing    EaseInQuart
-
-
-
-@docs easeInCirc, easeOutCirc, easeInOutCirc
-
-{-| Quartic ease out.
-
--}
-
-# Back EasingeaseOutQuart : Easing
-
-easeOutQuart =
-
-@docs easeInBack, easeOutBack, easeInOutBack    EaseOutQuart
-
-
-
-
-
-# Elastic Easing{-| Quartic ease in-out.
-
--}
-
-@docs easeInElastic, easeOutElastic, easeInOutElasticeaseInOutQuart : Easing
-
-easeInOutQuart =
-
-    EaseInOutQuart
-
-# Bounce Easing
-
-
-
-@docs easeInBounce, easeOutBounce, easeInOutBounce
-
--- QUINTIC EASING
-
-
-
-# Custom Easing
-
-{-| Quintic ease in.
-
-@docs custom-}
-
-easeInQuint : Easing
-
-easeInQuint =
-
-# Conversion Functions    EaseInQuint
-
-
-
-@docs toCSS, toWebAnimations, toFunction, encode
-
-{-| Quintic ease out.
-
--}-}
-
-easeOutQuint : Easing
-
-import Ease as EeaseOutQuint =
-
-import Json.Encode as Encode    EaseOutQuint
-
+type Easing
+    = Bezier Float Float Float Float
+    | Linear
+    | Ease
+    | EaseIn
+    | EaseOut
+    | EaseInOut
+    | EaseInSine
+    | EaseOutSine
+    | EaseInOutSine
+    | EaseInQuad
+    | EaseOutQuad
+    | EaseInOutQuad
+    | EaseInCubic
+    | EaseOutCubic
+    | EaseInOutCubic
+    | EaseInQuart
+    | EaseOutQuart
+    | EaseInOutQuart
+    | EaseInQuint
+    | EaseOutQuint
+    | EaseInOutQuint
+    | EaseInExpo
+    | EaseOutExpo
+    | EaseInOutExpo
+    | EaseInCirc
+    | EaseOutCirc
+    | EaseInOutCirc
+    | EaseInBack
+    | EaseOutBack
+    | EaseInOutBack
+    | EaseInElastic
+    | EaseOutElastic
+    | EaseInOutElastic
+    | EaseInBounce
+    | EaseOutBounce
+    | EaseInOutBounce
+    | Custom String
 
 
 {-| Quintic ease in-out.
@@ -415,6 +297,17 @@ custom value =
 toCSS : Easing -> String
 toCSS easing =
     case easing of
+        Bezier p1x p1y p2x p2y ->
+            "cubic-bezier("
+                ++ String.fromFloat p1x
+                ++ ", "
+                ++ String.fromFloat p1y
+                ++ ", "
+                ++ String.fromFloat p2x
+                ++ ", "
+                ++ String.fromFloat p2y
+                ++ ")"
+
         Linear ->
             "linear"
 
@@ -503,7 +396,8 @@ toCSS easing =
             "cubic-bezier(0.68, -0.6, 0.32, 1.6)"
 
         -- Note: Elastic and bounce can't be perfectly represented with cubic-bezier
-        -- These are approximations - for true elastic/bounce, use Web Animations API
+        -- Web Animations API could potentially support these with keyframes
+        -- For now, using cubic-bezier approximations
         EaseInElastic ->
             "cubic-bezier(0.04, 0.04, 0.12, 0.96)"
 
@@ -531,6 +425,17 @@ toCSS easing =
 toWebAnimations : Easing -> String
 toWebAnimations easing =
     case easing of
+        Bezier p1x p1y p2x p2y ->
+            "cubic-bezier("
+                ++ String.fromFloat p1x
+                ++ ", "
+                ++ String.fromFloat p1y
+                ++ ", "
+                ++ String.fromFloat p2x
+                ++ ", "
+                ++ String.fromFloat p2y
+                ++ ")"
+
         Linear ->
             "linear"
 
@@ -652,6 +557,9 @@ the eased progress value.
 toFunction : Easing -> (Float -> Float)
 toFunction easing =
     case easing of
+        Bezier p1x p1y p2x p2y ->
+            E.bezier p1x p1y p2x p2y
+
         Linear ->
             E.linear
 
@@ -766,153 +674,20 @@ toFunction easing =
 -- HELPER FUNCTIONS FOR MATHEMATICAL IMPLEMENTATIONS
 
 
-easeInFunction : Float -> Float
-easeInFunction t =
-    t * t
-
-
-easeOutFunction : Float -> Float
-easeOutFunction t =
-    1 - (1 - t) * (1 - t)
-
-
-easeInOutFunction : Float -> Float
-easeInOutFunction t =
-    E.inOutQuad t
-
-
-backIn : Float -> Float
-backIn t =
-    let
-        c1 =
-            1.70158
-
-        c3 =
-            c1 + 1
-    in
-    c3 * t * t * t - c1 * t * t
-
-
-backOut : Float -> Float
-backOut t =
-    let
-        c1 =
-            1.70158
-
-        c3 =
-            c1 + 1
-    in
-    1 + c3 * (t - 1) ^ 3 + c1 * (t - 1) ^ 2
-
-
-backInOut : Float -> Float
-backInOut t =
-    let
-        c1 =
-            1.70158
-
-        c2 =
-            c1 * 1.525
-    in
-    if t < 0.5 then
-        ((2 * t) ^ 2 * ((c2 + 1) * 2 * t - c2)) / 2
-
-    else
-        ((2 * t - 2) ^ 2 * ((c2 + 1) * (t * 2 - 2) + c2) + 2) / 2
-
-
-elasticIn : Float -> Float
-elasticIn t =
-    let
-        c4 =
-            (2 * pi) / 3
-    in
-    if t == 0 then
-        0
-
-    else if t == 1 then
-        1
-
-    else
-        -(2 ^ (10 * (t - 1))) * sin ((t - 1) * c4)
-
-
-elasticOut : Float -> Float
-elasticOut t =
-    let
-        c4 =
-            (2 * pi) / 3
-    in
-    if t == 0 then
-        0
-
-    else if t == 1 then
-        1
-
-    else
-        2 ^ (-10 * t) * sin (t * c4) + 1
-
-
-elasticInOut : Float -> Float
-elasticInOut t =
-    let
-        c5 =
-            (2 * pi) / 4.5
-    in
-    if t == 0 then
-        0
-
-    else if t == 1 then
-        1
-
-    else if t < 0.5 then
-        -(2 ^ (20 * t - 10) * sin ((20 * t - 11.125) * c5)) / 2
-
-    else
-        (2 ^ (-20 * t + 10) * sin ((20 * t - 11.125) * c5)) / 2 + 1
-
-
-bounceOut : Float -> Float
-bounceOut t =
-    let
-        n1 =
-            7.5625
-
-        d1 =
-            2.75
-    in
-    if t < 1 / d1 then
-        n1 * t * t
-
-    else if t < 2 / d1 then
-        n1 * (t - 1.5 / d1) * (t - 1.5 / d1) + 0.75
-
-    else if t < 2.5 / d1 then
-        n1 * (t - 2.25 / d1) * (t - 2.25 / d1) + 0.9375
-
-    else
-        n1 * (t - 2.625 / d1) * (t - 2.625 / d1) + 0.984375
-
-
-bounceIn : Float -> Float
-bounceIn t =
-    1 - bounceOut (1 - t)
-
-
-bounceInOut : Float -> Float
-bounceInOut t =
-    if t < 0.5 then
-        (1 - bounceOut (1 - 2 * t)) / 2
-
-    else
-        (1 + bounceOut (2 * t - 1)) / 2
-
-
 {-| Encode easing for JSON serialization (used by Ports system).
 -}
 encode : Easing -> Encode.Value
 encode easing =
     case easing of
+        Bezier p1x p1y p2x p2y ->
+            Encode.object
+                [ ( "type", Encode.string "bezier" )
+                , ( "p1x", Encode.float p1x )
+                , ( "p1y", Encode.float p1y )
+                , ( "p2x", Encode.float p2x )
+                , ( "p2y", Encode.float p2y )
+                ]
+
         Linear ->
             Encode.string "linear"
 
