@@ -12,7 +12,7 @@ module Anim.Internal exposing
 {-| Internal helper functions shared between Anim modules.
 -}
 
-import Anim exposing (Animation, AnimationTarget(..), EasePreset(..), Easing(..), Position, Timing(..), getAnimationData, getEasing, getTarget, getTiming)
+import Anim exposing (Animation, AnimationTarget(..), EasePreset(..), Easing(..), Position, Timing(..), getEasing, getTarget, getTiming)
 import Ease
 
 

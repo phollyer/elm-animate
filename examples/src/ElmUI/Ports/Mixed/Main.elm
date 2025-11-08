@@ -15,7 +15,8 @@ FEATURES:
 
 -}
 
-import Anim exposing (ColorValue(..), EasePreset(..), Easing(..), Position, RotationValue, ScaleValue, element, withPosition, withOpacity, withScale, withRotation, withBackgroundColor)
+import Anim
+import Anim.Easing exposing (Easing(..))
 import Anim.Ports exposing (Model, animateMultiple, handlePropertyUpdateFromJson, init, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors

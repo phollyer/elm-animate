@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim exposing (ColorValue(..), Position, RotationValue, ScaleValue, defaultConfig)
-import Anim.Sub exposing (Model, animateBackgroundColor, animateOpacity, animateRotation, animateScale, animateTo, init, step, styleProperties, subscriptions)
+import Anim exposing (ColorValue(..), Position, RotationValue, ScaleValue)
+import Anim.Sub exposing (Model, animate, init, step, styleProperties, transform)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -70,68 +70,173 @@ update msg model =
         StartComplexAnimation elementId ->
             -- Combine position + scale + rotation
             let
+                positionAnimation =
+                    Anim.position elementId { x = 200, y = 100 }
+                        |> Anim.pixelsPerSecond 200.0
+                        |> Anim.easeOut
+
+                scaleAnimation =
+                    Anim.scale elementId { x = 1.5, y = 1.9 }
+                        |> Anim.scalePerSecond 2.0
+                        |> Anim.easeOut
+
+                rotationAnimation =
+                    Anim.rotation elementId 90
+                        |> Anim.degreesPerSecond 120.0
+                        |> Anim.easeInOut
+
                 animations =
                     model.animations
-                        |> animateTo elementId (Position 200 100)
-                        |> animateScale elementId { x = 1.5, y = 1.9 }
-                        |> animateRotation elementId 90
+                        |> animate positionAnimation
+                        |> animate scaleAnimation
+                        |> animate rotationAnimation
             in
             ( { model | animations = animations }, Cmd.none )
 
         StartFadeMove elementId ->
             -- Combine opacity + position
             let
+                opacityAnimation =
+                    Anim.opacity elementId 0.3
+                        |> Anim.opacityPerSecond 2.0
+                        |> Anim.easeOut
+
+                positionAnimation =
+                    Anim.position elementId { x = 250, y = 80 }
+                        |> Anim.pixelsPerSecond 200.0
+                        |> Anim.easeOut
+
                 animations =
                     model.animations
-                        |> animateOpacity elementId 0.3
-                        |> animateTo elementId (Position 250 80)
+                        |> animate opacityAnimation
+                        |> animate positionAnimation
             in
             ( { model | animations = animations }, Cmd.none )
 
         StartSpinScale elementId ->
             -- Combine rotation + scale + color
             let
+                rotationAnimation =
+                    Anim.rotation elementId 180
+                        |> Anim.degreesPerSecond 180.0
+                        |> Anim.easeInOut
+
+                scaleAnimation =
+                    Anim.scale elementId { x = 0.8, y = 0.8 }
+                        |> Anim.scalePerSecond 1.5
+                        |> Anim.easeInOut
+
+                colorAnimation =
+                    Anim.backgroundColor elementId (Hex "#e74c3c")
+                        |> Anim.colorStepsPerSecond 300.0
+                        |> Anim.easeOut
+
                 animations =
                     model.animations
-                        |> animateRotation elementId 180
-                        |> animateScale elementId { x = 0.8, y = 0.8 }
-                        |> animateBackgroundColor elementId (Hex "#e74c3c")
+                        |> animate rotationAnimation
+                        |> animate scaleAnimation
+                        |> animate colorAnimation
             in
             ( { model | animations = animations }, Cmd.none )
 
         StartColorMorph elementId ->
             -- Combine color + scale + opacity
             let
+                colorAnimation =
+                    Anim.backgroundColor elementId (Hsl { h = 142, s = 71, l = 45 })
+                        |> Anim.colorStepsPerSecond 300.0
+                        |> Anim.easeInOut
+
+                scaleAnimation =
+                    Anim.scale elementId { x = 2.0, y = 0.5 }
+                        |> Anim.scalePerSecond 2.0
+                        |> Anim.easeOut
+
+                opacityAnimation =
+                    Anim.opacity elementId 0.8
+                        |> Anim.opacityPerSecond 1.5
+                        |> Anim.easeOut
+
                 animations =
                     model.animations
-                        |> animateBackgroundColor elementId (Hsl { h = 142, s = 71, l = 45 })
-                        |> animateScale elementId { x = 2.0, y = 0.5 }
-                        |> animateOpacity elementId 0.8
+                        |> animate colorAnimation
+                        |> animate scaleAnimation
+                        |> animate opacityAnimation
             in
             ( { model | animations = animations }, Cmd.none )
 
         StartFullTransform elementId ->
             -- All properties at once!
             let
+                positionAnimation =
+                    Anim.position elementId { x = 200, y = 200 }
+                        |> Anim.pixelsPerSecond 200.0
+                        |> Anim.easeInOut
+
+                scaleAnimation =
+                    Anim.scale elementId { x = 1.3, y = 1.3 }
+                        |> Anim.scalePerSecond 1.5
+                        |> Anim.easeOut
+
+                rotationAnimation =
+                    Anim.rotation elementId 270
+                        |> Anim.degreesPerSecond 180.0
+                        |> Anim.easeInOut
+
+                opacityAnimation =
+                    Anim.opacity elementId 0.7
+                        |> Anim.opacityPerSecond 1.0
+                        |> Anim.easeOut
+
+                colorAnimation =
+                    Anim.backgroundColor elementId (Hex "#9b59b6")
+                        |> Anim.colorStepsPerSecond 300.0
+                        |> Anim.easeOut
+
                 animations =
                     model.animations
-                        |> animateTo elementId (Position 200 200)
-                        |> animateScale elementId { x = 1.3, y = 1.3 }
-                        |> animateRotation elementId 270
-                        |> animateOpacity elementId 0.7
-                        |> animateBackgroundColor elementId (Hex "#9b59b6")
+                        |> animate positionAnimation
+                        |> animate scaleAnimation
+                        |> animate rotationAnimation
+                        |> animate opacityAnimation
+                        |> animate colorAnimation
             in
             ( { model | animations = animations }, Cmd.none )
 
         ResetAll ->
             let
+                positionAnimation =
+                    Anim.position "mixed-box" { x = 0, y = 0 }
+                        |> Anim.pixelsPerSecond 200.0
+                        |> Anim.easeInOut
+
+                scaleAnimation =
+                    Anim.scale "mixed-box" { x = 1.0, y = 1.0 }
+                        |> Anim.scalePerSecond 1.5
+                        |> Anim.easeInOut
+
+                rotationAnimation =
+                    Anim.rotation "mixed-box" 0
+                        |> Anim.degreesPerSecond 180.0
+                        |> Anim.easeInOut
+
+                opacityAnimation =
+                    Anim.opacity "mixed-box" 1.0
+                        |> Anim.opacityPerSecond 1.5
+                        |> Anim.easeInOut
+
+                colorAnimation =
+                    Anim.backgroundColor "mixed-box" (Hex "#3498db")
+                        |> Anim.colorStepsPerSecond 300.0
+                        |> Anim.easeOut
+
                 animations =
                     model.animations
-                        |> animateTo "mixed-box" (Position 0 0)
-                        |> animateScale "mixed-box" { x = 1.0, y = 1.0 }
-                        |> animateRotation "mixed-box" 0
-                        |> animateOpacity "mixed-box" 1.0
-                        |> animateBackgroundColor "mixed-box" (Hex "#3498db")
+                        |> animate positionAnimation
+                        |> animate scaleAnimation
+                        |> animate rotationAnimation
+                        |> animate opacityAnimation
+                        |> animate colorAnimation
             in
             ( { model | animations = animations }, Cmd.none )
 
@@ -145,12 +250,7 @@ update msg model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    let
-        -- Set initial position for the mixed-box element at origin
-        initialAnimations =
-            animateTo "mixed-box" (Position 0 0) Anim.Sub.init
-    in
-    ( { animations = initialAnimations
+    ( { animations = Anim.Sub.init
       }
     , Cmd.none
     )

@@ -5196,402 +5196,17 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$document = _Browser_document;
-var $author$project$Anim$Position = F2(
-	function (x, y) {
-		return {x: x, y: y};
-	});
-var $author$project$Anim$ToPosition = function (a) {
-	return {$: 'ToPosition', a: a};
-};
 var $author$project$Anim$Sub$Model = function (a) {
 	return {$: 'Model', a: a};
 };
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
-var $elm$core$Basics$sqrt = _Basics_sqrt;
-var $author$project$Anim$Internal$calculateDistance = F2(
-	function (from, to) {
-		var dy = to.y - from.y;
-		var dx = to.x - from.x;
-		return $elm$core$Basics$sqrt((dx * dx) + (dy * dy));
-	});
-var $author$project$Anim$Sub$calculateTargetDistance = F2(
-	function (start, target) {
-		var _v0 = _Utils_Tuple2(start, target);
-		_v0$6:
-		while (true) {
-			switch (_v0.a.$) {
-				case 'ToPosition':
-					if (_v0.b.$ === 'ToPosition') {
-						var startPos = _v0.a.a;
-						var targetPos = _v0.b.a;
-						return A2($author$project$Anim$Internal$calculateDistance, startPos, targetPos);
-					} else {
-						break _v0$6;
-					}
-				case 'ToOpacity':
-					if (_v0.b.$ === 'ToOpacity') {
-						var startOp = _v0.a.a;
-						var targetOp = _v0.b.a;
-						return $elm$core$Basics$abs(targetOp - startOp) * 100;
-					} else {
-						break _v0$6;
-					}
-				case 'ToScale':
-					if (_v0.b.$ === 'ToScale') {
-						var startScale = _v0.a.a;
-						var targetScale = _v0.b.a;
-						return ($elm$core$Basics$abs(targetScale.x - startScale.x) * 100) + ($elm$core$Basics$abs(targetScale.y - startScale.y) * 100);
-					} else {
-						break _v0$6;
-					}
-				case 'ToRotation':
-					if (_v0.b.$ === 'ToRotation') {
-						var startRot = _v0.a.a;
-						var targetRot = _v0.b.a;
-						return $elm$core$Basics$abs(targetRot - startRot);
-					} else {
-						break _v0$6;
-					}
-				case 'ToDimensions':
-					if (_v0.b.$ === 'ToDimensions') {
-						var startDim = _v0.a.a;
-						var targetDim = _v0.b.a;
-						return $elm$core$Basics$abs(targetDim.width - startDim.width) + $elm$core$Basics$abs(targetDim.height - startDim.height);
-					} else {
-						break _v0$6;
-					}
-				case 'ToBorderRadius':
-					if (_v0.b.$ === 'ToBorderRadius') {
-						var startRadius = _v0.a.a;
-						var targetRadius = _v0.b.a;
-						return $elm$core$Basics$abs(targetRadius - startRadius);
-					} else {
-						break _v0$6;
-					}
-				default:
-					break _v0$6;
-			}
-		}
-		return 100;
-	});
-var $author$project$Anim$Sub$calculateAnimationDuration = F3(
-	function (config, startValue, targetValue) {
-		var _v0 = config.timing;
-		if (_v0.$ === 'Duration') {
-			var ms = _v0.a;
-			return ms;
-		} else {
-			var pixelsPerSecond = _v0.a;
-			var distance = A2($author$project$Anim$Sub$calculateTargetDistance, startValue, targetValue);
-			return A2($elm$core$Basics$max, 100, (distance * 1000) / pixelsPerSecond);
-		}
-	});
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
-var $elm$core$Basics$compare = _Utils_compare;
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
-var $author$project$Anim$Brightness = function (a) {
-	return {$: 'Brightness', a: a};
-};
-var $author$project$Anim$Rgb = function (a) {
-	return {$: 'Rgb', a: a};
-};
-var $author$project$Anim$Rgba = function (a) {
-	return {$: 'Rgba', a: a};
-};
-var $author$project$Anim$ToBackgroundColor = function (a) {
-	return {$: 'ToBackgroundColor', a: a};
-};
-var $author$project$Anim$ToBorderColor = function (a) {
-	return {$: 'ToBorderColor', a: a};
-};
-var $author$project$Anim$ToBorderRadius = function (a) {
-	return {$: 'ToBorderRadius', a: a};
-};
-var $author$project$Anim$ToDimensions = function (a) {
-	return {$: 'ToDimensions', a: a};
-};
-var $author$project$Anim$ToFilter = function (a) {
-	return {$: 'ToFilter', a: a};
-};
-var $author$project$Anim$ToOpacity = function (a) {
-	return {$: 'ToOpacity', a: a};
-};
-var $author$project$Anim$ToRotation = function (a) {
-	return {$: 'ToRotation', a: a};
-};
-var $author$project$Anim$ToScale = function (a) {
-	return {$: 'ToScale', a: a};
-};
-var $author$project$Anim$ToTextColor = function (a) {
-	return {$: 'ToTextColor', a: a};
-};
-var $author$project$Anim$Sub$getDefaultValue = function (target) {
-	switch (target.$) {
-		case 'ToPosition':
-			return $author$project$Anim$ToPosition(
-				{x: 0, y: 0});
-		case 'ToOpacity':
-			return $author$project$Anim$ToOpacity(1.0);
-		case 'ToScale':
-			return $author$project$Anim$ToScale(
-				{x: 1.0, y: 1.0});
-		case 'ToRotation':
-			return $author$project$Anim$ToRotation(0.0);
-		case 'ToBackgroundColor':
-			return $author$project$Anim$ToBackgroundColor(
-				$author$project$Anim$Rgba(
-					{a: 0, b: 0, g: 0, r: 0}));
-		case 'ToTextColor':
-			return $author$project$Anim$ToTextColor(
-				$author$project$Anim$Rgb(
-					{b: 0, g: 0, r: 0}));
-		case 'ToBorderColor':
-			return $author$project$Anim$ToBorderColor(
-				$author$project$Anim$Rgba(
-					{a: 0, b: 0, g: 0, r: 0}));
-		case 'ToDimensions':
-			return $author$project$Anim$ToDimensions(
-				{height: 0, width: 0});
-		case 'ToBorderRadius':
-			return $author$project$Anim$ToBorderRadius(0.0);
-		default:
-			return $author$project$Anim$ToFilter(
-				$author$project$Anim$Brightness(1.0));
-	}
-};
-var $author$project$Anim$Sub$getPropertyKey = function (target) {
-	switch (target.$) {
-		case 'ToPosition':
-			return 'position';
-		case 'ToOpacity':
-			return 'opacity';
-		case 'ToScale':
-			return 'scale';
-		case 'ToRotation':
-			return 'rotation';
-		case 'ToBackgroundColor':
-			return 'background-color';
-		case 'ToTextColor':
-			return 'text-color';
-		case 'ToBorderColor':
-			return 'border-color';
-		case 'ToDimensions':
-			return 'dimensions';
-		case 'ToBorderRadius':
-			return 'border-radius';
-		default:
-			return 'filter';
-	}
-};
-var $elm$core$Dict$Black = {$: 'Black'};
-var $elm$core$Dict$RBNode_elm_builtin = F5(
-	function (a, b, c, d, e) {
-		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
-	});
-var $elm$core$Dict$Red = {$: 'Red'};
-var $elm$core$Dict$balance = F5(
-	function (color, key, value, left, right) {
-		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
-			var _v1 = right.a;
-			var rK = right.b;
-			var rV = right.c;
-			var rLeft = right.d;
-			var rRight = right.e;
-			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-				var _v3 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var lLeft = left.d;
-				var lRight = left.e;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Red,
-					key,
-					value,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					color,
-					rK,
-					rV,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
-					rRight);
-			}
-		} else {
-			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
-				var _v5 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var _v6 = left.d;
-				var _v7 = _v6.a;
-				var llK = _v6.b;
-				var llV = _v6.c;
-				var llLeft = _v6.d;
-				var llRight = _v6.e;
-				var lRight = left.e;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Red,
-					lK,
-					lV,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
-			} else {
-				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
-			}
-		}
-	});
-var $elm$core$Dict$insertHelp = F3(
-	function (key, value, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
-		} else {
-			var nColor = dict.a;
-			var nKey = dict.b;
-			var nValue = dict.c;
-			var nLeft = dict.d;
-			var nRight = dict.e;
-			var _v1 = A2($elm$core$Basics$compare, key, nKey);
-			switch (_v1.$) {
-				case 'LT':
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						A3($elm$core$Dict$insertHelp, key, value, nLeft),
-						nRight);
-				case 'EQ':
-					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
-				default:
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						nLeft,
-						A3($elm$core$Dict$insertHelp, key, value, nRight));
-			}
-		}
-	});
-var $elm$core$Dict$insert = F3(
-	function (key, value, dict) {
-		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
-		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
-			var _v1 = _v0.a;
-			var k = _v0.b;
-			var v = _v0.c;
-			var l = _v0.d;
-			var r = _v0.e;
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
-		} else {
-			var x = _v0;
-			return x;
-		}
-	});
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
-var $author$project$Anim$Sub$animateWithConfig = F4(
-	function (elementId, target, config, _v0) {
-		var elementsDict = _v0.a;
-		var propertyKey = $author$project$Anim$Sub$getPropertyKey(target);
-		var currentElementData = A2(
-			$elm$core$Maybe$withDefault,
-			{animation: $elm$core$Maybe$Nothing, properties: $elm$core$Dict$empty},
-			A2($elm$core$Dict$get, elementId, elementsDict));
-		var currentValue = A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Anim$Sub$getDefaultValue(target),
-			A2($elm$core$Dict$get, propertyKey, currentElementData.properties));
-		var duration = A3($author$project$Anim$Sub$calculateAnimationDuration, config, currentValue, target);
-		var updatedProperties = A3($elm$core$Dict$insert, propertyKey, currentValue, currentElementData.properties);
-		var animationState = {config: config, duration: duration, startValue: currentValue, startedAt: 0, target: target};
-		var elementData = {
-			animation: $elm$core$Maybe$Just(animationState),
-			properties: updatedProperties
-		};
-		var updatedDict = A3($elm$core$Dict$insert, elementId, elementData, elementsDict);
-		return $author$project$Anim$Sub$Model(updatedDict);
-	});
-var $author$project$Anim$Duration = function (a) {
-	return {$: 'Duration', a: a};
-};
-var $author$project$Anim$EaseOut = {$: 'EaseOut'};
-var $author$project$Anim$EasePreset = function (a) {
-	return {$: 'EasePreset', a: a};
-};
-var $author$project$Anim$defaultConfig = {
-	easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
-	timing: $author$project$Anim$Duration(400)
-};
-var $author$project$Anim$Sub$animate = F3(
-	function (elementId, target, model) {
-		return A4($author$project$Anim$Sub$animateWithConfig, elementId, target, $author$project$Anim$defaultConfig, model);
-	});
-var $author$project$Anim$Sub$animateTo = F3(
-	function (elementId, position, model) {
-		return A3(
-			$author$project$Anim$Sub$animate,
-			elementId,
-			$author$project$Anim$ToPosition(position),
-			model);
-	});
 var $author$project$Anim$Sub$init = $author$project$Anim$Sub$Model($elm$core$Dict$empty);
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$ElmUI$Sub$Mixed$Main$init = function (_v0) {
-	var initialAnimations = A3(
-		$author$project$Anim$Sub$animateTo,
-		'mixed-box',
-		A2($author$project$Anim$Position, 0, 0),
-		$author$project$Anim$Sub$init);
 	return _Utils_Tuple2(
-		{animations: initialAnimations},
+		{animations: $author$project$Anim$Sub$init},
 		$elm$core$Platform$Cmd$none);
 };
 var $author$project$ElmUI$Sub$Mixed$Main$AnimationFrame = function (a) {
@@ -5789,37 +5404,698 @@ var $author$project$Anim$Hex = function (a) {
 var $author$project$Anim$Hsl = function (a) {
 	return {$: 'Hsl', a: a};
 };
-var $author$project$Anim$Sub$animateBackgroundColor = F3(
-	function (elementId, color, model) {
-		return A3(
-			$author$project$Anim$Sub$animate,
-			elementId,
-			$author$project$Anim$ToBackgroundColor(color),
-			model);
+var $author$project$Anim$getTiming = function (_v0) {
+	var data = _v0.a;
+	return data.timing;
+};
+var $author$project$Anim$Internal$getAnimationTiming = $author$project$Anim$getTiming;
+var $author$project$Anim$Internal$animationToMilliseconds = F2(
+	function (animation, distance) {
+		var timing = $author$project$Anim$Internal$getAnimationTiming(animation);
+		switch (timing.$) {
+			case 'Duration':
+				var milliseconds = timing.a;
+				return milliseconds;
+			case 'PixelsPerSecond':
+				var pps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / pps);
+			case 'DegreesPerSecond':
+				var dps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / dps);
+			case 'ColorStepsPerSecond':
+				var cps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / cps);
+			case 'OpacityPerSecond':
+				var ops = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / ops);
+			case 'ScalePerSecond':
+				var sps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / sps);
+			case 'DimensionsPerSecond':
+				var dps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / dps);
+			default:
+				var fps = timing.a;
+				return A2($elm$core$Basics$max, 100, (distance * 1000) / fps);
+		}
 	});
-var $author$project$Anim$Sub$animateOpacity = F3(
-	function (elementId, opacity, model) {
-		return A3(
-			$author$project$Anim$Sub$animate,
-			elementId,
-			$author$project$Anim$ToOpacity(opacity),
-			model);
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var $elm$core$Basics$sqrt = _Basics_sqrt;
+var $author$project$Anim$Sub$calculateRgbColorDistance = F2(
+	function (start, target) {
+		var dr = target.r - start.r;
+		var dg = target.g - start.g;
+		var db = target.b - start.b;
+		var distance = $elm$core$Basics$sqrt(((dr * dr) + (dg * dg)) + (db * db));
+		return distance / 4.41;
 	});
-var $author$project$Anim$Sub$animateRotation = F3(
-	function (elementId, rotation, model) {
-		return A3(
-			$author$project$Anim$Sub$animate,
-			elementId,
-			$author$project$Anim$ToRotation(rotation),
-			model);
+var $author$project$Anim$Sub$hexCharToInt = function (_char) {
+	switch (_char.valueOf()) {
+		case '0':
+			return 0;
+		case '1':
+			return 1;
+		case '2':
+			return 2;
+		case '3':
+			return 3;
+		case '4':
+			return 4;
+		case '5':
+			return 5;
+		case '6':
+			return 6;
+		case '7':
+			return 7;
+		case '8':
+			return 8;
+		case '9':
+			return 9;
+		case 'A':
+			return 10;
+		case 'B':
+			return 11;
+		case 'C':
+			return 12;
+		case 'D':
+			return 13;
+		case 'E':
+			return 14;
+		case 'F':
+			return 15;
+		case 'a':
+			return 10;
+		case 'b':
+			return 11;
+		case 'c':
+			return 12;
+		case 'd':
+			return 13;
+		case 'e':
+			return 14;
+		case 'f':
+			return 15;
+		default:
+			return 0;
+	}
+};
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
+var $author$project$Anim$Sub$hexStringToInt = function (hexStr) {
+	var _v0 = $elm$core$String$toList(hexStr);
+	if ((_v0.b && _v0.b.b) && (!_v0.b.b.b)) {
+		var h1 = _v0.a;
+		var _v1 = _v0.b;
+		var h2 = _v1.a;
+		return ($author$project$Anim$Sub$hexCharToInt(h1) * 16) + $author$project$Anim$Sub$hexCharToInt(h2);
+	} else {
+		return 0;
+	}
+};
+var $elm$core$String$replace = F3(
+	function (before, after, string) {
+		return A2(
+			$elm$core$String$join,
+			after,
+			A2($elm$core$String$split, before, string));
 	});
-var $author$project$Anim$Sub$animateScale = F3(
-	function (elementId, scale, model) {
-		return A3(
-			$author$project$Anim$Sub$animate,
-			elementId,
-			$author$project$Anim$ToScale(scale),
-			model);
+var $author$project$Anim$Sub$hexToRgb = function (hex) {
+	var cleanHex = A3($elm$core$String$replace, '#', '', hex);
+	var g = $author$project$Anim$Sub$hexStringToInt(
+		A3($elm$core$String$slice, 2, 4, cleanHex));
+	var r = $author$project$Anim$Sub$hexStringToInt(
+		A3($elm$core$String$slice, 0, 2, cleanHex));
+	var b = $author$project$Anim$Sub$hexStringToInt(
+		A3($elm$core$String$slice, 4, 6, cleanHex));
+	return {b: b, g: g, r: r};
+};
+var $author$project$Anim$Sub$calculateHexColorDistance = F2(
+	function (startHex, targetHex) {
+		var targetRgb = $author$project$Anim$Sub$hexToRgb(targetHex);
+		var startRgb = $author$project$Anim$Sub$hexToRgb(startHex);
+		return A2($author$project$Anim$Sub$calculateRgbColorDistance, startRgb, targetRgb);
+	});
+var $author$project$Anim$Sub$calculateRgbaColorDistance = F2(
+	function (start, target) {
+		var rgbDistance = A2(
+			$author$project$Anim$Sub$calculateRgbColorDistance,
+			{b: start.b, g: start.g, r: start.r},
+			{b: target.b, g: target.g, r: target.r});
+		var alphaDistance = $elm$core$Basics$abs(target.a - start.a) * 100;
+		return (rgbDistance + alphaDistance) / 2;
+	});
+var $author$project$Anim$Sub$calculateColorDistance = F2(
+	function (startColor, targetColor) {
+		var _v0 = _Utils_Tuple2(startColor, targetColor);
+		_v0$5:
+		while (true) {
+			switch (_v0.a.$) {
+				case 'Rgba':
+					if (_v0.b.$ === 'Rgba') {
+						var startRgba = _v0.a.a;
+						var targetRgba = _v0.b.a;
+						return A2($author$project$Anim$Sub$calculateRgbaColorDistance, startRgba, targetRgba);
+					} else {
+						break _v0$5;
+					}
+				case 'Hex':
+					switch (_v0.b.$) {
+						case 'Hex':
+							var startHex = _v0.a.a;
+							var targetHex = _v0.b.a;
+							return A2($author$project$Anim$Sub$calculateHexColorDistance, startHex, targetHex);
+						case 'Rgb':
+							var startHex = _v0.a.a;
+							var targetRgb = _v0.b.a;
+							var startRgb = $author$project$Anim$Sub$hexToRgb(startHex);
+							return A2($author$project$Anim$Sub$calculateRgbColorDistance, startRgb, targetRgb);
+						default:
+							break _v0$5;
+					}
+				case 'Rgb':
+					switch (_v0.b.$) {
+						case 'Rgb':
+							var startRgb = _v0.a.a;
+							var targetRgb = _v0.b.a;
+							return A2($author$project$Anim$Sub$calculateRgbColorDistance, startRgb, targetRgb);
+						case 'Hex':
+							var startRgb = _v0.a.a;
+							var targetHex = _v0.b.a;
+							var targetRgb = $author$project$Anim$Sub$hexToRgb(targetHex);
+							return A2($author$project$Anim$Sub$calculateRgbColorDistance, startRgb, targetRgb);
+						default:
+							break _v0$5;
+					}
+				default:
+					break _v0$5;
+			}
+		}
+		return 50.0;
+	});
+var $author$project$Anim$Internal$calculateDistance = F2(
+	function (from, to) {
+		var dy = to.y - from.y;
+		var dx = to.x - from.x;
+		return $elm$core$Basics$sqrt((dx * dx) + (dy * dy));
+	});
+var $author$project$Anim$Sub$calculateTargetDistance = F2(
+	function (start, target) {
+		var _v0 = _Utils_Tuple2(start, target);
+		_v0$7:
+		while (true) {
+			switch (_v0.a.$) {
+				case 'ToPosition':
+					if (_v0.b.$ === 'ToPosition') {
+						var startPos = _v0.a.a;
+						var targetPos = _v0.b.a;
+						return A2($author$project$Anim$Internal$calculateDistance, startPos, targetPos);
+					} else {
+						break _v0$7;
+					}
+				case 'ToOpacity':
+					if (_v0.b.$ === 'ToOpacity') {
+						var startOp = _v0.a.a;
+						var targetOp = _v0.b.a;
+						return $elm$core$Basics$abs(targetOp - startOp);
+					} else {
+						break _v0$7;
+					}
+				case 'ToScale':
+					if (_v0.b.$ === 'ToScale') {
+						var startScale = _v0.a.a;
+						var targetScale = _v0.b.a;
+						return $elm$core$Basics$abs(targetScale.x - startScale.x) + $elm$core$Basics$abs(targetScale.y - startScale.y);
+					} else {
+						break _v0$7;
+					}
+				case 'ToRotation':
+					if (_v0.b.$ === 'ToRotation') {
+						var startRot = _v0.a.a;
+						var targetRot = _v0.b.a;
+						return $elm$core$Basics$abs(targetRot - startRot);
+					} else {
+						break _v0$7;
+					}
+				case 'ToDimensions':
+					if (_v0.b.$ === 'ToDimensions') {
+						var startDim = _v0.a.a;
+						var targetDim = _v0.b.a;
+						return $elm$core$Basics$abs(targetDim.width - startDim.width) + $elm$core$Basics$abs(targetDim.height - startDim.height);
+					} else {
+						break _v0$7;
+					}
+				case 'ToBorderRadius':
+					if (_v0.b.$ === 'ToBorderRadius') {
+						var startRadius = _v0.a.a;
+						var targetRadius = _v0.b.a;
+						return $elm$core$Basics$abs(targetRadius - startRadius);
+					} else {
+						break _v0$7;
+					}
+				case 'ToBackgroundColor':
+					if (_v0.b.$ === 'ToBackgroundColor') {
+						var startColor = _v0.a.a;
+						var targetColor = _v0.b.a;
+						return A2($author$project$Anim$Sub$calculateColorDistance, startColor, targetColor);
+					} else {
+						break _v0$7;
+					}
+				default:
+					break _v0$7;
+			}
+		}
+		return 1.0;
+	});
+var $elm$core$Basics$compare = _Utils_compare;
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var $author$project$Anim$getAnimationData = function (_v0) {
+	var data = _v0.a;
+	return data;
+};
+var $author$project$Anim$Brightness = function (a) {
+	return {$: 'Brightness', a: a};
+};
+var $author$project$Anim$Rgb = function (a) {
+	return {$: 'Rgb', a: a};
+};
+var $author$project$Anim$Rgba = function (a) {
+	return {$: 'Rgba', a: a};
+};
+var $author$project$Anim$ToBackgroundColor = function (a) {
+	return {$: 'ToBackgroundColor', a: a};
+};
+var $author$project$Anim$ToBorderColor = function (a) {
+	return {$: 'ToBorderColor', a: a};
+};
+var $author$project$Anim$ToBorderRadius = function (a) {
+	return {$: 'ToBorderRadius', a: a};
+};
+var $author$project$Anim$ToDimensions = function (a) {
+	return {$: 'ToDimensions', a: a};
+};
+var $author$project$Anim$ToFilter = function (a) {
+	return {$: 'ToFilter', a: a};
+};
+var $author$project$Anim$ToOpacity = function (a) {
+	return {$: 'ToOpacity', a: a};
+};
+var $author$project$Anim$ToPosition = function (a) {
+	return {$: 'ToPosition', a: a};
+};
+var $author$project$Anim$ToRotation = function (a) {
+	return {$: 'ToRotation', a: a};
+};
+var $author$project$Anim$ToScale = function (a) {
+	return {$: 'ToScale', a: a};
+};
+var $author$project$Anim$ToTextColor = function (a) {
+	return {$: 'ToTextColor', a: a};
+};
+var $author$project$Anim$Sub$getDefaultValue = function (target) {
+	switch (target.$) {
+		case 'ToPosition':
+			return $author$project$Anim$ToPosition(
+				{x: 0, y: 0});
+		case 'ToOpacity':
+			return $author$project$Anim$ToOpacity(1.0);
+		case 'ToScale':
+			return $author$project$Anim$ToScale(
+				{x: 1.0, y: 1.0});
+		case 'ToRotation':
+			return $author$project$Anim$ToRotation(0.0);
+		case 'ToBackgroundColor':
+			return $author$project$Anim$ToBackgroundColor(
+				$author$project$Anim$Rgba(
+					{a: 0, b: 0, g: 0, r: 0}));
+		case 'ToTextColor':
+			return $author$project$Anim$ToTextColor(
+				$author$project$Anim$Rgb(
+					{b: 0, g: 0, r: 0}));
+		case 'ToBorderColor':
+			return $author$project$Anim$ToBorderColor(
+				$author$project$Anim$Rgba(
+					{a: 0, b: 0, g: 0, r: 0}));
+		case 'ToDimensions':
+			return $author$project$Anim$ToDimensions(
+				{height: 0, width: 0});
+		case 'ToBorderRadius':
+			return $author$project$Anim$ToBorderRadius(0.0);
+		default:
+			return $author$project$Anim$ToFilter(
+				$author$project$Anim$Brightness(1.0));
+	}
+};
+var $author$project$Anim$Sub$getPropertyKey = function (target) {
+	switch (target.$) {
+		case 'ToPosition':
+			return 'position';
+		case 'ToOpacity':
+			return 'opacity';
+		case 'ToScale':
+			return 'scale';
+		case 'ToRotation':
+			return 'rotation';
+		case 'ToBackgroundColor':
+			return 'background-color';
+		case 'ToTextColor':
+			return 'text-color';
+		case 'ToBorderColor':
+			return 'border-color';
+		case 'ToDimensions':
+			return 'dimensions';
+		case 'ToBorderRadius':
+			return 'border-radius';
+		default:
+			return 'filter';
+	}
+};
+var $elm$core$Dict$Black = {$: 'Black'};
+var $elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+	});
+var $elm$core$Dict$Red = {$: 'Red'};
+var $elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+			var _v1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+				var _v3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					key,
+					value,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+				var _v5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _v6 = left.d;
+				var _v7 = _v6.a;
+				var llK = _v6.b;
+				var llV = _v6.c;
+				var llLeft = _v6.d;
+				var llRight = _v6.e;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					lK,
+					lV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
+			} else {
+				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var $elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _v1 = A2($elm$core$Basics$compare, key, nKey);
+			switch (_v1.$) {
+				case 'LT':
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3($elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 'EQ':
+					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3($elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var $elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Anim$Sub$animate = F2(
+	function (animation, _v0) {
+		var elementsDict = _v0.a;
+		var animData = $author$project$Anim$getAnimationData(animation);
+		var delayMs = animData.delayMs;
+		var easing = animData.easing;
+		var elementId = animData.elementId;
+		var currentElementData = A2(
+			$elm$core$Maybe$withDefault,
+			{animation: $elm$core$Maybe$Nothing, properties: $elm$core$Dict$empty},
+			A2($elm$core$Dict$get, elementId, elementsDict));
+		var target = animData.target;
+		var propertyKey = $author$project$Anim$Sub$getPropertyKey(target);
+		var currentValue = A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Anim$Sub$getDefaultValue(target),
+			A2($elm$core$Dict$get, propertyKey, currentElementData.properties));
+		var distance = A2($author$project$Anim$Sub$calculateTargetDistance, currentValue, target);
+		var duration = A2($author$project$Anim$Internal$animationToMilliseconds, animation, distance);
+		var animationState = {delayMs: delayMs, duration: duration, easing: easing, startValue: currentValue, startedAt: 0, target: target};
+		var updatedProperties = A3($elm$core$Dict$insert, propertyKey, currentValue, currentElementData.properties);
+		var elementData = {
+			animation: $elm$core$Maybe$Just(animationState),
+			properties: updatedProperties
+		};
+		var updatedDict = A3($elm$core$Dict$insert, elementId, elementData, elementsDict);
+		return $author$project$Anim$Sub$Model(updatedDict);
+	});
+var $author$project$Anim$BackgroundColorBuilder = F2(
+	function (a, b) {
+		return {$: 'BackgroundColorBuilder', a: a, b: b};
+	});
+var $author$project$Anim$backgroundColor = F2(
+	function (elementId, value) {
+		return A2($author$project$Anim$BackgroundColorBuilder, elementId, value);
+	});
+var $author$project$Anim$Animation = function (a) {
+	return {$: 'Animation', a: a};
+};
+var $author$project$Anim$ColorStepsPerSecond = function (a) {
+	return {$: 'ColorStepsPerSecond', a: a};
+};
+var $author$project$Anim$EaseOut = {$: 'EaseOut'};
+var $author$project$Anim$EasePreset = function (a) {
+	return {$: 'EasePreset', a: a};
+};
+var $author$project$Anim$colorStepsPerSecond = F2(
+	function (speed, _v0) {
+		var elementId = _v0.a;
+		var value = _v0.b;
+		return $author$project$Anim$Animation(
+			{
+				delayMs: 0,
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
+				elementId: elementId,
+				target: $author$project$Anim$ToBackgroundColor(value),
+				timing: $author$project$Anim$ColorStepsPerSecond(speed)
+			});
+	});
+var $author$project$Anim$DegreesPerSecond = function (a) {
+	return {$: 'DegreesPerSecond', a: a};
+};
+var $author$project$Anim$degreesPerSecond = F2(
+	function (speed, _v0) {
+		var elementId = _v0.a;
+		var value = _v0.b;
+		return $author$project$Anim$Animation(
+			{
+				delayMs: 0,
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
+				elementId: elementId,
+				target: $author$project$Anim$ToRotation(value),
+				timing: $author$project$Anim$DegreesPerSecond(speed)
+			});
+	});
+var $author$project$Anim$EaseInOut = {$: 'EaseInOut'};
+var $author$project$Anim$easeInOut = function (_v0) {
+	var data = _v0.a;
+	return $author$project$Anim$Animation(
+		_Utils_update(
+			data,
+			{
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseInOut)
+			}));
+};
+var $author$project$Anim$easeOut = function (_v0) {
+	var data = _v0.a;
+	return $author$project$Anim$Animation(
+		_Utils_update(
+			data,
+			{
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut)
+			}));
+};
+var $author$project$Anim$OpacityBuilder = F2(
+	function (a, b) {
+		return {$: 'OpacityBuilder', a: a, b: b};
+	});
+var $author$project$Anim$opacity = F2(
+	function (elementId, value) {
+		return A2($author$project$Anim$OpacityBuilder, elementId, value);
+	});
+var $author$project$Anim$OpacityPerSecond = function (a) {
+	return {$: 'OpacityPerSecond', a: a};
+};
+var $author$project$Anim$opacityPerSecond = F2(
+	function (speed, _v0) {
+		var elementId = _v0.a;
+		var value = _v0.b;
+		return $author$project$Anim$Animation(
+			{
+				delayMs: 0,
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
+				elementId: elementId,
+				target: $author$project$Anim$ToOpacity(value),
+				timing: $author$project$Anim$OpacityPerSecond(speed)
+			});
+	});
+var $author$project$Anim$PixelsPerSecond = function (a) {
+	return {$: 'PixelsPerSecond', a: a};
+};
+var $author$project$Anim$pixelsPerSecond = F2(
+	function (speed, _v0) {
+		var elementId = _v0.a;
+		var pos = _v0.b;
+		return $author$project$Anim$Animation(
+			{
+				delayMs: 0,
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
+				elementId: elementId,
+				target: $author$project$Anim$ToPosition(pos),
+				timing: $author$project$Anim$PixelsPerSecond(speed)
+			});
+	});
+var $author$project$Anim$PositionBuilder = F2(
+	function (a, b) {
+		return {$: 'PositionBuilder', a: a, b: b};
+	});
+var $author$project$Anim$position = F2(
+	function (elementId, pos) {
+		return A2($author$project$Anim$PositionBuilder, elementId, pos);
+	});
+var $author$project$Anim$RotationBuilder = F2(
+	function (a, b) {
+		return {$: 'RotationBuilder', a: a, b: b};
+	});
+var $author$project$Anim$rotation = F2(
+	function (elementId, value) {
+		return A2($author$project$Anim$RotationBuilder, elementId, value);
+	});
+var $author$project$Anim$ScaleBuilder = F2(
+	function (a, b) {
+		return {$: 'ScaleBuilder', a: a, b: b};
+	});
+var $author$project$Anim$scale = F2(
+	function (elementId, value) {
+		return A2($author$project$Anim$ScaleBuilder, elementId, value);
+	});
+var $author$project$Anim$ScalePerSecond = function (a) {
+	return {$: 'ScalePerSecond', a: a};
+};
+var $author$project$Anim$scalePerSecond = F2(
+	function (speed, _v0) {
+		var elementId = _v0.a;
+		var value = _v0.b;
+		return $author$project$Anim$Animation(
+			{
+				delayMs: 0,
+				easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
+				elementId: elementId,
+				target: $author$project$Anim$ToScale(value),
+				timing: $author$project$Anim$ScalePerSecond(speed)
+			});
 	});
 var $elm_community$easing_functions$Ease$inOut = F3(
 	function (e1, e2, time) {
@@ -6117,7 +6393,7 @@ var $author$project$Anim$Sub$step = F2(
 					{startedAt: newStartedAt});
 				var elapsed = (!animState.startedAt) ? 0 : (delta - newStartedAt);
 				var progress = (animState.duration <= 0) ? 1.0 : A2($elm$core$Basics$min, 1.0, elapsed / animState.duration);
-				var easedProgress = A2($author$project$Anim$Internal$easingToEaseFunction, animState.config.easing, progress);
+				var easedProgress = A2($author$project$Anim$Internal$easingToEaseFunction, animState.easing, progress);
 				var currentValue = A3($author$project$Anim$Sub$interpolateTarget, animState.startValue, animState.target, easedProgress);
 				if (progress >= 1.0) {
 					var updatedProperties = A3($elm$core$Dict$insert, propertyKey, animState.target, elementData.properties);
@@ -6149,19 +6425,34 @@ var $author$project$ElmUI$Sub$Mixed$Main$update = F2(
 		switch (msg.$) {
 			case 'StartComplexAnimation':
 				var elementId = msg.a;
-				var animations = A3(
-					$author$project$Anim$Sub$animateRotation,
-					elementId,
-					90,
-					A3(
-						$author$project$Anim$Sub$animateScale,
-						elementId,
-						{x: 1.5, y: 1.9},
-						A3(
-							$author$project$Anim$Sub$animateTo,
+				var scaleAnimation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$scalePerSecond,
+						2.0,
+						A2(
+							$author$project$Anim$scale,
 							elementId,
-							A2($author$project$Anim$Position, 200, 100),
-							model.animations)));
+							{x: 1.5, y: 1.9})));
+				var rotationAnimation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$degreesPerSecond,
+						120.0,
+						A2($author$project$Anim$rotation, elementId, 90)));
+				var positionAnimation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$pixelsPerSecond,
+						200.0,
+						A2(
+							$author$project$Anim$position,
+							elementId,
+							{x: 200, y: 100})));
+				var animations = A2(
+					$author$project$Anim$Sub$animate,
+					rotationAnimation,
+					A2(
+						$author$project$Anim$Sub$animate,
+						scaleAnimation,
+						A2($author$project$Anim$Sub$animate, positionAnimation, model.animations)));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -6169,11 +6460,23 @@ var $author$project$ElmUI$Sub$Mixed$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'StartFadeMove':
 				var elementId = msg.a;
-				var animations = A3(
-					$author$project$Anim$Sub$animateTo,
-					elementId,
-					A2($author$project$Anim$Position, 250, 80),
-					A3($author$project$Anim$Sub$animateOpacity, elementId, 0.3, model.animations));
+				var positionAnimation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$pixelsPerSecond,
+						200.0,
+						A2(
+							$author$project$Anim$position,
+							elementId,
+							{x: 250, y: 80})));
+				var opacityAnimation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$opacityPerSecond,
+						2.0,
+						A2($author$project$Anim$opacity, elementId, 0.3)));
+				var animations = A2(
+					$author$project$Anim$Sub$animate,
+					positionAnimation,
+					A2($author$project$Anim$Sub$animate, opacityAnimation, model.animations));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -6181,15 +6484,34 @@ var $author$project$ElmUI$Sub$Mixed$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'StartSpinScale':
 				var elementId = msg.a;
-				var animations = A3(
-					$author$project$Anim$Sub$animateBackgroundColor,
-					elementId,
-					$author$project$Anim$Hex('#e74c3c'),
-					A3(
-						$author$project$Anim$Sub$animateScale,
-						elementId,
-						{x: 0.8, y: 0.8},
-						A3($author$project$Anim$Sub$animateRotation, elementId, 180, model.animations)));
+				var scaleAnimation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$scalePerSecond,
+						1.5,
+						A2(
+							$author$project$Anim$scale,
+							elementId,
+							{x: 0.8, y: 0.8})));
+				var rotationAnimation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$degreesPerSecond,
+						180.0,
+						A2($author$project$Anim$rotation, elementId, 180)));
+				var colorAnimation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$colorStepsPerSecond,
+						300.0,
+						A2(
+							$author$project$Anim$backgroundColor,
+							elementId,
+							$author$project$Anim$Hex('#e74c3c'))));
+				var animations = A2(
+					$author$project$Anim$Sub$animate,
+					colorAnimation,
+					A2(
+						$author$project$Anim$Sub$animate,
+						scaleAnimation,
+						A2($author$project$Anim$Sub$animate, rotationAnimation, model.animations)));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -6197,20 +6519,35 @@ var $author$project$ElmUI$Sub$Mixed$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'StartColorMorph':
 				var elementId = msg.a;
-				var animations = A3(
-					$author$project$Anim$Sub$animateOpacity,
-					elementId,
-					0.8,
-					A3(
-						$author$project$Anim$Sub$animateScale,
-						elementId,
-						{x: 2.0, y: 0.5},
-						A3(
-							$author$project$Anim$Sub$animateBackgroundColor,
+				var scaleAnimation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$scalePerSecond,
+						2.0,
+						A2(
+							$author$project$Anim$scale,
+							elementId,
+							{x: 2.0, y: 0.5})));
+				var opacityAnimation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$opacityPerSecond,
+						1.5,
+						A2($author$project$Anim$opacity, elementId, 0.8)));
+				var colorAnimation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$colorStepsPerSecond,
+						300.0,
+						A2(
+							$author$project$Anim$backgroundColor,
 							elementId,
 							$author$project$Anim$Hsl(
-								{h: 142, l: 45, s: 71}),
-							model.animations)));
+								{h: 142, l: 45, s: 71}))));
+				var animations = A2(
+					$author$project$Anim$Sub$animate,
+					opacityAnimation,
+					A2(
+						$author$project$Anim$Sub$animate,
+						scaleAnimation,
+						A2($author$project$Anim$Sub$animate, colorAnimation, model.animations)));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -6218,54 +6555,106 @@ var $author$project$ElmUI$Sub$Mixed$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 			case 'StartFullTransform':
 				var elementId = msg.a;
-				var animations = A3(
-					$author$project$Anim$Sub$animateBackgroundColor,
-					elementId,
-					$author$project$Anim$Hex('#9b59b6'),
-					A3(
-						$author$project$Anim$Sub$animateOpacity,
-						elementId,
-						0.7,
-						A3(
-							$author$project$Anim$Sub$animateRotation,
+				var scaleAnimation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$scalePerSecond,
+						1.5,
+						A2(
+							$author$project$Anim$scale,
 							elementId,
-							270,
-							A3(
-								$author$project$Anim$Sub$animateScale,
-								elementId,
-								{x: 1.3, y: 1.3},
-								A3(
-									$author$project$Anim$Sub$animateTo,
-									elementId,
-									A2($author$project$Anim$Position, 200, 200),
-									model.animations)))));
+							{x: 1.3, y: 1.3})));
+				var rotationAnimation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$degreesPerSecond,
+						180.0,
+						A2($author$project$Anim$rotation, elementId, 270)));
+				var positionAnimation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$pixelsPerSecond,
+						200.0,
+						A2(
+							$author$project$Anim$position,
+							elementId,
+							{x: 200, y: 200})));
+				var opacityAnimation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$opacityPerSecond,
+						1.0,
+						A2($author$project$Anim$opacity, elementId, 0.7)));
+				var colorAnimation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$colorStepsPerSecond,
+						300.0,
+						A2(
+							$author$project$Anim$backgroundColor,
+							elementId,
+							$author$project$Anim$Hex('#9b59b6'))));
+				var animations = A2(
+					$author$project$Anim$Sub$animate,
+					colorAnimation,
+					A2(
+						$author$project$Anim$Sub$animate,
+						opacityAnimation,
+						A2(
+							$author$project$Anim$Sub$animate,
+							rotationAnimation,
+							A2(
+								$author$project$Anim$Sub$animate,
+								scaleAnimation,
+								A2($author$project$Anim$Sub$animate, positionAnimation, model.animations)))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{animations: animations}),
 					$elm$core$Platform$Cmd$none);
 			case 'ResetAll':
-				var animations = A3(
-					$author$project$Anim$Sub$animateBackgroundColor,
-					'mixed-box',
-					$author$project$Anim$Hex('#3498db'),
-					A3(
-						$author$project$Anim$Sub$animateOpacity,
-						'mixed-box',
-						1.0,
-						A3(
-							$author$project$Anim$Sub$animateRotation,
+				var scaleAnimation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$scalePerSecond,
+						1.5,
+						A2(
+							$author$project$Anim$scale,
 							'mixed-box',
-							0,
-							A3(
-								$author$project$Anim$Sub$animateScale,
-								'mixed-box',
-								{x: 1.0, y: 1.0},
-								A3(
-									$author$project$Anim$Sub$animateTo,
-									'mixed-box',
-									A2($author$project$Anim$Position, 0, 0),
-									model.animations)))));
+							{x: 1.0, y: 1.0})));
+				var rotationAnimation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$degreesPerSecond,
+						180.0,
+						A2($author$project$Anim$rotation, 'mixed-box', 0)));
+				var positionAnimation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$pixelsPerSecond,
+						200.0,
+						A2(
+							$author$project$Anim$position,
+							'mixed-box',
+							{x: 0, y: 0})));
+				var opacityAnimation = $author$project$Anim$easeInOut(
+					A2(
+						$author$project$Anim$opacityPerSecond,
+						1.5,
+						A2($author$project$Anim$opacity, 'mixed-box', 1.0)));
+				var colorAnimation = $author$project$Anim$easeOut(
+					A2(
+						$author$project$Anim$colorStepsPerSecond,
+						300.0,
+						A2(
+							$author$project$Anim$backgroundColor,
+							'mixed-box',
+							$author$project$Anim$Hex('#3498db'))));
+				var animations = A2(
+					$author$project$Anim$Sub$animate,
+					colorAnimation,
+					A2(
+						$author$project$Anim$Sub$animate,
+						opacityAnimation,
+						A2(
+							$author$project$Anim$Sub$animate,
+							rotationAnimation,
+							A2(
+								$author$project$Anim$Sub$animate,
+								scaleAnimation,
+								A2($author$project$Anim$Sub$animate, positionAnimation, model.animations)))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,

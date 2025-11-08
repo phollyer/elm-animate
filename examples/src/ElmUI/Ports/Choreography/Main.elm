@@ -26,8 +26,10 @@ USAGE EXAMPLES:
 
 -- Common UI imports
 
-import Anim exposing (Position, defaultConfig)
-import Anim.Ports exposing (Model, animateTo, animateToMultiple, animateToX, animateToY, batchAnimationCommands, encodeAnimationCommand, getPosition, handlePropertyUpdateFromJson, init, styleProperties)
+import Anim exposing (AnimBuilder, init)
+import Anim.Easing as Easing
+import Anim.Ports as Ports
+import Anim.Properties.Position as Position
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -49,15 +51,6 @@ import Json.Encode as Encode
 port animateElement : Encode.Value -> Cmd msg
 
 
-port stopElement : Encode.Value -> Cmd msg
-
-
-port positionUpdates : (Decode.Value -> msg) -> Sub msg
-
-
-port animationComplete : (String -> msg) -> Sub msg
-
-
 
 -- MAIN
 
@@ -77,9 +70,7 @@ main =
 
 
 type alias Model =
-    { animations : Anim.Ports.Model
-    , isAnimating : Bool
-    }
+    {}
 
 
 
@@ -88,9 +79,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Anim.Ports.init
-      , isAnimating = False
-      }
+    ( {}
     , Cmd.none
     )
 
@@ -103,8 +92,6 @@ type Msg
     = ScatterElements
     | ResetPositions
     | CircleFormation
-    | AnimationComplete String
-    | PositionUpdateReceived (Result Decode.Error Anim.Ports.PropertyUpdate)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -112,90 +99,112 @@ update msg model =
     case msg of
         ScatterElements ->
             let
-                scatterPositions =
-                    [ ( "elementA", Position 80 60 )
-                    , ( "elementB", Position 320 80 )
-                    , ( "elementC", Position 40 300 )
-                    , ( "elementD", Position 380 260 )
-                    , ( "elementE", Position 60 120 )
-                    , ( "elementF", Position 350 320 )
-                    ]
+                animationCmd1 =
+                    Anim.init "elementA"
+                        |> Position.to { x = 70, y = 250 }
+                        |> Position.duration 1000
+                        |> Position.easing Easing.easeInOut
+                        |> Ports.animate animateElement
 
-                ( updatedAnimations, animationCommands ) =
-                    animateToMultiple scatterPositions model.animations
+                animationCmd2 =
+                    Anim.init "elementB"
+                        |> Position.to { x = 220, y = 280 }
+                        |> Position.duration 1000
+                        |> Position.easing Easing.easeInOut
+                        |> Ports.animate animateElement
 
-                batchedCommand =
-                    batchAnimationCommands (animateElement << encodeAnimationCommand) animationCommands
+                animationCmd3 =
+                    Anim.init "elementC"
+                        |> Position.to { x = 370, y = 260 }
+                        |> Position.duration 1000
+                        |> Position.easing Easing.easeInOut
+                        |> Ports.animate animateElement
+
+                animationCmd4 =
+                    Anim.init "elementD"
+                        |> Position.to { x = 50, y = 50 }
+                        |> Position.duration 1000
+                        |> Position.easing Easing.easeInOut
+                        |> Anim.for "elementE"
+                        |> Position.to { x = 200, y = 80 }
+                        |> Position.duration 1000
+                        |> Position.easing Easing.easeInOut
+                        |> Anim.for "elementF"
+                        |> Position.to { x = 350, y = 60 }
+                        |> Position.duration 1000
+                        |> Position.easing Easing.easeInOut
+                        |> Ports.animate animateElement
             in
-            ( { model | animations = updatedAnimations, isAnimating = True }
-            , batchedCommand
-            )
-
-        ResetPositions ->
-            let
-                resetPositions =
-                    [ ( "elementA", Position 150 100 )
-                    , ( "elementB", Position 200 150 )
-                    , ( "elementC", Position 100 200 )
-                    , ( "elementD", Position 250 200 )
-                    , ( "elementE", Position 300 100 )
-                    , ( "elementF", Position 180 50 )
-                    ]
-
-                ( updatedAnimations, animationCommands ) =
-                    animateToMultiple resetPositions model.animations
-
-                batchedCommand =
-                    batchAnimationCommands (animateElement << encodeAnimationCommand) animationCommands
-            in
-            ( { model | animations = updatedAnimations, isAnimating = True }
-            , batchedCommand
+            ( model
+            , Cmd.batch
+                [ animationCmd1
+                , animationCmd2
+                , animationCmd3
+                , animationCmd4
+                ]
             )
 
         CircleFormation ->
             let
+                -- Circle formation: elements arranged in a circle
                 centerX =
-                    225
+                    200
 
                 centerY =
                     175
 
                 radius =
-                    90
+                    120
 
-                circlePositions =
-                    [ ( "elementA", Position (centerX + radius) centerY ) -- 0°
-                    , ( "elementB", Position (centerX + radius * 0.5) (centerY + radius * 0.866) ) -- 60°
-                    , ( "elementC", Position (centerX - radius * 0.5) (centerY + radius * 0.866) ) -- 120°
-                    , ( "elementD", Position (centerX - radius) centerY ) -- 180°
-                    , ( "elementE", Position (centerX - radius * 0.5) (centerY - radius * 0.866) ) -- 240°
-                    , ( "elementF", Position (centerX + radius * 0.5) (centerY - radius * 0.866) ) -- 300°
-                    ]
+                angleStep =
+                    2 * pi / 6
 
-                ( updatedAnimations, animationCommands ) =
-                    animateToMultiple circlePositions model.animations
+                createCircleAnimation index elementId =
+                    let
+                        angle =
+                            toFloat index * angleStep
 
-                batchedCommand =
-                    batchAnimationCommands (animateElement << encodeAnimationCommand) animationCommands
+                        x =
+                            centerX + radius * cos angle
+
+                        y =
+                            centerY + radius * sin angle
+                    in
+                    Anim.init elementId
+                        |> Position.to { x = x, y = y }
+                        |> Position.duration 1000
+                        |> Position.easing Easing.easeInOut
             in
-            ( { model | animations = updatedAnimations, isAnimating = True }
-            , batchedCommand
+            ( model
+            , Ports.animateBatch animateElement <|
+                [ createCircleAnimation 0 "elementA"
+                , createCircleAnimation 1 "elementB"
+                , createCircleAnimation 2 "elementC"
+                , createCircleAnimation 3 "elementD"
+                , createCircleAnimation 4 "elementE"
+                , createCircleAnimation 5 "elementF"
+                ]
             )
 
-        AnimationComplete _ ->
-            ( { model | isAnimating = False }
-            , Cmd.none
+        ResetPositions ->
+            let
+                -- Grid formation: elements in 2x3 grid
+                createGridAnimation row col elementId =
+                    Anim.init elementId
+                        |> Position.to { x = toFloat (50 + col * 150), y = toFloat (50 + row * 150) }
+                        |> Position.duration 1000
+                        |> Position.easing Easing.easeInOut
+            in
+            ( model
+            , Ports.animateBatch animateElement <|
+                [ createGridAnimation 0 0 "elementA"
+                , createGridAnimation 0 1 "elementB"
+                , createGridAnimation 0 2 "elementC"
+                , createGridAnimation 1 0 "elementD"
+                , createGridAnimation 1 1 "elementE"
+                , createGridAnimation 1 2 "elementF"
+                ]
             )
-
-        PositionUpdateReceived result ->
-            case result of
-                Ok propertyUpdate ->
-                    ( { model | animations = Anim.Ports.handlePropertyUpdate propertyUpdate model.animations }
-                    , Cmd.none
-                    )
-
-                Err _ ->
-                    ( model, Cmd.none )
 
 
 
@@ -204,14 +213,10 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ positionUpdates (PositionUpdateReceived << handlePropertyUpdateFromJson)
-        , animationComplete AnimationComplete
-        ]
+    Sub.none
 
 
 
--- No subscriptions needed for CSS transitions!
 -- VIEW
 
 
@@ -225,25 +230,6 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    let
-        positionA =
-            getPosition "elementA" model.animations
-
-        positionB =
-            getPosition "elementB" model.animations
-
-        positionC =
-            getPosition "elementC" model.animations
-
-        positionD =
-            getPosition "elementD" model.animations
-
-        positionE =
-            getPosition "elementE" model.animations
-
-        positionF =
-            getPosition "elementF" model.animations
-    in
     [ UI.backButton
     , UI.pageHeader "Ports Choreography Animations"
     , -- Element status display
@@ -277,42 +263,38 @@ viewContent model =
         ]
         (column []
             [ -- Element A (Blue)
-              animatedBox "elementA" "A" (rgb255 59 130 246) (rgb255 37 99 235) model
+              animatedBox "elementA" "A" (rgb255 59 130 246) (rgb255 37 99 235)
             , -- Element B (Green)
-              animatedBox "elementB" "B" (rgb255 16 185 129) (rgb255 5 150 105) model
+              animatedBox "elementB" "B" (rgb255 16 185 129) (rgb255 5 150 105)
             , -- Element C (Purple)
-              animatedBox "elementC" "C" (rgb255 168 85 247) (rgb255 147 51 234) model
+              animatedBox "elementC" "C" (rgb255 168 85 247) (rgb255 147 51 234)
             , -- Element D (Orange)
-              animatedBox "elementD" "D" (rgb255 249 115 22) (rgb255 234 88 12) model
+              animatedBox "elementD" "D" (rgb255 249 115 22) (rgb255 234 88 12)
             , -- Element E (Red)
-              animatedBox "elementE" "E" (rgb255 239 68 68) (rgb255 220 38 38) model
+              animatedBox "elementE" "E" (rgb255 239 68 68) (rgb255 220 38 38)
             , -- Element F (Pink)
-              animatedBox "elementF" "F" (rgb255 236 72 153) (rgb255 219 39 119) model
+              animatedBox "elementF" "F" (rgb255 236 72 153) (rgb255 219 39 119)
             ]
         )
     ]
 
 
-{-| Helper function to create an animated box element using the new Anim.CSS API
+{-| Helper function to create an animated box element using the new Anim.Ports API
 -}
-animatedBox : String -> String -> Element.Color -> Element.Color -> Model -> Element Msg
-animatedBox elementId label color1 color2 model =
+animatedBox : String -> String -> Element.Color -> Element.Color -> Element Msg
+animatedBox elementId label color1 color2 =
     el
-        ([ width (px 50)
-         , height (px 50)
-         , Background.gradient
+        [ width (px 50)
+        , height (px 50)
+        , Background.gradient
             { angle = 2.356 -- 135 degrees in radians
             , steps = [ color1, color2 ]
             }
-         , Border.rounded 12
-         , Font.color (rgb255 255 255 255)
-         , Font.semiBold
-         , Font.size 16
-         , htmlAttribute (Html.Attributes.id elementId)
-         , htmlAttribute (Html.Attributes.style "position" "absolute")
-         ]
-            ++ (styleProperties elementId model.animations
-                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
-               )
-        )
+        , Border.rounded 12
+        , Font.color (rgb255 255 255 255)
+        , Font.semiBold
+        , Font.size 16
+        , htmlAttribute (Html.Attributes.id elementId)
+        , htmlAttribute (Html.Attributes.style "position" "absolute")
+        ]
         (el [ centerX, centerY ] (text label))

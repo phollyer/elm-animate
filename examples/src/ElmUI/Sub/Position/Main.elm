@@ -22,8 +22,10 @@ USAGE:
 
 -}
 
-import Anim exposing (Position)
-import Anim.Sub exposing (Model, animate, getPosition, init, step, subscriptions, transform)
+import Anim
+import Anim.Sub as Sub
+import Anim.Properties.Position as Position
+import Anim.Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -53,8 +55,7 @@ main =
 
 
 type alias Model =
-    { animations : Anim.Sub.Model
-    }
+    { animations : Sub.AnimationState    }
 
 
 
@@ -63,7 +64,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Anim.Sub.init
+    ( { animations = Sub.init
       }
     , Cmd.none
     )
@@ -88,14 +89,13 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         MoveToCorner ->
-            let
-                animation =
-                    Anim.position "box" { x = 100, y = 100 }
-                        |> Anim.pixelsPerSecond 200.0
-                        |> Anim.easeOut
-            in
             ( { model
-                | animations = animate animation model.animations
+                | animations = 
+                    Anim.init "box"
+                        |> Position.to { x = 100, y = 100 }
+                        |> Position.speed 200.0
+                        |> Position.easing EaseOut
+                        |> Sub.animate model.animations
               }
             , Cmd.none
             )
@@ -116,7 +116,7 @@ update msg model =
         MoveLeft ->
             let
                 currentPos =
-                    getPosition "box" model.animations
+                    Sub.getPosition "box" model.animations
                         |> Maybe.withDefault { x = 0, y = 0 }
 
                 animation =
@@ -208,7 +208,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Anim.Sub.subscriptions AnimationFrame model.animations
+    Sub.subscriptions AnimationFrame model.animations
 
 
 
@@ -232,7 +232,8 @@ viewContent model =
         ]
         (let
             pos =
-                getPosition "box" model.animations |> Maybe.withDefault { x = 0, y = 0 }
+                Sub.getPosition "box" model.animations 
+                    |> Maybe.withDefault { x = 0, y = 0 }
          in
          text ("Position: (" ++ String.fromInt (round pos.x) ++ ", " ++ String.fromInt (round pos.y) ++ ")")
         )
@@ -272,7 +273,7 @@ viewContent model =
             , Border.rounded 8
             , htmlAttribute (Html.Attributes.id "box")
             , htmlAttribute (Html.Attributes.style "position" "absolute")
-            , htmlAttribute (Html.Attributes.style "transform" (transform "box" model.animations))
+            , htmlAttribute (Html.Attributes.style "transform" (Sub.transform "box" model.animations))
             ]
             (text "")
         )

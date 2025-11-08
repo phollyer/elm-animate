@@ -16,7 +16,9 @@ FEATURES:
 -}
 
 import Anim
-import Anim.CSS exposing (Model, animate, init, onTransitionEnd, styleProperties, transitionStyles)
+import Anim.CSS as CSS exposing (AnimationResult)
+import Anim.Easing as Easing
+import Anim.Properties.Opacity as Opacity
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -46,7 +48,7 @@ main =
 
 
 type alias Model =
-    { animations : Anim.CSS.Model
+    { animations : Maybe AnimationResult
     , isVisible : Bool
     }
 
@@ -57,7 +59,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Anim.CSS.init
+    ( { animations = Nothing
       , isVisible = True
       }
     , Cmd.none
@@ -80,13 +82,15 @@ update msg model =
     case msg of
         FadeIn ->
             let
-                animation =
-                    Anim.opacity "box" 1.0
-                        |> Anim.opacityDuration 600
-                        |> Anim.easeOut
+                animationResult =
+                    Anim.init "box"
+                        |> Opacity.to 1.0
+                        |> Anim.duration 600
+                        |> Anim.easing Easing.easeOut
+                        |> CSS.animate
             in
             ( { model
-                | animations = animate animation model.animations
+                | animations = Just animationResult
                 , isVisible = True
               }
             , Cmd.none
@@ -94,13 +98,15 @@ update msg model =
 
         FadeOut ->
             let
-                animation =
-                    Anim.opacity "box" 0.0
-                        |> Anim.opacityDuration 400
-                        |> Anim.easeIn
+                animationResult =
+                    Anim.init "box"
+                        |> Opacity.to 0.0
+                        |> Anim.duration 400
+                        |> Anim.easing Easing.easeIn
+                        |> CSS.animate
             in
             ( { model
-                | animations = animate animation model.animations
+                | animations = Just animationResult
                 , isVisible = False
               }
             , Cmd.none
@@ -119,13 +125,15 @@ update msg model =
                 newVisible =
                     not model.isVisible
 
-                animation =
-                    Anim.opacity "box" newOpacity
-                        |> Anim.opacityDuration 500
-                        |> Anim.easeInOut
+                animationResult =
+                    Anim.init "box"
+                        |> Opacity.to newOpacity
+                        |> Anim.duration 500
+                        |> Anim.easing Easing.easeInOut
+                        |> CSS.animate
             in
             ( { model
-                | animations = animate animation model.animations
+                | animations = Just animationResult
                 , isVisible = newVisible
               }
             , Cmd.none
@@ -213,15 +221,25 @@ animatedBox elementId label color model =
          , htmlAttribute (Html.Attributes.style "align-items" "center")
          , htmlAttribute (Html.Attributes.style "justify-content" "center")
          ]
-            ++ (styleProperties elementId model.animations
-                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+            ++ (case model.animations of
+                    Just animationResult ->
+                        CSS.getElementStyles elementId animationResult
+                            |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+
+                    Nothing ->
+                        []
                )
             ++ [ htmlAttribute
                     (Html.Attributes.style "transition"
-                        -- Apply a standard transition for opacity animations
-                        "opacity 500ms ease-in-out"
+                        (case model.animations of
+                            Just _ ->
+                                "opacity 500ms ease-in-out"
+
+                            Nothing ->
+                                "none"
+                        )
                     )
-               , htmlAttribute (onTransitionEnd AnimationComplete)
+               , htmlAttribute (CSS.onTransitionEnd AnimationComplete)
                ]
         )
         (el

@@ -15,8 +15,10 @@ FEATURES:
 
 -}
 
-import Anim exposing (RotationValue)
-import Anim.CSS exposing (Model, animate, init, onTransitionEnd, styleProperties, transitionStyles)
+import Anim
+import Anim.CSS as CSS exposing (AnimationResult)
+import Anim.Easing as Easing
+import Anim.Properties.Rotate as Rotate
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -46,8 +48,9 @@ main =
 
 
 type alias Model =
-    { animations : Anim.CSS.Model
-    , activeAnimation : Maybe Anim.Animation
+    { animations : Maybe AnimationResult
+    , isAnimating : Bool
+    , currentRotation : Float -- Current rotation in degrees
     }
 
 
@@ -70,90 +73,113 @@ update msg model =
     case msg of
         Rotate45 ->
             let
-                animation =
-                    Anim.rotation "box" 45
-                        |> Anim.rotationDuration 500
-                        |> Anim.easeOut
+                animationResult =
+                    Anim.init "box"
+                        |> Rotate.to 45
+                        |> Anim.duration 500
+                        |> Anim.easing Easing.easeOutQuad
+                        |> CSS.animate
             in
             ( { model
-                | animations = animate animation model.animations
-                , activeAnimation = Just animation
+                | animations = Just animationResult
+                , isAnimating = True
+                , currentRotation = 45
               }
             , Cmd.none
             )
 
         Rotate90 ->
             let
-                animation =
-                    Anim.rotation "box" 90
-                        |> Anim.rotationDuration 500
-                        |> Anim.easeOut
+                animationResult =
+                    Anim.init "box"
+                        |> Rotate.to 90
+                        |> Anim.duration 500
+                        |> Anim.easing Easing.easeOutQuad
+                        |> CSS.animate
             in
             ( { model
-                | animations = animate animation model.animations
-                , activeAnimation = Just animation
+                | animations = Just animationResult
+                , isAnimating = True
+                , currentRotation = 90
               }
             , Cmd.none
             )
 
         Rotate180 ->
             let
-                animation =
-                    Anim.rotation "box" 180
-                        |> Anim.rotationDuration 700
-                        |> Anim.easeInOut
+                animationResult =
+                    Anim.init "box"
+                        |> Rotate.to 180
+                        |> Anim.duration 700
+                        |> Anim.easing Easing.easeInOutQuad
+                        |> CSS.animate
             in
             ( { model
-                | animations = animate animation model.animations
-                , activeAnimation = Just animation
+                | animations = Just animationResult
+                , isAnimating = True
+                , currentRotation = 180
               }
             , Cmd.none
             )
 
         RotateLeft ->
             let
-                animation =
-                    Anim.rotation "box" -90
-                        |> Anim.rotationDuration 400
-                        |> Anim.easeIn
+                animationResult =
+                    Anim.init "box"
+                        |> Rotate.to -90
+                        |> Anim.duration 400
+                        |> Anim.easing Easing.easeInQuad
+                        |> CSS.animate
             in
             ( { model
-                | animations = animate animation model.animations
-                , activeAnimation = Just animation
+                | animations = Just animationResult
+                , isAnimating = True
+                , currentRotation = -90
               }
             , Cmd.none
             )
 
         RotateRight ->
             let
-                animation =
-                    Anim.rotation "box" 90
-                        |> Anim.rotationDuration 400
-                        |> Anim.easeIn
+                animationResult =
+                    Anim.init "box"
+                        |> Rotate.to 90
+                        |> Anim.duration 400
+                        |> Anim.easing Easing.easeInQuad
+                        |> CSS.animate
             in
             ( { model
-                | animations = animate animation model.animations
-                , activeAnimation = Just animation
+                | animations = Just animationResult
+                , isAnimating = True
+                , currentRotation = 90
               }
             , Cmd.none
             )
 
         ResetRotation ->
             let
-                animation =
-                    Anim.rotation "box" 0
-                        |> Anim.rotationDuration 600
-                        |> Anim.easeOut
+                animationResult =
+                    Anim.init "box"
+                        |> Rotate.to 0
+                        |> Anim.duration 600
+                        |> Anim.easing Easing.easeOutQuad
+                        |> CSS.animate
             in
             ( { model
-                | animations = animate animation model.animations
-                , activeAnimation = Just animation
+                | animations = Just animationResult
+                , isAnimating = True
+                , currentRotation = 0
               }
             , Cmd.none
             )
 
         AnimationComplete ->
-            ( { model | activeAnimation = Nothing }, Cmd.none )
+            ( { model
+                | isAnimating = False
+                , animations = Nothing
+              }
+            , Cmd.none
+            )
 
 
 
@@ -162,8 +188,9 @@ update msg model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Anim.CSS.init
-      , activeAnimation = Nothing
+    ( { animations = Nothing
+      , isAnimating = False
+      , currentRotation = 0.0 -- Starting with no rotation
       }
     , Cmd.none
     )
@@ -255,20 +282,26 @@ rotatingElement elementId symbol label color model =
          , htmlAttribute (Html.Attributes.style "align-items" "center")
          , htmlAttribute (Html.Attributes.style "justify-content" "center")
          ]
-            ++ (styleProperties elementId model.animations
-                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+            ++ (case model.animations of
+                    Just animationResult ->
+                        CSS.getElementStyles elementId animationResult
+                            |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+
+                    Nothing ->
+                        []
                )
             ++ [ htmlAttribute
                     (Html.Attributes.style "transition"
-                        (case model.activeAnimation of
-                            Just animation ->
-                                transitionStyles animation
+                        (case model.animations of
+                            Just _ ->
+                                "transform 0.5s ease-out"
 
+                            -- Default transition
                             Nothing ->
                                 "none"
                         )
                     )
-               , htmlAttribute (onTransitionEnd AnimationComplete)
+               , htmlAttribute (CSS.onTransitionEnd AnimationComplete)
                ]
         )
         (column

@@ -1,488 +1,275 @@
 module Anim.CSS exposing
-    ( Model
-    , init
-    , animate
-    , getCurrentPosition
-    , styleProperties
-    , transitionStyles
-    , onTransitionStart
-    , onTransitionEnd
-    , onTransitionRun
-    , onTransitionCancel
+    ( animate, AnimationResult(..)
+    , getElementStyles
+    , htmlAttributes
+    , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
     )
 
-{-| CSS-based animation system using native browser transitions.
+{-| CSS-based animation system for Anim.
 
-This module provides a way to animate elements using browser-native CSS transitions for optimal performance and battery efficiency. Use the fluent Animation builder API from the core Anim module to create animations, then apply them with this module's functions.
-
-**Basic Usage:**
-
-    import Anim
-    import Anim.CSS as CSS
+This module converts AnimBuilder configurations to CSS transition and transform styles
+for native browser performance and hardware acceleration.
 
 
-    -- Create animations using the builder pattern
-    fadeAnimation =
-        Anim.opacity "my-element" 0.5
-            |> Anim.opacityDuration 300
-            |> Anim.easeInOut
+# Animation Execution
 
-    positionAnimation =
-        Anim.position "my-element" { x = 100, y = 200 }
-            |> Anim.pixelsPerSecond 200.0
-            |> Anim.easeOut
-
-    -- Apply animations
-    model1 =
-        CSS.animate fadeAnimation model.cssModel
-
-    model2 =
-        CSS.animate positionAnimation model1
-
-    -- Generate CSS styles
-    transitionStyle =
-        CSS.transitionStyles fadeAnimation
-
-    elementStyles =
-        CSS.styleProperties "my-element" model2
+@docs animate, AnimationResult
 
 
-# Model
+# Utility Functions
 
-@docs Model
-@docs init
-
-
-# Animation
-
-@docs animate
-@docs getCurrentPosition
+@docs getElementStyles
 
 
-# CSS Generation
+# Element Integration
 
-@docs styleProperties
-@docs transitionStyles
+@docs htmlAttributes
 
 
-# Event Handlers
+# Event Handling
 
-@docs onTransitionStart
-@docs onTransitionEnd
-@docs onTransitionRun
-@docs onTransitionCancel
+@docs onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
 
 -}
 
-import Anim exposing (Animation, AnimationTarget(..), ColorValue(..), FilterValue(..), Position, getAnimationData)
-import Anim.Internal as Internal
-import Dict exposing (Dict)
+import Anim exposing (AnimBuilder)
+import Anim.Internal.Builder as Builder
+import Anim.Internal.Properties.Color as Color
+import Anim.Internal.Properties.Position as Position
+import Anim.Timing.Easing as Easing
+import Dict
 import Html
+import Html.Attributes
 import Html.Events
 import Json.Decode
 
 
-
--- MODEL
-
-
-{-| Model for managing CSS-based animations.
+{-| Result of CSS animation generation.
 -}
-type Model
-    = Model (Dict String (List AnimationTarget))
+type AnimationResult
+    = AnimationResult (List ElementAnimation)
 
 
-{-| Initialize an empty animation model.
+{-| CSS animation data for a single element.
 -}
-init : Model
-init =
-    Model Dict.empty
+type alias ElementAnimation =
+    { elementId : String
+    , styles : List ( String, String )
+    , keyframes : Maybe String
+    }
 
 
+{-| Generate CSS animations from AnimBuilder.
 
--- ANIMATION FUNCTIONS
+    Anim.init "my-element"
+        |> Anim.Properties.Position.to { x = 100, y = 200 }
+        |> Anim.Properties.Scale.to { x = 1.5, y = 1.5 }
+        |> Anim.CSS.animate
 
-
-{-| Animate an element using the new Animation builder API.
-
-    animation =
-        Anim.position "my-element" { x = 100, y = 200 }
-            |> Anim.duration 500
-            |> Anim.easeOut
-
-    newModel =
-        animate animation model
+Returns CSS styles that can be applied via Html.Attributes.style or similar.
 
 -}
-animate : Animation -> Model -> Model
-animate animation (Model animations) =
+animate : AnimBuilder -> AnimationResult
+animate builder =
     let
-        animationData =
-            getAnimationData animation
+        processedData =
+            Builder.processAnimationData builder
 
-        elementId =
-            animationData.elementId
-
-        target =
-            animationData.target
-
-        currentTargets =
-            Dict.get elementId animations |> Maybe.withDefault []
-
-        newTargets =
-            -- For transform targets, filter by specific target type, not general type
-            if isTransformTarget target then
-                target :: List.filter (\t -> getSpecificTargetType t /= getSpecificTargetType target) currentTargets
-
-            else
-                target :: List.filter (\t -> getTargetType t /= getTargetType target) currentTargets
+        elementAnimations =
+            Dict.toList processedData.elements
+                |> List.map (\( elementId, config ) -> generateElementAnimation elementId config)
     in
-    Model (Dict.insert elementId newTargets animations)
-
-
-{-| Get the current position of an element from the animation model.
-Returns { x = 0, y = 0 } if no position is set.
--}
-getCurrentPosition : String -> Model -> Position
-getCurrentPosition elementId (Model animations) =
-    case Dict.get elementId animations of
-        Just targets ->
-            targets
-                |> List.filterMap extractPosition
-                |> List.head
-                |> Maybe.withDefault { x = 0, y = 0 }
-
-        Nothing ->
-            { x = 0, y = 0 }
-
-
-{-| Extract position from AnimationTarget if it's a ToPosition target.
--}
-extractPosition : AnimationTarget -> Maybe Position
-extractPosition target =
-    case target of
-        ToPosition position ->
-            Just position
-
-        _ ->
-            Nothing
+    AnimationResult elementAnimations
 
 
 
 -- CSS GENERATION
 
 
-{-| Generate CSS property declarations for an element's animations.
+generateElementAnimation : String -> Builder.ProcessedElementConfig -> ElementAnimation
+generateElementAnimation elementId elementConfig =
+    let
+        transforms =
+            generateTransforms elementConfig.properties
+
+        transitions =
+            generateTransitions elementConfig.properties
+
+        colors =
+            generateColorStyles elementConfig.properties
+
+        allStyles =
+            [ ( "transform", transforms )
+            , ( "transition", transitions )
+            ]
+                ++ colors
+                |> List.filter (\( _, value ) -> not (String.isEmpty value))
+    in
+    { elementId = elementId
+    , styles = allStyles
+    , keyframes = Nothing -- For future complex animations
+    }
+
+
+generateTransforms : List Builder.ProcessedPropertyConfig -> String
+generateTransforms properties =
+    let
+        transformParts =
+            List.filterMap transformFromProperty properties
+    in
+    String.join " " transformParts
+
+
+transformFromProperty : Builder.ProcessedPropertyConfig -> Maybe String
+transformFromProperty property =
+    case property of
+        Builder.ProcessedPositionConfig config ->
+            Just ("translate(" ++ String.fromFloat (Position.x config.target) ++ "px, " ++ String.fromFloat (Position.y config.target) ++ "px)")
+
+        Builder.ProcessedRotateConfig config ->
+            Just ("rotate(" ++ String.fromFloat config.target ++ "deg)")
+
+        Builder.ProcessedScaleConfig config ->
+            Just ("scale(" ++ String.fromFloat config.target.x ++ ", " ++ String.fromFloat config.target.y ++ ")")
+
+        Builder.ProcessedColorConfig _ ->
+            -- Color doesn't use transform
+            Nothing
+
+        Builder.ProcessedOpacityConfig _ ->
+            -- Opacity doesn't use transform
+            Nothing
+
+
+generateTransitions : List Builder.ProcessedPropertyConfig -> String
+generateTransitions properties =
+    let
+        transitionParts =
+            List.filterMap transitionFromProperty properties
+    in
+    String.join ", " transitionParts
+
+
+transitionFromProperty : Builder.ProcessedPropertyConfig -> Maybe String
+transitionFromProperty property =
+    case property of
+        Builder.ProcessedPositionConfig config ->
+            Just ("transform " ++ timingToCSS config.timing ++ " " ++ easingToCSS config.easing ++ " " ++ String.fromInt config.delay ++ "ms")
+
+        Builder.ProcessedRotateConfig config ->
+            Just ("transform " ++ timingToCSS config.timing ++ " " ++ easingToCSS config.easing ++ " " ++ String.fromInt config.delay ++ "ms")
+
+        Builder.ProcessedScaleConfig config ->
+            Just ("transform " ++ timingToCSS config.timing ++ " " ++ easingToCSS config.easing ++ " " ++ String.fromInt config.delay ++ "ms")
+
+        Builder.ProcessedColorConfig config ->
+            Just ("background-color " ++ timingToCSS config.timing ++ " " ++ easingToCSS config.easing ++ " " ++ String.fromInt config.delay ++ "ms")
+
+        Builder.ProcessedOpacityConfig config ->
+            Just ("opacity " ++ timingToCSS config.timing ++ " " ++ easingToCSS config.easing ++ " " ++ String.fromInt config.delay ++ "ms")
+
+
+generateColorStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
+generateColorStyles properties =
+    List.filterMap colorStyleFromProperty properties
+
+
+colorStyleFromProperty : Builder.ProcessedPropertyConfig -> Maybe ( String, String )
+colorStyleFromProperty property =
+    case property of
+        Builder.ProcessedColorConfig config ->
+            Just ( "background-color", Color.toString config.target )
+
+        Builder.ProcessedOpacityConfig config ->
+            Just ( "opacity", String.fromFloat config.target )
+
+        _ ->
+            Nothing
+
+
+
+-- CSS CONVERSION HELPERS
+
+
+timingToCSS : Builder.TimeSpec -> String
+timingToCSS timing =
+    case timing of
+        Builder.Duration ms ->
+            String.fromInt ms ++ "ms"
+
+        Builder.Speed pixelsPerSecond ->
+            -- Convert speed to duration (approximate for CSS)
+            -- Assume 100px movement for speed-based timing
+            let
+                estimatedDuration =
+                    round (100 / pixelsPerSecond * 1000)
+            in
+            String.fromInt estimatedDuration ++ "ms"
+
+
+easingToCSS : Easing.Easing -> String
+easingToCSS easing =
+    -- Now we can properly convert the easing to CSS!
+    Easing.toCSS easing
+
+
+
+-- UTILITY FUNCTIONS FOR CONSUMERS
+
+
+{-| Extract styles for a specific element from AnimationResult.
+
+    case Anim.CSS.animate builder of
+        AnimationResult animations ->
+            animations
+                |> List.filter (\anim -> anim.elementId == "my-element")
+                |> List.head
+                |> Maybe.map .styles
+                |> Maybe.withDefault []
+
 -}
-styleProperties : String -> Model -> List ( String, String )
-styleProperties elementId (Model animations) =
-    case Dict.get elementId animations of
-        Just targets ->
-            groupAndCombineTargets targets
+getElementStyles : String -> AnimationResult -> List ( String, String )
+getElementStyles elementId (AnimationResult animations) =
+    animations
+        |> List.filter (\anim -> anim.elementId == elementId)
+        |> List.head
+        |> Maybe.map .styles
+        |> Maybe.withDefault []
+
+
+{-| Get all HTML attributes needed for CSS animations on an element.
+
+This is a convenience function that combines CSS styles, transition properties,
+and event handling into a single list of Html.Attribute values.
+
+Example:
+
+    div
+        ([ Html.Attributes.id "my-element"
+         , Html.Attributes.class "box"
+         ]
+            ++ CSS.htmlAttributes "my-element" animationResult AnimationComplete
+        )
+        [ text "Animating element" ]
+
+For Elm UI, wrap each attribute with htmlAttribute:
+
+    el
+        ([ htmlAttribute (Html.Attributes.id "my-element") ]
+            ++ List.map htmlAttribute (CSS.htmlAttributes "my-element" animationResult AnimationComplete)
+        )
+        (text "Animating element")
+
+-}
+htmlAttributes : String -> Maybe AnimationResult -> List (Html.Attribute msg)
+htmlAttributes elementId maybeAnimationResult =
+    case maybeAnimationResult of
+        Just animationResult ->
+            getElementStyles elementId animationResult
+                |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
 
         Nothing ->
-            []
-
-
-{-| Generate CSS transition styles for an animation.
-
-Use this function to generate the CSS transition property for smooth animations:
-
-    animation =
-        Anim.opacity "my-element" 0.5
-            |> Anim.opacityDuration 500
-            |> Anim.easeInOut
-
-    styles =
-        transitionStyles animation
-
--}
-transitionStyles : Animation -> String
-transitionStyles animation =
-    let
-        animationData =
-            getAnimationData animation
-
-        duration =
-            Internal.animationToMilliseconds animation 1.0
-
-        easing =
-            Internal.easingToString animationData.easing
-    in
-    "all " ++ String.fromFloat duration ++ "ms " ++ easing
-
-
-
--- HELPERS
-
-
-{-| Group targets by CSS property and combine them.
--}
-groupAndCombineTargets : List AnimationTarget -> List ( String, String )
-groupAndCombineTargets targets =
-    let
-        -- Separate transform targets from others
-        ( transformTargets, otherTargets ) =
-            List.partition isTransformTarget targets
-
-        -- Combine transform targets into single transform property
-        transformProperty =
-            if List.isEmpty transformTargets then
-                []
-
-            else
-                [ ( "transform", combineTransforms transformTargets ) ]
-
-        -- Convert other targets to properties
-        otherProperties =
-            List.map targetToProperty otherTargets
-    in
-    transformProperty ++ otherProperties
-
-
-{-| Check if target affects CSS transform property.
--}
-isTransformTarget : AnimationTarget -> Bool
-isTransformTarget target =
-    case target of
-        ToPosition _ ->
-            True
-
-        ToScale _ ->
-            True
-
-        ToRotation _ ->
-            True
-
-        _ ->
-            False
-
-
-{-| Combine multiple transform targets into single transform value.
-Ensures transforms are applied in the correct order: translate, scale, rotate.
--}
-combineTransforms : List AnimationTarget -> String
-combineTransforms targets =
-    let
-        -- Separate transforms by type for proper ordering
-        positions =
-            targets |> List.filterMap extractTranslate
-
-        scales =
-            targets |> List.filterMap extractScale
-
-        rotations =
-            targets |> List.filterMap extractRotation
-
-        -- Combine in correct order: translate, scale, rotate
-        orderedTransforms =
-            (positions |> List.map transformToString)
-                ++ (scales |> List.map transformToString)
-                ++ (rotations |> List.map transformToString)
-    in
-    String.join " " orderedTransforms
-
-
-{-| Extract translate transform from AnimationTarget if it's a ToPosition target.
--}
-extractTranslate : AnimationTarget -> Maybe AnimationTarget
-extractTranslate target =
-    case target of
-        ToPosition _ ->
-            Just target
-
-        _ ->
-            Nothing
-
-
-{-| Extract scale transform from AnimationTarget if it's a ToScale target.
--}
-extractScale : AnimationTarget -> Maybe AnimationTarget
-extractScale target =
-    case target of
-        ToScale _ ->
-            Just target
-
-        _ ->
-            Nothing
-
-
-{-| Extract rotation transform from AnimationTarget if it's a ToRotation target.
--}
-extractRotation : AnimationTarget -> Maybe AnimationTarget
-extractRotation target =
-    case target of
-        ToRotation _ ->
-            Just target
-
-        _ ->
-            Nothing
-
-
-{-| Convert transform target to CSS transform function.
--}
-transformToString : AnimationTarget -> String
-transformToString target =
-    case target of
-        ToPosition pos ->
-            "translate3d(" ++ String.fromFloat pos.x ++ "px, " ++ String.fromFloat pos.y ++ "px, 0)"
-
-        ToScale scale ->
-            "scale(" ++ String.fromFloat scale.x ++ ", " ++ String.fromFloat scale.y ++ ")"
-
-        ToRotation degrees ->
-            "rotate(" ++ String.fromFloat degrees ++ "deg)"
-
-        _ ->
-            ""
-
-
-{-| Get the type identifier for an AnimationTarget.
--}
-getTargetType : AnimationTarget -> String
-getTargetType target =
-    case target of
-        ToPosition _ ->
-            "transform"
-
-        ToScale _ ->
-            "transform"
-
-        ToRotation _ ->
-            "transform"
-
-        ToOpacity _ ->
-            "opacity"
-
-        ToBackgroundColor _ ->
-            "background-color"
-
-        ToTextColor _ ->
-            "color"
-
-        ToBorderColor _ ->
-            "border-color"
-
-        ToDimensions _ ->
-            "dimensions"
-
-        ToBorderRadius _ ->
-            "border-radius"
-
-        ToFilter _ ->
-            "filter"
-
-
-{-| Get the specific type identifier for an AnimationTarget (distinguishes between transform subtypes).
--}
-getSpecificTargetType : AnimationTarget -> String
-getSpecificTargetType target =
-    case target of
-        ToPosition _ ->
-            "position"
-
-        ToScale _ ->
-            "scale"
-
-        ToRotation _ ->
-            "rotation"
-
-        ToOpacity _ ->
-            "opacity"
-
-        ToBackgroundColor _ ->
-            "background-color"
-
-        ToTextColor _ ->
-            "color"
-
-        ToBorderColor _ ->
-            "border-color"
-
-        ToDimensions _ ->
-            "dimensions"
-
-        ToBorderRadius _ ->
-            "border-radius"
-
-        ToFilter _ ->
-            "filter"
-
-
-{-| Convert an AnimationTarget to a CSS property.
--}
-targetToProperty : AnimationTarget -> ( String, String )
-targetToProperty target =
-    case target of
-        ToOpacity value ->
-            ( "opacity", String.fromFloat (clamp 0.0 1.0 value) )
-
-        ToBackgroundColor color ->
-            ( "background-color", colorToString color )
-
-        ToTextColor color ->
-            ( "color", colorToString color )
-
-        ToBorderColor color ->
-            ( "border-color", colorToString color )
-
-        ToDimensions dimensions ->
-            ( "width", String.fromFloat dimensions.width ++ "px" )
-
-        ToBorderRadius radius ->
-            ( "border-radius", String.fromFloat radius ++ "px" )
-
-        ToFilter filter ->
-            ( "filter", filterToString filter )
-
-        _ ->
-            ( "", "" )
-
-
-
--- Transform targets handled separately
-
-
-{-| Convert ColorValue to CSS color string.
--}
-colorToString : ColorValue -> String
-colorToString color =
-    case color of
-        Hex hexString ->
-            hexString
-
-        Rgb rgb ->
-            "rgb(" ++ String.fromInt rgb.r ++ ", " ++ String.fromInt rgb.g ++ ", " ++ String.fromInt rgb.b ++ ")"
-
-        Rgba rgba ->
-            "rgba(" ++ String.fromInt rgba.r ++ ", " ++ String.fromInt rgba.g ++ ", " ++ String.fromInt rgba.b ++ ", " ++ String.fromFloat rgba.a ++ ")"
-
-        Hsl hsl ->
-            "hsl(" ++ String.fromFloat hsl.h ++ ", " ++ String.fromFloat hsl.s ++ "%, " ++ String.fromFloat hsl.l ++ "%)"
-
-        Hsla hsla ->
-            "hsla(" ++ String.fromFloat hsla.h ++ ", " ++ String.fromFloat hsla.s ++ "%, " ++ String.fromFloat hsla.l ++ "%, " ++ String.fromFloat hsla.a ++ ")"
-
-
-{-| Convert FilterValue to CSS filter string.
--}
-filterToString : Anim.FilterValue -> String
-filterToString filter =
-    case filter of
-        Blur radius ->
-            "blur(" ++ String.fromFloat radius ++ "px)"
-
-        Brightness value ->
-            "brightness(" ++ String.fromFloat value ++ ")"
-
-        Contrast value ->
-            "contrast(" ++ String.fromFloat value ++ ")"
-
-        Grayscale value ->
-            "grayscale(" ++ String.fromFloat (clamp 0.0 1.0 value) ++ ")"
-
-        Saturate value ->
-            "saturate(" ++ String.fromFloat value ++ ")"
+            [ Html.Attributes.style "transition" "none" ]
 
 
 

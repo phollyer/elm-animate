@@ -26,8 +26,8 @@ USAGE EXAMPLES:
 
 -- Common UI imports
 
-import Anim exposing (Position, defaultConfig)
-import Anim.Sub exposing (Model, animateTo, animateToX, animateToY, getPosition, init, step, styleProperties, subscriptions)
+import Anim exposing (Position)
+import Anim.Sub exposing (Model, animate, getPosition, init, step, styleProperties, subscriptions)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -93,14 +93,32 @@ update msg model =
     case msg of
         ScatterElements ->
             let
+                animA =
+                    Anim.position "elementA" { x = 80, y = 60 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
+
+                animB =
+                    Anim.position "elementB" { x = 320, y = 80 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
+
+                animC =
+                    Anim.position "elementC" { x = 40, y = 300 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
+
+                animD =
+                    Anim.position "elementD" { x = 380, y = 260 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
+
+                animE =
+                    Anim.position "elementE" { x = 60, y = 120 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
+
+                animF =
+                    Anim.position "elementF" { x = 350, y = 320 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
+
                 updatedAnimations =
                     model.animations
-                        |> animateTo "elementA" (Position 80 60)
-                        |> animateTo "elementB" (Position 320 80)
-                        |> animateTo "elementC" (Position 40 300)
-                        |> animateTo "elementD" (Position 380 260)
-                        |> animateTo "elementE" (Position 60 120)
-                        |> animateTo "elementF" (Position 350 320)
+                        |> animate animA
+                        |> animate animB
+                        |> animate animC
+                        |> animate animD
+                        |> animate animE
+                        |> animate animF
             in
             ( { model
                 | animations = updatedAnimations
@@ -111,14 +129,32 @@ update msg model =
 
         ResetPositions ->
             let
+                animA =
+                    Anim.position "elementA" { x = 150, y = 100 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
+
+                animB =
+                    Anim.position "elementB" { x = 200, y = 150 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
+
+                animC =
+                    Anim.position "elementC" { x = 100, y = 200 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
+
+                animD =
+                    Anim.position "elementD" { x = 250, y = 200 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
+
+                animE =
+                    Anim.position "elementE" { x = 300, y = 100 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
+
+                animF =
+                    Anim.position "elementF" { x = 180, y = 50 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
+
                 updatedAnimations =
                     model.animations
-                        |> animateTo "elementA" (Position 150 100)
-                        |> animateTo "elementB" (Position 200 150)
-                        |> animateTo "elementC" (Position 100 200)
-                        |> animateTo "elementD" (Position 250 200)
-                        |> animateTo "elementE" (Position 300 100)
-                        |> animateTo "elementF" (Position 180 50)
+                        |> animate animA
+                        |> animate animB
+                        |> animate animC
+                        |> animate animD
+                        |> animate animE
+                        |> animate animF
             in
             ( { model
                 | animations = updatedAnimations
@@ -138,21 +174,38 @@ update msg model =
                 radius =
                     90
 
-                updatedAnimations =
-                    model.animations
-                        |> animateTo "elementA" (Position (centerX + radius) centerY)
-                        -- 0°
-                        |> animateTo "elementB" (Position (centerX + radius * 0.5) (centerY + radius * 0.866))
-                        -- 60°
-                        |> animateTo "elementC" (Position (centerX - radius * 0.5) (centerY + radius * 0.866))
-                        -- 120°
-                        |> animateTo "elementD" (Position (centerX - radius) centerY)
-                        -- 180°
-                        |> animateTo "elementE" (Position (centerX - radius * 0.5) (centerY - radius * 0.866))
-                        -- 240°
-                        |> animateTo "elementF" (Position (centerX + radius * 0.5) (centerY - radius * 0.866))
+                animA =
+                    Anim.position "elementA" { x = centerX + radius, y = toFloat centerY } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
+
+                -- 0°
+                animB =
+                    Anim.position "elementB" { x = centerX + radius * 0.5, y = toFloat centerY + radius * 0.866 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
+
+                -- 60°
+                animC =
+                    Anim.position "elementC" { x = centerX - radius * 0.5, y = toFloat centerY + radius * 0.866 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
+
+                -- 120°
+                animD =
+                    Anim.position "elementD" { x = centerX - radius, y = toFloat centerY } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
+
+                -- 180°
+                animE =
+                    Anim.position "elementE" { x = centerX - radius * 0.5, y = toFloat centerY - radius * 0.866 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
+
+                -- 240°
+                animF =
+                    Anim.position "elementF" { x = centerX + radius * 0.5, y = toFloat centerY - radius * 0.866 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
 
                 -- 300°
+                updatedAnimations =
+                    model.animations
+                        |> animate animA
+                        |> animate animB
+                        |> animate animC
+                        |> animate animD
+                        |> animate animE
+                        |> animate animF
             in
             ( { model
                 | animations = updatedAnimations

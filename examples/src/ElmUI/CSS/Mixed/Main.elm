@@ -15,8 +15,15 @@ FEATURES:
 
 -}
 
-import Anim exposing (ColorValue(..), Position, RotationValue, ScaleValue)
-import Anim.CSS exposing (Model, animate, init, onTransitionEnd, styleProperties, transitionStyles)
+import Anim
+import Anim.CSS as CSS exposing (AnimationResult)
+import Anim.Easing as Easing
+import Anim.Internal exposing (ColorValue(..))
+import Anim.Properties.Color as Color
+import Anim.Properties.Opacity as Opacity
+import Anim.Properties.Position as Position
+import Anim.Properties.Rotate as Rotate
+import Anim.Properties.Scale as Scale
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -46,8 +53,8 @@ main =
 
 
 type alias Model =
-    { animations : Anim.CSS.Model
-    , activeAnimation : Maybe Anim.Animation
+    { animations : Maybe AnimationResult
+    , isAnimating : Bool
     }
 
 
@@ -71,73 +78,91 @@ update msg model =
         StartComplexAnimation elementId ->
             -- Combine position + scale + rotation
             let
-                animations =
-                    model.animations
-                        |> animatePosition elementId (Position 200 100)
-                        |> animateScale elementId { x = 1.5, y = 1.9 }
-                        |> animateRotation elementId 90
+                animationResult =
+                    Anim.init elementId
+                        |> Position.to { x = 200, y = 100 }
+                        |> Scale.to { x = 1.5, y = 1.9 }
+                        |> Rotate.to 90
+                        |> Anim.duration 800
+                        |> Anim.easing Easing.easeInOutQuad
+                        |> CSS.animate
             in
-            ( { model | animations = animations }, Cmd.none )
+            ( { model | animations = Just animationResult, isAnimating = True }, Cmd.none )
 
         StartFadeMove elementId ->
             -- Combine opacity + position
             let
-                animations =
-                    model.animations
-                        |> animateOpacity elementId 0.3
-                        |> animatePosition elementId (Position 250 80)
+                animationResult =
+                    Anim.init elementId
+                        |> Opacity.to 0.3
+                        |> Position.to { x = 250, y = 80 }
+                        |> Anim.duration 600
+                        |> Anim.easing Easing.easeOutQuad
+                        |> CSS.animate
             in
-            ( { model | animations = animations }, Cmd.none )
+            ( { model | animations = Just animationResult, isAnimating = True }, Cmd.none )
 
         StartSpinScale elementId ->
             -- Combine rotation + scale + color
             let
-                animations =
-                    model.animations
-                        |> animateRotation elementId 180
-                        |> animateScale elementId { x = 0.8, y = 0.8 }
-                        |> animateBackgroundColor elementId (Hex "#e74c3c")
+                animationResult =
+                    Anim.init elementId
+                        |> Rotate.to 180
+                        |> Scale.to { x = 0.8, y = 0.8 }
+                        |> Color.to (Hex "#e74c3c")
+                        |> Anim.duration 700
+                        |> Anim.easing Easing.easeInOutBack
+                        |> CSS.animate
             in
-            ( { model | animations = animations }, Cmd.none )
+            ( { model | animations = Just animationResult, isAnimating = True }, Cmd.none )
 
         StartColorMorph elementId ->
             -- Combine color + scale + opacity
             let
-                animations =
-                    model.animations
-                        |> animateBackgroundColor elementId (Hsl { h = 142, s = 71, l = 45 })
-                        |> animateScale elementId { x = 2.0, y = 0.5 }
-                        |> animateOpacity elementId 0.8
+                animationResult =
+                    Anim.init elementId
+                        |> Color.to (Hsl { h = 142, s = 71, l = 45 })
+                        |> Scale.to { x = 2.0, y = 0.5 }
+                        |> Opacity.to 0.8
+                        |> Anim.duration 900
+                        |> Anim.easing Easing.easeInOutCubic
+                        |> CSS.animate
             in
-            ( { model | animations = animations }, Cmd.none )
+            ( { model | animations = Just animationResult, isAnimating = True }, Cmd.none )
 
         StartFullTransform elementId ->
             -- All properties at once!
             let
-                animations =
-                    model.animations
-                        |> animatePosition elementId (Position 200 200)
-                        |> animateScale elementId { x = 1.3, y = 1.3 }
-                        |> animateRotation elementId 270
-                        |> animateOpacity elementId 0.7
-                        |> animateBackgroundColor elementId (Hex "#9b59b6")
+                animationResult =
+                    Anim.init elementId
+                        |> Position.to { x = 200, y = 200 }
+                        |> Scale.to { x = 1.3, y = 1.3 }
+                        |> Rotate.to 270
+                        |> Opacity.to 0.7
+                        |> Color.to (Hex "#9b59b6")
+                        |> Anim.duration 1000
+                        |> Anim.easing Easing.easeInOutElastic
+                        |> CSS.animate
             in
-            ( { model | animations = animations }, Cmd.none )
+            ( { model | animations = Just animationResult, isAnimating = True }, Cmd.none )
 
         ResetAll ->
             let
-                animations =
-                    model.animations
-                        |> animatePosition "mixed-box" (Position 0 0)
-                        |> animateScale "mixed-box" { x = 1.0, y = 1.0 }
-                        |> animateRotation "mixed-box" 0
-                        |> animateOpacity "mixed-box" 1.0
-                        |> animateBackgroundColor "mixed-box" (Hex "#3498db")
+                animationResult =
+                    Anim.init "mixed-box"
+                        |> Position.to { x = 0, y = 0 }
+                        |> Scale.to { x = 1.0, y = 1.0 }
+                        |> Rotate.to 0
+                        |> Opacity.to 1.0
+                        |> Color.to (Hex "#3498db")
+                        |> Anim.duration 500
+                        |> Anim.easing Easing.easeInOutQuad
+                        |> CSS.animate
             in
-            ( { model | animations = animations }, Cmd.none )
+            ( { model | animations = Just animationResult, isAnimating = True }, Cmd.none )
 
         AnimationComplete ->
-            ( model, Cmd.none )
+            ( { model | isAnimating = False, animations = Nothing }, Cmd.none )
 
 
 
@@ -146,18 +171,8 @@ update msg model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    let
-        -- Set initial position for the mixed-box element at origin
-        initialAnimation =
-            Anim.position "mixed-box" { x = 0, y = 0 }
-                |> Anim.duration 0
-                |> Anim.linear
-
-        initialAnimations =
-            animate initialAnimation Anim.CSS.init
-    in
-    ( { animations = initialAnimations
-      , activeAnimation = Nothing
+    ( { animations = Nothing
+      , isAnimating = False
       }
     , Cmd.none
     )
@@ -238,15 +253,7 @@ mixedAnimationBox model =
          , htmlAttribute (Html.Attributes.style "align-items" "center")
          , htmlAttribute (Html.Attributes.style "justify-content" "center")
          ]
-            ++ (styleProperties "mixed-box" model.animations
-                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
-               )
-            ++ [ htmlAttribute
-                    (Html.Attributes.style "transition"
-                        (transitionStyles "mixed-box" model.animations)
-                    )
-               , htmlAttribute (onTransitionEnd AnimationComplete)
-               ]
+            ++ List.map htmlAttribute (CSS.htmlAttributes "mixed-box" model.animations AnimationComplete)
         )
         (el
             [ centerX

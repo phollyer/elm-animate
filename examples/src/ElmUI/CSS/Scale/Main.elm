@@ -15,8 +15,10 @@ FEATURES:
 
 -}
 
-import Anim exposing (ScaleValue)
-import Anim.CSS exposing (Model, animate, init, onTransitionEnd, styleProperties, transitionStyles)
+import Anim
+import Anim.CSS as CSS exposing (AnimationResult)
+import Anim.Easing as Easing
+import Anim.Properties.Scale as Scale
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -46,8 +48,9 @@ main =
 
 
 type alias Model =
-    { animations : Anim.CSS.Model
-    , activeAnimation : Maybe Anim.Animation
+    { animations : Maybe AnimationResult
+    , isAnimating : Bool
+    , currentScale : { x : Float, y : Float }
     }
 
 
@@ -57,8 +60,9 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Anim.CSS.init
-      , activeAnimation = Nothing
+    ( { animations = Nothing
+      , isAnimating = False
+      , currentScale = { x = 1.0, y = 1.0 } -- Starting scale (normal size)
       }
     , Cmd.none
     )
@@ -82,76 +86,96 @@ update msg model =
     case msg of
         ScaleUp ->
             let
-                animation =
-                    Anim.scale "box" { x = 1.5, y = 1.5 }
-                        |> Anim.scaleDuration 400
-                        |> Anim.easeOut
+                animationResult =
+                    Anim.init "box"
+                        |> Scale.to { x = 1.5, y = 1.5 }
+                        |> Anim.duration 400
+                        |> Anim.easing Easing.easeOutQuad
+                        |> CSS.animate
             in
             ( { model
-                | animations = animate animation model.animations
-                , activeAnimation = Just animation
+                | animations = Just animationResult
+                , isAnimating = True
+                , currentScale = { x = 1.5, y = 1.5 }
               }
             , Cmd.none
             )
 
         ScaleDown ->
             let
-                animation =
-                    Anim.scale "box" { x = 0.7, y = 0.7 }
-                        |> Anim.scaleDuration 400
-                        |> Anim.easeOut
+                animationResult =
+                    Anim.init "box"
+                        |> Scale.to { x = 0.7, y = 0.7 }
+                        |> Anim.duration 400
+                        |> Anim.easing Easing.easeOutQuad
+                        |> CSS.animate
             in
             ( { model
-                | animations = animate animation model.animations
-                , activeAnimation = Just animation
+                | animations = Just animationResult
+                , isAnimating = True
+                , currentScale = { x = 0.7, y = 0.7 }
               }
             , Cmd.none
             )
 
         ScaleReset ->
             let
-                animation =
-                    Anim.scale "box" { x = 1.0, y = 1.0 }
-                        |> Anim.scaleDuration 600
-                        |> Anim.easeInOut
+                animationResult =
+                    Anim.init "box"
+                        |> Scale.to { x = 1.0, y = 1.0 }
+                        |> Anim.duration 600
+                        |> Anim.easing Easing.easeInOutQuad
+                        |> CSS.animate
             in
             ( { model
-                | animations = animate animation model.animations
-                , activeAnimation = Just animation
+                | animations = Just animationResult
+                , isAnimating = True
+                , currentScale = { x = 1.0, y = 1.0 }
               }
             , Cmd.none
             )
 
         ScaleWide ->
             let
-                animation =
-                    Anim.scale "box" { x = 1.8, y = 0.6 }
-                        |> Anim.scaleDuration 500
-                        |> Anim.easeOut
+                animationResult =
+                    Anim.init "box"
+                        |> Scale.to { x = 1.8, y = 0.6 }
+                        |> Anim.duration 500
+                        |> Anim.easing Easing.easeOutQuad
+                        |> CSS.animate
             in
             ( { model
-                | animations = animate animation model.animations
-                , activeAnimation = Just animation
+                | animations = Just animationResult
+                , isAnimating = True
+                , currentScale = { x = 1.8, y = 0.6 }
               }
             , Cmd.none
             )
 
         ScaleTall ->
             let
-                animation =
-                    Anim.scale "box" { x = 0.6, y = 1.8 }
-                        |> Anim.scaleDuration 500
-                        |> Anim.easeOut
+                animationResult =
+                    Anim.init "box"
+                        |> Scale.to { x = 0.6, y = 1.8 }
+                        |> Anim.duration 500
+                        |> Anim.easing Easing.easeOutQuad
+                        |> CSS.animate
             in
             ( { model
-                | animations = animate animation model.animations
-                , activeAnimation = Just animation
+                | animations = Just animationResult
+                , isAnimating = True
+                , currentScale = { x = 0.6, y = 1.8 }
               }
             , Cmd.none
             )
 
         AnimationComplete ->
-            ( { model | activeAnimation = Nothing }, Cmd.none )
+            ( { model
+                | isAnimating = False
+                , animations = Nothing
+              }
+            , Cmd.none
+            )
 
 
 
@@ -240,20 +264,26 @@ animatedBox elementId label color model =
          , htmlAttribute (Html.Attributes.style "align-items" "center")
          , htmlAttribute (Html.Attributes.style "justify-content" "center")
          ]
-            ++ (styleProperties elementId model.animations
-                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+            ++ (case model.animations of
+                    Just animationResult ->
+                        CSS.getElementStyles elementId animationResult
+                            |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+
+                    Nothing ->
+                        []
                )
             ++ [ htmlAttribute
                     (Html.Attributes.style "transition"
-                        (case model.activeAnimation of
-                            Just animation ->
-                                transitionStyles animation
+                        (case model.animations of
+                            Just _ ->
+                                "transform 0.4s ease-out"
 
+                            -- Default transition
                             Nothing ->
                                 "none"
                         )
                     )
-               , htmlAttribute (onTransitionEnd AnimationComplete)
+               , htmlAttribute (CSS.onTransitionEnd AnimationComplete)
                ]
         )
         (el

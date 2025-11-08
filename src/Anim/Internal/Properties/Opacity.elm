@@ -1,0 +1,63 @@
+module Anim.Internal.Properties.Opacity exposing
+    ( Opacity
+    , encode
+    , equal
+    , fromFloat
+    , isFullyOpaque
+    , isFullyTransparent
+    , map
+    , one
+    , toFloat
+    , zero
+    )
+
+import Json.Encode as Encode
+
+
+type Opacity
+    = Opacity Float
+
+
+toFloat : Opacity -> Float
+toFloat (Opacity o) =
+    o
+
+
+fromFloat : Float -> Opacity
+fromFloat o =
+    Opacity o
+
+
+map : (Float -> Float) -> Opacity -> Opacity
+map fn (Opacity o) =
+    Opacity (fn o)
+
+
+equal : Opacity -> Opacity -> Bool
+equal (Opacity o1) (Opacity o2) =
+    o1 == o2
+
+
+isFullyOpaque : Opacity -> Bool
+isFullyOpaque (Opacity o) =
+    o >= 1
+
+
+isFullyTransparent : Opacity -> Bool
+isFullyTransparent (Opacity o) =
+    o <= 0
+
+
+zero : Opacity
+zero =
+    Opacity 0
+
+
+one : Opacity
+one =
+    Opacity 1
+
+
+encode : Opacity -> Encode.Value
+encode (Opacity o) =
+    Encode.float o
