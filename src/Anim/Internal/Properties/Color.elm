@@ -1,5 +1,5 @@
 module Anim.Internal.Properties.Color exposing
-    ( Color
+    ( Color(..)
     , HSL
     , HSLA
     , Hex

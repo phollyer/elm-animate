@@ -14,9 +14,11 @@
         "Anim.CSS",
         "Anim.Sub",
         "Anim.Ports",
-        "Anim.Easing",
+        "Anim.Timing.Easing",
+        "Anim.Timing.TimeSpec",
+        "Anim.Timing.Delay",
         "Anim.Properties.Position",
-        "Anim.Properties.Rotate",
+        "Anim.Properties.Rotation",
         "Anim.Properties.Scale",
         "Anim.Properties.Opacity",
         "Anim.Properties.Color"

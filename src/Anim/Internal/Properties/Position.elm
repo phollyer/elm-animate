@@ -7,6 +7,7 @@ module Anim.Internal.Properties.Position exposing
     , interpolate
     , scale
     , subtract
+    , toCssString
     , toString
     , toTuple
     , x
@@ -82,6 +83,11 @@ interpolate t (Position start) (Position endPos) =
 toString : Position -> String
 toString (Position coords) =
     "Position(x: " ++ String.fromFloat coords.x ++ ", y: " ++ String.fromFloat coords.y ++ ")"
+
+
+toCssString : Position -> String
+toCssString (Position coords) =
+    String.fromFloat coords.x ++ "px, " ++ String.fromFloat coords.y ++ "px"
 
 
 encode : Position -> Encode.Value

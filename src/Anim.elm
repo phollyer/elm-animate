@@ -36,7 +36,7 @@ use the global settings defined here.
 -}
 
 import Anim.Internal.Builder as Builder
-import Anim.Timing.Easing exposing (Easing)
+import Anim.Timing.Easing as Easing exposing (Easing)
 
 
 
@@ -118,7 +118,7 @@ speed value builder =
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing easingValue builder =
-    Builder.easing easingValue builder
+    Easing.mapInternal Builder.easing easingValue builder
 
 
 {-| Set global delay in milliseconds.

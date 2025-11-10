@@ -9,8 +9,8 @@ module Anim.Internal.Builder exposing
     , ProcessedPropertyConfig(..)
     , PropertyAnimationState
     , PropertyConfig(..)
+    , PropertySpec
     , State
-    , UniversalPropertyData
     , delay
     , duration
     , easing
@@ -24,17 +24,16 @@ module Anim.Internal.Builder exposing
     , updateData
     )
 
-import Anim.Internal.Properties.Color as Color exposing (Color, HSL, HSLA, Hex, RGB, RGBA)
+import Anim.Internal.Properties.Color as Color exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotation as Rotation exposing (Rotation)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
-import Anim.Timing.Delay as Delay exposing (Delay)
-import Anim.Timing.Easing as Easing exposing (Easing(..))
-import Anim.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
+import Anim.Internal.Timing.Delay as Delay exposing (Delay)
+import Anim.Internal.Timing.Easing as Easing exposing (Easing(..))
+import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
 import Json.Encode as Encode
-import Scroll exposing (Config, Timing)
 
 
 {-| State
@@ -96,14 +95,14 @@ type alias ElementConfig =
 
 
 type PropertyConfig
-    = PositionConfig Position UniversalPropertyData
-    | RotateConfig Rotation UniversalPropertyData
-    | ScaleConfig Scale UniversalPropertyData
-    | ColorConfig Color UniversalPropertyData
-    | OpacityConfig Opacity UniversalPropertyData
+    = PositionConfig Position PropertySpec
+    | RotateConfig Rotation PropertySpec
+    | ScaleConfig Scale PropertySpec
+    | ColorConfig Color PropertySpec
+    | OpacityConfig Opacity PropertySpec
 
 
-type alias UniversalPropertyData =
+type alias PropertySpec =
     { timing : Maybe TimeSpec
     , easing : Maybe Easing
     , delay : Maybe Delay
@@ -369,8 +368,8 @@ encodeProcessedElementConfig config =
 encodeProcessedPropertyConfig : ProcessedPropertyConfig -> Encode.Value
 encodeProcessedPropertyConfig property =
     let
-        encode : String -> (target -> Encode.Value) -> { target : target, timing : TimeSpec, easing : Easing, delay : Delay } -> Encode.Value
-        encode type_ targetEncoder config =
+        encode_ : String -> (target -> Encode.Value) -> { target : target, timing : TimeSpec, easing : Easing, delay : Delay } -> Encode.Value
+        encode_ type_ targetEncoder config =
             Encode.object <|
                 [ ( "type", Encode.string type_ )
                 , ( "target", targetEncoder config.target )
@@ -381,19 +380,19 @@ encodeProcessedPropertyConfig property =
     in
     case property of
         ProcessedPositionConfig config ->
-            encode "position" Position.encode config
-
-        ProcessedRotateConfig config ->
-            encode "rotate" Rotation.encode config
+            encode_ "position" Position.encode config
 
         ProcessedScaleConfig config ->
-            encode "scale" Scale.encode config
+            encode_ "scale" Scale.encode config
 
         ProcessedColorConfig config ->
-            encode "color" Color.encode config
+            encode_ "color" Color.encode config
 
         ProcessedOpacityConfig config ->
-            encode "opacity" Opacity.encode config
+            encode_ "opacity" Opacity.encode config
+
+        ProcessedRotateConfig config ->
+            encode_ "rotate" Rotation.encode config
 
 
 encodeMaybeProcessedTiming : Maybe TimeSpec -> Encode.Value
@@ -435,13 +434,3 @@ encodeMaybeProcessedEasing maybeEasing =
 encodeProcessedEasing : Easing -> Encode.Value
 encodeProcessedEasing easing_ =
     Easing.encode easing_
-
-
-encodeMaybeInt : Maybe Int -> Encode.Value
-encodeMaybeInt maybeInt =
-    case maybeInt of
-        Nothing ->
-            Encode.null
-
-        Just value ->
-            Encode.int value

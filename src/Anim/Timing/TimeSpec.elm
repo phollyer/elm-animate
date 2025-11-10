@@ -1,27 +1,41 @@
 module Anim.Timing.TimeSpec exposing
     ( TimeSpec(..)
     , encode
+    , mapInternal
     )
 
+import Anim.Internal.Timing.TimeSpec as TS
 import Json.Encode as Encode
 
 
 type TimeSpec
-    = Duration Int -- milliseconds
-    | Speed Float -- units per second
+    = Duration Millis
+    | Speed PixelsPerSecond
+
+
+type alias Millis =
+    Int
+
+
+type alias PixelsPerSecond =
+    Float
 
 
 encode : TimeSpec -> Encode.Value
-encode timeSpec =
-    case timeSpec of
+encode =
+    mapInternal TS.encode
+
+
+mapInternal : (TS.TimeSpec -> a) -> TimeSpec -> a
+mapInternal fn =
+    fn << toInternal
+
+
+toInternal : TimeSpec -> TS.TimeSpec
+toInternal spec =
+    case spec of
         Duration ms ->
-            Encode.object
-                [ ( "type", Encode.string "duration" )
-                , ( "value", Encode.int ms )
-                ]
+            TS.Duration ms
 
         Speed value ->
-            Encode.object
-                [ ( "type", Encode.string "speed" )
-                , ( "value", Encode.float value )
-                ]
+            TS.Speed value

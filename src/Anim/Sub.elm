@@ -4,7 +4,7 @@ module Anim.Sub exposing
     , subscriptions, update
     , getPosition, getCurrentStyles
     , transform
-    , Color, Opacity, Rotation
+    , Rotation
     )
 
 {-| Subscription-based animation system for Anim.
@@ -37,7 +37,7 @@ onAnimationFrameDelta subscriptions for smooth, controlled animations.
 -}
 
 import Anim exposing (AnimBuilder)
-import Anim.Internal.Internal as Internal exposing (..)
+import Anim.Internal.Builder as Builder
 import Anim.Timing.Easing exposing (Easing(..))
 import Browser.Events
 import Dict
@@ -50,7 +50,7 @@ import Dict
 {-| State for managing subscription-based animations.
 -}
 type AnimationState
-    = AnimationState Internal.State
+    = AnimationState Builder.State
 
 
 {-| Messages for animation updates.
@@ -92,18 +92,18 @@ type alias Scale =
     let
         animationState =
             Anim.init "my-element"
-                |> Anim.Properties.Position.to { x = 100, y = 200 }
-                |> Anim.Properties.Scale.to { x = 1.5, y = 1.5 }
-                |> Anim.Sub.animate
+                |> Position.to { x = 100, y = 200 }
+                |> Scale.to { x = 1.5, y = 1.5 }
+                |> Sub.animate
     in
     -- Use with subscriptions and update
 
 -}
-animate : AnimationState -> AnimBuilder -> AnimationState
-animate (AnimationState internalState) (AnimBuilder builderData) =
+animate : AnimBuilder -> AnimationState
+animate builder =
     let
         processedData =
-            processAnimationData builderData
+            Builder.processAnimationData builder
 
         elementStates =
             Dict.map (createElementAnimationState startValues) processedData.elements
@@ -374,6 +374,33 @@ applyEasing easing progress =
         Linear ->
             progress
 
+        Bezier p1x p1y p2x p2y ->
+            -- Approximate cubic Bezier easing using De Casteljau's algorithm
+            let
+                u =
+                    1 - progress
+
+                tt =
+                    progress * progress
+
+                uu =
+                    u * u
+
+                uuu =
+                    uu * u
+
+                ttt =
+                    tt * progress
+
+                x =
+                    uuu * 0 + 3 * uu * progress * p1x + 3 * u * tt * p2x + ttt * 1
+
+                y =
+                    uuu * 0 + 3 * uu * progress * p1y + 3 * u * tt * p2y + ttt * 1
+            in
+            y
+
+        -- Return the y value as eased progress
         Ease ->
             -- Standard ease (equivalent to ease-in-out)
             if progress < 0.5 then

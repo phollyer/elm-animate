@@ -8,6 +8,7 @@ module Anim.Internal.Properties.Opacity exposing
     , map
     , one
     , toFloat
+    , toString
     , zero
     )
 
@@ -16,6 +17,11 @@ import Json.Encode as Encode
 
 type Opacity
     = Opacity Float
+
+
+toString : Opacity -> String
+toString (Opacity o) =
+    String.fromFloat o
 
 
 toFloat : Opacity -> Float

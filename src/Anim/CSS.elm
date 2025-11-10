@@ -1,5 +1,5 @@
 module Anim.CSS exposing
-    ( animate, AnimationResult(..)
+    ( animate, AnimationResult
     , getElementStyles
     , htmlAttributes
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
@@ -35,8 +35,13 @@ for native browser performance and hardware acceleration.
 import Anim exposing (AnimBuilder)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Properties.Color as Color
+import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position as Position
-import Anim.Timing.Easing as Easing
+import Anim.Internal.Properties.Rotation as Rotation
+import Anim.Internal.Properties.Scale as Scale
+import Anim.Internal.Timing.Delay as Delay
+import Anim.Internal.Timing.Easing as Easing
+import Anim.Internal.Timing.TimeSpec as TimeSpec
 import Dict
 import Html
 import Html.Attributes
@@ -124,13 +129,13 @@ transformFromProperty : Builder.ProcessedPropertyConfig -> Maybe String
 transformFromProperty property =
     case property of
         Builder.ProcessedPositionConfig config ->
-            Just ("translate(" ++ String.fromFloat (Position.x config.target) ++ "px, " ++ String.fromFloat (Position.y config.target) ++ "px)")
+            Just ("translate(" ++ Position.toCssString config.target ++ ")")
 
         Builder.ProcessedRotateConfig config ->
-            Just ("rotate(" ++ String.fromFloat config.target ++ "deg)")
+            Just ("rotate(" ++ Rotation.toCssString config.target ++ ")")
 
         Builder.ProcessedScaleConfig config ->
-            Just ("scale(" ++ String.fromFloat config.target.x ++ ", " ++ String.fromFloat config.target.y ++ ")")
+            Just ("scale(" ++ Scale.toCssString config.target ++ ")")
 
         Builder.ProcessedColorConfig _ ->
             -- Color doesn't use transform
@@ -154,19 +159,19 @@ transitionFromProperty : Builder.ProcessedPropertyConfig -> Maybe String
 transitionFromProperty property =
     case property of
         Builder.ProcessedPositionConfig config ->
-            Just ("transform " ++ timingToCSS config.timing ++ " " ++ easingToCSS config.easing ++ " " ++ String.fromInt config.delay ++ "ms")
+            Just ("transform " ++ TimeSpec.toCssString config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
         Builder.ProcessedRotateConfig config ->
-            Just ("transform " ++ timingToCSS config.timing ++ " " ++ easingToCSS config.easing ++ " " ++ String.fromInt config.delay ++ "ms")
+            Just ("transform " ++ TimeSpec.toCssString config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
         Builder.ProcessedScaleConfig config ->
-            Just ("transform " ++ timingToCSS config.timing ++ " " ++ easingToCSS config.easing ++ " " ++ String.fromInt config.delay ++ "ms")
+            Just ("transform " ++ TimeSpec.toCssString config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
         Builder.ProcessedColorConfig config ->
-            Just ("background-color " ++ timingToCSS config.timing ++ " " ++ easingToCSS config.easing ++ " " ++ String.fromInt config.delay ++ "ms")
+            Just ("background-color " ++ TimeSpec.toCssString config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
         Builder.ProcessedOpacityConfig config ->
-            Just ("opacity " ++ timingToCSS config.timing ++ " " ++ easingToCSS config.easing ++ " " ++ String.fromInt config.delay ++ "ms")
+            Just ("opacity " ++ TimeSpec.toCssString config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
 
 generateColorStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
@@ -181,36 +186,10 @@ colorStyleFromProperty property =
             Just ( "background-color", Color.toString config.target )
 
         Builder.ProcessedOpacityConfig config ->
-            Just ( "opacity", String.fromFloat config.target )
+            Just ( "opacity", Opacity.toString config.target )
 
         _ ->
             Nothing
-
-
-
--- CSS CONVERSION HELPERS
-
-
-timingToCSS : Builder.TimeSpec -> String
-timingToCSS timing =
-    case timing of
-        Builder.Duration ms ->
-            String.fromInt ms ++ "ms"
-
-        Builder.Speed pixelsPerSecond ->
-            -- Convert speed to duration (approximate for CSS)
-            -- Assume 100px movement for speed-based timing
-            let
-                estimatedDuration =
-                    round (100 / pixelsPerSecond * 1000)
-            in
-            String.fromInt estimatedDuration ++ "ms"
-
-
-easingToCSS : Easing.Easing -> String
-easingToCSS easing =
-    -- Now we can properly convert the easing to CSS!
-    Easing.toCSS easing
 
 
 

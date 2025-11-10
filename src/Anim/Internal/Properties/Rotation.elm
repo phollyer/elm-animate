@@ -5,7 +5,9 @@ module Anim.Internal.Properties.Rotation exposing
     , fromFloat
     , isZero
     , map
+    , toCssString
     , toFloat
+    , toString
     , zero
     )
 
@@ -19,6 +21,16 @@ type Rotation
 toFloat : Rotation -> Float
 toFloat (Rotation angle) =
     angle
+
+
+toString : Rotation -> String
+toString (Rotation angle) =
+    String.fromFloat angle
+
+
+toCssString : Rotation -> String
+toCssString rotation =
+    toString rotation ++ "deg"
 
 
 fromFloat : Float -> Rotation

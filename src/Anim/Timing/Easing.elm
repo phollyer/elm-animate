@@ -1,18 +1,21 @@
 module Anim.Timing.Easing exposing
     ( Easing(..)
     , linear, ease, easeIn, easeOut, easeInOut
-    , easeInSine, easeOutSine, easeInOutSine
-    , easeInQuad, easeOutQuad, easeInOutQuad
-    , easeInCubic, easeOutCubic, easeInOutCubic
-    , easeInQuart, easeOutQuart, easeInOutQuart
-    , easeInQuint, easeOutQuint, easeInOutQuint
-    , easeInExpo, easeOutExpo, easeInOutExpo
-    , easeInCirc, easeOutCirc, easeInOutCirc
-    , easeInBack, easeOutBack, easeInOutBack
-    , easeInElastic, easeOutElastic, easeInOutElastic
-    , easeInBounce, easeOutBounce, easeInOutBounce
+    , sineIn, sineOut, sineInOut
+    , quadIn, quadOut, quadInOut
+    , cubicIn, cubicOut, cubicInOut
+    , quartIn, quartOut, quartInOut
+    , quintIn, quintOut, quintInOut
+    , expoIn, expoOut, expoInOut
+    , circIn, circOut, circInOut
+    , backIn, backOut, backInOut
+    , elasticIn, elasticOut, elasticInOut
+    , bounceIn, bounceOut, bounceInOut
+    , bezier
     , custom
-    , toCSS, toWebAnimations, toFunction, encode
+    , toCSS, toWebAnimations, toFunction
+    , encode
+    , mapInternal
     )
 
 {-| Unified easing system for all Anim animation types.
@@ -33,52 +36,57 @@ Web Animations API via ports, and subscription-based animations.
 
 # Sine Easing
 
-@docs easeInSine, easeOutSine, easeInOutSine
+@docs sineIn, sineOut, sineInOut
 
 
 # Quadratic Easing
 
-@docs easeInQuad, easeOutQuad, easeInOutQuad
+@docs quadIn, quadOut, quadInOut
 
 
 # Cubic Easing
 
-@docs easeInCubic, easeOutCubic, easeInOutCubic
+@docs cubicIn, cubicOut, cubicInOut
 
 
 # Quartic Easing
 
-@docs easeInQuart, easeOutQuart, easeInOutQuart
+@docs quartIn, quartOut, quartInOut
 
 
 # Quintic Easing
 
-@docs easeInQuint, easeOutQuint, easeInOutQuint
+@docs quintIn, quintOut, quintInOut
 
 
 # Exponential Easing
 
-@docs easeInExpo, easeOutExpo, easeInOutExpo
+@docs expoIn, expoOut, expoInOut
 
 
 # Circular Easing
 
-@docs easeInCirc, easeOutCirc, easeInOutCirc
+@docs circIn, circOut, circInOut
 
 
 # Back Easing
 
-@docs easeInBack, easeOutBack, easeInOutBack
+@docs backIn, backOut, backInOut
 
 
 # Elastic Easing
 
-@docs easeInElastic, easeOutElastic, easeInOutElastic
+@docs elasticIn, elasticOut, elasticInOut
 
 
 # Bounce Easing
 
-@docs easeInBounce, easeOutBounce, easeInOutBounce
+@docs bounceIn, bounceOut, bounceInOut
+
+
+# Bezier Easing
+
+@docs bezier
 
 
 # Custom Easing
@@ -88,11 +96,23 @@ Web Animations API via ports, and subscription-based animations.
 
 # Conversion Functions
 
-@docs toCSS, toWebAnimations, toFunction, encode
+@docs toCSS, toWebAnimations, toFunction
+
+
+# Encoding
+
+@docs encode
+
+
+## Internal Mapping
+
+You are unlikely to need this, it is used internally to map to the underlying easing functions.
+
+@docs mapInternal
 
 -}
 
-import Ease as E
+import Anim.Internal.Timing.Easing as E
 import Json.Encode as Encode
 
 
@@ -140,6 +160,170 @@ type Easing
     | BounceOut
     | BounceInOut
     | Custom String
+
+
+{-| Bezier easing function.
+-}
+bezier : Float -> Float -> Float -> Float -> Easing
+bezier =
+    Bezier
+
+
+
+-- BASIC EASING FUNCTIONS
+
+
+{-| Linear easing.
+-}
+linear : Easing
+linear =
+    Linear
+
+
+{-| Standard ease (cubic-bezier(0.25, 0.1, 0.25, 1)).
+-}
+ease : Easing
+ease =
+    Ease
+
+
+{-| Ease in (cubic-bezier(0.42, 0, 1, 1)).
+-}
+easeIn : Easing
+easeIn =
+    EaseIn
+
+
+{-| Ease out (cubic-bezier(0, 0, 0.58, 1)).
+-}
+easeOut : Easing
+easeOut =
+    EaseOut
+
+
+{-| Ease in-out (cubic-bezier(0.42, 0, 0.58, 1)).
+-}
+easeInOut : Easing
+easeInOut =
+    EaseInOut
+
+
+
+-- SINE EASING
+
+
+{-| Sine ease in.
+-}
+sineIn : Easing
+sineIn =
+    SineIn
+
+
+{-| Sine ease out.
+-}
+sineOut : Easing
+sineOut =
+    SineOut
+
+
+{-| Sine ease in-out.
+-}
+sineInOut : Easing
+sineInOut =
+    SineInOut
+
+
+
+-- QUADRATIC EASING
+
+
+{-| Quadratic ease in.
+-}
+quadIn : Easing
+quadIn =
+    QuadIn
+
+
+{-| Quadratic ease out.
+-}
+quadOut : Easing
+quadOut =
+    QuadOut
+
+
+{-| Quadratic ease in-out.
+-}
+quadInOut : Easing
+quadInOut =
+    QuadInOut
+
+
+
+-- CUBIC EASING
+
+
+{-| Cubic ease in.
+-}
+cubicIn : Easing
+cubicIn =
+    CubicIn
+
+
+{-| Cubic ease out.
+-}
+cubicOut : Easing
+cubicOut =
+    CubicOut
+
+
+{-| Cubic ease in-out.
+-}
+cubicInOut : Easing
+cubicInOut =
+    CubicInOut
+
+
+
+-- QUARTIC EASING
+
+
+{-| Quartic ease in.
+-}
+quartIn : Easing
+quartIn =
+    QuartIn
+
+
+{-| Quartic ease out.
+-}
+quartOut : Easing
+quartOut =
+    QuartOut
+
+
+{-| Quartic ease in-out.
+-}
+quartInOut : Easing
+quartInOut =
+    QuartInOut
+
+
+
+-- QUINTIC EASING
+
+
+{-| Quintic ease in.
+-}
+quintIn : Easing
+quintIn =
+    QuintIn
+
+
+{-| Quintic ease out.
+-}
+quintOut : Easing
+quintOut =
+    QuintOut
 
 
 {-| Quintic ease in-out.
@@ -284,8 +468,19 @@ bounceInOut =
 
 -}
 custom : String -> Easing
-custom value =
-    Custom value
+custom =
+    Custom
+
+
+
+-- ENCODING
+
+
+{-| Encode easing for JSON serialization.
+-}
+encode : Easing -> Encode.Value
+encode =
+    mapInternal E.encode
 
 
 
@@ -295,257 +490,15 @@ custom value =
 {-| Convert easing to CSS transition-timing-function value.
 -}
 toCSS : Easing -> String
-toCSS easing =
-    case easing of
-        Bezier p1x p1y p2x p2y ->
-            "cubic-bezier("
-                ++ String.fromFloat p1x
-                ++ ", "
-                ++ String.fromFloat p1y
-                ++ ", "
-                ++ String.fromFloat p2x
-                ++ ", "
-                ++ String.fromFloat p2y
-                ++ ")"
-
-        Linear ->
-            "linear"
-
-        Ease ->
-            "ease"
-
-        EaseIn ->
-            "ease-in"
-
-        EaseOut ->
-            "ease-out"
-
-        EaseInOut ->
-            "ease-in-out"
-
-        EaseInSine ->
-            "cubic-bezier(0.12, 0, 0.39, 0)"
-
-        EaseOutSine ->
-            "cubic-bezier(0.61, 1, 0.88, 1)"
-
-        EaseInOutSine ->
-            "cubic-bezier(0.37, 0, 0.63, 1)"
-
-        EaseInQuad ->
-            "cubic-bezier(0.11, 0, 0.5, 0)"
-
-        EaseOutQuad ->
-            "cubic-bezier(0.5, 1, 0.89, 1)"
-
-        EaseInOutQuad ->
-            "cubic-bezier(0.45, 0, 0.55, 1)"
-
-        EaseInCubic ->
-            "cubic-bezier(0.32, 0, 0.67, 0)"
-
-        EaseOutCubic ->
-            "cubic-bezier(0.33, 1, 0.68, 1)"
-
-        EaseInOutCubic ->
-            "cubic-bezier(0.65, 0, 0.35, 1)"
-
-        EaseInQuart ->
-            "cubic-bezier(0.5, 0, 0.75, 0)"
-
-        EaseOutQuart ->
-            "cubic-bezier(0.25, 1, 0.5, 1)"
-
-        EaseInOutQuart ->
-            "cubic-bezier(0.76, 0, 0.24, 1)"
-
-        EaseInQuint ->
-            "cubic-bezier(0.64, 0, 0.78, 0)"
-
-        EaseOutQuint ->
-            "cubic-bezier(0.22, 1, 0.36, 1)"
-
-        EaseInOutQuint ->
-            "cubic-bezier(0.83, 0, 0.17, 1)"
-
-        EaseInExpo ->
-            "cubic-bezier(0.7, 0, 0.84, 0)"
-
-        EaseOutExpo ->
-            "cubic-bezier(0.16, 1, 0.3, 1)"
-
-        EaseInOutExpo ->
-            "cubic-bezier(0.87, 0, 0.13, 1)"
-
-        EaseInCirc ->
-            "cubic-bezier(0.55, 0, 1, 0.45)"
-
-        EaseOutCirc ->
-            "cubic-bezier(0, 0.55, 0.45, 1)"
-
-        EaseInOutCirc ->
-            "cubic-bezier(0.85, 0, 0.15, 1)"
-
-        EaseInBack ->
-            "cubic-bezier(0.36, 0, 0.66, -0.56)"
-
-        EaseOutBack ->
-            "cubic-bezier(0.34, 1.56, 0.64, 1)"
-
-        EaseInOutBack ->
-            "cubic-bezier(0.68, -0.6, 0.32, 1.6)"
-
-        -- Note: Elastic and bounce can't be perfectly represented with cubic-bezier
-        -- Web Animations API could potentially support these with keyframes
-        -- For now, using cubic-bezier approximations
-        EaseInElastic ->
-            "cubic-bezier(0.04, 0.04, 0.12, 0.96)"
-
-        EaseOutElastic ->
-            "cubic-bezier(0.88, 0.04, 0.96, 0.96)"
-
-        EaseInOutElastic ->
-            "cubic-bezier(0.04, 0.04, 0.96, 0.96)"
-
-        EaseInBounce ->
-            "cubic-bezier(0.04, 0.04, 0.12, 0.96)"
-
-        EaseOutBounce ->
-            "cubic-bezier(0.88, 0.04, 0.96, 0.96)"
-
-        EaseInOutBounce ->
-            "cubic-bezier(0.04, 0.04, 0.96, 0.96)"
-
-        Custom value ->
-            value
+toCSS =
+    mapInternal E.toCSS
 
 
 {-| Convert easing to Web Animations API easing string.
 -}
 toWebAnimations : Easing -> String
-toWebAnimations easing =
-    case easing of
-        Bezier p1x p1y p2x p2y ->
-            "cubic-bezier("
-                ++ String.fromFloat p1x
-                ++ ", "
-                ++ String.fromFloat p1y
-                ++ ", "
-                ++ String.fromFloat p2x
-                ++ ", "
-                ++ String.fromFloat p2y
-                ++ ")"
-
-        Linear ->
-            "linear"
-
-        Ease ->
-            "ease"
-
-        EaseIn ->
-            "ease-in"
-
-        EaseOut ->
-            "ease-out"
-
-        EaseInOut ->
-            "ease-in-out"
-
-        -- Web Animations API supports more complex easing strings
-        EaseInSine ->
-            "cubic-bezier(0.12, 0, 0.39, 0)"
-
-        EaseOutSine ->
-            "cubic-bezier(0.61, 1, 0.88, 1)"
-
-        EaseInOutSine ->
-            "cubic-bezier(0.37, 0, 0.63, 1)"
-
-        EaseInQuad ->
-            "cubic-bezier(0.11, 0, 0.5, 0)"
-
-        EaseOutQuad ->
-            "cubic-bezier(0.5, 1, 0.89, 1)"
-
-        EaseInOutQuad ->
-            "cubic-bezier(0.45, 0, 0.55, 1)"
-
-        EaseInCubic ->
-            "cubic-bezier(0.32, 0, 0.67, 0)"
-
-        EaseOutCubic ->
-            "cubic-bezier(0.33, 1, 0.68, 1)"
-
-        EaseInOutCubic ->
-            "cubic-bezier(0.65, 0, 0.35, 1)"
-
-        EaseInQuart ->
-            "cubic-bezier(0.5, 0, 0.75, 0)"
-
-        EaseOutQuart ->
-            "cubic-bezier(0.25, 1, 0.5, 1)"
-
-        EaseInOutQuart ->
-            "cubic-bezier(0.76, 0, 0.24, 1)"
-
-        EaseInQuint ->
-            "cubic-bezier(0.64, 0, 0.78, 0)"
-
-        EaseOutQuint ->
-            "cubic-bezier(0.22, 1, 0.36, 1)"
-
-        EaseInOutQuint ->
-            "cubic-bezier(0.83, 0, 0.17, 1)"
-
-        EaseInExpo ->
-            "cubic-bezier(0.7, 0, 0.84, 0)"
-
-        EaseOutExpo ->
-            "cubic-bezier(0.16, 1, 0.3, 1)"
-
-        EaseInOutExpo ->
-            "cubic-bezier(0.87, 0, 0.13, 1)"
-
-        EaseInCirc ->
-            "cubic-bezier(0.55, 0, 1, 0.45)"
-
-        EaseOutCirc ->
-            "cubic-bezier(0, 0.55, 0.45, 1)"
-
-        EaseInOutCirc ->
-            "cubic-bezier(0.85, 0, 0.15, 1)"
-
-        EaseInBack ->
-            "cubic-bezier(0.36, 0, 0.66, -0.56)"
-
-        EaseOutBack ->
-            "cubic-bezier(0.34, 1.56, 0.64, 1)"
-
-        EaseInOutBack ->
-            "cubic-bezier(0.68, -0.6, 0.32, 1.6)"
-
-        -- Web Animations API could potentially support these with keyframes
-        -- For now, using cubic-bezier approximations
-        EaseInElastic ->
-            "cubic-bezier(0.04, 0.04, 0.12, 0.96)"
-
-        EaseOutElastic ->
-            "cubic-bezier(0.88, 0.04, 0.96, 0.96)"
-
-        EaseInOutElastic ->
-            "cubic-bezier(0.04, 0.04, 0.96, 0.96)"
-
-        EaseInBounce ->
-            "cubic-bezier(0.04, 0.04, 0.12, 0.96)"
-
-        EaseOutBounce ->
-            "cubic-bezier(0.88, 0.04, 0.96, 0.96)"
-
-        EaseInOutBounce ->
-            "cubic-bezier(0.04, 0.04, 0.96, 0.96)"
-
-        Custom value ->
-            value
+toWebAnimations =
+    mapInternal E.toWebAnimations
 
 
 {-| Convert easing to a mathematical function for subscription-based animations.
@@ -555,246 +508,127 @@ the eased progress value.
 
 -}
 toFunction : Easing -> (Float -> Float)
-toFunction easing =
-    case easing of
-        Bezier p1x p1y p2x p2y ->
-            E.bezier p1x p1y p2x p2y
-
-        Linear ->
-            E.linear
-
-        Ease ->
-            E.inOutQuad
-
-        EaseIn ->
-            E.inQuad
-
-        EaseOut ->
-            E.outQuad
-
-        EaseInOut ->
-            E.inOutQuad
-
-        EaseInSine ->
-            E.inSine
-
-        EaseOutSine ->
-            E.outSine
-
-        EaseInOutSine ->
-            E.inOutSine
-
-        EaseInQuad ->
-            E.inQuad
-
-        EaseOutQuad ->
-            E.outQuad
-
-        EaseInOutQuad ->
-            E.inOutQuad
-
-        EaseInCubic ->
-            E.inCubic
-
-        EaseOutCubic ->
-            E.outCubic
-
-        EaseInOutCubic ->
-            E.inOutCubic
-
-        EaseInQuart ->
-            E.inQuart
-
-        EaseOutQuart ->
-            E.outQuart
-
-        EaseInOutQuart ->
-            E.inOutQuart
-
-        EaseInQuint ->
-            E.inQuint
-
-        EaseOutQuint ->
-            E.outQuint
-
-        EaseInOutQuint ->
-            E.inOutQuint
-
-        EaseInExpo ->
-            E.inExpo
-
-        EaseOutExpo ->
-            E.outExpo
-
-        EaseInOutExpo ->
-            E.inOutExpo
-
-        EaseInCirc ->
-            E.inCirc
-
-        EaseOutCirc ->
-            E.outCirc
-
-        EaseInOutCirc ->
-            E.inOutCirc
-
-        EaseInBack ->
-            E.inBack
-
-        EaseOutBack ->
-            E.outBack
-
-        EaseInOutBack ->
-            E.inOutBack
-
-        EaseInElastic ->
-            E.inElastic
-
-        EaseOutElastic ->
-            E.outElastic
-
-        EaseInOutElastic ->
-            E.inOutElastic
-
-        EaseInBounce ->
-            E.inBounce
-
-        EaseOutBounce ->
-            E.outBounce
-
-        EaseInOutBounce ->
-            E.inOutBounce
-
-        Custom _ ->
-            -- For custom CSS strings, fallback to ease-in-out
-            E.inOutQuad
+toFunction =
+    mapInternal E.toFunction
 
 
-
--- HELPER FUNCTIONS FOR MATHEMATICAL IMPLEMENTATIONS
-
-
-{-| Encode easing for JSON serialization (used by Ports system).
+{-| Internal mapping function to convert Easing to underlying representation.
 -}
-encode : Easing -> Encode.Value
-encode easing =
+mapInternal : (E.Easing -> a) -> Easing -> a
+mapInternal fn =
+    fn << toInternal
+
+
+toInternal : Easing -> E.Easing
+toInternal easing =
     case easing of
         Bezier p1x p1y p2x p2y ->
-            Encode.object
-                [ ( "type", Encode.string "bezier" )
-                , ( "p1x", Encode.float p1x )
-                , ( "p1y", Encode.float p1y )
-                , ( "p2x", Encode.float p2x )
-                , ( "p2y", Encode.float p2y )
-                ]
+            E.Bezier p1x p1y p2x p2y
 
         Linear ->
-            Encode.string "linear"
+            E.Linear
 
         Ease ->
-            Encode.string "ease"
+            E.Ease
 
         EaseIn ->
-            Encode.string "ease-in"
+            E.EaseIn
 
         EaseOut ->
-            Encode.string "ease-out"
+            E.EaseOut
 
         EaseInOut ->
-            Encode.string "ease-in-out"
+            E.EaseInOut
 
-        EaseInSine ->
-            Encode.string "ease-in-sine"
+        SineIn ->
+            E.SineIn
 
-        EaseOutSine ->
-            Encode.string "ease-out-sine"
+        SineOut ->
+            E.SineOut
 
-        EaseInOutSine ->
-            Encode.string "ease-in-out-sine"
+        SineInOut ->
+            E.SineInOut
 
-        EaseInQuad ->
-            Encode.string "ease-in-quad"
+        QuadIn ->
+            E.QuadIn
 
-        EaseOutQuad ->
-            Encode.string "ease-out-quad"
+        QuadOut ->
+            E.QuadOut
 
-        EaseInOutQuad ->
-            Encode.string "ease-in-out-quad"
+        QuadInOut ->
+            E.QuadInOut
 
-        EaseInCubic ->
-            Encode.string "ease-in-cubic"
+        CubicIn ->
+            E.CubicIn
 
-        EaseOutCubic ->
-            Encode.string "ease-out-cubic"
+        CubicOut ->
+            E.CubicOut
 
-        EaseInOutCubic ->
-            Encode.string "ease-in-out-cubic"
+        CubicInOut ->
+            E.CubicInOut
 
-        EaseInQuart ->
-            Encode.string "ease-in-quart"
+        QuartIn ->
+            E.QuartIn
 
-        EaseOutQuart ->
-            Encode.string "ease-out-quart"
+        QuartOut ->
+            E.QuartOut
 
-        EaseInOutQuart ->
-            Encode.string "ease-in-out-quart"
+        QuartInOut ->
+            E.QuartInOut
 
-        EaseInQuint ->
-            Encode.string "ease-in-quint"
+        QuintIn ->
+            E.QuintIn
 
-        EaseOutQuint ->
-            Encode.string "ease-out-quint"
+        QuintOut ->
+            E.QuintOut
 
-        EaseInOutQuint ->
-            Encode.string "ease-in-out-quint"
+        QuintInOut ->
+            E.QuintInOut
 
-        EaseInExpo ->
-            Encode.string "ease-in-expo"
+        ExpoIn ->
+            E.ExpoIn
 
-        EaseOutExpo ->
-            Encode.string "ease-out-expo"
+        ExpoOut ->
+            E.ExpoOut
 
-        EaseInOutExpo ->
-            Encode.string "ease-in-out-expo"
+        ExpoInOut ->
+            E.ExpoInOut
 
-        EaseInCirc ->
-            Encode.string "ease-in-circ"
+        CircIn ->
+            E.CircIn
 
-        EaseOutCirc ->
-            Encode.string "ease-out-circ"
+        CircOut ->
+            E.CircOut
 
-        EaseInOutCirc ->
-            Encode.string "ease-in-out-circ"
+        CircInOut ->
+            E.CircInOut
 
-        EaseInBack ->
-            Encode.string "ease-in-back"
+        BackIn ->
+            E.BackIn
 
-        EaseOutBack ->
-            Encode.string "ease-out-back"
+        BackOut ->
+            E.BackOut
 
-        EaseInOutBack ->
-            Encode.string "ease-in-out-back"
+        BackInOut ->
+            E.BackInOut
 
-        EaseInElastic ->
-            Encode.string "ease-in-elastic"
+        ElasticIn ->
+            E.ElasticIn
 
-        EaseOutElastic ->
-            Encode.string "ease-out-elastic"
+        ElasticOut ->
+            E.ElasticOut
 
-        EaseInOutElastic ->
-            Encode.string "ease-in-out-elastic"
+        ElasticInOut ->
+            E.ElasticInOut
 
-        EaseInBounce ->
-            Encode.string "ease-in-bounce"
+        BounceIn ->
+            E.BounceIn
 
-        EaseOutBounce ->
-            Encode.string "ease-out-bounce"
+        BounceOut ->
+            E.BounceOut
 
-        EaseInOutBounce ->
-            Encode.string "ease-in-out-bounce"
+        BounceInOut ->
+            E.BounceInOut
 
-        Custom value ->
-            Encode.object
-                [ ( "type", Encode.string "custom" )
-                , ( "value", Encode.string value )
-                ]
+        Custom str ->
+            E.Custom str

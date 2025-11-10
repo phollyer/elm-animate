@@ -1,4 +1,7 @@
-module Anim.Properties.Color exposing (to, speed, duration, easing, delay)
+module Anim.Properties.Color exposing
+    ( Color, Hex, HSL, HSLA, RGB, RGBA
+    , to, speed, duration, easing, delay
+    )
 
 {-| Color animation property functions.
 
@@ -10,6 +13,11 @@ Use these functions to configure color animations in the builder chain:
         |> animate portFunction
 
 
+# Types
+
+@docs Color, Hex, HSL, HSLA, RGB, RGBA
+
+
 # Color Configuration
 
 @docs to, speed, duration, easing, delay
@@ -18,8 +26,41 @@ Use these functions to configure color animations in the builder chain:
 
 import Anim exposing (AnimBuilder)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
-import Anim.Internal.Properties.Color exposing (Color(..))
-import Anim.Timing.Easing exposing (Easing)
+import Anim.Internal.Builders.Property as PB
+import Anim.Internal.Properties.Color as C
+import Anim.Timing.Delay as Delay exposing (Delay)
+import Anim.Timing.Easing as Easing exposing (Easing)
+import Anim.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
+
+
+{-| Color values in different formats.
+-}
+type Color
+    = Hex Hex
+    | Rgb RGB
+    | Rgba RGBA
+    | Hsl HSL
+    | Hsla HSLA
+
+
+type alias Hex =
+    String
+
+
+type alias HSL =
+    { h : Float, s : Float, l : Float }
+
+
+type alias HSLA =
+    { h : Float, s : Float, l : Float, a : Float }
+
+
+type alias RGB =
+    { r : Int, g : Int, b : Int }
+
+
+type alias RGBA =
+    { r : Int, g : Int, b : Int, a : Float }
 
 
 
@@ -34,22 +75,16 @@ import Anim.Timing.Easing exposing (Easing)
 
 -}
 to : Color -> AnimBuilder -> AnimBuilder
-to targetColor builder =
+to color builder =
     let
         colorConfig =
-            Builder.ColorConfig targetColor
+            Builder.ColorConfig (toInternal color)
                 { timing = Nothing
                 , easing = Nothing
                 , delay = Nothing
                 }
-
-        currentElement =
-            Builder.getCurrentElement builder
-
-        updatedElement =
-            { currentElement | properties = colorConfig :: currentElement.properties }
     in
-    Builder.updateCurrentElement updatedElement builder
+    PB.to colorConfig builder
 
 
 {-| Set animation speed for color (color value units per second).
@@ -58,27 +93,8 @@ to targetColor builder =
 
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
-speed unitsPerSecond builder =
-    let
-        timing =
-            Speed unitsPerSecond
-    in
-    updateTiming timing builder
-
-
-updateTiming : TimeSpec -> AnimBuilder -> AnimBuilder
-updateTiming timing builder =
-    let
-        elementConfig =
-            Builder.getCurrentElement builder
-
-        updatedProperties =
-            List.map (updateProperties (\config -> { config | timing = Just timing })) elementConfig.properties
-
-        updatedElement =
-            { elementConfig | properties = updatedProperties }
-    in
-    Builder.updateCurrentElement updatedElement builder
+speed pixelsPerSecond =
+    timeSpec (Speed pixelsPerSecond)
 
 
 {-| Set animation duration for color (milliseconds).
@@ -87,12 +103,13 @@ updateTiming timing builder =
 
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
-duration milliseconds builder =
-    let
-        timing =
-            Duration milliseconds
-    in
-    updateTiming timing builder
+duration milliseconds =
+    timeSpec (Duration milliseconds)
+
+
+timeSpec : TimeSpec -> AnimBuilder -> AnimBuilder
+timeSpec spec builder =
+    TimeSpec.mapInternal (\internalSpec -> PB.timeSpec updatePropertySpec internalSpec builder) spec
 
 
 {-| Set easing function for color animation.
@@ -101,18 +118,8 @@ duration milliseconds builder =
 
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
-easing easingFunction builder =
-    let
-        elementConfig =
-            Builder.getCurrentElement builder
-
-        updatedProperties =
-            List.map (updateProperties (\config -> { config | easing = Just easingFunction })) elementConfig.properties
-
-        updatedElement =
-            { elementConfig | properties = updatedProperties }
-    in
-    Builder.updateCurrentElement updatedElement builder
+easing easing_ builder =
+    Easing.mapInternal (\internalSpec -> PB.easing updatePropertySpec internalSpec builder) easing_
 
 
 {-| Set delay for color animation (milliseconds).
@@ -120,30 +127,35 @@ easing easingFunction builder =
     builder |> Color.delay 500
 
 -}
-delay : Int -> AnimBuilder -> AnimBuilder
-delay milliseconds builder =
-    let
-        elementConfig =
-            Builder.getCurrentElement builder
-
-        updatedProperties =
-            List.map (updateProperties (\config -> { config | delay = Just milliseconds })) elementConfig.properties
-
-        updatedElement =
-            { elementConfig | properties = updatedProperties }
-    in
-    Builder.updateCurrentElement updatedElement builder
+delay : Delay -> AnimBuilder -> AnimBuilder
+delay delay_ builder =
+    Delay.mapInternal (\internalSpec -> PB.delay updatePropertySpec internalSpec builder) delay_
 
 
+toInternal : Color -> C.Color
+toInternal color =
+    case color of
+        Hex hexString ->
+            C.Hex hexString
 
--- HELPER FUNCTIONS
+        Rgb rgb ->
+            C.Rgb rgb
+
+        Rgba rgba ->
+            C.Rgba rgba
+
+        Hsl hsl ->
+            C.Hsl hsl
+
+        Hsla hsla ->
+            C.Hsla hsla
 
 
-updateProperties : (Builder.UniversalPropertyData -> Builder.UniversalPropertyData) -> Builder.PropertyConfig -> Builder.PropertyConfig
-updateProperties updateFn property =
+updatePropertySpec : (Builder.PropertySpec -> Builder.PropertySpec) -> Builder.PropertyConfig -> Builder.PropertyConfig
+updatePropertySpec updateFn property =
     case property of
-        Builder.ColorConfig value config ->
-            Builder.ColorConfig value (updateFn config)
+        Builder.OpacityConfig value spec ->
+            Builder.OpacityConfig value (updateFn spec)
 
         other ->
             other

@@ -16,12 +16,20 @@ Use these functions to configure scale animations in the builder chain:
 
 -}
 
-import Anim exposing (AnimBuilder)
-import Anim.Timing.Easing exposing (Easing)
+import Anim.Internal.Builder as Builder exposing (AnimBuilder)
+import Anim.Internal.Builders.Property as PB
+import Anim.Internal.Properties.Scale as S
+import Anim.Timing.Delay as Delay exposing (Delay)
+import Anim.Timing.Easing as Easing exposing (Easing)
+import Anim.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
 
 
 
 -- SCALE CONFIGURATION
+
+
+type Scale
+    = ScaleXY Float Float
 
 
 {-| Set the target scale for the current element.
@@ -29,27 +37,17 @@ import Anim.Timing.Easing exposing (Easing)
     builder |> Scale.to { x = 1.5, y = 1.5 }
 
 -}
-to : ScaleValue -> AnimBuilder -> AnimBuilder
-to targetScale (AnimBuilder builderData) =
+to : Scale -> AnimBuilder -> AnimBuilder
+to targetScale builder =
     let
         scaleConfig =
-            ScaleConfig
-                { target = targetScale
-                , timing = Nothing
+            Builder.ScaleConfig (toInternal targetScale)
+                { timing = Nothing
                 , easing = Nothing
                 , delay = Nothing
                 }
-
-        currentElement =
-            getCurrentElement builderData
-
-        updatedElement =
-            { currentElement | properties = scaleConfig :: currentElement.properties }
-
-        updatedData =
-            updateCurrentElement updatedElement builderData
     in
-    AnimBuilder updatedData
+    PB.to scaleConfig builder
 
 
 {-| Set animation speed for scale (scale units per second).
@@ -58,15 +56,8 @@ to targetScale (AnimBuilder builderData) =
 
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
-speed unitsPerSecond (AnimBuilder builderData) =
-    let
-        timing =
-            Speed unitsPerSecond
-
-        updatedData =
-            updateScaleTiming builderData timing
-    in
-    AnimBuilder updatedData
+speed unitsPerSecond =
+    timeSpec (Speed unitsPerSecond)
 
 
 {-| Set animation duration for scale (milliseconds).
@@ -75,15 +66,13 @@ speed unitsPerSecond (AnimBuilder builderData) =
 
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
-duration milliseconds (AnimBuilder builderData) =
-    let
-        timing =
-            Duration milliseconds
+duration milliseconds =
+    timeSpec (Duration milliseconds)
 
-        updatedData =
-            updateScaleTiming builderData timing
-    in
-    AnimBuilder updatedData
+
+timeSpec : TimeSpec -> AnimBuilder -> AnimBuilder
+timeSpec spec builder =
+    TimeSpec.mapInternal (\internalSpec -> PB.timeSpec updatePropertySpec internalSpec builder) spec
 
 
 {-| Set easing function for scale animation.
@@ -92,12 +81,8 @@ duration milliseconds (AnimBuilder builderData) =
 
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
-easing easingFunction (AnimBuilder builderData) =
-    let
-        updatedData =
-            updateScaleEasing builderData easingFunction
-    in
-    AnimBuilder updatedData
+easing easing_ builder =
+    Easing.mapInternal (\internalSpec -> PB.easing updatePropertySpec internalSpec builder) easing_
 
 
 {-| Set delay for scale animation (milliseconds).
@@ -105,69 +90,27 @@ easing easingFunction (AnimBuilder builderData) =
     builder |> Scale.delay 500
 
 -}
-delay : Int -> AnimBuilder -> AnimBuilder
-delay milliseconds (AnimBuilder builderData) =
-    let
-        updatedData =
-            updateScaleDelay builderData milliseconds
-    in
-    AnimBuilder updatedData
+delay : Delay -> AnimBuilder -> AnimBuilder
+delay delay_ builder =
+    Delay.mapInternal (\internalSpec -> PB.delay updatePropertySpec internalSpec builder) delay_
 
 
 
 -- HELPER FUNCTIONS
 
 
-updateScaleTiming : BuilderData -> Timing -> BuilderData
-updateScaleTiming builderData timing =
-    let
-        elementConfig =
-            getCurrentElement builderData
-
-        updatedProperties =
-            List.map (updateScaleProperty (\config -> { config | timing = Just timing })) elementConfig.properties
-
-        updatedElement =
-            { elementConfig | properties = updatedProperties }
-    in
-    updateCurrentElement updatedElement builderData
-
-
-updateScaleEasing : BuilderData -> Easing -> BuilderData
-updateScaleEasing builderData easingFunction =
-    let
-        elementConfig =
-            getCurrentElement builderData
-
-        updatedProperties =
-            List.map (updateScaleProperty (\config -> { config | easing = Just easingFunction })) elementConfig.properties
-
-        updatedElement =
-            { elementConfig | properties = updatedProperties }
-    in
-    updateCurrentElement updatedElement builderData
-
-
-updateScaleDelay : BuilderData -> Int -> BuilderData
-updateScaleDelay builderData delayMs =
-    let
-        elementConfig =
-            getCurrentElement builderData
-
-        updatedProperties =
-            List.map (updateScaleProperty (\config -> { config | delay = Just delayMs })) elementConfig.properties
-
-        updatedElement =
-            { elementConfig | properties = updatedProperties }
-    in
-    updateCurrentElement updatedElement builderData
-
-
-updateScaleProperty : ({ target : ScaleValue, timing : Maybe Timing, easing : Maybe Easing, delay : Maybe Int } -> { target : ScaleValue, timing : Maybe Timing, easing : Maybe Easing, delay : Maybe Int }) -> PropertyConfig -> PropertyConfig
-updateScaleProperty updateFn property =
+updatePropertySpec : (Builder.PropertySpec -> Builder.PropertySpec) -> Builder.PropertyConfig -> Builder.PropertyConfig
+updatePropertySpec updateFn property =
     case property of
-        ScaleConfig config ->
-            ScaleConfig (updateFn config)
+        Builder.ScaleConfig scale spec ->
+            Builder.ScaleConfig scale (updateFn spec)
 
         other ->
             other
+
+
+toInternal : Scale -> S.Scale
+toInternal scale =
+    case scale of
+        ScaleXY x y ->
+            S.ScaleXY x y
