@@ -38,9 +38,16 @@ onAnimationFrameDelta subscriptions for smooth, controlled animations.
 
 import Anim exposing (AnimBuilder)
 import Anim.Internal.Builder as Builder
-import Anim.Timing.Easing exposing (Easing(..))
+import Anim.Internal.Properties.Color as Color exposing (Color)
+import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
+import Anim.Internal.Properties.Position as Position exposing (Position)
+import Anim.Internal.Properties.Rotation as Rotation exposing (Rotation)
+import Anim.Internal.Properties.Scale as Scale exposing (Scale)
+import Anim.Internal.Timing.Delay as Delay exposing (Delay)
+import Anim.Internal.Timing.Easing as Easing exposing (Easing(..))
+import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
 import Browser.Events
-import Dict
+import Dict exposing (Dict)
 
 
 
@@ -50,7 +57,40 @@ import Dict
 {-| State for managing subscription-based animations.
 -}
 type AnimationState
-    = AnimationState Builder.State
+    = AnimationState ElementAnimation
+
+
+type alias ElementAnimation =
+    { elements : Dict String ElementAnimationState
+    , isRunning : Bool
+    }
+
+
+type alias ElementAnimationState =
+    { properties : List PropertyAnimationState
+    , isComplete : Bool
+    }
+
+
+type alias PropertyAnimationState =
+    { propertyType : String
+    , startValue : AnimationValue
+    , targetValue : AnimationValue
+    , currentValue : AnimationValue
+    , elapsed : Float -- milliseconds
+    , delay : Delay
+    , easing : Easing
+    , timeSpec : TimeSpec
+    , isComplete : Bool
+    }
+
+
+type AnimationValue
+    = PositionAnimationValue Position
+    | RotationAnimationValue Rotation
+    | ScaleAnimationValue Scale
+    | ColorAnimationValue Color
+    | OpacityAnimationValue Opacity
 
 
 {-| Messages for animation updates.

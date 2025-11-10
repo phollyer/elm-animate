@@ -1,8 +1,9 @@
 module Anim.CSS exposing
-    ( animate, AnimationResult
+    ( animate
     , getElementStyles
     , htmlAttributes
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
+    , AnimationState
     )
 
 {-| CSS-based animation system for Anim.
@@ -51,8 +52,8 @@ import Json.Decode
 
 {-| Result of CSS animation generation.
 -}
-type AnimationResult
-    = AnimationResult (List ElementAnimation)
+type AnimationState
+    = AnimationState (List ElementAnimation)
 
 
 {-| CSS animation data for a single element.
@@ -74,7 +75,7 @@ type alias ElementAnimation =
 Returns CSS styles that can be applied via Html.Attributes.style or similar.
 
 -}
-animate : AnimBuilder -> AnimationResult
+animate : AnimBuilder -> AnimationState
 animate builder =
     let
         processedData =
@@ -84,7 +85,7 @@ animate builder =
             Dict.toList processedData.elements
                 |> List.map (\( elementId, config ) -> generateElementAnimation elementId config)
     in
-    AnimationResult elementAnimations
+    AnimationState elementAnimations
 
 
 
@@ -207,8 +208,8 @@ colorStyleFromProperty property =
                 |> Maybe.withDefault []
 
 -}
-getElementStyles : String -> AnimationResult -> List ( String, String )
-getElementStyles elementId (AnimationResult animations) =
+getElementStyles : String -> AnimationState -> List ( String, String )
+getElementStyles elementId (AnimationState animations) =
     animations
         |> List.filter (\anim -> anim.elementId == elementId)
         |> List.head
@@ -240,7 +241,7 @@ For Elm UI, wrap each attribute with htmlAttribute:
         (text "Animating element")
 
 -}
-htmlAttributes : String -> Maybe AnimationResult -> List (Html.Attribute msg)
+htmlAttributes : String -> Maybe AnimationState -> List (Html.Attribute msg)
 htmlAttributes elementId maybeAnimationResult =
     case maybeAnimationResult of
         Just animationResult ->

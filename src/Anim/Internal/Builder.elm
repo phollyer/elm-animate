@@ -1,16 +1,12 @@
 module Anim.Internal.Builder exposing
     ( AnimBuilder
-    , AnimationValue(..)
     , BuilderData
-    , ElementAnimationState
     , ElementConfig
     , ProcessedAnimationData
     , ProcessedElementConfig
     , ProcessedPropertyConfig(..)
-    , PropertyAnimationState
     , PropertyConfig(..)
     , PropertySpec
-    , State
     , delay
     , duration
     , easing
@@ -34,42 +30,6 @@ import Anim.Internal.Timing.Easing as Easing exposing (Easing(..))
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
 import Json.Encode as Encode
-
-
-{-| State
--}
-type State
-    = State
-        { elements : Dict String ElementAnimationState
-        , isRunning : Bool
-        }
-
-
-type alias ElementAnimationState =
-    { properties : List PropertyAnimationState
-    , isComplete : Bool
-    }
-
-
-type alias PropertyAnimationState =
-    { propertyType : String
-    , startValue : AnimationValue
-    , targetValue : AnimationValue
-    , currentValue : AnimationValue
-    , elapsed : Float -- milliseconds
-    , delay : Delay
-    , easing : Easing
-    , timeSpec : TimeSpec
-    , isComplete : Bool
-    }
-
-
-type AnimationValue
-    = PositionAnimationValue Position
-    | RotationAnimationValue Rotation
-    | ScaleAnimationValue Scale
-    | ColorAnimationValue Color
-    | OpacityAnimationValue Opacity
 
 
 type AnimBuilder
