@@ -109,44 +109,44 @@ type Easing
     | EaseIn
     | EaseOut
     | EaseInOut
-    | EaseInSine
-    | EaseOutSine
-    | EaseInOutSine
-    | EaseInQuad
-    | EaseOutQuad
-    | EaseInOutQuad
-    | EaseInCubic
-    | EaseOutCubic
-    | EaseInOutCubic
-    | EaseInQuart
-    | EaseOutQuart
-    | EaseInOutQuart
-    | EaseInQuint
-    | EaseOutQuint
-    | EaseInOutQuint
-    | EaseInExpo
-    | EaseOutExpo
-    | EaseInOutExpo
-    | EaseInCirc
-    | EaseOutCirc
-    | EaseInOutCirc
-    | EaseInBack
-    | EaseOutBack
-    | EaseInOutBack
-    | EaseInElastic
-    | EaseOutElastic
-    | EaseInOutElastic
-    | EaseInBounce
-    | EaseOutBounce
-    | EaseInOutBounce
+    | SineIn
+    | SineOut
+    | SineInOut
+    | QuadIn
+    | QuadOut
+    | QuadInOut
+    | CubicIn
+    | CubicOut
+    | CubicInOut
+    | QuartIn
+    | QuartOut
+    | QuartInOut
+    | QuintIn
+    | QuintOut
+    | QuintInOut
+    | ExpoIn
+    | ExpoOut
+    | ExpoInOut
+    | CircIn
+    | CircOut
+    | CircInOut
+    | BackIn
+    | BackOut
+    | BackInOut
+    | ElasticIn
+    | ElasticOut
+    | ElasticInOut
+    | BounceIn
+    | BounceOut
+    | BounceInOut
     | Custom String
 
 
 {-| Quintic ease in-out.
 -}
-easeInOutQuint : Easing
-easeInOutQuint =
-    EaseInOutQuint
+quintInOut : Easing
+quintInOut =
+    QuintInOut
 
 
 
@@ -155,23 +155,23 @@ easeInOutQuint =
 
 {-| Exponential ease in.
 -}
-easeInExpo : Easing
-easeInExpo =
-    EaseInExpo
+expoIn : Easing
+expoIn =
+    ExpoIn
 
 
 {-| Exponential ease out.
 -}
-easeOutExpo : Easing
-easeOutExpo =
-    EaseOutExpo
+expoOut : Easing
+expoOut =
+    ExpoOut
 
 
 {-| Exponential ease in-out.
 -}
-easeInOutExpo : Easing
-easeInOutExpo =
-    EaseInOutExpo
+expoInOut : Easing
+expoInOut =
+    ExpoInOut
 
 
 
@@ -180,23 +180,23 @@ easeInOutExpo =
 
 {-| Circular ease in.
 -}
-easeInCirc : Easing
-easeInCirc =
-    EaseInCirc
+circIn : Easing
+circIn =
+    CircIn
 
 
 {-| Circular ease out.
 -}
-easeOutCirc : Easing
-easeOutCirc =
-    EaseOutCirc
+circOut : Easing
+circOut =
+    CircOut
 
 
 {-| Circular ease in-out.
 -}
-easeInOutCirc : Easing
-easeInOutCirc =
-    EaseInOutCirc
+circInOut : Easing
+circInOut =
+    CircInOut
 
 
 
@@ -205,23 +205,23 @@ easeInOutCirc =
 
 {-| Back ease in (overshoot at start).
 -}
-easeInBack : Easing
-easeInBack =
-    EaseInBack
+backIn : Easing
+backIn =
+    BackIn
 
 
 {-| Back ease out (overshoot at end).
 -}
-easeOutBack : Easing
-easeOutBack =
-    EaseOutBack
+backOut : Easing
+backOut =
+    BackOut
 
 
 {-| Back ease in-out (overshoot at both ends).
 -}
-easeInOutBack : Easing
-easeInOutBack =
-    EaseInOutBack
+backInOut : Easing
+backInOut =
+    BackInOut
 
 
 
@@ -230,23 +230,23 @@ easeInOutBack =
 
 {-| Elastic ease in.
 -}
-easeInElastic : Easing
-easeInElastic =
-    EaseInElastic
+elasticIn : Easing
+elasticIn =
+    ElasticIn
 
 
 {-| Elastic ease out.
 -}
-easeOutElastic : Easing
-easeOutElastic =
-    EaseOutElastic
+elasticOut : Easing
+elasticOut =
+    ElasticOut
 
 
 {-| Elastic ease in-out.
 -}
-easeInOutElastic : Easing
-easeInOutElastic =
-    EaseInOutElastic
+elasticInOut : Easing
+elasticInOut =
+    ElasticInOut
 
 
 
@@ -255,23 +255,23 @@ easeInOutElastic =
 
 {-| Bounce ease in.
 -}
-easeInBounce : Easing
-easeInBounce =
-    EaseInBounce
+bounceIn : Easing
+bounceIn =
+    BounceIn
 
 
 {-| Bounce ease out.
 -}
-easeOutBounce : Easing
-easeOutBounce =
-    EaseOutBounce
+bounceOut : Easing
+bounceOut =
+    BounceOut
 
 
 {-| Bounce ease in-out.
 -}
-easeInOutBounce : Easing
-easeInOutBounce =
-    EaseInOutBounce
+bounceInOut : Easing
+bounceInOut =
+    BounceInOut
 
 
 
