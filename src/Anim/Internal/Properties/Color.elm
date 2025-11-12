@@ -7,6 +7,7 @@ module Anim.Internal.Properties.Color exposing
     , RGBA
     , encode
     , floatMod
+    , hex
     , hexStringToInt
     , hexToRgb
     , hexToRgba
@@ -25,8 +26,6 @@ module Anim.Internal.Properties.Color exposing
 import Json.Encode as Encode
 
 
-{-| Color values in different formats.
--}
 type Color
     = Hex Hex
     | Rgb RGB
@@ -55,27 +54,33 @@ type alias RGBA =
     { r : Int, g : Int, b : Int, a : Float }
 
 
+hex : String -> Color
+hex str =
+    Hex str
+
+
+rgb255 : Int -> Int -> Int -> Color
+rgb255 r g b =
+    Rgb { r = r, g = g, b = b }
+
+
+rgba255 : Int -> Int -> Int -> Float -> Color
+rgba255 r g b a =
+    Rgba { r = r, g = g, b = b, a = a }
+
+
+hslPercent : Float -> Float -> Float -> Color
+hslPercent h s l =
+    Hsl { h = h, s = s, l = l }
+
+
+hslaPercent : Float -> Float -> Float -> Float -> Color
+hslaPercent h s l a =
+    Hsla { h = h, s = s, l = l, a = a }
+
+
 
 -- COLOR UTILITIES
-
-
-toString : Color -> String
-toString colorValue =
-    case colorValue of
-        Hex hexString ->
-            hexString
-
-        Rgb rgb ->
-            "rgb(" ++ String.fromInt rgb.r ++ ", " ++ String.fromInt rgb.g ++ ", " ++ String.fromInt rgb.b ++ ")"
-
-        Rgba rgba ->
-            "rgba(" ++ String.fromInt rgba.r ++ ", " ++ String.fromInt rgba.g ++ ", " ++ String.fromInt rgba.b ++ ", " ++ String.fromFloat rgba.a ++ ")"
-
-        Hsl hsl ->
-            "hsl(" ++ String.fromFloat hsl.h ++ ", " ++ String.fromFloat hsl.s ++ "%, " ++ String.fromFloat hsl.l ++ "%)"
-
-        Hsla hsla ->
-            "hsla(" ++ String.fromFloat hsla.h ++ ", " ++ String.fromFloat hsla.s ++ "%, " ++ String.fromFloat hsla.l ++ "%, " ++ String.fromFloat hsla.a ++ ")"
 
 
 interpolate : Color -> Color -> Float -> Color
@@ -159,10 +164,10 @@ interpolate start end t =
 encode : Color -> Encode.Value
 encode color =
     case color of
-        Hex hex ->
+        Hex hex_ ->
             Encode.object
                 [ ( "type", Encode.string "hex" )
-                , ( "value", Encode.string hex )
+                , ( "value", Encode.string hex_ )
                 ]
 
         Rgb rgb ->
@@ -202,6 +207,25 @@ encode color =
 
 
 {- Transforms -}
+
+
+toString : Color -> String
+toString colorValue =
+    case colorValue of
+        Hex hexString ->
+            hexString
+
+        Rgb rgb ->
+            "rgb(" ++ String.fromInt rgb.r ++ ", " ++ String.fromInt rgb.g ++ ", " ++ String.fromInt rgb.b ++ ")"
+
+        Rgba rgba ->
+            "rgba(" ++ String.fromInt rgba.r ++ ", " ++ String.fromInt rgba.g ++ ", " ++ String.fromInt rgba.b ++ ", " ++ String.fromFloat rgba.a ++ ")"
+
+        Hsl hsl ->
+            "hsl(" ++ String.fromFloat hsl.h ++ ", " ++ String.fromFloat hsl.s ++ "%, " ++ String.fromFloat hsl.l ++ "%)"
+
+        Hsla hsla ->
+            "hsla(" ++ String.fromFloat hsla.h ++ ", " ++ String.fromFloat hsla.s ++ "%, " ++ String.fromFloat hsla.l ++ "%, " ++ String.fromFloat hsla.a ++ ")"
 
 
 floatMod : Float -> Float -> Float
@@ -295,17 +319,17 @@ hexStringToInt str =
 
 
 hexToRgb : String -> RGB
-hexToRgb hex =
+hexToRgb hex_ =
     let
         cleanHex =
             String.dropLeft
-                (if String.startsWith "#" hex then
+                (if String.startsWith "#" hex_ then
                     1
 
                  else
                     0
                 )
-                hex
+                hex_
 
         r =
             String.slice 0 2 cleanHex |> hexStringToInt |> Maybe.withDefault 0
@@ -320,10 +344,10 @@ hexToRgb hex =
 
 
 hexToRgba : String -> RGBA
-hexToRgba hex =
+hexToRgba hex_ =
     let
         rgb =
-            hexToRgb hex
+            hexToRgb hex_
     in
     { r = rgb.r, g = rgb.g, b = rgb.b, a = 1.0 }
 
@@ -453,23 +477,3 @@ hslaToRgba hsla =
             hslToRgb { h = hsla.h, s = hsla.s, l = hsla.l }
     in
     { r = rgb.r, g = rgb.g, b = rgb.b, a = hsla.a }
-
-
-rgb255 : Int -> Int -> Int -> Color
-rgb255 r g b =
-    Rgb { r = r, g = g, b = b }
-
-
-rgba255 : Int -> Int -> Int -> Float -> Color
-rgba255 r g b a =
-    Rgba { r = r, g = g, b = b, a = a }
-
-
-hslPercent : Float -> Float -> Float -> Color
-hslPercent h s l =
-    Hsl { h = h, s = s, l = l }
-
-
-hslaPercent : Float -> Float -> Float -> Float -> Color
-hslaPercent h s l a =
-    Hsla { h = h, s = s, l = l, a = a }

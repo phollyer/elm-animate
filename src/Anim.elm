@@ -61,9 +61,9 @@ type alias AnimBuilder =
         |> animate portFunction
 
 -}
-init : String -> AnimBuilder
-init elementId =
-    Builder.init elementId
+init : AnimBuilder
+init =
+    Builder.init
 
 
 {-| Switch to configuring a different element.

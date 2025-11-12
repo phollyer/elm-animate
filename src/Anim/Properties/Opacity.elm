@@ -98,7 +98,7 @@ easing easing_ builder =
     Easing.mapInternal (\internalSpec -> PB.easing updatePropertySpec internalSpec builder) easing_
 
 
-updatePropertySpec : (Builder.PropertySpec -> Builder.PropertySpec) -> Builder.PropertyConfig -> Builder.PropertyConfig
+updatePropertySpec : (Builder.AnimSpec -> Builder.AnimSpec) -> Builder.PropertyConfig -> Builder.PropertyConfig
 updatePropertySpec updateFn property =
     case property of
         Builder.OpacityConfig value spec ->

@@ -4,6 +4,7 @@ module Anim.Internal.Timing.Delay exposing
     , encodeMaybe
     , fromInt
     , toCssString
+    , toFloat
     , toInt
     )
 
@@ -30,6 +31,16 @@ toInt delayValue =
     case delayValue of
         Delay d ->
             d
+
+        NoDelay ->
+            0
+
+
+toFloat : Delay -> Float
+toFloat delayValue =
+    case delayValue of
+        Delay d ->
+            Basics.toFloat d
 
         NoDelay ->
             0

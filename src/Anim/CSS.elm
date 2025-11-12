@@ -1,9 +1,8 @@
 module Anim.CSS exposing
-    ( animate
+    ( animate, AnimationState
     , getElementStyles
     , htmlAttributes
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
-    , AnimationState
     )
 
 {-| CSS-based animation system for Anim.
@@ -14,7 +13,7 @@ for native browser performance and hardware acceleration.
 
 # Animation Execution
 
-@docs animate, AnimationResult
+@docs animate, AnimationState
 
 
 # Utility Functions
@@ -43,7 +42,7 @@ import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Timing.Delay as Delay
 import Anim.Internal.Timing.Easing as Easing
 import Anim.Internal.Timing.TimeSpec as TimeSpec
-import Dict
+import Dict exposing (Dict)
 import Html
 import Html.Attributes
 import Html.Events
@@ -53,13 +52,17 @@ import Json.Decode
 {-| Result of CSS animation generation.
 -}
 type AnimationState
-    = AnimationState (List ElementAnimation)
+    = AnimationState (Dict ElementId ElementAnimation)
+
+
+type alias ElementId =
+    String
 
 
 {-| CSS animation data for a single element.
 -}
 type alias ElementAnimation =
-    { elementId : String
+    { elementId : ElementId
     , styles : List ( String, String )
     , keyframes : Maybe String
     }
@@ -78,12 +81,10 @@ Returns CSS styles that can be applied via Html.Attributes.style or similar.
 animate : AnimBuilder -> AnimationState
 animate builder =
     let
-        processedData =
-            Builder.processAnimationData builder
-
         elementAnimations =
-            Dict.toList processedData.elements
-                |> List.map (\( elementId, config ) -> generateElementAnimation elementId config)
+            builder
+                |> Builder.elements
+                |> Dict.map generateElementAnimation
     in
     AnimationState elementAnimations
 
@@ -92,7 +93,7 @@ animate builder =
 -- CSS GENERATION
 
 
-generateElementAnimation : String -> Builder.ProcessedElementConfig -> ElementAnimation
+generateElementAnimation : String -> Builder.ElementConfig -> ElementAnimation
 generateElementAnimation elementId elementConfig =
     let
         transforms =
@@ -117,7 +118,7 @@ generateElementAnimation elementId elementConfig =
     }
 
 
-generateTransforms : List Builder.ProcessedPropertyConfig -> String
+generateTransforms : List Builder.PropertyConfig -> String
 generateTransforms properties =
     let
         transformParts =
@@ -126,28 +127,28 @@ generateTransforms properties =
     String.join " " transformParts
 
 
-transformFromProperty : Builder.ProcessedPropertyConfig -> Maybe String
+transformFromProperty : Builder.PropertyConfig -> Maybe String
 transformFromProperty property =
     case property of
-        Builder.ProcessedPositionConfig config ->
-            Just ("translate(" ++ Position.toCssString config.target ++ ")")
+        Builder.PositionConfig config ->
+            Just ("translate(" ++ Position.toCssString config ++ ")")
 
-        Builder.ProcessedRotateConfig config ->
+        Builder.RotateConfig config ->
             Just ("rotate(" ++ Rotation.toCssString config.target ++ ")")
 
-        Builder.ProcessedScaleConfig config ->
+        Builder.ScaleConfig config ->
             Just ("scale(" ++ Scale.toCssString config.target ++ ")")
 
-        Builder.ProcessedColorConfig _ ->
+        Builder.ColorConfig _ ->
             -- Color doesn't use transform
             Nothing
 
-        Builder.ProcessedOpacityConfig _ ->
+        Builder.OpacityConfig _ ->
             -- Opacity doesn't use transform
             Nothing
 
 
-generateTransitions : List Builder.ProcessedPropertyConfig -> String
+generateTransitions : List Builder.PropertyConfig -> String
 generateTransitions properties =
     let
         transitionParts =
@@ -156,37 +157,37 @@ generateTransitions properties =
     String.join ", " transitionParts
 
 
-transitionFromProperty : Builder.ProcessedPropertyConfig -> Maybe String
+transitionFromProperty : Builder.PropertyConfig -> Maybe String
 transitionFromProperty property =
     case property of
-        Builder.ProcessedPositionConfig config ->
+        Builder.PositionConfig config ->
             Just ("transform " ++ TimeSpec.toCssString config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
-        Builder.ProcessedRotateConfig config ->
+        Builder.RotateConfig config ->
             Just ("transform " ++ TimeSpec.toCssString config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
-        Builder.ProcessedScaleConfig config ->
+        Builder.ScaleConfig config ->
             Just ("transform " ++ TimeSpec.toCssString config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
-        Builder.ProcessedColorConfig config ->
+        Builder.ColorConfig config ->
             Just ("background-color " ++ TimeSpec.toCssString config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
-        Builder.ProcessedOpacityConfig config ->
+        Builder.OpacityConfig config ->
             Just ("opacity " ++ TimeSpec.toCssString config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
 
-generateColorStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
+generateColorStyles : List Builder.PropertyConfig -> List ( String, String )
 generateColorStyles properties =
     List.filterMap colorStyleFromProperty properties
 
 
-colorStyleFromProperty : Builder.ProcessedPropertyConfig -> Maybe ( String, String )
+colorStyleFromProperty : Builder.PropertyConfig -> Maybe ( String, String )
 colorStyleFromProperty property =
     case property of
-        Builder.ProcessedColorConfig config ->
+        Builder.ColorConfig config ->
             Just ( "background-color", Color.toString config.target )
 
-        Builder.ProcessedOpacityConfig config ->
+        Builder.OpacityConfig config ->
             Just ( "opacity", Opacity.toString config.target )
 
         _ ->

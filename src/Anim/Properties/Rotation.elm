@@ -103,7 +103,7 @@ delay delay_ builder =
 -- HELPER FUNCTIONS
 
 
-updatePropertySpec : (Builder.PropertySpec -> Builder.PropertySpec) -> Builder.PropertyConfig -> Builder.PropertyConfig
+updatePropertySpec : (Builder.AnimSpec -> Builder.AnimSpec) -> Builder.PropertyConfig -> Builder.PropertyConfig
 updatePropertySpec updateFn property =
     case property of
         Builder.RotateConfig degrees spec ->

@@ -1,15 +1,11 @@
 module Anim.Internal.Builder exposing
     ( AnimBuilder
-    , BuilderData
     , ElementConfig
-    , ProcessedAnimationData
-    , ProcessedElementConfig
-    , ProcessedPropertyConfig(..)
     , PropertyConfig(..)
-    , PropertySpec
     , delay
     , duration
     , easing
+    , elements
     , encode
     , for
     , getCurrentElement
@@ -17,12 +13,11 @@ module Anim.Internal.Builder exposing
     , processAnimationData
     , speed
     , updateCurrentElement
-    , updateData
     )
 
 import Anim.Internal.Properties.Color as Color exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
-import Anim.Internal.Properties.Position as Position exposing (Position)
+import Anim.Internal.Properties.Position as Position exposing (Position, distance)
 import Anim.Internal.Properties.Rotation as Rotation exposing (Rotation)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
 import Anim.Internal.Timing.Delay as Delay exposing (Delay)
@@ -40,7 +35,7 @@ type alias BuilderData =
     { globalTiming : Maybe TimeSpec
     , globalEasing : Maybe Easing
     , globalDelay : Maybe Delay
-    , currentElementId : ElementId
+    , currentElementId : Maybe ElementId
     , elements : Dict ElementId ElementConfig
     }
 
@@ -50,32 +45,36 @@ type alias ElementId =
 
 
 type alias ElementConfig =
-    { properties : List PropertyConfig
-    }
+    { properties : List PropertyConfig }
 
 
 type PropertyConfig
-    = PositionConfig Position PropertySpec
-    | RotateConfig Rotation PropertySpec
-    | ScaleConfig Scale PropertySpec
-    | ColorConfig Color PropertySpec
-    | OpacityConfig Opacity PropertySpec
+    = PositionConfig (AnimationConfig Position)
+    | RotateConfig (AnimationConfig Rotation)
+    | ScaleConfig (AnimationConfig Scale)
+    | ColorConfig (AnimationConfig Color)
+    | OpacityConfig (AnimationConfig Opacity)
 
 
-type alias PropertySpec =
-    { timing : Maybe TimeSpec
+type alias AnimationConfig targetProperty =
+    { startAt : targetProperty
+    , endAt : targetProperty
+    , duration : Int
+    , speed : Float
+    , distance : Float
+    , timing : Maybe TimeSpec
     , easing : Maybe Easing
     , delay : Maybe Delay
     }
 
 
-init : String -> AnimBuilder
-init elementId =
+init : AnimBuilder
+init =
     AnimBuilder
         { globalTiming = Nothing
         , globalEasing = Nothing
         , globalDelay = Nothing
-        , currentElementId = elementId
+        , currentElementId = Nothing
         , elements = Dict.empty
         }
 
@@ -114,17 +113,17 @@ delay ms (AnimBuilder data) =
         }
 
 
+elements : AnimBuilder -> Dict ElementId ElementConfig
+elements (AnimBuilder data) =
+    data.elements
+
+
 {-| Get the current element configuration, creating one if it doesn't exist.
 -}
 getCurrentElement : AnimBuilder -> ElementConfig
 getCurrentElement (AnimBuilder data) =
     Dict.get data.currentElementId data.elements
         |> Maybe.withDefault { properties = [] }
-
-
-updateData : BuilderData -> AnimBuilder -> AnimBuilder
-updateData newData (AnimBuilder _) =
-    AnimBuilder newData
 
 
 {-| Update the current element configuration.
@@ -150,7 +149,7 @@ This function applies global defaults to property-specific configurations
 and returns processed animation data that can be used by different animation systems.
 
 -}
-processAnimationData : AnimBuilder -> ProcessedAnimationData
+processAnimationData : AnimBuilder -> AnimBuilder
 processAnimationData (AnimBuilder data) =
     let
         processedElements =
@@ -163,75 +162,63 @@ processAnimationData (AnimBuilder data) =
     }
 
 
-type alias ProcessedAnimationData =
-    { elements : Dict String ProcessedElementConfig
-    , globalTiming : Maybe TimeSpec
-    , globalEasing : Maybe Easing
-    , globalDelay : Maybe Delay
-    }
-
-
-type alias ProcessedElementConfig =
-    { properties : List ProcessedPropertyConfig
-    }
-
-
-type ProcessedPropertyConfig
-    = ProcessedPositionConfig
-        { target : Position
-        , timing : TimeSpec
-        , easing : Easing
-        , delay : Delay
-        }
-    | ProcessedRotateConfig
-        { target : Rotation
-        , timing : TimeSpec
-        , easing : Easing
-        , delay : Delay
-        }
-    | ProcessedScaleConfig
-        { target : Scale
-        , timing : TimeSpec
-        , easing : Easing
-        , delay : Delay
-        }
-    | ProcessedColorConfig
-        { target : Color
-        , timing : TimeSpec
-        , easing : Easing
-        , delay : Delay
-        }
-    | ProcessedOpacityConfig
-        { target : Opacity
-        , timing : TimeSpec
-        , easing : Easing
-        , delay : Delay
-        }
-
-
-processElement : BuilderData -> String -> ElementConfig -> ProcessedElementConfig
+processElement : BuilderData -> String -> ElementConfig -> ElementConfig
 processElement globalData _ elementConfig =
     { properties = List.map (processProperty globalData) elementConfig.properties
     }
 
 
-processProperty : BuilderData -> PropertyConfig -> ProcessedPropertyConfig
+processProperty : BuilderData -> PropertyConfig -> PropertyConfig
 processProperty globalData property =
     case property of
-        PositionConfig position config ->
-            ProcessedPositionConfig
-                { target = position
-                , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
-                , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
-                , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
+        PositionConfig config ->
+            let
+                distance =
+                    Position.distance config.startAt config.endAt
+
+                duration_ =
+                    config.timing
+                        |> Maybe.map (Position.duration distance)
+                        |> Maybe.withDefault 0
+
+                speed_ =
+                    config.timing
+                        |> Maybe.map (Position.speed distance duration_)
+                        |> Maybe.withDefault 0
+            in
+            PositionConfig
+                { config
+                    | duration = duration_
+                    , speed = speed_
+                    , distance = distance
+                    , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
+                    , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
+                    , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
                 }
 
-        RotateConfig rotation config ->
+        RotateConfig config ->
+            let
+                distance =
+                    Rotation.distance config.startAt config.endAt
+
+                duration_ =
+                    config.timing
+                        |> Maybe.map (Rotation.duration distance)
+                        |> Maybe.withDefault 0
+
+                speed_ =
+                    config.timing
+                        |> Maybe.map (Rotation.speed rotationDistance duration_)
+                        |> Maybe.withDefault 0
+            in
             ProcessedRotateConfig
-                { target = rotation
-                , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
-                , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
-                , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
+                { config
+                    | duration = duration_
+                    , speed = speed_
+                    , distance = distance
+                    , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
+                    , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
+                    , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
                 }
 
         ScaleConfig scale config ->
@@ -259,19 +246,20 @@ processProperty globalData property =
                 }
 
 
-resolveTimingWithDefault : Maybe TimeSpec -> Maybe TimeSpec -> TimeSpec -> TimeSpec
+resolveTimingWithDefault : Maybe TimeSpec -> Maybe TimeSpec -> TimeSpec -> Maybe TimeSpec
 resolveTimingWithDefault local global default =
-    case local of
-        Just timing ->
-            timing
+    Just <|
+        case local of
+            Just timing ->
+                timing
 
-        Nothing ->
-            case global of
-                Just timing ->
-                    timing
+            Nothing ->
+                case global of
+                    Just timing ->
+                        timing
 
-                Nothing ->
-                    default
+                    Nothing ->
+                        default
 
 
 resolveEasingWithDefault : Maybe Easing -> Maybe Easing -> Easing -> Easing

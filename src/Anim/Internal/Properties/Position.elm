@@ -2,23 +2,27 @@ module Anim.Internal.Properties.Position exposing
     ( Position
     , add
     , distance
+    , duration
     , encode
     , fromTuple
     , interpolate
     , scale
+    , speed
     , subtract
     , toCssString
+    , toRecord
     , toString
     , toTuple
     , x
     , y
     )
 
+import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
 import Json.Encode as Encode
 
 
 
-{- Position coordinates for element placement. -}
+{- UTITLITY FUNCTIONS FOR THE PUBLIC Position TYPE, AND IT'S API -}
 
 
 type Position
@@ -72,6 +76,30 @@ distance (Position a) (Position b) =
     sqrt (dx * dx + dy * dy)
 
 
+speed : Float -> Float -> TimeSpec -> Float
+speed distance_ duration_ timeSpec =
+    case timeSpec of
+        TimeSpec.Duration ms ->
+            if ms == 0 then
+                distance_ * duration_ * 1000
+
+            else
+                distance_ / (Basics.toFloat ms / 1000)
+
+        TimeSpec.Speed unitsPerSecond ->
+            unitsPerSecond
+
+
+duration : Float -> TimeSpec -> Float
+duration distance_ timeSpec =
+    case timeSpec of
+        TimeSpec.Duration ms ->
+            Basics.toFloat ms
+
+        TimeSpec.Speed unitsPerSecond ->
+            distance_ / unitsPerSecond * 1000
+
+
 interpolate : Float -> Position -> Position -> Position
 interpolate t (Position start) (Position endPos) =
     Position
@@ -88,6 +116,11 @@ toString (Position coords) =
 toCssString : Position -> String
 toCssString (Position coords) =
     String.fromFloat coords.x ++ "px, " ++ String.fromFloat coords.y ++ "px"
+
+
+toRecord : Position -> { x : Float, y : Float }
+toRecord (Position coords) =
+    { x = coords.x, y = coords.y }
 
 
 encode : Position -> Encode.Value

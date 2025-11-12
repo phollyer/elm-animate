@@ -1,10 +1,9 @@
 module Anim.Sub exposing
-    ( TargetId, Position, Scale
+    ( TargetId
     , animate, AnimationState, AnimationMsg(..)
     , subscriptions, update
     , getPosition, getCurrentStyles
     , transform
-    , Rotation
     )
 
 {-| Subscription-based animation system for Anim.
@@ -40,12 +39,12 @@ import Anim exposing (AnimBuilder)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Properties.Color as Color exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
-import Anim.Internal.Properties.Position as Position exposing (Position)
+import Anim.Internal.Properties.Position as Position exposing (Position, distance)
 import Anim.Internal.Properties.Rotation as Rotation exposing (Rotation)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
 import Anim.Internal.Timing.Delay as Delay exposing (Delay)
 import Anim.Internal.Timing.Easing as Easing exposing (Easing(..))
-import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
+import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Events
 import Dict exposing (Dict)
 
@@ -80,7 +79,9 @@ type alias PropertyAnimationState =
     , elapsed : Float -- milliseconds
     , delay : Delay
     , easing : Easing
-    , timeSpec : TimeSpec
+    , speed : Float -- units per second
+    , distance : Float -- units
+    , duration : Float -- milliseconds
     , isComplete : Bool
     }
 
@@ -109,24 +110,6 @@ type alias TargetId =
     String
 
 
-{-| Position coordinates for element placement.
--}
-type alias Position =
-    { x : Float, y : Float }
-
-
-{-| Rotation angle for element rotation.
--}
-type alias Rotation =
-    Float
-
-
-{-| Scale factors for element sizing.
--}
-type alias Scale =
-    { x : Float, y : Float }
-
-
 {-| Create animation state from AnimBuilder.
 
     let
@@ -145,6 +128,14 @@ animate builder =
         processedData =
             Builder.processAnimationData builder
 
+        startValues =
+            { position = { x = 0, y = 0 }
+            , rotation = 0
+            , scale = { x = 1.0, y = 1.0 }
+            , color = Color.rgba255 255 255 255 1.0
+            , opacity = 1.0
+            }
+
         elementStates =
             Dict.map (createElementAnimationState startValues) processedData.elements
     in
@@ -158,11 +149,11 @@ createElementAnimationState :
     { position : { x : Float, y : Float }
     , rotation : Float
     , scale : { x : Float, y : Float }
-    , color : ColorValue
+    , color : Color
     , opacity : Float
     }
     -> String
-    -> ProcessedElementConfig
+    -> Builder.ProcessedElementConfig
     -> ElementAnimationState
 createElementAnimationState startValues _ elementConfig =
     { properties = List.map (createPropertyAnimationState startValues) elementConfig.properties
@@ -174,70 +165,208 @@ createPropertyAnimationState :
     { position : { x : Float, y : Float }
     , rotation : Float
     , scale : { x : Float, y : Float }
-    , color : ColorValue
+    , color : Color
     , opacity : Float
     }
-    -> ProcessedPropertyConfig
+    -> Builder.ProcessedPropertyConfig
     -> PropertyAnimationState
 createPropertyAnimationState startValues property =
     case property of
-        ProcessedPositionConfig config ->
+        Builder.ProcessedPositionConfig config ->
+            let
+                position =
+                    Position.fromTuple ( startValues.position.x, startValues.position.y )
+
+                distance =
+                    Position.distance position config.target
+
+                duration =
+                    Position.duration distance config.timing
+
+                speed =
+                    Position.speed distance duration config.timing
+            in
             { propertyType = "position"
-            , startValue = PositionAnimationValue startValues.position
+            , startValue = PositionAnimationValue position
             , targetValue = PositionAnimationValue config.target
-            , currentValue = PositionAnimationValue startValues.position
-            , duration = timingToMs config.timing
+            , currentValue = PositionAnimationValue position
             , elapsed = 0
-            , delay = toFloat config.delay
+            , delay = config.delay
             , easing = config.easing
+            , speed = speed
+            , distance = distance
+            , duration = duration
             , isComplete = False
             }
 
-        ProcessedRotateConfig config ->
+        Builder.ProcessedRotateConfig config ->
+            let
+                rotation =
+                    Rotation.fromFloat startValues.rotation
+
+                distance =
+                    Rotation.distance rotation
+                        config.target
+                        abs
+                        (Rotation.toFloat config.target - Rotation.toFloat rotation)
+
+                speed =
+                    case config.timing of
+                        Duration ms ->
+                            if ms == 0 then
+                                1000000
+
+                            else
+                                distance / (toFloat ms / 1000)
+
+                        Speed unitsPerSecond ->
+                            unitsPerSecond
+
+                duration =
+                    case config.timing of
+                        Duration ms ->
+                            toFloat ms
+
+                        Speed unitsPerSecond ->
+                            distance / unitsPerSecond * 1000
+            in
             { propertyType = "rotation"
-            , startValue = RotationAnimationValue startValues.rotation
+            , startValue = RotationAnimationValue rotation
             , targetValue = RotationAnimationValue config.target
-            , currentValue = RotationAnimationValue startValues.rotation
-            , duration = timingToMs config.timing
+            , currentValue = RotationAnimationValue rotation
             , elapsed = 0
-            , delay = toFloat config.delay
+            , delay = config.delay
             , easing = config.easing
+            , speed = speed
+            , distance = distance
+            , duration = duration
             , isComplete = False
             }
 
-        ProcessedScaleConfig config ->
+        Builder.ProcessedScaleConfig config ->
+            let
+                scale =
+                    Scale.fromTuple ( startValues.scale.x, startValues.scale.y )
+
+                startTuple =
+                    Scale.toTuple scale
+
+                targetTuple =
+                    Scale.toTuple config.target
+
+                distance =
+                    sqrt ((targetTuple.x - startTuple.x) ^ 2 + (targetTuple.y - startTuple.y) ^ 2)
+
+                speed =
+                    case config.timing of
+                        Duration ms ->
+                            if ms == 0 then
+                                1000000
+
+                            else
+                                distance / (toFloat ms / 1000)
+
+                        Speed unitsPerSecond ->
+                            unitsPerSecond
+
+                duration =
+                    case config.timing of
+                        Duration ms ->
+                            toFloat ms
+
+                        Speed unitsPerSecond ->
+                            distance / unitsPerSecond * 1000
+            in
             { propertyType = "scale"
-            , startValue = ScaleAnimationValue startValues.scale
+            , startValue = ScaleAnimationValue scale
             , targetValue = ScaleAnimationValue config.target
-            , currentValue = ScaleAnimationValue startValues.scale
-            , duration = timingToMs config.timing
+            , currentValue = ScaleAnimationValue scale
             , elapsed = 0
-            , delay = toFloat config.delay
+            , delay = config.delay
             , easing = config.easing
+            , speed = speed
+            , distance = distance
+            , duration = duration
             , isComplete = False
             }
 
-        ProcessedColorConfig config ->
+        Builder.ProcessedColorConfig config ->
+            let
+                distance =
+                    1.0
+
+                -- Color distance is not easily calculated
+                speed =
+                    case config.timing of
+                        Duration ms ->
+                            if ms == 0 then
+                                1000000
+
+                            else
+                                1.0 / (toFloat ms / 1000)
+
+                        Speed unitsPerSecond ->
+                            unitsPerSecond
+
+                duration =
+                    case config.timing of
+                        Duration ms ->
+                            toFloat ms
+
+                        Speed unitsPerSecond ->
+                            1.0 / unitsPerSecond * 1000
+            in
             { propertyType = "color"
             , startValue = ColorAnimationValue startValues.color
             , targetValue = ColorAnimationValue config.target
             , currentValue = ColorAnimationValue startValues.color
-            , duration = timingToMs config.timing
             , elapsed = 0
-            , delay = toFloat config.delay
+            , delay = config.delay
             , easing = config.easing
+            , speed = speed
+            , distance = distance
+            , duration = duration
             , isComplete = False
             }
 
-        ProcessedOpacityConfig config ->
+        Builder.ProcessedOpacityConfig config ->
+            let
+                opacity =
+                    Opacity.fromFloat startValues.opacity
+
+                distance =
+                    abs (Opacity.toFloat config.target - Opacity.toFloat opacity)
+
+                speed =
+                    case config.timing of
+                        Duration ms ->
+                            if ms == 0 then
+                                1000000
+
+                            else
+                                distance / (toFloat ms / 1000)
+
+                        Speed unitsPerSecond ->
+                            unitsPerSecond
+
+                duration =
+                    case config.timing of
+                        Duration ms ->
+                            toFloat ms
+
+                        Speed unitsPerSecond ->
+                            distance / unitsPerSecond * 1000
+            in
             { propertyType = "opacity"
-            , startValue = OpacityAnimationValue startValues.opacity
+            , startValue = OpacityAnimationValue opacity
             , targetValue = OpacityAnimationValue config.target
-            , currentValue = OpacityAnimationValue startValues.opacity
-            , duration = timingToMs config.timing
+            , currentValue = OpacityAnimationValue opacity
             , elapsed = 0
-            , delay = toFloat config.delay
+            , delay = config.delay
             , easing = config.easing
+            , speed = speed
+            , distance = distance
+            , duration = duration
             , isComplete = False
             }
 
@@ -304,21 +433,24 @@ updatePropertyAnimation deltaMs propertyState =
         let
             newElapsed =
                 propertyState.elapsed + deltaMs
+
+            delay =
+                Delay.toFloat propertyState.delay
         in
         -- Check if still in delay period
-        if newElapsed < propertyState.delay then
+        if newElapsed < delay then
             { propertyState | elapsed = newElapsed }
 
         else
             let
                 animationElapsed =
-                    newElapsed - propertyState.delay
+                    newElapsed - delay
 
                 progress =
                     min 1.0 (animationElapsed / propertyState.duration)
 
                 easedProgress =
-                    applyEasing propertyState.easing progress
+                    Easing.toFunction propertyState.easing progress
 
                 newCurrentValue =
                     interpolateValue easedProgress propertyState.startValue propertyState.targetValue
@@ -377,26 +509,42 @@ propertyToStyles : PropertyAnimationState -> List ( String, String )
 propertyToStyles propertyState =
     case propertyState.currentValue of
         PositionAnimationValue pos ->
-            [ ( "transform", "translate(" ++ String.fromFloat pos.x ++ "px, " ++ String.fromFloat pos.y ++ "px)" ) ]
+            let
+                ( x, y ) =
+                    Position.toTuple pos
+            in
+            [ ( "transform", "translate(" ++ String.fromFloat x ++ "px, " ++ String.fromFloat y ++ "px)" ) ]
 
         RotationAnimationValue rotation ->
-            [ ( "transform", "rotate(" ++ String.fromFloat rotation ++ "deg)" ) ]
+            let
+                degrees =
+                    Rotation.toFloat rotation
+            in
+            [ ( "transform", "rotate(" ++ String.fromFloat degrees ++ "deg)" ) ]
 
         ScaleAnimationValue scale ->
-            [ ( "transform", "scale(" ++ String.fromFloat scale.x ++ ", " ++ String.fromFloat scale.y ++ ")" ) ]
+            let
+                ( x, y ) =
+                    Scale.toTuple scale
+            in
+            [ ( "transform", "scale(" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")" ) ]
 
         ColorAnimationValue colorValue ->
-            [ ( "background-color", colorValueToCSS colorValue ) ]
+            [ ( "background-color", Color.toString colorValue ) ]
 
         OpacityAnimationValue opacity ->
-            [ ( "opacity", String.fromFloat opacity ) ]
+            let
+                opacityValue =
+                    Opacity.toFloat opacity
+            in
+            [ ( "opacity", String.fromFloat opacityValue ) ]
 
 
 
 -- HELPER FUNCTIONS
 
 
-timingToMs : Timing -> Float
+timingToMs : TimeSpec -> Float
 timingToMs timing =
     case timing of
         Duration ms ->
@@ -408,315 +556,65 @@ timingToMs timing =
             100 / unitsPerSecond * 1000
 
 
-applyEasing : Easing -> Float -> Float
-applyEasing easing progress =
-    case easing of
-        Linear ->
-            progress
-
-        Bezier p1x p1y p2x p2y ->
-            -- Approximate cubic Bezier easing using De Casteljau's algorithm
-            let
-                u =
-                    1 - progress
-
-                tt =
-                    progress * progress
-
-                uu =
-                    u * u
-
-                uuu =
-                    uu * u
-
-                ttt =
-                    tt * progress
-
-                x =
-                    uuu * 0 + 3 * uu * progress * p1x + 3 * u * tt * p2x + ttt * 1
-
-                y =
-                    uuu * 0 + 3 * uu * progress * p1y + 3 * u * tt * p2y + ttt * 1
-            in
-            y
-
-        -- Return the y value as eased progress
-        Ease ->
-            -- Standard ease (equivalent to ease-in-out)
-            if progress < 0.5 then
-                2 * progress * progress
-
-            else
-                1 - (-2 * progress + 2) ^ 2 / 2
-
-        EaseIn ->
-            progress * progress
-
-        EaseOut ->
-            1 - (1 - progress) * (1 - progress)
-
-        EaseInOut ->
-            if progress < 0.5 then
-                2 * progress * progress
-
-            else
-                1 - (-2 * progress + 2) ^ 2 / 2
-
-        EaseInSine ->
-            1 - cos (progress * pi / 2)
-
-        EaseOutSine ->
-            sin (progress * pi / 2)
-
-        EaseInOutSine ->
-            -(cos (pi * progress) - 1) / 2
-
-        EaseInQuad ->
-            progress * progress
-
-        EaseOutQuad ->
-            1 - (1 - progress) * (1 - progress)
-
-        EaseInOutQuad ->
-            if progress < 0.5 then
-                2 * progress * progress
-
-            else
-                1 - (-2 * progress + 2) ^ 2 / 2
-
-        EaseInCubic ->
-            progress * progress * progress
-
-        EaseOutCubic ->
-            1 - (1 - progress) ^ 3
-
-        EaseInOutCubic ->
-            if progress < 0.5 then
-                4 * progress * progress * progress
-
-            else
-                1 - (-2 * progress + 2) ^ 3 / 2
-
-        EaseInQuart ->
-            progress ^ 4
-
-        EaseOutQuart ->
-            1 - (1 - progress) ^ 4
-
-        EaseInOutQuart ->
-            if progress < 0.5 then
-                8 * progress ^ 4
-
-            else
-                1 - (-2 * progress + 2) ^ 4 / 2
-
-        EaseInQuint ->
-            progress ^ 5
-
-        EaseOutQuint ->
-            1 - (1 - progress) ^ 5
-
-        EaseInOutQuint ->
-            if progress < 0.5 then
-                16 * progress ^ 5
-
-            else
-                1 - (-2 * progress + 2) ^ 5 / 2
-
-        EaseInExpo ->
-            if progress == 0 then
-                0
-
-            else
-                2 ^ (10 * (progress - 1))
-
-        EaseOutExpo ->
-            if progress == 1 then
-                1
-
-            else
-                1 - 2 ^ (-10 * progress)
-
-        EaseInOutExpo ->
-            if progress == 0 then
-                0
-
-            else if progress == 1 then
-                1
-
-            else if progress < 0.5 then
-                2 ^ (20 * progress - 10) / 2
-
-            else
-                (2 - 2 ^ (-20 * progress + 10)) / 2
-
-        EaseInCirc ->
-            1 - sqrt (1 - progress ^ 2)
-
-        EaseOutCirc ->
-            sqrt (1 - (progress - 1) ^ 2)
-
-        EaseInOutCirc ->
-            if progress < 0.5 then
-                (1 - sqrt (1 - (2 * progress) ^ 2)) / 2
-
-            else
-                (sqrt (1 - (-2 * progress + 2) ^ 2) + 1) / 2
-
-        EaseInBack ->
-            let
-                c1 =
-                    1.70158
-
-                c3 =
-                    c1 + 1
-            in
-            c3 * progress * progress * progress - c1 * progress * progress
-
-        EaseOutBack ->
-            let
-                c1 =
-                    1.70158
-
-                c3 =
-                    c1 + 1
-            in
-            1 + c3 * (progress - 1) ^ 3 + c1 * (progress - 1) ^ 2
-
-        EaseInOutBack ->
-            let
-                c1 =
-                    1.70158
-
-                c2 =
-                    c1 * 1.525
-            in
-            if progress < 0.5 then
-                ((2 * progress) ^ 2 * ((c2 + 1) * 2 * progress - c2)) / 2
-
-            else
-                (((2 * progress - 2) ^ 2 * ((c2 + 1) * (progress * 2 - 2) + c2)) + 2) / 2
-
-        EaseInElastic ->
-            if progress == 0 then
-                0
-
-            else if progress == 1 then
-                1
-
-            else
-                -(2 ^ (10 * progress - 10)) * sin ((progress * 10 - 10.75) * (2 * pi) / 3)
-
-        EaseOutElastic ->
-            if progress == 0 then
-                0
-
-            else if progress == 1 then
-                1
-
-            else
-                (2 ^ (-10 * progress)) * sin ((progress * 10 - 0.75) * (2 * pi) / 3) + 1
-
-        EaseInOutElastic ->
-            if progress == 0 then
-                0
-
-            else if progress == 1 then
-                1
-
-            else if progress < 0.5 then
-                (-(2 ^ (20 * progress - 10)) * sin ((20 * progress - 11.125) * (2 * pi) / 4.5)) / 2
-
-            else
-                (2 ^ (-20 * progress + 10)) * sin ((20 * progress - 11.125) * (2 * pi) / 4.5) / 2 + 1
-
-        EaseInBounce ->
-            let
-                bounceIn t =
-                    1 - bounceOut (1 - t)
-
-                bounceOut t =
-                    if t < 1 / 2.75 then
-                        7.5625 * t * t
-
-                    else if t < 2 / 2.75 then
-                        7.5625 * (t - 1.5 / 2.75) * (t - 1.5 / 2.75) + 0.75
-
-                    else if t < 2.5 / 2.75 then
-                        7.5625 * (t - 2.25 / 2.75) * (t - 2.25 / 2.75) + 0.9375
-
-                    else
-                        7.5625 * (t - 2.625 / 2.75) * (t - 2.625 / 2.75) + 0.984375
-            in
-            bounceIn progress
-
-        EaseOutBounce ->
-            let
-                bounceOut t =
-                    if t < 1 / 2.75 then
-                        7.5625 * t * t
-
-                    else if t < 2 / 2.75 then
-                        7.5625 * (t - 1.5 / 2.75) * (t - 1.5 / 2.75) + 0.75
-
-                    else if t < 2.5 / 2.75 then
-                        7.5625 * (t - 2.25 / 2.75) * (t - 2.25 / 2.75) + 0.9375
-
-                    else
-                        7.5625 * (t - 2.625 / 2.75) * (t - 2.625 / 2.75) + 0.984375
-            in
-            bounceOut progress
-
-        EaseInOutBounce ->
-            let
-                bounceIn t =
-                    1 - bounceOut (1 - t)
-
-                bounceOut t =
-                    if t < 1 / 2.75 then
-                        7.5625 * t * t
-
-                    else if t < 2 / 2.75 then
-                        7.5625 * (t - 1.5 / 2.75) * (t - 1.5 / 2.75) + 0.75
-
-                    else if t < 2.5 / 2.75 then
-                        7.5625 * (t - 2.25 / 2.75) * (t - 2.25 / 2.75) + 0.9375
-
-                    else
-                        7.5625 * (t - 2.625 / 2.75) * (t - 2.625 / 2.75) + 0.984375
-            in
-            if progress < 0.5 then
-                bounceIn (progress * 2) / 2
-
-            else
-                bounceOut (progress * 2 - 1) / 2 + 0.5
-
-        Custom _ ->
-            -- For custom CSS strings, fallback to ease-in-out
-            if progress < 0.5 then
-                2 * progress * progress
-
-            else
-                1 - (-2 * progress + 2) ^ 2 / 2
-
-
 interpolateValue : Float -> AnimationValue -> AnimationValue -> AnimationValue
 interpolateValue progress startValue targetValue =
     case ( startValue, targetValue ) of
         ( PositionAnimationValue start, PositionAnimationValue target ) ->
-            PositionAnimationValue
-                { x = start.x + progress * (target.x - start.x)
-                , y = start.y + progress * (target.y - start.y)
-                }
+            let
+                startTuple =
+                    Position.toTuple start
+
+                targetTuple =
+                    Position.toTuple target
+
+                ( startX, startY ) =
+                    startTuple
+
+                ( targetX, targetY ) =
+                    targetTuple
+
+                newX =
+                    startX + progress * (targetX - startX)
+
+                newY =
+                    startY + progress * (targetY - startY)
+            in
+            PositionAnimationValue (Position.fromTuple ( newX, newY ))
 
         ( RotationAnimationValue start, RotationAnimationValue target ) ->
-            RotationAnimationValue (start + progress * (target - start))
+            let
+                startFloat =
+                    Rotation.toFloat start
+
+                targetFloat =
+                    Rotation.toFloat target
+
+                newFloat =
+                    startFloat + progress * (targetFloat - startFloat)
+            in
+            RotationAnimationValue (Rotation.fromFloat newFloat)
 
         ( ScaleAnimationValue start, ScaleAnimationValue target ) ->
-            ScaleAnimationValue
-                { x = start.x + progress * (target.x - start.x)
-                , y = start.y + progress * (target.y - start.y)
-                }
+            let
+                startTuple =
+                    Scale.toTuple start
+
+                targetTuple =
+                    Scale.toTuple target
+
+                ( startX, startY ) =
+                    startTuple
+
+                ( targetX, targetY ) =
+                    targetTuple
+
+                newX =
+                    startX + progress * (targetX - startX)
+
+                newY =
+                    startY + progress * (targetY - startY)
+            in
+            ScaleAnimationValue (Scale.fromTuple ( newX, newY ))
 
         ( ColorAnimationValue _, ColorAnimationValue target ) ->
             -- For colors, we'll just snap to target for now
@@ -724,7 +622,17 @@ interpolateValue progress startValue targetValue =
             ColorAnimationValue target
 
         ( OpacityAnimationValue start, OpacityAnimationValue target ) ->
-            OpacityAnimationValue (start + progress * (target - start))
+            let
+                startFloat =
+                    Opacity.toFloat start
+
+                targetFloat =
+                    Opacity.toFloat target
+
+                newFloat =
+                    startFloat + progress * (targetFloat - startFloat)
+            in
+            OpacityAnimationValue (Opacity.fromFloat newFloat)
 
         _ ->
             -- Mismatched types, return target

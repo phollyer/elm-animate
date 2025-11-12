@@ -791,26 +791,6 @@ animationTargetToCssProperty target =
             [ ( "filter", filterValueToCss filter ) ]
 
 
-{-| Convert a ColorValue to CSS color string.
--}
-colorValueToCss : ColorValue -> String
-colorValueToCss color =
-    case color of
-        Hex hex ->
-            hex
-
-        Rgb rgb ->
-            "rgb(" ++ String.fromInt rgb.r ++ ", " ++ String.fromInt rgb.g ++ ", " ++ String.fromInt rgb.b ++ ")"
-
-        Rgba rgba ->
-            "rgba(" ++ String.fromInt rgba.r ++ ", " ++ String.fromInt rgba.g ++ ", " ++ String.fromInt rgba.b ++ ", " ++ String.fromFloat rgba.a ++ ")"
-
-        Hsl hsl ->
-            "hsl(" ++ String.fromFloat hsl.h ++ ", " ++ String.fromFloat hsl.s ++ "%, " ++ String.fromFloat hsl.l ++ "%)"
-
-        Hsla hsla ->
-            "hsla(" ++ String.fromFloat hsla.h ++ ", " ++ String.fromFloat hsla.s ++ "%, " ++ String.fromFloat hsla.l ++ "%, " ++ String.fromFloat hsla.a ++ ")"
-
 
 {-| Convert a FilterValue to CSS filter string.
 -}

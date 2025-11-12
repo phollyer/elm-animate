@@ -24,7 +24,7 @@ to propertyConfig builder =
 
 
 type alias UpdatePropertySpecFn =
-    (Builder.PropertySpec -> Builder.PropertySpec) -> Builder.PropertyConfig -> Builder.PropertyConfig
+    (Builder.AnimSpec -> Builder.AnimSpec) -> Builder.PropertyConfig -> Builder.PropertyConfig
 
 
 delay : UpdatePropertySpecFn -> Delay -> AnimBuilder -> AnimBuilder
@@ -54,7 +54,7 @@ timeSpec updateFn timeSpec_ builder =
     updateCurrentElement updateFn propertySpecFn builder
 
 
-updateCurrentElement : UpdatePropertySpecFn -> (Builder.PropertySpec -> Builder.PropertySpec) -> AnimBuilder -> AnimBuilder
+updateCurrentElement : UpdatePropertySpecFn -> (Builder.AnimSpec -> Builder.AnimSpec) -> AnimBuilder -> AnimBuilder
 updateCurrentElement updateFn propertySpecFn builder =
     let
         elementConfig =
