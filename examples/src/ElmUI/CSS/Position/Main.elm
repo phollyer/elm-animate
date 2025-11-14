@@ -93,7 +93,8 @@ update msg model =
         MoveToPosition x y ->
             let
                 animationState =
-                    Anim.init
+                    model.animations
+                        |> CSS.builder
                         |> Anim.duration 700
                         |> Anim.easing Easing.QuadInOut
                         |> Position.for "box"
@@ -111,16 +112,13 @@ update msg model =
 
         MoveLeft ->
             let
-                currentPos = 
-                    CSS.getCurrentPosition "box" model.animations
-                        
                 animationState =
-                    Anim.init
+                    model.animations
+                        |> CSS.builder
                         |> Anim.duration 700
-                        |> Anim.easing Easing.Linear
+                        |> Anim.easing Easing.SineInOut
                         |> Position.for "box"
-                        |> Position.duration 2000
-                        |> Position.toXY 0 currentPos.y
+                        |> Position.toX 0
                         |> Position.build
                         |> CSS.animate
             in
@@ -133,20 +131,18 @@ update msg model =
 
         MoveRight ->
             let
-                currentPos = 
-                    CSS.getCurrentPosition "box" model.animations
-                        
                 animationState =
-                    Anim.init
+                    model.animations
+                        |> CSS.builder
                         |> Anim.duration 700
-                        |> Anim.easing Easing.Linear
+                        |> Anim.easing Easing.BounceIn
                         |> Position.for "box"
-                        |> Position.toXY 450 currentPos.y
+                        |> Position.toX 450 
                         |> Position.build
                         |> CSS.animate
             in
             ( { model
-                | animations =  animationState
+                | animations = animationState
                 , isAnimating = True
               }
             , Cmd.none
@@ -154,15 +150,13 @@ update msg model =
 
         MoveDown ->
             let
-                currentPos = 
-                    CSS.getCurrentPosition "box" model.animations
-                        
                 animationState =
-                    Anim.init
+                    model.animations
+                        |> CSS.builder
                         |> Anim.duration 700
-                        |> Anim.easing Easing.Linear
+                        |> Anim.easing Easing.BounceOut
                         |> Position.for "box"
-                        |> Position.toXY currentPos.x 350
+                        |> Position.toY  350
                         |> Position.build
                         |> CSS.animate
             in
@@ -175,20 +169,18 @@ update msg model =
 
         MoveUp ->
             let
-                currentPos = 
-                    CSS.getCurrentPosition "box" model.animations
-                        
                 animationState =
-                    Anim.init
+                    model.animations
+                        |> CSS.builder
                         |> Anim.duration 700
-                        |> Anim.easing Easing.Linear
+                        |> Anim.easing Easing.SineOut
                         |> Position.for "box"
-                        |> Position.toXY currentPos.x 0
+                        |> Position.toY  0
                         |> Position.build
                         |> CSS.animate
             in
             ( { model
-                | animations =  animationState
+                | animations = animationState
                 , isAnimating = True
               }
             , Cmd.none
@@ -197,7 +189,8 @@ update msg model =
         ReturnToOrigin ->
             let
                 animationState =
-                    Anim.init
+                    model.animations
+                        |> CSS.builder
                         |> Anim.duration 700
                         |> Anim.easing Easing.Linear
                         |> Position.for "box"
@@ -242,8 +235,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     let
-        currentPos = 
-            CSS.getCurrentPosition "box" model.animations
+        currentPos = CSS.getElementPosition "box" model.animations
     in
     [ UI.backButton
     , UI.pageHeader "CSS Position Animations"
@@ -293,7 +285,7 @@ viewContent model =
 
              -- Apply CSS styles from animation - browser handles the animation!
              ]
-                ++ List.map htmlAttribute (CSS.htmlAttributes "box" model.animations )
+                ++ List.map htmlAttribute (CSS.htmlAttributes "box" model.animations)
             )
             none
         )

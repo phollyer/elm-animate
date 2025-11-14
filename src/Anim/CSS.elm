@@ -7,6 +7,8 @@ module Anim.CSS exposing
     , getElementStyles
     , htmlAttributes
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
+    , builder, getElementPosition
+      -- New automatic position function
     )
 
 {-| CSS-based animation system for Anim with property state tracking.
@@ -68,6 +70,7 @@ type AnimationState
     = AnimationState
         { elementAnimations : Dict ElementId ElementAnimation
         , currentValues : Dict ElementId (Dict String PropertyValue)
+        , builder : AnimBuilder -- Store original builder for automatic state queries
         }
 
 
@@ -104,10 +107,10 @@ Returns CSS styles that can be applied via Html.Attributes.style or similar.
 
 -}
 animate : AnimBuilder -> AnimationState
-animate builder =
+animate builder_ =
     let
         elementsDict =
-            Builder.elements builder
+            Builder.elements builder_
 
         elementAnimations =
             elementsDict
@@ -121,6 +124,7 @@ animate builder =
     AnimationState
         { elementAnimations = elementAnimations
         , currentValues = currentValues
+        , builder = builder_ -- Store builder for automatic queries
         }
 
 
@@ -131,7 +135,13 @@ init =
     AnimationState
         { elementAnimations = Dict.empty
         , currentValues = Dict.empty
+        , builder = Anim.init
         }
+
+
+builder : AnimationState -> AnimBuilder
+builder (AnimationState state) =
+    state.builder
 
 
 {-| Get current rotation value with default fallback.
@@ -272,6 +282,57 @@ setCurrentOpacity elementId opacity (AnimationState state) =
         { state
             | currentValues = Dict.update elementId updateElement state.currentValues
         }
+
+
+{-| Automatically determine the current position of an element.
+
+This function intelligently looks at the animation state and builder to determine
+where an element currently is, eliminating the need for manual getCurrentPosition calls.
+
+For elements that are currently animating, it returns the target position.
+For elements not currently animating, it returns the last known position or (0,0).
+
+    -- No need to track positions manually!
+    currentPos =
+        CSS.getElementPosition "box" animationState
+
+-}
+getElementPosition : ElementId -> AnimationState -> { x : Float, y : Float }
+getElementPosition elementId (AnimationState state) =
+    let
+        elementsDict =
+            Builder.elements state.builder
+    in
+    Dict.get elementId elementsDict
+        |> Maybe.map getTargetPositionFromConfig
+        |> Maybe.withDefault (getStoredPosition elementId (AnimationState state))
+
+
+{-| Helper function to extract target position from element configuration.
+-}
+getTargetPositionFromConfig : Builder.ElementConfig -> { x : Float, y : Float }
+getTargetPositionFromConfig elementConfig =
+    elementConfig.properties
+        |> List.foldl extractPositionFromProperty { x = 0, y = 0 }
+
+
+{-| Helper function to extract position from a property configuration.
+-}
+extractPositionFromProperty : Builder.PropertyConfig -> { x : Float, y : Float } -> { x : Float, y : Float }
+extractPositionFromProperty property currentPos =
+    case property of
+        Builder.PositionConfig config ->
+            Position.toRecord config.endAt
+
+        _ ->
+            currentPos
+
+
+{-| Helper function to get stored position with fallback.
+-}
+getStoredPosition : ElementId -> AnimationState -> { x : Float, y : Float }
+getStoredPosition elementId animationState =
+    getCurrentPosition elementId animationState
 
 
 

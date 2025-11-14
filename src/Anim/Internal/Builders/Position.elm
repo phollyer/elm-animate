@@ -8,6 +8,8 @@ module Anim.Internal.Builders.Position exposing
     , from
     , speed
     , to
+    , toX
+    , toY
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
@@ -40,7 +42,31 @@ type PositionBuilder
 
 for : String -> AnimBuilder -> PositionBuilder
 for elementId builder =
-    PositionBuilder defaultConfig (Builder.for elementId builder)
+    let
+        existingConfig =
+            case Builder.getElementConfig elementId builder of
+                Just { properties } ->
+                    properties
+                        |> List.filterMap
+                            (\prop ->
+                                case prop of
+                                    Builder.PositionConfig config ->
+                                        Just config
+
+                                    _ ->
+                                        Nothing
+                            )
+                        |> List.head
+
+                _ ->
+                    Nothing
+    in
+    case existingConfig of
+        Just config ->
+            PositionBuilder config builder
+
+        Nothing ->
+            PositionBuilder defaultConfig (Builder.for elementId builder)
 
 
 build : PositionBuilder -> AnimBuilder
@@ -123,6 +149,16 @@ from position (PositionBuilder config builder) =
 to : Position -> PositionBuilder -> PositionBuilder
 to position (PositionBuilder config builder) =
     PositionBuilder { config | endAt = position } builder
+
+
+toX : Float -> PositionBuilder -> PositionBuilder
+toX x (PositionBuilder config builder) =
+    PositionBuilder { config | endAt = Position.fromTuple ( x, Position.y config.endAt ) } builder
+
+
+toY : Float -> PositionBuilder -> PositionBuilder
+toY y (PositionBuilder config builder) =
+    PositionBuilder { config | endAt = Position.fromTuple ( Position.x config.endAt, y ) } builder
 
 
 speed : Float -> PositionBuilder -> PositionBuilder

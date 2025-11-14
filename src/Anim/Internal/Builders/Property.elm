@@ -11,7 +11,7 @@ add : Builder.PropertyConfig -> AnimBuilder -> AnimBuilder
 add propertyConfig builder =
     let
         currentElement =
-            Builder.getCurrentElement builder
+            Builder.getCurrentElementConfig builder
 
         updatedElement =
             { currentElement | properties = propertyConfig :: currentElement.properties }
@@ -23,7 +23,7 @@ replace : Builder.PropertyConfig -> AnimBuilder -> AnimBuilder
 replace propertyConfig builder =
     let
         currentElement =
-            Builder.getCurrentElement builder
+            Builder.getCurrentElementConfig builder
 
         updatedProperties =
             List.map
@@ -56,7 +56,7 @@ find : (Builder.PropertyConfig -> Bool) -> AnimBuilder -> Maybe Builder.Property
 find predicate builder =
     let
         currentElement =
-            Builder.getCurrentElement builder
+            Builder.getCurrentElementConfig builder
     in
     List.head (List.filter predicate currentElement.properties)
 

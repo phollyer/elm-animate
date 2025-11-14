@@ -46,7 +46,7 @@ build : ColorBuilder -> AnimBuilder
 build (ColorBuilder config builder) =
     let
         currentElement =
-            Builder.getCurrentElement builder
+            Builder.getCurrentElementConfig builder
 
         newColorConfig =
             Builder.ColorConfig config

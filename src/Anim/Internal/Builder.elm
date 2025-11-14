@@ -9,9 +9,10 @@ module Anim.Internal.Builder exposing
     , elements
     , encode
     , for
-    , getCurrentElement
+    , getCurrentElementConfig
     , getDelay
     , getEasing
+    , getElementConfig
     , getTimespec
     , init
     , processAnimationData
@@ -155,8 +156,8 @@ elements (AnimBuilder data) =
 
 {-| Get the current element configuration, creating one if it doesn't exist.
 -}
-getCurrentElement : AnimBuilder -> ElementConfig
-getCurrentElement (AnimBuilder data) =
+getCurrentElementConfig : AnimBuilder -> ElementConfig
+getCurrentElementConfig (AnimBuilder data) =
     case data.currentElementId of
         Nothing ->
             { properties = [] }
@@ -164,6 +165,11 @@ getCurrentElement (AnimBuilder data) =
         Just elementId ->
             Dict.get elementId data.elements
                 |> Maybe.withDefault { properties = [] }
+
+
+getElementConfig : String -> AnimBuilder -> Maybe ElementConfig
+getElementConfig elementId (AnimBuilder data) =
+    Dict.get elementId data.elements
 
 
 getTimespec : AnimBuilder -> Maybe TimeSpec

@@ -1,7 +1,7 @@
 module Anim.Properties.Position exposing
     ( Position
     , from, to, speed, duration, easing, delay
-    , build, for, toInternal, toXY
+    , build, for, toInternal, toX, toXY, toY
     )
 
 {-| Position animation property functions.
@@ -71,6 +71,16 @@ to position =
 toXY : Float -> Float -> PositionBuilder -> PositionBuilder
 toXY x y =
     PB.to (P.fromTuple ( x, y ))
+
+
+toX : Float -> PositionBuilder -> PositionBuilder
+toX x =
+    PB.toX x
+
+
+toY : Float -> PositionBuilder -> PositionBuilder
+toY y =
+    PB.toY y
 
 
 {-| Set animation speed for position (pixels per second).
