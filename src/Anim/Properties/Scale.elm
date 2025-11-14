@@ -40,7 +40,7 @@ type Scale
 
 {-| Set the starting scale for the current element.
 
-    builder |> Scale.from { x = 1.0, y = 1.0
+    builder |> Scale.from { x = 1.0, y = 1.0 }
 
 -}
 from : Scale -> ScaleBuilder -> ScaleBuilder
