@@ -12390,6 +12390,8 @@ var $mdgriffith$elm_ui$Element$maximum = F2(
 	function (i, l) {
 		return A2($mdgriffith$elm_ui$Internal$Model$Max, i, l);
 	});
+var $mdgriffith$elm_ui$Internal$Model$Empty = {$: 'Empty'};
+var $mdgriffith$elm_ui$Element$none = $mdgriffith$elm_ui$Internal$Model$Empty;
 var $mdgriffith$elm_ui$Internal$Model$Describe = function (a) {
 	return {$: 'Describe', a: a};
 };
@@ -12613,11 +12615,8 @@ var $author$project$ElmUI$CSS$Position$Main$viewContent = function (model) {
 					A2(
 						$elm$core$List$map,
 						$mdgriffith$elm_ui$Element$htmlAttribute,
-						A2(
-							$elm$core$Debug$log,
-							'CSS Attributes',
-							A2($author$project$Anim$CSS$htmlAttributes, 'box', model.animations)))),
-				$mdgriffith$elm_ui$Element$text('')))
+						A2($author$project$Anim$CSS$htmlAttributes, 'box', model.animations))),
+				$mdgriffith$elm_ui$Element$none))
 		]);
 };
 var $author$project$ElmUI$CSS$Position$Main$view = function (model) {

@@ -29,7 +29,7 @@ import Anim.Timing.Easing as Easing
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
-import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
+import Element exposing (Element, centerX, none, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -286,8 +286,8 @@ viewContent model =
 
              -- Apply CSS styles from animation - browser handles the animation!
              ]
-                ++ List.map htmlAttribute (CSS.htmlAttributes "box" model.animations |> Debug.log "CSS Attributes")
+                ++ List.map htmlAttribute (CSS.htmlAttributes "box" model.animations )
             )
-            (text "")
+            none
         )
     ]
