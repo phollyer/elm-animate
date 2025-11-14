@@ -1,7 +1,7 @@
-module Tests exposing (suite)
+module Anim.Tests exposing (suite)
 
 import Anim exposing (AnimationTarget(..), ColorValue(..), EasePreset(..), Easing(..), Timing(..), getAnimationData, getDelay, getEasing, getElementId, getTarget, getTiming)
-import Anim.Internal.Internal exposing (animationToMilliseconds)
+import Anim. exposing (animationToMilliseconds)
 import Ease
 import Expect
 import Internal.AnimationCore exposing (animationSteps)
