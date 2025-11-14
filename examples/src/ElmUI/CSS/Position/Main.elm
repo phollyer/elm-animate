@@ -55,9 +55,8 @@ main =
 
 
 type alias Model =
-    { animations : Maybe AnimationState
+    { animations : AnimationState
     , isAnimating : Bool
-    , currentPosition : { x : Float, y : Float }
     }
 
 
@@ -67,9 +66,8 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Nothing
+    ( { animations = CSS.init
       , isAnimating = False
-      , currentPosition = { x = 0, y = 0 } -- Starting position
       }
     , Cmd.none
     )
@@ -104,9 +102,8 @@ update msg model =
                         |> CSS.animate
             in
             ( { model
-                | animations = Just animationState
+                | animations = animationState
                 , isAnimating = True
-                , currentPosition = { x = x, y = y }
               }
             , Cmd.none
             )
@@ -114,77 +111,85 @@ update msg model =
 
         MoveLeft ->
             let
+                currentPos = 
+                    CSS.getCurrentPosition "box" model.animations
+                        
                 animationState =
                     Anim.init
                         |> Anim.duration 700
                         |> Anim.easing Easing.Linear
                         |> Position.for "box"
                         |> Position.duration 2000
-                        |> Position.toXY 0 model.currentPosition.y
+                        |> Position.toXY 0 currentPos.y
                         |> Position.build
                         |> CSS.animate
             in
             ( { model
-                | animations = Just animationState
+                | animations = animationState
                 , isAnimating = True
-                , currentPosition = { x = 0, y = model.currentPosition.y }
               }
             , Cmd.none
             )
 
         MoveRight ->
             let
+                currentPos = 
+                    CSS.getCurrentPosition "box" model.animations
+                        
                 animationState =
                     Anim.init
                         |> Anim.duration 700
                         |> Anim.easing Easing.Linear
                         |> Position.for "box"
-                        |> Position.toXY 450 model.currentPosition.y
+                        |> Position.toXY 450 currentPos.y
                         |> Position.build
                         |> CSS.animate
             in
             ( { model
-                | animations = Just animationState
+                | animations =  animationState
                 , isAnimating = True
-                , currentPosition = { x = 450, y = model.currentPosition.y }
               }
             , Cmd.none
             )
 
         MoveDown ->
             let
+                currentPos = 
+                    CSS.getCurrentPosition "box" model.animations
+                        
                 animationState =
                     Anim.init
                         |> Anim.duration 700
                         |> Anim.easing Easing.Linear
                         |> Position.for "box"
-                        |> Position.toXY model.currentPosition.x 350
+                        |> Position.toXY currentPos.x 350
                         |> Position.build
                         |> CSS.animate
             in
             ( { model
-                | animations = Just animationState
+                | animations = animationState
                 , isAnimating = True
-                , currentPosition = { x = model.currentPosition.x, y = 350 }
               }
             , Cmd.none
             )
 
         MoveUp ->
             let
+                currentPos = 
+                    CSS.getCurrentPosition "box" model.animations
+                        
                 animationState =
                     Anim.init
                         |> Anim.duration 700
                         |> Anim.easing Easing.Linear
                         |> Position.for "box"
-                        |> Position.toXY model.currentPosition.x 0
+                        |> Position.toXY currentPos.x 0
                         |> Position.build
                         |> CSS.animate
             in
             ( { model
-                | animations = Just animationState
+                | animations =  animationState
                 , isAnimating = True
-                , currentPosition = { x = model.currentPosition.x, y = 0 }
               }
             , Cmd.none
             )
@@ -201,9 +206,8 @@ update msg model =
                         |> CSS.animate
             in
             ( { model
-                | animations = Just animationState
+                | animations =  animationState
                 , isAnimating = True
-                , currentPosition = { x = 0, y = 0 }
               }
             , Cmd.none
             )
@@ -211,7 +215,6 @@ update msg model =
         AnimationComplete ->
             ( { model
                 | isAnimating = False
-                , animations = Nothing
               }
             , Cmd.none
             )
@@ -238,6 +241,10 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
+    let
+        currentPos = 
+            CSS.getCurrentPosition "box" model.animations
+    in
     [ UI.backButton
     , UI.pageHeader "CSS Position Animations"
     , -- Position display
@@ -246,7 +253,7 @@ viewContent model =
         , Font.color Colors.textMedium
         , centerX
         ]
-        (text ("Position: (" ++ String.fromInt (round model.currentPosition.x) ++ ", " ++ String.fromInt (round model.currentPosition.y) ++ ")"))
+        (text ("Position: (" ++ String.fromInt (round currentPos.x) ++ ", " ++ String.fromInt (round currentPos.y) ++ ")"))
     , -- Buttons for predefined moves
       UI.wrappedButtonRow
         [ ( UI.Primary, MoveToPosition 100 100, "Move to (100, 100)" )

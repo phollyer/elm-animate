@@ -106,14 +106,21 @@ Returns CSS styles that can be applied via Html.Attributes.style or similar.
 animate : AnimBuilder -> AnimationState
 animate builder =
     let
+        elementsDict =
+            Builder.elements builder
+
         elementAnimations =
-            builder
-                |> Builder.elements
+            elementsDict
                 |> Dict.map generateElementAnimation
+
+        -- Automatically extract and store end values from animation configurations
+        currentValues =
+            elementsDict
+                |> Dict.map extractEndValues
     in
     AnimationState
         { elementAnimations = elementAnimations
-        , currentValues = Dict.empty
+        , currentValues = currentValues
         }
 
 
@@ -271,6 +278,40 @@ setCurrentOpacity elementId opacity (AnimationState state) =
 -- CSS GENERATION
 
 
+{-| Extract end values from element configuration and store them for position tracking.
+-}
+extractEndValues : String -> Builder.ElementConfig -> Dict String PropertyValue
+extractEndValues _ elementConfig =
+    elementConfig.properties
+        |> List.foldl extractPropertyEndValue Dict.empty
+
+
+{-| Extract end value from a single property configuration.
+-}
+extractPropertyEndValue : Builder.PropertyConfig -> Dict String PropertyValue -> Dict String PropertyValue
+extractPropertyEndValue property acc =
+    case property of
+        Builder.PositionConfig config ->
+            Dict.insert "position" (PositionValue (Position.toRecord config.endAt)) acc
+
+        Builder.RotateConfig config ->
+            Dict.insert "rotation" (FloatValue (Rotation.toFloat config.endAt)) acc
+
+        Builder.ScaleConfig config ->
+            let
+                ( x, y ) =
+                    Scale.toTuple config.endAt
+            in
+            Dict.insert "scale" (ScaleValue { x = x, y = y }) acc
+
+        Builder.OpacityConfig config ->
+            Dict.insert "opacity" (FloatValue (Opacity.toFloat config.endAt)) acc
+
+        Builder.ColorConfig _ ->
+            -- Color values are handled differently
+            acc
+
+
 generateElementAnimation : String -> Builder.ElementConfig -> ElementAnimation
 generateElementAnimation elementId elementConfig =
     let
@@ -418,15 +459,10 @@ For Elm UI, wrap each attribute with htmlAttribute:
         (text "Animating element")
 
 -}
-htmlAttributes : String -> Maybe AnimationState -> List (Html.Attribute msg)
-htmlAttributes elementId maybeAnimationResult =
-    case maybeAnimationResult of
-        Just animationResult ->
-            getElementStyles elementId animationResult
-                |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
-
-        Nothing ->
-            [ Html.Attributes.style "transition" "none" ]
+htmlAttributes : String -> AnimationState -> List (Html.Attribute msg)
+htmlAttributes elementId animationResult =
+    getElementStyles elementId animationResult
+        |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
 
 
 
