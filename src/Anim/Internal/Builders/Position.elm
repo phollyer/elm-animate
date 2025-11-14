@@ -15,7 +15,7 @@ import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Timing.Delay exposing (Delay)
 import Anim.Internal.Timing.Easing exposing (Easing)
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec)
+import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
 
@@ -47,9 +47,47 @@ build : PositionBuilder -> AnimBuilder
 build (PositionBuilder config builder) =
     let
         newPositionConfig =
-            Builder.PositionConfig config
+            Builder.PositionConfig <|
+                applyGlobalDefaults builder config
     in
     PropertyBuilder.upsert newPositionConfig builder
+
+
+applyGlobalDefaults : AnimBuilder -> PositionConfig -> PositionConfig
+applyGlobalDefaults builder config =
+    let
+        globalEasing =
+            case config.easing of
+                Just e ->
+                    Just e
+
+                Nothing ->
+                    Builder.getEasing builder
+
+        globalDelay =
+            case config.delay of
+                Just d ->
+                    Just d
+
+                Nothing ->
+                    Builder.getDelay builder
+
+        timeSpec =
+            case config.timing of
+                Just (Speed s) ->
+                    Just <| Speed s
+
+                Just (Duration d) ->
+                    Just <| Duration d
+
+                Nothing ->
+                    Builder.getTimespec builder
+    in
+    { config
+        | easing = globalEasing
+        , delay = globalDelay
+        , timing = timeSpec
+    }
 
 
 type alias PositionConfig =
@@ -89,12 +127,36 @@ to position (PositionBuilder config builder) =
 
 speed : Float -> PositionBuilder -> PositionBuilder
 speed value (PositionBuilder config builder) =
-    PositionBuilder { config | speed = value } builder
+    let
+        ( speed_, timeSpec ) =
+            case Builder.getTimespec builder of
+                Just (Speed s) ->
+                    ( s, Just <| Speed s )
+
+                Just (Duration d) ->
+                    ( value, Just <| Speed value )
+
+                Nothing ->
+                    ( value, Just <| Speed value )
+    in
+    PositionBuilder
+        { config
+            | speed = speed_
+            , timing = timeSpec
+        }
+        builder
 
 
 duration : Int -> PositionBuilder -> PositionBuilder
 duration ms (PositionBuilder config builder) =
-    PositionBuilder { config | duration = ms } builder
+    PositionBuilder
+        { config
+            | duration = ms
+            , timing =
+                Just <|
+                    Duration ms
+        }
+        builder
 
 
 easing : Easing -> PositionBuilder -> PositionBuilder

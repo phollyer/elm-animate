@@ -41,7 +41,7 @@ encode timeSpec =
 
 toCssString : Maybe TimeSpec -> String
 toCssString maybeTimespec =
-    case maybeTimespec of
+    case maybeTimespec |> Debug.log "maybeTimespec" of
         Just (Duration ms) ->
             String.fromInt ms ++ "ms"
 

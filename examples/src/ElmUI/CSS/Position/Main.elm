@@ -23,9 +23,9 @@ USAGE:
 -}
 
 import Anim
-import Anim.CSS as CSS exposing (AnimationResult)
-import Anim.Easing as Easing
+import Anim.CSS as CSS exposing (AnimationState)
 import Anim.Properties.Position as Position
+import Anim.Timing.Easing as Easing
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -55,7 +55,7 @@ main =
 
 
 type alias Model =
-    { animations : Maybe AnimationResult
+    { animations : Maybe AnimationState
     , isAnimating : Bool
     , currentPosition : { x : Float, y : Float }
     }
@@ -80,64 +80,52 @@ init _ =
 
 
 type Msg
-    = MoveToCorner
-    | MoveToCenter
+    = MoveToPosition Float Float
     | MoveLeft
     | MoveRight
     | MoveUp
     | MoveDown
-    | StopAnimation
+    | ReturnToOrigin
     | AnimationComplete
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        MoveToCorner ->
+        MoveToPosition x y ->
             let
-                animationResult =
-                    Anim.init "box"
-                        |> Position.to { x = 100, y = 100 }
+                animationState =
+                    Anim.init
                         |> Anim.duration 700
-                        |> Anim.easing Easing.easeInOutQuad
+                        |> Anim.easing Easing.QuadInOut
+                        |> Position.for "box"
+                        |> Position.toXY x y    
+                        |> Position.build
                         |> CSS.animate
             in
             ( { model
-                | animations = Just animationResult
+                | animations = Just animationState
                 , isAnimating = True
                 , currentPosition = { x = 100, y = 100 }
               }
             , Cmd.none
             )
 
-        MoveToCenter ->
-            let
-                animationResult =
-                    Anim.init "box"
-                        |> Position.to { x = 300, y = 200 }
-                        |> Anim.duration 700
-                        |> Anim.easing Easing.easeInOutQuad
-                        |> CSS.animate
-            in
-            ( { model
-                | animations = Just animationResult
-                , isAnimating = True
-                , currentPosition = { x = 300, y = 200 }
-              }
-            , Cmd.none
-            )
 
         MoveLeft ->
             let
-                animationResult =
-                    Anim.init "box"
-                        |> Position.to { x = 0, y = model.currentPosition.y }
-                        |> Anim.duration 400
-                        |> Anim.easing Easing.linear
+                animationState =
+                    Anim.init
+                        |> Anim.duration 700
+                        |> Anim.easing Easing.Linear
+                        |> Position.for "box"
+                        |> Position.duration 2000
+                        |> Position.toXY 0 model.currentPosition.y
+                        |> Position.build
                         |> CSS.animate
             in
             ( { model
-                | animations = Just animationResult
+                | animations = Just animationState
                 , isAnimating = True
                 , currentPosition = { x = 0, y = model.currentPosition.y }
               }
@@ -146,15 +134,17 @@ update msg model =
 
         MoveRight ->
             let
-                animationResult =
-                    Anim.init "box"
-                        |> Position.to { x = 450, y = model.currentPosition.y }
-                        |> Anim.duration 400
-                        |> Anim.easing Easing.linear
+                animationState =
+                    Anim.init
+                        |> Anim.duration 700
+                        |> Anim.easing Easing.Linear
+                        |> Position.for "box"
+                        |> Position.toXY 450 model.currentPosition.y
+                        |> Position.build
                         |> CSS.animate
             in
             ( { model
-                | animations = Just animationResult
+                | animations = Just animationState
                 , isAnimating = True
                 , currentPosition = { x = 450, y = model.currentPosition.y }
               }
@@ -163,15 +153,17 @@ update msg model =
 
         MoveDown ->
             let
-                animationResult =
-                    Anim.init "box"
-                        |> Position.to { x = model.currentPosition.x, y = 350 }
-                        |> Anim.duration 400
-                        |> Anim.easing Easing.linear
+                animationState =
+                    Anim.init
+                        |> Anim.duration 700
+                        |> Anim.easing Easing.Linear
+                        |> Position.for "box"
+                        |> Position.toXY model.currentPosition.x 350
+                        |> Position.build
                         |> CSS.animate
             in
             ( { model
-                | animations = Just animationResult
+                | animations = Just animationState
                 , isAnimating = True
                 , currentPosition = { x = model.currentPosition.x, y = 350 }
               }
@@ -180,32 +172,36 @@ update msg model =
 
         MoveUp ->
             let
-                animationResult =
-                    Anim.init "box"
-                        |> Position.to { x = model.currentPosition.x, y = 50 }
-                        |> Anim.duration 400
-                        |> Anim.easing Easing.linear
+                animationState =
+                    Anim.init
+                        |> Anim.duration 700
+                        |> Anim.easing Easing.Linear
+                        |> Position.for "box"
+                        |> Position.toXY model.currentPosition.x 0
+                        |> Position.build
                         |> CSS.animate
             in
             ( { model
-                | animations = Just animationResult
+                | animations = Just animationState
                 , isAnimating = True
                 , currentPosition = { x = model.currentPosition.x, y = 50 }
               }
             , Cmd.none
             )
 
-        StopAnimation ->
+        ReturnToOrigin ->
             let
-                animationResult =
-                    Anim.init "box"
-                        |> Position.to { x = 0, y = 0 }
-                        |> Anim.duration 400
-                        |> Anim.easing Easing.linear
+                animationState =
+                    Anim.init
+                        |> Anim.duration 700
+                        |> Anim.easing Easing.Linear
+                        |> Position.for "box"
+                        |> Position.toXY 0 0
+                        |> Position.build
                         |> CSS.animate
             in
             ( { model
-                | animations = Just animationResult
+                | animations = Just animationState
                 , isAnimating = True
                 , currentPosition = { x = 0, y = 0 }
               }
@@ -237,7 +233,7 @@ subscriptions _ =
 
 view : Model -> Document Msg
 view model =
-    UI.createDocument "Anim.CSS Position ElmUI Example" UI.Basic (viewContent model)
+    UI.createDocument "Anim.CSS Position ElmUI Examples" UI.Basic (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)
@@ -253,9 +249,9 @@ viewContent model =
         (text ("Position: (" ++ String.fromInt (round model.currentPosition.x) ++ ", " ++ String.fromInt (round model.currentPosition.y) ++ ")"))
     , -- Buttons for predefined moves
       UI.wrappedButtonRow
-        [ ( UI.Primary, MoveToCorner, "Move to (100, 100)" )
-        , ( UI.Success, MoveToCenter, "Move to (300, 200)" )
-        , ( UI.Purple, StopAnimation, "Return to Origin" )
+        [ ( UI.Primary, MoveToPosition 100 100, "Move to (100, 100)" )
+        , ( UI.Success, MoveToPosition 300 200, "Move to (300, 200)" )
+        , ( UI.Purple, ReturnToOrigin, "Return to Origin" )
         ]
     , -- Axis-specific movement buttons
       UI.wrappedButtonRow
@@ -290,7 +286,7 @@ viewContent model =
 
              -- Apply CSS styles from animation - browser handles the animation!
              ]
-                ++ List.map htmlAttribute (CSS.htmlAttributes "box" model.animations AnimationComplete)
+                ++ List.map htmlAttribute (CSS.htmlAttributes "box" model.animations |> Debug.log "CSS Attributes")
             )
             (text "")
         )

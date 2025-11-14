@@ -1,7 +1,7 @@
 module Anim.Properties.Position exposing
     ( Position
     , from, to, speed, duration, easing, delay
-    , toInternal
+    , build, for, toInternal, toXY
     )
 
 {-| Position animation property functions.
@@ -22,6 +22,7 @@ Use these functions to configure position animations in the builder chain:
 
 -}
 
+import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Position as PB
 import Anim.Internal.Properties.Position as P
 import Anim.Timing.Delay as Delay exposing (Delay)
@@ -42,6 +43,16 @@ type Position
     = Position { x : Float, y : Float }
 
 
+for : String -> AnimBuilder -> PositionBuilder
+for elementId =
+    PB.for elementId
+
+
+build : PositionBuilder -> AnimBuilder
+build =
+    PB.build
+
+
 from : Position -> PositionBuilder -> PositionBuilder
 from position =
     PB.from (toInternal position)
@@ -55,6 +66,11 @@ from position =
 to : Position -> PositionBuilder -> PositionBuilder
 to position =
     PB.to (toInternal position)
+
+
+toXY : Float -> Float -> PositionBuilder -> PositionBuilder
+toXY x y =
+    PB.to (P.fromTuple ( x, y ))
 
 
 {-| Set animation speed for position (pixels per second).

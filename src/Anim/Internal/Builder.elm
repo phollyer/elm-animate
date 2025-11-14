@@ -10,6 +10,9 @@ module Anim.Internal.Builder exposing
     , encode
     , for
     , getCurrentElement
+    , getDelay
+    , getEasing
+    , getTimespec
     , init
     , processAnimationData
     , speed
@@ -161,6 +164,21 @@ getCurrentElement (AnimBuilder data) =
         Just elementId ->
             Dict.get elementId data.elements
                 |> Maybe.withDefault { properties = [] }
+
+
+getTimespec : AnimBuilder -> Maybe TimeSpec
+getTimespec (AnimBuilder data) =
+    data.globalTiming
+
+
+getEasing : AnimBuilder -> Maybe Easing
+getEasing (AnimBuilder data) =
+    data.globalEasing
+
+
+getDelay : AnimBuilder -> Maybe Delay
+getDelay (AnimBuilder data) =
+    data.globalDelay
 
 
 {-| Update the current element configuration.
