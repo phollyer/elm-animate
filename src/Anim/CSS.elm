@@ -1,19 +1,32 @@
 module Anim.CSS exposing
-    ( animate, AnimationState
+    ( animate, AnimationState, init
+    , getCurrentRotation, setCurrentRotation
+    , getCurrentScale, setCurrentScale
+    , getCurrentPosition, setCurrentPosition
+    , getCurrentOpacity, setCurrentOpacity
     , getElementStyles
     , htmlAttributes
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
     )
 
-{-| CSS-based animation system for Anim.
+{-| CSS-based animation system for Anim with property state tracking.
 
 This module converts AnimBuilder configurations to CSS transition and transform styles
-for native browser performance and hardware acceleration.
+for native browser performance and hardware acceleration. It also tracks current property
+values to enable exact distance calculations for speed-based animations.
 
 
 # Animation Execution
 
-@docs animate, AnimationState
+@docs animate, AnimationState, init
+
+
+# State Tracking
+
+@docs getCurrentRotation, setCurrentRotation
+@docs getCurrentScale, setCurrentScale
+@docs getCurrentPosition, setCurrentPosition
+@docs getCurrentOpacity, setCurrentOpacity
 
 
 # Utility Functions
@@ -49,14 +62,26 @@ import Html.Events
 import Json.Decode
 
 
-{-| Result of CSS animation generation.
+{-| Result of CSS animation generation with property state tracking.
 -}
 type AnimationState
-    = AnimationState (Dict ElementId ElementAnimation)
+    = AnimationState
+        { elementAnimations : Dict ElementId ElementAnimation
+        , currentValues : Dict ElementId (Dict String PropertyValue)
+        }
 
 
 type alias ElementId =
     String
+
+
+{-| Flexible property value storage for state tracking.
+-}
+type PropertyValue
+    = FloatValue Float -- rotation: 45, opacity: 0.8
+    | PositionValue { x : Float, y : Float } -- translate: {x: 100, y: 50}
+    | ScaleValue { x : Float, y : Float } -- scale: {x: 1.2, y: 0.8}
+    | ColorValue String -- color: "#ff0000"
 
 
 {-| CSS animation data for a single element.
@@ -86,7 +111,160 @@ animate builder =
                 |> Builder.elements
                 |> Dict.map generateElementAnimation
     in
-    AnimationState elementAnimations
+    AnimationState
+        { elementAnimations = elementAnimations
+        , currentValues = Dict.empty
+        }
+
+
+{-| Initialize empty animation state.
+-}
+init : AnimationState
+init =
+    AnimationState
+        { elementAnimations = Dict.empty
+        , currentValues = Dict.empty
+        }
+
+
+{-| Get current rotation value with default fallback.
+-}
+getCurrentRotation : ElementId -> AnimationState -> Float
+getCurrentRotation elementId (AnimationState state) =
+    Dict.get elementId state.currentValues
+        |> Maybe.andThen (Dict.get "rotation")
+        |> Maybe.andThen
+            (\value ->
+                case value of
+                    FloatValue f ->
+                        Just f
+
+                    _ ->
+                        Nothing
+            )
+        |> Maybe.withDefault 0.0
+
+
+{-| Set current rotation value after animation completes.
+-}
+setCurrentRotation : ElementId -> Float -> AnimationState -> AnimationState
+setCurrentRotation elementId rotation (AnimationState state) =
+    let
+        updateElement elementValues =
+            elementValues
+                |> Maybe.withDefault Dict.empty
+                |> Dict.insert "rotation" (FloatValue rotation)
+                |> Just
+    in
+    AnimationState
+        { state
+            | currentValues = Dict.update elementId updateElement state.currentValues
+        }
+
+
+{-| Get current scale value with default fallback.
+-}
+getCurrentScale : ElementId -> AnimationState -> { x : Float, y : Float }
+getCurrentScale elementId (AnimationState state) =
+    Dict.get elementId state.currentValues
+        |> Maybe.andThen (Dict.get "scale")
+        |> Maybe.andThen
+            (\value ->
+                case value of
+                    ScaleValue scale ->
+                        Just scale
+
+                    _ ->
+                        Nothing
+            )
+        |> Maybe.withDefault { x = 1.0, y = 1.0 }
+
+
+{-| Set current scale value after animation completes.
+-}
+setCurrentScale : ElementId -> { x : Float, y : Float } -> AnimationState -> AnimationState
+setCurrentScale elementId scale (AnimationState state) =
+    let
+        updateElement elementValues =
+            elementValues
+                |> Maybe.withDefault Dict.empty
+                |> Dict.insert "scale" (ScaleValue scale)
+                |> Just
+    in
+    AnimationState
+        { state
+            | currentValues = Dict.update elementId updateElement state.currentValues
+        }
+
+
+{-| Get current position value with default fallback.
+-}
+getCurrentPosition : ElementId -> AnimationState -> { x : Float, y : Float }
+getCurrentPosition elementId (AnimationState state) =
+    Dict.get elementId state.currentValues
+        |> Maybe.andThen (Dict.get "position")
+        |> Maybe.andThen
+            (\value ->
+                case value of
+                    PositionValue pos ->
+                        Just pos
+
+                    _ ->
+                        Nothing
+            )
+        |> Maybe.withDefault { x = 0.0, y = 0.0 }
+
+
+{-| Set current position value after animation completes.
+-}
+setCurrentPosition : ElementId -> { x : Float, y : Float } -> AnimationState -> AnimationState
+setCurrentPosition elementId position (AnimationState state) =
+    let
+        updateElement elementValues =
+            elementValues
+                |> Maybe.withDefault Dict.empty
+                |> Dict.insert "position" (PositionValue position)
+                |> Just
+    in
+    AnimationState
+        { state
+            | currentValues = Dict.update elementId updateElement state.currentValues
+        }
+
+
+{-| Get current opacity value with default fallback.
+-}
+getCurrentOpacity : ElementId -> AnimationState -> Float
+getCurrentOpacity elementId (AnimationState state) =
+    Dict.get elementId state.currentValues
+        |> Maybe.andThen (Dict.get "opacity")
+        |> Maybe.andThen
+            (\value ->
+                case value of
+                    FloatValue f ->
+                        Just f
+
+                    _ ->
+                        Nothing
+            )
+        |> Maybe.withDefault 1.0
+
+
+{-| Set current opacity value after animation completes.
+-}
+setCurrentOpacity : ElementId -> Float -> AnimationState -> AnimationState
+setCurrentOpacity elementId opacity (AnimationState state) =
+    let
+        updateElement elementValues =
+            elementValues
+                |> Maybe.withDefault Dict.empty
+                |> Dict.insert "opacity" (FloatValue opacity)
+                |> Just
+    in
+    AnimationState
+        { state
+            | currentValues = Dict.update elementId updateElement state.currentValues
+        }
 
 
 
@@ -209,12 +387,9 @@ colorStyleFromProperty property =
                 |> Maybe.withDefault []
 
 -}
-getElementStyles : String -> AnimationState -> List ( String, String )
-getElementStyles elementId (AnimationState animations) =
-    animations
-        |> Dict.filter (\key _ -> key == elementId)
-        |> Dict.values
-        |> List.head
+getElementStyles : ElementId -> AnimationState -> List ( String, String )
+getElementStyles elementId (AnimationState state) =
+    Dict.get elementId state.elementAnimations
         |> Maybe.map .styles
         |> Maybe.withDefault []
 
