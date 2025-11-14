@@ -69,7 +69,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations = Nothing
       , isAnimating = False
-      , currentPosition = { x = 200, y = 150 } -- Starting position
+      , currentPosition = { x = 0, y = 0 } -- Starting position
       }
     , Cmd.none
     )

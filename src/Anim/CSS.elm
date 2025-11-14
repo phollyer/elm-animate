@@ -109,7 +109,6 @@ animate builder =
         elementAnimations =
             builder
                 |> Builder.elements
-                |> Debug.log "Element Configs"
                 |> Dict.map generateElementAnimation
     in
     AnimationState
@@ -391,7 +390,6 @@ colorStyleFromProperty property =
 getElementStyles : ElementId -> AnimationState -> List ( String, String )
 getElementStyles elementId (AnimationState state) =
     Dict.get elementId state.elementAnimations
-        |> Debug.log "getElementStyles"
         |> Maybe.map .styles
         |> Maybe.withDefault []
 

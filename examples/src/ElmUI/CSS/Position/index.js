@@ -5202,7 +5202,7 @@ var $author$project$ElmUI$CSS$Position$Main$init = function (_v0) {
 	return _Utils_Tuple2(
 		{
 			animations: $elm$core$Maybe$Nothing,
-			currentPosition: {x: 200, y: 150},
+			currentPosition: {x: 0, y: 0},
 			isAnimating: false
 		},
 		$elm$core$Platform$Cmd$none);
