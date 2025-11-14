@@ -1,5 +1,6 @@
 module Anim.Internal.Builder exposing
     ( AnimBuilder
+    , AnimationConfig
     , ElementConfig
     , PropertyConfig(..)
     , delay
@@ -15,14 +16,14 @@ module Anim.Internal.Builder exposing
     , updateCurrentElement
     )
 
-import Anim.Internal.Properties.Color as Color exposing (Color)
-import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
+import Anim.Internal.Properties.Color exposing (Color)
+import Anim.Internal.Properties.Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position, distance)
 import Anim.Internal.Properties.Rotation as Rotation exposing (Rotation)
-import Anim.Internal.Properties.Scale as Scale exposing (Scale)
+import Anim.Internal.Properties.Scale exposing (Scale)
 import Anim.Internal.Timing.Delay as Delay exposing (Delay)
-import Anim.Internal.Timing.Easing as Easing exposing (Easing(..))
-import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
+import Anim.Internal.Timing.Easing exposing (Easing(..))
+import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
 import Json.Encode as Encode
 
@@ -56,8 +57,20 @@ type PropertyConfig
     | OpacityConfig (AnimationConfig Opacity)
 
 
+type ProcessedPropertyConfig
+    = ProcessedPositionConfig (ProcessedAnimationConfig Position)
+    | ProcessedRotateConfig (ProcessedAnimationConfig Rotation)
+    | ProcessedScaleConfig (ProcessedAnimationConfig Scale)
+    | ProcessedColorConfig (ProcessedAnimationConfig Color)
+    | ProcessedOpacityConfig (ProcessedAnimationConfig Opacity)
+
+
+type alias ProcessedElementConfig =
+    { properties : List ProcessedPropertyConfig }
+
+
 type alias AnimationConfig targetProperty =
-    { startAt : targetProperty
+    { startAt : Maybe targetProperty
     , endAt : targetProperty
     , duration : Int
     , speed : Float
@@ -65,6 +78,25 @@ type alias AnimationConfig targetProperty =
     , timing : Maybe TimeSpec
     , easing : Maybe Easing
     , delay : Maybe Delay
+    }
+
+
+type alias ProcessedAnimationData =
+    { elements : Dict ElementId ProcessedElementConfig
+    , globalTiming : Maybe TimeSpec
+    , globalEasing : Maybe Easing
+    , globalDelay : Maybe Delay
+    }
+
+
+type alias ProcessedAnimationConfig targetProperty =
+    { target : targetProperty
+    , duration : Int
+    , speed : Float
+    , distance : Float
+    , timing : TimeSpec
+    , easing : Easing
+    , delay : Delay
     }
 
 
@@ -82,7 +114,7 @@ init =
 for : String -> AnimBuilder -> AnimBuilder
 for elementId (AnimBuilder data) =
     AnimBuilder
-        { data | currentElementId = elementId }
+        { data | currentElementId = Just elementId }
 
 
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -122,18 +154,26 @@ elements (AnimBuilder data) =
 -}
 getCurrentElement : AnimBuilder -> ElementConfig
 getCurrentElement (AnimBuilder data) =
-    Dict.get data.currentElementId data.elements
-        |> Maybe.withDefault { properties = [] }
+    case data.currentElementId of
+        Nothing ->
+            { properties = [] }
+
+        Just elementId ->
+            Dict.get elementId data.elements
+                |> Maybe.withDefault { properties = [] }
 
 
 {-| Update the current element configuration.
 -}
 updateCurrentElement : ElementConfig -> AnimBuilder -> AnimBuilder
 updateCurrentElement config (AnimBuilder data) =
-    AnimBuilder
-        { data
-            | elements = Dict.insert data.currentElementId config data.elements
-        }
+    case data.currentElementId of
+        Nothing ->
+            AnimBuilder data
+
+        Just elementId ->
+            AnimBuilder
+                { data | elements = Dict.insert elementId config data.elements }
 
 
 
@@ -149,7 +189,7 @@ This function applies global defaults to property-specific configurations
 and returns processed animation data that can be used by different animation systems.
 
 -}
-processAnimationData : AnimBuilder -> AnimBuilder
+processAnimationData : AnimBuilder -> ProcessedAnimationData
 processAnimationData (AnimBuilder data) =
     let
         processedElements =
@@ -162,19 +202,27 @@ processAnimationData (AnimBuilder data) =
     }
 
 
-processElement : BuilderData -> String -> ElementConfig -> ElementConfig
+processElement : BuilderData -> String -> ElementConfig -> ProcessedElementConfig
 processElement globalData _ elementConfig =
     { properties = List.map (processProperty globalData) elementConfig.properties
     }
 
 
-processProperty : BuilderData -> PropertyConfig -> PropertyConfig
+processProperty : BuilderData -> PropertyConfig -> ProcessedPropertyConfig
 processProperty globalData property =
     case property of
         PositionConfig config ->
             let
+                startAt =
+                    case config.startAt of
+                        Just s ->
+                            s
+
+                        Nothing ->
+                            Position.fromTuple ( 0, 0 )
+
                 distance =
-                    Position.distance config.startAt config.endAt
+                    Position.distance startAt config.endAt
 
                 duration_ =
                     config.timing
@@ -186,20 +234,28 @@ processProperty globalData property =
                         |> Maybe.map (Position.speed distance duration_)
                         |> Maybe.withDefault 0
             in
-            PositionConfig
-                { config
-                    | duration = duration_
-                    , speed = speed_
-                    , distance = distance
-                    , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
-                    , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
-                    , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
+            ProcessedPositionConfig
+                { target = config.endAt
+                , duration = round duration_
+                , speed = speed_
+                , distance = distance
+                , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
+                , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
+                , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
                 }
 
         RotateConfig config ->
             let
+                startAt =
+                    case config.startAt of
+                        Just s ->
+                            s
+
+                        Nothing ->
+                            Rotation.fromFloat 0.0
+
                 distance =
-                    Rotation.distance config.startAt config.endAt
+                    Rotation.distance startAt config.endAt
 
                 duration_ =
                     config.timing
@@ -208,58 +264,66 @@ processProperty globalData property =
 
                 speed_ =
                     config.timing
-                        |> Maybe.map (Rotation.speed rotationDistance duration_)
+                        |> Maybe.map (Rotation.speed distance duration_)
                         |> Maybe.withDefault 0
             in
             ProcessedRotateConfig
-                { config
-                    | duration = duration_
-                    , speed = speed_
-                    , distance = distance
-                    , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
-                    , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
-                    , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
+                { target = config.endAt
+                , duration = round duration_
+                , speed = speed_
+                , distance = distance
+                , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
+                , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
+                , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
                 }
 
-        ScaleConfig scale config ->
+        ScaleConfig config ->
             ProcessedScaleConfig
-                { target = scale
+                { target = config.endAt
+                , duration = 0 -- TODO: implement scale timing
+                , speed = 0
+                , distance = 0
                 , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
                 , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
                 , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
                 }
 
-        ColorConfig color config ->
+        ColorConfig config ->
             ProcessedColorConfig
-                { target = color
+                { target = config.endAt
+                , duration = 0 -- TODO: implement color timing
+                , speed = 0
+                , distance = 0
                 , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
                 , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
                 , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
                 }
 
-        OpacityConfig opacity config ->
+        OpacityConfig config ->
             ProcessedOpacityConfig
-                { target = opacity
+                { target = config.endAt
+                , duration = 0 -- TODO: implement opacity timing
+                , speed = 0
+                , distance = 0
                 , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
                 , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
                 , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
                 }
 
 
-resolveTimingWithDefault : Maybe TimeSpec -> Maybe TimeSpec -> TimeSpec -> Maybe TimeSpec
+resolveTimingWithDefault : Maybe TimeSpec -> Maybe TimeSpec -> TimeSpec -> TimeSpec
 resolveTimingWithDefault local global default =
-    Just <|
-        case local of
-            Just timing ->
-                timing
+    case local of
+        Just timing ->
+            timing
 
-            Nothing ->
-                case global of
-                    Just timing ->
-                        timing
+        Nothing ->
+            case global of
+                Just timing ->
+                    timing
 
-                    Nothing ->
-                        default
+                Nothing ->
+                    default
 
 
 resolveEasingWithDefault : Maybe Easing -> Maybe Easing -> Easing -> Easing
@@ -297,8 +361,14 @@ resolveDelayWithDefault local global default =
 
 
 encode : ProcessedAnimationData -> Encode.Value
-encode data =
-    Encode.object
+encode _ =
+    Encode.object []
+
+
+
+-- TODO: Complete encoding function for the Port module
+-- maybe this should be moved to the Port module itself
+{-
         [ ( "elements", Encode.dict identity encodeProcessedElementConfig data.elements )
         , ( "globalTiming", encodeMaybeProcessedTiming data.globalTiming )
         , ( "globalEasing", encodeMaybeProcessedEasing data.globalEasing )
@@ -306,79 +376,81 @@ encode data =
         ]
 
 
-encodeProcessedElementConfig : ProcessedElementConfig -> Encode.Value
-encodeProcessedElementConfig config =
-    Encode.object
-        [ ( "properties", Encode.list encodeProcessedPropertyConfig config.properties )
-        ]
+   encodeProcessedElementConfig : ProcessedElementConfig -> Encode.Value
+   encodeProcessedElementConfig config =
+       Encode.object
+           [ ( "properties", Encode.list encodeProcessedPropertyConfig config.properties )
+           ]
 
 
-encodeProcessedPropertyConfig : ProcessedPropertyConfig -> Encode.Value
-encodeProcessedPropertyConfig property =
-    let
-        encode_ : String -> (target -> Encode.Value) -> { target : target, timing : TimeSpec, easing : Easing, delay : Delay } -> Encode.Value
-        encode_ type_ targetEncoder config =
-            Encode.object <|
-                [ ( "type", Encode.string type_ )
-                , ( "target", targetEncoder config.target )
-                , ( "timing", TimeSpec.encode config.timing )
-                , ( "easing", Easing.encode config.easing )
-                , ( "delay", Delay.encode config.delay )
-                ]
-    in
-    case property of
-        ProcessedPositionConfig config ->
-            encode_ "position" Position.encode config
+   encodeProcessedPropertyConfig : ProcessedPropertyConfig -> Encode.Value
+   encodeProcessedPropertyConfig property =
+       let
+           encode_ : String -> (target -> Encode.Value) -> { target : target, timing : TimeSpec, easing : Easing, delay : Delay } -> Encode.Value
+           encode_ type_ targetEncoder config =
+               Encode.object <|
+                   [ ( "type", Encode.string type_ )
+                   , ( "target", targetEncoder config.target )
+                   , ( "timing", TimeSpec.encode config.timing )
+                   , ( "easing", Easing.encode config.easing )
+                   , ( "delay", Delay.encode config.delay )
+                   ]
+       in
+       case property of
+           ProcessedPositionConfig config ->
+               encode_ "position" Position.encode config.target
 
-        ProcessedScaleConfig config ->
-            encode_ "scale" Scale.encode config
+           ProcessedScaleConfig config ->
+               encode_ "scale" Scale.encode config
 
-        ProcessedColorConfig config ->
-            encode_ "color" Color.encode config
+           ProcessedColorConfig config ->
+               encode_ "color" Color.encode config
 
-        ProcessedOpacityConfig config ->
-            encode_ "opacity" Opacity.encode config
+           ProcessedOpacityConfig config ->
+               encode_ "opacity" Opacity.encode config
 
-        ProcessedRotateConfig config ->
-            encode_ "rotate" Rotation.encode config
-
-
-encodeMaybeProcessedTiming : Maybe TimeSpec -> Encode.Value
-encodeMaybeProcessedTiming maybeTiming =
-    case maybeTiming of
-        Nothing ->
-            Encode.null
-
-        Just timing ->
-            encodeProcessedTiming timing
+           ProcessedRotateConfig config ->
+               encode_ "rotate" Rotation.encode config
 
 
-encodeProcessedTiming : TimeSpec -> Encode.Value
-encodeProcessedTiming timing =
-    case timing of
-        Duration ms ->
-            Encode.object
-                [ ( "type", Encode.string "duration" )
-                , ( "value", Encode.int ms )
-                ]
+   encodeMaybeProcessedTiming : Maybe TimeSpec -> Encode.Value
+   encodeMaybeProcessedTiming maybeTiming =
+       case maybeTiming of
+           Nothing ->
+               Encode.null
 
-        Speed value ->
-            Encode.object
-                [ ( "type", Encode.string "speed" )
-                , ( "value", Encode.float value )
-                ]
+           Just timing ->
+               encodeProcessedTiming timing
 
 
-encodeMaybeProcessedEasing : Maybe Easing -> Encode.Value
-encodeMaybeProcessedEasing maybeEasing =
-    case maybeEasing of
-        Nothing ->
-            Encode.null
+   encodeProcessedTiming : TimeSpec -> Encode.Value
+   encodeProcessedTiming timing =
+       case timing of
+           Duration ms ->
+               Encode.object
+                   [ ( "type", Encode.string "duration" )
+                   , ( "value", Encode.int ms )
+                   ]
 
-        Just easing_ ->
-            encodeProcessedEasing easing_
+           Speed value ->
+               Encode.object
+                   [ ( "type", Encode.string "speed" )
+                   , ( "value", Encode.float value )
+                   ]
 
 
-encodeProcessedEasing : Easing -> Encode.Value
-encodeProcessedEasing easing_ =
-    Easing.encode easing_
+   encodeMaybeProcessedEasing : Maybe Easing -> Encode.Value
+   encodeMaybeProcessedEasing maybeEasing =
+       case maybeEasing of
+           Nothing ->
+               Encode.null
+
+           Just easing_ ->
+               encodeProcessedEasing easing_
+
+
+   encodeProcessedEasing : Easing -> Encode.Value
+   encodeProcessedEasing easing_ =
+       Easing.encode easing_
+
+-}

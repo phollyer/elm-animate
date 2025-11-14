@@ -39,13 +39,13 @@ encode timeSpec =
                 ]
 
 
-toCssString : TimeSpec -> String
-toCssString timeSpec =
-    case timeSpec of
-        Duration ms ->
+toCssString : Maybe TimeSpec -> String
+toCssString maybeTimespec =
+    case maybeTimespec of
+        Just (Duration ms) ->
             String.fromInt ms ++ "ms"
 
-        Speed pixelsPerSecond ->
+        Just (Speed pixelsPerSecond) ->
             -- Convert speed to duration (approximate for CSS)
             -- Assume 100px movement for speed-based timing
             -- TODO: Need to use the actual distance for accurate duration
@@ -56,3 +56,6 @@ toCssString timeSpec =
                     round (100 / pixelsPerSecond * 1000)
             in
             String.fromInt estimatedDuration ++ "ms"
+
+        Nothing ->
+            "0ms"

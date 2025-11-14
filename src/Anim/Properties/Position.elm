@@ -1,6 +1,7 @@
 module Anim.Properties.Position exposing
-    ( to, toXY, speed, duration, easing, delay
-    , Position, from, toInternal
+    ( Position
+    , from, to, speed, duration, easing, delay
+    , toInternal
     )
 
 {-| Position animation property functions.
@@ -15,9 +16,9 @@ Use these functions to configure position animations in the builder chain:
 
 # Position Configuration
 
-@doc Position
+@docs Position
 
-@docs to, toXY, speed, duration, easing, delay
+@docs from, to, speed, duration, easing, delay
 
 -}
 
@@ -25,8 +26,6 @@ import Anim.Internal.Builders.Position as PB
 import Anim.Internal.Properties.Position as P
 import Anim.Timing.Delay as Delay exposing (Delay)
 import Anim.Timing.Easing as Easing exposing (Easing)
-import Anim.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
-import Html.Attributes exposing (id)
 
 
 
@@ -56,13 +55,6 @@ from position =
 to : Position -> PositionBuilder -> PositionBuilder
 to position =
     PB.to (toInternal position)
-
-
-{-| Set the target position using x and y coordinates.
--}
-toXY : Float -> Float -> PositionBuilder -> PositionBuilder
-toXY xCoord yCoord =
-    to (Position { x = xCoord, y = yCoord })
 
 
 {-| Set animation speed for position (pixels per second).

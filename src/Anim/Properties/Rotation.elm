@@ -18,16 +18,18 @@ Use these functions to configure rotation animations in the builder chain:
 
 -}
 
-import Anim.Internal.Builder as Builder exposing (AnimBuilder)
-import Anim.Internal.Builders.Property as PB
-import Anim.Internal.Properties.Rotation as Rotation
+import Anim.Internal.Builders.Rotation as RB
+import Anim.Internal.Properties.Rotation as R
 import Anim.Timing.Delay as Delay exposing (Delay)
 import Anim.Timing.Easing as Easing exposing (Easing)
-import Anim.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
 
 
 
 -- ROTATION CONFIGURATION
+
+
+type alias RotationBuilder =
+    RB.RotationBuilder
 
 
 {-| Rotation value in degrees.
@@ -41,17 +43,9 @@ type alias Rotation =
     builder |> Rotate.to 180
 
 -}
-to : Rotation -> AnimBuilder -> AnimBuilder
-to targetRotation builder =
-    let
-        rotateConfig =
-            Builder.RotateConfig (Rotation.fromFloat targetRotation)
-                { timing = Nothing
-                , easing = Nothing
-                , delay = Nothing
-                }
-    in
-    PB.to rotateConfig builder
+to : Rotation -> RotationBuilder -> RotationBuilder
+to targetRotation =
+    RB.to (toInternal targetRotation)
 
 
 {-| Set animation speed for rotation (degrees per second).
@@ -59,9 +53,9 @@ to targetRotation builder =
     builder |> Rotate.speed 90
 
 -}
-speed : Float -> AnimBuilder -> AnimBuilder
+speed : Float -> RotationBuilder -> RotationBuilder
 speed degreesPerSecond =
-    timeSpec (Speed degreesPerSecond)
+    RB.speed degreesPerSecond
 
 
 {-| Set animation duration for rotation (milliseconds).
@@ -69,14 +63,9 @@ speed degreesPerSecond =
     builder |> Rotate.duration 2000
 
 -}
-duration : Int -> AnimBuilder -> AnimBuilder
+duration : Int -> RotationBuilder -> RotationBuilder
 duration milliseconds =
-    timeSpec (Duration milliseconds)
-
-
-timeSpec : TimeSpec -> AnimBuilder -> AnimBuilder
-timeSpec spec builder =
-    TimeSpec.mapInternal (\internalSpec -> PB.timeSpec updatePropertySpec internalSpec builder) spec
+    RB.duration milliseconds
 
 
 {-| Set easing function for rotation animation.
@@ -84,9 +73,9 @@ timeSpec spec builder =
     builder |> Rotate.easing EaseInOut
 
 -}
-easing : Easing -> AnimBuilder -> AnimBuilder
-easing easingFunction builder =
-    Easing.mapInternal (\internalSpec -> PB.easing updatePropertySpec internalSpec builder) easingFunction
+easing : Easing -> RotationBuilder -> RotationBuilder
+easing easingFunction =
+    RB.easing (Easing.mapInternal identity easingFunction)
 
 
 {-| Set delay for rotation animation (milliseconds).
@@ -94,20 +83,15 @@ easing easingFunction builder =
     builder |> Rotate.delay 500
 
 -}
-delay : Delay -> AnimBuilder -> AnimBuilder
-delay delay_ builder =
-    Delay.mapInternal (\internalSpec -> PB.delay updatePropertySpec internalSpec builder) delay_
+delay : Delay -> RotationBuilder -> RotationBuilder
+delay delay_ =
+    RB.delay (Delay.mapInternal identity delay_)
 
 
 
 -- HELPER FUNCTIONS
 
 
-updatePropertySpec : (Builder.AnimSpec -> Builder.AnimSpec) -> Builder.PropertyConfig -> Builder.PropertyConfig
-updatePropertySpec updateFn property =
-    case property of
-        Builder.RotateConfig degrees spec ->
-            Builder.RotateConfig degrees (updateFn spec)
-
-        other ->
-            other
+toInternal : Rotation -> R.Rotation
+toInternal degrees =
+    R.fromFloat degrees

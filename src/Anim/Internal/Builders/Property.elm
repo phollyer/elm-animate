@@ -1,18 +1,14 @@
 module Anim.Internal.Builders.Property exposing
-    ( delay
-    , easing
-    , timeSpec
-    , to
+    ( add
+    , replace
+    , upsert
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
-import Anim.Internal.Timing.Delay exposing (Delay)
-import Anim.Internal.Timing.Easing exposing (Easing)
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec)
 
 
-to : Builder.PropertyConfig -> AnimBuilder -> AnimBuilder
-to propertyConfig builder =
+add : Builder.PropertyConfig -> AnimBuilder -> AnimBuilder
+add propertyConfig builder =
     let
         currentElement =
             Builder.getCurrentElement builder
@@ -23,47 +19,65 @@ to propertyConfig builder =
     Builder.updateCurrentElement updatedElement builder
 
 
-type alias UpdatePropertySpecFn =
-    (Builder.AnimSpec -> Builder.AnimSpec) -> Builder.PropertyConfig -> Builder.PropertyConfig
-
-
-delay : UpdatePropertySpecFn -> Delay -> AnimBuilder -> AnimBuilder
-delay updateFn delay_ builder =
+replace : Builder.PropertyConfig -> AnimBuilder -> AnimBuilder
+replace propertyConfig builder =
     let
-        propertySpecFn =
-            \spec -> { spec | delay = Just delay_ }
-    in
-    updateCurrentElement updateFn propertySpecFn builder
-
-
-easing : UpdatePropertySpecFn -> Easing -> AnimBuilder -> AnimBuilder
-easing updateFn easingFunction builder =
-    let
-        propertySpecFn =
-            \spec -> { spec | easing = Just easingFunction }
-    in
-    updateCurrentElement updateFn propertySpecFn builder
-
-
-timeSpec : UpdatePropertySpecFn -> TimeSpec -> AnimBuilder -> AnimBuilder
-timeSpec updateFn timeSpec_ builder =
-    let
-        propertySpecFn =
-            \spec -> { spec | timing = Just timeSpec_ }
-    in
-    updateCurrentElement updateFn propertySpecFn builder
-
-
-updateCurrentElement : UpdatePropertySpecFn -> (Builder.AnimSpec -> Builder.AnimSpec) -> AnimBuilder -> AnimBuilder
-updateCurrentElement updateFn propertySpecFn builder =
-    let
-        elementConfig =
+        currentElement =
             Builder.getCurrentElement builder
 
         updatedProperties =
-            List.map (updateFn propertySpecFn) elementConfig.properties
+            List.map
+                (\p ->
+                    if configsMatch p propertyConfig then
+                        propertyConfig
+
+                    else
+                        p
+                )
+                currentElement.properties
 
         updatedElement =
-            { elementConfig | properties = updatedProperties }
+            { currentElement | properties = updatedProperties }
     in
     Builder.updateCurrentElement updatedElement builder
+
+
+upsert : Builder.PropertyConfig -> AnimBuilder -> AnimBuilder
+upsert propertyConfig builder =
+    case find (configsMatch propertyConfig) builder of
+        Just _ ->
+            replace propertyConfig builder
+
+        Nothing ->
+            add propertyConfig builder
+
+
+find : (Builder.PropertyConfig -> Bool) -> AnimBuilder -> Maybe Builder.PropertyConfig
+find predicate builder =
+    let
+        currentElement =
+            Builder.getCurrentElement builder
+    in
+    List.head (List.filter predicate currentElement.properties)
+
+
+configsMatch : Builder.PropertyConfig -> Builder.PropertyConfig -> Bool
+configsMatch prop1 prop2 =
+    case ( prop1, prop2 ) of
+        ( Builder.PositionConfig _, Builder.PositionConfig _ ) ->
+            True
+
+        ( Builder.RotateConfig _, Builder.RotateConfig _ ) ->
+            True
+
+        ( Builder.ScaleConfig _, Builder.ScaleConfig _ ) ->
+            True
+
+        ( Builder.ColorConfig _, Builder.ColorConfig _ ) ->
+            True
+
+        ( Builder.OpacityConfig _, Builder.OpacityConfig _ ) ->
+            True
+
+        _ ->
+            False

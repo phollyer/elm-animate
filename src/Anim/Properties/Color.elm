@@ -1,6 +1,6 @@
 module Anim.Properties.Color exposing
     ( Color, Hex, HSL, HSLA, RGB, RGBA
-    , to, speed, duration, easing, delay
+    , from, to, speed, duration, easing, delay
     )
 
 {-| Color animation property functions.
@@ -20,17 +20,22 @@ Use these functions to configure color animations in the builder chain:
 
 # Color Configuration
 
-@docs to, speed, duration, easing, delay
+@docs from, to, speed, duration, easing, delay
 
 -}
 
-import Anim exposing (AnimBuilder)
-import Anim.Internal.Builder as Builder exposing (AnimBuilder)
-import Anim.Internal.Builders.Property as PB
+import Anim.Internal.Builders.Color as CB
 import Anim.Internal.Properties.Color as C
 import Anim.Timing.Delay as Delay exposing (Delay)
 import Anim.Timing.Easing as Easing exposing (Easing)
-import Anim.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
+
+
+
+-- COLOR CONFIGURATION
+
+
+type alias ColorBuilder =
+    CB.ColorBuilder
 
 
 {-| Color values in different formats.
@@ -67,6 +72,18 @@ type alias RGBA =
 -- COLOR CONFIGURATION
 
 
+{-| Set the starting color for the current element.
+
+    builder |> Color.from (Hex "#ff0000")
+
+    If no starting color is specified, it defaults to black (#000000).
+
+-}
+from : Color -> ColorBuilder -> ColorBuilder
+from color =
+    CB.from (toInternal color)
+
+
 {-| Set the target color for the current element.
 
     builder |> Color.to (Hex "#ff0000")
@@ -74,17 +91,9 @@ type alias RGBA =
     builder |> Color.to (Rgb { r = 255, g = 0, b = 0 })
 
 -}
-to : Color -> AnimBuilder -> AnimBuilder
-to color builder =
-    let
-        colorConfig =
-            Builder.ColorConfig (toInternal color)
-                { timing = Nothing
-                , easing = Nothing
-                , delay = Nothing
-                }
-    in
-    PB.to colorConfig builder
+to : Color -> ColorBuilder -> ColorBuilder
+to color =
+    CB.to (toInternal color)
 
 
 {-| Set animation speed for color (color value units per second).
@@ -92,9 +101,9 @@ to color builder =
     builder |> Color.speed 255
 
 -}
-speed : Float -> AnimBuilder -> AnimBuilder
+speed : Float -> ColorBuilder -> ColorBuilder
 speed pixelsPerSecond =
-    timeSpec (Speed pixelsPerSecond)
+    CB.speed pixelsPerSecond
 
 
 {-| Set animation duration for color (milliseconds).
@@ -102,14 +111,9 @@ speed pixelsPerSecond =
     builder |> Color.duration 2000
 
 -}
-duration : Int -> AnimBuilder -> AnimBuilder
+duration : Int -> ColorBuilder -> ColorBuilder
 duration milliseconds =
-    timeSpec (Duration milliseconds)
-
-
-timeSpec : TimeSpec -> AnimBuilder -> AnimBuilder
-timeSpec spec builder =
-    TimeSpec.mapInternal (\internalSpec -> PB.timeSpec updatePropertySpec internalSpec builder) spec
+    CB.duration milliseconds
 
 
 {-| Set easing function for color animation.
@@ -117,9 +121,9 @@ timeSpec spec builder =
     builder |> Color.easing EaseInOut
 
 -}
-easing : Easing -> AnimBuilder -> AnimBuilder
-easing easing_ builder =
-    Easing.mapInternal (\internalSpec -> PB.easing updatePropertySpec internalSpec builder) easing_
+easing : Easing -> ColorBuilder -> ColorBuilder
+easing easing_ =
+    Easing.mapInternal CB.easing easing_
 
 
 {-| Set delay for color animation (milliseconds).
@@ -127,9 +131,9 @@ easing easing_ builder =
     builder |> Color.delay 500
 
 -}
-delay : Delay -> AnimBuilder -> AnimBuilder
-delay delay_ builder =
-    Delay.mapInternal (\internalSpec -> PB.delay updatePropertySpec internalSpec builder) delay_
+delay : Delay -> ColorBuilder -> ColorBuilder
+delay delay_ =
+    Delay.mapInternal CB.delay delay_
 
 
 toInternal : Color -> C.Color
@@ -149,13 +153,3 @@ toInternal color =
 
         Hsla hsla ->
             C.Hsla hsla
-
-
-updatePropertySpec : (Builder.AnimSpec -> Builder.AnimSpec) -> Builder.PropertyConfig -> Builder.PropertyConfig
-updatePropertySpec updateFn property =
-    case property of
-        Builder.OpacityConfig value spec ->
-            Builder.OpacityConfig value (updateFn spec)
-
-        other ->
-            other

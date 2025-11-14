@@ -1,4 +1,4 @@
-module Anim.Properties.Scale exposing (to, speed, duration, easing, delay)
+module Anim.Properties.Scale exposing (from, to, speed, duration, easing, delay)
 
 {-| Scale animation property functions.
 
@@ -12,24 +12,40 @@ Use these functions to configure scale animations in the builder chain:
 
 # Scale Configuration
 
-@docs to, speed, duration, easing, delay
+@docs Scale
+
+@docs from, to, speed, duration, easing, delay
 
 -}
 
-import Anim.Internal.Builder as Builder exposing (AnimBuilder)
-import Anim.Internal.Builders.Property as PB
+import Anim.Internal.Builders.Scale as SB
 import Anim.Internal.Properties.Scale as S
 import Anim.Timing.Delay as Delay exposing (Delay)
 import Anim.Timing.Easing as Easing exposing (Easing)
-import Anim.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
 
 
 
 -- SCALE CONFIGURATION
 
 
+type alias ScaleBuilder =
+    SB.ScaleBuilder
+
+
+{-| Opaque Scale type.
+-}
 type Scale
     = ScaleXY Float Float
+
+
+{-| Set the starting scale for the current element.
+
+    builder |> Scale.from { x = 1.0, y = 1.0
+
+-}
+from : Scale -> ScaleBuilder -> ScaleBuilder
+from scale =
+    SB.from (toInternal scale)
 
 
 {-| Set the target scale for the current element.
@@ -37,17 +53,9 @@ type Scale
     builder |> Scale.to { x = 1.5, y = 1.5 }
 
 -}
-to : Scale -> AnimBuilder -> AnimBuilder
-to targetScale builder =
-    let
-        scaleConfig =
-            Builder.ScaleConfig (toInternal targetScale)
-                { timing = Nothing
-                , easing = Nothing
-                , delay = Nothing
-                }
-    in
-    PB.to scaleConfig builder
+to : Scale -> ScaleBuilder -> ScaleBuilder
+to targetScale =
+    SB.to (toInternal targetScale)
 
 
 {-| Set animation speed for scale (scale units per second).
@@ -55,9 +63,9 @@ to targetScale builder =
     builder |> Scale.speed 2.0
 
 -}
-speed : Float -> AnimBuilder -> AnimBuilder
-speed unitsPerSecond =
-    timeSpec (Speed unitsPerSecond)
+speed : Float -> ScaleBuilder -> ScaleBuilder
+speed =
+    SB.speed
 
 
 {-| Set animation duration for scale (milliseconds).
@@ -65,14 +73,9 @@ speed unitsPerSecond =
     builder |> Scale.duration 2000
 
 -}
-duration : Int -> AnimBuilder -> AnimBuilder
-duration milliseconds =
-    timeSpec (Duration milliseconds)
-
-
-timeSpec : TimeSpec -> AnimBuilder -> AnimBuilder
-timeSpec spec builder =
-    TimeSpec.mapInternal (\internalSpec -> PB.timeSpec updatePropertySpec internalSpec builder) spec
+duration : Int -> ScaleBuilder -> ScaleBuilder
+duration =
+    SB.duration
 
 
 {-| Set easing function for scale animation.
@@ -80,9 +83,9 @@ timeSpec spec builder =
     builder |> Scale.easing EaseInOut
 
 -}
-easing : Easing -> AnimBuilder -> AnimBuilder
-easing easing_ builder =
-    Easing.mapInternal (\internalSpec -> PB.easing updatePropertySpec internalSpec builder) easing_
+easing : Easing -> ScaleBuilder -> ScaleBuilder
+easing easing_ =
+    SB.easing (Easing.mapInternal identity easing_)
 
 
 {-| Set delay for scale animation (milliseconds).
@@ -90,23 +93,13 @@ easing easing_ builder =
     builder |> Scale.delay 500
 
 -}
-delay : Delay -> AnimBuilder -> AnimBuilder
-delay delay_ builder =
-    Delay.mapInternal (\internalSpec -> PB.delay updatePropertySpec internalSpec builder) delay_
+delay : Delay -> ScaleBuilder -> ScaleBuilder
+delay delay_ =
+    SB.delay (Delay.mapInternal identity delay_)
 
 
 
 -- HELPER FUNCTIONS
-
-
-updatePropertySpec : (Builder.AnimSpec -> Builder.AnimSpec) -> Builder.PropertyConfig -> Builder.PropertyConfig
-updatePropertySpec updateFn property =
-    case property of
-        Builder.ScaleConfig scale spec ->
-            Builder.ScaleConfig scale (updateFn spec)
-
-        other ->
-            other
 
 
 toInternal : Scale -> S.Scale

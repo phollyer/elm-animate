@@ -16,13 +16,16 @@ type Delay
     | NoDelay
 
 
-toCssString : Delay -> String
-toCssString delayValue =
-    case delayValue of
-        Delay d ->
+toCssString : Maybe Delay -> String
+toCssString maybeDelayValue =
+    case maybeDelayValue of
+        Just (Delay d) ->
             String.fromInt d ++ "ms"
 
-        NoDelay ->
+        Just NoDelay ->
+            "0ms"
+
+        Nothing ->
             "0ms"
 
 

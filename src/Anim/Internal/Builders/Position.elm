@@ -11,11 +11,27 @@ module Anim.Internal.Builders.Position exposing
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
+import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Timing.Delay exposing (Delay)
 import Anim.Internal.Timing.Easing exposing (Easing)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec)
-import Html exposing (a)
+
+
+
+{- POSITION CONFIGURATION BUILDER -}
+{- Usage:
+
+   Anim.init
+       |> Position.for "my-element"
+       |> Position.from (Position.fromTuple (0, 0))
+       |> Position.to (Position.fromTuple (100, 200))
+       |> Position.duration 2000
+       |> Position.easing Easing.easeInOut
+       |> Position.delay (Delay.millis 500)
+       |> Position.build
+       |> Anim.animate
+-}
 
 
 type PositionBuilder
@@ -30,64 +46,14 @@ for elementId builder =
 build : PositionBuilder -> AnimBuilder
 build (PositionBuilder config builder) =
     let
-        currentElement =
-            Builder.getCurrentElement builder
-
         newPositionConfig =
             Builder.PositionConfig config
-
-        addProp =
-            newPositionConfig :: currentElement.properties
-
-        replaceProp =
-            currentElement.properties
-                |> List.map
-                    (\p ->
-                        case p of
-                            Builder.PositionConfig _ ->
-                                newPositionConfig
-
-                            _ ->
-                                p
-                    )
-
-        findProp : List Builder.PropertyConfig -> List Builder.PropertyConfig
-        findProp =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.PositionConfig c ->
-                            Just (Builder.PositionConfig c)
-
-                        _ ->
-                            Nothing
-                )
-
-        upsertProp : List Builder.PropertyConfig -> List Builder.PropertyConfig
-        upsertProp props =
-            case props of
-                [] ->
-                    addProp
-
-                [ Builder.PositionConfig _ ] ->
-                    replaceProp
-
-                _ ->
-                    currentElement.properties
-
-        updatedElement =
-            { currentElement
-                | properties =
-                    currentElement.properties
-                        |> findProp
-                        |> upsertProp
-            }
     in
-    Builder.updateCurrentElement updatedElement builder
+    PropertyBuilder.upsert newPositionConfig builder
 
 
 type alias PositionConfig =
-    { startAt : Position
+    { startAt : Maybe Position
     , endAt : Position
     , duration : Int -- Millis
     , speed : Float -- Pixels per second
@@ -100,7 +66,7 @@ type alias PositionConfig =
 
 defaultConfig : PositionConfig
 defaultConfig =
-    { startAt = Position.fromTuple ( 0, 0 )
+    { startAt = Nothing
     , endAt = Position.fromTuple ( 0, 0 )
     , duration = 0
     , speed = 0
@@ -113,7 +79,7 @@ defaultConfig =
 
 from : Position -> PositionBuilder -> PositionBuilder
 from position (PositionBuilder config builder) =
-    PositionBuilder { config | startAt = position } builder
+    PositionBuilder { config | startAt = Just position } builder
 
 
 to : Position -> PositionBuilder -> PositionBuilder

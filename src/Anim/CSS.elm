@@ -131,13 +131,13 @@ transformFromProperty : Builder.PropertyConfig -> Maybe String
 transformFromProperty property =
     case property of
         Builder.PositionConfig config ->
-            Just ("translate(" ++ Position.toCssString config ++ ")")
+            Just ("translate(" ++ Position.toCssString config.endAt ++ ")")
 
         Builder.RotateConfig config ->
-            Just ("rotate(" ++ Rotation.toCssString config.target ++ ")")
+            Just ("rotate(" ++ Rotation.toCssString config.endAt ++ ")")
 
         Builder.ScaleConfig config ->
-            Just ("scale(" ++ Scale.toCssString config.target ++ ")")
+            Just ("scale(" ++ Scale.toCssString config.endAt ++ ")")
 
         Builder.ColorConfig _ ->
             -- Color doesn't use transform
@@ -185,10 +185,10 @@ colorStyleFromProperty : Builder.PropertyConfig -> Maybe ( String, String )
 colorStyleFromProperty property =
     case property of
         Builder.ColorConfig config ->
-            Just ( "background-color", Color.toString config.target )
+            Just ( "background-color", Color.toString config.endAt )
 
         Builder.OpacityConfig config ->
-            Just ( "opacity", Opacity.toString config.target )
+            Just ( "opacity", Opacity.toString config.endAt )
 
         _ ->
             Nothing
@@ -212,7 +212,8 @@ colorStyleFromProperty property =
 getElementStyles : String -> AnimationState -> List ( String, String )
 getElementStyles elementId (AnimationState animations) =
     animations
-        |> List.filter (\anim -> anim.elementId == elementId)
+        |> Dict.filter (\key _ -> key == elementId)
+        |> Dict.values
         |> List.head
         |> Maybe.map .styles
         |> Maybe.withDefault []

@@ -491,7 +491,7 @@ encode =
 -}
 toCSS : Easing -> String
 toCSS =
-    mapInternal E.toCSS
+    mapInternal (\e -> E.toCSS <| Just e)
 
 
 {-| Convert easing to Web Animations API easing string.

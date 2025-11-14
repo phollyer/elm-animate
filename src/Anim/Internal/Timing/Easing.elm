@@ -451,8 +451,18 @@ custom value =
 
 {-| Convert easing to CSS transition-timing-function value.
 -}
-toCSS : Easing -> String
-toCSS easing =
+toCSS : Maybe Easing -> String
+toCSS maybeEasing =
+    case maybeEasing of
+        Just easing ->
+            easingToCSS easing
+
+        Nothing ->
+            "ease"
+
+
+easingToCSS : Easing -> String
+easingToCSS easing =
     case easing of
         Bezier p1x p1y p2x p2y ->
             "cubic-bezier("
