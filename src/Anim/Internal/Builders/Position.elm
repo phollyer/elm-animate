@@ -83,7 +83,7 @@ applyGlobalDefaults : AnimBuilder -> PositionConfig -> PositionConfig
 applyGlobalDefaults builder config =
     let
         globalEasing =
-            case config.easing of
+            case config.easing |> Debug.log "Config Easing" of
                 Just e ->
                     Just e
 
@@ -110,7 +110,7 @@ applyGlobalDefaults builder config =
                     Builder.getTimespec builder
     in
     { config
-        | easing = globalEasing
+        | easing = globalEasing |> Debug.log "Global Easing"
         , delay = globalDelay
         , timing = timeSpec
     }

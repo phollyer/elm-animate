@@ -5221,12 +5221,12 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$ElmUI$CSS$Position$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
 };
-var $author$project$Anim$Timing$Easing$BounceIn = {$: 'BounceIn'};
-var $author$project$Anim$Timing$Easing$BounceOut = {$: 'BounceOut'};
-var $author$project$Anim$Timing$Easing$Linear = {$: 'Linear'};
+var $author$project$Anim$Timing$Easing$BackInOut = {$: 'BackInOut'};
+var $author$project$Anim$Timing$Easing$BounceInOut = {$: 'BounceInOut'};
+var $author$project$Anim$Timing$Easing$CircInOut = {$: 'CircInOut'};
+var $author$project$Anim$Timing$Easing$ElasticInOut = {$: 'ElasticInOut'};
 var $author$project$Anim$Timing$Easing$QuadInOut = {$: 'QuadInOut'};
 var $author$project$Anim$Timing$Easing$SineInOut = {$: 'SineInOut'};
-var $author$project$Anim$Timing$Easing$SineOut = {$: 'SineOut'};
 var $author$project$Anim$Internal$Builder$elements = function (_v0) {
 	var data = _v0.a;
 	return data.elements;
@@ -5559,9 +5559,9 @@ var $author$project$Anim$Internal$Timing$Easing$easingToCSS = function (easing) 
 		case 'CubicIn':
 			return 'cubic-bezier(0.32, 0, 0.67, 0)';
 		case 'CubicOut':
-			return 'cubic-bezier(0.67, 0, 0.32, 1)';
+			return 'cubic-bezier(0.33, 1, 0.68, 1)';
 		case 'CubicInOut':
-			return 'cubic-bezier(0.5, 0, 0.5, 1)';
+			return 'cubic-bezier(0.65, 0, 0.35, 1)';
 		case 'QuartIn':
 			return 'cubic-bezier(0.5, 0, 0.75, 0)';
 		case 'QuartOut':
@@ -5741,6 +5741,7 @@ var $author$project$Anim$Internal$Builder$getTimespec = function (_v0) {
 	var data = _v0.a;
 	return data.globalTiming;
 };
+var $elm$core$Debug$log = _Debug_log;
 var $author$project$Anim$Internal$Builders$Position$applyGlobalDefaults = F2(
 	function (builder, config) {
 		var timeSpec = function () {
@@ -5760,7 +5761,7 @@ var $author$project$Anim$Internal$Builders$Position$applyGlobalDefaults = F2(
 			}
 		}();
 		var globalEasing = function () {
-			var _v1 = config.easing;
+			var _v1 = A2($elm$core$Debug$log, 'Config Easing', config.easing);
 			if (_v1.$ === 'Just') {
 				var e = _v1.a;
 				return $elm$core$Maybe$Just(e);
@@ -5779,7 +5780,11 @@ var $author$project$Anim$Internal$Builders$Position$applyGlobalDefaults = F2(
 		}();
 		return _Utils_update(
 			config,
-			{delay: globalDelay, easing: globalEasing, timing: timeSpec});
+			{
+				delay: globalDelay,
+				easing: A2($elm$core$Debug$log, 'Global Easing', globalEasing),
+				timing: timeSpec
+			});
 	});
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -6311,7 +6316,7 @@ var $author$project$ElmUI$CSS$Position$Main$update = F2(
 								'box',
 								A2(
 									$author$project$Anim$easing,
-									$author$project$Anim$Timing$Easing$BounceIn,
+									$author$project$Anim$Timing$Easing$BackInOut,
 									A2(
 										$author$project$Anim$duration,
 										700,
@@ -6332,7 +6337,7 @@ var $author$project$ElmUI$CSS$Position$Main$update = F2(
 								'box',
 								A2(
 									$author$project$Anim$easing,
-									$author$project$Anim$Timing$Easing$BounceOut,
+									$author$project$Anim$Timing$Easing$BounceInOut,
 									A2(
 										$author$project$Anim$duration,
 										700,
@@ -6353,7 +6358,7 @@ var $author$project$ElmUI$CSS$Position$Main$update = F2(
 								'box',
 								A2(
 									$author$project$Anim$easing,
-									$author$project$Anim$Timing$Easing$SineOut,
+									$author$project$Anim$Timing$Easing$CircInOut,
 									A2(
 										$author$project$Anim$duration,
 										700,
@@ -6375,7 +6380,7 @@ var $author$project$ElmUI$CSS$Position$Main$update = F2(
 								'box',
 								A2(
 									$author$project$Anim$easing,
-									$author$project$Anim$Timing$Easing$Linear,
+									$author$project$Anim$Timing$Easing$ElasticInOut,
 									A2(
 										$author$project$Anim$duration,
 										700,
@@ -12789,7 +12794,10 @@ var $author$project$ElmUI$CSS$Position$Main$viewContent = function (model) {
 					A2(
 						$elm$core$List$map,
 						$mdgriffith$elm_ui$Element$htmlAttribute,
-						A2($author$project$Anim$CSS$htmlAttributes, 'box', model.animations))),
+						A2(
+							$elm$core$Debug$log,
+							'HTML Attributes for box',
+							A2($author$project$Anim$CSS$htmlAttributes, 'box', model.animations)))),
 				$mdgriffith$elm_ui$Element$none))
 		]);
 };

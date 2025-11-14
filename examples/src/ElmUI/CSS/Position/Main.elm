@@ -29,7 +29,7 @@ import Anim.Timing.Easing as Easing
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
-import Element exposing (Element, centerX, none, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
+import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, none, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -98,7 +98,7 @@ update msg model =
                         |> Anim.duration 700
                         |> Anim.easing Easing.QuadInOut
                         |> Position.for "box"
-                        |> Position.toXY x y    
+                        |> Position.toXY x y
                         |> Position.build
                         |> CSS.animate
             in
@@ -108,7 +108,6 @@ update msg model =
               }
             , Cmd.none
             )
-
 
         MoveLeft ->
             let
@@ -135,9 +134,9 @@ update msg model =
                     model.animations
                         |> CSS.builder
                         |> Anim.duration 700
-                        |> Anim.easing Easing.BounceIn
+                        |> Anim.easing Easing.BackInOut
                         |> Position.for "box"
-                        |> Position.toX 450 
+                        |> Position.toX 450
                         |> Position.build
                         |> CSS.animate
             in
@@ -154,9 +153,9 @@ update msg model =
                     model.animations
                         |> CSS.builder
                         |> Anim.duration 700
-                        |> Anim.easing Easing.BounceOut
+                        |> Anim.easing Easing.BounceInOut
                         |> Position.for "box"
-                        |> Position.toY  350
+                        |> Position.toY 350
                         |> Position.build
                         |> CSS.animate
             in
@@ -173,9 +172,9 @@ update msg model =
                     model.animations
                         |> CSS.builder
                         |> Anim.duration 700
-                        |> Anim.easing Easing.SineOut
+                        |> Anim.easing Easing.CircInOut
                         |> Position.for "box"
-                        |> Position.toY  0
+                        |> Position.toY 0
                         |> Position.build
                         |> CSS.animate
             in
@@ -192,14 +191,14 @@ update msg model =
                     model.animations
                         |> CSS.builder
                         |> Anim.duration 700
-                        |> Anim.easing Easing.Linear
+                        |> Anim.easing Easing.ElasticInOut
                         |> Position.for "box"
                         |> Position.toXY 0 0
                         |> Position.build
                         |> CSS.animate
             in
             ( { model
-                | animations =  animationState
+                | animations = animationState
                 , isAnimating = True
               }
             , Cmd.none
@@ -235,7 +234,8 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     let
-        currentPos = CSS.getElementPosition "box" model.animations
+        currentPos =
+            CSS.getElementPosition "box" model.animations
     in
     [ UI.backButton
     , UI.pageHeader "CSS Position Animations"
@@ -285,7 +285,7 @@ viewContent model =
 
              -- Apply CSS styles from animation - browser handles the animation!
              ]
-                ++ List.map htmlAttribute (CSS.htmlAttributes "box" model.animations)
+                ++ List.map htmlAttribute (CSS.htmlAttributes "box" model.animations |> Debug.log "HTML Attributes for box")
             )
             none
         )

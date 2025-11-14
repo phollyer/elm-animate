@@ -512,10 +512,10 @@ easingToCSS easing =
             "cubic-bezier(0.32, 0, 0.67, 0)"
 
         CubicOut ->
-            "cubic-bezier(0.67, 0, 0.32, 1)"
+            "cubic-bezier(0.33, 1, 0.68, 1)"
 
         CubicInOut ->
-            "cubic-bezier(0.5, 0, 0.5, 1)"
+            "cubic-bezier(0.65, 0, 0.35, 1)"
 
         QuartIn ->
             "cubic-bezier(0.5, 0, 0.75, 0)"
@@ -562,9 +562,8 @@ easingToCSS easing =
         BackInOut ->
             "cubic-bezier(0.68, -0.6, 0.32, 1.6)"
 
-        -- Note: Elastic and bounce can't be perfectly represented with cubic-bezier
-        -- Web Animations API could potentially support these with keyframes
-        -- For now, using cubic-bezier approximations
+        -- Note: Elastic and bounce need cubic-bezier as they aren't standard CSS easing names yet
+        -- These are mathematical approximations for CSS compatibility
         ElasticIn ->
             "cubic-bezier(0.04, 0.04, 0.12, 0.96)"
 
