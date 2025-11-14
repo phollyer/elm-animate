@@ -106,7 +106,7 @@ update msg model =
             ( { model
                 | animations = Just animationState
                 , isAnimating = True
-                , currentPosition = { x = 100, y = 100 }
+                , currentPosition = { x = x, y = y }
               }
             , Cmd.none
             )
@@ -184,7 +184,7 @@ update msg model =
             ( { model
                 | animations = Just animationState
                 , isAnimating = True
-                , currentPosition = { x = model.currentPosition.x, y = 50 }
+                , currentPosition = { x = model.currentPosition.x, y = 0 }
               }
             , Cmd.none
             )

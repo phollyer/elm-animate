@@ -6144,7 +6144,7 @@ var $author$project$ElmUI$CSS$Position$Main$update = F2(
 						model,
 						{
 							animations: $elm$core$Maybe$Just(animationState),
-							currentPosition: {x: 100, y: 100},
+							currentPosition: {x: x, y: y},
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -6239,7 +6239,7 @@ var $author$project$ElmUI$CSS$Position$Main$update = F2(
 						model,
 						{
 							animations: $elm$core$Maybe$Just(animationState),
-							currentPosition: {x: model.currentPosition.x, y: 50},
+							currentPosition: {x: model.currentPosition.x, y: 0},
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);
