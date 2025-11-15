@@ -23,8 +23,8 @@ USAGE:
 -}
 
 import Anim
-import Anim.CSS as CSS exposing (AnimationState)
-import Anim.Properties.Position as Position exposing (PositionBuilder)
+import Anim.CSS as CSS
+import Anim.Properties.Position as Position
 import Anim.Timing.Delay as Delay exposing (Delay(..))
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
@@ -47,7 +47,7 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = \_ -> Sub.none
         }
 
 
@@ -56,9 +56,7 @@ main =
 
 
 type alias Model =
-    { animations : AnimationState
-    , isAnimating : Bool
-    }
+    { animations : CSS.AnimationState }
 
 
 
@@ -67,9 +65,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = CSS.init
-      , isAnimating = False
-      }
+    ( { animations = CSS.init }
     , Cmd.none
     )
 
@@ -78,7 +74,7 @@ init _ =
 -- UPDATE
 
 
-anim : AnimationState -> PositionBuilder
+anim : CSS.AnimationState -> Position.Builder
 anim animations =
     animations
         |> CSS.builder
@@ -101,25 +97,21 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         MoveToPosition x y ->
-            let
-                animationState =
+            ( { model
+                | animations =
                     model.animations
                         |> anim
                         |> Position.toXY x y
                         |> Position.easing Easing.QuadInOut
                         |> Position.build
                         |> CSS.animate
-            in
-            ( { model
-                | animations = animationState
-                , isAnimating = True
               }
             , Cmd.none
             )
 
         MoveLeft ->
-            let
-                animationState =
+            ( { model
+                | animations =
                     model.animations
                         |> anim
                         |> Position.toX 0
@@ -127,17 +119,13 @@ update msg model =
                         |> Position.speed 100
                         |> Position.build
                         |> CSS.animate
-            in
-            ( { model
-                | animations = animationState
-                , isAnimating = True
               }
             , Cmd.none
             )
 
         MoveRight ->
-            let
-                animationState =
+            ( { model
+                | animations =
                     model.animations
                         |> anim
                         |> Position.toX 450
@@ -145,17 +133,13 @@ update msg model =
                         |> Position.duration 400
                         |> Position.build
                         |> CSS.animate
-            in
-            ( { model
-                | animations = animationState
-                , isAnimating = True
               }
             , Cmd.none
             )
 
         MoveDown ->
-            let
-                animationState =
+            ( { model
+                | animations =
                     model.animations
                         |> anim
                         |> Position.toY 350
@@ -163,73 +147,50 @@ update msg model =
                         |> Position.delay (Delay 1000)
                         |> Position.build
                         |> CSS.animate
-            in
-            ( { model
-                | animations = animationState
-                , isAnimating = True
               }
             , Cmd.none
             )
 
         MoveUp ->
-            let
-                animationState =
+            ( { model
+                | animations =
                     model.animations
                         |> anim
                         |> Position.toY 0
                         |> Position.easing Easing.circInOut
                         |> Position.build
                         |> CSS.animate
-            in
-            ( { model
-                | animations = animationState
-                , isAnimating = True
               }
             , Cmd.none
             )
 
         ReturnToOrigin ->
-            let
-                animationState =
+            ( { model
+                | animations =
                     model.animations
                         |> anim
                         |> Position.toXY 0 0
                         |> Position.easing Easing.elasticInOut
                         |> Position.build
                         |> CSS.animate
-            in
-            ( { model
-                | animations = animationState
-                , isAnimating = True
               }
             , Cmd.none
             )
 
         AnimationComplete ->
-            ( { model
-                | isAnimating = False
-              }
-            , Cmd.none
-            )
+            ( model, Cmd.none )
 
 
 
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
-
-
-
--- No subscriptions needed for CSS transitions!
 -- VIEW
 
 
 view : Model -> Document Msg
 view model =
-    UI.createDocument "Anim.CSS Position ElmUI Examples" UI.Basic (viewContent model)
+    UI.createDocument
+        "Anim.CSS Position ElmUI Examples"
+        UI.Basic
+        (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)
@@ -283,9 +244,8 @@ viewContent model =
              , Border.rounded 8
              , htmlAttribute (Html.Attributes.id "box")
              , htmlAttribute (Html.Attributes.style "position" "absolute")
-
-             -- Apply CSS styles from animation - browser handles the animation!
              ]
+                -- Apply CSS styles for the animation
                 ++ List.map htmlAttribute (CSS.htmlAttributes "box" model.animations)
             )
             none

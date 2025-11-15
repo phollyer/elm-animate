@@ -15,9 +15,9 @@ FEATURES:
 
 -}
 
-import Anim
-import Anim.CSS as CSS exposing (AnimationState)
-import Anim.Properties.Color as Color
+import Anim exposing (AnimBuilder)
+import Anim.CSS as CSS
+import Anim.Properties.Color as Color exposing (Color(..))
 import Anim.Timing.Easing as Easing
 import Browser exposing (Document)
 import Common.Colors as Colors
@@ -39,7 +39,7 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = \_ -> Sub.none
         }
 
 
@@ -48,10 +48,7 @@ main =
 
 
 type alias Model =
-    { animations : Maybe AnimationState
-    , isAnimating : Bool
-    , currentColor : String -- Current color as hex string
-    }
+    { animations : CSS.AnimationState }
 
 
 
@@ -60,12 +57,23 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Nothing
-      , isAnimating = False
-      , currentColor = "#e74c3c" -- Starting with red color
-      }
+    ( { animations = CSS.init }
     , Cmd.none
     )
+
+
+
+-- UPDATE
+
+
+toColorBuilderWithDefaults : CSS.AnimationState -> Color.Builder
+toColorBuilderWithDefaults =
+    CSS.builder
+        -- Set default animation parameters
+        >> Anim.duration 1000
+        >> Anim.easing Easing.EaseInOut
+        -- Start configuring color animation for the element
+        >> Color.for "box"
 
 
 type Msg
@@ -78,131 +86,87 @@ type Msg
     | AnimationComplete
 
 
-
--- UPDATE
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ChangeToBlue ->
-            let
-                animationResult =
-                    Anim.init "box"
-                        |> Color.to (Hex "#3498db")
-                        |> Anim.duration 600
-                        |> Anim.easing Easing.easeInOutQuad
-                        |> CSS.animate
-            in
             ( { model
-                | animations = Just animationResult
-                , isAnimating = True
-                , currentColor = "#3498db"
+                | animations =
+                    model.animations
+                        |> toColorBuilderWithDefaults
+                        |> Color.to (Color.Hex "#3498db")
+                        |> Color.build
+                        |> CSS.animate
               }
             , Cmd.none
             )
 
         ChangeToGreen ->
-            let
-                animationResult =
-                    Anim.init "box"
-                        |> Color.to (Hex "#2ecc71")
-                        |> Anim.duration 600
-                        |> Anim.easing Easing.easeInOutQuad
-                        |> CSS.animate
-            in
             ( { model
-                | animations = Just animationResult
-                , isAnimating = True
-                , currentColor = "#2ecc71"
+                | animations =
+                    model.animations
+                        |> toColorBuilderWithDefaults
+                        |> Color.to (Color.Hex "#2ecc71")
+                        |> Color.easing Easing.BackInOut
+                        |> Color.build
+                        |> CSS.animate
               }
             , Cmd.none
             )
 
         ChangeToOrange ->
-            let
-                animationResult =
-                    Anim.init "box"
-                        |> Color.to (Hex "#f39c12")
-                        |> Anim.duration 600
-                        |> Anim.easing Easing.easeInOutQuad
-                        |> CSS.animate
-            in
             ( { model
-                | animations = Just animationResult
-                , isAnimating = True
-                , currentColor = "#f39c12"
+                | animations =
+                    model.animations
+                        |> toColorBuilderWithDefaults
+                        |> Color.to (Color.Hex "#f39c12")
+                        |> Color.easing Easing.ElasticOut
+                        |> Color.build
+                        |> CSS.animate
               }
             , Cmd.none
             )
 
         ChangeToRed ->
-            let
-                animationResult =
-                    Anim.init "box"
-                        |> Color.to (Hex "#e74c3c")
-                        |> Anim.duration 600
-                        |> Anim.easing Easing.easeInOutQuad
-                        |> CSS.animate
-            in
             ( { model
-                | animations = Just animationResult
-                , isAnimating = True
-                , currentColor = "#e74c3c"
+                | animations =
+                    model.animations
+                        |> toColorBuilderWithDefaults
+                        |> Color.to (Color.Hex "#e74c3c")
+                        |> Color.easing Easing.BounceOut
+                        |> Color.build
+                        |> CSS.animate
               }
             , Cmd.none
             )
 
         ChangeToPurple ->
-            let
-                animationResult =
-                    Anim.init "box"
-                        |> Color.to (Hex "#9b59b6")
-                        |> Anim.duration 600
-                        |> Anim.easing Easing.easeInOutQuad
-                        |> CSS.animate
-            in
             ( { model
-                | animations = Just animationResult
-                , isAnimating = True
-                , currentColor = "#9b59b6"
+                | animations =
+                    model.animations
+                        |> toColorBuilderWithDefaults
+                        |> Color.to (Color.Hex "#9b59b6")
+                        |> Color.easing Easing.CubicInOut
+                        |> Color.build
+                        |> CSS.animate
               }
             , Cmd.none
             )
 
         ResetColor ->
-            let
-                animationResult =
-                    Anim.init "box"
-                        |> Color.to (Hex "#95a5a6")
-                        |> Anim.duration 600
-                        |> Anim.easing Easing.easeInOutQuad
-                        |> CSS.animate
-            in
             ( { model
-                | animations = Just animationResult
-                , isAnimating = True
-                , currentColor = "#95a5a6"
+                | animations =
+                    model.animations
+                        |> toColorBuilderWithDefaults
+                        |> Color.to (Color.Hex "#95a5a6")
+                        |> Color.build
+                        |> CSS.animate
               }
             , Cmd.none
             )
 
         AnimationComplete ->
-            ( { model
-                | isAnimating = False
-                , animations = Nothing
-              }
-            , Cmd.none
-            )
-
-
-
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
+            ( model, Cmd.none )
 
 
 
@@ -261,29 +225,10 @@ viewContent model =
              , Background.color (rgb 0.8 0.8 0.8)
              , Border.rounded 8
              , htmlAttribute (Html.Attributes.id "box")
-             , htmlAttribute (Html.Attributes.style "background-color" "#95a5a6") -- Default gray
+             , htmlAttribute (CSS.onTransitionEnd AnimationComplete)
              ]
-                ++ (case model.animations of
-                        Just animationResult ->
-                            CSS.getElementStyles "box" animationResult
-                                |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
-
-                        Nothing ->
-                            []
-                   )
-                ++ [ htmlAttribute
-                        (Html.Attributes.style "transition"
-                            (case model.animations of
-                                Just _ ->
-                                    "background-color 0.6s ease-in-out"
-
-                                -- Default transition
-                                Nothing ->
-                                    "none"
-                            )
-                        )
-                   , htmlAttribute (CSS.onTransitionEnd AnimationComplete)
-                   ]
+                -- Apply CSS styles for the animation
+                ++ List.map htmlAttribute (CSS.htmlAttributes "box" model.animations |> Debug.log "")
             )
             (el [ centerX, centerY ] (text "Color"))
         )

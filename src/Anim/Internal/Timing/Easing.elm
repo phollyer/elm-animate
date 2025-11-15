@@ -562,25 +562,25 @@ easingToCSS easing =
         BackInOut ->
             "cubic-bezier(0.68, -0.6, 0.32, 1.6)"
 
-        -- Note: Elastic and bounce need cubic-bezier as they aren't standard CSS easing names yet
-        -- These are mathematical approximations for CSS compatibility
+        -- Note: Elastic and bounce are complex easing functions that require mathematical implementation
+        -- These cubic-bezier approximations provide similar visual character for CSS compatibility
         ElasticIn ->
-            "cubic-bezier(0.04, 0.04, 0.12, 0.96)"
+            "cubic-bezier(0.175, 0.885, 0.320, 1.275)"
 
         ElasticOut ->
-            "cubic-bezier(0.88, 0.04, 0.96, 0.96)"
+            "cubic-bezier(0.680, -0.550, 0.265, 1.550)"
 
         ElasticInOut ->
-            "cubic-bezier(0.04, 0.04, 0.96, 0.96)"
+            "cubic-bezier(0.680, -0.550, 0.265, 1.550)"
 
         BounceIn ->
-            "cubic-bezier(0.04, 0.04, 0.12, 0.96)"
+            "cubic-bezier(0.600, 0.040, 0.980, 0.335)"
 
         BounceOut ->
-            "cubic-bezier(0.88, 0.04, 0.96, 0.96)"
+            "cubic-bezier(0.175, 0.885, 0.320, 1.275)"
 
         BounceInOut ->
-            "cubic-bezier(0.04, 0.04, 0.96, 0.96)"
+            "cubic-bezier(0.680, -0.550, 0.265, 1.550)"
 
         Custom value ->
             value
@@ -691,24 +691,24 @@ toWebAnimations easing =
             "cubic-bezier(0.68, -0.6, 0.32, 1.6)"
 
         -- Web Animations API could potentially support these with keyframes
-        -- For now, using cubic-bezier approximations
+        -- For now, using cubic-bezier approximations that provide similar visual character
         ElasticIn ->
-            "cubic-bezier(0.04, 0.04, 0.12, 0.96)"
+            "cubic-bezier(0.175, 0.885, 0.320, 1.275)"
 
         ElasticOut ->
-            "cubic-bezier(0.88, 0.04, 0.96, 0.96)"
+            "cubic-bezier(0.680, -0.550, 0.265, 1.550)"
 
         ElasticInOut ->
-            "cubic-bezier(0.04, 0.04, 0.96, 0.96)"
+            "cubic-bezier(0.680, -0.550, 0.265, 1.550)"
 
         BounceIn ->
-            "cubic-bezier(0.04, 0.04, 0.12, 0.96)"
+            "cubic-bezier(0.600, 0.040, 0.980, 0.335)"
 
         BounceOut ->
-            "cubic-bezier(0.88, 0.04, 0.96, 0.96)"
+            "cubic-bezier(0.175, 0.885, 0.320, 1.275)"
 
         BounceInOut ->
-            "cubic-bezier(0.04, 0.04, 0.96, 0.96)"
+            "cubic-bezier(0.680, -0.550, 0.265, 1.550)"
 
         Custom value ->
             value

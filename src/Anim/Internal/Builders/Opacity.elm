@@ -10,7 +10,7 @@ module Anim.Internal.Builders.Opacity exposing
     , to
     )
 
-import Anim.Internal.Builder as Builder exposing (AnimBuilder)
+import Anim.Internal.Builder as Builder exposing (Builder)
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Timing.Delay exposing (Delay)
@@ -36,15 +36,15 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec)
 
 
 type OpacityBuilder
-    = OpacityBuilder OpacityConfig AnimBuilder
+    = OpacityBuilder OpacityConfig Builder
 
 
-for : String -> AnimBuilder -> OpacityBuilder
+for : String -> Builder -> OpacityBuilder
 for elementId builder =
     OpacityBuilder defaultConfig (Builder.for elementId builder)
 
 
-build : OpacityBuilder -> AnimBuilder
+build : OpacityBuilder -> Builder
 build (OpacityBuilder config builder) =
     let
         newOpacityConfig =

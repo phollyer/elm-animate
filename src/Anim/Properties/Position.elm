@@ -1,7 +1,7 @@
 module Anim.Properties.Position exposing
     ( Position
     , from, to, speed, duration, easing, delay
-    , PositionBuilder, build, for, toInternal, toX, toXY, toY
+    , Builder, build, for, toInternal, toX, toXY, toY
     )
 
 {-| Position animation property functions.
@@ -33,7 +33,7 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 -- POSITION CONFIGURATION
 
 
-type alias PositionBuilder =
+type alias Builder =
     PB.PositionBuilder
 
 
@@ -43,17 +43,17 @@ type Position
     = Position { x : Float, y : Float }
 
 
-for : String -> AnimBuilder -> PositionBuilder
+for : String -> AnimBuilder -> Builder
 for elementId =
     PB.for elementId
 
 
-build : PositionBuilder -> AnimBuilder
+build : Builder -> AnimBuilder
 build =
     PB.build
 
 
-from : Position -> PositionBuilder -> PositionBuilder
+from : Position -> Builder -> Builder
 from position =
     PB.from (toInternal position)
 
@@ -63,22 +63,22 @@ from position =
     builder |> Position.to { x = 100, y = 200 }
 
 -}
-to : Position -> PositionBuilder -> PositionBuilder
+to : Position -> Builder -> Builder
 to position =
     PB.to (toInternal position)
 
 
-toXY : Float -> Float -> PositionBuilder -> PositionBuilder
+toXY : Float -> Float -> Builder -> Builder
 toXY x y =
     PB.to (P.fromTuple ( x, y ))
 
 
-toX : Float -> PositionBuilder -> PositionBuilder
+toX : Float -> Builder -> Builder
 toX x =
     PB.toX x
 
 
-toY : Float -> PositionBuilder -> PositionBuilder
+toY : Float -> Builder -> Builder
 toY y =
     PB.toY y
 
@@ -88,7 +88,7 @@ toY y =
     builder |> Position.speed 500
 
 -}
-speed : Float -> PositionBuilder -> PositionBuilder
+speed : Float -> Builder -> Builder
 speed =
     PB.speed
 
@@ -98,7 +98,7 @@ speed =
     builder |> Position.duration 2000
 
 -}
-duration : Int -> PositionBuilder -> PositionBuilder
+duration : Int -> Builder -> Builder
 duration =
     PB.duration
 
@@ -108,7 +108,7 @@ duration =
     builder |> Position.easing Ease.inOutQuad
 
 -}
-easing : Easing -> PositionBuilder -> PositionBuilder
+easing : Easing -> Builder -> Builder
 easing easing_ =
     PB.easing (Easing.mapInternal identity easing_)
 
@@ -118,7 +118,7 @@ easing easing_ =
     builder |> Position.delay 500
 
 -}
-delay : Delay -> PositionBuilder -> PositionBuilder
+delay : Delay -> Builder -> Builder
 delay delay_ =
     PB.delay (Delay.mapInternal identity delay_)
 

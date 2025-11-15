@@ -1,29 +1,33 @@
 module Anim.Properties.Color exposing
-    ( Color, Hex, HSL, HSLA, RGB, RGBA
-    , from, to, speed, duration, easing, delay
+    ( Color(..), Hex, HSL, HSLA, RGB, RGBA
+    , for, build, from, to, speed, duration, easing, delay
+    , Builder
     )
 
 {-| Color animation property functions.
 
 Use these functions to configure color animations in the builder chain:
 
-    Anim.init "my-element"
+    Anim.init
+        |> Color.for "my-element"
         |> Color.to (Hex "#ff0000")
         |> Color.speed 255
-        |> animate portFunction
+        |> Color.build
+        |> CSS.animate
 
 
 # Types
 
-@docs Color, Hex, HSL, HSLA, RGB, RGBA
+@docs Color, Hex, HSL, HSLA, RGB, RGBA, ColorBuilder
 
 
 # Color Configuration
 
-@docs from, to, speed, duration, easing, delay
+@docs for, build, from, to, speed, duration, easing, delay
 
 -}
 
+import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Color as CB
 import Anim.Internal.Properties.Color as C
 import Anim.Timing.Delay as Delay exposing (Delay)
@@ -34,8 +38,34 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 -- COLOR CONFIGURATION
 
 
-type alias ColorBuilder =
-    CB.ColorBuilder
+type alias Builder =
+    CB.Builder
+
+
+{-| Start configuring color animation for a specific element.
+
+    Anim.init
+        |> Color.for "my-element"
+        |> Color.to (Hex "#ff0000")
+        |> Color.build
+        |> CSS.animate
+
+-}
+for : String -> AnimBuilder -> Builder
+for elementId =
+    CB.for elementId
+
+
+{-| Complete the color configuration and return to AnimBuilder.
+
+    Color.for "element"
+        |> Color.to (Hex "#ff0000")
+        |> Color.build
+
+-}
+build : Builder -> AnimBuilder
+build =
+    CB.build
 
 
 {-| Color values in different formats.
@@ -79,7 +109,7 @@ type alias RGBA =
     If no starting color is specified, it defaults to black (#000000).
 
 -}
-from : Color -> ColorBuilder -> ColorBuilder
+from : Color -> Builder -> Builder
 from color =
     CB.from (toInternal color)
 
@@ -91,7 +121,7 @@ from color =
     builder |> Color.to (Rgb { r = 255, g = 0, b = 0 })
 
 -}
-to : Color -> ColorBuilder -> ColorBuilder
+to : Color -> Builder -> Builder
 to color =
     CB.to (toInternal color)
 
@@ -101,7 +131,7 @@ to color =
     builder |> Color.speed 255
 
 -}
-speed : Float -> ColorBuilder -> ColorBuilder
+speed : Float -> Builder -> Builder
 speed pixelsPerSecond =
     CB.speed pixelsPerSecond
 
@@ -111,7 +141,7 @@ speed pixelsPerSecond =
     builder |> Color.duration 2000
 
 -}
-duration : Int -> ColorBuilder -> ColorBuilder
+duration : Int -> Builder -> Builder
 duration milliseconds =
     CB.duration milliseconds
 
@@ -121,7 +151,7 @@ duration milliseconds =
     builder |> Color.easing EaseInOut
 
 -}
-easing : Easing -> ColorBuilder -> ColorBuilder
+easing : Easing -> Builder -> Builder
 easing easing_ =
     Easing.mapInternal CB.easing easing_
 
@@ -131,7 +161,7 @@ easing easing_ =
     builder |> Color.delay 500
 
 -}
-delay : Delay -> ColorBuilder -> ColorBuilder
+delay : Delay -> Builder -> Builder
 delay delay_ =
     Delay.mapInternal CB.delay delay_
 

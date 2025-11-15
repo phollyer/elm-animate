@@ -5213,14 +5213,11 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$ElmUI$CSS$Position$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{animations: $author$project$Anim$CSS$init, isAnimating: false},
+		{animations: $author$project$Anim$CSS$init},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$ElmUI$CSS$Position$Main$subscriptions = function (_v0) {
-	return $elm$core$Platform$Sub$none;
-};
 var $author$project$Anim$Timing$Delay$Delay = function (a) {
 	return {$: 'Delay', a: a};
 };
@@ -5913,17 +5910,17 @@ var $author$project$Anim$Internal$Timing$Easing$easingToCSS = function (easing) 
 		case 'BackInOut':
 			return 'cubic-bezier(0.68, -0.6, 0.32, 1.6)';
 		case 'ElasticIn':
-			return 'cubic-bezier(0.04, 0.04, 0.12, 0.96)';
+			return 'cubic-bezier(0.175, 0.885, 0.320, 1.275)';
 		case 'ElasticOut':
-			return 'cubic-bezier(0.88, 0.04, 0.96, 0.96)';
+			return 'cubic-bezier(0.680, -0.550, 0.265, 1.550)';
 		case 'ElasticInOut':
-			return 'cubic-bezier(0.04, 0.04, 0.96, 0.96)';
+			return 'cubic-bezier(0.680, -0.550, 0.265, 1.550)';
 		case 'BounceIn':
-			return 'cubic-bezier(0.04, 0.04, 0.12, 0.96)';
+			return 'cubic-bezier(0.600, 0.040, 0.980, 0.335)';
 		case 'BounceOut':
-			return 'cubic-bezier(0.88, 0.04, 0.96, 0.96)';
+			return 'cubic-bezier(0.175, 0.885, 0.320, 1.275)';
 		case 'BounceInOut':
-			return 'cubic-bezier(0.04, 0.04, 0.96, 0.96)';
+			return 'cubic-bezier(0.680, -0.550, 0.265, 1.550)';
 		default:
 			var value = easing.a;
 			return value;
@@ -6260,7 +6257,6 @@ var $author$project$Anim$Internal$Builders$Position$speed = F2(
 						$elm$core$Maybe$Just(
 							$author$project$Anim$Internal$Timing$TimeSpec$Speed(s)));
 				} else {
-					var d = _v2.a.a;
 					return _Utils_Tuple2(
 						value,
 						$elm$core$Maybe$Just(
@@ -6352,112 +6348,114 @@ var $author$project$ElmUI$CSS$Position$Main$update = F2(
 			case 'MoveToPosition':
 				var x = msg.a;
 				var y = msg.b;
-				var animationState = $author$project$Anim$CSS$animate(
-					$author$project$Anim$Properties$Position$build(
-						A2(
-							$author$project$Anim$Properties$Position$easing,
-							$author$project$Anim$Timing$Easing$QuadInOut,
-							A3(
-								$author$project$Anim$Properties$Position$toXY,
-								x,
-								y,
-								$author$project$ElmUI$CSS$Position$Main$anim(model.animations)))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animations: animationState, isAnimating: true}),
+						{
+							animations: $author$project$Anim$CSS$animate(
+								$author$project$Anim$Properties$Position$build(
+									A2(
+										$author$project$Anim$Properties$Position$easing,
+										$author$project$Anim$Timing$Easing$QuadInOut,
+										A3(
+											$author$project$Anim$Properties$Position$toXY,
+											x,
+											y,
+											$author$project$ElmUI$CSS$Position$Main$anim(model.animations)))))
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'MoveLeft':
-				var animationState = $author$project$Anim$CSS$animate(
-					$author$project$Anim$Properties$Position$build(
-						A2(
-							$author$project$Anim$Properties$Position$speed,
-							100,
-							A2(
-								$author$project$Anim$Properties$Position$easing,
-								$author$project$Anim$Timing$Easing$SineInOut,
-								A2(
-									$author$project$Anim$Properties$Position$toX,
-									0,
-									$author$project$ElmUI$CSS$Position$Main$anim(model.animations))))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animations: animationState, isAnimating: true}),
+						{
+							animations: $author$project$Anim$CSS$animate(
+								$author$project$Anim$Properties$Position$build(
+									A2(
+										$author$project$Anim$Properties$Position$speed,
+										100,
+										A2(
+											$author$project$Anim$Properties$Position$easing,
+											$author$project$Anim$Timing$Easing$SineInOut,
+											A2(
+												$author$project$Anim$Properties$Position$toX,
+												0,
+												$author$project$ElmUI$CSS$Position$Main$anim(model.animations))))))
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'MoveRight':
-				var animationState = $author$project$Anim$CSS$animate(
-					$author$project$Anim$Properties$Position$build(
-						A2(
-							$author$project$Anim$Properties$Position$duration,
-							400,
-							A2(
-								$author$project$Anim$Properties$Position$easing,
-								$author$project$Anim$Timing$Easing$backInOut,
-								A2(
-									$author$project$Anim$Properties$Position$toX,
-									450,
-									$author$project$ElmUI$CSS$Position$Main$anim(model.animations))))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animations: animationState, isAnimating: true}),
+						{
+							animations: $author$project$Anim$CSS$animate(
+								$author$project$Anim$Properties$Position$build(
+									A2(
+										$author$project$Anim$Properties$Position$duration,
+										400,
+										A2(
+											$author$project$Anim$Properties$Position$easing,
+											$author$project$Anim$Timing$Easing$backInOut,
+											A2(
+												$author$project$Anim$Properties$Position$toX,
+												450,
+												$author$project$ElmUI$CSS$Position$Main$anim(model.animations))))))
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'MoveDown':
-				var animationState = $author$project$Anim$CSS$animate(
-					$author$project$Anim$Properties$Position$build(
-						A2(
-							$author$project$Anim$Properties$Position$delay,
-							$author$project$Anim$Timing$Delay$Delay(1000),
-							A2(
-								$author$project$Anim$Properties$Position$easing,
-								$author$project$Anim$Timing$Easing$bounceInOut,
-								A2(
-									$author$project$Anim$Properties$Position$toY,
-									350,
-									$author$project$ElmUI$CSS$Position$Main$anim(model.animations))))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animations: animationState, isAnimating: true}),
+						{
+							animations: $author$project$Anim$CSS$animate(
+								$author$project$Anim$Properties$Position$build(
+									A2(
+										$author$project$Anim$Properties$Position$delay,
+										$author$project$Anim$Timing$Delay$Delay(1000),
+										A2(
+											$author$project$Anim$Properties$Position$easing,
+											$author$project$Anim$Timing$Easing$bounceInOut,
+											A2(
+												$author$project$Anim$Properties$Position$toY,
+												350,
+												$author$project$ElmUI$CSS$Position$Main$anim(model.animations))))))
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'MoveUp':
-				var animationState = $author$project$Anim$CSS$animate(
-					$author$project$Anim$Properties$Position$build(
-						A2(
-							$author$project$Anim$Properties$Position$easing,
-							$author$project$Anim$Timing$Easing$circInOut,
-							A2(
-								$author$project$Anim$Properties$Position$toY,
-								0,
-								$author$project$ElmUI$CSS$Position$Main$anim(model.animations)))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animations: animationState, isAnimating: true}),
+						{
+							animations: $author$project$Anim$CSS$animate(
+								$author$project$Anim$Properties$Position$build(
+									A2(
+										$author$project$Anim$Properties$Position$easing,
+										$author$project$Anim$Timing$Easing$circInOut,
+										A2(
+											$author$project$Anim$Properties$Position$toY,
+											0,
+											$author$project$ElmUI$CSS$Position$Main$anim(model.animations)))))
+						}),
 					$elm$core$Platform$Cmd$none);
 			case 'ReturnToOrigin':
-				var animationState = $author$project$Anim$CSS$animate(
-					$author$project$Anim$Properties$Position$build(
-						A2(
-							$author$project$Anim$Properties$Position$easing,
-							$author$project$Anim$Timing$Easing$elasticInOut,
-							A3(
-								$author$project$Anim$Properties$Position$toXY,
-								0,
-								0,
-								$author$project$ElmUI$CSS$Position$Main$anim(model.animations)))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animations: animationState, isAnimating: true}),
+						{
+							animations: $author$project$Anim$CSS$animate(
+								$author$project$Anim$Properties$Position$build(
+									A2(
+										$author$project$Anim$Properties$Position$easing,
+										$author$project$Anim$Timing$Easing$elasticInOut,
+										A3(
+											$author$project$Anim$Properties$Position$toXY,
+											0,
+											0,
+											$author$project$ElmUI$CSS$Position$Main$anim(model.animations)))))
+						}),
 					$elm$core$Platform$Cmd$none);
 			default:
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{isAnimating: false}),
-					$elm$core$Platform$Cmd$none);
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Common$UI$Basic = {$: 'Basic'};
@@ -12868,6 +12866,13 @@ var $author$project$ElmUI$CSS$Position$Main$view = function (model) {
 		$author$project$ElmUI$CSS$Position$Main$viewContent(model));
 };
 var $author$project$ElmUI$CSS$Position$Main$main = $elm$browser$Browser$document(
-	{init: $author$project$ElmUI$CSS$Position$Main$init, subscriptions: $author$project$ElmUI$CSS$Position$Main$subscriptions, update: $author$project$ElmUI$CSS$Position$Main$update, view: $author$project$ElmUI$CSS$Position$Main$view});
+	{
+		init: $author$project$ElmUI$CSS$Position$Main$init,
+		subscriptions: function (_v0) {
+			return $elm$core$Platform$Sub$none;
+		},
+		update: $author$project$ElmUI$CSS$Position$Main$update,
+		view: $author$project$ElmUI$CSS$Position$Main$view
+	});
 _Platform_export({'ElmUI':{'CSS':{'Position':{'Main':{'init':$author$project$ElmUI$CSS$Position$Main$main(
 	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}}}}});}(this));

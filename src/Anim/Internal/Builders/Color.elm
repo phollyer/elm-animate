@@ -1,5 +1,5 @@
 module Anim.Internal.Builders.Color exposing
-    ( ColorBuilder
+    ( Builder
     , build
     , delay
     , duration
@@ -34,11 +34,11 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec)
 -}
 
 
-type ColorBuilder
-    = ColorBuilder ColorConfig AnimBuilder
+type Builder
+    = Builder ColorConfig AnimBuilder
 
 
-for : String -> AnimBuilder -> ColorBuilder
+for : String -> AnimBuilder -> Builder
 for elementId builder =
     let
         existingConfig =
@@ -61,10 +61,10 @@ for elementId builder =
     in
     case existingConfig of
         Just config ->
-            ColorBuilder (applyGlobalDefaults builder config) builder
+            Builder (applyGlobalDefaults builder config) builder
 
         Nothing ->
-            ColorBuilder (applyGlobalDefaults builder defaultConfig) (Builder.for elementId builder)
+            Builder (applyGlobalDefaults builder defaultConfig) (Builder.for elementId builder)
 
 
 applyGlobalDefaults : AnimBuilder -> ColorConfig -> ColorConfig
@@ -76,8 +76,8 @@ applyGlobalDefaults builder config =
     }
 
 
-build : ColorBuilder -> AnimBuilder
-build (ColorBuilder config builder) =
+build : Builder -> AnimBuilder
+build (Builder config builder) =
     let
         newColorConfig =
             Builder.ColorConfig config
@@ -110,31 +110,31 @@ defaultConfig =
     }
 
 
-from : Color -> ColorBuilder -> ColorBuilder
-from color (ColorBuilder config builder) =
-    ColorBuilder { config | startAt = Just color } builder
+from : Color -> Builder -> Builder
+from color (Builder config builder) =
+    Builder { config | startAt = Just color } builder
 
 
-to : Color -> ColorBuilder -> ColorBuilder
-to color (ColorBuilder config builder) =
-    ColorBuilder { config | endAt = color } builder
+to : Color -> Builder -> Builder
+to color (Builder config builder) =
+    Builder { config | endAt = color } builder
 
 
-speed : Float -> ColorBuilder -> ColorBuilder
-speed spd (ColorBuilder config builder) =
-    ColorBuilder { config | speed = spd } builder
+speed : Float -> Builder -> Builder
+speed spd (Builder config builder) =
+    Builder { config | speed = spd } builder
 
 
-duration : Int -> ColorBuilder -> ColorBuilder
-duration ms (ColorBuilder config builder) =
-    ColorBuilder { config | duration = ms } builder
+duration : Int -> Builder -> Builder
+duration ms (Builder config builder) =
+    Builder { config | duration = ms } builder
 
 
-easing : Easing -> ColorBuilder -> ColorBuilder
-easing ease (ColorBuilder config builder) =
-    ColorBuilder { config | easing = Just ease } builder
+easing : Easing -> Builder -> Builder
+easing ease (Builder config builder) =
+    Builder { config | easing = Just ease } builder
 
 
-delay : Delay -> ColorBuilder -> ColorBuilder
-delay dly (ColorBuilder config builder) =
-    ColorBuilder { config | delay = Just dly } builder
+delay : Delay -> Builder -> Builder
+delay dly (Builder config builder) =
+    Builder { config | delay = Just dly } builder
