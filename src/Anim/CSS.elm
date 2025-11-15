@@ -401,52 +401,31 @@ generateElementAnimation elementId elementConfig =
 generateTransforms : List Builder.PropertyConfig -> String
 generateTransforms properties =
     let
-        -- Extract transform properties by type for canonical ordering
-        positionPart =
-            properties
-                |> List.filterMap
-                    (\prop ->
-                        case prop of
-                            Builder.PositionConfig config ->
-                                Just ("translate(" ++ Position.toCssString config.endAt ++ ")")
-
-                            _ ->
-                                Nothing
-                    )
-                |> List.head
-
-        rotationPart =
-            properties
-                |> List.filterMap
-                    (\prop ->
-                        case prop of
-                            Builder.RotateConfig config ->
-                                Just ("rotate(" ++ Rotation.toCssString config.endAt ++ ")")
-
-                            _ ->
-                                Nothing
-                    )
-                |> List.head
-
-        scalePart =
-            properties
-                |> List.filterMap
-                    (\prop ->
-                        case prop of
-                            Builder.ScaleConfig config ->
-                                Just ("scale(" ++ Scale.toCssString config.endAt ++ ")")
-
-                            _ ->
-                                Nothing
-                    )
-                |> List.head
-
-        -- Canonical transform order: translate → rotate → scale
         transformParts =
-            [ positionPart, rotationPart, scalePart ]
-                |> List.filterMap identity
+            List.filterMap transformFromProperty properties
     in
     String.join " " transformParts
+
+
+transformFromProperty : Builder.PropertyConfig -> Maybe String
+transformFromProperty property =
+    case property of
+        Builder.PositionConfig config ->
+            Just ("translate(" ++ Position.toCssString config.endAt ++ ")")
+
+        Builder.RotateConfig config ->
+            Just ("rotate(" ++ Rotation.toCssString config.endAt ++ ")")
+
+        Builder.ScaleConfig config ->
+            Just ("scale(" ++ Scale.toCssString config.endAt ++ ")")
+
+        Builder.ColorConfig _ ->
+            -- Color doesn't use transform
+            Nothing
+
+        Builder.OpacityConfig _ ->
+            -- Opacity doesn't use transform
+            Nothing
 
 
 

@@ -5484,15 +5484,6 @@ var $elm$core$List$filterMap = F2(
 var $author$project$Anim$CSS$generateColorStyles = function (properties) {
 	return A2($elm$core$List$filterMap, $author$project$Anim$CSS$colorStyleFromProperty, properties);
 };
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
 var $author$project$Anim$Internal$Properties$Position$toCssString = function (_v0) {
 	var coords = _v0.a;
 	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + 'px'));
@@ -5509,51 +5500,28 @@ var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) 
 	var sy = _v0.b;
 	return $elm$core$String$fromFloat(sx) + (',' + $elm$core$String$fromFloat(sy));
 };
+var $author$project$Anim$CSS$transformFromProperty = function (property) {
+	switch (property.$) {
+		case 'PositionConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				'translate(' + ($author$project$Anim$Internal$Properties$Position$toCssString(config.endAt) + ')'));
+		case 'RotateConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				'rotate(' + ($author$project$Anim$Internal$Properties$Rotation$toCssString(config.endAt) + ')'));
+		case 'ScaleConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				'scale(' + ($author$project$Anim$Internal$Properties$Scale$toCssString(config.endAt) + ')'));
+		case 'ColorConfig':
+			return $elm$core$Maybe$Nothing;
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Anim$CSS$generateTransforms = function (properties) {
-	var scalePart = $elm$core$List$head(
-		A2(
-			$elm$core$List$filterMap,
-			function (prop) {
-				if (prop.$ === 'ScaleConfig') {
-					var config = prop.a;
-					return $elm$core$Maybe$Just(
-						'scale(' + ($author$project$Anim$Internal$Properties$Scale$toCssString(config.endAt) + ')'));
-				} else {
-					return $elm$core$Maybe$Nothing;
-				}
-			},
-			properties));
-	var rotationPart = $elm$core$List$head(
-		A2(
-			$elm$core$List$filterMap,
-			function (prop) {
-				if (prop.$ === 'RotateConfig') {
-					var config = prop.a;
-					return $elm$core$Maybe$Just(
-						'rotate(' + ($author$project$Anim$Internal$Properties$Rotation$toCssString(config.endAt) + ')'));
-				} else {
-					return $elm$core$Maybe$Nothing;
-				}
-			},
-			properties));
-	var positionPart = $elm$core$List$head(
-		A2(
-			$elm$core$List$filterMap,
-			function (prop) {
-				if (prop.$ === 'PositionConfig') {
-					var config = prop.a;
-					return $elm$core$Maybe$Just(
-						'translate(' + ($author$project$Anim$Internal$Properties$Position$toCssString(config.endAt) + ')'));
-				} else {
-					return $elm$core$Maybe$Nothing;
-				}
-			},
-			properties));
-	var transformParts = A2(
-		$elm$core$List$filterMap,
-		$elm$core$Basics$identity,
-		_List_fromArray(
-			[positionPart, rotationPart, scalePart]));
+	var transformParts = A2($elm$core$List$filterMap, $author$project$Anim$CSS$transformFromProperty, properties);
 	return A2($elm$core$String$join, ' ', transformParts);
 };
 var $elm$core$Debug$log = _Debug_log;
@@ -5832,7 +5800,10 @@ var $author$project$Anim$Internal$Builders$Property$add = F2(
 		var updatedElement = _Utils_update(
 			currentElement,
 			{
-				properties: A2($elm$core$List$cons, propertyConfig, currentElement.properties)
+				properties: _Utils_ap(
+					currentElement.properties,
+					_List_fromArray(
+						[propertyConfig]))
 			});
 		return A2($author$project$Anim$Internal$Builder$updateCurrentElement, updatedElement, builder);
 	});
@@ -5876,6 +5847,15 @@ var $author$project$Anim$Internal$Builders$Property$configsMatch = F2(
 		}
 		return false;
 	});
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Anim$Internal$Builders$Property$find = F2(
 	function (predicate, builder) {
 		var currentElement = $author$project$Anim$Internal$Builder$getCurrentElementConfig(builder);

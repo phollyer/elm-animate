@@ -30,7 +30,7 @@ add propertyConfig builder =
             Builder.getCurrentElementConfig builder
 
         updatedElement =
-            { currentElement | properties = propertyConfig :: currentElement.properties }
+            { currentElement | properties = currentElement.properties ++ [ propertyConfig ] }
     in
     Builder.updateCurrentElement updatedElement builder
 
