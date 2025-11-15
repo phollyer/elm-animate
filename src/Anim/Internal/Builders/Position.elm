@@ -63,57 +63,28 @@ for elementId builder =
     in
     case existingConfig of
         Just config ->
-            PositionBuilder config builder
+            PositionBuilder (applyGlobalDefaults builder config) builder
 
         Nothing ->
-            PositionBuilder defaultConfig (Builder.for elementId builder)
+            PositionBuilder (applyGlobalDefaults builder defaultConfig) (Builder.for elementId builder)
+
+
+applyGlobalDefaults : AnimBuilder -> PositionConfig -> PositionConfig
+applyGlobalDefaults builder config =
+    { config
+        | easing = Builder.getEasing builder
+        , delay = Builder.getDelay builder
+        , timing = Builder.getTimespec builder
+    }
 
 
 build : PositionBuilder -> AnimBuilder
 build (PositionBuilder config builder) =
     let
         newPositionConfig =
-            Builder.PositionConfig <|
-                applyGlobalDefaults builder config
+            Builder.PositionConfig config
     in
     PropertyBuilder.upsert newPositionConfig builder
-
-
-applyGlobalDefaults : AnimBuilder -> PositionConfig -> PositionConfig
-applyGlobalDefaults builder config =
-    let
-        globalEasing =
-            case config.easing |> Debug.log "Config Easing" of
-                Just e ->
-                    Just e
-
-                Nothing ->
-                    Builder.getEasing builder
-
-        globalDelay =
-            case config.delay of
-                Just d ->
-                    Just d
-
-                Nothing ->
-                    Builder.getDelay builder
-
-        timeSpec =
-            case config.timing of
-                Just (Speed s) ->
-                    Just <| Speed s
-
-                Just (Duration d) ->
-                    Just <| Duration d
-
-                Nothing ->
-                    Builder.getTimespec builder
-    in
-    { config
-        | easing = globalEasing |> Debug.log "Global Easing"
-        , delay = globalDelay
-        , timing = timeSpec
-    }
 
 
 type alias PositionConfig =
