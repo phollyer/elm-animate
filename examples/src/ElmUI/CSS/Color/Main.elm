@@ -228,7 +228,7 @@ viewContent model =
              , htmlAttribute (CSS.onTransitionEnd AnimationComplete)
              ]
                 -- Apply CSS styles for the animation
-                ++ List.map htmlAttribute (CSS.htmlAttributes "box" model.animations )
+                ++ List.map htmlAttribute (CSS.htmlAttributes "box" model.animations)
             )
             (el [ centerX, centerY ] (text "Color"))
         )

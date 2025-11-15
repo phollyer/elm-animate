@@ -413,7 +413,7 @@ viewContent model =
              , htmlAttribute (Html.Attributes.style "align-items" "center")
              , htmlAttribute (Html.Attributes.style "justify-content" "center")
              ]
-                ++ List.map htmlAttribute (CSS.htmlAttributes "mixed-box" model.animations )
+                ++ List.map htmlAttribute (CSS.htmlAttributes "mixed-box" model.animations)
             )
             (el [ centerX, centerY, Font.size 24, Font.color Colors.backgroundWhite ]
                 (text "🎨")

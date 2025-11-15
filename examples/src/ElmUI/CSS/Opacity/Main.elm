@@ -240,7 +240,7 @@ animatedBox elementId label color model =
          , htmlAttribute (Html.Attributes.style "justify-content" "center")
          ]
             -- Add CSS animation attributes
-            ++ List.map htmlAttribute (CSS.htmlAttributes elementId model.animations )
+            ++ List.map htmlAttribute (CSS.htmlAttributes elementId model.animations)
         )
         (el
             [ centerX

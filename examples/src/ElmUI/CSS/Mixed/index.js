@@ -5951,11 +5951,10 @@ var $author$project$Anim$Internal$Builder$getCurrentElementConfig = function (_v
 			A2($elm$core$Dict$get, elementId, data.elements));
 	}
 };
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$Anim$Internal$Builder$updateCurrentElement = F2(
 	function (config, _v0) {
 		var data = _v0.a;
-		var _v1 = A2($elm$core$Debug$log, 'updateCurrentElement currentElementId', data.currentElementId);
+		var _v1 = data.currentElementId;
 		if (_v1.$ === 'Nothing') {
 			return $author$project$Anim$Internal$Builder$AnimBuilder(data);
 		} else {
@@ -5979,7 +5978,6 @@ var $author$project$Anim$Internal$Builders$Property$add = F2(
 					_List_fromArray(
 						[propertyConfig]))
 			});
-		var _v0 = A2($elm$core$Debug$log, 'add propertyConfig', propertyConfig);
 		return A2($author$project$Anim$Internal$Builder$updateCurrentElement, updatedElement, builder);
 	});
 var $author$project$Anim$Internal$Builders$Property$configsMatch = F2(
@@ -6034,10 +6032,7 @@ var $author$project$Anim$Internal$Builders$Property$replace = F2(
 		var updatedProperties = A2(
 			$elm$core$List$map,
 			function (p) {
-				return A2(
-					$elm$core$Debug$log,
-					'replace configsMatch',
-					A2($author$project$Anim$Internal$Builders$Property$configsMatch, p, propertyConfig)) ? propertyConfig : p;
+				return A2($author$project$Anim$Internal$Builders$Property$configsMatch, p, propertyConfig) ? propertyConfig : p;
 			},
 			currentElement.properties);
 		var updatedElement = _Utils_update(
@@ -6081,7 +6076,6 @@ var $author$project$Anim$Internal$Builders$Position$build = function (_v0) {
 	var config = _v0.a;
 	var builder = _v0.b;
 	var newPositionConfig = $author$project$Anim$Internal$Builder$PositionConfig(config);
-	var _v1 = A2($elm$core$Debug$log, 'build config', config);
 	return A2($author$project$Anim$Internal$Builders$Property$upsert, newPositionConfig, builder);
 };
 var $author$project$Anim$Properties$Position$build = $author$project$Anim$Internal$Builders$Position$build;
@@ -6600,18 +6594,18 @@ var $author$project$Anim$Internal$Builders$Color$for = F2(
 				return $elm$core$Maybe$Nothing;
 			}
 		}();
-		if (existingConfig.$ === 'Just') {
-			var config = existingConfig.a;
-			return A2(
-				$author$project$Anim$Internal$Builders$Color$ColorBuilder,
-				A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, config),
-				builder);
-		} else {
-			return A2(
-				$author$project$Anim$Internal$Builders$Color$ColorBuilder,
-				A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, $author$project$Anim$Internal$Builders$Color$defaultConfig),
-				A2($author$project$Anim$Internal$Builder$for, elementId, builder));
-		}
+		var newConfig = function () {
+			if (existingConfig.$ === 'Just') {
+				var config = existingConfig.a;
+				return A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, config);
+			} else {
+				return A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, $author$project$Anim$Internal$Builders$Color$defaultConfig);
+			}
+		}();
+		return A2(
+			$author$project$Anim$Internal$Builders$Color$ColorBuilder,
+			newConfig,
+			A2($author$project$Anim$Internal$Builder$for, elementId, builder));
 	});
 var $author$project$Anim$Properties$Color$for = function (elementId) {
 	return $author$project$Anim$Internal$Builders$Color$for(elementId);
@@ -6654,18 +6648,18 @@ var $author$project$Anim$Internal$Builders$Opacity$for = F2(
 				return $elm$core$Maybe$Nothing;
 			}
 		}();
-		if (existingConfig.$ === 'Just') {
-			var config = existingConfig.a;
-			return A2(
-				$author$project$Anim$Internal$Builders$Opacity$OpacityBuilder,
-				A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, config),
-				builder);
-		} else {
-			return A2(
-				$author$project$Anim$Internal$Builders$Opacity$OpacityBuilder,
-				A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, $author$project$Anim$Internal$Builders$Opacity$defaultConfig),
-				A2($author$project$Anim$Internal$Builder$for, elementId, builder));
-		}
+		var newConfig = function () {
+			if (existingConfig.$ === 'Just') {
+				var config = existingConfig.a;
+				return A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, config);
+			} else {
+				return A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, $author$project$Anim$Internal$Builders$Opacity$defaultConfig);
+			}
+		}();
+		return A2(
+			$author$project$Anim$Internal$Builders$Opacity$OpacityBuilder,
+			newConfig,
+			A2($author$project$Anim$Internal$Builder$for, elementId, builder));
 	});
 var $author$project$Anim$Properties$Opacity$for = function (elementId) {
 	return $author$project$Anim$Internal$Builders$Opacity$for(elementId);
@@ -6766,18 +6760,18 @@ var $author$project$Anim$Internal$Builders$Rotation$for = F2(
 				return $elm$core$Maybe$Nothing;
 			}
 		}();
-		if (existingConfig.$ === 'Just') {
-			var config = existingConfig.a;
-			return A2(
-				$author$project$Anim$Internal$Builders$Rotation$RotationBuilder,
-				A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, config),
-				builder);
-		} else {
-			return A2(
-				$author$project$Anim$Internal$Builders$Rotation$RotationBuilder,
-				A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, $author$project$Anim$Internal$Builders$Rotation$defaultConfig),
-				A2($author$project$Anim$Internal$Builder$for, elementId, builder));
-		}
+		var newConfig = function () {
+			if (existingConfig.$ === 'Just') {
+				var config = existingConfig.a;
+				return A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, config);
+			} else {
+				return A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, $author$project$Anim$Internal$Builders$Rotation$defaultConfig);
+			}
+		}();
+		return A2(
+			$author$project$Anim$Internal$Builders$Rotation$RotationBuilder,
+			newConfig,
+			A2($author$project$Anim$Internal$Builder$for, elementId, builder));
 	});
 var $author$project$Anim$Properties$Rotation$for = function (elementId) {
 	return $author$project$Anim$Internal$Builders$Rotation$for(elementId);
@@ -6824,18 +6818,18 @@ var $author$project$Anim$Internal$Builders$Scale$for = F2(
 				return $elm$core$Maybe$Nothing;
 			}
 		}();
-		if (existingConfig.$ === 'Just') {
-			var config = existingConfig.a;
-			return A2(
-				$author$project$Anim$Internal$Builders$Scale$ScaleBuilder,
-				A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, config),
-				builder);
-		} else {
-			return A2(
-				$author$project$Anim$Internal$Builders$Scale$ScaleBuilder,
-				A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, $author$project$Anim$Internal$Builders$Scale$defaultConfig),
-				A2($author$project$Anim$Internal$Builder$for, elementId, builder));
-		}
+		var newConfig = function () {
+			if (existingConfig.$ === 'Just') {
+				var config = existingConfig.a;
+				return A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, config);
+			} else {
+				return A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, $author$project$Anim$Internal$Builders$Scale$defaultConfig);
+			}
+		}();
+		return A2(
+			$author$project$Anim$Internal$Builders$Scale$ScaleBuilder,
+			newConfig,
+			A2($author$project$Anim$Internal$Builder$for, elementId, builder));
 	});
 var $author$project$Anim$Properties$Scale$for = function (elementId) {
 	return $author$project$Anim$Internal$Builders$Scale$for(elementId);
@@ -13743,10 +13737,7 @@ var $author$project$ElmUI$CSS$Mixed$Main$viewContent = function (model) {
 					A2(
 						$elm$core$List$map,
 						$mdgriffith$elm_ui$Element$htmlAttribute,
-						A2(
-							$elm$core$Debug$log,
-							'',
-							A2($author$project$Anim$CSS$htmlAttributes, 'mixed-box', model.animations)))),
+						A2($author$project$Anim$CSS$htmlAttributes, 'mixed-box', model.animations))),
 				A2(
 					$mdgriffith$elm_ui$Element$el,
 					_List_fromArray(

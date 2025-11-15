@@ -58,13 +58,16 @@ for elementId builder =
 
                 _ ->
                     Nothing
-    in
-    case existingConfig of
-        Just config ->
-            RotationBuilder (PropertyBuilder.applyGlobalDefaults builder config) builder
 
-        Nothing ->
-            RotationBuilder (PropertyBuilder.applyGlobalDefaults builder defaultConfig) (Builder.for elementId builder)
+        newConfig =
+            case existingConfig of
+                Just config ->
+                    PropertyBuilder.applyGlobalDefaults builder config
+
+                Nothing ->
+                    PropertyBuilder.applyGlobalDefaults builder defaultConfig
+    in
+    RotationBuilder newConfig (Builder.for elementId builder)
 
 
 build : RotationBuilder -> AnimBuilder

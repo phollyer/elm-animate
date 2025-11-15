@@ -58,13 +58,16 @@ for elementId builder =
 
                 _ ->
                     Nothing
-    in
-    case existingConfig of
-        Just config ->
-            ScaleBuilder (PropertyBuilder.applyGlobalDefaults builder config) builder
 
-        Nothing ->
-            ScaleBuilder (PropertyBuilder.applyGlobalDefaults builder defaultConfig) (Builder.for elementId builder)
+        newConfig =
+            case existingConfig of
+                Just config ->
+                    PropertyBuilder.applyGlobalDefaults builder config
+
+                Nothing ->
+                    PropertyBuilder.applyGlobalDefaults builder defaultConfig
+    in
+    ScaleBuilder newConfig (Builder.for elementId builder)
 
 
 build : ScaleBuilder -> AnimBuilder

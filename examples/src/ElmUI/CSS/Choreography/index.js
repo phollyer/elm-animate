@@ -5883,7 +5883,6 @@ var $author$project$Anim$Timing$Easing$backInOut = $author$project$Anim$Timing$E
 var $author$project$Anim$Internal$Builder$PositionConfig = function (a) {
 	return {$: 'PositionConfig', a: a};
 };
-var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
 		get:
@@ -5931,7 +5930,7 @@ var $author$project$Anim$Internal$Builder$getCurrentElementConfig = function (_v
 var $author$project$Anim$Internal$Builder$updateCurrentElement = F2(
 	function (config, _v0) {
 		var data = _v0.a;
-		var _v1 = A2($elm$core$Debug$log, 'updateCurrentElement currentElementId', data.currentElementId);
+		var _v1 = data.currentElementId;
 		if (_v1.$ === 'Nothing') {
 			return $author$project$Anim$Internal$Builder$AnimBuilder(data);
 		} else {
@@ -5955,7 +5954,6 @@ var $author$project$Anim$Internal$Builders$Property$add = F2(
 					_List_fromArray(
 						[propertyConfig]))
 			});
-		var _v0 = A2($elm$core$Debug$log, 'add propertyConfig', propertyConfig);
 		return A2($author$project$Anim$Internal$Builder$updateCurrentElement, updatedElement, builder);
 	});
 var $author$project$Anim$Internal$Builders$Property$configsMatch = F2(
@@ -6010,10 +6008,7 @@ var $author$project$Anim$Internal$Builders$Property$replace = F2(
 		var updatedProperties = A2(
 			$elm$core$List$map,
 			function (p) {
-				return A2(
-					$elm$core$Debug$log,
-					'replace configsMatch',
-					A2($author$project$Anim$Internal$Builders$Property$configsMatch, p, propertyConfig)) ? propertyConfig : p;
+				return A2($author$project$Anim$Internal$Builders$Property$configsMatch, p, propertyConfig) ? propertyConfig : p;
 			},
 			currentElement.properties);
 		var updatedElement = _Utils_update(
@@ -6037,7 +6032,6 @@ var $author$project$Anim$Internal$Builders$Position$build = function (_v0) {
 	var config = _v0.a;
 	var builder = _v0.b;
 	var newPositionConfig = $author$project$Anim$Internal$Builder$PositionConfig(config);
-	var _v1 = A2($elm$core$Debug$log, 'build config', config);
 	return A2($author$project$Anim$Internal$Builders$Property$upsert, newPositionConfig, builder);
 };
 var $author$project$Anim$Properties$Position$build = $author$project$Anim$Internal$Builders$Position$build;
