@@ -5221,12 +5221,351 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$ElmUI$CSS$Position$Main$subscriptions = function (_v0) {
 	return $elm$core$Platform$Sub$none;
 };
-var $author$project$Anim$Timing$Easing$BackInOut = {$: 'BackInOut'};
-var $author$project$Anim$Timing$Easing$BounceInOut = {$: 'BounceInOut'};
-var $author$project$Anim$Timing$Easing$CircInOut = {$: 'CircInOut'};
-var $author$project$Anim$Timing$Easing$ElasticInOut = {$: 'ElasticInOut'};
+var $author$project$Anim$Timing$Delay$Delay = function (a) {
+	return {$: 'Delay', a: a};
+};
 var $author$project$Anim$Timing$Easing$QuadInOut = {$: 'QuadInOut'};
 var $author$project$Anim$Timing$Easing$SineInOut = {$: 'SineInOut'};
+var $author$project$Anim$Timing$Easing$Linear = {$: 'Linear'};
+var $author$project$Anim$CSS$builder = function (_v0) {
+	var state = _v0.a;
+	return state.builder;
+};
+var $author$project$Anim$Internal$Timing$TimeSpec$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
+var $author$project$Anim$Internal$Builder$duration = F2(
+	function (ms, _v0) {
+		var data = _v0.a;
+		return $author$project$Anim$Internal$Builder$AnimBuilder(
+			_Utils_update(
+				data,
+				{
+					globalTiming: $elm$core$Maybe$Just(
+						$author$project$Anim$Internal$Timing$TimeSpec$Duration(ms))
+				}));
+	});
+var $author$project$Anim$duration = F2(
+	function (ms, builder) {
+		return A2($author$project$Anim$Internal$Builder$duration, ms, builder);
+	});
+var $author$project$Anim$Internal$Builder$easing = F2(
+	function (easingValue, _v0) {
+		var data = _v0.a;
+		return $author$project$Anim$Internal$Builder$AnimBuilder(
+			_Utils_update(
+				data,
+				{
+					globalEasing: $elm$core$Maybe$Just(easingValue)
+				}));
+	});
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $author$project$Anim$Internal$Timing$Easing$BackIn = {$: 'BackIn'};
+var $author$project$Anim$Internal$Timing$Easing$BackInOut = {$: 'BackInOut'};
+var $author$project$Anim$Internal$Timing$Easing$BackOut = {$: 'BackOut'};
+var $author$project$Anim$Internal$Timing$Easing$Bezier = F4(
+	function (a, b, c, d) {
+		return {$: 'Bezier', a: a, b: b, c: c, d: d};
+	});
+var $author$project$Anim$Internal$Timing$Easing$BounceIn = {$: 'BounceIn'};
+var $author$project$Anim$Internal$Timing$Easing$BounceInOut = {$: 'BounceInOut'};
+var $author$project$Anim$Internal$Timing$Easing$BounceOut = {$: 'BounceOut'};
+var $author$project$Anim$Internal$Timing$Easing$CircIn = {$: 'CircIn'};
+var $author$project$Anim$Internal$Timing$Easing$CircInOut = {$: 'CircInOut'};
+var $author$project$Anim$Internal$Timing$Easing$CircOut = {$: 'CircOut'};
+var $author$project$Anim$Internal$Timing$Easing$CubicIn = {$: 'CubicIn'};
+var $author$project$Anim$Internal$Timing$Easing$CubicInOut = {$: 'CubicInOut'};
+var $author$project$Anim$Internal$Timing$Easing$CubicOut = {$: 'CubicOut'};
+var $author$project$Anim$Internal$Timing$Easing$Custom = function (a) {
+	return {$: 'Custom', a: a};
+};
+var $author$project$Anim$Internal$Timing$Easing$Ease = {$: 'Ease'};
+var $author$project$Anim$Internal$Timing$Easing$EaseIn = {$: 'EaseIn'};
+var $author$project$Anim$Internal$Timing$Easing$EaseInOut = {$: 'EaseInOut'};
+var $author$project$Anim$Internal$Timing$Easing$EaseOut = {$: 'EaseOut'};
+var $author$project$Anim$Internal$Timing$Easing$ElasticIn = {$: 'ElasticIn'};
+var $author$project$Anim$Internal$Timing$Easing$ElasticInOut = {$: 'ElasticInOut'};
+var $author$project$Anim$Internal$Timing$Easing$ElasticOut = {$: 'ElasticOut'};
+var $author$project$Anim$Internal$Timing$Easing$ExpoIn = {$: 'ExpoIn'};
+var $author$project$Anim$Internal$Timing$Easing$ExpoInOut = {$: 'ExpoInOut'};
+var $author$project$Anim$Internal$Timing$Easing$ExpoOut = {$: 'ExpoOut'};
+var $author$project$Anim$Internal$Timing$Easing$Linear = {$: 'Linear'};
+var $author$project$Anim$Internal$Timing$Easing$QuadIn = {$: 'QuadIn'};
+var $author$project$Anim$Internal$Timing$Easing$QuadInOut = {$: 'QuadInOut'};
+var $author$project$Anim$Internal$Timing$Easing$QuadOut = {$: 'QuadOut'};
+var $author$project$Anim$Internal$Timing$Easing$QuartIn = {$: 'QuartIn'};
+var $author$project$Anim$Internal$Timing$Easing$QuartInOut = {$: 'QuartInOut'};
+var $author$project$Anim$Internal$Timing$Easing$QuartOut = {$: 'QuartOut'};
+var $author$project$Anim$Internal$Timing$Easing$QuintIn = {$: 'QuintIn'};
+var $author$project$Anim$Internal$Timing$Easing$QuintInOut = {$: 'QuintInOut'};
+var $author$project$Anim$Internal$Timing$Easing$QuintOut = {$: 'QuintOut'};
+var $author$project$Anim$Internal$Timing$Easing$SineIn = {$: 'SineIn'};
+var $author$project$Anim$Internal$Timing$Easing$SineInOut = {$: 'SineInOut'};
+var $author$project$Anim$Internal$Timing$Easing$SineOut = {$: 'SineOut'};
+var $author$project$Anim$Timing$Easing$toInternal = function (easing) {
+	switch (easing.$) {
+		case 'Bezier':
+			var p1x = easing.a;
+			var p1y = easing.b;
+			var p2x = easing.c;
+			var p2y = easing.d;
+			return A4($author$project$Anim$Internal$Timing$Easing$Bezier, p1x, p1y, p2x, p2y);
+		case 'Linear':
+			return $author$project$Anim$Internal$Timing$Easing$Linear;
+		case 'Ease':
+			return $author$project$Anim$Internal$Timing$Easing$Ease;
+		case 'EaseIn':
+			return $author$project$Anim$Internal$Timing$Easing$EaseIn;
+		case 'EaseOut':
+			return $author$project$Anim$Internal$Timing$Easing$EaseOut;
+		case 'EaseInOut':
+			return $author$project$Anim$Internal$Timing$Easing$EaseInOut;
+		case 'SineIn':
+			return $author$project$Anim$Internal$Timing$Easing$SineIn;
+		case 'SineOut':
+			return $author$project$Anim$Internal$Timing$Easing$SineOut;
+		case 'SineInOut':
+			return $author$project$Anim$Internal$Timing$Easing$SineInOut;
+		case 'QuadIn':
+			return $author$project$Anim$Internal$Timing$Easing$QuadIn;
+		case 'QuadOut':
+			return $author$project$Anim$Internal$Timing$Easing$QuadOut;
+		case 'QuadInOut':
+			return $author$project$Anim$Internal$Timing$Easing$QuadInOut;
+		case 'CubicIn':
+			return $author$project$Anim$Internal$Timing$Easing$CubicIn;
+		case 'CubicOut':
+			return $author$project$Anim$Internal$Timing$Easing$CubicOut;
+		case 'CubicInOut':
+			return $author$project$Anim$Internal$Timing$Easing$CubicInOut;
+		case 'QuartIn':
+			return $author$project$Anim$Internal$Timing$Easing$QuartIn;
+		case 'QuartOut':
+			return $author$project$Anim$Internal$Timing$Easing$QuartOut;
+		case 'QuartInOut':
+			return $author$project$Anim$Internal$Timing$Easing$QuartInOut;
+		case 'QuintIn':
+			return $author$project$Anim$Internal$Timing$Easing$QuintIn;
+		case 'QuintOut':
+			return $author$project$Anim$Internal$Timing$Easing$QuintOut;
+		case 'QuintInOut':
+			return $author$project$Anim$Internal$Timing$Easing$QuintInOut;
+		case 'ExpoIn':
+			return $author$project$Anim$Internal$Timing$Easing$ExpoIn;
+		case 'ExpoOut':
+			return $author$project$Anim$Internal$Timing$Easing$ExpoOut;
+		case 'ExpoInOut':
+			return $author$project$Anim$Internal$Timing$Easing$ExpoInOut;
+		case 'CircIn':
+			return $author$project$Anim$Internal$Timing$Easing$CircIn;
+		case 'CircOut':
+			return $author$project$Anim$Internal$Timing$Easing$CircOut;
+		case 'CircInOut':
+			return $author$project$Anim$Internal$Timing$Easing$CircInOut;
+		case 'BackIn':
+			return $author$project$Anim$Internal$Timing$Easing$BackIn;
+		case 'BackOut':
+			return $author$project$Anim$Internal$Timing$Easing$BackOut;
+		case 'BackInOut':
+			return $author$project$Anim$Internal$Timing$Easing$BackInOut;
+		case 'ElasticIn':
+			return $author$project$Anim$Internal$Timing$Easing$ElasticIn;
+		case 'ElasticOut':
+			return $author$project$Anim$Internal$Timing$Easing$ElasticOut;
+		case 'ElasticInOut':
+			return $author$project$Anim$Internal$Timing$Easing$ElasticInOut;
+		case 'BounceIn':
+			return $author$project$Anim$Internal$Timing$Easing$BounceIn;
+		case 'BounceOut':
+			return $author$project$Anim$Internal$Timing$Easing$BounceOut;
+		case 'BounceInOut':
+			return $author$project$Anim$Internal$Timing$Easing$BounceInOut;
+		default:
+			var str = easing.a;
+			return $author$project$Anim$Internal$Timing$Easing$Custom(str);
+	}
+};
+var $author$project$Anim$Timing$Easing$mapInternal = function (fn) {
+	return A2($elm$core$Basics$composeL, fn, $author$project$Anim$Timing$Easing$toInternal);
+};
+var $author$project$Anim$easing = F2(
+	function (easingValue, builder) {
+		return A3($author$project$Anim$Timing$Easing$mapInternal, $author$project$Anim$Internal$Builder$easing, easingValue, builder);
+	});
+var $author$project$Anim$Internal$Builders$Position$PositionBuilder = F2(
+	function (a, b) {
+		return {$: 'PositionBuilder', a: a, b: b};
+	});
+var $author$project$Anim$Internal$Builder$getDelay = function (_v0) {
+	var data = _v0.a;
+	return data.globalDelay;
+};
+var $author$project$Anim$Internal$Builder$getEasing = function (_v0) {
+	var data = _v0.a;
+	return data.globalEasing;
+};
+var $author$project$Anim$Internal$Builder$getTimespec = function (_v0) {
+	var data = _v0.a;
+	return data.globalTiming;
+};
+var $author$project$Anim$Internal$Builders$Position$applyGlobalDefaults = F2(
+	function (builder, config) {
+		return _Utils_update(
+			config,
+			{
+				delay: $author$project$Anim$Internal$Builder$getDelay(builder),
+				easing: $author$project$Anim$Internal$Builder$getEasing(builder),
+				timing: $author$project$Anim$Internal$Builder$getTimespec(builder)
+			});
+	});
+var $author$project$Anim$Internal$Properties$Position$Position = function (a) {
+	return {$: 'Position', a: a};
+};
+var $author$project$Anim$Internal$Properties$Position$fromTuple = function (_v0) {
+	var xCoord = _v0.a;
+	var yCoord = _v0.b;
+	return $author$project$Anim$Internal$Properties$Position$Position(
+		{x: xCoord, y: yCoord});
+};
+var $author$project$Anim$Internal$Builders$Position$defaultConfig = {
+	delay: $elm$core$Maybe$Nothing,
+	distance: 0,
+	duration: 0,
+	easing: $elm$core$Maybe$Nothing,
+	endAt: $author$project$Anim$Internal$Properties$Position$fromTuple(
+		_Utils_Tuple2(0, 0)),
+	speed: 0,
+	startAt: $elm$core$Maybe$Nothing,
+	timing: $elm$core$Maybe$Nothing
+};
+var $elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _v0 = f(mx);
+		if (_v0.$ === 'Just') {
+			var x = _v0.a;
+			return A2($elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var $elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			$elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
+var $author$project$Anim$Internal$Builder$for = F2(
+	function (elementId, _v0) {
+		var data = _v0.a;
+		return $author$project$Anim$Internal$Builder$AnimBuilder(
+			_Utils_update(
+				data,
+				{
+					currentElementId: $elm$core$Maybe$Just(elementId)
+				}));
+	});
+var $elm$core$Basics$compare = _Utils_compare;
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var $author$project$Anim$Internal$Builder$getElementConfig = F2(
+	function (elementId, _v0) {
+		var data = _v0.a;
+		return A2($elm$core$Dict$get, elementId, data.elements);
+	});
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$Internal$Builders$Position$for = F2(
+	function (elementId, builder) {
+		var existingConfig = function () {
+			var _v1 = A2($author$project$Anim$Internal$Builder$getElementConfig, elementId, builder);
+			if (_v1.$ === 'Just') {
+				var properties = _v1.a.properties;
+				return $elm$core$List$head(
+					A2(
+						$elm$core$List$filterMap,
+						function (prop) {
+							if (prop.$ === 'PositionConfig') {
+								var config = prop.a;
+								return $elm$core$Maybe$Just(config);
+							} else {
+								return $elm$core$Maybe$Nothing;
+							}
+						},
+						properties));
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		}();
+		if (existingConfig.$ === 'Just') {
+			var config = existingConfig.a;
+			return A2(
+				$author$project$Anim$Internal$Builders$Position$PositionBuilder,
+				A2($author$project$Anim$Internal$Builders$Position$applyGlobalDefaults, builder, config),
+				builder);
+		} else {
+			return A2(
+				$author$project$Anim$Internal$Builders$Position$PositionBuilder,
+				A2($author$project$Anim$Internal$Builders$Position$applyGlobalDefaults, builder, $author$project$Anim$Internal$Builders$Position$defaultConfig),
+				A2($author$project$Anim$Internal$Builder$for, elementId, builder));
+		}
+	});
+var $author$project$Anim$Properties$Position$for = function (elementId) {
+	return $author$project$Anim$Internal$Builders$Position$for(elementId);
+};
+var $author$project$ElmUI$CSS$Position$Main$anim = function (animations) {
+	return A2(
+		$author$project$Anim$Properties$Position$for,
+		'box',
+		A2(
+			$author$project$Anim$easing,
+			$author$project$Anim$Timing$Easing$Linear,
+			A2(
+				$author$project$Anim$duration,
+				700,
+				$author$project$Anim$CSS$builder(animations))));
+};
 var $author$project$Anim$Internal$Builder$elements = function (_v0) {
 	var data = _v0.a;
 	return data.elements;
@@ -5300,7 +5639,6 @@ var $elm$core$Dict$balance = F5(
 			}
 		}
 	});
-var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$insertHelp = F3(
 	function (key, value, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
@@ -5465,24 +5803,6 @@ var $author$project$Anim$CSS$colorStyleFromProperty = function (property) {
 			return $elm$core$Maybe$Nothing;
 	}
 };
-var $elm$core$List$maybeCons = F3(
-	function (f, mx, xs) {
-		var _v0 = f(mx);
-		if (_v0.$ === 'Just') {
-			var x = _v0.a;
-			return A2($elm$core$List$cons, x, xs);
-		} else {
-			return xs;
-		}
-	});
-var $elm$core$List$filterMap = F2(
-	function (f, xs) {
-		return A3(
-			$elm$core$List$foldr,
-			$elm$core$List$maybeCons(f),
-			_List_Nil,
-			xs);
-	});
 var $author$project$Anim$CSS$generateColorStyles = function (properties) {
 	return A2($elm$core$List$filterMap, $author$project$Anim$CSS$colorStyleFromProperty, properties);
 };
@@ -5720,103 +6040,13 @@ var $author$project$Anim$CSS$animate = function (builder_) {
 	return $author$project$Anim$CSS$AnimationState(
 		{builder: builder_, currentValues: currentValues, elementAnimations: elementAnimations});
 };
+var $author$project$Anim$Timing$Easing$BackInOut = {$: 'BackInOut'};
+var $author$project$Anim$Timing$Easing$backInOut = $author$project$Anim$Timing$Easing$BackInOut;
+var $author$project$Anim$Timing$Easing$BounceInOut = {$: 'BounceInOut'};
+var $author$project$Anim$Timing$Easing$bounceInOut = $author$project$Anim$Timing$Easing$BounceInOut;
 var $author$project$Anim$Internal$Builder$PositionConfig = function (a) {
 	return {$: 'PositionConfig', a: a};
 };
-var $author$project$Anim$Internal$Timing$TimeSpec$Duration = function (a) {
-	return {$: 'Duration', a: a};
-};
-var $author$project$Anim$Internal$Timing$TimeSpec$Speed = function (a) {
-	return {$: 'Speed', a: a};
-};
-var $author$project$Anim$Internal$Builder$getDelay = function (_v0) {
-	var data = _v0.a;
-	return data.globalDelay;
-};
-var $author$project$Anim$Internal$Builder$getEasing = function (_v0) {
-	var data = _v0.a;
-	return data.globalEasing;
-};
-var $author$project$Anim$Internal$Builder$getTimespec = function (_v0) {
-	var data = _v0.a;
-	return data.globalTiming;
-};
-var $elm$core$Debug$log = _Debug_log;
-var $author$project$Anim$Internal$Builders$Position$applyGlobalDefaults = F2(
-	function (builder, config) {
-		var timeSpec = function () {
-			var _v2 = config.timing;
-			if (_v2.$ === 'Just') {
-				if (_v2.a.$ === 'Speed') {
-					var s = _v2.a.a;
-					return $elm$core$Maybe$Just(
-						$author$project$Anim$Internal$Timing$TimeSpec$Speed(s));
-				} else {
-					var d = _v2.a.a;
-					return $elm$core$Maybe$Just(
-						$author$project$Anim$Internal$Timing$TimeSpec$Duration(d));
-				}
-			} else {
-				return $author$project$Anim$Internal$Builder$getTimespec(builder);
-			}
-		}();
-		var globalEasing = function () {
-			var _v1 = A2($elm$core$Debug$log, 'Config Easing', config.easing);
-			if (_v1.$ === 'Just') {
-				var e = _v1.a;
-				return $elm$core$Maybe$Just(e);
-			} else {
-				return $author$project$Anim$Internal$Builder$getEasing(builder);
-			}
-		}();
-		var globalDelay = function () {
-			var _v0 = config.delay;
-			if (_v0.$ === 'Just') {
-				var d = _v0.a;
-				return $elm$core$Maybe$Just(d);
-			} else {
-				return $author$project$Anim$Internal$Builder$getDelay(builder);
-			}
-		}();
-		return _Utils_update(
-			config,
-			{
-				delay: globalDelay,
-				easing: A2($elm$core$Debug$log, 'Global Easing', globalEasing),
-				timing: timeSpec
-			});
-	});
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
 var $elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
 		if (maybe.$ === 'Just') {
@@ -5905,15 +6135,6 @@ var $author$project$Anim$Internal$Builders$Property$configsMatch = F2(
 		}
 		return false;
 	});
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
 var $author$project$Anim$Internal$Builders$Property$find = F2(
 	function (predicate, builder) {
 		var currentElement = $author$project$Anim$Internal$Builder$getCurrentElementConfig(builder);
@@ -5949,251 +6170,119 @@ var $author$project$Anim$Internal$Builders$Property$upsert = F2(
 var $author$project$Anim$Internal$Builders$Position$build = function (_v0) {
 	var config = _v0.a;
 	var builder = _v0.b;
-	var newPositionConfig = $author$project$Anim$Internal$Builder$PositionConfig(
-		A2($author$project$Anim$Internal$Builders$Position$applyGlobalDefaults, builder, config));
+	var newPositionConfig = $author$project$Anim$Internal$Builder$PositionConfig(config);
 	return A2($author$project$Anim$Internal$Builders$Property$upsert, newPositionConfig, builder);
 };
 var $author$project$Anim$Properties$Position$build = $author$project$Anim$Internal$Builders$Position$build;
-var $author$project$Anim$CSS$builder = function (_v0) {
-	var state = _v0.a;
-	return state.builder;
-};
-var $author$project$Anim$Internal$Builder$duration = F2(
-	function (ms, _v0) {
-		var data = _v0.a;
-		return $author$project$Anim$Internal$Builder$AnimBuilder(
+var $author$project$Anim$Timing$Easing$CircInOut = {$: 'CircInOut'};
+var $author$project$Anim$Timing$Easing$circInOut = $author$project$Anim$Timing$Easing$CircInOut;
+var $author$project$Anim$Internal$Builders$Position$delay = F2(
+	function (delay_, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builders$Position$PositionBuilder,
 			_Utils_update(
-				data,
+				config,
 				{
-					globalTiming: $elm$core$Maybe$Just(
-						$author$project$Anim$Internal$Timing$TimeSpec$Duration(ms))
-				}));
+					delay: $elm$core$Maybe$Just(delay_)
+				}),
+			builder);
 	});
-var $author$project$Anim$duration = F2(
-	function (ms, builder) {
-		return A2($author$project$Anim$Internal$Builder$duration, ms, builder);
-	});
-var $author$project$Anim$Internal$Builder$easing = F2(
-	function (easingValue, _v0) {
-		var data = _v0.a;
-		return $author$project$Anim$Internal$Builder$AnimBuilder(
-			_Utils_update(
-				data,
-				{
-					globalEasing: $elm$core$Maybe$Just(easingValue)
-				}));
-	});
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
-var $author$project$Anim$Internal$Timing$Easing$BackIn = {$: 'BackIn'};
-var $author$project$Anim$Internal$Timing$Easing$BackInOut = {$: 'BackInOut'};
-var $author$project$Anim$Internal$Timing$Easing$BackOut = {$: 'BackOut'};
-var $author$project$Anim$Internal$Timing$Easing$Bezier = F4(
-	function (a, b, c, d) {
-		return {$: 'Bezier', a: a, b: b, c: c, d: d};
-	});
-var $author$project$Anim$Internal$Timing$Easing$BounceIn = {$: 'BounceIn'};
-var $author$project$Anim$Internal$Timing$Easing$BounceInOut = {$: 'BounceInOut'};
-var $author$project$Anim$Internal$Timing$Easing$BounceOut = {$: 'BounceOut'};
-var $author$project$Anim$Internal$Timing$Easing$CircIn = {$: 'CircIn'};
-var $author$project$Anim$Internal$Timing$Easing$CircInOut = {$: 'CircInOut'};
-var $author$project$Anim$Internal$Timing$Easing$CircOut = {$: 'CircOut'};
-var $author$project$Anim$Internal$Timing$Easing$CubicIn = {$: 'CubicIn'};
-var $author$project$Anim$Internal$Timing$Easing$CubicInOut = {$: 'CubicInOut'};
-var $author$project$Anim$Internal$Timing$Easing$CubicOut = {$: 'CubicOut'};
-var $author$project$Anim$Internal$Timing$Easing$Custom = function (a) {
-	return {$: 'Custom', a: a};
+var $author$project$Anim$Internal$Timing$Delay$Delay = function (a) {
+	return {$: 'Delay', a: a};
 };
-var $author$project$Anim$Internal$Timing$Easing$Ease = {$: 'Ease'};
-var $author$project$Anim$Internal$Timing$Easing$EaseIn = {$: 'EaseIn'};
-var $author$project$Anim$Internal$Timing$Easing$EaseInOut = {$: 'EaseInOut'};
-var $author$project$Anim$Internal$Timing$Easing$EaseOut = {$: 'EaseOut'};
-var $author$project$Anim$Internal$Timing$Easing$ElasticIn = {$: 'ElasticIn'};
-var $author$project$Anim$Internal$Timing$Easing$ElasticInOut = {$: 'ElasticInOut'};
-var $author$project$Anim$Internal$Timing$Easing$ElasticOut = {$: 'ElasticOut'};
-var $author$project$Anim$Internal$Timing$Easing$ExpoIn = {$: 'ExpoIn'};
-var $author$project$Anim$Internal$Timing$Easing$ExpoInOut = {$: 'ExpoInOut'};
-var $author$project$Anim$Internal$Timing$Easing$ExpoOut = {$: 'ExpoOut'};
-var $author$project$Anim$Internal$Timing$Easing$Linear = {$: 'Linear'};
-var $author$project$Anim$Internal$Timing$Easing$QuadIn = {$: 'QuadIn'};
-var $author$project$Anim$Internal$Timing$Easing$QuadInOut = {$: 'QuadInOut'};
-var $author$project$Anim$Internal$Timing$Easing$QuadOut = {$: 'QuadOut'};
-var $author$project$Anim$Internal$Timing$Easing$QuartIn = {$: 'QuartIn'};
-var $author$project$Anim$Internal$Timing$Easing$QuartInOut = {$: 'QuartInOut'};
-var $author$project$Anim$Internal$Timing$Easing$QuartOut = {$: 'QuartOut'};
-var $author$project$Anim$Internal$Timing$Easing$QuintIn = {$: 'QuintIn'};
-var $author$project$Anim$Internal$Timing$Easing$QuintInOut = {$: 'QuintInOut'};
-var $author$project$Anim$Internal$Timing$Easing$QuintOut = {$: 'QuintOut'};
-var $author$project$Anim$Internal$Timing$Easing$SineIn = {$: 'SineIn'};
-var $author$project$Anim$Internal$Timing$Easing$SineInOut = {$: 'SineInOut'};
-var $author$project$Anim$Internal$Timing$Easing$SineOut = {$: 'SineOut'};
-var $author$project$Anim$Timing$Easing$toInternal = function (easing) {
-	switch (easing.$) {
-		case 'Bezier':
-			var p1x = easing.a;
-			var p1y = easing.b;
-			var p2x = easing.c;
-			var p2y = easing.d;
-			return A4($author$project$Anim$Internal$Timing$Easing$Bezier, p1x, p1y, p2x, p2y);
-		case 'Linear':
-			return $author$project$Anim$Internal$Timing$Easing$Linear;
-		case 'Ease':
-			return $author$project$Anim$Internal$Timing$Easing$Ease;
-		case 'EaseIn':
-			return $author$project$Anim$Internal$Timing$Easing$EaseIn;
-		case 'EaseOut':
-			return $author$project$Anim$Internal$Timing$Easing$EaseOut;
-		case 'EaseInOut':
-			return $author$project$Anim$Internal$Timing$Easing$EaseInOut;
-		case 'SineIn':
-			return $author$project$Anim$Internal$Timing$Easing$SineIn;
-		case 'SineOut':
-			return $author$project$Anim$Internal$Timing$Easing$SineOut;
-		case 'SineInOut':
-			return $author$project$Anim$Internal$Timing$Easing$SineInOut;
-		case 'QuadIn':
-			return $author$project$Anim$Internal$Timing$Easing$QuadIn;
-		case 'QuadOut':
-			return $author$project$Anim$Internal$Timing$Easing$QuadOut;
-		case 'QuadInOut':
-			return $author$project$Anim$Internal$Timing$Easing$QuadInOut;
-		case 'CubicIn':
-			return $author$project$Anim$Internal$Timing$Easing$CubicIn;
-		case 'CubicOut':
-			return $author$project$Anim$Internal$Timing$Easing$CubicOut;
-		case 'CubicInOut':
-			return $author$project$Anim$Internal$Timing$Easing$CubicInOut;
-		case 'QuartIn':
-			return $author$project$Anim$Internal$Timing$Easing$QuartIn;
-		case 'QuartOut':
-			return $author$project$Anim$Internal$Timing$Easing$QuartOut;
-		case 'QuartInOut':
-			return $author$project$Anim$Internal$Timing$Easing$QuartInOut;
-		case 'QuintIn':
-			return $author$project$Anim$Internal$Timing$Easing$QuintIn;
-		case 'QuintOut':
-			return $author$project$Anim$Internal$Timing$Easing$QuintOut;
-		case 'QuintInOut':
-			return $author$project$Anim$Internal$Timing$Easing$QuintInOut;
-		case 'ExpoIn':
-			return $author$project$Anim$Internal$Timing$Easing$ExpoIn;
-		case 'ExpoOut':
-			return $author$project$Anim$Internal$Timing$Easing$ExpoOut;
-		case 'ExpoInOut':
-			return $author$project$Anim$Internal$Timing$Easing$ExpoInOut;
-		case 'CircIn':
-			return $author$project$Anim$Internal$Timing$Easing$CircIn;
-		case 'CircOut':
-			return $author$project$Anim$Internal$Timing$Easing$CircOut;
-		case 'CircInOut':
-			return $author$project$Anim$Internal$Timing$Easing$CircInOut;
-		case 'BackIn':
-			return $author$project$Anim$Internal$Timing$Easing$BackIn;
-		case 'BackOut':
-			return $author$project$Anim$Internal$Timing$Easing$BackOut;
-		case 'BackInOut':
-			return $author$project$Anim$Internal$Timing$Easing$BackInOut;
-		case 'ElasticIn':
-			return $author$project$Anim$Internal$Timing$Easing$ElasticIn;
-		case 'ElasticOut':
-			return $author$project$Anim$Internal$Timing$Easing$ElasticOut;
-		case 'ElasticInOut':
-			return $author$project$Anim$Internal$Timing$Easing$ElasticInOut;
-		case 'BounceIn':
-			return $author$project$Anim$Internal$Timing$Easing$BounceIn;
-		case 'BounceOut':
-			return $author$project$Anim$Internal$Timing$Easing$BounceOut;
-		case 'BounceInOut':
-			return $author$project$Anim$Internal$Timing$Easing$BounceInOut;
-		default:
-			var str = easing.a;
-			return $author$project$Anim$Internal$Timing$Easing$Custom(str);
+var $author$project$Anim$Internal$Timing$Delay$NoDelay = {$: 'NoDelay'};
+var $author$project$Anim$Timing$Delay$toInternal = function (delay) {
+	if (delay.$ === 'Delay') {
+		var d = delay.a;
+		return $author$project$Anim$Internal$Timing$Delay$Delay(d);
+	} else {
+		return $author$project$Anim$Internal$Timing$Delay$NoDelay;
 	}
 };
-var $author$project$Anim$Timing$Easing$mapInternal = function (fn) {
-	return A2($elm$core$Basics$composeL, fn, $author$project$Anim$Timing$Easing$toInternal);
+var $author$project$Anim$Timing$Delay$mapInternal = function (fn) {
+	return A2($elm$core$Basics$composeL, fn, $author$project$Anim$Timing$Delay$toInternal);
 };
-var $author$project$Anim$easing = F2(
-	function (easingValue, builder) {
-		return A3($author$project$Anim$Timing$Easing$mapInternal, $author$project$Anim$Internal$Builder$easing, easingValue, builder);
-	});
-var $author$project$Anim$Internal$Builders$Position$PositionBuilder = F2(
-	function (a, b) {
-		return {$: 'PositionBuilder', a: a, b: b};
-	});
-var $author$project$Anim$Internal$Properties$Position$Position = function (a) {
-	return {$: 'Position', a: a};
+var $author$project$Anim$Properties$Position$delay = function (delay_) {
+	return $author$project$Anim$Internal$Builders$Position$delay(
+		A2($author$project$Anim$Timing$Delay$mapInternal, $elm$core$Basics$identity, delay_));
 };
-var $author$project$Anim$Internal$Properties$Position$fromTuple = function (_v0) {
-	var xCoord = _v0.a;
-	var yCoord = _v0.b;
-	return $author$project$Anim$Internal$Properties$Position$Position(
-		{x: xCoord, y: yCoord});
-};
-var $author$project$Anim$Internal$Builders$Position$defaultConfig = {
-	delay: $elm$core$Maybe$Nothing,
-	distance: 0,
-	duration: 0,
-	easing: $elm$core$Maybe$Nothing,
-	endAt: $author$project$Anim$Internal$Properties$Position$fromTuple(
-		_Utils_Tuple2(0, 0)),
-	speed: 0,
-	startAt: $elm$core$Maybe$Nothing,
-	timing: $elm$core$Maybe$Nothing
-};
-var $author$project$Anim$Internal$Builder$for = F2(
-	function (elementId, _v0) {
-		var data = _v0.a;
-		return $author$project$Anim$Internal$Builder$AnimBuilder(
+var $author$project$Anim$Internal$Builders$Position$duration = F2(
+	function (ms, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builders$Position$PositionBuilder,
 			_Utils_update(
-				data,
+				config,
 				{
-					currentElementId: $elm$core$Maybe$Just(elementId)
-				}));
+					duration: ms,
+					timing: $elm$core$Maybe$Just(
+						$author$project$Anim$Internal$Timing$TimeSpec$Duration(ms))
+				}),
+			builder);
 	});
-var $author$project$Anim$Internal$Builder$getElementConfig = F2(
-	function (elementId, _v0) {
-		var data = _v0.a;
-		return A2($elm$core$Dict$get, elementId, data.elements);
+var $author$project$Anim$Properties$Position$duration = $author$project$Anim$Internal$Builders$Position$duration;
+var $author$project$Anim$Internal$Builders$Position$easing = F2(
+	function (easing_, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builders$Position$PositionBuilder,
+			_Utils_update(
+				config,
+				{
+					easing: $elm$core$Maybe$Just(easing_)
+				}),
+			builder);
 	});
-var $author$project$Anim$Internal$Builders$Position$for = F2(
-	function (elementId, builder) {
-		var existingConfig = function () {
-			var _v1 = A2($author$project$Anim$Internal$Builder$getElementConfig, elementId, builder);
-			if (_v1.$ === 'Just') {
-				var properties = _v1.a.properties;
-				return $elm$core$List$head(
-					A2(
-						$elm$core$List$filterMap,
-						function (prop) {
-							if (prop.$ === 'PositionConfig') {
-								var config = prop.a;
-								return $elm$core$Maybe$Just(config);
-							} else {
-								return $elm$core$Maybe$Nothing;
-							}
-						},
-						properties));
+var $author$project$Anim$Properties$Position$easing = function (easing_) {
+	return $author$project$Anim$Internal$Builders$Position$easing(
+		A2($author$project$Anim$Timing$Easing$mapInternal, $elm$core$Basics$identity, easing_));
+};
+var $author$project$Anim$Timing$Easing$ElasticInOut = {$: 'ElasticInOut'};
+var $author$project$Anim$Timing$Easing$elasticInOut = $author$project$Anim$Timing$Easing$ElasticInOut;
+var $author$project$Anim$Internal$Timing$TimeSpec$Speed = function (a) {
+	return {$: 'Speed', a: a};
+};
+var $author$project$Anim$Internal$Builders$Position$speed = F2(
+	function (value, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var _v1 = function () {
+			var _v2 = $author$project$Anim$Internal$Builder$getTimespec(builder);
+			if (_v2.$ === 'Just') {
+				if (_v2.a.$ === 'Speed') {
+					var s = _v2.a.a;
+					return _Utils_Tuple2(
+						s,
+						$elm$core$Maybe$Just(
+							$author$project$Anim$Internal$Timing$TimeSpec$Speed(s)));
+				} else {
+					var d = _v2.a.a;
+					return _Utils_Tuple2(
+						value,
+						$elm$core$Maybe$Just(
+							$author$project$Anim$Internal$Timing$TimeSpec$Speed(value)));
+				}
 			} else {
-				return $elm$core$Maybe$Nothing;
+				return _Utils_Tuple2(
+					value,
+					$elm$core$Maybe$Just(
+						$author$project$Anim$Internal$Timing$TimeSpec$Speed(value)));
 			}
 		}();
-		if (existingConfig.$ === 'Just') {
-			var config = existingConfig.a;
-			return A2($author$project$Anim$Internal$Builders$Position$PositionBuilder, config, builder);
-		} else {
-			return A2(
-				$author$project$Anim$Internal$Builders$Position$PositionBuilder,
-				$author$project$Anim$Internal$Builders$Position$defaultConfig,
-				A2($author$project$Anim$Internal$Builder$for, elementId, builder));
-		}
+		var speed_ = _v1.a;
+		var timeSpec = _v1.b;
+		return A2(
+			$author$project$Anim$Internal$Builders$Position$PositionBuilder,
+			_Utils_update(
+				config,
+				{speed: speed_, timing: timeSpec}),
+			builder);
 	});
-var $author$project$Anim$Properties$Position$for = function (elementId) {
-	return $author$project$Anim$Internal$Builders$Position$for(elementId);
-};
+var $author$project$Anim$Properties$Position$speed = $author$project$Anim$Internal$Builders$Position$speed;
 var $author$project$Anim$Internal$Properties$Position$y = function (_v0) {
 	var coords = _v0.a;
 	return coords.y;
@@ -6265,20 +6354,14 @@ var $author$project$ElmUI$CSS$Position$Main$update = F2(
 				var y = msg.b;
 				var animationState = $author$project$Anim$CSS$animate(
 					$author$project$Anim$Properties$Position$build(
-						A3(
-							$author$project$Anim$Properties$Position$toXY,
-							x,
-							y,
-							A2(
-								$author$project$Anim$Properties$Position$for,
-								'box',
-								A2(
-									$author$project$Anim$easing,
-									$author$project$Anim$Timing$Easing$QuadInOut,
-									A2(
-										$author$project$Anim$duration,
-										700,
-										$author$project$Anim$CSS$builder(model.animations)))))));
+						A2(
+							$author$project$Anim$Properties$Position$easing,
+							$author$project$Anim$Timing$Easing$QuadInOut,
+							A3(
+								$author$project$Anim$Properties$Position$toXY,
+								x,
+								y,
+								$author$project$ElmUI$CSS$Position$Main$anim(model.animations)))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -6288,18 +6371,15 @@ var $author$project$ElmUI$CSS$Position$Main$update = F2(
 				var animationState = $author$project$Anim$CSS$animate(
 					$author$project$Anim$Properties$Position$build(
 						A2(
-							$author$project$Anim$Properties$Position$toX,
-							0,
+							$author$project$Anim$Properties$Position$speed,
+							100,
 							A2(
-								$author$project$Anim$Properties$Position$for,
-								'box',
+								$author$project$Anim$Properties$Position$easing,
+								$author$project$Anim$Timing$Easing$SineInOut,
 								A2(
-									$author$project$Anim$easing,
-									$author$project$Anim$Timing$Easing$SineInOut,
-									A2(
-										$author$project$Anim$duration,
-										700,
-										$author$project$Anim$CSS$builder(model.animations)))))));
+									$author$project$Anim$Properties$Position$toX,
+									0,
+									$author$project$ElmUI$CSS$Position$Main$anim(model.animations))))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -6309,18 +6389,15 @@ var $author$project$ElmUI$CSS$Position$Main$update = F2(
 				var animationState = $author$project$Anim$CSS$animate(
 					$author$project$Anim$Properties$Position$build(
 						A2(
-							$author$project$Anim$Properties$Position$toX,
-							450,
+							$author$project$Anim$Properties$Position$duration,
+							400,
 							A2(
-								$author$project$Anim$Properties$Position$for,
-								'box',
+								$author$project$Anim$Properties$Position$easing,
+								$author$project$Anim$Timing$Easing$backInOut,
 								A2(
-									$author$project$Anim$easing,
-									$author$project$Anim$Timing$Easing$BackInOut,
-									A2(
-										$author$project$Anim$duration,
-										700,
-										$author$project$Anim$CSS$builder(model.animations)))))));
+									$author$project$Anim$Properties$Position$toX,
+									450,
+									$author$project$ElmUI$CSS$Position$Main$anim(model.animations))))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -6330,18 +6407,15 @@ var $author$project$ElmUI$CSS$Position$Main$update = F2(
 				var animationState = $author$project$Anim$CSS$animate(
 					$author$project$Anim$Properties$Position$build(
 						A2(
-							$author$project$Anim$Properties$Position$toY,
-							350,
+							$author$project$Anim$Properties$Position$delay,
+							$author$project$Anim$Timing$Delay$Delay(1000),
 							A2(
-								$author$project$Anim$Properties$Position$for,
-								'box',
+								$author$project$Anim$Properties$Position$easing,
+								$author$project$Anim$Timing$Easing$bounceInOut,
 								A2(
-									$author$project$Anim$easing,
-									$author$project$Anim$Timing$Easing$BounceInOut,
-									A2(
-										$author$project$Anim$duration,
-										700,
-										$author$project$Anim$CSS$builder(model.animations)))))));
+									$author$project$Anim$Properties$Position$toY,
+									350,
+									$author$project$ElmUI$CSS$Position$Main$anim(model.animations))))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -6351,18 +6425,12 @@ var $author$project$ElmUI$CSS$Position$Main$update = F2(
 				var animationState = $author$project$Anim$CSS$animate(
 					$author$project$Anim$Properties$Position$build(
 						A2(
-							$author$project$Anim$Properties$Position$toY,
-							0,
+							$author$project$Anim$Properties$Position$easing,
+							$author$project$Anim$Timing$Easing$circInOut,
 							A2(
-								$author$project$Anim$Properties$Position$for,
-								'box',
-								A2(
-									$author$project$Anim$easing,
-									$author$project$Anim$Timing$Easing$CircInOut,
-									A2(
-										$author$project$Anim$duration,
-										700,
-										$author$project$Anim$CSS$builder(model.animations)))))));
+								$author$project$Anim$Properties$Position$toY,
+								0,
+								$author$project$ElmUI$CSS$Position$Main$anim(model.animations)))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -6371,20 +6439,14 @@ var $author$project$ElmUI$CSS$Position$Main$update = F2(
 			case 'ReturnToOrigin':
 				var animationState = $author$project$Anim$CSS$animate(
 					$author$project$Anim$Properties$Position$build(
-						A3(
-							$author$project$Anim$Properties$Position$toXY,
-							0,
-							0,
-							A2(
-								$author$project$Anim$Properties$Position$for,
-								'box',
-								A2(
-									$author$project$Anim$easing,
-									$author$project$Anim$Timing$Easing$ElasticInOut,
-									A2(
-										$author$project$Anim$duration,
-										700,
-										$author$project$Anim$CSS$builder(model.animations)))))));
+						A2(
+							$author$project$Anim$Properties$Position$easing,
+							$author$project$Anim$Timing$Easing$elasticInOut,
+							A3(
+								$author$project$Anim$Properties$Position$toXY,
+								0,
+								0,
+								$author$project$ElmUI$CSS$Position$Main$anim(model.animations)))));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -12750,7 +12812,7 @@ var $author$project$ElmUI$CSS$Position$Main$viewContent = function (model) {
 					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$CSS$Position$Main$MoveLeft, '← Move Left'),
 					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$CSS$Position$Main$MoveRight, 'Move Right →'),
 					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$CSS$Position$Main$MoveUp, '↑ Move Up'),
-					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$CSS$Position$Main$MoveDown, 'Move Down ↓')
+					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$CSS$Position$Main$MoveDown, 'Move Down (with delay 1000ms) ↓')
 				])),
 			A2(
 			$mdgriffith$elm_ui$Element$el,
@@ -12794,10 +12856,7 @@ var $author$project$ElmUI$CSS$Position$Main$viewContent = function (model) {
 					A2(
 						$elm$core$List$map,
 						$mdgriffith$elm_ui$Element$htmlAttribute,
-						A2(
-							$elm$core$Debug$log,
-							'HTML Attributes for box',
-							A2($author$project$Anim$CSS$htmlAttributes, 'box', model.animations)))),
+						A2($author$project$Anim$CSS$htmlAttributes, 'box', model.animations))),
 				$mdgriffith$elm_ui$Element$none))
 		]);
 };

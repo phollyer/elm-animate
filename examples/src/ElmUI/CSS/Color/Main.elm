@@ -16,10 +16,9 @@ FEATURES:
 -}
 
 import Anim
-import Anim.CSS as CSS exposing (AnimationResult)
-import Anim.Easing as Easing
-import Anim.Internal exposing (ColorValue(..))
+import Anim.CSS as CSS exposing (AnimationState)
 import Anim.Properties.Color as Color
+import Anim.Timing.Easing as Easing
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -49,7 +48,7 @@ main =
 
 
 type alias Model =
-    { animations : Maybe AnimationResult
+    { animations : Maybe AnimationState
     , isAnimating : Bool
     , currentColor : String -- Current color as hex string
     }

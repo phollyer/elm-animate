@@ -1,7 +1,7 @@
 module Anim.Properties.Position exposing
     ( Position
     , from, to, speed, duration, easing, delay
-    , build, for, toInternal, toX, toXY, toY
+    , PositionBuilder, build, for, toInternal, toX, toXY, toY
     )
 
 {-| Position animation property functions.

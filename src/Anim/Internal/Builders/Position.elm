@@ -140,7 +140,7 @@ speed value (PositionBuilder config builder) =
                 Just (Speed s) ->
                     ( s, Just <| Speed s )
 
-                Just (Duration d) ->
+                Just (Duration _) ->
                     ( value, Just <| Speed value )
 
                 Nothing ->

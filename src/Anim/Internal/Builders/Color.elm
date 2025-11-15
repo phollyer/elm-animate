@@ -11,6 +11,7 @@ module Anim.Internal.Builders.Color exposing
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
+import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Color as Color exposing (Color(..))
 import Anim.Internal.Timing.Delay exposing (Delay)
 import Anim.Internal.Timing.Easing exposing (Easing)
@@ -39,66 +40,49 @@ type ColorBuilder
 
 for : String -> AnimBuilder -> ColorBuilder
 for elementId builder =
-    ColorBuilder defaultConfig (Builder.for elementId builder)
+    let
+        existingConfig =
+            case Builder.getElementConfig elementId builder of
+                Just { properties } ->
+                    properties
+                        |> List.filterMap
+                            (\prop ->
+                                case prop of
+                                    Builder.ColorConfig config ->
+                                        Just config
+
+                                    _ ->
+                                        Nothing
+                            )
+                        |> List.head
+
+                _ ->
+                    Nothing
+    in
+    case existingConfig of
+        Just config ->
+            ColorBuilder (applyGlobalDefaults builder config) builder
+
+        Nothing ->
+            ColorBuilder (applyGlobalDefaults builder defaultConfig) (Builder.for elementId builder)
+
+
+applyGlobalDefaults : AnimBuilder -> ColorConfig -> ColorConfig
+applyGlobalDefaults builder config =
+    { config
+        | easing = Builder.getEasing builder
+        , delay = Builder.getDelay builder
+        , timing = Builder.getTimespec builder
+    }
 
 
 build : ColorBuilder -> AnimBuilder
 build (ColorBuilder config builder) =
     let
-        currentElement =
-            Builder.getCurrentElementConfig builder
-
         newColorConfig =
             Builder.ColorConfig config
-
-        addProp =
-            newColorConfig :: currentElement.properties
-
-        replaceProp =
-            currentElement.properties
-                |> List.map
-                    (\p ->
-                        case p of
-                            Builder.ColorConfig _ ->
-                                newColorConfig
-
-                            _ ->
-                                p
-                    )
-
-        findProp : List Builder.PropertyConfig -> List Builder.PropertyConfig
-        findProp =
-            List.filterMap
-                (\p ->
-                    case p of
-                        Builder.ColorConfig c ->
-                            Just (Builder.ColorConfig c)
-
-                        _ ->
-                            Nothing
-                )
-
-        upsertProp : List Builder.PropertyConfig -> List Builder.PropertyConfig
-        upsertProp props =
-            case props of
-                [] ->
-                    addProp
-
-                [ Builder.ColorConfig _ ] ->
-                    replaceProp
-
-                _ ->
-                    replaceProp
-
-        updatedElement =
-            { currentElement
-                | properties =
-                    currentElement.properties
-                        |> findProp
-                        |> upsertProp
-            }
     in
-    Builder.updateCurrentElement updatedElement builder
+    PropertyBuilder.upsert newColorConfig builder
 
 
 type alias ColorConfig =
