@@ -4373,6 +4373,52 @@ function _Browser_load(url)
 
 
 
+function _Time_now(millisToPosix)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		callback(_Scheduler_succeed(millisToPosix(Date.now())));
+	});
+}
+
+var _Time_setInterval = F2(function(interval, task)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var id = setInterval(function() { _Scheduler_rawSpawn(task); }, interval);
+		return function() { clearInterval(id); };
+	});
+});
+
+function _Time_here()
+{
+	return _Scheduler_binding(function(callback)
+	{
+		callback(_Scheduler_succeed(
+			A2($elm$time$Time$customZone, -(new Date().getTimezoneOffset()), _List_Nil)
+		));
+	});
+}
+
+
+function _Time_getZoneName()
+{
+	return _Scheduler_binding(function(callback)
+	{
+		try
+		{
+			var name = $elm$time$Time$Name(Intl.DateTimeFormat().resolvedOptions().timeZone);
+		}
+		catch (e)
+		{
+			var name = $elm$time$Time$Offset(new Date().getTimezoneOffset());
+		}
+		callback(_Scheduler_succeed(name));
+	});
+}
+
+
+
 var _Bitwise_and = F2(function(a, b)
 {
 	return a & b;
@@ -5196,58 +5242,39 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$document = _Browser_document;
-var $author$project$Anim$CSS$Model = function (a) {
-	return {$: 'Model', a: a};
+var $author$project$Anim$CSS$AnimationState = function (a) {
+	return {$: 'AnimationState', a: a};
 };
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
-var $author$project$Anim$CSS$init = $author$project$Anim$CSS$Model($elm$core$Dict$empty);
+var $author$project$Anim$Internal$Builder$AnimBuilder = function (a) {
+	return {$: 'AnimBuilder', a: a};
+};
+var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
+	{currentElementId: $elm$core$Maybe$Nothing, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing});
+var $author$project$Anim$init = $author$project$Anim$Internal$Builder$init;
+var $author$project$Anim$CSS$init = $author$project$Anim$CSS$AnimationState(
+	{builder: $author$project$Anim$init, currentValues: $elm$core$Dict$empty, elementAnimations: $elm$core$Dict$empty});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$ElmUI$CSS$Events$Main$init = function (_v0) {
 	return _Utils_Tuple2(
-		{animations: $author$project$Anim$CSS$init, eventCounter: 0, eventLog: _List_Nil, isAnimating: false},
+		{animations: $author$project$Anim$CSS$init, currentTime: 0, eventCounter: 0, eventLog: _List_Nil, isAnimating: false},
 		$elm$core$Platform$Cmd$none);
 };
-var $elm$core$Platform$Sub$batch = _Platform_batch;
-var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$ElmUI$CSS$Events$Main$subscriptions = function (_v0) {
-	return $elm$core$Platform$Sub$none;
+var $author$project$ElmUI$CSS$Events$Main$Tick = function (a) {
+	return {$: 'Tick', a: a};
 };
-var $author$project$Anim$Position = F2(
-	function (x, y) {
-		return {x: x, y: y};
+var $elm$time$Time$Every = F2(
+	function (a, b) {
+		return {$: 'Every', a: a, b: b};
 	});
-var $author$project$ElmUI$CSS$Events$Main$TransitionCancel = {$: 'TransitionCancel'};
-var $author$project$ElmUI$CSS$Events$Main$TransitionEnd = {$: 'TransitionEnd'};
-var $author$project$ElmUI$CSS$Events$Main$TransitionRun = {$: 'TransitionRun'};
-var $author$project$ElmUI$CSS$Events$Main$TransitionStart = {$: 'TransitionStart'};
-var $author$project$Anim$CSS$extractPosition = function (target) {
-	if (target.$ === 'ToPosition') {
-		var position = target.a;
-		return $elm$core$Maybe$Just(position);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $elm$core$List$maybeCons = F3(
-	function (f, mx, xs) {
-		var _v0 = f(mx);
-		if (_v0.$ === 'Just') {
-			var x = _v0.a;
-			return A2($elm$core$List$cons, x, xs);
-		} else {
-			return xs;
-		}
+var $elm$time$Time$State = F2(
+	function (taggers, processes) {
+		return {processes: processes, taggers: taggers};
 	});
-var $elm$core$List$filterMap = F2(
-	function (f, xs) {
-		return A3(
-			$elm$core$List$foldr,
-			$elm$core$List$maybeCons(f),
-			_List_Nil,
-			xs);
-	});
+var $elm$time$Time$init = $elm$core$Task$succeed(
+	A2($elm$time$Time$State, $elm$core$Dict$empty, $elm$core$Dict$empty));
 var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -5280,39 +5307,386 @@ var $elm$core$Dict$get = F2(
 			}
 		}
 	});
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
+var $elm$core$Dict$Black = {$: 'Black'};
+var $elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+	});
+var $elm$core$Dict$Red = {$: 'Red'};
+var $elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+			var _v1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+				var _v3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					key,
+					value,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+				var _v5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _v6 = left.d;
+				var _v7 = _v6.a;
+				var llK = _v6.b;
+				var llV = _v6.c;
+				var llLeft = _v6.d;
+				var llRight = _v6.e;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					lK,
+					lV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
+			} else {
+				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var $elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _v1 = A2($elm$core$Basics$compare, key, nKey);
+			switch (_v1.$) {
+				case 'LT':
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3($elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 'EQ':
+					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3($elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var $elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $elm$time$Time$addMySub = F2(
+	function (_v0, state) {
+		var interval = _v0.a;
+		var tagger = _v0.b;
+		var _v1 = A2($elm$core$Dict$get, interval, state);
+		if (_v1.$ === 'Nothing') {
+			return A3(
+				$elm$core$Dict$insert,
+				interval,
+				_List_fromArray(
+					[tagger]),
+				state);
+		} else {
+			var taggers = _v1.a;
+			return A3(
+				$elm$core$Dict$insert,
+				interval,
+				A2($elm$core$List$cons, tagger, taggers),
+				state);
+		}
+	});
+var $elm$core$Process$kill = _Scheduler_kill;
+var $elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3($elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
+var $elm$core$Dict$merge = F6(
+	function (leftStep, bothStep, rightStep, leftDict, rightDict, initialResult) {
+		var stepState = F3(
+			function (rKey, rValue, _v0) {
+				stepState:
+				while (true) {
+					var list = _v0.a;
+					var result = _v0.b;
+					if (!list.b) {
+						return _Utils_Tuple2(
+							list,
+							A3(rightStep, rKey, rValue, result));
+					} else {
+						var _v2 = list.a;
+						var lKey = _v2.a;
+						var lValue = _v2.b;
+						var rest = list.b;
+						if (_Utils_cmp(lKey, rKey) < 0) {
+							var $temp$rKey = rKey,
+								$temp$rValue = rValue,
+								$temp$_v0 = _Utils_Tuple2(
+								rest,
+								A3(leftStep, lKey, lValue, result));
+							rKey = $temp$rKey;
+							rValue = $temp$rValue;
+							_v0 = $temp$_v0;
+							continue stepState;
+						} else {
+							if (_Utils_cmp(lKey, rKey) > 0) {
+								return _Utils_Tuple2(
+									list,
+									A3(rightStep, rKey, rValue, result));
+							} else {
+								return _Utils_Tuple2(
+									rest,
+									A4(bothStep, lKey, lValue, rValue, result));
+							}
+						}
+					}
+				}
+			});
+		var _v3 = A3(
+			$elm$core$Dict$foldl,
+			stepState,
+			_Utils_Tuple2(
+				$elm$core$Dict$toList(leftDict),
+				initialResult),
+			rightDict);
+		var leftovers = _v3.a;
+		var intermediateResult = _v3.b;
+		return A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v4, result) {
+					var k = _v4.a;
+					var v = _v4.b;
+					return A3(leftStep, k, v, result);
+				}),
+			intermediateResult,
+			leftovers);
+	});
+var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
+var $elm$time$Time$Name = function (a) {
+	return {$: 'Name', a: a};
 };
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
+var $elm$time$Time$Offset = function (a) {
+	return {$: 'Offset', a: a};
+};
+var $elm$time$Time$Zone = F2(
+	function (a, b) {
+		return {$: 'Zone', a: a, b: b};
+	});
+var $elm$time$Time$customZone = $elm$time$Time$Zone;
+var $elm$time$Time$setInterval = _Time_setInterval;
+var $elm$core$Process$spawn = _Scheduler_spawn;
+var $elm$time$Time$spawnHelp = F3(
+	function (router, intervals, processes) {
+		if (!intervals.b) {
+			return $elm$core$Task$succeed(processes);
 		} else {
-			return _default;
+			var interval = intervals.a;
+			var rest = intervals.b;
+			var spawnTimer = $elm$core$Process$spawn(
+				A2(
+					$elm$time$Time$setInterval,
+					interval,
+					A2($elm$core$Platform$sendToSelf, router, interval)));
+			var spawnRest = function (id) {
+				return A3(
+					$elm$time$Time$spawnHelp,
+					router,
+					rest,
+					A3($elm$core$Dict$insert, interval, id, processes));
+			};
+			return A2($elm$core$Task$andThen, spawnRest, spawnTimer);
 		}
 	});
-var $author$project$Anim$CSS$getCurrentPosition = F2(
-	function (elementId, _v0) {
-		var animations = _v0.a;
-		var _v1 = A2($elm$core$Dict$get, elementId, animations);
-		if (_v1.$ === 'Just') {
-			var targets = _v1.a;
+var $elm$time$Time$onEffects = F3(
+	function (router, subs, _v0) {
+		var processes = _v0.processes;
+		var rightStep = F3(
+			function (_v6, id, _v7) {
+				var spawns = _v7.a;
+				var existing = _v7.b;
+				var kills = _v7.c;
+				return _Utils_Tuple3(
+					spawns,
+					existing,
+					A2(
+						$elm$core$Task$andThen,
+						function (_v5) {
+							return kills;
+						},
+						$elm$core$Process$kill(id)));
+			});
+		var newTaggers = A3($elm$core$List$foldl, $elm$time$Time$addMySub, $elm$core$Dict$empty, subs);
+		var leftStep = F3(
+			function (interval, taggers, _v4) {
+				var spawns = _v4.a;
+				var existing = _v4.b;
+				var kills = _v4.c;
+				return _Utils_Tuple3(
+					A2($elm$core$List$cons, interval, spawns),
+					existing,
+					kills);
+			});
+		var bothStep = F4(
+			function (interval, taggers, id, _v3) {
+				var spawns = _v3.a;
+				var existing = _v3.b;
+				var kills = _v3.c;
+				return _Utils_Tuple3(
+					spawns,
+					A3($elm$core$Dict$insert, interval, id, existing),
+					kills);
+			});
+		var _v1 = A6(
+			$elm$core$Dict$merge,
+			leftStep,
+			bothStep,
+			rightStep,
+			newTaggers,
+			processes,
+			_Utils_Tuple3(
+				_List_Nil,
+				$elm$core$Dict$empty,
+				$elm$core$Task$succeed(_Utils_Tuple0)));
+		var spawnList = _v1.a;
+		var existingDict = _v1.b;
+		var killTask = _v1.c;
+		return A2(
+			$elm$core$Task$andThen,
+			function (newProcesses) {
+				return $elm$core$Task$succeed(
+					A2($elm$time$Time$State, newTaggers, newProcesses));
+			},
+			A2(
+				$elm$core$Task$andThen,
+				function (_v2) {
+					return A3($elm$time$Time$spawnHelp, router, spawnList, existingDict);
+				},
+				killTask));
+	});
+var $elm$time$Time$Posix = function (a) {
+	return {$: 'Posix', a: a};
+};
+var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
+var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
+var $elm$time$Time$onSelfMsg = F3(
+	function (router, interval, state) {
+		var _v0 = A2($elm$core$Dict$get, interval, state.taggers);
+		if (_v0.$ === 'Nothing') {
+			return $elm$core$Task$succeed(state);
+		} else {
+			var taggers = _v0.a;
+			var tellTaggers = function (time) {
+				return $elm$core$Task$sequence(
+					A2(
+						$elm$core$List$map,
+						function (tagger) {
+							return A2(
+								$elm$core$Platform$sendToApp,
+								router,
+								tagger(time));
+						},
+						taggers));
+			};
 			return A2(
-				$elm$core$Maybe$withDefault,
-				{x: 0, y: 0},
-				$elm$core$List$head(
-					A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractPosition, targets)));
-		} else {
-			return {x: 0, y: 0};
+				$elm$core$Task$andThen,
+				function (_v1) {
+					return $elm$core$Task$succeed(state);
+				},
+				A2($elm$core$Task$andThen, tellTaggers, $elm$time$Time$now));
 		}
 	});
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$time$Time$subMap = F2(
+	function (f, _v0) {
+		var interval = _v0.a;
+		var tagger = _v0.b;
+		return A2(
+			$elm$time$Time$Every,
+			interval,
+			A2($elm$core$Basics$composeL, f, tagger));
+	});
+_Platform_effectManagers['Time'] = _Platform_createManager($elm$time$Time$init, $elm$time$Time$onEffects, $elm$time$Time$onSelfMsg, 0, $elm$time$Time$subMap);
+var $elm$time$Time$subscription = _Platform_leaf('Time');
+var $elm$time$Time$every = F2(
+	function (interval, tagger) {
+		return $elm$time$Time$subscription(
+			A2($elm$time$Time$Every, interval, tagger));
+	});
+var $author$project$ElmUI$CSS$Events$Main$subscriptions = function (_v0) {
+	return A2($elm$time$Time$every, 100, $author$project$ElmUI$CSS$Events$Main$Tick);
+};
+var $author$project$Anim$Timing$Easing$QuadInOut = {$: 'QuadInOut'};
+var $author$project$Anim$Timing$Easing$SineInOut = {$: 'SineInOut'};
+var $author$project$ElmUI$CSS$Events$Main$TransitionCancel = {$: 'TransitionCancel'};
+var $author$project$ElmUI$CSS$Events$Main$TransitionEnd = {$: 'TransitionEnd'};
+var $author$project$ElmUI$CSS$Events$Main$TransitionRun = {$: 'TransitionRun'};
+var $author$project$ElmUI$CSS$Events$Main$TransitionStart = {$: 'TransitionStart'};
 var $elm$core$List$takeReverse = F3(
 	function (n, list, kept) {
 		takeReverse:
@@ -5439,10 +5813,9 @@ var $elm$core$List$take = F2(
 	function (n, list) {
 		return A3($elm$core$List$takeFast, 0, n, list);
 	});
-var $author$project$ElmUI$CSS$Events$Main$addEventToLog = F2(
-	function (eventType, model) {
-		var currentPosition = A2($author$project$Anim$CSS$getCurrentPosition, 'box', model.animations);
-		var newEntry = {eventType: eventType, id: model.eventCounter, position: currentPosition, timestamp: model.eventCounter};
+var $author$project$ElmUI$CSS$Events$Main$addEventToLog = F3(
+	function (eventType, description, model) {
+		var newEntry = {description: description, eventType: eventType, id: model.eventCounter, timestamp: model.currentTime};
 		var newLog = A2(
 			$elm$core$List$take,
 			10,
@@ -5451,9 +5824,385 @@ var $author$project$ElmUI$CSS$Events$Main$addEventToLog = F2(
 			model,
 			{eventCounter: model.eventCounter + 1, eventLog: newLog});
 	});
-var $author$project$Anim$ToPosition = function (a) {
-	return {$: 'ToPosition', a: a};
+var $author$project$Anim$Timing$Easing$Linear = {$: 'Linear'};
+var $author$project$Anim$CSS$builder = function (_v0) {
+	var state = _v0.a;
+	return state.builder;
 };
+var $author$project$Anim$Internal$Timing$TimeSpec$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
+var $author$project$Anim$Internal$Builder$duration = F2(
+	function (ms, _v0) {
+		var data = _v0.a;
+		return $author$project$Anim$Internal$Builder$AnimBuilder(
+			_Utils_update(
+				data,
+				{
+					globalTiming: $elm$core$Maybe$Just(
+						$author$project$Anim$Internal$Timing$TimeSpec$Duration(ms))
+				}));
+	});
+var $author$project$Anim$duration = F2(
+	function (ms, builder) {
+		return A2($author$project$Anim$Internal$Builder$duration, ms, builder);
+	});
+var $author$project$Anim$Internal$Builder$easing = F2(
+	function (easingValue, _v0) {
+		var data = _v0.a;
+		return $author$project$Anim$Internal$Builder$AnimBuilder(
+			_Utils_update(
+				data,
+				{
+					globalEasing: $elm$core$Maybe$Just(easingValue)
+				}));
+	});
+var $author$project$Anim$Internal$Timing$Easing$BackIn = {$: 'BackIn'};
+var $author$project$Anim$Internal$Timing$Easing$BackInOut = {$: 'BackInOut'};
+var $author$project$Anim$Internal$Timing$Easing$BackOut = {$: 'BackOut'};
+var $author$project$Anim$Internal$Timing$Easing$Bezier = F4(
+	function (a, b, c, d) {
+		return {$: 'Bezier', a: a, b: b, c: c, d: d};
+	});
+var $author$project$Anim$Internal$Timing$Easing$BounceIn = {$: 'BounceIn'};
+var $author$project$Anim$Internal$Timing$Easing$BounceInOut = {$: 'BounceInOut'};
+var $author$project$Anim$Internal$Timing$Easing$BounceOut = {$: 'BounceOut'};
+var $author$project$Anim$Internal$Timing$Easing$CircIn = {$: 'CircIn'};
+var $author$project$Anim$Internal$Timing$Easing$CircInOut = {$: 'CircInOut'};
+var $author$project$Anim$Internal$Timing$Easing$CircOut = {$: 'CircOut'};
+var $author$project$Anim$Internal$Timing$Easing$CubicIn = {$: 'CubicIn'};
+var $author$project$Anim$Internal$Timing$Easing$CubicInOut = {$: 'CubicInOut'};
+var $author$project$Anim$Internal$Timing$Easing$CubicOut = {$: 'CubicOut'};
+var $author$project$Anim$Internal$Timing$Easing$Custom = function (a) {
+	return {$: 'Custom', a: a};
+};
+var $author$project$Anim$Internal$Timing$Easing$Ease = {$: 'Ease'};
+var $author$project$Anim$Internal$Timing$Easing$EaseIn = {$: 'EaseIn'};
+var $author$project$Anim$Internal$Timing$Easing$EaseInOut = {$: 'EaseInOut'};
+var $author$project$Anim$Internal$Timing$Easing$EaseOut = {$: 'EaseOut'};
+var $author$project$Anim$Internal$Timing$Easing$ElasticIn = {$: 'ElasticIn'};
+var $author$project$Anim$Internal$Timing$Easing$ElasticInOut = {$: 'ElasticInOut'};
+var $author$project$Anim$Internal$Timing$Easing$ElasticOut = {$: 'ElasticOut'};
+var $author$project$Anim$Internal$Timing$Easing$ExpoIn = {$: 'ExpoIn'};
+var $author$project$Anim$Internal$Timing$Easing$ExpoInOut = {$: 'ExpoInOut'};
+var $author$project$Anim$Internal$Timing$Easing$ExpoOut = {$: 'ExpoOut'};
+var $author$project$Anim$Internal$Timing$Easing$Linear = {$: 'Linear'};
+var $author$project$Anim$Internal$Timing$Easing$QuadIn = {$: 'QuadIn'};
+var $author$project$Anim$Internal$Timing$Easing$QuadInOut = {$: 'QuadInOut'};
+var $author$project$Anim$Internal$Timing$Easing$QuadOut = {$: 'QuadOut'};
+var $author$project$Anim$Internal$Timing$Easing$QuartIn = {$: 'QuartIn'};
+var $author$project$Anim$Internal$Timing$Easing$QuartInOut = {$: 'QuartInOut'};
+var $author$project$Anim$Internal$Timing$Easing$QuartOut = {$: 'QuartOut'};
+var $author$project$Anim$Internal$Timing$Easing$QuintIn = {$: 'QuintIn'};
+var $author$project$Anim$Internal$Timing$Easing$QuintInOut = {$: 'QuintInOut'};
+var $author$project$Anim$Internal$Timing$Easing$QuintOut = {$: 'QuintOut'};
+var $author$project$Anim$Internal$Timing$Easing$SineIn = {$: 'SineIn'};
+var $author$project$Anim$Internal$Timing$Easing$SineInOut = {$: 'SineInOut'};
+var $author$project$Anim$Internal$Timing$Easing$SineOut = {$: 'SineOut'};
+var $author$project$Anim$Timing$Easing$toInternal = function (easing) {
+	switch (easing.$) {
+		case 'Bezier':
+			var p1x = easing.a;
+			var p1y = easing.b;
+			var p2x = easing.c;
+			var p2y = easing.d;
+			return A4($author$project$Anim$Internal$Timing$Easing$Bezier, p1x, p1y, p2x, p2y);
+		case 'Linear':
+			return $author$project$Anim$Internal$Timing$Easing$Linear;
+		case 'Ease':
+			return $author$project$Anim$Internal$Timing$Easing$Ease;
+		case 'EaseIn':
+			return $author$project$Anim$Internal$Timing$Easing$EaseIn;
+		case 'EaseOut':
+			return $author$project$Anim$Internal$Timing$Easing$EaseOut;
+		case 'EaseInOut':
+			return $author$project$Anim$Internal$Timing$Easing$EaseInOut;
+		case 'SineIn':
+			return $author$project$Anim$Internal$Timing$Easing$SineIn;
+		case 'SineOut':
+			return $author$project$Anim$Internal$Timing$Easing$SineOut;
+		case 'SineInOut':
+			return $author$project$Anim$Internal$Timing$Easing$SineInOut;
+		case 'QuadIn':
+			return $author$project$Anim$Internal$Timing$Easing$QuadIn;
+		case 'QuadOut':
+			return $author$project$Anim$Internal$Timing$Easing$QuadOut;
+		case 'QuadInOut':
+			return $author$project$Anim$Internal$Timing$Easing$QuadInOut;
+		case 'CubicIn':
+			return $author$project$Anim$Internal$Timing$Easing$CubicIn;
+		case 'CubicOut':
+			return $author$project$Anim$Internal$Timing$Easing$CubicOut;
+		case 'CubicInOut':
+			return $author$project$Anim$Internal$Timing$Easing$CubicInOut;
+		case 'QuartIn':
+			return $author$project$Anim$Internal$Timing$Easing$QuartIn;
+		case 'QuartOut':
+			return $author$project$Anim$Internal$Timing$Easing$QuartOut;
+		case 'QuartInOut':
+			return $author$project$Anim$Internal$Timing$Easing$QuartInOut;
+		case 'QuintIn':
+			return $author$project$Anim$Internal$Timing$Easing$QuintIn;
+		case 'QuintOut':
+			return $author$project$Anim$Internal$Timing$Easing$QuintOut;
+		case 'QuintInOut':
+			return $author$project$Anim$Internal$Timing$Easing$QuintInOut;
+		case 'ExpoIn':
+			return $author$project$Anim$Internal$Timing$Easing$ExpoIn;
+		case 'ExpoOut':
+			return $author$project$Anim$Internal$Timing$Easing$ExpoOut;
+		case 'ExpoInOut':
+			return $author$project$Anim$Internal$Timing$Easing$ExpoInOut;
+		case 'CircIn':
+			return $author$project$Anim$Internal$Timing$Easing$CircIn;
+		case 'CircOut':
+			return $author$project$Anim$Internal$Timing$Easing$CircOut;
+		case 'CircInOut':
+			return $author$project$Anim$Internal$Timing$Easing$CircInOut;
+		case 'BackIn':
+			return $author$project$Anim$Internal$Timing$Easing$BackIn;
+		case 'BackOut':
+			return $author$project$Anim$Internal$Timing$Easing$BackOut;
+		case 'BackInOut':
+			return $author$project$Anim$Internal$Timing$Easing$BackInOut;
+		case 'ElasticIn':
+			return $author$project$Anim$Internal$Timing$Easing$ElasticIn;
+		case 'ElasticOut':
+			return $author$project$Anim$Internal$Timing$Easing$ElasticOut;
+		case 'ElasticInOut':
+			return $author$project$Anim$Internal$Timing$Easing$ElasticInOut;
+		case 'BounceIn':
+			return $author$project$Anim$Internal$Timing$Easing$BounceIn;
+		case 'BounceOut':
+			return $author$project$Anim$Internal$Timing$Easing$BounceOut;
+		case 'BounceInOut':
+			return $author$project$Anim$Internal$Timing$Easing$BounceInOut;
+		default:
+			var str = easing.a;
+			return $author$project$Anim$Internal$Timing$Easing$Custom(str);
+	}
+};
+var $author$project$Anim$Timing$Easing$mapInternal = function (fn) {
+	return A2($elm$core$Basics$composeL, fn, $author$project$Anim$Timing$Easing$toInternal);
+};
+var $author$project$Anim$easing = F2(
+	function (easingValue, builder) {
+		return A3($author$project$Anim$Timing$Easing$mapInternal, $author$project$Anim$Internal$Builder$easing, easingValue, builder);
+	});
+var $author$project$Anim$Internal$Builders$Position$PositionBuilder = F2(
+	function (a, b) {
+		return {$: 'PositionBuilder', a: a, b: b};
+	});
+var $author$project$Anim$Internal$Builder$getDelay = function (_v0) {
+	var data = _v0.a;
+	return data.globalDelay;
+};
+var $author$project$Anim$Internal$Builder$getEasing = function (_v0) {
+	var data = _v0.a;
+	return data.globalEasing;
+};
+var $author$project$Anim$Internal$Builder$getTimespec = function (_v0) {
+	var data = _v0.a;
+	return data.globalTiming;
+};
+var $author$project$Anim$Internal$Builders$Property$applyGlobalDefaults = F2(
+	function (builder, config) {
+		return _Utils_update(
+			config,
+			{
+				delay: $author$project$Anim$Internal$Builder$getDelay(builder),
+				easing: $author$project$Anim$Internal$Builder$getEasing(builder),
+				timing: $author$project$Anim$Internal$Builder$getTimespec(builder)
+			});
+	});
+var $author$project$Anim$Internal$Properties$Position$Position = function (a) {
+	return {$: 'Position', a: a};
+};
+var $author$project$Anim$Internal$Properties$Position$fromTuple = function (_v0) {
+	var xCoord = _v0.a;
+	var yCoord = _v0.b;
+	return $author$project$Anim$Internal$Properties$Position$Position(
+		{x: xCoord, y: yCoord});
+};
+var $author$project$Anim$Internal$Builders$Position$defaultConfig = {
+	delay: $elm$core$Maybe$Nothing,
+	distance: 0,
+	duration: 0,
+	easing: $elm$core$Maybe$Nothing,
+	endAt: $author$project$Anim$Internal$Properties$Position$fromTuple(
+		_Utils_Tuple2(0, 0)),
+	speed: 0,
+	startAt: $elm$core$Maybe$Nothing,
+	timing: $elm$core$Maybe$Nothing
+};
+var $elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _v0 = f(mx);
+		if (_v0.$ === 'Just') {
+			var x = _v0.a;
+			return A2($elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var $elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			$elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
+var $author$project$Anim$Internal$Builder$for = F2(
+	function (elementId, _v0) {
+		var data = _v0.a;
+		return $author$project$Anim$Internal$Builder$AnimBuilder(
+			_Utils_update(
+				data,
+				{
+					currentElementId: $elm$core$Maybe$Just(elementId)
+				}));
+	});
+var $author$project$Anim$Internal$Builder$getElementConfig = F2(
+	function (elementId, _v0) {
+		var data = _v0.a;
+		return A2($elm$core$Dict$get, elementId, data.elements);
+	});
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$Internal$Builders$Position$for = F2(
+	function (elementId, builder) {
+		var existingConfig = function () {
+			var _v1 = A2($author$project$Anim$Internal$Builder$getElementConfig, elementId, builder);
+			if (_v1.$ === 'Just') {
+				var properties = _v1.a.properties;
+				return $elm$core$List$head(
+					A2(
+						$elm$core$List$filterMap,
+						function (prop) {
+							if (prop.$ === 'PositionConfig') {
+								var config = prop.a;
+								return $elm$core$Maybe$Just(config);
+							} else {
+								return $elm$core$Maybe$Nothing;
+							}
+						},
+						properties));
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		}();
+		if (existingConfig.$ === 'Just') {
+			var config = existingConfig.a;
+			return A2(
+				$author$project$Anim$Internal$Builders$Position$PositionBuilder,
+				A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, config),
+				builder);
+		} else {
+			return A2(
+				$author$project$Anim$Internal$Builders$Position$PositionBuilder,
+				A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, $author$project$Anim$Internal$Builders$Position$defaultConfig),
+				A2($author$project$Anim$Internal$Builder$for, elementId, builder));
+		}
+	});
+var $author$project$Anim$Properties$Position$for = function (elementId) {
+	return $author$project$Anim$Internal$Builders$Position$for(elementId);
+};
+var $author$project$ElmUI$CSS$Events$Main$anim = function (animations) {
+	return A2(
+		$author$project$Anim$Properties$Position$for,
+		'event-box',
+		A2(
+			$author$project$Anim$easing,
+			$author$project$Anim$Timing$Easing$Linear,
+			A2(
+				$author$project$Anim$duration,
+				1000,
+				$author$project$Anim$CSS$builder(animations))));
+};
+var $author$project$Anim$Internal$Builder$elements = function (_v0) {
+	var data = _v0.a;
+	return data.elements;
+};
+var $author$project$Anim$CSS$FloatValue = function (a) {
+	return {$: 'FloatValue', a: a};
+};
+var $author$project$Anim$CSS$PositionValue = function (a) {
+	return {$: 'PositionValue', a: a};
+};
+var $author$project$Anim$CSS$ScaleValue = function (a) {
+	return {$: 'ScaleValue', a: a};
+};
+var $author$project$Anim$Internal$Properties$Opacity$toFloat = function (_v0) {
+	var o = _v0.a;
+	return o;
+};
+var $author$project$Anim$Internal$Properties$Rotation$toFloat = function (_v0) {
+	var angle = _v0.a;
+	return angle;
+};
+var $author$project$Anim$Internal$Properties$Position$toRecord = function (_v0) {
+	var coords = _v0.a;
+	return {x: coords.x, y: coords.y};
+};
+var $author$project$Anim$Internal$Properties$Scale$toTuple = function (_v0) {
+	var sx = _v0.a;
+	var sy = _v0.b;
+	return _Utils_Tuple2(sx, sy);
+};
+var $author$project$Anim$CSS$extractPropertyEndValue = F2(
+	function (property, acc) {
+		switch (property.$) {
+			case 'PositionConfig':
+				var config = property.a;
+				return A3(
+					$elm$core$Dict$insert,
+					'position',
+					$author$project$Anim$CSS$PositionValue(
+						$author$project$Anim$Internal$Properties$Position$toRecord(config.endAt)),
+					acc);
+			case 'RotateConfig':
+				var config = property.a;
+				return A3(
+					$elm$core$Dict$insert,
+					'rotation',
+					$author$project$Anim$CSS$FloatValue(
+						$author$project$Anim$Internal$Properties$Rotation$toFloat(config.endAt)),
+					acc);
+			case 'ScaleConfig':
+				var config = property.a;
+				var _v1 = $author$project$Anim$Internal$Properties$Scale$toTuple(config.endAt);
+				var x = _v1.a;
+				var y = _v1.b;
+				return A3(
+					$elm$core$Dict$insert,
+					'scale',
+					$author$project$Anim$CSS$ScaleValue(
+						{x: x, y: y}),
+					acc);
+			case 'OpacityConfig':
+				var config = property.a;
+				return A3(
+					$elm$core$Dict$insert,
+					'opacity',
+					$author$project$Anim$CSS$FloatValue(
+						$author$project$Anim$Internal$Properties$Opacity$toFloat(config.endAt)),
+					acc);
+			default:
+				return acc;
+		}
+	});
+var $author$project$Anim$CSS$extractEndValues = F2(
+	function (_v0, elementConfig) {
+		return A3($elm$core$List$foldl, $author$project$Anim$CSS$extractPropertyEndValue, $elm$core$Dict$empty, elementConfig.properties);
+	});
 var $elm$core$List$filter = F2(
 	function (isGood, list) {
 		return A3(
@@ -5465,167 +6214,474 @@ var $elm$core$List$filter = F2(
 			_List_Nil,
 			list);
 	});
-var $author$project$Anim$CSS$getTargetType = function (target) {
-	switch (target.$) {
-		case 'ToPosition':
-			return 'transform';
-		case 'ToScale':
-			return 'transform';
-		case 'ToRotation':
-			return 'transform';
-		case 'ToOpacity':
-			return 'opacity';
-		case 'ToBackgroundColor':
-			return 'background-color';
-		case 'ToTextColor':
-			return 'color';
-		case 'ToBorderColor':
-			return 'border-color';
-		case 'ToDimensions':
-			return 'width';
-		case 'ToBorderRadius':
-			return 'border-radius';
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $author$project$Anim$Internal$Properties$Color$toString = function (colorValue) {
+	switch (colorValue.$) {
+		case 'Hex':
+			var hexString = colorValue.a;
+			return hexString;
+		case 'Rgb':
+			var rgb = colorValue.a;
+			return 'rgb(' + ($elm$core$String$fromInt(rgb.r) + (', ' + ($elm$core$String$fromInt(rgb.g) + (', ' + ($elm$core$String$fromInt(rgb.b) + ')')))));
+		case 'Rgba':
+			var rgba = colorValue.a;
+			return 'rgba(' + ($elm$core$String$fromInt(rgba.r) + (', ' + ($elm$core$String$fromInt(rgba.g) + (', ' + ($elm$core$String$fromInt(rgba.b) + (', ' + ($elm$core$String$fromFloat(rgba.a) + ')')))))));
+		case 'Hsl':
+			var hsl = colorValue.a;
+			return 'hsl(' + ($elm$core$String$fromFloat(hsl.h) + (', ' + ($elm$core$String$fromFloat(hsl.s) + ('%, ' + ($elm$core$String$fromFloat(hsl.l) + '%)')))));
 		default:
-			return 'filter';
+			var hsla = colorValue.a;
+			return 'hsla(' + ($elm$core$String$fromFloat(hsla.h) + (', ' + ($elm$core$String$fromFloat(hsla.s) + ('%, ' + ($elm$core$String$fromFloat(hsla.l) + ('%, ' + ($elm$core$String$fromFloat(hsla.a) + ')')))))));
 	}
 };
-var $elm$core$Dict$Black = {$: 'Black'};
-var $elm$core$Dict$RBNode_elm_builtin = F5(
-	function (a, b, c, d, e) {
-		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
-	});
-var $elm$core$Dict$Red = {$: 'Red'};
-var $elm$core$Dict$balance = F5(
-	function (color, key, value, left, right) {
-		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
-			var _v1 = right.a;
-			var rK = right.b;
-			var rV = right.c;
-			var rLeft = right.d;
-			var rRight = right.e;
-			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-				var _v3 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var lLeft = left.d;
-				var lRight = left.e;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Red,
-					key,
-					value,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					color,
-					rK,
-					rV,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
-					rRight);
-			}
+var $author$project$Anim$Internal$Properties$Opacity$toString = function (_v0) {
+	var o = _v0.a;
+	return $elm$core$String$fromFloat(o);
+};
+var $author$project$Anim$CSS$colorStyleFromProperty = function (property) {
+	switch (property.$) {
+		case 'ColorConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				_Utils_Tuple2(
+					'background-color',
+					$author$project$Anim$Internal$Properties$Color$toString(config.endAt)));
+		case 'OpacityConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				_Utils_Tuple2(
+					'opacity',
+					$author$project$Anim$Internal$Properties$Opacity$toString(config.endAt)));
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$CSS$generateColorStyles = function (properties) {
+	return A2($elm$core$List$filterMap, $author$project$Anim$CSS$colorStyleFromProperty, properties);
+};
+var $author$project$Anim$Internal$Properties$Position$toCssString = function (_v0) {
+	var coords = _v0.a;
+	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + 'px'));
+};
+var $author$project$Anim$Internal$Properties$Rotation$toString = function (_v0) {
+	var angle = _v0.a;
+	return $elm$core$String$fromFloat(angle);
+};
+var $author$project$Anim$Internal$Properties$Rotation$toCssString = function (rotation) {
+	return $author$project$Anim$Internal$Properties$Rotation$toString(rotation) + 'deg';
+};
+var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) {
+	var sx = _v0.a;
+	var sy = _v0.b;
+	return $elm$core$String$fromFloat(sx) + (',' + $elm$core$String$fromFloat(sy));
+};
+var $author$project$Anim$CSS$transformFromProperty = function (property) {
+	switch (property.$) {
+		case 'PositionConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				'translate(' + ($author$project$Anim$Internal$Properties$Position$toCssString(config.endAt) + ')'));
+		case 'RotateConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				'rotate(' + ($author$project$Anim$Internal$Properties$Rotation$toCssString(config.endAt) + ')'));
+		case 'ScaleConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				'scale(' + ($author$project$Anim$Internal$Properties$Scale$toCssString(config.endAt) + ')'));
+		case 'ColorConfig':
+			return $elm$core$Maybe$Nothing;
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$CSS$generateTransforms = function (properties) {
+	var transformParts = A2($elm$core$List$filterMap, $author$project$Anim$CSS$transformFromProperty, properties);
+	return A2($elm$core$String$join, ' ', transformParts);
+};
+var $elm$core$Debug$log = _Debug_log;
+var $author$project$Anim$Internal$Timing$Easing$easingToCSS = function (easing) {
+	switch (easing.$) {
+		case 'Bezier':
+			var p1x = easing.a;
+			var p1y = easing.b;
+			var p2x = easing.c;
+			var p2y = easing.d;
+			return 'cubic-bezier(' + ($elm$core$String$fromFloat(p1x) + (', ' + ($elm$core$String$fromFloat(p1y) + (', ' + ($elm$core$String$fromFloat(p2x) + (', ' + ($elm$core$String$fromFloat(p2y) + ')')))))));
+		case 'Linear':
+			return 'linear';
+		case 'Ease':
+			return 'ease';
+		case 'EaseIn':
+			return 'ease-in';
+		case 'EaseOut':
+			return 'ease-out';
+		case 'EaseInOut':
+			return 'ease-in-out';
+		case 'SineIn':
+			return 'cubic-bezier(0.12, 0, 0.39, 0)';
+		case 'SineOut':
+			return 'cubic-bezier(0.61, 1, 0.88, 1)';
+		case 'SineInOut':
+			return 'cubic-bezier(0.37, 0, 0.63, 1)';
+		case 'QuadIn':
+			return 'cubic-bezier(0.11, 0, 0.5, 0)';
+		case 'QuadOut':
+			return 'cubic-bezier(0.5, 1, 0.89, 1)';
+		case 'QuadInOut':
+			return 'cubic-bezier(0.45, 0, 0.55, 1)';
+		case 'CubicIn':
+			return 'cubic-bezier(0.32, 0, 0.67, 0)';
+		case 'CubicOut':
+			return 'cubic-bezier(0.33, 1, 0.68, 1)';
+		case 'CubicInOut':
+			return 'cubic-bezier(0.65, 0, 0.35, 1)';
+		case 'QuartIn':
+			return 'cubic-bezier(0.5, 0, 0.75, 0)';
+		case 'QuartOut':
+			return 'cubic-bezier(0.25, 1, 0.5, 1)';
+		case 'QuartInOut':
+			return 'cubic-bezier(0.76, 0, 0.24, 1)';
+		case 'QuintIn':
+			return 'cubic-bezier(0.64, 0, 0.78, 0)';
+		case 'QuintOut':
+			return 'cubic-bezier(0.22, 1, 0.36, 1)';
+		case 'QuintInOut':
+			return 'cubic-bezier(0.83, 0, 0.17, 1)';
+		case 'ExpoIn':
+			return 'cubic-bezier(0.7, 0, 0.84, 0)';
+		case 'ExpoOut':
+			return 'cubic-bezier(0.16, 1, 0.3, 1)';
+		case 'ExpoInOut':
+			return 'cubic-bezier(0.87, 0, 0.13, 1)';
+		case 'CircIn':
+			return 'cubic-bezier(0.55, 0, 1, 0.45)';
+		case 'CircOut':
+			return 'cubic-bezier(0, 0.55, 0.45, 1)';
+		case 'CircInOut':
+			return 'cubic-bezier(0.85, 0, 0.15, 1)';
+		case 'BackIn':
+			return 'cubic-bezier(0.36, 0, 0.66, -0.56)';
+		case 'BackOut':
+			return 'cubic-bezier(0.34, 1.56, 0.64, 1)';
+		case 'BackInOut':
+			return 'cubic-bezier(0.68, -0.6, 0.32, 1.6)';
+		case 'ElasticIn':
+			return 'cubic-bezier(0.175, 0.885, 0.320, 1.275)';
+		case 'ElasticOut':
+			return 'cubic-bezier(0.680, -0.550, 0.265, 1.550)';
+		case 'ElasticInOut':
+			return 'cubic-bezier(0.680, -0.550, 0.265, 1.550)';
+		case 'BounceIn':
+			return 'cubic-bezier(0.600, 0.040, 0.980, 0.335)';
+		case 'BounceOut':
+			return 'cubic-bezier(0.175, 0.885, 0.320, 1.275)';
+		case 'BounceInOut':
+			return 'cubic-bezier(0.680, -0.550, 0.265, 1.550)';
+		default:
+			var value = easing.a;
+			return value;
+	}
+};
+var $author$project$Anim$Internal$Timing$Easing$toCSS = function (maybeEasing) {
+	if (maybeEasing.$ === 'Just') {
+		var easing = maybeEasing.a;
+		return $author$project$Anim$Internal$Timing$Easing$easingToCSS(easing);
+	} else {
+		return 'ease';
+	}
+};
+var $author$project$Anim$Internal$Timing$Delay$toCssString = function (maybeDelayValue) {
+	if (maybeDelayValue.$ === 'Just') {
+		if (maybeDelayValue.a.$ === 'Delay') {
+			var d = maybeDelayValue.a.a;
+			return $elm$core$String$fromInt(d) + 'ms';
 		} else {
-			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
-				var _v5 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var _v6 = left.d;
-				var _v7 = _v6.a;
-				var llK = _v6.b;
-				var llV = _v6.c;
-				var llLeft = _v6.d;
-				var llRight = _v6.e;
-				var lRight = left.e;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Red,
-					lK,
-					lV,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
-			} else {
-				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
-			}
+			var _v1 = maybeDelayValue.a;
+			return '0ms';
 		}
+	} else {
+		return '0ms';
+	}
+};
+var $elm$core$Basics$round = _Basics_round;
+var $author$project$Anim$Internal$Timing$TimeSpec$toCssString = function (maybeTimespec) {
+	if (maybeTimespec.$ === 'Just') {
+		if (maybeTimespec.a.$ === 'Duration') {
+			var ms = maybeTimespec.a.a;
+			return $elm$core$String$fromInt(ms) + 'ms';
+		} else {
+			var pixelsPerSecond = maybeTimespec.a.a;
+			var estimatedDuration = $elm$core$Basics$round((100 / pixelsPerSecond) * 1000);
+			return $elm$core$String$fromInt(estimatedDuration) + 'ms';
+		}
+	} else {
+		return '0ms';
+	}
+};
+var $author$project$Anim$CSS$transitionFromProperty = function (property) {
+	switch (property.$) {
+		case 'PositionConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				'transform ' + ($author$project$Anim$Internal$Timing$TimeSpec$toCssString(config.timing) + (' ' + ($author$project$Anim$Internal$Timing$Easing$toCSS(config.easing) + (' ' + $author$project$Anim$Internal$Timing$Delay$toCssString(config.delay))))));
+		case 'RotateConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				'transform ' + (A2(
+					$elm$core$Debug$log,
+					'timespec',
+					$author$project$Anim$Internal$Timing$TimeSpec$toCssString(config.timing)) + (' ' + ($author$project$Anim$Internal$Timing$Easing$toCSS(config.easing) + (' ' + $author$project$Anim$Internal$Timing$Delay$toCssString(config.delay))))));
+		case 'ScaleConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				'transform ' + ($author$project$Anim$Internal$Timing$TimeSpec$toCssString(config.timing) + (' ' + ($author$project$Anim$Internal$Timing$Easing$toCSS(config.easing) + (' ' + $author$project$Anim$Internal$Timing$Delay$toCssString(config.delay))))));
+		case 'ColorConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				'background-color ' + ($author$project$Anim$Internal$Timing$TimeSpec$toCssString(config.timing) + (' ' + ($author$project$Anim$Internal$Timing$Easing$toCSS(config.easing) + (' ' + $author$project$Anim$Internal$Timing$Delay$toCssString(config.delay))))));
+		default:
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				'opacity ' + ($author$project$Anim$Internal$Timing$TimeSpec$toCssString(config.timing) + (' ' + ($author$project$Anim$Internal$Timing$Easing$toCSS(config.easing) + (' ' + $author$project$Anim$Internal$Timing$Delay$toCssString(config.delay))))));
+	}
+};
+var $author$project$Anim$CSS$generateTransitions = function (properties) {
+	var transitionParts = A2($elm$core$List$filterMap, $author$project$Anim$CSS$transitionFromProperty, properties);
+	return A2($elm$core$String$join, ', ', transitionParts);
+};
+var $elm$core$Basics$not = _Basics_not;
+var $author$project$Anim$CSS$generateElementAnimation = F2(
+	function (elementId, elementConfig) {
+		var transitions = $author$project$Anim$CSS$generateTransitions(elementConfig.properties);
+		var transforms = $author$project$Anim$CSS$generateTransforms(elementConfig.properties);
+		var colors = $author$project$Anim$CSS$generateColorStyles(elementConfig.properties);
+		var allStyles = A2(
+			$elm$core$List$filter,
+			function (_v0) {
+				var value = _v0.b;
+				return !$elm$core$String$isEmpty(value);
+			},
+			_Utils_ap(
+				_List_fromArray(
+					[
+						_Utils_Tuple2('transform', transforms),
+						_Utils_Tuple2('transition', transitions)
+					]),
+				colors));
+		return {elementId: elementId, keyframes: $elm$core$Maybe$Nothing, styles: allStyles};
 	});
-var $elm$core$Dict$insertHelp = F3(
-	function (key, value, dict) {
+var $elm$core$Dict$map = F2(
+	function (func, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
+			return $elm$core$Dict$RBEmpty_elm_builtin;
 		} else {
-			var nColor = dict.a;
-			var nKey = dict.b;
-			var nValue = dict.c;
-			var nLeft = dict.d;
-			var nRight = dict.e;
-			var _v1 = A2($elm$core$Basics$compare, key, nKey);
-			switch (_v1.$) {
-				case 'LT':
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						A3($elm$core$Dict$insertHelp, key, value, nLeft),
-						nRight);
-				case 'EQ':
-					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				A2(func, key, value),
+				A2($elm$core$Dict$map, func, left),
+				A2($elm$core$Dict$map, func, right));
+		}
+	});
+var $author$project$Anim$CSS$animate = function (builder_) {
+	var elementsDict = $author$project$Anim$Internal$Builder$elements(builder_);
+	var elementAnimations = A2($elm$core$Dict$map, $author$project$Anim$CSS$generateElementAnimation, elementsDict);
+	var currentValues = A2($elm$core$Dict$map, $author$project$Anim$CSS$extractEndValues, elementsDict);
+	return $author$project$Anim$CSS$AnimationState(
+		{builder: builder_, currentValues: currentValues, elementAnimations: elementAnimations});
+};
+var $author$project$Anim$Internal$Builder$PositionConfig = function (a) {
+	return {$: 'PositionConfig', a: a};
+};
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Anim$Internal$Builder$getCurrentElementConfig = function (_v0) {
+	var data = _v0.a;
+	var _v1 = data.currentElementId;
+	if (_v1.$ === 'Nothing') {
+		return {properties: _List_Nil};
+	} else {
+		var elementId = _v1.a;
+		return A2(
+			$elm$core$Maybe$withDefault,
+			{properties: _List_Nil},
+			A2($elm$core$Dict$get, elementId, data.elements));
+	}
+};
+var $author$project$Anim$Internal$Builder$updateCurrentElement = F2(
+	function (config, _v0) {
+		var data = _v0.a;
+		var _v1 = data.currentElementId;
+		if (_v1.$ === 'Nothing') {
+			return $author$project$Anim$Internal$Builder$AnimBuilder(data);
+		} else {
+			var elementId = _v1.a;
+			return $author$project$Anim$Internal$Builder$AnimBuilder(
+				_Utils_update(
+					data,
+					{
+						elements: A3($elm$core$Dict$insert, elementId, config, data.elements)
+					}));
+		}
+	});
+var $author$project$Anim$Internal$Builders$Property$add = F2(
+	function (propertyConfig, builder) {
+		var currentElement = $author$project$Anim$Internal$Builder$getCurrentElementConfig(builder);
+		var updatedElement = _Utils_update(
+			currentElement,
+			{
+				properties: A2($elm$core$List$cons, propertyConfig, currentElement.properties)
+			});
+		return A2($author$project$Anim$Internal$Builder$updateCurrentElement, updatedElement, builder);
+	});
+var $author$project$Anim$Internal$Builders$Property$configsMatch = F2(
+	function (prop1, prop2) {
+		var _v0 = _Utils_Tuple2(prop1, prop2);
+		_v0$5:
+		while (true) {
+			switch (_v0.a.$) {
+				case 'PositionConfig':
+					if (_v0.b.$ === 'PositionConfig') {
+						return true;
+					} else {
+						break _v0$5;
+					}
+				case 'RotateConfig':
+					if (_v0.b.$ === 'RotateConfig') {
+						return true;
+					} else {
+						break _v0$5;
+					}
+				case 'ScaleConfig':
+					if (_v0.b.$ === 'ScaleConfig') {
+						return true;
+					} else {
+						break _v0$5;
+					}
+				case 'ColorConfig':
+					if (_v0.b.$ === 'ColorConfig') {
+						return true;
+					} else {
+						break _v0$5;
+					}
 				default:
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						nLeft,
-						A3($elm$core$Dict$insertHelp, key, value, nRight));
+					if (_v0.b.$ === 'OpacityConfig') {
+						return true;
+					} else {
+						break _v0$5;
+					}
 			}
 		}
+		return false;
 	});
-var $elm$core$Dict$insert = F3(
-	function (key, value, dict) {
-		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
-		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
-			var _v1 = _v0.a;
-			var k = _v0.b;
-			var v = _v0.c;
-			var l = _v0.d;
-			var r = _v0.e;
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+var $author$project$Anim$Internal$Builders$Property$find = F2(
+	function (predicate, builder) {
+		var currentElement = $author$project$Anim$Internal$Builder$getCurrentElementConfig(builder);
+		return $elm$core$List$head(
+			A2($elm$core$List$filter, predicate, currentElement.properties));
+	});
+var $author$project$Anim$Internal$Builders$Property$replace = F2(
+	function (propertyConfig, builder) {
+		var currentElement = $author$project$Anim$Internal$Builder$getCurrentElementConfig(builder);
+		var updatedProperties = A2(
+			$elm$core$List$map,
+			function (p) {
+				return A2($author$project$Anim$Internal$Builders$Property$configsMatch, p, propertyConfig) ? propertyConfig : p;
+			},
+			currentElement.properties);
+		var updatedElement = _Utils_update(
+			currentElement,
+			{properties: updatedProperties});
+		return A2($author$project$Anim$Internal$Builder$updateCurrentElement, updatedElement, builder);
+	});
+var $author$project$Anim$Internal$Builders$Property$upsert = F2(
+	function (propertyConfig, builder) {
+		var _v0 = A2(
+			$author$project$Anim$Internal$Builders$Property$find,
+			$author$project$Anim$Internal$Builders$Property$configsMatch(propertyConfig),
+			builder);
+		if (_v0.$ === 'Just') {
+			return A2($author$project$Anim$Internal$Builders$Property$replace, propertyConfig, builder);
 		} else {
-			var x = _v0;
-			return x;
+			return A2($author$project$Anim$Internal$Builders$Property$add, propertyConfig, builder);
 		}
 	});
-var $elm$core$Basics$neq = _Utils_notEqual;
-var $author$project$Anim$CSS$animate = F3(
-	function (elementId, target, _v0) {
-		var animations = _v0.a;
-		var currentTargets = A2(
-			$elm$core$Maybe$withDefault,
-			_List_Nil,
-			A2($elm$core$Dict$get, elementId, animations));
-		var newTargets = A2(
-			$elm$core$List$cons,
-			target,
-			A2(
-				$elm$core$List$filter,
-				function (t) {
-					return !_Utils_eq(
-						$author$project$Anim$CSS$getTargetType(t),
-						$author$project$Anim$CSS$getTargetType(target));
-				},
-				currentTargets));
-		return $author$project$Anim$CSS$Model(
-			A3($elm$core$Dict$insert, elementId, newTargets, animations));
+var $author$project$Anim$Internal$Builders$Position$build = function (_v0) {
+	var config = _v0.a;
+	var builder = _v0.b;
+	var newPositionConfig = $author$project$Anim$Internal$Builder$PositionConfig(config);
+	return A2($author$project$Anim$Internal$Builders$Property$upsert, newPositionConfig, builder);
+};
+var $author$project$Anim$Properties$Position$build = $author$project$Anim$Internal$Builders$Position$build;
+var $author$project$Anim$Internal$Builders$Position$duration = F2(
+	function (ms, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builders$Position$PositionBuilder,
+			_Utils_update(
+				config,
+				{
+					duration: ms,
+					timing: $elm$core$Maybe$Just(
+						$author$project$Anim$Internal$Timing$TimeSpec$Duration(ms))
+				}),
+			builder);
 	});
-var $author$project$Anim$CSS$animatePosition = F3(
-	function (elementId, position, model) {
-		return A3(
-			$author$project$Anim$CSS$animate,
-			elementId,
-			$author$project$Anim$ToPosition(position),
-			model);
+var $author$project$Anim$Properties$Position$duration = $author$project$Anim$Internal$Builders$Position$duration;
+var $author$project$Anim$Internal$Builders$Position$easing = F2(
+	function (easing_, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builders$Position$PositionBuilder,
+			_Utils_update(
+				config,
+				{
+					easing: $elm$core$Maybe$Just(easing_)
+				}),
+			builder);
+	});
+var $author$project$Anim$Properties$Position$easing = function (easing_) {
+	return $author$project$Anim$Internal$Builders$Position$easing(
+		A2($author$project$Anim$Timing$Easing$mapInternal, $elm$core$Basics$identity, easing_));
+};
+var $author$project$Anim$Timing$Easing$ElasticInOut = {$: 'ElasticInOut'};
+var $author$project$Anim$Timing$Easing$elasticInOut = $author$project$Anim$Timing$Easing$ElasticInOut;
+var $elm$time$Time$posixToMillis = function (_v0) {
+	var millis = _v0.a;
+	return millis;
+};
+var $author$project$Anim$Internal$Builders$Position$to = F2(
+	function (position, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builders$Position$PositionBuilder,
+			_Utils_update(
+				config,
+				{endAt: position}),
+			builder);
+	});
+var $author$project$Anim$Properties$Position$toXY = F2(
+	function (x, y) {
+		return $author$project$Anim$Internal$Builders$Position$to(
+			$author$project$Anim$Internal$Properties$Position$fromTuple(
+				_Utils_Tuple2(x, y)));
 	});
 var $author$project$ElmUI$CSS$Events$Main$update = F2(
 	function (msg, model) {
@@ -5635,11 +6691,16 @@ var $author$project$ElmUI$CSS$Events$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$CSS$animatePosition,
-								'box',
-								A2($author$project$Anim$Position, 100, 100),
-								model.animations),
+							animations: $author$project$Anim$CSS$animate(
+								$author$project$Anim$Properties$Position$build(
+									A2(
+										$author$project$Anim$Properties$Position$easing,
+										$author$project$Anim$Timing$Easing$QuadInOut,
+										A3(
+											$author$project$Anim$Properties$Position$toXY,
+											450,
+											300,
+											$author$project$ElmUI$CSS$Events$Main$anim(model.animations))))),
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -5648,24 +6709,19 @@ var $author$project$ElmUI$CSS$Events$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$CSS$animatePosition,
-								'box',
-								A2($author$project$Anim$Position, 300, 200),
-								model.animations),
-							isAnimating: true
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'MoveToOpposite':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							animations: A3(
-								$author$project$Anim$CSS$animatePosition,
-								'box',
-								A2($author$project$Anim$Position, 400, 50),
-								model.animations),
+							animations: $author$project$Anim$CSS$animate(
+								$author$project$Anim$Properties$Position$build(
+									A2(
+										$author$project$Anim$Properties$Position$duration,
+										800,
+										A2(
+											$author$project$Anim$Properties$Position$easing,
+											$author$project$Anim$Timing$Easing$SineInOut,
+											A3(
+												$author$project$Anim$Properties$Position$toXY,
+												225,
+												150,
+												$author$project$ElmUI$CSS$Events$Main$anim(model.animations)))))),
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -5674,11 +6730,16 @@ var $author$project$ElmUI$CSS$Events$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animations: A3(
-								$author$project$Anim$CSS$animatePosition,
-								'box',
-								A2($author$project$Anim$Position, 0, 0),
-								model.animations),
+							animations: $author$project$Anim$CSS$animate(
+								$author$project$Anim$Properties$Position$build(
+									A2(
+										$author$project$Anim$Properties$Position$easing,
+										$author$project$Anim$Timing$Easing$elasticInOut,
+										A3(
+											$author$project$Anim$Properties$Position$toXY,
+											0,
+											0,
+											$author$project$ElmUI$CSS$Events$Main$anim(model.animations))))),
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -5686,11 +6747,11 @@ var $author$project$ElmUI$CSS$Events$Main$update = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{eventLog: _List_Nil}),
+						{eventCounter: 0, eventLog: _List_Nil}),
 					$elm$core$Platform$Cmd$none);
 			case 'OnTransitionStart':
 				return _Utils_Tuple2(
-					A2($author$project$ElmUI$CSS$Events$Main$addEventToLog, $author$project$ElmUI$CSS$Events$Main$TransitionStart, model),
+					A3($author$project$ElmUI$CSS$Events$Main$addEventToLog, $author$project$ElmUI$CSS$Events$Main$TransitionStart, 'Animation started', model),
 					$elm$core$Platform$Cmd$none);
 			case 'OnTransitionEnd':
 				return _Utils_Tuple2(
@@ -5699,20 +6760,29 @@ var $author$project$ElmUI$CSS$Events$Main$update = F2(
 							m,
 							{isAnimating: false});
 					}(
-						A2($author$project$ElmUI$CSS$Events$Main$addEventToLog, $author$project$ElmUI$CSS$Events$Main$TransitionEnd, model)),
+						A3($author$project$ElmUI$CSS$Events$Main$addEventToLog, $author$project$ElmUI$CSS$Events$Main$TransitionEnd, 'Animation completed', model)),
 					$elm$core$Platform$Cmd$none);
 			case 'OnTransitionRun':
 				return _Utils_Tuple2(
-					A2($author$project$ElmUI$CSS$Events$Main$addEventToLog, $author$project$ElmUI$CSS$Events$Main$TransitionRun, model),
+					A3($author$project$ElmUI$CSS$Events$Main$addEventToLog, $author$project$ElmUI$CSS$Events$Main$TransitionRun, 'Animation is running', model),
 					$elm$core$Platform$Cmd$none);
-			default:
+			case 'OnTransitionCancel':
 				return _Utils_Tuple2(
 					function (m) {
 						return _Utils_update(
 							m,
 							{isAnimating: false});
 					}(
-						A2($author$project$ElmUI$CSS$Events$Main$addEventToLog, $author$project$ElmUI$CSS$Events$Main$TransitionCancel, model)),
+						A3($author$project$ElmUI$CSS$Events$Main$addEventToLog, $author$project$ElmUI$CSS$Events$Main$TransitionCancel, 'Animation was cancelled', model)),
+					$elm$core$Platform$Cmd$none);
+			default:
+				var time = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							currentTime: $elm$time$Time$posixToMillis(time)
+						}),
 					$elm$core$Platform$Cmd$none);
 		}
 	});
@@ -5727,17 +6797,6 @@ var $mdgriffith$elm_ui$Element$rgb255 = F3(
 	});
 var $author$project$Common$Colors$backgroundLight = A3($mdgriffith$elm_ui$Element$rgb255, 248, 250, 252);
 var $author$project$Common$Colors$backgroundMedium = A3($mdgriffith$elm_ui$Element$rgb255, 226, 232, 240);
-var $author$project$Common$UI$calculateHorizontalWidth = function (_v0) {
-	var sectionCount = _v0.sectionCount;
-	var sectionWidth = _v0.sectionWidth;
-	var spacing = _v0.spacing;
-	var containerPaddingX = _v0.containerPaddingX;
-	var layoutPaddingX = _v0.layoutPaddingX;
-	var totalSpacingWidth = (sectionCount - 1) * spacing;
-	var totalSectionWidth = sectionCount * sectionWidth;
-	var totalPaddingWidth = containerPaddingX + layoutPaddingX;
-	return (totalSectionWidth + totalSpacingWidth) + totalPaddingWidth;
-};
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -5776,12 +6835,10 @@ var $mdgriffith$elm_ui$Internal$Flag$flag = function (i) {
 };
 var $mdgriffith$elm_ui$Internal$Flag$bgColor = $mdgriffith$elm_ui$Internal$Flag$flag(8);
 var $mdgriffith$elm_ui$Internal$Flag$bgGradient = $mdgriffith$elm_ui$Internal$Flag$flag(10);
-var $elm$core$Basics$round = _Basics_round;
 var $mdgriffith$elm_ui$Internal$Model$floatClass = function (x) {
 	return $elm$core$String$fromInt(
 		$elm$core$Basics$round(x * 255));
 };
-var $elm$core$String$fromFloat = _String_fromNumber;
 var $mdgriffith$elm_ui$Internal$Model$formatColor = function (_v0) {
 	var red = _v0.a;
 	var green = _v0.b;
@@ -5881,10 +6938,6 @@ var $mdgriffith$elm_ui$Element$paddingXY = F2(
 					xFloat));
 		}
 	});
-var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
-	return {$: 'Px', a: a};
-};
-var $mdgriffith$elm_ui$Element$px = $mdgriffith$elm_ui$Internal$Model$Px;
 var $mdgriffith$elm_ui$Internal$Model$Width = function (a) {
 	return {$: 'Width', a: a};
 };
@@ -5897,28 +6950,6 @@ var $author$project$Common$UI$getLayoutAttributes = function (layoutType) {
 					[
 						$mdgriffith$elm_ui$Element$htmlAttribute(
 						$elm$html$Html$Attributes$class('responsive-layout'))
-					]);
-			case 'Horizontal':
-				var calculatedWidth = $author$project$Common$UI$calculateHorizontalWidth(
-					{containerPaddingX: 40, layoutPaddingX: 80, sectionCount: 4, sectionWidth: 300, spacing: 40});
-				return _List_fromArray(
-					[
-						$mdgriffith$elm_ui$Element$width(
-						$mdgriffith$elm_ui$Element$px(calculatedWidth)),
-						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						$elm$html$Html$Attributes$class('horizontal-layout responsive-layout'))
-					]);
-			case 'HorizontalCustomWidth':
-				var customWidth = layoutType.a;
-				return _List_fromArray(
-					[
-						$mdgriffith$elm_ui$Element$width(
-						$mdgriffith$elm_ui$Element$px(
-							$elm$core$Basics$round(customWidth))),
-						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						$elm$html$Html$Attributes$class('horizontal-layout responsive-layout'))
 					]);
 			case 'Diagonal':
 				return _List_fromArray(
@@ -9292,6 +10323,7 @@ var $elm$core$List$minimum = function (list) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
+var $elm$core$Basics$neq = _Utils_notEqual;
 var $mdgriffith$elm_ui$Internal$Model$convertAdjustment = function (adjustment) {
 	var lines = _List_fromArray(
 		[adjustment.capital, adjustment.baseline, adjustment.descender, adjustment.lowercase]);
@@ -9576,7 +10608,6 @@ var $elm$virtual_dom$VirtualDom$keyedNode = function (tag) {
 	return _VirtualDom_keyedNode(
 		_VirtualDom_noScript(tag));
 };
-var $elm$core$Basics$not = _Basics_not;
 var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$core$Bitwise$and = _Bitwise_and;
 var $mdgriffith$elm_ui$Internal$Flag$present = F2(
@@ -11680,7 +12711,6 @@ var $author$project$Common$UI$createDocument = F3(
 var $author$project$ElmUI$CSS$Events$Main$ClearEventLog = {$: 'ClearEventLog'};
 var $author$project$ElmUI$CSS$Events$Main$MoveToCenter = {$: 'MoveToCenter'};
 var $author$project$ElmUI$CSS$Events$Main$MoveToCorner = {$: 'MoveToCorner'};
-var $author$project$ElmUI$CSS$Events$Main$MoveToOpposite = {$: 'MoveToOpposite'};
 var $author$project$ElmUI$CSS$Events$Main$OnTransitionCancel = {$: 'OnTransitionCancel'};
 var $author$project$ElmUI$CSS$Events$Main$OnTransitionEnd = {$: 'OnTransitionEnd'};
 var $author$project$ElmUI$CSS$Events$Main$OnTransitionRun = {$: 'OnTransitionRun'};
@@ -11703,7 +12733,6 @@ var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
 			'color',
 			fontColor));
 };
-var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
@@ -11793,14 +12822,17 @@ var $author$project$Common$UI$backButton = A2(
 			}),
 			$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$backgroundWhite),
 			$mdgriffith$elm_ui$Element$Font$semiBold,
-			$mdgriffith$elm_ui$Element$Border$rounded(8),
-			$mdgriffith$elm_ui$Element$htmlAttribute(
-			$elm$html$Html$Attributes$id('top'))
+			$mdgriffith$elm_ui$Element$Border$rounded(8)
 		]),
 	{
 		label: $mdgriffith$elm_ui$Element$text('← Back to Examples'),
 		url: '../../index.html'
 	});
+var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
+	return {$: 'AlignY', a: a};
+};
+var $mdgriffith$elm_ui$Internal$Model$CenterY = {$: 'CenterY'};
+var $mdgriffith$elm_ui$Element$centerY = $mdgriffith$elm_ui$Internal$Model$AlignY($mdgriffith$elm_ui$Internal$Model$CenterY);
 var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
 	return A2(
 		$mdgriffith$elm_ui$Internal$Model$StyleClass,
@@ -11828,18 +12860,42 @@ var $mdgriffith$elm_ui$Element$el = F2(
 				_List_fromArray(
 					[child])));
 	});
-var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$core$Basics$always = F2(
-	function (a, _v0) {
-		return a;
+var $author$project$Anim$CSS$getElementStyles = F2(
+	function (elementId, _v0) {
+		var state = _v0.a;
+		return A2(
+			$elm$core$Maybe$withDefault,
+			_List_Nil,
+			A2(
+				$elm$core$Maybe$map,
+				function ($) {
+					return $.styles;
+				},
+				A2($elm$core$Dict$get, elementId, state.elementAnimations)));
 	});
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $author$project$Anim$CSS$htmlAttributes = F2(
+	function (elementId, animationResult) {
+		return A2(
+			$elm$core$List$map,
+			function (_v0) {
+				var prop = _v0.a;
+				var value = _v0.b;
+				return A2($elm$html$Html$Attributes$style, prop, value);
+			},
+			A2($author$project$Anim$CSS$getElementStyles, elementId, animationResult));
 	});
-var $mdgriffith$elm_ui$Internal$Model$unstyled = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Unstyled, $elm$core$Basics$always);
-var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
+var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $mdgriffith$elm_ui$Internal$Model$Max = F2(
+	function (a, b) {
+		return {$: 'Max', a: a, b: b};
+	});
+var $mdgriffith$elm_ui$Element$maximum = F2(
+	function (i, l) {
+		return A2($mdgriffith$elm_ui$Internal$Model$Max, i, l);
+	});
+var $mdgriffith$elm_ui$Element$Font$medium = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textMedium);
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -11851,65 +12907,6 @@ var $elm$html$Html$Events$on = F2(
 			event,
 			$elm$virtual_dom$VirtualDom$Normal(decoder));
 	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $author$project$Common$UI$htmlActionButtons = function (buttons) {
-	var getButtonStyleClass = function (style) {
-		switch (style.$) {
-			case 'Primary':
-				return 'primary';
-			case 'Success':
-				return 'success';
-			case 'Purple':
-				return 'purple';
-			default:
-				return 'warning';
-		}
-	};
-	var createHtmlButton = function (_v0) {
-		var style = _v0.a;
-		var onPress = _v0.b;
-		var label = _v0.c;
-		return A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick(onPress),
-					$elm$html$Html$Attributes$class(
-					'ui-action-button ' + getButtonStyleClass(style))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(label)
-				]));
-	};
-	var htmlButtons = A2($elm$core$List$map, createHtmlButton, buttons);
-	return A2(
-		$mdgriffith$elm_ui$Element$el,
-		_List_fromArray(
-			[$mdgriffith$elm_ui$Element$centerX]),
-		$mdgriffith$elm_ui$Element$html(
-			A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('ui-button-group')
-					]),
-				htmlButtons)));
-};
-var $mdgriffith$elm_ui$Internal$Model$Max = F2(
-	function (a, b) {
-		return {$: 'Max', a: a, b: b};
-	});
-var $mdgriffith$elm_ui$Element$maximum = F2(
-	function (i, l) {
-		return A2($mdgriffith$elm_ui$Internal$Model$Max, i, l);
-	});
-var $mdgriffith$elm_ui$Element$Font$medium = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textMedium);
 var $author$project$Anim$CSS$onTransitionCancel = function (msg) {
 	return A2(
 		$elm$html$Html$Events$on,
@@ -11973,6 +12970,10 @@ var $author$project$Common$UI$pageHeader = function (title) {
 				$mdgriffith$elm_ui$Element$text(title)
 			]));
 };
+var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
+	return {$: 'Px', a: a};
+};
+var $mdgriffith$elm_ui$Element$px = $mdgriffith$elm_ui$Internal$Model$Px;
 var $mdgriffith$elm_ui$Element$rgba = $mdgriffith$elm_ui$Internal$Model$Rgba;
 var $mdgriffith$elm_ui$Internal$Model$boxShadowClass = function (shadow) {
 	return $elm$core$String$concat(
@@ -12004,220 +13005,8 @@ var $mdgriffith$elm_ui$Element$Font$size = function (i) {
 		$mdgriffith$elm_ui$Internal$Flag$fontSize,
 		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
 };
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$Anim$CSS$transformToString = function (target) {
-	switch (target.$) {
-		case 'ToPosition':
-			var pos = target.a;
-			return 'translate3d(' + ($elm$core$String$fromFloat(pos.x) + ('px, ' + ($elm$core$String$fromFloat(pos.y) + 'px, 0)')));
-		case 'ToScale':
-			var scale = target.a;
-			return 'scale(' + ($elm$core$String$fromFloat(scale.x) + (', ' + ($elm$core$String$fromFloat(scale.y) + ')')));
-		case 'ToRotation':
-			var degrees = target.a;
-			return 'rotate(' + ($elm$core$String$fromFloat(degrees) + 'deg)');
-		default:
-			return '';
-	}
-};
-var $author$project$Anim$CSS$combineTransforms = function (targets) {
-	return A2(
-		$elm$core$String$join,
-		' ',
-		A2($elm$core$List$map, $author$project$Anim$CSS$transformToString, targets));
-};
-var $author$project$Anim$CSS$isTransformTarget = function (target) {
-	switch (target.$) {
-		case 'ToPosition':
-			return true;
-		case 'ToScale':
-			return true;
-		case 'ToRotation':
-			return true;
-		default:
-			return false;
-	}
-};
-var $elm$core$List$partition = F2(
-	function (pred, list) {
-		var step = F2(
-			function (x, _v0) {
-				var trues = _v0.a;
-				var falses = _v0.b;
-				return pred(x) ? _Utils_Tuple2(
-					A2($elm$core$List$cons, x, trues),
-					falses) : _Utils_Tuple2(
-					trues,
-					A2($elm$core$List$cons, x, falses));
-			});
-		return A3(
-			$elm$core$List$foldr,
-			step,
-			_Utils_Tuple2(_List_Nil, _List_Nil),
-			list);
-	});
-var $elm$core$Basics$clamp = F3(
-	function (low, high, number) {
-		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
-	});
-var $author$project$Anim$CSS$colorToString = function (color) {
-	switch (color.$) {
-		case 'Hex':
-			var hexString = color.a;
-			return hexString;
-		case 'Rgb':
-			var rgb = color.a;
-			return 'rgb(' + ($elm$core$String$fromInt(rgb.r) + (', ' + ($elm$core$String$fromInt(rgb.g) + (', ' + ($elm$core$String$fromInt(rgb.b) + ')')))));
-		case 'Rgba':
-			var rgba = color.a;
-			return 'rgba(' + ($elm$core$String$fromInt(rgba.r) + (', ' + ($elm$core$String$fromInt(rgba.g) + (', ' + ($elm$core$String$fromInt(rgba.b) + (', ' + ($elm$core$String$fromFloat(rgba.a) + ')')))))));
-		case 'Hsl':
-			var hsl = color.a;
-			return 'hsl(' + ($elm$core$String$fromFloat(hsl.h) + (', ' + ($elm$core$String$fromFloat(hsl.s) + ('%, ' + ($elm$core$String$fromFloat(hsl.l) + '%)')))));
-		default:
-			var hsla = color.a;
-			return 'hsla(' + ($elm$core$String$fromFloat(hsla.h) + (', ' + ($elm$core$String$fromFloat(hsla.s) + ('%, ' + ($elm$core$String$fromFloat(hsla.l) + ('%, ' + ($elm$core$String$fromFloat(hsla.a) + ')')))))));
-	}
-};
-var $author$project$Anim$CSS$filterToString = function (filter) {
-	switch (filter.$) {
-		case 'Blur':
-			var radius = filter.a;
-			return 'blur(' + ($elm$core$String$fromFloat(radius) + 'px)');
-		case 'Brightness':
-			var value = filter.a;
-			return 'brightness(' + ($elm$core$String$fromFloat(value) + ')');
-		case 'Contrast':
-			var value = filter.a;
-			return 'contrast(' + ($elm$core$String$fromFloat(value) + ')');
-		case 'Grayscale':
-			var value = filter.a;
-			return 'grayscale(' + ($elm$core$String$fromFloat(
-				A3($elm$core$Basics$clamp, 0.0, 1.0, value)) + ')');
-		default:
-			var value = filter.a;
-			return 'saturate(' + ($elm$core$String$fromFloat(value) + ')');
-	}
-};
-var $author$project$Anim$CSS$targetToProperty = function (target) {
-	switch (target.$) {
-		case 'ToOpacity':
-			var value = target.a;
-			return _Utils_Tuple2(
-				'opacity',
-				$elm$core$String$fromFloat(
-					A3($elm$core$Basics$clamp, 0.0, 1.0, value)));
-		case 'ToBackgroundColor':
-			var color = target.a;
-			return _Utils_Tuple2(
-				'background-color',
-				$author$project$Anim$CSS$colorToString(color));
-		case 'ToTextColor':
-			var color = target.a;
-			return _Utils_Tuple2(
-				'color',
-				$author$project$Anim$CSS$colorToString(color));
-		case 'ToBorderColor':
-			var color = target.a;
-			return _Utils_Tuple2(
-				'border-color',
-				$author$project$Anim$CSS$colorToString(color));
-		case 'ToDimensions':
-			var dimensions = target.a;
-			return _Utils_Tuple2(
-				'width',
-				$elm$core$String$fromFloat(dimensions.width) + 'px');
-		case 'ToBorderRadius':
-			var radius = target.a;
-			return _Utils_Tuple2(
-				'border-radius',
-				$elm$core$String$fromFloat(radius) + 'px');
-		case 'ToFilter':
-			var filter = target.a;
-			return _Utils_Tuple2(
-				'filter',
-				$author$project$Anim$CSS$filterToString(filter));
-		default:
-			return _Utils_Tuple2('', '');
-	}
-};
-var $author$project$Anim$CSS$groupAndCombineTargets = function (targets) {
-	var _v0 = A2($elm$core$List$partition, $author$project$Anim$CSS$isTransformTarget, targets);
-	var transformTargets = _v0.a;
-	var otherTargets = _v0.b;
-	var otherProperties = A2($elm$core$List$map, $author$project$Anim$CSS$targetToProperty, otherTargets);
-	var transformProperty = $elm$core$List$isEmpty(transformTargets) ? _List_Nil : _List_fromArray(
-		[
-			_Utils_Tuple2(
-			'transform',
-			$author$project$Anim$CSS$combineTransforms(transformTargets))
-		]);
-	return _Utils_ap(transformProperty, otherProperties);
-};
-var $author$project$Anim$CSS$styleProperties = F2(
-	function (elementId, _v0) {
-		var animations = _v0.a;
-		var _v1 = A2($elm$core$Dict$get, elementId, animations);
-		if (_v1.$ === 'Just') {
-			var targets = _v1.a;
-			return $author$project$Anim$CSS$groupAndCombineTargets(targets);
-		} else {
-			return _List_Nil;
-		}
-	});
 var $author$project$Common$Colors$success = A3($mdgriffith$elm_ui$Element$rgb255, 16, 185, 129);
 var $author$project$Common$Colors$textMedium = A3($mdgriffith$elm_ui$Element$rgb255, 71, 85, 105);
-var $author$project$Anim$Duration = function (a) {
-	return {$: 'Duration', a: a};
-};
-var $author$project$Anim$EaseOut = {$: 'EaseOut'};
-var $author$project$Anim$EasePreset = function (a) {
-	return {$: 'EasePreset', a: a};
-};
-var $author$project$Anim$defaultConfig = {
-	easing: $author$project$Anim$EasePreset($author$project$Anim$EaseOut),
-	timing: $author$project$Anim$Duration(400)
-};
-var $author$project$Anim$Internal$easingToString = function (easing) {
-	switch (easing.$) {
-		case 'EaseString':
-			var string = easing.a;
-			return string;
-		case 'EasePreset':
-			var preset = easing.a;
-			switch (preset.$) {
-				case 'Linear':
-					return 'linear';
-				case 'EaseOut':
-					return 'ease-out';
-				case 'EaseIn':
-					return 'ease-in';
-				default:
-					return 'ease-in-out';
-			}
-		default:
-			return 'ease-out';
-	}
-};
-var $author$project$Anim$Internal$timingToMilliseconds = F2(
-	function (timing, distance) {
-		if (timing.$ === 'Speed') {
-			var pixelsPerSecond = timing.a;
-			return (distance / pixelsPerSecond) * 1000;
-		} else {
-			var milliseconds = timing.a;
-			return milliseconds;
-		}
-	});
-var $author$project$Anim$CSS$transitionStyles = F2(
-	function (_v0, _v1) {
-		var config = $author$project$Anim$defaultConfig;
-		var duration = $author$project$Anim$Internal$timingToMilliseconds(config.timing);
-		var easing = $author$project$Anim$Internal$easingToString(config.easing);
-		return 'all ' + ($elm$core$String$fromFloat(
-			duration(1.0)) + ('ms ' + easing));
-	});
 var $author$project$Common$Colors$borderLight = A3($mdgriffith$elm_ui$Element$rgb255, 226, 232, 240);
 var $mdgriffith$elm_ui$Internal$Flag$borderColor = $mdgriffith$elm_ui$Internal$Flag$flag(28);
 var $mdgriffith$elm_ui$Element$Border$color = function (clr) {
@@ -12368,10 +13157,7 @@ var $author$project$ElmUI$CSS$Events$Main$viewEventEntry = F2(
 										$mdgriffith$elm_ui$Element$Font$size(12),
 										$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium)
 									]),
-								$mdgriffith$elm_ui$Element$text(
-									'Position: (' + ($elm$core$String$fromInt(
-										$elm$core$Basics$round(entry.position.x)) + (', ' + ($elm$core$String$fromInt(
-										$elm$core$Basics$round(entry.position.y)) + ')')))))
+								$mdgriffith$elm_ui$Element$text(entry.description))
 							])),
 						A2(
 						$mdgriffith$elm_ui$Element$el,
@@ -12384,11 +13170,77 @@ var $author$project$ElmUI$CSS$Events$Main$viewEventEntry = F2(
 							'#' + $elm$core$String$fromInt(entry.id)))
 					])));
 	});
+var $elm$html$Html$button = _VirtualDom_node('button');
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
+var $mdgriffith$elm_ui$Internal$Model$unstyled = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Unstyled, $elm$core$Basics$always);
+var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $author$project$Common$UI$wrappedButtonRow = function (buttons) {
+	var getButtonStyleClass = function (style) {
+		switch (style.$) {
+			case 'Primary':
+				return 'primary';
+			case 'Success':
+				return 'success';
+			case 'Purple':
+				return 'purple';
+			default:
+				return 'warning';
+		}
+	};
+	var createHtmlButton = function (_v0) {
+		var style = _v0.a;
+		var onPress = _v0.b;
+		var label = _v0.c;
+		return A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(onPress),
+					$elm$html$Html$Attributes$class(
+					'ui-action-button ' + getButtonStyleClass(style))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(label)
+				]));
+	};
+	var htmlButtons = A2($elm$core$List$map, createHtmlButton, buttons);
+	return A2(
+		$mdgriffith$elm_ui$Element$el,
+		_List_fromArray(
+			[$mdgriffith$elm_ui$Element$centerX]),
+		$mdgriffith$elm_ui$Element$html(
+			A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('ui-button-group')
+					]),
+				htmlButtons)));
+};
 var $author$project$ElmUI$CSS$Events$Main$viewContent = function (model) {
 	return _List_fromArray(
 		[
 			$author$project$Common$UI$backButton,
-			$author$project$Common$UI$pageHeader('SmoothMoveCSS Events Example'),
+			$author$project$Common$UI$pageHeader('CSS Events Example'),
+			A2(
+			$mdgriffith$elm_ui$Element$el,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$Font$size(16),
+					$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium),
+					$mdgriffith$elm_ui$Element$centerX
+				]),
+			$mdgriffith$elm_ui$Element$text('Demonstrating CSS transition events with real-time event logging')),
 			A2(
 			$mdgriffith$elm_ui$Element$column,
 			_List_fromArray(
@@ -12403,21 +13255,6 @@ var $author$project$ElmUI$CSS$Events$Main$viewContent = function (model) {
 					_List_fromArray(
 						[
 							$mdgriffith$elm_ui$Element$Font$size(14),
-							$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium),
-							$mdgriffith$elm_ui$Element$centerX
-						]),
-					function () {
-						var pos = A2($author$project$Anim$CSS$getCurrentPosition, 'box', model.animations);
-						return $mdgriffith$elm_ui$Element$text(
-							'Position: (' + ($elm$core$String$fromInt(
-								$elm$core$Basics$round(pos.x)) + (', ' + ($elm$core$String$fromInt(
-								$elm$core$Basics$round(pos.y)) + ')'))));
-					}()),
-					A2(
-					$mdgriffith$elm_ui$Element$el,
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$Font$size(14),
 							$mdgriffith$elm_ui$Element$Font$color(
 							model.isAnimating ? $author$project$Common$Colors$warning : $author$project$Common$Colors$success),
 							$mdgriffith$elm_ui$Element$centerX,
@@ -12426,12 +13263,11 @@ var $author$project$ElmUI$CSS$Events$Main$viewContent = function (model) {
 					$mdgriffith$elm_ui$Element$text(
 						model.isAnimating ? '🎬 Animating...' : '✅ Animation Complete'))
 				])),
-			$author$project$Common$UI$htmlActionButtons(
+			$author$project$Common$UI$wrappedButtonRow(
 			_List_fromArray(
 				[
-					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$CSS$Events$Main$MoveToCorner, 'Move to (100, 100)'),
-					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$CSS$Events$Main$MoveToCenter, 'Move to (300, 200)'),
-					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$CSS$Events$Main$MoveToOpposite, 'Move to (400, 50)'),
+					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$CSS$Events$Main$MoveToCorner, 'Move to Corner'),
+					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$CSS$Events$Main$MoveToCenter, 'Move to Center'),
 					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$CSS$Events$Main$StopAnimation, 'Return to Origin')
 				])),
 			A2(
@@ -12469,27 +13305,17 @@ var $author$project$ElmUI$CSS$Events$Main$viewContent = function (model) {
 							$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$primary),
 							$mdgriffith$elm_ui$Element$Border$rounded(8),
 							$mdgriffith$elm_ui$Element$htmlAttribute(
-							$elm$html$Html$Attributes$id('box')),
+							$elm$html$Html$Attributes$id('event-box')),
 							$mdgriffith$elm_ui$Element$htmlAttribute(
 							A2($elm$html$Html$Attributes$style, 'position', 'absolute'))
 						]),
 					_Utils_ap(
 						A2(
 							$elm$core$List$map,
-							function (_v0) {
-								var prop = _v0.a;
-								var value = _v0.b;
-								return $mdgriffith$elm_ui$Element$htmlAttribute(
-									A2($elm$html$Html$Attributes$style, prop, value));
-							},
-							A2($author$project$Anim$CSS$styleProperties, 'box', model.animations)),
+							$mdgriffith$elm_ui$Element$htmlAttribute,
+							A2($author$project$Anim$CSS$htmlAttributes, 'event-box', model.animations)),
 						_List_fromArray(
 							[
-								$mdgriffith$elm_ui$Element$htmlAttribute(
-								A2(
-									$elm$html$Html$Attributes$style,
-									'transition',
-									model.isAnimating ? A2($author$project$Anim$CSS$transitionStyles, 'box', model.animations) : 'none')),
 								$mdgriffith$elm_ui$Element$htmlAttribute(
 								$author$project$Anim$CSS$onTransitionStart($author$project$ElmUI$CSS$Events$Main$OnTransitionStart)),
 								$mdgriffith$elm_ui$Element$htmlAttribute(
@@ -12499,7 +13325,15 @@ var $author$project$ElmUI$CSS$Events$Main$viewContent = function (model) {
 								$mdgriffith$elm_ui$Element$htmlAttribute(
 								$author$project$Anim$CSS$onTransitionCancel($author$project$ElmUI$CSS$Events$Main$OnTransitionCancel))
 							]))),
-				$mdgriffith$elm_ui$Element$text('📦'))),
+				A2(
+					$mdgriffith$elm_ui$Element$el,
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$centerX,
+							$mdgriffith$elm_ui$Element$centerY,
+							$mdgriffith$elm_ui$Element$Font$size(20)
+						]),
+					$mdgriffith$elm_ui$Element$text('📦')))),
 			A2(
 			$mdgriffith$elm_ui$Element$column,
 			_List_fromArray(
@@ -12511,10 +13345,10 @@ var $author$project$ElmUI$CSS$Events$Main$viewContent = function (model) {
 				]),
 			_List_fromArray(
 				[
-					$author$project$Common$UI$htmlActionButtons(
+					$author$project$Common$UI$wrappedButtonRow(
 					_List_fromArray(
 						[
-							_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$CSS$Events$Main$ClearEventLog, 'Clear Log')
+							_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$ElmUI$CSS$Events$Main$ClearEventLog, 'Clear Log')
 						])),
 					A2(
 					$mdgriffith$elm_ui$Element$el,
@@ -12552,7 +13386,7 @@ var $author$project$ElmUI$CSS$Events$Main$viewContent = function (model) {
 var $author$project$ElmUI$CSS$Events$Main$view = function (model) {
 	return A3(
 		$author$project$Common$UI$createDocument,
-		'SmoothMoveCSS Events ElmUI Example',
+		'Anim.CSS Events ElmUI Example',
 		$author$project$Common$UI$Basic,
 		$author$project$ElmUI$CSS$Events$Main$viewContent(model));
 };

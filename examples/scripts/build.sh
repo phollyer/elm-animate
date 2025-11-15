@@ -58,6 +58,7 @@ build_example "src/ElmUI/CSS/Opacity/Main.elm" "src/ElmUI/CSS/Opacity/index.js" 
 build_example "src/ElmUI/CSS/Scale/Main.elm" "src/ElmUI/CSS/Scale/index.js" "ElmUI.CSS.Scale.Main"
 build_example "src/ElmUI/CSS/Rotation/Main.elm" "src/ElmUI/CSS/Rotation/index.js" "ElmUI.CSS.Rotation.Main"
 build_example "src/ElmUI/CSS/Color/Main.elm" "src/ElmUI/CSS/Color/index.js" "ElmUI.CSS.Color.Main"
+build_example "src/ElmUI/CSS/Events/Main.elm" "src/ElmUI/CSS/Events/index.js" "ElmUI.CSS.Events.Main"
 # build_example "src/ElmUI/CSS/Mixed/Main.elm" "src/ElmUI/CSS/Mixed/index.js" "ElmUI.CSS.Mixed.Main"
 # build_example "src/ElmUI/CSS/Choreography/Main.elm" "src/ElmUI/CSS/Choreography/index.js" "ElmUI.CSS.Choreography.Main"
 
@@ -104,6 +105,7 @@ if [ ${#FAILED_BUILDS[@]} -eq 0 ]; then
     echo "   - Scale (size transformations)"
     echo "   - Rotation (angular animations)"
     echo "   - Color (background transitions)"
+    echo "   - Events (transition lifecycle)"
     echo "   - Mixed (multi-property coordination)"
     echo "   - Choreography (6-element formations)"
 else

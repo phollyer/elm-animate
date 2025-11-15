@@ -1,8 +1,8 @@
 module ElmUI.CSS.Events.Main exposing (main)
 
-{-| SmoothMoveCSS Events Example using ElmUI - Demonstrating CSS transition event handling
+{-| Anim.CSS Events Example using ElmUI - Demonstrating CSS transition event handling
 
-This example showcases all CSS transition events available in the SmoothMoveCSS module.
+This example showcases CSS transition events available in the Anim.CSS module.
 Learn how to coordinate animations and update your UI based on transition lifecycle events.
 
 EVENT TYPES:
@@ -23,17 +23,20 @@ BENEFITS:
 
 -}
 
-import Anim exposing (Position, defaultConfig)
-import Anim.CSS exposing (Model, animatePosition, animateToX, animateToY, getCurrentPosition, init, onTransitionCancel, onTransitionEnd, onTransitionRun, onTransitionStart, styleProperties, transitionStyles)
+import Anim
+import Anim.CSS as CSS
+import Anim.Properties.Position as Position
+import Anim.Timing.Delay as Delay exposing (Delay(..))
+import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
-import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
+import Element exposing (Element, centerX, centerY, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
-import Element.Input as Input
 import Html.Attributes
+import Time
 
 
 
@@ -55,10 +58,11 @@ main =
 
 
 type alias Model =
-    { animations : Anim.CSS.Model
+    { animations : CSS.AnimationState
     , isAnimating : Bool
     , eventLog : List EventLogEntry
     , eventCounter : Int
+    , currentTime : Int
     }
 
 
@@ -66,7 +70,7 @@ type alias EventLogEntry =
     { id : Int
     , eventType : EventType
     , timestamp : Int
-    , position : Position
+    , description : String
     }
 
 
@@ -83,10 +87,11 @@ type EventType
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Anim.CSS.init
+    ( { animations = CSS.init
       , isAnimating = False
       , eventLog = []
       , eventCounter = 0
+      , currentTime = 0
       }
     , Cmd.none
     )
@@ -96,16 +101,25 @@ init _ =
 -- UPDATE
 
 
+anim : CSS.AnimationState -> Position.Builder
+anim animations =
+    animations
+        |> CSS.builder
+        |> Anim.duration 1000
+        |> Anim.easing Linear
+        |> Position.for "event-box"
+
+
 type Msg
     = MoveToCorner
     | MoveToCenter
-    | MoveToOpposite
     | StopAnimation
     | ClearEventLog
     | OnTransitionStart
     | OnTransitionEnd
     | OnTransitionRun
     | OnTransitionCancel
+    | Tick Time.Posix
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -113,7 +127,13 @@ update msg model =
     case msg of
         MoveToCorner ->
             ( { model
-                | animations = animatePosition "box" (Position 100 100) model.animations
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Position.toXY 450 300
+                        |> Position.easing Easing.QuadInOut
+                        |> Position.build
+                        |> CSS.animate
                 , isAnimating = True
               }
             , Cmd.none
@@ -121,15 +141,14 @@ update msg model =
 
         MoveToCenter ->
             ( { model
-                | animations = animatePosition "box" (Position 300 200) model.animations
-                , isAnimating = True
-              }
-            , Cmd.none
-            )
-
-        MoveToOpposite ->
-            ( { model
-                | animations = animatePosition "box" (Position 400 50) model.animations
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Position.toXY 225 150
+                        |> Position.easing Easing.SineInOut
+                        |> Position.duration 800
+                        |> Position.build
+                        |> CSS.animate
                 , isAnimating = True
               }
             , Cmd.none
@@ -137,53 +156,61 @@ update msg model =
 
         StopAnimation ->
             ( { model
-                | animations = animatePosition "box" (Position 0 0) model.animations
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Position.toXY 0 0
+                        |> Position.easing Easing.elasticInOut
+                        |> Position.build
+                        |> CSS.animate
                 , isAnimating = True
               }
             , Cmd.none
             )
 
         ClearEventLog ->
-            ( { model | eventLog = [] }
+            ( { model | eventLog = [], eventCounter = 0 }
             , Cmd.none
             )
 
         OnTransitionStart ->
-            ( addEventToLog TransitionStart model
+            ( addEventToLog TransitionStart "Animation started" model
             , Cmd.none
             )
 
         OnTransitionEnd ->
             ( model
-                |> addEventToLog TransitionEnd
+                |> addEventToLog TransitionEnd "Animation completed"
                 |> (\m -> { m | isAnimating = False })
             , Cmd.none
             )
 
         OnTransitionRun ->
-            ( addEventToLog TransitionRun model
+            ( addEventToLog TransitionRun "Animation is running" model
             , Cmd.none
             )
 
         OnTransitionCancel ->
             ( model
-                |> addEventToLog TransitionCancel
+                |> addEventToLog TransitionCancel "Animation was cancelled"
                 |> (\m -> { m | isAnimating = False })
             , Cmd.none
             )
 
+        Tick time ->
+            ( { model | currentTime = Time.posixToMillis time }
+            , Cmd.none
+            )
 
-addEventToLog : EventType -> Model -> Model
-addEventToLog eventType model =
+
+addEventToLog : EventType -> String -> Model -> Model
+addEventToLog eventType description model =
     let
-        currentPosition =
-            getCurrentPosition "box" model.animations
-
         newEntry =
             { id = model.eventCounter
             , eventType = eventType
-            , timestamp = model.eventCounter -- Simple counter for demo
-            , position = currentPosition
+            , timestamp = model.currentTime
+            , description = description
             }
 
         -- Keep only the last 10 events for display
@@ -203,38 +230,36 @@ addEventToLog eventType model =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.none
+    Time.every 100 Tick
 
 
 
--- No subscriptions needed - CSS events handle everything!
 -- VIEW
 
 
 view : Model -> Document Msg
 view model =
-    UI.createDocument "SmoothMoveCSS Events ElmUI Example" UI.Basic (viewContent model)
+    UI.createDocument
+        "Anim.CSS Events ElmUI Example"
+        UI.Basic
+        (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButton
-    , UI.pageHeader "SmoothMoveCSS Events Example"
+    , UI.pageHeader "CSS Events Example"
+    , -- Description
+      el
+        [ Font.size 16
+        , Font.color Colors.textMedium
+        , centerX
+        ]
+        (text "Demonstrating CSS transition events with real-time event logging")
     , -- Current status display
       column
         [ spacing 8, centerX ]
         [ el
-            [ Font.size 14
-            , Font.color Colors.textMedium
-            , centerX
-            ]
-            (let
-                pos =
-                    getCurrentPosition "box" model.animations
-             in
-             text ("Position: (" ++ String.fromInt (round pos.x) ++ ", " ++ String.fromInt (round pos.y) ++ ")")
-            )
-        , el
             [ Font.size 14
             , Font.color
                 (if model.isAnimating then
@@ -257,9 +282,8 @@ viewContent model =
         ]
     , -- Control buttons
       UI.wrappedButtonRow
-        [ ( UI.Primary, MoveToCorner, "Move to (100, 100)" )
-        , ( UI.Success, MoveToCenter, "Move to (300, 200)" )
-        , ( UI.Warning, MoveToOpposite, "Move to (400, 50)" )
+        [ ( UI.Primary, MoveToCorner, "Move to Corner" )
+        , ( UI.Success, MoveToCenter, "Move to Center" )
         , ( UI.Purple, StopAnimation, "Return to Origin" )
         ]
     , -- Animation area with moving box
@@ -283,41 +307,26 @@ viewContent model =
              , height (px 50)
              , Background.color Colors.primary
              , Border.rounded 8
-             , htmlAttribute (Html.Attributes.id "box")
+             , htmlAttribute (Html.Attributes.id "event-box")
              , htmlAttribute (Html.Attributes.style "position" "absolute")
-
-             -- Apply CSS styles from animation model
              ]
-                ++ (styleProperties "box" model.animations
-                        |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
-                   )
-                ++ [ htmlAttribute
-                        (Html.Attributes.style "transition"
-                            (if model.isAnimating then
-                                transitionStyles "box" model.animations
-
-                             else
-                                "none"
-                            )
-                        )
-
-                   -- All CSS transition event handlers
-                   , htmlAttribute (onTransitionStart OnTransitionStart)
-                   , htmlAttribute (onTransitionEnd OnTransitionEnd)
-                   , htmlAttribute (onTransitionRun OnTransitionRun)
-                   , htmlAttribute (onTransitionCancel OnTransitionCancel)
+                ++ List.map htmlAttribute (CSS.htmlAttributes "event-box" model.animations)
+                ++ [ htmlAttribute (CSS.onTransitionStart OnTransitionStart)
+                   , htmlAttribute (CSS.onTransitionEnd OnTransitionEnd)
+                   , htmlAttribute (CSS.onTransitionRun OnTransitionRun)
+                   , htmlAttribute (CSS.onTransitionCancel OnTransitionCancel)
                    ]
             )
-            (text "📦")
+            (el [ centerX, centerY, Font.size 20 ] (text "📦"))
         )
     , -- Event log section
       column
         [ spacing 12, width (fill |> maximum 600), centerX ]
         [ -- Event log header with clear button
           UI.wrappedButtonRow
-            [ ( UI.Primary, ClearEventLog, "Clear Log" ) ]
+            [ ( UI.Warning, ClearEventLog, "Clear Log" ) ]
         , el
-            [ Font.size 18, Element.centerX, Font.medium, Font.color Colors.textDark ]
+            [ Font.size 18, centerX, Font.medium, Font.color Colors.textDark ]
             (text "🎯 Event Log")
         , -- Event log display
           if List.isEmpty model.eventLog then
@@ -378,7 +387,7 @@ viewEventEntry currentCounter entry =
                     (text eventTypeInfo.name)
                 , el
                     [ Font.size 12, Font.color Colors.textMedium ]
-                    (text ("Position: (" ++ String.fromInt (round entry.position.x) ++ ", " ++ String.fromInt (round entry.position.y) ++ ")"))
+                    (text entry.description)
                 ]
             , el
                 [ Font.size 12, Font.color Colors.textLight ]
