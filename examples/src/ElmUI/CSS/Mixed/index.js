@@ -7006,7 +7006,7 @@ var $author$project$ElmUI$CSS$Mixed$Main$update = F2(
 																							A2(
 																								$author$project$Anim$duration,
 																								800,
-																								$author$project$Anim$CSS$builder($author$project$Anim$CSS$init)))))))))))))))))),
+																								$author$project$Anim$CSS$builder(model.animations)))))))))))))))))),
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -7038,7 +7038,7 @@ var $author$project$ElmUI$CSS$Mixed$Main$update = F2(
 															A2(
 																$author$project$Anim$duration,
 																800,
-																$author$project$Anim$CSS$builder($author$project$Anim$CSS$init)))))))))),
+																$author$project$Anim$CSS$builder(model.animations)))))))))),
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -7072,7 +7072,7 @@ var $author$project$ElmUI$CSS$Mixed$Main$update = F2(
 																A2(
 																	$author$project$Anim$duration,
 																	1000,
-																	$author$project$Anim$CSS$builder($author$project$Anim$CSS$init))))))))))),
+																	$author$project$Anim$CSS$builder(model.animations))))))))))),
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -7104,7 +7104,7 @@ var $author$project$ElmUI$CSS$Mixed$Main$update = F2(
 															A2(
 																$author$project$Anim$duration,
 																900,
-																$author$project$Anim$CSS$builder($author$project$Anim$CSS$init)))))))))),
+																$author$project$Anim$CSS$builder(model.animations)))))))))),
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -7210,7 +7210,7 @@ var $author$project$ElmUI$CSS$Mixed$Main$update = F2(
 																																										A2(
 																																											$author$project$Anim$Properties$Position$for,
 																																											'mixed-box',
-																																											$author$project$Anim$CSS$builder($author$project$Anim$CSS$init))))))))))))))))))))))))))))))))))))),
+																																											$author$project$Anim$CSS$builder(model.animations))))))))))))))))))))))))))))))))))))),
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -7264,7 +7264,7 @@ var $author$project$ElmUI$CSS$Mixed$Main$update = F2(
 																								A2(
 																									$author$project$Anim$duration,
 																									800,
-																									$author$project$Anim$CSS$builder($author$project$Anim$CSS$init))))))))))))))))))),
+																									$author$project$Anim$CSS$builder(model.animations))))))))))))))))))),
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);

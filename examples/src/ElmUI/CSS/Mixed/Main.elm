@@ -110,7 +110,7 @@ update msg model =
             -- Combine position + scale + rotation with different easing
             ( { model
                 | animations =
-                    CSS.init
+                    model.animations
                         |> CSS.builder
                         -- Global Defaults
                         |> Anim.duration 800
@@ -143,7 +143,7 @@ update msg model =
             -- Combine opacity + position with synchronized timing
             ( { model
                 | animations =
-                    CSS.init
+                    model.animations
                         |> CSS.builder
                         -- Global Defaults
                         |> Anim.duration 800
@@ -167,7 +167,7 @@ update msg model =
             -- Rotation + scale with delayed start
             ( { model
                 | animations =
-                    CSS.init
+                    model.animations
                         |> CSS.builder
                         -- Global Defaults
                         |> Anim.duration 1000
@@ -192,7 +192,7 @@ update msg model =
             -- Color + scale with smooth coordination
             ( { model
                 | animations =
-                    CSS.init
+                    model.animations
                         |> CSS.builder
                         -- Global Defaults
                         |> Anim.duration 900
@@ -216,7 +216,7 @@ update msg model =
             -- All properties with staggered timing - API handles transform order automatically
             ( { model
                 | animations =
-                    CSS.init
+                    model.animations
                         |> CSS.builder
                         -- Position
                         |> Position.for "mixed-box"
@@ -269,7 +269,7 @@ update msg model =
         ResetAll ->
             ( { model
                 | animations =
-                    CSS.init
+                    model.animations
                         |> CSS.builder
                         -- Global Defaults
                         |> Anim.duration 800
