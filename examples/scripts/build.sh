@@ -60,7 +60,7 @@ build_example "src/ElmUI/CSS/Rotation/Main.elm" "src/ElmUI/CSS/Rotation/index.js
 build_example "src/ElmUI/CSS/Color/Main.elm" "src/ElmUI/CSS/Color/index.js" "ElmUI.CSS.Color.Main"
 build_example "src/ElmUI/CSS/Events/Main.elm" "src/ElmUI/CSS/Events/index.js" "ElmUI.CSS.Events.Main"
 build_example "src/ElmUI/CSS/Mixed/Main.elm" "src/ElmUI/CSS/Mixed/index.js" "ElmUI.CSS.Mixed.Main"
-# build_example "src/ElmUI/CSS/Choreography/Main.elm" "src/ElmUI/CSS/Choreography/index.js" "ElmUI.CSS.Choreography.Main"
+build_example "src/ElmUI/CSS/Choreography/Main.elm" "src/ElmUI/CSS/Choreography/index.js" "ElmUI.CSS.Choreography.Main"
 
 # ElmUI Sub examples (Subscription-based API)
 #echo "  ⚡ ElmUI Sub examples (Anim.Sub - Frame-rate independent timing)..."

@@ -27,9 +27,9 @@ USAGE EXAMPLES:
 -- Common UI imports
 
 import Anim
-import Anim.CSS as CSS exposing (AnimationResult)
-import Anim.Easing as Easing
+import Anim.CSS as CSS
 import Anim.Properties.Position as Position
+import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -61,8 +61,7 @@ main =
 
 
 type alias Model =
-    { animations : Maybe AnimationResult
-    , isAnimating : Bool
+    { animations : CSS.AnimationState
     }
 
 
@@ -72,8 +71,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Nothing
-      , isAnimating = False
+    ( { animations = CSS.init
       }
     , Cmd.none
     )
@@ -93,55 +91,66 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        AnimationComplete ->
+            ( model, Cmd.none )
+
         ScatterElements ->
-            let
-                -- Create a multi-element animation using the new API
-                animationResult =
-                    Anim.init "elementA"
-                        |> Position.to { x = 80, y = 60 }
-                        |> Anim.duration 800
-                        |> Anim.easing Easing.easeInOutQuad
-                        |> Anim.for "elementB"
-                        |> Position.to { x = 320, y = 80 }
-                        |> Anim.for "elementC"
-                        |> Position.to { x = 40, y = 300 }
-                        |> Anim.for "elementD"
-                        |> Position.to { x = 380, y = 260 }
-                        |> Anim.for "elementE"
-                        |> Position.to { x = 60, y = 120 }
-                        |> Anim.for "elementF"
-                        |> Position.to { x = 350, y = 320 }
-                        |> CSS.animate
-            in
+            -- Create a multi-element animation using the new API
             ( { model
-                | animations = Just animationResult
-                , isAnimating = True
+                | animations =
+                    model.animations
+                        |> CSS.builder
+                        |> Anim.duration 800
+                        |> Anim.easing Easing.QuadInOut
+                        |> Position.for "elementA"
+                        |> Position.toXY 80 60
+                        |> Position.build
+                        |> Position.for "elementB"
+                        |> Position.toXY 320 80
+                        |> Position.build
+                        |> Position.for "elementC"
+                        |> Position.toXY 40 300
+                        |> Position.build
+                        |> Position.for "elementD"
+                        |> Position.toXY 380 260
+                        |> Position.build
+                        |> Position.for "elementE"
+                        |> Position.toXY 60 120
+                        |> Position.build
+                        |> Position.for "elementF"
+                        |> Position.toXY 350 320
+                        |> Position.build
+                        |> CSS.animate
               }
             , Cmd.none
             )
 
         ResetPositions ->
-            let
-                animationResult =
-                    Anim.init "elementA"
-                        |> Position.to { x = 150, y = 100 }
-                        |> Anim.duration 600
-                        |> Anim.easing Easing.easeInOutQuad
-                        |> Anim.for "elementB"
-                        |> Position.to { x = 200, y = 150 }
-                        |> Anim.for "elementC"
-                        |> Position.to { x = 100, y = 200 }
-                        |> Anim.for "elementD"
-                        |> Position.to { x = 250, y = 200 }
-                        |> Anim.for "elementE"
-                        |> Position.to { x = 300, y = 100 }
-                        |> Anim.for "elementF"
-                        |> Position.to { x = 180, y = 50 }
-                        |> CSS.animate
-            in
             ( { model
-                | animations = Just animationResult
-                , isAnimating = True
+                | animations =
+                    model.animations
+                        |> CSS.builder
+                        |> Anim.duration 600
+                        |> Anim.easing Easing.QuadInOut
+                        |> Position.for "elementA"
+                        |> Position.toXY 0 0
+                        |> Position.build
+                        |> Position.for "elementB"
+                        |> Position.toXY 0 0
+                        |> Position.build
+                        |> Position.for "elementC"
+                        |> Position.toXY 0 0
+                        |> Position.build
+                        |> Position.for "elementD"
+                        |> Position.toXY 0 0
+                        |> Position.build
+                        |> Position.for "elementE"
+                        |> Position.toXY 0 0
+                        |> Position.build
+                        |> Position.for "elementF"
+                        |> Position.toXY 0 0
+                        |> Position.build
+                        |> CSS.animate
               }
             , Cmd.none
             )
@@ -156,39 +165,33 @@ update msg model =
 
                 radius =
                     90
-
-                animationResult =
-                    Anim.init "elementA"
-                        |> Position.to { x = centerX + radius, y = centerY }
-                        -- 0°
-                        |> Anim.duration 1000
-                        |> Anim.easing Easing.easeInOutBack
-                        |> Anim.for "elementB"
-                        |> Position.to { x = centerX + radius * 0.5, y = centerY + radius * 0.866 }
-                        -- 60°
-                        |> Anim.for "elementC"
-                        |> Position.to { x = centerX - radius * 0.5, y = centerY + radius * 0.866 }
-                        -- 120°
-                        |> Anim.for "elementD"
-                        |> Position.to { x = centerX - radius, y = centerY }
-                        -- 180°
-                        |> Anim.for "elementE"
-                        |> Position.to { x = centerX - radius * 0.5, y = centerY - radius * 0.866 }
-                        -- 240°
-                        |> Anim.for "elementF"
-                        |> Position.to { x = centerX + radius * 0.5, y = centerY - radius * 0.866 }
-                        -- 300°
-                        |> CSS.animate
             in
             ( { model
-                | animations = Just animationResult
-                , isAnimating = True
+                | animations =
+                    model.animations
+                        |> CSS.builder
+                        |> Anim.duration 1000
+                        |> Anim.easing Easing.backInOut
+                        |> Position.for "elementA"
+                        |> Position.toXY (toFloat (centerX + round radius)) (toFloat centerY)
+                        |> Position.build
+                        |> Position.for "elementB"
+                        |> Position.toXY (toFloat (centerX + round (radius * 0.5))) (toFloat (centerY + round (radius * 0.866)))
+                        |> Position.build
+                        |> Position.for "elementC"
+                        |> Position.toXY (toFloat (centerX - round (radius * 0.5))) (toFloat (centerY + round (radius * 0.866)))
+                        |> Position.build
+                        |> Position.for "elementD"
+                        |> Position.toXY (toFloat (centerX - round radius)) (toFloat centerY)
+                        |> Position.build
+                        |> Position.for "elementE"
+                        |> Position.toXY (toFloat (centerX - round (radius * 0.5))) (toFloat (centerY - round (radius * 0.866)))
+                        |> Position.build
+                        |> Position.for "elementF"
+                        |> Position.toXY (toFloat (centerX + round (radius * 0.5))) (toFloat (centerY - round (radius * 0.866)))
+                        |> Position.build
+                        |> CSS.animate
               }
-            , Cmd.none
-            )
-
-        AnimationComplete ->
-            ( { model | isAnimating = False, animations = Nothing }
             , Cmd.none
             )
 
@@ -274,6 +277,6 @@ animatedBox elementId label color1 color2 model =
          , htmlAttribute (Html.Attributes.id elementId)
          , htmlAttribute (Html.Attributes.style "position" "absolute")
          ]
-            ++ List.map htmlAttribute (CSS.htmlAttributes elementId model.animations AnimationComplete)
+            ++ List.map htmlAttribute (CSS.htmlAttributes elementId model.animations)
         )
         (el [ centerX, centerY ] (text label))
