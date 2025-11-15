@@ -16,13 +16,14 @@ FEATURES:
 -}
 
 import Anim
-import Anim.CSS as CSS exposing (AnimationResult)
-import Anim.Easing as Easing
-import Anim.Properties.Scale as Scale
+import Anim.CSS as CSS
+import Anim.Properties.Scale as Scale exposing (Scale(..), ScaleXY)
+import Anim.Timing.Delay as Delay exposing (Delay(..))
+import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
-import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
+import Element exposing (Element, centerX, centerY, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -39,7 +40,7 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = \_ -> Sub.none
         }
 
 
@@ -48,10 +49,7 @@ main =
 
 
 type alias Model =
-    { animations : Maybe AnimationResult
-    , isAnimating : Bool
-    , currentScale : { x : Float, y : Float }
-    }
+    { animations : CSS.AnimationState }
 
 
 
@@ -60,131 +58,109 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Nothing
-      , isAnimating = False
-      , currentScale = { x = 1.0, y = 1.0 } -- Starting scale (normal size)
-      }
+    ( { animations = CSS.init }
     , Cmd.none
     )
-
-
-type Msg
-    = ScaleUp
-    | ScaleDown
-    | ScaleReset
-    | ScaleWide
-    | ScaleTall
-    | AnimationComplete
 
 
 
 -- UPDATE
 
 
+anim : CSS.AnimationState -> Scale.Builder
+anim animations =
+    animations
+        |> CSS.builder
+        |> Anim.duration 500
+        |> Anim.easing Linear
+        |> Scale.for "box"
+
+
+type Msg
+    = ScaleUp
+    | ScaleDown
+    | ScaleWide
+    | ScaleTall
+    | ScaleReset
+    | AnimationComplete
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ScaleUp ->
-            let
-                animationResult =
-                    Anim.init "box"
-                        |> Scale.to { x = 1.5, y = 1.5 }
-                        |> Anim.duration 400
-                        |> Anim.easing Easing.easeOutQuad
-                        |> CSS.animate
-            in
             ( { model
-                | animations = Just animationResult
-                , isAnimating = True
-                , currentScale = { x = 1.5, y = 1.5 }
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Scale.to (ScaleXY 1.5 1.5)
+                        |> Scale.easing Easing.QuadInOut
+                        |> Scale.build
+                        |> CSS.animate
               }
             , Cmd.none
             )
 
         ScaleDown ->
-            let
-                animationResult =
-                    Anim.init "box"
-                        |> Scale.to { x = 0.7, y = 0.7 }
-                        |> Anim.duration 400
-                        |> Anim.easing Easing.easeOutQuad
-                        |> CSS.animate
-            in
             ( { model
-                | animations = Just animationResult
-                , isAnimating = True
-                , currentScale = { x = 0.7, y = 0.7 }
-              }
-            , Cmd.none
-            )
-
-        ScaleReset ->
-            let
-                animationResult =
-                    Anim.init "box"
-                        |> Scale.to { x = 1.0, y = 1.0 }
-                        |> Anim.duration 600
-                        |> Anim.easing Easing.easeInOutQuad
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Scale.to (ScaleXY 0.7 0.7)
+                        |> Scale.easing Easing.SineInOut
+                        |> Scale.speed 2.0
+                        |> Scale.build
                         |> CSS.animate
-            in
-            ( { model
-                | animations = Just animationResult
-                , isAnimating = True
-                , currentScale = { x = 1.0, y = 1.0 }
               }
             , Cmd.none
             )
 
         ScaleWide ->
-            let
-                animationResult =
-                    Anim.init "box"
-                        |> Scale.to { x = 1.8, y = 0.6 }
-                        |> Anim.duration 500
-                        |> Anim.easing Easing.easeOutQuad
-                        |> CSS.animate
-            in
             ( { model
-                | animations = Just animationResult
-                , isAnimating = True
-                , currentScale = { x = 1.8, y = 0.6 }
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Scale.to (ScaleXY 2.0 0.8)
+                        |> Scale.easing Easing.backInOut
+                        |> Scale.duration 700
+                        |> Scale.build
+                        |> CSS.animate
               }
             , Cmd.none
             )
 
         ScaleTall ->
-            let
-                animationResult =
-                    Anim.init "box"
-                        |> Scale.to { x = 0.6, y = 1.8 }
-                        |> Anim.duration 500
-                        |> Anim.easing Easing.easeOutQuad
-                        |> CSS.animate
-            in
             ( { model
-                | animations = Just animationResult
-                , isAnimating = True
-                , currentScale = { x = 0.6, y = 1.8 }
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Scale.to (ScaleXY 0.6 1.8)
+                        |> Scale.easing Easing.bounceInOut
+                        |> Scale.delay (Delay 200)
+                        |> Scale.build
+                        |> CSS.animate
+              }
+            , Cmd.none
+            )
+
+        ScaleReset ->
+            ( { model
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Scale.to (ScaleXY 1.0 1.0)
+                        |> Scale.easing Easing.elasticInOut
+                        |> Scale.duration 800
+                        |> Scale.build
+                        |> CSS.animate
               }
             , Cmd.none
             )
 
         AnimationComplete ->
-            ( { model
-                | isAnimating = False
-                , animations = Nothing
-              }
+            ( model
             , Cmd.none
             )
-
-
-
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
 
 
 
@@ -209,16 +185,16 @@ viewContent model =
         , Font.color Colors.textMedium
         , centerX
         ]
-        (text "Smooth size transformations using browser-native CSS transitions")
+        (text "Smooth scaling transformations using hardware-accelerated CSS transforms")
     , -- Scale controls
       UI.wrappedButtonRow
-        [ ( UI.Primary, ScaleUp, "Scale Up" )
+        [ ( UI.Success, ScaleUp, "Scale Up" )
         , ( UI.Warning, ScaleDown, "Scale Down" )
-        , ( UI.Success, ScaleWide, "Wide" )
-        , ( UI.Success, ScaleTall, "Tall" )
-        , ( UI.Purple, ScaleReset, "Reset" )
+        , ( UI.Primary, ScaleWide, "Scale Wide" )
+        , ( UI.Purple, ScaleTall, "Scale Tall" )
+        , ( UI.Success, ScaleReset, "Reset Scale" )
         ]
-    , -- Animation area with box
+    , -- Animation area with boxes
       el
         [ width (fill |> maximum 600)
         , height (px 400)
@@ -241,17 +217,17 @@ viewContent model =
         ]
         (el
             [ centerX
-            , Element.centerY
+            , centerY
             , width (px 200)
             , height (px 200)
             ]
-            (animatedBox "box" "Scale Demo" Colors.primary model)
+            (scaledElement "box" "Scale Demo" Colors.primary model)
         )
     ]
 
 
-animatedBox : String -> String -> Element.Color -> Model -> Element Msg
-animatedBox elementId label color model =
+scaledElement : String -> String -> Element.Color -> Model -> Element Msg
+scaledElement elementId label color model =
     el
         ([ width (px 150)
          , height (px 150)
@@ -264,31 +240,11 @@ animatedBox elementId label color model =
          , htmlAttribute (Html.Attributes.style "align-items" "center")
          , htmlAttribute (Html.Attributes.style "justify-content" "center")
          ]
-            ++ (case model.animations of
-                    Just animationResult ->
-                        CSS.getElementStyles elementId animationResult
-                            |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
-
-                    Nothing ->
-                        []
-               )
-            ++ [ htmlAttribute
-                    (Html.Attributes.style "transition"
-                        (case model.animations of
-                            Just _ ->
-                                "transform 0.4s ease-out"
-
-                            -- Default transition
-                            Nothing ->
-                                "none"
-                        )
-                    )
-               , htmlAttribute (CSS.onTransitionEnd AnimationComplete)
-               ]
+            ++ List.map htmlAttribute (CSS.htmlAttributes elementId model.animations)
         )
         (el
             [ centerX
-            , Element.centerY
+            , centerY
             , Font.color Colors.backgroundWhite
             , Font.bold
             , Font.size 16

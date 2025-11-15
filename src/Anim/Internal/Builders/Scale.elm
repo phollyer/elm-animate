@@ -10,7 +10,7 @@ module Anim.Internal.Builders.Scale exposing
     , to
     )
 
-import Anim.Internal.Builder as Builder exposing (Builder)
+import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
 import Anim.Internal.Timing.Delay exposing (Delay)
@@ -35,15 +35,39 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec)
 
 
 type ScaleBuilder
-    = ScaleBuilder ScaleConfig Builder
+    = ScaleBuilder ScaleConfig AnimBuilder
 
 
-for : String -> Builder -> ScaleBuilder
+for : String -> AnimBuilder -> ScaleBuilder
 for elementId builder =
-    ScaleBuilder defaultConfig (Builder.for elementId builder)
+    let
+        existingConfig =
+            case Builder.getElementConfig elementId builder of
+                Just { properties } ->
+                    properties
+                        |> List.filterMap
+                            (\prop ->
+                                case prop of
+                                    Builder.ScaleConfig config ->
+                                        Just config
+
+                                    _ ->
+                                        Nothing
+                            )
+                        |> List.head
+
+                _ ->
+                    Nothing
+    in
+    case existingConfig of
+        Just config ->
+            ScaleBuilder (PropertyBuilder.applyGlobalDefaults builder config) builder
+
+        Nothing ->
+            ScaleBuilder (PropertyBuilder.applyGlobalDefaults builder defaultConfig) (Builder.for elementId builder)
 
 
-build : ScaleBuilder -> Builder
+build : ScaleBuilder -> AnimBuilder
 build (ScaleBuilder config builder) =
     let
         newScaleConfig =
