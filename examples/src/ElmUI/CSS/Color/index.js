@@ -5524,6 +5524,7 @@ var $author$project$Anim$CSS$generateTransforms = function (properties) {
 	var transformParts = A2($elm$core$List$filterMap, $author$project$Anim$CSS$transformFromProperty, properties);
 	return A2($elm$core$String$join, ' ', transformParts);
 };
+var $elm$core$Debug$log = _Debug_log;
 var $author$project$Anim$Internal$Timing$Easing$easingToCSS = function (easing) {
 	switch (easing.$) {
 		case 'Bezier':
@@ -5652,7 +5653,10 @@ var $author$project$Anim$CSS$transitionFromProperty = function (property) {
 		case 'RotateConfig':
 			var config = property.a;
 			return $elm$core$Maybe$Just(
-				'transform ' + ($author$project$Anim$Internal$Timing$TimeSpec$toCssString(config.timing) + (' ' + ($author$project$Anim$Internal$Timing$Easing$toCSS(config.easing) + (' ' + $author$project$Anim$Internal$Timing$Delay$toCssString(config.delay))))));
+				'transform ' + (A2(
+					$elm$core$Debug$log,
+					'timespec',
+					$author$project$Anim$Internal$Timing$TimeSpec$toCssString(config.timing)) + (' ' + ($author$project$Anim$Internal$Timing$Easing$toCSS(config.easing) + (' ' + $author$project$Anim$Internal$Timing$Delay$toCssString(config.delay))))));
 		case 'ScaleConfig':
 			var config = property.a;
 			return $elm$core$Maybe$Just(
@@ -6144,7 +6148,7 @@ var $author$project$Anim$Internal$Builder$getTimespec = function (_v0) {
 	var data = _v0.a;
 	return data.globalTiming;
 };
-var $author$project$Anim$Internal$Builders$Color$applyGlobalDefaults = F2(
+var $author$project$Anim$Internal$Builders$Property$applyGlobalDefaults = F2(
 	function (builder, config) {
 		return _Utils_update(
 			config,
@@ -6210,12 +6214,12 @@ var $author$project$Anim$Internal$Builders$Color$for = F2(
 			var config = existingConfig.a;
 			return A2(
 				$author$project$Anim$Internal$Builders$Color$Builder,
-				A2($author$project$Anim$Internal$Builders$Color$applyGlobalDefaults, builder, config),
+				A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, config),
 				builder);
 		} else {
 			return A2(
 				$author$project$Anim$Internal$Builders$Color$Builder,
-				A2($author$project$Anim$Internal$Builders$Color$applyGlobalDefaults, builder, $author$project$Anim$Internal$Builders$Color$defaultConfig),
+				A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, $author$project$Anim$Internal$Builders$Color$defaultConfig),
 				A2($author$project$Anim$Internal$Builder$for, elementId, builder));
 		}
 	});
@@ -12429,7 +12433,6 @@ var $author$project$Anim$CSS$htmlAttributes = F2(
 			A2($author$project$Anim$CSS$getElementStyles, elementId, animationResult));
 	});
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
-var $elm$core$Debug$log = _Debug_log;
 var $mdgriffith$elm_ui$Internal$Model$Max = F2(
 	function (a, b) {
 		return {$: 'Max', a: a, b: b};

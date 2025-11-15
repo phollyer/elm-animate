@@ -444,7 +444,7 @@ transitionFromProperty property =
             Just ("transform " ++ TimeSpec.toCssString config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
         Builder.RotateConfig config ->
-            Just ("transform " ++ TimeSpec.toCssString config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
+            Just ("transform " ++ (TimeSpec.toCssString config.timing |> Debug.log "timespec") ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
         Builder.ScaleConfig config ->
             Just ("transform " ++ TimeSpec.toCssString config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)

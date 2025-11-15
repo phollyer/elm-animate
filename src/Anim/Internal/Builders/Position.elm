@@ -63,19 +63,10 @@ for elementId builder =
     in
     case existingConfig of
         Just config ->
-            PositionBuilder (applyGlobalDefaults builder config) builder
+            PositionBuilder (PropertyBuilder.applyGlobalDefaults builder config) builder
 
         Nothing ->
-            PositionBuilder (applyGlobalDefaults builder defaultConfig) (Builder.for elementId builder)
-
-
-applyGlobalDefaults : AnimBuilder -> PositionConfig -> PositionConfig
-applyGlobalDefaults builder config =
-    { config
-        | easing = Builder.getEasing builder
-        , delay = Builder.getDelay builder
-        , timing = Builder.getTimespec builder
-    }
+            PositionBuilder (PropertyBuilder.applyGlobalDefaults builder defaultConfig) (Builder.for elementId builder)
 
 
 build : PositionBuilder -> AnimBuilder

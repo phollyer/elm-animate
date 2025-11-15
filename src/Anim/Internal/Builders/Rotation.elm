@@ -10,7 +10,7 @@ module Anim.Internal.Builders.Rotation exposing
     , to
     )
 
-import Anim.Internal.Builder as Builder exposing (Builder)
+import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Rotation as Rotation exposing (Rotation)
 import Anim.Internal.Timing.Delay exposing (Delay)
@@ -35,15 +35,39 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec)
 
 
 type RotationBuilder
-    = RotationBuilder RotationConfig Builder
+    = RotationBuilder RotationConfig AnimBuilder
 
 
-for : String -> Builder -> RotationBuilder
+for : String -> AnimBuilder -> RotationBuilder
 for elementId builder =
-    RotationBuilder defaultConfig (Builder.for elementId builder)
+    let
+        existingConfig =
+            case Builder.getElementConfig elementId builder of
+                Just { properties } ->
+                    properties
+                        |> List.filterMap
+                            (\prop ->
+                                case prop of
+                                    Builder.RotateConfig config ->
+                                        Just config
+
+                                    _ ->
+                                        Nothing
+                            )
+                        |> List.head
+
+                _ ->
+                    Nothing
+    in
+    case existingConfig of
+        Just config ->
+            RotationBuilder (PropertyBuilder.applyGlobalDefaults builder config) builder
+
+        Nothing ->
+            RotationBuilder (PropertyBuilder.applyGlobalDefaults builder defaultConfig) (Builder.for elementId builder)
 
 
-build : RotationBuilder -> Builder
+build : RotationBuilder -> AnimBuilder
 build (RotationBuilder config builder) =
     let
         newRotationConfig =

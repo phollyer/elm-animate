@@ -1,10 +1,26 @@
 module Anim.Internal.Builders.Property exposing
     ( add
+    , applyGlobalDefaults
     , replace
     , upsert
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
+import Anim.Internal.Timing.Delay exposing (Delay)
+import Anim.Internal.Timing.Easing exposing (Easing)
+import Anim.Internal.Timing.TimeSpec exposing (TimeSpec)
+
+
+applyGlobalDefaults :
+    AnimBuilder
+    -> { c | easing : Maybe Easing, delay : Maybe Delay, timing : Maybe TimeSpec }
+    -> { c | easing : Maybe Easing, delay : Maybe Delay, timing : Maybe TimeSpec }
+applyGlobalDefaults builder config =
+    { config
+        | easing = Builder.getEasing builder
+        , delay = Builder.getDelay builder
+        , timing = Builder.getTimespec builder
+    }
 
 
 add : Builder.PropertyConfig -> AnimBuilder -> AnimBuilder

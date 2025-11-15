@@ -1,23 +1,32 @@
-module Anim.Properties.Rotation exposing (to, speed, duration, easing, delay)
+module Anim.Properties.Rotation exposing
+    ( Rotation, Builder
+    , for, build, to, speed, duration, easing, delay
+    )
 
 {-| Rotation animation property functions.
 
 Use these functions to configure rotation animations in the builder chain:
 
-    Anim.init "my-element"
-        |> Rotate.to 180
-        |> Rotate.speed 90
-        |> ...
+    Anim.init
+        |> Rotation.for "my-element"
+        |> Rotation.to 180
+        |> Rotation.speed 90
+        |> Rotation.build
+        |> CSS.animate
+
+
+# Types
+
+@docs Rotation, Builder
 
 
 # Rotation Configuration
 
-@doc Rotation
-
-@docs to, speed, duration, easing, delay
+@docs for, build, to, speed, duration, easing, delay
 
 -}
 
+import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Rotation as RB
 import Anim.Internal.Properties.Rotation as R
 import Anim.Timing.Delay as Delay exposing (Delay)
@@ -28,7 +37,7 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 -- ROTATION CONFIGURATION
 
 
-type alias RotationBuilder =
+type alias Builder =
     RB.RotationBuilder
 
 
@@ -38,12 +47,40 @@ type alias Rotation =
     Float
 
 
+{-| Start configuring rotation animation for a specific element.
+
+    Anim.init
+        |> Rotation.for "my-element"
+        |> Rotation.to 180
+        |> Rotation.build
+
+-}
+for : String -> AnimBuilder -> Builder
+for elementId =
+    RB.for elementId
+
+
+{-| Complete the rotation animation configuration and return an AnimBuilder.
+
+    animations
+        |> CSS.builder
+        |> Rotation.for "my-element"
+        |> Rotation.to 180
+        |> Rotation.build
+        |> CSS.animate
+
+-}
+build : Builder -> AnimBuilder
+build =
+    RB.build
+
+
 {-| Set the target rotation angle for the current element (in degrees).
 
     builder |> Rotate.to 180
 
 -}
-to : Rotation -> RotationBuilder -> RotationBuilder
+to : Rotation -> Builder -> Builder
 to targetRotation =
     RB.to (toInternal targetRotation)
 
@@ -53,7 +90,7 @@ to targetRotation =
     builder |> Rotate.speed 90
 
 -}
-speed : Float -> RotationBuilder -> RotationBuilder
+speed : Float -> Builder -> Builder
 speed degreesPerSecond =
     RB.speed degreesPerSecond
 
@@ -63,7 +100,7 @@ speed degreesPerSecond =
     builder |> Rotate.duration 2000
 
 -}
-duration : Int -> RotationBuilder -> RotationBuilder
+duration : Int -> Builder -> Builder
 duration milliseconds =
     RB.duration milliseconds
 
@@ -73,7 +110,7 @@ duration milliseconds =
     builder |> Rotate.easing EaseInOut
 
 -}
-easing : Easing -> RotationBuilder -> RotationBuilder
+easing : Easing -> Builder -> Builder
 easing easingFunction =
     RB.easing (Easing.mapInternal identity easingFunction)
 
@@ -83,7 +120,7 @@ easing easingFunction =
     builder |> Rotate.delay 500
 
 -}
-delay : Delay -> RotationBuilder -> RotationBuilder
+delay : Delay -> Builder -> Builder
 delay delay_ =
     RB.delay (Delay.mapInternal identity delay_)
 
