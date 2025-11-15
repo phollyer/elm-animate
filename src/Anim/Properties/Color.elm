@@ -39,7 +39,7 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 
 
 type alias Builder =
-    CB.Builder
+    CB.ColorBuilder
 
 
 {-| Start configuring color animation for a specific element.

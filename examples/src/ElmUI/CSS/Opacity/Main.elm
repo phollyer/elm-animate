@@ -9,20 +9,21 @@ FEATURES:
 
   - ✅ Smooth fade in/out animations
   - ✅ Hardware-accelerated opacity transitions
-  - ✅ Multiple elements with different timing
+  - ✅ Multiple opacity values and transitions
   - ✅ Show/hide patterns with smooth transitions
   - ✅ Battery efficient browser-native animations
 
 -}
 
 import Anim
-import Anim.CSS as CSS exposing (AnimationResult)
-import Anim.Easing as Easing
+import Anim.CSS as CSS
 import Anim.Properties.Opacity as Opacity
+import Anim.Timing.Delay as Delay exposing (Delay(..))
+import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
-import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
+import Element exposing (Element, centerX, centerY, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -39,7 +40,7 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = \_ -> Sub.none
         }
 
 
@@ -48,9 +49,7 @@ main =
 
 
 type alias Model =
-    { animations : Maybe AnimationResult
-    , isVisible : Bool
-    }
+    { animations : CSS.AnimationState }
 
 
 
@@ -59,97 +58,109 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Nothing
-      , isVisible = True
-      }
+    ( { animations = CSS.init }
     , Cmd.none
     )
-
-
-type Msg
-    = FadeIn
-    | FadeOut
-    | FadeToggle
-    | AnimationComplete
 
 
 
 -- UPDATE
 
 
+anim : CSS.AnimationState -> Opacity.Builder
+anim animations =
+    animations
+        |> CSS.builder
+        |> Anim.duration 600
+        |> Anim.easing Linear
+        |> Opacity.for "box"
+
+
+type Msg
+    = FadeIn
+    | FadeOut
+    | FadeToHalf
+    | FadeToQuarter
+    | ShowFully
+    | AnimationComplete
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         FadeIn ->
-            let
-                animationResult =
-                    Anim.init "box"
-                        |> Opacity.to 1.0
-                        |> Anim.duration 600
-                        |> Anim.easing Easing.easeOut
-                        |> CSS.animate
-            in
             ( { model
-                | animations = Just animationResult
-                , isVisible = True
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Opacity.to 1.0
+                        |> Opacity.easing Easing.QuadInOut
+                        |> Opacity.build
+                        |> CSS.animate
               }
             , Cmd.none
             )
 
         FadeOut ->
-            let
-                animationResult =
-                    Anim.init "box"
-                        |> Opacity.to 0.0
-                        |> Anim.duration 400
-                        |> Anim.easing Easing.easeIn
-                        |> CSS.animate
-            in
             ( { model
-                | animations = Just animationResult
-                , isVisible = False
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Opacity.to 0.0
+                        |> Opacity.easing Easing.SineInOut
+                        |> Opacity.speed 2.0
+                        |> Opacity.build
+                        |> CSS.animate
               }
             , Cmd.none
             )
 
-        FadeToggle ->
-            -- Toggle between fully visible (1.0) and fully invisible (0.0)
-            let
-                newOpacity =
-                    if model.isVisible then
-                        0.0
-
-                    else
-                        1.0
-
-                newVisible =
-                    not model.isVisible
-
-                animationResult =
-                    Anim.init "box"
-                        |> Opacity.to newOpacity
-                        |> Anim.duration 500
-                        |> Anim.easing Easing.easeInOut
-                        |> CSS.animate
-            in
+        FadeToHalf ->
             ( { model
-                | animations = Just animationResult
-                , isVisible = newVisible
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Opacity.to 0.5
+                        |> Opacity.easing Easing.backInOut
+                        |> Opacity.duration 800
+                        |> Opacity.build
+                        |> CSS.animate
+              }
+            , Cmd.none
+            )
+
+        FadeToQuarter ->
+            ( { model
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Opacity.to 0.25
+                        |> Opacity.easing Easing.bounceInOut
+                        |> Opacity.delay (Delay 300)
+                        |> Opacity.build
+                        |> CSS.animate
+              }
+            , Cmd.none
+            )
+
+        ShowFully ->
+            ( { model
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Opacity.to 1.0
+                        |> Opacity.easing Easing.elasticInOut
+                        |> Opacity.duration 1000
+                        |> Opacity.build
+                        |> CSS.animate
               }
             , Cmd.none
             )
 
         AnimationComplete ->
-            ( model, Cmd.none )
-
-
-
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
+            ( model
+            , Cmd.none
+            )
 
 
 
@@ -179,12 +190,14 @@ viewContent model =
       UI.wrappedButtonRow
         [ ( UI.Success, FadeIn, "Fade In" )
         , ( UI.Warning, FadeOut, "Fade Out" )
-        , ( UI.Primary, FadeToggle, "Toggle Visibility" )
+        , ( UI.Primary, FadeToHalf, "50% Opacity" )
+        , ( UI.Purple, FadeToQuarter, "25% Opacity" )
+        , ( UI.Success, ShowFully, "Show Fully" )
         ]
     , -- Animation area with boxes
       el
         [ width (fill |> maximum 600)
-        , height (px 300)
+        , height (px 400)
         , Background.color Colors.backgroundWhite
         , Border.rounded 12
         , Border.shadow
@@ -195,11 +208,16 @@ viewContent model =
             }
         , centerX
         , htmlAttribute (Html.Attributes.style "position" "relative")
-        , htmlAttribute (Html.Attributes.style "overflow" "hidden")
+        , htmlAttribute (Html.Attributes.style "overflow" "visible")
+        , htmlAttribute (Html.Attributes.style "display" "flex")
+        , htmlAttribute (Html.Attributes.style "flex-direction" "column")
+        , htmlAttribute (Html.Attributes.style "align-items" "center")
+        , htmlAttribute (Html.Attributes.style "justify-content" "space-around")
+        , htmlAttribute (Html.Attributes.style "padding" "40px")
         ]
         (el
             [ centerX
-            , Element.centerY
+            , centerY
             , width (px 200)
             , height (px 200)
             ]
@@ -221,30 +239,12 @@ animatedBox elementId label color model =
          , htmlAttribute (Html.Attributes.style "align-items" "center")
          , htmlAttribute (Html.Attributes.style "justify-content" "center")
          ]
-            ++ (case model.animations of
-                    Just animationResult ->
-                        CSS.getElementStyles elementId animationResult
-                            |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
-
-                    Nothing ->
-                        []
-               )
-            ++ [ htmlAttribute
-                    (Html.Attributes.style "transition"
-                        (case model.animations of
-                            Just _ ->
-                                "opacity 500ms ease-in-out"
-
-                            Nothing ->
-                                "none"
-                        )
-                    )
-               , htmlAttribute (CSS.onTransitionEnd AnimationComplete)
-               ]
+            -- Add CSS animation attributes
+            ++ List.map htmlAttribute (CSS.htmlAttributes elementId model.animations |> Debug.log "")
         )
         (el
             [ centerX
-            , Element.centerY
+            , centerY
             , Font.color Colors.backgroundWhite
             , Font.bold
             , Font.size 16

@@ -5892,16 +5892,16 @@ var $author$project$Anim$Internal$Builders$Color$build = function (_v0) {
 	return A2($author$project$Anim$Internal$Builders$Property$upsert, newColorConfig, builder);
 };
 var $author$project$Anim$Properties$Color$build = $author$project$Anim$Internal$Builders$Color$build;
-var $author$project$Anim$Internal$Builders$Color$Builder = F2(
+var $author$project$Anim$Internal$Builders$Color$ColorBuilder = F2(
 	function (a, b) {
-		return {$: 'Builder', a: a, b: b};
+		return {$: 'ColorBuilder', a: a, b: b};
 	});
 var $author$project$Anim$Internal$Builders$Color$easing = F2(
 	function (ease, _v0) {
 		var config = _v0.a;
 		var builder = _v0.b;
 		return A2(
-			$author$project$Anim$Internal$Builders$Color$Builder,
+			$author$project$Anim$Internal$Builders$Color$ColorBuilder,
 			_Utils_update(
 				config,
 				{
@@ -6050,7 +6050,7 @@ var $author$project$Anim$Internal$Builders$Color$to = F2(
 		var config = _v0.a;
 		var builder = _v0.b;
 		return A2(
-			$author$project$Anim$Internal$Builders$Color$Builder,
+			$author$project$Anim$Internal$Builders$Color$ColorBuilder,
 			_Utils_update(
 				config,
 				{endAt: color}),
@@ -6213,12 +6213,12 @@ var $author$project$Anim$Internal$Builders$Color$for = F2(
 		if (existingConfig.$ === 'Just') {
 			var config = existingConfig.a;
 			return A2(
-				$author$project$Anim$Internal$Builders$Color$Builder,
+				$author$project$Anim$Internal$Builders$Color$ColorBuilder,
 				A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, config),
 				builder);
 		} else {
 			return A2(
-				$author$project$Anim$Internal$Builders$Color$Builder,
+				$author$project$Anim$Internal$Builders$Color$ColorBuilder,
 				A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, $author$project$Anim$Internal$Builders$Color$defaultConfig),
 				A2($author$project$Anim$Internal$Builder$for, elementId, builder));
 		}
