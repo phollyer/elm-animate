@@ -224,13 +224,13 @@ update msg model =
                         |> Position.easing ExpoInOut
                         |> Position.duration 1200
                         |> Position.build
-                        -- Opacity
-                        |> Opacity.for "mixed-box"
-                        |> Opacity.to 0.7
-                        |> Opacity.easing Linear
-                        |> Opacity.duration 800
-                        |> Opacity.delay (Delay 100)
-                        |> Opacity.build
+                        -- Rotation
+                        |> Rotation.for "mixed-box"
+                        |> Rotation.to 135
+                        |> Rotation.easing ElasticInOut
+                        |> Rotation.duration 1400
+                        |> Rotation.delay (Delay 300)
+                        |> Rotation.build
                         -- Scale
                         |> Scale.for "mixed-box"
                         |> Scale.to (Scale.ScaleXY 1.4 0.9)
@@ -245,6 +245,13 @@ update msg model =
                         |> Rotation.duration 1400
                         |> Rotation.delay (Delay 300)
                         |> Rotation.build
+                        -- Opacity
+                        |> Opacity.for "mixed-box"
+                        |> Opacity.to 0.7
+                        |> Opacity.easing Linear
+                        |> Opacity.duration 800
+                        |> Opacity.delay (Delay 100)
+                        |> Opacity.build
                         -- Color
                         |> Color.for "mixed-box"
                         |> Color.to (Color.Rgb { r = 100, g = 255, b = 200 })

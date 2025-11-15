@@ -435,29 +435,206 @@ transformFromProperty property =
 generateTransitions : List Builder.PropertyConfig -> String
 generateTransitions properties =
     let
-        transitionParts =
-            List.filterMap transitionFromProperty properties
+        -- Group properties by CSS property type
+        transformProperties =
+            List.filter isTransformProperty properties
+
+        nonTransformTransitions =
+            List.filterMap transitionFromNonTransformProperty properties
+
+        -- Generate single consolidated transform transition
+        transformTransition =
+            case consolidateTransformTiming transformProperties of
+                Just transition ->
+                    [ transition ]
+
+                Nothing ->
+                    []
+
+        allTransitions =
+            transformTransition ++ nonTransformTransitions
     in
-    String.join ", " transitionParts
+    String.join ", " allTransitions
 
 
-transitionFromProperty : Builder.PropertyConfig -> Maybe String
-transitionFromProperty property =
+isTransformProperty : Builder.PropertyConfig -> Bool
+isTransformProperty property =
     case property of
-        Builder.PositionConfig config ->
-            Just ("transform " ++ TimeSpec.toCssString config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
+        Builder.PositionConfig _ ->
+            True
 
-        Builder.RotateConfig config ->
-            Just ("transform " ++ (TimeSpec.toCssString config.timing |> Debug.log "timespec") ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
+        Builder.RotateConfig _ ->
+            True
 
-        Builder.ScaleConfig config ->
-            Just ("transform " ++ TimeSpec.toCssString config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
+        Builder.ScaleConfig _ ->
+            True
 
+        _ ->
+            False
+
+
+transitionFromNonTransformProperty : Builder.PropertyConfig -> Maybe String
+transitionFromNonTransformProperty property =
+    case property of
         Builder.ColorConfig config ->
             Just ("background-color " ++ TimeSpec.toCssString config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
         Builder.OpacityConfig config ->
             Just ("opacity " ++ TimeSpec.toCssString config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
+
+        _ ->
+            Nothing
+
+
+consolidateTransformTiming : List Builder.PropertyConfig -> Maybe String
+consolidateTransformTiming transformProps =
+    case transformProps of
+        [] ->
+            Nothing
+
+        _ ->
+            let
+                -- Strategy: Use the longest duration, latest easing, earliest delay
+                longestDuration =
+                    findLongestDuration transformProps
+
+                latestEasing =
+                    findLatestEasing transformProps
+
+                earliestDelay =
+                    findEarliestDelay transformProps
+            in
+            Just ("transform " ++ TimeSpec.toCssString longestDuration ++ " " ++ Easing.toCSS (Just latestEasing) ++ " " ++ Delay.toCssString earliestDelay)
+
+
+findLongestDuration : List Builder.PropertyConfig -> Maybe TimeSpec.TimeSpec
+findLongestDuration properties =
+    let
+        durations =
+            List.filterMap extractTiming properties
+    in
+    case durations of
+        [] ->
+            Nothing
+
+        _ ->
+            durations
+                |> List.foldl chooseLongerDuration (TimeSpec.Duration 0)
+                |> Just
+
+
+chooseLongerDuration : TimeSpec.TimeSpec -> TimeSpec.TimeSpec -> TimeSpec.TimeSpec
+chooseLongerDuration a b =
+    case ( a, b ) of
+        ( TimeSpec.Duration msA, TimeSpec.Duration msB ) ->
+            if msA >= msB then
+                a
+
+            else
+                b
+
+        ( TimeSpec.Speed _, TimeSpec.Duration _ ) ->
+            b
+
+        -- Prefer duration over speed
+        ( TimeSpec.Duration _, TimeSpec.Speed _ ) ->
+            a
+
+        -- Prefer duration over speed
+        ( TimeSpec.Speed speedA, TimeSpec.Speed speedB ) ->
+            if speedA <= speedB then
+                a
+
+            else
+                b
+
+
+
+-- Slower speed = longer duration
+
+
+findLatestEasing : List Builder.PropertyConfig -> Easing.Easing
+findLatestEasing properties =
+    properties
+        |> List.filterMap extractEasing
+        |> List.reverse
+        -- Get the last one added
+        |> List.head
+        |> Maybe.withDefault Easing.Linear
+
+
+findEarliestDelay : List Builder.PropertyConfig -> Maybe Delay.Delay
+findEarliestDelay properties =
+    let
+        delays =
+            List.filterMap extractDelay properties
+    in
+    case delays of
+        [] ->
+            Nothing
+
+        _ ->
+            delays
+                |> List.foldl chooseSmallerDelay (Delay.Delay 999999)
+                -- Start with large delay
+                |> Just
+
+
+chooseSmallerDelay : Delay.Delay -> Delay.Delay -> Delay.Delay
+chooseSmallerDelay a b =
+    if Delay.toInt a <= Delay.toInt b then
+        a
+
+    else
+        b
+
+
+extractTiming : Builder.PropertyConfig -> Maybe TimeSpec.TimeSpec
+extractTiming property =
+    case property of
+        Builder.PositionConfig config ->
+            config.timing
+
+        Builder.RotateConfig config ->
+            config.timing
+
+        Builder.ScaleConfig config ->
+            config.timing
+
+        _ ->
+            Nothing
+
+
+extractEasing : Builder.PropertyConfig -> Maybe Easing.Easing
+extractEasing property =
+    case property of
+        Builder.PositionConfig config ->
+            config.easing
+
+        Builder.RotateConfig config ->
+            config.easing
+
+        Builder.ScaleConfig config ->
+            config.easing
+
+        _ ->
+            Nothing
+
+
+extractDelay : Builder.PropertyConfig -> Maybe Delay.Delay
+extractDelay property =
+    case property of
+        Builder.PositionConfig config ->
+            config.delay
+
+        Builder.RotateConfig config ->
+            config.delay
+
+        Builder.ScaleConfig config ->
+            config.delay
+
+        _ ->
+            Nothing
 
 
 generateColorStyles : List Builder.PropertyConfig -> List ( String, String )
