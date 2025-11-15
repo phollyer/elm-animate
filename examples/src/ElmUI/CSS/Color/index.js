@@ -5931,10 +5931,11 @@ var $author$project$Anim$Internal$Builder$getCurrentElementConfig = function (_v
 			A2($elm$core$Dict$get, elementId, data.elements));
 	}
 };
+var $elm$core$Debug$log = _Debug_log;
 var $author$project$Anim$Internal$Builder$updateCurrentElement = F2(
 	function (config, _v0) {
 		var data = _v0.a;
-		var _v1 = data.currentElementId;
+		var _v1 = A2($elm$core$Debug$log, 'updateCurrentElement currentElementId', data.currentElementId);
 		if (_v1.$ === 'Nothing') {
 			return $author$project$Anim$Internal$Builder$AnimBuilder(data);
 		} else {
@@ -5958,6 +5959,7 @@ var $author$project$Anim$Internal$Builders$Property$add = F2(
 					_List_fromArray(
 						[propertyConfig]))
 			});
+		var _v0 = A2($elm$core$Debug$log, 'add propertyConfig', propertyConfig);
 		return A2($author$project$Anim$Internal$Builder$updateCurrentElement, updatedElement, builder);
 	});
 var $author$project$Anim$Internal$Builders$Property$configsMatch = F2(
@@ -6012,7 +6014,10 @@ var $author$project$Anim$Internal$Builders$Property$replace = F2(
 		var updatedProperties = A2(
 			$elm$core$List$map,
 			function (p) {
-				return A2($author$project$Anim$Internal$Builders$Property$configsMatch, p, propertyConfig) ? propertyConfig : p;
+				return A2(
+					$elm$core$Debug$log,
+					'replace configsMatch',
+					A2($author$project$Anim$Internal$Builders$Property$configsMatch, p, propertyConfig)) ? propertyConfig : p;
 			},
 			currentElement.properties);
 		var updatedElement = _Utils_update(
@@ -12575,7 +12580,6 @@ var $author$project$Anim$CSS$htmlAttributes = F2(
 			A2($author$project$Anim$CSS$getElementStyles, elementId, animationResult));
 	});
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
-var $elm$core$Debug$log = _Debug_log;
 var $mdgriffith$elm_ui$Internal$Model$Max = F2(
 	function (a, b) {
 		return {$: 'Max', a: a, b: b};

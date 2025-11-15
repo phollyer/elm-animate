@@ -60,13 +60,16 @@ for elementId builder =
 
                 _ ->
                     Nothing
-    in
-    case existingConfig of
-        Just config ->
-            PositionBuilder (PropertyBuilder.applyGlobalDefaults builder config) builder
 
-        Nothing ->
-            PositionBuilder (PropertyBuilder.applyGlobalDefaults builder defaultConfig) (Builder.for elementId builder)
+        newConfig =
+            case existingConfig of
+                Just config ->
+                    PropertyBuilder.applyGlobalDefaults builder config
+
+                Nothing ->
+                    PropertyBuilder.applyGlobalDefaults builder defaultConfig
+    in
+    PositionBuilder newConfig (Builder.for elementId builder)
 
 
 build : PositionBuilder -> AnimBuilder
