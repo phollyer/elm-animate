@@ -52,14 +52,14 @@ echo "🎨 Building ElmUI examples..."
 # build_example "src/ElmUI/Scroll/ScrollIntoView/Main.elm" "src/ElmUI/Scroll/ScrollIntoView/index.js" "ElmUI.Scroll.ScrollIntoView.Main"
 
 # ElmUI CSS examples (CSS Transition-based API)
-# echo "  🎨 ElmUI CSS examples (Anim.CSS - Browser-native transitions)..."
+echo "  🎨 ElmUI CSS examples (Anim.CSS - Browser-native transitions)..."
 build_example "src/ElmUI/CSS/Position/Main.elm" "src/ElmUI/CSS/Position/index.js" "ElmUI.CSS.Position.Main"
 build_example "src/ElmUI/CSS/Opacity/Main.elm" "src/ElmUI/CSS/Opacity/index.js" "ElmUI.CSS.Opacity.Main"
 build_example "src/ElmUI/CSS/Scale/Main.elm" "src/ElmUI/CSS/Scale/index.js" "ElmUI.CSS.Scale.Main"
 build_example "src/ElmUI/CSS/Rotation/Main.elm" "src/ElmUI/CSS/Rotation/index.js" "ElmUI.CSS.Rotation.Main"
 build_example "src/ElmUI/CSS/Color/Main.elm" "src/ElmUI/CSS/Color/index.js" "ElmUI.CSS.Color.Main"
 build_example "src/ElmUI/CSS/Events/Main.elm" "src/ElmUI/CSS/Events/index.js" "ElmUI.CSS.Events.Main"
-# build_example "src/ElmUI/CSS/Mixed/Main.elm" "src/ElmUI/CSS/Mixed/index.js" "ElmUI.CSS.Mixed.Main"
+build_example "src/ElmUI/CSS/Mixed/Main.elm" "src/ElmUI/CSS/Mixed/index.js" "ElmUI.CSS.Mixed.Main"
 # build_example "src/ElmUI/CSS/Choreography/Main.elm" "src/ElmUI/CSS/Choreography/index.js" "ElmUI.CSS.Choreography.Main"
 
 # ElmUI Sub examples (Subscription-based API)
