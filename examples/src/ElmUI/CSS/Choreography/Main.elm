@@ -98,7 +98,7 @@ update msg model =
             -- Create a multi-element animation using the new API
             ( { model
                 | animations =
-                    model.animations
+                    CSS.init
                         |> CSS.builder
                         |> Anim.duration 800
                         |> Anim.easing Easing.QuadInOut
@@ -128,7 +128,7 @@ update msg model =
         ResetPositions ->
             ( { model
                 | animations =
-                    model.animations
+                    CSS.init
                         |> CSS.builder
                         |> Anim.duration 600
                         |> Anim.easing Easing.QuadInOut
@@ -168,7 +168,7 @@ update msg model =
             in
             ( { model
                 | animations =
-                    model.animations
+                    CSS.init
                         |> CSS.builder
                         |> Anim.duration 1000
                         |> Anim.easing Easing.backInOut

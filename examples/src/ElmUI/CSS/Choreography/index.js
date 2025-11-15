@@ -6381,7 +6381,7 @@ var $author$project$ElmUI$CSS$Choreography$Main$update = F2(
 																											A2(
 																												$author$project$Anim$duration,
 																												800,
-																												$author$project$Anim$CSS$builder(model.animations))))))))))))))))))))))
+																												$author$project$Anim$CSS$builder($author$project$Anim$CSS$init))))))))))))))))))))))
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'ResetPositions':
@@ -6444,7 +6444,7 @@ var $author$project$ElmUI$CSS$Choreography$Main$update = F2(
 																											A2(
 																												$author$project$Anim$duration,
 																												600,
-																												$author$project$Anim$CSS$builder(model.animations))))))))))))))))))))))
+																												$author$project$Anim$CSS$builder($author$project$Anim$CSS$init))))))))))))))))))))))
 						}),
 					$elm$core$Platform$Cmd$none);
 			default:
@@ -6510,7 +6510,7 @@ var $author$project$ElmUI$CSS$Choreography$Main$update = F2(
 																											A2(
 																												$author$project$Anim$duration,
 																												1000,
-																												$author$project$Anim$CSS$builder(model.animations))))))))))))))))))))))
+																												$author$project$Anim$CSS$builder($author$project$Anim$CSS$init))))))))))))))))))))))
 						}),
 					$elm$core$Platform$Cmd$none);
 		}
