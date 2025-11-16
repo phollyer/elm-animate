@@ -73,10 +73,6 @@ distance (fromFloat 0.2) (fromFloat 0.8)
 -}
 distance : Opacity -> Opacity -> Float
 distance (Opacity o1) (Opacity o2) =
-    let
-        _ =
-            Debug.log "Opacity Distance" ( o1, o2 )
-    in
     abs (o2 - o1)
 
 

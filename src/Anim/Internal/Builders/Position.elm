@@ -18,7 +18,6 @@ import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Timing.Delay exposing (Delay)
 import Anim.Internal.Timing.Easing exposing (Easing)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
-import Html.Attributes exposing (start)
 
 
 
@@ -78,9 +77,6 @@ for elementId builder =
 
                 Nothing ->
                     PropertyBuilder.applyGlobalDefaults builder defaultConfig
-
-        _ =
-            Debug.log "New Position Config for " ( elementId, newConfig )
     in
     PositionBuilder newConfig (Builder.for elementId builder)
 
@@ -90,9 +86,6 @@ build (PositionBuilder config builder) =
     let
         newPositionConfig =
             Builder.PositionConfig config
-
-        _ =
-            Debug.log "Building Position Config: " newPositionConfig
     in
     PropertyBuilder.upsert newPositionConfig builder
 
@@ -183,7 +176,7 @@ duration ms (PositionBuilder config builder) =
 
 easing : Easing -> PositionBuilder -> PositionBuilder
 easing easing_ (PositionBuilder config builder) =
-    PositionBuilder { config | easing = Just easing_ |> Debug.log "Easing" } builder
+    PositionBuilder { config | easing = Just easing_ } builder
 
 
 delay : Delay -> PositionBuilder -> PositionBuilder

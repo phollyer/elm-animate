@@ -249,7 +249,7 @@ viewContent model =
              , htmlAttribute (Html.Attributes.style "position" "absolute")
              ]
                 -- Apply CSS styles for the animation
-                ++ List.map htmlAttribute (CSS.htmlAttributes "box" model.animations |> Debug.log "Box CSS Attributes")
+                ++ List.map htmlAttribute (CSS.htmlAttributes "box" model.animations )
             )
             none
         )

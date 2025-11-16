@@ -15,10 +15,6 @@ type TimeSpec
 
 duration : Float -> TimeSpec -> Int
 duration distance timeSpec =
-    let
-        _ =
-            Debug.log "Calculating duration for distance:" ( distance, timeSpec )
-    in
     case timeSpec of
         Duration ms ->
             ms
@@ -45,13 +41,11 @@ encode timeSpec =
 
 toCssString : Float -> Maybe TimeSpec -> String
 toCssString distance maybeTimespec =
-    case maybeTimespec |> Debug.log "Maybe TimeSpec" of
+    case maybeTimespec of
         Just timespec ->
             duration distance timespec
-                |> Debug.log "Duration in ms"
                 |> String.fromInt
                 |> (\msStr -> msStr ++ "ms")
-                |> Debug.log "Computed CSS Time String"
 
         Nothing ->
             "0ms"
