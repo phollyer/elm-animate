@@ -95,6 +95,7 @@ update msg model =
                         |> anim
                         |> Opacity.to 1.0
                         |> Opacity.easing Easing.QuadInOut
+                        |> Opacity.speed 1
                         |> Opacity.build
                         |> CSS.animate
               }
@@ -108,7 +109,7 @@ update msg model =
                         |> anim
                         |> Opacity.to 0.0
                         |> Opacity.easing Easing.SineInOut
-                        |> Opacity.speed 2.0
+                        |> Opacity.speed 0.2
                         |> Opacity.build
                         |> CSS.animate
               }

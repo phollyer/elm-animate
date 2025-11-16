@@ -477,10 +477,18 @@ transitionFromNonTransformProperty : Builder.PropertyConfig -> Maybe String
 transitionFromNonTransformProperty property =
     case property of
         Builder.ColorConfig config ->
-            Just ("background-color " ++ TimeSpec.toCssString config.distance config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
+            let
+                distance =
+                    calculatePropertyDistance (Builder.ColorConfig config)
+            in
+            Just ("background-color " ++ TimeSpec.toCssString distance config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
         Builder.OpacityConfig config ->
-            Just ("opacity " ++ TimeSpec.toCssString config.distance config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
+            let
+                distance =
+                    calculatePropertyDistance (Builder.OpacityConfig config)
+            in
+            Just ("opacity " ++ TimeSpec.toCssString distance config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
         _ ->
             Nothing
@@ -569,13 +577,41 @@ calculatePropertyDistance property =
             in
             Rotation.distance startAt config.endAt
 
-        Builder.ScaleConfig _ ->
-            -- Scale animations don't have meaningful distance for speed calculations
-            -- Use a default distance of 1 unit
-            1.0
+        Builder.ScaleConfig config ->
+            let
+                startAt =
+                    case config.startAt of
+                        Just s ->
+                            s
 
-        _ ->
-            0.0
+                        Nothing ->
+                            Scale.fromTuple ( 1, 1 )
+            in
+            Scale.distance startAt config.endAt
+
+        Builder.ColorConfig config ->
+            let
+                startAt =
+                    case config.startAt of
+                        Just s ->
+                            s
+
+                        Nothing ->
+                            Color.rgb255 0 0 0
+            in
+            Color.distance startAt config.endAt
+
+        Builder.OpacityConfig config ->
+            let
+                startAt =
+                    case config.startAt of
+                        Just s ->
+                            s
+
+                        Nothing ->
+                            Opacity.fromFloat 1.0
+            in
+            Opacity.distance startAt config.endAt
 
 
 findLongestDuration : List Builder.PropertyConfig -> Maybe TimeSpec.TimeSpec

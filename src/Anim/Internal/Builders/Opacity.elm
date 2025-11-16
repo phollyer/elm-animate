@@ -63,7 +63,16 @@ for elementId builder =
         newConfig =
             case existingConfig of
                 Just config ->
-                    PropertyBuilder.applyGlobalDefaults builder config
+                    PropertyBuilder.applyGlobalDefaults builder <|
+                        { config
+                            | startAt = Just config.endAt
+                            , easing = Nothing
+                            , delay = Nothing
+                            , timing = Nothing
+                            , duration = 0
+                            , speed = 0
+                            , distance = 0
+                        }
 
                 Nothing ->
                     PropertyBuilder.applyGlobalDefaults builder defaultConfig
@@ -112,7 +121,22 @@ from opacity (OpacityBuilder config builder) =
 
 to : Opacity -> OpacityBuilder -> OpacityBuilder
 to opacity (OpacityBuilder config builder) =
-    OpacityBuilder { config | endAt = opacity } builder
+    let
+        startPos =
+            case config.startAt of
+                Just opacity_ ->
+                    opacity_
+
+                Nothing ->
+                    Opacity.fromFloat 1
+    in
+    OpacityBuilder
+        { config
+            | endAt = opacity
+            , distance = Opacity.distance startPos opacity
+            , startAt = Just startPos
+        }
+        builder
 
 
 speed : Float -> OpacityBuilder -> OpacityBuilder

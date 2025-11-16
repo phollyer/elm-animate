@@ -62,7 +62,16 @@ for elementId builder =
         newConfig =
             case existingConfig of
                 Just config ->
-                    PropertyBuilder.applyGlobalDefaults builder config
+                    PropertyBuilder.applyGlobalDefaults builder <|
+                        { config
+                            | startAt = Just config.endAt
+                            , easing = Nothing
+                            , delay = Nothing
+                            , timing = Nothing
+                            , duration = 0
+                            , speed = 0
+                            , distance = 0
+                        }
 
                 Nothing ->
                     PropertyBuilder.applyGlobalDefaults builder defaultConfig
@@ -111,7 +120,22 @@ from color (ColorBuilder config builder) =
 
 to : Color -> ColorBuilder -> ColorBuilder
 to color (ColorBuilder config builder) =
-    ColorBuilder { config | endAt = color } builder
+    let
+        startPos =
+            case config.startAt of
+                Just opacity_ ->
+                    opacity_
+
+                Nothing ->
+                    Color.rgb255 0 0 0
+    in
+    ColorBuilder
+        { config
+            | endAt = color
+            , distance = Color.distance startPos color
+            , startAt = Just startPos
+        }
+        builder
 
 
 speed : Float -> ColorBuilder -> ColorBuilder

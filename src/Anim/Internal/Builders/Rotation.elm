@@ -62,7 +62,16 @@ for elementId builder =
         newConfig =
             case existingConfig of
                 Just config ->
-                    PropertyBuilder.applyGlobalDefaults builder config
+                    PropertyBuilder.applyGlobalDefaults builder <|
+                        { config
+                            | startAt = Just config.endAt
+                            , easing = Nothing
+                            , delay = Nothing
+                            , timing = Nothing
+                            , duration = 0
+                            , speed = 0
+                            , distance = 0
+                        }
 
                 Nothing ->
                     PropertyBuilder.applyGlobalDefaults builder defaultConfig
@@ -106,7 +115,22 @@ defaultConfig =
 
 from : Rotation -> RotationBuilder -> RotationBuilder
 from rotation (RotationBuilder config builder) =
-    RotationBuilder { config | startAt = Just rotation } builder
+    let
+        startPos =
+            case config.startAt of
+                Just opacity_ ->
+                    opacity_
+
+                Nothing ->
+                    Rotation.fromFloat 0
+    in
+    RotationBuilder
+        { config
+            | endAt = rotation
+            , distance = Rotation.distance startPos rotation
+            , startAt = Just startPos
+        }
+        builder
 
 
 to : Rotation -> RotationBuilder -> RotationBuilder

@@ -5648,6 +5648,182 @@ var $author$project$Anim$CSS$findLongestDistance = function (properties) {
 	}
 };
 var $elm$core$Basics$sqrt = _Basics_sqrt;
+var $elm$core$Maybe$map2 = F3(
+	function (func, ma, mb) {
+		if (ma.$ === 'Nothing') {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var a = ma.a;
+			if (mb.$ === 'Nothing') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var b = mb.a;
+				return $elm$core$Maybe$Just(
+					A2(func, a, b));
+			}
+		}
+	});
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
+var $author$project$Anim$Internal$Properties$Color$hexStringToInt = function (str) {
+	var hexCharToInt = function (_char) {
+		switch (_char.valueOf()) {
+			case '0':
+				return $elm$core$Maybe$Just(0);
+			case '1':
+				return $elm$core$Maybe$Just(1);
+			case '2':
+				return $elm$core$Maybe$Just(2);
+			case '3':
+				return $elm$core$Maybe$Just(3);
+			case '4':
+				return $elm$core$Maybe$Just(4);
+			case '5':
+				return $elm$core$Maybe$Just(5);
+			case '6':
+				return $elm$core$Maybe$Just(6);
+			case '7':
+				return $elm$core$Maybe$Just(7);
+			case '8':
+				return $elm$core$Maybe$Just(8);
+			case '9':
+				return $elm$core$Maybe$Just(9);
+			case 'A':
+				return $elm$core$Maybe$Just(10);
+			case 'a':
+				return $elm$core$Maybe$Just(10);
+			case 'B':
+				return $elm$core$Maybe$Just(11);
+			case 'b':
+				return $elm$core$Maybe$Just(11);
+			case 'C':
+				return $elm$core$Maybe$Just(12);
+			case 'c':
+				return $elm$core$Maybe$Just(12);
+			case 'D':
+				return $elm$core$Maybe$Just(13);
+			case 'd':
+				return $elm$core$Maybe$Just(13);
+			case 'E':
+				return $elm$core$Maybe$Just(14);
+			case 'e':
+				return $elm$core$Maybe$Just(14);
+			case 'F':
+				return $elm$core$Maybe$Just(15);
+			case 'f':
+				return $elm$core$Maybe$Just(15);
+			default:
+				return $elm$core$Maybe$Nothing;
+		}
+	};
+	var chars = $elm$core$String$toList(str);
+	if ((chars.b && chars.b.b) && (!chars.b.b.b)) {
+		var c1 = chars.a;
+		var _v1 = chars.b;
+		var c2 = _v1.a;
+		return A3(
+			$elm$core$Maybe$map2,
+			F2(
+				function (v1, v2) {
+					return (v1 * 16) + v2;
+				}),
+			hexCharToInt(c1),
+			hexCharToInt(c2));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$Internal$Properties$Color$hexToRgb = function (hex_) {
+	var cleanHex = A2(
+		$elm$core$String$dropLeft,
+		A2($elm$core$String$startsWith, '#', hex_) ? 1 : 0,
+		hex_);
+	var g = A2(
+		$elm$core$Maybe$withDefault,
+		0,
+		$author$project$Anim$Internal$Properties$Color$hexStringToInt(
+			A3($elm$core$String$slice, 2, 4, cleanHex)));
+	var r = A2(
+		$elm$core$Maybe$withDefault,
+		0,
+		$author$project$Anim$Internal$Properties$Color$hexStringToInt(
+			A3($elm$core$String$slice, 0, 2, cleanHex)));
+	var b = A2(
+		$elm$core$Maybe$withDefault,
+		0,
+		$author$project$Anim$Internal$Properties$Color$hexStringToInt(
+			A3($elm$core$String$slice, 4, 6, cleanHex)));
+	return {b: b, g: g, r: r};
+};
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var $author$project$Anim$Internal$Properties$Color$floatMod = F2(
+	function (a, b) {
+		return a - ($elm$core$Basics$floor(a / b) * b);
+	});
+var $elm$core$Basics$round = _Basics_round;
+var $author$project$Anim$Internal$Properties$Color$hslToRgb = function (hsl) {
+	var s = hsl.s / 100;
+	var l = hsl.l / 100;
+	var c = (1 - $elm$core$Basics$abs((2 * l) - 1)) * s;
+	var m = l - (c / 2);
+	var x = c * (1 - $elm$core$Basics$abs(
+		A2($author$project$Anim$Internal$Properties$Color$floatMod, hsl.h / 60, 2) - 1));
+	var _v0 = (hsl.h < 60) ? _Utils_Tuple3(c, x, 0) : ((hsl.h < 120) ? _Utils_Tuple3(x, c, 0) : ((hsl.h < 180) ? _Utils_Tuple3(0, c, x) : ((hsl.h < 240) ? _Utils_Tuple3(0, x, c) : ((hsl.h < 300) ? _Utils_Tuple3(x, 0, c) : _Utils_Tuple3(c, 0, x)))));
+	var r1 = _v0.a;
+	var g1 = _v0.b;
+	var b1 = _v0.c;
+	var b = $elm$core$Basics$round((b1 + m) * 255);
+	var g = $elm$core$Basics$round((g1 + m) * 255);
+	var r = $elm$core$Basics$round((r1 + m) * 255);
+	return {b: b, g: g, r: r};
+};
+var $author$project$Anim$Internal$Properties$Color$toRgb = function (color) {
+	switch (color.$) {
+		case 'Hex':
+			var hex_ = color.a;
+			return $author$project$Anim$Internal$Properties$Color$hexToRgb(hex_);
+		case 'Rgb':
+			var rgb = color.a;
+			return rgb;
+		case 'Rgba':
+			var rgba = color.a;
+			return {b: rgba.b, g: rgba.g, r: rgba.r};
+		case 'Hsl':
+			var hsl = color.a;
+			return $author$project$Anim$Internal$Properties$Color$hslToRgb(hsl);
+		default:
+			var hsla = color.a;
+			return $author$project$Anim$Internal$Properties$Color$hslToRgb(
+				{h: hsla.h, l: hsla.l, s: hsla.s});
+	}
+};
+var $author$project$Anim$Internal$Properties$Color$distance = F2(
+	function (color1, color2) {
+		var rgb2 = $author$project$Anim$Internal$Properties$Color$toRgb(color2);
+		var rgb1 = $author$project$Anim$Internal$Properties$Color$toRgb(color1);
+		var dr = rgb2.r - rgb1.r;
+		var dg = rgb2.g - rgb1.g;
+		var db = rgb2.b - rgb1.b;
+		return $elm$core$Basics$sqrt(((dr * dr) + (dg * dg)) + (db * db));
+	});
+var $elm$core$Debug$log = _Debug_log;
+var $author$project$Anim$Internal$Properties$Opacity$distance = F2(
+	function (_v0, _v1) {
+		var o1 = _v0.a;
+		var o2 = _v1.a;
+		var _v2 = A2(
+			$elm$core$Debug$log,
+			'Opacity Distance',
+			_Utils_Tuple2(o1, o2));
+		return $elm$core$Basics$abs(o2 - o1);
+	});
 var $author$project$Anim$Internal$Properties$Position$distance = F2(
 	function (_v0, _v1) {
 		var a = _v0.a;
@@ -5656,18 +5832,28 @@ var $author$project$Anim$Internal$Properties$Position$distance = F2(
 		var dx = a.x - b.x;
 		return $elm$core$Basics$sqrt((dx * dx) + (dy * dy));
 	});
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
 var $author$project$Anim$Internal$Properties$Rotation$distance = F2(
 	function (_v0, _v1) {
 		var start = _v0.a;
 		var end = _v1.a;
 		return $elm$core$Basics$abs(end - start);
 	});
+var $author$project$Anim$Internal$Properties$Scale$distance = F2(
+	function (_v0, _v1) {
+		var sx1 = _v0.a;
+		var sy1 = _v0.b;
+		var sx2 = _v1.a;
+		var sy2 = _v1.b;
+		var dy = sy2 - sy1;
+		var dx = sx2 - sx1;
+		return $elm$core$Basics$sqrt((dx * dx) + (dy * dy));
+	});
+var $author$project$Anim$Internal$Properties$Opacity$Opacity = function (a) {
+	return {$: 'Opacity', a: a};
+};
+var $author$project$Anim$Internal$Properties$Opacity$fromFloat = function (o) {
+	return $author$project$Anim$Internal$Properties$Opacity$Opacity(o);
+};
 var $author$project$Anim$Internal$Properties$Rotation$Rotation = function (a) {
 	return {$: 'Rotation', a: a};
 };
@@ -5683,6 +5869,23 @@ var $author$project$Anim$Internal$Properties$Position$fromTuple = function (_v0)
 	return $author$project$Anim$Internal$Properties$Position$Position(
 		{x: xCoord, y: yCoord});
 };
+var $author$project$Anim$Internal$Properties$Scale$ScaleXY = F2(
+	function (a, b) {
+		return {$: 'ScaleXY', a: a, b: b};
+	});
+var $author$project$Anim$Internal$Properties$Scale$fromTuple = function (_v0) {
+	var sx = _v0.a;
+	var sy = _v0.b;
+	return A2($author$project$Anim$Internal$Properties$Scale$ScaleXY, sx, sy);
+};
+var $author$project$Anim$Internal$Properties$Color$Rgb = function (a) {
+	return {$: 'Rgb', a: a};
+};
+var $author$project$Anim$Internal$Properties$Color$rgb255 = F3(
+	function (r, g, b) {
+		return $author$project$Anim$Internal$Properties$Color$Rgb(
+			{b: b, g: g, r: r});
+	});
 var $author$project$Anim$CSS$calculatePropertyDistance = function (property) {
 	switch (property.$) {
 		case 'PositionConfig':
@@ -5711,9 +5914,42 @@ var $author$project$Anim$CSS$calculatePropertyDistance = function (property) {
 			}();
 			return A2($author$project$Anim$Internal$Properties$Rotation$distance, startAt, config.endAt);
 		case 'ScaleConfig':
-			return 1.0;
+			var config = property.a;
+			var startAt = function () {
+				var _v3 = config.startAt;
+				if (_v3.$ === 'Just') {
+					var s = _v3.a;
+					return s;
+				} else {
+					return $author$project$Anim$Internal$Properties$Scale$fromTuple(
+						_Utils_Tuple2(1, 1));
+				}
+			}();
+			return A2($author$project$Anim$Internal$Properties$Scale$distance, startAt, config.endAt);
+		case 'ColorConfig':
+			var config = property.a;
+			var startAt = function () {
+				var _v4 = config.startAt;
+				if (_v4.$ === 'Just') {
+					var s = _v4.a;
+					return s;
+				} else {
+					return A3($author$project$Anim$Internal$Properties$Color$rgb255, 0, 0, 0);
+				}
+			}();
+			return A2($author$project$Anim$Internal$Properties$Color$distance, startAt, config.endAt);
 		default:
-			return 0.0;
+			var config = property.a;
+			var startAt = function () {
+				var _v5 = config.startAt;
+				if (_v5.$ === 'Just') {
+					var s = _v5.a;
+					return s;
+				} else {
+					return $author$project$Anim$Internal$Properties$Opacity$fromFloat(1.0);
+				}
+			}();
+			return A2($author$project$Anim$Internal$Properties$Opacity$distance, startAt, config.endAt);
 	}
 };
 var $elm$core$Basics$ge = _Utils_ge;
@@ -5723,8 +5959,6 @@ var $author$project$Anim$CSS$chooseLongerDuration = F3(
 		var durationA = calcDuration(a);
 		return (_Utils_cmp(durationA, durationB) > -1) ? a : b;
 	});
-var $elm$core$Debug$log = _Debug_log;
-var $elm$core$Basics$round = _Basics_round;
 var $author$project$Anim$Internal$Timing$TimeSpec$duration = F2(
 	function (distance, timeSpec) {
 		var _v0 = A2(
@@ -5952,16 +6186,26 @@ var $author$project$Anim$CSS$isTransformProperty = function (property) {
 			return false;
 	}
 };
+var $author$project$Anim$Internal$Builder$ColorConfig = function (a) {
+	return {$: 'ColorConfig', a: a};
+};
+var $author$project$Anim$Internal$Builder$OpacityConfig = function (a) {
+	return {$: 'OpacityConfig', a: a};
+};
 var $author$project$Anim$CSS$transitionFromNonTransformProperty = function (property) {
 	switch (property.$) {
 		case 'ColorConfig':
 			var config = property.a;
+			var distance = $author$project$Anim$CSS$calculatePropertyDistance(
+				$author$project$Anim$Internal$Builder$ColorConfig(config));
 			return $elm$core$Maybe$Just(
-				'background-color ' + (A2($author$project$Anim$Internal$Timing$TimeSpec$toCssString, config.distance, config.timing) + (' ' + ($author$project$Anim$Internal$Timing$Easing$toCSS(config.easing) + (' ' + $author$project$Anim$Internal$Timing$Delay$toCssString(config.delay))))));
+				'background-color ' + (A2($author$project$Anim$Internal$Timing$TimeSpec$toCssString, distance, config.timing) + (' ' + ($author$project$Anim$Internal$Timing$Easing$toCSS(config.easing) + (' ' + $author$project$Anim$Internal$Timing$Delay$toCssString(config.delay))))));
 		case 'OpacityConfig':
 			var config = property.a;
+			var distance = $author$project$Anim$CSS$calculatePropertyDistance(
+				$author$project$Anim$Internal$Builder$OpacityConfig(config));
 			return $elm$core$Maybe$Just(
-				'opacity ' + (A2($author$project$Anim$Internal$Timing$TimeSpec$toCssString, config.distance, config.timing) + (' ' + ($author$project$Anim$Internal$Timing$Easing$toCSS(config.easing) + (' ' + $author$project$Anim$Internal$Timing$Delay$toCssString(config.delay))))));
+				'opacity ' + (A2($author$project$Anim$Internal$Timing$TimeSpec$toCssString, distance, config.timing) + (' ' + ($author$project$Anim$Internal$Timing$Easing$toCSS(config.easing) + (' ' + $author$project$Anim$Internal$Timing$Delay$toCssString(config.delay))))));
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -6028,9 +6272,6 @@ var $author$project$Anim$CSS$animate = function (builder_) {
 	var currentValues = A2($elm$core$Dict$map, $author$project$Anim$CSS$extractEndValues, elementsDict);
 	return $author$project$Anim$CSS$AnimationState(
 		{builder: builder_, currentValues: currentValues, elementAnimations: elementAnimations});
-};
-var $author$project$Anim$Internal$Builder$ColorConfig = function (a) {
-	return {$: 'ColorConfig', a: a};
 };
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -6340,11 +6581,24 @@ var $author$project$Anim$Internal$Builders$Color$to = F2(
 	function (color, _v0) {
 		var config = _v0.a;
 		var builder = _v0.b;
+		var startPos = function () {
+			var _v1 = config.startAt;
+			if (_v1.$ === 'Just') {
+				var opacity_ = _v1.a;
+				return opacity_;
+			} else {
+				return A3($author$project$Anim$Internal$Properties$Color$rgb255, 0, 0, 0);
+			}
+		}();
 		return A2(
 			$author$project$Anim$Internal$Builders$Color$ColorBuilder,
 			_Utils_update(
 				config,
-				{endAt: color}),
+				{
+					distance: A2($author$project$Anim$Internal$Properties$Color$distance, startPos, color),
+					endAt: color,
+					startAt: $elm$core$Maybe$Just(startPos)
+				}),
 			builder);
 	});
 var $author$project$Anim$Internal$Properties$Color$Hex = function (a) {
@@ -6355,9 +6609,6 @@ var $author$project$Anim$Internal$Properties$Color$Hsl = function (a) {
 };
 var $author$project$Anim$Internal$Properties$Color$Hsla = function (a) {
 	return {$: 'Hsla', a: a};
-};
-var $author$project$Anim$Internal$Properties$Color$Rgb = function (a) {
-	return {$: 'Rgb', a: a};
 };
 var $author$project$Anim$Internal$Properties$Color$Rgba = function (a) {
 	return {$: 'Rgba', a: a};
@@ -6473,11 +6724,6 @@ var $author$project$Anim$Internal$Builders$Property$applyGlobalDefaults = F2(
 				}()
 			});
 	});
-var $author$project$Anim$Internal$Properties$Color$rgb255 = F3(
-	function (r, g, b) {
-		return $author$project$Anim$Internal$Properties$Color$Rgb(
-			{b: b, g: g, r: r});
-	});
 var $author$project$Anim$Internal$Builders$Color$defaultConfig = {
 	delay: $elm$core$Maybe$Nothing,
 	distance: 0,
@@ -6528,7 +6774,20 @@ var $author$project$Anim$Internal$Builders$Color$for = F2(
 		var newConfig = function () {
 			if (existingConfig.$ === 'Just') {
 				var config = existingConfig.a;
-				return A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, config);
+				return A2(
+					$author$project$Anim$Internal$Builders$Property$applyGlobalDefaults,
+					builder,
+					_Utils_update(
+						config,
+						{
+							delay: $elm$core$Maybe$Nothing,
+							distance: 0,
+							duration: 0,
+							easing: $elm$core$Maybe$Nothing,
+							speed: 0,
+							startAt: $elm$core$Maybe$Just(config.endAt),
+							timing: $elm$core$Maybe$Nothing
+						}));
 			} else {
 				return A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, $author$project$Anim$Internal$Builders$Color$defaultConfig);
 			}

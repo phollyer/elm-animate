@@ -62,7 +62,16 @@ for elementId builder =
         newConfig =
             case existingConfig of
                 Just config ->
-                    PropertyBuilder.applyGlobalDefaults builder config
+                    PropertyBuilder.applyGlobalDefaults builder <|
+                        { config
+                            | startAt = Just config.endAt
+                            , easing = Nothing
+                            , delay = Nothing
+                            , timing = Nothing
+                            , duration = 0
+                            , speed = 0
+                            , distance = 0
+                        }
 
                 Nothing ->
                     PropertyBuilder.applyGlobalDefaults builder defaultConfig
@@ -111,7 +120,22 @@ from scale (ScaleBuilder config builder) =
 
 to : Scale -> ScaleBuilder -> ScaleBuilder
 to scale (ScaleBuilder config builder) =
-    ScaleBuilder { config | endAt = scale } builder
+    let
+        startPos =
+            case config.startAt of
+                Just opacity_ ->
+                    opacity_
+
+                Nothing ->
+                    Scale.fromTuple ( 1, 1 )
+    in
+    ScaleBuilder
+        { config
+            | endAt = scale
+            , distance = Scale.distance startPos scale
+            , startAt = Just startPos
+        }
+        builder
 
 
 speed : Float -> ScaleBuilder -> ScaleBuilder
