@@ -15,7 +15,7 @@ import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Rotation as Rotation exposing (Rotation)
 import Anim.Internal.Timing.Delay exposing (Delay)
 import Anim.Internal.Timing.Easing exposing (Easing)
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec)
+import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
 
@@ -116,12 +116,26 @@ to rotation (RotationBuilder config builder) =
 
 speed : Float -> RotationBuilder -> RotationBuilder
 speed value (RotationBuilder config builder) =
-    RotationBuilder { config | speed = value } builder
+    RotationBuilder
+        { config
+            | speed = value
+            , timing =
+                Just <|
+                    Speed value
+        }
+        builder
 
 
 duration : Int -> RotationBuilder -> RotationBuilder
 duration ms (RotationBuilder config builder) =
-    RotationBuilder { config | duration = ms } builder
+    RotationBuilder
+        { config
+            | duration = ms
+            , timing =
+                Just <|
+                    Duration ms
+        }
+        builder
 
 
 easing : Easing -> RotationBuilder -> RotationBuilder

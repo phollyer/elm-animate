@@ -5415,9 +5415,33 @@ var $author$project$Anim$Internal$Builders$Property$applyGlobalDefaults = F2(
 		return _Utils_update(
 			config,
 			{
-				delay: $author$project$Anim$Internal$Builder$getDelay(builder),
-				easing: $author$project$Anim$Internal$Builder$getEasing(builder),
-				timing: $author$project$Anim$Internal$Builder$getTimespec(builder)
+				delay: function () {
+					var _v0 = config.delay;
+					if (_v0.$ === 'Just') {
+						var delay_ = _v0.a;
+						return $elm$core$Maybe$Just(delay_);
+					} else {
+						return $author$project$Anim$Internal$Builder$getDelay(builder);
+					}
+				}(),
+				easing: function () {
+					var _v1 = config.easing;
+					if (_v1.$ === 'Just') {
+						var easing_ = _v1.a;
+						return $elm$core$Maybe$Just(easing_);
+					} else {
+						return $author$project$Anim$Internal$Builder$getEasing(builder);
+					}
+				}(),
+				timing: function () {
+					var _v2 = config.timing;
+					if (_v2.$ === 'Just') {
+						var timing_ = _v2.a;
+						return $elm$core$Maybe$Just(timing_);
+					} else {
+						return $author$project$Anim$Internal$Builder$getTimespec(builder);
+					}
+				}()
 			});
 	});
 var $author$project$Anim$Internal$Properties$Rotation$Rotation = function (a) {
@@ -6352,7 +6376,11 @@ var $author$project$Anim$Internal$Builders$Rotation$duration = F2(
 			$author$project$Anim$Internal$Builders$Rotation$RotationBuilder,
 			_Utils_update(
 				config,
-				{duration: ms}),
+				{
+					duration: ms,
+					timing: $elm$core$Maybe$Just(
+						$author$project$Anim$Internal$Timing$TimeSpec$Duration(ms))
+				}),
 			builder);
 	});
 var $author$project$Anim$Properties$Rotation$duration = function (milliseconds) {
@@ -6380,6 +6408,9 @@ var $author$project$Anim$Timing$Easing$elasticInOut = $author$project$Anim$Timin
 var $elm$core$Basics$negate = function (n) {
 	return -n;
 };
+var $author$project$Anim$Internal$Timing$TimeSpec$Speed = function (a) {
+	return {$: 'Speed', a: a};
+};
 var $author$project$Anim$Internal$Builders$Rotation$speed = F2(
 	function (value, _v0) {
 		var config = _v0.a;
@@ -6388,7 +6419,11 @@ var $author$project$Anim$Internal$Builders$Rotation$speed = F2(
 			$author$project$Anim$Internal$Builders$Rotation$RotationBuilder,
 			_Utils_update(
 				config,
-				{speed: value}),
+				{
+					speed: value,
+					timing: $elm$core$Maybe$Just(
+						$author$project$Anim$Internal$Timing$TimeSpec$Speed(value))
+				}),
 			builder);
 	});
 var $author$project$Anim$Properties$Rotation$speed = function (degreesPerSecond) {

@@ -15,7 +15,7 @@ import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
 import Anim.Internal.Timing.Delay exposing (Delay)
 import Anim.Internal.Timing.Easing exposing (Easing)
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec)
+import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
 
@@ -116,12 +116,26 @@ to scale (ScaleBuilder config builder) =
 
 speed : Float -> ScaleBuilder -> ScaleBuilder
 speed value (ScaleBuilder config builder) =
-    ScaleBuilder { config | speed = value } builder
+    ScaleBuilder
+        { config
+            | speed = value
+            , timing =
+                Just <|
+                    Speed value
+        }
+        builder
 
 
 duration : Int -> ScaleBuilder -> ScaleBuilder
 duration ms (ScaleBuilder config builder) =
-    ScaleBuilder { config | duration = ms } builder
+    ScaleBuilder
+        { config
+            | duration = ms
+            , timing =
+                Just <|
+                    Duration ms
+        }
+        builder
 
 
 easing : Easing -> ScaleBuilder -> ScaleBuilder

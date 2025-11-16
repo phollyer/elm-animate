@@ -15,7 +15,7 @@ import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Timing.Delay exposing (Delay)
 import Anim.Internal.Timing.Easing exposing (Easing)
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec)
+import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
 
@@ -117,12 +117,26 @@ to opacity (OpacityBuilder config builder) =
 
 speed : Float -> OpacityBuilder -> OpacityBuilder
 speed spd (OpacityBuilder config builder) =
-    OpacityBuilder { config | speed = spd } builder
+    OpacityBuilder
+        { config
+            | speed = spd
+            , timing =
+                Just <|
+                    Speed spd
+        }
+        builder
 
 
 duration : Int -> OpacityBuilder -> OpacityBuilder
 duration dur (OpacityBuilder config builder) =
-    OpacityBuilder { config | duration = dur } builder
+    OpacityBuilder
+        { config
+            | duration = dur
+            , timing =
+                Just <|
+                    Duration dur
+        }
+        builder
 
 
 easing : Easing -> OpacityBuilder -> OpacityBuilder

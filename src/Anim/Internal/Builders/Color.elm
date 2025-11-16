@@ -15,7 +15,7 @@ import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Color as Color exposing (Color(..))
 import Anim.Internal.Timing.Delay exposing (Delay)
 import Anim.Internal.Timing.Easing exposing (Easing)
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec)
+import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
 
@@ -116,12 +116,26 @@ to color (ColorBuilder config builder) =
 
 speed : Float -> ColorBuilder -> ColorBuilder
 speed spd (ColorBuilder config builder) =
-    ColorBuilder { config | speed = spd } builder
+    ColorBuilder
+        { config
+            | speed = spd
+            , timing =
+                Just <|
+                    Speed spd
+        }
+        builder
 
 
 duration : Int -> ColorBuilder -> ColorBuilder
 duration ms (ColorBuilder config builder) =
-    ColorBuilder { config | duration = ms } builder
+    ColorBuilder
+        { config
+            | duration = ms
+            , timing =
+                Just <|
+                    Duration ms
+        }
+        builder
 
 
 easing : Easing -> ColorBuilder -> ColorBuilder

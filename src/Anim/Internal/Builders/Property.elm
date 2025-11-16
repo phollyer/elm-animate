@@ -17,9 +17,27 @@ applyGlobalDefaults :
     -> { c | easing : Maybe Easing, delay : Maybe Delay, timing : Maybe TimeSpec }
 applyGlobalDefaults builder config =
     { config
-        | easing = Builder.getEasing builder
-        , delay = Builder.getDelay builder
-        , timing = Builder.getTimespec builder
+        | easing =
+            case config.easing of
+                Just easing_ ->
+                    Just easing_
+
+                Nothing ->
+                    Builder.getEasing builder
+        , delay =
+            case config.delay of
+                Just delay_ ->
+                    Just delay_
+
+                Nothing ->
+                    Builder.getDelay builder
+        , timing =
+            case config.timing of
+                Just timing_ ->
+                    Just timing_
+
+                Nothing ->
+                    Builder.getTimespec builder
     }
 
 

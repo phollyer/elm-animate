@@ -64,10 +64,18 @@ for elementId builder =
         newConfig =
             case existingConfig of
                 Just config ->
-                    PropertyBuilder.applyGlobalDefaults builder config
+                    PropertyBuilder.applyGlobalDefaults builder <|
+                        { config
+                            | easing = Nothing
+                            , delay = Nothing
+                            , timing = Nothing
+                        }
 
                 Nothing ->
                     PropertyBuilder.applyGlobalDefaults builder defaultConfig
+
+        _ =
+            Debug.log "New Position Config for " ( elementId, newConfig )
     in
     PositionBuilder newConfig (Builder.for elementId builder)
 
@@ -77,6 +85,9 @@ build (PositionBuilder config builder) =
     let
         newPositionConfig =
             Builder.PositionConfig config
+
+        _ =
+            Debug.log "Building Position Config: " newPositionConfig
     in
     PropertyBuilder.upsert newPositionConfig builder
 
@@ -128,22 +139,12 @@ toY y (PositionBuilder config builder) =
 
 speed : Float -> PositionBuilder -> PositionBuilder
 speed value (PositionBuilder config builder) =
-    let
-        ( speed_, timeSpec ) =
-            case Builder.getTimespec builder of
-                Just (Speed s) ->
-                    ( s, Just <| Speed s )
-
-                Just (Duration _) ->
-                    ( value, Just <| Speed value )
-
-                Nothing ->
-                    ( value, Just <| Speed value )
-    in
     PositionBuilder
         { config
-            | speed = speed_
-            , timing = timeSpec
+            | speed = value
+            , timing =
+                Just <|
+                    Speed value
         }
         builder
 
@@ -162,7 +163,7 @@ duration ms (PositionBuilder config builder) =
 
 easing : Easing -> PositionBuilder -> PositionBuilder
 easing easing_ (PositionBuilder config builder) =
-    PositionBuilder { config | easing = Just easing_ } builder
+    PositionBuilder { config | easing = Just easing_ |> Debug.log "Easing" } builder
 
 
 delay : Delay -> PositionBuilder -> PositionBuilder

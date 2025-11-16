@@ -6296,9 +6296,33 @@ var $author$project$Anim$Internal$Builders$Property$applyGlobalDefaults = F2(
 		return _Utils_update(
 			config,
 			{
-				delay: $author$project$Anim$Internal$Builder$getDelay(builder),
-				easing: $author$project$Anim$Internal$Builder$getEasing(builder),
-				timing: $author$project$Anim$Internal$Builder$getTimespec(builder)
+				delay: function () {
+					var _v0 = config.delay;
+					if (_v0.$ === 'Just') {
+						var delay_ = _v0.a;
+						return $elm$core$Maybe$Just(delay_);
+					} else {
+						return $author$project$Anim$Internal$Builder$getDelay(builder);
+					}
+				}(),
+				easing: function () {
+					var _v1 = config.easing;
+					if (_v1.$ === 'Just') {
+						var easing_ = _v1.a;
+						return $elm$core$Maybe$Just(easing_);
+					} else {
+						return $author$project$Anim$Internal$Builder$getEasing(builder);
+					}
+				}(),
+				timing: function () {
+					var _v2 = config.timing;
+					if (_v2.$ === 'Just') {
+						var timing_ = _v2.a;
+						return $elm$core$Maybe$Just(timing_);
+					} else {
+						return $author$project$Anim$Internal$Builder$getTimespec(builder);
+					}
+				}()
 			});
 	});
 var $author$project$Anim$Internal$Properties$Color$rgb255 = F3(

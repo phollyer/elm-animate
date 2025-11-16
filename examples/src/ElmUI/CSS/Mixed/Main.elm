@@ -218,6 +218,9 @@ update msg model =
                 | animations =
                     model.animations
                         |> CSS.builder
+                        --|> Anim.duration 800
+                        --|> Anim.easing QuadInOut
+                        --|> Anim.delay 3000
                         -- Position
                         |> Position.for "mixed-box"
                         |> Position.toXY 150 200
@@ -236,15 +239,8 @@ update msg model =
                         |> Scale.to (Scale.ScaleXY 1.4 0.9)
                         |> Scale.easing CircInOut
                         |> Scale.duration 1000
-                        |> Scale.delay (Delay 200)
+                        |> Scale.delay (Delay 2000)
                         |> Scale.build
-                        -- Rotation
-                        |> Rotation.for "mixed-box"
-                        |> Rotation.to 135
-                        |> Rotation.easing ElasticInOut
-                        |> Rotation.duration 1400
-                        |> Rotation.delay (Delay 300)
-                        |> Rotation.build
                         -- Opacity
                         |> Opacity.for "mixed-box"
                         |> Opacity.to 0.7

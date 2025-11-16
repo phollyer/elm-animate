@@ -6010,9 +6010,33 @@ var $author$project$Anim$Internal$Builders$Property$applyGlobalDefaults = F2(
 		return _Utils_update(
 			config,
 			{
-				delay: $author$project$Anim$Internal$Builder$getDelay(builder),
-				easing: $author$project$Anim$Internal$Builder$getEasing(builder),
-				timing: $author$project$Anim$Internal$Builder$getTimespec(builder)
+				delay: function () {
+					var _v0 = config.delay;
+					if (_v0.$ === 'Just') {
+						var delay_ = _v0.a;
+						return $elm$core$Maybe$Just(delay_);
+					} else {
+						return $author$project$Anim$Internal$Builder$getDelay(builder);
+					}
+				}(),
+				easing: function () {
+					var _v1 = config.easing;
+					if (_v1.$ === 'Just') {
+						var easing_ = _v1.a;
+						return $elm$core$Maybe$Just(easing_);
+					} else {
+						return $author$project$Anim$Internal$Builder$getEasing(builder);
+					}
+				}(),
+				timing: function () {
+					var _v2 = config.timing;
+					if (_v2.$ === 'Just') {
+						var timing_ = _v2.a;
+						return $elm$core$Maybe$Just(timing_);
+					} else {
+						return $author$project$Anim$Internal$Builder$getTimespec(builder);
+					}
+				}()
 			});
 	});
 var $author$project$Anim$Internal$Properties$Position$Position = function (a) {
@@ -6077,12 +6101,13 @@ var $elm$core$List$head = function (list) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
+var $elm$core$Debug$log = _Debug_log;
 var $author$project$Anim$Internal$Builders$Position$for = F2(
 	function (elementId, builder) {
 		var existingConfig = function () {
-			var _v1 = A2($author$project$Anim$Internal$Builder$getElementConfig, elementId, builder);
-			if (_v1.$ === 'Just') {
-				var properties = _v1.a.properties;
+			var _v2 = A2($author$project$Anim$Internal$Builder$getElementConfig, elementId, builder);
+			if (_v2.$ === 'Just') {
+				var properties = _v2.a.properties;
 				return $elm$core$List$head(
 					A2(
 						$elm$core$List$filterMap,
@@ -6102,11 +6127,20 @@ var $author$project$Anim$Internal$Builders$Position$for = F2(
 		var newConfig = function () {
 			if (existingConfig.$ === 'Just') {
 				var config = existingConfig.a;
-				return A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, config);
+				return A2(
+					$author$project$Anim$Internal$Builders$Property$applyGlobalDefaults,
+					builder,
+					_Utils_update(
+						config,
+						{delay: $elm$core$Maybe$Nothing, easing: $elm$core$Maybe$Nothing, timing: $elm$core$Maybe$Nothing}));
 			} else {
 				return A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, $author$project$Anim$Internal$Builders$Position$defaultConfig);
 			}
 		}();
+		var _v0 = A2(
+			$elm$core$Debug$log,
+			'New Position Config for ',
+			_Utils_Tuple2(elementId, newConfig));
 		return A2(
 			$author$project$Anim$Internal$Builders$Position$PositionBuilder,
 			newConfig,
@@ -6767,6 +6801,7 @@ var $author$project$Anim$Internal$Builders$Position$build = function (_v0) {
 	var config = _v0.a;
 	var builder = _v0.b;
 	var newPositionConfig = $author$project$Anim$Internal$Builder$PositionConfig(config);
+	var _v1 = A2($elm$core$Debug$log, 'Building Position Config: ', newPositionConfig);
 	return A2($author$project$Anim$Internal$Builders$Property$upsert, newPositionConfig, builder);
 };
 var $author$project$Anim$Properties$Position$build = $author$project$Anim$Internal$Builders$Position$build;
@@ -6795,7 +6830,10 @@ var $author$project$Anim$Internal$Builders$Position$easing = F2(
 			_Utils_update(
 				config,
 				{
-					easing: $elm$core$Maybe$Just(easing_)
+					easing: A2(
+						$elm$core$Debug$log,
+						'Easing',
+						$elm$core$Maybe$Just(easing_))
 				}),
 			builder);
 	});

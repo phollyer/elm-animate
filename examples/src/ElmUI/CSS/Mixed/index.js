@@ -6072,10 +6072,12 @@ var $author$project$Anim$Properties$Opacity$build = $author$project$Anim$Interna
 var $author$project$Anim$Internal$Builder$PositionConfig = function (a) {
 	return {$: 'PositionConfig', a: a};
 };
+var $elm$core$Debug$log = _Debug_log;
 var $author$project$Anim$Internal$Builders$Position$build = function (_v0) {
 	var config = _v0.a;
 	var builder = _v0.b;
 	var newPositionConfig = $author$project$Anim$Internal$Builder$PositionConfig(config);
+	var _v1 = A2($elm$core$Debug$log, 'Building Position Config: ', newPositionConfig);
 	return A2($author$project$Anim$Internal$Builders$Property$upsert, newPositionConfig, builder);
 };
 var $author$project$Anim$Properties$Position$build = $author$project$Anim$Internal$Builders$Position$build;
@@ -6226,7 +6228,11 @@ var $author$project$Anim$Internal$Builders$Color$duration = F2(
 			$author$project$Anim$Internal$Builders$Color$ColorBuilder,
 			_Utils_update(
 				config,
-				{duration: ms}),
+				{
+					duration: ms,
+					timing: $elm$core$Maybe$Just(
+						$author$project$Anim$Internal$Timing$TimeSpec$Duration(ms))
+				}),
 			builder);
 	});
 var $author$project$Anim$Properties$Color$duration = function (milliseconds) {
@@ -6240,7 +6246,11 @@ var $author$project$Anim$Internal$Builders$Opacity$duration = F2(
 			$author$project$Anim$Internal$Builders$Opacity$OpacityBuilder,
 			_Utils_update(
 				config,
-				{duration: dur}),
+				{
+					duration: dur,
+					timing: $elm$core$Maybe$Just(
+						$author$project$Anim$Internal$Timing$TimeSpec$Duration(dur))
+				}),
 			builder);
 	});
 var $author$project$Anim$Properties$Opacity$duration = function (milliseconds) {
@@ -6274,7 +6284,11 @@ var $author$project$Anim$Internal$Builders$Rotation$duration = F2(
 			$author$project$Anim$Internal$Builders$Rotation$RotationBuilder,
 			_Utils_update(
 				config,
-				{duration: ms}),
+				{
+					duration: ms,
+					timing: $elm$core$Maybe$Just(
+						$author$project$Anim$Internal$Timing$TimeSpec$Duration(ms))
+				}),
 			builder);
 	});
 var $author$project$Anim$Properties$Rotation$duration = function (milliseconds) {
@@ -6288,7 +6302,11 @@ var $author$project$Anim$Internal$Builders$Scale$duration = F2(
 			$author$project$Anim$Internal$Builders$Scale$ScaleBuilder,
 			_Utils_update(
 				config,
-				{duration: ms}),
+				{
+					duration: ms,
+					timing: $elm$core$Maybe$Just(
+						$author$project$Anim$Internal$Timing$TimeSpec$Duration(ms))
+				}),
 			builder);
 	});
 var $author$project$Anim$Properties$Scale$duration = $author$project$Anim$Internal$Builders$Scale$duration;
@@ -6475,7 +6493,10 @@ var $author$project$Anim$Internal$Builders$Position$easing = F2(
 			_Utils_update(
 				config,
 				{
-					easing: $elm$core$Maybe$Just(easing_)
+					easing: A2(
+						$elm$core$Debug$log,
+						'Easing',
+						$elm$core$Maybe$Just(easing_))
 				}),
 			builder);
 	});
@@ -6534,9 +6555,33 @@ var $author$project$Anim$Internal$Builders$Property$applyGlobalDefaults = F2(
 		return _Utils_update(
 			config,
 			{
-				delay: $author$project$Anim$Internal$Builder$getDelay(builder),
-				easing: $author$project$Anim$Internal$Builder$getEasing(builder),
-				timing: $author$project$Anim$Internal$Builder$getTimespec(builder)
+				delay: function () {
+					var _v0 = config.delay;
+					if (_v0.$ === 'Just') {
+						var delay_ = _v0.a;
+						return $elm$core$Maybe$Just(delay_);
+					} else {
+						return $author$project$Anim$Internal$Builder$getDelay(builder);
+					}
+				}(),
+				easing: function () {
+					var _v1 = config.easing;
+					if (_v1.$ === 'Just') {
+						var easing_ = _v1.a;
+						return $elm$core$Maybe$Just(easing_);
+					} else {
+						return $author$project$Anim$Internal$Builder$getEasing(builder);
+					}
+				}(),
+				timing: function () {
+					var _v2 = config.timing;
+					if (_v2.$ === 'Just') {
+						var timing_ = _v2.a;
+						return $elm$core$Maybe$Just(timing_);
+					} else {
+						return $author$project$Anim$Internal$Builder$getTimespec(builder);
+					}
+				}()
 			});
 	});
 var $author$project$Anim$Internal$Properties$Color$Rgb = function (a) {
@@ -6687,9 +6732,9 @@ var $author$project$Anim$Internal$Builders$Position$defaultConfig = {
 var $author$project$Anim$Internal$Builders$Position$for = F2(
 	function (elementId, builder) {
 		var existingConfig = function () {
-			var _v1 = A2($author$project$Anim$Internal$Builder$getElementConfig, elementId, builder);
-			if (_v1.$ === 'Just') {
-				var properties = _v1.a.properties;
+			var _v2 = A2($author$project$Anim$Internal$Builder$getElementConfig, elementId, builder);
+			if (_v2.$ === 'Just') {
+				var properties = _v2.a.properties;
 				return $elm$core$List$head(
 					A2(
 						$elm$core$List$filterMap,
@@ -6709,11 +6754,20 @@ var $author$project$Anim$Internal$Builders$Position$for = F2(
 		var newConfig = function () {
 			if (existingConfig.$ === 'Just') {
 				var config = existingConfig.a;
-				return A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, config);
+				return A2(
+					$author$project$Anim$Internal$Builders$Property$applyGlobalDefaults,
+					builder,
+					_Utils_update(
+						config,
+						{delay: $elm$core$Maybe$Nothing, easing: $elm$core$Maybe$Nothing, timing: $elm$core$Maybe$Nothing}));
 			} else {
 				return A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, $author$project$Anim$Internal$Builders$Position$defaultConfig);
 			}
 		}();
+		var _v0 = A2(
+			$elm$core$Debug$log,
+			'New Position Config for ',
+			_Utils_Tuple2(elementId, newConfig));
 		return A2(
 			$author$project$Anim$Internal$Builders$Position$PositionBuilder,
 			newConfig,
@@ -7148,69 +7202,53 @@ var $author$project$ElmUI$CSS$Mixed$Main$update = F2(
 																			A2(
 																				$author$project$Anim$Properties$Opacity$for,
 																				'mixed-box',
-																				$author$project$Anim$Properties$Rotation$build(
+																				$author$project$Anim$Properties$Scale$build(
 																					A2(
-																						$author$project$Anim$Properties$Rotation$delay,
-																						$author$project$Anim$Timing$Delay$Delay(300),
+																						$author$project$Anim$Properties$Scale$delay,
+																						$author$project$Anim$Timing$Delay$Delay(2000),
 																						A2(
-																							$author$project$Anim$Properties$Rotation$duration,
-																							1400,
+																							$author$project$Anim$Properties$Scale$duration,
+																							1000,
 																							A2(
-																								$author$project$Anim$Properties$Rotation$easing,
-																								$author$project$Anim$Timing$Easing$ElasticInOut,
+																								$author$project$Anim$Properties$Scale$easing,
+																								$author$project$Anim$Timing$Easing$CircInOut,
 																								A2(
-																									$author$project$Anim$Properties$Rotation$to,
-																									135,
+																									$author$project$Anim$Properties$Scale$to,
+																									A2($author$project$Anim$Properties$Scale$ScaleXY, 1.4, 0.9),
 																									A2(
-																										$author$project$Anim$Properties$Rotation$for,
+																										$author$project$Anim$Properties$Scale$for,
 																										'mixed-box',
-																										$author$project$Anim$Properties$Scale$build(
+																										$author$project$Anim$Properties$Rotation$build(
 																											A2(
-																												$author$project$Anim$Properties$Scale$delay,
-																												$author$project$Anim$Timing$Delay$Delay(200),
+																												$author$project$Anim$Properties$Rotation$delay,
+																												$author$project$Anim$Timing$Delay$Delay(300),
 																												A2(
-																													$author$project$Anim$Properties$Scale$duration,
-																													1000,
+																													$author$project$Anim$Properties$Rotation$duration,
+																													1400,
 																													A2(
-																														$author$project$Anim$Properties$Scale$easing,
-																														$author$project$Anim$Timing$Easing$CircInOut,
+																														$author$project$Anim$Properties$Rotation$easing,
+																														$author$project$Anim$Timing$Easing$ElasticInOut,
 																														A2(
-																															$author$project$Anim$Properties$Scale$to,
-																															A2($author$project$Anim$Properties$Scale$ScaleXY, 1.4, 0.9),
+																															$author$project$Anim$Properties$Rotation$to,
+																															135,
 																															A2(
-																																$author$project$Anim$Properties$Scale$for,
+																																$author$project$Anim$Properties$Rotation$for,
 																																'mixed-box',
-																																$author$project$Anim$Properties$Rotation$build(
+																																$author$project$Anim$Properties$Position$build(
 																																	A2(
-																																		$author$project$Anim$Properties$Rotation$delay,
-																																		$author$project$Anim$Timing$Delay$Delay(300),
+																																		$author$project$Anim$Properties$Position$duration,
+																																		1200,
 																																		A2(
-																																			$author$project$Anim$Properties$Rotation$duration,
-																																			1400,
-																																			A2(
-																																				$author$project$Anim$Properties$Rotation$easing,
-																																				$author$project$Anim$Timing$Easing$ElasticInOut,
+																																			$author$project$Anim$Properties$Position$easing,
+																																			$author$project$Anim$Timing$Easing$ExpoInOut,
+																																			A3(
+																																				$author$project$Anim$Properties$Position$toXY,
+																																				150,
+																																				200,
 																																				A2(
-																																					$author$project$Anim$Properties$Rotation$to,
-																																					135,
-																																					A2(
-																																						$author$project$Anim$Properties$Rotation$for,
-																																						'mixed-box',
-																																						$author$project$Anim$Properties$Position$build(
-																																							A2(
-																																								$author$project$Anim$Properties$Position$duration,
-																																								1200,
-																																								A2(
-																																									$author$project$Anim$Properties$Position$easing,
-																																									$author$project$Anim$Timing$Easing$ExpoInOut,
-																																									A3(
-																																										$author$project$Anim$Properties$Position$toXY,
-																																										150,
-																																										200,
-																																										A2(
-																																											$author$project$Anim$Properties$Position$for,
-																																											'mixed-box',
-																																											$author$project$Anim$CSS$builder(model.animations))))))))))))))))))))))))))))))))))))),
+																																					$author$project$Anim$Properties$Position$for,
+																																					'mixed-box',
+																																					$author$project$Anim$CSS$builder(model.animations))))))))))))))))))))))))))))))),
 							isAnimating: true
 						}),
 					$elm$core$Platform$Cmd$none);
