@@ -477,10 +477,10 @@ transitionFromNonTransformProperty : Builder.PropertyConfig -> Maybe String
 transitionFromNonTransformProperty property =
     case property of
         Builder.ColorConfig config ->
-            Just ("background-color " ++ TimeSpec.toCssString config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
+            Just ("background-color " ++ TimeSpec.toCssString config.distance config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
         Builder.OpacityConfig config ->
-            Just ("opacity " ++ TimeSpec.toCssString config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
+            Just ("opacity " ++ TimeSpec.toCssString config.distance config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
         _ ->
             Nothing
@@ -495,6 +495,9 @@ consolidateTransformTiming transformProps =
         _ ->
             let
                 -- Strategy: Use the longest duration, latest easing, earliest delay
+                longestDistance =
+                    findLongestDistance transformProps
+
                 longestDuration =
                     findLongestDuration transformProps
 
@@ -504,49 +507,116 @@ consolidateTransformTiming transformProps =
                 earliestDelay =
                     findEarliestDelay transformProps
             in
-            Just ("transform " ++ TimeSpec.toCssString longestDuration ++ " " ++ Easing.toCSS (Just latestEasing) ++ " " ++ Delay.toCssString earliestDelay)
+            Just ("transform " ++ TimeSpec.toCssString longestDistance longestDuration ++ " " ++ Easing.toCSS (Just latestEasing) ++ " " ++ Delay.toCssString earliestDelay)
+
+
+findLongestDistance : List Builder.PropertyConfig -> Float
+findLongestDistance properties =
+    let
+        distances =
+            List.filterMap extractDistance properties
+    in
+    case distances of
+        [] ->
+            0.0
+
+        _ ->
+            distances
+                |> List.maximum
+                |> Maybe.withDefault 0.0
+
+
+extractDistance : Builder.PropertyConfig -> Maybe Float
+extractDistance property =
+    case property of
+        Builder.PositionConfig config ->
+            Just config.distance
+
+        Builder.RotateConfig config ->
+            Just config.distance
+
+        Builder.ScaleConfig config ->
+            Just config.distance
+
+        _ ->
+            Nothing
+
+
+calculatePropertyDistance : Builder.PropertyConfig -> Float
+calculatePropertyDistance property =
+    case property of
+        Builder.PositionConfig config ->
+            let
+                startAt =
+                    case config.startAt of
+                        Just s ->
+                            s
+
+                        Nothing ->
+                            Position.fromTuple ( 0, 0 )
+            in
+            Position.distance startAt config.endAt
+
+        Builder.RotateConfig config ->
+            let
+                startAt =
+                    case config.startAt of
+                        Just s ->
+                            s
+
+                        Nothing ->
+                            Rotation.fromFloat 0
+            in
+            Rotation.distance startAt config.endAt
+
+        Builder.ScaleConfig _ ->
+            -- Scale animations don't have meaningful distance for speed calculations
+            -- Use a default distance of 1 unit
+            1.0
+
+        _ ->
+            0.0
 
 
 findLongestDuration : List Builder.PropertyConfig -> Maybe TimeSpec.TimeSpec
 findLongestDuration properties =
     let
-        durations =
-            List.filterMap extractTiming properties
+        propertyDistances =
+            List.filterMap
+                (\prop ->
+                    extractTiming prop
+                        |> Maybe.map (\timeSpec -> ( timeSpec, calculatePropertyDistance prop ))
+                )
+                properties
     in
-    case durations of
+    case propertyDistances of
         [] ->
             Nothing
 
-        _ ->
-            durations
-                |> List.foldl chooseLongerDuration (TimeSpec.Duration 0)
+        ( firstTimeSpec, _ ) :: rest ->
+            rest
+                |> List.foldl
+                    (\( timeSpec, dist ) acc ->
+                        chooseLongerDuration (\ts -> toFloat (TimeSpec.duration dist ts)) timeSpec acc
+                    )
+                    firstTimeSpec
                 |> Just
 
 
-chooseLongerDuration : TimeSpec.TimeSpec -> TimeSpec.TimeSpec -> TimeSpec.TimeSpec
-chooseLongerDuration a b =
-    case ( a, b ) of
-        ( TimeSpec.Duration msA, TimeSpec.Duration msB ) ->
-            if msA >= msB then
-                a
+chooseLongerDuration : (TimeSpec.TimeSpec -> Float) -> TimeSpec.TimeSpec -> TimeSpec.TimeSpec -> TimeSpec.TimeSpec
+chooseLongerDuration calcDuration a b =
+    let
+        durationA =
+            calcDuration a
 
-            else
-                b
+        durationB =
+            calcDuration b
+    in
+    if durationA >= durationB then
+        a
 
-        ( TimeSpec.Speed _, TimeSpec.Duration _ ) ->
-            b
-
-        -- Prefer duration over speed
-        ( TimeSpec.Duration _, TimeSpec.Speed _ ) ->
-            a
-
-        -- Prefer duration over speed
-        ( TimeSpec.Speed speedA, TimeSpec.Speed speedB ) ->
-            if speedA <= speedB then
-                a
-
-            else
-                b
+    else
+        b
 
 
 

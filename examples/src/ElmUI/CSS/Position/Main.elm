@@ -103,6 +103,7 @@ update msg model =
                         |> anim
                         |> Position.toXY x y
                         |> Position.easing (Easing.Bezier 0.3 0 0.7 0)
+                        |> Position.speed 200
                         |> Position.build
                         |> CSS.animate
               }
@@ -116,7 +117,7 @@ update msg model =
                         |> anim
                         |> Position.toX 0
                         |> Position.easing Easing.SineInOut
-                        |> Position.duration 3000
+                        |> Position.duration 500
                         |> Position.build
                         |> CSS.animate
               }
@@ -130,7 +131,7 @@ update msg model =
                         |> anim
                         |> Position.toX 450
                         |> Position.easing Easing.BackInOut
-                        --|> Position.duration 400
+                        |> Position.duration 5000
                         |> Position.build
                         |> CSS.animate
               }
@@ -144,6 +145,7 @@ update msg model =
                         |> anim
                         |> Position.toY 350
                         |> Position.easing Easing.BounceInOut
+                        |> Position.duration 5000
                         --|> Position.delay (Delay 1000)
                         |> Position.build
                         |> CSS.animate
@@ -158,6 +160,7 @@ update msg model =
                         |> anim
                         |> Position.toY 0
                         |> Position.easing Easing.CircInOut
+                        |> Position.duration 500
                         |> Position.build
                         |> CSS.animate
               }
@@ -246,7 +249,7 @@ viewContent model =
              , htmlAttribute (Html.Attributes.style "position" "absolute")
              ]
                 -- Apply CSS styles for the animation
-                ++ List.map htmlAttribute (CSS.htmlAttributes "box" model.animations)
+                ++ List.map htmlAttribute (CSS.htmlAttributes "box" model.animations |> Debug.log "Box CSS Attributes")
             )
             none
         )

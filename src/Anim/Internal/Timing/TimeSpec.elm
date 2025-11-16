@@ -13,14 +13,18 @@ type TimeSpec
     | Speed Float -- units per second
 
 
-duration : Int -> TimeSpec -> Int
+duration : Float -> TimeSpec -> Int
 duration distance timeSpec =
+    let
+        _ =
+            Debug.log "Calculating duration for distance:" ( distance, timeSpec )
+    in
     case timeSpec of
         Duration ms ->
             ms
 
         Speed unitsPerSecond ->
-            round (Basics.toFloat distance / unitsPerSecond * 1000)
+            round (distance / unitsPerSecond * 1000)
 
 
 encode : TimeSpec -> Encode.Value
@@ -39,23 +43,15 @@ encode timeSpec =
                 ]
 
 
-toCssString : Maybe TimeSpec -> String
-toCssString maybeTimespec =
-    case maybeTimespec of
-        Just (Duration ms) ->
-            String.fromInt ms ++ "ms"
-
-        Just (Speed pixelsPerSecond) ->
-            -- Convert speed to duration (approximate for CSS)
-            -- Assume 100px movement for speed-based timing
-            -- TODO: Need to use the actual distance for accurate duration
-            -- Add the distance parameter to this function
-            -- Then follow the compiler errors back to fix the callsites
-            let
-                estimatedDuration =
-                    round (100 / pixelsPerSecond * 1000)
-            in
-            String.fromInt estimatedDuration ++ "ms"
+toCssString : Float -> Maybe TimeSpec -> String
+toCssString distance maybeTimespec =
+    case maybeTimespec |> Debug.log "Maybe TimeSpec" of
+        Just timespec ->
+            duration distance timespec
+                |> Debug.log "Duration in ms"
+                |> String.fromInt
+                |> (\msStr -> msStr ++ "ms")
+                |> Debug.log "Computed CSS Time String"
 
         Nothing ->
             "0ms"

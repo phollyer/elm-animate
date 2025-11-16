@@ -6132,7 +6132,15 @@ var $author$project$Anim$Internal$Builders$Position$for = F2(
 					builder,
 					_Utils_update(
 						config,
-						{delay: $elm$core$Maybe$Nothing, easing: $elm$core$Maybe$Nothing, timing: $elm$core$Maybe$Nothing}));
+						{
+							delay: $elm$core$Maybe$Nothing,
+							distance: 0,
+							duration: 0,
+							easing: $elm$core$Maybe$Nothing,
+							speed: 0,
+							startAt: $elm$core$Maybe$Just(config.endAt),
+							timing: $elm$core$Maybe$Nothing
+						}));
 			} else {
 				return A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, $author$project$Anim$Internal$Builders$Position$defaultConfig);
 			}
@@ -6410,26 +6418,122 @@ var $author$project$Anim$CSS$findLatestEasing = function (properties) {
 			$elm$core$List$reverse(
 				A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractEasing, properties))));
 };
+var $author$project$Anim$CSS$extractDistance = function (property) {
+	switch (property.$) {
+		case 'PositionConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(config.distance);
+		case 'RotateConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(config.distance);
+		case 'ScaleConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(config.distance);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$List$maximum = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(
+			A3($elm$core$List$foldl, $elm$core$Basics$max, x, xs));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$CSS$findLongestDistance = function (properties) {
+	var distances = A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractDistance, properties);
+	if (!distances.b) {
+		return 0.0;
+	} else {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			0.0,
+			$elm$core$List$maximum(distances));
+	}
+};
+var $elm$core$Basics$sqrt = _Basics_sqrt;
+var $author$project$Anim$Internal$Properties$Position$distance = F2(
+	function (_v0, _v1) {
+		var a = _v0.a;
+		var b = _v1.a;
+		var dy = a.y - b.y;
+		var dx = a.x - b.x;
+		return $elm$core$Basics$sqrt((dx * dx) + (dy * dy));
+	});
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var $author$project$Anim$Internal$Properties$Rotation$distance = F2(
+	function (_v0, _v1) {
+		var start = _v0.a;
+		var end = _v1.a;
+		return $elm$core$Basics$abs(end - start);
+	});
+var $author$project$Anim$Internal$Properties$Rotation$Rotation = function (a) {
+	return {$: 'Rotation', a: a};
+};
+var $author$project$Anim$Internal$Properties$Rotation$fromFloat = function (angle) {
+	return $author$project$Anim$Internal$Properties$Rotation$Rotation(angle);
+};
+var $author$project$Anim$CSS$calculatePropertyDistance = function (property) {
+	switch (property.$) {
+		case 'PositionConfig':
+			var config = property.a;
+			var startAt = function () {
+				var _v1 = config.startAt;
+				if (_v1.$ === 'Just') {
+					var s = _v1.a;
+					return s;
+				} else {
+					return $author$project$Anim$Internal$Properties$Position$fromTuple(
+						_Utils_Tuple2(0, 0));
+				}
+			}();
+			return A2($author$project$Anim$Internal$Properties$Position$distance, startAt, config.endAt);
+		case 'RotateConfig':
+			var config = property.a;
+			var startAt = function () {
+				var _v2 = config.startAt;
+				if (_v2.$ === 'Just') {
+					var s = _v2.a;
+					return s;
+				} else {
+					return $author$project$Anim$Internal$Properties$Rotation$fromFloat(0);
+				}
+			}();
+			return A2($author$project$Anim$Internal$Properties$Rotation$distance, startAt, config.endAt);
+		case 'ScaleConfig':
+			return 1.0;
+		default:
+			return 0.0;
+	}
+};
 var $elm$core$Basics$ge = _Utils_ge;
-var $author$project$Anim$CSS$chooseLongerDuration = F2(
-	function (a, b) {
-		var _v0 = _Utils_Tuple2(a, b);
-		if (_v0.a.$ === 'Duration') {
-			if (_v0.b.$ === 'Duration') {
-				var msA = _v0.a.a;
-				var msB = _v0.b.a;
-				return (_Utils_cmp(msA, msB) > -1) ? a : b;
-			} else {
-				return a;
-			}
+var $author$project$Anim$CSS$chooseLongerDuration = F3(
+	function (calcDuration, a, b) {
+		var durationB = calcDuration(b);
+		var durationA = calcDuration(a);
+		return (_Utils_cmp(durationA, durationB) > -1) ? a : b;
+	});
+var $elm$core$Basics$round = _Basics_round;
+var $author$project$Anim$Internal$Timing$TimeSpec$duration = F2(
+	function (distance, timeSpec) {
+		var _v0 = A2(
+			$elm$core$Debug$log,
+			'Calculating duration for distance:',
+			_Utils_Tuple2(distance, timeSpec));
+		if (timeSpec.$ === 'Duration') {
+			var ms = timeSpec.a;
+			return ms;
 		} else {
-			if (_v0.b.$ === 'Duration') {
-				return b;
-			} else {
-				var speedA = _v0.a.a;
-				var speedB = _v0.b.a;
-				return (_Utils_cmp(speedA, speedB) < 1) ? a : b;
-			}
+			var unitsPerSecond = timeSpec.a;
+			return $elm$core$Basics$round((distance / unitsPerSecond) * 1000);
 		}
 	});
 var $author$project$Anim$CSS$extractTiming = function (property) {
@@ -6447,17 +6551,53 @@ var $author$project$Anim$CSS$extractTiming = function (property) {
 			return $elm$core$Maybe$Nothing;
 	}
 };
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $author$project$Anim$CSS$findLongestDuration = function (properties) {
-	var durations = A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractTiming, properties);
-	if (!durations.b) {
+	var propertyDistances = A2(
+		$elm$core$List$filterMap,
+		function (prop) {
+			return A2(
+				$elm$core$Maybe$map,
+				function (timeSpec) {
+					return _Utils_Tuple2(
+						timeSpec,
+						$author$project$Anim$CSS$calculatePropertyDistance(prop));
+				},
+				$author$project$Anim$CSS$extractTiming(prop));
+		},
+		properties);
+	if (!propertyDistances.b) {
 		return $elm$core$Maybe$Nothing;
 	} else {
+		var _v1 = propertyDistances.a;
+		var firstTimeSpec = _v1.a;
+		var rest = propertyDistances.b;
 		return $elm$core$Maybe$Just(
 			A3(
 				$elm$core$List$foldl,
-				$author$project$Anim$CSS$chooseLongerDuration,
-				$author$project$Anim$Internal$Timing$TimeSpec$Duration(0),
-				durations));
+				F2(
+					function (_v2, acc) {
+						var timeSpec = _v2.a;
+						var dist = _v2.b;
+						return A3(
+							$author$project$Anim$CSS$chooseLongerDuration,
+							function (ts) {
+								return A2($author$project$Anim$Internal$Timing$TimeSpec$duration, dist, ts);
+							},
+							timeSpec,
+							acc);
+					}),
+				firstTimeSpec,
+				rest));
 	}
 };
 var $author$project$Anim$Internal$Timing$Easing$easingToCSS = function (easing) {
@@ -6564,30 +6704,36 @@ var $author$project$Anim$Internal$Timing$Delay$toCssString = function (maybeDela
 		return '0ms';
 	}
 };
-var $elm$core$Basics$round = _Basics_round;
-var $author$project$Anim$Internal$Timing$TimeSpec$toCssString = function (maybeTimespec) {
-	if (maybeTimespec.$ === 'Just') {
-		if (maybeTimespec.a.$ === 'Duration') {
-			var ms = maybeTimespec.a.a;
-			return $elm$core$String$fromInt(ms) + 'ms';
+var $author$project$Anim$Internal$Timing$TimeSpec$toCssString = F2(
+	function (distance, maybeTimespec) {
+		var _v0 = A2($elm$core$Debug$log, 'Maybe TimeSpec', maybeTimespec);
+		if (_v0.$ === 'Just') {
+			var timespec = _v0.a;
+			return A2(
+				$elm$core$Debug$log,
+				'Computed CSS Time String',
+				function (msStr) {
+					return msStr + 'ms';
+				}(
+					$elm$core$String$fromInt(
+						A2(
+							$elm$core$Debug$log,
+							'Duration in ms',
+							A2($author$project$Anim$Internal$Timing$TimeSpec$duration, distance, timespec)))));
 		} else {
-			var pixelsPerSecond = maybeTimespec.a.a;
-			var estimatedDuration = $elm$core$Basics$round((100 / pixelsPerSecond) * 1000);
-			return $elm$core$String$fromInt(estimatedDuration) + 'ms';
+			return '0ms';
 		}
-	} else {
-		return '0ms';
-	}
-};
+	});
 var $author$project$Anim$CSS$consolidateTransformTiming = function (transformProps) {
 	if (!transformProps.b) {
 		return $elm$core$Maybe$Nothing;
 	} else {
 		var longestDuration = $author$project$Anim$CSS$findLongestDuration(transformProps);
+		var longestDistance = $author$project$Anim$CSS$findLongestDistance(transformProps);
 		var latestEasing = $author$project$Anim$CSS$findLatestEasing(transformProps);
 		var earliestDelay = $author$project$Anim$CSS$findEarliestDelay(transformProps);
 		return $elm$core$Maybe$Just(
-			'transform ' + ($author$project$Anim$Internal$Timing$TimeSpec$toCssString(longestDuration) + (' ' + ($author$project$Anim$Internal$Timing$Easing$toCSS(
+			'transform ' + (A2($author$project$Anim$Internal$Timing$TimeSpec$toCssString, longestDistance, longestDuration) + (' ' + ($author$project$Anim$Internal$Timing$Easing$toCSS(
 				$elm$core$Maybe$Just(latestEasing)) + (' ' + $author$project$Anim$Internal$Timing$Delay$toCssString(earliestDelay))))));
 	}
 };
@@ -6608,11 +6754,11 @@ var $author$project$Anim$CSS$transitionFromNonTransformProperty = function (prop
 		case 'ColorConfig':
 			var config = property.a;
 			return $elm$core$Maybe$Just(
-				'background-color ' + ($author$project$Anim$Internal$Timing$TimeSpec$toCssString(config.timing) + (' ' + ($author$project$Anim$Internal$Timing$Easing$toCSS(config.easing) + (' ' + $author$project$Anim$Internal$Timing$Delay$toCssString(config.delay))))));
+				'background-color ' + (A2($author$project$Anim$Internal$Timing$TimeSpec$toCssString, config.distance, config.timing) + (' ' + ($author$project$Anim$Internal$Timing$Easing$toCSS(config.easing) + (' ' + $author$project$Anim$Internal$Timing$Delay$toCssString(config.delay))))));
 		case 'OpacityConfig':
 			var config = property.a;
 			return $elm$core$Maybe$Just(
-				'opacity ' + ($author$project$Anim$Internal$Timing$TimeSpec$toCssString(config.timing) + (' ' + ($author$project$Anim$Internal$Timing$Easing$toCSS(config.easing) + (' ' + $author$project$Anim$Internal$Timing$Delay$toCssString(config.delay))))));
+				'opacity ' + (A2($author$project$Anim$Internal$Timing$TimeSpec$toCssString, config.distance, config.timing) + (' ' + ($author$project$Anim$Internal$Timing$Easing$toCSS(config.easing) + (' ' + $author$project$Anim$Internal$Timing$Delay$toCssString(config.delay))))));
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -6851,11 +6997,25 @@ var $author$project$Anim$Internal$Builders$Position$to = F2(
 	function (position, _v0) {
 		var config = _v0.a;
 		var builder = _v0.b;
+		var startPos = function () {
+			var _v1 = config.startAt;
+			if (_v1.$ === 'Just') {
+				var pos = _v1.a;
+				return pos;
+			} else {
+				return $author$project$Anim$Internal$Properties$Position$fromTuple(
+					_Utils_Tuple2(0, 0));
+			}
+		}();
 		return A2(
 			$author$project$Anim$Internal$Builders$Position$PositionBuilder,
 			_Utils_update(
 				config,
-				{endAt: position}),
+				{
+					distance: A2($author$project$Anim$Internal$Properties$Position$distance, startPos, position),
+					endAt: position,
+					startAt: $elm$core$Maybe$Just(startPos)
+				}),
 			builder);
 	});
 var $author$project$Anim$Properties$Position$toXY = F2(
@@ -7500,16 +7660,6 @@ var $mdgriffith$elm_ui$Internal$Model$formatBoxShadow = function (shadow) {
 					$mdgriffith$elm_ui$Internal$Model$formatColor(shadow.color))
 				])));
 };
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
 var $elm$core$Tuple$mapFirst = F2(
 	function (func, _v0) {
 		var x = _v0.a;
@@ -9797,9 +9947,6 @@ var $elm$core$Basics$min = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) < 0) ? x : y;
 	});
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
 var $mdgriffith$elm_ui$Internal$Model$renderProps = F3(
 	function (force, _v0, existing) {
 		var key = _v0.a;
@@ -10484,16 +10631,6 @@ var $mdgriffith$elm_ui$Internal$Model$adjust = F3(
 	function (size, height, vertical) {
 		return {height: height / size, size: size, vertical: vertical};
 	});
-var $elm$core$List$maximum = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(
-			A3($elm$core$List$foldl, $elm$core$Basics$max, x, xs));
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
 var $elm$core$List$minimum = function (list) {
 	if (list.b) {
 		var x = list.a;

@@ -18,6 +18,7 @@ import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Timing.Delay exposing (Delay)
 import Anim.Internal.Timing.Easing exposing (Easing)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
+import Html.Attributes exposing (start)
 
 
 
@@ -66,9 +67,13 @@ for elementId builder =
                 Just config ->
                     PropertyBuilder.applyGlobalDefaults builder <|
                         { config
-                            | easing = Nothing
+                            | startAt = Just config.endAt
+                            , easing = Nothing
                             , delay = Nothing
                             , timing = Nothing
+                            , duration = 0
+                            , speed = 0
+                            , distance = 0
                         }
 
                 Nothing ->
@@ -124,7 +129,22 @@ from position (PositionBuilder config builder) =
 
 to : Position -> PositionBuilder -> PositionBuilder
 to position (PositionBuilder config builder) =
-    PositionBuilder { config | endAt = position } builder
+    let
+        startPos =
+            case config.startAt of
+                Just pos ->
+                    pos
+
+                Nothing ->
+                    Position.fromTuple ( 0, 0 )
+    in
+    PositionBuilder
+        { config
+            | endAt = position
+            , distance = Position.distance startPos position
+            , startAt = Just startPos
+        }
+        builder
 
 
 toX : Float -> PositionBuilder -> PositionBuilder
