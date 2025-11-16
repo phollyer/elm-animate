@@ -1,7 +1,6 @@
 module Anim.Properties.Color exposing
-    ( Color(..), Hex, HSL, HSLA, RGB, RGBA
-    , for, build, from, to, speed, duration, easing, delay
-    , Builder
+    ( Builder, for, build, from, to, speed, duration, easing, delay
+    , Color(..), Hex, HSL, HSLA, RGB, RGBA
     )
 
 {-| Color animation property functions.
@@ -16,14 +15,14 @@ Use these functions to configure color animations in the builder chain:
         |> CSS.animate
 
 
+# Build
+
+@docs Builder, for, build, from, to, speed, duration, easing, delay
+
+
 # Types
 
-@docs Color, Hex, HSL, HSLA, RGB, RGBA, ColorBuilder
-
-
-# Color Configuration
-
-@docs for, build, from, to, speed, duration, easing, delay
+@docs Color, Hex, HSL, HSLA, RGB, RGBA
 
 -}
 
@@ -38,6 +37,8 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 -- COLOR CONFIGURATION
 
 
+{-| Type alias for the ColorBuilder.
+-}
 type alias Builder =
     CB.ColorBuilder
 
@@ -78,22 +79,32 @@ type Color
     | Hsla HSLA
 
 
+{-| Hex color string, e.g. "#ff0000".
+-}
 type alias Hex =
     String
 
 
+{-| HSL color representation.
+-}
 type alias HSL =
     { h : Float, s : Float, l : Float }
 
 
+{-| HSLA color representation.
+-}
 type alias HSLA =
     { h : Float, s : Float, l : Float, a : Float }
 
 
+{-| RGB color representation.
+-}
 type alias RGB =
     { r : Int, g : Int, b : Int }
 
 
+{-| RGBA color representation.
+-}
 type alias RGBA =
     { r : Int, g : Int, b : Int, a : Float }
 

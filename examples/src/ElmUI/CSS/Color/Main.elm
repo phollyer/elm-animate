@@ -71,7 +71,7 @@ toColorBuilderWithDefaults =
     CSS.builder
         -- Set default animation parameters
         >> Anim.duration 1000
-        >> Anim.easing Easing.EaseInOut
+        >> Anim.easing Easing.Linear
         -- Start configuring color animation for the element
         >> Color.for "box"
 
@@ -95,6 +95,7 @@ update msg model =
                     model.animations
                         |> toColorBuilderWithDefaults
                         |> Color.to (Color.Hex "#3498db")
+                        |> Color.duration 2000
                         |> Color.build
                         |> CSS.animate
               }
@@ -107,7 +108,8 @@ update msg model =
                     model.animations
                         |> toColorBuilderWithDefaults
                         |> Color.to (Color.Hex "#2ecc71")
-                        |> Color.easing Easing.BackInOut
+                        |> Color.speed 25
+                        --|> Color.easing Easing.BackInOut
                         |> Color.build
                         |> CSS.animate
               }

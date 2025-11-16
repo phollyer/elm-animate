@@ -5208,7 +5208,7 @@ var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$B
 	{currentElementId: $elm$core$Maybe$Nothing, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing});
 var $author$project$Anim$init = $author$project$Anim$Internal$Builder$init;
 var $author$project$Anim$CSS$init = $author$project$Anim$CSS$AnimationState(
-	{builder: $author$project$Anim$init, currentValues: $elm$core$Dict$empty, elementAnimations: $elm$core$Dict$empty});
+	{builder: $author$project$Anim$init, elementAnimations: $elm$core$Dict$empty});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$ElmUI$CSS$Position$Main$init = function (_v0) {
@@ -5541,13 +5541,12 @@ var $elm$core$List$head = function (list) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$Anim$Internal$Builders$Position$for = F2(
 	function (elementId, builder) {
 		var existingConfig = function () {
-			var _v2 = A2($author$project$Anim$Internal$Builder$getElementConfig, elementId, builder);
-			if (_v2.$ === 'Just') {
-				var properties = _v2.a.properties;
+			var _v1 = A2($author$project$Anim$Internal$Builder$getElementConfig, elementId, builder);
+			if (_v1.$ === 'Just') {
+				var properties = _v1.a.properties;
 				return $elm$core$List$head(
 					A2(
 						$elm$core$List$filterMap,
@@ -5585,10 +5584,6 @@ var $author$project$Anim$Internal$Builders$Position$for = F2(
 				return A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, $author$project$Anim$Internal$Builders$Position$defaultConfig);
 			}
 		}();
-		var _v0 = A2(
-			$elm$core$Debug$log,
-			'New Position Config for ',
-			_Utils_Tuple2(elementId, newConfig));
 		return A2(
 			$author$project$Anim$Internal$Builders$Position$PositionBuilder,
 			newConfig,
@@ -5613,186 +5608,6 @@ var $author$project$Anim$Internal$Builder$elements = function (_v0) {
 	var data = _v0.a;
 	return data.elements;
 };
-var $author$project$Anim$CSS$FloatValue = function (a) {
-	return {$: 'FloatValue', a: a};
-};
-var $author$project$Anim$CSS$PositionValue = function (a) {
-	return {$: 'PositionValue', a: a};
-};
-var $author$project$Anim$CSS$ScaleValue = function (a) {
-	return {$: 'ScaleValue', a: a};
-};
-var $elm$core$Dict$Black = {$: 'Black'};
-var $elm$core$Dict$RBNode_elm_builtin = F5(
-	function (a, b, c, d, e) {
-		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
-	});
-var $elm$core$Dict$Red = {$: 'Red'};
-var $elm$core$Dict$balance = F5(
-	function (color, key, value, left, right) {
-		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
-			var _v1 = right.a;
-			var rK = right.b;
-			var rV = right.c;
-			var rLeft = right.d;
-			var rRight = right.e;
-			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-				var _v3 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var lLeft = left.d;
-				var lRight = left.e;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Red,
-					key,
-					value,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					color,
-					rK,
-					rV,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
-					rRight);
-			}
-		} else {
-			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
-				var _v5 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var _v6 = left.d;
-				var _v7 = _v6.a;
-				var llK = _v6.b;
-				var llV = _v6.c;
-				var llLeft = _v6.d;
-				var llRight = _v6.e;
-				var lRight = left.e;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Red,
-					lK,
-					lV,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
-			} else {
-				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
-			}
-		}
-	});
-var $elm$core$Dict$insertHelp = F3(
-	function (key, value, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
-		} else {
-			var nColor = dict.a;
-			var nKey = dict.b;
-			var nValue = dict.c;
-			var nLeft = dict.d;
-			var nRight = dict.e;
-			var _v1 = A2($elm$core$Basics$compare, key, nKey);
-			switch (_v1.$) {
-				case 'LT':
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						A3($elm$core$Dict$insertHelp, key, value, nLeft),
-						nRight);
-				case 'EQ':
-					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
-				default:
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						nLeft,
-						A3($elm$core$Dict$insertHelp, key, value, nRight));
-			}
-		}
-	});
-var $elm$core$Dict$insert = F3(
-	function (key, value, dict) {
-		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
-		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
-			var _v1 = _v0.a;
-			var k = _v0.b;
-			var v = _v0.c;
-			var l = _v0.d;
-			var r = _v0.e;
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
-		} else {
-			var x = _v0;
-			return x;
-		}
-	});
-var $author$project$Anim$Internal$Properties$Opacity$toFloat = function (_v0) {
-	var o = _v0.a;
-	return o;
-};
-var $author$project$Anim$Internal$Properties$Rotation$toFloat = function (_v0) {
-	var angle = _v0.a;
-	return angle;
-};
-var $author$project$Anim$Internal$Properties$Position$toRecord = function (_v0) {
-	var coords = _v0.a;
-	return {x: coords.x, y: coords.y};
-};
-var $author$project$Anim$Internal$Properties$Scale$toTuple = function (_v0) {
-	var sx = _v0.a;
-	var sy = _v0.b;
-	return _Utils_Tuple2(sx, sy);
-};
-var $author$project$Anim$CSS$extractPropertyEndValue = F2(
-	function (property, acc) {
-		switch (property.$) {
-			case 'PositionConfig':
-				var config = property.a;
-				return A3(
-					$elm$core$Dict$insert,
-					'position',
-					$author$project$Anim$CSS$PositionValue(
-						$author$project$Anim$Internal$Properties$Position$toRecord(config.endAt)),
-					acc);
-			case 'RotateConfig':
-				var config = property.a;
-				return A3(
-					$elm$core$Dict$insert,
-					'rotation',
-					$author$project$Anim$CSS$FloatValue(
-						$author$project$Anim$Internal$Properties$Rotation$toFloat(config.endAt)),
-					acc);
-			case 'ScaleConfig':
-				var config = property.a;
-				var _v1 = $author$project$Anim$Internal$Properties$Scale$toTuple(config.endAt);
-				var x = _v1.a;
-				var y = _v1.b;
-				return A3(
-					$elm$core$Dict$insert,
-					'scale',
-					$author$project$Anim$CSS$ScaleValue(
-						{x: x, y: y}),
-					acc);
-			case 'OpacityConfig':
-				var config = property.a;
-				return A3(
-					$elm$core$Dict$insert,
-					'opacity',
-					$author$project$Anim$CSS$FloatValue(
-						$author$project$Anim$Internal$Properties$Opacity$toFloat(config.endAt)),
-					acc);
-			default:
-				return acc;
-		}
-	});
-var $author$project$Anim$CSS$extractEndValues = F2(
-	function (_v0, elementConfig) {
-		return A3($elm$core$List$foldl, $author$project$Anim$CSS$extractPropertyEndValue, $elm$core$Dict$empty, elementConfig.properties);
-	});
 var $elm$core$List$filter = F2(
 	function (isGood, list) {
 		return A3(
@@ -6172,10 +5987,6 @@ var $author$project$Anim$Internal$Properties$Opacity$distance = F2(
 	function (_v0, _v1) {
 		var o1 = _v0.a;
 		var o2 = _v1.a;
-		var _v2 = A2(
-			$elm$core$Debug$log,
-			'Opacity Distance',
-			_Utils_Tuple2(o1, o2));
 		return $elm$core$Basics$abs(o2 - o1);
 	});
 var $author$project$Anim$Internal$Properties$Position$distance = F2(
@@ -6306,10 +6117,6 @@ var $author$project$Anim$CSS$chooseLongerDuration = F3(
 	});
 var $author$project$Anim$Internal$Timing$TimeSpec$duration = F2(
 	function (distance, timeSpec) {
-		var _v0 = A2(
-			$elm$core$Debug$log,
-			'Calculating duration for distance:',
-			_Utils_Tuple2(distance, timeSpec));
 		if (timeSpec.$ === 'Duration') {
 			var ms = timeSpec.a;
 			return ms;
@@ -6488,20 +6295,13 @@ var $author$project$Anim$Internal$Timing$Delay$toCssString = function (maybeDela
 };
 var $author$project$Anim$Internal$Timing$TimeSpec$toCssString = F2(
 	function (distance, maybeTimespec) {
-		var _v0 = A2($elm$core$Debug$log, 'Maybe TimeSpec', maybeTimespec);
-		if (_v0.$ === 'Just') {
-			var timespec = _v0.a;
-			return A2(
-				$elm$core$Debug$log,
-				'Computed CSS Time String',
-				function (msStr) {
-					return msStr + 'ms';
-				}(
-					$elm$core$String$fromInt(
-						A2(
-							$elm$core$Debug$log,
-							'Duration in ms',
-							A2($author$project$Anim$Internal$Timing$TimeSpec$duration, distance, timespec)))));
+		if (maybeTimespec.$ === 'Just') {
+			var timespec = maybeTimespec.a;
+			return function (msStr) {
+				return msStr + 'ms';
+			}(
+				$elm$core$String$fromInt(
+					A2($author$project$Anim$Internal$Timing$TimeSpec$duration, distance, timespec)));
 		} else {
 			return '0ms';
 		}
@@ -6592,6 +6392,10 @@ var $author$project$Anim$CSS$generateElementAnimation = F2(
 				colors));
 		return {elementId: elementId, keyframes: $elm$core$Maybe$Nothing, styles: allStyles};
 	});
+var $elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+	});
 var $elm$core$Dict$map = F2(
 	function (func, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
@@ -6614,9 +6418,8 @@ var $elm$core$Dict$map = F2(
 var $author$project$Anim$CSS$animate = function (builder_) {
 	var elementsDict = $author$project$Anim$Internal$Builder$elements(builder_);
 	var elementAnimations = A2($elm$core$Dict$map, $author$project$Anim$CSS$generateElementAnimation, elementsDict);
-	var currentValues = A2($elm$core$Dict$map, $author$project$Anim$CSS$extractEndValues, elementsDict);
 	return $author$project$Anim$CSS$AnimationState(
-		{builder: builder_, currentValues: currentValues, elementAnimations: elementAnimations});
+		{builder: builder_, elementAnimations: elementAnimations});
 };
 var $author$project$Anim$Internal$Builder$PositionConfig = function (a) {
 	return {$: 'PositionConfig', a: a};
@@ -6634,6 +6437,110 @@ var $author$project$Anim$Internal$Builder$getCurrentElementConfig = function (_v
 			A2($elm$core$Dict$get, elementId, data.elements));
 	}
 };
+var $elm$core$Dict$Black = {$: 'Black'};
+var $elm$core$Dict$Red = {$: 'Red'};
+var $elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+			var _v1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+				var _v3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					key,
+					value,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+				var _v5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _v6 = left.d;
+				var _v7 = _v6.a;
+				var llK = _v6.b;
+				var llV = _v6.c;
+				var llLeft = _v6.d;
+				var llRight = _v6.e;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					lK,
+					lV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
+			} else {
+				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var $elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _v1 = A2($elm$core$Basics$compare, key, nKey);
+			switch (_v1.$) {
+				case 'LT':
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3($elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 'EQ':
+					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3($elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var $elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
 var $author$project$Anim$Internal$Builder$updateCurrentElement = F2(
 	function (config, _v0) {
 		var data = _v0.a;
@@ -6739,7 +6646,6 @@ var $author$project$Anim$Internal$Builders$Position$build = function (_v0) {
 	var config = _v0.a;
 	var builder = _v0.b;
 	var newPositionConfig = $author$project$Anim$Internal$Builder$PositionConfig(config);
-	var _v1 = A2($elm$core$Debug$log, 'Building Position Config: ', newPositionConfig);
 	return A2($author$project$Anim$Internal$Builders$Property$upsert, newPositionConfig, builder);
 };
 var $author$project$Anim$Properties$Position$build = $author$project$Anim$Internal$Builders$Position$build;
@@ -6768,10 +6674,7 @@ var $author$project$Anim$Internal$Builders$Position$easing = F2(
 			_Utils_update(
 				config,
 				{
-					easing: A2(
-						$elm$core$Debug$log,
-						'Easing',
-						$elm$core$Maybe$Just(easing_))
+					easing: $elm$core$Maybe$Just(easing_)
 				}),
 			builder);
 	});
@@ -13043,40 +12946,10 @@ var $mdgriffith$elm_ui$Element$el = F2(
 				_List_fromArray(
 					[child])));
 	});
-var $elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $author$project$Anim$CSS$getCurrentPosition = F2(
-	function (elementId, _v0) {
-		var state = _v0.a;
-		return A2(
-			$elm$core$Maybe$withDefault,
-			{x: 0.0, y: 0.0},
-			A2(
-				$elm$core$Maybe$andThen,
-				function (value) {
-					if (value.$ === 'PositionValue') {
-						var pos = value.a;
-						return $elm$core$Maybe$Just(pos);
-					} else {
-						return $elm$core$Maybe$Nothing;
-					}
-				},
-				A2(
-					$elm$core$Maybe$andThen,
-					$elm$core$Dict$get('position'),
-					A2($elm$core$Dict$get, elementId, state.currentValues))));
-	});
-var $author$project$Anim$CSS$getStoredPosition = F2(
-	function (elementId, animationState) {
-		return A2($author$project$Anim$CSS$getCurrentPosition, elementId, animationState);
-	});
+var $author$project$Anim$Internal$Properties$Position$toRecord = function (_v0) {
+	var coords = _v0.a;
+	return {x: coords.x, y: coords.y};
+};
 var $author$project$Anim$CSS$extractPositionFromProperty = F2(
 	function (property, currentPos) {
 		if (property.$ === 'PositionConfig') {
@@ -13099,10 +12972,7 @@ var $author$project$Anim$CSS$getElementPosition = F2(
 		var elementsDict = $author$project$Anim$Internal$Builder$elements(state.builder);
 		return A2(
 			$elm$core$Maybe$withDefault,
-			A2(
-				$author$project$Anim$CSS$getStoredPosition,
-				elementId,
-				$author$project$Anim$CSS$AnimationState(state)),
+			{x: 0.0, y: 0.0},
 			A2(
 				$elm$core$Maybe$map,
 				$author$project$Anim$CSS$getTargetPositionFromConfig,
@@ -13369,10 +13239,7 @@ var $author$project$ElmUI$CSS$Position$Main$viewContent = function (model) {
 					A2(
 						$elm$core$List$map,
 						$mdgriffith$elm_ui$Element$htmlAttribute,
-						A2(
-							$elm$core$Debug$log,
-							'Box CSS Attributes',
-							A2($author$project$Anim$CSS$htmlAttributes, 'box', model.animations)))),
+						A2($author$project$Anim$CSS$htmlAttributes, 'box', model.animations))),
 				$mdgriffith$elm_ui$Element$none))
 		]);
 };

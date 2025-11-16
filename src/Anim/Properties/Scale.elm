@@ -37,6 +37,8 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 -- SCALE CONFIGURATION
 
 
+{-| Type alias for the ScaleBuilder.
+-}
 type alias Builder =
     SB.ScaleBuilder
 

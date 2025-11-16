@@ -37,6 +37,8 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 -- OPACITY CONFIGURATION
 
 
+{-| Type alias for the OpacityBuilder.
+-}
 type alias Builder =
     OB.OpacityBuilder
 
@@ -62,7 +64,7 @@ for elementId =
 
 {-| Complete the opacity animation configuration and return an AnimBuilder.
 
-    animations
+    CSS.init
         |> CSS.builder
         |> Opacity.for "my-element"
         |> Opacity.to 0.5
@@ -75,6 +77,16 @@ build =
     OB.build
 
 
+{-| Animate from a specific opacity value.
+
+    Anim.init
+        |> Opacity.for "element"
+        |> Opacity.from 1.0
+        |> Opacity.to 0.0
+        |> Opacity.build
+        |> CSS.animate
+
+-}
 from : Opacity -> Builder -> Builder
 from opacity =
     OB.from (toInternal opacity)

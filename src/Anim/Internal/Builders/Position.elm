@@ -5,7 +5,9 @@ module Anim.Internal.Builders.Position exposing
     , duration
     , easing
     , for
-    , from
+    , fromX
+    , fromXY
+    , fromY
     , speed
     , to
     , toX
@@ -115,9 +117,19 @@ defaultConfig =
     }
 
 
-from : Position -> PositionBuilder -> PositionBuilder
-from position (PositionBuilder config builder) =
-    PositionBuilder { config | startAt = Just position } builder
+fromXY : Float -> Float -> PositionBuilder -> PositionBuilder
+fromXY x y (PositionBuilder config builder) =
+    PositionBuilder { config | startAt = Just (Position.fromTuple ( x, y )) } builder
+
+
+fromX : Float -> PositionBuilder -> PositionBuilder
+fromX x (PositionBuilder config builder) =
+    PositionBuilder { config | startAt = Just (Position.fromTuple ( x, Maybe.withDefault 0 (Maybe.map Position.y config.startAt) )) } builder
+
+
+fromY : Float -> PositionBuilder -> PositionBuilder
+fromY y (PositionBuilder config builder) =
+    PositionBuilder { config | startAt = Just (Position.fromTuple ( Maybe.withDefault 0 (Maybe.map Position.x config.startAt), y )) } builder
 
 
 to : Position -> PositionBuilder -> PositionBuilder

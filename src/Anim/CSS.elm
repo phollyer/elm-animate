@@ -1,14 +1,11 @@
 module Anim.CSS exposing
-    ( animate, AnimationState, init
-    , getCurrentRotation, setCurrentRotation
-    , getCurrentScale, setCurrentScale
-    , getCurrentPosition, setCurrentPosition
-    , getCurrentOpacity, setCurrentOpacity
+    ( builder
+    , animate, AnimationState, init
+    , getElementPosition
     , getElementStyles
     , htmlAttributes
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
-    , builder, getElementPosition
-      -- New automatic position function
+    -- New automatic position function
     )
 
 {-| CSS-based animation system for Anim with property state tracking.
@@ -18,6 +15,11 @@ for native browser performance and hardware acceleration. It also tracks current
 values to enable exact distance calculations for speed-based animations.
 
 
+# Builder Functions
+
+@docs builder
+
+
 # Animation Execution
 
 @docs animate, AnimationState, init
@@ -25,10 +27,7 @@ values to enable exact distance calculations for speed-based animations.
 
 # State Tracking
 
-@docs getCurrentRotation, setCurrentRotation
-@docs getCurrentScale, setCurrentScale
-@docs getCurrentPosition, setCurrentPosition
-@docs getCurrentOpacity, setCurrentOpacity
+@docs getElementPosition
 
 
 # Utility Functions
@@ -69,7 +68,6 @@ import Json.Decode
 type AnimationState
     = AnimationState
         { elementAnimations : Dict ElementId ElementAnimation
-        , currentValues : Dict ElementId (Dict String PropertyValue)
         , builder : AnimBuilder -- Store original builder for automatic state queries
         }
 
@@ -115,15 +113,9 @@ animate builder_ =
         elementAnimations =
             elementsDict
                 |> Dict.map generateElementAnimation
-
-        -- Automatically extract and store end values from animation configurations
-        currentValues =
-            elementsDict
-                |> Dict.map extractEndValues
     in
     AnimationState
         { elementAnimations = elementAnimations
-        , currentValues = currentValues
         , builder = builder_ -- Store builder for automatic queries
         }
 
@@ -134,160 +126,21 @@ init : AnimationState
 init =
     AnimationState
         { elementAnimations = Dict.empty
-        , currentValues = Dict.empty
         , builder = Anim.init
         }
 
 
+{-| Get the underlying AnimBuilder from AnimationState.
+
+Use this to start new animations based on the current state.
+
+-}
 builder : AnimationState -> AnimBuilder
 builder (AnimationState state) =
     state.builder
 
 
-{-| Get current rotation value with default fallback.
--}
-getCurrentRotation : ElementId -> AnimationState -> Float
-getCurrentRotation elementId (AnimationState state) =
-    Dict.get elementId state.currentValues
-        |> Maybe.andThen (Dict.get "rotation")
-        |> Maybe.andThen
-            (\value ->
-                case value of
-                    FloatValue f ->
-                        Just f
-
-                    _ ->
-                        Nothing
-            )
-        |> Maybe.withDefault 0.0
-
-
-{-| Set current rotation value after animation completes.
--}
-setCurrentRotation : ElementId -> Float -> AnimationState -> AnimationState
-setCurrentRotation elementId rotation (AnimationState state) =
-    let
-        updateElement elementValues =
-            elementValues
-                |> Maybe.withDefault Dict.empty
-                |> Dict.insert "rotation" (FloatValue rotation)
-                |> Just
-    in
-    AnimationState
-        { state
-            | currentValues = Dict.update elementId updateElement state.currentValues
-        }
-
-
-{-| Get current scale value with default fallback.
--}
-getCurrentScale : ElementId -> AnimationState -> { x : Float, y : Float }
-getCurrentScale elementId (AnimationState state) =
-    Dict.get elementId state.currentValues
-        |> Maybe.andThen (Dict.get "scale")
-        |> Maybe.andThen
-            (\value ->
-                case value of
-                    ScaleValue scale ->
-                        Just scale
-
-                    _ ->
-                        Nothing
-            )
-        |> Maybe.withDefault { x = 1.0, y = 1.0 }
-
-
-{-| Set current scale value after animation completes.
--}
-setCurrentScale : ElementId -> { x : Float, y : Float } -> AnimationState -> AnimationState
-setCurrentScale elementId scale (AnimationState state) =
-    let
-        updateElement elementValues =
-            elementValues
-                |> Maybe.withDefault Dict.empty
-                |> Dict.insert "scale" (ScaleValue scale)
-                |> Just
-    in
-    AnimationState
-        { state
-            | currentValues = Dict.update elementId updateElement state.currentValues
-        }
-
-
-{-| Get current position value with default fallback.
--}
-getCurrentPosition : ElementId -> AnimationState -> { x : Float, y : Float }
-getCurrentPosition elementId (AnimationState state) =
-    Dict.get elementId state.currentValues
-        |> Maybe.andThen (Dict.get "position")
-        |> Maybe.andThen
-            (\value ->
-                case value of
-                    PositionValue pos ->
-                        Just pos
-
-                    _ ->
-                        Nothing
-            )
-        |> Maybe.withDefault { x = 0.0, y = 0.0 }
-
-
-{-| Set current position value after animation completes.
--}
-setCurrentPosition : ElementId -> { x : Float, y : Float } -> AnimationState -> AnimationState
-setCurrentPosition elementId position (AnimationState state) =
-    let
-        updateElement elementValues =
-            elementValues
-                |> Maybe.withDefault Dict.empty
-                |> Dict.insert "position" (PositionValue position)
-                |> Just
-    in
-    AnimationState
-        { state
-            | currentValues = Dict.update elementId updateElement state.currentValues
-        }
-
-
-{-| Get current opacity value with default fallback.
--}
-getCurrentOpacity : ElementId -> AnimationState -> Float
-getCurrentOpacity elementId (AnimationState state) =
-    Dict.get elementId state.currentValues
-        |> Maybe.andThen (Dict.get "opacity")
-        |> Maybe.andThen
-            (\value ->
-                case value of
-                    FloatValue f ->
-                        Just f
-
-                    _ ->
-                        Nothing
-            )
-        |> Maybe.withDefault 1.0
-
-
-{-| Set current opacity value after animation completes.
--}
-setCurrentOpacity : ElementId -> Float -> AnimationState -> AnimationState
-setCurrentOpacity elementId opacity (AnimationState state) =
-    let
-        updateElement elementValues =
-            elementValues
-                |> Maybe.withDefault Dict.empty
-                |> Dict.insert "opacity" (FloatValue opacity)
-                |> Just
-    in
-    AnimationState
-        { state
-            | currentValues = Dict.update elementId updateElement state.currentValues
-        }
-
-
-{-| Automatically determine the current position of an element.
-
-This function intelligently looks at the animation state and builder to determine
-where an element currently is, eliminating the need for manual getCurrentPosition calls.
+{-| Get the current position of an element.
 
 For elements that are currently animating, it returns the target position.
 For elements not currently animating, it returns the last known position or (0,0).
@@ -305,7 +158,7 @@ getElementPosition elementId (AnimationState state) =
     in
     Dict.get elementId elementsDict
         |> Maybe.map getTargetPositionFromConfig
-        |> Maybe.withDefault (getStoredPosition elementId (AnimationState state))
+        |> Maybe.withDefault { x = 0.0, y = 0.0 }
 
 
 {-| Helper function to extract target position from element configuration.
@@ -326,13 +179,6 @@ extractPositionFromProperty property currentPos =
 
         _ ->
             currentPos
-
-
-{-| Helper function to get stored position with fallback.
--}
-getStoredPosition : ElementId -> AnimationState -> { x : Float, y : Float }
-getStoredPosition elementId animationState =
-    getCurrentPosition elementId animationState
 
 
 

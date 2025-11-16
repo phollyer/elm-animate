@@ -1,24 +1,30 @@
 module Anim.Properties.Position exposing
-    ( Position
-    , from, to, speed, duration, easing, delay
-    , Builder, build, for, toInternal, toX, toXY, toY
+    ( Builder, for, build
+    , fromXY, fromX, fromY, toXY, toX, toY, speed, duration, easing, delay
     )
 
-{-| Position animation property functions.
+{-| Position animation functions.
 
 Use these functions to configure position animations in the builder chain:
 
-    Anim.init "my-element"
-        |> Position.to { x = 100, y = 200 }
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.fromXY 100 20
+        |> Position.toY 200
         |> Position.speed 500
-        |> ...
+        |> ... -- other position configuration steps
+        |> Position.build
+        |> ... -- continue with animation
 
 
-# Position Configuration
+# Build
 
-@docs Position
+@docs Builder, for, build
 
-@docs from, to, speed, duration, easing, delay
+
+# Configure
+
+@docs fromXY, fromX, fromY, toXY, toX, toY, speed, duration, easing, delay
 
 -}
 
@@ -33,51 +39,117 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 -- POSITION CONFIGURATION
 
 
+{-| Type alias for the internal `PositionBuilder`.
+-}
 type alias Builder =
     PB.PositionBuilder
 
 
-{-| Opaque Position type.
+{-| Start configuring a position animation for a specific element.
+
+    animBuilder
+        |> Position.for "my-element"
+        |> ...
+
 -}
-type Position
-    = Position { x : Float, y : Float }
-
-
 for : String -> AnimBuilder -> Builder
 for elementId =
     PB.for elementId
 
 
+{-| Complete the position animation configuration and return an [AnimBuilder](Anim.AnimBuilder)
+so you can continue building the overall animation.
+
+    animBuilder
+        |> Position.for "my-element"
+        |> ... -- Position configuration steps
+        |> Position.build
+        |> ...
+
+-}
 build : Builder -> AnimBuilder
 build =
     PB.build
 
 
-from : Position -> Builder -> Builder
-from position =
-    PB.from (toInternal position)
+{-| Set the starting position for the current element.
 
-
-{-| Set the target position for the current element.
-
-    builder |> Position.to { x = 100, y = 200 }
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.fromXY 100 20
+        |> ...
 
 -}
-to : Position -> Builder -> Builder
-to position =
-    PB.to (toInternal position)
+fromXY : Float -> Float -> Builder -> Builder
+fromXY x y =
+    PB.fromXY x y
 
 
+{-| Set the starting X position for the current element.
+
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.fromX 100
+        |> ...
+
+The starting Y position remains unchanged, or zero if not set.
+
+-}
+fromX : Float -> Builder -> Builder
+fromX x =
+    PB.fromX x
+
+
+{-| Set the starting Y position for the current element.
+
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.fromY 50
+        |> ...
+
+The starting X position remains unchanged, or zero if not set.
+
+-}
+fromY : Float -> Builder -> Builder
+fromY y =
+    PB.fromY y
+
+
+{-| Set the target X and Y position for the current element.
+
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.toXY 100 200
+
+-}
 toXY : Float -> Float -> Builder -> Builder
 toXY x y =
     PB.to (P.fromTuple ( x, y ))
 
 
+{-| Set the target X position for the current element.
+
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.toX 150
+
+The Y position remains unchanged, or zero if not set.
+
+-}
 toX : Float -> Builder -> Builder
 toX x =
     PB.toX x
 
 
+{-| Set the target Y position for the current element.
+
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.toY 250
+
+The X position remains unchanged, or zero if not set.
+
+-}
 toY : Float -> Builder -> Builder
 toY y =
     PB.toY y
@@ -121,8 +193,3 @@ easing easing_ =
 delay : Delay -> Builder -> Builder
 delay delay_ =
     PB.delay (Delay.mapInternal identity delay_)
-
-
-toInternal : Position -> P.Position
-toInternal (Position { x, y }) =
-    P.fromTuple ( x, y )

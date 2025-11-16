@@ -14,7 +14,7 @@ onAnimationFrameDelta subscriptions for smooth, controlled animations.
 
 # Animation Execution
 
-@docs TargetId, Position, Scale
+@docs TargetId
 
 @docs animate, AnimationState, AnimationMsg
 

@@ -37,6 +37,8 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 -- ROTATION CONFIGURATION
 
 
+{-| Type alias for the RotationBuilder.
+-}
 type alias Builder =
     RB.RotationBuilder
 
