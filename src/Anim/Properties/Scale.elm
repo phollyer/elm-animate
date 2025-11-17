@@ -123,7 +123,7 @@ fromXY =
         |> Scale.fromX 0.8
         |> ...
 
-The starting Y scale remains unchanged, or defaults to 1.0 if not set.
+The starting X position remains unchanged, or 1.0 if not set.
 
 -}
 fromX : Float -> Builder -> Builder
@@ -138,7 +138,7 @@ fromX =
         |> Scale.fromY 1.2
         |> ...
 
-If the starting X scale is not set, it remains unchanged or defaults to 1.0.
+The starting Y position remains unchanged, or 1.0 if not set.
 
 -}
 fromY : Float -> Builder -> Builder
