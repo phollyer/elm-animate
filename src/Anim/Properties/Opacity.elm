@@ -3,7 +3,6 @@ module Anim.Properties.Opacity exposing
     , from
     , to
     , speed, duration, easing, delay
-    , Opacity
     )
 
 {-| Opacity animation functions.
@@ -13,7 +12,6 @@ Use these functions to configure opacity animations in the builder chain:
     animBuilder
         |> Opacity.for "my-element"
         |> Opacity.to 0.5
-        |> Opacity.speed 500
         |> ... -- other opacity configuration steps
         |> Opacity.build
         |> ... -- continue with animation
@@ -45,11 +43,6 @@ On subsequent animations, it will start from the last known opacity, so you only
 
 @docs speed, duration, easing, delay
 
-
-# Types
-
-@docs Opacity
-
 -}
 
 import Anim.Internal.Builder exposing (AnimBuilder)
@@ -67,12 +60,6 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 -}
 type alias Builder =
     OB.OpacityBuilder
-
-
-{-| Opacity value for elements.
--}
-type alias Opacity =
-    Float
 
 
 {-| Start configuring an opacity animation for a specific element.
@@ -110,9 +97,9 @@ build =
         |> ...
 
 -}
-from : Opacity -> Builder -> Builder
+from : Float -> Builder -> Builder
 from opacity =
-    OB.from (toInternal opacity)
+    OB.from (O.fromFloat opacity)
 
 
 {-| Animate to a specific opacity value.
@@ -123,12 +110,12 @@ from opacity =
         |> ...
 
 -}
-to : Opacity -> Builder -> Builder
+to : Float -> Builder -> Builder
 to opacity =
-    OB.to (toInternal opacity)
+    OB.to (O.fromFloat opacity)
 
 
-{-| Set animation speed for opacity (opacity units per second).
+{-| Set the animation speed (opacity units per second).
 
 The speed represents how much the opacity value changes per second. Since opacity
 ranges from 0.0 (transparent) to 1.0 (opaque), a speed of `2.0` means the opacity
@@ -136,6 +123,7 @@ will change by 2.0 units per second (e.g., from 0.0 to 1.0 takes 0.5 seconds).
 
     animBuilder
         |> Opacity.for "my-element"
+        |> Opacity.to 0.0
         |> Opacity.speed 1.0
         |> ...
 
@@ -145,10 +133,11 @@ speed pixelsPerSecond =
     OB.speed pixelsPerSecond
 
 
-{-| Set animation duration for opacity (milliseconds).
+{-| Set the animation duration (milliseconds).
 
     animBuilder
         |> Opacity.for "my-element"
+        |> Opacity.to 1.0
         |> Opacity.duration 2000
         |> ...
 
@@ -158,17 +147,25 @@ duration milliseconds =
     OB.duration milliseconds
 
 
-{-| Set delay.
+{-| Set the delay (milliseconds) before the animation runs.
+
+    animBuilder
+        |> Opacity.for "my-element"
+        |> Opacity.to 0.5
+        |> Opacity.delay 500
+        |> ...
+
 -}
 delay : Delay -> Builder -> Builder
 delay delay_ =
     OB.delay (Delay.mapInternal identity delay_)
 
 
-{-| Set easing function for opacity animation.
+{-| Set the easing function for the animation.
 
     animBuilder
         |> Opacity.for "my-element"
+        |> Opacity.to 0.5
         |> Opacity.easing EaseInOut
         |> ...
 
@@ -176,12 +173,3 @@ delay delay_ =
 easing : Easing -> Builder -> Builder
 easing easing_ =
     OB.easing (Easing.mapInternal identity easing_)
-
-
-
--- INTERNAL HELPERS
-
-
-toInternal : Opacity -> O.Opacity
-toInternal opacity =
-    O.fromFloat opacity
