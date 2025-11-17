@@ -13,7 +13,6 @@ Use these functions to configure rotation animations in the builder chain:
     animBuilder
         |> Rotation.for "my-element"
         |> Rotation.to 180
-        |> Rotation.speed 90
         |> ... -- other rotation configuration steps
         |> Rotation.build
         |> ... -- continue with animation
