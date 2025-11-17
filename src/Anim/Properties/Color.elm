@@ -171,7 +171,7 @@ to color =
     CB.to (toInternal color)
 
 
-{-| Set animation speed for color (RGB distance units per second).
+{-| Set the animation speed (RGB distance units per second).
 
 The speed represents how fast the color changes based on the Euclidean distance
 in RGB color space. A speed of `255.0` means the color will change by 255 RGB

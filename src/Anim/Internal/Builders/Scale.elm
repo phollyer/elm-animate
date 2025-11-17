@@ -5,9 +5,13 @@ module Anim.Internal.Builders.Scale exposing
     , duration
     , easing
     , for
-    , from
+    , fromX
+    , fromXY
+    , fromY
     , speed
-    , to
+    , toX
+    , toXY
+    , toY
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
@@ -113,13 +117,59 @@ defaultConfig =
     }
 
 
-from : Scale -> ScaleBuilder -> ScaleBuilder
-from scale (ScaleBuilder config builder) =
-    ScaleBuilder { config | startAt = Just scale } builder
+fromXY : Float -> Float -> ScaleBuilder -> ScaleBuilder
+fromXY scaleX scaleY (ScaleBuilder config builder) =
+    ScaleBuilder
+        { config
+            | startAt =
+                Just <|
+                    Scale.fromTuple ( scaleX, scaleY )
+        }
+        builder
 
 
-to : Scale -> ScaleBuilder -> ScaleBuilder
-to scale (ScaleBuilder config builder) =
+fromX : Float -> ScaleBuilder -> ScaleBuilder
+fromX scaleX (ScaleBuilder config builder) =
+    let
+        startPos =
+            case config.startAt of
+                Just scale_ ->
+                    scale_
+
+                Nothing ->
+                    Scale.fromTuple ( 1, 1 )
+    in
+    ScaleBuilder
+        { config
+            | startAt =
+                Just <|
+                    Scale.fromTuple ( scaleX, Scale.getY startPos )
+        }
+        builder
+
+
+fromY : Float -> ScaleBuilder -> ScaleBuilder
+fromY scaleY (ScaleBuilder config builder) =
+    let
+        startPos =
+            case config.startAt of
+                Just scale_ ->
+                    scale_
+
+                Nothing ->
+                    Scale.fromTuple ( 1, 1 )
+    in
+    ScaleBuilder
+        { config
+            | startAt =
+                Just <|
+                    Scale.fromTuple ( Scale.getX startPos, scaleY )
+        }
+        builder
+
+
+toXY : Float -> Float -> ScaleBuilder -> ScaleBuilder
+toXY scaleX scaleY (ScaleBuilder config builder) =
     let
         startPos =
             case config.startAt of
@@ -128,12 +178,59 @@ to scale (ScaleBuilder config builder) =
 
                 Nothing ->
                     Scale.fromTuple ( 1, 1 )
+
+        scale =
+            Scale.fromTuple ( scaleX, scaleY )
     in
     ScaleBuilder
         { config
             | endAt = scale
             , distance = Scale.distance startPos scale
             , startAt = Just startPos
+        }
+        builder
+
+
+toX : Float -> ScaleBuilder -> ScaleBuilder
+toX scaleX (ScaleBuilder config builder) =
+    let
+        startPos =
+            case config.startAt of
+                Just scale_ ->
+                    scale_
+
+                Nothing ->
+                    Scale.fromTuple ( 1, 1 )
+
+        scale =
+            Scale.fromTuple ( scaleX, Scale.getY startPos )
+    in
+    ScaleBuilder
+        { config
+            | endAt = scale
+            , distance = Scale.distance startPos scale
+        }
+        builder
+
+
+toY : Float -> ScaleBuilder -> ScaleBuilder
+toY scaleY (ScaleBuilder config builder) =
+    let
+        startPos =
+            case config.startAt of
+                Just scale_ ->
+                    scale_
+
+                Nothing ->
+                    Scale.fromTuple ( 1, 1 )
+
+        scale =
+            Scale.fromTuple ( Scale.getX startPos, scaleY )
+    in
+    ScaleBuilder
+        { config
+            | endAt = scale
+            , distance = Scale.distance startPos scale
         }
         builder
 

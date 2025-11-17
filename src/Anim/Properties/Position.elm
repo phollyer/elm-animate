@@ -100,8 +100,8 @@ build =
 
 -}
 fromXY : Float -> Float -> Builder -> Builder
-fromXY x y =
-    PB.fromXY x y
+fromXY =
+    PB.fromXY
 
 
 {-| Set the starting X position for the current element.
@@ -115,8 +115,8 @@ The starting Y position remains unchanged, or zero if not set.
 
 -}
 fromX : Float -> Builder -> Builder
-fromX x =
-    PB.fromX x
+fromX =
+    PB.fromX
 
 
 {-| Set the starting Y position for the current element.
@@ -130,8 +130,8 @@ The starting X position remains unchanged, or zero if not set.
 
 -}
 fromY : Float -> Builder -> Builder
-fromY y =
-    PB.fromY y
+fromY =
+    PB.fromY
 
 
 {-| Set the target X and Y position for the current element.
@@ -220,7 +220,7 @@ easing easing_ =
     PB.easing (Easing.mapInternal identity easing_)
 
 
-{-| Set the delay (milliseconds) before the animation runs.
+{-| Set the delay (milliseconds) before the animation starts.
 
     animBuilder
         |> Position.for "my-element"

@@ -5,6 +5,8 @@ module Anim.Internal.Properties.Scale exposing
     , equal
     , fromTuple
     , fromUniform
+    , getX
+    , getY
     , isUniform
     , map
     , toCssString
@@ -77,17 +79,30 @@ encode (ScaleXY sx sy) =
         ]
 
 
-{-| Calculate distance between two Scale values using Euclidean distance in scale space.
+getY : Scale -> Float
+getY (ScaleXY _ sy) =
+    sy
 
-This follows industry standard vector magnitude calculation for 2D scale transformations:
 
-  - distance = sqrt((sx2-sx1)² + (sy2-sy1)²)
+getX : Scale -> Float
+getX (ScaleXY sx _) =
+    sx
 
-Example:
-distance (fromTuple (1.0, 1.0)) (fromTuple (2.0, 1.5))
--- Returns: sqrt((2-1)² + (1.5-1)²) = sqrt(1.25) ≈ 1.118
+
+
+{- Calculate distance between two Scale values using Euclidean distance in scale space.
+
+   This follows industry standard vector magnitude calculation for 2D scale transformations:
+
+     - distance = sqrt((sx2-sx1)² + (sy2-sy1)²)
+
+   Example:
+   distance (fromTuple (1.0, 1.0)) (fromTuple (2.0, 1.5))
+   -- Returns: sqrt((2-1)² + (1.5-1)²) = sqrt(1.25) ≈ 1.118
 
 -}
+
+
 distance : Scale -> Scale -> Float
 distance (ScaleXY sx1 sy1) (ScaleXY sx2 sy2) =
     let

@@ -1,9 +1,8 @@
 module Anim.Properties.Scale exposing
     ( Builder, for, build
-    , from
-    , to
+    , from, fromXY, fromX, fromY
+    , to, toXY, toX, toY
     , speed, duration, easing, delay
-    , Scale, ScaleXY
     )
 
 {-| Scale animation functions.
@@ -33,22 +32,17 @@ The first time the animation runs, if no starting scale is set, it will default 
 
 On subsequent animations, it will start from the last known scale, so you only need to set this when you want to override that behavior.
 
-@docs from
+@docs from, fromXY, fromX, fromY
 
 
 ## End Scale
 
-@docs to
+@docs to, toXY, toX, toY
 
 
 ## Timing
 
 @docs speed, duration, easing, delay
-
-
-# Types
-
-@docs Scale, ScaleXY
 
 -}
 
@@ -67,18 +61,6 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 -}
 type alias Builder =
     SB.ScaleBuilder
-
-
-{-| Opaque Scale type.
--}
-type Scale
-    = ScaleXY Float Float
-
-
-{-| Convenience type alias for ScaleXY constructor.
--}
-type alias ScaleXY =
-    Float -> Float -> Scale
 
 
 {-| Start configuring a scale animation for a specific element.
@@ -108,33 +90,115 @@ build =
     SB.build
 
 
-{-| Set the starting scale for the current element.
+{-| Set the uniform starting scale for the current element.
 
     animBuilder
         |> Scale.for "my-element"
-        |> Scale.from (ScaleXY 1.0 1.0)
+        |> Scale.from 0.8
         |> ...
 
 -}
-from : Scale -> Builder -> Builder
-from scale =
-    SB.from (toInternal scale)
+from : Float -> Builder -> Builder
+from uniformScale =
+    SB.fromXY uniformScale uniformScale
 
 
-{-| Set the target scale for the current element.
+{-| Set the starting scale for the X and Y axes of the current element.
 
     animBuilder
         |> Scale.for "my-element"
-        |> Scale.to (ScaleXY 1.5 1.5)
+        |> Scale.fromXY 0.8 1.2
         |> ...
 
 -}
-to : Scale -> Builder -> Builder
+fromXY : Float -> Float -> Builder -> Builder
+fromXY =
+    SB.fromXY
+
+
+{-| Set the starting scale for the X axis of the current element.
+
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.fromX 0.8
+        |> ...
+
+The starting Y scale remains unchanged, or defaults to 1.0 if not set.
+
+-}
+fromX : Float -> Builder -> Builder
+fromX =
+    SB.fromX
+
+
+{-| Set the starting scale for the Y axis of the current element.
+
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.fromY 1.2
+        |> ...
+
+If the starting X scale is not set, it remains unchanged or defaults to 1.0.
+
+-}
+fromY : Float -> Builder -> Builder
+fromY =
+    SB.fromY
+
+
+{-| Set the uniform target scale for the current element.
+
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.to 1.5
+        |> ...
+
+-}
+to : Float -> Builder -> Builder
 to targetScale =
-    SB.to (toInternal targetScale)
+    SB.toXY targetScale targetScale
 
 
-{-| Set animation speed for scale (scale factor units per second).
+{-| Set the target scale for the X and Y axes of the current element.
+
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.toXY 1.5 2.0
+        |> ...
+
+-}
+toXY : Float -> Float -> Builder -> Builder
+toXY =
+    SB.toXY
+
+
+{-| Set the target scale for the Y axis of the current element.
+
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.toY 1.5
+        |> ...
+
+-}
+toY : Float -> Builder -> Builder
+toY =
+    SB.toY
+
+
+{-| Set the target scale for the X axis of the current element.
+
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.toX 2.0
+        |> ...
+
+-}
+toX : Float -> Builder -> Builder
+toX =
+    SB.toX
+
+
+{-| Set the animation speed (scale factor units per second).
 
 The speed represents how much the scale factor changes per second. For example,
 a speed of `2.0` means the scale will change by 2.0 units per second (e.g., from 1.0 to 3.0 takes 1 second).
@@ -150,7 +214,7 @@ speed =
     SB.speed
 
 
-{-| Set animation duration for scale (milliseconds).
+{-| Set the animation duration (milliseconds).
 
     animBuilder
         |> Scale.for "my-element"
@@ -163,7 +227,7 @@ duration =
     SB.duration
 
 
-{-| Set easing function for scale animation.
+{-| Set the easing function for the animation.
 
     animBuilder
         |> Scale.for "my-element"
@@ -176,7 +240,7 @@ easing easing_ =
     SB.easing (Easing.mapInternal identity easing_)
 
 
-{-| Set delay for scale animation (milliseconds).
+{-| Set the delay (milliseconds) before the animation starts.
 
     animBuilder
         |> Scale.for "my-element"
@@ -187,14 +251,3 @@ easing easing_ =
 delay : Delay -> Builder -> Builder
 delay delay_ =
     SB.delay (Delay.mapInternal identity delay_)
-
-
-
--- HELPER FUNCTIONS
-
-
-toInternal : Scale -> S.Scale
-toInternal scale =
-    case scale of
-        ScaleXY x y ->
-            S.ScaleXY x y
