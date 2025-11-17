@@ -23,7 +23,7 @@ module Anim.Internal.Builder exposing
 import Anim.Internal.Properties.Color exposing (Color)
 import Anim.Internal.Properties.Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position, distance)
-import Anim.Internal.Properties.Rotation as Rotation exposing (Rotation)
+import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale exposing (Scale)
 import Anim.Internal.Timing.Delay as Delay exposing (Delay)
 import Anim.Internal.Timing.Easing exposing (Easing(..))
@@ -55,7 +55,7 @@ type alias ElementConfig =
 
 type PropertyConfig
     = PositionConfig (AnimationConfig Position)
-    | RotateConfig (AnimationConfig Rotation)
+    | RotateConfig (AnimationConfig Rotate)
     | ScaleConfig (AnimationConfig Scale)
     | ColorConfig (AnimationConfig Color)
     | OpacityConfig (AnimationConfig Opacity)
@@ -63,7 +63,7 @@ type PropertyConfig
 
 type ProcessedPropertyConfig
     = ProcessedPositionConfig (ProcessedAnimationConfig Position)
-    | ProcessedRotateConfig (ProcessedAnimationConfig Rotation)
+    | ProcessedRotateConfig (ProcessedAnimationConfig Rotate)
     | ProcessedScaleConfig (ProcessedAnimationConfig Scale)
     | ProcessedColorConfig (ProcessedAnimationConfig Color)
     | ProcessedOpacityConfig (ProcessedAnimationConfig Opacity)
@@ -276,19 +276,19 @@ processProperty globalData property =
                             s
 
                         Nothing ->
-                            Rotation.fromFloat 0.0
+                            Rotate.fromFloat 0.0
 
                 distance =
-                    Rotation.distance startAt config.endAt
+                    Rotate.distance startAt config.endAt
 
                 duration_ =
                     config.timing
-                        |> Maybe.map (Rotation.duration distance)
+                        |> Maybe.map (Rotate.duration distance)
                         |> Maybe.withDefault 0
 
                 speed_ =
                     config.timing
-                        |> Maybe.map (Rotation.speed distance duration_)
+                        |> Maybe.map (Rotate.speed distance duration_)
                         |> Maybe.withDefault 0
             in
             ProcessedRotateConfig
@@ -434,7 +434,7 @@ encode _ =
                encode_ "opacity" Opacity.encode config
 
            ProcessedRotateConfig config ->
-               encode_ "rotate" Rotation.encode config
+               encode_ "rotate" Rotate.encode config
 
 
    encodeMaybeProcessedTiming : Maybe TimeSpec -> Encode.Value

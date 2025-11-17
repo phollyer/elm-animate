@@ -1,5 +1,5 @@
-module Anim.Internal.Properties.Rotation exposing
-    ( Rotation
+module Anim.Internal.Properties.Rotate exposing
+    ( Rotate
     , add
     , distance
     , duration
@@ -21,62 +21,62 @@ import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
 import Json.Encode as Encode
 
 
-type Rotation
-    = Rotation Float
+type Rotate
+    = Rotate Float
 
 
-toFloat : Rotation -> Float
-toFloat (Rotation angle) =
+toFloat : Rotate -> Float
+toFloat (Rotate angle) =
     angle
 
 
-toString : Rotation -> String
-toString (Rotation angle) =
+toString : Rotate -> String
+toString (Rotate angle) =
     String.fromFloat angle
 
 
-toCssString : Rotation -> String
+toCssString : Rotate -> String
 toCssString rotation =
     toString rotation ++ "deg"
 
 
-fromFloat : Float -> Rotation
+fromFloat : Float -> Rotate
 fromFloat angle =
-    Rotation angle
+    Rotate angle
 
 
-map : (Float -> Float) -> Rotation -> Rotation
-map fn (Rotation angle) =
-    Rotation (fn angle)
+map : (Float -> Float) -> Rotate -> Rotate
+map fn (Rotate angle) =
+    Rotate (fn angle)
 
 
-equal : Rotation -> Rotation -> Bool
-equal (Rotation angle1) (Rotation angle2) =
+equal : Rotate -> Rotate -> Bool
+equal (Rotate angle1) (Rotate angle2) =
     angle1 == angle2
 
 
-isZero : Rotation -> Bool
-isZero (Rotation angle) =
+isZero : Rotate -> Bool
+isZero (Rotate angle) =
     angle == 0
 
 
-zero : Rotation
+zero : Rotate
 zero =
-    Rotation 0
+    Rotate 0
 
 
-add : Rotation -> Rotation -> Rotation
-add (Rotation angle1) (Rotation angle2) =
-    Rotation (angle1 + angle2)
+add : Rotate -> Rotate -> Rotate
+add (Rotate angle1) (Rotate angle2) =
+    Rotate (angle1 + angle2)
 
 
-subtract : Rotation -> Rotation -> Rotation
-subtract (Rotation angle1) (Rotation angle2) =
-    Rotation (angle1 - angle2)
+subtract : Rotate -> Rotate -> Rotate
+subtract (Rotate angle1) (Rotate angle2) =
+    Rotate (angle1 - angle2)
 
 
-distance : Rotation -> Rotation -> Float
-distance (Rotation start) (Rotation end) =
+distance : Rotate -> Rotate -> Float
+distance (Rotate start) (Rotate end) =
     abs (end - start)
 
 
@@ -108,11 +108,11 @@ duration distance_ timeSpec =
                 distance_ / degreesPerSecond * 1000
 
 
-scale : Float -> Rotation -> Rotation
-scale factor (Rotation angle) =
-    Rotation (angle * factor)
+scale : Float -> Rotate -> Rotate
+scale factor (Rotate angle) =
+    Rotate (angle * factor)
 
 
-encode : Rotation -> Encode.Value
-encode (Rotation angle) =
+encode : Rotate -> Encode.Value
+encode (Rotate angle) =
     Encode.float angle

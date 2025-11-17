@@ -1,5 +1,5 @@
-module Anim.Internal.Builders.Rotation exposing
-    ( RotationBuilder
+module Anim.Internal.Builders.Rotate exposing
+    ( RotateBuilder
     , build
     , delay
     , duration
@@ -12,7 +12,7 @@ module Anim.Internal.Builders.Rotation exposing
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Property as PropertyBuilder
-import Anim.Internal.Properties.Rotation as Rotation exposing (Rotation)
+import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Timing.Delay exposing (Delay)
 import Anim.Internal.Timing.Easing exposing (Easing)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
@@ -34,11 +34,11 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 -}
 
 
-type RotationBuilder
-    = RotationBuilder RotationConfig AnimBuilder
+type RotateBuilder
+    = RotateBuilder RotateConfig AnimBuilder
 
 
-for : String -> AnimBuilder -> RotationBuilder
+for : String -> AnimBuilder -> RotateBuilder
 for elementId builder =
     let
         existingConfig =
@@ -76,11 +76,11 @@ for elementId builder =
                 Nothing ->
                     PropertyBuilder.applyGlobalDefaults builder defaultConfig
     in
-    RotationBuilder newConfig (Builder.for elementId builder)
+    RotateBuilder newConfig (Builder.for elementId builder)
 
 
-build : RotationBuilder -> AnimBuilder
-build (RotationBuilder config builder) =
+build : RotateBuilder -> AnimBuilder
+build (RotateBuilder config builder) =
     let
         newRotationConfig =
             Builder.RotateConfig config
@@ -88,9 +88,9 @@ build (RotationBuilder config builder) =
     PropertyBuilder.upsert newRotationConfig builder
 
 
-type alias RotationConfig =
-    { startAt : Maybe Rotation
-    , endAt : Rotation
+type alias RotateConfig =
+    { startAt : Maybe Rotate
+    , endAt : Rotate
     , duration : Int -- Millis
     , speed : Float -- Pixels per second
     , distance : Float -- Pixels
@@ -100,21 +100,21 @@ type alias RotationConfig =
     }
 
 
-defaultConfig : RotationConfig
+defaultConfig : RotateConfig
 defaultConfig =
     { startAt = Nothing
-    , endAt = Rotation.fromFloat 0
+    , endAt = Rotate.fromFloat 0.0
     , duration = 0
-    , speed = 0
-    , distance = 0
+    , speed = 0.0
+    , distance = 0.0
     , timing = Nothing
     , easing = Nothing
     , delay = Nothing
     }
 
 
-from : Rotation -> RotationBuilder -> RotationBuilder
-from rotation (RotationBuilder config builder) =
+from : Rotate -> RotateBuilder -> RotateBuilder
+from rotation (RotateBuilder config builder) =
     let
         startPos =
             case config.startAt of
@@ -122,25 +122,25 @@ from rotation (RotationBuilder config builder) =
                     opacity_
 
                 Nothing ->
-                    Rotation.fromFloat 0
+                    Rotate.fromFloat 0.0
     in
-    RotationBuilder
+    RotateBuilder
         { config
             | endAt = rotation
-            , distance = Rotation.distance startPos rotation
+            , distance = Rotate.distance startPos rotation
             , startAt = Just startPos
         }
         builder
 
 
-to : Rotation -> RotationBuilder -> RotationBuilder
-to rotation (RotationBuilder config builder) =
-    RotationBuilder { config | endAt = rotation } builder
+to : Rotate -> RotateBuilder -> RotateBuilder
+to rotation (RotateBuilder config builder) =
+    RotateBuilder { config | endAt = rotation } builder
 
 
-speed : Float -> RotationBuilder -> RotationBuilder
-speed value (RotationBuilder config builder) =
-    RotationBuilder
+speed : Float -> RotateBuilder -> RotateBuilder
+speed value (RotateBuilder config builder) =
+    RotateBuilder
         { config
             | speed = value
             , timing =
@@ -150,9 +150,9 @@ speed value (RotationBuilder config builder) =
         builder
 
 
-duration : Int -> RotationBuilder -> RotationBuilder
-duration ms (RotationBuilder config builder) =
-    RotationBuilder
+duration : Int -> RotateBuilder -> RotateBuilder
+duration ms (RotateBuilder config builder) =
+    RotateBuilder
         { config
             | duration = ms
             , timing =
@@ -162,11 +162,11 @@ duration ms (RotationBuilder config builder) =
         builder
 
 
-easing : Easing -> RotationBuilder -> RotationBuilder
-easing easing_ (RotationBuilder config builder) =
-    RotationBuilder { config | easing = Just easing_ } builder
+easing : Easing -> RotateBuilder -> RotateBuilder
+easing easing_ (RotateBuilder config builder) =
+    RotateBuilder { config | easing = Just easing_ } builder
 
 
-delay : Delay -> RotationBuilder -> RotationBuilder
-delay delay_ (RotationBuilder config builder) =
-    RotationBuilder { config | delay = Just delay_ } builder
+delay : Delay -> RotateBuilder -> RotateBuilder
+delay delay_ (RotateBuilder config builder) =
+    RotateBuilder { config | delay = Just delay_ } builder

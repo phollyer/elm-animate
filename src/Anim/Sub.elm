@@ -39,8 +39,8 @@ import Anim exposing (AnimBuilder)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Properties.Color as Color exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
-import Anim.Internal.Properties.Position as Position exposing (Position, distance)
-import Anim.Internal.Properties.Rotation as Rotation exposing (Rotation)
+import Anim.Internal.Properties.Position as Position exposing (Position)
+import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
 import Anim.Internal.Timing.Delay as Delay exposing (Delay)
 import Anim.Internal.Timing.Easing as Easing exposing (Easing(..))
@@ -88,7 +88,7 @@ type alias PropertyAnimationState =
 
 type AnimationValue
     = PositionAnimationValue Position
-    | RotationAnimationValue Rotation
+    | RotateAnimationValue Rotate
     | ScaleAnimationValue Scale
     | ColorAnimationValue Color
     | OpacityAnimationValue Opacity
@@ -130,7 +130,7 @@ animate builder =
 
         startValues =
             { position = { x = 0, y = 0 }
-            , rotation = 0
+            , rotate = 0
             , scale = { x = 1.0, y = 1.0 }
             , color = Color.rgba255 255 255 255 1.0
             , opacity = 1.0
@@ -150,7 +150,7 @@ animate builder =
 
 createElementAnimationState :
     { position : { x : Float, y : Float }
-    , rotation : Float
+    , rotate : Float
     , scale : { x : Float, y : Float }
     , color : Color
     , opacity : Float
@@ -168,7 +168,7 @@ createElementAnimationState startValues _ elementConfig =
 {-
    createPropertyAnimationState :
        { position : { x : Float, y : Float }
-       , rotation : Float
+       , rotate : Float
        , scale : { x : Float, y : Float }
        , color : Color
        , opacity : Float
@@ -227,11 +227,11 @@ createElementAnimationState startValues _ elementConfig =
 
            Builder.RotateConfig config ->
                let
-                   rotation =
-                       Rotation.fromFloat startValues.rotation
+                   rotate =
+                       Rotate.fromFloat startValues.rotate
 
                    distance =
-                       Rotation.distance config.startAt config.endAt
+                       Rotate.distance config.startAt config.endAt
 
                    speed =
                        case config.timing of
@@ -259,10 +259,10 @@ createElementAnimationState startValues _ elementConfig =
                            Nothing ->
                                0
                in
-               { propertyType = "rotation"
-               , startValue = RotationAnimationValue rotation
-               , targetValue = RotationAnimationValue config.target
-               , currentValue = RotationAnimationValue rotation
+               { propertyType = "rotate"
+               , startValue = RotateAnimationValue rotate
+               , targetValue = RotateAnimationValue config.target
+               , currentValue = RotateAnimationValue rotate
                , elapsed = 0
                , delay = config.delay
                , easing = config.easing
@@ -549,10 +549,10 @@ propertyToStyles propertyState =
             in
             [ ( "transform", "translate(" ++ String.fromFloat x ++ "px, " ++ String.fromFloat y ++ "px)" ) ]
 
-        RotationAnimationValue rotation ->
+        RotateAnimationValue rotate ->
             let
                 degrees =
-                    Rotation.toFloat rotation
+                    Rotate.toFloat rotate
             in
             [ ( "transform", "rotate(" ++ String.fromFloat degrees ++ "deg)" ) ]
 
@@ -615,18 +615,18 @@ interpolateValue progress startValue targetValue =
             in
             PositionAnimationValue (Position.fromTuple ( newX, newY ))
 
-        ( RotationAnimationValue start, RotationAnimationValue target ) ->
+        ( RotateAnimationValue start, RotateAnimationValue target ) ->
             let
                 startFloat =
-                    Rotation.toFloat start
+                    Rotate.toFloat start
 
                 targetFloat =
-                    Rotation.toFloat target
+                    Rotate.toFloat target
 
                 newFloat =
                     startFloat + progress * (targetFloat - startFloat)
             in
-            RotationAnimationValue (Rotation.fromFloat newFloat)
+            RotateAnimationValue (Rotate.fromFloat newFloat)
 
         ( ScaleAnimationValue start, ScaleAnimationValue target ) ->
             let

@@ -1,15 +1,15 @@
-module ElmUI.CSS.Rotation.Main exposing (main)
+module ElmUI.CSS.Rotate.Main exposing (main)
 
-{-| Anim.CSS Rotation Example using ElmUI - Rotation transformation animations
+{-| Anim.CSS Rotate Example using ElmUI - Rotate transformation animations
 
-This example demonstrates smooth rotation animations using browser-native CSS transforms.
+This example demonstrates smooth rotate animations using browser-native CSS transforms.
 Perfect for loading spinners, interactive elements, and dynamic orientation changes.
 
 FEATURES:
 
-  - ✅ Smooth rotation animations in degrees
-  - ✅ Hardware-accelerated transform rotations
-  - ✅ Multiple rotation directions and speeds
+  - ✅ Smooth rotate animations in degrees
+  - ✅ Hardware-accelerated transform rotates
+  - ✅ Multiple rotate directions and speeds
   - ✅ Continuous spinning and specific angle targeting
   - ✅ Battery efficient browser-native transforms
 
@@ -17,7 +17,7 @@ FEATURES:
 
 import Anim
 import Anim.CSS as CSS
-import Anim.Properties.Rotation as Rotation
+import Anim.Properties.Rotate as Rotate
 import Anim.Timing.Delay as Delay exposing (Delay(..))
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
@@ -67,13 +67,13 @@ init _ =
 -- UPDATE
 
 
-anim : CSS.AnimationState -> Rotation.Builder
+anim : CSS.AnimationState -> Rotate.Builder
 anim animations =
     animations
         |> CSS.builder
         |> Anim.duration 700
         |> Anim.easing Linear
-        |> Rotation.for "box"
+        |> Rotate.for "box"
 
 
 type Msg
@@ -82,7 +82,7 @@ type Msg
     | Rotate180
     | RotateLeft
     | RotateRight
-    | ResetRotation
+    | ResetRotate
     | AnimationComplete
 
 
@@ -94,9 +94,9 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Rotation.to 45
-                        |> Rotation.easing Easing.QuadInOut
-                        |> Rotation.build
+                        |> Rotate.to 45
+                        |> Rotate.easing Easing.QuadInOut
+                        |> Rotate.build
                         |> CSS.animate
               }
             , Cmd.none
@@ -107,10 +107,10 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Rotation.to 90
-                        |> Rotation.easing Easing.SineInOut
-                        |> Rotation.speed 100
-                        |> Rotation.build
+                        |> Rotate.to 90
+                        |> Rotate.easing Easing.SineInOut
+                        |> Rotate.speed 100
+                        |> Rotate.build
                         |> CSS.animate
               }
             , Cmd.none
@@ -121,10 +121,10 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Rotation.to 180
-                        |> Rotation.easing Easing.backInOut
-                        |> Rotation.duration 900
-                        |> Rotation.build
+                        |> Rotate.to 180
+                        |> Rotate.easing Easing.backInOut
+                        |> Rotate.duration 900
+                        |> Rotate.build
                         |> CSS.animate
               }
             , Cmd.none
@@ -135,10 +135,10 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Rotation.to -90
-                        |> Rotation.easing Easing.bounceInOut
-                        |> Rotation.delay (Delay 500)
-                        |> Rotation.build
+                        |> Rotate.to -90
+                        |> Rotate.easing Easing.bounceInOut
+                        |> Rotate.delay (Delay 500)
+                        |> Rotate.build
                         |> CSS.animate
               }
             , Cmd.none
@@ -149,23 +149,23 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Rotation.to 90
-                        |> Rotation.easing Easing.elasticInOut
-                        |> Rotation.duration 600
-                        |> Rotation.build
+                        |> Rotate.to 90
+                        |> Rotate.easing Easing.elasticInOut
+                        |> Rotate.duration 600
+                        |> Rotate.build
                         |> CSS.animate
               }
             , Cmd.none
             )
 
-        ResetRotation ->
+        ResetRotate ->
             ( { model
                 | animations =
                     model.animations
                         |> anim
-                        |> Rotation.to 0
-                        |> Rotation.easing Easing.EaseInOut
-                        |> Rotation.build
+                        |> Rotate.to 0
+                        |> Rotate.easing Easing.EaseInOut
+                        |> Rotate.build
                         |> CSS.animate
               }
             , Cmd.none
@@ -184,7 +184,7 @@ update msg model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.CSS Rotation ElmUI Example"
+        "Anim.CSS Rotate ElmUI Example"
         UI.Basic
         (viewContent model)
 
@@ -192,21 +192,21 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButton
-    , UI.pageHeader "CSS Rotation Animations"
+    , UI.pageHeader "CSS Rotate Animations"
     , -- Description
       el
         [ Font.size 16
         , Font.color Colors.textMedium
         , centerX
         ]
-        (text "Smooth rotation transformations using hardware-accelerated CSS transforms")
-    , -- Rotation controls
+        (text "Smooth rotate transformations using hardware-accelerated CSS transforms")
+    , -- Rotate controls
       UI.wrappedButtonRow
         [ ( UI.Success, Rotate45, "45°" )
         , ( UI.Warning, Rotate90, "90°" )
         , ( UI.Primary, Rotate180, "180°" )
         , ( UI.Success, RotateLeft, "← 90°" )
-        , ( UI.Purple, ResetRotation, "Reset" )
+        , ( UI.Purple, ResetRotate, "Reset" )
         ]
     , -- Animation area with boxes
       el
@@ -235,7 +235,7 @@ viewContent model =
             , width (px 200)
             , height (px 200)
             ]
-            (rotatingElement "box" "→" "Rotation Demo" Colors.primary model)
+            (rotatingElement "box" "→" "Rotate Demo" Colors.primary model)
         )
     ]
 

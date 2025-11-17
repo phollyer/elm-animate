@@ -51,7 +51,7 @@ import Anim.Internal.Builder as Builder
 import Anim.Internal.Properties.Color as Color
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position as Position
-import Anim.Internal.Properties.Rotation as Rotation
+import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Timing.Delay as Delay
 import Anim.Internal.Timing.Easing as Easing
@@ -79,7 +79,7 @@ type alias ElementId =
 {-| Flexible property value storage for state tracking.
 -}
 type PropertyValue
-    = FloatValue Float -- rotation: 45, opacity: 0.8
+    = FloatValue Float -- Rotate: 45, opacity: 0.8
     | PositionValue { x : Float, y : Float } -- translate: {x: 100, y: 50}
     | ScaleValue { x : Float, y : Float } -- scale: {x: 1.2, y: 0.8}
     | ColorValue String -- color: "#ff0000"
@@ -202,7 +202,7 @@ extractPropertyEndValue property acc =
             Dict.insert "position" (PositionValue (Position.toRecord config.endAt)) acc
 
         Builder.RotateConfig config ->
-            Dict.insert "rotation" (FloatValue (Rotation.toFloat config.endAt)) acc
+            Dict.insert "Rotate" (FloatValue (Rotate.toFloat config.endAt)) acc
 
         Builder.ScaleConfig config ->
             let
@@ -260,7 +260,7 @@ transformFromProperty property =
             Just ("translate(" ++ Position.toCssString config.endAt ++ ")")
 
         Builder.RotateConfig config ->
-            Just ("rotate(" ++ Rotation.toCssString config.endAt ++ ")")
+            Just ("rotate(" ++ Rotate.toCssString config.endAt ++ ")")
 
         Builder.ScaleConfig config ->
             Just ("scale(" ++ Scale.toCssString config.endAt ++ ")")
@@ -419,9 +419,9 @@ calculatePropertyDistance property =
                             s
 
                         Nothing ->
-                            Rotation.fromFloat 0
+                            Rotate.fromFloat 0
             in
-            Rotation.distance startAt config.endAt
+            Rotate.distance startAt config.endAt
 
         Builder.ScaleConfig config ->
             let

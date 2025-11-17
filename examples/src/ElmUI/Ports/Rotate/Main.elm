@@ -1,15 +1,15 @@
-port module ElmUI.Ports.Rotation.Main exposing (main)
+port module ElmUI.Ports.Rotate.Main exposing (main)
 
-{-| Anim.CSS Rotation Example using ElmUI - Rotation transformation animations
+{-| Anim.CSS Rotate Example using ElmUI - Rotate transformation animations
 
-This example demonstrates smooth rotation animations using browser-native CSS transforms.
+This example demonstrates smooth rotate animations using browser-native CSS transforms.
 Perfect for loading spinners, interactive elements, and dynamic orientation changes.
 
 FEATURES:
 
-  - ✅ Smooth rotation animations in degrees
-  - ✅ Hardware-accelerated transform rotations
-  - ✅ Multiple rotation directions and speeds
+  - ✅ Smooth rotate animations in degrees
+  - ✅ Hardware-accelerated transform rotates
+  - ✅ Multiple rotate directions and speeds
   - ✅ Continuous spinning and specific angle targeting
   - ✅ Battery efficient browser-native transforms
 
@@ -245,7 +245,7 @@ subscriptions model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Ports Rotation ElmUI Example"
+        "Anim.Ports Rotate ElmUI Example"
         UI.Basic
         (viewContent model)
 
@@ -253,14 +253,14 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButton
-    , UI.pageHeader "Ports Rotation Animations"
+    , UI.pageHeader "Ports Rotate Animations"
     , -- Description
       el
         [ Font.size 16
         , Font.color Colors.textMedium
         , centerX
         ]
-        (text "Smooth rotation transformations using hardware-accelerated CSS transforms")
+        (text "Smooth rotate transformations using hardware-accelerated CSS transforms")
     , -- Rotation controls
       UI.wrappedButtonRow
         [ ( UI.Success, Rotate45, "45°" )
@@ -296,7 +296,7 @@ viewContent model =
             , width (px 200)
             , height (px 200)
             ]
-            (rotatingElement "box" "→" "Rotation Demo" Colors.primary model)
+            (rotatingElement "box" "→" "Rotate Demo" Colors.primary model)
         )
     ]
 

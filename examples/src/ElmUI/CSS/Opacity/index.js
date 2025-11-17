@@ -6756,12 +6756,9 @@ var $author$project$Anim$Internal$Builders$Opacity$to = F2(
 				}),
 			builder);
 	});
-var $author$project$Anim$Properties$Opacity$toInternal = function (opacity) {
-	return $author$project$Anim$Internal$Properties$Opacity$fromFloat(opacity);
-};
 var $author$project$Anim$Properties$Opacity$to = function (opacity) {
 	return $author$project$Anim$Internal$Builders$Opacity$to(
-		$author$project$Anim$Properties$Opacity$toInternal(opacity));
+		$author$project$Anim$Internal$Properties$Opacity$fromFloat(opacity));
 };
 var $author$project$ElmUI$CSS$Opacity$Main$update = F2(
 	function (msg, model) {

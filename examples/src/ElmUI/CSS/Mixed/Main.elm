@@ -3,13 +3,13 @@ module ElmUI.CSS.Mixed.Main exposing (main)
 {-| Anim.CSS Mixed Properties Example using ElmUI - Combined animation effects
 
 This example demonstrates combining multiple CSS properties in single animations.
-Shows how to create rich, complex effects by mixing position, scale, rotation, opacity, and color.
+Shows how to create rich, complex effects by mixing position, scale, rotate, opacity, and color.
 
 ANIMATION COMBINATIONS:
 
-  - ✅ Complex Transform: Position + Scale + Rotation
+  - ✅ Complex Transform: Position + Scale + Rotate
   - ✅ Fade & Move: Opacity + Position
-  - ✅ Spin & Scale: Rotation + Scale with synchronized timing
+  - ✅ Spin & Scale: Rotate + Scale with synchronized timing
   - ✅ Color Morph: Background Color + Scale coordination
   - ✅ Full Transform: All properties animated simultaneously
   - ✅ Coordinated Timing: Different durations and easing per property
@@ -29,7 +29,7 @@ import Anim.CSS as CSS
 import Anim.Properties.Color as Color
 import Anim.Properties.Opacity as Opacity
 import Anim.Properties.Position as Position
-import Anim.Properties.Rotation as Rotation
+import Anim.Properties.Rotate as Rotate
 import Anim.Properties.Scale as Scale
 import Anim.Timing.Delay as Delay exposing (Delay(..))
 import Anim.Timing.Easing as Easing exposing (Easing(..))
@@ -107,7 +107,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         StartComplexTransform ->
-            -- Combine position + scale + rotation with different easing
+            -- Combine position + scale + rotate with different easing
             ( { model
                 | animations =
                     model.animations
@@ -126,12 +126,12 @@ update msg model =
                         |> Scale.easing BackInOut
                         |> Scale.duration 1000
                         |> Scale.build
-                        -- Rotation
-                        |> Rotation.for "mixed-box"
-                        |> Rotation.to 45
-                        |> Rotation.easing ElasticOut
-                        |> Rotation.duration 1200
-                        |> Rotation.build
+                        -- Rotate
+                        |> Rotate.for "mixed-box"
+                        |> Rotate.to 45
+                        |> Rotate.easing ElasticOut
+                        |> Rotate.duration 1200
+                        |> Rotate.build
                         |> CSS.animate
                 , isAnimating = True
                 , activeAnimation = Just ComplexTransform
@@ -164,7 +164,7 @@ update msg model =
             )
 
         StartSpinScale ->
-            -- Rotation + scale with delayed start
+            -- Rotate + scale with delayed start
             ( { model
                 | animations =
                     model.animations
@@ -172,10 +172,10 @@ update msg model =
                         -- Global Defaults
                         |> Anim.duration 1000
                         |> Anim.easing BounceOut
-                        -- Rotation
-                        |> Rotation.for "mixed-box"
-                        |> Rotation.to 180
-                        |> Rotation.build
+                        -- Rotate
+                        |> Rotate.for "mixed-box"
+                        |> Rotate.to 180
+                        |> Rotate.build
                         -- Scale
                         |> Scale.for "mixed-box"
                         |> Scale.to (Scale.ScaleXY 0.8 0.8)
@@ -227,13 +227,13 @@ update msg model =
                         |> Position.easing ExpoInOut
                         |> Position.duration 1200
                         |> Position.build
-                        -- Rotation
-                        |> Rotation.for "mixed-box"
-                        |> Rotation.to 135
-                        |> Rotation.easing ElasticInOut
-                        |> Rotation.duration 1400
-                        |> Rotation.delay (Delay 300)
-                        |> Rotation.build
+                        -- Rotate
+                        |> Rotate.for "mixed-box"
+                        |> Rotate.to 135
+                        |> Rotate.easing ElasticInOut
+                        |> Rotate.duration 1400
+                        |> Rotate.delay (Delay 300)
+                        |> Rotate.build
                         -- Scale
                         |> Scale.for "mixed-box"
                         |> Scale.to (Scale.ScaleXY 1.4 0.9)
@@ -282,10 +282,10 @@ update msg model =
                         |> Scale.for "mixed-box"
                         |> Scale.to (Scale.ScaleXY 1.0 1.0)
                         |> Scale.build
-                        -- Rotation
-                        |> Rotation.for "mixed-box"
-                        |> Rotation.to 0
-                        |> Rotation.build
+                        -- Rotate
+                        |> Rotate.for "mixed-box"
+                        |> Rotate.to 0
+                        |> Rotate.build
                         -- Color
                         |> Color.for "mixed-box"
                         |> Color.to (Color.Rgb { r = 59, g = 130, b = 246 })
@@ -344,13 +344,13 @@ viewContent model =
                 (if model.isAnimating then
                     case model.activeAnimation of
                         Just ComplexTransform ->
-                            "🎬 Complex Transform: Position + Scale + Rotation"
+                            "🎬 Complex Transform: Position + Scale + Rotate"
 
                         Just FadeMove ->
                             "🎬 Fade & Move: Opacity + Position"
 
                         Just SpinScale ->
-                            "🎬 Spin & Scale: Rotation + Scale (Delayed)"
+                            "🎬 Spin & Scale: Rotate + Scale (Delayed)"
 
                         Just ColorMorph ->
                             "🎬 Color Morph: Background + Scale"
@@ -425,10 +425,10 @@ viewContent model =
             [ spacing 12, width fill ]
             [ viewAnimationDetail
                 "🔄 Complex Transform"
-                "Position + Scale + Rotation with different easing functions"
+                "Position + Scale + Rotate with different easing functions"
                 [ "Position: SineInOut (800ms)"
                 , "Scale: BackInOut (1000ms)"
-                , "Rotation: ElasticOut (1200ms)"
+                , "Rotate: ElasticOut (1200ms)"
                 ]
             , viewAnimationDetail
                 "👻 Fade & Move"
@@ -438,7 +438,7 @@ viewContent model =
                 ]
             , viewAnimationDetail
                 "🌪️ Spin & Scale"
-                "Rotation with delayed scale animation"
+                "Rotate with delayed scale animation"
                 [ "Rotation: BounceOut (1000ms)"
                 , "Scale: BounceOut (1000ms, 200ms delay)"
                 ]

@@ -18,7 +18,7 @@
         "Anim.Timing.TimeSpec",
         "Anim.Timing.Delay",
         "Anim.Properties.Position",
-        "Anim.Properties.Rotation",
+        "Anim.Properties.Rotate",
         "Anim.Properties.Scale",
         "Anim.Properties.Opacity",
         "Anim.Properties.Color"
