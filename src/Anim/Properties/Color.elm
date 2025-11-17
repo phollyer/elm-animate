@@ -12,7 +12,7 @@ Use these functions to configure color animations in the builder chain:
     animBuilder
         |> Color.for "my-element"
         |> Color.to (Hex "#ff0000")
-        |> Color.speed 255
+        |> Color.speed 0.5
         |> ... -- other color configuration steps
         |> Color.build
         |> ... -- continue with animation

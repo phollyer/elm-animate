@@ -6512,11 +6512,11 @@ var $author$project$Anim$Internal$Timing$TimeSpec$Speed = function (a) {
 	return {$: 'Speed', a: a};
 };
 var $author$project$Anim$Internal$Builders$Color$speed = F2(
-	function (spd, _v0) {
+	function (blackToWhiteSeconds, _v0) {
 		var config = _v0.a;
 		var builder = _v0.b;
 		var maxColorDistance = 441.67;
-		var rgbDistancePerSecond = spd * maxColorDistance;
+		var rgbDistancePerSecond = blackToWhiteSeconds * maxColorDistance;
 		return A2(
 			$author$project$Anim$Internal$Builders$Color$ColorBuilder,
 			_Utils_update(
@@ -6528,11 +6528,7 @@ var $author$project$Anim$Internal$Builders$Color$speed = F2(
 				}),
 			builder);
 	});
-var $author$project$Anim$Properties$Color$speed = function (blackToWhiteSeconds) {
-	var maxColorDistance = 441.67;
-	var rgbDistancePerSecond = blackToWhiteSeconds * maxColorDistance;
-	return $author$project$Anim$Internal$Builders$Color$speed(rgbDistancePerSecond);
-};
+var $author$project$Anim$Properties$Color$speed = $author$project$Anim$Internal$Builders$Color$speed;
 var $author$project$Anim$Internal$Builders$Color$to = F2(
 	function (color, _v0) {
 		var config = _v0.a;
