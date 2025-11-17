@@ -10,7 +10,7 @@ Choose the approach that best fits your performance needs and architectural pref
 
 This project takes the approach that an animation is an animation regardless of what techniques are used to play the animation. The animation should be able to be described in a single way, and then that description should be able to be passed off to different playback techniques. 
 
-Therefore, all 3 approaches share a **unified fluent API** with property-specific builders. This consistent design makes it easy to switch between approaches as your requirements evolve, while the underlying implementations are optimized for different performance characteristics.
+Therefore, all 3 approaches share a **unified fluent API** with type-safe and property-specific builders. This consistent design makes it easy to switch between approaches as your requirements evolve, while the underlying implementations are optimized for different performance characteristics.
 
 (Stay tuned for WebGL and Canvas integration)
 
@@ -94,7 +94,7 @@ port animationComplete : (String -> msg) -> Sub msg
 
 -- Update animation state with port commands
 let
-    animationCmd = 
+    (newAnimations, animationCmd) = 
         model.animations
             |> Ports.builder
             |> Position.for "my-element"  

@@ -1,6 +1,8 @@
 module Anim.Properties.Position exposing
     ( Builder, for, build
-    , fromXY, fromX, fromY, toXY, toX, toY, speed, duration, easing, delay
+    , fromXY, fromX, fromY
+    , toXY, toX, toY
+    , speed, duration, easing, delay
     )
 
 {-| Position animation functions.
@@ -24,7 +26,24 @@ Use these functions to configure position animations in the builder chain:
 
 # Configure
 
-@docs fromXY, fromX, fromY, toXY, toX, toY, speed, duration, easing, delay
+
+## Start Position
+
+The first time the animation runs, if no starting position is set, it will default to (0, 0).
+
+On subsequent animations, it will start from the last known position, so you only need to set this when you want to override that behavior.
+
+@docs fromXY, fromX, fromY
+
+
+## End Position
+
+@docs toXY, toX, toY
+
+
+## Timing
+
+@docs speed, duration, easing, delay
 
 -}
 
@@ -120,6 +139,7 @@ fromY y =
     animBuilder
         |> Position.for "my-element"
         |> Position.toXY 100 200
+        |> ...
 
 -}
 toXY : Float -> Float -> Builder -> Builder
@@ -132,6 +152,7 @@ toXY x y =
     animBuilder
         |> Position.for "my-element"
         |> Position.toX 150
+        |> ...
 
 The Y position remains unchanged, or zero if not set.
 
@@ -146,6 +167,7 @@ toX x =
     animBuilder
         |> Position.for "my-element"
         |> Position.toY 250
+        |> ...
 
 The X position remains unchanged, or zero if not set.
 
@@ -155,9 +177,13 @@ toY y =
     PB.toY y
 
 
-{-| Set animation speed for position (pixels per second).
+{-| Set the animation speed (pixels per second).
 
-    builder |> Position.speed 500
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.toY 300
+        |> Position.speed 500
+        |> ...
 
 -}
 speed : Float -> Builder -> Builder
@@ -165,9 +191,13 @@ speed =
     PB.speed
 
 
-{-| Set animation duration for position (milliseconds).
+{-| Set the animation duration (milliseconds).
 
-    builder |> Position.duration 2000
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.toY 300
+        |> Position.duration 2000
+        |> ...
 
 -}
 duration : Int -> Builder -> Builder
@@ -175,9 +205,14 @@ duration =
     PB.duration
 
 
-{-| Set easing function for position animation.
+{-| Set the easing function for the animation.
 
-    builder |> Position.easing Ease.inOutQuad
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.toY 300
+        |> Position.speed 400
+        |> Position.easing Ease.inOutQuad
+        |> ...
 
 -}
 easing : Easing -> Builder -> Builder
@@ -185,9 +220,14 @@ easing easing_ =
     PB.easing (Easing.mapInternal identity easing_)
 
 
-{-| Set delay for position animation (milliseconds).
+{-| Set the delay (milliseconds) before the animation runs.
 
-    builder |> Position.delay 500
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.toY 300
+        |> Position.speed 400
+        |> Position.delay 500
+        |> ...
 
 -}
 delay : Delay -> Builder -> Builder
