@@ -6515,19 +6515,23 @@ var $author$project$Anim$Internal$Builders$Color$speed = F2(
 	function (spd, _v0) {
 		var config = _v0.a;
 		var builder = _v0.b;
+		var maxColorDistance = 441.67;
+		var rgbDistancePerSecond = spd * maxColorDistance;
 		return A2(
 			$author$project$Anim$Internal$Builders$Color$ColorBuilder,
 			_Utils_update(
 				config,
 				{
-					speed: spd,
+					speed: rgbDistancePerSecond,
 					timing: $elm$core$Maybe$Just(
-						$author$project$Anim$Internal$Timing$TimeSpec$Speed(spd))
+						$author$project$Anim$Internal$Timing$TimeSpec$Speed(rgbDistancePerSecond))
 				}),
 			builder);
 	});
-var $author$project$Anim$Properties$Color$speed = function (unitsPerSecond) {
-	return $author$project$Anim$Internal$Builders$Color$speed(unitsPerSecond);
+var $author$project$Anim$Properties$Color$speed = function (blackToWhiteSeconds) {
+	var maxColorDistance = 441.67;
+	var rgbDistancePerSecond = blackToWhiteSeconds * maxColorDistance;
+	return $author$project$Anim$Internal$Builders$Color$speed(rgbDistancePerSecond);
 };
 var $author$project$Anim$Internal$Builders$Color$to = F2(
 	function (color, _v0) {

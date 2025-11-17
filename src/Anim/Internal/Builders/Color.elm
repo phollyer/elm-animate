@@ -140,12 +140,20 @@ to color (ColorBuilder config builder) =
 
 speed : Float -> ColorBuilder -> ColorBuilder
 speed spd (ColorBuilder config builder) =
+    let
+        -- Black to white distance is exactly √(255² + 255² + 255²) ≈ 441.67
+        maxColorDistance =
+            441.67
+
+        rgbDistancePerSecond =
+            spd * maxColorDistance
+    in
     ColorBuilder
         { config
-            | speed = spd
+            | speed = rgbDistancePerSecond
             , timing =
                 Just <|
-                    Speed spd
+                    Speed rgbDistancePerSecond
         }
         builder
 
