@@ -6526,8 +6526,8 @@ var $author$project$Anim$Internal$Builders$Color$speed = F2(
 				}),
 			builder);
 	});
-var $author$project$Anim$Properties$Color$speed = function (pixelsPerSecond) {
-	return $author$project$Anim$Internal$Builders$Color$speed(pixelsPerSecond);
+var $author$project$Anim$Properties$Color$speed = function (unitsPerSecond) {
+	return $author$project$Anim$Internal$Builders$Color$speed(unitsPerSecond);
 };
 var $author$project$Anim$Internal$Builders$Color$to = F2(
 	function (color, _v0) {

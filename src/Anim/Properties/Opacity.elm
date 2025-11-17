@@ -130,9 +130,13 @@ to opacity =
 
 {-| Set animation speed for opacity (opacity units per second).
 
+The speed represents how much the opacity value changes per second. Since opacity
+ranges from 0.0 (transparent) to 1.0 (opaque), a speed of `2.0` means the opacity
+will change by 2.0 units per second (e.g., from 0.0 to 1.0 takes 0.5 seconds).
+
     animBuilder
         |> Opacity.for "my-element"
-        |> Opacity.speed 500
+        |> Opacity.speed 1.0
         |> ...
 
 -}

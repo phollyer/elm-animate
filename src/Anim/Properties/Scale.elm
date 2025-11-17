@@ -3,7 +3,7 @@ module Anim.Properties.Scale exposing
     , from
     , to
     , speed, duration, easing, delay
-    , Scale(..), ScaleXY
+    , Scale, ScaleXY
     )
 
 {-| Scale animation functions.
@@ -134,7 +134,10 @@ to targetScale =
     SB.to (toInternal targetScale)
 
 
-{-| Set animation speed for scale (scale units per second).
+{-| Set animation speed for scale (scale factor units per second).
+
+The speed represents how much the scale factor changes per second. For example,
+a speed of `2.0` means the scale will change by 2.0 units per second (e.g., from 1.0 to 3.0 takes 1 second).
 
     animBuilder
         |> Scale.for "my-element"

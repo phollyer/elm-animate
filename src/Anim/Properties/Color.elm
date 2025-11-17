@@ -171,11 +171,14 @@ to color =
     CB.to (toInternal color)
 
 
-{-| Set the animation speed (color value units per second).
+{-| Set animation speed for color (RGB distance units per second).
+
+The speed represents how fast the color changes based on the Euclidean distance
+in RGB color space. A speed of `255.0` means the color will change by 255 RGB
+distance units per second (e.g., from black #000000 to white #ffffff takes ~1.5 seconds).
 
     animBuilder
         |> Color.for "my-element"
-        |> Color.from (Hex "#ff00ff")
         |> Color.to (Hex "#ff0000")
         |> Color.speed 255
         |> ...
