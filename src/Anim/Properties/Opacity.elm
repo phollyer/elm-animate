@@ -1,28 +1,54 @@
 module Anim.Properties.Opacity exposing
-    ( Opacity, Builder
-    , for, build, from, to, speed, duration, easing, delay
+    ( Builder, for, build
+    , from
+    , to
+    , speed, duration, easing, delay
+    , Opacity
     )
 
-{-| Opacity animation property functions.
+{-| Opacity animation functions.
 
 Use these functions to configure opacity animations in the builder chain:
 
-    Anim.init
+    animBuilder
         |> Opacity.for "my-element"
         |> Opacity.to 0.5
         |> Opacity.speed 500
+        |> ... -- other opacity configuration steps
         |> Opacity.build
-        |> CSS.animate
+        |> ... -- continue with animation
+
+
+# Build
+
+@docs Builder, for, build
+
+
+# Configure
+
+
+## Start Opacity
+
+The first time the animation runs, if no starting opacity is set, it will default to 1.0 (fully opaque).
+
+On subsequent animations, it will start from the last known opacity, so you only need to set this when you want to override that behavior.
+
+@docs from
+
+
+## End Opacity
+
+@docs to
+
+
+## Timing
+
+@docs speed, duration, easing, delay
 
 
 # Types
 
-@docs Opacity, Builder
-
-
-# Opacity Configuration
-
-@docs for, build, from, to, speed, duration, easing, delay
+@docs Opacity
 
 -}
 
@@ -37,7 +63,7 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 -- OPACITY CONFIGURATION
 
 
-{-| Type alias for the OpacityBuilder.
+{-| Type alias for the internal `OpacityBuilder`.
 -}
 type alias Builder =
     OB.OpacityBuilder
@@ -49,12 +75,11 @@ type alias Opacity =
     Float
 
 
-{-| Start configuring opacity animation for a specific element.
+{-| Start configuring an opacity animation for a specific element.
 
-    Anim.init
+    animBuilder
         |> Opacity.for "my-element"
-        |> Opacity.to 0.5
-        |> Opacity.build
+        |> ...
 
 -}
 for : String -> AnimBuilder -> Builder
@@ -62,14 +87,14 @@ for elementId =
     OB.for elementId
 
 
-{-| Complete the opacity animation configuration and return an AnimBuilder.
+{-| Complete the opacity animation configuration and return an [AnimBuilder](Anim.AnimBuilder)
+so you can continue building the overall animation.
 
-    CSS.init
-        |> CSS.builder
+    animBuilder
         |> Opacity.for "my-element"
-        |> Opacity.to 0.5
+        |> ... -- Opacity configuration steps
         |> Opacity.build
-        |> CSS.animate
+        |> ...
 
 -}
 build : Builder -> AnimBuilder
@@ -79,12 +104,10 @@ build =
 
 {-| Animate from a specific opacity value.
 
-    Anim.init
+    animBuilder
         |> Opacity.for "element"
         |> Opacity.from 1.0
-        |> Opacity.to 0.0
-        |> Opacity.build
-        |> CSS.animate
+        |> ...
 
 -}
 from : Opacity -> Builder -> Builder
@@ -94,11 +117,10 @@ from opacity =
 
 {-| Animate to a specific opacity value.
 
-    Anim.init
+    animBuilder
         |> Opacity.for "element"
         |> Opacity.to 0.5
-        |> Opacity.build
-        |> CSS.animate
+        |> ...
 
 -}
 to : Opacity -> Builder -> Builder
@@ -106,9 +128,12 @@ to opacity =
     OB.to (toInternal opacity)
 
 
-{-| Set animation speed for position (pixels per second).
+{-| Set animation speed for opacity (opacity units per second).
 
-    builder |> Position.speed 500
+    animBuilder
+        |> Opacity.for "my-element"
+        |> Opacity.speed 500
+        |> ...
 
 -}
 speed : Float -> Builder -> Builder
@@ -118,7 +143,10 @@ speed pixelsPerSecond =
 
 {-| Set animation duration for opacity (milliseconds).
 
-    builder |> Opacity.duration 2000
+    animBuilder
+        |> Opacity.for "my-element"
+        |> Opacity.duration 2000
+        |> ...
 
 -}
 duration : Int -> Builder -> Builder
@@ -133,9 +161,12 @@ delay delay_ =
     OB.delay (Delay.mapInternal identity delay_)
 
 
-{-| Set easing function.
+{-| Set easing function for opacity animation.
 
-    builder |> Opacity.easing EaseInOut
+    animBuilder
+        |> Opacity.for "my-element"
+        |> Opacity.easing EaseInOut
+        |> ...
 
 -}
 easing : Easing -> Builder -> Builder

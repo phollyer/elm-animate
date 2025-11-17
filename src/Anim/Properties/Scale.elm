@@ -1,28 +1,54 @@
 module Anim.Properties.Scale exposing
-    ( Scale(..), ScaleXY, Builder
-    , for, build, from, to, speed, duration, easing, delay
+    ( Builder, for, build
+    , from
+    , to
+    , speed, duration, easing, delay
+    , Scale(..), ScaleXY
     )
 
-{-| Scale animation property functions.
+{-| Scale animation functions.
 
 Use these functions to configure scale animations in the builder chain:
 
-    Anim.init
+    animBuilder
         |> Scale.for "my-element"
         |> Scale.to (ScaleXY 1.5 1.5)
         |> Scale.speed 2.0
+        |> ... -- other scale configuration steps
         |> Scale.build
-        |> CSS.animate
+        |> ... -- continue with animation
+
+
+# Build
+
+@docs Builder, for, build
+
+
+# Configure
+
+
+## Start Scale
+
+The first time the animation runs, if no starting scale is set, it will default to (1.0, 1.0).
+
+On subsequent animations, it will start from the last known scale, so you only need to set this when you want to override that behavior.
+
+@docs from
+
+
+## End Scale
+
+@docs to
+
+
+## Timing
+
+@docs speed, duration, easing, delay
 
 
 # Types
 
-@docs Scale, ScaleXY, Builder
-
-
-# Scale Configuration
-
-@docs for, build, from, to, speed, duration, easing, delay
+@docs Scale, ScaleXY
 
 -}
 
@@ -37,7 +63,7 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 -- SCALE CONFIGURATION
 
 
-{-| Type alias for the ScaleBuilder.
+{-| Type alias for the internal `ScaleBuilder`.
 -}
 type alias Builder =
     SB.ScaleBuilder
@@ -55,12 +81,11 @@ type alias ScaleXY =
     Float -> Float -> Scale
 
 
-{-| Start configuring scale animation for a specific element.
+{-| Start configuring a scale animation for a specific element.
 
-    Anim.init
+    animBuilder
         |> Scale.for "my-element"
-        |> Scale.to (ScaleXY 1.5 1.5)
-        |> Scale.build
+        |> ...
 
 -}
 for : String -> AnimBuilder -> Builder
@@ -68,14 +93,14 @@ for elementId =
     SB.for elementId
 
 
-{-| Complete the scale animation configuration and return an AnimBuilder.
+{-| Complete the scale animation configuration and return an [AnimBuilder](Anim.AnimBuilder)
+so you can continue building the overall animation.
 
-    animations
-        |> CSS.builder
+    animBuilder
         |> Scale.for "my-element"
-        |> Scale.to (ScaleXY 1.5 1.5)
+        |> ... -- Scale configuration steps
         |> Scale.build
-        |> CSS.animate
+        |> ...
 
 -}
 build : Builder -> AnimBuilder
@@ -85,7 +110,10 @@ build =
 
 {-| Set the starting scale for the current element.
 
-    builder |> Scale.from { x = 1.0, y = 1.0 }
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.from (ScaleXY 1.0 1.0)
+        |> ...
 
 -}
 from : Scale -> Builder -> Builder
@@ -95,7 +123,10 @@ from scale =
 
 {-| Set the target scale for the current element.
 
-    builder |> Scale.to (ScaleXY 1.5 1.5)
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.to (ScaleXY 1.5 1.5)
+        |> ...
 
 -}
 to : Scale -> Builder -> Builder
@@ -105,7 +136,10 @@ to targetScale =
 
 {-| Set animation speed for scale (scale units per second).
 
-    builder |> Scale.speed 2.0
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.speed 2.0
+        |> ...
 
 -}
 speed : Float -> Builder -> Builder
@@ -115,7 +149,10 @@ speed =
 
 {-| Set animation duration for scale (milliseconds).
 
-    builder |> Scale.duration 2000
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.duration 2000
+        |> ...
 
 -}
 duration : Int -> Builder -> Builder
@@ -125,7 +162,10 @@ duration =
 
 {-| Set easing function for scale animation.
 
-    builder |> Scale.easing EaseInOut
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.easing EaseInOut
+        |> ...
 
 -}
 easing : Easing -> Builder -> Builder
@@ -135,7 +175,10 @@ easing easing_ =
 
 {-| Set delay for scale animation (milliseconds).
 
-    builder |> Scale.delay 500
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.delay 500
+        |> ...
 
 -}
 delay : Delay -> Builder -> Builder

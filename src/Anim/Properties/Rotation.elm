@@ -1,28 +1,54 @@
 module Anim.Properties.Rotation exposing
-    ( Rotation, Builder
-    , for, build, to, speed, duration, easing, delay
+    ( Builder, for, build
+    , from
+    , to
+    , speed, duration, easing, delay
+    , Rotation
     )
 
-{-| Rotation animation property functions.
+{-| Rotation animation functions.
 
 Use these functions to configure rotation animations in the builder chain:
 
-    Anim.init
+    animBuilder
         |> Rotation.for "my-element"
         |> Rotation.to 180
         |> Rotation.speed 90
+        |> ... -- other rotation configuration steps
         |> Rotation.build
-        |> CSS.animate
+        |> ... -- continue with animation
+
+
+# Build
+
+@docs Builder, for, build
+
+
+# Configure
+
+
+## Start Rotation
+
+The first time the animation runs, if no starting rotation is set, it will default to 0 degrees.
+
+On subsequent animations, it will start from the last known rotation, so you only need to set this when you want to override that behavior.
+
+@docs from
+
+
+## End Rotation
+
+@docs to
+
+
+## Timing
+
+@docs speed, duration, easing, delay
 
 
 # Types
 
-@docs Rotation, Builder
-
-
-# Rotation Configuration
-
-@docs for, build, to, speed, duration, easing, delay
+@docs Rotation
 
 -}
 
@@ -37,7 +63,7 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 -- ROTATION CONFIGURATION
 
 
-{-| Type alias for the RotationBuilder.
+{-| Type alias for the internal `RotationBuilder`.
 -}
 type alias Builder =
     RB.RotationBuilder
@@ -49,12 +75,11 @@ type alias Rotation =
     Float
 
 
-{-| Start configuring rotation animation for a specific element.
+{-| Start configuring a rotation animation for a specific element.
 
-    Anim.init
+    animBuilder
         |> Rotation.for "my-element"
-        |> Rotation.to 180
-        |> Rotation.build
+        |> ...
 
 -}
 for : String -> AnimBuilder -> Builder
@@ -62,14 +87,14 @@ for elementId =
     RB.for elementId
 
 
-{-| Complete the rotation animation configuration and return an AnimBuilder.
+{-| Complete the rotation animation configuration and return an [AnimBuilder](Anim.AnimBuilder)
+so you can continue building the overall animation.
 
-    animations
-        |> CSS.builder
+    animBuilder
         |> Rotation.for "my-element"
-        |> Rotation.to 180
+        |> ... -- Rotation configuration steps
         |> Rotation.build
-        |> CSS.animate
+        |> ...
 
 -}
 build : Builder -> AnimBuilder
@@ -77,9 +102,25 @@ build =
     RB.build
 
 
-{-| Set the target rotation angle for the current element (in degrees).
+{-| Set the starting rotation for the current element (degrees).
 
-    builder |> Rotate.to 180
+    animBuilder
+        |> Rotation.for "my-element"
+        |> Rotation.from 45
+        |> ...
+
+-}
+from : Rotation -> Builder -> Builder
+from rotation =
+    RB.from (toInternal rotation)
+
+
+{-| Set the target rotation for the current element.
+
+    animBuilder
+        |> Rotation.for "my-element"
+        |> Rotation.to 180
+        |> ...
 
 -}
 to : Rotation -> Builder -> Builder
@@ -89,7 +130,11 @@ to targetRotation =
 
 {-| Set animation speed for rotation (degrees per second).
 
-    builder |> Rotate.speed 90
+    animBuilder
+        |> Rotation.for "my-element"
+        |> Rotation.to 180
+        |> Rotation.speed 90
+        |> ...
 
 -}
 speed : Float -> Builder -> Builder
@@ -99,7 +144,11 @@ speed degreesPerSecond =
 
 {-| Set animation duration for rotation (milliseconds).
 
-    builder |> Rotate.duration 2000
+    animBuilder
+        |> Rotation.for "my-element"
+        |> Rotation.to 180
+        |> Rotation.duration 2000
+        |> ...
 
 -}
 duration : Int -> Builder -> Builder
@@ -109,7 +158,11 @@ duration milliseconds =
 
 {-| Set easing function for rotation animation.
 
-    builder |> Rotate.easing EaseInOut
+    animBuilder
+        |> Rotation.for "my-element"
+        |> Rotation.to 180
+        |> Rotation.easing EaseInOut
+        |> ...
 
 -}
 easing : Easing -> Builder -> Builder
@@ -119,7 +172,11 @@ easing easingFunction =
 
 {-| Set delay for rotation animation (milliseconds).
 
-    builder |> Rotate.delay 500
+    animBuilder
+        |> Rotation.for "my-element"
+        |> Rotation.to 180
+        |> Rotation.delay 500
+        |> ...
 
 -}
 delay : Delay -> Builder -> Builder

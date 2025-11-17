@@ -83,7 +83,7 @@ so you can continue building the overall animation.
         |> Position.for "my-element"
         |> ... -- Position configuration steps
         |> Position.build
-        |> ...
+        |> ... -- continue with animation
 
 -}
 build : Builder -> AnimBuilder

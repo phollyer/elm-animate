@@ -1,23 +1,49 @@
 module Anim.Properties.Color exposing
-    ( Builder, for, build, from, to, speed, duration, easing, delay
+    ( Builder, for, build
+    , from
+    , to
+    , speed, duration, easing, delay
     , Color(..), Hex, HSL, HSLA, RGB, RGBA
     )
 
-{-| Color animation property functions.
+{-| Color animation functions.
 
 Use these functions to configure color animations in the builder chain:
 
-    Anim.init
+    animBuilder
         |> Color.for "my-element"
         |> Color.to (Hex "#ff0000")
         |> Color.speed 255
+        |> ... -- other color configuration steps
         |> Color.build
-        |> CSS.animate
+        |> ... -- continue with animation
 
 
 # Build
 
-@docs Builder, for, build, from, to, speed, duration, easing, delay
+@docs Builder, for, build
+
+
+# Configure
+
+
+## Start Color
+
+The first time the animation runs, if no starting color is set, it will default to black (#000000).
+
+On subsequent animations, it will start from the last known color, so you only need to set this when you want to override that behavior.
+
+@docs from
+
+
+## End Color
+
+@docs to
+
+
+## Timing
+
+@docs speed, duration, easing, delay
 
 
 # Types
@@ -37,19 +63,17 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 -- COLOR CONFIGURATION
 
 
-{-| Type alias for the ColorBuilder.
+{-| Type alias for the internal `ColorBuilder`.
 -}
 type alias Builder =
     CB.ColorBuilder
 
 
-{-| Start configuring color animation for a specific element.
+{-| Start configuring a color animation for a specific element.
 
-    Anim.init
+    animBuilder
         |> Color.for "my-element"
-        |> Color.to (Hex "#ff0000")
-        |> Color.build
-        |> CSS.animate
+        |> ...
 
 -}
 for : String -> AnimBuilder -> Builder
@@ -57,11 +81,14 @@ for elementId =
     CB.for elementId
 
 
-{-| Complete the color configuration and return to AnimBuilder.
+{-| Complete the color animation configuration and return an [AnimBuilder](Anim#AnimBuilder)
+so you can continue building the overall animation.
 
-    Color.for "element"
-        |> Color.to (Hex "#ff0000")
+    animBuilder
+        |> Color.for "my-element"
+        |> ... -- Color configuration steps
         |> Color.build
+        |> ... -- continue with animation
 
 -}
 build : Builder -> AnimBuilder
@@ -115,9 +142,10 @@ type alias RGBA =
 
 {-| Set the starting color for the current element.
 
-    builder |> Color.from (Hex "#ff0000")
-
-    If no starting color is specified, it defaults to black (#000000).
+    animBuilder
+        |> Color.for "my-element"
+        |> Color.from (Hex "#ff0000")
+        |> ...
 
 -}
 from : Color -> Builder -> Builder
@@ -127,9 +155,15 @@ from color =
 
 {-| Set the target color for the current element.
 
-    builder |> Color.to (Hex "#ff0000")
+    animBuilder
+        |> Color.for "my-element"
+        |> Color.to (Hex "#ff0000")
+        |> ...
 
-    builder |> Color.to (Rgb { r = 255, g = 0, b = 0 })
+    animBuilder
+        |> Color.for "my-element"
+        |> Color.to (Rgb { r = 255, g = 0, b = 0 })
+        |> ...
 
 -}
 to : Color -> Builder -> Builder
@@ -137,19 +171,28 @@ to color =
     CB.to (toInternal color)
 
 
-{-| Set animation speed for color (color value units per second).
+{-| Set the animation speed (color value units per second).
 
-    builder |> Color.speed 255
+    animBuilder
+        |> Color.for "my-element"
+        |> Color.from (Hex "#ff00ff")
+        |> Color.to (Hex "#ff0000")
+        |> Color.speed 255
+        |> ...
 
 -}
 speed : Float -> Builder -> Builder
-speed pixelsPerSecond =
-    CB.speed pixelsPerSecond
+speed unitsPerSecond =
+    CB.speed unitsPerSecond
 
 
-{-| Set animation duration for color (milliseconds).
+{-| Set the animation duration (milliseconds).
 
-    builder |> Color.duration 2000
+    animBuilder
+        |> Color.for "my-element"
+        |> Color.to (Hex "#ff0000")
+        |> Color.duration 2000
+        |> ...
 
 -}
 duration : Int -> Builder -> Builder
@@ -157,9 +200,13 @@ duration milliseconds =
     CB.duration milliseconds
 
 
-{-| Set easing function for color animation.
+{-| Set the easing function for the animation.
 
-    builder |> Color.easing EaseInOut
+    animBuilder
+        |> Color.for "my-element"
+        |> Color.to (Hex "#ff0000")
+        |> Color.easing Ease.CubicInOut
+        |> ...
 
 -}
 easing : Easing -> Builder -> Builder
@@ -167,9 +214,13 @@ easing easing_ =
     Easing.mapInternal CB.easing easing_
 
 
-{-| Set delay for color animation (milliseconds).
+{-| Set the delay (milliseconds) before the animation runs.
 
-    builder |> Color.delay 500
+    animBuilder
+        |> Color.for "my-element"
+        |> Color.to (Hex "#ff0000")
+        |> Color.delay 500
+        |> ...
 
 -}
 delay : Delay -> Builder -> Builder
