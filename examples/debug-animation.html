@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Animation Style Attribute</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .container {
+            width: 500px;
+            height: 400px;
+            border: 1px solid #ccc;
+            position: relative;
+            background-color: #f5f5f5;
+        }
+
+        .box {
+            width: 50px;
+            height: 50px;
+            background-color: #007acc;
+            position: absolute;
+            border-radius: 8px;
+        }
+
+        .info {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e8f4fd;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Animation Style Attribute Debug</h1>
+
+    <div class="info">
+        <h3>Expected Behavior:</h3>
+        <ul>
+            <li>Click "Animate" to move the box from (0,0) to (100,100)</li>
+            <li>Check DevTools Inspector to see the animation style attribute</li>
+            <li>The box should have:
+                <code>style="animation: box-layer-0-animation-1000-linear-0-1 1000ms linear 0ms forwards"</code></li>
+        </ul>
+    </div>
+
+    <button id="animate-btn" onclick="startAnimation()">Animate</button>
+    <button id="reset-btn" onclick="resetAnimation()">Reset</button>
+
+    <div class="container">
+        <div class="box" id="box"></div>
+    </div>
+
+    <div class="info">
+        <h3>Current Animation Style:</h3>
+        <code id="current-style">No animation active</code>
+    </div>
+
+    <script src="src/ElmUI/CSS/Keyframes/Position/index.js"></script>
+    <script>
+        // Initialize the Elm app
+        var app = Elm.ElmUI.CSS.Keyframes.Position.Main.init({
+            node: document.getElementById('elm-container')
+        });
+
+        function startAnimation() {
+            // Trigger animation by sending a message to Elm
+            // This would be done via Elm's message system
+            console.log("Starting animation...");
+
+            // For debugging, let's manually check what the box element looks like
+            const box = document.getElementById('box');
+            const currentStyle = box.getAttribute('style') || 'No style attribute';
+            document.getElementById('current-style').textContent = currentStyle;
+
+            console.log("Box style attribute:", currentStyle);
+        }
+
+        function resetAnimation() {
+            const box = document.getElementById('box');
+            box.removeAttribute('style');
+            document.getElementById('current-style').textContent = 'No animation active';
+        }
+
+        // Monitor changes to the box element
+        const observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    const box = document.getElementById('box');
+                    const currentStyle = box.getAttribute('style') || 'No style attribute';
+                    document.getElementById('current-style').textContent = currentStyle;
+                    console.log("Style changed:", currentStyle);
+                }
+            });
+        });
+
+        const box = document.getElementById('box');
+        observer.observe(box, { attributes: true, attributeFilter: ['style'] });
+    </script>
+
+    <!-- Add a container for Elm if needed -->
+    <div id="elm-container" style="display: none;"></div>
+</body>
+
+</html>

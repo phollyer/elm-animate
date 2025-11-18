@@ -249,7 +249,7 @@ viewContent model =
             , Border.rounded 8
             , htmlAttribute (Html.Attributes.id "box")
             , htmlAttribute (Html.Attributes.style "position" "absolute")
-            , htmlAttribute (CSS.animationStyleAttribute "box" model.animations)
+            , htmlAttribute (CSS.animationStyleAttribute "box" model.animations |> Debug.log "Animation Style")
             ]
             none
         )

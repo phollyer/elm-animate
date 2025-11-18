@@ -13896,6 +13896,7 @@ var $author$project$Anim$Internal$CSS$keyframesStyleNodeFor = F2(
 		}
 	});
 var $author$project$Anim$CSS$keyframesStyleNodeFor = $author$project$Anim$Internal$CSS$keyframesStyleNodeFor;
+var $elm$core$Debug$log = _Debug_log;
 var $mdgriffith$elm_ui$Internal$Model$Max = F2(
 	function (a, b) {
 		return {$: 'Max', a: a, b: b};
@@ -14126,7 +14127,10 @@ var $author$project$ElmUI$CSS$Keyframes$Position$Main$viewContent = function (mo
 						$mdgriffith$elm_ui$Element$htmlAttribute(
 						A2($elm$html$Html$Attributes$style, 'position', 'absolute')),
 						$mdgriffith$elm_ui$Element$htmlAttribute(
-						A2($author$project$Anim$CSS$animationStyleAttribute, 'box', model.animations))
+						A2(
+							$elm$core$Debug$log,
+							'Animation Style',
+							A2($author$project$Anim$CSS$animationStyleAttribute, 'box', model.animations)))
 					]),
 				$mdgriffith$elm_ui$Element$none))
 		]);
