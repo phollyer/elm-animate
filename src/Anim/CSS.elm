@@ -1,41 +1,22 @@
 module Anim.CSS exposing
-    ( builder
-    , animate, AnimationState, init
-    , getElementPosition
-    , getElementStyles
+    ( AnimationState, init, builder, animate
     , htmlAttributes
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
     -- New automatic position function
     )
 
-{-| CSS-based animation system for Anim with property state tracking.
+{-| CSS-based animation system with optional state tracking.
 
-This module converts AnimBuilder configurations to CSS transition and transform styles
-for native browser performance and hardware acceleration. It also tracks current property
-values to enable exact distance calculations for speed-based animations.
-
-
-# Builder Functions
-
-@docs builder
+This module provides the ability to create simple CSS animations that
+can be easily added to your elements as style tags or css [transform](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transforms) attributes.
 
 
-# Animation Execution
+# Build
 
-@docs animate, AnimationState, init
-
-
-# State Tracking
-
-@docs getElementPosition
+@docs AnimationState, init, builder, animate
 
 
-# Utility Functions
-
-@docs getElementStyles
-
-
-# Element Integration
+# View
 
 @docs htmlAttributes
 
@@ -63,7 +44,20 @@ import Html.Events
 import Json.Decode
 
 
-{-| Result of CSS animation generation with property state tracking.
+{-| Optional state tracker.
+
+Add this to your model to enable state tracking for CSS animations.
+
+    type alias Model =
+        { animations : CSS.AnimationState
+        , ...
+        }
+
+For simple CSS animations, such as one-off transitions, you probably do not need to track state.
+
+If you want more complex animations that depend on current positions or colors etc, include this in your model
+so that new animations will be started based on the current state.
+
 -}
 type AnimationState
     = AnimationState
@@ -85,14 +79,16 @@ type alias ElementAnimation =
     }
 
 
-{-| Generate CSS animations from AnimBuilder.
+{-| Generate CSS animations from the builder, and return the
+updated AnimationState.
 
-    Anim.init "my-element"
-        |> Anim.Properties.Position.to { x = 100, y = 200 }
-        |> Anim.Properties.Scale.to { x = 1.5, y = 1.5 }
-        |> Anim.CSS.animate
+    animationState =
+        model.animations -- Or `CSS.init`
+            |> CSS.builder
+            |> ... -- continue building the animation
+            |> CSS.animate
 
-Returns CSS styles that can be applied via Html.Attributes.style or similar.
+The AnimationState can then be used by the view.
 
 -}
 animate : AnimBuilder -> AnimationState
@@ -121,55 +117,27 @@ init =
         }
 
 
-{-| Get the underlying AnimBuilder from AnimationState.
+{-| Turn the AnimationState into an AnimBuilder.
 
-Use this to start new animations based on the current state.
+Use this to start new animations.
+
+    -- Start a new animation based on current state
+    newBuilder =
+        model.animations
+            |> CSS.builder
+            |> ... -- continue building the animation
+
+
+    -- Start a new animation with no state tracking
+    newBuilder =
+        CSS.init
+            |> CSS.builder
+            |> ... -- continue building the animation
 
 -}
 builder : AnimationState -> AnimBuilder
 builder (AnimationState state) =
     state.builder
-
-
-{-| Get the current position of an element.
-
-For elements that are currently animating, it returns the target position.
-For elements not currently animating, it returns the last known position or (0,0).
-
-    -- No need to track positions manually!
-    currentPos =
-        CSS.getElementPosition "box" animationState
-
--}
-getElementPosition : ElementId -> AnimationState -> { x : Float, y : Float }
-getElementPosition elementId (AnimationState state) =
-    let
-        elementsDict =
-            Builder.elements state.builder
-    in
-    Dict.get elementId elementsDict
-        |> Maybe.map getTargetPositionFromConfig
-        |> Maybe.withDefault { x = 0.0, y = 0.0 }
-
-
-{-| Helper function to extract target position from element configuration.
--}
-getTargetPositionFromConfig : Builder.ElementConfig -> { x : Float, y : Float }
-getTargetPositionFromConfig elementConfig =
-    elementConfig.properties
-        |> List.foldl extractPositionFromProperty { x = 0, y = 0 }
-
-
-{-| Helper function to extract position from a property configuration.
--}
-extractPositionFromProperty : Builder.PropertyConfig -> { x : Float, y : Float } -> { x : Float, y : Float }
-extractPositionFromProperty property currentPos =
-    case property of
-        Builder.PositionConfig config ->
-            Position.toRecord config.endAt
-
-        _ ->
-            currentPos
 
 
 
@@ -564,48 +532,30 @@ colorStyleFromProperty property =
             Nothing
 
 
-
--- UTILITY FUNCTIONS FOR CONSUMERS
-
-
-{-| Extract styles for a specific element from AnimationResult.
-
-    case Anim.CSS.animate builder of
-        AnimationResult animations ->
-            animations
-                |> List.filter (\anim -> anim.elementId == "my-element")
-                |> List.head
-                |> Maybe.map .styles
-                |> Maybe.withDefault []
-
--}
-getElementStyles : ElementId -> AnimationState -> List ( String, String )
-getElementStyles elementId (AnimationState state) =
-    Dict.get elementId state.elementAnimations
-        |> Maybe.map .styles
-        |> Maybe.withDefault []
+{-| Get all the HTML attributes needed for the CSS animations on the target element.
 
 
-{-| Get all HTML attributes needed for CSS animations on an element.
-
-This is a convenience function that combines CSS styles, transition properties,
-and event handling into a single list of Html.Attribute values.
-
-Example:
+### HTML Example
 
     div
         ([ Html.Attributes.id "my-element"
-         , Html.Attributes.class "box"
+         , ...
          ]
-            ++ CSS.htmlAttributes "my-element" animationResult AnimationComplete
+            ++ CSS.htmlAttributes "my-element" animationState
         )
         [ text "Animating element" ]
 
-For Elm UI, wrap each attribute with htmlAttribute:
+
+### Elm UI Example
+
+For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/Element#htmlAttribute):
 
     el
-        ([ htmlAttribute (Html.Attributes.id "my-element") ]
-            ++ List.map htmlAttribute (CSS.htmlAttributes "my-element" animationResult AnimationComplete)
+        ([ htmlAttribute (Html.Attributes.id "my-element")
+         , ...
+         ]
+            ++ List.map htmlAttribute <|
+                CSS.htmlAttributes "my-element" animationState
         )
         (text "Animating element")
 
@@ -614,6 +564,13 @@ htmlAttributes : String -> AnimationState -> List (Html.Attribute msg)
 htmlAttributes elementId animationResult =
     getElementStyles elementId animationResult
         |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
+
+
+getElementStyles : ElementId -> AnimationState -> List ( String, String )
+getElementStyles elementId (AnimationState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.map .styles
+        |> Maybe.withDefault []
 
 
 
