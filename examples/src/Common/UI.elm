@@ -3,6 +3,7 @@ module Common.UI exposing
     , LayoutType(..)
     , actionButton
     , backButton
+    , backButtonWithPath
     , bulletPoint
     , contentBlock
     , contentSection
@@ -89,6 +90,11 @@ getLayoutAttributes layoutType =
 
 backButton : Element msg
 backButton =
+    backButtonWithPath "../../index.html"
+
+
+backButtonWithPath : String -> Element msg
+backButtonWithPath path =
     link
         [ alignLeft
         , padding 12
@@ -100,7 +106,7 @@ backButton =
         , Font.semiBold
         , Border.rounded 8
         ]
-        { url = "../../index.html"
+        { url = path
         , label = text "← Back to Examples"
         }
 

@@ -1,0 +1,279 @@
+module ElmUI.CSS.Keyframes.Rotate.Main exposing (main)
+
+{-| Anim.CSS Rotation Example using ElmUI - Element rotation animations with CSS keyframes
+
+This example demonstrates smooth rotation animations using browser-native CSS keyframes.
+Perfect for creating spin effects and angular transformations with precise timing control.
+
+FEATURES:
+
+  - ✅ Smooth rotation animations using CSS keyframes
+  - ✅ Hardware-accelerated CSS transforms with fine-grained control
+  - ✅ Multiple rotation angles and directions
+  - ✅ Keyframes provide precise control over animation timing and composition
+
+-}
+
+import Anim
+import Anim.CSS as CSS
+import Anim.Properties.Rotate as Rotate
+import Anim.Timing.Delay as Delay
+import Anim.Timing.Easing as Easing exposing (Easing(..))
+import Browser exposing (Document)
+import Common.Colors as Colors
+import Common.UI as UI
+import Element exposing (Element, centerX, centerY, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Font as Font
+import Html
+import Html.Attributes
+
+
+
+-- MAIN
+
+
+main : Program () Model Msg
+main =
+    Browser.document
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = \_ -> Sub.none
+        }
+
+
+
+-- MODEL
+
+
+type alias Model =
+    { animations : CSS.AnimationState }
+
+
+
+-- INIT
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { animations = CSS.init }
+    , Cmd.none
+    )
+
+
+
+-- UPDATE
+
+
+anim : CSS.AnimationState -> Rotate.Builder
+anim animations =
+    animations
+        |> CSS.builder
+        |> Anim.duration 700
+        |> Anim.easing Linear
+        |> Rotate.for "rotateBox"
+
+
+type Msg
+    = Rotate45
+    | Rotate90
+    | Rotate180
+    | RotateLeft
+    | RotateRight
+    | ResetRotate
+    | AnimationComplete
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        Rotate45 ->
+            ( { model
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Rotate.to 45
+                        |> Rotate.easing Easing.QuadInOut
+                        |> Rotate.build
+                        |> CSS.animate
+              }
+            , Cmd.none
+            )
+
+        Rotate90 ->
+            ( { model
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Rotate.to 90
+                        |> Rotate.easing Easing.SineInOut
+                        |> Rotate.speed 100
+                        |> Rotate.build
+                        |> CSS.animate
+              }
+            , Cmd.none
+            )
+
+        Rotate180 ->
+            ( { model
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Rotate.to 180
+                        |> Rotate.easing Easing.backInOut
+                        |> Rotate.duration 900
+                        |> Rotate.build
+                        |> CSS.animate
+              }
+            , Cmd.none
+            )
+
+        RotateLeft ->
+            ( { model
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Rotate.to -90
+                        |> Rotate.easing Easing.bounceInOut
+                        |> Rotate.delay 500
+                        |> Rotate.build
+                        |> CSS.animate
+              }
+            , Cmd.none
+            )
+
+        RotateRight ->
+            ( { model
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Rotate.to 90
+                        |> Rotate.easing Easing.elasticInOut
+                        |> Rotate.duration 600
+                        |> Rotate.build
+                        |> CSS.animate
+              }
+            , Cmd.none
+            )
+
+        ResetRotate ->
+            ( { model
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Rotate.to 0
+                        |> Rotate.easing Easing.EaseInOut
+                        |> Rotate.build
+                        |> CSS.animate
+              }
+            , Cmd.none
+            )
+
+        AnimationComplete ->
+            ( model
+            , Cmd.none
+            )
+
+
+
+-- VIEW
+
+
+view : Model -> Document Msg
+view model =
+    UI.createDocument
+        "Anim.CSS Rotate Keyframes ElmUI Example"
+        UI.Basic
+        (viewContent model)
+
+
+viewContent : Model -> List (Element Msg)
+viewContent model =
+    [ Element.html (CSS.keyframesStyleNodeFor "box" model.animations)
+    , UI.backButtonWithPath "../../../index.html"
+    , UI.pageHeader "CSS Rotate Animations"
+    , -- Description
+      el
+        [ Font.size 16
+        , Font.color Colors.textMedium
+        , centerX
+        ]
+        (text "Smooth rotate transformations using hardware-accelerated CSS transforms")
+    , -- Rotate controls
+      UI.wrappedButtonRow
+        [ ( UI.Success, Rotate45, "45°" )
+        , ( UI.Warning, Rotate90, "90°" )
+        , ( UI.Primary, Rotate180, "180°" )
+        , ( UI.Success, RotateLeft, "← 90°" )
+        , ( UI.Purple, ResetRotate, "Reset" )
+        ]
+    , -- Animation area with boxes
+      el
+        [ width (fill |> maximum 600)
+        , height (px 400)
+        , Background.color Colors.backgroundWhite
+        , Border.rounded 12
+        , Border.shadow
+            { offset = ( 0, 4 )
+            , size = 0
+            , blur = 8
+            , color = Element.rgba 0 0 0 0.1
+            }
+        , centerX
+        , htmlAttribute (Html.Attributes.style "position" "relative")
+        , htmlAttribute (Html.Attributes.style "overflow" "visible")
+        , htmlAttribute (Html.Attributes.style "display" "flex")
+        , htmlAttribute (Html.Attributes.style "flex-direction" "column")
+        , htmlAttribute (Html.Attributes.style "align-items" "center")
+        , htmlAttribute (Html.Attributes.style "justify-content" "space-around")
+        , htmlAttribute (Html.Attributes.style "padding" "40px")
+        ]
+        (el
+            [ centerX
+            , Element.centerY
+            , width (px 200)
+            , height (px 200)
+            ]
+            (rotatingElement "box" "→" "Rotate Demo" Colors.primary model)
+        )
+    ]
+
+
+rotatingElement : String -> String -> String -> Element.Color -> Model -> Element Msg
+rotatingElement elementId symbol label color model =
+    el
+        ([ width (px 150)
+         , height (px 150)
+         , Background.color color
+         , Border.rounded 12
+         , centerX
+         , htmlAttribute (Html.Attributes.id elementId)
+         , htmlAttribute (Html.Attributes.style "transform-origin" "center")
+         , htmlAttribute (Html.Attributes.style "display" "flex")
+         , htmlAttribute (Html.Attributes.style "align-items" "center")
+         , htmlAttribute (Html.Attributes.style "justify-content" "center")
+         ]
+            ++ List.map htmlAttribute (CSS.htmlAttributes elementId model.animations)
+        )
+        (column
+            [ centerX
+            , Element.centerY
+            , spacing 8
+            ]
+            [ el
+                [ centerX
+                , Font.color Colors.backgroundWhite
+                , Font.bold
+                , Font.size 32
+                ]
+                (text symbol)
+            , el
+                [ centerX
+                , Font.color Colors.backgroundWhite
+                , Font.size 14
+                ]
+                (text label)
+            ]
+        )

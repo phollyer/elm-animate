@@ -52,15 +52,26 @@ echo "🎨 Building ElmUI examples..."
 # build_example "src/ElmUI/Scroll/ScrollIntoView/Main.elm" "src/ElmUI/Scroll/ScrollIntoView/index.js" "ElmUI.Scroll.ScrollIntoView.Main"
 
 # ElmUI CSS examples (CSS Transition-based API)
-echo "  🎨 ElmUI CSS examples (Anim.CSS - Browser-native transitions)..."
-build_example "src/ElmUI/CSS/Position/Main.elm" "src/ElmUI/CSS/Position/index.js" "ElmUI.CSS.Position.Main"
-build_example "src/ElmUI/CSS/Opacity/Main.elm" "src/ElmUI/CSS/Opacity/index.js" "ElmUI.CSS.Opacity.Main"
-build_example "src/ElmUI/CSS/Scale/Main.elm" "src/ElmUI/CSS/Scale/index.js" "ElmUI.CSS.Scale.Main"
-build_example "src/ElmUI/CSS/Rotate/Main.elm" "src/ElmUI/CSS/Rotate/index.js" "ElmUI.CSS.Rotate.Main"
-build_example "src/ElmUI/CSS/Color/Main.elm" "src/ElmUI/CSS/Color/index.js" "ElmUI.CSS.Color.Main"
-build_example "src/ElmUI/CSS/Events/Main.elm" "src/ElmUI/CSS/Events/index.js" "ElmUI.CSS.Events.Main"
-build_example "src/ElmUI/CSS/Mixed/Main.elm" "src/ElmUI/CSS/Mixed/index.js" "ElmUI.CSS.Mixed.Main"
-build_example "src/ElmUI/CSS/Choreography/Main.elm" "src/ElmUI/CSS/Choreography/index.js" "ElmUI.CSS.Choreography.Main"
+echo "  🎨 ElmUI CSS Transitions examples (Anim.CSS - Browser-native transitions)..."
+build_example "src/ElmUI/CSS/Transitions/Position/Main.elm" "src/ElmUI/CSS/Transitions/Position/index.js" "ElmUI.CSS.Transitions.Position.Main"
+build_example "src/ElmUI/CSS/Transitions/Opacity/Main.elm" "src/ElmUI/CSS/Transitions/Opacity/index.js" "ElmUI.CSS.Transitions.Opacity.Main"
+build_example "src/ElmUI/CSS/Transitions/Scale/Main.elm" "src/ElmUI/CSS/Transitions/Scale/index.js" "ElmUI.CSS.Transitions.Scale.Main"
+build_example "src/ElmUI/CSS/Transitions/Rotate/Main.elm" "src/ElmUI/CSS/Transitions/Rotate/index.js" "ElmUI.CSS.Transitions.Rotate.Main"
+build_example "src/ElmUI/CSS/Transitions/Color/Main.elm" "src/ElmUI/CSS/Transitions/Color/index.js" "ElmUI.CSS.Transitions.Color.Main"
+build_example "src/ElmUI/CSS/Transitions/Events/Main.elm" "src/ElmUI/CSS/Transitions/Events/index.js" "ElmUI.CSS.Transitions.Events.Main"
+build_example "src/ElmUI/CSS/Transitions/Mixed/Main.elm" "src/ElmUI/CSS/Transitions/Mixed/index.js" "ElmUI.CSS.Transitions.Mixed.Main"
+build_example "src/ElmUI/CSS/Transitions/Choreography/Main.elm" "src/ElmUI/CSS/Transitions/Choreography/index.js" "ElmUI.CSS.Transitions.Choreography.Main"
+
+# ElmUI CSS Keyframes examples (CSS Keyframes-based API)
+echo "  🎯 ElmUI CSS Keyframes examples (Anim.CSS - Advanced keyframes control)..."
+build_example "src/ElmUI/CSS/Keyframes/Position/Main.elm" "src/ElmUI/CSS/Keyframes/Position/index.js" "ElmUI.CSS.Keyframes.Position.Main"
+build_example "src/ElmUI/CSS/Keyframes/Opacity/Main.elm" "src/ElmUI/CSS/Keyframes/Opacity/index.js" "ElmUI.CSS.Keyframes.Opacity.Main"
+build_example "src/ElmUI/CSS/Keyframes/Scale/Main.elm" "src/ElmUI/CSS/Keyframes/Scale/index.js" "ElmUI.CSS.Keyframes.Scale.Main"
+build_example "src/ElmUI/CSS/Keyframes/Rotate/Main.elm" "src/ElmUI/CSS/Keyframes/Rotate/index.js" "ElmUI.CSS.Keyframes.Rotate.Main"
+build_example "src/ElmUI/CSS/Keyframes/Color/Main.elm" "src/ElmUI/CSS/Keyframes/Color/index.js" "ElmUI.CSS.Keyframes.Color.Main"
+build_example "src/ElmUI/CSS/Keyframes/Events/Main.elm" "src/ElmUI/CSS/Keyframes/Events/index.js" "ElmUI.CSS.Keyframes.Events.Main"
+build_example "src/ElmUI/CSS/Keyframes/Mixed/Main.elm" "src/ElmUI/CSS/Keyframes/Mixed/index.js" "ElmUI.CSS.Keyframes.Mixed.Main"
+build_example "src/ElmUI/CSS/Keyframes/Choreography/Main.elm" "src/ElmUI/CSS/Keyframes/Choreography/index.js" "ElmUI.CSS.Keyframes.Choreography.Main"
 
 
 # ElmUI Sub examples (Subscription-based API)
