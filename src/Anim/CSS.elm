@@ -1,9 +1,8 @@
 module Anim.CSS exposing
     ( AnimationState, init, builder, animate
-    , htmlAttributes
+    , htmlAttributes, getElementKeyframes, animationStyleAttribute, keyframesStyleNode
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
-    -- New automatic position function
     )
 
 {-| CSS-based animation system with optional state tracking.
@@ -19,7 +18,7 @@ can be easily added to your elements as style tags or css [transform](https://de
 
 # View
 
-@docs htmlAttributes
+@docs htmlAttributes, getElementKeyframes, animationStyleAttribute, keyframesStyleNode
 
 
 # Event Handling
@@ -175,10 +174,13 @@ generateElementAnimation elementId elementConfig =
             ]
                 ++ colors
                 |> List.filter (\( _, value ) -> not (String.isEmpty value))
+
+        keyframes =
+            generateKeyframes elementId elementConfig.properties
     in
     { elementId = elementId
     , styles = allStyles
-    , keyframes = Nothing -- For future complex animations
+    , keyframes = keyframes
     }
 
 
@@ -543,6 +545,590 @@ colorStyleFromProperty property =
 
         _ ->
             Nothing
+
+
+{-| Generate CSS keyframes for an element's animation properties with timing information.
+-}
+generateKeyframes : String -> List Builder.PropertyConfig -> Maybe String
+generateKeyframes elementId properties =
+    if List.isEmpty properties then
+        Nothing
+
+    else
+        let
+            keyframeSteps =
+                generateKeyframeSteps properties
+
+            timingGroups =
+                groupPropertiesByTiming properties
+
+            dominantGroup =
+                findDominantTimingGroup timingGroups
+        in
+        if List.isEmpty keyframeSteps then
+            Nothing
+
+        else
+            Just (buildKeyframesString elementId keyframeSteps dominantGroup)
+
+
+{-| Generate keyframe steps from animation properties with proper timing and easing.
+-}
+generateKeyframeSteps : List Builder.PropertyConfig -> List ( Float, List ( String, String ) )
+generateKeyframeSteps properties =
+    if List.isEmpty properties then
+        []
+
+    else
+        let
+            -- Group properties by timing characteristics
+            timingGroups =
+                groupPropertiesByTiming properties
+
+            -- Generate keyframes for the dominant timing group
+            dominantGroup =
+                findDominantTimingGroup timingGroups
+        in
+        case dominantGroup of
+            Just group ->
+                generateTimedKeyframeSteps group properties
+
+            Nothing ->
+                -- Fallback to basic keyframes if no timing info
+                generateBasicKeyframeSteps properties
+
+
+{-| Group animation properties by their timing characteristics.
+-}
+groupPropertiesByTiming : List Builder.PropertyConfig -> List TimingGroup
+groupPropertiesByTiming properties =
+    properties
+        |> List.filterMap extractPropertyTiming
+        |> List.foldl groupByTiming []
+        |> List.map (\group -> { group | properties = List.reverse group.properties })
+
+
+type alias TimingGroup =
+    { duration : Int
+    , easing : Easing.Easing
+    , delay : Int
+    , properties : List Builder.PropertyConfig
+    }
+
+
+extractPropertyTiming : Builder.PropertyConfig -> Maybe ( TimingInfo, Builder.PropertyConfig )
+extractPropertyTiming property =
+    case property of
+        Builder.PositionConfig config ->
+            config.timing
+                |> Maybe.map
+                    (\timing ->
+                        let
+                            distance =
+                                calculatePropertyDistance property
+
+                            duration_ =
+                                TimeSpec.duration distance timing
+
+                            easing_ =
+                                Maybe.withDefault Easing.Linear config.easing
+
+                            delay_ =
+                                Maybe.withDefault 0 config.delay
+                        in
+                        ( { duration = duration_, easing = easing_, delay = delay_ }, property )
+                    )
+
+        Builder.RotateConfig config ->
+            config.timing
+                |> Maybe.map
+                    (\timing ->
+                        let
+                            distance =
+                                calculatePropertyDistance property
+
+                            duration_ =
+                                TimeSpec.duration distance timing
+
+                            easing_ =
+                                Maybe.withDefault Easing.Linear config.easing
+
+                            delay_ =
+                                Maybe.withDefault 0 config.delay
+                        in
+                        ( { duration = duration_, easing = easing_, delay = delay_ }, property )
+                    )
+
+        Builder.ScaleConfig config ->
+            config.timing
+                |> Maybe.map
+                    (\timing ->
+                        let
+                            distance =
+                                calculatePropertyDistance property
+
+                            duration_ =
+                                TimeSpec.duration distance timing
+
+                            easing_ =
+                                Maybe.withDefault Easing.Linear config.easing
+
+                            delay_ =
+                                Maybe.withDefault 0 config.delay
+                        in
+                        ( { duration = duration_, easing = easing_, delay = delay_ }, property )
+                    )
+
+        Builder.ColorConfig config ->
+            config.timing
+                |> Maybe.map
+                    (\timing ->
+                        let
+                            distance =
+                                calculatePropertyDistance property
+
+                            duration_ =
+                                TimeSpec.duration distance timing
+
+                            easing_ =
+                                Maybe.withDefault Easing.Linear config.easing
+
+                            delay_ =
+                                Maybe.withDefault 0 config.delay
+                        in
+                        ( { duration = duration_, easing = easing_, delay = delay_ }, property )
+                    )
+
+        Builder.OpacityConfig config ->
+            config.timing
+                |> Maybe.map
+                    (\timing ->
+                        let
+                            distance =
+                                calculatePropertyDistance property
+
+                            duration_ =
+                                TimeSpec.duration distance timing
+
+                            easing_ =
+                                Maybe.withDefault Easing.Linear config.easing
+
+                            delay_ =
+                                Maybe.withDefault 0 config.delay
+                        in
+                        ( { duration = duration_, easing = easing_, delay = delay_ }, property )
+                    )
+
+
+type alias TimingInfo =
+    { duration : Int
+    , easing : Easing.Easing
+    , delay : Int
+    }
+
+
+groupByTiming : ( TimingInfo, Builder.PropertyConfig ) -> List TimingGroup -> List TimingGroup
+groupByTiming ( timing, property ) groups =
+    case findMatchingGroup timing groups of
+        Just group ->
+            List.map
+                (\g ->
+                    if g == group then
+                        { g | properties = property :: g.properties }
+
+                    else
+                        g
+                )
+                groups
+
+        Nothing ->
+            { duration = timing.duration
+            , easing = timing.easing
+            , delay = timing.delay
+            , properties = [ property ]
+            }
+                :: groups
+
+
+findMatchingGroup : TimingInfo -> List TimingGroup -> Maybe TimingGroup
+findMatchingGroup timing groups =
+    groups
+        |> List.filter
+            (\group ->
+                group.duration
+                    == timing.duration
+                    && group.easing
+                    == timing.easing
+                    && group.delay
+                    == timing.delay
+            )
+        |> List.head
+
+
+findDominantTimingGroup : List TimingGroup -> Maybe TimingGroup
+findDominantTimingGroup groups =
+    groups
+        |> List.sortBy (\group -> -1 * List.length group.properties)
+        |> List.head
+
+
+{-| Generate keyframes with proper timing and easing distribution.
+-}
+generateTimedKeyframeSteps : TimingGroup -> List Builder.PropertyConfig -> List ( Float, List ( String, String ) )
+generateTimedKeyframeSteps dominantGroup allProperties =
+    let
+        easingFunction =
+            Easing.toFunction dominantGroup.easing
+
+        -- Generate 15 keyframes for smooth easing representation
+        rawSteps =
+            List.range 0 14
+                |> List.map (\i -> toFloat i / 14.0)
+
+        -- Apply easing function to get actual progress values
+        easedSteps =
+            rawSteps
+                |> List.map easingFunction
+                |> List.indexedMap
+                    (\i easedProgress ->
+                        ( toFloat i / 14.0, easedProgress )
+                    )
+
+        -- Always include 0% and 100% keyframes
+        allSteps =
+            ( 0.0, 0.0 )
+                :: (easedSteps |> List.drop 1 |> List.take 13)
+                ++ [ ( 1.0, 1.0 ) ]
+
+        generateStepStyles : Float -> List ( String, String )
+        generateStepStyles easedProgress =
+            allProperties
+                |> List.filterMap (propertyToKeyframeStyle easedProgress)
+                |> combineTransformStyles
+    in
+    allSteps
+        |> List.map (\( _, easedProgress ) -> ( easedProgress, generateStepStyles easedProgress ))
+        |> List.filter (\( _, styles ) -> not (List.isEmpty styles))
+        |> List.indexedMap (\i ( _, styles ) -> ( toFloat i / 14.0, styles ))
+
+
+{-| Fallback to basic keyframes when no timing information is available.
+-}
+generateBasicKeyframeSteps : List Builder.PropertyConfig -> List ( Float, List ( String, String ) )
+generateBasicKeyframeSteps properties =
+    let
+        steps =
+            [ 0.0, 0.25, 0.5, 0.75, 1.0 ]
+
+        generateStepStyles : Float -> List ( String, String )
+        generateStepStyles progress =
+            properties
+                |> List.filterMap (propertyToKeyframeStyle progress)
+                |> combineTransformStyles
+    in
+    steps
+        |> List.map (\progress -> ( progress, generateStepStyles progress ))
+        |> List.filter (\( _, styles ) -> not (List.isEmpty styles))
+
+
+{-| Combine multiple transform properties into a single transform style.
+-}
+combineTransformStyles : List ( String, String ) -> List ( String, String )
+combineTransformStyles styles =
+    let
+        ( transformStyles, otherStyles ) =
+            styles |> List.partition (\( prop, _ ) -> prop == "transform")
+
+        combinedTransform =
+            case transformStyles of
+                [] ->
+                    []
+
+                _ ->
+                    let
+                        transformValues =
+                            transformStyles
+                                |> List.map Tuple.second
+                                |> String.join " "
+                    in
+                    [ ( "transform", transformValues ) ]
+    in
+    combinedTransform ++ otherStyles
+
+
+{-| Convert a property to its CSS style at a given progress.
+-}
+propertyToKeyframeStyle : Float -> Builder.PropertyConfig -> Maybe ( String, String )
+propertyToKeyframeStyle progress property =
+    case property of
+        Builder.PositionConfig config ->
+            let
+                startPos =
+                    Maybe.withDefault (Position.fromTuple ( 0, 0 )) config.startAt
+
+                endPos =
+                    config.endAt
+
+                interpolatedPos =
+                    Position.interpolate progress startPos endPos
+            in
+            Just ( "transform", "translate(" ++ Position.toCssString interpolatedPos ++ ")" )
+
+        Builder.RotateConfig config ->
+            let
+                startRot =
+                    Maybe.withDefault (Rotate.fromFloat 0) config.startAt
+
+                endRot =
+                    config.endAt
+
+                startAngle =
+                    Rotate.toFloat startRot
+
+                endAngle =
+                    Rotate.toFloat endRot
+
+                interpolatedAngle =
+                    startAngle + (endAngle - startAngle) * progress
+
+                interpolatedRot =
+                    Rotate.fromFloat interpolatedAngle
+            in
+            Just ( "transform", "rotate(" ++ Rotate.toCssString interpolatedRot ++ ")" )
+
+        Builder.ScaleConfig config ->
+            let
+                startScale =
+                    Maybe.withDefault (Scale.fromTuple ( 1, 1 )) config.startAt
+
+                endScale =
+                    config.endAt
+
+                ( startX, startY ) =
+                    Scale.toTuple startScale
+
+                ( endX, endY ) =
+                    Scale.toTuple endScale
+
+                interpolatedX =
+                    startX + (endX - startX) * progress
+
+                interpolatedY =
+                    startY + (endY - startY) * progress
+
+                interpolatedScale =
+                    Scale.fromTuple ( interpolatedX, interpolatedY )
+            in
+            Just ( "transform", "scale(" ++ Scale.toCssString interpolatedScale ++ ")" )
+
+        Builder.ColorConfig config ->
+            let
+                startColor =
+                    Maybe.withDefault (Color.rgb255 0 0 0) config.startAt
+
+                endColor =
+                    config.endAt
+
+                interpolatedColor =
+                    Color.interpolate startColor endColor progress
+            in
+            Just ( "background-color", Color.toString interpolatedColor )
+
+        Builder.OpacityConfig config ->
+            let
+                startOpacity =
+                    Maybe.withDefault (Opacity.fromFloat 1.0) config.startAt
+
+                endOpacity =
+                    config.endAt
+
+                startValue =
+                    Opacity.toFloat startOpacity
+
+                endValue =
+                    Opacity.toFloat endOpacity
+
+                interpolatedValue =
+                    startValue + (endValue - startValue) * progress
+
+                interpolatedOpacity =
+                    Opacity.fromFloat interpolatedValue
+            in
+            Just ( "opacity", Opacity.toString interpolatedOpacity )
+
+
+{-| Build the CSS keyframes string from keyframe steps with animation properties.
+-}
+buildKeyframesString : String -> List ( Float, List ( String, String ) ) -> Maybe TimingGroup -> String
+buildKeyframesString elementId steps maybeTimingGroup =
+    let
+        animationName =
+            elementId ++ "-animation"
+
+        stepToString : ( Float, List ( String, String ) ) -> String
+        stepToString ( progress, styles ) =
+            let
+                percentage =
+                    String.fromFloat (progress * 100) ++ "%"
+
+                styleStrings =
+                    List.map (\( prop, value ) -> "  " ++ prop ++ ": " ++ value ++ ";") styles
+            in
+            percentage ++ " {\n" ++ String.join "\n" styleStrings ++ "\n}"
+
+        stepsString =
+            List.map stepToString steps |> String.join "\n\n"
+
+        animationProperties =
+            case maybeTimingGroup of
+                Just group ->
+                    "\n\n/* Animation properties for "
+                        ++ elementId
+                        ++ " */\n"
+                        ++ "/* Use: animation: "
+                        ++ animationName
+                        ++ " "
+                        ++ String.fromInt group.duration
+                        ++ "ms "
+                        ++ Easing.toCSS (Just group.easing)
+                        ++ " "
+                        ++ String.fromInt group.delay
+                        ++ "ms; */\n"
+
+                Nothing ->
+                    "\n\n/* Animation properties for "
+                        ++ elementId
+                        ++ " */\n"
+                        ++ "/* Use: animation: "
+                        ++ animationName
+                        ++ " 1s ease 0ms; */\n"
+    in
+    "@keyframes " ++ animationName ++ " {\n" ++ stepsString ++ "\n}" ++ animationProperties
+
+
+{-| Generate the CSS animation property for an element.
+
+This creates the `animation` CSS property value that should be applied to the element.
+
+    div
+        [ Html.Attributes.id "my-element"
+        , CSS.animationStyleAttribute "my-element" animationState
+        ]
+        [ text "Animating element" ]
+
+This is equivalent to manually writing:
+
+    Html.Attributes.style "animation" "my-element-animation 2000ms ease-out 100ms"
+
+-}
+animationStyleAttribute : String -> AnimationState -> Html.Attribute msg
+animationStyleAttribute elementId animationState =
+    case getElementAnimation elementId animationState of
+        Just elementAnimation ->
+            case elementAnimation.keyframes of
+                Just _ ->
+                    let
+                        animationName =
+                            elementId ++ "-animation"
+
+                        timingGroups =
+                            animationState
+                                |> getBuilder
+                                |> Builder.elements
+                                |> Dict.get elementId
+                                |> Maybe.map .properties
+                                |> Maybe.withDefault []
+                                |> groupPropertiesByTiming
+
+                        dominantGroup =
+                            findDominantTimingGroup timingGroups
+
+                        animationValue =
+                            case dominantGroup of
+                                Just group ->
+                                    animationName
+                                        ++ " "
+                                        ++ String.fromInt group.duration
+                                        ++ "ms "
+                                        ++ Easing.toCSS (Just group.easing)
+                                        ++ " "
+                                        ++ String.fromInt group.delay
+                                        ++ "ms"
+
+                                Nothing ->
+                                    animationName ++ " 1s ease 0ms"
+                    in
+                    Html.Attributes.style "animation" animationValue
+
+                Nothing ->
+                    Html.Attributes.style "animation" ""
+
+        Nothing ->
+            Html.Attributes.style "animation" ""
+
+
+{-| Generate a `<style>` node containing keyframes for all animated elements.
+
+This creates a style node that can be added to your view to include all the keyframe definitions.
+
+    view model =
+        div []
+            [ CSS.keyframesStyleNode model.animationState
+            , div
+                [ Html.Attributes.id "my-element"
+                , CSS.animationStyleAttribute "my-element" model.animationState
+                ]
+                [ text "Animating element" ]
+            ]
+
+-}
+keyframesStyleNode : AnimationState -> Html.Html msg
+keyframesStyleNode (AnimationState state) =
+    let
+        allKeyframes =
+            Dict.values state.elementAnimations
+                |> List.filterMap .keyframes
+                |> String.join "\n\n"
+    in
+    if String.isEmpty allKeyframes then
+        Html.text ""
+
+    else
+        Html.node "style" [] [ Html.text allKeyframes ]
+
+
+{-| Helper function to get the animation builder from state.
+-}
+getBuilder : AnimationState -> AnimBuilder
+getBuilder (AnimationState state) =
+    state.builder
+
+
+{-| Helper function to get element animation data.
+-}
+getElementAnimation : String -> AnimationState -> Maybe ElementAnimation
+getElementAnimation elementId (AnimationState state) =
+    Dict.get elementId state.elementAnimations
+
+
+{-| Get the keyframes CSS string for a specific element from the animation state.
+
+This function returns the generated CSS keyframes that can be inserted into a `<style>` tag.
+
+    case CSS.getElementKeyframes "my-element" animationState of
+        Just keyframes ->
+            Html.node "style" [] [ Html.text keyframes ]
+
+        Nothing ->
+            Html.text ""
+
+The generated keyframes will have a name based on the element ID (e.g., "my-element-animation").
+
+-}
+getElementKeyframes : String -> AnimationState -> Maybe String
+getElementKeyframes elementId (AnimationState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen .keyframes
 
 
 {-| Get all the HTML attributes needed for the CSS animations on the target element.
