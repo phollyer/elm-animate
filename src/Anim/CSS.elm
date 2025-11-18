@@ -1,6 +1,7 @@
 module Anim.CSS exposing
     ( AnimationState, init, builder, animate
     , htmlAttributes
+    , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
     -- New automatic position function
     )
@@ -22,6 +23,18 @@ can be easily added to your elements as style tags or css [transform](https://de
 
 
 # Event Handling
+
+CSS animations and transitions can trigger events when they start, end, or are cancelled.
+
+Animation events are different from transition events, so both types of events can be handled using the following functions:
+
+
+## Animation Events
+
+@docs onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
+
+
+## Transition Events
 
 @docs onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
 
@@ -603,3 +616,35 @@ onTransitionRun msg =
 onTransitionCancel : msg -> Html.Attribute msg
 onTransitionCancel msg =
     Html.Events.on "transitioncancel" (Json.Decode.succeed msg)
+
+
+
+-- CSS ANIMATION EVENT HANDLERS
+
+
+{-| Event handler for when a CSS animation starts.
+-}
+onAnimationStart : msg -> Html.Attribute msg
+onAnimationStart msg =
+    Html.Events.on "animationstart" (Json.Decode.succeed msg)
+
+
+{-| Event handler for when a CSS animation ends.
+-}
+onAnimationEnd : msg -> Html.Attribute msg
+onAnimationEnd msg =
+    Html.Events.on "animationend" (Json.Decode.succeed msg)
+
+
+{-| Event handler for when a CSS animation iteration completes.
+-}
+onAnimationIteration : msg -> Html.Attribute msg
+onAnimationIteration msg =
+    Html.Events.on "animationiteration" (Json.Decode.succeed msg)
+
+
+{-| Event handler for when a CSS animation is cancelled.
+-}
+onAnimationCancel : msg -> Html.Attribute msg
+onAnimationCancel msg =
+    Html.Events.on "animationcancel" (Json.Decode.succeed msg)
