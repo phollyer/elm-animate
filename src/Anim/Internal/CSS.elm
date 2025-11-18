@@ -16,6 +16,14 @@ import Html exposing (Html)
 import Html.Attributes
 import Html.Events
 import Json.Decode
+import Time
+
+
+{-| Global counter to ensure unique animation names
+-}
+animationCounter : { value : Int }
+animationCounter =
+    { value = 0 }
 
 
 type AnimationState
@@ -504,8 +512,36 @@ createAnimationLayerFromGroup elementId layerIndex timingGroup =
         keyframeSteps =
             generateTimedKeyframeSteps timingGroup timingGroup.properties
 
+        -- Create a truly unique identifier by hashing all the animation data
+        contentForHash =
+            elementId
+                ++ String.fromInt layerIndex
+                ++ String.fromInt timingGroup.duration
+                ++ String.fromInt timingGroup.delay
+                ++ (keyframeSteps
+                        |> List.map
+                            (\( progress, properties ) ->
+                                String.fromFloat progress
+                                    ++ (properties |> List.map (\( prop, value ) -> prop ++ value) |> String.join "")
+                            )
+                        |> String.join ""
+                   )
+
+        simpleHash =
+            contentForHash
+                |> String.toList
+                |> List.map Char.toCode
+                |> List.sum
+                |> modBy 999999
+
+        uniqueId =
+            "anim" ++ String.fromInt simpleHash
+
         animationName =
-            elementId ++ "-layer-" ++ String.fromInt layerIndex ++ "-animation-" ++ String.fromInt (timingGroup.duration + timingGroup.delay)
+            elementId ++ "-layer-" ++ String.fromInt layerIndex ++ "-" ++ uniqueId
+
+        _ =
+            Debug.log ("Animation name for " ++ elementId) animationName
 
         keyframesString =
             buildKeyframesString animationName keyframeSteps (Just timingGroup)

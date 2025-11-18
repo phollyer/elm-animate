@@ -6550,16 +6550,66 @@ var $author$project$Anim$Internal$CSS$generateTimedKeyframeSteps = F2(
 					},
 					allSteps)));
 	});
+var $elm$core$Debug$log = _Debug_log;
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $elm$core$List$sum = function (numbers) {
+	return A3($elm$core$List$foldl, $elm$core$Basics$add, 0, numbers);
+};
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
 var $author$project$Anim$Internal$CSS$createAnimationLayerFromGroup = F3(
 	function (elementId, layerIndex, timingGroup) {
 		var keyframeSteps = A2($author$project$Anim$Internal$CSS$generateTimedKeyframeSteps, timingGroup, timingGroup.properties);
-		var animationName = elementId + ('-layer-' + ($elm$core$String$fromInt(layerIndex) + '-animation'));
+		var contentForHash = _Utils_ap(
+			elementId,
+			_Utils_ap(
+				$elm$core$String$fromInt(layerIndex),
+				_Utils_ap(
+					$elm$core$String$fromInt(timingGroup.duration),
+					_Utils_ap(
+						$elm$core$String$fromInt(timingGroup.delay),
+						A2(
+							$elm$core$String$join,
+							'',
+							A2(
+								$elm$core$List$map,
+								function (_v1) {
+									var progress = _v1.a;
+									var properties = _v1.b;
+									return _Utils_ap(
+										$elm$core$String$fromFloat(progress),
+										A2(
+											$elm$core$String$join,
+											'',
+											A2(
+												$elm$core$List$map,
+												function (_v2) {
+													var prop = _v2.a;
+													var value = _v2.b;
+													return _Utils_ap(prop, value);
+												},
+												properties)));
+								},
+								keyframeSteps))))));
+		var simpleHash = A2(
+			$elm$core$Basics$modBy,
+			999999,
+			$elm$core$List$sum(
+				A2(
+					$elm$core$List$map,
+					$elm$core$Char$toCode,
+					$elm$core$String$toList(contentForHash))));
+		var uniqueId = 'anim' + $elm$core$String$fromInt(simpleHash);
+		var animationName = elementId + ('-layer-' + ($elm$core$String$fromInt(layerIndex) + ('-' + uniqueId)));
 		var keyframesString = A3(
 			$author$project$Anim$Internal$CSS$buildKeyframesString,
 			animationName,
 			keyframeSteps,
 			$elm$core$Maybe$Just(timingGroup));
 		var animatedProperties = $author$project$Anim$Internal$CSS$extractAnimatedProperties(timingGroup.properties);
+		var _v0 = A2($elm$core$Debug$log, 'Animation name for ' + elementId, animationName);
 		return $elm$core$List$isEmpty(keyframeSteps) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
 			{
 				animationName: animationName,
@@ -6586,10 +6636,6 @@ var $elm$core$Maybe$map2 = F3(
 			}
 		}
 	});
-var $elm$core$String$foldr = _String_foldr;
-var $elm$core$String$toList = function (string) {
-	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
-};
 var $author$project$Anim$Internal$Properties$Color$hexStringToInt = function (str) {
 	var hexCharToInt = function (_char) {
 		switch (_char.valueOf()) {
