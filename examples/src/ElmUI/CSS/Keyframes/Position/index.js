@@ -6560,7 +6560,7 @@ var $author$project$Anim$Internal$CSS$generateTimedKeyframeSteps = F2(
 var $author$project$Anim$Internal$CSS$createAnimationLayerFromGroup = F3(
 	function (elementId, layerIndex, timingGroup) {
 		var keyframeSteps = A2($author$project$Anim$Internal$CSS$generateTimedKeyframeSteps, timingGroup, timingGroup.properties);
-		var animationName = elementId + ('-layer-' + ($elm$core$String$fromInt(layerIndex) + '-animation'));
+		var animationName = elementId + ('-layer-' + ($elm$core$String$fromInt(layerIndex) + ('-animation-' + $elm$core$String$fromInt(timingGroup.duration + timingGroup.delay))));
 		var keyframesString = A3(
 			$author$project$Anim$Internal$CSS$buildKeyframesString,
 			animationName,

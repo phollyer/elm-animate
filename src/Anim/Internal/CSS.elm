@@ -505,7 +505,7 @@ createAnimationLayerFromGroup elementId layerIndex timingGroup =
             generateTimedKeyframeSteps timingGroup timingGroup.properties
 
         animationName =
-            elementId ++ "-layer-" ++ String.fromInt layerIndex ++ "-animation"
+            elementId ++ "-layer-" ++ String.fromInt layerIndex ++ "-animation-" ++ String.fromInt (timingGroup.duration + timingGroup.delay)
 
         keyframesString =
             buildKeyframesString animationName keyframeSteps (Just timingGroup)
