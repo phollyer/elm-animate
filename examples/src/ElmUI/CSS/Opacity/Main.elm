@@ -18,7 +18,7 @@ FEATURES:
 import Anim
 import Anim.CSS as CSS
 import Anim.Properties.Opacity as Opacity
-import Anim.Timing.Delay as Delay exposing (Delay(..))
+import Anim.Timing.Delay as Delay
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
@@ -137,7 +137,7 @@ update msg model =
                         |> anim
                         |> Opacity.to 0.25
                         |> Opacity.easing Easing.bounceInOut
-                        |> Opacity.delay (Delay 300)
+                        |> Opacity.delay 300
                         |> Opacity.build
                         |> CSS.animate
               }

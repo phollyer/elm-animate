@@ -5218,9 +5218,6 @@ var $author$project$ElmUI$CSS$Opacity$Main$init = function (_v0) {
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$Anim$Timing$Delay$Delay = function (a) {
-	return {$: 'Delay', a: a};
-};
 var $author$project$Anim$Timing$Easing$QuadInOut = {$: 'QuadInOut'};
 var $author$project$Anim$Timing$Easing$SineInOut = {$: 'SineInOut'};
 var $author$project$Anim$Timing$Easing$Linear = {$: 'Linear'};
@@ -5612,6 +5609,421 @@ var $elm$core$List$filter = F2(
 			list);
 	});
 var $elm$core$String$fromFloat = _String_fromNumber;
+var $author$project$Anim$Internal$Timing$Easing$easingToCSS = function (easing) {
+	switch (easing.$) {
+		case 'Bezier':
+			var p1x = easing.a;
+			var p1y = easing.b;
+			var p2x = easing.c;
+			var p2y = easing.d;
+			return 'cubic-bezier(' + ($elm$core$String$fromFloat(p1x) + (', ' + ($elm$core$String$fromFloat(p1y) + (', ' + ($elm$core$String$fromFloat(p2x) + (', ' + ($elm$core$String$fromFloat(p2y) + ')')))))));
+		case 'Linear':
+			return 'linear';
+		case 'Ease':
+			return 'ease';
+		case 'EaseIn':
+			return 'ease-in';
+		case 'EaseOut':
+			return 'ease-out';
+		case 'EaseInOut':
+			return 'ease-in-out';
+		case 'SineIn':
+			return 'cubic-bezier(0.12, 0, 0.39, 0)';
+		case 'SineOut':
+			return 'cubic-bezier(0.61, 1, 0.88, 1)';
+		case 'SineInOut':
+			return 'cubic-bezier(0.37, 0, 0.63, 1)';
+		case 'QuadIn':
+			return 'cubic-bezier(0.11, 0, 0.5, 0)';
+		case 'QuadOut':
+			return 'cubic-bezier(0.5, 1, 0.89, 1)';
+		case 'QuadInOut':
+			return 'cubic-bezier(0.45, 0, 0.55, 1)';
+		case 'CubicIn':
+			return 'cubic-bezier(0.32, 0, 0.67, 0)';
+		case 'CubicOut':
+			return 'cubic-bezier(0.33, 1, 0.68, 1)';
+		case 'CubicInOut':
+			return 'cubic-bezier(0.65, 0, 0.35, 1)';
+		case 'QuartIn':
+			return 'cubic-bezier(0.5, 0, 0.75, 0)';
+		case 'QuartOut':
+			return 'cubic-bezier(0.25, 1, 0.5, 1)';
+		case 'QuartInOut':
+			return 'cubic-bezier(0.76, 0, 0.24, 1)';
+		case 'QuintIn':
+			return 'cubic-bezier(0.64, 0, 0.78, 0)';
+		case 'QuintOut':
+			return 'cubic-bezier(0.22, 1, 0.36, 1)';
+		case 'QuintInOut':
+			return 'cubic-bezier(0.83, 0, 0.17, 1)';
+		case 'ExpoIn':
+			return 'cubic-bezier(0.7, 0, 0.84, 0)';
+		case 'ExpoOut':
+			return 'cubic-bezier(0.16, 1, 0.3, 1)';
+		case 'ExpoInOut':
+			return 'cubic-bezier(0.87, 0, 0.13, 1)';
+		case 'CircIn':
+			return 'cubic-bezier(0.55, 0, 1, 0.45)';
+		case 'CircOut':
+			return 'cubic-bezier(0, 0.55, 0.45, 1)';
+		case 'CircInOut':
+			return 'cubic-bezier(0.85, 0, 0.15, 1)';
+		case 'BackIn':
+			return 'cubic-bezier(0.36, 0, 0.66, -0.56)';
+		case 'BackOut':
+			return 'cubic-bezier(0.34, 1.56, 0.64, 1)';
+		case 'BackInOut':
+			return 'cubic-bezier(0.68, -0.6, 0.32, 1.6)';
+		case 'ElasticIn':
+			return 'cubic-bezier(0.175, 0.885, 0.320, 1.275)';
+		case 'ElasticOut':
+			return 'cubic-bezier(0.680, -0.550, 0.265, 1.550)';
+		case 'ElasticInOut':
+			return 'cubic-bezier(0.680, -0.550, 0.265, 1.550)';
+		case 'BounceIn':
+			return 'cubic-bezier(0.600, 0.040, 0.980, 0.335)';
+		case 'BounceOut':
+			return 'cubic-bezier(0.175, 0.885, 0.320, 1.275)';
+		case 'BounceInOut':
+			return 'cubic-bezier(0.680, -0.550, 0.265, 1.550)';
+		default:
+			var value = easing.a;
+			return value;
+	}
+};
+var $author$project$Anim$Internal$Timing$Easing$toCSS = function (maybeEasing) {
+	if (maybeEasing.$ === 'Just') {
+		var easing = maybeEasing.a;
+		return $author$project$Anim$Internal$Timing$Easing$easingToCSS(easing);
+	} else {
+		return 'ease';
+	}
+};
+var $author$project$Anim$CSS$buildKeyframesString = F3(
+	function (elementId, steps, maybeTimingGroup) {
+		var stepToString = function (_v2) {
+			var progress = _v2.a;
+			var styles = _v2.b;
+			var styleStrings = A2(
+				$elm$core$List$map,
+				function (_v1) {
+					var prop = _v1.a;
+					var value = _v1.b;
+					return '  ' + (prop + (': ' + (value + ';')));
+				},
+				styles);
+			var percentage = $elm$core$String$fromFloat(progress * 100) + '%';
+			return percentage + (' {\n' + (A2($elm$core$String$join, '\n', styleStrings) + '\n}'));
+		};
+		var stepsString = A2(
+			$elm$core$String$join,
+			'\n\n',
+			A2($elm$core$List$map, stepToString, steps));
+		var animationName = elementId + '-animation';
+		var animationProperties = function () {
+			if (maybeTimingGroup.$ === 'Just') {
+				var group = maybeTimingGroup.a;
+				return '\n\n/* Animation properties for ' + (elementId + (' */\n' + ('/* Use: animation: ' + (animationName + (' ' + ($elm$core$String$fromInt(group.duration) + ('ms ' + ($author$project$Anim$Internal$Timing$Easing$toCSS(
+					$elm$core$Maybe$Just(group.easing)) + (' ' + ($elm$core$String$fromInt(group.delay) + 'ms; */\n'))))))))));
+			} else {
+				return '\n\n/* Animation properties for ' + (elementId + (' */\n' + ('/* Use: animation: ' + (animationName + ' 1s ease 0ms; */\n'))));
+			}
+		}();
+		return '@keyframes ' + (animationName + (' {\n' + (stepsString + ('\n}' + animationProperties))));
+	});
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
+var $author$project$Anim$CSS$removeDuplicates = function (list) {
+	removeDuplicates:
+	while (true) {
+		if (!list.b) {
+			return _List_Nil;
+		} else {
+			var x = list.a;
+			var xs = list.b;
+			if (A2($elm$core$List$member, x, xs)) {
+				var $temp$list = xs;
+				list = $temp$list;
+				continue removeDuplicates;
+			} else {
+				return A2(
+					$elm$core$List$cons,
+					x,
+					$author$project$Anim$CSS$removeDuplicates(xs));
+			}
+		}
+	}
+};
+var $author$project$Anim$CSS$extractAnimatedProperties = function (properties) {
+	return $author$project$Anim$CSS$removeDuplicates(
+		A2(
+			$elm$core$List$filterMap,
+			function (property) {
+				switch (property.$) {
+					case 'PositionConfig':
+						return $elm$core$Maybe$Just('transform');
+					case 'RotateConfig':
+						return $elm$core$Maybe$Just('transform');
+					case 'ScaleConfig':
+						return $elm$core$Maybe$Just('transform');
+					case 'ColorConfig':
+						return $elm$core$Maybe$Just('background-color');
+					default:
+						return $elm$core$Maybe$Just('opacity');
+				}
+			},
+			properties));
+};
+var $elm$core$List$partition = F2(
+	function (pred, list) {
+		var step = F2(
+			function (x, _v0) {
+				var trues = _v0.a;
+				var falses = _v0.b;
+				return pred(x) ? _Utils_Tuple2(
+					A2($elm$core$List$cons, x, trues),
+					falses) : _Utils_Tuple2(
+					trues,
+					A2($elm$core$List$cons, x, falses));
+			});
+		return A3(
+			$elm$core$List$foldr,
+			step,
+			_Utils_Tuple2(_List_Nil, _List_Nil),
+			list);
+	});
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
+var $author$project$Anim$CSS$combineTransformStyles = function (styles) {
+	var _v0 = A2(
+		$elm$core$List$partition,
+		function (_v1) {
+			var prop = _v1.a;
+			return prop === 'transform';
+		},
+		styles);
+	var transformStyles = _v0.a;
+	var otherStyles = _v0.b;
+	var combinedTransform = function () {
+		if (!transformStyles.b) {
+			return _List_Nil;
+		} else {
+			var transformValues = A2(
+				$elm$core$String$join,
+				' ',
+				A2($elm$core$List$map, $elm$core$Tuple$second, transformStyles));
+			return _List_fromArray(
+				[
+					_Utils_Tuple2('transform', transformValues)
+				]);
+		}
+	}();
+	return _Utils_ap(combinedTransform, otherStyles);
+};
+var $elm$core$List$drop = F2(
+	function (n, list) {
+		drop:
+		while (true) {
+			if (n <= 0) {
+				return list;
+			} else {
+				if (!list.b) {
+					return list;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs;
+					n = $temp$n;
+					list = $temp$list;
+					continue drop;
+				}
+			}
+		}
+	});
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $elm$core$Basics$not = _Basics_not;
+var $author$project$Anim$Internal$Properties$Rotate$Rotate = function (a) {
+	return {$: 'Rotate', a: a};
+};
+var $author$project$Anim$Internal$Properties$Rotate$fromFloat = function (angle) {
+	return $author$project$Anim$Internal$Properties$Rotate$Rotate(angle);
+};
+var $author$project$Anim$Internal$Properties$Position$Position = function (a) {
+	return {$: 'Position', a: a};
+};
+var $author$project$Anim$Internal$Properties$Position$fromTuple = function (_v0) {
+	var xCoord = _v0.a;
+	var yCoord = _v0.b;
+	return $author$project$Anim$Internal$Properties$Position$Position(
+		{x: xCoord, y: yCoord});
+};
+var $author$project$Anim$Internal$Properties$Scale$ScaleXY = F2(
+	function (a, b) {
+		return {$: 'ScaleXY', a: a, b: b};
+	});
+var $author$project$Anim$Internal$Properties$Scale$fromTuple = function (_v0) {
+	var sx = _v0.a;
+	var sy = _v0.b;
+	return A2($author$project$Anim$Internal$Properties$Scale$ScaleXY, sx, sy);
+};
+var $author$project$Anim$Internal$Properties$Color$Hex = function (a) {
+	return {$: 'Hex', a: a};
+};
+var $author$project$Anim$Internal$Properties$Color$Hsl = function (a) {
+	return {$: 'Hsl', a: a};
+};
+var $author$project$Anim$Internal$Properties$Color$Hsla = function (a) {
+	return {$: 'Hsla', a: a};
+};
+var $author$project$Anim$Internal$Properties$Color$Rgb = function (a) {
+	return {$: 'Rgb', a: a};
+};
+var $author$project$Anim$Internal$Properties$Color$Rgba = function (a) {
+	return {$: 'Rgba', a: a};
+};
+var $elm$core$Basics$round = _Basics_round;
+var $author$project$Anim$Internal$Properties$Color$interpolate = F3(
+	function (start, end, t) {
+		var _v0 = _Utils_Tuple2(start, end);
+		_v0$5:
+		while (true) {
+			switch (_v0.a.$) {
+				case 'Hex':
+					if (_v0.b.$ === 'Hex') {
+						var startHex = _v0.a.a;
+						var endHex = _v0.b.a;
+						return (t < 0.5) ? $author$project$Anim$Internal$Properties$Color$Hex(startHex) : $author$project$Anim$Internal$Properties$Color$Hex(endHex);
+					} else {
+						break _v0$5;
+					}
+				case 'Rgb':
+					if (_v0.b.$ === 'Rgb') {
+						var startRgb = _v0.a.a;
+						var endRgb = _v0.b.a;
+						var r = $elm$core$Basics$round(startRgb.r + ((endRgb.r - startRgb.r) * t));
+						var g = $elm$core$Basics$round(startRgb.g + ((endRgb.g - startRgb.g) * t));
+						var b = $elm$core$Basics$round(startRgb.b + ((endRgb.b - startRgb.b) * t));
+						return $author$project$Anim$Internal$Properties$Color$Rgb(
+							{b: b, g: g, r: r});
+					} else {
+						break _v0$5;
+					}
+				case 'Rgba':
+					if (_v0.b.$ === 'Rgba') {
+						var startRgba = _v0.a.a;
+						var endRgba = _v0.b.a;
+						var r = $elm$core$Basics$round(startRgba.r + ((endRgba.r - startRgba.r) * t));
+						var g = $elm$core$Basics$round(startRgba.g + ((endRgba.g - startRgba.g) * t));
+						var b = $elm$core$Basics$round(startRgba.b + ((endRgba.b - startRgba.b) * t));
+						var a = startRgba.a + ((endRgba.a - startRgba.a) * t);
+						return $author$project$Anim$Internal$Properties$Color$Rgba(
+							{a: a, b: b, g: g, r: r});
+					} else {
+						break _v0$5;
+					}
+				case 'Hsl':
+					if (_v0.b.$ === 'Hsl') {
+						var startHsl = _v0.a.a;
+						var endHsl = _v0.b.a;
+						var s = startHsl.s + ((endHsl.s - startHsl.s) * t);
+						var l = startHsl.l + ((endHsl.l - startHsl.l) * t);
+						var h = startHsl.h + ((endHsl.h - startHsl.h) * t);
+						return $author$project$Anim$Internal$Properties$Color$Hsl(
+							{h: h, l: l, s: s});
+					} else {
+						break _v0$5;
+					}
+				default:
+					if (_v0.b.$ === 'Hsla') {
+						var startHsla = _v0.a.a;
+						var endHsla = _v0.b.a;
+						var s = startHsla.s + ((endHsla.s - startHsla.s) * t);
+						var l = startHsla.l + ((endHsla.l - startHsla.l) * t);
+						var h = startHsla.h + ((endHsla.h - startHsla.h) * t);
+						var a = startHsla.a + ((endHsla.a - startHsla.a) * t);
+						return $author$project$Anim$Internal$Properties$Color$Hsla(
+							{a: a, h: h, l: l, s: s});
+					} else {
+						break _v0$5;
+					}
+			}
+		}
+		return start;
+	});
+var $author$project$Anim$Internal$Properties$Position$interpolate = F3(
+	function (t, _v0, _v1) {
+		var start = _v0.a;
+		var endPos = _v1.a;
+		return $author$project$Anim$Internal$Properties$Position$Position(
+			{x: start.x + ((endPos.x - start.x) * t), y: start.y + ((endPos.y - start.y) * t)});
+	});
+var $author$project$Anim$Internal$Properties$Color$rgb255 = F3(
+	function (r, g, b) {
+		return $author$project$Anim$Internal$Properties$Color$Rgb(
+			{b: b, g: g, r: r});
+	});
+var $author$project$Anim$Internal$Properties$Position$toCssString = function (_v0) {
+	var coords = _v0.a;
+	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + 'px'));
+};
+var $author$project$Anim$Internal$Properties$Rotate$toString = function (_v0) {
+	var angle = _v0.a;
+	return $elm$core$String$fromFloat(angle);
+};
+var $author$project$Anim$Internal$Properties$Rotate$toCssString = function (rotation) {
+	return $author$project$Anim$Internal$Properties$Rotate$toString(rotation) + 'deg';
+};
+var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) {
+	var sx = _v0.a;
+	var sy = _v0.b;
+	return $elm$core$String$fromFloat(sx) + (',' + $elm$core$String$fromFloat(sy));
+};
+var $author$project$Anim$Internal$Properties$Opacity$toFloat = function (_v0) {
+	var o = _v0.a;
+	return o;
+};
+var $author$project$Anim$Internal$Properties$Rotate$toFloat = function (_v0) {
+	var angle = _v0.a;
+	return angle;
+};
 var $author$project$Anim$Internal$Properties$Color$toString = function (colorValue) {
 	switch (colorValue.$) {
 		case 'Hex':
@@ -5635,126 +6047,10 @@ var $author$project$Anim$Internal$Properties$Opacity$toString = function (_v0) {
 	var o = _v0.a;
 	return $elm$core$String$fromFloat(o);
 };
-var $author$project$Anim$CSS$colorStyleFromProperty = function (property) {
-	switch (property.$) {
-		case 'ColorConfig':
-			var config = property.a;
-			return $elm$core$Maybe$Just(
-				_Utils_Tuple2(
-					'background-color',
-					$author$project$Anim$Internal$Properties$Color$toString(config.endAt)));
-		case 'OpacityConfig':
-			var config = property.a;
-			return $elm$core$Maybe$Just(
-				_Utils_Tuple2(
-					'opacity',
-					$author$project$Anim$Internal$Properties$Opacity$toString(config.endAt)));
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Anim$CSS$generateColorStyles = function (properties) {
-	return A2($elm$core$List$filterMap, $author$project$Anim$CSS$colorStyleFromProperty, properties);
-};
-var $author$project$Anim$Internal$Properties$Position$toCssString = function (_v0) {
-	var coords = _v0.a;
-	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + 'px'));
-};
-var $author$project$Anim$Internal$Properties$Rotate$toString = function (_v0) {
-	var angle = _v0.a;
-	return $elm$core$String$fromFloat(angle);
-};
-var $author$project$Anim$Internal$Properties$Rotate$toCssString = function (rotation) {
-	return $author$project$Anim$Internal$Properties$Rotate$toString(rotation) + 'deg';
-};
-var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) {
+var $author$project$Anim$Internal$Properties$Scale$toTuple = function (_v0) {
 	var sx = _v0.a;
 	var sy = _v0.b;
-	return $elm$core$String$fromFloat(sx) + (',' + $elm$core$String$fromFloat(sy));
-};
-var $author$project$Anim$CSS$transformFromProperty = function (property) {
-	switch (property.$) {
-		case 'PositionConfig':
-			var config = property.a;
-			return $elm$core$Maybe$Just(
-				'translate(' + ($author$project$Anim$Internal$Properties$Position$toCssString(config.endAt) + ')'));
-		case 'RotateConfig':
-			var config = property.a;
-			return $elm$core$Maybe$Just(
-				'rotate(' + ($author$project$Anim$Internal$Properties$Rotate$toCssString(config.endAt) + ')'));
-		case 'ScaleConfig':
-			var config = property.a;
-			return $elm$core$Maybe$Just(
-				'scale(' + ($author$project$Anim$Internal$Properties$Scale$toCssString(config.endAt) + ')'));
-		case 'ColorConfig':
-			return $elm$core$Maybe$Nothing;
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Anim$CSS$generateTransforms = function (properties) {
-	var transformParts = A2($elm$core$List$filterMap, $author$project$Anim$CSS$transformFromProperty, properties);
-	return A2($elm$core$String$join, ' ', transformParts);
-};
-var $author$project$Anim$Internal$Timing$Delay$Delay = function (a) {
-	return {$: 'Delay', a: a};
-};
-var $author$project$Anim$Internal$Timing$Delay$toInt = function (delayValue) {
-	if (delayValue.$ === 'Delay') {
-		var d = delayValue.a;
-		return d;
-	} else {
-		return 0;
-	}
-};
-var $author$project$Anim$CSS$chooseSmallerDelay = F2(
-	function (a, b) {
-		return (_Utils_cmp(
-			$author$project$Anim$Internal$Timing$Delay$toInt(a),
-			$author$project$Anim$Internal$Timing$Delay$toInt(b)) < 1) ? a : b;
-	});
-var $author$project$Anim$CSS$extractDelay = function (property) {
-	switch (property.$) {
-		case 'PositionConfig':
-			var config = property.a;
-			return config.delay;
-		case 'RotateConfig':
-			var config = property.a;
-			return config.delay;
-		case 'ScaleConfig':
-			var config = property.a;
-			return config.delay;
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Anim$CSS$findEarliestDelay = function (properties) {
-	var delays = A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractDelay, properties);
-	if (!delays.b) {
-		return $elm$core$Maybe$Nothing;
-	} else {
-		return $elm$core$Maybe$Just(
-			A3(
-				$elm$core$List$foldl,
-				$author$project$Anim$CSS$chooseSmallerDelay,
-				$author$project$Anim$Internal$Timing$Delay$Delay(999999),
-				delays));
-	}
-};
-var $author$project$Anim$CSS$extractEasing = function (property) {
-	switch (property.$) {
-		case 'PositionConfig':
-			var config = property.a;
-			return config.easing;
-		case 'RotateConfig':
-			var config = property.a;
-			return config.easing;
-		case 'ScaleConfig':
-			var config = property.a;
-			return config.easing;
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
+	return _Utils_Tuple2(sx, sy);
 };
 var $elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
@@ -5765,51 +6061,509 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
-var $author$project$Anim$CSS$findLatestEasing = function (properties) {
-	return A2(
-		$elm$core$Maybe$withDefault,
-		$author$project$Anim$Internal$Timing$Easing$Linear,
-		$elm$core$List$head(
-			$elm$core$List$reverse(
-				A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractEasing, properties))));
-};
-var $author$project$Anim$CSS$extractDistance = function (property) {
-	switch (property.$) {
-		case 'PositionConfig':
-			var config = property.a;
-			return $elm$core$Maybe$Just(config.distance);
-		case 'RotateConfig':
-			var config = property.a;
-			return $elm$core$Maybe$Just(config.distance);
-		case 'ScaleConfig':
-			var config = property.a;
-			return $elm$core$Maybe$Just(config.distance);
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
-};
-var $elm$core$List$maximum = function (list) {
+var $author$project$Anim$CSS$propertyToKeyframeStyle = F2(
+	function (progress, property) {
+		switch (property.$) {
+			case 'PositionConfig':
+				var config = property.a;
+				var startPos = A2(
+					$elm$core$Maybe$withDefault,
+					$author$project$Anim$Internal$Properties$Position$fromTuple(
+						_Utils_Tuple2(0, 0)),
+					config.startAt);
+				var endPos = config.endAt;
+				var interpolatedPos = A3($author$project$Anim$Internal$Properties$Position$interpolate, progress, startPos, endPos);
+				return $elm$core$Maybe$Just(
+					_Utils_Tuple2(
+						'transform',
+						'translate(' + ($author$project$Anim$Internal$Properties$Position$toCssString(interpolatedPos) + ')')));
+			case 'RotateConfig':
+				var config = property.a;
+				var startRot = A2(
+					$elm$core$Maybe$withDefault,
+					$author$project$Anim$Internal$Properties$Rotate$fromFloat(0),
+					config.startAt);
+				var startAngle = $author$project$Anim$Internal$Properties$Rotate$toFloat(startRot);
+				var endRot = config.endAt;
+				var endAngle = $author$project$Anim$Internal$Properties$Rotate$toFloat(endRot);
+				var interpolatedAngle = startAngle + ((endAngle - startAngle) * progress);
+				var interpolatedRot = $author$project$Anim$Internal$Properties$Rotate$fromFloat(interpolatedAngle);
+				return $elm$core$Maybe$Just(
+					_Utils_Tuple2(
+						'transform',
+						'rotate(' + ($author$project$Anim$Internal$Properties$Rotate$toCssString(interpolatedRot) + ')')));
+			case 'ScaleConfig':
+				var config = property.a;
+				var startScale = A2(
+					$elm$core$Maybe$withDefault,
+					$author$project$Anim$Internal$Properties$Scale$fromTuple(
+						_Utils_Tuple2(1, 1)),
+					config.startAt);
+				var endScale = config.endAt;
+				var _v1 = $author$project$Anim$Internal$Properties$Scale$toTuple(startScale);
+				var startX = _v1.a;
+				var startY = _v1.b;
+				var _v2 = $author$project$Anim$Internal$Properties$Scale$toTuple(endScale);
+				var endX = _v2.a;
+				var endY = _v2.b;
+				var interpolatedX = startX + ((endX - startX) * progress);
+				var interpolatedY = startY + ((endY - startY) * progress);
+				var interpolatedScale = $author$project$Anim$Internal$Properties$Scale$fromTuple(
+					_Utils_Tuple2(interpolatedX, interpolatedY));
+				return $elm$core$Maybe$Just(
+					_Utils_Tuple2(
+						'transform',
+						'scale(' + ($author$project$Anim$Internal$Properties$Scale$toCssString(interpolatedScale) + ')')));
+			case 'ColorConfig':
+				var config = property.a;
+				var startColor = A2(
+					$elm$core$Maybe$withDefault,
+					A3($author$project$Anim$Internal$Properties$Color$rgb255, 0, 0, 0),
+					config.startAt);
+				var endColor = config.endAt;
+				var interpolatedColor = A3($author$project$Anim$Internal$Properties$Color$interpolate, startColor, endColor, progress);
+				return $elm$core$Maybe$Just(
+					_Utils_Tuple2(
+						'background-color',
+						$author$project$Anim$Internal$Properties$Color$toString(interpolatedColor)));
+			default:
+				var config = property.a;
+				var startOpacity = A2(
+					$elm$core$Maybe$withDefault,
+					$author$project$Anim$Internal$Properties$Opacity$fromFloat(1.0),
+					config.startAt);
+				var startValue = $author$project$Anim$Internal$Properties$Opacity$toFloat(startOpacity);
+				var endOpacity = config.endAt;
+				var endValue = $author$project$Anim$Internal$Properties$Opacity$toFloat(endOpacity);
+				var interpolatedValue = startValue + ((endValue - startValue) * progress);
+				var interpolatedOpacity = $author$project$Anim$Internal$Properties$Opacity$fromFloat(interpolatedValue);
+				return $elm$core$Maybe$Just(
+					_Utils_Tuple2(
+						'opacity',
+						$author$project$Anim$Internal$Properties$Opacity$toString(interpolatedOpacity)));
+		}
+	});
+var $elm$core$List$takeReverse = F3(
+	function (n, list, kept) {
+		takeReverse:
+		while (true) {
+			if (n <= 0) {
+				return kept;
+			} else {
+				if (!list.b) {
+					return kept;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs,
+						$temp$kept = A2($elm$core$List$cons, x, kept);
+					n = $temp$n;
+					list = $temp$list;
+					kept = $temp$kept;
+					continue takeReverse;
+				}
+			}
+		}
+	});
+var $elm$core$List$takeTailRec = F2(
+	function (n, list) {
+		return $elm$core$List$reverse(
+			A3($elm$core$List$takeReverse, n, list, _List_Nil));
+	});
+var $elm$core$List$takeFast = F3(
+	function (ctr, n, list) {
+		if (n <= 0) {
+			return _List_Nil;
+		} else {
+			var _v0 = _Utils_Tuple2(n, list);
+			_v0$1:
+			while (true) {
+				_v0$5:
+				while (true) {
+					if (!_v0.b.b) {
+						return list;
+					} else {
+						if (_v0.b.b.b) {
+							switch (_v0.a) {
+								case 1:
+									break _v0$1;
+								case 2:
+									var _v2 = _v0.b;
+									var x = _v2.a;
+									var _v3 = _v2.b;
+									var y = _v3.a;
+									return _List_fromArray(
+										[x, y]);
+								case 3:
+									if (_v0.b.b.b.b) {
+										var _v4 = _v0.b;
+										var x = _v4.a;
+										var _v5 = _v4.b;
+										var y = _v5.a;
+										var _v6 = _v5.b;
+										var z = _v6.a;
+										return _List_fromArray(
+											[x, y, z]);
+									} else {
+										break _v0$5;
+									}
+								default:
+									if (_v0.b.b.b.b && _v0.b.b.b.b.b) {
+										var _v7 = _v0.b;
+										var x = _v7.a;
+										var _v8 = _v7.b;
+										var y = _v8.a;
+										var _v9 = _v8.b;
+										var z = _v9.a;
+										var _v10 = _v9.b;
+										var w = _v10.a;
+										var tl = _v10.b;
+										return (ctr > 1000) ? A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A2($elm$core$List$takeTailRec, n - 4, tl))))) : A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A3($elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
+									} else {
+										break _v0$5;
+									}
+							}
+						} else {
+							if (_v0.a === 1) {
+								break _v0$1;
+							} else {
+								break _v0$5;
+							}
+						}
+					}
+				}
+				return list;
+			}
+			var _v1 = _v0.b;
+			var x = _v1.a;
+			return _List_fromArray(
+				[x]);
+		}
+	});
+var $elm$core$List$take = F2(
+	function (n, list) {
+		return A3($elm$core$List$takeFast, 0, n, list);
+	});
+var $elm$core$List$tail = function (list) {
 	if (list.b) {
 		var x = list.a;
 		var xs = list.b;
-		return $elm$core$Maybe$Just(
-			A3($elm$core$List$foldl, $elm$core$Basics$max, x, xs));
+		return $elm$core$Maybe$Just(xs);
 	} else {
 		return $elm$core$Maybe$Nothing;
 	}
 };
-var $author$project$Anim$CSS$findLongestDistance = function (properties) {
-	var distances = A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractDistance, properties);
-	if (!distances.b) {
+var $elm_community$easing_functions$Ease$bezier = F5(
+	function (x1, y1, x2, y2, time) {
+		var pair = F4(
+			function (interpolate, _v2, _v3, v) {
+				var a0 = _v2.a;
+				var b0 = _v2.b;
+				var a1 = _v3.a;
+				var b1 = _v3.b;
+				return _Utils_Tuple2(
+					A3(interpolate, a0, a1, v),
+					A3(interpolate, b0, b1, v));
+			});
+		var lerp = F3(
+			function (from, to, v) {
+				return from + ((to - from) * v);
+			});
+		var casteljau = function (ps) {
+			if (ps.b && (!ps.b.b)) {
+				var _v1 = ps.a;
+				var x = _v1.a;
+				var y = _v1.b;
+				return y;
+			} else {
+				var xs = ps;
+				return casteljau(
+					A3(
+						$elm$core$List$map2,
+						F2(
+							function (x, y) {
+								return A4(pair, lerp, x, y, time);
+							}),
+						xs,
+						A2(
+							$elm$core$Maybe$withDefault,
+							_List_Nil,
+							$elm$core$List$tail(xs))));
+			}
+		};
+		return casteljau(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(0, 0),
+					_Utils_Tuple2(x1, y1),
+					_Utils_Tuple2(x2, y2),
+					_Utils_Tuple2(1, 1)
+				]));
+	});
+var $elm_community$easing_functions$Ease$inBack = function (time) {
+	return (time * time) * ((2.70158 * time) - 1.70158);
+};
+var $elm_community$easing_functions$Ease$flip = F2(
+	function (easing, time) {
+		return 1 - easing(1 - time);
+	});
+var $elm_community$easing_functions$Ease$outBounce = function (time) {
+	var t4 = time - (2.625 / 2.75);
+	var t3 = time - (2.25 / 2.75);
+	var t2 = time - (1.5 / 2.75);
+	var a = 7.5625;
+	return (_Utils_cmp(time, 1 / 2.75) < 0) ? ((a * time) * time) : ((_Utils_cmp(time, 2 / 2.75) < 0) ? (((a * t2) * t2) + 0.75) : ((_Utils_cmp(time, 2.5 / 2.75) < 0) ? (((a * t3) * t3) + 0.9375) : (((a * t4) * t4) + 0.984375)));
+};
+var $elm_community$easing_functions$Ease$inBounce = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$outBounce);
+var $elm$core$Basics$pow = _Basics_pow;
+var $elm$core$Basics$sqrt = _Basics_sqrt;
+var $elm_community$easing_functions$Ease$outCirc = function (time) {
+	return $elm$core$Basics$sqrt(
+		1 - A2($elm$core$Basics$pow, time - 1, 2));
+};
+var $elm_community$easing_functions$Ease$inCirc = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$outCirc);
+var $elm_community$easing_functions$Ease$inCubic = function (time) {
+	return A2($elm$core$Basics$pow, time, 3);
+};
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$core$Basics$pi = _Basics_pi;
+var $elm$core$Basics$sin = _Basics_sin;
+var $elm_community$easing_functions$Ease$inElastic = function (time) {
+	if (time === 0.0) {
 		return 0.0;
 	} else {
-		return A2(
-			$elm$core$Maybe$withDefault,
-			0.0,
-			$elm$core$List$maximum(distances));
+		var t = time - 1;
+		var s = 0.075;
+		var p = 0.3;
+		return -(A2($elm$core$Basics$pow, 2, 10 * t) * $elm$core$Basics$sin(((t - s) * (2 * $elm$core$Basics$pi)) / p));
 	}
 };
-var $elm$core$Basics$sqrt = _Basics_sqrt;
+var $elm_community$easing_functions$Ease$inExpo = function (time) {
+	return (time === 0.0) ? 0.0 : A2($elm$core$Basics$pow, 2, 10 * (time - 1));
+};
+var $elm_community$easing_functions$Ease$inOut = F3(
+	function (e1, e2, time) {
+		return (time < 0.5) ? (e1(time * 2) / 2) : (0.5 + (e2((time - 0.5) * 2) / 2));
+	});
+var $elm_community$easing_functions$Ease$outBack = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inBack);
+var $elm_community$easing_functions$Ease$inOutBack = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inBack, $elm_community$easing_functions$Ease$outBack);
+var $elm_community$easing_functions$Ease$inOutBounce = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inBounce, $elm_community$easing_functions$Ease$outBounce);
+var $elm_community$easing_functions$Ease$inOutCirc = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inCirc, $elm_community$easing_functions$Ease$outCirc);
+var $elm_community$easing_functions$Ease$outCubic = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inCubic);
+var $elm_community$easing_functions$Ease$inOutCubic = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inCubic, $elm_community$easing_functions$Ease$outCubic);
+var $elm_community$easing_functions$Ease$outElastic = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inElastic);
+var $elm_community$easing_functions$Ease$inOutElastic = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inElastic, $elm_community$easing_functions$Ease$outElastic);
+var $elm_community$easing_functions$Ease$outExpo = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inExpo);
+var $elm_community$easing_functions$Ease$inOutExpo = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inExpo, $elm_community$easing_functions$Ease$outExpo);
+var $elm_community$easing_functions$Ease$inQuad = function (time) {
+	return A2($elm$core$Basics$pow, time, 2);
+};
+var $elm_community$easing_functions$Ease$outQuad = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inQuad);
+var $elm_community$easing_functions$Ease$inOutQuad = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inQuad, $elm_community$easing_functions$Ease$outQuad);
+var $elm_community$easing_functions$Ease$inQuart = function (time) {
+	return A2($elm$core$Basics$pow, time, 4);
+};
+var $elm_community$easing_functions$Ease$outQuart = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inQuart);
+var $elm_community$easing_functions$Ease$inOutQuart = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inQuart, $elm_community$easing_functions$Ease$outQuart);
+var $elm_community$easing_functions$Ease$inQuint = function (time) {
+	return A2($elm$core$Basics$pow, time, 5);
+};
+var $elm_community$easing_functions$Ease$outQuint = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inQuint);
+var $elm_community$easing_functions$Ease$inOutQuint = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inQuint, $elm_community$easing_functions$Ease$outQuint);
+var $elm_community$easing_functions$Ease$outSine = function (time) {
+	return $elm$core$Basics$sin(time * ($elm$core$Basics$pi / 2));
+};
+var $elm_community$easing_functions$Ease$inSine = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$outSine);
+var $elm_community$easing_functions$Ease$inOutSine = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inSine, $elm_community$easing_functions$Ease$outSine);
+var $elm_community$easing_functions$Ease$linear = $elm$core$Basics$identity;
+var $author$project$Anim$Internal$Timing$Easing$toFunction = function (easing) {
+	switch (easing.$) {
+		case 'Bezier':
+			var p1x = easing.a;
+			var p1y = easing.b;
+			var p2x = easing.c;
+			var p2y = easing.d;
+			return A4($elm_community$easing_functions$Ease$bezier, p1x, p1y, p2x, p2y);
+		case 'Linear':
+			return $elm_community$easing_functions$Ease$linear;
+		case 'Ease':
+			return $elm_community$easing_functions$Ease$inOutQuad;
+		case 'EaseIn':
+			return $elm_community$easing_functions$Ease$inQuad;
+		case 'EaseOut':
+			return $elm_community$easing_functions$Ease$outQuad;
+		case 'EaseInOut':
+			return $elm_community$easing_functions$Ease$inOutQuad;
+		case 'SineIn':
+			return $elm_community$easing_functions$Ease$inSine;
+		case 'SineOut':
+			return $elm_community$easing_functions$Ease$outSine;
+		case 'SineInOut':
+			return $elm_community$easing_functions$Ease$inOutSine;
+		case 'QuadIn':
+			return $elm_community$easing_functions$Ease$inQuad;
+		case 'QuadOut':
+			return $elm_community$easing_functions$Ease$outQuad;
+		case 'QuadInOut':
+			return $elm_community$easing_functions$Ease$inOutQuad;
+		case 'CubicIn':
+			return $elm_community$easing_functions$Ease$inCubic;
+		case 'CubicOut':
+			return $elm_community$easing_functions$Ease$outCubic;
+		case 'CubicInOut':
+			return $elm_community$easing_functions$Ease$inOutCubic;
+		case 'QuartIn':
+			return $elm_community$easing_functions$Ease$inQuart;
+		case 'QuartOut':
+			return $elm_community$easing_functions$Ease$outQuart;
+		case 'QuartInOut':
+			return $elm_community$easing_functions$Ease$inOutQuart;
+		case 'QuintIn':
+			return $elm_community$easing_functions$Ease$inQuint;
+		case 'QuintOut':
+			return $elm_community$easing_functions$Ease$outQuint;
+		case 'QuintInOut':
+			return $elm_community$easing_functions$Ease$inOutQuint;
+		case 'ExpoIn':
+			return $elm_community$easing_functions$Ease$inExpo;
+		case 'ExpoOut':
+			return $elm_community$easing_functions$Ease$outExpo;
+		case 'ExpoInOut':
+			return $elm_community$easing_functions$Ease$inOutExpo;
+		case 'CircIn':
+			return $elm_community$easing_functions$Ease$inCirc;
+		case 'CircOut':
+			return $elm_community$easing_functions$Ease$outCirc;
+		case 'CircInOut':
+			return $elm_community$easing_functions$Ease$inOutCirc;
+		case 'BackIn':
+			return $elm_community$easing_functions$Ease$inBack;
+		case 'BackOut':
+			return $elm_community$easing_functions$Ease$outBack;
+		case 'BackInOut':
+			return $elm_community$easing_functions$Ease$inOutBack;
+		case 'ElasticIn':
+			return $elm_community$easing_functions$Ease$inElastic;
+		case 'ElasticOut':
+			return $elm_community$easing_functions$Ease$outElastic;
+		case 'ElasticInOut':
+			return $elm_community$easing_functions$Ease$inOutElastic;
+		case 'BounceIn':
+			return $elm_community$easing_functions$Ease$inBounce;
+		case 'BounceOut':
+			return $elm_community$easing_functions$Ease$outBounce;
+		case 'BounceInOut':
+			return $elm_community$easing_functions$Ease$inOutBounce;
+		default:
+			return $elm_community$easing_functions$Ease$inOutQuad;
+	}
+};
+var $author$project$Anim$CSS$generateTimedKeyframeSteps = F2(
+	function (dominantGroup, allProperties) {
+		var rawSteps = A2(
+			$elm$core$List$map,
+			function (i) {
+				return i / 14.0;
+			},
+			A2($elm$core$List$range, 0, 14));
+		var generateStepStyles = function (easedProgress) {
+			return $author$project$Anim$CSS$combineTransformStyles(
+				A2(
+					$elm$core$List$filterMap,
+					$author$project$Anim$CSS$propertyToKeyframeStyle(easedProgress),
+					allProperties));
+		};
+		var easingFunction = $author$project$Anim$Internal$Timing$Easing$toFunction(dominantGroup.easing);
+		var easedSteps = A2(
+			$elm$core$List$indexedMap,
+			F2(
+				function (i, easedProgress) {
+					return _Utils_Tuple2(i / 14.0, easedProgress);
+				}),
+			A2($elm$core$List$map, easingFunction, rawSteps));
+		var allSteps = A2(
+			$elm$core$List$cons,
+			_Utils_Tuple2(0.0, 0.0),
+			_Utils_ap(
+				A2(
+					$elm$core$List$take,
+					13,
+					A2($elm$core$List$drop, 1, easedSteps)),
+				_List_fromArray(
+					[
+						_Utils_Tuple2(1.0, 1.0)
+					])));
+		return A2(
+			$elm$core$List$indexedMap,
+			F2(
+				function (i, _v2) {
+					var styles = _v2.b;
+					return _Utils_Tuple2(i / 14.0, styles);
+				}),
+			A2(
+				$elm$core$List$filter,
+				function (_v1) {
+					var styles = _v1.b;
+					return !$elm$core$List$isEmpty(styles);
+				},
+				A2(
+					$elm$core$List$map,
+					function (_v0) {
+						var easedProgress = _v0.b;
+						return _Utils_Tuple2(
+							easedProgress,
+							generateStepStyles(easedProgress));
+					},
+					allSteps)));
+	});
+var $author$project$Anim$CSS$createAnimationLayerFromGroup = F3(
+	function (elementId, layerIndex, timingGroup) {
+		var keyframeSteps = A2($author$project$Anim$CSS$generateTimedKeyframeSteps, timingGroup, timingGroup.properties);
+		var animationName = elementId + ('-layer-' + $elm$core$String$fromInt(layerIndex));
+		var keyframesString = A3(
+			$author$project$Anim$CSS$buildKeyframesString,
+			animationName,
+			keyframeSteps,
+			$elm$core$Maybe$Just(timingGroup));
+		var animatedProperties = $author$project$Anim$CSS$extractAnimatedProperties(timingGroup.properties);
+		return $elm$core$List$isEmpty(keyframeSteps) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
+			{
+				animationName: animationName,
+				delay: timingGroup.delay,
+				duration: timingGroup.duration,
+				easing: $author$project$Anim$Internal$Timing$Easing$toCSS(
+					$elm$core$Maybe$Just(timingGroup.easing)),
+				keyframes: keyframesString,
+				properties: animatedProperties
+			});
+	});
 var $elm$core$Maybe$map2 = F3(
 	function (func, ma, mb) {
 		if (ma.$ === 'Nothing') {
@@ -5919,9 +6673,6 @@ var $author$project$Anim$Internal$Properties$Color$hexToRgb = function (hex_) {
 			A3($elm$core$String$slice, 4, 6, cleanHex)));
 	return {b: b, g: g, r: r};
 };
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
 var $elm$core$Basics$abs = function (n) {
 	return (n < 0) ? (-n) : n;
 };
@@ -5929,7 +6680,6 @@ var $author$project$Anim$Internal$Properties$Color$floatMod = F2(
 	function (a, b) {
 		return a - ($elm$core$Basics$floor(a / b) * b);
 	});
-var $elm$core$Basics$round = _Basics_round;
 var $author$project$Anim$Internal$Properties$Color$hslToRgb = function (hsl) {
 	var s = hsl.s / 100;
 	var l = hsl.l / 100;
@@ -6005,38 +6755,6 @@ var $author$project$Anim$Internal$Properties$Scale$distance = F2(
 		var dx = sx2 - sx1;
 		return $elm$core$Basics$sqrt((dx * dx) + (dy * dy));
 	});
-var $author$project$Anim$Internal$Properties$Rotate$Rotate = function (a) {
-	return {$: 'Rotate', a: a};
-};
-var $author$project$Anim$Internal$Properties$Rotate$fromFloat = function (angle) {
-	return $author$project$Anim$Internal$Properties$Rotate$Rotate(angle);
-};
-var $author$project$Anim$Internal$Properties$Position$Position = function (a) {
-	return {$: 'Position', a: a};
-};
-var $author$project$Anim$Internal$Properties$Position$fromTuple = function (_v0) {
-	var xCoord = _v0.a;
-	var yCoord = _v0.b;
-	return $author$project$Anim$Internal$Properties$Position$Position(
-		{x: xCoord, y: yCoord});
-};
-var $author$project$Anim$Internal$Properties$Scale$ScaleXY = F2(
-	function (a, b) {
-		return {$: 'ScaleXY', a: a, b: b};
-	});
-var $author$project$Anim$Internal$Properties$Scale$fromTuple = function (_v0) {
-	var sx = _v0.a;
-	var sy = _v0.b;
-	return A2($author$project$Anim$Internal$Properties$Scale$ScaleXY, sx, sy);
-};
-var $author$project$Anim$Internal$Properties$Color$Rgb = function (a) {
-	return {$: 'Rgb', a: a};
-};
-var $author$project$Anim$Internal$Properties$Color$rgb255 = F3(
-	function (r, g, b) {
-		return $author$project$Anim$Internal$Properties$Color$Rgb(
-			{b: b, g: g, r: r});
-	});
 var $author$project$Anim$CSS$calculatePropertyDistance = function (property) {
 	switch (property.$) {
 		case 'PositionConfig':
@@ -6103,13 +6821,6 @@ var $author$project$Anim$CSS$calculatePropertyDistance = function (property) {
 			return A2($author$project$Anim$Internal$Properties$Opacity$distance, startAt, config.endAt);
 	}
 };
-var $elm$core$Basics$ge = _Utils_ge;
-var $author$project$Anim$CSS$chooseLongerDuration = F3(
-	function (calcDuration, a, b) {
-		var durationB = calcDuration(b);
-		var durationA = calcDuration(a);
-		return (_Utils_cmp(durationA, durationB) > -1) ? a : b;
-	});
 var $author$project$Anim$Internal$Timing$TimeSpec$duration = F2(
 	function (distance, timeSpec) {
 		if (timeSpec.$ === 'Duration') {
@@ -6119,6 +6830,301 @@ var $author$project$Anim$Internal$Timing$TimeSpec$duration = F2(
 			var unitsPerSecond = timeSpec.a;
 			return $elm$core$Basics$round((distance / unitsPerSecond) * 1000);
 		}
+	});
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$Anim$CSS$extractPropertyTiming = function (property) {
+	switch (property.$) {
+		case 'PositionConfig':
+			var config = property.a;
+			return A2(
+				$elm$core$Maybe$map,
+				function (timing) {
+					var easing_ = A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Timing$Easing$Linear, config.easing);
+					var distance = $author$project$Anim$CSS$calculatePropertyDistance(property);
+					var duration_ = A2($author$project$Anim$Internal$Timing$TimeSpec$duration, distance, timing);
+					var delay_ = A2($elm$core$Maybe$withDefault, 0, config.delay);
+					return _Utils_Tuple2(
+						{delay: delay_, duration: duration_, easing: easing_},
+						property);
+				},
+				config.timing);
+		case 'RotateConfig':
+			var config = property.a;
+			return A2(
+				$elm$core$Maybe$map,
+				function (timing) {
+					var easing_ = A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Timing$Easing$Linear, config.easing);
+					var distance = $author$project$Anim$CSS$calculatePropertyDistance(property);
+					var duration_ = A2($author$project$Anim$Internal$Timing$TimeSpec$duration, distance, timing);
+					var delay_ = A2($elm$core$Maybe$withDefault, 0, config.delay);
+					return _Utils_Tuple2(
+						{delay: delay_, duration: duration_, easing: easing_},
+						property);
+				},
+				config.timing);
+		case 'ScaleConfig':
+			var config = property.a;
+			return A2(
+				$elm$core$Maybe$map,
+				function (timing) {
+					var easing_ = A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Timing$Easing$Linear, config.easing);
+					var distance = $author$project$Anim$CSS$calculatePropertyDistance(property);
+					var duration_ = A2($author$project$Anim$Internal$Timing$TimeSpec$duration, distance, timing);
+					var delay_ = A2($elm$core$Maybe$withDefault, 0, config.delay);
+					return _Utils_Tuple2(
+						{delay: delay_, duration: duration_, easing: easing_},
+						property);
+				},
+				config.timing);
+		case 'ColorConfig':
+			var config = property.a;
+			return A2(
+				$elm$core$Maybe$map,
+				function (timing) {
+					var easing_ = A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Timing$Easing$Linear, config.easing);
+					var distance = $author$project$Anim$CSS$calculatePropertyDistance(property);
+					var duration_ = A2($author$project$Anim$Internal$Timing$TimeSpec$duration, distance, timing);
+					var delay_ = A2($elm$core$Maybe$withDefault, 0, config.delay);
+					return _Utils_Tuple2(
+						{delay: delay_, duration: duration_, easing: easing_},
+						property);
+				},
+				config.timing);
+		default:
+			var config = property.a;
+			return A2(
+				$elm$core$Maybe$map,
+				function (timing) {
+					var easing_ = A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Timing$Easing$Linear, config.easing);
+					var distance = $author$project$Anim$CSS$calculatePropertyDistance(property);
+					var duration_ = A2($author$project$Anim$Internal$Timing$TimeSpec$duration, distance, timing);
+					var delay_ = A2($elm$core$Maybe$withDefault, 0, config.delay);
+					return _Utils_Tuple2(
+						{delay: delay_, duration: duration_, easing: easing_},
+						property);
+				},
+				config.timing);
+	}
+};
+var $author$project$Anim$CSS$findMatchingGroup = F2(
+	function (timing, groups) {
+		return $elm$core$List$head(
+			A2(
+				$elm$core$List$filter,
+				function (group) {
+					return _Utils_eq(group.duration, timing.duration) && (_Utils_eq(group.easing, timing.easing) && _Utils_eq(group.delay, timing.delay));
+				},
+				groups));
+	});
+var $author$project$Anim$CSS$groupByTiming = F2(
+	function (_v0, groups) {
+		var timing = _v0.a;
+		var property = _v0.b;
+		var _v1 = A2($author$project$Anim$CSS$findMatchingGroup, timing, groups);
+		if (_v1.$ === 'Just') {
+			var group = _v1.a;
+			return A2(
+				$elm$core$List$map,
+				function (g) {
+					return _Utils_eq(g, group) ? _Utils_update(
+						g,
+						{
+							properties: A2($elm$core$List$cons, property, g.properties)
+						}) : g;
+				},
+				groups);
+		} else {
+			return A2(
+				$elm$core$List$cons,
+				{
+					delay: timing.delay,
+					duration: timing.duration,
+					easing: timing.easing,
+					properties: _List_fromArray(
+						[property])
+				},
+				groups);
+		}
+	});
+var $author$project$Anim$CSS$groupPropertiesByTiming = function (properties) {
+	return A2(
+		$elm$core$List$map,
+		function (group) {
+			return _Utils_update(
+				group,
+				{
+					properties: $elm$core$List$reverse(group.properties)
+				});
+		},
+		A3(
+			$elm$core$List$foldl,
+			$author$project$Anim$CSS$groupByTiming,
+			_List_Nil,
+			A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractPropertyTiming, properties)));
+};
+var $author$project$Anim$CSS$generateAnimationLayers = F2(
+	function (elementId, properties) {
+		if ($elm$core$List$isEmpty(properties)) {
+			return _List_Nil;
+		} else {
+			var timingGroups = $author$project$Anim$CSS$groupPropertiesByTiming(properties);
+			var layersFromGroups = A2(
+				$elm$core$List$filterMap,
+				$elm$core$Basics$identity,
+				A2(
+					$elm$core$List$indexedMap,
+					$author$project$Anim$CSS$createAnimationLayerFromGroup(elementId),
+					timingGroups));
+			return layersFromGroups;
+		}
+	});
+var $author$project$Anim$CSS$colorStyleFromProperty = function (property) {
+	switch (property.$) {
+		case 'ColorConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				_Utils_Tuple2(
+					'background-color',
+					$author$project$Anim$Internal$Properties$Color$toString(config.endAt)));
+		case 'OpacityConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				_Utils_Tuple2(
+					'opacity',
+					$author$project$Anim$Internal$Properties$Opacity$toString(config.endAt)));
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$CSS$generateColorStyles = function (properties) {
+	return A2($elm$core$List$filterMap, $author$project$Anim$CSS$colorStyleFromProperty, properties);
+};
+var $author$project$Anim$CSS$transformFromProperty = function (property) {
+	switch (property.$) {
+		case 'PositionConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				'translate(' + ($author$project$Anim$Internal$Properties$Position$toCssString(config.endAt) + ')'));
+		case 'RotateConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				'rotate(' + ($author$project$Anim$Internal$Properties$Rotate$toCssString(config.endAt) + ')'));
+		case 'ScaleConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				'scale(' + ($author$project$Anim$Internal$Properties$Scale$toCssString(config.endAt) + ')'));
+		case 'ColorConfig':
+			return $elm$core$Maybe$Nothing;
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$CSS$generateTransforms = function (properties) {
+	var transformParts = A2($elm$core$List$filterMap, $author$project$Anim$CSS$transformFromProperty, properties);
+	return A2($elm$core$String$join, ' ', transformParts);
+};
+var $author$project$Anim$CSS$chooseSmallerDelay = F2(
+	function (a, b) {
+		return (_Utils_cmp(a, b) < 1) ? a : b;
+	});
+var $author$project$Anim$CSS$extractDelay = function (property) {
+	switch (property.$) {
+		case 'PositionConfig':
+			var config = property.a;
+			return config.delay;
+		case 'RotateConfig':
+			var config = property.a;
+			return config.delay;
+		case 'ScaleConfig':
+			var config = property.a;
+			return config.delay;
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$CSS$findEarliestDelay = function (properties) {
+	var delays = A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractDelay, properties);
+	if (!delays.b) {
+		return $elm$core$Maybe$Nothing;
+	} else {
+		return $elm$core$Maybe$Just(
+			A3($elm$core$List$foldl, $author$project$Anim$CSS$chooseSmallerDelay, 999999, delays));
+	}
+};
+var $author$project$Anim$CSS$extractEasing = function (property) {
+	switch (property.$) {
+		case 'PositionConfig':
+			var config = property.a;
+			return config.easing;
+		case 'RotateConfig':
+			var config = property.a;
+			return config.easing;
+		case 'ScaleConfig':
+			var config = property.a;
+			return config.easing;
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$CSS$findLatestEasing = function (properties) {
+	return A2(
+		$elm$core$Maybe$withDefault,
+		$author$project$Anim$Internal$Timing$Easing$Linear,
+		$elm$core$List$head(
+			$elm$core$List$reverse(
+				A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractEasing, properties))));
+};
+var $author$project$Anim$CSS$extractDistance = function (property) {
+	switch (property.$) {
+		case 'PositionConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(config.distance);
+		case 'RotateConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(config.distance);
+		case 'ScaleConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(config.distance);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$List$maximum = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(
+			A3($elm$core$List$foldl, $elm$core$Basics$max, x, xs));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$CSS$findLongestDistance = function (properties) {
+	var distances = A2($elm$core$List$filterMap, $author$project$Anim$CSS$extractDistance, properties);
+	if (!distances.b) {
+		return 0.0;
+	} else {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			0.0,
+			$elm$core$List$maximum(distances));
+	}
+};
+var $elm$core$Basics$ge = _Utils_ge;
+var $author$project$Anim$CSS$chooseLongerDuration = F3(
+	function (calcDuration, a, b) {
+		var durationB = calcDuration(b);
+		var durationA = calcDuration(a);
+		return (_Utils_cmp(durationA, durationB) > -1) ? a : b;
 	});
 var $author$project$Anim$CSS$extractTiming = function (property) {
 	switch (property.$) {
@@ -6135,16 +7141,6 @@ var $author$project$Anim$CSS$extractTiming = function (property) {
 			return $elm$core$Maybe$Nothing;
 	}
 };
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
 var $author$project$Anim$CSS$findLongestDuration = function (properties) {
 	var propertyDistances = A2(
 		$elm$core$List$filterMap,
@@ -6184,106 +7180,10 @@ var $author$project$Anim$CSS$findLongestDuration = function (properties) {
 				rest));
 	}
 };
-var $author$project$Anim$Internal$Timing$Easing$easingToCSS = function (easing) {
-	switch (easing.$) {
-		case 'Bezier':
-			var p1x = easing.a;
-			var p1y = easing.b;
-			var p2x = easing.c;
-			var p2y = easing.d;
-			return 'cubic-bezier(' + ($elm$core$String$fromFloat(p1x) + (', ' + ($elm$core$String$fromFloat(p1y) + (', ' + ($elm$core$String$fromFloat(p2x) + (', ' + ($elm$core$String$fromFloat(p2y) + ')')))))));
-		case 'Linear':
-			return 'linear';
-		case 'Ease':
-			return 'ease';
-		case 'EaseIn':
-			return 'ease-in';
-		case 'EaseOut':
-			return 'ease-out';
-		case 'EaseInOut':
-			return 'ease-in-out';
-		case 'SineIn':
-			return 'cubic-bezier(0.12, 0, 0.39, 0)';
-		case 'SineOut':
-			return 'cubic-bezier(0.61, 1, 0.88, 1)';
-		case 'SineInOut':
-			return 'cubic-bezier(0.37, 0, 0.63, 1)';
-		case 'QuadIn':
-			return 'cubic-bezier(0.11, 0, 0.5, 0)';
-		case 'QuadOut':
-			return 'cubic-bezier(0.5, 1, 0.89, 1)';
-		case 'QuadInOut':
-			return 'cubic-bezier(0.45, 0, 0.55, 1)';
-		case 'CubicIn':
-			return 'cubic-bezier(0.32, 0, 0.67, 0)';
-		case 'CubicOut':
-			return 'cubic-bezier(0.33, 1, 0.68, 1)';
-		case 'CubicInOut':
-			return 'cubic-bezier(0.65, 0, 0.35, 1)';
-		case 'QuartIn':
-			return 'cubic-bezier(0.5, 0, 0.75, 0)';
-		case 'QuartOut':
-			return 'cubic-bezier(0.25, 1, 0.5, 1)';
-		case 'QuartInOut':
-			return 'cubic-bezier(0.76, 0, 0.24, 1)';
-		case 'QuintIn':
-			return 'cubic-bezier(0.64, 0, 0.78, 0)';
-		case 'QuintOut':
-			return 'cubic-bezier(0.22, 1, 0.36, 1)';
-		case 'QuintInOut':
-			return 'cubic-bezier(0.83, 0, 0.17, 1)';
-		case 'ExpoIn':
-			return 'cubic-bezier(0.7, 0, 0.84, 0)';
-		case 'ExpoOut':
-			return 'cubic-bezier(0.16, 1, 0.3, 1)';
-		case 'ExpoInOut':
-			return 'cubic-bezier(0.87, 0, 0.13, 1)';
-		case 'CircIn':
-			return 'cubic-bezier(0.55, 0, 1, 0.45)';
-		case 'CircOut':
-			return 'cubic-bezier(0, 0.55, 0.45, 1)';
-		case 'CircInOut':
-			return 'cubic-bezier(0.85, 0, 0.15, 1)';
-		case 'BackIn':
-			return 'cubic-bezier(0.36, 0, 0.66, -0.56)';
-		case 'BackOut':
-			return 'cubic-bezier(0.34, 1.56, 0.64, 1)';
-		case 'BackInOut':
-			return 'cubic-bezier(0.68, -0.6, 0.32, 1.6)';
-		case 'ElasticIn':
-			return 'cubic-bezier(0.175, 0.885, 0.320, 1.275)';
-		case 'ElasticOut':
-			return 'cubic-bezier(0.680, -0.550, 0.265, 1.550)';
-		case 'ElasticInOut':
-			return 'cubic-bezier(0.680, -0.550, 0.265, 1.550)';
-		case 'BounceIn':
-			return 'cubic-bezier(0.600, 0.040, 0.980, 0.335)';
-		case 'BounceOut':
-			return 'cubic-bezier(0.175, 0.885, 0.320, 1.275)';
-		case 'BounceInOut':
-			return 'cubic-bezier(0.680, -0.550, 0.265, 1.550)';
-		default:
-			var value = easing.a;
-			return value;
-	}
-};
-var $author$project$Anim$Internal$Timing$Easing$toCSS = function (maybeEasing) {
-	if (maybeEasing.$ === 'Just') {
-		var easing = maybeEasing.a;
-		return $author$project$Anim$Internal$Timing$Easing$easingToCSS(easing);
-	} else {
-		return 'ease';
-	}
-};
 var $author$project$Anim$Internal$Timing$Delay$toCssString = function (maybeDelayValue) {
 	if (maybeDelayValue.$ === 'Just') {
-		if (maybeDelayValue.a.$ === 'Delay') {
-			var d = maybeDelayValue.a.a;
-			return $elm$core$String$fromInt(d) + 'ms';
-		} else {
-			var _v1 = maybeDelayValue.a;
-			return '0ms';
-		}
+		var d = maybeDelayValue.a;
+		return $elm$core$String$fromInt(d) + 'ms';
 	} else {
 		return '0ms';
 	}
@@ -6366,12 +7266,12 @@ var $author$project$Anim$CSS$generateTransitions = function (properties) {
 	var allTransitions = _Utils_ap(transformTransition, nonTransformTransitions);
 	return A2($elm$core$String$join, ', ', allTransitions);
 };
-var $elm$core$Basics$not = _Basics_not;
 var $author$project$Anim$CSS$generateElementAnimation = F2(
 	function (elementId, elementConfig) {
 		var transitions = $author$project$Anim$CSS$generateTransitions(elementConfig.properties);
 		var transforms = $author$project$Anim$CSS$generateTransforms(elementConfig.properties);
 		var colors = $author$project$Anim$CSS$generateColorStyles(elementConfig.properties);
+		var animationLayers = A2($author$project$Anim$CSS$generateAnimationLayers, elementId, elementConfig.properties);
 		var allStyles = A2(
 			$elm$core$List$filter,
 			function (_v0) {
@@ -6385,7 +7285,7 @@ var $author$project$Anim$CSS$generateElementAnimation = F2(
 						_Utils_Tuple2('transition', transitions)
 					]),
 				colors));
-		return {elementId: elementId, keyframes: $elm$core$Maybe$Nothing, styles: allStyles};
+		return {animationLayers: animationLayers, elementId: elementId, styles: allStyles};
 	});
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
@@ -6658,21 +7558,8 @@ var $author$project$Anim$Internal$Builders$Opacity$delay = F2(
 				}),
 			builder);
 	});
-var $author$project$Anim$Internal$Timing$Delay$NoDelay = {$: 'NoDelay'};
-var $author$project$Anim$Timing$Delay$toInternal = function (delay) {
-	if (delay.$ === 'Delay') {
-		var d = delay.a;
-		return $author$project$Anim$Internal$Timing$Delay$Delay(d);
-	} else {
-		return $author$project$Anim$Internal$Timing$Delay$NoDelay;
-	}
-};
-var $author$project$Anim$Timing$Delay$mapInternal = function (fn) {
-	return A2($elm$core$Basics$composeL, fn, $author$project$Anim$Timing$Delay$toInternal);
-};
 var $author$project$Anim$Properties$Opacity$delay = function (delay_) {
-	return $author$project$Anim$Internal$Builders$Opacity$delay(
-		A2($author$project$Anim$Timing$Delay$mapInternal, $elm$core$Basics$identity, delay_));
+	return $author$project$Anim$Internal$Builders$Opacity$delay(delay_);
 };
 var $author$project$Anim$Internal$Builders$Opacity$duration = F2(
 	function (dur, _v0) {
@@ -6829,7 +7716,7 @@ var $author$project$ElmUI$CSS$Opacity$Main$update = F2(
 								$author$project$Anim$Properties$Opacity$build(
 									A2(
 										$author$project$Anim$Properties$Opacity$delay,
-										$author$project$Anim$Timing$Delay$Delay(300),
+										300,
 										A2(
 											$author$project$Anim$Properties$Opacity$easing,
 											$author$project$Anim$Timing$Easing$bounceInOut,
@@ -7208,10 +8095,6 @@ var $mdgriffith$elm_ui$Internal$Model$lengthClassName = function (x) {
 			var len = x.b;
 			return 'max' + ($elm$core$String$fromInt(max) + $mdgriffith$elm_ui$Internal$Model$lengthClassName(len));
 	}
-};
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
 };
 var $mdgriffith$elm_ui$Internal$Model$transformClass = function (transform) {
 	switch (transform.$) {
@@ -9615,27 +10498,6 @@ var $elm$json$Json$Encode$object = function (pairs) {
 			_Json_emptyObject(_Utils_Tuple0),
 			pairs));
 };
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
 var $mdgriffith$elm_ui$Internal$Model$fontName = function (font) {
 	switch (font.$) {
 		case 'Serif':
@@ -10816,13 +11678,6 @@ var $mdgriffith$elm_ui$Internal$Model$finalizeNode = F6(
 				return html;
 		}
 	});
-var $elm$core$List$isEmpty = function (xs) {
-	if (!xs.b) {
-		return true;
-	} else {
-		return false;
-	}
-};
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $mdgriffith$elm_ui$Internal$Model$textElementClasses = $mdgriffith$elm_ui$Internal$Style$classes.any + (' ' + ($mdgriffith$elm_ui$Internal$Style$classes.text + (' ' + ($mdgriffith$elm_ui$Internal$Style$classes.widthContent + (' ' + $mdgriffith$elm_ui$Internal$Style$classes.heightContent)))));
 var $mdgriffith$elm_ui$Internal$Model$textElement = function (str) {

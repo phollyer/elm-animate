@@ -25,7 +25,7 @@ USAGE:
 import Anim
 import Anim.CSS as CSS
 import Anim.Properties.Position as Position
-import Anim.Timing.Delay as Delay exposing (Delay(..))
+import Anim.Timing.Delay as Delay
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
@@ -146,7 +146,7 @@ update msg model =
                         |> Position.toY 350
                         |> Position.easing Easing.BounceInOut
                         |> Position.duration 5000
-                        --|> Position.delay (Delay 1000)
+                        --|> Position.delay (1000)
                         |> Position.build
                         |> CSS.animate
               }
@@ -198,19 +198,8 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    let
-        currentPos =
-            CSS.getElementPosition "box" model.animations
-    in
     [ UI.backButton
     , UI.pageHeader "CSS Position Animations"
-    , -- Position display
-      el
-        [ Font.size 14
-        , Font.color Colors.textMedium
-        , centerX
-        ]
-        (text ("Position: (" ++ String.fromInt (round currentPos.x) ++ ", " ++ String.fromInt (round currentPos.y) ++ ")"))
     , -- Buttons for predefined moves
       UI.wrappedButtonRow
         [ ( UI.Primary, MoveToPosition 100 100, "Move to (100, 100)" )

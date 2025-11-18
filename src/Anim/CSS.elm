@@ -1,6 +1,6 @@
 module Anim.CSS exposing
     ( AnimationState, init, builder, animate
-    , htmlAttributes, getElementKeyframes, animationStyleAttribute, keyframesStyleNode
+    , htmlAttributes, getElementKeyframes, animationStyleAttribute, keyframesStyleNode, keyframesStyleNodeFor
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
     )
@@ -18,7 +18,7 @@ can be easily added to your elements as style tags or css [transform](https://de
 
 # View
 
-@docs htmlAttributes, getElementKeyframes, animationStyleAttribute, keyframesStyleNode
+@docs htmlAttributes, getElementKeyframes, animationStyleAttribute, keyframesStyleNode, keyframesStyleNodeFor
 
 
 # Event Handling
@@ -82,12 +82,24 @@ type alias ElementId =
     String
 
 
-{-| CSS animation data for a single element.
+{-| CSS animation data for a single element with support for multiple simultaneous animations.
 -}
 type alias ElementAnimation =
     { elementId : ElementId
     , styles : List ( String, String )
-    , keyframes : Maybe String
+    , animationLayers : List AnimationLayer
+    }
+
+
+{-| Individual animation layer that can run independently.
+-}
+type alias AnimationLayer =
+    { animationName : String
+    , keyframes : String
+    , duration : Int
+    , easing : String
+    , delay : Int
+    , properties : List String -- Properties this layer animates
     }
 
 
@@ -175,12 +187,12 @@ generateElementAnimation elementId elementConfig =
                 ++ colors
                 |> List.filter (\( _, value ) -> not (String.isEmpty value))
 
-        keyframes =
-            generateKeyframes elementId elementConfig.properties
+        animationLayers =
+            generateAnimationLayers elementId elementConfig.properties
     in
     { elementId = elementId
     , styles = allStyles
-    , keyframes = keyframes
+    , animationLayers = animationLayers
     }
 
 
@@ -547,35 +559,10 @@ colorStyleFromProperty property =
             Nothing
 
 
-{-| Generate CSS keyframes for an element's animation properties with timing information.
+{-| Generate animation layers for an element's properties, supporting multiple simultaneous animations.
 -}
-generateKeyframes : String -> List Builder.PropertyConfig -> Maybe String
-generateKeyframes elementId properties =
-    if List.isEmpty properties then
-        Nothing
-
-    else
-        let
-            keyframeSteps =
-                generateKeyframeSteps properties
-
-            timingGroups =
-                groupPropertiesByTiming properties
-
-            dominantGroup =
-                findDominantTimingGroup timingGroups
-        in
-        if List.isEmpty keyframeSteps then
-            Nothing
-
-        else
-            Just (buildKeyframesString elementId keyframeSteps dominantGroup)
-
-
-{-| Generate keyframe steps from animation properties with proper timing and easing.
--}
-generateKeyframeSteps : List Builder.PropertyConfig -> List ( Float, List ( String, String ) )
-generateKeyframeSteps properties =
+generateAnimationLayers : String -> List Builder.PropertyConfig -> List AnimationLayer
+generateAnimationLayers elementId properties =
     if List.isEmpty properties then
         []
 
@@ -585,17 +572,86 @@ generateKeyframeSteps properties =
             timingGroups =
                 groupPropertiesByTiming properties
 
-            -- Generate keyframes for the dominant timing group
-            dominantGroup =
-                findDominantTimingGroup timingGroups
+            -- Create separate animation layers for different timing groups
+            layersFromGroups =
+                timingGroups
+                    |> List.indexedMap (createAnimationLayerFromGroup elementId)
+                    |> List.filterMap identity
         in
-        case dominantGroup of
-            Just group ->
-                generateTimedKeyframeSteps group properties
+        layersFromGroups
 
-            Nothing ->
-                -- Fallback to basic keyframes if no timing info
-                generateBasicKeyframeSteps properties
+
+{-| Create an animation layer from a timing group.
+-}
+createAnimationLayerFromGroup : String -> Int -> TimingGroup -> Maybe AnimationLayer
+createAnimationLayerFromGroup elementId layerIndex timingGroup =
+    let
+        keyframeSteps =
+            generateTimedKeyframeSteps timingGroup timingGroup.properties
+
+        animationName =
+            elementId ++ "-layer-" ++ String.fromInt layerIndex
+
+        keyframesString =
+            buildKeyframesString animationName keyframeSteps (Just timingGroup)
+
+        animatedProperties =
+            extractAnimatedProperties timingGroup.properties
+    in
+    if List.isEmpty keyframeSteps then
+        Nothing
+
+    else
+        Just
+            { animationName = animationName
+            , keyframes = keyframesString
+            , duration = timingGroup.duration
+            , easing = Easing.toCSS (Just timingGroup.easing)
+            , delay = timingGroup.delay
+            , properties = animatedProperties
+            }
+
+
+{-| Extract the CSS property names that are animated by a list of property configs.
+-}
+extractAnimatedProperties : List Builder.PropertyConfig -> List String
+extractAnimatedProperties properties =
+    List.filterMap
+        (\property ->
+            case property of
+                Builder.PositionConfig _ ->
+                    Just "transform"
+
+                Builder.RotateConfig _ ->
+                    Just "transform"
+
+                Builder.ScaleConfig _ ->
+                    Just "transform"
+
+                Builder.ColorConfig _ ->
+                    Just "background-color"
+
+                Builder.OpacityConfig _ ->
+                    Just "opacity"
+        )
+        properties
+        |> removeDuplicates
+
+
+{-| Remove duplicate strings from a list.
+-}
+removeDuplicates : List String -> List String
+removeDuplicates list =
+    case list of
+        [] ->
+            []
+
+        x :: xs ->
+            if List.member x xs then
+                removeDuplicates xs
+
+            else
+                x :: removeDuplicates xs
 
 
 {-| Group animation properties by their timing characteristics.
@@ -765,13 +821,6 @@ findMatchingGroup timing groups =
         |> List.head
 
 
-findDominantTimingGroup : List TimingGroup -> Maybe TimingGroup
-findDominantTimingGroup groups =
-    groups
-        |> List.sortBy (\group -> -1 * List.length group.properties)
-        |> List.head
-
-
 {-| Generate keyframes with proper timing and easing distribution.
 -}
 generateTimedKeyframeSteps : TimingGroup -> List Builder.PropertyConfig -> List ( Float, List ( String, String ) )
@@ -810,25 +859,6 @@ generateTimedKeyframeSteps dominantGroup allProperties =
         |> List.map (\( _, easedProgress ) -> ( easedProgress, generateStepStyles easedProgress ))
         |> List.filter (\( _, styles ) -> not (List.isEmpty styles))
         |> List.indexedMap (\i ( _, styles ) -> ( toFloat i / 14.0, styles ))
-
-
-{-| Fallback to basic keyframes when no timing information is available.
--}
-generateBasicKeyframeSteps : List Builder.PropertyConfig -> List ( Float, List ( String, String ) )
-generateBasicKeyframeSteps properties =
-    let
-        steps =
-            [ 0.0, 0.25, 0.5, 0.75, 1.0 ]
-
-        generateStepStyles : Float -> List ( String, String )
-        generateStepStyles progress =
-            properties
-                |> List.filterMap (propertyToKeyframeStyle progress)
-                |> combineTransformStyles
-    in
-    steps
-        |> List.map (\progress -> ( progress, generateStepStyles progress ))
-        |> List.filter (\( _, styles ) -> not (List.isEmpty styles))
 
 
 {-| Combine multiple transform properties into a single transform style.
@@ -1025,43 +1055,27 @@ animationStyleAttribute : String -> AnimationState -> Html.Attribute msg
 animationStyleAttribute elementId animationState =
     case getElementAnimation elementId animationState of
         Just elementAnimation ->
-            case elementAnimation.keyframes of
-                Just _ ->
-                    let
-                        animationName =
-                            elementId ++ "-animation"
-
-                        timingGroups =
-                            animationState
-                                |> getBuilder
-                                |> Builder.elements
-                                |> Dict.get elementId
-                                |> Maybe.map .properties
-                                |> Maybe.withDefault []
-                                |> groupPropertiesByTiming
-
-                        dominantGroup =
-                            findDominantTimingGroup timingGroups
-
-                        animationValue =
-                            case dominantGroup of
-                                Just group ->
-                                    animationName
+            if not (List.isEmpty elementAnimation.animationLayers) then
+                let
+                    animationValues =
+                        elementAnimation.animationLayers
+                            |> List.map
+                                (\layer ->
+                                    layer.animationName
                                         ++ " "
-                                        ++ String.fromInt group.duration
+                                        ++ String.fromInt layer.duration
                                         ++ "ms "
-                                        ++ Easing.toCSS (Just group.easing)
+                                        ++ layer.easing
                                         ++ " "
-                                        ++ String.fromInt group.delay
+                                        ++ String.fromInt layer.delay
                                         ++ "ms"
+                                )
+                            |> String.join ", "
+                in
+                Html.Attributes.style "animation" animationValues
 
-                                Nothing ->
-                                    animationName ++ " 1s ease 0ms"
-                    in
-                    Html.Attributes.style "animation" animationValue
-
-                Nothing ->
-                    Html.Attributes.style "animation" ""
+            else
+                Html.Attributes.style "animation" ""
 
         Nothing ->
             Html.Attributes.style "animation" ""
@@ -1087,7 +1101,8 @@ keyframesStyleNode (AnimationState state) =
     let
         allKeyframes =
             Dict.values state.elementAnimations
-                |> List.filterMap .keyframes
+                |> List.concatMap .animationLayers
+                |> List.map .keyframes
                 |> String.join "\n\n"
     in
     if String.isEmpty allKeyframes then
@@ -1097,11 +1112,42 @@ keyframesStyleNode (AnimationState state) =
         Html.node "style" [] [ Html.text allKeyframes ]
 
 
-{-| Helper function to get the animation builder from state.
+{-| Generate a `<style>` node containing keyframes for a specific element.
+
+This creates a style node for just one element, giving you fine-grained control over which
+keyframes are included in your DOM.
+
+    view model =
+        div []
+            [ CSS.keyframesStyleNodeFor "my-element" model.animationState
+            , div
+                [ Html.Attributes.id "my-element"
+                , CSS.animationStyleAttribute "my-element" model.animationState
+                ]
+                [ text "Animating element" ]
+            ]
+
+If the element has no animations, this returns an empty text node.
+
 -}
-getBuilder : AnimationState -> AnimBuilder
-getBuilder (AnimationState state) =
-    state.builder
+keyframesStyleNodeFor : String -> AnimationState -> Html.Html msg
+keyframesStyleNodeFor elementId (AnimationState state) =
+    case Dict.get elementId state.elementAnimations of
+        Just elementAnimation ->
+            if List.isEmpty elementAnimation.animationLayers then
+                Html.text ""
+
+            else
+                let
+                    elementKeyframes =
+                        elementAnimation.animationLayers
+                            |> List.map .keyframes
+                            |> String.join "\n\n"
+                in
+                Html.node "style" [] [ Html.text elementKeyframes ]
+
+        Nothing ->
+            Html.text ""
 
 
 {-| Helper function to get element animation data.
@@ -1128,7 +1174,17 @@ The generated keyframes will have a name based on the element ID (e.g., "my-elem
 getElementKeyframes : String -> AnimationState -> Maybe String
 getElementKeyframes elementId (AnimationState state) =
     Dict.get elementId state.elementAnimations
-        |> Maybe.andThen .keyframes
+        |> Maybe.andThen
+            (\elementAnimation ->
+                if List.isEmpty elementAnimation.animationLayers then
+                    Nothing
+
+                else
+                    elementAnimation.animationLayers
+                        |> List.map .keyframes
+                        |> String.join "\n\n"
+                        |> Just
+            )
 
 
 {-| Get all the HTML attributes needed for the CSS animations on the target element.

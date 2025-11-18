@@ -31,7 +31,7 @@ import Anim.Properties.Opacity as Opacity
 import Anim.Properties.Position as Position
 import Anim.Properties.Rotate as Rotate
 import Anim.Properties.Scale as Scale
-import Anim.Timing.Delay as Delay exposing (Delay(..))
+import Anim.Timing.Delay as Delay
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
@@ -179,7 +179,7 @@ update msg model =
                         -- Scale
                         |> Scale.for "mixed-box"
                         |> Scale.toXY 0.8 0.8
-                        |> Scale.delay (Delay 200)
+                        |> Scale.delay 200
                         |> Scale.build
                         |> CSS.animate
                 , isAnimating = True
@@ -232,21 +232,21 @@ update msg model =
                         |> Rotate.to 135
                         |> Rotate.easing ElasticInOut
                         |> Rotate.duration 1400
-                        |> Rotate.delay (Delay 300)
+                        |> Rotate.delay 300
                         |> Rotate.build
                         -- Scale
                         |> Scale.for "mixed-box"
                         |> Scale.toXY 1.4 0.9
                         |> Scale.easing CircInOut
                         |> Scale.duration 1000
-                        |> Scale.delay (Delay 2000)
+                        |> Scale.delay 2000
                         |> Scale.build
                         -- Opacity
                         |> Opacity.for "mixed-box"
                         |> Opacity.to 0.7
                         |> Opacity.easing Linear
                         |> Opacity.duration 800
-                        |> Opacity.delay (Delay 100)
+                        |> Opacity.delay 100
                         |> Opacity.build
                         -- Color
                         |> Color.for "mixed-box"
