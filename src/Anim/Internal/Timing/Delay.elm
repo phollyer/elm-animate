@@ -1,64 +1,23 @@
 module Anim.Internal.Timing.Delay exposing
-    ( Delay(..)
-    , encode
+    ( encode
     , encodeMaybe
-    , fromInt
     , toCssString
-    , toFloat
-    , toInt
     )
 
 import Json.Encode as Encode
 
 
-type Delay
-    = Delay Int
-    | NoDelay
-
-
-toCssString : Maybe Delay -> String
+toCssString : Maybe Int -> String
 toCssString maybeDelayValue =
     case maybeDelayValue of
-        Just (Delay d) ->
+        Just d ->
             String.fromInt d ++ "ms"
-
-        Just NoDelay ->
-            "0ms"
 
         Nothing ->
             "0ms"
 
 
-toInt : Delay -> Int
-toInt delayValue =
-    case delayValue of
-        Delay d ->
-            d
-
-        NoDelay ->
-            0
-
-
-toFloat : Delay -> Float
-toFloat delayValue =
-    case delayValue of
-        Delay d ->
-            Basics.toFloat d
-
-        NoDelay ->
-            0
-
-
-fromInt : Int -> Delay
-fromInt d =
-    if d <= 0 then
-        NoDelay
-
-    else
-        Delay d
-
-
-encodeMaybe : Maybe Delay -> Encode.Value
+encodeMaybe : Maybe Int -> Encode.Value
 encodeMaybe maybeDelay =
     case maybeDelay of
         Just delayValue ->
@@ -68,11 +27,6 @@ encodeMaybe maybeDelay =
             Encode.null
 
 
-encode : Delay -> Encode.Value
+encode : Int -> Encode.Value
 encode delayValue =
-    case delayValue of
-        Delay d ->
-            Encode.int d
-
-        NoDelay ->
-            Encode.null
+    Encode.int delayValue

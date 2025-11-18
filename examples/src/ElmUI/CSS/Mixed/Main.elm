@@ -122,7 +122,7 @@ update msg model =
                         |> Position.build
                         -- Scale
                         |> Scale.for "mixed-box"
-                        |> Scale.to (Scale.ScaleXY 1.5 1.2)
+                        |> Scale.toXY 1.5 1.2
                         |> Scale.easing BackInOut
                         |> Scale.duration 1000
                         |> Scale.build
@@ -178,7 +178,7 @@ update msg model =
                         |> Rotate.build
                         -- Scale
                         |> Scale.for "mixed-box"
-                        |> Scale.to (Scale.ScaleXY 0.8 0.8)
+                        |> Scale.toXY 0.8 0.8
                         |> Scale.delay (Delay 200)
                         |> Scale.build
                         |> CSS.animate
@@ -203,7 +203,7 @@ update msg model =
                         |> Color.build
                         -- Scale
                         |> Scale.for "mixed-box"
-                        |> Scale.to (Scale.ScaleXY 1.3 1.3)
+                        |> Scale.toXY 1.3 1.3
                         |> Scale.build
                         |> CSS.animate
                 , isAnimating = True
@@ -236,7 +236,7 @@ update msg model =
                         |> Rotate.build
                         -- Scale
                         |> Scale.for "mixed-box"
-                        |> Scale.to (Scale.ScaleXY 1.4 0.9)
+                        |> Scale.toXY 1.4 0.9
                         |> Scale.easing CircInOut
                         |> Scale.duration 1000
                         |> Scale.delay (Delay 2000)
@@ -253,7 +253,7 @@ update msg model =
                         |> Color.to (Color.Rgb { r = 100, g = 255, b = 200 })
                         |> Color.easing QuintInOut
                         |> Color.duration 1100
-                        |> Color.delay (Delay 400)
+                        |> Color.delay 400
                         |> Color.build
                         |> CSS.animate
                 , isAnimating = True
@@ -280,7 +280,7 @@ update msg model =
                         |> Opacity.build
                         -- Scale
                         |> Scale.for "mixed-box"
-                        |> Scale.to (Scale.ScaleXY 1.0 1.0)
+                        |> Scale.toXY 1.0 1.0
                         |> Scale.build
                         -- Rotate
                         |> Rotate.for "mixed-box"

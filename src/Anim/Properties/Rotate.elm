@@ -48,7 +48,6 @@ On subsequent animations, it will start from the last known rotation, so you onl
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Rotate as RB
 import Anim.Internal.Properties.Rotate as R
-import Anim.Timing.Delay as Delay exposing (Delay)
 import Anim.Timing.Easing as Easing exposing (Easing)
 
 
@@ -166,6 +165,6 @@ easing easingFunction =
         |> ...
 
 -}
-delay : Delay -> Builder -> Builder
+delay : Int -> Builder -> Builder
 delay delay_ =
-    RB.delay (Delay.mapInternal identity delay_)
+    RB.delay delay_

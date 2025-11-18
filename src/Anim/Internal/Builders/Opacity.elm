@@ -13,7 +13,6 @@ module Anim.Internal.Builders.Opacity exposing
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
-import Anim.Internal.Timing.Delay exposing (Delay)
 import Anim.Internal.Timing.Easing exposing (Easing)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
@@ -97,7 +96,7 @@ type alias OpacityConfig =
     , distance : Float -- Opacity units
     , timing : Maybe TimeSpec
     , easing : Maybe Easing
-    , delay : Maybe Delay
+    , delay : Maybe Int
     }
 
 
@@ -168,6 +167,6 @@ easing ease (OpacityBuilder config builder) =
     OpacityBuilder { config | easing = Just ease } builder
 
 
-delay : Delay -> OpacityBuilder -> OpacityBuilder
+delay : Int -> OpacityBuilder -> OpacityBuilder
 delay dly (OpacityBuilder config builder) =
     OpacityBuilder { config | delay = Just dly } builder

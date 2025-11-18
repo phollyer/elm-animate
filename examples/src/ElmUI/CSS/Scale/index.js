@@ -5222,10 +5222,6 @@ var $author$project$Anim$Timing$Delay$Delay = function (a) {
 	return {$: 'Delay', a: a};
 };
 var $author$project$Anim$Timing$Easing$QuadInOut = {$: 'QuadInOut'};
-var $author$project$Anim$Properties$Scale$ScaleXY = F2(
-	function (a, b) {
-		return {$: 'ScaleXY', a: a, b: b};
-	});
 var $author$project$Anim$Timing$Easing$SineInOut = {$: 'SineInOut'};
 var $author$project$Anim$Timing$Easing$Linear = {$: 'Linear'};
 var $author$project$Anim$CSS$builder = function (_v0) {
@@ -5668,12 +5664,12 @@ var $author$project$Anim$Internal$Properties$Position$toCssString = function (_v
 	var coords = _v0.a;
 	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + 'px'));
 };
-var $author$project$Anim$Internal$Properties$Rotation$toString = function (_v0) {
+var $author$project$Anim$Internal$Properties$Rotate$toString = function (_v0) {
 	var angle = _v0.a;
 	return $elm$core$String$fromFloat(angle);
 };
-var $author$project$Anim$Internal$Properties$Rotation$toCssString = function (rotation) {
-	return $author$project$Anim$Internal$Properties$Rotation$toString(rotation) + 'deg';
+var $author$project$Anim$Internal$Properties$Rotate$toCssString = function (rotation) {
+	return $author$project$Anim$Internal$Properties$Rotate$toString(rotation) + 'deg';
 };
 var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) {
 	var sx = _v0.a;
@@ -5689,7 +5685,7 @@ var $author$project$Anim$CSS$transformFromProperty = function (property) {
 		case 'RotateConfig':
 			var config = property.a;
 			return $elm$core$Maybe$Just(
-				'rotate(' + ($author$project$Anim$Internal$Properties$Rotation$toCssString(config.endAt) + ')'));
+				'rotate(' + ($author$project$Anim$Internal$Properties$Rotate$toCssString(config.endAt) + ')'));
 		case 'ScaleConfig':
 			var config = property.a;
 			return $elm$core$Maybe$Just(
@@ -5997,7 +5993,7 @@ var $author$project$Anim$Internal$Properties$Position$distance = F2(
 		var dx = a.x - b.x;
 		return $elm$core$Basics$sqrt((dx * dx) + (dy * dy));
 	});
-var $author$project$Anim$Internal$Properties$Rotation$distance = F2(
+var $author$project$Anim$Internal$Properties$Rotate$distance = F2(
 	function (_v0, _v1) {
 		var start = _v0.a;
 		var end = _v1.a;
@@ -6019,11 +6015,11 @@ var $author$project$Anim$Internal$Properties$Opacity$Opacity = function (a) {
 var $author$project$Anim$Internal$Properties$Opacity$fromFloat = function (o) {
 	return $author$project$Anim$Internal$Properties$Opacity$Opacity(o);
 };
-var $author$project$Anim$Internal$Properties$Rotation$Rotation = function (a) {
-	return {$: 'Rotation', a: a};
+var $author$project$Anim$Internal$Properties$Rotate$Rotate = function (a) {
+	return {$: 'Rotate', a: a};
 };
-var $author$project$Anim$Internal$Properties$Rotation$fromFloat = function (angle) {
-	return $author$project$Anim$Internal$Properties$Rotation$Rotation(angle);
+var $author$project$Anim$Internal$Properties$Rotate$fromFloat = function (angle) {
+	return $author$project$Anim$Internal$Properties$Rotate$Rotate(angle);
 };
 var $author$project$Anim$Internal$Properties$Position$Position = function (a) {
 	return {$: 'Position', a: a};
@@ -6065,10 +6061,10 @@ var $author$project$Anim$CSS$calculatePropertyDistance = function (property) {
 					var s = _v2.a;
 					return s;
 				} else {
-					return $author$project$Anim$Internal$Properties$Rotation$fromFloat(0);
+					return $author$project$Anim$Internal$Properties$Rotate$fromFloat(0);
 				}
 			}();
-			return A2($author$project$Anim$Internal$Properties$Rotation$distance, startAt, config.endAt);
+			return A2($author$project$Anim$Internal$Properties$Rotate$distance, startAt, config.endAt);
 		case 'ScaleConfig':
 			var config = property.a;
 			var startAt = function () {
@@ -6736,8 +6732,8 @@ var $author$project$Anim$Internal$Builders$Scale$speed = F2(
 			builder);
 	});
 var $author$project$Anim$Properties$Scale$speed = $author$project$Anim$Internal$Builders$Scale$speed;
-var $author$project$Anim$Internal$Builders$Scale$to = F2(
-	function (scale, _v0) {
+var $author$project$Anim$Internal$Builders$Scale$toXY = F3(
+	function (scaleX, scaleY, _v0) {
 		var config = _v0.a;
 		var builder = _v0.b;
 		var startPos = function () {
@@ -6750,6 +6746,8 @@ var $author$project$Anim$Internal$Builders$Scale$to = F2(
 					_Utils_Tuple2(1, 1));
 			}
 		}();
+		var scale = $author$project$Anim$Internal$Properties$Scale$fromTuple(
+			_Utils_Tuple2(scaleX, scaleY));
 		return A2(
 			$author$project$Anim$Internal$Builders$Scale$ScaleBuilder,
 			_Utils_update(
@@ -6761,15 +6759,7 @@ var $author$project$Anim$Internal$Builders$Scale$to = F2(
 				}),
 			builder);
 	});
-var $author$project$Anim$Properties$Scale$toInternal = function (scale) {
-	var x = scale.a;
-	var y = scale.b;
-	return A2($author$project$Anim$Internal$Properties$Scale$ScaleXY, x, y);
-};
-var $author$project$Anim$Properties$Scale$to = function (targetScale) {
-	return $author$project$Anim$Internal$Builders$Scale$to(
-		$author$project$Anim$Properties$Scale$toInternal(targetScale));
-};
+var $author$project$Anim$Properties$Scale$toXY = $author$project$Anim$Internal$Builders$Scale$toXY;
 var $author$project$ElmUI$CSS$Scale$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -6783,9 +6773,10 @@ var $author$project$ElmUI$CSS$Scale$Main$update = F2(
 									A2(
 										$author$project$Anim$Properties$Scale$easing,
 										$author$project$Anim$Timing$Easing$QuadInOut,
-										A2(
-											$author$project$Anim$Properties$Scale$to,
-											A2($author$project$Anim$Properties$Scale$ScaleXY, 1.5, 1.5),
+										A3(
+											$author$project$Anim$Properties$Scale$toXY,
+											1.5,
+											1.5,
 											$author$project$ElmUI$CSS$Scale$Main$anim(model.animations)))))
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -6802,9 +6793,10 @@ var $author$project$ElmUI$CSS$Scale$Main$update = F2(
 										A2(
 											$author$project$Anim$Properties$Scale$easing,
 											$author$project$Anim$Timing$Easing$SineInOut,
-											A2(
-												$author$project$Anim$Properties$Scale$to,
-												A2($author$project$Anim$Properties$Scale$ScaleXY, 0.7, 0.7),
+											A3(
+												$author$project$Anim$Properties$Scale$toXY,
+												0.7,
+												0.7,
 												$author$project$ElmUI$CSS$Scale$Main$anim(model.animations))))))
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -6821,9 +6813,10 @@ var $author$project$ElmUI$CSS$Scale$Main$update = F2(
 										A2(
 											$author$project$Anim$Properties$Scale$easing,
 											$author$project$Anim$Timing$Easing$backInOut,
-											A2(
-												$author$project$Anim$Properties$Scale$to,
-												A2($author$project$Anim$Properties$Scale$ScaleXY, 2.0, 0.8),
+											A3(
+												$author$project$Anim$Properties$Scale$toXY,
+												2.0,
+												0.8,
 												$author$project$ElmUI$CSS$Scale$Main$anim(model.animations))))))
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -6840,9 +6833,10 @@ var $author$project$ElmUI$CSS$Scale$Main$update = F2(
 										A2(
 											$author$project$Anim$Properties$Scale$easing,
 											$author$project$Anim$Timing$Easing$bounceInOut,
-											A2(
-												$author$project$Anim$Properties$Scale$to,
-												A2($author$project$Anim$Properties$Scale$ScaleXY, 0.6, 1.8),
+											A3(
+												$author$project$Anim$Properties$Scale$toXY,
+												0.6,
+												1.8,
 												$author$project$ElmUI$CSS$Scale$Main$anim(model.animations))))))
 						}),
 					$elm$core$Platform$Cmd$none);
@@ -6859,9 +6853,10 @@ var $author$project$ElmUI$CSS$Scale$Main$update = F2(
 										A2(
 											$author$project$Anim$Properties$Scale$easing,
 											$author$project$Anim$Timing$Easing$elasticInOut,
-											A2(
-												$author$project$Anim$Properties$Scale$to,
-												A2($author$project$Anim$Properties$Scale$ScaleXY, 1.0, 1.0),
+											A3(
+												$author$project$Anim$Properties$Scale$toXY,
+												1.0,
+												1.0,
 												$author$project$ElmUI$CSS$Scale$Main$anim(model.animations))))))
 						}),
 					$elm$core$Platform$Cmd$none);

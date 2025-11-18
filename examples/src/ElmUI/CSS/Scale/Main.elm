@@ -17,7 +17,7 @@ FEATURES:
 
 import Anim
 import Anim.CSS as CSS
-import Anim.Properties.Scale as Scale exposing (Scale(..), ScaleXY)
+import Anim.Properties.Scale as Scale
 import Anim.Timing.Delay as Delay exposing (Delay(..))
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
@@ -93,7 +93,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Scale.to (ScaleXY 1.5 1.5)
+                        |> Scale.toXY 1.5 1.5
                         |> Scale.easing Easing.QuadInOut
                         |> Scale.build
                         |> CSS.animate
@@ -106,7 +106,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Scale.to (ScaleXY 0.7 0.7)
+                        |> Scale.toXY 0.7 0.7
                         |> Scale.easing Easing.SineInOut
                         |> Scale.speed 2.0
                         |> Scale.build
@@ -120,7 +120,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Scale.to (ScaleXY 2.0 0.8)
+                        |> Scale.toXY 2.0 0.8
                         |> Scale.easing Easing.backInOut
                         |> Scale.duration 700
                         |> Scale.build
@@ -134,7 +134,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Scale.to (ScaleXY 0.6 1.8)
+                        |> Scale.toXY 0.6 1.8
                         |> Scale.easing Easing.bounceInOut
                         |> Scale.delay (Delay 200)
                         |> Scale.build
@@ -148,7 +148,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Scale.to (ScaleXY 1.0 1.0)
+                        |> Scale.toXY 1.0 1.0
                         |> Scale.easing Easing.elasticInOut
                         |> Scale.duration 800
                         |> Scale.build

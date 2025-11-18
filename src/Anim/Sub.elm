@@ -42,7 +42,6 @@ import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
-import Anim.Internal.Timing.Delay as Delay exposing (Delay)
 import Anim.Internal.Timing.Easing as Easing exposing (Easing(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Events
@@ -77,7 +76,7 @@ type alias PropertyAnimationState =
     , targetValue : AnimationValue
     , currentValue : AnimationValue
     , elapsed : Float -- milliseconds
-    , delay : Delay
+    , delay : Int
     , easing : Easing
     , speed : Float -- units per second
     , distance : Float -- units
@@ -469,7 +468,7 @@ updatePropertyAnimation deltaMs propertyState =
                 propertyState.elapsed + deltaMs
 
             delay =
-                Delay.toFloat propertyState.delay
+                toFloat propertyState.delay
         in
         -- Check if still in delay period
         if newElapsed < delay then

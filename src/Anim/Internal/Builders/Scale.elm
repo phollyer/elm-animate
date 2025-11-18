@@ -17,7 +17,6 @@ module Anim.Internal.Builders.Scale exposing
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
-import Anim.Internal.Timing.Delay exposing (Delay)
 import Anim.Internal.Timing.Easing exposing (Easing)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
@@ -100,7 +99,7 @@ type alias ScaleConfig =
     , distance : Float -- Pixels
     , timing : Maybe TimeSpec
     , easing : Maybe Easing
-    , delay : Maybe Delay
+    , delay : Maybe Int
     }
 
 
@@ -264,6 +263,6 @@ easing easing_ (ScaleBuilder config builder) =
     ScaleBuilder { config | easing = Just easing_ } builder
 
 
-delay : Delay -> ScaleBuilder -> ScaleBuilder
+delay : Int -> ScaleBuilder -> ScaleBuilder
 delay delay_ (ScaleBuilder config builder) =
     ScaleBuilder { config | delay = Just delay_ } builder

@@ -6228,12 +6228,12 @@ var $author$project$Anim$Internal$Properties$Position$toCssString = function (_v
 	var coords = _v0.a;
 	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + 'px'));
 };
-var $author$project$Anim$Internal$Properties$Rotation$toString = function (_v0) {
+var $author$project$Anim$Internal$Properties$Rotate$toString = function (_v0) {
 	var angle = _v0.a;
 	return $elm$core$String$fromFloat(angle);
 };
-var $author$project$Anim$Internal$Properties$Rotation$toCssString = function (rotation) {
-	return $author$project$Anim$Internal$Properties$Rotation$toString(rotation) + 'deg';
+var $author$project$Anim$Internal$Properties$Rotate$toCssString = function (rotation) {
+	return $author$project$Anim$Internal$Properties$Rotate$toString(rotation) + 'deg';
 };
 var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) {
 	var sx = _v0.a;
@@ -6249,7 +6249,7 @@ var $author$project$Anim$CSS$transformFromProperty = function (property) {
 		case 'RotateConfig':
 			var config = property.a;
 			return $elm$core$Maybe$Just(
-				'rotate(' + ($author$project$Anim$Internal$Properties$Rotation$toCssString(config.endAt) + ')'));
+				'rotate(' + ($author$project$Anim$Internal$Properties$Rotate$toCssString(config.endAt) + ')'));
 		case 'ScaleConfig':
 			var config = property.a;
 			return $elm$core$Maybe$Just(
@@ -6557,7 +6557,7 @@ var $author$project$Anim$Internal$Properties$Position$distance = F2(
 		var dx = a.x - b.x;
 		return $elm$core$Basics$sqrt((dx * dx) + (dy * dy));
 	});
-var $author$project$Anim$Internal$Properties$Rotation$distance = F2(
+var $author$project$Anim$Internal$Properties$Rotate$distance = F2(
 	function (_v0, _v1) {
 		var start = _v0.a;
 		var end = _v1.a;
@@ -6579,11 +6579,11 @@ var $author$project$Anim$Internal$Properties$Opacity$Opacity = function (a) {
 var $author$project$Anim$Internal$Properties$Opacity$fromFloat = function (o) {
 	return $author$project$Anim$Internal$Properties$Opacity$Opacity(o);
 };
-var $author$project$Anim$Internal$Properties$Rotation$Rotation = function (a) {
-	return {$: 'Rotation', a: a};
+var $author$project$Anim$Internal$Properties$Rotate$Rotate = function (a) {
+	return {$: 'Rotate', a: a};
 };
-var $author$project$Anim$Internal$Properties$Rotation$fromFloat = function (angle) {
-	return $author$project$Anim$Internal$Properties$Rotation$Rotation(angle);
+var $author$project$Anim$Internal$Properties$Rotate$fromFloat = function (angle) {
+	return $author$project$Anim$Internal$Properties$Rotate$Rotate(angle);
 };
 var $author$project$Anim$Internal$Properties$Scale$ScaleXY = F2(
 	function (a, b) {
@@ -6625,10 +6625,10 @@ var $author$project$Anim$CSS$calculatePropertyDistance = function (property) {
 					var s = _v2.a;
 					return s;
 				} else {
-					return $author$project$Anim$Internal$Properties$Rotation$fromFloat(0);
+					return $author$project$Anim$Internal$Properties$Rotate$fromFloat(0);
 				}
 			}();
-			return A2($author$project$Anim$Internal$Properties$Rotation$distance, startAt, config.endAt);
+			return A2($author$project$Anim$Internal$Properties$Rotate$distance, startAt, config.endAt);
 		case 'ScaleConfig':
 			var config = property.a;
 			var startAt = function () {

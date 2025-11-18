@@ -48,7 +48,6 @@ On subsequent animations, it will start from the last known opacity, so you only
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Opacity as OB
 import Anim.Internal.Properties.Opacity as O
-import Anim.Timing.Delay as Delay exposing (Delay)
 import Anim.Timing.Easing as Easing exposing (Easing)
 
 
@@ -156,9 +155,9 @@ duration milliseconds =
         |> ...
 
 -}
-delay : Delay -> Builder -> Builder
+delay : Int -> Builder -> Builder
 delay delay_ =
-    OB.delay (Delay.mapInternal identity delay_)
+    OB.delay delay_
 
 
 {-| Set the easing function for the animation.

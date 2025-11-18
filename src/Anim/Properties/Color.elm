@@ -48,7 +48,6 @@ On subsequent animations, it will start from the last known color, so you only n
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Color as CB
 import Anim.Internal.Properties.Color as C
-import Anim.Timing.Delay as Delay exposing (Delay)
 import Anim.Timing.Easing as Easing exposing (Easing)
 
 
@@ -194,9 +193,9 @@ easing easing_ =
         |> ...
 
 -}
-delay : Delay -> Builder -> Builder
+delay : Int -> Builder -> Builder
 delay delay_ =
-    Delay.mapInternal CB.delay delay_
+    CB.delay delay_
 
 
 toInternal : Color -> C.Color

@@ -17,7 +17,6 @@ module Anim.Internal.Builders.Position exposing
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Position as Position exposing (Position)
-import Anim.Internal.Timing.Delay exposing (Delay)
 import Anim.Internal.Timing.Easing exposing (Easing)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
@@ -100,7 +99,7 @@ type alias PositionConfig =
     , distance : Float -- Pixels
     , timing : Maybe TimeSpec
     , easing : Maybe Easing
-    , delay : Maybe Delay
+    , delay : Maybe Int
     }
 
 
@@ -191,6 +190,6 @@ easing easing_ (PositionBuilder config builder) =
     PositionBuilder { config | easing = Just easing_ } builder
 
 
-delay : Delay -> PositionBuilder -> PositionBuilder
+delay : Int -> PositionBuilder -> PositionBuilder
 delay delay_ (PositionBuilder config builder) =
     PositionBuilder { config | delay = Just delay_ } builder

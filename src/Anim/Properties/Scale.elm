@@ -48,8 +48,6 @@ On subsequent animations, it will start from the last known scale, so you only n
 
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Scale as SB
-import Anim.Internal.Properties.Scale as S
-import Anim.Timing.Delay as Delay exposing (Delay)
 import Anim.Timing.Easing as Easing exposing (Easing)
 
 
@@ -248,6 +246,6 @@ easing easing_ =
         |> ...
 
 -}
-delay : Delay -> Builder -> Builder
-delay delay_ =
-    SB.delay (Delay.mapInternal identity delay_)
+delay : Int -> Builder -> Builder
+delay =
+    SB.delay

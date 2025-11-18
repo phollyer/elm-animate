@@ -76,15 +76,6 @@ type alias ElementId =
     String
 
 
-{-| Flexible property value storage for state tracking.
--}
-type PropertyValue
-    = FloatValue Float -- Rotate: 45, opacity: 0.8
-    | PositionValue { x : Float, y : Float } -- translate: {x: 100, y: 50}
-    | ScaleValue { x : Float, y : Float } -- scale: {x: 1.2, y: 0.8}
-    | ColorValue String -- color: "#ff0000"
-
-
 {-| CSS animation data for a single element.
 -}
 type alias ElementAnimation =
@@ -183,40 +174,6 @@ extractPositionFromProperty property currentPos =
 
 
 -- CSS GENERATION
-
-
-{-| Extract end values from element configuration and store them for position tracking.
--}
-extractEndValues : String -> Builder.ElementConfig -> Dict String PropertyValue
-extractEndValues _ elementConfig =
-    elementConfig.properties
-        |> List.foldl extractPropertyEndValue Dict.empty
-
-
-{-| Extract end value from a single property configuration.
--}
-extractPropertyEndValue : Builder.PropertyConfig -> Dict String PropertyValue -> Dict String PropertyValue
-extractPropertyEndValue property acc =
-    case property of
-        Builder.PositionConfig config ->
-            Dict.insert "position" (PositionValue (Position.toRecord config.endAt)) acc
-
-        Builder.RotateConfig config ->
-            Dict.insert "Rotate" (FloatValue (Rotate.toFloat config.endAt)) acc
-
-        Builder.ScaleConfig config ->
-            let
-                ( x, y ) =
-                    Scale.toTuple config.endAt
-            in
-            Dict.insert "scale" (ScaleValue { x = x, y = y }) acc
-
-        Builder.OpacityConfig config ->
-            Dict.insert "opacity" (FloatValue (Opacity.toFloat config.endAt)) acc
-
-        Builder.ColorConfig _ ->
-            -- Color values are handled differently
-            acc
 
 
 generateElementAnimation : String -> Builder.ElementConfig -> ElementAnimation
@@ -515,7 +472,7 @@ findLatestEasing properties =
         |> Maybe.withDefault Easing.Linear
 
 
-findEarliestDelay : List Builder.PropertyConfig -> Maybe Delay.Delay
+findEarliestDelay : List Builder.PropertyConfig -> Maybe Int
 findEarliestDelay properties =
     let
         delays =
@@ -527,14 +484,14 @@ findEarliestDelay properties =
 
         _ ->
             delays
-                |> List.foldl chooseSmallerDelay (Delay.Delay 999999)
+                |> List.foldl chooseSmallerDelay 999999
                 -- Start with large delay
                 |> Just
 
 
-chooseSmallerDelay : Delay.Delay -> Delay.Delay -> Delay.Delay
+chooseSmallerDelay : Int -> Int -> Int
 chooseSmallerDelay a b =
-    if Delay.toInt a <= Delay.toInt b then
+    if a <= b then
         a
 
     else
@@ -573,7 +530,7 @@ extractEasing property =
             Nothing
 
 
-extractDelay : Builder.PropertyConfig -> Maybe Delay.Delay
+extractDelay : Builder.PropertyConfig -> Maybe Int
 extractDelay property =
     case property of
         Builder.PositionConfig config ->

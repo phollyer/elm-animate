@@ -5239,10 +5239,6 @@ var $author$project$Anim$Timing$Easing$QuintInOut = {$: 'QuintInOut'};
 var $author$project$Anim$Properties$Color$Rgb = function (a) {
 	return {$: 'Rgb', a: a};
 };
-var $author$project$Anim$Properties$Scale$ScaleXY = F2(
-	function (a, b) {
-		return {$: 'ScaleXY', a: a, b: b};
-	});
 var $author$project$Anim$Timing$Easing$SineInOut = {$: 'SineInOut'};
 var $author$project$ElmUI$CSS$Mixed$Main$SpinScale = {$: 'SpinScale'};
 var $author$project$Anim$Internal$Builder$elements = function (_v0) {
@@ -5327,12 +5323,12 @@ var $author$project$Anim$Internal$Properties$Position$toCssString = function (_v
 	var coords = _v0.a;
 	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + 'px'));
 };
-var $author$project$Anim$Internal$Properties$Rotation$toString = function (_v0) {
+var $author$project$Anim$Internal$Properties$Rotate$toString = function (_v0) {
 	var angle = _v0.a;
 	return $elm$core$String$fromFloat(angle);
 };
-var $author$project$Anim$Internal$Properties$Rotation$toCssString = function (rotation) {
-	return $author$project$Anim$Internal$Properties$Rotation$toString(rotation) + 'deg';
+var $author$project$Anim$Internal$Properties$Rotate$toCssString = function (rotation) {
+	return $author$project$Anim$Internal$Properties$Rotate$toString(rotation) + 'deg';
 };
 var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) {
 	var sx = _v0.a;
@@ -5348,7 +5344,7 @@ var $author$project$Anim$CSS$transformFromProperty = function (property) {
 		case 'RotateConfig':
 			var config = property.a;
 			return $elm$core$Maybe$Just(
-				'rotate(' + ($author$project$Anim$Internal$Properties$Rotation$toCssString(config.endAt) + ')'));
+				'rotate(' + ($author$project$Anim$Internal$Properties$Rotate$toCssString(config.endAt) + ')'));
 		case 'ScaleConfig':
 			var config = property.a;
 			return $elm$core$Maybe$Just(
@@ -5666,7 +5662,7 @@ var $author$project$Anim$Internal$Properties$Position$distance = F2(
 		var dx = a.x - b.x;
 		return $elm$core$Basics$sqrt((dx * dx) + (dy * dy));
 	});
-var $author$project$Anim$Internal$Properties$Rotation$distance = F2(
+var $author$project$Anim$Internal$Properties$Rotate$distance = F2(
 	function (_v0, _v1) {
 		var start = _v0.a;
 		var end = _v1.a;
@@ -5688,11 +5684,11 @@ var $author$project$Anim$Internal$Properties$Opacity$Opacity = function (a) {
 var $author$project$Anim$Internal$Properties$Opacity$fromFloat = function (o) {
 	return $author$project$Anim$Internal$Properties$Opacity$Opacity(o);
 };
-var $author$project$Anim$Internal$Properties$Rotation$Rotation = function (a) {
-	return {$: 'Rotation', a: a};
+var $author$project$Anim$Internal$Properties$Rotate$Rotate = function (a) {
+	return {$: 'Rotate', a: a};
 };
-var $author$project$Anim$Internal$Properties$Rotation$fromFloat = function (angle) {
-	return $author$project$Anim$Internal$Properties$Rotation$Rotation(angle);
+var $author$project$Anim$Internal$Properties$Rotate$fromFloat = function (angle) {
+	return $author$project$Anim$Internal$Properties$Rotate$Rotate(angle);
 };
 var $author$project$Anim$Internal$Properties$Position$Position = function (a) {
 	return {$: 'Position', a: a};
@@ -5743,10 +5739,10 @@ var $author$project$Anim$CSS$calculatePropertyDistance = function (property) {
 					var s = _v2.a;
 					return s;
 				} else {
-					return $author$project$Anim$Internal$Properties$Rotation$fromFloat(0);
+					return $author$project$Anim$Internal$Properties$Rotate$fromFloat(0);
 				}
 			}();
-			return A2($author$project$Anim$Internal$Properties$Rotation$distance, startAt, config.endAt);
+			return A2($author$project$Anim$Internal$Properties$Rotate$distance, startAt, config.endAt);
 		case 'ScaleConfig':
 			var config = property.a;
 			var startAt = function () {
@@ -6376,13 +6372,13 @@ var $author$project$Anim$Properties$Position$build = $author$project$Anim$Intern
 var $author$project$Anim$Internal$Builder$RotateConfig = function (a) {
 	return {$: 'RotateConfig', a: a};
 };
-var $author$project$Anim$Internal$Builders$Rotation$build = function (_v0) {
+var $author$project$Anim$Internal$Builders$Rotate$build = function (_v0) {
 	var config = _v0.a;
 	var builder = _v0.b;
 	var newRotationConfig = $author$project$Anim$Internal$Builder$RotateConfig(config);
 	return A2($author$project$Anim$Internal$Builders$Property$upsert, newRotationConfig, builder);
 };
-var $author$project$Anim$Properties$Rotation$build = $author$project$Anim$Internal$Builders$Rotation$build;
+var $author$project$Anim$Properties$Rotate$build = $author$project$Anim$Internal$Builders$Rotate$build;
 var $author$project$Anim$Internal$Builder$ScaleConfig = function (a) {
 	return {$: 'ScaleConfig', a: a};
 };
@@ -6410,6 +6406,27 @@ var $author$project$Anim$Internal$Builders$Color$delay = F2(
 			_Utils_update(
 				config,
 				{
+					delay: $elm$core$Maybe$Just(
+						$author$project$Anim$Internal$Timing$Delay$Delay(dly))
+				}),
+			builder);
+	});
+var $author$project$Anim$Properties$Color$delay = function (delay_) {
+	return $author$project$Anim$Internal$Builders$Color$delay(delay_);
+};
+var $author$project$Anim$Internal$Builders$Opacity$OpacityBuilder = F2(
+	function (a, b) {
+		return {$: 'OpacityBuilder', a: a, b: b};
+	});
+var $author$project$Anim$Internal$Builders$Opacity$delay = F2(
+	function (dly, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builders$Opacity$OpacityBuilder,
+			_Utils_update(
+				config,
+				{
 					delay: $elm$core$Maybe$Just(dly)
 				}),
 			builder);
@@ -6431,40 +6448,20 @@ var $author$project$Anim$Timing$Delay$toInternal = function (delay) {
 var $author$project$Anim$Timing$Delay$mapInternal = function (fn) {
 	return A2($elm$core$Basics$composeL, fn, $author$project$Anim$Timing$Delay$toInternal);
 };
-var $author$project$Anim$Properties$Color$delay = function (delay_) {
-	return A2($author$project$Anim$Timing$Delay$mapInternal, $author$project$Anim$Internal$Builders$Color$delay, delay_);
-};
-var $author$project$Anim$Internal$Builders$Opacity$OpacityBuilder = F2(
-	function (a, b) {
-		return {$: 'OpacityBuilder', a: a, b: b};
-	});
-var $author$project$Anim$Internal$Builders$Opacity$delay = F2(
-	function (dly, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		return A2(
-			$author$project$Anim$Internal$Builders$Opacity$OpacityBuilder,
-			_Utils_update(
-				config,
-				{
-					delay: $elm$core$Maybe$Just(dly)
-				}),
-			builder);
-	});
 var $author$project$Anim$Properties$Opacity$delay = function (delay_) {
 	return $author$project$Anim$Internal$Builders$Opacity$delay(
 		A2($author$project$Anim$Timing$Delay$mapInternal, $elm$core$Basics$identity, delay_));
 };
-var $author$project$Anim$Internal$Builders$Rotation$RotationBuilder = F2(
+var $author$project$Anim$Internal$Builders$Rotate$RotateBuilder = F2(
 	function (a, b) {
-		return {$: 'RotationBuilder', a: a, b: b};
+		return {$: 'RotateBuilder', a: a, b: b};
 	});
-var $author$project$Anim$Internal$Builders$Rotation$delay = F2(
+var $author$project$Anim$Internal$Builders$Rotate$delay = F2(
 	function (delay_, _v0) {
 		var config = _v0.a;
 		var builder = _v0.b;
 		return A2(
-			$author$project$Anim$Internal$Builders$Rotation$RotationBuilder,
+			$author$project$Anim$Internal$Builders$Rotate$RotateBuilder,
 			_Utils_update(
 				config,
 				{
@@ -6472,8 +6469,8 @@ var $author$project$Anim$Internal$Builders$Rotation$delay = F2(
 				}),
 			builder);
 	});
-var $author$project$Anim$Properties$Rotation$delay = function (delay_) {
-	return $author$project$Anim$Internal$Builders$Rotation$delay(
+var $author$project$Anim$Properties$Rotate$delay = function (delay_) {
+	return $author$project$Anim$Internal$Builders$Rotate$delay(
 		A2($author$project$Anim$Timing$Delay$mapInternal, $elm$core$Basics$identity, delay_));
 };
 var $author$project$Anim$Internal$Builders$Scale$ScaleBuilder = F2(
@@ -6571,12 +6568,12 @@ var $author$project$Anim$Internal$Builders$Position$duration = F2(
 			builder);
 	});
 var $author$project$Anim$Properties$Position$duration = $author$project$Anim$Internal$Builders$Position$duration;
-var $author$project$Anim$Internal$Builders$Rotation$duration = F2(
+var $author$project$Anim$Internal$Builders$Rotate$duration = F2(
 	function (ms, _v0) {
 		var config = _v0.a;
 		var builder = _v0.b;
 		return A2(
-			$author$project$Anim$Internal$Builders$Rotation$RotationBuilder,
+			$author$project$Anim$Internal$Builders$Rotate$RotateBuilder,
 			_Utils_update(
 				config,
 				{
@@ -6586,8 +6583,8 @@ var $author$project$Anim$Internal$Builders$Rotation$duration = F2(
 				}),
 			builder);
 	});
-var $author$project$Anim$Properties$Rotation$duration = function (milliseconds) {
-	return $author$project$Anim$Internal$Builders$Rotation$duration(milliseconds);
+var $author$project$Anim$Properties$Rotate$duration = function (milliseconds) {
+	return $author$project$Anim$Internal$Builders$Rotate$duration(milliseconds);
 };
 var $author$project$Anim$Internal$Builders$Scale$duration = F2(
 	function (ms, _v0) {
@@ -6796,12 +6793,12 @@ var $author$project$Anim$Properties$Position$easing = function (easing_) {
 	return $author$project$Anim$Internal$Builders$Position$easing(
 		A2($author$project$Anim$Timing$Easing$mapInternal, $elm$core$Basics$identity, easing_));
 };
-var $author$project$Anim$Internal$Builders$Rotation$easing = F2(
+var $author$project$Anim$Internal$Builders$Rotate$easing = F2(
 	function (easing_, _v0) {
 		var config = _v0.a;
 		var builder = _v0.b;
 		return A2(
-			$author$project$Anim$Internal$Builders$Rotation$RotationBuilder,
+			$author$project$Anim$Internal$Builders$Rotate$RotateBuilder,
 			_Utils_update(
 				config,
 				{
@@ -6809,8 +6806,8 @@ var $author$project$Anim$Internal$Builders$Rotation$easing = F2(
 				}),
 			builder);
 	});
-var $author$project$Anim$Properties$Rotation$easing = function (easingFunction) {
-	return $author$project$Anim$Internal$Builders$Rotation$easing(
+var $author$project$Anim$Properties$Rotate$easing = function (easingFunction) {
+	return $author$project$Anim$Internal$Builders$Rotate$easing(
 		A2($author$project$Anim$Timing$Easing$mapInternal, $elm$core$Basics$identity, easingFunction));
 };
 var $author$project$Anim$Internal$Builders$Scale$easing = F2(
@@ -7075,17 +7072,17 @@ var $author$project$Anim$Internal$Builders$Position$for = F2(
 var $author$project$Anim$Properties$Position$for = function (elementId) {
 	return $author$project$Anim$Internal$Builders$Position$for(elementId);
 };
-var $author$project$Anim$Internal$Builders$Rotation$defaultConfig = {
+var $author$project$Anim$Internal$Builders$Rotate$defaultConfig = {
 	delay: $elm$core$Maybe$Nothing,
-	distance: 0,
+	distance: 0.0,
 	duration: 0,
 	easing: $elm$core$Maybe$Nothing,
-	endAt: $author$project$Anim$Internal$Properties$Rotation$fromFloat(0),
-	speed: 0,
+	endAt: $author$project$Anim$Internal$Properties$Rotate$fromFloat(0.0),
+	speed: 0.0,
 	startAt: $elm$core$Maybe$Nothing,
 	timing: $elm$core$Maybe$Nothing
 };
-var $author$project$Anim$Internal$Builders$Rotation$for = F2(
+var $author$project$Anim$Internal$Builders$Rotate$for = F2(
 	function (elementId, builder) {
 		var existingConfig = function () {
 			var _v1 = A2($author$project$Anim$Internal$Builder$getElementConfig, elementId, builder);
@@ -7125,16 +7122,16 @@ var $author$project$Anim$Internal$Builders$Rotation$for = F2(
 							timing: $elm$core$Maybe$Nothing
 						}));
 			} else {
-				return A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, $author$project$Anim$Internal$Builders$Rotation$defaultConfig);
+				return A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, $author$project$Anim$Internal$Builders$Rotate$defaultConfig);
 			}
 		}();
 		return A2(
-			$author$project$Anim$Internal$Builders$Rotation$RotationBuilder,
+			$author$project$Anim$Internal$Builders$Rotate$RotateBuilder,
 			newConfig,
 			A2($author$project$Anim$Internal$Builder$for, elementId, builder));
 	});
-var $author$project$Anim$Properties$Rotation$for = function (elementId) {
-	return $author$project$Anim$Internal$Builders$Rotation$for(elementId);
+var $author$project$Anim$Properties$Rotate$for = function (elementId) {
+	return $author$project$Anim$Internal$Builders$Rotate$for(elementId);
 };
 var $author$project$Anim$Internal$Builders$Scale$defaultConfig = {
 	delay: $elm$core$Maybe$Nothing,
@@ -7281,64 +7278,24 @@ var $author$project$Anim$Internal$Builders$Opacity$to = F2(
 				}),
 			builder);
 	});
-var $author$project$Anim$Properties$Opacity$toInternal = function (opacity) {
-	return $author$project$Anim$Internal$Properties$Opacity$fromFloat(opacity);
-};
 var $author$project$Anim$Properties$Opacity$to = function (opacity) {
 	return $author$project$Anim$Internal$Builders$Opacity$to(
-		$author$project$Anim$Properties$Opacity$toInternal(opacity));
+		$author$project$Anim$Internal$Properties$Opacity$fromFloat(opacity));
 };
-var $author$project$Anim$Internal$Builders$Rotation$to = F2(
+var $author$project$Anim$Internal$Builders$Rotate$to = F2(
 	function (rotation, _v0) {
 		var config = _v0.a;
 		var builder = _v0.b;
 		return A2(
-			$author$project$Anim$Internal$Builders$Rotation$RotationBuilder,
+			$author$project$Anim$Internal$Builders$Rotate$RotateBuilder,
 			_Utils_update(
 				config,
 				{endAt: rotation}),
 			builder);
 	});
-var $author$project$Anim$Properties$Rotation$toInternal = function (degrees) {
-	return $author$project$Anim$Internal$Properties$Rotation$fromFloat(degrees);
-};
-var $author$project$Anim$Properties$Rotation$to = function (targetRotation) {
-	return $author$project$Anim$Internal$Builders$Rotation$to(
-		$author$project$Anim$Properties$Rotation$toInternal(targetRotation));
-};
-var $author$project$Anim$Internal$Builders$Scale$to = F2(
-	function (scale, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		var startPos = function () {
-			var _v1 = config.startAt;
-			if (_v1.$ === 'Just') {
-				var opacity_ = _v1.a;
-				return opacity_;
-			} else {
-				return $author$project$Anim$Internal$Properties$Scale$fromTuple(
-					_Utils_Tuple2(1, 1));
-			}
-		}();
-		return A2(
-			$author$project$Anim$Internal$Builders$Scale$ScaleBuilder,
-			_Utils_update(
-				config,
-				{
-					distance: A2($author$project$Anim$Internal$Properties$Scale$distance, startPos, scale),
-					endAt: scale,
-					startAt: $elm$core$Maybe$Just(startPos)
-				}),
-			builder);
-	});
-var $author$project$Anim$Properties$Scale$toInternal = function (scale) {
-	var x = scale.a;
-	var y = scale.b;
-	return A2($author$project$Anim$Internal$Properties$Scale$ScaleXY, x, y);
-};
-var $author$project$Anim$Properties$Scale$to = function (targetScale) {
-	return $author$project$Anim$Internal$Builders$Scale$to(
-		$author$project$Anim$Properties$Scale$toInternal(targetScale));
+var $author$project$Anim$Properties$Rotate$to = function (targetRotation) {
+	return $author$project$Anim$Internal$Builders$Rotate$to(
+		$author$project$Anim$Internal$Properties$Rotate$fromFloat(targetRotation));
 };
 var $author$project$Anim$Internal$Builders$Position$to = F2(
 	function (position, _v0) {
@@ -7371,6 +7328,34 @@ var $author$project$Anim$Properties$Position$toXY = F2(
 			$author$project$Anim$Internal$Properties$Position$fromTuple(
 				_Utils_Tuple2(x, y)));
 	});
+var $author$project$Anim$Internal$Builders$Scale$toXY = F3(
+	function (scaleX, scaleY, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var startPos = function () {
+			var _v1 = config.startAt;
+			if (_v1.$ === 'Just') {
+				var opacity_ = _v1.a;
+				return opacity_;
+			} else {
+				return $author$project$Anim$Internal$Properties$Scale$fromTuple(
+					_Utils_Tuple2(1, 1));
+			}
+		}();
+		var scale = $author$project$Anim$Internal$Properties$Scale$fromTuple(
+			_Utils_Tuple2(scaleX, scaleY));
+		return A2(
+			$author$project$Anim$Internal$Builders$Scale$ScaleBuilder,
+			_Utils_update(
+				config,
+				{
+					distance: A2($author$project$Anim$Internal$Properties$Scale$distance, startPos, scale),
+					endAt: scale,
+					startAt: $elm$core$Maybe$Just(startPos)
+				}),
+			builder);
+	});
+var $author$project$Anim$Properties$Scale$toXY = $author$project$Anim$Internal$Builders$Scale$toXY;
 var $author$project$ElmUI$CSS$Mixed$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -7381,18 +7366,18 @@ var $author$project$ElmUI$CSS$Mixed$Main$update = F2(
 						{
 							activeAnimation: $elm$core$Maybe$Just($author$project$ElmUI$CSS$Mixed$Main$ComplexTransform),
 							animations: $author$project$Anim$CSS$animate(
-								$author$project$Anim$Properties$Rotation$build(
+								$author$project$Anim$Properties$Rotate$build(
 									A2(
-										$author$project$Anim$Properties$Rotation$duration,
+										$author$project$Anim$Properties$Rotate$duration,
 										1200,
 										A2(
-											$author$project$Anim$Properties$Rotation$easing,
+											$author$project$Anim$Properties$Rotate$easing,
 											$author$project$Anim$Timing$Easing$ElasticOut,
 											A2(
-												$author$project$Anim$Properties$Rotation$to,
+												$author$project$Anim$Properties$Rotate$to,
 												45,
 												A2(
-													$author$project$Anim$Properties$Rotation$for,
+													$author$project$Anim$Properties$Rotate$for,
 													'mixed-box',
 													$author$project$Anim$Properties$Scale$build(
 														A2(
@@ -7401,9 +7386,10 @@ var $author$project$ElmUI$CSS$Mixed$Main$update = F2(
 															A2(
 																$author$project$Anim$Properties$Scale$easing,
 																$author$project$Anim$Timing$Easing$BackInOut,
-																A2(
-																	$author$project$Anim$Properties$Scale$to,
-																	A2($author$project$Anim$Properties$Scale$ScaleXY, 1.5, 1.2),
+																A3(
+																	$author$project$Anim$Properties$Scale$toXY,
+																	1.5,
+																	1.2,
 																	A2(
 																		$author$project$Anim$Properties$Scale$for,
 																		'mixed-box',
@@ -7471,18 +7457,19 @@ var $author$project$ElmUI$CSS$Mixed$Main$update = F2(
 									A2(
 										$author$project$Anim$Properties$Scale$delay,
 										$author$project$Anim$Timing$Delay$Delay(200),
-										A2(
-											$author$project$Anim$Properties$Scale$to,
-											A2($author$project$Anim$Properties$Scale$ScaleXY, 0.8, 0.8),
+										A3(
+											$author$project$Anim$Properties$Scale$toXY,
+											0.8,
+											0.8,
 											A2(
 												$author$project$Anim$Properties$Scale$for,
 												'mixed-box',
-												$author$project$Anim$Properties$Rotation$build(
+												$author$project$Anim$Properties$Rotate$build(
 													A2(
-														$author$project$Anim$Properties$Rotation$to,
+														$author$project$Anim$Properties$Rotate$to,
 														180,
 														A2(
-															$author$project$Anim$Properties$Rotation$for,
+															$author$project$Anim$Properties$Rotate$for,
 															'mixed-box',
 															A2(
 																$author$project$Anim$easing,
@@ -7502,9 +7489,10 @@ var $author$project$ElmUI$CSS$Mixed$Main$update = F2(
 							activeAnimation: $elm$core$Maybe$Just($author$project$ElmUI$CSS$Mixed$Main$ColorMorph),
 							animations: $author$project$Anim$CSS$animate(
 								$author$project$Anim$Properties$Scale$build(
-									A2(
-										$author$project$Anim$Properties$Scale$to,
-										A2($author$project$Anim$Properties$Scale$ScaleXY, 1.3, 1.3),
+									A3(
+										$author$project$Anim$Properties$Scale$toXY,
+										1.3,
+										1.3,
 										A2(
 											$author$project$Anim$Properties$Scale$for,
 											'mixed-box',
@@ -7536,7 +7524,7 @@ var $author$project$ElmUI$CSS$Mixed$Main$update = F2(
 								$author$project$Anim$Properties$Color$build(
 									A2(
 										$author$project$Anim$Properties$Color$delay,
-										$author$project$Anim$Timing$Delay$Delay(400),
+										400,
 										A2(
 											$author$project$Anim$Properties$Color$duration,
 											1100,
@@ -7576,27 +7564,28 @@ var $author$project$ElmUI$CSS$Mixed$Main$update = F2(
 																							A2(
 																								$author$project$Anim$Properties$Scale$easing,
 																								$author$project$Anim$Timing$Easing$CircInOut,
-																								A2(
-																									$author$project$Anim$Properties$Scale$to,
-																									A2($author$project$Anim$Properties$Scale$ScaleXY, 1.4, 0.9),
+																								A3(
+																									$author$project$Anim$Properties$Scale$toXY,
+																									1.4,
+																									0.9,
 																									A2(
 																										$author$project$Anim$Properties$Scale$for,
 																										'mixed-box',
-																										$author$project$Anim$Properties$Rotation$build(
+																										$author$project$Anim$Properties$Rotate$build(
 																											A2(
-																												$author$project$Anim$Properties$Rotation$delay,
+																												$author$project$Anim$Properties$Rotate$delay,
 																												$author$project$Anim$Timing$Delay$Delay(300),
 																												A2(
-																													$author$project$Anim$Properties$Rotation$duration,
+																													$author$project$Anim$Properties$Rotate$duration,
 																													1400,
 																													A2(
-																														$author$project$Anim$Properties$Rotation$easing,
+																														$author$project$Anim$Properties$Rotate$easing,
 																														$author$project$Anim$Timing$Easing$ElasticInOut,
 																														A2(
-																															$author$project$Anim$Properties$Rotation$to,
+																															$author$project$Anim$Properties$Rotate$to,
 																															135,
 																															A2(
-																																$author$project$Anim$Properties$Rotation$for,
+																																$author$project$Anim$Properties$Rotate$for,
 																																'mixed-box',
 																																$author$project$Anim$Properties$Position$build(
 																																	A2(
@@ -7631,17 +7620,18 @@ var $author$project$ElmUI$CSS$Mixed$Main$update = F2(
 										A2(
 											$author$project$Anim$Properties$Color$for,
 											'mixed-box',
-											$author$project$Anim$Properties$Rotation$build(
+											$author$project$Anim$Properties$Rotate$build(
 												A2(
-													$author$project$Anim$Properties$Rotation$to,
+													$author$project$Anim$Properties$Rotate$to,
 													0,
 													A2(
-														$author$project$Anim$Properties$Rotation$for,
+														$author$project$Anim$Properties$Rotate$for,
 														'mixed-box',
 														$author$project$Anim$Properties$Scale$build(
-															A2(
-																$author$project$Anim$Properties$Scale$to,
-																A2($author$project$Anim$Properties$Scale$ScaleXY, 1.0, 1.0),
+															A3(
+																$author$project$Anim$Properties$Scale$toXY,
+																1.0,
+																1.0,
 																A2(
 																	$author$project$Anim$Properties$Scale$for,
 																	'mixed-box',
@@ -14018,13 +14008,13 @@ var $author$project$ElmUI$CSS$Mixed$Main$viewContent = function (model) {
 									switch (_v0.a.$) {
 										case 'ComplexTransform':
 											var _v1 = _v0.a;
-											return '🎬 Complex Transform: Position + Scale + Rotation';
+											return '🎬 Complex Transform: Position + Scale + Rotate';
 										case 'FadeMove':
 											var _v2 = _v0.a;
 											return '🎬 Fade & Move: Opacity + Position';
 										case 'SpinScale':
 											var _v3 = _v0.a;
-											return '🎬 Spin & Scale: Rotation + Scale (Delayed)';
+											return '🎬 Spin & Scale: Rotate + Scale (Delayed)';
 										case 'ColorMorph':
 											var _v4 = _v0.a;
 											return '🎬 Color Morph: Background + Scale';
@@ -14160,9 +14150,9 @@ var $author$project$ElmUI$CSS$Mixed$Main$viewContent = function (model) {
 							A3(
 							$author$project$ElmUI$CSS$Mixed$Main$viewAnimationDetail,
 							'🔄 Complex Transform',
-							'Position + Scale + Rotation with different easing functions',
+							'Position + Scale + Rotate with different easing functions',
 							_List_fromArray(
-								['Position: SineInOut (800ms)', 'Scale: BackInOut (1000ms)', 'Rotation: ElasticOut (1200ms)'])),
+								['Position: SineInOut (800ms)', 'Scale: BackInOut (1000ms)', 'Rotate: ElasticOut (1200ms)'])),
 							A3(
 							$author$project$ElmUI$CSS$Mixed$Main$viewAnimationDetail,
 							'👻 Fade & Move',
@@ -14172,7 +14162,7 @@ var $author$project$ElmUI$CSS$Mixed$Main$viewContent = function (model) {
 							A3(
 							$author$project$ElmUI$CSS$Mixed$Main$viewAnimationDetail,
 							'🌪️ Spin & Scale',
-							'Rotation with delayed scale animation',
+							'Rotate with delayed scale animation',
 							_List_fromArray(
 								['Rotation: BounceOut (1000ms)', 'Scale: BounceOut (1000ms, 200ms delay)'])),
 							A3(

@@ -13,7 +13,6 @@ module Anim.Internal.Builders.Color exposing
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Color as Color exposing (Color(..))
-import Anim.Internal.Timing.Delay exposing (Delay)
 import Anim.Internal.Timing.Easing exposing (Easing)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
@@ -95,7 +94,7 @@ type alias ColorConfig =
     , speed : Float
     , distance : Float
     , timing : Maybe TimeSpec
-    , delay : Maybe Delay
+    , delay : Maybe Int
     , easing : Maybe Easing
     }
 
@@ -175,6 +174,12 @@ easing ease (ColorBuilder config builder) =
     ColorBuilder { config | easing = Just ease } builder
 
 
-delay : Delay -> ColorBuilder -> ColorBuilder
+delay : Int -> ColorBuilder -> ColorBuilder
 delay dly (ColorBuilder config builder) =
-    ColorBuilder { config | delay = Just dly } builder
+    ColorBuilder
+        { config
+            | delay =
+                Just <|
+                    dly
+        }
+        builder

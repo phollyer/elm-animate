@@ -50,7 +50,6 @@ On subsequent animations, it will start from the last known position, so you onl
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Position as PB
 import Anim.Internal.Properties.Position as P
-import Anim.Timing.Delay as Delay exposing (Delay)
 import Anim.Timing.Easing as Easing exposing (Easing)
 
 
@@ -230,6 +229,6 @@ easing easing_ =
         |> ...
 
 -}
-delay : Delay -> Builder -> Builder
+delay : Int -> Builder -> Builder
 delay delay_ =
-    PB.delay (Delay.mapInternal identity delay_)
+    PB.delay delay_

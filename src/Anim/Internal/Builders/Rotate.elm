@@ -13,7 +13,6 @@ module Anim.Internal.Builders.Rotate exposing
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
-import Anim.Internal.Timing.Delay exposing (Delay)
 import Anim.Internal.Timing.Easing exposing (Easing)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
@@ -96,7 +95,7 @@ type alias RotateConfig =
     , distance : Float -- Pixels
     , timing : Maybe TimeSpec
     , easing : Maybe Easing
-    , delay : Maybe Delay
+    , delay : Maybe Int
     }
 
 
@@ -167,6 +166,6 @@ easing easing_ (RotateBuilder config builder) =
     RotateBuilder { config | easing = Just easing_ } builder
 
 
-delay : Delay -> RotateBuilder -> RotateBuilder
+delay : Int -> RotateBuilder -> RotateBuilder
 delay delay_ (RotateBuilder config builder) =
     RotateBuilder { config | delay = Just delay_ } builder

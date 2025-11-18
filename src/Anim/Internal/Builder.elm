@@ -25,7 +25,6 @@ import Anim.Internal.Properties.Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position, distance)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale exposing (Scale)
-import Anim.Internal.Timing.Delay as Delay exposing (Delay)
 import Anim.Internal.Timing.Easing exposing (Easing(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
@@ -39,7 +38,7 @@ type AnimBuilder
 type alias BuilderData =
     { globalTiming : Maybe TimeSpec
     , globalEasing : Maybe Easing
-    , globalDelay : Maybe Delay
+    , globalDelay : Maybe Int
     , currentElementId : Maybe ElementId
     , elements : Dict ElementId ElementConfig
     }
@@ -81,7 +80,7 @@ type alias AnimationConfig targetProperty =
     , distance : Float
     , timing : Maybe TimeSpec
     , easing : Maybe Easing
-    , delay : Maybe Delay
+    , delay : Maybe Int
     }
 
 
@@ -89,7 +88,7 @@ type alias ProcessedAnimationData =
     { elements : Dict ElementId ProcessedElementConfig
     , globalTiming : Maybe TimeSpec
     , globalEasing : Maybe Easing
-    , globalDelay : Maybe Delay
+    , globalDelay : Maybe Int
     }
 
 
@@ -100,7 +99,7 @@ type alias ProcessedAnimationConfig targetProperty =
     , distance : Float
     , timing : TimeSpec
     , easing : Easing
-    , delay : Delay
+    , delay : Int
     }
 
 
@@ -145,7 +144,7 @@ delay ms (AnimBuilder data) =
         { data
             | globalDelay =
                 Just <|
-                    Delay.fromInt ms
+                    ms
         }
 
 
@@ -182,7 +181,7 @@ getEasing (AnimBuilder data) =
     data.globalEasing
 
 
-getDelay : AnimBuilder -> Maybe Delay
+getDelay : AnimBuilder -> Maybe Int
 getDelay (AnimBuilder data) =
     data.globalDelay
 
@@ -365,7 +364,7 @@ resolveEasingWithDefault local global default =
                     default
 
 
-resolveDelayWithDefault : Maybe Delay -> Maybe Delay -> Int -> Delay
+resolveDelayWithDefault : Maybe Int -> Maybe Int -> Int -> Int
 resolveDelayWithDefault local global default =
     case local of
         Just delay_ ->
@@ -377,7 +376,7 @@ resolveDelayWithDefault local global default =
                     delay_
 
                 Nothing ->
-                    Delay.fromInt default
+                    default
 
 
 
