@@ -987,7 +987,7 @@ generateAnimationAttributeString animationLayers =
                         ++ layer.easing
                         ++ " "
                         ++ String.fromInt layer.delay
-                        ++ "ms"
+                        ++ "ms forwards"
                 )
             |> String.join ", "
 

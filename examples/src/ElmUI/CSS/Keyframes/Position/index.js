@@ -13696,7 +13696,7 @@ var $author$project$Anim$Internal$CSS$generateAnimationAttributeString = functio
 		A2(
 			$elm$core$List$map,
 			function (layer) {
-				return layer.animationName + (' ' + ($elm$core$String$fromInt(layer.duration) + ('ms ' + (layer.easing + (' ' + ($elm$core$String$fromInt(layer.delay) + 'ms'))))));
+				return layer.animationName + (' ' + ($elm$core$String$fromInt(layer.duration) + ('ms ' + (layer.easing + (' ' + ($elm$core$String$fromInt(layer.delay) + 'ms forwards'))))));
 			},
 			animationLayers)) : '';
 };
