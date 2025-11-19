@@ -118,7 +118,7 @@ update msg model =
                     model.animations
                         |> anim
                         |> Position.toX 0
-                        |> Position.easing Easing.SineInOut
+                        |> Position.easing Easing.BounceIn
                         |> Position.duration 500
                         |> Position.build
                         |> CSS.animate
@@ -132,8 +132,8 @@ update msg model =
                     model.animations
                         |> anim
                         |> Position.toX 450
-                        |> Position.easing Easing.BackInOut
-                        |> Position.duration 5000
+                        |> Position.duration 1000
+                        |> Position.easing Easing.BounceOut
                         |> Position.build
                         |> CSS.animate
               }
@@ -146,9 +146,9 @@ update msg model =
                     model.animations
                         |> anim
                         |> Position.toY 350
+                        |> Position.delay 1000
+                        |> Position.duration 500
                         |> Position.easing Easing.BounceInOut
-                        |> Position.duration 5000
-                        --|> Position.delay (1000)
                         |> Position.build
                         |> CSS.animate
               }
@@ -161,7 +161,7 @@ update msg model =
                     model.animations
                         |> anim
                         |> Position.toY 0
-                        |> Position.easing Easing.CircInOut
+                        |> Position.easing Easing.BounceInOut
                         |> Position.duration 500
                         |> Position.build
                         |> CSS.animate

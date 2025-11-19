@@ -244,19 +244,18 @@ viewContent model =
 rotatingElement : String -> String -> String -> Element.Color -> Model -> Element Msg
 rotatingElement elementId symbol label color model =
     el
-        ([ width (px 150)
-         , height (px 150)
-         , Background.color color
-         , Border.rounded 12
-         , centerX
-         , htmlAttribute (Html.Attributes.id elementId)
-         , htmlAttribute (Html.Attributes.style "transform-origin" "center")
-         , htmlAttribute (Html.Attributes.style "display" "flex")
-         , htmlAttribute (Html.Attributes.style "align-items" "center")
-         , htmlAttribute (Html.Attributes.style "justify-content" "center")
-         ]
-            ++ List.map htmlAttribute (CSS.htmlAttributes elementId model.animations)
-        )
+        [ width (px 150)
+        , height (px 150)
+        , Background.color color
+        , Border.rounded 12
+        , centerX
+        , htmlAttribute (Html.Attributes.id elementId)
+        , htmlAttribute (Html.Attributes.style "transform-origin" "center")
+        , htmlAttribute (Html.Attributes.style "display" "flex")
+        , htmlAttribute (Html.Attributes.style "align-items" "center")
+        , htmlAttribute (Html.Attributes.style "justify-content" "center")
+        , htmlAttribute (CSS.animationStyleAttribute elementId model.animations |> Debug.log "Animation Style")
+        ]
         (column
             [ centerX
             , Element.centerY

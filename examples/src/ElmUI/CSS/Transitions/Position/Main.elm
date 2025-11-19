@@ -74,8 +74,8 @@ init _ =
 -- UPDATE
 
 
-anim : CSS.AnimationState -> Position.Builder
-anim animations =
+toPositionBuilder : CSS.AnimationState -> Position.Builder
+toPositionBuilder animations =
     animations
         |> CSS.builder
         |> Anim.duration 700
@@ -100,7 +100,7 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
+                        |> toPositionBuilder
                         |> Position.toXY x y
                         |> Position.easing (Easing.Bezier 0.3 0 0.7 0)
                         |> Position.speed 200
@@ -114,7 +114,7 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
+                        |> toPositionBuilder
                         |> Position.toX 0
                         |> Position.easing Easing.SineInOut
                         |> Position.duration 500
@@ -128,10 +128,10 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
+                        |> toPositionBuilder
                         |> Position.toX 450
-                        |> Position.easing Easing.BackInOut
-                        |> Position.duration 5000
+                        |> Position.duration 800
+                        |> Position.easing Easing.BounceInOut
                         |> Position.build
                         |> CSS.animate
               }
@@ -142,11 +142,11 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
+                        |> toPositionBuilder
                         |> Position.toY 350
-                        |> Position.easing Easing.BounceInOut
-                        |> Position.duration 5000
-                        --|> Position.delay (1000)
+                        |> Position.delay 1000
+                        |> Position.duration 500
+                        |> Position.easing Easing.BackInOut
                         |> Position.build
                         |> CSS.animate
               }
@@ -157,7 +157,7 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
+                        |> toPositionBuilder
                         |> Position.toY 0
                         |> Position.easing Easing.CircInOut
                         |> Position.duration 500
@@ -171,7 +171,7 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
+                        |> toPositionBuilder
                         |> Position.toXY 0 0
                         |> Position.easing Easing.ElasticInOut
                         |> Position.build

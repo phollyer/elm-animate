@@ -5612,97 +5612,6 @@ var $elm$core$List$filter = F2(
 			list);
 	});
 var $elm$core$String$fromFloat = _String_fromNumber;
-var $author$project$Anim$Internal$Timing$Easing$easingToCSS = function (easing) {
-	switch (easing.$) {
-		case 'Bezier':
-			var p1x = easing.a;
-			var p1y = easing.b;
-			var p2x = easing.c;
-			var p2y = easing.d;
-			return 'cubic-bezier(' + ($elm$core$String$fromFloat(p1x) + (', ' + ($elm$core$String$fromFloat(p1y) + (', ' + ($elm$core$String$fromFloat(p2x) + (', ' + ($elm$core$String$fromFloat(p2y) + ')')))))));
-		case 'Linear':
-			return 'linear';
-		case 'Ease':
-			return 'ease';
-		case 'EaseIn':
-			return 'ease-in';
-		case 'EaseOut':
-			return 'ease-out';
-		case 'EaseInOut':
-			return 'ease-in-out';
-		case 'SineIn':
-			return 'cubic-bezier(0.12, 0, 0.39, 0)';
-		case 'SineOut':
-			return 'cubic-bezier(0.61, 1, 0.88, 1)';
-		case 'SineInOut':
-			return 'cubic-bezier(0.37, 0, 0.63, 1)';
-		case 'QuadIn':
-			return 'cubic-bezier(0.11, 0, 0.5, 0)';
-		case 'QuadOut':
-			return 'cubic-bezier(0.5, 1, 0.89, 1)';
-		case 'QuadInOut':
-			return 'cubic-bezier(0.45, 0, 0.55, 1)';
-		case 'CubicIn':
-			return 'cubic-bezier(0.32, 0, 0.67, 0)';
-		case 'CubicOut':
-			return 'cubic-bezier(0.33, 1, 0.68, 1)';
-		case 'CubicInOut':
-			return 'cubic-bezier(0.65, 0, 0.35, 1)';
-		case 'QuartIn':
-			return 'cubic-bezier(0.5, 0, 0.75, 0)';
-		case 'QuartOut':
-			return 'cubic-bezier(0.25, 1, 0.5, 1)';
-		case 'QuartInOut':
-			return 'cubic-bezier(0.76, 0, 0.24, 1)';
-		case 'QuintIn':
-			return 'cubic-bezier(0.64, 0, 0.78, 0)';
-		case 'QuintOut':
-			return 'cubic-bezier(0.22, 1, 0.36, 1)';
-		case 'QuintInOut':
-			return 'cubic-bezier(0.83, 0, 0.17, 1)';
-		case 'ExpoIn':
-			return 'cubic-bezier(0.7, 0, 0.84, 0)';
-		case 'ExpoOut':
-			return 'cubic-bezier(0.16, 1, 0.3, 1)';
-		case 'ExpoInOut':
-			return 'cubic-bezier(0.87, 0, 0.13, 1)';
-		case 'CircIn':
-			return 'cubic-bezier(0.55, 0, 1, 0.45)';
-		case 'CircOut':
-			return 'cubic-bezier(0, 0.55, 0.45, 1)';
-		case 'CircInOut':
-			return 'cubic-bezier(0.85, 0, 0.15, 1)';
-		case 'BackIn':
-			return 'cubic-bezier(0.36, 0, 0.66, -0.56)';
-		case 'BackOut':
-			return 'cubic-bezier(0.34, 1.56, 0.64, 1)';
-		case 'BackInOut':
-			return 'cubic-bezier(0.68, -0.6, 0.32, 1.6)';
-		case 'ElasticIn':
-			return 'cubic-bezier(0.175, 0.885, 0.320, 1.275)';
-		case 'ElasticOut':
-			return 'cubic-bezier(0.680, -0.550, 0.265, 1.550)';
-		case 'ElasticInOut':
-			return 'cubic-bezier(0.680, -0.550, 0.265, 1.550)';
-		case 'BounceIn':
-			return 'cubic-bezier(0.600, 0.040, 0.980, 0.335)';
-		case 'BounceOut':
-			return 'cubic-bezier(0.175, 0.885, 0.320, 1.275)';
-		case 'BounceInOut':
-			return 'cubic-bezier(0.680, -0.550, 0.265, 1.550)';
-		default:
-			var value = easing.a;
-			return value;
-	}
-};
-var $author$project$Anim$Internal$Timing$Easing$toCSS = function (maybeEasing) {
-	if (maybeEasing.$ === 'Just') {
-		var easing = maybeEasing.a;
-		return $author$project$Anim$Internal$Timing$Easing$easingToCSS(easing);
-	} else {
-		return 'ease';
-	}
-};
 var $elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
 		if (maybe.$ === 'Just') {
@@ -5712,16 +5621,16 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
-var $author$project$Anim$Internal$CSS$buildKeyframesString = F3(
-	function (animationName, steps, maybeTimingGroup) {
-		var stepToString = function (_v2) {
-			var progress = _v2.a;
-			var styles = _v2.b;
+var $author$project$Anim$Internal$CSS$buildKeyframesString = F2(
+	function (animationName, steps) {
+		var stepToString = function (_v1) {
+			var progress = _v1.a;
+			var styles = _v1.b;
 			var styleStrings = A2(
 				$elm$core$List$map,
-				function (_v1) {
-					var prop = _v1.a;
-					var value = _v1.b;
+				function (_v0) {
+					var prop = _v0.a;
+					var value = _v0.b;
 					return '  ' + (prop + (': ' + (value + ';')));
 				},
 				styles);
@@ -5737,16 +5646,8 @@ var $author$project$Anim$Internal$CSS$buildKeyframesString = F3(
 			animationName,
 			$elm$core$List$head(
 				A2($elm$core$String$split, '-layer-', animationName)));
-		var animationProperties = function () {
-			if (maybeTimingGroup.$ === 'Just') {
-				var group = maybeTimingGroup.a;
-				return '\n\n/* Animation properties for ' + (elementId + (' */\n' + ('/* Use: animation: ' + (animationName + (' ' + ($elm$core$String$fromInt(group.duration) + ('ms ' + ($author$project$Anim$Internal$Timing$Easing$toCSS(
-					$elm$core$Maybe$Just(group.easing)) + (' ' + ($elm$core$String$fromInt(group.delay) + 'ms; */\n'))))))))));
-			} else {
-				return '\n\n/* Animation properties for ' + (elementId + (' */\n' + ('/* Use: animation: ' + (animationName + ' 1s ease 0ms; */\n'))));
-			}
-		}();
-		return '@keyframes ' + (animationName + (' {\n' + (stepsString + ('\n}' + animationProperties))));
+		var animationPropertiesComment = '\n\n/* Animation properties for ' + (elementId + ' */\n');
+		return '@keyframes ' + (animationName + (' {\n' + (stepsString + ('\n}' + animationPropertiesComment))));
 	});
 var $elm$core$List$any = F2(
 	function (isOkay, list) {
@@ -5867,27 +5768,6 @@ var $author$project$Anim$Internal$CSS$combineTransformStyles = function (styles)
 	}();
 	return _Utils_ap(combinedTransform, otherStyles);
 };
-var $elm$core$List$drop = F2(
-	function (n, list) {
-		drop:
-		while (true) {
-			if (n <= 0) {
-				return list;
-			} else {
-				if (!list.b) {
-					return list;
-				} else {
-					var x = list.a;
-					var xs = list.b;
-					var $temp$n = n - 1,
-						$temp$list = xs;
-					n = $temp$n;
-					list = $temp$list;
-					continue drop;
-				}
-			}
-		}
-	});
 var $elm$core$List$isEmpty = function (xs) {
 	if (!xs.b) {
 		return true;
@@ -6150,132 +6030,6 @@ var $author$project$Anim$Internal$CSS$propertyToKeyframeStyle = F2(
 						$author$project$Anim$Internal$Properties$Opacity$toString(interpolatedOpacity)));
 		}
 	});
-var $elm$core$List$takeReverse = F3(
-	function (n, list, kept) {
-		takeReverse:
-		while (true) {
-			if (n <= 0) {
-				return kept;
-			} else {
-				if (!list.b) {
-					return kept;
-				} else {
-					var x = list.a;
-					var xs = list.b;
-					var $temp$n = n - 1,
-						$temp$list = xs,
-						$temp$kept = A2($elm$core$List$cons, x, kept);
-					n = $temp$n;
-					list = $temp$list;
-					kept = $temp$kept;
-					continue takeReverse;
-				}
-			}
-		}
-	});
-var $elm$core$List$takeTailRec = F2(
-	function (n, list) {
-		return $elm$core$List$reverse(
-			A3($elm$core$List$takeReverse, n, list, _List_Nil));
-	});
-var $elm$core$List$takeFast = F3(
-	function (ctr, n, list) {
-		if (n <= 0) {
-			return _List_Nil;
-		} else {
-			var _v0 = _Utils_Tuple2(n, list);
-			_v0$1:
-			while (true) {
-				_v0$5:
-				while (true) {
-					if (!_v0.b.b) {
-						return list;
-					} else {
-						if (_v0.b.b.b) {
-							switch (_v0.a) {
-								case 1:
-									break _v0$1;
-								case 2:
-									var _v2 = _v0.b;
-									var x = _v2.a;
-									var _v3 = _v2.b;
-									var y = _v3.a;
-									return _List_fromArray(
-										[x, y]);
-								case 3:
-									if (_v0.b.b.b.b) {
-										var _v4 = _v0.b;
-										var x = _v4.a;
-										var _v5 = _v4.b;
-										var y = _v5.a;
-										var _v6 = _v5.b;
-										var z = _v6.a;
-										return _List_fromArray(
-											[x, y, z]);
-									} else {
-										break _v0$5;
-									}
-								default:
-									if (_v0.b.b.b.b && _v0.b.b.b.b.b) {
-										var _v7 = _v0.b;
-										var x = _v7.a;
-										var _v8 = _v7.b;
-										var y = _v8.a;
-										var _v9 = _v8.b;
-										var z = _v9.a;
-										var _v10 = _v9.b;
-										var w = _v10.a;
-										var tl = _v10.b;
-										return (ctr > 1000) ? A2(
-											$elm$core$List$cons,
-											x,
-											A2(
-												$elm$core$List$cons,
-												y,
-												A2(
-													$elm$core$List$cons,
-													z,
-													A2(
-														$elm$core$List$cons,
-														w,
-														A2($elm$core$List$takeTailRec, n - 4, tl))))) : A2(
-											$elm$core$List$cons,
-											x,
-											A2(
-												$elm$core$List$cons,
-												y,
-												A2(
-													$elm$core$List$cons,
-													z,
-													A2(
-														$elm$core$List$cons,
-														w,
-														A3($elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
-									} else {
-										break _v0$5;
-									}
-							}
-						} else {
-							if (_v0.a === 1) {
-								break _v0$1;
-							} else {
-								break _v0$5;
-							}
-						}
-					}
-				}
-				return list;
-			}
-			var _v1 = _v0.b;
-			var x = _v1.a;
-			return _List_fromArray(
-				[x]);
-		}
-	});
-var $elm$core$List$take = F2(
-	function (n, list) {
-		return A3($elm$core$List$takeFast, 0, n, list);
-	});
 var $elm$core$List$tail = function (list) {
 	if (list.b) {
 		var x = list.a;
@@ -6494,12 +6248,25 @@ var $author$project$Anim$Internal$Timing$Easing$toFunction = function (easing) {
 };
 var $author$project$Anim$Internal$CSS$generateTimedKeyframeSteps = F2(
 	function (dominantGroup, allProperties) {
-		var rawSteps = A2(
-			$elm$core$List$map,
-			function (i) {
-				return i / 14.0;
-			},
-			A2($elm$core$List$range, 0, 14));
+		var keyframeCount = function () {
+			var _v2 = dominantGroup.easing;
+			switch (_v2.$) {
+				case 'BounceIn':
+					return 80;
+				case 'BounceOut':
+					return 80;
+				case 'BounceInOut':
+					return 80;
+				case 'ElasticIn':
+					return 60;
+				case 'ElasticOut':
+					return 60;
+				case 'ElasticInOut':
+					return 60;
+				default:
+					return 30;
+			}
+		}();
 		var generateStepStyles = function (easedProgress) {
 			return $author$project$Anim$Internal$CSS$combineTransformStyles(
 				A2(
@@ -6508,47 +6275,37 @@ var $author$project$Anim$Internal$CSS$generateTimedKeyframeSteps = F2(
 					allProperties));
 		};
 		var easingFunction = $author$project$Anim$Internal$Timing$Easing$toFunction(dominantGroup.easing);
-		var easedSteps = A2(
-			$elm$core$List$indexedMap,
+		var baseLinear = A2(
+			$elm$core$List$map,
+			function (i) {
+				return i / (keyframeCount - 1);
+			},
+			A2($elm$core$List$range, 0, keyframeCount - 1));
+		var rawSteps = baseLinear;
+		var progressPairs = A3(
+			$elm$core$List$map2,
 			F2(
-				function (i, easedProgress) {
-					return _Utils_Tuple2(i / 14.0, easedProgress);
+				function (raw, eased) {
+					return _Utils_Tuple2(raw, eased);
 				}),
+			rawSteps,
 			A2($elm$core$List$map, easingFunction, rawSteps));
-		var allSteps = A2(
-			$elm$core$List$cons,
-			_Utils_Tuple2(0.0, 0.0),
-			_Utils_ap(
-				A2(
-					$elm$core$List$take,
-					13,
-					A2($elm$core$List$drop, 1, easedSteps)),
-				_List_fromArray(
-					[
-						_Utils_Tuple2(1.0, 1.0)
-					])));
 		return A2(
-			$elm$core$List$indexedMap,
-			F2(
-				function (i, _v2) {
-					var styles = _v2.b;
-					return _Utils_Tuple2(i / 14.0, styles);
-				}),
+			$elm$core$List$filter,
+			function (_v1) {
+				var styles = _v1.b;
+				return !$elm$core$List$isEmpty(styles);
+			},
 			A2(
-				$elm$core$List$filter,
-				function (_v1) {
-					var styles = _v1.b;
-					return !$elm$core$List$isEmpty(styles);
+				$elm$core$List$map,
+				function (_v0) {
+					var raw = _v0.a;
+					var eased = _v0.b;
+					return _Utils_Tuple2(
+						raw,
+						generateStepStyles(eased));
 				},
-				A2(
-					$elm$core$List$map,
-					function (_v0) {
-						var easedProgress = _v0.b;
-						return _Utils_Tuple2(
-							easedProgress,
-							generateStepStyles(easedProgress));
-					},
-					allSteps)));
+				progressPairs));
 	});
 var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Basics$modBy = _Basics_modBy;
@@ -6603,23 +6360,11 @@ var $author$project$Anim$Internal$CSS$createAnimationLayerFromGroup = F3(
 					$elm$core$String$toList(contentForHash))));
 		var uniqueId = 'anim' + $elm$core$String$fromInt(simpleHash);
 		var animationName = elementId + ('-layer-' + ($elm$core$String$fromInt(layerIndex) + ('-' + uniqueId)));
-		var keyframesString = A3(
-			$author$project$Anim$Internal$CSS$buildKeyframesString,
-			animationName,
-			keyframeSteps,
-			$elm$core$Maybe$Just(timingGroup));
+		var keyframesString = A2($author$project$Anim$Internal$CSS$buildKeyframesString, animationName, keyframeSteps);
 		var animatedProperties = $author$project$Anim$Internal$CSS$extractAnimatedProperties(timingGroup.properties);
 		var _v0 = A2($elm$core$Debug$log, 'Animation name for ' + elementId, animationName);
 		return $elm$core$List$isEmpty(keyframeSteps) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
-			{
-				animationName: animationName,
-				delay: timingGroup.delay,
-				duration: timingGroup.duration,
-				easing: $author$project$Anim$Internal$Timing$Easing$toCSS(
-					$elm$core$Maybe$Just(timingGroup.easing)),
-				keyframes: keyframesString,
-				properties: animatedProperties
-			});
+			{animationName: animationName, delay: timingGroup.delay, duration: timingGroup.duration, easing: 'linear', keyframes: keyframesString, properties: animatedProperties});
 	});
 var $elm$core$Maybe$map2 = F3(
 	function (func, ma, mb) {
@@ -7231,6 +6976,97 @@ var $author$project$Anim$Internal$CSS$findLongestDuration = function (properties
 					}),
 				firstTimeSpec,
 				rest));
+	}
+};
+var $author$project$Anim$Internal$Timing$Easing$easingToCSS = function (easing) {
+	switch (easing.$) {
+		case 'Bezier':
+			var p1x = easing.a;
+			var p1y = easing.b;
+			var p2x = easing.c;
+			var p2y = easing.d;
+			return 'cubic-bezier(' + ($elm$core$String$fromFloat(p1x) + (', ' + ($elm$core$String$fromFloat(p1y) + (', ' + ($elm$core$String$fromFloat(p2x) + (', ' + ($elm$core$String$fromFloat(p2y) + ')')))))));
+		case 'Linear':
+			return 'linear';
+		case 'Ease':
+			return 'ease';
+		case 'EaseIn':
+			return 'ease-in';
+		case 'EaseOut':
+			return 'ease-out';
+		case 'EaseInOut':
+			return 'ease-in-out';
+		case 'SineIn':
+			return 'cubic-bezier(0.12, 0, 0.39, 0)';
+		case 'SineOut':
+			return 'cubic-bezier(0.61, 1, 0.88, 1)';
+		case 'SineInOut':
+			return 'cubic-bezier(0.37, 0, 0.63, 1)';
+		case 'QuadIn':
+			return 'cubic-bezier(0.11, 0, 0.5, 0)';
+		case 'QuadOut':
+			return 'cubic-bezier(0.5, 1, 0.89, 1)';
+		case 'QuadInOut':
+			return 'cubic-bezier(0.45, 0, 0.55, 1)';
+		case 'CubicIn':
+			return 'cubic-bezier(0.32, 0, 0.67, 0)';
+		case 'CubicOut':
+			return 'cubic-bezier(0.33, 1, 0.68, 1)';
+		case 'CubicInOut':
+			return 'cubic-bezier(0.65, 0, 0.35, 1)';
+		case 'QuartIn':
+			return 'cubic-bezier(0.5, 0, 0.75, 0)';
+		case 'QuartOut':
+			return 'cubic-bezier(0.25, 1, 0.5, 1)';
+		case 'QuartInOut':
+			return 'cubic-bezier(0.76, 0, 0.24, 1)';
+		case 'QuintIn':
+			return 'cubic-bezier(0.64, 0, 0.78, 0)';
+		case 'QuintOut':
+			return 'cubic-bezier(0.22, 1, 0.36, 1)';
+		case 'QuintInOut':
+			return 'cubic-bezier(0.83, 0, 0.17, 1)';
+		case 'ExpoIn':
+			return 'cubic-bezier(0.7, 0, 0.84, 0)';
+		case 'ExpoOut':
+			return 'cubic-bezier(0.16, 1, 0.3, 1)';
+		case 'ExpoInOut':
+			return 'cubic-bezier(0.87, 0, 0.13, 1)';
+		case 'CircIn':
+			return 'cubic-bezier(0.55, 0, 1, 0.45)';
+		case 'CircOut':
+			return 'cubic-bezier(0, 0.55, 0.45, 1)';
+		case 'CircInOut':
+			return 'cubic-bezier(0.85, 0, 0.15, 1)';
+		case 'BackIn':
+			return 'cubic-bezier(0.36, 0, 0.66, -0.56)';
+		case 'BackOut':
+			return 'cubic-bezier(0.34, 1.56, 0.64, 1)';
+		case 'BackInOut':
+			return 'cubic-bezier(0.68, -0.6, 0.32, 1.6)';
+		case 'ElasticIn':
+			return 'cubic-bezier(0.175, 0.885, 0.320, 1.275)';
+		case 'ElasticOut':
+			return 'cubic-bezier(0.680, -0.550, 0.265, 1.550)';
+		case 'ElasticInOut':
+			return 'cubic-bezier(0.680, -0.550, 0.265, 1.550)';
+		case 'BounceIn':
+			return 'cubic-bezier(0.600, 0.040, 0.980, 0.335)';
+		case 'BounceOut':
+			return 'cubic-bezier(0.175, 0.885, 0.320, 1.275)';
+		case 'BounceInOut':
+			return 'cubic-bezier(0.445, 0.050, 0.550, 0.950)';
+		default:
+			var value = easing.a;
+			return value;
+	}
+};
+var $author$project$Anim$Internal$Timing$Easing$toCSS = function (maybeEasing) {
+	if (maybeEasing.$ === 'Just') {
+		var easing = maybeEasing.a;
+		return $author$project$Anim$Internal$Timing$Easing$easingToCSS(easing);
+	} else {
+		return 'ease';
 	}
 };
 var $author$project$Anim$Internal$Timing$Delay$toCssString = function (maybeDelayValue) {
@@ -13914,34 +13750,37 @@ var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
 };
 var $mdgriffith$elm_ui$Element$px = $mdgriffith$elm_ui$Internal$Model$Px;
 var $mdgriffith$elm_ui$Element$rgba = $mdgriffith$elm_ui$Internal$Model$Rgba;
-var $mdgriffith$elm_ui$Element$Font$bold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.bold);
-var $author$project$Anim$Internal$CSS$getElementStyles = F2(
+var $author$project$Anim$Internal$CSS$generateAnimationAttributeString = function (animationLayers) {
+	return (!$elm$core$List$isEmpty(animationLayers)) ? A2(
+		$elm$core$String$join,
+		', ',
+		A2(
+			$elm$core$List$map,
+			function (layer) {
+				return layer.animationName + (' ' + ($elm$core$String$fromInt(layer.duration) + ('ms ' + (layer.easing + (' ' + ($elm$core$String$fromInt(layer.delay) + 'ms forwards'))))));
+			},
+			animationLayers)) : '';
+};
+var $author$project$Anim$Internal$CSS$getElementAnimation = F2(
 	function (elementId, _v0) {
 		var state = _v0.a;
-		return A2(
-			$elm$core$Maybe$withDefault,
-			_List_Nil,
-			A2(
-				$elm$core$Maybe$map,
-				function ($) {
-					return $.styles;
-				},
-				A2($elm$core$Dict$get, elementId, state.elementAnimations)));
+		return A2($elm$core$Dict$get, elementId, state.elementAnimations);
 	});
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$Anim$Internal$CSS$htmlAttributes = F2(
-	function (elementId, animationResult) {
-		return A2(
-			$elm$core$List$map,
-			function (_v0) {
-				var prop = _v0.a;
-				var value = _v0.b;
-				return A2($elm$html$Html$Attributes$style, prop, value);
-			},
-			A2($author$project$Anim$Internal$CSS$getElementStyles, elementId, animationResult));
+var $author$project$Anim$Internal$CSS$animationStyleAttribute = F2(
+	function (elementId, animationState) {
+		var _v0 = A2($author$project$Anim$Internal$CSS$getElementAnimation, elementId, animationState);
+		if (_v0.$ === 'Just') {
+			var elementAnimation = _v0.a;
+			var animationValues = $author$project$Anim$Internal$CSS$generateAnimationAttributeString(elementAnimation.animationLayers);
+			return A2($elm$html$Html$Attributes$style, 'animation', animationValues);
+		} else {
+			return A2($elm$html$Html$Attributes$style, 'animation', '');
+		}
 	});
-var $author$project$Anim$CSS$htmlAttributes = $author$project$Anim$Internal$CSS$htmlAttributes;
+var $author$project$Anim$CSS$animationStyleAttribute = $author$project$Anim$Internal$CSS$animationStyleAttribute;
+var $mdgriffith$elm_ui$Element$Font$bold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.bold);
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $mdgriffith$elm_ui$Element$Font$size = function (i) {
 	return A2(
@@ -13953,31 +13792,31 @@ var $author$project$ElmUI$CSS$Keyframes$Rotate$Main$rotatingElement = F5(
 	function (elementId, symbol, label, color, model) {
 		return A2(
 			$mdgriffith$elm_ui$Element$el,
-			_Utils_ap(
-				_List_fromArray(
-					[
-						$mdgriffith$elm_ui$Element$width(
-						$mdgriffith$elm_ui$Element$px(150)),
-						$mdgriffith$elm_ui$Element$height(
-						$mdgriffith$elm_ui$Element$px(150)),
-						$mdgriffith$elm_ui$Element$Background$color(color),
-						$mdgriffith$elm_ui$Element$Border$rounded(12),
-						$mdgriffith$elm_ui$Element$centerX,
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						$elm$html$Html$Attributes$id(elementId)),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						A2($elm$html$Html$Attributes$style, 'transform-origin', 'center')),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						A2($elm$html$Html$Attributes$style, 'display', 'flex')),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						A2($elm$html$Html$Attributes$style, 'align-items', 'center')),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						A2($elm$html$Html$Attributes$style, 'justify-content', 'center'))
-					]),
-				A2(
-					$elm$core$List$map,
-					$mdgriffith$elm_ui$Element$htmlAttribute,
-					A2($author$project$Anim$CSS$htmlAttributes, elementId, model.animations))),
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$width(
+					$mdgriffith$elm_ui$Element$px(150)),
+					$mdgriffith$elm_ui$Element$height(
+					$mdgriffith$elm_ui$Element$px(150)),
+					$mdgriffith$elm_ui$Element$Background$color(color),
+					$mdgriffith$elm_ui$Element$Border$rounded(12),
+					$mdgriffith$elm_ui$Element$centerX,
+					$mdgriffith$elm_ui$Element$htmlAttribute(
+					$elm$html$Html$Attributes$id(elementId)),
+					$mdgriffith$elm_ui$Element$htmlAttribute(
+					A2($elm$html$Html$Attributes$style, 'transform-origin', 'center')),
+					$mdgriffith$elm_ui$Element$htmlAttribute(
+					A2($elm$html$Html$Attributes$style, 'display', 'flex')),
+					$mdgriffith$elm_ui$Element$htmlAttribute(
+					A2($elm$html$Html$Attributes$style, 'align-items', 'center')),
+					$mdgriffith$elm_ui$Element$htmlAttribute(
+					A2($elm$html$Html$Attributes$style, 'justify-content', 'center')),
+					$mdgriffith$elm_ui$Element$htmlAttribute(
+					A2(
+						$elm$core$Debug$log,
+						'Animation Style',
+						A2($author$project$Anim$CSS$animationStyleAttribute, elementId, model.animations)))
+				]),
 			A2(
 				$mdgriffith$elm_ui$Element$column,
 				_List_fromArray(

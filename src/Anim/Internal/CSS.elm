@@ -16,7 +16,6 @@ import Html exposing (Html)
 import Html.Attributes
 import Html.Events
 import Json.Decode
-import Time
 
 
 {-| Global counter to ensure unique animation names
@@ -544,7 +543,7 @@ createAnimationLayerFromGroup elementId layerIndex timingGroup =
             Debug.log ("Animation name for " ++ elementId) animationName
 
         keyframesString =
-            buildKeyframesString animationName keyframeSteps (Just timingGroup)
+            buildKeyframesString animationName keyframeSteps
 
         animatedProperties =
             extractAnimatedProperties timingGroup.properties
@@ -557,7 +556,7 @@ createAnimationLayerFromGroup elementId layerIndex timingGroup =
             { animationName = animationName
             , keyframes = keyframesString
             , duration = timingGroup.duration
-            , easing = Easing.toCSS (Just timingGroup.easing)
+            , easing = "linear" -- Use linear since easing is already in keyframes
             , delay = timingGroup.delay
             , properties = animatedProperties
             }
@@ -770,25 +769,43 @@ generateTimedKeyframeSteps dominantGroup allProperties =
         easingFunction =
             Easing.toFunction dominantGroup.easing
 
-        -- Generate 15 keyframes for smooth easing representation
+        -- Generate more keyframes for smooth easing representation
+        -- Use more steps for complex easings like bounce and elastic
+        keyframeCount =
+            case dominantGroup.easing of
+                Easing.BounceIn ->
+                    80
+
+                Easing.BounceOut ->
+                    80
+
+                Easing.BounceInOut ->
+                    80
+
+                Easing.ElasticIn ->
+                    60
+
+                Easing.ElasticOut ->
+                    60
+
+                Easing.ElasticInOut ->
+                    60
+
+                _ ->
+                    30
+
+        -- Base linear distribution 0..1
+        baseLinear =
+            List.range 0 (keyframeCount - 1)
+                |> List.map (\i -> toFloat i / toFloat (keyframeCount - 1))
+
+        -- Uniform sampling preserves mathematical relationship (BounceIn = flip BounceOut).
         rawSteps =
-            List.range 0 14
-                |> List.map (\i -> toFloat i / 14.0)
+            baseLinear
 
-        -- Apply easing function to get actual progress values
-        easedSteps =
-            rawSteps
-                |> List.map easingFunction
-                |> List.indexedMap
-                    (\i easedProgress ->
-                        ( toFloat i / 14.0, easedProgress )
-                    )
-
-        -- Always include 0% and 100% keyframes
-        allSteps =
-            ( 0.0, 0.0 )
-                :: (easedSteps |> List.drop 1 |> List.take 13)
-                ++ [ ( 1.0, 1.0 ) ]
+        -- Pair raw progress with its eased progress (no truncation)
+        progressPairs =
+            List.map2 (\raw eased -> ( raw, eased )) rawSteps (List.map easingFunction rawSteps)
 
         generateStepStyles : Float -> List ( String, String )
         generateStepStyles easedProgress =
@@ -796,10 +813,9 @@ generateTimedKeyframeSteps dominantGroup allProperties =
                 |> List.filterMap (propertyToKeyframeStyle easedProgress)
                 |> combineTransformStyles
     in
-    allSteps
-        |> List.map (\( _, easedProgress ) -> ( easedProgress, generateStepStyles easedProgress ))
+    progressPairs
+        |> List.map (\( raw, eased ) -> ( raw, generateStepStyles eased ))
         |> List.filter (\( _, styles ) -> not (List.isEmpty styles))
-        |> List.indexedMap (\i ( _, styles ) -> ( toFloat i / 14.0, styles ))
 
 
 {-| Combine multiple transform properties into a single transform style.
@@ -936,8 +952,8 @@ type alias TimingGroup =
     }
 
 
-buildKeyframesString : String -> List ( Float, List ( String, String ) ) -> Maybe TimingGroup -> String
-buildKeyframesString animationName steps maybeTimingGroup =
+buildKeyframesString : String -> List ( Float, List ( String, String ) ) -> String
+buildKeyframesString animationName steps =
     let
         stepToString : ( Float, List ( String, String ) ) -> String
         stepToString ( progress, styles ) =
@@ -960,31 +976,12 @@ buildKeyframesString animationName steps maybeTimingGroup =
                 |> List.head
                 |> Maybe.withDefault animationName
 
-        animationProperties =
-            case maybeTimingGroup of
-                Just group ->
-                    "\n\n/* Animation properties for "
-                        ++ elementId
-                        ++ " */\n"
-                        ++ "/* Use: animation: "
-                        ++ animationName
-                        ++ " "
-                        ++ String.fromInt group.duration
-                        ++ "ms "
-                        ++ Easing.toCSS (Just group.easing)
-                        ++ " "
-                        ++ String.fromInt group.delay
-                        ++ "ms; */\n"
-
-                Nothing ->
-                    "\n\n/* Animation properties for "
-                        ++ elementId
-                        ++ " */\n"
-                        ++ "/* Use: animation: "
-                        ++ animationName
-                        ++ " 1s ease 0ms; */\n"
+        animationPropertiesComment =
+            "\n\n/* Animation properties for "
+                ++ elementId
+                ++ " */\n"
     in
-    "@keyframes " ++ animationName ++ " {\n" ++ stepsString ++ "\n}" ++ animationProperties
+    "@keyframes " ++ animationName ++ " {\n" ++ stepsString ++ "\n}" ++ animationPropertiesComment
 
 
 {-| Generate the keyframes CSS string for a given element and animations.

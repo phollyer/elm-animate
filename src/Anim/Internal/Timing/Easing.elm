@@ -580,7 +580,7 @@ easingToCSS easing =
             "cubic-bezier(0.175, 0.885, 0.320, 1.275)"
 
         BounceInOut ->
-            "cubic-bezier(0.680, -0.550, 0.265, 1.550)"
+            "cubic-bezier(0.445, 0.050, 0.550, 0.950)"
 
         Custom value ->
             value
@@ -708,7 +708,7 @@ toWebAnimations easing =
             "cubic-bezier(0.175, 0.885, 0.320, 1.275)"
 
         BounceInOut ->
-            "cubic-bezier(0.680, -0.550, 0.265, 1.550)"
+            "cubic-bezier(0.445, 0.050, 0.550, 0.950)"
 
         Custom value ->
             value
