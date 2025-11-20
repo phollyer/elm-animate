@@ -60,17 +60,6 @@ zero =
     Opacity 0
 
 
-{-| Calculate distance between two Opacity values using absolute difference.
-
-This follows industry standard for 1-dimensional opacity values:
-
-  - distance = |opacity2 - opacity1|
-
-Example:
-distance (fromFloat 0.2) (fromFloat 0.8)
--- Returns: 0.6
-
--}
 distance : Opacity -> Opacity -> Float
 distance (Opacity o1) (Opacity o2) =
     abs (o2 - o1)

@@ -118,14 +118,36 @@ generateElementAnimation elementId elementConfig =
         transitions =
             generateTransitions elementConfig.properties
 
-        colors =
-            generateColorStyles elementConfig.properties
+        colorStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.ColorConfig config ->
+                            Just ( "background-color", Color.toString config.endAt )
+
+                        _ ->
+                            Nothing
+                )
+                elementConfig.properties
+
+        opacityStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.OpacityConfig config ->
+                            Just ( "opacity", Opacity.toString config.endAt )
+
+                        _ ->
+                            Nothing
+                )
+                elementConfig.properties
 
         allStyles =
             [ ( "transform", transforms )
             , ( "transition", transitions )
             ]
-                ++ colors
+                ++ colorStyles
+                ++ opacityStyles
                 |> List.filter (\( _, value ) -> not (String.isEmpty value))
 
         animationLayers =
@@ -477,24 +499,6 @@ extractDelay property =
 
         Builder.ScaleConfig config ->
             config.delay
-
-        _ ->
-            Nothing
-
-
-generateColorStyles : List Builder.PropertyConfig -> List ( String, String )
-generateColorStyles properties =
-    List.filterMap colorStyleFromProperty properties
-
-
-colorStyleFromProperty : Builder.PropertyConfig -> Maybe ( String, String )
-colorStyleFromProperty property =
-    case property of
-        Builder.ColorConfig config ->
-            Just ( "background-color", Color.toString config.endAt )
-
-        Builder.OpacityConfig config ->
-            Just ( "opacity", Opacity.toString config.endAt )
 
         _ ->
             Nothing

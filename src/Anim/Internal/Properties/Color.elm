@@ -257,8 +257,8 @@ encode color =
 
 
 toString : Color -> String
-toString colorValue =
-    case colorValue of
+toString color =
+    case color of
         Hex hexString ->
             hexString
 
