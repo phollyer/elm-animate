@@ -5223,10 +5223,9 @@ var $author$project$Anim$Timing$Easing$Bezier = F4(
 	function (a, b, c, d) {
 		return {$: 'Bezier', a: a, b: b, c: c, d: d};
 	});
-var $author$project$Anim$Timing$Easing$BounceIn = {$: 'BounceIn'};
-var $author$project$Anim$Timing$Easing$BounceInOut = {$: 'BounceInOut'};
-var $author$project$Anim$Timing$Easing$BounceOut = {$: 'BounceOut'};
+var $author$project$Anim$Timing$Easing$ElasticIn = {$: 'ElasticIn'};
 var $author$project$Anim$Timing$Easing$ElasticInOut = {$: 'ElasticInOut'};
+var $author$project$Anim$Timing$Easing$ElasticOut = {$: 'ElasticOut'};
 var $author$project$Anim$Timing$Easing$Linear = {$: 'Linear'};
 var $author$project$Anim$Internal$CSS$builder = function (_v0) {
 	var state = _v0.a;
@@ -5729,12 +5728,6 @@ var $author$project$Anim$Internal$CSS$extractAnimatedProperties = function (prop
 			},
 			properties));
 };
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
 var $elm$core$List$partition = F2(
 	function (pred, list) {
 		var step = F2(
@@ -6042,10 +6035,6 @@ var $author$project$Anim$Internal$CSS$propertyToKeyframeStyle = F2(
 						$author$project$Anim$Internal$Properties$Opacity$toString(interpolatedOpacity)));
 		}
 	});
-var $elm$core$List$sortBy = _List_sortBy;
-var $elm$core$List$sort = function (xs) {
-	return A2($elm$core$List$sortBy, $elm$core$Basics$identity, xs);
-};
 var $elm$core$List$tail = function (list) {
 	if (list.b) {
 		var x = list.a;
@@ -6126,6 +6115,9 @@ var $elm_community$easing_functions$Ease$outCirc = function (time) {
 var $elm_community$easing_functions$Ease$inCirc = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$outCirc);
 var $elm_community$easing_functions$Ease$inCubic = function (time) {
 	return A2($elm$core$Basics$pow, time, 3);
+};
+var $elm$core$Basics$negate = function (n) {
+	return -n;
 };
 var $elm$core$Basics$pi = _Basics_pi;
 var $elm$core$Basics$sin = _Basics_sin;
@@ -6261,48 +6253,9 @@ var $author$project$Anim$Internal$Timing$Easing$toFunction = function (easing) {
 };
 var $author$project$Anim$Internal$CSS$generateTimedKeyframeSteps = F2(
 	function (dominantGroup, allProperties) {
-		var sortAndDedupe = function (xs) {
-			var sorted = $elm$core$List$sort(xs);
-			var dedupe = F2(
-				function (acc, rest) {
-					dedupe:
-					while (true) {
-						if (!rest.b) {
-							return $elm$core$List$reverse(acc);
-						} else {
-							var y = rest.a;
-							var ys = rest.b;
-							if (acc.b) {
-								var a = acc.a;
-								if ($elm$core$Basics$abs(y - a) < 1.0e-6) {
-									var $temp$acc = acc,
-										$temp$rest = ys;
-									acc = $temp$acc;
-									rest = $temp$rest;
-									continue dedupe;
-								} else {
-									var $temp$acc = A2($elm$core$List$cons, y, acc),
-										$temp$rest = ys;
-									acc = $temp$acc;
-									rest = $temp$rest;
-									continue dedupe;
-								}
-							} else {
-								var $temp$acc = _List_fromArray(
-									[y]),
-									$temp$rest = ys;
-								acc = $temp$acc;
-								rest = $temp$rest;
-								continue dedupe;
-							}
-						}
-					}
-				});
-			return A2(dedupe, _List_Nil, sorted);
-		};
 		var keyframeCount = function () {
-			var _v5 = dominantGroup.easing;
-			switch (_v5.$) {
+			var _v4 = dominantGroup.easing;
+			switch (_v4.$) {
 				case 'BounceIn':
 					return 80;
 				case 'BounceOut':
@@ -6326,69 +6279,7 @@ var $author$project$Anim$Internal$CSS$generateTimedKeyframeSteps = F2(
 					$author$project$Anim$Internal$CSS$propertyToKeyframeStyle(easedProgress),
 					allProperties));
 		};
-		var eps = 0.005;
 		var easingFunction = $author$project$Anim$Internal$Timing$Easing$toFunction(dominantGroup.easing);
-		var specialBounce = function (t) {
-			var _v4 = dominantGroup.easing;
-			switch (_v4.$) {
-				case 'BounceOut':
-					return A2($author$project$Anim$Internal$Timing$Easing$toFunction, $author$project$Anim$Internal$Timing$Easing$BounceOut, t);
-				case 'BounceIn':
-					return A2($author$project$Anim$Internal$Timing$Easing$toFunction, $author$project$Anim$Internal$Timing$Easing$BounceIn, t);
-				case 'BounceInOut':
-					return A2($author$project$Anim$Internal$Timing$Easing$toFunction, $author$project$Anim$Internal$Timing$Easing$BounceInOut, t);
-				default:
-					return easingFunction(t);
-			}
-		};
-		var clamp01 = function (x) {
-			return (x < 0) ? 0 : ((x > 1) ? 1 : x);
-		};
-		var piecewiseOutTimes = function () {
-			var neighbors = function (t) {
-				return _List_fromArray(
-					[
-						clamp01(t - eps),
-						clamp01(t),
-						clamp01(t + eps)
-					]);
-			};
-			var between = F2(
-				function (a, b) {
-					var q3 = a + ((b - a) * 0.75);
-					var q2 = a + ((b - a) * 0.5);
-					var q1 = a + ((b - a) * 0.25);
-					return _List_fromArray(
-						[q1, q2, q3]);
-				});
-			var b3 = 2.5 / 2.75;
-			var b2 = 2 / 2.75;
-			var b1 = 1 / 2.75;
-			var interiors = _Utils_ap(
-				A2(between, 0, b1),
-				_Utils_ap(
-					A2(between, b1, b2),
-					_Utils_ap(
-						A2(between, b2, b3),
-						A2(between, b3, 1))));
-			var allTimes = A2(
-				$elm$core$List$map,
-				clamp01,
-				A2(
-					$elm$core$List$cons,
-					0,
-					_Utils_ap(
-						neighbors(b1),
-						_Utils_ap(
-							neighbors(b2),
-							_Utils_ap(
-								neighbors(b3),
-								_Utils_ap(
-									interiors,
-									_List_fromArray(
-										[1])))))));
-			return sortAndDedupe(allTimes);
-		}();
 		var baseLinear = A2(
 			$elm$core$List$map,
 			function (i) {
@@ -6399,7 +6290,12 @@ var $author$project$Anim$Internal$CSS$generateTimedKeyframeSteps = F2(
 			var _v3 = dominantGroup.easing;
 			switch (_v3.$) {
 				case 'BounceOut':
-					return piecewiseOutTimes;
+					return A2(
+						$elm$core$List$map,
+						function (i) {
+							return i / 50.0;
+						},
+						A2($elm$core$List$range, 0, 50));
 				case 'BounceIn':
 					return A2(
 						$elm$core$List$map,
@@ -6436,7 +6332,7 @@ var $author$project$Anim$Internal$CSS$generateTimedKeyframeSteps = F2(
 			function (raw) {
 				return _Utils_Tuple2(
 					raw,
-					specialBounce(raw));
+					easingFunction(raw));
 			},
 			rawSteps);
 		return A2(
@@ -6619,6 +6515,9 @@ var $author$project$Anim$Internal$Properties$Color$hexToRgb = function (hex_) {
 		$author$project$Anim$Internal$Properties$Color$hexStringToInt(
 			A3($elm$core$String$slice, 4, 6, cleanHex)));
 	return {b: b, g: g, r: r};
+};
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
 };
 var $author$project$Anim$Internal$Properties$Color$floatMod = F2(
 	function (a, b) {
@@ -7580,22 +7479,6 @@ var $author$project$Anim$Internal$Builders$Position$build = function (_v0) {
 	return A2($author$project$Anim$Internal$Builders$Property$upsert, newPositionConfig, builder);
 };
 var $author$project$Anim$Properties$Position$build = $author$project$Anim$Internal$Builders$Position$build;
-var $author$project$Anim$Internal$Builders$Position$delay = F2(
-	function (delay_, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		return A2(
-			$author$project$Anim$Internal$Builders$Position$PositionBuilder,
-			_Utils_update(
-				config,
-				{
-					delay: $elm$core$Maybe$Just(delay_)
-				}),
-			builder);
-	});
-var $author$project$Anim$Properties$Position$delay = function (delay_) {
-	return $author$project$Anim$Internal$Builders$Position$delay(delay_);
-};
 var $author$project$Anim$Internal$Builders$Position$duration = F2(
 	function (ms, _v0) {
 		var config = _v0.a;
@@ -7759,7 +7642,7 @@ var $author$project$ElmUI$CSS$Keyframes$Position$Main$update = F2(
 								$author$project$Anim$Properties$Position$build(
 									A2(
 										$author$project$Anim$Properties$Position$easing,
-										$author$project$Anim$Timing$Easing$BounceIn,
+										$author$project$Anim$Timing$Easing$ElasticOut,
 										A2(
 											$author$project$Anim$Properties$Position$duration,
 											1000,
@@ -7778,7 +7661,7 @@ var $author$project$ElmUI$CSS$Keyframes$Position$Main$update = F2(
 								$author$project$Anim$Properties$Position$build(
 									A2(
 										$author$project$Anim$Properties$Position$easing,
-										$author$project$Anim$Timing$Easing$BounceOut,
+										$author$project$Anim$Timing$Easing$ElasticIn,
 										A2(
 											$author$project$Anim$Properties$Position$duration,
 											1000,
@@ -7797,17 +7680,14 @@ var $author$project$ElmUI$CSS$Keyframes$Position$Main$update = F2(
 								$author$project$Anim$Properties$Position$build(
 									A2(
 										$author$project$Anim$Properties$Position$easing,
-										$author$project$Anim$Timing$Easing$BounceInOut,
+										$author$project$Anim$Timing$Easing$ElasticInOut,
 										A2(
 											$author$project$Anim$Properties$Position$duration,
-											500,
+											1000,
 											A2(
-												$author$project$Anim$Properties$Position$delay,
-												1000,
-												A2(
-													$author$project$Anim$Properties$Position$toY,
-													350,
-													$author$project$ElmUI$CSS$Keyframes$Position$Main$anim(model.animations)))))))
+												$author$project$Anim$Properties$Position$toY,
+												350,
+												$author$project$ElmUI$CSS$Keyframes$Position$Main$anim(model.animations))))))
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'MoveUp':
@@ -7819,10 +7699,10 @@ var $author$project$ElmUI$CSS$Keyframes$Position$Main$update = F2(
 								$author$project$Anim$Properties$Position$build(
 									A2(
 										$author$project$Anim$Properties$Position$duration,
-										500,
+										1000,
 										A2(
 											$author$project$Anim$Properties$Position$easing,
-											$author$project$Anim$Timing$Easing$BounceInOut,
+											$author$project$Anim$Timing$Easing$ElasticInOut,
 											A2(
 												$author$project$Anim$Properties$Position$toY,
 												0,

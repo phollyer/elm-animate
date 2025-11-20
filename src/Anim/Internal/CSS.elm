@@ -799,96 +799,13 @@ generateTimedKeyframeSteps dominantGroup allProperties =
             List.range 0 (keyframeCount - 1)
                 |> List.map (\i -> toFloat i / toFloat (keyframeCount - 1))
 
-        -- Piecewise sampling for Bounce easings: include segment boundaries and interior points
-        eps =
-            0.005
-
-        clamp01 x =
-            if x < 0 then
-                0
-
-            else if x > 1 then
-                1
-
-            else
-                x
-
-        sortAndDedupe : List Float -> List Float
-        sortAndDedupe xs =
-            let
-                sorted =
-                    List.sort xs
-
-                dedupe acc rest =
-                    case rest of
-                        [] ->
-                            List.reverse acc
-
-                        y :: ys ->
-                            case acc of
-                                a :: _ ->
-                                    if abs (y - a) < 1.0e-6 then
-                                        dedupe acc ys
-
-                                    else
-                                        dedupe (y :: acc) ys
-
-                                [] ->
-                                    dedupe [ y ] ys
-            in
-            dedupe [] sorted
-
-        piecewiseOutTimes : List Float
-        piecewiseOutTimes =
-            let
-                b1 =
-                    1 / 2.75
-
-                b2 =
-                    2 / 2.75
-
-                b3 =
-                    2.5 / 2.75
-
-                neighbors t =
-                    [ clamp01 (t - eps), clamp01 t, clamp01 (t + eps) ]
-
-                between a b =
-                    let
-                        q1 =
-                            a + (b - a) * 0.25
-
-                        q2 =
-                            a + (b - a) * 0.5
-
-                        q3 =
-                            a + (b - a) * 0.75
-                    in
-                    [ q1, q2, q3 ]
-
-                interiors =
-                    between 0 b1
-                        ++ between b1 b2
-                        ++ between b2 b3
-                        ++ between b3 1
-
-                allTimes =
-                    0
-                        :: (neighbors b1
-                                ++ neighbors b2
-                                ++ neighbors b3
-                                ++ interiors
-                                ++ [ 1 ]
-                           )
-                        |> List.map clamp01
-            in
-            sortAndDedupe allTimes
-
         piecewiseTimes : List Float
         piecewiseTimes =
             case dominantGroup.easing of
                 Easing.BounceOut ->
-                    piecewiseOutTimes
+                    -- Use uniform sampling for all bounce types
+                    List.range 0 50
+                        |> List.map (\i -> toFloat i / 50.0)
 
                 Easing.BounceIn ->
                     -- Use uniform sampling - the easing function handles the bounce timing
@@ -918,24 +835,8 @@ generateTimedKeyframeSteps dominantGroup allProperties =
                 _ ->
                     baseLinear
 
-        -- Use proper easing functions from elm-community/easing-functions
-        specialBounce : Float -> Float
-        specialBounce t =
-            case dominantGroup.easing of
-                Easing.BounceOut ->
-                    Easing.toFunction Easing.BounceOut t
-
-                Easing.BounceIn ->
-                    Easing.toFunction Easing.BounceIn t
-
-                Easing.BounceInOut ->
-                    Easing.toFunction Easing.BounceInOut t
-
-                _ ->
-                    easingFunction t
-
         progressPairs =
-            rawSteps |> List.map (\raw -> ( raw, specialBounce raw ))
+            rawSteps |> List.map (\raw -> ( raw, easingFunction raw ))
 
         generateStepStyles : Float -> List ( String, String )
         generateStepStyles easedProgress =
