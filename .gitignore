@@ -13,3 +13,7 @@ npm-debug.log
 # Ignore OS files
 .DS_Store
 .vscode
+
+# Ignore generated JS outputs for ElmUI CSS examples
+src/ElmUI/CSS/Keyframes/*/index.js
+src/ElmUI/CSS/Transitions/*/index.js
