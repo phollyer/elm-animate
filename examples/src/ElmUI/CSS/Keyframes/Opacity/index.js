@@ -5800,9 +5800,6 @@ var $author$project$Anim$Internal$Properties$Scale$fromTuple = function (_v0) {
 	var sy = _v0.b;
 	return A2($author$project$Anim$Internal$Properties$Scale$ScaleXY, sx, sy);
 };
-var $author$project$Anim$Internal$Properties$Color$Hex = function (a) {
-	return {$: 'Hex', a: a};
-};
 var $author$project$Anim$Internal$Properties$Color$Hsl = function (a) {
 	return {$: 'Hsl', a: a};
 };
@@ -5815,6 +5812,115 @@ var $author$project$Anim$Internal$Properties$Color$Rgb = function (a) {
 var $author$project$Anim$Internal$Properties$Color$Rgba = function (a) {
 	return {$: 'Rgba', a: a};
 };
+var $elm$core$Maybe$map2 = F3(
+	function (func, ma, mb) {
+		if (ma.$ === 'Nothing') {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var a = ma.a;
+			if (mb.$ === 'Nothing') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var b = mb.a;
+				return $elm$core$Maybe$Just(
+					A2(func, a, b));
+			}
+		}
+	});
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
+var $author$project$Anim$Internal$Properties$Color$hexStringToInt = function (str) {
+	var hexCharToInt = function (_char) {
+		switch (_char.valueOf()) {
+			case '0':
+				return $elm$core$Maybe$Just(0);
+			case '1':
+				return $elm$core$Maybe$Just(1);
+			case '2':
+				return $elm$core$Maybe$Just(2);
+			case '3':
+				return $elm$core$Maybe$Just(3);
+			case '4':
+				return $elm$core$Maybe$Just(4);
+			case '5':
+				return $elm$core$Maybe$Just(5);
+			case '6':
+				return $elm$core$Maybe$Just(6);
+			case '7':
+				return $elm$core$Maybe$Just(7);
+			case '8':
+				return $elm$core$Maybe$Just(8);
+			case '9':
+				return $elm$core$Maybe$Just(9);
+			case 'A':
+				return $elm$core$Maybe$Just(10);
+			case 'a':
+				return $elm$core$Maybe$Just(10);
+			case 'B':
+				return $elm$core$Maybe$Just(11);
+			case 'b':
+				return $elm$core$Maybe$Just(11);
+			case 'C':
+				return $elm$core$Maybe$Just(12);
+			case 'c':
+				return $elm$core$Maybe$Just(12);
+			case 'D':
+				return $elm$core$Maybe$Just(13);
+			case 'd':
+				return $elm$core$Maybe$Just(13);
+			case 'E':
+				return $elm$core$Maybe$Just(14);
+			case 'e':
+				return $elm$core$Maybe$Just(14);
+			case 'F':
+				return $elm$core$Maybe$Just(15);
+			case 'f':
+				return $elm$core$Maybe$Just(15);
+			default:
+				return $elm$core$Maybe$Nothing;
+		}
+	};
+	var chars = $elm$core$String$toList(str);
+	if ((chars.b && chars.b.b) && (!chars.b.b.b)) {
+		var c1 = chars.a;
+		var _v1 = chars.b;
+		var c2 = _v1.a;
+		return A3(
+			$elm$core$Maybe$map2,
+			F2(
+				function (v1, v2) {
+					return (v1 * 16) + v2;
+				}),
+			hexCharToInt(c1),
+			hexCharToInt(c2));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$Internal$Properties$Color$hexToRgb = function (hex_) {
+	var cleanHex = A2(
+		$elm$core$String$dropLeft,
+		A2($elm$core$String$startsWith, '#', hex_) ? 1 : 0,
+		hex_);
+	var g = A2(
+		$elm$core$Maybe$withDefault,
+		0,
+		$author$project$Anim$Internal$Properties$Color$hexStringToInt(
+			A3($elm$core$String$slice, 2, 4, cleanHex)));
+	var r = A2(
+		$elm$core$Maybe$withDefault,
+		0,
+		$author$project$Anim$Internal$Properties$Color$hexStringToInt(
+			A3($elm$core$String$slice, 0, 2, cleanHex)));
+	var b = A2(
+		$elm$core$Maybe$withDefault,
+		0,
+		$author$project$Anim$Internal$Properties$Color$hexStringToInt(
+			A3($elm$core$String$slice, 4, 6, cleanHex)));
+	return {b: b, g: g, r: r};
+};
 var $elm$core$Basics$round = _Basics_round;
 var $author$project$Anim$Internal$Properties$Color$interpolate = F3(
 	function (start, end, t) {
@@ -5826,7 +5932,13 @@ var $author$project$Anim$Internal$Properties$Color$interpolate = F3(
 					if (_v0.b.$ === 'Hex') {
 						var startHex = _v0.a.a;
 						var endHex = _v0.b.a;
-						return (t < 0.5) ? $author$project$Anim$Internal$Properties$Color$Hex(startHex) : $author$project$Anim$Internal$Properties$Color$Hex(endHex);
+						var startRgb = $author$project$Anim$Internal$Properties$Color$hexToRgb(startHex);
+						var endRgb = $author$project$Anim$Internal$Properties$Color$hexToRgb(endHex);
+						var g = $elm$core$Basics$round(startRgb.g + ((endRgb.g - startRgb.g) * t));
+						var r = $elm$core$Basics$round(startRgb.r + ((endRgb.r - startRgb.r) * t));
+						var b = $elm$core$Basics$round(startRgb.b + ((endRgb.b - startRgb.b) * t));
+						return $author$project$Anim$Internal$Properties$Color$Rgb(
+							{b: b, g: g, r: r});
 					} else {
 						break _v0$5;
 					}
@@ -6352,10 +6464,6 @@ var $elm$core$Basics$modBy = _Basics_modBy;
 var $elm$core$List$sum = function (numbers) {
 	return A3($elm$core$List$foldl, $elm$core$Basics$add, 0, numbers);
 };
-var $elm$core$String$foldr = _String_foldr;
-var $elm$core$String$toList = function (string) {
-	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
-};
 var $author$project$Anim$Internal$CSS$createAnimationLayerFromGroup = F3(
 	function (elementId, layerIndex, timingGroup) {
 		var keyframeSteps = A2($author$project$Anim$Internal$CSS$generateTimedKeyframeSteps, timingGroup, timingGroup.properties);
@@ -6406,111 +6514,6 @@ var $author$project$Anim$Internal$CSS$createAnimationLayerFromGroup = F3(
 		return $elm$core$List$isEmpty(keyframeSteps) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
 			{animationName: animationName, delay: timingGroup.delay, duration: timingGroup.duration, easing: 'linear', keyframes: keyframesString, properties: animatedProperties});
 	});
-var $elm$core$Maybe$map2 = F3(
-	function (func, ma, mb) {
-		if (ma.$ === 'Nothing') {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var a = ma.a;
-			if (mb.$ === 'Nothing') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var b = mb.a;
-				return $elm$core$Maybe$Just(
-					A2(func, a, b));
-			}
-		}
-	});
-var $author$project$Anim$Internal$Properties$Color$hexStringToInt = function (str) {
-	var hexCharToInt = function (_char) {
-		switch (_char.valueOf()) {
-			case '0':
-				return $elm$core$Maybe$Just(0);
-			case '1':
-				return $elm$core$Maybe$Just(1);
-			case '2':
-				return $elm$core$Maybe$Just(2);
-			case '3':
-				return $elm$core$Maybe$Just(3);
-			case '4':
-				return $elm$core$Maybe$Just(4);
-			case '5':
-				return $elm$core$Maybe$Just(5);
-			case '6':
-				return $elm$core$Maybe$Just(6);
-			case '7':
-				return $elm$core$Maybe$Just(7);
-			case '8':
-				return $elm$core$Maybe$Just(8);
-			case '9':
-				return $elm$core$Maybe$Just(9);
-			case 'A':
-				return $elm$core$Maybe$Just(10);
-			case 'a':
-				return $elm$core$Maybe$Just(10);
-			case 'B':
-				return $elm$core$Maybe$Just(11);
-			case 'b':
-				return $elm$core$Maybe$Just(11);
-			case 'C':
-				return $elm$core$Maybe$Just(12);
-			case 'c':
-				return $elm$core$Maybe$Just(12);
-			case 'D':
-				return $elm$core$Maybe$Just(13);
-			case 'd':
-				return $elm$core$Maybe$Just(13);
-			case 'E':
-				return $elm$core$Maybe$Just(14);
-			case 'e':
-				return $elm$core$Maybe$Just(14);
-			case 'F':
-				return $elm$core$Maybe$Just(15);
-			case 'f':
-				return $elm$core$Maybe$Just(15);
-			default:
-				return $elm$core$Maybe$Nothing;
-		}
-	};
-	var chars = $elm$core$String$toList(str);
-	if ((chars.b && chars.b.b) && (!chars.b.b.b)) {
-		var c1 = chars.a;
-		var _v1 = chars.b;
-		var c2 = _v1.a;
-		return A3(
-			$elm$core$Maybe$map2,
-			F2(
-				function (v1, v2) {
-					return (v1 * 16) + v2;
-				}),
-			hexCharToInt(c1),
-			hexCharToInt(c2));
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Anim$Internal$Properties$Color$hexToRgb = function (hex_) {
-	var cleanHex = A2(
-		$elm$core$String$dropLeft,
-		A2($elm$core$String$startsWith, '#', hex_) ? 1 : 0,
-		hex_);
-	var g = A2(
-		$elm$core$Maybe$withDefault,
-		0,
-		$author$project$Anim$Internal$Properties$Color$hexStringToInt(
-			A3($elm$core$String$slice, 2, 4, cleanHex)));
-	var r = A2(
-		$elm$core$Maybe$withDefault,
-		0,
-		$author$project$Anim$Internal$Properties$Color$hexStringToInt(
-			A3($elm$core$String$slice, 0, 2, cleanHex)));
-	var b = A2(
-		$elm$core$Maybe$withDefault,
-		0,
-		$author$project$Anim$Internal$Properties$Color$hexStringToInt(
-			A3($elm$core$String$slice, 4, 6, cleanHex)));
-	return {b: b, g: g, r: r};
-};
 var $elm$core$Basics$abs = function (n) {
 	return (n < 0) ? (-n) : n;
 };

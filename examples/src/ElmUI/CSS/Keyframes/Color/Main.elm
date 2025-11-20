@@ -238,7 +238,6 @@ viewContent model =
             , centerY
             , width (px 150)
             , height (px 150)
-            , Background.color (rgb 0.8 0.8 0.8)
             , Border.rounded 8
             , htmlAttribute (Html.Attributes.id elementId)
             , htmlAttribute (CSS.animationStyleAttribute elementId model.animations)

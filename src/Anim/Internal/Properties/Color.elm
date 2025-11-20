@@ -88,12 +88,24 @@ interpolate : Color -> Color -> Float -> Color
 interpolate start end t =
     case ( start, end ) of
         ( Hex startHex, Hex endHex ) ->
-            -- Simple interpolation by returning start or end based on t
-            if t < 0.5 then
-                Hex startHex
+            -- Convert hex to RGB, interpolate, then convert back
+            let
+                startRgb =
+                    hexToRgb startHex
 
-            else
-                Hex endHex
+                endRgb =
+                    hexToRgb endHex
+
+                r =
+                    round <| toFloat startRgb.r + (toFloat (endRgb.r - startRgb.r) * t)
+
+                g =
+                    round <| toFloat startRgb.g + (toFloat (endRgb.g - startRgb.g) * t)
+
+                b =
+                    round <| toFloat startRgb.b + (toFloat (endRgb.b - startRgb.b) * t)
+            in
+            Rgb { r = r, g = g, b = b }
 
         ( Rgb startRgb, Rgb endRgb ) ->
             let
