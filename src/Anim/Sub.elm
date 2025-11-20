@@ -318,7 +318,7 @@ createElementAnimationState startValues _ elementConfig =
                , isComplete = False
                }
 
-           Builder.ColorConfig config ->
+           Builder.BackgroundColorConfig config ->
                let
                    distance =
                        1.0

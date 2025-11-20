@@ -96,7 +96,7 @@ generateElementAnimation elementId elementConfig =
             List.filterMap
                 (\prop ->
                     case prop of
-                        Builder.ColorConfig config ->
+                        Builder.BackgroundColorConfig config ->
                             Just ( "background-color", Color.toString config.endAt )
 
                         _ ->

@@ -56,7 +56,7 @@ type PropertyConfig
     = PositionConfig (AnimationConfig Position)
     | RotateConfig (AnimationConfig Rotate)
     | ScaleConfig (AnimationConfig Scale)
-    | ColorConfig (AnimationConfig Color)
+    | BackgroundColorConfig (AnimationConfig Color)
     | OpacityConfig (AnimationConfig Opacity)
 
 
@@ -311,7 +311,7 @@ processProperty globalData property =
                 , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
                 }
 
-        ColorConfig config ->
+        BackgroundColorConfig config ->
             ProcessedColorConfig
                 { target = config.endAt
                 , duration = 0 -- TODO: implement color timing

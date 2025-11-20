@@ -144,7 +144,7 @@ extractAnimatedProperties properties =
                 Builder.ScaleConfig _ ->
                     Just "transform"
 
-                Builder.ColorConfig _ ->
+                Builder.BackgroundColorConfig _ ->
                     Just "background-color"
 
                 Builder.OpacityConfig _ ->
@@ -238,7 +238,7 @@ extractPropertyTiming property =
             in
             Just ( { duration = duration_, easing = easing_, delay = delay_ }, property )
 
-        Builder.ColorConfig config ->
+        Builder.BackgroundColorConfig config ->
             let
                 distance =
                     Transitions.calculatePropertyDistance property
@@ -481,7 +481,7 @@ propertyToKeyframeStyle progress property =
             in
             Just ( "transform", "scale(" ++ Scale.toCssString interpolatedScale ++ ")" )
 
-        Builder.ColorConfig config ->
+        Builder.BackgroundColorConfig config ->
             let
                 startColor =
                     Maybe.withDefault (Color.rgb255 0 0 0) config.startAt

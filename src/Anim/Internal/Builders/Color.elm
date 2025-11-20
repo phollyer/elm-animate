@@ -47,7 +47,7 @@ for elementId builder =
                         |> List.filterMap
                             (\prop ->
                                 case prop of
-                                    Builder.ColorConfig config ->
+                                    Builder.BackgroundColorConfig config ->
                                         Just config
 
                                     _ ->
@@ -82,7 +82,7 @@ build : ColorBuilder -> AnimBuilder
 build (ColorBuilder config builder) =
     let
         newColorConfig =
-            Builder.ColorConfig config
+            Builder.BackgroundColorConfig config
     in
     PropertyBuilder.upsert newColorConfig builder
 

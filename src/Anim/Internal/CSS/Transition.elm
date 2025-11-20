@@ -43,10 +43,10 @@ generate properties =
 transitionFromNonTransformProperty : Builder.PropertyConfig -> Maybe String
 transitionFromNonTransformProperty property =
     case property of
-        Builder.ColorConfig config ->
+        Builder.BackgroundColorConfig config ->
             let
                 distance =
-                    calculatePropertyDistance (Builder.ColorConfig config)
+                    calculatePropertyDistance (Builder.BackgroundColorConfig config)
             in
             Just ("background-color " ++ TimeSpec.toCssString distance config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
@@ -100,7 +100,7 @@ calculatePropertyDistance property =
             in
             Scale.distance startAt config.endAt
 
-        Builder.ColorConfig config ->
+        Builder.BackgroundColorConfig config ->
             let
                 startAt =
                     case config.startAt of

@@ -106,7 +106,7 @@ configsMatch prop1 prop2 =
         ( Builder.ScaleConfig _, Builder.ScaleConfig _ ) ->
             True
 
-        ( Builder.ColorConfig _, Builder.ColorConfig _ ) ->
+        ( Builder.BackgroundColorConfig _, Builder.BackgroundColorConfig _ ) ->
             True
 
         ( Builder.OpacityConfig _, Builder.OpacityConfig _ ) ->
