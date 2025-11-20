@@ -67,13 +67,18 @@ init _ =
 -- UPDATE
 
 
+elementId : String
+elementId =
+    "box"
+
+
 anim : CSS.AnimationState -> Scale.Builder
 anim animations =
     animations
         |> CSS.builder
         |> Anim.duration 500
         |> Anim.easing Linear
-        |> Scale.for "scaleBox"
+        |> Scale.for elementId
 
 
 type Msg
@@ -177,7 +182,7 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ Element.html (CSS.keyframesStyleNodeFor "box" model.animations)
+    [ Element.html (CSS.keyframesStyleNodeFor elementId model.animations)
     , UI.backButtonWithPath "../../../index.html"
     , UI.pageHeader "CSS Keyframes Scale Animations"
     , -- Description
@@ -225,24 +230,25 @@ viewContent model =
             , width (px 200)
             , height (px 200)
             ]
-            (scaledElement "box" "Scale Demo" Colors.primary model)
+            (scaledElement "Scale Demo" Colors.primary model)
         )
     ]
 
 
-scaledElement : String -> String -> Element.Color -> Model -> Element Msg
-scaledElement elementId label color model =
+scaledElement : String -> Element.Color -> Model -> Element Msg
+scaledElement label color model =
     el
         [ width (px 150)
         , height (px 150)
         , Background.color color
         , Border.rounded 12
         , centerX
-        , htmlAttribute (Html.Attributes.id "scaleBox")
+        , htmlAttribute (Html.Attributes.id elementId)
         , htmlAttribute (Html.Attributes.style "transform-origin" "center")
         , htmlAttribute (Html.Attributes.style "display" "flex")
         , htmlAttribute (Html.Attributes.style "align-items" "center")
         , htmlAttribute (Html.Attributes.style "justify-content" "center")
+        , htmlAttribute (CSS.animationStyleAttribute elementId model.animations)
         ]
         (el
             [ centerX

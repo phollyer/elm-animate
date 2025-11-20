@@ -74,6 +74,11 @@ init _ =
 -- UPDATE
 
 
+elementId : String
+elementId =
+    "box"
+
+
 toColorBuilderWithDefaults : CSS.AnimationState -> Color.Builder
 toColorBuilderWithDefaults =
     CSS.builder
@@ -81,7 +86,7 @@ toColorBuilderWithDefaults =
         >> Anim.duration 1000
         >> Anim.easing Easing.Linear
         -- Start configuring color animation for the element
-        >> Color.for "box"
+        >> Color.for elementId
 
 
 type Msg
@@ -193,7 +198,7 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ Element.html (CSS.keyframesStyleNodeFor "box" model.animations)
+    [ Element.html (CSS.keyframesStyleNodeFor elementId model.animations)
     , UI.backButtonWithPath "../../../index.html"
     , UI.pageHeader "CSS Color Animations"
     , -- Description
@@ -235,7 +240,8 @@ viewContent model =
             , height (px 150)
             , Background.color (rgb 0.8 0.8 0.8)
             , Border.rounded 8
-            , htmlAttribute (Html.Attributes.id "colorBox")
+            , htmlAttribute (Html.Attributes.id elementId)
+            , htmlAttribute (CSS.animationStyleAttribute elementId model.animations)
             ]
             (el [ centerX, centerY ] (text "Color"))
         )

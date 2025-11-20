@@ -5393,6 +5393,7 @@ var $author$project$Anim$easing = F2(
 	function (easingValue, builder) {
 		return A3($author$project$Anim$Timing$Easing$mapInternal, $author$project$Anim$Internal$Builder$easing, easingValue, builder);
 	});
+var $author$project$ElmUI$CSS$Keyframes$Rotate$Main$elementId = 'box';
 var $author$project$Anim$Internal$Builders$Rotate$RotateBuilder = F2(
 	function (a, b) {
 		return {$: 'RotateBuilder', a: a, b: b};
@@ -5587,7 +5588,7 @@ var $author$project$Anim$Properties$Rotate$for = function (elementId) {
 var $author$project$ElmUI$CSS$Keyframes$Rotate$Main$anim = function (animations) {
 	return A2(
 		$author$project$Anim$Properties$Rotate$for,
-		'rotateBox',
+		$author$project$ElmUI$CSS$Keyframes$Rotate$Main$elementId,
 		A2(
 			$author$project$Anim$easing,
 			$author$project$Anim$Timing$Easing$Linear,
@@ -13828,8 +13829,8 @@ var $mdgriffith$elm_ui$Element$Font$size = function (i) {
 		$mdgriffith$elm_ui$Internal$Flag$fontSize,
 		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
 };
-var $author$project$ElmUI$CSS$Keyframes$Rotate$Main$rotatingElement = F5(
-	function (elementId, symbol, label, color, model) {
+var $author$project$ElmUI$CSS$Keyframes$Rotate$Main$rotatingElement = F4(
+	function (symbol, label, color, model) {
 		return A2(
 			$mdgriffith$elm_ui$Element$el,
 			_List_fromArray(
@@ -13842,7 +13843,7 @@ var $author$project$ElmUI$CSS$Keyframes$Rotate$Main$rotatingElement = F5(
 					$mdgriffith$elm_ui$Element$Border$rounded(12),
 					$mdgriffith$elm_ui$Element$centerX,
 					$mdgriffith$elm_ui$Element$htmlAttribute(
-					$elm$html$Html$Attributes$id(elementId)),
+					$elm$html$Html$Attributes$id($author$project$ElmUI$CSS$Keyframes$Rotate$Main$elementId)),
 					$mdgriffith$elm_ui$Element$htmlAttribute(
 					A2($elm$html$Html$Attributes$style, 'transform-origin', 'center')),
 					$mdgriffith$elm_ui$Element$htmlAttribute(
@@ -13855,7 +13856,7 @@ var $author$project$ElmUI$CSS$Keyframes$Rotate$Main$rotatingElement = F5(
 					A2(
 						$elm$core$Debug$log,
 						'Animation Style',
-						A2($author$project$Anim$CSS$animationStyleAttribute, elementId, model.animations)))
+						A2($author$project$Anim$CSS$animationStyleAttribute, $author$project$ElmUI$CSS$Keyframes$Rotate$Main$elementId, model.animations)))
 				]),
 			A2(
 				$mdgriffith$elm_ui$Element$column,
@@ -13979,7 +13980,7 @@ var $author$project$ElmUI$CSS$Keyframes$Rotate$Main$viewContent = function (mode
 	return _List_fromArray(
 		[
 			$mdgriffith$elm_ui$Element$html(
-			A2($author$project$Anim$CSS$keyframesStyleNodeFor, 'box', model.animations)),
+			A2($author$project$Anim$CSS$keyframesStyleNodeFor, $author$project$ElmUI$CSS$Keyframes$Rotate$Main$elementId, model.animations)),
 			$author$project$Common$UI$backButtonWithPath('../../../index.html'),
 			$author$project$Common$UI$pageHeader('CSS Rotate Animations'),
 			A2(
@@ -14044,7 +14045,7 @@ var $author$project$ElmUI$CSS$Keyframes$Rotate$Main$viewContent = function (mode
 						$mdgriffith$elm_ui$Element$height(
 						$mdgriffith$elm_ui$Element$px(200))
 					]),
-				A5($author$project$ElmUI$CSS$Keyframes$Rotate$Main$rotatingElement, 'box', '→', 'Rotate Demo', $author$project$Common$Colors$primary, model)))
+				A4($author$project$ElmUI$CSS$Keyframes$Rotate$Main$rotatingElement, '→', 'Rotate Demo', $author$project$Common$Colors$primary, model)))
 		]);
 };
 var $author$project$ElmUI$CSS$Keyframes$Rotate$Main$view = function (model) {

@@ -5397,6 +5397,7 @@ var $author$project$Anim$easing = F2(
 	function (easingValue, builder) {
 		return A3($author$project$Anim$Timing$Easing$mapInternal, $author$project$Anim$Internal$Builder$easing, easingValue, builder);
 	});
+var $author$project$ElmUI$CSS$Keyframes$Position$Main$elementId = 'box';
 var $author$project$Anim$Internal$Builders$Position$PositionBuilder = F2(
 	function (a, b) {
 		return {$: 'PositionBuilder', a: a, b: b};
@@ -5595,7 +5596,7 @@ var $author$project$Anim$Properties$Position$for = function (elementId) {
 var $author$project$ElmUI$CSS$Keyframes$Position$Main$anim = function (animations) {
 	return A2(
 		$author$project$Anim$Properties$Position$for,
-		'box',
+		$author$project$ElmUI$CSS$Keyframes$Position$Main$elementId,
 		A2(
 			$author$project$Anim$easing,
 			$author$project$Anim$Timing$Easing$Linear,
@@ -13967,7 +13968,7 @@ var $author$project$ElmUI$CSS$Keyframes$Position$Main$viewContent = function (mo
 	return _List_fromArray(
 		[
 			$mdgriffith$elm_ui$Element$html(
-			A2($author$project$Anim$CSS$keyframesStyleNodeFor, 'box', model.animations)),
+			A2($author$project$Anim$CSS$keyframesStyleNodeFor, $author$project$ElmUI$CSS$Keyframes$Position$Main$elementId, model.animations)),
 			$author$project$Common$UI$backButtonWithPath('../../../index.html'),
 			$author$project$Common$UI$pageHeader('CSS Keyframes Position Animations'),
 			A2(
@@ -14042,14 +14043,14 @@ var $author$project$ElmUI$CSS$Keyframes$Position$Main$viewContent = function (mo
 						$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$primary),
 						$mdgriffith$elm_ui$Element$Border$rounded(8),
 						$mdgriffith$elm_ui$Element$htmlAttribute(
-						$elm$html$Html$Attributes$id('box')),
+						$elm$html$Html$Attributes$id($author$project$ElmUI$CSS$Keyframes$Position$Main$elementId)),
 						$mdgriffith$elm_ui$Element$htmlAttribute(
 						A2($elm$html$Html$Attributes$style, 'position', 'absolute')),
 						$mdgriffith$elm_ui$Element$htmlAttribute(
 						A2(
 							$elm$core$Debug$log,
 							'Animation Style',
-							A2($author$project$Anim$CSS$animationStyleAttribute, 'box', model.animations)))
+							A2($author$project$Anim$CSS$animationStyleAttribute, $author$project$ElmUI$CSS$Keyframes$Position$Main$elementId, model.animations)))
 					]),
 				$mdgriffith$elm_ui$Element$none))
 		]);

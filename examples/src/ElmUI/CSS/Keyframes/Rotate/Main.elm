@@ -67,13 +67,18 @@ init _ =
 -- UPDATE
 
 
+elementId : String
+elementId =
+    "box"
+
+
 anim : CSS.AnimationState -> Rotate.Builder
 anim animations =
     animations
         |> CSS.builder
         |> Anim.duration 700
         |> Anim.easing Linear
-        |> Rotate.for "rotateBox"
+        |> Rotate.for elementId
 
 
 type Msg
@@ -191,7 +196,7 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ Element.html (CSS.keyframesStyleNodeFor "box" model.animations)
+    [ Element.html (CSS.keyframesStyleNodeFor elementId model.animations)
     , UI.backButtonWithPath "../../../index.html"
     , UI.pageHeader "CSS Rotate Animations"
     , -- Description
@@ -236,13 +241,13 @@ viewContent model =
             , width (px 200)
             , height (px 200)
             ]
-            (rotatingElement "box" "→" "Rotate Demo" Colors.primary model)
+            (rotatingElement "→" "Rotate Demo" Colors.primary model)
         )
     ]
 
 
-rotatingElement : String -> String -> String -> Element.Color -> Model -> Element Msg
-rotatingElement elementId symbol label color model =
+rotatingElement : String -> String -> Element.Color -> Model -> Element Msg
+rotatingElement symbol label color model =
     el
         [ width (px 150)
         , height (px 150)

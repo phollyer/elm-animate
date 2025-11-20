@@ -5392,6 +5392,7 @@ var $author$project$Anim$easing = F2(
 	function (easingValue, builder) {
 		return A3($author$project$Anim$Timing$Easing$mapInternal, $author$project$Anim$Internal$Builder$easing, easingValue, builder);
 	});
+var $author$project$ElmUI$CSS$Keyframes$Opacity$Main$elementId = 'box';
 var $author$project$Anim$Internal$Builders$Opacity$OpacityBuilder = F2(
 	function (a, b) {
 		return {$: 'OpacityBuilder', a: a, b: b};
@@ -5586,7 +5587,7 @@ var $author$project$Anim$Properties$Opacity$for = function (elementId) {
 var $author$project$ElmUI$CSS$Keyframes$Opacity$Main$anim = function (animations) {
 	return A2(
 		$author$project$Anim$Properties$Opacity$for,
-		'opacityBox',
+		$author$project$ElmUI$CSS$Keyframes$Opacity$Main$elementId,
 		A2(
 			$author$project$Anim$easing,
 			$author$project$Anim$Timing$Easing$Linear,
@@ -7474,22 +7475,6 @@ var $author$project$Anim$Internal$Builders$Opacity$build = function (_v0) {
 	return A2($author$project$Anim$Internal$Builders$Property$upsert, newOpacityConfig, builder);
 };
 var $author$project$Anim$Properties$Opacity$build = $author$project$Anim$Internal$Builders$Opacity$build;
-var $author$project$Anim$Internal$Builders$Opacity$delay = F2(
-	function (dly, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		return A2(
-			$author$project$Anim$Internal$Builders$Opacity$OpacityBuilder,
-			_Utils_update(
-				config,
-				{
-					delay: $elm$core$Maybe$Just(dly)
-				}),
-			builder);
-	});
-var $author$project$Anim$Properties$Opacity$delay = function (delay_) {
-	return $author$project$Anim$Internal$Builders$Opacity$delay(delay_);
-};
 var $author$project$Anim$Internal$Builders$Opacity$duration = F2(
 	function (dur, _v0) {
 		var config = _v0.a;
@@ -7644,15 +7629,12 @@ var $author$project$ElmUI$CSS$Keyframes$Opacity$Main$update = F2(
 							animations: $author$project$Anim$CSS$animate(
 								$author$project$Anim$Properties$Opacity$build(
 									A2(
-										$author$project$Anim$Properties$Opacity$delay,
-										300,
+										$author$project$Anim$Properties$Opacity$easing,
+										$author$project$Anim$Timing$Easing$bounceInOut,
 										A2(
-											$author$project$Anim$Properties$Opacity$easing,
-											$author$project$Anim$Timing$Easing$bounceInOut,
-											A2(
-												$author$project$Anim$Properties$Opacity$to,
-												0.25,
-												$author$project$ElmUI$CSS$Keyframes$Opacity$Main$anim(model.animations))))))
+											$author$project$Anim$Properties$Opacity$to,
+											0.25,
+											$author$project$ElmUI$CSS$Keyframes$Opacity$Main$anim(model.animations)))))
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'ShowFully':
@@ -13553,6 +13535,36 @@ var $author$project$Common$UI$Purple = {$: 'Purple'};
 var $author$project$ElmUI$CSS$Keyframes$Opacity$Main$ShowFully = {$: 'ShowFully'};
 var $author$project$Common$UI$Success = {$: 'Success'};
 var $author$project$Common$UI$Warning = {$: 'Warning'};
+var $author$project$Anim$Internal$CSS$generateAnimationAttributeString = function (animationLayers) {
+	return (!$elm$core$List$isEmpty(animationLayers)) ? A2(
+		$elm$core$String$join,
+		', ',
+		A2(
+			$elm$core$List$map,
+			function (layer) {
+				return layer.animationName + (' ' + ($elm$core$String$fromInt(layer.duration) + ('ms ' + (layer.easing + (' ' + ($elm$core$String$fromInt(layer.delay) + 'ms forwards'))))));
+			},
+			animationLayers)) : '';
+};
+var $author$project$Anim$Internal$CSS$getElementAnimation = F2(
+	function (elementId, _v0) {
+		var state = _v0.a;
+		return A2($elm$core$Dict$get, elementId, state.elementAnimations);
+	});
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $author$project$Anim$Internal$CSS$animationStyleAttribute = F2(
+	function (elementId, animationState) {
+		var _v0 = A2($author$project$Anim$Internal$CSS$getElementAnimation, elementId, animationState);
+		if (_v0.$ === 'Just') {
+			var elementAnimation = _v0.a;
+			var animationValues = $author$project$Anim$Internal$CSS$generateAnimationAttributeString(elementAnimation.animationLayers);
+			return A2($elm$html$Html$Attributes$style, 'animation', animationValues);
+		} else {
+			return A2($elm$html$Html$Attributes$style, 'animation', '');
+		}
+	});
+var $author$project$Anim$CSS$animationStyleAttribute = $author$project$Anim$Internal$CSS$animationStyleAttribute;
 var $author$project$Common$Colors$backgroundWhite = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
 var $mdgriffith$elm_ui$Internal$Model$Class = F2(
 	function (a, b) {
@@ -13624,16 +13636,14 @@ var $mdgriffith$elm_ui$Element$Font$size = function (i) {
 		$mdgriffith$elm_ui$Internal$Flag$fontSize,
 		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
 };
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
 	return {$: 'Text', a: a};
 };
 var $mdgriffith$elm_ui$Element$text = function (content) {
 	return $mdgriffith$elm_ui$Internal$Model$Text(content);
 };
-var $author$project$ElmUI$CSS$Keyframes$Opacity$Main$animatedBox = F4(
-	function (elementId, label, color, model) {
+var $author$project$ElmUI$CSS$Keyframes$Opacity$Main$animatedBox = F3(
+	function (label, color, model) {
 		return A2(
 			$mdgriffith$elm_ui$Element$el,
 			_List_fromArray(
@@ -13646,13 +13656,15 @@ var $author$project$ElmUI$CSS$Keyframes$Opacity$Main$animatedBox = F4(
 					$mdgriffith$elm_ui$Element$Border$rounded(12),
 					$mdgriffith$elm_ui$Element$centerX,
 					$mdgriffith$elm_ui$Element$htmlAttribute(
-					$elm$html$Html$Attributes$id('opacityBox')),
+					$elm$html$Html$Attributes$id($author$project$ElmUI$CSS$Keyframes$Opacity$Main$elementId)),
 					$mdgriffith$elm_ui$Element$htmlAttribute(
 					A2($elm$html$Html$Attributes$style, 'display', 'flex')),
 					$mdgriffith$elm_ui$Element$htmlAttribute(
 					A2($elm$html$Html$Attributes$style, 'align-items', 'center')),
 					$mdgriffith$elm_ui$Element$htmlAttribute(
-					A2($elm$html$Html$Attributes$style, 'justify-content', 'center'))
+					A2($elm$html$Html$Attributes$style, 'justify-content', 'center')),
+					$mdgriffith$elm_ui$Element$htmlAttribute(
+					A2($author$project$Anim$CSS$animationStyleAttribute, $author$project$ElmUI$CSS$Keyframes$Opacity$Main$elementId, model.animations))
 				]),
 			A2(
 				$mdgriffith$elm_ui$Element$el,
@@ -13921,7 +13933,7 @@ var $author$project$ElmUI$CSS$Keyframes$Opacity$Main$viewContent = function (mod
 	return _List_fromArray(
 		[
 			$mdgriffith$elm_ui$Element$html(
-			A2($author$project$Anim$CSS$keyframesStyleNodeFor, 'box', model.animations)),
+			A2($author$project$Anim$CSS$keyframesStyleNodeFor, $author$project$ElmUI$CSS$Keyframes$Opacity$Main$elementId, model.animations)),
 			$author$project$Common$UI$backButtonWithPath('../../../index.html'),
 			$author$project$Common$UI$pageHeader('CSS Opacity Animations'),
 			A2(
@@ -13986,7 +13998,7 @@ var $author$project$ElmUI$CSS$Keyframes$Opacity$Main$viewContent = function (mod
 						$mdgriffith$elm_ui$Element$height(
 						$mdgriffith$elm_ui$Element$px(200))
 					]),
-				A4($author$project$ElmUI$CSS$Keyframes$Opacity$Main$animatedBox, 'box', 'Opacity Demo', $author$project$Common$Colors$primary, model)))
+				A3($author$project$ElmUI$CSS$Keyframes$Opacity$Main$animatedBox, 'Opacity Demo', $author$project$Common$Colors$primary, model)))
 		]);
 };
 var $author$project$ElmUI$CSS$Keyframes$Opacity$Main$view = function (model) {

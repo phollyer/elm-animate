@@ -76,13 +76,18 @@ init _ =
 -- UPDATE
 
 
+elementId : String
+elementId =
+    "box"
+
+
 anim : CSS.AnimationState -> Position.Builder
 anim animations =
     animations
         |> CSS.builder
         |> Anim.duration 700
         |> Anim.easing Linear
-        |> Position.for "box"
+        |> Position.for elementId
 
 
 type Msg
@@ -200,7 +205,7 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ Element.html (CSS.keyframesStyleNodeFor "box" model.animations)
+    [ Element.html (CSS.keyframesStyleNodeFor elementId model.animations)
     , UI.backButtonWithPath "../../../index.html"
     , UI.pageHeader "CSS Keyframes Position Animations"
     , -- Description
@@ -247,9 +252,9 @@ viewContent model =
             , height (px 50)
             , Background.color Colors.primary
             , Border.rounded 8
-            , htmlAttribute (Html.Attributes.id "box")
+            , htmlAttribute (Html.Attributes.id elementId)
             , htmlAttribute (Html.Attributes.style "position" "absolute")
-            , htmlAttribute (CSS.animationStyleAttribute "box" model.animations |> Debug.log "Animation Style")
+            , htmlAttribute (CSS.animationStyleAttribute elementId model.animations |> Debug.log "Animation Style")
             ]
             none
         )

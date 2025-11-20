@@ -67,13 +67,18 @@ init _ =
 -- UPDATE
 
 
+elementId : String
+elementId =
+    "box"
+
+
 anim : CSS.AnimationState -> Opacity.Builder
 anim animations =
     animations
         |> CSS.builder
         |> Anim.duration 600
         |> Anim.easing Linear
-        |> Opacity.for "opacityBox"
+        |> Opacity.for elementId
 
 
 type Msg
@@ -136,8 +141,9 @@ update msg model =
                     model.animations
                         |> anim
                         |> Opacity.to 0.25
+                        -- TODO: Fix bug -> Adding delay causes animation to jump to opacity == 1
+                        --|> Opacity.delay 300
                         |> Opacity.easing Easing.bounceInOut
-                        |> Opacity.delay 300
                         |> Opacity.build
                         |> CSS.animate
               }
@@ -178,7 +184,7 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ Element.html (CSS.keyframesStyleNodeFor "box" model.animations)
+    [ Element.html (CSS.keyframesStyleNodeFor elementId model.animations)
     , UI.backButtonWithPath "../../../index.html"
     , UI.pageHeader "CSS Opacity Animations"
     , -- Description
@@ -223,23 +229,24 @@ viewContent model =
             , width (px 200)
             , height (px 200)
             ]
-            (animatedBox "box" "Opacity Demo" Colors.primary model)
+            (animatedBox "Opacity Demo" Colors.primary model)
         )
     ]
 
 
-animatedBox : String -> String -> Element.Color -> Model -> Element Msg
-animatedBox elementId label color model =
+animatedBox : String -> Element.Color -> Model -> Element Msg
+animatedBox label color model =
     el
         [ width (px 150)
         , height (px 150)
         , Background.color color
         , Border.rounded 12
         , centerX
-        , htmlAttribute (Html.Attributes.id "opacityBox")
+        , htmlAttribute (Html.Attributes.id elementId)
         , htmlAttribute (Html.Attributes.style "display" "flex")
         , htmlAttribute (Html.Attributes.style "align-items" "center")
         , htmlAttribute (Html.Attributes.style "justify-content" "center")
+        , htmlAttribute (CSS.animationStyleAttribute elementId model.animations)
         ]
         (el
             [ centerX

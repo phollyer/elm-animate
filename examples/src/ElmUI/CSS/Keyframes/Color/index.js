@@ -7447,6 +7447,7 @@ var $author$project$Anim$easing = F2(
 	function (easingValue, builder) {
 		return A3($author$project$Anim$Timing$Easing$mapInternal, $author$project$Anim$Internal$Builder$easing, easingValue, builder);
 	});
+var $author$project$ElmUI$CSS$Keyframes$Color$Main$elementId = 'box';
 var $author$project$Anim$Internal$Builder$getDelay = function (_v0) {
 	var data = _v0.a;
 	return data.globalDelay;
@@ -7578,7 +7579,7 @@ var $author$project$ElmUI$CSS$Keyframes$Color$Main$toColorBuilderWithDefaults = 
 		A2(
 			$elm$core$Basics$composeR,
 			$author$project$Anim$easing($author$project$Anim$Timing$Easing$Linear),
-			$author$project$Anim$Properties$Color$for('box'))));
+			$author$project$Anim$Properties$Color$for($author$project$ElmUI$CSS$Keyframes$Color$Main$elementId))));
 var $author$project$ElmUI$CSS$Keyframes$Color$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -13555,6 +13556,36 @@ var $author$project$Common$UI$Purple = {$: 'Purple'};
 var $author$project$ElmUI$CSS$Keyframes$Color$Main$ResetColor = {$: 'ResetColor'};
 var $author$project$Common$UI$Success = {$: 'Success'};
 var $author$project$Common$UI$Warning = {$: 'Warning'};
+var $author$project$Anim$Internal$CSS$generateAnimationAttributeString = function (animationLayers) {
+	return (!$elm$core$List$isEmpty(animationLayers)) ? A2(
+		$elm$core$String$join,
+		', ',
+		A2(
+			$elm$core$List$map,
+			function (layer) {
+				return layer.animationName + (' ' + ($elm$core$String$fromInt(layer.duration) + ('ms ' + (layer.easing + (' ' + ($elm$core$String$fromInt(layer.delay) + 'ms forwards'))))));
+			},
+			animationLayers)) : '';
+};
+var $author$project$Anim$Internal$CSS$getElementAnimation = F2(
+	function (elementId, _v0) {
+		var state = _v0.a;
+		return A2($elm$core$Dict$get, elementId, state.elementAnimations);
+	});
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $author$project$Anim$Internal$CSS$animationStyleAttribute = F2(
+	function (elementId, animationState) {
+		var _v0 = A2($author$project$Anim$Internal$CSS$getElementAnimation, elementId, animationState);
+		if (_v0.$ === 'Just') {
+			var elementAnimation = _v0.a;
+			var animationValues = $author$project$Anim$Internal$CSS$generateAnimationAttributeString(elementAnimation.animationLayers);
+			return A2($elm$html$Html$Attributes$style, 'animation', animationValues);
+		} else {
+			return A2($elm$html$Html$Attributes$style, 'animation', '');
+		}
+	});
+var $author$project$Anim$CSS$animationStyleAttribute = $author$project$Anim$Internal$CSS$animationStyleAttribute;
 var $mdgriffith$elm_ui$Internal$Model$Left = {$: 'Left'};
 var $mdgriffith$elm_ui$Element$alignLeft = $mdgriffith$elm_ui$Internal$Model$AlignX($mdgriffith$elm_ui$Internal$Model$Left);
 var $author$project$Common$Colors$backgroundWhite = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
@@ -13823,8 +13854,6 @@ var $mdgriffith$elm_ui$Element$Font$size = function (i) {
 		$mdgriffith$elm_ui$Internal$Flag$fontSize,
 		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
 };
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Common$Colors$textMedium = A3($mdgriffith$elm_ui$Element$rgb255, 71, 85, 105);
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
@@ -13892,7 +13921,7 @@ var $author$project$ElmUI$CSS$Keyframes$Color$Main$viewContent = function (model
 	return _List_fromArray(
 		[
 			$mdgriffith$elm_ui$Element$html(
-			A2($author$project$Anim$CSS$keyframesStyleNodeFor, 'box', model.animations)),
+			A2($author$project$Anim$CSS$keyframesStyleNodeFor, $author$project$ElmUI$CSS$Keyframes$Color$Main$elementId, model.animations)),
 			$author$project$Common$UI$backButtonWithPath('../../../index.html'),
 			$author$project$Common$UI$pageHeader('CSS Color Animations'),
 			A2(
@@ -13951,7 +13980,9 @@ var $author$project$ElmUI$CSS$Keyframes$Color$Main$viewContent = function (model
 						A3($mdgriffith$elm_ui$Element$rgb, 0.8, 0.8, 0.8)),
 						$mdgriffith$elm_ui$Element$Border$rounded(8),
 						$mdgriffith$elm_ui$Element$htmlAttribute(
-						$elm$html$Html$Attributes$id('colorBox'))
+						$elm$html$Html$Attributes$id($author$project$ElmUI$CSS$Keyframes$Color$Main$elementId)),
+						$mdgriffith$elm_ui$Element$htmlAttribute(
+						A2($author$project$Anim$CSS$animationStyleAttribute, $author$project$ElmUI$CSS$Keyframes$Color$Main$elementId, model.animations))
 					]),
 				A2(
 					$mdgriffith$elm_ui$Element$el,

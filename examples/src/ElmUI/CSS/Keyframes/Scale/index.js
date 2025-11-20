@@ -5392,6 +5392,7 @@ var $author$project$Anim$easing = F2(
 	function (easingValue, builder) {
 		return A3($author$project$Anim$Timing$Easing$mapInternal, $author$project$Anim$Internal$Builder$easing, easingValue, builder);
 	});
+var $author$project$ElmUI$CSS$Keyframes$Scale$Main$elementId = 'box';
 var $author$project$Anim$Internal$Builders$Scale$ScaleBuilder = F2(
 	function (a, b) {
 		return {$: 'ScaleBuilder', a: a, b: b};
@@ -5590,7 +5591,7 @@ var $author$project$Anim$Properties$Scale$for = function (elementId) {
 var $author$project$ElmUI$CSS$Keyframes$Scale$Main$anim = function (animations) {
 	return A2(
 		$author$project$Anim$Properties$Scale$for,
-		'scaleBox',
+		$author$project$ElmUI$CSS$Keyframes$Scale$Main$elementId,
 		A2(
 			$author$project$Anim$easing,
 			$author$project$Anim$Timing$Easing$Linear,
@@ -13786,6 +13787,36 @@ var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
 };
 var $mdgriffith$elm_ui$Element$px = $mdgriffith$elm_ui$Internal$Model$Px;
 var $mdgriffith$elm_ui$Element$rgba = $mdgriffith$elm_ui$Internal$Model$Rgba;
+var $author$project$Anim$Internal$CSS$generateAnimationAttributeString = function (animationLayers) {
+	return (!$elm$core$List$isEmpty(animationLayers)) ? A2(
+		$elm$core$String$join,
+		', ',
+		A2(
+			$elm$core$List$map,
+			function (layer) {
+				return layer.animationName + (' ' + ($elm$core$String$fromInt(layer.duration) + ('ms ' + (layer.easing + (' ' + ($elm$core$String$fromInt(layer.delay) + 'ms forwards'))))));
+			},
+			animationLayers)) : '';
+};
+var $author$project$Anim$Internal$CSS$getElementAnimation = F2(
+	function (elementId, _v0) {
+		var state = _v0.a;
+		return A2($elm$core$Dict$get, elementId, state.elementAnimations);
+	});
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $author$project$Anim$Internal$CSS$animationStyleAttribute = F2(
+	function (elementId, animationState) {
+		var _v0 = A2($author$project$Anim$Internal$CSS$getElementAnimation, elementId, animationState);
+		if (_v0.$ === 'Just') {
+			var elementAnimation = _v0.a;
+			var animationValues = $author$project$Anim$Internal$CSS$generateAnimationAttributeString(elementAnimation.animationLayers);
+			return A2($elm$html$Html$Attributes$style, 'animation', animationValues);
+		} else {
+			return A2($elm$html$Html$Attributes$style, 'animation', '');
+		}
+	});
+var $author$project$Anim$CSS$animationStyleAttribute = $author$project$Anim$Internal$CSS$animationStyleAttribute;
 var $mdgriffith$elm_ui$Element$Font$bold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.bold);
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $mdgriffith$elm_ui$Element$Font$size = function (i) {
@@ -13794,10 +13825,8 @@ var $mdgriffith$elm_ui$Element$Font$size = function (i) {
 		$mdgriffith$elm_ui$Internal$Flag$fontSize,
 		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
 };
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$ElmUI$CSS$Keyframes$Scale$Main$scaledElement = F4(
-	function (elementId, label, color, model) {
+var $author$project$ElmUI$CSS$Keyframes$Scale$Main$scaledElement = F3(
+	function (label, color, model) {
 		return A2(
 			$mdgriffith$elm_ui$Element$el,
 			_List_fromArray(
@@ -13810,7 +13839,7 @@ var $author$project$ElmUI$CSS$Keyframes$Scale$Main$scaledElement = F4(
 					$mdgriffith$elm_ui$Element$Border$rounded(12),
 					$mdgriffith$elm_ui$Element$centerX,
 					$mdgriffith$elm_ui$Element$htmlAttribute(
-					$elm$html$Html$Attributes$id('scaleBox')),
+					$elm$html$Html$Attributes$id($author$project$ElmUI$CSS$Keyframes$Scale$Main$elementId)),
 					$mdgriffith$elm_ui$Element$htmlAttribute(
 					A2($elm$html$Html$Attributes$style, 'transform-origin', 'center')),
 					$mdgriffith$elm_ui$Element$htmlAttribute(
@@ -13818,7 +13847,9 @@ var $author$project$ElmUI$CSS$Keyframes$Scale$Main$scaledElement = F4(
 					$mdgriffith$elm_ui$Element$htmlAttribute(
 					A2($elm$html$Html$Attributes$style, 'align-items', 'center')),
 					$mdgriffith$elm_ui$Element$htmlAttribute(
-					A2($elm$html$Html$Attributes$style, 'justify-content', 'center'))
+					A2($elm$html$Html$Attributes$style, 'justify-content', 'center')),
+					$mdgriffith$elm_ui$Element$htmlAttribute(
+					A2($author$project$Anim$CSS$animationStyleAttribute, $author$project$ElmUI$CSS$Keyframes$Scale$Main$elementId, model.animations))
 				]),
 			A2(
 				$mdgriffith$elm_ui$Element$el,
@@ -13923,7 +13954,7 @@ var $author$project$ElmUI$CSS$Keyframes$Scale$Main$viewContent = function (model
 	return _List_fromArray(
 		[
 			$mdgriffith$elm_ui$Element$html(
-			A2($author$project$Anim$CSS$keyframesStyleNodeFor, 'box', model.animations)),
+			A2($author$project$Anim$CSS$keyframesStyleNodeFor, $author$project$ElmUI$CSS$Keyframes$Scale$Main$elementId, model.animations)),
 			$author$project$Common$UI$backButtonWithPath('../../../index.html'),
 			$author$project$Common$UI$pageHeader('CSS Keyframes Scale Animations'),
 			A2(
@@ -13996,7 +14027,7 @@ var $author$project$ElmUI$CSS$Keyframes$Scale$Main$viewContent = function (model
 						$mdgriffith$elm_ui$Element$height(
 						$mdgriffith$elm_ui$Element$px(200))
 					]),
-				A4($author$project$ElmUI$CSS$Keyframes$Scale$Main$scaledElement, 'box', 'Scale Demo', $author$project$Common$Colors$primary, model)))
+				A3($author$project$ElmUI$CSS$Keyframes$Scale$Main$scaledElement, 'Scale Demo', $author$project$Common$Colors$primary, model)))
 		]);
 };
 var $author$project$ElmUI$CSS$Keyframes$Scale$Main$view = function (model) {
