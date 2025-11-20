@@ -10,12 +10,31 @@ import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Timing.Delay as Delay
 import Anim.Internal.Timing.Easing as Easing
 import Anim.Internal.Timing.TimeSpec as TimeSpec
-import Browser exposing (UrlRequest(..))
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes
 import Html.Events
 import Json.Decode
+
+
+
+--
+-- ===================== INTERNAL CSS MODULE ORGANIZATION =====================
+--
+-- 1. STATE & TYPES: Animation state, element/layer types
+-- 2. STATE MANAGEMENT: State init, builder, animate
+-- 3. MAIN CSS GENERATION: Top-level element animation generation
+-- 4. TRANSFORM/STYLE GENERATION: Transform, transition, color style helpers
+--    (SUGGESTED: Move property distance/timing/extraction helpers to PropertyTiming)
+--    (SUGGESTED: Move transform/consolidation helpers to TransformHelpers)
+--    (SUGGESTED: Move color/opacity helpers to property modules)
+-- 5. ANIMATION LAYER & KEYFRAME GENERATION: Layer and keyframe orchestration
+-- 6. TIMING GROUPS & PROPERTY GROUPING: Grouping for multi-layer animation
+-- 7. KEYFRAME GENERATION: Keyframe step and style helpers
+--    (SUGGESTED: Only keep orchestration in this module)
+-- 8. SUGGESTED MODULE SPLITS: See bottom of file for refactor notes
+--
+-- ===========================================================================
 
 
 {-| Global counter to ensure unique animation names
@@ -1176,3 +1195,17 @@ onAnimationIteration msg =
 onAnimationCancel : msg -> Html.Attribute msg
 onAnimationCancel msg =
     Html.Events.on "animationcancel" (Json.Decode.succeed msg)
+
+
+
+--
+-- TODO: SUGGESTED MODULE SPLITS
+--
+-- ANIMATED PROPERTIES (Color, Opacity, etc.)
+-- -> Move color/opacity helpers to property modules
+-- TRANSFORM HELPERS
+-- -> Move transform/consolidation helpers to TransformHelpers
+-- PROPERTY TIMING
+-- -> Move property distance/timing/extraction helpers to PropertyTiming
+-- MAIN CSS GENERATION
+-- -> Keep top-level animation orchestration here
