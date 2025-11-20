@@ -891,128 +891,14 @@ generateTimedKeyframeSteps dominantGroup allProperties =
                     piecewiseOutTimes
 
                 Easing.BounceIn ->
-                    let
-                        p1 =
-                            0.15
-
-                        p2 =
-                            0.3
-
-                        p3 =
-                            0.25
-
-                        pFinal =
-                            0.3
-
-                        s1 =
-                            0
-
-                        s2 =
-                            s1 + p1
-
-                        s3 =
-                            s2 + p2
-
-                        sFinal =
-                            s3 + p3
-
-                        between a b =
-                            let
-                                q1 =
-                                    a + (b - a) * 0.25
-
-                                q2 =
-                                    a + (b - a) * 0.5
-
-                                q3 =
-                                    a + (b - a) * 0.75
-                            in
-                            [ q1, q2, q3 ]
-                    in
-                    sortAndDedupe
-                        (0
-                            :: ([ s2 - eps
-                                , s2
-                                , s2 + eps
-                                , s3 - eps
-                                , s3
-                                , s3 + eps
-                                , sFinal - eps
-                                , sFinal
-                                , sFinal + eps
-                                ]
-                                    ++ between s1 s2
-                                    ++ between s2 s3
-                                    ++ between s3 sFinal
-                                    ++ between sFinal 1
-                                    ++ [ 1 ]
-                               )
-                        )
+                    -- Use uniform sampling - the easing function handles the bounce timing
+                    List.range 0 50
+                        |> List.map (\i -> toFloat i / 50.0)
 
                 Easing.BounceInOut ->
-                    let
-                        p1 =
-                            0.15
-
-                        p2 =
-                            0.3
-
-                        p3 =
-                            0.25
-
-                        pFinal =
-                            0.3
-
-                        s1 =
-                            0
-
-                        s2 =
-                            s1 + p1
-
-                        s3 =
-                            s2 + p2
-
-                        sFinal =
-                            s3 + p3
-
-                        between a b =
-                            let
-                                q1 =
-                                    a + (b - a) * 0.25
-
-                                q2 =
-                                    a + (b - a) * 0.5
-
-                                q3 =
-                                    a + (b - a) * 0.75
-                            in
-                            [ q1, q2, q3 ]
-
-                        firstHalf =
-                            sortAndDedupe
-                                (0
-                                    :: ([ s2 - eps
-                                        , s2
-                                        , s2 + eps
-                                        , s3 - eps
-                                        , s3
-                                        , s3 + eps
-                                        , sFinal - eps
-                                        , sFinal
-                                        , sFinal + eps
-                                        ]
-                                            ++ between s1 s2
-                                            ++ between s2 s3
-                                            ++ between s3 sFinal
-                                            ++ [ 1 ]
-                                       )
-                                )
-                                |> List.map (\t -> 0.5 * t)
-
-                        secondHalf =
-                            piecewiseOutTimes |> List.map (\s -> 0.5 + 0.5 * s)
-                    in
-                    sortAndDedupe (firstHalf ++ secondHalf)
+                    -- Use uniform sampling - the easing function handles the bounce timing
+                    List.range 0 50
+                        |> List.map (\i -> toFloat i / 50.0)
 
                 _ ->
                     baseLinear
@@ -1032,100 +918,18 @@ generateTimedKeyframeSteps dominantGroup allProperties =
                 _ ->
                     baseLinear
 
-        -- Derived bounce mapping: outBounce for Out, engineered pulses for In, hybrid for InOut
+        -- Use proper easing functions from elm-community/easing-functions
         specialBounce : Float -> Float
         specialBounce t =
-            let
-                outB =
-                    Easing.toFunction Easing.BounceOut
-
-                bounceInPulse : Float -> Float
-                bounceInPulse tt =
-                    let
-                        p1 =
-                            0.15
-
-                        p2 =
-                            0.3
-
-                        p3 =
-                            0.25
-
-                        pFinal =
-                            0.3
-
-                        s1 =
-                            0
-
-                        s2 =
-                            s1 + p1
-
-                        s3 =
-                            s2 + p2
-
-                        sFinal =
-                            s3 + p3
-
-                        pulseShape x =
-                            4 * x * (1 - x)
-
-                        easeFinal x =
-                            let
-                                x2 =
-                                    x * x
-
-                                x3 =
-                                    x2 * x
-                            in
-                            3 * x2 - 2 * x3
-
-                        inPhase start len =
-                            tt >= start && tt < start + len
-                    in
-                    if inPhase s1 p1 then
-                        let
-                            x =
-                                (tt - s1) / p1
-                        in
-                        0.1 * pulseShape x
-
-                    else if inPhase s2 p2 then
-                        let
-                            x =
-                                (tt - s2) / p2
-                        in
-                        0.3 * pulseShape x
-
-                    else if inPhase s3 p3 then
-                        let
-                            x =
-                                (tt - s3) / p3
-                        in
-                        0.6 * pulseShape x
-
-                    else if tt >= sFinal then
-                        let
-                            x =
-                                (tt - sFinal) / pFinal |> max 0 |> min 1
-                        in
-                        easeFinal x
-
-                    else
-                        0
-            in
             case dominantGroup.easing of
                 Easing.BounceOut ->
-                    outB t
+                    Easing.toFunction Easing.BounceOut t
 
                 Easing.BounceIn ->
-                    bounceInPulse t
+                    Easing.toFunction Easing.BounceIn t
 
                 Easing.BounceInOut ->
-                    if t < 0.5 then
-                        0.5 * bounceInPulse (t * 2)
-
-                    else
-                        0.5 + outB ((t - 0.5) * 2) / 2
+                    Easing.toFunction Easing.BounceInOut t
 
                 _ ->
                     easingFunction t

@@ -5777,7 +5777,6 @@ var $author$project$Anim$Internal$CSS$combineTransformStyles = function (styles)
 	}();
 	return _Utils_ap(combinedTransform, otherStyles);
 };
-var $elm$core$Basics$ge = _Utils_ge;
 var $elm$core$List$isEmpty = function (xs) {
 	if (!xs.b) {
 		return true;
@@ -5785,10 +5784,6 @@ var $elm$core$List$isEmpty = function (xs) {
 		return false;
 	}
 };
-var $elm$core$Basics$min = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) < 0) ? x : y;
-	});
 var $elm$core$Basics$not = _Basics_not;
 var $author$project$Anim$Internal$Properties$Opacity$Opacity = function (a) {
 	return {$: 'Opacity', a: a};
@@ -6328,61 +6323,14 @@ var $author$project$Anim$Internal$CSS$generateTimedKeyframeSteps = F2(
 		var eps = 0.005;
 		var easingFunction = $author$project$Anim$Internal$Timing$Easing$toFunction(dominantGroup.easing);
 		var specialBounce = function (t) {
-			var outB = $author$project$Anim$Internal$Timing$Easing$toFunction($author$project$Anim$Internal$Timing$Easing$BounceOut);
-			var bounceInPulse = function (tt) {
-				var s1 = 0;
-				var pulseShape = function (x) {
-					return (4 * x) * (1 - x);
-				};
-				var pFinal = 0.3;
-				var p3 = 0.25;
-				var p2 = 0.3;
-				var p1 = 0.15;
-				var s2 = s1 + p1;
-				var s3 = s2 + p2;
-				var sFinal = s3 + p3;
-				var inPhase = F2(
-					function (start, len) {
-						return (_Utils_cmp(tt, start) > -1) && (_Utils_cmp(tt, start + len) < 0);
-					});
-				var easeFinal = function (x) {
-					var x2 = x * x;
-					var x3 = x2 * x;
-					return (3 * x2) - (2 * x3);
-				};
-				if (A2(inPhase, s1, p1)) {
-					var x = (tt - s1) / p1;
-					return 0.1 * pulseShape(x);
-				} else {
-					if (A2(inPhase, s2, p2)) {
-						var x = (tt - s2) / p2;
-						return 0.3 * pulseShape(x);
-					} else {
-						if (A2(inPhase, s3, p3)) {
-							var x = (tt - s3) / p3;
-							return 0.6 * pulseShape(x);
-						} else {
-							if (_Utils_cmp(tt, sFinal) > -1) {
-								var x = A2(
-									$elm$core$Basics$min,
-									1,
-									A2($elm$core$Basics$max, 0, (tt - sFinal) / pFinal));
-								return easeFinal(x);
-							} else {
-								return 0;
-							}
-						}
-					}
-				}
-			};
 			var _v4 = dominantGroup.easing;
 			switch (_v4.$) {
 				case 'BounceOut':
-					return outB(t);
+					return A2($author$project$Anim$Internal$Timing$Easing$toFunction, $author$project$Anim$Internal$Timing$Easing$BounceOut, t);
 				case 'BounceIn':
-					return bounceInPulse(t);
+					return A2($author$project$Anim$Internal$Timing$Easing$toFunction, $author$project$Anim$Internal$Timing$Easing$BounceIn, t);
 				case 'BounceInOut':
-					return (t < 0.5) ? (0.5 * bounceInPulse(t * 2)) : (0.5 + (outB((t - 0.5) * 2) / 2));
+					return A2($author$project$Anim$Internal$Timing$Easing$toFunction, $author$project$Anim$Internal$Timing$Easing$BounceInOut, t);
 				default:
 					return easingFunction(t);
 			}
@@ -6447,96 +6395,19 @@ var $author$project$Anim$Internal$CSS$generateTimedKeyframeSteps = F2(
 				case 'BounceOut':
 					return piecewiseOutTimes;
 				case 'BounceIn':
-					var s1 = 0;
-					var pFinal = 0.3;
-					var p3 = 0.25;
-					var p2 = 0.3;
-					var p1 = 0.15;
-					var s2 = s1 + p1;
-					var s3 = s2 + p2;
-					var sFinal = s3 + p3;
-					var between = F2(
-						function (a, b) {
-							var q3 = a + ((b - a) * 0.75);
-							var q2 = a + ((b - a) * 0.5);
-							var q1 = a + ((b - a) * 0.25);
-							return _List_fromArray(
-								[q1, q2, q3]);
-						});
-					return sortAndDedupe(
-						A2(
-							$elm$core$List$cons,
-							0,
-							_Utils_ap(
-								_List_fromArray(
-									[s2 - eps, s2, s2 + eps]),
-								_Utils_ap(
-									_List_fromArray(
-										[s3 - eps, s3, s3 + eps]),
-									_Utils_ap(
-										_List_fromArray(
-											[sFinal - eps, sFinal, sFinal + eps]),
-										_Utils_ap(
-											A2(between, s1, s2),
-											_Utils_ap(
-												A2(between, s2, s3),
-												_Utils_ap(
-													A2(between, s3, sFinal),
-													_Utils_ap(
-														A2(between, sFinal, 1),
-														_List_fromArray(
-															[1]))))))))));
+					return A2(
+						$elm$core$List$map,
+						function (i) {
+							return i / 50.0;
+						},
+						A2($elm$core$List$range, 0, 50));
 				case 'BounceInOut':
-					var secondHalf = A2(
+					return A2(
 						$elm$core$List$map,
-						function (s) {
-							return 0.5 + (0.5 * s);
+						function (i) {
+							return i / 50.0;
 						},
-						piecewiseOutTimes);
-					var s1 = 0;
-					var pFinal = 0.3;
-					var p3 = 0.25;
-					var p2 = 0.3;
-					var p1 = 0.15;
-					var s2 = s1 + p1;
-					var s3 = s2 + p2;
-					var sFinal = s3 + p3;
-					var between = F2(
-						function (a, b) {
-							var q3 = a + ((b - a) * 0.75);
-							var q2 = a + ((b - a) * 0.5);
-							var q1 = a + ((b - a) * 0.25);
-							return _List_fromArray(
-								[q1, q2, q3]);
-						});
-					var firstHalf = A2(
-						$elm$core$List$map,
-						function (t) {
-							return 0.5 * t;
-						},
-						sortAndDedupe(
-							A2(
-								$elm$core$List$cons,
-								0,
-								_Utils_ap(
-									_List_fromArray(
-										[s2 - eps, s2, s2 + eps]),
-									_Utils_ap(
-										_List_fromArray(
-											[s3 - eps, s3, s3 + eps]),
-										_Utils_ap(
-											_List_fromArray(
-												[sFinal - eps, sFinal, sFinal + eps]),
-											_Utils_ap(
-												A2(between, s1, s2),
-												_Utils_ap(
-													A2(between, s2, s3),
-													_Utils_ap(
-														A2(between, s3, sFinal),
-														_List_fromArray(
-															[1]))))))))));
-					return sortAndDedupe(
-						_Utils_ap(firstHalf, secondHalf));
+						A2($elm$core$List$range, 0, 50));
 				default:
 					return baseLinear;
 			}
@@ -7186,6 +7057,7 @@ var $author$project$Anim$Internal$CSS$findLongestDistance = function (properties
 			$elm$core$List$maximum(distances));
 	}
 };
+var $elm$core$Basics$ge = _Utils_ge;
 var $author$project$Anim$Internal$CSS$chooseLongerDuration = F3(
 	function (calcDuration, a, b) {
 		var durationB = calcDuration(b);
@@ -10697,6 +10569,10 @@ var $mdgriffith$elm_ui$Internal$Model$hasSmallCaps = function (typeface) {
 		return false;
 	}
 };
+var $elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
 var $mdgriffith$elm_ui$Internal$Model$renderProps = F3(
 	function (force, _v0, existing) {
 		var key = _v0.a;
