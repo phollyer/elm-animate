@@ -15,5 +15,4 @@ npm-debug.log
 .vscode
 
 # Ignore generated JS outputs for ElmUI CSS examples
-examples/src/ElmUI/CSS/Keyframes/*/index.js
-examples/src/ElmUI/CSS/Transitions/*/index.js
+examples/src/**/index.js
