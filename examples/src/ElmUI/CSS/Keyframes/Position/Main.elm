@@ -118,8 +118,8 @@ update msg model =
                     model.animations
                         |> anim
                         |> Position.toX 0
+                        |> Position.duration 1000
                         |> Position.easing Easing.BounceIn
-                        |> Position.duration 500
                         |> Position.build
                         |> CSS.animate
               }

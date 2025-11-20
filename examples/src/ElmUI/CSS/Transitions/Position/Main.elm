@@ -116,7 +116,7 @@ update msg model =
                     model.animations
                         |> toPositionBuilder
                         |> Position.toX 0
-                        |> Position.easing Easing.SineInOut
+                        |> Position.easing Easing.BounceOut
                         |> Position.duration 500
                         |> Position.build
                         |> CSS.animate
@@ -131,7 +131,7 @@ update msg model =
                         |> toPositionBuilder
                         |> Position.toX 450
                         |> Position.duration 800
-                        |> Position.easing Easing.BounceInOut
+                        |> Position.easing Easing.BounceIn
                         |> Position.build
                         |> CSS.animate
               }
