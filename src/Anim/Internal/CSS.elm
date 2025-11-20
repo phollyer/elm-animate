@@ -2,15 +2,15 @@ module Anim.Internal.CSS exposing (..)
 
 import Anim exposing (AnimBuilder)
 import Anim.Internal.Builder as Builder
+import Anim.Internal.CSS.Transform as Transforms
+import Anim.Internal.CSS.Transition as Transitions
 import Anim.Internal.Properties.Color as Color
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
-import Anim.Internal.Timing.Delay as Delay
 import Anim.Internal.Timing.Easing as Easing
 import Anim.Internal.Timing.TimeSpec as TimeSpec
-import Anim.Internal.TransformHelpers.TransformHelpers as TH
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes
@@ -19,30 +19,7 @@ import Json.Decode
 
 
 
---
--- ===================== INTERNAL CSS MODULE ORGANIZATION =====================
---
--- 1. STATE & TYPES: Animation state, element/layer types
--- 2. STATE MANAGEMENT: State init, builder, animate
--- 3. MAIN CSS GENERATION: Top-level element animation generation
--- 4. TRANSFORM/STYLE GENERATION: Transform, transition, color style helpers
---    (SUGGESTED: Move property distance/timing/extraction helpers to PropertyTiming)
---    (SUGGESTED: Move transform/consolidation helpers to TransformHelpers)
---    (SUGGESTED: Move color/opacity helpers to property modules)
--- 5. ANIMATION LAYER & KEYFRAME GENERATION: Layer and keyframe orchestration
--- 6. TIMING GROUPS & PROPERTY GROUPING: Grouping for multi-layer animation
--- 7. KEYFRAME GENERATION: Keyframe step and style helpers
---    (SUGGESTED: Only keep orchestration in this module)
--- 8. SUGGESTED MODULE SPLITS: See bottom of file for refactor notes
---
--- ===========================================================================
-
-
-{-| Global counter to ensure unique animation names
--}
-animationCounter : { value : Int }
-animationCounter =
-    { value = 0 }
+-- TYPES
 
 
 type AnimationState
@@ -56,13 +33,15 @@ type alias ElementId =
     String
 
 
-{-| CSS animation data for a single element with support for multiple simultaneous animations.
--}
 type alias ElementAnimation =
     { elementId : ElementId
-    , styles : List ( String, String )
-    , animationLayers : List AnimationLayer
+    , styles : List ( String, String ) -- CSS styles to apply
+    , animationLayers : List AnimationLayer --
     }
+
+
+
+-- Animation Layer
 
 
 {-| Individual animation layer that can run independently.
@@ -114,10 +93,10 @@ generateElementAnimation : String -> Builder.ElementConfig -> ElementAnimation
 generateElementAnimation elementId elementConfig =
     let
         transforms =
-            TH.generateTransforms elementConfig.properties
+            Transforms.generate elementConfig.properties
 
         transitions =
-            generateTransitions elementConfig.properties
+            Transitions.generate elementConfig.properties
 
         colorStyles =
             List.filterMap
@@ -162,116 +141,6 @@ generateElementAnimation elementId elementConfig =
 
 
 -- CSS TRANSITIONS
-
-
-generateTransitions : List Builder.PropertyConfig -> String
-generateTransitions properties =
-    let
-        -- Group properties by CSS property type
-        transformProperties =
-            List.filter TH.isTransformProperty properties
-
-        nonTransformTransitions =
-            List.filterMap transitionFromNonTransformProperty properties
-
-        -- Generate single consolidated transform transition
-        transformTransition =
-            case TH.consolidateTransformTiming transformProperties of
-                Just transition ->
-                    [ transition ]
-
-                Nothing ->
-                    []
-
-        allTransitions =
-            transformTransition ++ nonTransformTransitions
-    in
-    String.join ", " allTransitions
-
-
-transitionFromNonTransformProperty : Builder.PropertyConfig -> Maybe String
-transitionFromNonTransformProperty property =
-    case property of
-        Builder.ColorConfig config ->
-            let
-                distance =
-                    calculatePropertyDistance (Builder.ColorConfig config)
-            in
-            Just ("background-color " ++ TimeSpec.toCssString distance config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
-
-        Builder.OpacityConfig config ->
-            let
-                distance =
-                    calculatePropertyDistance (Builder.OpacityConfig config)
-            in
-            Just ("opacity " ++ TimeSpec.toCssString distance config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
-
-        _ ->
-            Nothing
-
-
-calculatePropertyDistance : Builder.PropertyConfig -> Float
-calculatePropertyDistance property =
-    case property of
-        Builder.PositionConfig config ->
-            let
-                startAt =
-                    case config.startAt of
-                        Just s ->
-                            s
-
-                        Nothing ->
-                            Position.fromTuple ( 0, 0 )
-            in
-            Position.distance startAt config.endAt
-
-        Builder.RotateConfig config ->
-            let
-                startAt =
-                    case config.startAt of
-                        Just s ->
-                            s
-
-                        Nothing ->
-                            Rotate.fromFloat 0
-            in
-            Rotate.distance startAt config.endAt
-
-        Builder.ScaleConfig config ->
-            let
-                startAt =
-                    case config.startAt of
-                        Just s ->
-                            s
-
-                        Nothing ->
-                            Scale.fromTuple ( 1, 1 )
-            in
-            Scale.distance startAt config.endAt
-
-        Builder.ColorConfig config ->
-            let
-                startAt =
-                    case config.startAt of
-                        Just s ->
-                            s
-
-                        Nothing ->
-                            Color.rgb255 0 0 0
-            in
-            Color.distance startAt config.endAt
-
-        Builder.OpacityConfig config ->
-            let
-                startAt =
-                    case config.startAt of
-                        Just s ->
-                            s
-
-                        Nothing ->
-                            Opacity.fromFloat 1.0
-            in
-            Opacity.distance startAt config.endAt
 
 
 {-| Generate animation layers for an element's properties, supporting multiple simultaneous animations.
@@ -411,7 +280,7 @@ extractPropertyTiming property =
         Builder.PositionConfig config ->
             let
                 distance =
-                    calculatePropertyDistance property
+                    Transitions.calculatePropertyDistance property
 
                 timing =
                     Maybe.withDefault (TimeSpec.Duration 0) config.timing
@@ -430,7 +299,7 @@ extractPropertyTiming property =
         Builder.RotateConfig config ->
             let
                 distance =
-                    calculatePropertyDistance property
+                    Transitions.calculatePropertyDistance property
 
                 timing =
                     Maybe.withDefault (TimeSpec.Duration 0) config.timing
@@ -449,7 +318,7 @@ extractPropertyTiming property =
         Builder.ScaleConfig config ->
             let
                 distance =
-                    calculatePropertyDistance property
+                    Transitions.calculatePropertyDistance property
 
                 timing =
                     Maybe.withDefault (TimeSpec.Duration 0) config.timing
@@ -468,7 +337,7 @@ extractPropertyTiming property =
         Builder.ColorConfig config ->
             let
                 distance =
-                    calculatePropertyDistance property
+                    Transitions.calculatePropertyDistance property
 
                 timing =
                     Maybe.withDefault (TimeSpec.Duration 0) config.timing
@@ -487,7 +356,7 @@ extractPropertyTiming property =
         Builder.OpacityConfig config ->
             let
                 distance =
-                    calculatePropertyDistance property
+                    Transitions.calculatePropertyDistance property
 
                 timing =
                     Maybe.withDefault (TimeSpec.Duration 0) config.timing
@@ -558,7 +427,7 @@ generateTimedKeyframeSteps dominantGroup allProperties =
         generateStepStyles easedProgress =
             allProperties
                 |> List.filterMap (propertyToKeyframeStyle easedProgress)
-                |> TH.combineTransformStyles
+                |> Transforms.combineStyles
     in
     -- Handle zero duration case: create single keyframe at 100%
     if dominantGroup.duration == 0 then
@@ -951,7 +820,7 @@ onAnimationCancel msg =
 -- TODO: SUGGESTED MODULE SPLITS
 --
 -- TRANSFORM HELPERS
--- -> Move transform/consolidation helpers to TransformHelpers
+-- -> Move transform/consolidation helpers to Transform
 -- PROPERTY TIMING
 -- -> Move property distance/timing/extraction helpers to PropertyTiming
 -- MAIN CSS GENERATION
