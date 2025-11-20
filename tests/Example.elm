@@ -2,6 +2,7 @@ module Example exposing (..)
 
 import Anim.CSS as CSS
 import Anim.Internal.CSS as InternalCSS
+import Anim.Internal.CSS.KeyframeAnimation as KeyframeAnimation
 import Anim.Properties.Position as Position
 import Anim.Timing.Easing as Easing
 import Expect
@@ -37,7 +38,7 @@ suite =
                         -- This will fail until we create the Internal.CSS module
                         actualKeyframes =
                             CSS.getElementKeyframes "box" animations
-                                |> InternalCSS.generateKeyframesString
+                                |> Maybe.withDefault ""
                     in
                     Expect.equal expectedKeyframes actualKeyframes
             , test "generateAnimationAttributeString produces correct animation CSS property" <|
@@ -62,7 +63,7 @@ suite =
                         actualAnimation =
                             case InternalCSS.getElementAnimation "box" animations of
                                 Just elementAnimation ->
-                                    InternalCSS.generateAnimationAttributeString elementAnimation.animationLayers
+                                    KeyframeAnimation.toAttributeString elementAnimation.animationLayers
 
                                 Nothing ->
                                     ""
