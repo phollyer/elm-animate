@@ -10,6 +10,7 @@ import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Timing.Delay as Delay
 import Anim.Internal.Timing.Easing as Easing
 import Anim.Internal.Timing.TimeSpec as TimeSpec
+import Anim.Internal.TransformHelpers.TransformHelpers as TH
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes
@@ -113,7 +114,7 @@ generateElementAnimation : String -> Builder.ElementConfig -> ElementAnimation
 generateElementAnimation elementId elementConfig =
     let
         transforms =
-            generateTransforms elementConfig.properties
+            TH.generateTransforms elementConfig.properties
 
         transitions =
             generateTransitions elementConfig.properties
@@ -159,36 +160,6 @@ generateElementAnimation elementId elementConfig =
     }
 
 
-generateTransforms : List Builder.PropertyConfig -> String
-generateTransforms properties =
-    let
-        transformParts =
-            List.filterMap transformFromProperty properties
-    in
-    String.join " " transformParts
-
-
-transformFromProperty : Builder.PropertyConfig -> Maybe String
-transformFromProperty property =
-    case property of
-        Builder.PositionConfig config ->
-            Just ("translate(" ++ Position.toCssString config.endAt ++ ")")
-
-        Builder.RotateConfig config ->
-            Just ("rotate(" ++ Rotate.toCssString config.endAt ++ ")")
-
-        Builder.ScaleConfig config ->
-            Just ("scale(" ++ Scale.toCssString config.endAt ++ ")")
-
-        Builder.ColorConfig _ ->
-            -- Color doesn't use transform
-            Nothing
-
-        Builder.OpacityConfig _ ->
-            -- Opacity doesn't use transform
-            Nothing
-
-
 
 -- CSS TRANSITIONS
 
@@ -198,14 +169,14 @@ generateTransitions properties =
     let
         -- Group properties by CSS property type
         transformProperties =
-            List.filter isTransformProperty properties
+            List.filter TH.isTransformProperty properties
 
         nonTransformTransitions =
             List.filterMap transitionFromNonTransformProperty properties
 
         -- Generate single consolidated transform transition
         transformTransition =
-            case consolidateTransformTiming transformProperties of
+            case TH.consolidateTransformTiming transformProperties of
                 Just transition ->
                     [ transition ]
 
@@ -216,22 +187,6 @@ generateTransitions properties =
             transformTransition ++ nonTransformTransitions
     in
     String.join ", " allTransitions
-
-
-isTransformProperty : Builder.PropertyConfig -> Bool
-isTransformProperty property =
-    case property of
-        Builder.PositionConfig _ ->
-            True
-
-        Builder.RotateConfig _ ->
-            True
-
-        Builder.ScaleConfig _ ->
-            True
-
-        _ ->
-            False
 
 
 transitionFromNonTransformProperty : Builder.PropertyConfig -> Maybe String
@@ -250,62 +205,6 @@ transitionFromNonTransformProperty property =
                     calculatePropertyDistance (Builder.OpacityConfig config)
             in
             Just ("opacity " ++ TimeSpec.toCssString distance config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
-
-        _ ->
-            Nothing
-
-
-consolidateTransformTiming : List Builder.PropertyConfig -> Maybe String
-consolidateTransformTiming transformProps =
-    case transformProps of
-        [] ->
-            Nothing
-
-        _ ->
-            let
-                -- Strategy: Use the longest duration, latest easing, earliest delay
-                longestDistance =
-                    findLongestDistance transformProps
-
-                longestDuration =
-                    findLongestDuration transformProps
-
-                latestEasing =
-                    findLatestEasing transformProps
-
-                earliestDelay =
-                    findEarliestDelay transformProps
-            in
-            Just ("transform " ++ TimeSpec.toCssString longestDistance longestDuration ++ " " ++ Easing.toCSS (Just latestEasing) ++ " " ++ Delay.toCssString earliestDelay)
-
-
-findLongestDistance : List Builder.PropertyConfig -> Float
-findLongestDistance properties =
-    let
-        distances =
-            List.filterMap extractDistance properties
-    in
-    case distances of
-        [] ->
-            0.0
-
-        _ ->
-            distances
-                |> List.maximum
-                |> Maybe.withDefault 0.0
-
-
-extractDistance : Builder.PropertyConfig -> Maybe Float
-extractDistance property =
-    case property of
-        Builder.PositionConfig config ->
-            Just config.distance
-
-        Builder.RotateConfig config ->
-            Just config.distance
-
-        Builder.ScaleConfig config ->
-            Just config.distance
 
         _ ->
             Nothing
@@ -373,135 +272,6 @@ calculatePropertyDistance property =
                             Opacity.fromFloat 1.0
             in
             Opacity.distance startAt config.endAt
-
-
-findLongestDuration : List Builder.PropertyConfig -> Maybe TimeSpec.TimeSpec
-findLongestDuration properties =
-    let
-        propertyDistances =
-            List.filterMap
-                (\prop ->
-                    extractTiming prop
-                        |> Maybe.map (\timeSpec -> ( timeSpec, calculatePropertyDistance prop ))
-                )
-                properties
-    in
-    case propertyDistances of
-        [] ->
-            Nothing
-
-        ( firstTimeSpec, _ ) :: rest ->
-            rest
-                |> List.foldl
-                    (\( timeSpec, dist ) acc ->
-                        chooseLongerDuration (\ts -> toFloat (TimeSpec.duration dist ts)) timeSpec acc
-                    )
-                    firstTimeSpec
-                |> Just
-
-
-chooseLongerDuration : (TimeSpec.TimeSpec -> Float) -> TimeSpec.TimeSpec -> TimeSpec.TimeSpec -> TimeSpec.TimeSpec
-chooseLongerDuration calcDuration a b =
-    let
-        durationA =
-            calcDuration a
-
-        durationB =
-            calcDuration b
-    in
-    if durationA >= durationB then
-        a
-
-    else
-        b
-
-
-
--- Slower speed = longer duration
-
-
-findLatestEasing : List Builder.PropertyConfig -> Easing.Easing
-findLatestEasing properties =
-    properties
-        |> List.filterMap extractEasing
-        |> List.reverse
-        -- Get the last one added
-        |> List.head
-        |> Maybe.withDefault Easing.Linear
-
-
-findEarliestDelay : List Builder.PropertyConfig -> Maybe Int
-findEarliestDelay properties =
-    let
-        delays =
-            List.filterMap extractDelay properties
-    in
-    case delays of
-        [] ->
-            Nothing
-
-        _ ->
-            delays
-                |> List.foldl chooseSmallerDelay 999999
-                -- Start with large delay
-                |> Just
-
-
-chooseSmallerDelay : Int -> Int -> Int
-chooseSmallerDelay a b =
-    if a <= b then
-        a
-
-    else
-        b
-
-
-extractTiming : Builder.PropertyConfig -> Maybe TimeSpec.TimeSpec
-extractTiming property =
-    case property of
-        Builder.PositionConfig config ->
-            config.timing
-
-        Builder.RotateConfig config ->
-            config.timing
-
-        Builder.ScaleConfig config ->
-            config.timing
-
-        _ ->
-            Nothing
-
-
-extractEasing : Builder.PropertyConfig -> Maybe Easing.Easing
-extractEasing property =
-    case property of
-        Builder.PositionConfig config ->
-            config.easing
-
-        Builder.RotateConfig config ->
-            config.easing
-
-        Builder.ScaleConfig config ->
-            config.easing
-
-        _ ->
-            Nothing
-
-
-extractDelay : Builder.PropertyConfig -> Maybe Int
-extractDelay property =
-    case property of
-        Builder.PositionConfig config ->
-            config.delay
-
-        Builder.RotateConfig config ->
-            config.delay
-
-        Builder.ScaleConfig config ->
-            config.delay
-
-        _ ->
-            Nothing
 
 
 {-| Generate animation layers for an element's properties, supporting multiple simultaneous animations.
@@ -788,7 +558,7 @@ generateTimedKeyframeSteps dominantGroup allProperties =
         generateStepStyles easedProgress =
             allProperties
                 |> List.filterMap (propertyToKeyframeStyle easedProgress)
-                |> combineTransformStyles
+                |> TH.combineTransformStyles
     in
     -- Handle zero duration case: create single keyframe at 100%
     if dominantGroup.duration == 0 then
@@ -871,31 +641,6 @@ generateTimedKeyframeSteps dominantGroup allProperties =
         progressPairs
             |> List.map (\( raw, eased ) -> ( raw, generateStepStyles eased ))
             |> List.filter (\( _, styles ) -> not (List.isEmpty styles))
-
-
-{-| Combine multiple transform properties into a single transform style.
--}
-combineTransformStyles : List ( String, String ) -> List ( String, String )
-combineTransformStyles styles =
-    let
-        ( transformStyles, otherStyles ) =
-            styles |> List.partition (\( prop, _ ) -> prop == "transform")
-
-        combinedTransform =
-            case transformStyles of
-                [] ->
-                    []
-
-                _ ->
-                    let
-                        transformValues =
-                            transformStyles
-                                |> List.map Tuple.second
-                                |> String.join " "
-                    in
-                    [ ( "transform", transformValues ) ]
-    in
-    combinedTransform ++ otherStyles
 
 
 {-| Convert a property to its CSS style at a given progress.
@@ -1205,8 +950,6 @@ onAnimationCancel msg =
 --
 -- TODO: SUGGESTED MODULE SPLITS
 --
--- ANIMATED PROPERTIES (Color, Opacity, etc.)
--- -> Move color/opacity helpers to property modules
 -- TRANSFORM HELPERS
 -- -> Move transform/consolidation helpers to TransformHelpers
 -- PROPERTY TIMING
