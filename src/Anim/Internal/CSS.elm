@@ -616,104 +616,99 @@ extractPropertyTiming : Builder.PropertyConfig -> Maybe ( TimingInfo, Builder.Pr
 extractPropertyTiming property =
     case property of
         Builder.PositionConfig config ->
-            config.timing
-                |> Maybe.map
-                    (\timing ->
-                        let
-                            distance =
-                                calculatePropertyDistance property
+            let
+                distance =
+                    calculatePropertyDistance property
 
-                            duration_ =
-                                TimeSpec.duration distance timing
+                timing =
+                    Maybe.withDefault (TimeSpec.Duration 0) config.timing
 
-                            easing_ =
-                                Maybe.withDefault Easing.Linear config.easing
+                duration_ =
+                    TimeSpec.duration distance timing
 
-                            delay_ =
-                                Maybe.withDefault 0 config.delay
-                        in
-                        ( { duration = duration_, easing = easing_, delay = delay_ }, property )
-                    )
+                easing_ =
+                    Maybe.withDefault Easing.Linear config.easing
+
+                delay_ =
+                    Maybe.withDefault 0 config.delay
+            in
+            Just ( { duration = duration_, easing = easing_, delay = delay_ }, property )
 
         Builder.RotateConfig config ->
-            config.timing
-                |> Maybe.map
-                    (\timing ->
-                        let
-                            distance =
-                                calculatePropertyDistance property
+            let
+                distance =
+                    calculatePropertyDistance property
 
-                            duration_ =
-                                TimeSpec.duration distance timing
+                timing =
+                    Maybe.withDefault (TimeSpec.Duration 0) config.timing
 
-                            easing_ =
-                                Maybe.withDefault Easing.Linear config.easing
+                duration_ =
+                    TimeSpec.duration distance timing
 
-                            delay_ =
-                                Maybe.withDefault 0 config.delay
-                        in
-                        ( { duration = duration_, easing = easing_, delay = delay_ }, property )
-                    )
+                easing_ =
+                    Maybe.withDefault Easing.Linear config.easing
+
+                delay_ =
+                    Maybe.withDefault 0 config.delay
+            in
+            Just ( { duration = duration_, easing = easing_, delay = delay_ }, property )
 
         Builder.ScaleConfig config ->
-            config.timing
-                |> Maybe.map
-                    (\timing ->
-                        let
-                            distance =
-                                calculatePropertyDistance property
+            let
+                distance =
+                    calculatePropertyDistance property
 
-                            duration_ =
-                                TimeSpec.duration distance timing
+                timing =
+                    Maybe.withDefault (TimeSpec.Duration 0) config.timing
 
-                            easing_ =
-                                Maybe.withDefault Easing.Linear config.easing
+                duration_ =
+                    TimeSpec.duration distance timing
 
-                            delay_ =
-                                Maybe.withDefault 0 config.delay
-                        in
-                        ( { duration = duration_, easing = easing_, delay = delay_ }, property )
-                    )
+                easing_ =
+                    Maybe.withDefault Easing.Linear config.easing
+
+                delay_ =
+                    Maybe.withDefault 0 config.delay
+            in
+            Just ( { duration = duration_, easing = easing_, delay = delay_ }, property )
 
         Builder.ColorConfig config ->
-            config.timing
-                |> Maybe.map
-                    (\timing ->
-                        let
-                            distance =
-                                calculatePropertyDistance property
+            let
+                distance =
+                    calculatePropertyDistance property
 
-                            duration_ =
-                                TimeSpec.duration distance timing
+                timing =
+                    Maybe.withDefault (TimeSpec.Duration 0) config.timing
 
-                            easing_ =
-                                Maybe.withDefault Easing.Linear config.easing
+                duration_ =
+                    TimeSpec.duration distance timing
 
-                            delay_ =
-                                Maybe.withDefault 0 config.delay
-                        in
-                        ( { duration = duration_, easing = easing_, delay = delay_ }, property )
-                    )
+                easing_ =
+                    Maybe.withDefault Easing.Linear config.easing
+
+                delay_ =
+                    Maybe.withDefault 0 config.delay
+            in
+            Just ( { duration = duration_, easing = easing_, delay = delay_ }, property )
 
         Builder.OpacityConfig config ->
-            config.timing
-                |> Maybe.map
-                    (\timing ->
-                        let
-                            distance =
-                                calculatePropertyDistance property
+            let
+                distance =
+                    calculatePropertyDistance property
 
-                            duration_ =
-                                TimeSpec.duration distance timing
+                timing =
+                    Maybe.withDefault (TimeSpec.Duration 0) config.timing
 
-                            easing_ =
-                                Maybe.withDefault Easing.Linear config.easing
+                duration_ =
+                    TimeSpec.duration distance timing
 
-                            delay_ =
-                                Maybe.withDefault 0 config.delay
-                        in
-                        ( { duration = duration_, easing = easing_, delay = delay_ }, property )
-                    )
+                easing_ =
+                    Maybe.withDefault Easing.Linear config.easing
+
+                delay_ =
+                    Maybe.withDefault 0 config.delay
+            in
+            Just ( { duration = duration_, easing = easing_, delay = delay_ }, property )
 
 
 type alias TimingInfo =
@@ -766,87 +761,93 @@ findMatchingGroup timing groups =
 generateTimedKeyframeSteps : TimingGroup -> List Builder.PropertyConfig -> List ( Float, List ( String, String ) )
 generateTimedKeyframeSteps dominantGroup allProperties =
     let
-        easingFunction =
-            Easing.toFunction dominantGroup.easing
-
-        -- Generate more keyframes for smooth easing representation
-        -- Use more steps for complex easings like bounce and elastic
-        keyframeCount =
-            case dominantGroup.easing of
-                Easing.BounceIn ->
-                    80
-
-                Easing.BounceOut ->
-                    80
-
-                Easing.BounceInOut ->
-                    80
-
-                Easing.ElasticIn ->
-                    60
-
-                Easing.ElasticOut ->
-                    60
-
-                Easing.ElasticInOut ->
-                    60
-
-                _ ->
-                    30
-
-        -- Base linear distribution 0..1
-        baseLinear =
-            List.range 0 (keyframeCount - 1)
-                |> List.map (\i -> toFloat i / toFloat (keyframeCount - 1))
-
-        piecewiseTimes : List Float
-        piecewiseTimes =
-            case dominantGroup.easing of
-                Easing.BounceOut ->
-                    -- Use uniform sampling for all bounce types
-                    List.range 0 50
-                        |> List.map (\i -> toFloat i / 50.0)
-
-                Easing.BounceIn ->
-                    -- Use uniform sampling - the easing function handles the bounce timing
-                    List.range 0 50
-                        |> List.map (\i -> toFloat i / 50.0)
-
-                Easing.BounceInOut ->
-                    -- Use uniform sampling - the easing function handles the bounce timing
-                    List.range 0 50
-                        |> List.map (\i -> toFloat i / 50.0)
-
-                _ ->
-                    baseLinear
-
-        -- Use piecewise sampling for Bounce, otherwise uniform
-        rawSteps =
-            case dominantGroup.easing of
-                Easing.BounceIn ->
-                    piecewiseTimes
-
-                Easing.BounceOut ->
-                    piecewiseTimes
-
-                Easing.BounceInOut ->
-                    piecewiseTimes
-
-                _ ->
-                    baseLinear
-
-        progressPairs =
-            rawSteps |> List.map (\raw -> ( raw, easingFunction raw ))
-
         generateStepStyles : Float -> List ( String, String )
         generateStepStyles easedProgress =
             allProperties
                 |> List.filterMap (propertyToKeyframeStyle easedProgress)
                 |> combineTransformStyles
     in
-    progressPairs
-        |> List.map (\( raw, eased ) -> ( raw, generateStepStyles eased ))
-        |> List.filter (\( _, styles ) -> not (List.isEmpty styles))
+    -- Handle zero duration case: create single keyframe at 100%
+    if dominantGroup.duration == 0 then
+        [ ( 1.0, generateStepStyles 1.0 ) ]
+
+    else
+        let
+            easingFunction =
+                Easing.toFunction dominantGroup.easing
+
+            -- Generate more keyframes for smooth easing representation
+            -- Use more steps for complex easings like bounce and elastic
+            keyframeCount =
+                case dominantGroup.easing of
+                    Easing.BounceIn ->
+                        80
+
+                    Easing.BounceOut ->
+                        80
+
+                    Easing.BounceInOut ->
+                        80
+
+                    Easing.ElasticIn ->
+                        60
+
+                    Easing.ElasticOut ->
+                        60
+
+                    Easing.ElasticInOut ->
+                        60
+
+                    _ ->
+                        30
+
+            -- Base linear distribution 0..1
+            baseLinear =
+                List.range 0 (keyframeCount - 1)
+                    |> List.map (\i -> toFloat i / toFloat (keyframeCount - 1))
+
+            piecewiseTimes : List Float
+            piecewiseTimes =
+                case dominantGroup.easing of
+                    Easing.BounceOut ->
+                        -- Use uniform sampling for all bounce types
+                        List.range 0 50
+                            |> List.map (\i -> toFloat i / 50.0)
+
+                    Easing.BounceIn ->
+                        -- Use uniform sampling - the easing function handles the bounce timing
+                        List.range 0 50
+                            |> List.map (\i -> toFloat i / 50.0)
+
+                    Easing.BounceInOut ->
+                        -- Use uniform sampling - the easing function handles the bounce timing
+                        List.range 0 50
+                            |> List.map (\i -> toFloat i / 50.0)
+
+                    _ ->
+                        baseLinear
+
+            -- Use piecewise sampling for Bounce, otherwise uniform
+            rawSteps =
+                case dominantGroup.easing of
+                    Easing.BounceIn ->
+                        piecewiseTimes
+
+                    Easing.BounceOut ->
+                        piecewiseTimes
+
+                    Easing.BounceInOut ->
+                        piecewiseTimes
+
+                    _ ->
+                        baseLinear
+
+            progressPairs =
+                rawSteps |> List.map (\raw -> ( raw, easingFunction raw ))
+        in
+        progressPairs
+            |> List.map (\( raw, eased ) -> ( raw, generateStepStyles eased ))
+            |> List.filter (\( _, styles ) -> not (List.isEmpty styles))
 
 
 {-| Combine multiple transform properties into a single transform style.

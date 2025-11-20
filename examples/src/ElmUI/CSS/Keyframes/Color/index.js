@@ -5196,7 +5196,7 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$document = _Browser_document;
-var $author$project$Anim$Timing$Easing$Linear = {$: 'Linear'};
+var $author$project$Anim$Timing$Easing$BounceOut = {$: 'BounceOut'};
 var $author$project$Anim$Properties$Color$Rgb = function (a) {
 	return {$: 'Rgb', a: a};
 };
@@ -6278,25 +6278,6 @@ var $author$project$Anim$Internal$Timing$Easing$toFunction = function (easing) {
 };
 var $author$project$Anim$Internal$CSS$generateTimedKeyframeSteps = F2(
 	function (dominantGroup, allProperties) {
-		var keyframeCount = function () {
-			var _v4 = dominantGroup.easing;
-			switch (_v4.$) {
-				case 'BounceIn':
-					return 80;
-				case 'BounceOut':
-					return 80;
-				case 'BounceInOut':
-					return 80;
-				case 'ElasticIn':
-					return 60;
-				case 'ElasticOut':
-					return 60;
-				case 'ElasticInOut':
-					return 60;
-				default:
-					return 30;
-			}
-		}();
 		var generateStepStyles = function (easedProgress) {
 			return $author$project$Anim$Internal$CSS$combineTransformStyles(
 				A2(
@@ -6304,78 +6285,106 @@ var $author$project$Anim$Internal$CSS$generateTimedKeyframeSteps = F2(
 					$author$project$Anim$Internal$CSS$propertyToKeyframeStyle(easedProgress),
 					allProperties));
 		};
-		var easingFunction = $author$project$Anim$Internal$Timing$Easing$toFunction(dominantGroup.easing);
-		var baseLinear = A2(
-			$elm$core$List$map,
-			function (i) {
-				return i / (keyframeCount - 1);
-			},
-			A2($elm$core$List$range, 0, keyframeCount - 1));
-		var piecewiseTimes = function () {
-			var _v3 = dominantGroup.easing;
-			switch (_v3.$) {
-				case 'BounceOut':
-					return A2(
-						$elm$core$List$map,
-						function (i) {
-							return i / 50.0;
-						},
-						A2($elm$core$List$range, 0, 50));
-				case 'BounceIn':
-					return A2(
-						$elm$core$List$map,
-						function (i) {
-							return i / 50.0;
-						},
-						A2($elm$core$List$range, 0, 50));
-				case 'BounceInOut':
-					return A2(
-						$elm$core$List$map,
-						function (i) {
-							return i / 50.0;
-						},
-						A2($elm$core$List$range, 0, 50));
-				default:
-					return baseLinear;
-			}
-		}();
-		var rawSteps = function () {
-			var _v2 = dominantGroup.easing;
-			switch (_v2.$) {
-				case 'BounceIn':
-					return piecewiseTimes;
-				case 'BounceOut':
-					return piecewiseTimes;
-				case 'BounceInOut':
-					return piecewiseTimes;
-				default:
-					return baseLinear;
-			}
-		}();
-		var progressPairs = A2(
-			$elm$core$List$map,
-			function (raw) {
-				return _Utils_Tuple2(
-					raw,
-					easingFunction(raw));
-			},
-			rawSteps);
-		return A2(
-			$elm$core$List$filter,
-			function (_v1) {
-				var styles = _v1.b;
-				return !$elm$core$List$isEmpty(styles);
-			},
-			A2(
+		if (!dominantGroup.duration) {
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					1.0,
+					generateStepStyles(1.0))
+				]);
+		} else {
+			var keyframeCount = function () {
+				var _v4 = dominantGroup.easing;
+				switch (_v4.$) {
+					case 'BounceIn':
+						return 80;
+					case 'BounceOut':
+						return 80;
+					case 'BounceInOut':
+						return 80;
+					case 'ElasticIn':
+						return 60;
+					case 'ElasticOut':
+						return 60;
+					case 'ElasticInOut':
+						return 60;
+					default:
+						return 30;
+				}
+			}();
+			var easingFunction = $author$project$Anim$Internal$Timing$Easing$toFunction(dominantGroup.easing);
+			var baseLinear = A2(
 				$elm$core$List$map,
-				function (_v0) {
-					var raw = _v0.a;
-					var eased = _v0.b;
+				function (i) {
+					return i / (keyframeCount - 1);
+				},
+				A2($elm$core$List$range, 0, keyframeCount - 1));
+			var piecewiseTimes = function () {
+				var _v3 = dominantGroup.easing;
+				switch (_v3.$) {
+					case 'BounceOut':
+						return A2(
+							$elm$core$List$map,
+							function (i) {
+								return i / 50.0;
+							},
+							A2($elm$core$List$range, 0, 50));
+					case 'BounceIn':
+						return A2(
+							$elm$core$List$map,
+							function (i) {
+								return i / 50.0;
+							},
+							A2($elm$core$List$range, 0, 50));
+					case 'BounceInOut':
+						return A2(
+							$elm$core$List$map,
+							function (i) {
+								return i / 50.0;
+							},
+							A2($elm$core$List$range, 0, 50));
+					default:
+						return baseLinear;
+				}
+			}();
+			var rawSteps = function () {
+				var _v2 = dominantGroup.easing;
+				switch (_v2.$) {
+					case 'BounceIn':
+						return piecewiseTimes;
+					case 'BounceOut':
+						return piecewiseTimes;
+					case 'BounceInOut':
+						return piecewiseTimes;
+					default:
+						return baseLinear;
+				}
+			}();
+			var progressPairs = A2(
+				$elm$core$List$map,
+				function (raw) {
 					return _Utils_Tuple2(
 						raw,
-						generateStepStyles(eased));
+						easingFunction(raw));
 				},
-				progressPairs));
+				rawSteps);
+			return A2(
+				$elm$core$List$filter,
+				function (_v1) {
+					var styles = _v1.b;
+					return !$elm$core$List$isEmpty(styles);
+				},
+				A2(
+					$elm$core$List$map,
+					function (_v0) {
+						var raw = _v0.a;
+						var eased = _v0.b;
+						return _Utils_Tuple2(
+							raw,
+							generateStepStyles(eased));
+					},
+					progressPairs));
+		}
 	});
 var $elm$core$Debug$log = _Debug_log;
 var $elm$core$List$sum = function (numbers) {
@@ -6431,6 +6440,9 @@ var $author$project$Anim$Internal$CSS$createAnimationLayerFromGroup = F3(
 		return $elm$core$List$isEmpty(keyframeSteps) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
 			{animationName: animationName, delay: timingGroup.delay, duration: timingGroup.duration, easing: 'linear', keyframes: keyframesString, properties: animatedProperties});
 	});
+var $author$project$Anim$Internal$Timing$TimeSpec$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
 var $author$project$Anim$Internal$Timing$Easing$Linear = {$: 'Linear'};
 var $author$project$Anim$Internal$Properties$Color$distance = F2(
 	function (color1, color2) {
@@ -6547,88 +6559,78 @@ var $author$project$Anim$Internal$Timing$TimeSpec$duration = F2(
 			return $elm$core$Basics$round((distance / unitsPerSecond) * 1000);
 		}
 	});
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
 var $author$project$Anim$Internal$CSS$extractPropertyTiming = function (property) {
 	switch (property.$) {
 		case 'PositionConfig':
 			var config = property.a;
-			return A2(
-				$elm$core$Maybe$map,
-				function (timing) {
-					var easing_ = A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Timing$Easing$Linear, config.easing);
-					var distance = $author$project$Anim$Internal$CSS$calculatePropertyDistance(property);
-					var duration_ = A2($author$project$Anim$Internal$Timing$TimeSpec$duration, distance, timing);
-					var delay_ = A2($elm$core$Maybe$withDefault, 0, config.delay);
-					return _Utils_Tuple2(
-						{delay: delay_, duration: duration_, easing: easing_},
-						property);
-				},
+			var timing = A2(
+				$elm$core$Maybe$withDefault,
+				$author$project$Anim$Internal$Timing$TimeSpec$Duration(0),
 				config.timing);
+			var easing_ = A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Timing$Easing$Linear, config.easing);
+			var distance = $author$project$Anim$Internal$CSS$calculatePropertyDistance(property);
+			var duration_ = A2($author$project$Anim$Internal$Timing$TimeSpec$duration, distance, timing);
+			var delay_ = A2($elm$core$Maybe$withDefault, 0, config.delay);
+			return $elm$core$Maybe$Just(
+				_Utils_Tuple2(
+					{delay: delay_, duration: duration_, easing: easing_},
+					property));
 		case 'RotateConfig':
 			var config = property.a;
-			return A2(
-				$elm$core$Maybe$map,
-				function (timing) {
-					var easing_ = A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Timing$Easing$Linear, config.easing);
-					var distance = $author$project$Anim$Internal$CSS$calculatePropertyDistance(property);
-					var duration_ = A2($author$project$Anim$Internal$Timing$TimeSpec$duration, distance, timing);
-					var delay_ = A2($elm$core$Maybe$withDefault, 0, config.delay);
-					return _Utils_Tuple2(
-						{delay: delay_, duration: duration_, easing: easing_},
-						property);
-				},
+			var timing = A2(
+				$elm$core$Maybe$withDefault,
+				$author$project$Anim$Internal$Timing$TimeSpec$Duration(0),
 				config.timing);
+			var easing_ = A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Timing$Easing$Linear, config.easing);
+			var distance = $author$project$Anim$Internal$CSS$calculatePropertyDistance(property);
+			var duration_ = A2($author$project$Anim$Internal$Timing$TimeSpec$duration, distance, timing);
+			var delay_ = A2($elm$core$Maybe$withDefault, 0, config.delay);
+			return $elm$core$Maybe$Just(
+				_Utils_Tuple2(
+					{delay: delay_, duration: duration_, easing: easing_},
+					property));
 		case 'ScaleConfig':
 			var config = property.a;
-			return A2(
-				$elm$core$Maybe$map,
-				function (timing) {
-					var easing_ = A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Timing$Easing$Linear, config.easing);
-					var distance = $author$project$Anim$Internal$CSS$calculatePropertyDistance(property);
-					var duration_ = A2($author$project$Anim$Internal$Timing$TimeSpec$duration, distance, timing);
-					var delay_ = A2($elm$core$Maybe$withDefault, 0, config.delay);
-					return _Utils_Tuple2(
-						{delay: delay_, duration: duration_, easing: easing_},
-						property);
-				},
+			var timing = A2(
+				$elm$core$Maybe$withDefault,
+				$author$project$Anim$Internal$Timing$TimeSpec$Duration(0),
 				config.timing);
+			var easing_ = A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Timing$Easing$Linear, config.easing);
+			var distance = $author$project$Anim$Internal$CSS$calculatePropertyDistance(property);
+			var duration_ = A2($author$project$Anim$Internal$Timing$TimeSpec$duration, distance, timing);
+			var delay_ = A2($elm$core$Maybe$withDefault, 0, config.delay);
+			return $elm$core$Maybe$Just(
+				_Utils_Tuple2(
+					{delay: delay_, duration: duration_, easing: easing_},
+					property));
 		case 'ColorConfig':
 			var config = property.a;
-			return A2(
-				$elm$core$Maybe$map,
-				function (timing) {
-					var easing_ = A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Timing$Easing$Linear, config.easing);
-					var distance = $author$project$Anim$Internal$CSS$calculatePropertyDistance(property);
-					var duration_ = A2($author$project$Anim$Internal$Timing$TimeSpec$duration, distance, timing);
-					var delay_ = A2($elm$core$Maybe$withDefault, 0, config.delay);
-					return _Utils_Tuple2(
-						{delay: delay_, duration: duration_, easing: easing_},
-						property);
-				},
+			var timing = A2(
+				$elm$core$Maybe$withDefault,
+				$author$project$Anim$Internal$Timing$TimeSpec$Duration(0),
 				config.timing);
+			var easing_ = A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Timing$Easing$Linear, config.easing);
+			var distance = $author$project$Anim$Internal$CSS$calculatePropertyDistance(property);
+			var duration_ = A2($author$project$Anim$Internal$Timing$TimeSpec$duration, distance, timing);
+			var delay_ = A2($elm$core$Maybe$withDefault, 0, config.delay);
+			return $elm$core$Maybe$Just(
+				_Utils_Tuple2(
+					{delay: delay_, duration: duration_, easing: easing_},
+					property));
 		default:
 			var config = property.a;
-			return A2(
-				$elm$core$Maybe$map,
-				function (timing) {
-					var easing_ = A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Timing$Easing$Linear, config.easing);
-					var distance = $author$project$Anim$Internal$CSS$calculatePropertyDistance(property);
-					var duration_ = A2($author$project$Anim$Internal$Timing$TimeSpec$duration, distance, timing);
-					var delay_ = A2($elm$core$Maybe$withDefault, 0, config.delay);
-					return _Utils_Tuple2(
-						{delay: delay_, duration: duration_, easing: easing_},
-						property);
-				},
+			var timing = A2(
+				$elm$core$Maybe$withDefault,
+				$author$project$Anim$Internal$Timing$TimeSpec$Duration(0),
 				config.timing);
+			var easing_ = A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Timing$Easing$Linear, config.easing);
+			var distance = $author$project$Anim$Internal$CSS$calculatePropertyDistance(property);
+			var duration_ = A2($author$project$Anim$Internal$Timing$TimeSpec$duration, distance, timing);
+			var delay_ = A2($elm$core$Maybe$withDefault, 0, config.delay);
+			return $elm$core$Maybe$Just(
+				_Utils_Tuple2(
+					{delay: delay_, duration: duration_, easing: easing_},
+					property));
 	}
 };
 var $author$project$Anim$Internal$CSS$findMatchingGroup = F2(
@@ -6846,6 +6848,16 @@ var $author$project$Anim$Internal$CSS$extractTiming = function (property) {
 			return $elm$core$Maybe$Nothing;
 	}
 };
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $author$project$Anim$Internal$CSS$findLongestDuration = function (properties) {
 	var propertyDistances = A2(
 		$elm$core$List$filterMap,
@@ -7697,6 +7709,24 @@ var $author$project$Anim$Internal$CSS$init = $author$project$Anim$Internal$CSS$A
 var $author$project$Anim$CSS$init = $author$project$Anim$Internal$CSS$init;
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $author$project$Anim$Internal$Timing$TimeSpec$Speed = function (a) {
+	return {$: 'Speed', a: a};
+};
+var $author$project$Anim$Internal$Builder$speed = F2(
+	function (value, _v0) {
+		var data = _v0.a;
+		return $author$project$Anim$Internal$Builder$AnimBuilder(
+			_Utils_update(
+				data,
+				{
+					globalTiming: $elm$core$Maybe$Just(
+						$author$project$Anim$Internal$Timing$TimeSpec$Speed(value))
+				}));
+	});
+var $author$project$Anim$speed = F2(
+	function (value, builder) {
+		return A2($author$project$Anim$Internal$Builder$speed, value, builder);
+	});
 var $author$project$Anim$Internal$Builders$Color$to = F2(
 	function (color, _v0) {
 		var config = _v0.a;
@@ -7743,21 +7773,20 @@ var $author$project$ElmUI$CSS$Keyframes$Color$Main$init = function (_v0) {
 								$author$project$ElmUI$CSS$Keyframes$Color$Main$elementId,
 								A2(
 									$author$project$Anim$easing,
-									$author$project$Anim$Timing$Easing$Linear,
-									$author$project$Anim$CSS$builder($author$project$Anim$CSS$init)))))))
+									$author$project$Anim$Timing$Easing$BounceOut,
+									A2(
+										$author$project$Anim$speed,
+										100,
+										$author$project$Anim$CSS$builder($author$project$Anim$CSS$init))))))))
 		},
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$Anim$Timing$Easing$BounceOut = {$: 'BounceOut'};
 var $author$project$Anim$Timing$Easing$CubicInOut = {$: 'CubicInOut'};
 var $author$project$Anim$Timing$Easing$ElasticOut = {$: 'ElasticOut'};
 var $author$project$Anim$Properties$Color$Hex = function (a) {
 	return {$: 'Hex', a: a};
-};
-var $author$project$Anim$Internal$Timing$TimeSpec$Duration = function (a) {
-	return {$: 'Duration', a: a};
 };
 var $author$project$Anim$Internal$Builders$Color$duration = F2(
 	function (ms, _v0) {
@@ -7793,9 +7822,6 @@ var $author$project$Anim$Internal$Builders$Color$easing = F2(
 var $author$project$Anim$Properties$Color$easing = function (easing_) {
 	return A2($author$project$Anim$Timing$Easing$mapInternal, $author$project$Anim$Internal$Builders$Color$easing, easing_);
 };
-var $author$project$Anim$Internal$Timing$TimeSpec$Speed = function (a) {
-	return {$: 'Speed', a: a};
-};
 var $author$project$Anim$Internal$Builders$Color$speed = F2(
 	function (spd, _v0) {
 		var config = _v0.a;
@@ -7814,6 +7840,7 @@ var $author$project$Anim$Internal$Builders$Color$speed = F2(
 			builder);
 	});
 var $author$project$Anim$Properties$Color$speed = $author$project$Anim$Internal$Builders$Color$speed;
+var $author$project$Anim$Timing$Easing$Linear = {$: 'Linear'};
 var $elm$core$Basics$composeR = F3(
 	function (f, g, x) {
 		return g(

@@ -68,8 +68,8 @@ init _ =
     ( { animations =
             CSS.init
                 |> CSS.builder
-                --|> Anim.duration 1000
-                |> Anim.easing Easing.Linear
+                |> Anim.speed 100
+                |> Anim.easing Easing.BounceOut
                 |> Color.for elementId
                 |> Color.from (Color.Rgb { r = 255, g = 255, b = 255 })
                 |> Color.to (Color.Rgb { r = 149, g = 165, b = 166 })
