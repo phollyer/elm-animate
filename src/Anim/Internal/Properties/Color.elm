@@ -166,8 +166,42 @@ interpolate start end t =
             Hsla { h = h, s = s, l = l, a = a }
 
         _ ->
-            -- Fallback: return start color if types don't match
-            start
+            -- Convert start color to match end color type and interpolate
+            case end of
+                Hex _ ->
+                    let
+                        startAsHex =
+                            Hex (toHex start)
+                    in
+                    interpolate startAsHex end t
+
+                Rgb _ ->
+                    let
+                        startAsRgb =
+                            Rgb (toRgb start)
+                    in
+                    interpolate startAsRgb end t
+
+                Rgba _ ->
+                    let
+                        startAsRgba =
+                            Rgba (toRgba start)
+                    in
+                    interpolate startAsRgba end t
+
+                Hsl _ ->
+                    let
+                        startAsHsl =
+                            Hsl (toHsl start)
+                    in
+                    interpolate startAsHsl end t
+
+                Hsla _ ->
+                    let
+                        startAsHsla =
+                            Hsla (toHsla start)
+                    in
+                    interpolate startAsHsla end t
 
 
 
@@ -549,3 +583,174 @@ toRgb color =
 
         Hsla hsla ->
             hslToRgb { h = hsla.h, s = hsla.s, l = hsla.l }
+
+
+{-| Convert any Color to Hex.
+-}
+toHex : Color -> String
+toHex color =
+    let
+        rgb =
+            toRgb color
+
+        intToHex value =
+            -- For now, use a simple mapping for hex conversion
+            case value of
+                0 ->
+                    "00"
+
+                1 ->
+                    "01"
+
+                2 ->
+                    "02"
+
+                3 ->
+                    "03"
+
+                4 ->
+                    "04"
+
+                5 ->
+                    "05"
+
+                6 ->
+                    "06"
+
+                7 ->
+                    "07"
+
+                8 ->
+                    "08"
+
+                9 ->
+                    "09"
+
+                10 ->
+                    "0a"
+
+                11 ->
+                    "0b"
+
+                12 ->
+                    "0c"
+
+                13 ->
+                    "0d"
+
+                14 ->
+                    "0e"
+
+                15 ->
+                    "0f"
+
+                _ ->
+                    let
+                        high =
+                            value // 16
+
+                        low =
+                            modBy 16 value
+
+                        highHex =
+                            case high of
+                                10 ->
+                                    "a"
+
+                                11 ->
+                                    "b"
+
+                                12 ->
+                                    "c"
+
+                                13 ->
+                                    "d"
+
+                                14 ->
+                                    "e"
+
+                                15 ->
+                                    "f"
+
+                                _ ->
+                                    String.fromInt high
+
+                        lowHex =
+                            case low of
+                                10 ->
+                                    "a"
+
+                                11 ->
+                                    "b"
+
+                                12 ->
+                                    "c"
+
+                                13 ->
+                                    "d"
+
+                                14 ->
+                                    "e"
+
+                                15 ->
+                                    "f"
+
+                                _ ->
+                                    String.fromInt low
+                    in
+                    highHex ++ lowHex
+    in
+    "#" ++ intToHex rgb.r ++ intToHex rgb.g ++ intToHex rgb.b
+
+
+{-| Convert any Color to HSL.
+-}
+toHsl : Color -> HSL
+toHsl color =
+    case color of
+        Hsl hsl ->
+            hsl
+
+        Hsla hsla ->
+            { h = hsla.h, s = hsla.s, l = hsla.l }
+
+        _ ->
+            toRgb color |> rgbToHsl
+
+
+{-| Convert any Color to RGBA.
+-}
+toRgba : Color -> RGBA
+toRgba color =
+    case color of
+        Rgba rgba ->
+            rgba
+
+        Hsla hsla ->
+            hslaToRgba hsla
+
+        _ ->
+            let
+                rgb =
+                    toRgb color
+            in
+            { r = rgb.r, g = rgb.g, b = rgb.b, a = 1.0 }
+
+
+{-| Convert any Color to HSLA.
+-}
+toHsla : Color -> HSLA
+toHsla color =
+    case color of
+        Hsla hsla ->
+            hsla
+
+        Rgba rgba ->
+            rgbaToHsla rgba
+
+        _ ->
+            let
+                hsl =
+                    toHsl color
+            in
+            { h = hsl.h, s = hsl.s, l = hsl.l, a = 1.0 }
