@@ -26,7 +26,7 @@ import Anim.Internal.Properties.Color exposing (Color)
 import Anim.Internal.Properties.Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position, distance)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
-import Anim.Internal.Properties.Scale exposing (Scale)
+import Anim.Internal.Properties.Scale as Scale exposing (Scale)
 import Anim.Internal.Timing.Easing exposing (Easing(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
@@ -307,24 +307,68 @@ processProperty globalData property =
                 }
 
         ScaleConfig config ->
+            let
+                startAt =
+                    Maybe.withDefault (Scale.fromTuple ( 1.0, 1.0 )) config.startAt
+
+                distance =
+                    Scale.distance startAt config.endAt
+
+                duration_ =
+                    -- For scale, we need a way to calculate duration from timing
+                    -- Let's use a simple approach based on timing spec
+                    case resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000) of
+                        Duration ms ->
+                            toFloat ms
+
+                        Speed _ ->
+                            1000.0
+
+                -- Default 1 second for speed-based
+                speed_ =
+                    if duration_ > 0 then
+                        distance / (duration_ / 1000.0)
+
+                    else
+                        0.0
+            in
             ProcessedScaleConfig
                 { startAt = config.startAt
                 , target = config.endAt
-                , duration = 0 -- TODO: implement scale timing
-                , speed = 0.0
-                , distance = 0.0
+                , duration = round duration_
+                , speed = speed_
+                , distance = distance
                 , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
                 , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
                 , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
                 }
 
         BackgroundColorConfig config ->
+            let
+                duration_ =
+                    -- For color, use the same timing approach as scale
+                    case resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000) of
+                        Duration ms ->
+                            toFloat ms
+
+                        Speed _ ->
+                            1000.0
+
+                -- Default 1 second for speed-based
+                speed_ =
+                    -- For color animations, we don't really use speed/distance
+                    -- but we'll set reasonable defaults
+                    1.0
+
+                distance_ =
+                    1.0
+            in
             ProcessedColorConfig
                 { startAt = config.startAt
                 , target = config.endAt
-                , duration = 0 -- TODO: implement color timing
-                , speed = 0.0
-                , distance = 0.0
+                , duration = round duration_
+                , speed = speed_
+                , distance = distance_
                 , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
                 , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
                 , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0

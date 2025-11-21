@@ -306,8 +306,41 @@ generate elementId properties =
                             ( globalProgress, styles )
                         )
 
+            -- Generate a unique animation name based on content hash
+            contentForHash =
+                elementId
+                    ++ String.fromInt totalDuration
+                    ++ (processedProps
+                            |> List.map
+                                (\p ->
+                                    case p of
+                                        Builder.ProcessedPositionConfig cfg ->
+                                            "pos" ++ String.fromInt cfg.duration ++ Position.toCssString cfg.target
+
+                                        Builder.ProcessedScaleConfig cfg ->
+                                            "scale" ++ String.fromInt cfg.duration ++ Scale.toCssString cfg.target
+
+                                        Builder.ProcessedRotateConfig cfg ->
+                                            "rot" ++ String.fromInt cfg.duration ++ Rotate.toCssString cfg.target
+
+                                        Builder.ProcessedColorConfig cfg ->
+                                            "color" ++ String.fromInt cfg.duration ++ Color.toString cfg.target
+
+                                        Builder.ProcessedOpacityConfig cfg ->
+                                            "opacity" ++ String.fromInt cfg.duration ++ Opacity.toString cfg.target
+                                )
+                            |> String.join ""
+                       )
+
+            simpleHash =
+                contentForHash
+                    |> String.toList
+                    |> List.map Char.toCode
+                    |> List.sum
+                    |> modBy 999999
+
             animationName =
-                elementId ++ "-composite"
+                elementId ++ "-anim-" ++ String.fromInt simpleHash
 
             keyframesString =
                 buildKeyframesString animationName keyframeSteps
