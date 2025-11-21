@@ -61,8 +61,7 @@ main =
 
 
 type alias Model =
-    { animations : CSS.AnimationState
-    }
+    { animations : CSS.AnimationState }
 
 
 
@@ -71,10 +70,20 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = CSS.init
-      }
+    ( { animations = CSS.init }
     , Cmd.none
     )
+
+
+elements : List ( String, String, Element.Color )
+elements =
+    [ ( "elementA", "A", rgb255 59 130 246 )
+    , ( "elementB", "B", rgb255 16 185 129 )
+    , ( "elementC", "C", rgb255 168 85 247 )
+    , ( "elementD", "D", rgb255 249 115 22 )
+    , ( "elementE", "E", rgb255 239 68 68 )
+    , ( "elementF", "F", rgb255 236 72 153 )
+    ]
 
 
 
@@ -210,79 +219,69 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ Element.html (CSS.keyframesStyleNodeFor "dancer1" model.animations)
-    , Element.html (CSS.keyframesStyleNodeFor "dancer2" model.animations)
-    , Element.html (CSS.keyframesStyleNodeFor "dancer3" model.animations)
-    , Element.html (CSS.keyframesStyleNodeFor "dancer4" model.animations)
-    , Element.html (CSS.keyframesStyleNodeFor "dancer5" model.animations)
-    , Element.html (CSS.keyframesStyleNodeFor "dancer6" model.animations)
-    , UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "CSS Choreography Animations"
-    , -- Element status display
-      el
-        [ Font.size 14
-        , Font.color Colors.textMedium
-        , centerX
-        ]
-        (text "Coordinated choreography with 6 elements in formation patterns")
-    , -- Control buttons
-      UI.wrappedButtonRow
-        [ ( UI.Primary, ScatterElements, "Scatter Formation" )
-        , ( UI.Success, CircleFormation, "Circle Formation" )
-        , ( UI.Purple, ResetPositions, "Reset Formation" )
-        ]
-    , -- Animation area with 6 moving boxes using proper ElmUI + new API
-      el
-        [ width (fill |> maximum 500)
-        , height (px 400)
-        , centerX
-        , Background.color Colors.backgroundWhite
-        , Border.rounded 12
-        , Border.shadow
-            { offset = ( 0, 4 )
-            , size = 0
-            , blur = 8
-            , color = Element.rgba 0 0 0 0.1
-            }
-        , htmlAttribute (Html.Attributes.style "position" "relative")
-        , htmlAttribute (Html.Attributes.style "overflow" "hidden")
-        ]
-        (column []
-            [ -- Element A (Blue)
-              animatedBox "elementA" "A" (rgb255 59 130 246) (rgb255 37 99 235) model
-            , -- Element B (Green)
-              animatedBox "elementB" "B" (rgb255 16 185 129) (rgb255 5 150 105) model
-            , -- Element C (Purple)
-              animatedBox "elementC" "C" (rgb255 168 85 247) (rgb255 147 51 234) model
-            , -- Element D (Orange)
-              animatedBox "elementD" "D" (rgb255 249 115 22) (rgb255 234 88 12) model
-            , -- Element E (Red)
-              animatedBox "elementE" "E" (rgb255 239 68 68) (rgb255 220 38 38) model
-            , -- Element F (Pink)
-              animatedBox "elementF" "F" (rgb255 236 72 153) (rgb255 219 39 119) model
-            ]
-        )
-    ]
+    let
+        keyframeStyleNodes =
+            elements
+                |> List.map
+                    (\( elementId, _, _ ) ->
+                        Element.html <|
+                            CSS.keyframesStyleNodeFor elementId model.animations
+                    )
+    in
+    keyframeStyleNodes
+        ++ [ UI.backButtonWithPath "../../../index.html"
+           , UI.pageHeader "CSS Choreography Keyframes ElmUI Example"
+           , -- Element status display
+             el
+                [ Font.size 14
+                , Font.color Colors.textMedium
+                , centerX
+                ]
+                (text "Coordinated choreography with 6 elements in formation patterns")
+           , -- Control buttons
+             UI.wrappedButtonRow
+                [ ( UI.Primary, ScatterElements, "Scatter Formation" )
+                , ( UI.Success, CircleFormation, "Circle Formation" )
+                , ( UI.Purple, ResetPositions, "Reset Formation" )
+                ]
+           , -- Animation area with 6 moving boxes using proper ElmUI + new API
+             el
+                [ width (fill |> maximum 500)
+                , height (px 400)
+                , centerX
+                , Background.color Colors.backgroundWhite
+                , Border.rounded 12
+                , Border.shadow
+                    { offset = ( 0, 4 )
+                    , size = 0
+                    , blur = 8
+                    , color = Element.rgba 0 0 0 0.1
+                    }
+                , htmlAttribute (Html.Attributes.style "position" "relative")
+                , htmlAttribute (Html.Attributes.style "overflow" "hidden")
+                ]
+                (column [] <|
+                    List.map
+                        (\( elementId, label, color ) ->
+                            animatedBox elementId label color model
+                        )
+                        elements
+                )
+           ]
 
 
-{-| Helper function to create an animated box element using the new Anim.CSS API
--}
-animatedBox : String -> String -> Element.Color -> Element.Color -> Model -> Element Msg
-animatedBox elementId label color1 color2 model =
+animatedBox : String -> String -> Element.Color -> Model -> Element Msg
+animatedBox elementId label color1 model =
     el
-        ([ width (px 50)
-         , height (px 50)
-         , Background.gradient
-            { angle = 2.356 -- 135 degrees in radians
-            , steps = [ color1, color2 ]
-            }
-         , Border.rounded 12
-         , Font.color (rgb255 255 255 255)
-         , Font.semiBold
-         , Font.size 16
-         , htmlAttribute (Html.Attributes.id elementId)
-         , htmlAttribute (Html.Attributes.style "position" "absolute")
-         ]
-            ++ List.map htmlAttribute (CSS.htmlAttributes elementId model.animations)
-        )
+        [ width (px 50)
+        , height (px 50)
+        , Background.color color1
+        , Border.rounded 12
+        , Font.color (rgb255 255 255 255)
+        , Font.semiBold
+        , Font.size 16
+        , htmlAttribute (Html.Attributes.id elementId)
+        , htmlAttribute (Html.Attributes.style "position" "absolute")
+        , htmlAttribute (CSS.animationStyleAttribute elementId model.animations)
+        ]
         (el [ centerX, centerY ] (text label))
