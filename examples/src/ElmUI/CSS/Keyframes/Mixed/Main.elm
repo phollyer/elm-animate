@@ -83,7 +83,16 @@ type AnimationType
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = CSS.init
+    ( { animations =
+            CSS.init
+                |> CSS.builder
+                |> Color.for elementId
+                |> Color.to (Color.Rgb { r = 59, g = 130, b = 246 })
+                |> Color.build
+                |> Scale.for elementId
+                |> Scale.toXY 1 1
+                |> Scale.build
+                |> CSS.animate
       , isAnimating = False
       , activeAnimation = Nothing
       }

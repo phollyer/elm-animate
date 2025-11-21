@@ -96,7 +96,8 @@ type alias ProcessedAnimationData =
 
 
 type alias ProcessedAnimationConfig targetProperty =
-    { target : targetProperty
+    { startAt : Maybe targetProperty
+    , target : targetProperty
     , duration : Int
     , speed : Float
     , distance : Float
@@ -261,7 +262,8 @@ processProperty globalData property =
                         |> Maybe.withDefault 0.0
             in
             ProcessedPositionConfig
-                { target = config.endAt
+                { startAt = config.startAt
+                , target = config.endAt
                 , duration = round duration_
                 , speed = speed_
                 , distance = distance
@@ -294,7 +296,8 @@ processProperty globalData property =
                         |> Maybe.withDefault 0.0
             in
             ProcessedRotateConfig
-                { target = config.endAt
+                { startAt = config.startAt
+                , target = config.endAt
                 , duration = round duration_
                 , speed = speed_
                 , distance = distance
@@ -305,7 +308,8 @@ processProperty globalData property =
 
         ScaleConfig config ->
             ProcessedScaleConfig
-                { target = config.endAt
+                { startAt = config.startAt
+                , target = config.endAt
                 , duration = 0 -- TODO: implement scale timing
                 , speed = 0.0
                 , distance = 0.0
@@ -316,7 +320,8 @@ processProperty globalData property =
 
         BackgroundColorConfig config ->
             ProcessedColorConfig
-                { target = config.endAt
+                { startAt = config.startAt
+                , target = config.endAt
                 , duration = 0 -- TODO: implement color timing
                 , speed = 0.0
                 , distance = 0.0
@@ -327,7 +332,8 @@ processProperty globalData property =
 
         OpacityConfig config ->
             ProcessedOpacityConfig
-                { target = config.endAt
+                { startAt = config.startAt
+                , target = config.endAt
                 , duration = 0 -- TODO: implement opacity timing
                 , speed = 0.0
                 , distance = 0.0

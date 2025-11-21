@@ -106,7 +106,12 @@ generate elementId properties =
                                                                     1.0
 
                                                             startPos =
-                                                                Position.fromTuple ( 0.0, 0.0 )
+                                                                case cfg.startAt of
+                                                                    Just s ->
+                                                                        s
+
+                                                                    Nothing ->
+                                                                        Position.fromTuple ( 0.0, 0.0 )
 
                                                             endPos =
                                                                 cfg.target
@@ -129,7 +134,12 @@ generate elementId properties =
                                                                     1.0
 
                                                             startRot =
-                                                                Rotate.fromFloat 0.0
+                                                                case cfg.startAt of
+                                                                    Just s ->
+                                                                        s
+
+                                                                    Nothing ->
+                                                                        Rotate.fromFloat 0.0
 
                                                             endRot =
                                                                 cfg.target
@@ -154,14 +164,19 @@ generate elementId properties =
                                                                 cfg.duration
 
                                                             propProgress =
-                                                                if time <= toFloat dur then
-                                                                    time / toFloat dur
+                                                                if dur > 0 then
+                                                                    clamp 0 1 (time / toFloat dur)
 
                                                                 else
                                                                     1.0
 
                                                             startScale =
-                                                                Scale.fromTuple ( 1.0, 1.0 )
+                                                                case cfg.startAt of
+                                                                    Just s ->
+                                                                        s
+
+                                                                    Nothing ->
+                                                                        Scale.fromTuple ( 1.0, 1.0 )
 
                                                             endScale =
                                                                 cfg.target
@@ -189,14 +204,19 @@ generate elementId properties =
                                                                 cfg.duration
 
                                                             propProgress =
-                                                                if time <= toFloat dur then
-                                                                    time / toFloat dur
+                                                                if dur > 0 then
+                                                                    clamp 0 1 (time / toFloat dur)
 
                                                                 else
                                                                     1.0
 
                                                             startColor =
-                                                                Color.rgb255 0 0 0
+                                                                case cfg.startAt of
+                                                                    Just c ->
+                                                                        c
+
+                                                                    Nothing ->
+                                                                        Color.rgb255 59 130 246
 
                                                             endColor =
                                                                 cfg.target
@@ -219,7 +239,12 @@ generate elementId properties =
                                                                     1.0
 
                                                             startOpacity =
-                                                                Opacity.fromFloat 1.0
+                                                                case cfg.startAt of
+                                                                    Just s ->
+                                                                        s
+
+                                                                    Nothing ->
+                                                                        Opacity.fromFloat 1.0
 
                                                             endOpacity =
                                                                 cfg.target
