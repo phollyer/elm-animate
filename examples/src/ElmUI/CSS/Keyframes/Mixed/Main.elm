@@ -95,6 +95,11 @@ init _ =
 -- UPDATE
 
 
+elementId : String
+elementId =
+    "box"
+
+
 type Msg
     = StartComplexTransform
     | StartFadeMove
@@ -117,21 +122,24 @@ update msg model =
                         |> Anim.duration 800
                         |> Anim.easing QuadInOut
                         -- Position
-                        |> Position.for "mixed-box"
+                        |> Position.for elementId
                         |> Position.toXY 200 100
+                        |> Position.duration 800
                         |> Position.easing SineInOut
                         |> Position.build
                         -- Scale
-                        |> Scale.for "mixed-box"
+                        |> Scale.for elementId
                         |> Scale.toXY 1.5 1.2
+                        |> Scale.duration 800
                         |> Scale.easing BackInOut
-                        |> Scale.duration 1000
+                        --|> Scale.duration 1000
                         |> Scale.build
                         -- Rotate
-                        |> Rotate.for "mixed-box"
+                        |> Rotate.for elementId
                         |> Rotate.to 45
+                        |> Rotate.duration 800
                         |> Rotate.easing ElasticOut
-                        |> Rotate.duration 1200
+                        --|> Rotate.duration 1200
                         |> Rotate.build
                         |> CSS.animate
                 , isAnimating = True
@@ -150,12 +158,14 @@ update msg model =
                         |> Anim.duration 800
                         |> Anim.easing CubicInOut
                         -- Opacity
-                        |> Opacity.for "mixed-box"
+                        |> Opacity.for elementId
                         |> Opacity.to 0.3
+                        |> Opacity.duration 800
                         |> Opacity.build
                         -- Position
-                        |> Position.for "mixed-box"
+                        |> Position.for elementId
                         |> Position.toXY 250 150
+                        |> Position.duration 800
                         |> Position.build
                         |> CSS.animate
                 , isAnimating = True
@@ -174,13 +184,15 @@ update msg model =
                         |> Anim.duration 1000
                         |> Anim.easing BounceOut
                         -- Rotate
-                        |> Rotate.for "mixed-box"
+                        |> Rotate.for elementId
                         |> Rotate.to 180
+                        |> Rotate.duration 1000
                         |> Rotate.build
                         -- Scale
-                        |> Scale.for "mixed-box"
+                        |> Scale.for elementId
                         |> Scale.toXY 0.8 0.8
                         |> Scale.delay 200
+                        |> Scale.duration 1000
                         |> Scale.build
                         |> CSS.animate
                 , isAnimating = True
@@ -199,12 +211,14 @@ update msg model =
                         |> Anim.duration 900
                         |> Anim.easing QuartInOut
                         -- Color
-                        |> Color.for "mixed-box"
+                        |> Color.for elementId
                         |> Color.to (Color.Rgb { r = 255, g = 100, b = 150 })
+                        |> Color.duration 900
                         |> Color.build
                         -- Scale
-                        |> Scale.for "mixed-box"
+                        |> Scale.for elementId
                         |> Scale.toXY 1.3 1.3
+                        |> Scale.duration 900
                         |> Scale.build
                         |> CSS.animate
                 , isAnimating = True
@@ -223,34 +237,34 @@ update msg model =
                         --|> Anim.easing QuadInOut
                         --|> Anim.delay 3000
                         -- Position
-                        |> Position.for "mixed-box"
+                        |> Position.for elementId
                         |> Position.toXY 150 200
                         |> Position.easing ExpoInOut
                         |> Position.duration 1200
                         |> Position.build
                         -- Rotate
-                        |> Rotate.for "mixed-box"
+                        |> Rotate.for elementId
                         |> Rotate.to 135
                         |> Rotate.easing ElasticInOut
                         |> Rotate.duration 1400
                         |> Rotate.delay 300
                         |> Rotate.build
                         -- Scale
-                        |> Scale.for "mixed-box"
+                        |> Scale.for elementId
                         |> Scale.toXY 1.4 0.9
                         |> Scale.easing CircInOut
                         |> Scale.duration 1000
                         |> Scale.delay 2000
                         |> Scale.build
                         -- Opacity
-                        |> Opacity.for "mixed-box"
+                        |> Opacity.for elementId
                         |> Opacity.to 0.7
                         |> Opacity.easing Linear
                         |> Opacity.duration 800
                         |> Opacity.delay 100
                         |> Opacity.build
                         -- Color
-                        |> Color.for "mixed-box"
+                        |> Color.for elementId
                         |> Color.to (Color.Rgb { r = 100, g = 255, b = 200 })
                         |> Color.easing QuintInOut
                         |> Color.duration 1100
@@ -272,23 +286,23 @@ update msg model =
                         |> Anim.duration 800
                         |> Anim.easing QuadInOut
                         -- Position
-                        |> Position.for "mixed-box"
+                        |> Position.for elementId
                         |> Position.toXY 0 0
                         |> Position.build
                         -- Opacity
-                        |> Opacity.for "mixed-box"
+                        |> Opacity.for elementId
                         |> Opacity.to 1.0
                         |> Opacity.build
                         -- Scale
-                        |> Scale.for "mixed-box"
+                        |> Scale.for elementId
                         |> Scale.toXY 1.0 1.0
                         |> Scale.build
                         -- Rotate
-                        |> Rotate.for "mixed-box"
+                        |> Rotate.for elementId
                         |> Rotate.to 0
                         |> Rotate.build
                         -- Color
-                        |> Color.for "mixed-box"
+                        |> Color.for elementId
                         |> Color.to (Color.Rgb { r = 59, g = 130, b = 246 })
                         |> Color.build
                         |> CSS.animate
@@ -313,7 +327,7 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ Element.html (CSS.keyframesStyleNodeFor "box" model.animations)
+    [ Element.html (CSS.keyframesStyleNodeFor elementId model.animations)
     , UI.backButtonWithPath "../../../index.html"
     , UI.pageHeader "CSS Mixed Properties Example"
     , -- Description
@@ -401,18 +415,17 @@ viewContent model =
         , htmlAttribute (Html.Attributes.style "overflow" "hidden")
         ]
         (el
-            ([ width (px 60)
-             , height (px 60)
-             , Background.color Colors.primary
-             , Border.rounded 12
-             , htmlAttribute (Html.Attributes.id "mixed-box")
-             , htmlAttribute (Html.Attributes.style "position" "absolute")
-             , htmlAttribute (Html.Attributes.style "display" "flex")
-             , htmlAttribute (Html.Attributes.style "align-items" "center")
-             , htmlAttribute (Html.Attributes.style "justify-content" "center")
-             ]
-                ++ List.map htmlAttribute (CSS.htmlAttributes "mixed-box" model.animations)
-            )
+            [ width (px 60)
+            , height (px 60)
+            , Background.color Colors.primary
+            , Border.rounded 12
+            , htmlAttribute (Html.Attributes.id elementId)
+            , htmlAttribute (Html.Attributes.style "position" "absolute")
+            , htmlAttribute (Html.Attributes.style "display" "flex")
+            , htmlAttribute (Html.Attributes.style "align-items" "center")
+            , htmlAttribute (Html.Attributes.style "justify-content" "center")
+            , htmlAttribute (CSS.animationStyleAttribute elementId model.animations)
+            ]
             (el [ centerX, centerY, Font.size 24, Font.color Colors.backgroundWhite ]
                 (text "🎨")
             )

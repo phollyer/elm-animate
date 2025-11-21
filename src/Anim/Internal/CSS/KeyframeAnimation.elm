@@ -5,7 +5,6 @@ module Anim.Internal.CSS.KeyframeAnimation exposing
     )
 
 import Anim.Internal.Builder as Builder
-import Anim.Internal.CSS.Transform as Transforms
 import Anim.Internal.CSS.Transition as Transitions
 import Anim.Internal.Properties.Color as Color
 import Anim.Internal.Properties.Opacity as Opacity
@@ -35,17 +34,261 @@ generate elementId properties =
 
     else
         let
-            -- Group properties by timing characteristics
-            timingGroups =
-                groupPropertiesByTiming properties
+            -- Find the max duration among all properties
+            maxDuration =
+                properties
+                    |> List.map
+                        (\prop ->
+                            case prop of
+                                Builder.PositionConfig cfg ->
+                                    cfg.duration
 
-            -- Create separate animation layers for different timing groups
-            layersFromGroups =
-                timingGroups
-                    |> List.indexedMap (createAnimationLayerFromGroup elementId)
-                    |> List.filterMap identity
+                                Builder.ScaleConfig cfg ->
+                                    cfg.duration
+
+                                Builder.RotateConfig cfg ->
+                                    cfg.duration
+
+                                Builder.BackgroundColorConfig cfg ->
+                                    cfg.duration
+
+                                Builder.OpacityConfig cfg ->
+                                    cfg.duration
+                        )
+                    |> List.maximum
+                    |> Maybe.withDefault 0
+
+            totalDuration =
+                if maxDuration == 0 then
+                    800
+
+                else
+                    maxDuration
+
+            keyframeCount =
+                30
+
+            keyframeSteps =
+                List.range 0 keyframeCount
+                    |> List.map
+                        (\i ->
+                            let
+                                globalProgress =
+                                    toFloat i / toFloat keyframeCount
+
+                                time =
+                                    globalProgress * toFloat totalDuration
+
+                                stepStyles =
+                                    properties
+                                        |> List.filterMap
+                                            (\prop ->
+                                                case prop of
+                                                    Builder.PositionConfig cfg ->
+                                                        let
+                                                            dur =
+                                                                cfg.duration
+
+                                                            propProgress =
+                                                                if time <= toFloat dur then
+                                                                    time / toFloat dur
+
+                                                                else
+                                                                    1.0
+
+                                                            startPos =
+                                                                Maybe.withDefault (Position.fromTuple ( 0, 0 )) cfg.startAt
+
+                                                            endPos =
+                                                                cfg.endAt
+
+                                                            interpolatedPos =
+                                                                Position.interpolate propProgress startPos endPos
+                                                        in
+                                                        Just ( "transform-component", "translate(" ++ Position.toCssString interpolatedPos ++ ")" )
+
+                                                    Builder.RotateConfig cfg ->
+                                                        let
+                                                            dur =
+                                                                cfg.duration
+
+                                                            propProgress =
+                                                                if time <= toFloat dur then
+                                                                    time / toFloat dur
+
+                                                                else
+                                                                    1.0
+
+                                                            startRot =
+                                                                Maybe.withDefault (Rotate.fromFloat 0) cfg.startAt
+
+                                                            endRot =
+                                                                cfg.endAt
+
+                                                            startAngle =
+                                                                Rotate.toFloat startRot
+
+                                                            endAngle =
+                                                                Rotate.toFloat endRot
+
+                                                            interpolatedAngle =
+                                                                startAngle + (endAngle - startAngle) * propProgress
+
+                                                            interpolatedRot =
+                                                                Rotate.fromFloat interpolatedAngle
+                                                        in
+                                                        Just ( "transform-component", "rotate(" ++ Rotate.toCssString interpolatedRot ++ ")" )
+
+                                                    Builder.ScaleConfig cfg ->
+                                                        let
+                                                            dur =
+                                                                cfg.duration
+
+                                                            propProgress =
+                                                                if time <= toFloat dur then
+                                                                    time / toFloat dur
+
+                                                                else
+                                                                    1.0
+
+                                                            startScale =
+                                                                Maybe.withDefault (Scale.fromTuple ( 1, 1 )) cfg.startAt
+
+                                                            endScale =
+                                                                cfg.endAt
+
+                                                            ( startX, startY ) =
+                                                                Scale.toTuple startScale
+
+                                                            ( endX, endY ) =
+                                                                Scale.toTuple endScale
+
+                                                            interpolatedX =
+                                                                startX + (endX - startX) * propProgress
+
+                                                            interpolatedY =
+                                                                startY + (endY - startY) * propProgress
+
+                                                            interpolatedScale =
+                                                                Scale.fromTuple ( interpolatedX, interpolatedY )
+                                                        in
+                                                        Just ( "transform-component", "scale(" ++ Scale.toCssString interpolatedScale ++ ")" )
+
+                                                    Builder.BackgroundColorConfig cfg ->
+                                                        let
+                                                            dur =
+                                                                cfg.duration
+
+                                                            propProgress =
+                                                                if time <= toFloat dur then
+                                                                    time / toFloat dur
+
+                                                                else
+                                                                    1.0
+
+                                                            startColor =
+                                                                Maybe.withDefault (Color.rgb255 0 0 0) cfg.startAt
+
+                                                            endColor =
+                                                                cfg.endAt
+
+                                                            interpolatedColor =
+                                                                Color.interpolate startColor endColor propProgress
+                                                        in
+                                                        Just ( "background-color", Color.toString interpolatedColor )
+
+                                                    Builder.OpacityConfig cfg ->
+                                                        let
+                                                            dur =
+                                                                cfg.duration
+
+                                                            propProgress =
+                                                                if time <= toFloat dur then
+                                                                    time / toFloat dur
+
+                                                                else
+                                                                    1.0
+
+                                                            startOpacity =
+                                                                Maybe.withDefault (Opacity.fromFloat 1.0) cfg.startAt
+
+                                                            endOpacity =
+                                                                cfg.endAt
+
+                                                            startValue =
+                                                                Opacity.toFloat startOpacity
+
+                                                            endValue =
+                                                                Opacity.toFloat endOpacity
+
+                                                            interpolatedValue =
+                                                                startValue + (endValue - startValue) * propProgress
+
+                                                            interpolatedOpacity =
+                                                                Opacity.fromFloat interpolatedValue
+                                                        in
+                                                        Just ( "opacity", Opacity.toString interpolatedOpacity )
+                                            )
+
+                                transformComponents =
+                                    stepStyles
+                                        |> List.filterMap
+                                            (\s ->
+                                                case s of
+                                                    ( "transform-component", v ) ->
+                                                        Just v
+
+                                                    _ ->
+                                                        Nothing
+                                            )
+
+                                transformStyle =
+                                    if List.isEmpty transformComponents then
+                                        Nothing
+
+                                    else
+                                        Just ( "transform", String.join " " transformComponents )
+
+                                otherStyles =
+                                    stepStyles
+                                        |> List.filterMap
+                                            (\s ->
+                                                case s of
+                                                    ( "transform-component", _ ) ->
+                                                        Nothing
+
+                                                    _ ->
+                                                        Just s
+                                            )
+
+                                styles =
+                                    case transformStyle of
+                                        Just t ->
+                                            t :: otherStyles
+
+                                        Nothing ->
+                                            otherStyles
+                            in
+                            ( globalProgress, styles )
+                        )
+
+            animationName =
+                elementId ++ "-composite"
+
+            keyframesString =
+                buildKeyframesString animationName keyframeSteps
+
+            animatedProperties =
+                [ "transform", "background-color", "opacity" ]
         in
-        layersFromGroups
+        [ { animationName = animationName
+          , keyframes = keyframesString
+          , duration = totalDuration
+          , easing = "linear"
+          , delay = 0
+          , properties = animatedProperties
+          }
+        ]
 
 
 toAttributeString : List KeyframeAnimation -> String
@@ -327,11 +570,280 @@ findMatchingGroup timing groups =
 generateTimedKeyframeSteps : TimingGroup -> List Builder.PropertyConfig -> List ( Float, List ( String, String ) )
 generateTimedKeyframeSteps dominantGroup allProperties =
     let
+        -- Composite pattern: build a single transform string and combine with other properties
+        -- Composite keyframe logic: all properties animated in one layer, with per-property timing windows
         generateStepStyles : Float -> List ( String, String )
-        generateStepStyles easedProgress =
-            allProperties
-                |> List.filterMap (propertyToKeyframeStyle easedProgress)
-                |> Transforms.combineStyles
+        generateStepStyles globalProgress =
+            let
+                -- Find the max duration among all properties
+                maxDuration =
+                    allProperties
+                        |> List.map
+                            (\prop ->
+                                case prop of
+                                    Builder.PositionConfig cfg ->
+                                        cfg.duration
+
+                                    Builder.ScaleConfig cfg ->
+                                        cfg.duration
+
+                                    Builder.RotateConfig cfg ->
+                                        cfg.duration
+
+                                    Builder.BackgroundColorConfig cfg ->
+                                        cfg.duration
+
+                                    Builder.OpacityConfig cfg ->
+                                        cfg.duration
+                            )
+                        |> List.maximum
+                        |> Maybe.withDefault 0
+
+                totalDuration =
+                    if maxDuration == 0 then
+                        800
+
+                    else
+                        maxDuration
+
+                time =
+                    globalProgress * toFloat totalDuration
+
+                -- For each property, map its progress to its timing window
+                stepStyles =
+                    allProperties
+                        |> List.filterMap
+                            (\prop ->
+                                case prop of
+                                    Builder.PositionConfig cfg ->
+                                        let
+                                            dur =
+                                                cfg.duration
+
+                                            propProgress =
+                                                if time <= toFloat dur then
+                                                    time / toFloat dur
+
+                                                else
+                                                    1.0
+
+                                            startPos =
+                                                Maybe.withDefault (Position.fromTuple ( 0, 0 )) cfg.startAt
+
+                                            endPos =
+                                                cfg.endAt
+
+                                            interpolatedPos =
+                                                Position.interpolate propProgress startPos endPos
+                                        in
+                                        Just ( "transform-component", "translate(" ++ Position.toCssString interpolatedPos ++ ")" )
+
+                                    Builder.RotateConfig cfg ->
+                                        let
+                                            dur =
+                                                cfg.duration
+
+                                            propProgress =
+                                                if time <= toFloat dur then
+                                                    time / toFloat dur
+
+                                                else
+                                                    1.0
+
+                                            startRot =
+                                                Maybe.withDefault (Rotate.fromFloat 0) cfg.startAt
+
+                                            endRot =
+                                                cfg.endAt
+
+                                            startAngle =
+                                                Rotate.toFloat startRot
+
+                                            endAngle =
+                                                Rotate.toFloat endRot
+
+                                            interpolatedAngle =
+                                                startAngle + (endAngle - startAngle) * propProgress
+
+                                            interpolatedRot =
+                                                Rotate.fromFloat interpolatedAngle
+                                        in
+                                        Just ( "transform-component", "rotate(" ++ Rotate.toCssString interpolatedRot ++ ")" )
+
+                                    Builder.ScaleConfig cfg ->
+                                        let
+                                            dur =
+                                                cfg.duration
+
+                                            propProgress =
+                                                if time <= toFloat dur then
+                                                    time / toFloat dur
+
+                                                else
+                                                    1.0
+
+                                            startScale =
+                                                Maybe.withDefault (Scale.fromTuple ( 1, 1 )) cfg.startAt
+
+                                            endScale =
+                                                cfg.endAt
+
+                                            ( startX, startY ) =
+                                                Scale.toTuple startScale
+
+                                            ( endX, endY ) =
+                                                Scale.toTuple endScale
+
+                                            interpolatedX =
+                                                startX + (endX - startX) * propProgress
+
+                                            interpolatedY =
+                                                startY + (endY - startY) * propProgress
+
+                                            interpolatedScale =
+                                                Scale.fromTuple ( interpolatedX, interpolatedY )
+                                        in
+                                        Just ( "transform-component", "scale(" ++ Scale.toCssString interpolatedScale ++ ")" )
+
+                                    Builder.BackgroundColorConfig cfg ->
+                                        let
+                                            dur =
+                                                cfg.duration
+
+                                            propProgress =
+                                                if time <= toFloat dur then
+                                                    time / toFloat dur
+
+                                                else
+                                                    1.0
+
+                                            startColor =
+                                                Maybe.withDefault (Color.rgb255 0 0 0) cfg.startAt
+
+                                            endColor =
+                                                cfg.endAt
+
+                                            interpolatedColor =
+                                                Color.interpolate startColor endColor propProgress
+                                        in
+                                        Just ( "background-color", Color.toString interpolatedColor )
+
+                                    Builder.OpacityConfig cfg ->
+                                        let
+                                            dur =
+                                                cfg.duration
+
+                                            propProgress =
+                                                if time <= toFloat dur then
+                                                    time / toFloat dur
+
+                                                else
+                                                    1.0
+
+                                            startOpacity =
+                                                Maybe.withDefault (Opacity.fromFloat 1.0) cfg.startAt
+
+                                            endOpacity =
+                                                cfg.endAt
+
+                                            startValue =
+                                                Opacity.toFloat startOpacity
+
+                                            endValue =
+                                                Opacity.toFloat endOpacity
+
+                                            interpolatedValue =
+                                                startValue + (endValue - startValue) * propProgress
+
+                                            interpolatedOpacity =
+                                                Opacity.fromFloat interpolatedValue
+                                        in
+                                        Just ( "opacity", Opacity.toString interpolatedOpacity )
+                            )
+
+                -- Compose transform string from all transform components
+                transformComponents =
+                    stepStyles
+                        |> List.filterMap
+                            (\s ->
+                                case s of
+                                    ( "transform-component", v ) ->
+                                        Just v
+
+                                    _ ->
+                                        Nothing
+                            )
+
+                transformStyle =
+                    if List.isEmpty transformComponents then
+                        Nothing
+
+                    else
+                        Just ( "transform", String.join " " transformComponents )
+
+                otherStyles =
+                    stepStyles
+                        |> List.filterMap
+                            (\s ->
+                                case s of
+                                    ( "transform-component", _ ) ->
+                                        Nothing
+
+                                    _ ->
+                                        Just s
+                            )
+
+                styles =
+                    case transformStyle of
+                        Just t ->
+                            t :: otherStyles
+
+                        Nothing ->
+                            otherStyles
+            in
+            styles
+
+        -- Helper: extract non-transform styles
+        propertyToNonTransformStyle : Float -> Builder.PropertyConfig -> Maybe ( String, String )
+        propertyToNonTransformStyle progress property =
+            case property of
+                Builder.BackgroundColorConfig config ->
+                    let
+                        startColor =
+                            Maybe.withDefault (Color.rgb255 0 0 0) config.startAt
+
+                        endColor =
+                            config.endAt
+
+                        interpolatedColor =
+                            Color.interpolate startColor endColor progress
+                    in
+                    Just ( "background-color", Color.toString interpolatedColor )
+
+                Builder.OpacityConfig config ->
+                    let
+                        startOpacity =
+                            Maybe.withDefault (Opacity.fromFloat 1.0) config.startAt
+
+                        endOpacity =
+                            config.endAt
+
+                        startValue =
+                            Opacity.toFloat startOpacity
+
+                        endValue =
+                            Opacity.toFloat endOpacity
+
+                        interpolatedValue =
+                            startValue + (endValue - startValue) * progress
+
+                        interpolatedOpacity =
+                            Opacity.fromFloat interpolatedValue
+                    in
+                    Just ( "opacity", Opacity.toString interpolatedOpacity )
+
+                _ ->
+                    Nothing
     in
     -- Handle zero duration case: create single keyframe at 100%
     if dominantGroup.duration == 0 then
@@ -414,107 +926,6 @@ generateTimedKeyframeSteps dominantGroup allProperties =
         progressPairs
             |> List.map (\( raw, eased ) -> ( raw, generateStepStyles eased ))
             |> List.filter (\( _, styles ) -> not (List.isEmpty styles))
-
-
-{-| Convert a property to its CSS style at a given progress.
--}
-propertyToKeyframeStyle : Float -> Builder.PropertyConfig -> Maybe ( String, String )
-propertyToKeyframeStyle progress property =
-    case property of
-        Builder.PositionConfig config ->
-            let
-                startPos =
-                    Maybe.withDefault (Position.fromTuple ( 0, 0 )) config.startAt
-
-                endPos =
-                    config.endAt
-
-                interpolatedPos =
-                    Position.interpolate progress startPos endPos
-            in
-            Just ( "transform", "translate(" ++ Position.toCssString interpolatedPos ++ ")" )
-
-        Builder.RotateConfig config ->
-            let
-                startRot =
-                    Maybe.withDefault (Rotate.fromFloat 0) config.startAt
-
-                endRot =
-                    config.endAt
-
-                startAngle =
-                    Rotate.toFloat startRot
-
-                endAngle =
-                    Rotate.toFloat endRot
-
-                interpolatedAngle =
-                    startAngle + (endAngle - startAngle) * progress
-
-                interpolatedRot =
-                    Rotate.fromFloat interpolatedAngle
-            in
-            Just ( "transform", "rotate(" ++ Rotate.toCssString interpolatedRot ++ ")" )
-
-        Builder.ScaleConfig config ->
-            let
-                startScale =
-                    Maybe.withDefault (Scale.fromTuple ( 1, 1 )) config.startAt
-
-                endScale =
-                    config.endAt
-
-                ( startX, startY ) =
-                    Scale.toTuple startScale
-
-                ( endX, endY ) =
-                    Scale.toTuple endScale
-
-                interpolatedX =
-                    startX + (endX - startX) * progress
-
-                interpolatedY =
-                    startY + (endY - startY) * progress
-
-                interpolatedScale =
-                    Scale.fromTuple ( interpolatedX, interpolatedY )
-            in
-            Just ( "transform", "scale(" ++ Scale.toCssString interpolatedScale ++ ")" )
-
-        Builder.BackgroundColorConfig config ->
-            let
-                startColor =
-                    Maybe.withDefault (Color.rgb255 0 0 0) config.startAt
-
-                endColor =
-                    config.endAt
-
-                interpolatedColor =
-                    Color.interpolate startColor endColor progress
-            in
-            Just ( "background-color", Color.toString interpolatedColor )
-
-        Builder.OpacityConfig config ->
-            let
-                startOpacity =
-                    Maybe.withDefault (Opacity.fromFloat 1.0) config.startAt
-
-                endOpacity =
-                    config.endAt
-
-                startValue =
-                    Opacity.toFloat startOpacity
-
-                endValue =
-                    Opacity.toFloat endOpacity
-
-                interpolatedValue =
-                    startValue + (endValue - startValue) * progress
-
-                interpolatedOpacity =
-                    Opacity.fromFloat interpolatedValue
-            in
-            Just ( "opacity", Opacity.toString interpolatedOpacity )
 
 
 type alias TimingGroup =
