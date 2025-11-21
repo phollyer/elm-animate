@@ -86,11 +86,16 @@ animate builder_ =
 generateElementAnimation : String -> Builder.ElementConfig -> ElementAnimation
 generateElementAnimation elementId elementConfig =
     let
+        _ =
+            Debug.log ("Generating element animation for " ++ elementId) elementConfig
+
         transforms =
             Transforms.generate elementConfig.properties
+                |> Debug.log ("Generated transforms for " ++ elementId)
 
         transitions =
             Transitions.generate elementConfig.properties
+                |> Debug.log ("Generated transitions for " ++ elementId)
 
         colorStyles =
             List.filterMap

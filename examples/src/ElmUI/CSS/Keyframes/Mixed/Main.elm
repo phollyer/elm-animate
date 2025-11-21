@@ -89,6 +89,12 @@ init _ =
                 |> Color.for elementId
                 |> Color.to (Color.Rgb { r = 59, g = 130, b = 246 })
                 |> Color.build
+                |> Position.for elementId
+                |> Position.toXY 0 0
+                |> Position.build
+                |> Rotate.for elementId
+                |> Rotate.to 0
+                |> Rotate.build
                 |> Scale.for elementId
                 |> Scale.toXY 1 1
                 |> Scale.build

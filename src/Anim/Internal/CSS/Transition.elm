@@ -18,7 +18,6 @@ import Anim.Internal.Timing.TimeSpec as TimeSpec
 generate : List Builder.PropertyConfig -> String
 generate properties =
     let
-        -- Group properties by CSS property type
         transformProperties =
             List.filter TH.isTransformProperty properties
 
