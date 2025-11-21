@@ -97,7 +97,7 @@ type alias ProcessedAnimationData =
 
 type alias ProcessedAnimationConfig targetProperty =
     { startAt : Maybe targetProperty
-    , target : targetProperty
+    , endAt : targetProperty
     , duration : Int
     , speed : Float
     , distance : Float
@@ -263,7 +263,7 @@ processProperty globalData property =
             in
             ProcessedPositionConfig
                 { startAt = config.startAt
-                , target = config.endAt
+                , endAt = config.endAt
                 , duration = round duration_
                 , speed = speed_
                 , distance = distance
@@ -297,7 +297,7 @@ processProperty globalData property =
             in
             ProcessedRotateConfig
                 { startAt = config.startAt
-                , target = config.endAt
+                , endAt = config.endAt
                 , duration = round duration_
                 , speed = speed_
                 , distance = distance
@@ -334,7 +334,7 @@ processProperty globalData property =
             in
             ProcessedScaleConfig
                 { startAt = config.startAt
-                , target = config.endAt
+                , endAt = config.endAt
                 , duration = round duration_
                 , speed = speed_
                 , distance = distance
@@ -365,7 +365,7 @@ processProperty globalData property =
             in
             ProcessedColorConfig
                 { startAt = config.startAt
-                , target = config.endAt
+                , endAt = config.endAt
                 , duration = round duration_
                 , speed = speed_
                 , distance = distance_
@@ -377,7 +377,7 @@ processProperty globalData property =
         OpacityConfig config ->
             ProcessedOpacityConfig
                 { startAt = config.startAt
-                , target = config.endAt
+                , endAt = config.endAt
                 , duration = 0 -- TODO: implement opacity timing
                 , speed = 0.0
                 , distance = 0.0

@@ -114,7 +114,7 @@ generate elementId properties =
                                                                         Position.fromTuple ( 0.0, 0.0 )
 
                                                             endPos =
-                                                                cfg.target
+                                                                cfg.endAt
 
                                                             interpolatedPos =
                                                                 Position.interpolate propProgress startPos endPos
@@ -142,7 +142,7 @@ generate elementId properties =
                                                                         Rotate.fromFloat 0.0
 
                                                             endRot =
-                                                                cfg.target
+                                                                cfg.endAt
 
                                                             startAngle =
                                                                 Rotate.toFloat startRot
@@ -179,7 +179,7 @@ generate elementId properties =
                                                                         Scale.fromTuple ( 1.0, 1.0 )
 
                                                             endScale =
-                                                                cfg.target
+                                                                cfg.endAt
 
                                                             ( startX, startY ) =
                                                                 Scale.toTuple startScale
@@ -219,7 +219,7 @@ generate elementId properties =
                                                                         Color.rgb255 59 130 246
 
                                                             endColor =
-                                                                cfg.target
+                                                                cfg.endAt
 
                                                             interpolatedColor =
                                                                 Color.interpolate startColor endColor propProgress
@@ -247,7 +247,7 @@ generate elementId properties =
                                                                         Opacity.fromFloat 1.0
 
                                                             endOpacity =
-                                                                cfg.target
+                                                                cfg.endAt
 
                                                             startValue =
                                                                 Opacity.toFloat startOpacity
@@ -315,19 +315,19 @@ generate elementId properties =
                                 (\p ->
                                     case p of
                                         Builder.ProcessedPositionConfig cfg ->
-                                            "pos" ++ String.fromInt cfg.duration ++ Position.toCssString cfg.target
+                                            "pos" ++ String.fromInt cfg.duration ++ Position.toCssString cfg.endAt
 
                                         Builder.ProcessedScaleConfig cfg ->
-                                            "scale" ++ String.fromInt cfg.duration ++ Scale.toCssString cfg.target
+                                            "scale" ++ String.fromInt cfg.duration ++ Scale.toCssString cfg.endAt
 
                                         Builder.ProcessedRotateConfig cfg ->
-                                            "rot" ++ String.fromInt cfg.duration ++ Rotate.toCssString cfg.target
+                                            "rot" ++ String.fromInt cfg.duration ++ Rotate.toCssString cfg.endAt
 
                                         Builder.ProcessedColorConfig cfg ->
-                                            "color" ++ String.fromInt cfg.duration ++ Color.toString cfg.target
+                                            "color" ++ String.fromInt cfg.duration ++ Color.toString cfg.endAt
 
                                         Builder.ProcessedOpacityConfig cfg ->
-                                            "opacity" ++ String.fromInt cfg.duration ++ Opacity.toString cfg.target
+                                            "opacity" ++ String.fromInt cfg.duration ++ Opacity.toString cfg.endAt
                                 )
                             |> String.join ""
                        )

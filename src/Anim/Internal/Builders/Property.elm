@@ -58,16 +58,11 @@ replace propertyConfig builder =
         currentElement =
             Builder.getCurrentElementConfig builder
 
+        -- Remove existing property of same type and append new one to end
+        -- This respects pipeline order instead of maintaining original position
         updatedProperties =
-            List.map
-                (\p ->
-                    if configsMatch p propertyConfig then
-                        propertyConfig
-
-                    else
-                        p
-                )
-                currentElement.properties
+            List.filter (not << configsMatch propertyConfig) currentElement.properties
+                ++ [ propertyConfig ]
 
         updatedElement =
             { currentElement | properties = updatedProperties }
