@@ -75,7 +75,7 @@ animate builder_ =
             builder_
                 |> Builder.elements
                 |> Dict.map generateElementAnimation
-        , builder = builder_
+        , builder = Builder.markDirty builder_
         }
 
 

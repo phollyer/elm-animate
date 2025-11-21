@@ -71,6 +71,7 @@ for elementId builder =
                             , duration = 0
                             , speed = 0
                             , distance = 0
+                            , isDirty = False
                         }
 
                 Nothing ->
@@ -97,6 +98,7 @@ type alias OpacityConfig =
     , timing : Maybe TimeSpec
     , easing : Maybe Easing
     , delay : Maybe Int
+    , isDirty : Bool
     }
 
 
@@ -110,6 +112,7 @@ defaultConfig =
     , timing = Nothing
     , easing = Nothing
     , delay = Nothing
+    , isDirty = False
     }
 
 

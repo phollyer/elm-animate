@@ -70,6 +70,7 @@ for elementId builder =
                             , duration = 0
                             , speed = 0
                             , distance = 0
+                            , isDirty = False
                         }
 
                 Nothing ->
@@ -96,6 +97,7 @@ type alias ColorConfig =
     , timing : Maybe TimeSpec
     , delay : Maybe Int
     , easing : Maybe Easing
+    , isDirty : Bool
     }
 
 
@@ -109,6 +111,7 @@ defaultConfig =
     , timing = Nothing
     , delay = Nothing
     , easing = Nothing
+    , isDirty = False
     }
 
 

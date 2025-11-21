@@ -142,6 +142,12 @@ update msg model =
                         |> Position.speed 50
                         |> Position.easing SineInOut
                         |> Position.build
+                        -- Rotate
+                        |> Rotate.for elementId
+                        |> Rotate.to 45
+                        |> Rotate.duration 800
+                        |> Rotate.easing ElasticOut
+                        |> Rotate.build
                         -- Scale
                         |> Scale.for elementId
                         |> Scale.toXY 1.5 1.2
@@ -149,13 +155,6 @@ update msg model =
                         |> Scale.easing BackInOut
                         --|> Scale.duration 1000
                         |> Scale.build
-                        -- Rotate
-                        |> Rotate.for elementId
-                        |> Rotate.to 45
-                        |> Rotate.duration 800
-                        |> Rotate.easing ElasticOut
-                        --|> Rotate.duration 1200
-                        |> Rotate.build
                         |> CSS.animate
                 , isAnimating = True
                 , activeAnimation = Just ComplexTransform
@@ -172,16 +171,16 @@ update msg model =
                         -- Global Defaults
                         |> Anim.duration 800
                         |> Anim.easing CubicInOut
-                        -- Opacity
-                        |> Opacity.for elementId
-                        |> Opacity.to 0.3
-                        |> Opacity.duration 800
-                        |> Opacity.build
                         -- Position
                         |> Position.for elementId
                         |> Position.toXY 250 150
                         |> Position.duration 800
                         |> Position.build
+                        -- Opacity
+                        |> Opacity.for elementId
+                        |> Opacity.to 0.3
+                        |> Opacity.duration 800
+                        |> Opacity.build
                         |> CSS.animate
                 , isAnimating = True
                 , activeAnimation = Just FadeMove

@@ -16,6 +16,7 @@ module Anim.Internal.Builder exposing
     , getElementConfig
     , getTimespec
     , init
+    , markDirty
     , processAnimationData
     , processElement
     , speed
@@ -84,6 +85,7 @@ type alias AnimationConfig targetProperty =
     , timing : Maybe TimeSpec
     , easing : Maybe Easing
     , delay : Maybe Int
+    , isDirty : Bool
     }
 
 
@@ -116,6 +118,34 @@ init =
         , currentElementId = Nothing
         , elements = Dict.empty
         }
+
+
+markDirty : AnimBuilder -> AnimBuilder
+markDirty (AnimBuilder data) =
+    AnimBuilder
+        { data
+            | currentElementId = Nothing
+            , elements = Dict.map (\_ el -> { el | properties = List.map markPropertyDirty el.properties }) data.elements
+        }
+
+
+markPropertyDirty : PropertyConfig -> PropertyConfig
+markPropertyDirty property =
+    case property of
+        PositionConfig config ->
+            PositionConfig { config | isDirty = True }
+
+        RotateConfig config ->
+            RotateConfig { config | isDirty = True }
+
+        ScaleConfig config ->
+            ScaleConfig { config | isDirty = True }
+
+        BackgroundColorConfig config ->
+            BackgroundColorConfig { config | isDirty = True }
+
+        OpacityConfig config ->
+            OpacityConfig { config | isDirty = True }
 
 
 for : String -> AnimBuilder -> AnimBuilder
@@ -231,160 +261,185 @@ processAnimationData (AnimBuilder data) =
 
 processElement : BuilderData -> String -> ElementConfig -> ProcessedElementConfig
 processElement globalData _ elementConfig =
-    { properties = List.map (processProperty globalData) elementConfig.properties
+    { properties = List.filterMap (processProperty globalData) elementConfig.properties
     }
 
 
-processProperty : BuilderData -> PropertyConfig -> ProcessedPropertyConfig
+processProperty : BuilderData -> PropertyConfig -> Maybe ProcessedPropertyConfig
 processProperty globalData property =
     case property of
         PositionConfig config ->
-            let
-                startAt =
-                    case config.startAt of
-                        Just s ->
-                            s
+            if config.isDirty then
+                Nothing
 
-                        Nothing ->
-                            Position.fromTuple ( 0.0, 0.0 )
+            else
+                let
+                    startAt =
+                        case config.startAt of
+                            Just s ->
+                                s
 
-                distance =
-                    Position.distance startAt config.endAt
+                            Nothing ->
+                                Position.fromTuple ( 0.0, 0.0 )
 
-                duration_ =
-                    config.timing
-                        |> Maybe.map (Position.duration distance)
-                        |> Maybe.withDefault 0.0
+                    distance =
+                        Position.distance startAt config.endAt
 
-                speed_ =
-                    config.timing
-                        |> Maybe.map (Position.speed distance duration_)
-                        |> Maybe.withDefault 0.0
-            in
-            ProcessedPositionConfig
-                { startAt = config.startAt
-                , endAt = config.endAt
-                , duration = round duration_
-                , speed = speed_
-                , distance = distance
-                , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
-                , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
-                , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
-                }
+                    duration_ =
+                        config.timing
+                            |> Maybe.map (Position.duration distance)
+                            |> Maybe.withDefault 0.0
+
+                    speed_ =
+                        config.timing
+                            |> Maybe.map (Position.speed distance duration_)
+                            |> Maybe.withDefault 0.0
+                in
+                Just <|
+                    ProcessedPositionConfig
+                        { startAt = config.startAt
+                        , endAt = config.endAt
+                        , duration = round duration_
+                        , speed = speed_
+                        , distance = distance
+                        , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
+                        , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
+                        , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
+                        }
 
         RotateConfig config ->
-            let
-                startAt =
-                    case config.startAt of
-                        Just s ->
-                            s
+            if config.isDirty then
+                Nothing
 
-                        Nothing ->
-                            Rotate.fromFloat 0.0
+            else
+                let
+                    startAt =
+                        case config.startAt of
+                            Just s ->
+                                s
 
-                distance =
-                    Rotate.distance startAt config.endAt
+                            Nothing ->
+                                Rotate.fromFloat 0.0
 
-                duration_ =
-                    config.timing
-                        |> Maybe.map (Rotate.duration distance)
-                        |> Maybe.withDefault 0.0
+                    distance =
+                        Rotate.distance startAt config.endAt
 
-                speed_ =
-                    config.timing
-                        |> Maybe.map (Rotate.speed distance duration_)
-                        |> Maybe.withDefault 0.0
-            in
-            ProcessedRotateConfig
-                { startAt = config.startAt
-                , endAt = config.endAt
-                , duration = round duration_
-                , speed = speed_
-                , distance = distance
-                , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
-                , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
-                , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
-                }
+                    duration_ =
+                        config.timing
+                            |> Maybe.map (Rotate.duration distance)
+                            |> Maybe.withDefault 0.0
+
+                    speed_ =
+                        config.timing
+                            |> Maybe.map (Rotate.speed distance duration_)
+                            |> Maybe.withDefault 0.0
+                in
+                Just <|
+                    ProcessedRotateConfig
+                        { startAt = config.startAt
+                        , endAt = config.endAt
+                        , duration = round duration_
+                        , speed = speed_
+                        , distance = distance
+                        , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
+                        , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
+                        , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
+                        }
 
         ScaleConfig config ->
-            let
-                startAt =
-                    Maybe.withDefault (Scale.fromTuple ( 1.0, 1.0 )) config.startAt
+            if config.isDirty then
+                Nothing
 
-                distance =
-                    Scale.distance startAt config.endAt
+            else
+                let
+                    startAt =
+                        Maybe.withDefault (Scale.fromTuple ( 1.0, 1.0 )) config.startAt
 
-                duration_ =
-                    -- For scale, we need a way to calculate duration from timing
-                    -- Let's use a simple approach based on timing spec
-                    case resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000) of
-                        Duration ms ->
-                            toFloat ms
+                    distance =
+                        Scale.distance startAt config.endAt
 
-                        Speed _ ->
-                            1000.0
+                    duration_ =
+                        -- For scale, we need a way to calculate duration from timing
+                        -- Let's use a simple approach based on timing spec
+                        case resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000) of
+                            Duration ms ->
+                                toFloat ms
 
-                -- Default 1 second for speed-based
-                speed_ =
-                    if duration_ > 0 then
-                        distance / (duration_ / 1000.0)
+                            Speed _ ->
+                                1000.0
 
-                    else
-                        0.0
-            in
-            ProcessedScaleConfig
-                { startAt = config.startAt
-                , endAt = config.endAt
-                , duration = round duration_
-                , speed = speed_
-                , distance = distance
-                , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
-                , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
-                , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
-                }
+                    -- Default 1 second for speed-based
+                    speed_ =
+                        if duration_ > 0 then
+                            distance / (duration_ / 1000.0)
+
+                        else
+                            0.0
+                in
+                Just <|
+                    ProcessedScaleConfig
+                        { startAt = config.startAt
+                        , endAt = config.endAt
+                        , duration = round duration_
+                        , speed = speed_
+                        , distance = distance
+                        , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
+                        , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
+                        , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
+                        }
 
         BackgroundColorConfig config ->
-            let
-                duration_ =
-                    -- For color, use the same timing approach as scale
-                    case resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000) of
-                        Duration ms ->
-                            toFloat ms
+            if config.isDirty then
+                Nothing
 
-                        Speed _ ->
-                            1000.0
+            else
+                let
+                    duration_ =
+                        -- For color, use the same timing approach as scale
+                        case resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000) of
+                            Duration ms ->
+                                toFloat ms
 
-                -- Default 1 second for speed-based
-                speed_ =
-                    -- For color animations, we don't really use speed/distance
-                    -- but we'll set reasonable defaults
-                    1.0
+                            Speed _ ->
+                                1000.0
 
-                distance_ =
-                    1.0
-            in
-            ProcessedColorConfig
-                { startAt = config.startAt
-                , endAt = config.endAt
-                , duration = round duration_
-                , speed = speed_
-                , distance = distance_
-                , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
-                , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
-                , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
-                }
+                    -- Default 1 second for speed-based
+                    speed_ =
+                        -- For color animations, we don't really use speed/distance
+                        -- but we'll set reasonable defaults
+                        1.0
+
+                    distance_ =
+                        1.0
+                in
+                Just <|
+                    ProcessedColorConfig
+                        { startAt = config.startAt
+                        , endAt = config.endAt
+                        , duration = round duration_
+                        , speed = speed_
+                        , distance = distance_
+                        , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
+                        , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
+                        , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
+                        }
 
         OpacityConfig config ->
-            ProcessedOpacityConfig
-                { startAt = config.startAt
-                , endAt = config.endAt
-                , duration = 0 -- TODO: implement opacity timing
-                , speed = 0.0
-                , distance = 0.0
-                , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
-                , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
-                , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
-                }
+            if config.isDirty then
+                Nothing
+
+            else
+                Just <|
+                    ProcessedOpacityConfig
+                        { startAt = config.startAt
+                        , endAt = config.endAt
+                        , duration = 0 -- TODO: implement opacity timing
+                        , speed = 0.0
+                        , distance = 0.0
+                        , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
+                        , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
+                        , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
+                        }
 
 
 resolveTimingWithDefault : Maybe TimeSpec -> Maybe TimeSpec -> TimeSpec -> TimeSpec
