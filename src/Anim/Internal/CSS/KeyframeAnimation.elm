@@ -13,6 +13,7 @@ import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Timing.Easing as Easing
 import Anim.Internal.Timing.TimeSpec as TimeSpec
+import Dict
 
 
 type alias KeyframeAnimation =
@@ -34,25 +35,33 @@ generate elementId properties =
 
     else
         let
-            -- Find the max duration among all properties
+            processed =
+                Builder.processElement
+                    { globalTiming = Nothing, globalEasing = Nothing, globalDelay = Nothing, currentElementId = Nothing, elements = Dict.empty }
+                    elementId
+                    { properties = properties }
+
+            processedProps =
+                processed.properties
+
             maxDuration =
-                properties
+                processedProps
                     |> List.map
-                        (\prop ->
-                            case prop of
-                                Builder.PositionConfig cfg ->
+                        (\p ->
+                            case p of
+                                Builder.ProcessedPositionConfig cfg ->
                                     cfg.duration
 
-                                Builder.ScaleConfig cfg ->
+                                Builder.ProcessedScaleConfig cfg ->
                                     cfg.duration
 
-                                Builder.RotateConfig cfg ->
+                                Builder.ProcessedRotateConfig cfg ->
                                     cfg.duration
 
-                                Builder.BackgroundColorConfig cfg ->
+                                Builder.ProcessedColorConfig cfg ->
                                     cfg.duration
 
-                                Builder.OpacityConfig cfg ->
+                                Builder.ProcessedOpacityConfig cfg ->
                                     cfg.duration
                         )
                     |> List.maximum
@@ -80,11 +89,11 @@ generate elementId properties =
                                     globalProgress * toFloat totalDuration
 
                                 stepStyles =
-                                    properties
+                                    processedProps
                                         |> List.filterMap
-                                            (\prop ->
-                                                case prop of
-                                                    Builder.PositionConfig cfg ->
+                                            (\p ->
+                                                case p of
+                                                    Builder.ProcessedPositionConfig cfg ->
                                                         let
                                                             dur =
                                                                 cfg.duration
@@ -97,17 +106,17 @@ generate elementId properties =
                                                                     1.0
 
                                                             startPos =
-                                                                Maybe.withDefault (Position.fromTuple ( 0, 0 )) cfg.startAt
+                                                                Position.fromTuple ( 0.0, 0.0 )
 
                                                             endPos =
-                                                                cfg.endAt
+                                                                cfg.target
 
                                                             interpolatedPos =
                                                                 Position.interpolate propProgress startPos endPos
                                                         in
                                                         Just ( "transform-component", "translate(" ++ Position.toCssString interpolatedPos ++ ")" )
 
-                                                    Builder.RotateConfig cfg ->
+                                                    Builder.ProcessedRotateConfig cfg ->
                                                         let
                                                             dur =
                                                                 cfg.duration
@@ -120,10 +129,10 @@ generate elementId properties =
                                                                     1.0
 
                                                             startRot =
-                                                                Maybe.withDefault (Rotate.fromFloat 0) cfg.startAt
+                                                                Rotate.fromFloat 0.0
 
                                                             endRot =
-                                                                cfg.endAt
+                                                                cfg.target
 
                                                             startAngle =
                                                                 Rotate.toFloat startRot
@@ -139,7 +148,7 @@ generate elementId properties =
                                                         in
                                                         Just ( "transform-component", "rotate(" ++ Rotate.toCssString interpolatedRot ++ ")" )
 
-                                                    Builder.ScaleConfig cfg ->
+                                                    Builder.ProcessedScaleConfig cfg ->
                                                         let
                                                             dur =
                                                                 cfg.duration
@@ -152,10 +161,10 @@ generate elementId properties =
                                                                     1.0
 
                                                             startScale =
-                                                                Maybe.withDefault (Scale.fromTuple ( 1, 1 )) cfg.startAt
+                                                                Scale.fromTuple ( 1.0, 1.0 )
 
                                                             endScale =
-                                                                cfg.endAt
+                                                                cfg.target
 
                                                             ( startX, startY ) =
                                                                 Scale.toTuple startScale
@@ -174,7 +183,7 @@ generate elementId properties =
                                                         in
                                                         Just ( "transform-component", "scale(" ++ Scale.toCssString interpolatedScale ++ ")" )
 
-                                                    Builder.BackgroundColorConfig cfg ->
+                                                    Builder.ProcessedColorConfig cfg ->
                                                         let
                                                             dur =
                                                                 cfg.duration
@@ -187,17 +196,17 @@ generate elementId properties =
                                                                     1.0
 
                                                             startColor =
-                                                                Maybe.withDefault (Color.rgb255 0 0 0) cfg.startAt
+                                                                Color.rgb255 0 0 0
 
                                                             endColor =
-                                                                cfg.endAt
+                                                                cfg.target
 
                                                             interpolatedColor =
                                                                 Color.interpolate startColor endColor propProgress
                                                         in
                                                         Just ( "background-color", Color.toString interpolatedColor )
 
-                                                    Builder.OpacityConfig cfg ->
+                                                    Builder.ProcessedOpacityConfig cfg ->
                                                         let
                                                             dur =
                                                                 cfg.duration
@@ -210,10 +219,10 @@ generate elementId properties =
                                                                     1.0
 
                                                             startOpacity =
-                                                                Maybe.withDefault (Opacity.fromFloat 1.0) cfg.startAt
+                                                                Opacity.fromFloat 1.0
 
                                                             endOpacity =
-                                                                cfg.endAt
+                                                                cfg.target
 
                                                             startValue =
                                                                 Opacity.toFloat startOpacity

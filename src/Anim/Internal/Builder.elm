@@ -2,6 +2,7 @@ module Anim.Internal.Builder exposing
     ( AnimBuilder
     , AnimationConfig
     , ElementConfig
+    , ProcessedPropertyConfig(..)
     , PropertyConfig(..)
     , delay
     , duration
@@ -16,6 +17,7 @@ module Anim.Internal.Builder exposing
     , getTimespec
     , init
     , processAnimationData
+    , processElement
     , speed
     , updateCurrentElement
     )
@@ -243,7 +245,7 @@ processProperty globalData property =
                             s
 
                         Nothing ->
-                            Position.fromTuple ( 0, 0 )
+                            Position.fromTuple ( 0.0, 0.0 )
 
                 distance =
                     Position.distance startAt config.endAt
@@ -251,12 +253,12 @@ processProperty globalData property =
                 duration_ =
                     config.timing
                         |> Maybe.map (Position.duration distance)
-                        |> Maybe.withDefault 0
+                        |> Maybe.withDefault 0.0
 
                 speed_ =
                     config.timing
                         |> Maybe.map (Position.speed distance duration_)
-                        |> Maybe.withDefault 0
+                        |> Maybe.withDefault 0.0
             in
             ProcessedPositionConfig
                 { target = config.endAt
@@ -284,12 +286,12 @@ processProperty globalData property =
                 duration_ =
                     config.timing
                         |> Maybe.map (Rotate.duration distance)
-                        |> Maybe.withDefault 0
+                        |> Maybe.withDefault 0.0
 
                 speed_ =
                     config.timing
                         |> Maybe.map (Rotate.speed distance duration_)
-                        |> Maybe.withDefault 0
+                        |> Maybe.withDefault 0.0
             in
             ProcessedRotateConfig
                 { target = config.endAt
@@ -305,8 +307,8 @@ processProperty globalData property =
             ProcessedScaleConfig
                 { target = config.endAt
                 , duration = 0 -- TODO: implement scale timing
-                , speed = 0
-                , distance = 0
+                , speed = 0.0
+                , distance = 0.0
                 , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
                 , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
                 , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
@@ -316,8 +318,8 @@ processProperty globalData property =
             ProcessedColorConfig
                 { target = config.endAt
                 , duration = 0 -- TODO: implement color timing
-                , speed = 0
-                , distance = 0
+                , speed = 0.0
+                , distance = 0.0
                 , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
                 , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
                 , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
@@ -327,8 +329,8 @@ processProperty globalData property =
             ProcessedOpacityConfig
                 { target = config.endAt
                 , duration = 0 -- TODO: implement opacity timing
-                , speed = 0
-                , distance = 0
+                , speed = 0.0
+                , distance = 0.0
                 , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
                 , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
                 , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0

@@ -124,7 +124,7 @@ update msg model =
                         -- Position
                         |> Position.for elementId
                         |> Position.toXY 200 100
-                        |> Position.duration 800
+                        |> Position.speed 50
                         |> Position.easing SineInOut
                         |> Position.build
                         -- Scale
