@@ -102,13 +102,18 @@ init _ =
 -- UPDATE
 
 
+elementId : String
+elementId =
+    "event-box"
+
+
 anim : CSS.AnimationState -> Position.Builder
 anim animations =
     animations
         |> CSS.builder
         |> Anim.duration 1000
         |> Anim.easing Linear
-        |> Position.for "event-box"
+        |> Position.for elementId
 
 
 type Msg
@@ -116,10 +121,10 @@ type Msg
     | MoveToCenter
     | StopAnimation
     | ClearEventLog
-    | OnTransitionStart
-    | OnTransitionEnd
-    | OnTransitionRun
-    | OnTransitionCancel
+    | OnAnimationStart
+    | OnAnimationEnd
+    | OnAnimationIteration
+    | OnAnimationCancel
     | Tick Time.Posix
 
 
@@ -174,24 +179,24 @@ update msg model =
             , Cmd.none
             )
 
-        OnTransitionStart ->
+        OnAnimationStart ->
             ( addEventToLog TransitionStart "Animation started" model
             , Cmd.none
             )
 
-        OnTransitionEnd ->
+        OnAnimationEnd ->
             ( model
                 |> addEventToLog TransitionEnd "Animation completed"
                 |> (\m -> { m | isAnimating = False })
             , Cmd.none
             )
 
-        OnTransitionRun ->
+        OnAnimationIteration ->
             ( addEventToLog TransitionRun "Animation is running" model
             , Cmd.none
             )
 
-        OnTransitionCancel ->
+        OnAnimationCancel ->
             ( model
                 |> addEventToLog TransitionCancel "Animation was cancelled"
                 |> (\m -> { m | isAnimating = False })
@@ -248,7 +253,7 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ Element.html (CSS.keyframesStyleNodeFor "box" model.animations)
+    [ Element.html (CSS.keyframesStyleNodeFor elementId model.animations)
     , UI.backButtonWithPath "../../../index.html"
     , UI.pageHeader "CSS Events Example"
     , -- Description
@@ -305,20 +310,18 @@ viewContent model =
         , htmlAttribute (Html.Attributes.style "overflow" "hidden")
         ]
         (el
-            ([ width (px 50)
-             , height (px 50)
-             , Background.color Colors.primary
-             , Border.rounded 8
-             , htmlAttribute (Html.Attributes.id "event-box")
-             , htmlAttribute (Html.Attributes.style "position" "absolute")
-             ]
-                ++ List.map htmlAttribute (CSS.htmlAttributes "event-box" model.animations)
-                ++ [ htmlAttribute (CSS.onTransitionStart OnTransitionStart)
-                   , htmlAttribute (CSS.onTransitionEnd OnTransitionEnd)
-                   , htmlAttribute (CSS.onTransitionRun OnTransitionRun)
-                   , htmlAttribute (CSS.onTransitionCancel OnTransitionCancel)
-                   ]
-            )
+            [ width (px 50)
+            , height (px 50)
+            , Background.color Colors.primary
+            , Border.rounded 8
+            , htmlAttribute (Html.Attributes.id "event-box")
+            , htmlAttribute (Html.Attributes.style "position" "absolute")
+            , htmlAttribute (CSS.animationStyleAttribute elementId model.animations)
+            , htmlAttribute (CSS.onAnimationStart OnAnimationStart)
+            , htmlAttribute (CSS.onAnimationEnd OnAnimationEnd)
+            , htmlAttribute (CSS.onAnimationIteration OnAnimationIteration)
+            , htmlAttribute (CSS.onAnimationCancel OnAnimationCancel)
+            ]
             (el [ centerX, centerY, Font.size 20 ] (text "📦"))
         )
     , -- Event log section
