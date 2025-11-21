@@ -56,6 +56,7 @@ type PropertyConfig
     = PositionConfig (AnimationConfig Position)
     | RotateConfig (AnimationConfig Rotate)
     | ScaleConfig (AnimationConfig Scale)
+      -- TODO: Need to consider how to handle all available color properties
     | BackgroundColorConfig (AnimationConfig Color)
     | OpacityConfig (AnimationConfig Opacity)
 
