@@ -264,7 +264,7 @@ viewContent model =
             getPosition "elementF" model.animations
     in
     [ UI.backButton
-    , UI.pageHeader "Subscription-Based Choreography Animations"
+    , UI.pageHeader "ElmUI & Subscription Choreography Example"
     , -- Element status display
       el
         [ Font.size 14

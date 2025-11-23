@@ -253,7 +253,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButton
-    , UI.pageHeader "Ports Color Animations"
+    , UI.pageHeader "ElmUI & Ports Color Example"
     , -- Description
       el
         [ Font.size 16

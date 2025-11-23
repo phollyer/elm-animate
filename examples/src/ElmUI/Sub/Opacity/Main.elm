@@ -163,7 +163,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButton
-    , UI.pageHeader "Subscription-Based Opacity Animations"
+    , UI.pageHeader "ElmUI & Subscription Opacity Example"
     , -- Description
       el
         [ Font.size 16

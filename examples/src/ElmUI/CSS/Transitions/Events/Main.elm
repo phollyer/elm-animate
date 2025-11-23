@@ -248,7 +248,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "CSS Events Example"
+    , UI.pageHeader "ElmUI & CSS Transitions Events Example"
     , -- Description
       el
         [ Font.size 16

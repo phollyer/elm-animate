@@ -199,7 +199,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "CSS Position Animations"
+    , UI.pageHeader "ElmUI & CSS Transitions Position Example"
     , -- Buttons for predefined moves
       UI.wrappedButtonRow
         [ ( UI.Primary, MoveToPosition 100 100, "Move to (100, 100)" )

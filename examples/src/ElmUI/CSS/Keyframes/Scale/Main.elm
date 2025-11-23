@@ -184,7 +184,7 @@ viewContent : Model -> List (Element Msg)
 viewContent model =
     [ Element.html (CSS.keyframesStyleNodeFor elementId model.animations)
     , UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "CSS Keyframes Scale Animations"
+    , UI.pageHeader "ElmUI & CSS Keyframes Scale Example"
     , -- Description
       el
         [ Font.size 16

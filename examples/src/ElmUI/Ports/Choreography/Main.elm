@@ -231,7 +231,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButton
-    , UI.pageHeader "Ports Choreography Animations"
+    , UI.pageHeader "ElmUI & Ports Choreography Example"
     , -- Element status display
       el
         [ Font.size 14

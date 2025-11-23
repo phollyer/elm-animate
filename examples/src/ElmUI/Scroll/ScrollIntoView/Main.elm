@@ -128,7 +128,7 @@ viewContent model =
     [ -- Back Button
       UI.backButton
     , -- Header
-      UI.pageHeader "ScrollIntoView Example"
+      UI.pageHeader "ElmUI & Scroll Into View Example"
     , -- Navigation buttons
       el [] <|
         UI.wrappedButtonRow

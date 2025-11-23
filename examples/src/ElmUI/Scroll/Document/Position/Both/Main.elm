@@ -95,7 +95,7 @@ viewContent model =
     [ -- Back Button
       UI.backButton
     , -- Title
-      UI.pageHeader "Diagonal Both Axis Scrolling"
+      UI.pageHeader "ElmUI & Scroll Document Both Example"
     , -- Navigation Buttons
       column
         [ spacing 20

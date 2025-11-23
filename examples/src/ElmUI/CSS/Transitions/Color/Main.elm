@@ -186,7 +186,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "CSS Color Animations"
+    , UI.pageHeader "ElmUI & CSS Transitions Color Example"
     , -- Description
       el
         [ Font.size 16

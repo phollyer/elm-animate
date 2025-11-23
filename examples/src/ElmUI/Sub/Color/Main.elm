@@ -173,7 +173,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButton
-    , UI.pageHeader "Subscription-Based Color Animations"
+    , UI.pageHeader "ElmUI & Subscription Color Example"
     , -- Description
       el
         [ Font.size 16

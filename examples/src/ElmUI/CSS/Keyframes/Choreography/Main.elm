@@ -24,8 +24,6 @@ USAGE EXAMPLES:
 
 -}
 
--- Common UI imports
-
 import Anim
 import Anim.CSS as CSS
 import Anim.Properties.Position as Position
@@ -75,17 +73,6 @@ init _ =
     )
 
 
-elements : List ( String, String, Element.Color )
-elements =
-    [ ( "elementA", "A", rgb255 59 130 246 )
-    , ( "elementB", "B", rgb255 16 185 129 )
-    , ( "elementC", "C", rgb255 168 85 247 )
-    , ( "elementD", "D", rgb255 249 115 22 )
-    , ( "elementE", "E", rgb255 239 68 68 )
-    , ( "elementF", "F", rgb255 236 72 153 )
-    ]
-
-
 
 -- UPDATE
 
@@ -104,7 +91,6 @@ update msg model =
             ( model, Cmd.none )
 
         ScatterElements ->
-            -- Create a multi-element animation using the new API
             ( { model
                 | animations =
                     model.animations
@@ -217,20 +203,38 @@ view model =
         (viewContent model)
 
 
+type alias ElementData =
+    { id : String
+    , label : String
+    , color : Element.Color
+    }
+
+
+elements : List ElementData
+elements =
+    [ { id = "elementA", label = "A", color = rgb255 59 130 246 }
+    , { id = "elementB", label = "B", color = rgb255 16 185 129 }
+    , { id = "elementC", label = "C", color = rgb255 168 85 247 }
+    , { id = "elementD", label = "D", color = rgb255 249 115 22 }
+    , { id = "elementE", label = "E", color = rgb255 239 68 68 }
+    , { id = "elementF", label = "F", color = rgb255 236 72 153 }
+    ]
+
+
 viewContent : Model -> List (Element Msg)
 viewContent model =
     let
         keyframeStyleNodes =
             elements
                 |> List.map
-                    (\( elementId, _, _ ) ->
+                    (\{ id } ->
                         Element.html <|
-                            CSS.keyframesStyleNodeFor elementId model.animations
+                            CSS.keyframesStyleNodeFor id model.animations
                     )
     in
     keyframeStyleNodes
         ++ [ UI.backButtonWithPath "../../../index.html"
-           , UI.pageHeader "CSS Choreography Keyframes ElmUI Example"
+           , UI.pageHeader "ElmUI & CSS Keyframes Choreography Example"
            , -- Element status display
              el
                 [ Font.size 14
@@ -262,8 +266,8 @@ viewContent model =
                 ]
                 (column [] <|
                     List.map
-                        (\( elementId, label, color ) ->
-                            animatedBox elementId label color model
+                        (\{ id, label, color } ->
+                            animatedBox id label color model
                         )
                         elements
                 )

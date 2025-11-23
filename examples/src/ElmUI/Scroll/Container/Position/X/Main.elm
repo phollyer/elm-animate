@@ -103,7 +103,7 @@ viewContent : Model -> List (Element Msg)
 viewContent model =
     [ -- Back Button
       UI.backButton
-    , UI.pageHeader "Horizontal Container Scrolling"
+    , UI.pageHeader "ElmUI & Scroll Container X Example"
     , -- Navigation Buttons
       column
         [ spacing 16

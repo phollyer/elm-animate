@@ -211,7 +211,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "CSS Choreography Animations"
+    , UI.pageHeader "ElmUI & CSS Transitions Choreography Example"
     , -- Element status display
       el
         [ Font.size 14

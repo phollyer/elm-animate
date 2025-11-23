@@ -16,7 +16,7 @@ FEATURES:
 -}
 
 import Anim
-import Anim.Easing exposing (Easing(..))
+import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Anim.Ports exposing (Model, animateMultiple, handlePropertyUpdateFromJson, init, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors
@@ -238,7 +238,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButton
-    , UI.pageHeader "Ports Mixed Property Animations"
+    , UI.pageHeader "ElmUI & Ports Mixed Example"
     , -- Description
       el
         [ Font.size 16

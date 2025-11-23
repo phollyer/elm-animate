@@ -119,7 +119,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButton
-    , UI.pageHeader "Container Both Axis Scrolling"
+    , UI.pageHeader "ElmUI & Scroll Container Both Example"
     , UI.wrappedButtonRow
         [ ( UI.Primary, ScrollToTopLeft, "Top Left" )
         , ( UI.Success, ScrollToTopRight, "Top Right" )

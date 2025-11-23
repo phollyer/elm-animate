@@ -114,7 +114,7 @@ viewContent model =
     [ -- Back Button
       UI.backButton
     , -- Header
-      UI.pageHeader "SmoothMoveScroll Document Example"
+      UI.pageHeader "ElmUI & Scroll Document Y Example"
 
     -- Buttons
     , el [ centerX ] <|

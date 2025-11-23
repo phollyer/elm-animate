@@ -199,7 +199,7 @@ viewContent model =
     [ -- Back Button
       UI.backButton
     , -- Header
-      UI.pageHeader "Horizontal X Axis Scrolling"
+      UI.pageHeader "ElmUI & Scroll Document X Example"
     , -- Add/Remove Section Controls
       column
         [ spacing 8, centerX ]

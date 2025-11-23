@@ -313,7 +313,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "CSS Mixed Properties Example"
+    , UI.pageHeader "ElmUI & CSS Transitions Mixed Example"
     , -- Description
       el
         [ Font.size 16

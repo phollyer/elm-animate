@@ -120,7 +120,7 @@ pageHeader title =
     paragraph
         [ Font.semiBold
         , Font.color Colors.textDark
-        , centerX
+        , Font.center
         , htmlAttribute (Html.Attributes.class "responsive-header")
         ]
         [ text title ]

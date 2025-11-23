@@ -87,7 +87,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButton
-    , UI.pageHeader "SmoothMoveScroll - Container Example"
+    , UI.pageHeader "ElmUI & Scroll Container Y Example"
     , UI.wrappedButtonRow
         [ ( UI.Primary, ScrollToTop, "Scroll to Top" )
         , ( UI.Success, ScrollToMiddle, "Scroll to Middle" )

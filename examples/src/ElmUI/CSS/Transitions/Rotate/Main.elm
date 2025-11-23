@@ -192,7 +192,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "CSS Rotate Animations"
+    , UI.pageHeader "ElmUI & CSS Transitions Rotate Example"
     , -- Description
       el
         [ Font.size 16

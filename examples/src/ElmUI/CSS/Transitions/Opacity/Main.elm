@@ -179,7 +179,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "CSS Opacity Animations"
+    , UI.pageHeader "ElmUI & CSS Transitions Opacity Example"
     , -- Description
       el
         [ Font.size 16
