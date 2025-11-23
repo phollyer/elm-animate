@@ -92,18 +92,20 @@ update msg model =
                         |> Position.for elementId
                         |> Position.toXY 200 100
                         |> Position.speed 200.0
-                        |> Position.easing Easing.EaseOut
+                        |> Position.easing Easing.EaseIn
                         |> Position.build
-                        |> Scale.for elementId
-                        |> Scale.toXY 1.5 1.9
-                        |> Scale.speed 2.0
-                        |> Scale.easing Easing.EaseOut
-                        |> Scale.build
                         |> Rotate.for elementId
+                        |> Rotate.delay 500
                         |> Rotate.to 90
                         |> Rotate.speed 120.0
-                        |> Rotate.easing Easing.EaseInOut
+                        |> Rotate.easing Easing.BounceOut
                         |> Rotate.build
+                        |> Scale.for elementId
+                        |> Scale.delay 2000
+                        |> Scale.toXY 1.5 1.9
+                        |> Scale.speed 2.0
+                        |> Scale.easing Easing.BounceOut
+                        |> Scale.build
                         |> Sub.animate
               }
             , Cmd.none
@@ -226,7 +228,7 @@ update msg model =
                         |> Position.for "mixed-box"
                         |> Position.toXY 0 0
                         |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
+                        |> Position.easing Easing.BounceOut
                         |> Position.build
                         |> Scale.for "mixed-box"
                         |> Scale.toXY 1.0 1.0
