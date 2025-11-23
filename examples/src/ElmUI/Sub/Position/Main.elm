@@ -81,43 +81,27 @@ init _ =
 
 
 type Msg
-    = MoveToCorner
-    | MoveToCenter
+    = MoveToXY Float Float
     | MoveLeft
     | MoveRight
     | MoveUp
     | MoveDown
-    | StopAnimation
+    | ResetPosition
     | AnimationMsg Sub.AnimationMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg |> Debug.log "Received Msg" of
-        MoveToCorner ->
+    case msg of
+        MoveToXY x y ->
             ( { model
                 | animations =
                     model.animations
                         |> Sub.builder
                         |> Position.for "box"
-                        |> Position.toXY 100 100
+                        |> Position.toXY x y
                         |> Position.speed 200.0
                         |> Position.easing Easing.EaseOut
-                        |> Position.build
-                        |> Sub.animate
-              }
-            , Cmd.none
-            )
-
-        MoveToCenter ->
-            ( { model
-                | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Position.for "box"
-                        |> Position.toXY 225 175
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
                         |> Position.build
                         |> Sub.animate
               }
@@ -184,7 +168,7 @@ update msg model =
             , Cmd.none
             )
 
-        StopAnimation ->
+        ResetPosition ->
             ( { model
                 | animations =
                     model.animations
@@ -244,9 +228,9 @@ viewContent model =
         )
     , -- Buttons for predefined moves
       UI.wrappedButtonRow
-        [ ( UI.Primary, MoveToCorner, "Move to (100, 100)" )
-        , ( UI.Success, MoveToCenter, "Move to (300, 200)" )
-        , ( UI.Purple, StopAnimation, "Return to Origin" )
+        [ ( UI.Primary, MoveToXY 100 100, "Move to (100, 100)" )
+        , ( UI.Primary, MoveToXY 300 200, "Move to (300, 200)" )
+        , ( UI.Purple, ResetPosition, "Return to Origin" )
         ]
     , -- Axis-specific movement buttons
       UI.wrappedButtonRow

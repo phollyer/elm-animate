@@ -5202,29 +5202,65 @@ var $author$project$Anim$Internal$Sub$AnimationState = function (a) {
 var $author$project$Anim$Internal$Sub$ColorAnimationValue = function (a) {
 	return {$: 'ColorAnimationValue', a: a};
 };
+var $author$project$Anim$Internal$Sub$createColorSteps = F4(
+	function (_v0, target, _v1, _v2) {
+		return _List_fromArray(
+			[
+				$author$project$Anim$Internal$Sub$ColorAnimationValue(target)
+			]);
+	});
 var $author$project$Anim$Internal$Sub$OpacityAnimationValue = function (a) {
 	return {$: 'OpacityAnimationValue', a: a};
 };
-var $author$project$Anim$Internal$Sub$PositionAnimationValue = function (a) {
-	return {$: 'PositionAnimationValue', a: a};
+var $elm$core$Basics$negate = function (n) {
+	return -n;
 };
-var $author$project$Anim$Internal$Sub$RotateAnimationValue = function (a) {
-	return {$: 'RotateAnimationValue', a: a};
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
 };
-var $author$project$Anim$Internal$Sub$ScaleAnimationValue = function (a) {
-	return {$: 'ScaleAnimationValue', a: a};
-};
+var $author$project$Internal$AnimationCore$animationStepsWithFrames = F4(
+	function (frames, easing, start, stop) {
+		var operator = (_Utils_cmp(start, stop) > 0) ? $elm$core$Basics$sub : $elm$core$Basics$add;
+		var framesFloat = frames;
+		var weights = A2(
+			$elm$core$List$map,
+			function (i) {
+				return easing(i / framesFloat);
+			},
+			A2($elm$core$List$range, 0, frames));
+		var diff = $elm$core$Basics$abs(start - stop);
+		return ((frames <= 0) || _Utils_eq(start, stop)) ? _List_Nil : A2(
+			$elm$core$List$map,
+			function (weight) {
+				return A2(operator, start, weight * diff);
+			},
+			weights);
+	});
 var $author$project$Anim$Internal$Properties$Opacity$Opacity = function (a) {
 	return {$: 'Opacity', a: a};
 };
 var $author$project$Anim$Internal$Properties$Opacity$fromFloat = function (o) {
 	return $author$project$Anim$Internal$Properties$Opacity$Opacity(o);
 };
-var $author$project$Anim$Internal$Properties$Rotate$Rotate = function (a) {
-	return {$: 'Rotate', a: a};
+var $author$project$Anim$Internal$Properties$Opacity$toFloat = function (_v0) {
+	var o = _v0.a;
+	return o;
 };
-var $author$project$Anim$Internal$Properties$Rotate$fromFloat = function (angle) {
-	return $author$project$Anim$Internal$Properties$Rotate$Rotate(angle);
+var $author$project$Anim$Internal$Sub$createOpacitySteps = F4(
+	function (start, target, frames, easingFunction) {
+		var targetFloat = $author$project$Anim$Internal$Properties$Opacity$toFloat(target);
+		var startFloat = $author$project$Anim$Internal$Properties$Opacity$toFloat(start);
+		var steps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startFloat, targetFloat);
+		return A2(
+			$elm$core$List$map,
+			function (value) {
+				return $author$project$Anim$Internal$Sub$OpacityAnimationValue(
+					$author$project$Anim$Internal$Properties$Opacity$fromFloat(value));
+			},
+			steps);
+	});
+var $author$project$Anim$Internal$Sub$PositionAnimationValue = function (a) {
+	return {$: 'PositionAnimationValue', a: a};
 };
 var $author$project$Anim$Internal$Properties$Position$Position = function (a) {
 	return {$: 'Position', a: a};
@@ -5235,6 +5271,65 @@ var $author$project$Anim$Internal$Properties$Position$fromTuple = function (_v0)
 	return $author$project$Anim$Internal$Properties$Position$Position(
 		{x: xCoord, y: yCoord});
 };
+var $elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
+var $author$project$Anim$Internal$Properties$Position$toTuple = function (_v0) {
+	var coords = _v0.a;
+	return _Utils_Tuple2(coords.x, coords.y);
+};
+var $author$project$Anim$Internal$Sub$createPositionSteps = F4(
+	function (start, target, frames, easingFunction) {
+		var _v0 = $author$project$Anim$Internal$Properties$Position$toTuple(target);
+		var targetX = _v0.a;
+		var targetY = _v0.b;
+		var _v1 = $author$project$Anim$Internal$Properties$Position$toTuple(start);
+		var startX = _v1.a;
+		var startY = _v1.b;
+		var stepsX = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startX, targetX);
+		var stepsY = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startY, targetY);
+		var steps = A3($elm$core$List$map2, $elm$core$Tuple$pair, stepsX, stepsY);
+		return A2(
+			$elm$core$List$map,
+			function (_v2) {
+				var x = _v2.a;
+				var y = _v2.b;
+				return $author$project$Anim$Internal$Sub$PositionAnimationValue(
+					$author$project$Anim$Internal$Properties$Position$fromTuple(
+						_Utils_Tuple2(x, y)));
+			},
+			steps);
+	});
+var $author$project$Anim$Internal$Sub$RotateAnimationValue = function (a) {
+	return {$: 'RotateAnimationValue', a: a};
+};
+var $author$project$Anim$Internal$Properties$Rotate$Rotate = function (a) {
+	return {$: 'Rotate', a: a};
+};
+var $author$project$Anim$Internal$Properties$Rotate$fromFloat = function (angle) {
+	return $author$project$Anim$Internal$Properties$Rotate$Rotate(angle);
+};
+var $author$project$Anim$Internal$Properties$Rotate$toFloat = function (_v0) {
+	var angle = _v0.a;
+	return angle;
+};
+var $author$project$Anim$Internal$Sub$createRotateSteps = F4(
+	function (start, target, frames, easingFunction) {
+		var targetFloat = $author$project$Anim$Internal$Properties$Rotate$toFloat(target);
+		var startFloat = $author$project$Anim$Internal$Properties$Rotate$toFloat(start);
+		var steps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startFloat, targetFloat);
+		return A2(
+			$elm$core$List$map,
+			function (value) {
+				return $author$project$Anim$Internal$Sub$RotateAnimationValue(
+					$author$project$Anim$Internal$Properties$Rotate$fromFloat(value));
+			},
+			steps);
+	});
+var $author$project$Anim$Internal$Sub$ScaleAnimationValue = function (a) {
+	return {$: 'ScaleAnimationValue', a: a};
+};
 var $author$project$Anim$Internal$Properties$Scale$ScaleXY = F2(
 	function (a, b) {
 		return {$: 'ScaleXY', a: a, b: b};
@@ -5244,6 +5339,256 @@ var $author$project$Anim$Internal$Properties$Scale$fromTuple = function (_v0) {
 	var sy = _v0.b;
 	return A2($author$project$Anim$Internal$Properties$Scale$ScaleXY, sx, sy);
 };
+var $author$project$Anim$Internal$Properties$Scale$toTuple = function (_v0) {
+	var sx = _v0.a;
+	var sy = _v0.b;
+	return _Utils_Tuple2(sx, sy);
+};
+var $author$project$Anim$Internal$Sub$createScaleSteps = F4(
+	function (start, target, frames, easingFunction) {
+		var _v0 = $author$project$Anim$Internal$Properties$Scale$toTuple(target);
+		var targetX = _v0.a;
+		var targetY = _v0.b;
+		var _v1 = $author$project$Anim$Internal$Properties$Scale$toTuple(start);
+		var startX = _v1.a;
+		var startY = _v1.b;
+		var stepsX = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startX, targetX);
+		var stepsY = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startY, targetY);
+		var steps = A3($elm$core$List$map2, $elm$core$Tuple$pair, stepsX, stepsY);
+		return A2(
+			$elm$core$List$map,
+			function (_v2) {
+				var x = _v2.a;
+				var y = _v2.b;
+				return $author$project$Anim$Internal$Sub$ScaleAnimationValue(
+					$author$project$Anim$Internal$Properties$Scale$fromTuple(
+						_Utils_Tuple2(x, y)));
+			},
+			steps);
+	});
+var $elm$core$Basics$round = _Basics_round;
+var $elm$core$List$tail = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(xs);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $elm_community$easing_functions$Ease$bezier = F5(
+	function (x1, y1, x2, y2, time) {
+		var pair = F4(
+			function (interpolate, _v2, _v3, v) {
+				var a0 = _v2.a;
+				var b0 = _v2.b;
+				var a1 = _v3.a;
+				var b1 = _v3.b;
+				return _Utils_Tuple2(
+					A3(interpolate, a0, a1, v),
+					A3(interpolate, b0, b1, v));
+			});
+		var lerp = F3(
+			function (from, to, v) {
+				return from + ((to - from) * v);
+			});
+		var casteljau = function (ps) {
+			if (ps.b && (!ps.b.b)) {
+				var _v1 = ps.a;
+				var x = _v1.a;
+				var y = _v1.b;
+				return y;
+			} else {
+				var xs = ps;
+				return casteljau(
+					A3(
+						$elm$core$List$map2,
+						F2(
+							function (x, y) {
+								return A4(pair, lerp, x, y, time);
+							}),
+						xs,
+						A2(
+							$elm$core$Maybe$withDefault,
+							_List_Nil,
+							$elm$core$List$tail(xs))));
+			}
+		};
+		return casteljau(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(0, 0),
+					_Utils_Tuple2(x1, y1),
+					_Utils_Tuple2(x2, y2),
+					_Utils_Tuple2(1, 1)
+				]));
+	});
+var $elm_community$easing_functions$Ease$inBack = function (time) {
+	return (time * time) * ((2.70158 * time) - 1.70158);
+};
+var $elm_community$easing_functions$Ease$flip = F2(
+	function (easing, time) {
+		return 1 - easing(1 - time);
+	});
+var $elm_community$easing_functions$Ease$outBounce = function (time) {
+	var t4 = time - (2.625 / 2.75);
+	var t3 = time - (2.25 / 2.75);
+	var t2 = time - (1.5 / 2.75);
+	var a = 7.5625;
+	return (_Utils_cmp(time, 1 / 2.75) < 0) ? ((a * time) * time) : ((_Utils_cmp(time, 2 / 2.75) < 0) ? (((a * t2) * t2) + 0.75) : ((_Utils_cmp(time, 2.5 / 2.75) < 0) ? (((a * t3) * t3) + 0.9375) : (((a * t4) * t4) + 0.984375)));
+};
+var $elm_community$easing_functions$Ease$inBounce = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$outBounce);
+var $elm$core$Basics$pow = _Basics_pow;
+var $elm$core$Basics$sqrt = _Basics_sqrt;
+var $elm_community$easing_functions$Ease$outCirc = function (time) {
+	return $elm$core$Basics$sqrt(
+		1 - A2($elm$core$Basics$pow, time - 1, 2));
+};
+var $elm_community$easing_functions$Ease$inCirc = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$outCirc);
+var $elm_community$easing_functions$Ease$inCubic = function (time) {
+	return A2($elm$core$Basics$pow, time, 3);
+};
+var $elm$core$Basics$pi = _Basics_pi;
+var $elm$core$Basics$sin = _Basics_sin;
+var $elm_community$easing_functions$Ease$inElastic = function (time) {
+	if (time === 0.0) {
+		return 0.0;
+	} else {
+		var t = time - 1;
+		var s = 0.075;
+		var p = 0.3;
+		return -(A2($elm$core$Basics$pow, 2, 10 * t) * $elm$core$Basics$sin(((t - s) * (2 * $elm$core$Basics$pi)) / p));
+	}
+};
+var $elm_community$easing_functions$Ease$inExpo = function (time) {
+	return (time === 0.0) ? 0.0 : A2($elm$core$Basics$pow, 2, 10 * (time - 1));
+};
+var $elm_community$easing_functions$Ease$inOut = F3(
+	function (e1, e2, time) {
+		return (time < 0.5) ? (e1(time * 2) / 2) : (0.5 + (e2((time - 0.5) * 2) / 2));
+	});
+var $elm_community$easing_functions$Ease$outBack = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inBack);
+var $elm_community$easing_functions$Ease$inOutBack = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inBack, $elm_community$easing_functions$Ease$outBack);
+var $elm_community$easing_functions$Ease$inOutBounce = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inBounce, $elm_community$easing_functions$Ease$outBounce);
+var $elm_community$easing_functions$Ease$inOutCirc = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inCirc, $elm_community$easing_functions$Ease$outCirc);
+var $elm_community$easing_functions$Ease$outCubic = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inCubic);
+var $elm_community$easing_functions$Ease$inOutCubic = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inCubic, $elm_community$easing_functions$Ease$outCubic);
+var $elm_community$easing_functions$Ease$outElastic = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inElastic);
+var $elm_community$easing_functions$Ease$inOutElastic = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inElastic, $elm_community$easing_functions$Ease$outElastic);
+var $elm_community$easing_functions$Ease$outExpo = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inExpo);
+var $elm_community$easing_functions$Ease$inOutExpo = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inExpo, $elm_community$easing_functions$Ease$outExpo);
+var $elm_community$easing_functions$Ease$inQuad = function (time) {
+	return A2($elm$core$Basics$pow, time, 2);
+};
+var $elm_community$easing_functions$Ease$outQuad = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inQuad);
+var $elm_community$easing_functions$Ease$inOutQuad = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inQuad, $elm_community$easing_functions$Ease$outQuad);
+var $elm_community$easing_functions$Ease$inQuart = function (time) {
+	return A2($elm$core$Basics$pow, time, 4);
+};
+var $elm_community$easing_functions$Ease$outQuart = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inQuart);
+var $elm_community$easing_functions$Ease$inOutQuart = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inQuart, $elm_community$easing_functions$Ease$outQuart);
+var $elm_community$easing_functions$Ease$inQuint = function (time) {
+	return A2($elm$core$Basics$pow, time, 5);
+};
+var $elm_community$easing_functions$Ease$outQuint = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inQuint);
+var $elm_community$easing_functions$Ease$inOutQuint = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inQuint, $elm_community$easing_functions$Ease$outQuint);
+var $elm_community$easing_functions$Ease$outSine = function (time) {
+	return $elm$core$Basics$sin(time * ($elm$core$Basics$pi / 2));
+};
+var $elm_community$easing_functions$Ease$inSine = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$outSine);
+var $elm_community$easing_functions$Ease$inOutSine = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inSine, $elm_community$easing_functions$Ease$outSine);
+var $elm_community$easing_functions$Ease$linear = $elm$core$Basics$identity;
+var $author$project$Anim$Internal$Timing$Easing$toFunction = function (easing) {
+	switch (easing.$) {
+		case 'Bezier':
+			var p1x = easing.a;
+			var p1y = easing.b;
+			var p2x = easing.c;
+			var p2y = easing.d;
+			return A4($elm_community$easing_functions$Ease$bezier, p1x, p1y, p2x, p2y);
+		case 'Linear':
+			return $elm_community$easing_functions$Ease$linear;
+		case 'Ease':
+			return $elm_community$easing_functions$Ease$inOutQuad;
+		case 'EaseIn':
+			return $elm_community$easing_functions$Ease$inQuad;
+		case 'EaseOut':
+			return $elm_community$easing_functions$Ease$outQuad;
+		case 'EaseInOut':
+			return $elm_community$easing_functions$Ease$inOutQuad;
+		case 'SineIn':
+			return $elm_community$easing_functions$Ease$inSine;
+		case 'SineOut':
+			return $elm_community$easing_functions$Ease$outSine;
+		case 'SineInOut':
+			return $elm_community$easing_functions$Ease$inOutSine;
+		case 'QuadIn':
+			return $elm_community$easing_functions$Ease$inQuad;
+		case 'QuadOut':
+			return $elm_community$easing_functions$Ease$outQuad;
+		case 'QuadInOut':
+			return $elm_community$easing_functions$Ease$inOutQuad;
+		case 'CubicIn':
+			return $elm_community$easing_functions$Ease$inCubic;
+		case 'CubicOut':
+			return $elm_community$easing_functions$Ease$outCubic;
+		case 'CubicInOut':
+			return $elm_community$easing_functions$Ease$inOutCubic;
+		case 'QuartIn':
+			return $elm_community$easing_functions$Ease$inQuart;
+		case 'QuartOut':
+			return $elm_community$easing_functions$Ease$outQuart;
+		case 'QuartInOut':
+			return $elm_community$easing_functions$Ease$inOutQuart;
+		case 'QuintIn':
+			return $elm_community$easing_functions$Ease$inQuint;
+		case 'QuintOut':
+			return $elm_community$easing_functions$Ease$outQuint;
+		case 'QuintInOut':
+			return $elm_community$easing_functions$Ease$inOutQuint;
+		case 'ExpoIn':
+			return $elm_community$easing_functions$Ease$inExpo;
+		case 'ExpoOut':
+			return $elm_community$easing_functions$Ease$outExpo;
+		case 'ExpoInOut':
+			return $elm_community$easing_functions$Ease$inOutExpo;
+		case 'CircIn':
+			return $elm_community$easing_functions$Ease$inCirc;
+		case 'CircOut':
+			return $elm_community$easing_functions$Ease$outCirc;
+		case 'CircInOut':
+			return $elm_community$easing_functions$Ease$inOutCirc;
+		case 'BackIn':
+			return $elm_community$easing_functions$Ease$inBack;
+		case 'BackOut':
+			return $elm_community$easing_functions$Ease$outBack;
+		case 'BackInOut':
+			return $elm_community$easing_functions$Ease$inOutBack;
+		case 'ElasticIn':
+			return $elm_community$easing_functions$Ease$inElastic;
+		case 'ElasticOut':
+			return $elm_community$easing_functions$Ease$outElastic;
+		case 'ElasticInOut':
+			return $elm_community$easing_functions$Ease$inOutElastic;
+		case 'BounceIn':
+			return $elm_community$easing_functions$Ease$inBounce;
+		case 'BounceOut':
+			return $elm_community$easing_functions$Ease$outBounce;
+		case 'BounceInOut':
+			return $elm_community$easing_functions$Ease$inOutBounce;
+		default:
+			return $elm_community$easing_functions$Ease$inOutQuad;
+	}
+};
 var $author$project$Anim$Internal$Sub$createPropertyAnimationState = F2(
 	function (startValues, property) {
 		switch (property.$) {
@@ -5251,6 +5596,11 @@ var $author$project$Anim$Internal$Sub$createPropertyAnimationState = F2(
 				var config = property.a;
 				var startPosition = $author$project$Anim$Internal$Properties$Position$fromTuple(
 					_Utils_Tuple2(startValues.position.x, startValues.position.y));
+				var frames = A2(
+					$elm$core$Basics$max,
+					1,
+					($elm$core$Basics$round(config.duration) / 16) | 0);
+				var easeFunction = $author$project$Anim$Internal$Timing$Easing$toFunction(config.easing);
 				var actualStart = function () {
 					var _v1 = config.startAt;
 					if (_v1.$ === 'Just') {
@@ -5260,23 +5610,24 @@ var $author$project$Anim$Internal$Sub$createPropertyAnimationState = F2(
 						return startPosition;
 					}
 				}();
+				var steps = A4($author$project$Anim$Internal$Sub$createPositionSteps, actualStart, config.endAt, frames, easeFunction);
 				return $elm$core$Maybe$Just(
 					{
-						currentValue: $author$project$Anim$Internal$Sub$PositionAnimationValue(actualStart),
-						delay: config.delay,
-						distance: config.distance,
-						duration: config.duration,
-						easing: config.easing,
-						elapsed: 0,
+						animationSteps: steps,
+						currentDelayFrame: 0,
+						currentStepIndex: 0,
+						delayFrames: A2($elm$core$Basics$max, 0, (config.delay / 16) | 0),
 						isComplete: false,
-						propertyType: 'position',
-						speed: config.speed,
-						startValue: $author$project$Anim$Internal$Sub$PositionAnimationValue(actualStart),
-						targetValue: $author$project$Anim$Internal$Sub$PositionAnimationValue(config.endAt)
+						propertyType: 'position'
 					});
 			case 'ProcessedRotateConfig':
 				var config = property.a;
 				var startRotate = $author$project$Anim$Internal$Properties$Rotate$fromFloat(startValues.rotate);
+				var frames = A2(
+					$elm$core$Basics$max,
+					1,
+					($elm$core$Basics$round(config.duration) / 16) | 0);
+				var easeFunction = $author$project$Anim$Internal$Timing$Easing$toFunction(config.easing);
 				var actualStart = function () {
 					var _v2 = config.startAt;
 					if (_v2.$ === 'Just') {
@@ -5286,24 +5637,25 @@ var $author$project$Anim$Internal$Sub$createPropertyAnimationState = F2(
 						return startRotate;
 					}
 				}();
+				var steps = A4($author$project$Anim$Internal$Sub$createRotateSteps, actualStart, config.endAt, frames, easeFunction);
 				return $elm$core$Maybe$Just(
 					{
-						currentValue: $author$project$Anim$Internal$Sub$RotateAnimationValue(actualStart),
-						delay: config.delay,
-						distance: config.distance,
-						duration: config.duration,
-						easing: config.easing,
-						elapsed: 0,
+						animationSteps: steps,
+						currentDelayFrame: 0,
+						currentStepIndex: 0,
+						delayFrames: A2($elm$core$Basics$max, 0, (config.delay / 16) | 0),
 						isComplete: false,
-						propertyType: 'rotate',
-						speed: config.speed,
-						startValue: $author$project$Anim$Internal$Sub$RotateAnimationValue(actualStart),
-						targetValue: $author$project$Anim$Internal$Sub$RotateAnimationValue(config.endAt)
+						propertyType: 'rotate'
 					});
 			case 'ProcessedScaleConfig':
 				var config = property.a;
 				var startScale = $author$project$Anim$Internal$Properties$Scale$fromTuple(
 					_Utils_Tuple2(startValues.scale.x, startValues.scale.y));
+				var frames = A2(
+					$elm$core$Basics$max,
+					1,
+					($elm$core$Basics$round(config.duration) / 16) | 0);
+				var easeFunction = $author$project$Anim$Internal$Timing$Easing$toFunction(config.easing);
 				var actualStart = function () {
 					var _v3 = config.startAt;
 					if (_v3.$ === 'Just') {
@@ -5313,23 +5665,24 @@ var $author$project$Anim$Internal$Sub$createPropertyAnimationState = F2(
 						return startScale;
 					}
 				}();
+				var steps = A4($author$project$Anim$Internal$Sub$createScaleSteps, actualStart, config.endAt, frames, easeFunction);
 				return $elm$core$Maybe$Just(
 					{
-						currentValue: $author$project$Anim$Internal$Sub$ScaleAnimationValue(actualStart),
-						delay: config.delay,
-						distance: config.distance,
-						duration: config.duration,
-						easing: config.easing,
-						elapsed: 0,
+						animationSteps: steps,
+						currentDelayFrame: 0,
+						currentStepIndex: 0,
+						delayFrames: A2($elm$core$Basics$max, 0, (config.delay / 16) | 0),
 						isComplete: false,
-						propertyType: 'scale',
-						speed: config.speed,
-						startValue: $author$project$Anim$Internal$Sub$ScaleAnimationValue(actualStart),
-						targetValue: $author$project$Anim$Internal$Sub$ScaleAnimationValue(config.endAt)
+						propertyType: 'scale'
 					});
 			case 'ProcessedColorConfig':
 				var config = property.a;
 				var startColor = startValues.color;
+				var frames = A2(
+					$elm$core$Basics$max,
+					1,
+					($elm$core$Basics$round(config.duration) / 16) | 0);
+				var easeFunction = $author$project$Anim$Internal$Timing$Easing$toFunction(config.easing);
 				var actualStart = function () {
 					var _v4 = config.startAt;
 					if (_v4.$ === 'Just') {
@@ -5339,23 +5692,24 @@ var $author$project$Anim$Internal$Sub$createPropertyAnimationState = F2(
 						return startColor;
 					}
 				}();
+				var steps = A4($author$project$Anim$Internal$Sub$createColorSteps, actualStart, config.endAt, frames, easeFunction);
 				return $elm$core$Maybe$Just(
 					{
-						currentValue: $author$project$Anim$Internal$Sub$ColorAnimationValue(actualStart),
-						delay: config.delay,
-						distance: config.distance,
-						duration: config.duration,
-						easing: config.easing,
-						elapsed: 0,
+						animationSteps: steps,
+						currentDelayFrame: 0,
+						currentStepIndex: 0,
+						delayFrames: A2($elm$core$Basics$max, 0, (config.delay / 16) | 0),
 						isComplete: false,
-						propertyType: 'color',
-						speed: config.speed,
-						startValue: $author$project$Anim$Internal$Sub$ColorAnimationValue(actualStart),
-						targetValue: $author$project$Anim$Internal$Sub$ColorAnimationValue(config.endAt)
+						propertyType: 'color'
 					});
 			default:
 				var config = property.a;
 				var startOpacity = $author$project$Anim$Internal$Properties$Opacity$fromFloat(startValues.opacity);
+				var frames = A2(
+					$elm$core$Basics$max,
+					1,
+					($elm$core$Basics$round(config.duration) / 16) | 0);
+				var easeFunction = $author$project$Anim$Internal$Timing$Easing$toFunction(config.easing);
 				var actualStart = function () {
 					var _v5 = config.startAt;
 					if (_v5.$ === 'Just') {
@@ -5365,19 +5719,15 @@ var $author$project$Anim$Internal$Sub$createPropertyAnimationState = F2(
 						return startOpacity;
 					}
 				}();
+				var steps = A4($author$project$Anim$Internal$Sub$createOpacitySteps, actualStart, config.endAt, frames, easeFunction);
 				return $elm$core$Maybe$Just(
 					{
-						currentValue: $author$project$Anim$Internal$Sub$OpacityAnimationValue(actualStart),
-						delay: config.delay,
-						distance: config.distance,
-						duration: config.duration,
-						easing: config.easing,
-						elapsed: 0,
+						animationSteps: steps,
+						currentDelayFrame: 0,
+						currentStepIndex: 0,
+						delayFrames: A2($elm$core$Basics$max, 0, (config.delay / 16) | 0),
 						isComplete: false,
-						propertyType: 'opacity',
-						speed: config.speed,
-						startValue: $author$project$Anim$Internal$Sub$OpacityAnimationValue(actualStart),
-						targetValue: $author$project$Anim$Internal$Sub$OpacityAnimationValue(config.endAt)
+						propertyType: 'opacity'
 					});
 		}
 	});
@@ -5425,22 +5775,9 @@ var $elm$core$List$concatMap = F2(
 		return $elm$core$List$concat(
 			A2($elm$core$List$map, f, list));
 	});
-var $author$project$Anim$Internal$Properties$Opacity$toFloat = function (_v0) {
-	var o = _v0.a;
-	return o;
-};
-var $author$project$Anim$Internal$Properties$Rotate$toFloat = function (_v0) {
-	var angle = _v0.a;
-	return angle;
-};
 var $author$project$Anim$Internal$Properties$Position$toRecord = function (_v0) {
 	var coords = _v0.a;
 	return {x: coords.x, y: coords.y};
-};
-var $author$project$Anim$Internal$Properties$Scale$toTuple = function (_v0) {
-	var sx = _v0.a;
-	var sy = _v0.b;
-	return _Utils_Tuple2(sx, sy);
 };
 var $author$project$Anim$Internal$Sub$extractFromProperty = F2(
 	function (property, acc) {
@@ -5537,7 +5874,6 @@ var $author$project$Anim$Internal$Builder$ProcessedRotateConfig = function (a) {
 var $author$project$Anim$Internal$Builder$ProcessedScaleConfig = function (a) {
 	return {$: 'ProcessedScaleConfig', a: a};
 };
-var $elm$core$Basics$sqrt = _Basics_sqrt;
 var $author$project$Anim$Internal$Properties$Position$distance = F2(
 	function (_v0, _v1) {
 		var a = _v0.a;
@@ -5546,12 +5882,6 @@ var $author$project$Anim$Internal$Properties$Position$distance = F2(
 		var dx = a.x - b.x;
 		return $elm$core$Basics$sqrt((dx * dx) + (dy * dy));
 	});
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
 var $author$project$Anim$Internal$Properties$Rotate$distance = F2(
 	function (_v0, _v1) {
 		var start = _v0.a;
@@ -5640,7 +5970,6 @@ var $author$project$Anim$Internal$Builder$resolveTimingWithDefault = F3(
 			}
 		}
 	});
-var $elm$core$Basics$round = _Basics_round;
 var $author$project$Anim$Internal$Properties$Position$speed = F3(
 	function (distance_, duration_, timeSpec) {
 		if (timeSpec.$ === 'Duration') {
@@ -5659,15 +5988,6 @@ var $author$project$Anim$Internal$Properties$Rotate$speed = F3(
 		} else {
 			var degreesPerSecond = timeSpec.a;
 			return degreesPerSecond;
-		}
-	});
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
 		}
 	});
 var $author$project$Anim$Internal$Builder$processProperty = F2(
@@ -6698,7 +7018,6 @@ var $author$project$ElmUI$Sub$Position$Main$subscriptions = function (model) {
 };
 var $author$project$Anim$Timing$Easing$BounceIn = {$: 'BounceIn'};
 var $author$project$Anim$Timing$Easing$BounceOut = {$: 'BounceOut'};
-var $author$project$Anim$Timing$Easing$EaseInOut = {$: 'EaseInOut'};
 var $author$project$Anim$Timing$Easing$EaseOut = {$: 'EaseOut'};
 var $author$project$Anim$Internal$Sub$builder = function (_v0) {
 	var state = _v0.a;
@@ -6943,327 +7262,33 @@ var $elm$core$List$all = F2(
 			list);
 	});
 var $elm$core$Basics$ge = _Utils_ge;
-var $author$project$Anim$Internal$Properties$Position$toTuple = function (_v0) {
-	var coords = _v0.a;
-	return _Utils_Tuple2(coords.x, coords.y);
-};
-var $author$project$Anim$Internal$Sub$interpolateValue = F3(
-	function (progress, startValue, targetValue) {
-		var _v0 = _Utils_Tuple2(startValue, targetValue);
-		_v0$5:
-		while (true) {
-			switch (_v0.a.$) {
-				case 'PositionAnimationValue':
-					if (_v0.b.$ === 'PositionAnimationValue') {
-						var start = _v0.a.a;
-						var target = _v0.b.a;
-						var targetTuple = $author$project$Anim$Internal$Properties$Position$toTuple(target);
-						var startTuple = $author$project$Anim$Internal$Properties$Position$toTuple(start);
-						var _v1 = targetTuple;
-						var targetX = _v1.a;
-						var targetY = _v1.b;
-						var _v2 = startTuple;
-						var startX = _v2.a;
-						var startY = _v2.b;
-						var newX = startX + (progress * (targetX - startX));
-						var newY = startY + (progress * (targetY - startY));
-						return $author$project$Anim$Internal$Sub$PositionAnimationValue(
-							$author$project$Anim$Internal$Properties$Position$fromTuple(
-								_Utils_Tuple2(newX, newY)));
-					} else {
-						break _v0$5;
-					}
-				case 'RotateAnimationValue':
-					if (_v0.b.$ === 'RotateAnimationValue') {
-						var start = _v0.a.a;
-						var target = _v0.b.a;
-						var targetFloat = $author$project$Anim$Internal$Properties$Rotate$toFloat(target);
-						var startFloat = $author$project$Anim$Internal$Properties$Rotate$toFloat(start);
-						var newFloat = startFloat + (progress * (targetFloat - startFloat));
-						return $author$project$Anim$Internal$Sub$RotateAnimationValue(
-							$author$project$Anim$Internal$Properties$Rotate$fromFloat(newFloat));
-					} else {
-						break _v0$5;
-					}
-				case 'ScaleAnimationValue':
-					if (_v0.b.$ === 'ScaleAnimationValue') {
-						var start = _v0.a.a;
-						var target = _v0.b.a;
-						var targetTuple = $author$project$Anim$Internal$Properties$Scale$toTuple(target);
-						var startTuple = $author$project$Anim$Internal$Properties$Scale$toTuple(start);
-						var _v3 = targetTuple;
-						var targetX = _v3.a;
-						var targetY = _v3.b;
-						var _v4 = startTuple;
-						var startX = _v4.a;
-						var startY = _v4.b;
-						var newX = startX + (progress * (targetX - startX));
-						var newY = startY + (progress * (targetY - startY));
-						return $author$project$Anim$Internal$Sub$ScaleAnimationValue(
-							$author$project$Anim$Internal$Properties$Scale$fromTuple(
-								_Utils_Tuple2(newX, newY)));
-					} else {
-						break _v0$5;
-					}
-				case 'ColorAnimationValue':
-					if (_v0.b.$ === 'ColorAnimationValue') {
-						var target = _v0.b.a;
-						return $author$project$Anim$Internal$Sub$ColorAnimationValue(target);
-					} else {
-						break _v0$5;
-					}
-				default:
-					if (_v0.b.$ === 'OpacityAnimationValue') {
-						var start = _v0.a.a;
-						var target = _v0.b.a;
-						var targetFloat = $author$project$Anim$Internal$Properties$Opacity$toFloat(target);
-						var startFloat = $author$project$Anim$Internal$Properties$Opacity$toFloat(start);
-						var newFloat = startFloat + (progress * (targetFloat - startFloat));
-						return $author$project$Anim$Internal$Sub$OpacityAnimationValue(
-							$author$project$Anim$Internal$Properties$Opacity$fromFloat(newFloat));
-					} else {
-						break _v0$5;
-					}
-			}
-		}
-		return targetValue;
-	});
 var $elm$core$Basics$min = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) < 0) ? x : y;
 	});
-var $elm$core$List$tail = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(xs);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $elm_community$easing_functions$Ease$bezier = F5(
-	function (x1, y1, x2, y2, time) {
-		var pair = F4(
-			function (interpolate, _v2, _v3, v) {
-				var a0 = _v2.a;
-				var b0 = _v2.b;
-				var a1 = _v3.a;
-				var b1 = _v3.b;
-				return _Utils_Tuple2(
-					A3(interpolate, a0, a1, v),
-					A3(interpolate, b0, b1, v));
-			});
-		var lerp = F3(
-			function (from, to, v) {
-				return from + ((to - from) * v);
-			});
-		var casteljau = function (ps) {
-			if (ps.b && (!ps.b.b)) {
-				var _v1 = ps.a;
-				var x = _v1.a;
-				var y = _v1.b;
-				return y;
-			} else {
-				var xs = ps;
-				return casteljau(
-					A3(
-						$elm$core$List$map2,
-						F2(
-							function (x, y) {
-								return A4(pair, lerp, x, y, time);
-							}),
-						xs,
-						A2(
-							$elm$core$Maybe$withDefault,
-							_List_Nil,
-							$elm$core$List$tail(xs))));
-			}
-		};
-		return casteljau(
-			_List_fromArray(
-				[
-					_Utils_Tuple2(0, 0),
-					_Utils_Tuple2(x1, y1),
-					_Utils_Tuple2(x2, y2),
-					_Utils_Tuple2(1, 1)
-				]));
-	});
-var $elm_community$easing_functions$Ease$inBack = function (time) {
-	return (time * time) * ((2.70158 * time) - 1.70158);
-};
-var $elm_community$easing_functions$Ease$flip = F2(
-	function (easing, time) {
-		return 1 - easing(1 - time);
-	});
-var $elm_community$easing_functions$Ease$outBounce = function (time) {
-	var t4 = time - (2.625 / 2.75);
-	var t3 = time - (2.25 / 2.75);
-	var t2 = time - (1.5 / 2.75);
-	var a = 7.5625;
-	return (_Utils_cmp(time, 1 / 2.75) < 0) ? ((a * time) * time) : ((_Utils_cmp(time, 2 / 2.75) < 0) ? (((a * t2) * t2) + 0.75) : ((_Utils_cmp(time, 2.5 / 2.75) < 0) ? (((a * t3) * t3) + 0.9375) : (((a * t4) * t4) + 0.984375)));
-};
-var $elm_community$easing_functions$Ease$inBounce = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$outBounce);
-var $elm$core$Basics$pow = _Basics_pow;
-var $elm_community$easing_functions$Ease$outCirc = function (time) {
-	return $elm$core$Basics$sqrt(
-		1 - A2($elm$core$Basics$pow, time - 1, 2));
-};
-var $elm_community$easing_functions$Ease$inCirc = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$outCirc);
-var $elm_community$easing_functions$Ease$inCubic = function (time) {
-	return A2($elm$core$Basics$pow, time, 3);
-};
-var $elm$core$Basics$pi = _Basics_pi;
-var $elm$core$Basics$sin = _Basics_sin;
-var $elm_community$easing_functions$Ease$inElastic = function (time) {
-	if (time === 0.0) {
-		return 0.0;
-	} else {
-		var t = time - 1;
-		var s = 0.075;
-		var p = 0.3;
-		return -(A2($elm$core$Basics$pow, 2, 10 * t) * $elm$core$Basics$sin(((t - s) * (2 * $elm$core$Basics$pi)) / p));
-	}
-};
-var $elm_community$easing_functions$Ease$inExpo = function (time) {
-	return (time === 0.0) ? 0.0 : A2($elm$core$Basics$pow, 2, 10 * (time - 1));
-};
-var $elm_community$easing_functions$Ease$inOut = F3(
-	function (e1, e2, time) {
-		return (time < 0.5) ? (e1(time * 2) / 2) : (0.5 + (e2((time - 0.5) * 2) / 2));
-	});
-var $elm_community$easing_functions$Ease$outBack = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inBack);
-var $elm_community$easing_functions$Ease$inOutBack = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inBack, $elm_community$easing_functions$Ease$outBack);
-var $elm_community$easing_functions$Ease$inOutBounce = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inBounce, $elm_community$easing_functions$Ease$outBounce);
-var $elm_community$easing_functions$Ease$inOutCirc = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inCirc, $elm_community$easing_functions$Ease$outCirc);
-var $elm_community$easing_functions$Ease$outCubic = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inCubic);
-var $elm_community$easing_functions$Ease$inOutCubic = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inCubic, $elm_community$easing_functions$Ease$outCubic);
-var $elm_community$easing_functions$Ease$outElastic = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inElastic);
-var $elm_community$easing_functions$Ease$inOutElastic = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inElastic, $elm_community$easing_functions$Ease$outElastic);
-var $elm_community$easing_functions$Ease$outExpo = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inExpo);
-var $elm_community$easing_functions$Ease$inOutExpo = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inExpo, $elm_community$easing_functions$Ease$outExpo);
-var $elm_community$easing_functions$Ease$inQuad = function (time) {
-	return A2($elm$core$Basics$pow, time, 2);
-};
-var $elm_community$easing_functions$Ease$outQuad = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inQuad);
-var $elm_community$easing_functions$Ease$inOutQuad = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inQuad, $elm_community$easing_functions$Ease$outQuad);
-var $elm_community$easing_functions$Ease$inQuart = function (time) {
-	return A2($elm$core$Basics$pow, time, 4);
-};
-var $elm_community$easing_functions$Ease$outQuart = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inQuart);
-var $elm_community$easing_functions$Ease$inOutQuart = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inQuart, $elm_community$easing_functions$Ease$outQuart);
-var $elm_community$easing_functions$Ease$inQuint = function (time) {
-	return A2($elm$core$Basics$pow, time, 5);
-};
-var $elm_community$easing_functions$Ease$outQuint = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inQuint);
-var $elm_community$easing_functions$Ease$inOutQuint = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inQuint, $elm_community$easing_functions$Ease$outQuint);
-var $elm_community$easing_functions$Ease$outSine = function (time) {
-	return $elm$core$Basics$sin(time * ($elm$core$Basics$pi / 2));
-};
-var $elm_community$easing_functions$Ease$inSine = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$outSine);
-var $elm_community$easing_functions$Ease$inOutSine = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inSine, $elm_community$easing_functions$Ease$outSine);
-var $elm_community$easing_functions$Ease$linear = $elm$core$Basics$identity;
-var $author$project$Anim$Internal$Timing$Easing$toFunction = function (easing) {
-	switch (easing.$) {
-		case 'Bezier':
-			var p1x = easing.a;
-			var p1y = easing.b;
-			var p2x = easing.c;
-			var p2y = easing.d;
-			return A4($elm_community$easing_functions$Ease$bezier, p1x, p1y, p2x, p2y);
-		case 'Linear':
-			return $elm_community$easing_functions$Ease$linear;
-		case 'Ease':
-			return $elm_community$easing_functions$Ease$inOutQuad;
-		case 'EaseIn':
-			return $elm_community$easing_functions$Ease$inQuad;
-		case 'EaseOut':
-			return $elm_community$easing_functions$Ease$outQuad;
-		case 'EaseInOut':
-			return $elm_community$easing_functions$Ease$inOutQuad;
-		case 'SineIn':
-			return $elm_community$easing_functions$Ease$inSine;
-		case 'SineOut':
-			return $elm_community$easing_functions$Ease$outSine;
-		case 'SineInOut':
-			return $elm_community$easing_functions$Ease$inOutSine;
-		case 'QuadIn':
-			return $elm_community$easing_functions$Ease$inQuad;
-		case 'QuadOut':
-			return $elm_community$easing_functions$Ease$outQuad;
-		case 'QuadInOut':
-			return $elm_community$easing_functions$Ease$inOutQuad;
-		case 'CubicIn':
-			return $elm_community$easing_functions$Ease$inCubic;
-		case 'CubicOut':
-			return $elm_community$easing_functions$Ease$outCubic;
-		case 'CubicInOut':
-			return $elm_community$easing_functions$Ease$inOutCubic;
-		case 'QuartIn':
-			return $elm_community$easing_functions$Ease$inQuart;
-		case 'QuartOut':
-			return $elm_community$easing_functions$Ease$outQuart;
-		case 'QuartInOut':
-			return $elm_community$easing_functions$Ease$inOutQuart;
-		case 'QuintIn':
-			return $elm_community$easing_functions$Ease$inQuint;
-		case 'QuintOut':
-			return $elm_community$easing_functions$Ease$outQuint;
-		case 'QuintInOut':
-			return $elm_community$easing_functions$Ease$inOutQuint;
-		case 'ExpoIn':
-			return $elm_community$easing_functions$Ease$inExpo;
-		case 'ExpoOut':
-			return $elm_community$easing_functions$Ease$outExpo;
-		case 'ExpoInOut':
-			return $elm_community$easing_functions$Ease$inOutExpo;
-		case 'CircIn':
-			return $elm_community$easing_functions$Ease$inCirc;
-		case 'CircOut':
-			return $elm_community$easing_functions$Ease$outCirc;
-		case 'CircInOut':
-			return $elm_community$easing_functions$Ease$inOutCirc;
-		case 'BackIn':
-			return $elm_community$easing_functions$Ease$inBack;
-		case 'BackOut':
-			return $elm_community$easing_functions$Ease$outBack;
-		case 'BackInOut':
-			return $elm_community$easing_functions$Ease$inOutBack;
-		case 'ElasticIn':
-			return $elm_community$easing_functions$Ease$inElastic;
-		case 'ElasticOut':
-			return $elm_community$easing_functions$Ease$outElastic;
-		case 'ElasticInOut':
-			return $elm_community$easing_functions$Ease$inOutElastic;
-		case 'BounceIn':
-			return $elm_community$easing_functions$Ease$inBounce;
-		case 'BounceOut':
-			return $elm_community$easing_functions$Ease$outBounce;
-		case 'BounceInOut':
-			return $elm_community$easing_functions$Ease$inOutBounce;
-		default:
-			return $elm_community$easing_functions$Ease$inOutQuad;
-	}
-};
 var $author$project$Anim$Internal$Sub$updatePropertyAnimation = F2(
-	function (deltaMs, propertyState) {
+	function (_v0, propertyState) {
 		if (propertyState.isComplete) {
 			return propertyState;
 		} else {
-			var newElapsed = propertyState.elapsed + deltaMs;
-			var delay = propertyState.delay;
-			if (_Utils_cmp(newElapsed, delay) < 0) {
+			if (_Utils_cmp(propertyState.currentDelayFrame, propertyState.delayFrames) < 0) {
 				return _Utils_update(
 					propertyState,
-					{elapsed: newElapsed});
+					{currentDelayFrame: propertyState.currentDelayFrame + 1});
 			} else {
-				var animationElapsed = newElapsed - delay;
-				var progress = A2($elm$core$Basics$min, 1.0, animationElapsed / propertyState.duration);
-				var easedProgress = A2($author$project$Anim$Internal$Timing$Easing$toFunction, propertyState.easing, progress);
-				var newCurrentValue = A3($author$project$Anim$Internal$Sub$interpolateValue, easedProgress, propertyState.startValue, propertyState.targetValue);
-				var isComplete = progress >= 1.0;
+				var nextStepIndex = propertyState.currentStepIndex + 1;
+				var isComplete = _Utils_cmp(
+					nextStepIndex,
+					$elm$core$List$length(propertyState.animationSteps)) > -1;
 				return _Utils_update(
 					propertyState,
-					{currentValue: newCurrentValue, elapsed: newElapsed, isComplete: isComplete});
+					{
+						currentStepIndex: A2(
+							$elm$core$Basics$min,
+							nextStepIndex,
+							$elm$core$List$length(propertyState.animationSteps) - 1),
+						isComplete: isComplete
+					});
 			}
 		}
 	});
@@ -7308,7 +7333,9 @@ var $author$project$ElmUI$Sub$Position$Main$update = F2(
 	function (msg, model) {
 		var _v0 = A2($elm$core$Debug$log, 'Received Msg', msg);
 		switch (_v0.$) {
-			case 'MoveToCorner':
+			case 'MoveToXY':
+				var x = _v0.a;
+				var y = _v0.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -7323,31 +7350,8 @@ var $author$project$ElmUI$Sub$Position$Main$update = F2(
 											200.0,
 											A3(
 												$author$project$Anim$Properties$Position$toXY,
-												100,
-												100,
-												A2(
-													$author$project$Anim$Properties$Position$for,
-													'box',
-													$author$project$Anim$Sub$builder(model.animations)))))))
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'MoveToCenter':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							animations: $author$project$Anim$Sub$animate(
-								$author$project$Anim$Properties$Position$build(
-									A2(
-										$author$project$Anim$Properties$Position$easing,
-										$author$project$Anim$Timing$Easing$EaseInOut,
-										A2(
-											$author$project$Anim$Properties$Position$speed,
-											200.0,
-											A3(
-												$author$project$Anim$Properties$Position$toXY,
-												225,
-												175,
+												x,
+												y,
 												A2(
 													$author$project$Anim$Properties$Position$for,
 													'box',
@@ -7442,7 +7446,7 @@ var $author$project$ElmUI$Sub$Position$Main$update = F2(
 													$author$project$Anim$Sub$builder(model.animations)))))))
 						}),
 					$elm$core$Platform$Cmd$none);
-			case 'StopAnimation':
+			case 'ResetPosition':
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -13347,12 +13351,14 @@ var $author$project$Common$UI$createDocument = F3(
 var $author$project$ElmUI$Sub$Position$Main$MoveDown = {$: 'MoveDown'};
 var $author$project$ElmUI$Sub$Position$Main$MoveLeft = {$: 'MoveLeft'};
 var $author$project$ElmUI$Sub$Position$Main$MoveRight = {$: 'MoveRight'};
-var $author$project$ElmUI$Sub$Position$Main$MoveToCenter = {$: 'MoveToCenter'};
-var $author$project$ElmUI$Sub$Position$Main$MoveToCorner = {$: 'MoveToCorner'};
+var $author$project$ElmUI$Sub$Position$Main$MoveToXY = F2(
+	function (a, b) {
+		return {$: 'MoveToXY', a: a, b: b};
+	});
 var $author$project$ElmUI$Sub$Position$Main$MoveUp = {$: 'MoveUp'};
 var $author$project$Common$UI$Primary = {$: 'Primary'};
 var $author$project$Common$UI$Purple = {$: 'Purple'};
-var $author$project$ElmUI$Sub$Position$Main$StopAnimation = {$: 'StopAnimation'};
+var $author$project$ElmUI$Sub$Position$Main$ResetPosition = {$: 'ResetPosition'};
 var $author$project$Common$UI$Success = {$: 'Success'};
 var $author$project$Common$UI$Warning = {$: 'Warning'};
 var $author$project$Anim$Properties$Position$asRecord = function (pos) {
@@ -13505,6 +13511,36 @@ var $elm$core$Maybe$andThen = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
+var $elm$core$List$drop = F2(
+	function (n, list) {
+		drop:
+		while (true) {
+			if (n <= 0) {
+				return list;
+			} else {
+				if (!list.b) {
+					return list;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs;
+					n = $temp$n;
+					list = $temp$list;
+					continue drop;
+				}
+			}
+		}
+	});
+var $author$project$Anim$Internal$Sub$getLastStep = function (steps) {
+	return A2(
+		$elm$core$Maybe$withDefault,
+		$author$project$Anim$Internal$Sub$PositionAnimationValue(
+			$author$project$Anim$Internal$Properties$Position$fromTuple(
+				_Utils_Tuple2(0, 0))),
+		$elm$core$List$head(
+			$elm$core$List$reverse(steps)));
+};
 var $author$project$Anim$Internal$Sub$getPosition = F2(
 	function (elementId, _v0) {
 		var state = _v0.a;
@@ -13514,9 +13550,13 @@ var $author$project$Anim$Internal$Sub$getPosition = F2(
 				return A2(
 					$elm$core$Maybe$andThen,
 					function (propertyState) {
-						var _v1 = propertyState.currentValue;
-						if (_v1.$ === 'PositionAnimationValue') {
-							var pos = _v1.a;
+						var currentValue = A2(
+							$elm$core$Maybe$withDefault,
+							$author$project$Anim$Internal$Sub$getLastStep(propertyState.animationSteps),
+							$elm$core$List$head(
+								A2($elm$core$List$drop, propertyState.currentStepIndex, propertyState.animationSteps)));
+						if (currentValue.$ === 'PositionAnimationValue') {
+							var pos = currentValue.a;
 							return $elm$core$Maybe$Just(pos);
 						} else {
 							return $elm$core$Maybe$Nothing;
@@ -13547,10 +13587,14 @@ var $author$project$Anim$Internal$Properties$Color$toString = function (color) {
 	}
 };
 var $author$project$Anim$Internal$Sub$propertyToStyles = function (propertyState) {
-	var _v0 = propertyState.currentValue;
-	switch (_v0.$) {
+	var currentValue = A2(
+		$elm$core$Maybe$withDefault,
+		$author$project$Anim$Internal$Sub$getLastStep(propertyState.animationSteps),
+		$elm$core$List$head(
+			A2($elm$core$List$drop, propertyState.currentStepIndex, propertyState.animationSteps)));
+	switch (currentValue.$) {
 		case 'PositionAnimationValue':
-			var pos = _v0.a;
+			var pos = currentValue.a;
 			var _v1 = $author$project$Anim$Internal$Properties$Position$toTuple(pos);
 			var x = _v1.a;
 			var y = _v1.b;
@@ -13561,7 +13605,7 @@ var $author$project$Anim$Internal$Sub$propertyToStyles = function (propertyState
 					'translate(' + ($elm$core$String$fromFloat(x) + ('px, ' + ($elm$core$String$fromFloat(y) + 'px)'))))
 				]);
 		case 'RotateAnimationValue':
-			var rotate = _v0.a;
+			var rotate = currentValue.a;
 			var degrees = $author$project$Anim$Internal$Properties$Rotate$toFloat(rotate);
 			return _List_fromArray(
 				[
@@ -13570,7 +13614,7 @@ var $author$project$Anim$Internal$Sub$propertyToStyles = function (propertyState
 					'rotate(' + ($elm$core$String$fromFloat(degrees) + 'deg)'))
 				]);
 		case 'ScaleAnimationValue':
-			var scale = _v0.a;
+			var scale = currentValue.a;
 			var _v2 = $author$project$Anim$Internal$Properties$Scale$toTuple(scale);
 			var x = _v2.a;
 			var y = _v2.b;
@@ -13581,7 +13625,7 @@ var $author$project$Anim$Internal$Sub$propertyToStyles = function (propertyState
 					'scale(' + ($elm$core$String$fromFloat(x) + (', ' + ($elm$core$String$fromFloat(y) + ')'))))
 				]);
 		case 'ColorAnimationValue':
-			var colorValue = _v0.a;
+			var colorValue = currentValue.a;
 			return _List_fromArray(
 				[
 					_Utils_Tuple2(
@@ -13589,7 +13633,7 @@ var $author$project$Anim$Internal$Sub$propertyToStyles = function (propertyState
 					$author$project$Anim$Internal$Properties$Color$toString(colorValue))
 				]);
 		default:
-			var opacity = _v0.a;
+			var opacity = currentValue.a;
 			var opacityValue = $author$project$Anim$Internal$Properties$Opacity$toFloat(opacity);
 			return _List_fromArray(
 				[
@@ -13812,9 +13856,15 @@ var $author$project$ElmUI$Sub$Position$Main$viewContent = function (model) {
 			$author$project$Common$UI$wrappedButtonRow(
 			_List_fromArray(
 				[
-					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$ElmUI$Sub$Position$Main$MoveToCorner, 'Move to (100, 100)'),
-					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$ElmUI$Sub$Position$Main$MoveToCenter, 'Move to (300, 200)'),
-					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Sub$Position$Main$StopAnimation, 'Return to Origin')
+					_Utils_Tuple3(
+					$author$project$Common$UI$Primary,
+					A2($author$project$ElmUI$Sub$Position$Main$MoveToXY, 100, 100),
+					'Move to (100, 100)'),
+					_Utils_Tuple3(
+					$author$project$Common$UI$Primary,
+					A2($author$project$ElmUI$Sub$Position$Main$MoveToXY, 300, 200),
+					'Move to (300, 200)'),
+					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$ElmUI$Sub$Position$Main$ResetPosition, 'Return to Origin')
 				])),
 			$author$project$Common$UI$wrappedButtonRow(
 			_List_fromArray(
