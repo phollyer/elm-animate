@@ -25,7 +25,7 @@ USAGE:
 import Anim
 import Anim.Sub as Sub
 import Anim.Properties.Position as Position
-import Anim.Easing exposing (Easing(..))
+import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI

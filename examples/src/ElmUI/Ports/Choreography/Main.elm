@@ -27,7 +27,7 @@ USAGE EXAMPLES:
 -- Common UI imports
 
 import Anim exposing (AnimBuilder, init)
-import Anim.Easing as Easing
+import Anim.Timing.Easing as Easing
 import Anim.Ports as Ports
 import Anim.Properties.Position as Position
 import Browser exposing (Document)
