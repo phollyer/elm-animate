@@ -1,9 +1,5 @@
-module Internal.Types exposing
-    ( Pixels
-    , Distance
-    , Milliseconds
-    , MillisecondsInt
-    , Speed
+module Scroll.Types exposing
+    ( Distance
     , Frames
     , CoordinatePair
     )
@@ -24,33 +20,9 @@ function signatures.
 -}
 
 
-{-| Type alias for pixel coordinates and positions.
--}
-type alias Pixels =
-    Float
-
-
 {-| Type alias for pixel distances, offsets, and sizes.
 -}
 type alias Distance =
-    Float
-
-
-{-| Type alias for animation durations in milliseconds.
--}
-type alias Milliseconds =
-    Float
-
-
-{-| Type alias for animation durations in milliseconds as integers.
--}
-type alias MillisecondsInt =
-    Int
-
-
-{-| Type alias for animation speeds in pixels per second.
--}
-type alias Speed =
     Float
 
 
