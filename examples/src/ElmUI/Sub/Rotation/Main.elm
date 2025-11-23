@@ -15,9 +15,12 @@ FEATURES:
 
 -}
 
-import Anim exposing (RotationValue)
-import Anim.Sub exposing (Model, animate, init, step, styleProperties, subscriptions)
+import Anim
+import Anim.Properties.Rotate as Rotate exposing (Builder)
+import Anim.Sub as Sub
+import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
+import Browser.Events
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
@@ -43,11 +46,18 @@ main =
 
 
 -- MODEL
+-- INIT
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { animations = Sub.init }
+    , Cmd.none
+    )
 
 
 type alias Model =
-    { animations : Anim.Sub.Model
-    }
+    { animations : Sub.AnimationState }
 
 
 type Msg
@@ -57,7 +67,14 @@ type Msg
     | RotateLeft
     | RotateRight
     | ResetRotation
-    | AnimationFrame Float
+    | AnimationMsg Sub.AnimationMsg
+
+
+anim : Sub.AnimationState -> Builder
+anim animation =
+    animation
+        |> Sub.builder
+        |> Rotate.for "box"
 
 
 
@@ -68,97 +85,87 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Rotate45 ->
-            let
-                animation =
-                    Anim.rotation "box" 45
-                        |> Anim.degreesPerSecond 180.0
-                        |> Anim.easeOut
-            in
             ( { model
-                | animations = animate animation model.animations
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Rotate.to 45
+                        |> Rotate.speed 180.0
+                        |> Rotate.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
 
         Rotate90 ->
-            let
-                animation =
-                    Anim.rotation "box" 90
-                        |> Anim.degreesPerSecond 180.0
-                        |> Anim.easeOut
-            in
             ( { model
-                | animations = animate animation model.animations
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Rotate.to 90
+                        |> Rotate.speed 180.0
+                        |> Rotate.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
 
         Rotate180 ->
-            let
-                animation =
-                    Anim.rotation "box" 180
-                        |> Anim.degreesPerSecond 200.0
-                        |> Anim.easeInOut
-            in
             ( { model
-                | animations = animate animation model.animations
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Rotate.to 180
+                        |> Rotate.speed 200.0
+                        |> Rotate.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
 
         RotateLeft ->
-            let
-                animation =
-                    Anim.rotation "box" -90
-                        |> Anim.degreesPerSecond 150.0
-                        |> Anim.easeIn
-            in
             ( { model
-                | animations = animate animation model.animations
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Rotate.to -90
+                        |> Rotate.speed 150.0
+                        |> Rotate.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
 
         RotateRight ->
-            let
-                animation =
-                    Anim.rotation "box" 90
-                        |> Anim.degreesPerSecond 150.0
-                        |> Anim.easeIn
-            in
             ( { model
-                | animations = animate animation model.animations
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Rotate.to 90
+                        |> Rotate.speed 150.0
+                        |> Rotate.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
 
         ResetRotation ->
-            let
-                animation =
-                    Anim.rotation "box" 0
-                        |> Anim.degreesPerSecond 180.0
-                        |> Anim.easeOut
-            in
             ( { model
-                | animations = animate animation model.animations
+                | animations =
+                    model.animations
+                        |> anim
+                        |> Rotate.to 0
+                        |> Rotate.speed 180.0
+                        |> Rotate.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
 
-        AnimationFrame deltaTime ->
-            ( { model | animations = step deltaTime model.animations }, Cmd.none )
-
-
-
--- INIT
-
-
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { animations = Anim.Sub.init
-      }
-    , Cmd.none
-    )
+        AnimationMsg animMsg ->
+            ( { model | animations = Sub.update animMsg model.animations }
+            , Cmd.none
+            )
 
 
 
@@ -167,7 +174,8 @@ init _ =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Anim.Sub.subscriptions AnimationFrame model.animations
+    Sub.map AnimationMsg <|
+        Sub.subscriptions model.animations
 
 
 
@@ -247,9 +255,7 @@ rotatingElement elementId symbol label color model =
          , htmlAttribute (Html.Attributes.style "align-items" "center")
          , htmlAttribute (Html.Attributes.style "justify-content" "center")
          ]
-            ++ (styleProperties elementId model.animations
-                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
-               )
+            ++ List.map htmlAttribute (Sub.htmlAttributes "box" model.animations)
         )
         (column
             [ centerX

@@ -1,9 +1,9 @@
 module Anim.Sub exposing
-    ( init, builder, animate, AnimationState, AnimationMsg
+    ( ElementId
+    , init, builder, animate, AnimationState, AnimationMsg
     , subscriptions, update
     , getPosition, getCurrentStyles
     , htmlAttributes
-    , ElementId
     )
 
 {-| Subscription-based animation system for Anim.
@@ -14,7 +14,7 @@ onAnimationFrameDelta subscriptions for smooth, controlled animations.
 
 # Animation Execution
 
-@docs TargetId
+@docs ElementId
 
 @docs init, builder, animate, AnimationState, AnimationMsg
 
@@ -66,7 +66,7 @@ type alias ElementId =
 
 {-| Initialize empty animation builder.
 -}
-init : AnimBuilder
+init : AnimationState
 init =
     InternalSub.init
 

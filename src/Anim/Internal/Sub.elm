@@ -65,6 +65,17 @@ type AnimationState
         }
 
 
+{-| Initialize empty animation builder.
+-}
+init : AnimationState
+init =
+    AnimationState
+        { elementAnimations = Dict.empty
+        , isRunning = False
+        , builder = Anim.init
+        }
+
+
 type alias ElementId =
     String
 
@@ -200,13 +211,6 @@ type AnimationMsg
 -}
 type alias TargetId =
     String
-
-
-{-| Initialize empty animation builder.
--}
-init : AnimBuilder
-init =
-    Anim.init
 
 
 {-| Turn the AnimationState into an AnimBuilder.

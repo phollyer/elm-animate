@@ -5271,7 +5271,6 @@ var $author$project$Anim$Internal$Properties$Position$fromTuple = function (_v0)
 	return $author$project$Anim$Internal$Properties$Position$Position(
 		{x: xCoord, y: yCoord});
 };
-var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Tuple$pair = F2(
 	function (a, b) {
 		return _Utils_Tuple2(a, b);
@@ -5303,46 +5302,36 @@ var $author$project$Anim$Internal$Properties$Position$toTuple = function (_v0) {
 };
 var $author$project$Anim$Internal$Sub$createPositionSteps = F4(
 	function (startPos, endPos, frames, easingFunction) {
-		var _v0 = A2(
-			$elm$core$Debug$log,
-			'Start Position Tuple',
-			$author$project$Anim$Internal$Properties$Position$toTuple(startPos));
+		var _v0 = $author$project$Anim$Internal$Properties$Position$toTuple(startPos);
 		var startX = _v0.a;
 		var startY = _v0.b;
-		var _v1 = A2(
-			$elm$core$Debug$log,
-			'Target Position Tuple',
-			$author$project$Anim$Internal$Properties$Position$toTuple(endPos));
+		var _v1 = $author$project$Anim$Internal$Properties$Position$toTuple(endPos);
 		var endX = _v1.a;
 		var endY = _v1.b;
 		var stepsX = function () {
-			var _v5 = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startX, endX);
-			if (!_v5.b) {
-				return A2($elm$core$List$repeat, frames, endX);
-			} else {
-				var vals = _v5;
-				return vals;
-			}
-		}();
-		var stepsY = function () {
-			var _v4 = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startY, endY);
+			var _v4 = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startX, endX);
 			if (!_v4.b) {
-				return A2($elm$core$List$repeat, frames, endY);
+				return A2($elm$core$List$repeat, frames, endX);
 			} else {
 				var vals = _v4;
 				return vals;
 			}
 		}();
-		var steps = A2(
-			$elm$core$Debug$log,
-			'Position Steps',
-			A3($elm$core$List$map2, $elm$core$Tuple$pair, stepsX, stepsY));
-		var _v2 = A2($elm$core$Debug$log, 'Frames', frames);
+		var stepsY = function () {
+			var _v3 = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startY, endY);
+			if (!_v3.b) {
+				return A2($elm$core$List$repeat, frames, endY);
+			} else {
+				var vals = _v3;
+				return vals;
+			}
+		}();
+		var steps = A3($elm$core$List$map2, $elm$core$Tuple$pair, stepsX, stepsY);
 		return A2(
 			$elm$core$List$map,
-			function (_v3) {
-				var x = _v3.a;
-				var y = _v3.b;
+			function (_v2) {
+				var x = _v2.a;
+				var y = _v2.b;
 				return $author$project$Anim$Internal$Sub$PositionAnimationValue(
 					$author$project$Anim$Internal$Properties$Position$fromTuple(
 						_Utils_Tuple2(x, y)));
@@ -5414,6 +5403,7 @@ var $author$project$Anim$Internal$Sub$createScaleSteps = F4(
 			},
 			steps);
 	});
+var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Basics$round = _Basics_round;
 var $elm$core$List$tail = function (list) {
 	if (list.b) {
@@ -6734,6 +6724,11 @@ var $author$project$Anim$Internal$Builders$Position$build = function (_v0) {
 	return A2($author$project$Anim$Internal$Builders$Property$upsert, newPositionConfig, builder);
 };
 var $author$project$Anim$Properties$Position$build = $author$project$Anim$Internal$Builders$Position$build;
+var $author$project$Anim$Internal$Sub$builder = function (_v0) {
+	var state = _v0.a;
+	return state.builder;
+};
+var $author$project$Anim$Sub$builder = $author$project$Anim$Internal$Sub$builder;
 var $author$project$Anim$Internal$Builders$Position$PositionBuilder = F2(
 	function (a, b) {
 		return {$: 'PositionBuilder', a: a, b: b};
@@ -6867,7 +6862,8 @@ var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
 	{currentElementId: $elm$core$Maybe$Nothing, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing});
 var $author$project$Anim$init = $author$project$Anim$Internal$Builder$init;
-var $author$project$Anim$Internal$Sub$init = $author$project$Anim$init;
+var $author$project$Anim$Internal$Sub$init = $author$project$Anim$Internal$Sub$AnimationState(
+	{builder: $author$project$Anim$init, elementAnimations: $elm$core$Dict$empty, isRunning: false});
 var $author$project$Anim$Sub$init = $author$project$Anim$Internal$Sub$init;
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
@@ -6911,7 +6907,10 @@ var $author$project$ElmUI$Sub$Position$Main$init = function (_v0) {
 						$author$project$Anim$Properties$Position$toXY,
 						0,
 						0,
-						A2($author$project$Anim$Properties$Position$for, 'box', $author$project$Anim$Sub$init))))
+						A2(
+							$author$project$Anim$Properties$Position$for,
+							'box',
+							$author$project$Anim$Sub$builder($author$project$Anim$Sub$init)))))
 		},
 		$elm$core$Platform$Cmd$none);
 };
@@ -7067,11 +7066,6 @@ var $author$project$ElmUI$Sub$Position$Main$subscriptions = function (model) {
 var $author$project$Anim$Timing$Easing$BounceIn = {$: 'BounceIn'};
 var $author$project$Anim$Timing$Easing$BounceOut = {$: 'BounceOut'};
 var $author$project$Anim$Timing$Easing$EaseOut = {$: 'EaseOut'};
-var $author$project$Anim$Internal$Sub$builder = function (_v0) {
-	var state = _v0.a;
-	return state.builder;
-};
-var $author$project$Anim$Sub$builder = $author$project$Anim$Internal$Sub$builder;
 var $author$project$Anim$Internal$Builders$Position$easing = F2(
 	function (easing_, _v0) {
 		var config = _v0.a;

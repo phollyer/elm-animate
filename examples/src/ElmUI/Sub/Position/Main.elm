@@ -67,6 +67,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations =
             Sub.init
+                |> Sub.builder
                 |> Position.for "box"
                 |> Position.toXY 0 0
                 |> Position.build
