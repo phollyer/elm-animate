@@ -211,7 +211,8 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.map AnimationMsg (Sub.subscriptions model.animations)
+    Sub.map AnimationMsg <|
+        Sub.subscriptions model.animations
 
 
 
@@ -271,14 +272,15 @@ viewContent model =
         , htmlAttribute (Html.Attributes.style "overflow" "hidden")
         ]
         (el
-            [ width (px 50)
-            , height (px 50)
-            , Background.color Colors.primary
-            , Border.rounded 8
-            , htmlAttribute (Html.Attributes.id "box")
-            , htmlAttribute (Html.Attributes.style "position" "absolute")
-            , htmlAttribute (Html.Attributes.style "transform" (Sub.transform "box" model.animations))
-            ]
+            ([ width (px 50)
+             , height (px 50)
+             , Background.color Colors.primary
+             , Border.rounded 8
+             , htmlAttribute (Html.Attributes.id "box")
+             , htmlAttribute (Html.Attributes.style "position" "absolute")
+             ]
+                ++ List.map htmlAttribute (Sub.htmlAttributes "box" model.animations)
+            )
             (text "")
         )
     ]

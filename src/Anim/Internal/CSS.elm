@@ -74,8 +74,7 @@ type alias ElementId =
 
 
 type alias ElementAnimation =
-    { elementId : ElementId
-    , styles : List ( String, String )
+    { styles : List ( String, String )
     , animationLayers : List KeyframeAnimation
     }
 
@@ -173,8 +172,7 @@ generateElementAnimation maybeOrder elementId elementConfig =
                 ++ opacityStyles
                 |> List.filter (\( _, value ) -> not (String.isEmpty value))
     in
-    { elementId = elementId
-    , styles = allStyles
+    { styles = allStyles
     , animationLayers = KeyframeAnimation.generate elementId elementConfig.properties
     }
 
@@ -256,7 +254,7 @@ htmlAttributes elementId animationResult =
         |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
 
 
-getElementStyles : ElementId -> AnimationState -> List ( String, String )
+getElementStyles : String -> AnimationState -> List ( String, String )
 getElementStyles elementId (AnimationState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.map .styles

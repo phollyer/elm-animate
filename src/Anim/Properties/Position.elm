@@ -46,6 +46,11 @@ On subsequent animations, it will start from the last known position, so you onl
 
 @docs speed, duration, easing, delay
 
+
+## Convert Position
+
+@docs asRecord
+
 -}
 
 import Anim.Internal.Builder exposing (AnimBuilder)
@@ -239,6 +244,16 @@ delay delay_ =
     PB.delay delay_
 
 
+{-| Convert a `Position` to a record with `x` and `y` fields.
+
+    let
+        pos =
+            Position.fromXY 150 250
+    in
+    Position.asRecord pos
+    -- Result: { x = 150, y = 250 }
+
+-}
 asRecord : Position -> { x : Float, y : Float }
 asRecord pos =
     P.toRecord pos

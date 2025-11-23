@@ -5196,22 +5196,22 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$document = _Browser_document;
-var $author$project$Anim$Sub$AnimationState = function (a) {
+var $author$project$Anim$Internal$Sub$AnimationState = function (a) {
 	return {$: 'AnimationState', a: a};
 };
-var $author$project$Anim$Sub$ColorAnimationValue = function (a) {
+var $author$project$Anim$Internal$Sub$ColorAnimationValue = function (a) {
 	return {$: 'ColorAnimationValue', a: a};
 };
-var $author$project$Anim$Sub$OpacityAnimationValue = function (a) {
+var $author$project$Anim$Internal$Sub$OpacityAnimationValue = function (a) {
 	return {$: 'OpacityAnimationValue', a: a};
 };
-var $author$project$Anim$Sub$PositionAnimationValue = function (a) {
+var $author$project$Anim$Internal$Sub$PositionAnimationValue = function (a) {
 	return {$: 'PositionAnimationValue', a: a};
 };
-var $author$project$Anim$Sub$RotateAnimationValue = function (a) {
+var $author$project$Anim$Internal$Sub$RotateAnimationValue = function (a) {
 	return {$: 'RotateAnimationValue', a: a};
 };
-var $author$project$Anim$Sub$ScaleAnimationValue = function (a) {
+var $author$project$Anim$Internal$Sub$ScaleAnimationValue = function (a) {
 	return {$: 'ScaleAnimationValue', a: a};
 };
 var $author$project$Anim$Internal$Properties$Opacity$Opacity = function (a) {
@@ -5244,7 +5244,7 @@ var $author$project$Anim$Internal$Properties$Scale$fromTuple = function (_v0) {
 	var sy = _v0.b;
 	return A2($author$project$Anim$Internal$Properties$Scale$ScaleXY, sx, sy);
 };
-var $author$project$Anim$Sub$createPropertyAnimationState = F2(
+var $author$project$Anim$Internal$Sub$createPropertyAnimationState = F2(
 	function (startValues, property) {
 		switch (property.$) {
 			case 'ProcessedPositionConfig':
@@ -5262,7 +5262,7 @@ var $author$project$Anim$Sub$createPropertyAnimationState = F2(
 				}();
 				return $elm$core$Maybe$Just(
 					{
-						currentValue: $author$project$Anim$Sub$PositionAnimationValue(actualStart),
+						currentValue: $author$project$Anim$Internal$Sub$PositionAnimationValue(actualStart),
 						delay: config.delay,
 						distance: config.distance,
 						duration: config.duration,
@@ -5271,8 +5271,8 @@ var $author$project$Anim$Sub$createPropertyAnimationState = F2(
 						isComplete: false,
 						propertyType: 'position',
 						speed: config.speed,
-						startValue: $author$project$Anim$Sub$PositionAnimationValue(actualStart),
-						targetValue: $author$project$Anim$Sub$PositionAnimationValue(config.endAt)
+						startValue: $author$project$Anim$Internal$Sub$PositionAnimationValue(actualStart),
+						targetValue: $author$project$Anim$Internal$Sub$PositionAnimationValue(config.endAt)
 					});
 			case 'ProcessedRotateConfig':
 				var config = property.a;
@@ -5288,7 +5288,7 @@ var $author$project$Anim$Sub$createPropertyAnimationState = F2(
 				}();
 				return $elm$core$Maybe$Just(
 					{
-						currentValue: $author$project$Anim$Sub$RotateAnimationValue(actualStart),
+						currentValue: $author$project$Anim$Internal$Sub$RotateAnimationValue(actualStart),
 						delay: config.delay,
 						distance: config.distance,
 						duration: config.duration,
@@ -5297,8 +5297,8 @@ var $author$project$Anim$Sub$createPropertyAnimationState = F2(
 						isComplete: false,
 						propertyType: 'rotate',
 						speed: config.speed,
-						startValue: $author$project$Anim$Sub$RotateAnimationValue(actualStart),
-						targetValue: $author$project$Anim$Sub$RotateAnimationValue(config.endAt)
+						startValue: $author$project$Anim$Internal$Sub$RotateAnimationValue(actualStart),
+						targetValue: $author$project$Anim$Internal$Sub$RotateAnimationValue(config.endAt)
 					});
 			case 'ProcessedScaleConfig':
 				var config = property.a;
@@ -5315,7 +5315,7 @@ var $author$project$Anim$Sub$createPropertyAnimationState = F2(
 				}();
 				return $elm$core$Maybe$Just(
 					{
-						currentValue: $author$project$Anim$Sub$ScaleAnimationValue(actualStart),
+						currentValue: $author$project$Anim$Internal$Sub$ScaleAnimationValue(actualStart),
 						delay: config.delay,
 						distance: config.distance,
 						duration: config.duration,
@@ -5324,8 +5324,8 @@ var $author$project$Anim$Sub$createPropertyAnimationState = F2(
 						isComplete: false,
 						propertyType: 'scale',
 						speed: config.speed,
-						startValue: $author$project$Anim$Sub$ScaleAnimationValue(actualStart),
-						targetValue: $author$project$Anim$Sub$ScaleAnimationValue(config.endAt)
+						startValue: $author$project$Anim$Internal$Sub$ScaleAnimationValue(actualStart),
+						targetValue: $author$project$Anim$Internal$Sub$ScaleAnimationValue(config.endAt)
 					});
 			case 'ProcessedColorConfig':
 				var config = property.a;
@@ -5341,7 +5341,7 @@ var $author$project$Anim$Sub$createPropertyAnimationState = F2(
 				}();
 				return $elm$core$Maybe$Just(
 					{
-						currentValue: $author$project$Anim$Sub$ColorAnimationValue(actualStart),
+						currentValue: $author$project$Anim$Internal$Sub$ColorAnimationValue(actualStart),
 						delay: config.delay,
 						distance: config.distance,
 						duration: config.duration,
@@ -5350,8 +5350,8 @@ var $author$project$Anim$Sub$createPropertyAnimationState = F2(
 						isComplete: false,
 						propertyType: 'color',
 						speed: config.speed,
-						startValue: $author$project$Anim$Sub$ColorAnimationValue(actualStart),
-						targetValue: $author$project$Anim$Sub$ColorAnimationValue(config.endAt)
+						startValue: $author$project$Anim$Internal$Sub$ColorAnimationValue(actualStart),
+						targetValue: $author$project$Anim$Internal$Sub$ColorAnimationValue(config.endAt)
 					});
 			default:
 				var config = property.a;
@@ -5367,7 +5367,7 @@ var $author$project$Anim$Sub$createPropertyAnimationState = F2(
 				}();
 				return $elm$core$Maybe$Just(
 					{
-						currentValue: $author$project$Anim$Sub$OpacityAnimationValue(actualStart),
+						currentValue: $author$project$Anim$Internal$Sub$OpacityAnimationValue(actualStart),
 						delay: config.delay,
 						distance: config.distance,
 						duration: config.duration,
@@ -5376,8 +5376,8 @@ var $author$project$Anim$Sub$createPropertyAnimationState = F2(
 						isComplete: false,
 						propertyType: 'opacity',
 						speed: config.speed,
-						startValue: $author$project$Anim$Sub$OpacityAnimationValue(actualStart),
-						targetValue: $author$project$Anim$Sub$OpacityAnimationValue(config.endAt)
+						startValue: $author$project$Anim$Internal$Sub$OpacityAnimationValue(actualStart),
+						targetValue: $author$project$Anim$Internal$Sub$OpacityAnimationValue(config.endAt)
 					});
 		}
 	});
@@ -5399,13 +5399,13 @@ var $elm$core$List$filterMap = F2(
 			_List_Nil,
 			xs);
 	});
-var $author$project$Anim$Sub$createElementAnimationState = F3(
+var $author$project$Anim$Internal$Sub$createElementAnimationState = F3(
 	function (startValues, _v0, elementConfig) {
 		return {
 			isComplete: false,
 			properties: A2(
 				$elm$core$List$filterMap,
-				$author$project$Anim$Sub$createPropertyAnimationState(startValues),
+				$author$project$Anim$Internal$Sub$createPropertyAnimationState(startValues),
 				elementConfig.properties)
 		};
 	});
@@ -5442,7 +5442,7 @@ var $author$project$Anim$Internal$Properties$Scale$toTuple = function (_v0) {
 	var sy = _v0.b;
 	return _Utils_Tuple2(sx, sy);
 };
-var $author$project$Anim$Sub$extractFromProperty = F2(
+var $author$project$Anim$Internal$Sub$extractFromProperty = F2(
 	function (property, acc) {
 		switch (property.$) {
 			case 'ProcessedPositionConfig':
@@ -5947,11 +5947,11 @@ var $elm$core$Dict$values = function (dict) {
 		_List_Nil,
 		dict);
 };
-var $author$project$Anim$Sub$extractCurrentValuesFromBuilder = function (animBuilder) {
+var $author$project$Anim$Internal$Sub$extractCurrentValuesFromBuilder = function (animBuilder) {
 	var processedData = $author$project$Anim$Internal$Builder$processAnimationData(animBuilder);
 	var extractFromElements = A3(
 		$elm$core$List$foldl,
-		$author$project$Anim$Sub$extractFromProperty,
+		$author$project$Anim$Internal$Sub$extractFromProperty,
 		{color: $elm$core$Maybe$Nothing, opacity: $elm$core$Maybe$Nothing, position: $elm$core$Maybe$Nothing, rotate: $elm$core$Maybe$Nothing, scale: $elm$core$Maybe$Nothing},
 		A2(
 			$elm$core$List$concatMap,
@@ -6049,9 +6049,9 @@ var $author$project$Anim$Internal$Properties$Color$rgba255 = F4(
 		return $author$project$Anim$Internal$Properties$Color$Rgba(
 			{a: a, b: b, g: g, r: r});
 	});
-var $author$project$Anim$Sub$animate = function (animBuilder) {
+var $author$project$Anim$Internal$Sub$animate = function (animBuilder) {
 	var processedData = $author$project$Anim$Internal$Builder$processAnimationData(animBuilder);
-	var currentValues = $author$project$Anim$Sub$extractCurrentValuesFromBuilder(animBuilder);
+	var currentValues = $author$project$Anim$Internal$Sub$extractCurrentValuesFromBuilder(animBuilder);
 	var startValues = {
 		color: A2(
 			$elm$core$Maybe$withDefault,
@@ -6070,15 +6070,16 @@ var $author$project$Anim$Sub$animate = function (animBuilder) {
 	};
 	var elementStates = A2(
 		$elm$core$Dict$map,
-		$author$project$Anim$Sub$createElementAnimationState(startValues),
+		$author$project$Anim$Internal$Sub$createElementAnimationState(startValues),
 		processedData.elements);
-	return $author$project$Anim$Sub$AnimationState(
+	return $author$project$Anim$Internal$Sub$AnimationState(
 		{
 			builder: $author$project$Anim$Internal$Builder$markDirty(animBuilder),
-			elements: elementStates,
+			elementAnimations: elementStates,
 			isRunning: !$elm$core$Dict$isEmpty(elementStates)
 		});
 };
+var $author$project$Anim$Sub$animate = $author$project$Anim$Internal$Sub$animate;
 var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -6498,7 +6499,8 @@ var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
 	{currentElementId: $elm$core$Maybe$Nothing, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing});
 var $author$project$Anim$init = $author$project$Anim$Internal$Builder$init;
-var $author$project$Anim$Sub$init = $author$project$Anim$init;
+var $author$project$Anim$Internal$Sub$init = $author$project$Anim$init;
+var $author$project$Anim$Sub$init = $author$project$Anim$Internal$Sub$init;
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Anim$Internal$Builders$Position$to = F2(
@@ -6549,7 +6551,7 @@ var $author$project$ElmUI$Sub$Position$Main$AnimationMsg = function (a) {
 	return {$: 'AnimationMsg', a: a};
 };
 var $elm$core$Platform$Sub$map = _Platform_map;
-var $author$project$Anim$Sub$AnimationFrame = function (a) {
+var $author$project$Anim$Internal$Sub$AnimationFrame = function (a) {
 	return {$: 'AnimationFrame', a: a};
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -6683,10 +6685,11 @@ var $elm$browser$Browser$AnimationManager$onAnimationFrameDelta = function (tagg
 		$elm$browser$Browser$AnimationManager$Delta(tagger));
 };
 var $elm$browser$Browser$Events$onAnimationFrameDelta = $elm$browser$Browser$AnimationManager$onAnimationFrameDelta;
-var $author$project$Anim$Sub$subscriptions = function (_v0) {
+var $author$project$Anim$Internal$Sub$subscriptions = function (_v0) {
 	var state = _v0.a;
-	return state.isRunning ? $elm$browser$Browser$Events$onAnimationFrameDelta($author$project$Anim$Sub$AnimationFrame) : $elm$core$Platform$Sub$none;
+	return state.isRunning ? $elm$browser$Browser$Events$onAnimationFrameDelta($author$project$Anim$Internal$Sub$AnimationFrame) : $elm$core$Platform$Sub$none;
 };
+var $author$project$Anim$Sub$subscriptions = $author$project$Anim$Internal$Sub$subscriptions;
 var $author$project$ElmUI$Sub$Position$Main$subscriptions = function (model) {
 	return A2(
 		$elm$core$Platform$Sub$map,
@@ -6697,10 +6700,11 @@ var $author$project$Anim$Timing$Easing$BounceIn = {$: 'BounceIn'};
 var $author$project$Anim$Timing$Easing$BounceOut = {$: 'BounceOut'};
 var $author$project$Anim$Timing$Easing$EaseInOut = {$: 'EaseInOut'};
 var $author$project$Anim$Timing$Easing$EaseOut = {$: 'EaseOut'};
-var $author$project$Anim$Sub$builder = function (_v0) {
+var $author$project$Anim$Internal$Sub$builder = function (_v0) {
 	var state = _v0.a;
 	return state.builder;
 };
+var $author$project$Anim$Sub$builder = $author$project$Anim$Internal$Sub$builder;
 var $author$project$Anim$Internal$Builders$Position$easing = F2(
 	function (easing_, _v0) {
 		var config = _v0.a;
@@ -6943,7 +6947,7 @@ var $author$project$Anim$Internal$Properties$Position$toTuple = function (_v0) {
 	var coords = _v0.a;
 	return _Utils_Tuple2(coords.x, coords.y);
 };
-var $author$project$Anim$Sub$interpolateValue = F3(
+var $author$project$Anim$Internal$Sub$interpolateValue = F3(
 	function (progress, startValue, targetValue) {
 		var _v0 = _Utils_Tuple2(startValue, targetValue);
 		_v0$5:
@@ -6963,7 +6967,7 @@ var $author$project$Anim$Sub$interpolateValue = F3(
 						var startY = _v2.b;
 						var newX = startX + (progress * (targetX - startX));
 						var newY = startY + (progress * (targetY - startY));
-						return $author$project$Anim$Sub$PositionAnimationValue(
+						return $author$project$Anim$Internal$Sub$PositionAnimationValue(
 							$author$project$Anim$Internal$Properties$Position$fromTuple(
 								_Utils_Tuple2(newX, newY)));
 					} else {
@@ -6976,7 +6980,7 @@ var $author$project$Anim$Sub$interpolateValue = F3(
 						var targetFloat = $author$project$Anim$Internal$Properties$Rotate$toFloat(target);
 						var startFloat = $author$project$Anim$Internal$Properties$Rotate$toFloat(start);
 						var newFloat = startFloat + (progress * (targetFloat - startFloat));
-						return $author$project$Anim$Sub$RotateAnimationValue(
+						return $author$project$Anim$Internal$Sub$RotateAnimationValue(
 							$author$project$Anim$Internal$Properties$Rotate$fromFloat(newFloat));
 					} else {
 						break _v0$5;
@@ -6995,7 +6999,7 @@ var $author$project$Anim$Sub$interpolateValue = F3(
 						var startY = _v4.b;
 						var newX = startX + (progress * (targetX - startX));
 						var newY = startY + (progress * (targetY - startY));
-						return $author$project$Anim$Sub$ScaleAnimationValue(
+						return $author$project$Anim$Internal$Sub$ScaleAnimationValue(
 							$author$project$Anim$Internal$Properties$Scale$fromTuple(
 								_Utils_Tuple2(newX, newY)));
 					} else {
@@ -7004,7 +7008,7 @@ var $author$project$Anim$Sub$interpolateValue = F3(
 				case 'ColorAnimationValue':
 					if (_v0.b.$ === 'ColorAnimationValue') {
 						var target = _v0.b.a;
-						return $author$project$Anim$Sub$ColorAnimationValue(target);
+						return $author$project$Anim$Internal$Sub$ColorAnimationValue(target);
 					} else {
 						break _v0$5;
 					}
@@ -7015,7 +7019,7 @@ var $author$project$Anim$Sub$interpolateValue = F3(
 						var targetFloat = $author$project$Anim$Internal$Properties$Opacity$toFloat(target);
 						var startFloat = $author$project$Anim$Internal$Properties$Opacity$toFloat(start);
 						var newFloat = startFloat + (progress * (targetFloat - startFloat));
-						return $author$project$Anim$Sub$OpacityAnimationValue(
+						return $author$project$Anim$Internal$Sub$OpacityAnimationValue(
 							$author$project$Anim$Internal$Properties$Opacity$fromFloat(newFloat));
 					} else {
 						break _v0$5;
@@ -7240,7 +7244,7 @@ var $author$project$Anim$Internal$Timing$Easing$toFunction = function (easing) {
 			return $elm_community$easing_functions$Ease$inOutQuad;
 	}
 };
-var $author$project$Anim$Sub$updatePropertyAnimation = F2(
+var $author$project$Anim$Internal$Sub$updatePropertyAnimation = F2(
 	function (deltaMs, propertyState) {
 		if (propertyState.isComplete) {
 			return propertyState;
@@ -7255,7 +7259,7 @@ var $author$project$Anim$Sub$updatePropertyAnimation = F2(
 				var animationElapsed = newElapsed - delay;
 				var progress = A2($elm$core$Basics$min, 1.0, animationElapsed / propertyState.duration);
 				var easedProgress = A2($author$project$Anim$Internal$Timing$Easing$toFunction, propertyState.easing, progress);
-				var newCurrentValue = A3($author$project$Anim$Sub$interpolateValue, easedProgress, propertyState.startValue, propertyState.targetValue);
+				var newCurrentValue = A3($author$project$Anim$Internal$Sub$interpolateValue, easedProgress, propertyState.startValue, propertyState.targetValue);
 				var isComplete = progress >= 1.0;
 				return _Utils_update(
 					propertyState,
@@ -7263,11 +7267,11 @@ var $author$project$Anim$Sub$updatePropertyAnimation = F2(
 			}
 		}
 	});
-var $author$project$Anim$Sub$updateElementAnimation = F3(
+var $author$project$Anim$Internal$Sub$updateElementAnimation = F3(
 	function (deltaMs, _v0, elementState) {
 		var updatedProperties = A2(
 			$elm$core$List$map,
-			$author$project$Anim$Sub$updatePropertyAnimation(deltaMs),
+			$author$project$Anim$Internal$Sub$updatePropertyAnimation(deltaMs),
 			elementState.properties);
 		var allComplete = A2(
 			$elm$core$List$all,
@@ -7279,14 +7283,14 @@ var $author$project$Anim$Sub$updateElementAnimation = F3(
 			elementState,
 			{isComplete: allComplete, properties: updatedProperties});
 	});
-var $author$project$Anim$Sub$update = F2(
+var $author$project$Anim$Internal$Sub$update = F2(
 	function (msg, _v0) {
 		var state = _v0.a;
 		var deltaMs = msg.a;
 		var updatedElements = A2(
 			$elm$core$Dict$map,
-			$author$project$Anim$Sub$updateElementAnimation(deltaMs),
-			state.elements);
+			$author$project$Anim$Internal$Sub$updateElementAnimation(deltaMs),
+			state.elementAnimations);
 		var stillRunning = A2(
 			$elm$core$List$any,
 			A2(
@@ -7296,9 +7300,10 @@ var $author$project$Anim$Sub$update = F2(
 					return $.isComplete;
 				}),
 			$elm$core$Dict$values(updatedElements));
-		return $author$project$Anim$Sub$AnimationState(
-			{builder: state.builder, elements: updatedElements, isRunning: stillRunning});
+		return $author$project$Anim$Internal$Sub$AnimationState(
+			{builder: state.builder, elementAnimations: updatedElements, isRunning: stillRunning});
 	});
+var $author$project$Anim$Sub$update = $author$project$Anim$Internal$Sub$update;
 var $author$project$ElmUI$Sub$Position$Main$update = F2(
 	function (msg, model) {
 		var _v0 = A2($elm$core$Debug$log, 'Received Msg', msg);
@@ -13500,7 +13505,7 @@ var $elm$core$Maybe$andThen = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
-var $author$project$Anim$Sub$getPosition = F2(
+var $author$project$Anim$Internal$Sub$getPosition = F2(
 	function (elementId, _v0) {
 		var state = _v0.a;
 		return A2(
@@ -13519,8 +13524,111 @@ var $author$project$Anim$Sub$getPosition = F2(
 					},
 					$elm$core$List$head(elementState.properties));
 			},
-			A2($elm$core$Dict$get, elementId, state.elements));
+			A2($elm$core$Dict$get, elementId, state.elementAnimations));
 	});
+var $author$project$Anim$Sub$getPosition = $author$project$Anim$Internal$Sub$getPosition;
+var $author$project$Anim$Internal$Properties$Color$toString = function (color) {
+	switch (color.$) {
+		case 'Hex':
+			var hexString = color.a;
+			return hexString;
+		case 'Rgb':
+			var rgb = color.a;
+			return 'rgb(' + ($elm$core$String$fromInt(rgb.r) + (', ' + ($elm$core$String$fromInt(rgb.g) + (', ' + ($elm$core$String$fromInt(rgb.b) + ')')))));
+		case 'Rgba':
+			var rgba = color.a;
+			return 'rgba(' + ($elm$core$String$fromInt(rgba.r) + (', ' + ($elm$core$String$fromInt(rgba.g) + (', ' + ($elm$core$String$fromInt(rgba.b) + (', ' + ($elm$core$String$fromFloat(rgba.a) + ')')))))));
+		case 'Hsl':
+			var hsl = color.a;
+			return 'hsl(' + ($elm$core$String$fromFloat(hsl.h) + (', ' + ($elm$core$String$fromFloat(hsl.s) + ('%, ' + ($elm$core$String$fromFloat(hsl.l) + '%)')))));
+		default:
+			var hsla = color.a;
+			return 'hsla(' + ($elm$core$String$fromFloat(hsla.h) + (', ' + ($elm$core$String$fromFloat(hsla.s) + ('%, ' + ($elm$core$String$fromFloat(hsla.l) + ('%, ' + ($elm$core$String$fromFloat(hsla.a) + ')')))))));
+	}
+};
+var $author$project$Anim$Internal$Sub$propertyToStyles = function (propertyState) {
+	var _v0 = propertyState.currentValue;
+	switch (_v0.$) {
+		case 'PositionAnimationValue':
+			var pos = _v0.a;
+			var _v1 = $author$project$Anim$Internal$Properties$Position$toTuple(pos);
+			var x = _v1.a;
+			var y = _v1.b;
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'transform',
+					'translate(' + ($elm$core$String$fromFloat(x) + ('px, ' + ($elm$core$String$fromFloat(y) + 'px)'))))
+				]);
+		case 'RotateAnimationValue':
+			var rotate = _v0.a;
+			var degrees = $author$project$Anim$Internal$Properties$Rotate$toFloat(rotate);
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'transform',
+					'rotate(' + ($elm$core$String$fromFloat(degrees) + 'deg)'))
+				]);
+		case 'ScaleAnimationValue':
+			var scale = _v0.a;
+			var _v2 = $author$project$Anim$Internal$Properties$Scale$toTuple(scale);
+			var x = _v2.a;
+			var y = _v2.b;
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'transform',
+					'scale(' + ($elm$core$String$fromFloat(x) + (', ' + ($elm$core$String$fromFloat(y) + ')'))))
+				]);
+		case 'ColorAnimationValue':
+			var colorValue = _v0.a;
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'background-color',
+					$author$project$Anim$Internal$Properties$Color$toString(colorValue))
+				]);
+		default:
+			var opacity = _v0.a;
+			var opacityValue = $author$project$Anim$Internal$Properties$Opacity$toFloat(opacity);
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'opacity',
+					$elm$core$String$fromFloat(opacityValue))
+				]);
+	}
+};
+var $author$project$Anim$Internal$Sub$getElementStyles = F2(
+	function (elementId, _v0) {
+		var state = _v0.a;
+		return A2(
+			$elm$core$Maybe$withDefault,
+			_List_Nil,
+			A2(
+				$elm$core$Maybe$map,
+				$elm$core$List$concatMap($author$project$Anim$Internal$Sub$propertyToStyles),
+				A2(
+					$elm$core$Maybe$map,
+					function ($) {
+						return $.properties;
+					},
+					A2($elm$core$Dict$get, elementId, state.elementAnimations))));
+	});
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $author$project$Anim$Internal$Sub$htmlAttributes = F2(
+	function (elementId, animationResult) {
+		return A2(
+			$elm$core$List$map,
+			function (_v0) {
+				var prop = _v0.a;
+				var value = _v0.b;
+				return A2($elm$html$Html$Attributes$style, prop, value);
+			},
+			A2($author$project$Anim$Internal$Sub$getElementStyles, elementId, animationResult));
+	});
+var $author$project$Anim$Sub$htmlAttributes = $author$project$Anim$Internal$Sub$htmlAttributes;
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $mdgriffith$elm_ui$Internal$Model$Max = F2(
 	function (a, b) {
@@ -13606,23 +13714,7 @@ var $mdgriffith$elm_ui$Element$Font$size = function (i) {
 		$mdgriffith$elm_ui$Internal$Flag$fontSize,
 		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
 };
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Common$Colors$textMedium = A3($mdgriffith$elm_ui$Element$rgb255, 71, 85, 105);
-var $author$project$Anim$Internal$Properties$Position$toCssString = function (_v0) {
-	var coords = _v0.a;
-	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + 'px'));
-};
-var $author$project$Anim$Sub$transform = F2(
-	function (elementId, model) {
-		var _v0 = A2($author$project$Anim$Sub$getPosition, elementId, model);
-		if (_v0.$ === 'Just') {
-			var position = _v0.a;
-			return 'translate(' + ($author$project$Anim$Internal$Properties$Position$toCssString(position) + ')');
-		} else {
-			return 'translate(0px, 0px)';
-		}
-	});
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$core$Basics$always = F2(
 	function (a, _v0) {
@@ -13757,24 +13849,24 @@ var $author$project$ElmUI$Sub$Position$Main$viewContent = function (model) {
 				]),
 			A2(
 				$mdgriffith$elm_ui$Element$el,
-				_List_fromArray(
-					[
-						$mdgriffith$elm_ui$Element$width(
-						$mdgriffith$elm_ui$Element$px(50)),
-						$mdgriffith$elm_ui$Element$height(
-						$mdgriffith$elm_ui$Element$px(50)),
-						$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$primary),
-						$mdgriffith$elm_ui$Element$Border$rounded(8),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						$elm$html$Html$Attributes$id('box')),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						A2($elm$html$Html$Attributes$style, 'position', 'absolute')),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						A2(
-							$elm$html$Html$Attributes$style,
-							'transform',
-							A2($author$project$Anim$Sub$transform, 'box', model.animations)))
-					]),
+				_Utils_ap(
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$width(
+							$mdgriffith$elm_ui$Element$px(50)),
+							$mdgriffith$elm_ui$Element$height(
+							$mdgriffith$elm_ui$Element$px(50)),
+							$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$primary),
+							$mdgriffith$elm_ui$Element$Border$rounded(8),
+							$mdgriffith$elm_ui$Element$htmlAttribute(
+							$elm$html$Html$Attributes$id('box')),
+							$mdgriffith$elm_ui$Element$htmlAttribute(
+							A2($elm$html$Html$Attributes$style, 'position', 'absolute'))
+						]),
+					A2(
+						$elm$core$List$map,
+						$mdgriffith$elm_ui$Element$htmlAttribute,
+						A2($author$project$Anim$Sub$htmlAttributes, 'box', model.animations))),
 				$mdgriffith$elm_ui$Element$text('')))
 		]);
 };
