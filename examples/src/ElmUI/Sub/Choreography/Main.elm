@@ -100,36 +100,26 @@ update msg model =
                         |> Position.speed 200.0
                         |> Position.easing Easing.EaseInOut
                         |> Position.build
-                        |> Sub.animate
-                        |> Sub.builder
                         |> Position.for "elementB"
                         |> Position.toXY 320 80
                         |> Position.speed 200.0
                         |> Position.easing Easing.EaseInOut
                         |> Position.build
-                        |> Sub.animate
-                        |> Sub.builder
                         |> Position.for "elementC"
                         |> Position.toXY 40 300
                         |> Position.speed 200.0
                         |> Position.easing Easing.EaseInOut
                         |> Position.build
-                        |> Sub.animate
-                        |> Sub.builder
                         |> Position.for "elementD"
                         |> Position.toXY 380 260
                         |> Position.speed 200.0
                         |> Position.easing Easing.EaseInOut
                         |> Position.build
-                        |> Sub.animate
-                        |> Sub.builder
                         |> Position.for "elementE"
                         |> Position.toXY 60 120
                         |> Position.speed 200.0
                         |> Position.easing Easing.EaseInOut
                         |> Position.build
-                        |> Sub.animate
-                        |> Sub.builder
                         |> Position.for "elementF"
                         |> Position.toXY 350 320
                         |> Position.speed 200.0
@@ -146,42 +136,32 @@ update msg model =
                     model.animations
                         |> Sub.builder
                         |> Position.for "elementA"
-                        |> Position.toXY 150 100
+                        |> Position.toXY 0 0
                         |> Position.speed 200.0
                         |> Position.easing Easing.EaseInOut
                         |> Position.build
-                        |> Sub.animate
-                        |> Sub.builder
                         |> Position.for "elementB"
-                        |> Position.toXY 200 150
+                        |> Position.toXY 0 0
                         |> Position.speed 200.0
                         |> Position.easing Easing.EaseInOut
                         |> Position.build
-                        |> Sub.animate
-                        |> Sub.builder
                         |> Position.for "elementC"
-                        |> Position.toXY 100 200
+                        |> Position.toXY 0 0
                         |> Position.speed 200.0
                         |> Position.easing Easing.EaseInOut
                         |> Position.build
-                        |> Sub.animate
-                        |> Sub.builder
                         |> Position.for "elementD"
-                        |> Position.toXY 250 200
+                        |> Position.toXY 0 0
                         |> Position.speed 200.0
                         |> Position.easing Easing.EaseInOut
                         |> Position.build
-                        |> Sub.animate
-                        |> Sub.builder
                         |> Position.for "elementE"
-                        |> Position.toXY 300 100
+                        |> Position.toXY 0 0
                         |> Position.speed 200.0
                         |> Position.easing Easing.EaseInOut
                         |> Position.build
-                        |> Sub.animate
-                        |> Sub.builder
                         |> Position.for "elementF"
-                        |> Position.toXY 180 50
+                        |> Position.toXY 0 0
                         |> Position.speed 200.0
                         |> Position.easing Easing.EaseInOut
                         |> Position.build
@@ -210,36 +190,26 @@ update msg model =
                         |> Position.speed 200.0
                         |> Position.easing Easing.EaseInOut
                         |> Position.build
-                        |> Sub.animate
-                        |> Sub.builder
                         |> Position.for "elementB"
                         |> Position.toXY (centerX + radius * 0.5) (toFloat centerY + radius * 0.866)
                         |> Position.speed 200.0
                         |> Position.easing Easing.EaseInOut
                         |> Position.build
-                        |> Sub.animate
-                        |> Sub.builder
                         |> Position.for "elementC"
                         |> Position.toXY (centerX - radius * 0.5) (toFloat centerY + radius * 0.866)
                         |> Position.speed 200.0
                         |> Position.easing Easing.EaseInOut
                         |> Position.build
-                        |> Sub.animate
-                        |> Sub.builder
                         |> Position.for "elementD"
                         |> Position.toXY (centerX - radius) (toFloat centerY)
                         |> Position.speed 200.0
                         |> Position.easing Easing.EaseInOut
                         |> Position.build
-                        |> Sub.animate
-                        |> Sub.builder
                         |> Position.for "elementE"
                         |> Position.toXY (centerX - radius * 0.5) (toFloat centerY - radius * 0.866)
                         |> Position.speed 200.0
                         |> Position.easing Easing.EaseInOut
                         |> Position.build
-                        |> Sub.animate
-                        |> Sub.builder
                         |> Position.for "elementF"
                         |> Position.toXY (centerX + radius * 0.5) (toFloat centerY - radius * 0.866)
                         |> Position.speed 200.0
