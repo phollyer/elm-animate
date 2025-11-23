@@ -15,9 +15,12 @@ FEATURES:
 
 -}
 
-import Anim exposing (ScaleValue)
-import Anim.Sub exposing (Model, animate, init, step, styleProperties, subscriptions)
+import Anim
+import Anim.Properties.Scale as Scale
+import Anim.Sub as Sub
+import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
+import Browser.Events
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
@@ -44,22 +47,20 @@ main =
 
 -- MODEL
 
-
 type alias Model =
-    { animations : Anim.Sub.Model
-    }
-
-
+    { animations : Sub.AnimationState  }
 
 -- INIT
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Anim.Sub.init
-      }
+    ( { animations = Sub.init }
     , Cmd.none
     )
+
+
+
 
 
 type Msg
@@ -68,7 +69,7 @@ type Msg
     | ScaleReset
     | ScaleWide
     | ScaleTall
-    | AnimationFrame Float
+    | AnimationMsg Sub.AnimationMsg
 
 
 
@@ -79,74 +80,82 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ScaleUp ->
-            let
-                animation =
-                    Anim.scale "box" { x = 1.5, y = 1.5 }
-                        |> Anim.scalePerSecond 2.0
-                        |> Anim.easeOut
-            in
             ( { model
-                | animations = animate animation model.animations
+                | animations =
+                    model.animations
+                        |> Sub.builder
+                        |> Scale.for "box"
+                        |> Scale.toXY 1.5 1.5
+                        |> Scale.speed 2.0
+                        |> Scale.easing Easing.EaseOut
+                        |> Scale.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
 
         ScaleDown ->
-            let
-                animation =
-                    Anim.scale "box" { x = 0.7, y = 0.7 }
-                        |> Anim.scalePerSecond 2.0
-                        |> Anim.easeOut
-            in
             ( { model
-                | animations = animate animation model.animations
+                | animations =
+                    model.animations
+                        |> Sub.builder
+                        |> Scale.for "box"
+                        |> Scale.toXY 0.7 0.7
+                        |> Scale.speed 2.0
+                        |> Scale.easing Easing.EaseOut
+                        |> Scale.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
 
         ScaleReset ->
-            let
-                animation =
-                    Anim.scale "box" { x = 1.0, y = 1.0 }
-                        |> Anim.scalePerSecond 1.5
-                        |> Anim.easeInOut
-            in
             ( { model
-                | animations = animate animation model.animations
+                | animations =
+                    model.animations
+                        |> Sub.builder
+                        |> Scale.for "box"
+                        |> Scale.toXY 1.0 1.0
+                        |> Scale.speed 1.5
+                        |> Scale.easing Easing.EaseInOut
+                        |> Scale.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
 
         ScaleWide ->
-            let
-                animation =
-                    Anim.scale "box" { x = 1.8, y = 0.6 }
-                        |> Anim.scalePerSecond 2.5
-                        |> Anim.easeOut
-            in
             ( { model
-                | animations = animate animation model.animations
+                | animations =
+                    model.animations
+                        |> Sub.builder
+                        |> Scale.for "box"
+                        |> Scale.toXY 1.8 0.6
+                        |> Scale.speed 2.5
+                        |> Scale.easing Easing.EaseOut
+                        |> Scale.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
 
         ScaleTall ->
-            let
-                animation =
-                    Anim.scale "box" { x = 0.6, y = 1.8 }
-                        |> Anim.scalePerSecond 2.5
-                        |> Anim.easeOut
-            in
             ( { model
-                | animations = animate animation model.animations
+                | animations =
+                    model.animations
+                        |> Sub.builder
+                        |> Scale.for "box"
+                        |> Scale.toXY 0.6 1.8
+                        |> Scale.speed 2.5
+                        |> Scale.easing Easing.EaseOut
+                        |> Scale.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
 
-        AnimationFrame deltaTime ->
-            ( { model
-                | animations = step deltaTime model.animations
-              }
+        AnimationMsg animMsg ->
+            ( { model | animations = Sub.update animMsg model.animations }
             , Cmd.none
             )
 
@@ -157,7 +166,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Anim.Sub.subscriptions AnimationFrame model.animations
+    Sub.map AnimationMsg (Sub.subscriptions model.animations)
 
 
 
@@ -237,8 +246,8 @@ animatedBox elementId label color model =
          , htmlAttribute (Html.Attributes.style "align-items" "center")
          , htmlAttribute (Html.Attributes.style "justify-content" "center")
          ]
-            ++ (styleProperties elementId model.animations
-                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+            ++ (Sub.htmlAttributes elementId model.animations
+                    |> List.map htmlAttribute
                )
         )
         (el

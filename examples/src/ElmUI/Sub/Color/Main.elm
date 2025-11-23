@@ -15,8 +15,11 @@ FEATURES:
 
 -}
 
-import Anim exposing (ColorValue(..), easeInOut)
-import Anim.Sub exposing (Model, init, step, styleProperties, subscriptions)
+import Anim
+import Anim.Internal.Properties.Color as AnimColor
+import Anim.Properties.Color as ColorBuilder exposing (Color(..))
+import Anim.Sub as Sub
+import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -46,7 +49,7 @@ main =
 
 
 type alias Model =
-    { animations : Anim.Sub.Model
+    { animations : Sub.AnimationState
     }
 
 
@@ -56,7 +59,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Anim.Sub.init
+    ( { animations = Sub.init
       }
     , Cmd.none
     )
@@ -69,7 +72,7 @@ type Msg
     | ChangeToRed
     | ChangeToPurple
     | ResetColor
-    | AnimationFrame Float
+    | AnimationMsg Sub.AnimationMsg
 
 
 
@@ -82,10 +85,14 @@ update msg model =
         ChangeToBlue ->
             ( { model
                 | animations =
-                    Anim.backgroundColor "box" (Hex "#3498db")
-                        |> Anim.backgroundColorDuration 1000
-                        |> easeInOut
-                        |> (\animation -> Anim.Sub.animate animation model.animations)
+                    model.animations
+                        |> Sub.builder
+                        |> ColorBuilder.for "box"
+                        |> ColorBuilder.to (Rgb { r = 52, g = 152, b = 219 })
+                        |> ColorBuilder.duration 1000
+                        |> ColorBuilder.easing Easing.EaseInOut
+                        |> ColorBuilder.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
@@ -93,10 +100,14 @@ update msg model =
         ChangeToGreen ->
             ( { model
                 | animations =
-                    Anim.backgroundColor "box" (Hex "#2ecc71")
-                        |> Anim.backgroundColorDuration 1000
-                        |> easeInOut
-                        |> (\animation -> Anim.Sub.animate animation model.animations)
+                    model.animations
+                        |> Sub.builder
+                        |> ColorBuilder.for "box"
+                        |> ColorBuilder.to (Rgb { r = 46, g = 204, b = 113 })
+                        |> ColorBuilder.duration 1000
+                        |> ColorBuilder.easing Easing.EaseInOut
+                        |> ColorBuilder.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
@@ -104,10 +115,14 @@ update msg model =
         ChangeToOrange ->
             ( { model
                 | animations =
-                    Anim.backgroundColor "box" (Hex "#f39c12")
-                        |> Anim.backgroundColorDuration 1000
-                        |> easeInOut
-                        |> (\animation -> Anim.Sub.animate animation model.animations)
+                    model.animations
+                        |> Sub.builder
+                        |> ColorBuilder.for "box"
+                        |> ColorBuilder.to (Rgb { r = 243, g = 156, b = 18 })
+                        |> ColorBuilder.duration 1000
+                        |> ColorBuilder.easing Easing.EaseInOut
+                        |> ColorBuilder.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
@@ -115,10 +130,14 @@ update msg model =
         ChangeToRed ->
             ( { model
                 | animations =
-                    Anim.backgroundColor "box" (Hex "#e74c3c")
-                        |> Anim.backgroundColorDuration 1000
-                        |> easeInOut
-                        |> (\animation -> Anim.Sub.animate animation model.animations)
+                    model.animations
+                        |> Sub.builder
+                        |> ColorBuilder.for "box"
+                        |> ColorBuilder.to (Rgb { r = 231, g = 76, b = 60 })
+                        |> ColorBuilder.duration 1000
+                        |> ColorBuilder.easing Easing.EaseInOut
+                        |> ColorBuilder.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
@@ -126,10 +145,14 @@ update msg model =
         ChangeToPurple ->
             ( { model
                 | animations =
-                    Anim.backgroundColor "box" (Hex "#9b59b6")
-                        |> Anim.backgroundColorDuration 1000
-                        |> easeInOut
-                        |> (\animation -> Anim.Sub.animate animation model.animations)
+                    model.animations
+                        |> Sub.builder
+                        |> ColorBuilder.for "box"
+                        |> ColorBuilder.to (Rgb { r = 155, g = 89, b = 182 })
+                        |> ColorBuilder.duration 1000
+                        |> ColorBuilder.easing Easing.EaseInOut
+                        |> ColorBuilder.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
@@ -137,16 +160,20 @@ update msg model =
         ResetColor ->
             ( { model
                 | animations =
-                    Anim.backgroundColor "box" (Hex "#95a5a6")
-                        |> Anim.backgroundColorDuration 1000
-                        |> easeInOut
-                        |> (\animation -> Anim.Sub.animate animation model.animations)
+                    model.animations
+                        |> Sub.builder
+                        |> ColorBuilder.for "box"
+                        |> ColorBuilder.to (Rgb { r = 149, g = 165, b = 166 })
+                        |> ColorBuilder.duration 1000
+                        |> ColorBuilder.easing Easing.EaseInOut
+                        |> ColorBuilder.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
 
-        AnimationFrame deltaTime ->
-            ( { model | animations = step deltaTime model.animations }, Cmd.none )
+        AnimationMsg animMsg ->
+            ( { model | animations = Sub.update animMsg model.animations }, Cmd.none )
 
 
 
@@ -155,7 +182,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Anim.Sub.subscriptions AnimationFrame model.animations
+    Sub.map AnimationMsg (Sub.subscriptions model.animations)
 
 
 
@@ -216,8 +243,8 @@ viewContent model =
              , htmlAttribute (Html.Attributes.id "box")
              , htmlAttribute (Html.Attributes.style "background-color" "#95a5a6") -- Default gray
              ]
-                ++ (styleProperties "box" model.animations
-                        |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+                ++ (Sub.htmlAttributes "box" model.animations
+                        |> List.map htmlAttribute
                    )
             )
             (el [ centerX, centerY ] (text "Color"))

@@ -78,7 +78,7 @@ build_example "src/ElmUI/CSS/Keyframes/Choreography/Main.elm" "src/ElmUI/CSS/Key
 echo "  ⚡ ElmUI Sub examples (Anim.Sub - Frame-rate independent timing)..."
 build_example "src/ElmUI/Sub/Position/Main.elm" "src/ElmUI/Sub/Position/index.js" "ElmUI.Sub.Position.Main"
 #build_example "src/ElmUI/Sub/Opacity/Main.elm" "src/ElmUI/Sub/Opacity/index.js" "ElmUI.Sub.Opacity.Main"
-#build_example "src/ElmUI/Sub/Scale/Main.elm" "src/ElmUI/Sub/Scale/index.js" "ElmUI.Sub.Scale.Main"
+build_example "src/ElmUI/Sub/Scale/Main.elm" "src/ElmUI/Sub/Scale/index.js" "ElmUI.Sub.Scale.Main"
 build_example "src/ElmUI/Sub/Rotation/Main.elm" "src/ElmUI/Sub/Rotation/index.js" "ElmUI.Sub.Rotation.Main"
 #build_example "src/ElmUI/Sub/Color/Main.elm" "src/ElmUI/Sub/Color/index.js" "ElmUI.Sub.Color.Main"
 #build_example "src/ElmUI/Sub/Mixed/Main.elm" "src/ElmUI/Sub/Mixed/index.js" "ElmUI.Sub.Mixed.Main"

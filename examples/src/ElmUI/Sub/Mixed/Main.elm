@@ -15,8 +15,14 @@ FEATURES:
 
 -}
 
-import Anim exposing (ColorValue(..), Position, RotationValue, ScaleValue)
-import Anim.Sub exposing (Model, animate, init, step, styleProperties, transform)
+import Anim
+import Anim.Properties.Color as ColorBuilder exposing (Color(..))
+import Anim.Properties.Opacity as OpacityBuilder
+import Anim.Properties.Position as PositionBuilder
+import Anim.Properties.Rotate as RotationBuilder
+import Anim.Properties.Scale as ScaleBuilder
+import Anim.Sub as Sub
+import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -46,8 +52,7 @@ main =
 
 
 type alias Model =
-    { animations : Anim.Sub.Model
-    }
+    { animations : Sub.AnimationState }
 
 
 type Msg
@@ -57,7 +62,7 @@ type Msg
     | StartColorMorph String
     | StartFullTransform String
     | ResetAll
-    | AnimationFrame Float
+    | AnimationMsg Sub.AnimationMsg
 
 
 
@@ -69,179 +74,237 @@ update msg model =
     case msg of
         StartComplexAnimation elementId ->
             -- Combine position + scale + rotation
-            let
-                positionAnimation =
-                    Anim.position elementId { x = 200, y = 100 }
-                        |> Anim.pixelsPerSecond 200.0
-                        |> Anim.easeOut
-
-                scaleAnimation =
-                    Anim.scale elementId { x = 1.5, y = 1.9 }
-                        |> Anim.scalePerSecond 2.0
-                        |> Anim.easeOut
-
-                rotationAnimation =
-                    Anim.rotation elementId 90
-                        |> Anim.degreesPerSecond 120.0
-                        |> Anim.easeInOut
-
-                animations =
+            ( { model
+                | animations =
                     model.animations
-                        |> animate positionAnimation
-                        |> animate scaleAnimation
-                        |> animate rotationAnimation
-            in
-            ( { model | animations = animations }, Cmd.none )
+                        |> Sub.builder
+                        |> PositionBuilder.for elementId
+                        |> PositionBuilder.toXY 200 100
+                        |> PositionBuilder.speed 200.0
+                        |> PositionBuilder.easing Easing.EaseOut
+                        |> PositionBuilder.build
+                        |> Sub.animate
+                        |> Sub.builder
+                        |> ScaleBuilder.for elementId
+                        |> ScaleBuilder.toXY 1.5 1.9
+                        |> ScaleBuilder.speed 2.0
+                        |> ScaleBuilder.easing Easing.EaseOut
+                        |> ScaleBuilder.build
+                        |> Sub.animate
+                        |> Sub.builder
+                        |> RotationBuilder.for elementId
+                        |> RotationBuilder.to 90
+                        |> RotationBuilder.speed 120.0
+                        |> RotationBuilder.easing Easing.EaseInOut
+                        |> RotationBuilder.build
+                        |> Sub.animate
+              }
+            , Cmd.none
+            )
 
         StartFadeMove elementId ->
             -- Combine opacity + position
             let
-                opacityAnimation =
-                    Anim.opacity elementId 0.3
-                        |> Anim.opacityPerSecond 2.0
-                        |> Anim.easeOut
+                opacityConfig =
+                    Sub.builder
+                        |> OpacityBuilder.for elementId
+                        |> OpacityBuilder.to 0.3
+                        |> OpacityBuilder.speed 2.0
+                        |> OpacityBuilder.easing Easing.EaseOut
+                        |> OpacityBuilder.build
 
-                positionAnimation =
-                    Anim.position elementId { x = 250, y = 80 }
-                        |> Anim.pixelsPerSecond 200.0
-                        |> Anim.easeOut
+                positionConfig =
+                    Sub.builder
+                        |> PositionBuilder.for elementId
+                        |> PositionBuilder.toXY 250 80
+                        |> PositionBuilder.speed 200.0
+                        |> PositionBuilder.easing Easing.EaseOut
+                        |> PositionBuilder.build
 
                 animations =
                     model.animations
-                        |> animate opacityAnimation
-                        |> animate positionAnimation
+                        |> Sub.animate opacityConfig
+                        |> Sub.animate positionConfig
             in
             ( { model | animations = animations }, Cmd.none )
 
         StartSpinScale elementId ->
             -- Combine rotation + scale + color
             let
-                rotationAnimation =
-                    Anim.rotation elementId 180
-                        |> Anim.degreesPerSecond 180.0
-                        |> Anim.easeInOut
+                rotationConfig =
+                    Sub.builder
+                        |> RotationBuilder.for elementId
+                        |> RotationBuilder.to 180
+                        |> RotationBuilder.speed 180.0
+                        |> RotationBuilder.easing Easing.EaseInOut
+                        |> RotationBuilder.build
 
-                scaleAnimation =
-                    Anim.scale elementId { x = 0.8, y = 0.8 }
-                        |> Anim.scalePerSecond 1.5
-                        |> Anim.easeInOut
+                scaleConfig =
+                    Sub.builder
+                        |> ScaleBuilder.for elementId
+                        |> ScaleBuilder.toXY 0.8 0.8
+                        |> ScaleBuilder.speed 1.5
+                        |> ScaleBuilder.easing Easing.EaseInOut
+                        |> ScaleBuilder.build
 
-                colorAnimation =
-                    Anim.backgroundColor elementId (Hex "#e74c3c")
-                        |> Anim.colorStepsPerSecond 300.0
-                        |> Anim.easeOut
+                colorConfig =
+                    Sub.builder
+                        |> ColorBuilder.for elementId
+                        |> ColorBuilder.to (Hex "#e74c3c")
+                        |> ColorBuilder.speed 300.0
+                        |> ColorBuilder.easing Easing.EaseOut
+                        |> ColorBuilder.build
 
                 animations =
                     model.animations
-                        |> animate rotationAnimation
-                        |> animate scaleAnimation
-                        |> animate colorAnimation
+                        |> Sub.animate rotationConfig
+                        |> Sub.animate scaleConfig
+                        |> Sub.animate colorConfig
             in
             ( { model | animations = animations }, Cmd.none )
 
         StartColorMorph elementId ->
             -- Combine color + scale + opacity
             let
-                colorAnimation =
-                    Anim.backgroundColor elementId (Hsl { h = 142, s = 71, l = 45 })
-                        |> Anim.colorStepsPerSecond 300.0
-                        |> Anim.easeInOut
+                colorConfig =
+                    Sub.builder
+                        |> ColorBuilder.for elementId
+                        |> ColorBuilder.to (Hsl { h = 142, s = 71, l = 45 })
+                        |> ColorBuilder.speed 300.0
+                        |> ColorBuilder.easing Easing.EaseInOut
+                        |> ColorBuilder.build
 
-                scaleAnimation =
-                    Anim.scale elementId { x = 2.0, y = 0.5 }
-                        |> Anim.scalePerSecond 2.0
-                        |> Anim.easeOut
+                scaleConfig =
+                    Sub.builder
+                        |> ScaleBuilder.for elementId
+                        |> ScaleBuilder.toXY 2.0 0.5
+                        |> ScaleBuilder.speed 2.0
+                        |> ScaleBuilder.easing Easing.EaseOut
+                        |> ScaleBuilder.build
 
-                opacityAnimation =
-                    Anim.opacity elementId 0.8
-                        |> Anim.opacityPerSecond 1.5
-                        |> Anim.easeOut
+                opacityConfig =
+                    Sub.builder
+                        |> OpacityBuilder.for elementId
+                        |> OpacityBuilder.to 0.8
+                        |> OpacityBuilder.speed 1.5
+                        |> OpacityBuilder.easing Easing.EaseOut
+                        |> OpacityBuilder.build
 
                 animations =
                     model.animations
-                        |> animate colorAnimation
-                        |> animate scaleAnimation
-                        |> animate opacityAnimation
+                        |> Sub.animate colorConfig
+                        |> Sub.animate scaleConfig
+                        |> Sub.animate opacityConfig
             in
             ( { model | animations = animations }, Cmd.none )
 
         StartFullTransform elementId ->
             -- All properties at once!
             let
-                positionAnimation =
-                    Anim.position elementId { x = 200, y = 200 }
-                        |> Anim.pixelsPerSecond 200.0
-                        |> Anim.easeInOut
+                positionConfig =
+                    Sub.builder
+                        |> PositionBuilder.for elementId
+                        |> PositionBuilder.toXY 200 200
+                        |> PositionBuilder.speed 200.0
+                        |> PositionBuilder.easing Easing.EaseInOut
+                        |> PositionBuilder.build
 
-                scaleAnimation =
-                    Anim.scale elementId { x = 1.3, y = 1.3 }
-                        |> Anim.scalePerSecond 1.5
-                        |> Anim.easeOut
+                scaleConfig =
+                    Sub.builder
+                        |> ScaleBuilder.for elementId
+                        |> ScaleBuilder.toXY 1.3 1.3
+                        |> ScaleBuilder.speed 1.5
+                        |> ScaleBuilder.easing Easing.EaseOut
+                        |> ScaleBuilder.build
 
-                rotationAnimation =
-                    Anim.rotation elementId 270
-                        |> Anim.degreesPerSecond 180.0
-                        |> Anim.easeInOut
+                rotationConfig =
+                    Sub.builder
+                        |> RotationBuilder.for elementId
+                        |> RotationBuilder.to 270
+                        |> RotationBuilder.speed 180.0
+                        |> RotationBuilder.easing Easing.EaseInOut
+                        |> RotationBuilder.build
 
-                opacityAnimation =
-                    Anim.opacity elementId 0.7
-                        |> Anim.opacityPerSecond 1.0
-                        |> Anim.easeOut
+                opacityConfig =
+                    Sub.builder
+                        |> OpacityBuilder.for elementId
+                        |> OpacityBuilder.to 0.7
+                        |> OpacityBuilder.speed 1.0
+                        |> OpacityBuilder.easing Easing.EaseOut
+                        |> OpacityBuilder.build
 
-                colorAnimation =
-                    Anim.backgroundColor elementId (Hex "#9b59b6")
-                        |> Anim.colorStepsPerSecond 300.0
-                        |> Anim.easeOut
+                colorConfig =
+                    Sub.builder
+                        |> ColorBuilder.for elementId
+                        |> ColorBuilder.to (Hex "#9b59b6")
+                        |> ColorBuilder.speed 300.0
+                        |> ColorBuilder.easing Easing.EaseOut
+                        |> ColorBuilder.build
 
                 animations =
                     model.animations
-                        |> animate positionAnimation
-                        |> animate scaleAnimation
-                        |> animate rotationAnimation
-                        |> animate opacityAnimation
-                        |> animate colorAnimation
+                        |> Sub.animate positionConfig
+                        |> Sub.animate scaleConfig
+                        |> Sub.animate rotationConfig
+                        |> Sub.animate opacityConfig
+                        |> Sub.animate colorConfig
             in
             ( { model | animations = animations }, Cmd.none )
 
         ResetAll ->
             let
-                positionAnimation =
-                    Anim.position "mixed-box" { x = 0, y = 0 }
-                        |> Anim.pixelsPerSecond 200.0
-                        |> Anim.easeInOut
+                positionConfig =
+                    Sub.builder
+                        |> PositionBuilder.for "mixed-box"
+                        |> PositionBuilder.toXY 0 0
+                        |> PositionBuilder.speed 200.0
+                        |> PositionBuilder.easing Easing.EaseInOut
+                        |> PositionBuilder.build
 
-                scaleAnimation =
-                    Anim.scale "mixed-box" { x = 1.0, y = 1.0 }
-                        |> Anim.scalePerSecond 1.5
-                        |> Anim.easeInOut
+                scaleConfig =
+                    Sub.builder
+                        |> ScaleBuilder.for "mixed-box"
+                        |> ScaleBuilder.toXY 1.0 1.0
+                        |> ScaleBuilder.speed 1.5
+                        |> ScaleBuilder.easing Easing.EaseInOut
+                        |> ScaleBuilder.build
 
-                rotationAnimation =
-                    Anim.rotation "mixed-box" 0
-                        |> Anim.degreesPerSecond 180.0
-                        |> Anim.easeInOut
+                rotationConfig =
+                    Sub.builder
+                        |> RotationBuilder.for "mixed-box"
+                        |> RotationBuilder.to 0
+                        |> RotationBuilder.speed 180.0
+                        |> RotationBuilder.easing Easing.EaseInOut
+                        |> RotationBuilder.build
 
-                opacityAnimation =
-                    Anim.opacity "mixed-box" 1.0
-                        |> Anim.opacityPerSecond 1.5
-                        |> Anim.easeInOut
+                opacityConfig =
+                    Sub.builder
+                        |> OpacityBuilder.for "mixed-box"
+                        |> OpacityBuilder.to 1.0
+                        |> OpacityBuilder.speed 1.5
+                        |> OpacityBuilder.easing Easing.EaseInOut
+                        |> OpacityBuilder.build
 
-                colorAnimation =
-                    Anim.backgroundColor "mixed-box" (Hex "#3498db")
-                        |> Anim.colorStepsPerSecond 300.0
-                        |> Anim.easeOut
+                colorConfig =
+                    Sub.builder
+                        |> ColorBuilder.for "mixed-box"
+                        |> ColorBuilder.to (Hex "#3498db")
+                        |> ColorBuilder.speed 300.0
+                        |> ColorBuilder.easing Easing.EaseOut
+                        |> ColorBuilder.build
 
                 animations =
                     model.animations
-                        |> animate positionAnimation
-                        |> animate scaleAnimation
-                        |> animate rotationAnimation
-                        |> animate opacityAnimation
-                        |> animate colorAnimation
+                        |> Sub.animate positionConfig
+                        |> Sub.animate scaleConfig
+                        |> Sub.animate rotationConfig
+                        |> Sub.animate opacityConfig
+                        |> Sub.animate colorConfig
             in
             ( { model | animations = animations }, Cmd.none )
 
-        AnimationFrame deltaTime ->
-            ( { model | animations = step deltaTime model.animations }, Cmd.none )
+        AnimationMsg subMsg ->
+            ( { model | animations = Sub.update subMsg model.animations }, Cmd.none )
 
 
 
@@ -250,7 +313,7 @@ update msg model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Anim.Sub.init
+    ( { animations = Sub.init
       }
     , Cmd.none
     )
@@ -262,7 +325,7 @@ init _ =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Anim.Sub.subscriptions AnimationFrame model.animations
+    Sub.subscriptions AnimationMsg model.animations
 
 
 
@@ -331,9 +394,7 @@ mixedAnimationBox model =
          , htmlAttribute (Html.Attributes.style "align-items" "center")
          , htmlAttribute (Html.Attributes.style "justify-content" "center")
          ]
-            ++ (styleProperties "mixed-box" model.animations
-                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
-               )
+            ++ (Sub.htmlAttributes "mixed-box" model.animations)
         )
         (el
             [ centerX

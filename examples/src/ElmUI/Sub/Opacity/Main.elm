@@ -16,7 +16,9 @@ FEATURES:
 -}
 
 import Anim
-import Anim.Sub exposing (Model, animate, init, step, styleProperties, subscriptions)
+import Anim.Properties.Opacity as Opacity
+import Anim.Sub as Sub
+import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -46,7 +48,7 @@ main =
 
 
 type alias Model =
-    { animations : Anim.Sub.Model
+    { animations : Sub.AnimationState
     , isVisible : Bool
     }
 
@@ -57,7 +59,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Anim.Sub.init
+    ( { animations = Sub.init
       , isVisible = True
       }
     , Cmd.none
@@ -68,7 +70,7 @@ type Msg
     = FadeIn
     | FadeOut
     | FadeToggle
-    | AnimationFrame Float
+    | AnimationMsg Sub.AnimationMsg
 
 
 
@@ -79,28 +81,32 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         FadeIn ->
-            let
-                animation =
-                    Anim.opacity "box" 1.0
-                        |> Anim.opacityPerSecond 2.0
-                        |> Anim.easeOut
-            in
             ( { model
-                | animations = animate animation model.animations
+                | animations =
+                    model.animations
+                        |> Sub.builder
+                        |> Opacity.for "box"
+                        |> Opacity.to 1.0
+                        |> Opacity.speed 2.0
+                        |> Opacity.easing Easing.EaseOut
+                        |> Opacity.build
+                        |> Sub.animate
                 , isVisible = True
               }
             , Cmd.none
             )
 
         FadeOut ->
-            let
-                animation =
-                    Anim.opacity "box" 0.0
-                        |> Anim.opacityPerSecond 2.0
-                        |> Anim.easeOut
-            in
             ( { model
-                | animations = animate animation model.animations
+                | animations =
+                    model.animations
+                        |> Sub.builder
+                        |> Opacity.for "box"
+                        |> Opacity.to 0.0
+                        |> Opacity.speed 2.0
+                        |> Opacity.easing Easing.EaseOut
+                        |> Opacity.build
+                        |> Sub.animate
                 , isVisible = False
               }
             , Cmd.none
@@ -118,22 +124,25 @@ update msg model =
 
                 newVisible =
                     not model.isVisible
-
-                animation =
-                    Anim.opacity "box" newOpacity
-                        |> Anim.opacityPerSecond 3.0
-                        |> Anim.easeInOut
             in
             ( { model
-                | animations = animate animation model.animations
+                | animations =
+                    model.animations
+                        |> Sub.builder
+                        |> Opacity.for "box"
+                        |> Opacity.to newOpacity
+                        |> Opacity.speed 3.0
+                        |> Opacity.easing Easing.EaseInOut
+                        |> Opacity.build
+                        |> Sub.animate
                 , isVisible = newVisible
               }
             , Cmd.none
             )
 
-        AnimationFrame deltaTime ->
+        AnimationMsg animMsg ->
             ( { model
-                | animations = step deltaTime model.animations
+                | animations = Sub.update animMsg model.animations
               }
             , Cmd.none
             )
@@ -145,7 +154,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Anim.Sub.subscriptions AnimationFrame model.animations
+    Sub.map AnimationMsg (Sub.subscriptions model.animations)
 
 
 
@@ -217,8 +226,8 @@ animatedBox elementId label color model =
          , htmlAttribute (Html.Attributes.style "align-items" "center")
          , htmlAttribute (Html.Attributes.style "justify-content" "center")
          ]
-            ++ (styleProperties elementId model.animations
-                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
+            ++ (Sub.htmlAttributes elementId model.animations
+                    |> List.map htmlAttribute
                )
         )
         (el
