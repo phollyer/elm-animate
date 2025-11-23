@@ -58,14 +58,16 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Sub.init
-        |> Sub.builder
-        |> ColorBuilder.for "box"
-        |> ColorBuilder.to (Rgb { r = 149, g = 165, b = 166 }) -- Default gray
-        |> ColorBuilder.duration 0
-        |> ColorBuilder.easing Easing.EaseInOut
-        |> ColorBuilder.build
-        |> Sub.animate
+    ( { animations =
+            Sub.init
+                |> Sub.builder
+                |> ColorBuilder.for "box"
+                |> ColorBuilder.to (Rgb { r = 149, g = 165, b = 166 })
+                -- Default gray
+                |> ColorBuilder.duration 0
+                |> ColorBuilder.easing Easing.EaseInOut
+                |> ColorBuilder.build
+                |> Sub.animate
       }
     , Cmd.none
     )

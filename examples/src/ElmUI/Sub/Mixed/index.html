@@ -16,13 +16,8 @@
     <div id="elm"></div>
     <script src="index.js"></script>
     <script>
-        var app = Elm.ElmUI.CSS.Mixed.Main.init({
+        var app = Elm.ElmUI.Sub.Mixed.Main.init({
             node: document.getElementById('elm')
-        });
-
-        // Listen for custom animation-complete events
-        document.addEventListener('animation-complete', function () {
-            // Send to Elm if needed
         });
     </script>
 </body>

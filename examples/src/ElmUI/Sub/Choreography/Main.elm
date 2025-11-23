@@ -26,8 +26,9 @@ USAGE EXAMPLES:
 
 -- Common UI imports
 
-import Anim exposing (Position)
-import Anim.Sub exposing (Model, animate, getPosition, init, step, styleProperties, subscriptions)
+import Anim.Properties.Position as Position
+import Anim.Sub as Sub
+import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -59,8 +60,7 @@ main =
 
 
 type alias Model =
-    { animations : Anim.Sub.Model
-    , isAnimating : Bool
+    { animations : Sub.AnimationState
     }
 
 
@@ -70,8 +70,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Anim.Sub.init
-      , isAnimating = False
+    ( { animations = Sub.init
       }
     , Cmd.none
     )
@@ -85,80 +84,108 @@ type Msg
     = ScatterElements
     | ResetPositions
     | CircleFormation
-    | AnimationFrame Float
+    | AnimationMsg Sub.AnimationMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ScatterElements ->
-            let
-                animA =
-                    Anim.position "elementA" { x = 80, y = 60 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
-
-                animB =
-                    Anim.position "elementB" { x = 320, y = 80 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
-
-                animC =
-                    Anim.position "elementC" { x = 40, y = 300 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
-
-                animD =
-                    Anim.position "elementD" { x = 380, y = 260 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
-
-                animE =
-                    Anim.position "elementE" { x = 60, y = 120 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
-
-                animF =
-                    Anim.position "elementF" { x = 350, y = 320 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
-
-                updatedAnimations =
-                    model.animations
-                        |> animate animA
-                        |> animate animB
-                        |> animate animC
-                        |> animate animD
-                        |> animate animE
-                        |> animate animF
-            in
             ( { model
-                | animations = updatedAnimations
-                , isAnimating = True
+                | animations =
+                    model.animations
+                        |> Sub.builder
+                        |> Position.for "elementA"
+                        |> Position.toXY 80 60
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.EaseInOut
+                        |> Position.build
+                        |> Sub.animate
+                        |> Sub.builder
+                        |> Position.for "elementB"
+                        |> Position.toXY 320 80
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.EaseInOut
+                        |> Position.build
+                        |> Sub.animate
+                        |> Sub.builder
+                        |> Position.for "elementC"
+                        |> Position.toXY 40 300
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.EaseInOut
+                        |> Position.build
+                        |> Sub.animate
+                        |> Sub.builder
+                        |> Position.for "elementD"
+                        |> Position.toXY 380 260
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.EaseInOut
+                        |> Position.build
+                        |> Sub.animate
+                        |> Sub.builder
+                        |> Position.for "elementE"
+                        |> Position.toXY 60 120
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.EaseInOut
+                        |> Position.build
+                        |> Sub.animate
+                        |> Sub.builder
+                        |> Position.for "elementF"
+                        |> Position.toXY 350 320
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.EaseInOut
+                        |> Position.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
 
         ResetPositions ->
-            let
-                animA =
-                    Anim.position "elementA" { x = 150, y = 100 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
-
-                animB =
-                    Anim.position "elementB" { x = 200, y = 150 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
-
-                animC =
-                    Anim.position "elementC" { x = 100, y = 200 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
-
-                animD =
-                    Anim.position "elementD" { x = 250, y = 200 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
-
-                animE =
-                    Anim.position "elementE" { x = 300, y = 100 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
-
-                animF =
-                    Anim.position "elementF" { x = 180, y = 50 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
-
-                updatedAnimations =
-                    model.animations
-                        |> animate animA
-                        |> animate animB
-                        |> animate animC
-                        |> animate animD
-                        |> animate animE
-                        |> animate animF
-            in
             ( { model
-                | animations = updatedAnimations
-                , isAnimating = True
+                | animations =
+                    model.animations
+                        |> Sub.builder
+                        |> Position.for "elementA"
+                        |> Position.toXY 150 100
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.EaseInOut
+                        |> Position.build
+                        |> Sub.animate
+                        |> Sub.builder
+                        |> Position.for "elementB"
+                        |> Position.toXY 200 150
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.EaseInOut
+                        |> Position.build
+                        |> Sub.animate
+                        |> Sub.builder
+                        |> Position.for "elementC"
+                        |> Position.toXY 100 200
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.EaseInOut
+                        |> Position.build
+                        |> Sub.animate
+                        |> Sub.builder
+                        |> Position.for "elementD"
+                        |> Position.toXY 250 200
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.EaseInOut
+                        |> Position.build
+                        |> Sub.animate
+                        |> Sub.builder
+                        |> Position.for "elementE"
+                        |> Position.toXY 300 100
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.EaseInOut
+                        |> Position.build
+                        |> Sub.animate
+                        |> Sub.builder
+                        |> Position.for "elementF"
+                        |> Position.toXY 180 50
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.EaseInOut
+                        |> Position.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
@@ -173,49 +200,62 @@ update msg model =
 
                 radius =
                     90
-
-                animA =
-                    Anim.position "elementA" { x = centerX + radius, y = toFloat centerY } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
-
-                -- 0°
-                animB =
-                    Anim.position "elementB" { x = centerX + radius * 0.5, y = toFloat centerY + radius * 0.866 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
-
-                -- 60°
-                animC =
-                    Anim.position "elementC" { x = centerX - radius * 0.5, y = toFloat centerY + radius * 0.866 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
-
-                -- 120°
-                animD =
-                    Anim.position "elementD" { x = centerX - radius, y = toFloat centerY } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
-
-                -- 180°
-                animE =
-                    Anim.position "elementE" { x = centerX - radius * 0.5, y = toFloat centerY - radius * 0.866 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
-
-                -- 240°
-                animF =
-                    Anim.position "elementF" { x = centerX + radius * 0.5, y = toFloat centerY - radius * 0.866 } |> Anim.pixelsPerSecond 200.0 |> Anim.easeInOut
-
-                -- 300°
-                updatedAnimations =
-                    model.animations
-                        |> animate animA
-                        |> animate animB
-                        |> animate animC
-                        |> animate animD
-                        |> animate animE
-                        |> animate animF
             in
             ( { model
-                | animations = updatedAnimations
-                , isAnimating = True
+                | animations =
+                    model.animations
+                        |> Sub.builder
+                        |> Position.for "elementA"
+                        |> Position.toXY (centerX + radius) (toFloat centerY)
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.EaseInOut
+                        |> Position.build
+                        |> Sub.animate
+                        |> Sub.builder
+                        |> Position.for "elementB"
+                        |> Position.toXY (centerX + radius * 0.5) (toFloat centerY + radius * 0.866)
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.EaseInOut
+                        |> Position.build
+                        |> Sub.animate
+                        |> Sub.builder
+                        |> Position.for "elementC"
+                        |> Position.toXY (centerX - radius * 0.5) (toFloat centerY + radius * 0.866)
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.EaseInOut
+                        |> Position.build
+                        |> Sub.animate
+                        |> Sub.builder
+                        |> Position.for "elementD"
+                        |> Position.toXY (centerX - radius) (toFloat centerY)
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.EaseInOut
+                        |> Position.build
+                        |> Sub.animate
+                        |> Sub.builder
+                        |> Position.for "elementE"
+                        |> Position.toXY (centerX - radius * 0.5) (toFloat centerY - radius * 0.866)
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.EaseInOut
+                        |> Position.build
+                        |> Sub.animate
+                        |> Sub.builder
+                        |> Position.for "elementF"
+                        |> Position.toXY (centerX + radius * 0.5) (toFloat centerY - radius * 0.866)
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.EaseInOut
+                        |> Position.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
 
-        AnimationFrame deltaTime ->
-            ( model
+        AnimationMsg subMsg ->
+            let
+                updatedAnimations =
+                    Sub.update subMsg model.animations
+            in
+            ( { model | animations = updatedAnimations }
             , Cmd.none
             )
 
@@ -226,7 +266,8 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Anim.Sub.subscriptions AnimationFrame model.animations
+    Sub.map AnimationMsg <|
+        Sub.subscriptions model.animations
 
 
 
@@ -246,22 +287,22 @@ viewContent : Model -> List (Element Msg)
 viewContent model =
     let
         positionA =
-            getPosition "elementA" model.animations
+            Sub.getPosition "elementA" model.animations
 
         positionB =
-            getPosition "elementB" model.animations
+            Sub.getPosition "elementB" model.animations
 
         positionC =
-            getPosition "elementC" model.animations
+            Sub.getPosition "elementC" model.animations
 
         positionD =
-            getPosition "elementD" model.animations
+            Sub.getPosition "elementD" model.animations
 
         positionE =
-            getPosition "elementE" model.animations
+            Sub.getPosition "elementE" model.animations
 
         positionF =
-            getPosition "elementF" model.animations
+            Sub.getPosition "elementF" model.animations
     in
     [ UI.backButton
     , UI.pageHeader "ElmUI & Subscription Choreography Example"
@@ -330,8 +371,6 @@ animatedBox elementId label color1 color2 model =
          , htmlAttribute (Html.Attributes.id elementId)
          , htmlAttribute (Html.Attributes.style "position" "absolute")
          ]
-            ++ (styleProperties elementId model.animations
-                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
-               )
+            ++ List.map htmlAttribute (Sub.htmlAttributes elementId model.animations |> Debug.log elementId)
         )
         (el [ centerX, centerY ] (text label))
