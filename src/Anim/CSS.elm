@@ -1,5 +1,6 @@
 module Anim.CSS exposing
-    ( AnimationState, init, builder, animate
+    ( AnimationState, init, builder, animate, animateOrder
+    , TransformOrder, defaultTransformOrder
     , htmlAttributes, getElementKeyframes, animationStyleAttribute, keyframesStyleNode, keyframesStyleNodeFor
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
@@ -13,7 +14,12 @@ can be easily added to your elements as style tags or css [transform](https://de
 
 # Build
 
-@docs AnimationState, init, builder, animate
+@docs AnimationState, init, builder, animate, animateOrder
+
+
+# Transform Ordering
+
+@docs TransformOrder, defaultTransformOrder
 
 
 # View
@@ -40,8 +46,32 @@ Animation events are different from transition events, so both types of events c
 -}
 
 import Anim exposing (AnimBuilder)
-import Anim.Internal.CSS as InternalCSS
+import Anim.Internal.CSS as InternalCSS exposing (TransformOrder(..))
 import Html
+
+
+{-| Transform property ordering for CSS generation.
+
+Defines the order in which transform properties (position, rotate, scale)
+should appear in the final CSS transform string.
+
+-}
+type alias TransformOrder =
+    InternalCSS.TransformOrder
+
+
+{-| Default transform order: Position → Rotate → Scale.
+
+This is the recommended order for most use cases:
+
+  - Position sets the base location
+  - Rotation happens around that position
+  - Scale happens last to avoid affecting rotation radius
+
+-}
+defaultTransformOrder : List TransformOrder
+defaultTransformOrder =
+    [ Position, Rotate, Scale ]
 
 
 {-| Optional state tracker.
@@ -78,6 +108,25 @@ The AnimationState can then be used by the view.
 animate : AnimBuilder -> AnimationState
 animate =
     InternalCSS.animate
+
+
+{-| Apply animation configuration with custom transform ordering.
+
+This is an alternative to `animate` that allows you to specify the order
+in which transform properties should appear in the CSS.
+Uses the default transform order (Position → Rotate → Scale) by default.
+
+    -- Custom transform order: Scale → Rotate → Position
+    newState =
+        state
+            |> CSS.builder
+            |> -- ... property configurations ...
+            |> CSS.animateOrder [ Scale, Rotate, Position ]
+
+-}
+animateOrder : List TransformOrder -> AnimBuilder -> AnimationState
+animateOrder order =
+    InternalCSS.animateWithOrder order
 
 
 {-| Initialize empty animation state.

@@ -67,13 +67,6 @@ generate elementId properties =
                     |> List.maximum
                     |> Maybe.withDefault 0
 
-            totalDuration =
-                if maxDuration == 0 then
-                    800
-
-                else
-                    maxDuration
-
             keyframeCount =
                 30
 
@@ -86,12 +79,13 @@ generate elementId properties =
                                     toFloat i / toFloat keyframeCount
 
                                 time =
-                                    globalProgress * toFloat totalDuration
+                                    globalProgress * toFloat maxDuration
 
-                                stepStyles =
+                                -- Collect transform components using canonical ordering pattern
+                                transformParts =
                                     processedProps
-                                        |> List.filterMap
-                                            (\p ->
+                                        |> List.foldl
+                                            (\p acc ->
                                                 case p of
                                                     Builder.ProcessedPositionConfig cfg ->
                                                         let
@@ -99,7 +93,10 @@ generate elementId properties =
                                                                 cfg.duration
 
                                                             propProgress =
-                                                                if time <= toFloat dur then
+                                                                if time == 0 || dur == 0 then
+                                                                    0
+
+                                                                else if time <= toFloat dur then
                                                                     time / toFloat dur
 
                                                                 else
@@ -119,7 +116,7 @@ generate elementId properties =
                                                             interpolatedPos =
                                                                 Position.interpolate propProgress startPos endPos
                                                         in
-                                                        Just ( "transform-component", "translate(" ++ Position.toCssString interpolatedPos ++ ")" )
+                                                        { acc | position = "translate(" ++ Position.toCssString interpolatedPos ++ ")" }
 
                                                     Builder.ProcessedRotateConfig cfg ->
                                                         let
@@ -127,7 +124,10 @@ generate elementId properties =
                                                                 cfg.duration
 
                                                             propProgress =
-                                                                if time <= toFloat dur then
+                                                                if time == 0 || dur == 0 then
+                                                                    0
+
+                                                                else if time <= toFloat dur then
                                                                     time / toFloat dur
 
                                                                 else
@@ -156,7 +156,7 @@ generate elementId properties =
                                                             interpolatedRot =
                                                                 Rotate.fromFloat interpolatedAngle
                                                         in
-                                                        Just ( "transform-component", "rotate(" ++ Rotate.toCssString interpolatedRot ++ ")" )
+                                                        { acc | rotate = "rotate(" ++ Rotate.toCssString interpolatedRot ++ ")" }
 
                                                     Builder.ProcessedScaleConfig cfg ->
                                                         let
@@ -196,8 +196,31 @@ generate elementId properties =
                                                             interpolatedScale =
                                                                 Scale.fromTuple ( interpolatedX, interpolatedY )
                                                         in
-                                                        Just ( "transform-component", "scale(" ++ Scale.toCssString interpolatedScale ++ ")" )
+                                                        { acc | scale = "scale(" ++ Scale.toCssString interpolatedScale ++ ")" }
 
+                                                    _ ->
+                                                        acc
+                                            )
+                                            { position = "", rotate = "", scale = "" }
+
+                                -- Build transform string with canonical ordering: translate rotate scale
+                                transformComponents =
+                                    [ transformParts.position, transformParts.rotate, transformParts.scale ]
+                                        |> List.filter (\s -> s /= "")
+
+                                transformStyle =
+                                    if List.isEmpty transformComponents then
+                                        Nothing
+
+                                    else
+                                        Just ( "transform", String.join " " transformComponents )
+
+                                -- Collect non-transform styles
+                                otherStyles =
+                                    processedProps
+                                        |> List.filterMap
+                                            (\p ->
+                                                case p of
                                                     Builder.ProcessedColorConfig cfg ->
                                                         let
                                                             dur =
@@ -262,37 +285,9 @@ generate elementId properties =
                                                                 Opacity.fromFloat interpolatedValue
                                                         in
                                                         Just ( "opacity", Opacity.toString interpolatedOpacity )
-                                            )
-
-                                transformComponents =
-                                    stepStyles
-                                        |> List.filterMap
-                                            (\s ->
-                                                case s of
-                                                    ( "transform-component", v ) ->
-                                                        Just v
 
                                                     _ ->
                                                         Nothing
-                                            )
-
-                                transformStyle =
-                                    if List.isEmpty transformComponents then
-                                        Nothing
-
-                                    else
-                                        Just ( "transform", String.join " " transformComponents )
-
-                                otherStyles =
-                                    stepStyles
-                                        |> List.filterMap
-                                            (\s ->
-                                                case s of
-                                                    ( "transform-component", _ ) ->
-                                                        Nothing
-
-                                                    _ ->
-                                                        Just s
                                             )
 
                                 styles =
@@ -309,7 +304,7 @@ generate elementId properties =
             -- Generate a unique animation name based on content hash
             contentForHash =
                 elementId
-                    ++ String.fromInt totalDuration
+                    ++ String.fromInt maxDuration
                     ++ (processedProps
                             |> List.map
                                 (\p ->
@@ -350,7 +345,7 @@ generate elementId properties =
         in
         [ { animationName = animationName
           , keyframes = keyframesString
-          , duration = totalDuration
+          , duration = maxDuration
           , easing = "linear"
           , delay = 0
           , properties = animatedProperties
@@ -414,9 +409,6 @@ createAnimationLayerFromGroup elementId layerIndex timingGroup =
 
         animationName =
             elementId ++ "-layer-" ++ String.fromInt layerIndex ++ "-" ++ uniqueId
-
-        _ =
-            Debug.log ("Animation name for " ++ elementId) animationName
 
         keyframesString =
             buildKeyframesString animationName keyframeSteps

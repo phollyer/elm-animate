@@ -156,6 +156,9 @@ update msg model =
                         --|> Scale.duration 1000
                         |> Scale.build
                         |> CSS.animate
+
+                -- Test: To use custom transform order, replace above line with:
+                -- |> CSS.animateOrder [Scale, Rotate, Position]
                 , isAnimating = True
                 , activeAnimation = Just ComplexTransform
               }

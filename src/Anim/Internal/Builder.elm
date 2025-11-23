@@ -270,7 +270,18 @@ processProperty globalData property =
     case property of
         PositionConfig config ->
             if config.isDirty then
-                Nothing
+                -- Return static config to preserve visual state
+                Just <|
+                    ProcessedPositionConfig
+                        { startAt = Just config.endAt
+                        , endAt = config.endAt
+                        , duration = 0 -- No animation, just maintain state
+                        , speed = 0
+                        , distance = 0
+                        , timing = Duration 0
+                        , easing = Linear
+                        , delay = 0
+                        }
 
             else
                 let
@@ -309,7 +320,18 @@ processProperty globalData property =
 
         RotateConfig config ->
             if config.isDirty then
-                Nothing
+                -- Return static config to preserve visual state
+                Just <|
+                    ProcessedRotateConfig
+                        { startAt = Just config.endAt
+                        , endAt = config.endAt
+                        , duration = 0 -- No animation, just maintain state
+                        , speed = 0
+                        , distance = 0
+                        , timing = Duration 0
+                        , easing = Linear
+                        , delay = 0
+                        }
 
             else
                 let
@@ -348,7 +370,18 @@ processProperty globalData property =
 
         ScaleConfig config ->
             if config.isDirty then
-                Nothing
+                -- Return static config to preserve visual state
+                Just <|
+                    ProcessedScaleConfig
+                        { startAt = Just config.endAt
+                        , endAt = config.endAt
+                        , duration = 0 -- No animation, just maintain state
+                        , speed = 0
+                        , distance = 0
+                        , timing = Duration 0
+                        , easing = Linear
+                        , delay = 0
+                        }
 
             else
                 let
@@ -390,7 +423,18 @@ processProperty globalData property =
 
         BackgroundColorConfig config ->
             if config.isDirty then
-                Nothing
+                -- Return static config to preserve visual state
+                Just <|
+                    ProcessedColorConfig
+                        { startAt = Just config.endAt
+                        , endAt = config.endAt
+                        , duration = 0 -- No animation, just maintain state
+                        , speed = 0
+                        , distance = 0
+                        , timing = Duration 0
+                        , easing = Linear
+                        , delay = 0
+                        }
 
             else
                 let
@@ -426,7 +470,18 @@ processProperty globalData property =
 
         OpacityConfig config ->
             if config.isDirty then
-                Nothing
+                -- Return static config to preserve visual state
+                Just <|
+                    ProcessedOpacityConfig
+                        { startAt = Just config.endAt
+                        , endAt = config.endAt
+                        , duration = 0 -- No animation, just maintain state
+                        , speed = 0
+                        , distance = 0
+                        , timing = Duration 0
+                        , easing = Linear
+                        , delay = 0
+                        }
 
             else
                 Just <|

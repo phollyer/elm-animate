@@ -2,6 +2,7 @@ module Anim.Internal.CSS.Transform exposing
     ( combineStyles
     , consolidateTiming
     , generate
+    , generateWithOrder
     , isTransformProperty
     )
 
@@ -19,39 +20,90 @@ generate : List Builder.PropertyConfig -> String
 generate properties =
     let
         transformParts =
-            List.filterMap transformFromProperty properties
+            List.foldl transformFromProperty
+                { position = "", rotate = "", scale = "" }
+                properties
     in
-    String.join " " transformParts
+    transformParts.position ++ " " ++ transformParts.rotate ++ " " ++ transformParts.scale
+
+
+{-| Generate transform with custom property ordering.
+Position = "position", Rotate = "rotate", Scale = "scale"
+-}
+generateWithOrder : List String -> List Builder.PropertyConfig -> String
+generateWithOrder order properties =
+    let
+        -- Sort properties according to the specified order
+        sortedProperties =
+            sortPropertiesByOrder order properties
+
+        transformParts =
+            List.foldl transformFromProperty
+                { position = "", rotate = "", scale = "" }
+                sortedProperties
+    in
+    transformParts.position ++ " " ++ transformParts.rotate ++ " " ++ transformParts.scale
+
+
+{-| Sort properties according to specified order.
+-}
+sortPropertiesByOrder : List String -> List Builder.PropertyConfig -> List Builder.PropertyConfig
+sortPropertiesByOrder order properties =
+    let
+        getPropertyPriority prop =
+            case prop of
+                Builder.PositionConfig _ ->
+                    getOrderIndex "position" order
+
+                Builder.RotateConfig _ ->
+                    getOrderIndex "rotate" order
+
+                Builder.ScaleConfig _ ->
+                    getOrderIndex "scale" order
+
+                _ ->
+                    999
+
+        -- Non-transform properties go last
+        getOrderIndex propType orderList =
+            orderList
+                |> List.indexedMap Tuple.pair
+                |> List.filter (\( _, item ) -> item == propType)
+                |> List.head
+                |> Maybe.map Tuple.first
+                |> Maybe.withDefault 999
+    in
+    List.sortBy getPropertyPriority properties
 
 
 {-| Convert a property config to a transform string, if applicable.
 -}
-transformFromProperty : Builder.PropertyConfig -> Maybe String
-transformFromProperty property =
+transformFromProperty : Builder.PropertyConfig -> { position : String, rotate : String, scale : String } -> { position : String, rotate : String, scale : String }
+transformFromProperty property acc =
     case property of
         Builder.PositionConfig config ->
             if config.isDirty then
-                Nothing
+                acc
 
             else
-                Just ("translate(" ++ Position.toCssString config.endAt ++ ")")
+                { acc | position = "translate(" ++ Position.toCssString config.endAt ++ ")" }
 
         Builder.RotateConfig config ->
             if config.isDirty then
-                Nothing
+                acc
 
             else
-                Just ("rotate(" ++ Rotate.toCssString config.endAt ++ ")")
+                { acc | rotate = "rotate(" ++ Rotate.toCssString config.endAt ++ ")" }
 
         Builder.ScaleConfig config ->
             if config.isDirty then
-                Nothing
+                acc
 
             else
-                Just ("scale(" ++ Scale.toCssString config.endAt ++ ")")
+                { acc | scale = "scale(" ++ Scale.toCssString config.endAt ++ ")" }
 
         _ ->
-            Nothing
+            acc
 
 
 {-| Combine multiple transform styles into a single transform style.

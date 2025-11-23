@@ -13,7 +13,7 @@ import Test exposing (..)
 suite : Test
 suite =
     describe "Transform Order in Keyframes"
-        [ test "should respect pipeline order: Position -> Scale -> Rotate" <|
+        [ test "should respect canonical CSS order: Position -> Rotate -> Scale" <|
             \_ ->
                 let
                     animations =
@@ -25,21 +25,20 @@ suite =
                             |> Position.for "test-element"
                             |> Position.toXY 100 50
                             |> Position.build
-                            -- Second: Scale
+                            -- Second: Rotate
+                            |> Rotate.for "test-element"
+                            |> Rotate.to 45
+                            |> Rotate.build
+                            -- Third: Scale
                             |> Scale.for "test-element"
                             |> Scale.fromXY 1.0 1.0
                             |> Scale.toXY 1.5 1.2
                             |> Scale.build
-                            -- Third: Rotate
-                            |> Rotate.for "test-element"
-                            |> Rotate.to 45
-                            |> Rotate.build
                             |> CSS.animate
 
                     keyframes =
                         CSS.getElementKeyframes "test-element" animations
                             |> Maybe.withDefault ""
-                            |> Debug.log "Generated keyframes for test-element"
                 in
                 Expect.all
                     [ \_ -> keyframes |> String.contains "translate(" |> Expect.equal True
@@ -58,49 +57,49 @@ suite =
                         in
                         Expect.all
                             [ \_ ->
-                                if translateIndex >= 0 && scaleIndex >= 0 then
-                                    Expect.equal True (translateIndex < scaleIndex)
+                                if translateIndex >= 0 && rotateIndex >= 0 then
+                                    Expect.equal True (translateIndex < rotateIndex)
 
                                 else
-                                    Expect.fail "Could not find both translate and scale functions"
+                                    Expect.fail "Could not find both translate and rotate functions"
                             , \_ ->
-                                if scaleIndex >= 0 && rotateIndex >= 0 then
-                                    Expect.equal True (scaleIndex < rotateIndex)
+                                if rotateIndex >= 0 && scaleIndex >= 0 then
+                                    Expect.equal True (rotateIndex < scaleIndex)
 
                                 else
-                                    Expect.fail "Could not find both scale and rotate functions"
+                                    Expect.fail "Could not find both rotate and scale functions"
                             ]
                             keyframes
 
-                    -- Verify that translate comes before scale in the string
+                    -- Verify that translate comes before rotate in the string
                     , \_ ->
                         let
                             translateIndex =
                                 String.indexes "translate(" keyframes |> List.head |> Maybe.withDefault -1
 
-                            scaleIndex =
-                                String.indexes "scale(" keyframes |> List.head |> Maybe.withDefault -1
-                        in
-                        if translateIndex >= 0 && scaleIndex >= 0 then
-                            Expect.equal True (translateIndex < scaleIndex)
-
-                        else
-                            Expect.fail "Could not find both translate and scale functions"
-
-                    -- Verify that scale comes before rotate in the string
-                    , \_ ->
-                        let
-                            scaleIndex =
-                                String.indexes "scale(" keyframes |> List.head |> Maybe.withDefault -1
-
                             rotateIndex =
                                 String.indexes "rotate(" keyframes |> List.head |> Maybe.withDefault -1
                         in
-                        if scaleIndex >= 0 && rotateIndex >= 0 then
-                            Expect.equal True (scaleIndex < rotateIndex)
+                        if translateIndex >= 0 && rotateIndex >= 0 then
+                            Expect.equal True (translateIndex < rotateIndex)
 
                         else
-                            Expect.fail "Could not find both scale and rotate functions"
+                            Expect.fail "Could not find both translate and rotate functions"
+
+                    -- Verify that rotate comes before scale in the string
+                    , \_ ->
+                        let
+                            rotateIndex =
+                                String.indexes "rotate(" keyframes |> List.head |> Maybe.withDefault -1
+
+                            scaleIndex =
+                                String.indexes "scale(" keyframes |> List.head |> Maybe.withDefault -1
+                        in
+                        if rotateIndex >= 0 && scaleIndex >= 0 then
+                            Expect.equal True (rotateIndex < scaleIndex)
+
+                        else
+                            Expect.fail "Could not find both rotate and scale functions"
                     ]
                     keyframes
         ]

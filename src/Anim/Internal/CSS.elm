@@ -1,6 +1,8 @@
 module Anim.Internal.CSS exposing
     ( AnimationState
+    , TransformOrder(..)
     , animate
+    , animateWithOrder
     , animationStyleAttribute
     , builder
     , getElementAnimation
@@ -35,6 +37,29 @@ import Json.Decode
 
 
 -- TYPES
+
+
+{-| Transform property ordering for CSS generation.
+-}
+type TransformOrder
+    = Position
+    | Rotate
+    | Scale
+
+
+{-| Convert TransformOrder to string for the transform generation.
+-}
+transformOrderToString : TransformOrder -> String
+transformOrderToString order =
+    case order of
+        Position ->
+            "position"
+
+        Rotate ->
+            "rotate"
+
+        Scale ->
+            "scale"
 
 
 type AnimationState
@@ -74,7 +99,20 @@ animate builder_ =
         { elementAnimations =
             builder_
                 |> Builder.elements
-                |> Dict.map generateElementAnimation
+                |> Dict.map (generateElementAnimation Nothing)
+        , builder = Builder.markDirty builder_
+        }
+
+
+{-| Apply animation with custom transform ordering.
+-}
+animateWithOrder : List TransformOrder -> AnimBuilder -> AnimationState
+animateWithOrder order builder_ =
+    AnimationState
+        { elementAnimations =
+            builder_
+                |> Builder.elements
+                |> Dict.map (generateElementAnimation (Just order))
         , builder = Builder.markDirty builder_
         }
 
@@ -83,19 +121,25 @@ animate builder_ =
 -- CSS GENERATION
 
 
-generateElementAnimation : String -> Builder.ElementConfig -> ElementAnimation
-generateElementAnimation elementId elementConfig =
+generateElementAnimation : Maybe (List TransformOrder) -> String -> Builder.ElementConfig -> ElementAnimation
+generateElementAnimation maybeOrder elementId elementConfig =
     let
-        _ =
-            Debug.log ("Generating element animation for " ++ elementId) elementConfig
-
         transforms =
-            Transforms.generate elementConfig.properties
-                |> Debug.log ("Generated transforms for " ++ elementId)
+            case maybeOrder of
+                Nothing ->
+                    -- Use default ordering: Position -> Rotate -> Scale
+                    Transforms.generate elementConfig.properties
+
+                Just order ->
+                    -- Use custom ordering
+                    let
+                        orderStrings =
+                            List.map transformOrderToString order
+                    in
+                    Transforms.generateWithOrder orderStrings elementConfig.properties
 
         transitions =
             Transitions.generate elementConfig.properties
-                |> Debug.log ("Generated transitions for " ++ elementId)
 
         colorStyles =
             List.filterMap

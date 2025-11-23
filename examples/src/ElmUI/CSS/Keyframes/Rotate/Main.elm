@@ -259,7 +259,7 @@ rotatingElement symbol label color model =
         , htmlAttribute (Html.Attributes.style "display" "flex")
         , htmlAttribute (Html.Attributes.style "align-items" "center")
         , htmlAttribute (Html.Attributes.style "justify-content" "center")
-        , htmlAttribute (CSS.animationStyleAttribute elementId model.animations |> Debug.log "Animation Style")
+        , htmlAttribute (CSS.animationStyleAttribute elementId model.animations)
         ]
         (column
             [ centerX
