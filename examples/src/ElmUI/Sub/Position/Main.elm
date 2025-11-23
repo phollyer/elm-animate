@@ -23,10 +23,11 @@ USAGE:
 -}
 
 import Anim
-import Anim.Sub as Sub
 import Anim.Properties.Position as Position
+import Anim.Sub as Sub
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
+import Browser.Events
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
@@ -55,7 +56,7 @@ main =
 
 
 type alias Model =
-    { animations : Sub.AnimationState    }
+    { animations : Sub.AnimationState }
 
 
 
@@ -64,7 +65,12 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Sub.init
+    ( { animations =
+            Sub.init
+                |> Position.for "box"
+                |> Position.toXY 0 0
+                |> Position.build
+                |> Sub.animate
       }
     , Cmd.none
     )
@@ -82,50 +88,53 @@ type Msg
     | MoveUp
     | MoveDown
     | StopAnimation
-    | AnimationFrame Float
+    | AnimationMsg Sub.AnimationMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
+    case msg |> Debug.log "Received Msg" of
         MoveToCorner ->
             ( { model
-                | animations = 
-                    Anim.init "box"
-                        |> Position.to { x = 100, y = 100 }
+                | animations =
+                    model.animations
+                        |> Sub.builder
+                        |> Position.for "box"
+                        |> Position.toXY 100 100
                         |> Position.speed 200.0
-                        |> Position.easing EaseOut
-                        |> Sub.animate model.animations
+                        |> Position.easing Easing.EaseOut
+                        |> Position.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
 
         MoveToCenter ->
-            let
-                animation =
-                    Anim.position "box" { x = 225, y = 175 }
-                        |> Anim.pixelsPerSecond 200.0
-                        |> Anim.easeInOut
-            in
             ( { model
-                | animations = animate animation model.animations
+                | animations =
+                    model.animations
+                        |> Sub.builder
+                        |> Position.for "box"
+                        |> Position.toXY 225 175
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.EaseInOut
+                        |> Position.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
 
         MoveLeft ->
-            let
-                currentPos =
-                    Sub.getPosition "box" model.animations
-                        |> Maybe.withDefault { x = 0, y = 0 }
-
-                animation =
-                    Anim.position "box" { x = 0, y = currentPos.y }
-                        |> Anim.pixelsPerSecond 300.0
-                        |> Anim.easeIn
-            in
             ( { model
-                | animations = animate animation model.animations
+                | animations =
+                    model.animations
+                        |> Sub.builder
+                        |> Position.for "box"
+                        |> Position.toX 0
+                        |> Position.speed 300.0
+                        |> Position.easing Easing.EaseIn
+                        |> Position.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
@@ -133,71 +142,71 @@ update msg model =
         MoveRight ->
             let
                 currentPos =
-                    getPosition "box" model.animations
+                    Sub.getPosition "box" model.animations
+                        |> Maybe.map Position.asRecord
                         |> Maybe.withDefault { x = 0, y = 0 }
-
-                animation =
-                    Anim.position "box" { x = 450, y = currentPos.y }
-                        |> Anim.pixelsPerSecond 300.0
-                        |> Anim.easeIn
             in
             ( { model
-                | animations = animate animation model.animations
+                | animations =
+                    model.animations
+                        |> Sub.builder
+                        |> Position.for "box"
+                        |> Position.toX 450
+                        |> Position.speed 300.0
+                        |> Position.easing Easing.EaseIn
+                        |> Position.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
 
         MoveUp ->
-            let
-                currentPos =
-                    getPosition "box" model.animations
-                        |> Maybe.withDefault { x = 0, y = 0 }
-
-                animation =
-                    Anim.position "box" { x = currentPos.x, y = 0 }
-                        |> Anim.pixelsPerSecond 250.0
-                        |> Anim.easeOut
-            in
             ( { model
-                | animations = animate animation model.animations
+                | animations =
+                    model.animations
+                        |> Sub.builder
+                        |> Position.for "box"
+                        |> Position.toY 0
+                        |> Position.speed 250.0
+                        |> Position.easing Easing.EaseOut
+                        |> Position.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
 
         MoveDown ->
-            let
-                currentPos =
-                    getPosition "box" model.animations
-                        |> Maybe.withDefault { x = 0, y = 0 }
-
-                animation =
-                    Anim.position "box" { x = currentPos.x, y = 350 }
-                        |> Anim.pixelsPerSecond 250.0
-                        |> Anim.easeOut
-            in
             ( { model
-                | animations = animate animation model.animations
+                | animations =
+                    model.animations
+                        |> Sub.builder
+                        |> Position.for "box"
+                        |> Position.toY 350
+                        |> Position.speed 250.0
+                        |> Position.easing Easing.EaseOut
+                        |> Position.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
 
         StopAnimation ->
-            let
-                animation =
-                    Anim.position "box" { x = 0, y = 0 }
-                        |> Anim.pixelsPerSecond 400.0
-                        |> Anim.easeOut
-            in
             ( { model
-                | animations = animate animation model.animations
+                | animations =
+                    model.animations
+                        |> Sub.builder
+                        |> Position.for "box"
+                        |> Position.toXY 0 0
+                        |> Position.speed 400.0
+                        |> Position.easing Easing.EaseOut
+                        |> Position.build
+                        |> Sub.animate
               }
             , Cmd.none
             )
 
-        AnimationFrame deltaTime ->
-            ( { model
-                | animations = step deltaTime model.animations
-              }
+        AnimationMsg subMsg ->
+            ( { model | animations = Sub.update subMsg model.animations }
             , Cmd.none
             )
 
@@ -208,7 +217,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.subscriptions AnimationFrame model.animations
+    Sub.map AnimationMsg (Sub.subscriptions model.animations)
 
 
 
@@ -232,7 +241,8 @@ viewContent model =
         ]
         (let
             pos =
-                Sub.getPosition "box" model.animations 
+                Sub.getPosition "box" model.animations
+                    |> Maybe.map Position.asRecord
                     |> Maybe.withDefault { x = 0, y = 0 }
          in
          text ("Position: (" ++ String.fromInt (round pos.x) ++ ", " ++ String.fromInt (round pos.y) ++ ")")

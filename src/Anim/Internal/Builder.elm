@@ -2,6 +2,7 @@ module Anim.Internal.Builder exposing
     ( AnimBuilder
     , AnimationConfig
     , ElementConfig
+    , ProcessedElementConfig
     , ProcessedPropertyConfig(..)
     , PropertyConfig(..)
     , delay

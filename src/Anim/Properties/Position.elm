@@ -3,6 +3,7 @@ module Anim.Properties.Position exposing
     , fromXY, fromX, fromY
     , toXY, toX, toY
     , speed, duration, easing, delay
+    , asRecord
     )
 
 {-| Position animation functions.
@@ -61,6 +62,10 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 -}
 type alias Builder =
     PB.PositionBuilder
+
+
+type alias Position =
+    P.Position
 
 
 {-| Start configuring a position animation for a specific element.
@@ -232,3 +237,8 @@ easing easing_ =
 delay : Int -> Builder -> Builder
 delay delay_ =
     PB.delay delay_
+
+
+asRecord : Position -> { x : Float, y : Float }
+asRecord pos =
+    P.toRecord pos

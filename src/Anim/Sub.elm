@@ -1,6 +1,6 @@
 module Anim.Sub exposing
     ( TargetId
-    , animate, AnimationState, AnimationMsg(..)
+    , init, builder, animate, AnimationState, AnimationMsg(..)
     , subscriptions, update
     , getPosition, getCurrentStyles
     , transform
@@ -16,7 +16,7 @@ onAnimationFrameDelta subscriptions for smooth, controlled animations.
 
 @docs TargetId
 
-@docs animate, AnimationState, AnimationMsg
+@docs init, builder, animate, AnimationState, AnimationMsg
 
 
 # Animation Management
@@ -109,6 +109,34 @@ type alias TargetId =
     String
 
 
+{-| Initialize empty animation builder.
+-}
+init : AnimBuilder
+init =
+    Anim.init
+
+
+{-| Turn the AnimationState into an AnimBuilder.
+
+Use this to start new animations based on current state.
+
+    -- Start a new animation based on current state
+    newBuilder =
+        model.animations
+            |> Sub.builder
+            |> Position.for "element"
+            |> Position.to { x = 100, y = 200 }
+            |> Position.build
+            |> Sub.animate
+
+-}
+builder : AnimationState -> AnimBuilder
+builder (AnimationState _) =
+    -- Start with a fresh builder, carrying over any current element positions
+    -- This allows chaining animations while preserving current states
+    Anim.init
+
+
 {-| Create animation state from AnimBuilder.
 
     let
@@ -122,10 +150,10 @@ type alias TargetId =
 
 -}
 animate : AnimBuilder -> AnimationState
-animate builder =
+animate animBuilder =
     let
         processedData =
-            Builder.processAnimationData builder
+            Builder.processAnimationData animBuilder
 
         startValues =
             { position = { x = 0, y = 0 }
@@ -136,10 +164,7 @@ animate builder =
             }
 
         elementStates =
-            Dict.empty
-
-        -- TODO: implement
-        --Dict.map (createElementAnimationState startValues) processedData.elements
+            Dict.map (createElementAnimationState startValues) processedData.elements
     in
     AnimationState
         { elements = elementStates
@@ -155,256 +180,162 @@ createElementAnimationState :
     , opacity : Float
     }
     -> String
-    -> Builder.ElementConfig
+    -> Builder.ProcessedElementConfig
     -> ElementAnimationState
 createElementAnimationState startValues _ elementConfig =
-    { properties = [] -- List.map (createPropertyAnimationState startValues) elementConfig.properties
+    { properties = List.filterMap (createPropertyAnimationState startValues) elementConfig.properties
     , isComplete = False
     }
 
 
+createPropertyAnimationState :
+    { position : { x : Float, y : Float }
+    , rotate : Float
+    , scale : { x : Float, y : Float }
+    , color : Color
+    , opacity : Float
+    }
+    -> Builder.ProcessedPropertyConfig
+    -> Maybe PropertyAnimationState
+createPropertyAnimationState startValues property =
+    case property of
+        Builder.ProcessedPositionConfig config ->
+            let
+                startPosition =
+                    Position.fromTuple ( startValues.position.x, startValues.position.y )
 
-{-
-   createPropertyAnimationState :
-       { position : { x : Float, y : Float }
-       , rotate : Float
-       , scale : { x : Float, y : Float }
-       , color : Color
-       , opacity : Float
-       }
-       -> Builder.PropertyConfig
-       -> PropertyAnimationState
-   createPropertyAnimationState startValues property =
+                actualStart =
+                    case config.startAt of
+                        Just start ->
+                            start
 
-       case property of
-           Builder.PositionConfig config ->
-               let
-                   position =
-                       Position.fromTuple ( startValues.position.x, startValues.position.y )
+                        Nothing ->
+                            startPosition
+            in
+            Just
+                { propertyType = "position"
+                , startValue = PositionAnimationValue actualStart
+                , targetValue = PositionAnimationValue config.endAt
+                , currentValue = PositionAnimationValue actualStart
+                , elapsed = 0
+                , delay = config.delay
+                , easing = config.easing
+                , speed = config.speed
+                , distance = config.distance
+                , duration = toFloat config.duration
+                , isComplete = False
+                }
 
-                   distance =
-                       Position.distance config.startAt config.endAt
+        Builder.ProcessedRotateConfig config ->
+            let
+                startRotate =
+                    Rotate.fromFloat startValues.rotate
 
-                   duration =
-                       case config.timing of
-                           Just (Duration ms) ->
-                               toFloat ms
+                actualStart =
+                    case config.startAt of
+                        Just start ->
+                            start
 
-                           Just (Speed unitsPerSecond) ->
-                               distance / unitsPerSecond * 1000
+                        Nothing ->
+                            startRotate
+            in
+            Just
+                { propertyType = "rotate"
+                , startValue = RotateAnimationValue actualStart
+                , targetValue = RotateAnimationValue config.endAt
+                , currentValue = RotateAnimationValue actualStart
+                , elapsed = 0
+                , delay = config.delay
+                , easing = config.easing
+                , speed = config.speed
+                , distance = config.distance
+                , duration = toFloat config.duration
+                , isComplete = False
+                }
 
-                           Nothing ->
-                               0
+        Builder.ProcessedScaleConfig config ->
+            let
+                startScale =
+                    Scale.fromTuple ( startValues.scale.x, startValues.scale.y )
 
-                   speed =
-                       case config.timing of
-                           Just (Duration ms) ->
-                               if ms == 0 then
-                                   0
+                actualStart =
+                    case config.startAt of
+                        Just start ->
+                            start
 
-                               else
-                                   distance / (toFloat ms / 1000)
+                        Nothing ->
+                            startScale
+            in
+            Just
+                { propertyType = "scale"
+                , startValue = ScaleAnimationValue actualStart
+                , targetValue = ScaleAnimationValue config.endAt
+                , currentValue = ScaleAnimationValue actualStart
+                , elapsed = 0
+                , delay = config.delay
+                , easing = config.easing
+                , speed = config.speed
+                , distance = config.distance
+                , duration = toFloat config.duration
+                , isComplete = False
+                }
 
-                           Just (Speed unitsPerSecond) ->
-                               unitsPerSecond
+        Builder.ProcessedColorConfig config ->
+            let
+                startColor =
+                    startValues.color
 
-                           Nothing ->
-                               0
-               in
-               { propertyType = "position"
-               , startValue = PositionAnimationValue position
-               , targetValue = PositionAnimationValue config.target
-               , currentValue = PositionAnimationValue position
-               , elapsed = 0
-               , delay = config.delay
-               , easing = config.easing
-               , speed = speed
-               , distance = distance
-               , duration = duration
-               , isComplete = False
-               }
+                actualStart =
+                    case config.startAt of
+                        Just start ->
+                            start
 
-           Builder.RotateConfig config ->
-               let
-                   rotate =
-                       Rotate.fromFloat startValues.rotate
+                        Nothing ->
+                            startColor
+            in
+            Just
+                { propertyType = "color"
+                , startValue = ColorAnimationValue actualStart
+                , targetValue = ColorAnimationValue config.endAt
+                , currentValue = ColorAnimationValue actualStart
+                , elapsed = 0
+                , delay = config.delay
+                , easing = config.easing
+                , speed = config.speed
+                , distance = config.distance
+                , duration = toFloat config.duration
+                , isComplete = False
+                }
 
-                   distance =
-                       Rotate.distance config.startAt config.endAt
+        Builder.ProcessedOpacityConfig config ->
+            let
+                startOpacity =
+                    Opacity.fromFloat startValues.opacity
 
-                   speed =
-                       case config.timing of
-                           Just (Duration ms) ->
-                               if ms == 0 then
-                                   1000000
+                actualStart =
+                    case config.startAt of
+                        Just start ->
+                            start
 
-                               else
-                                   distance / (toFloat ms / 1000)
+                        Nothing ->
+                            startOpacity
+            in
+            Just
+                { propertyType = "opacity"
+                , startValue = OpacityAnimationValue actualStart
+                , targetValue = OpacityAnimationValue config.endAt
+                , currentValue = OpacityAnimationValue actualStart
+                , elapsed = 0
+                , delay = config.delay
+                , easing = config.easing
+                , speed = config.speed
+                , distance = config.distance
+                , duration = toFloat config.duration
+                , isComplete = False
+                }
 
-                           Just (Speed unitsPerSecond) ->
-                               unitsPerSecond
 
-                           Nothing ->
-                               0
 
-                   duration =
-                       case config.timing of
-                           Just (Duration ms) ->
-                               toFloat ms
-
-                           Just (Speed unitsPerSecond) ->
-                               distance / unitsPerSecond * 1000
-
-                           Nothing ->
-                               0
-               in
-               { propertyType = "rotate"
-               , startValue = RotateAnimationValue rotate
-               , targetValue = RotateAnimationValue config.target
-               , currentValue = RotateAnimationValue rotate
-               , elapsed = 0
-               , delay = config.delay
-               , easing = config.easing
-               , speed = speed
-               , distance = distance
-               , duration = duration
-               , isComplete = False
-               }
-
-           Builder.ScaleConfig config ->
-               let
-                   scale =
-                       Scale.fromTuple ( startValues.scale.x, startValues.scale.y )
-
-                   startTuple =
-                       Scale.toTuple scale
-
-                   targetTuple =
-                       Scale.toTuple config.target
-
-                   distance =
-                       sqrt ((targetTuple.x - startTuple.x) ^ 2 + (targetTuple.y - startTuple.y) ^ 2)
-
-                   speed =
-                       case config.timing of
-                           Duration ms ->
-                               if ms == 0 then
-                                   1000000
-
-                               else
-                                   distance / (toFloat ms / 1000)
-
-                           Speed unitsPerSecond ->
-                               unitsPerSecond
-
-                   duration =
-                       case config.timing of
-                           Duration ms ->
-                               toFloat ms
-
-                           Speed unitsPerSecond ->
-                               distance / unitsPerSecond * 1000
-               in
-               { propertyType = "scale"
-               , startValue = ScaleAnimationValue scale
-               , targetValue = ScaleAnimationValue config.target
-               , currentValue = ScaleAnimationValue scale
-               , elapsed = 0
-               , delay = config.delay
-               , easing = config.easing
-               , speed = speed
-               , distance = distance
-               , duration = duration
-               , isComplete = False
-               }
-
-           Builder.BackgroundColorConfig config ->
-               let
-                   distance =
-                       1.0
-
-                   -- Color distance is not easily calculated
-                   speed =
-                       case config.timing of
-                           Duration ms ->
-                               if ms == 0 then
-                                   1000000
-
-                               else
-                                   1.0 / (toFloat ms / 1000)
-
-                           Speed unitsPerSecond ->
-                               unitsPerSecond
-
-                   duration =
-                       case config.timing of
-                           Duration ms ->
-                               toFloat ms
-
-                           Speed unitsPerSecond ->
-                               1.0 / unitsPerSecond * 1000
-               in
-               { propertyType = "color"
-               , startValue = ColorAnimationValue startValues.color
-               , targetValue = ColorAnimationValue config.target
-               , currentValue = ColorAnimationValue startValues.color
-               , elapsed = 0
-               , delay = config.delay
-               , easing = config.easing
-               , speed = speed
-               , distance = distance
-               , duration = duration
-               , isComplete = False
-               }
-
-           Builder.OpacityConfig config ->
-               let
-                   opacity =
-                       Opacity.fromFloat startValues.opacity
-
-                   distance =
-                       abs (Opacity.toFloat config.endAt - Opacity.toFloat opacity)
-
-                   speed =
-                       case config.timing of
-                           Just (Duration ms) ->
-                               if ms == 0 then
-                                   1000000
-
-                               else
-                                   distance / (toFloat ms / 1000)
-
-                           Just (Speed unitsPerSecond) ->
-                               unitsPerSecond
-
-                           Nothing ->
-                               0
-
-                   duration =
-                       case config.timing of
-                           Just (Duration ms) ->
-                               toFloat ms
-
-                           Just (Speed unitsPerSecond) ->
-                               distance / unitsPerSecond * 1000
-
-                           Nothing ->
-                               0
-               in
-               { propertyType = "opacity"
-               , startValue = OpacityAnimationValue opacity
-               , targetValue = OpacityAnimationValue config.endAt
-               , currentValue = OpacityAnimationValue opacity
-               , elapsed = 0
-               , delay = config.delay
-               , easing = config.easing
-               , speed = speed
-               , distance = distance
-               , duration = duration
-               , isComplete = False
-               }
-
--}
 -- SUBSCRIPTIONS
 
 
@@ -575,18 +506,6 @@ propertyToStyles propertyState =
 
 
 -- HELPER FUNCTIONS
-
-
-timingToMs : TimeSpec -> Float
-timingToMs timing =
-    case timing of
-        Duration ms ->
-            toFloat ms
-
-        Speed unitsPerSecond ->
-            -- Convert speed to duration (approximate)
-            -- Assume 100 unit movement for speed-based timing
-            100 / unitsPerSecond * 1000
 
 
 interpolateValue : Float -> AnimationValue -> AnimationValue -> AnimationValue
