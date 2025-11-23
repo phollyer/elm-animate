@@ -5271,30 +5271,78 @@ var $author$project$Anim$Internal$Properties$Position$fromTuple = function (_v0)
 	return $author$project$Anim$Internal$Properties$Position$Position(
 		{x: xCoord, y: yCoord});
 };
+var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Tuple$pair = F2(
 	function (a, b) {
 		return _Utils_Tuple2(a, b);
+	});
+var $elm$core$List$repeatHelp = F3(
+	function (result, n, value) {
+		repeatHelp:
+		while (true) {
+			if (n <= 0) {
+				return result;
+			} else {
+				var $temp$result = A2($elm$core$List$cons, value, result),
+					$temp$n = n - 1,
+					$temp$value = value;
+				result = $temp$result;
+				n = $temp$n;
+				value = $temp$value;
+				continue repeatHelp;
+			}
+		}
+	});
+var $elm$core$List$repeat = F2(
+	function (n, value) {
+		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
 	});
 var $author$project$Anim$Internal$Properties$Position$toTuple = function (_v0) {
 	var coords = _v0.a;
 	return _Utils_Tuple2(coords.x, coords.y);
 };
 var $author$project$Anim$Internal$Sub$createPositionSteps = F4(
-	function (start, target, frames, easingFunction) {
-		var _v0 = $author$project$Anim$Internal$Properties$Position$toTuple(target);
-		var targetX = _v0.a;
-		var targetY = _v0.b;
-		var _v1 = $author$project$Anim$Internal$Properties$Position$toTuple(start);
-		var startX = _v1.a;
-		var startY = _v1.b;
-		var stepsX = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startX, targetX);
-		var stepsY = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startY, targetY);
-		var steps = A3($elm$core$List$map2, $elm$core$Tuple$pair, stepsX, stepsY);
+	function (startPos, endPos, frames, easingFunction) {
+		var _v0 = A2(
+			$elm$core$Debug$log,
+			'Start Position Tuple',
+			$author$project$Anim$Internal$Properties$Position$toTuple(startPos));
+		var startX = _v0.a;
+		var startY = _v0.b;
+		var _v1 = A2(
+			$elm$core$Debug$log,
+			'Target Position Tuple',
+			$author$project$Anim$Internal$Properties$Position$toTuple(endPos));
+		var endX = _v1.a;
+		var endY = _v1.b;
+		var stepsX = function () {
+			var _v5 = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startX, endX);
+			if (!_v5.b) {
+				return A2($elm$core$List$repeat, frames, endX);
+			} else {
+				var vals = _v5;
+				return vals;
+			}
+		}();
+		var stepsY = function () {
+			var _v4 = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startY, endY);
+			if (!_v4.b) {
+				return A2($elm$core$List$repeat, frames, endY);
+			} else {
+				var vals = _v4;
+				return vals;
+			}
+		}();
+		var steps = A2(
+			$elm$core$Debug$log,
+			'Position Steps',
+			A3($elm$core$List$map2, $elm$core$Tuple$pair, stepsX, stepsY));
+		var _v2 = A2($elm$core$Debug$log, 'Frames', frames);
 		return A2(
 			$elm$core$List$map,
-			function (_v2) {
-				var x = _v2.a;
-				var y = _v2.b;
+			function (_v3) {
+				var x = _v3.a;
+				var y = _v3.b;
 				return $author$project$Anim$Internal$Sub$PositionAnimationValue(
 					$author$project$Anim$Internal$Properties$Position$fromTuple(
 						_Utils_Tuple2(x, y)));
@@ -5613,7 +5661,7 @@ var $author$project$Anim$Internal$Sub$createPropertyAnimationState = F2(
 				var steps = A4($author$project$Anim$Internal$Sub$createPositionSteps, actualStart, config.endAt, frames, easeFunction);
 				return $elm$core$Maybe$Just(
 					{
-						animationSteps: steps,
+						animationSteps: A2($elm$core$Debug$log, 'Position Steps', steps),
 						currentDelayFrame: 0,
 						currentStepIndex: 0,
 						delayFrames: A2($elm$core$Basics$max, 0, (config.delay / 16) | 0),
@@ -6369,9 +6417,9 @@ var $author$project$Anim$Internal$Properties$Color$rgba255 = F4(
 		return $author$project$Anim$Internal$Properties$Color$Rgba(
 			{a: a, b: b, g: g, r: r});
 	});
-var $author$project$Anim$Internal$Sub$animate = function (animBuilder) {
-	var processedData = $author$project$Anim$Internal$Builder$processAnimationData(animBuilder);
-	var currentValues = $author$project$Anim$Internal$Sub$extractCurrentValuesFromBuilder(animBuilder);
+var $author$project$Anim$Internal$Sub$animate = function (builder_) {
+	var processedData = $author$project$Anim$Internal$Builder$processAnimationData(builder_);
+	var currentValues = $author$project$Anim$Internal$Sub$extractCurrentValuesFromBuilder(builder_);
 	var startValues = {
 		color: A2(
 			$elm$core$Maybe$withDefault,
@@ -6394,7 +6442,7 @@ var $author$project$Anim$Internal$Sub$animate = function (animBuilder) {
 		processedData.elements);
 	return $author$project$Anim$Internal$Sub$AnimationState(
 		{
-			builder: $author$project$Anim$Internal$Builder$markDirty(animBuilder),
+			builder: $author$project$Anim$Internal$Builder$markDirty(builder_),
 			elementAnimations: elementStates,
 			isRunning: !$elm$core$Dict$isEmpty(elementStates)
 		});
@@ -7167,7 +7215,6 @@ var $author$project$Anim$Properties$Position$easing = function (easing_) {
 	return $author$project$Anim$Internal$Builders$Position$easing(
 		A2($author$project$Anim$Timing$Easing$mapInternal, $elm$core$Basics$identity, easing_));
 };
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$Anim$Internal$Timing$TimeSpec$Speed = function (a) {
 	return {$: 'Speed', a: a};
 };
@@ -7196,16 +7243,12 @@ var $author$project$Anim$Internal$Builders$Position$toX = F2(
 		var config = _v0.a;
 		var builder = _v0.b;
 		return A2(
-			$author$project$Anim$Internal$Builders$Position$PositionBuilder,
-			_Utils_update(
-				config,
-				{
-					endAt: $author$project$Anim$Internal$Properties$Position$fromTuple(
-						_Utils_Tuple2(
-							x,
-							$author$project$Anim$Internal$Properties$Position$y(config.endAt)))
-				}),
-			builder);
+			$author$project$Anim$Internal$Builders$Position$to,
+			$author$project$Anim$Internal$Properties$Position$fromTuple(
+				_Utils_Tuple2(
+					x,
+					$author$project$Anim$Internal$Properties$Position$y(config.endAt))),
+			A2($author$project$Anim$Internal$Builders$Position$PositionBuilder, config, builder));
 	});
 var $author$project$Anim$Properties$Position$toX = function (x) {
 	return $author$project$Anim$Internal$Builders$Position$toX(x);
@@ -7219,16 +7262,12 @@ var $author$project$Anim$Internal$Builders$Position$toY = F2(
 		var config = _v0.a;
 		var builder = _v0.b;
 		return A2(
-			$author$project$Anim$Internal$Builders$Position$PositionBuilder,
-			_Utils_update(
-				config,
-				{
-					endAt: $author$project$Anim$Internal$Properties$Position$fromTuple(
-						_Utils_Tuple2(
-							$author$project$Anim$Internal$Properties$Position$x(config.endAt),
-							y))
-				}),
-			builder);
+			$author$project$Anim$Internal$Builders$Position$to,
+			$author$project$Anim$Internal$Properties$Position$fromTuple(
+				_Utils_Tuple2(
+					$author$project$Anim$Internal$Properties$Position$x(config.endAt),
+					y)),
+			A2($author$project$Anim$Internal$Builders$Position$PositionBuilder, config, builder));
 	});
 var $author$project$Anim$Properties$Position$toY = function (y) {
 	return $author$project$Anim$Internal$Builders$Position$toY(y);
@@ -7331,11 +7370,10 @@ var $author$project$Anim$Internal$Sub$update = F2(
 var $author$project$Anim$Sub$update = $author$project$Anim$Internal$Sub$update;
 var $author$project$ElmUI$Sub$Position$Main$update = F2(
 	function (msg, model) {
-		var _v0 = A2($elm$core$Debug$log, 'Received Msg', msg);
-		switch (_v0.$) {
+		switch (msg.$) {
 			case 'MoveToXY':
-				var x = _v0.a;
-				var y = _v0.b;
+				var x = msg.a;
+				var y = msg.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -7470,7 +7508,7 @@ var $author$project$ElmUI$Sub$Position$Main$update = F2(
 						}),
 					$elm$core$Platform$Cmd$none);
 			default:
-				var subMsg = _v0.a;
+				var subMsg = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,

@@ -80,19 +80,29 @@ type alias ElementAnimation =
 
 
 createPositionSteps : Position.Position -> Position.Position -> Int -> (Float -> Float) -> List AnimationValue
-createPositionSteps start target frames easingFunction =
+createPositionSteps startPos endPos frames easingFunction =
     let
         ( startX, startY ) =
-            Position.toTuple start
+            Position.toTuple startPos
 
-        ( targetX, targetY ) =
-            Position.toTuple target
+        ( endX, endY ) =
+            Position.toTuple endPos
 
         stepsX =
-            AnimationCore.animationStepsWithFrames frames easingFunction startX targetX
+            case AnimationCore.animationStepsWithFrames frames easingFunction startX endX of
+                [] ->
+                    List.repeat frames endX
+
+                vals ->
+                    vals
 
         stepsY =
-            AnimationCore.animationStepsWithFrames frames easingFunction startY targetY
+            case AnimationCore.animationStepsWithFrames frames easingFunction startY endY of
+                [] ->
+                    List.repeat frames endY
+
+                vals ->
+                    vals
 
         steps =
             List.map2 Tuple.pair stepsX stepsY
@@ -293,14 +303,14 @@ extractFromProperty property acc =
 
 -}
 animate : AnimBuilder -> AnimationState
-animate animBuilder =
+animate builder_ =
     let
         processedData =
-            Builder.processAnimationData animBuilder
+            Builder.processAnimationData builder_
 
         -- Extract current values from any existing animations in the builder
         currentValues =
-            extractCurrentValuesFromBuilder animBuilder
+            extractCurrentValuesFromBuilder builder_
 
         startValues =
             { position = Maybe.withDefault { x = 0, y = 0 } currentValues.position
@@ -316,7 +326,7 @@ animate animBuilder =
     AnimationState
         { elementAnimations = elementStates
         , isRunning = not (Dict.isEmpty elementStates)
-        , builder = Builder.markDirty animBuilder
+        , builder = Builder.markDirty builder_
         }
 
 
@@ -371,7 +381,7 @@ createPropertyAnimationState startValues property =
             in
             Just
                 { propertyType = "position"
-                , animationSteps = steps
+                , animationSteps = steps |> Debug.log "Position Steps"
                 , currentStepIndex = 0
                 , delayFrames = max 0 (config.delay // 16)
                 , currentDelayFrame = 0

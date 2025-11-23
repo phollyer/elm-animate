@@ -156,12 +156,12 @@ to position (PositionBuilder config builder) =
 
 toX : Float -> PositionBuilder -> PositionBuilder
 toX x (PositionBuilder config builder) =
-    PositionBuilder { config | endAt = Position.fromTuple ( x, Position.y config.endAt ) } builder
+    to (Position.fromTuple ( x, Position.y config.endAt )) (PositionBuilder config builder)
 
 
 toY : Float -> PositionBuilder -> PositionBuilder
 toY y (PositionBuilder config builder) =
-    PositionBuilder { config | endAt = Position.fromTuple ( Position.x config.endAt, y ) } builder
+    to (Position.fromTuple ( Position.x config.endAt, y )) (PositionBuilder config builder)
 
 
 speed : Float -> PositionBuilder -> PositionBuilder
