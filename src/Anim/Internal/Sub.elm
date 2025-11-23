@@ -643,11 +643,30 @@ getCurrentStyles elementId (AnimationState state) =
             []
 
         Just elementState ->
-            List.concatMap propertyToStyles elementState.properties
+            combinePropertyStyles elementState.properties
 
 
-propertyToStyles : PropertyAnimationState -> List ( String, String )
-propertyToStyles propertyState =
+combinePropertyStyles : List PropertyAnimationState -> List ( String, String )
+combinePropertyStyles properties =
+    let
+        transformParts =
+            List.filterMap getTransformPart properties
+
+        nonTransformStyles =
+            List.filterMap getNonTransformStyle properties
+
+        transformStyle =
+            if List.isEmpty transformParts then
+                []
+
+            else
+                [ ( "transform", String.join " " transformParts ) ]
+    in
+    transformStyle ++ nonTransformStyles
+
+
+getTransformPart : PropertyAnimationState -> Maybe String
+getTransformPart propertyState =
     let
         currentValue =
             List.drop propertyState.currentStepIndex propertyState.animationSteps
@@ -660,31 +679,47 @@ propertyToStyles propertyState =
                 ( x, y ) =
                     Position.toTuple pos
             in
-            [ ( "transform", "translate(" ++ String.fromFloat x ++ "px, " ++ String.fromFloat y ++ "px)" ) ]
+            Just ("translate(" ++ String.fromFloat x ++ "px, " ++ String.fromFloat y ++ "px)")
 
         RotateAnimationValue rotate ->
             let
                 degrees =
                     Rotate.toFloat rotate
             in
-            [ ( "transform", "rotate(" ++ String.fromFloat degrees ++ "deg)" ) ]
+            Just ("rotate(" ++ String.fromFloat degrees ++ "deg)")
 
         ScaleAnimationValue scale ->
             let
                 ( x, y ) =
                     Scale.toTuple scale
             in
-            [ ( "transform", "scale(" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")" ) ]
+            Just ("scale(" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")")
 
+        _ ->
+            Nothing
+
+
+getNonTransformStyle : PropertyAnimationState -> Maybe ( String, String )
+getNonTransformStyle propertyState =
+    let
+        currentValue =
+            List.drop propertyState.currentStepIndex propertyState.animationSteps
+                |> List.head
+                |> Maybe.withDefault (getLastStep propertyState.animationSteps)
+    in
+    case currentValue of
         ColorAnimationValue colorValue ->
-            [ ( "background-color", Color.toString colorValue ) ]
+            Just ( "background-color", Color.toString colorValue )
 
         OpacityAnimationValue opacity ->
             let
                 opacityValue =
                     Opacity.toFloat opacity
             in
-            [ ( "opacity", String.fromFloat opacityValue ) ]
+            Just ( "opacity", String.fromFloat opacityValue )
+
+        _ ->
+            Nothing
 
 
 getLastStep : List AnimationValue -> AnimationValue
@@ -708,5 +743,5 @@ getElementStyles : String -> AnimationState -> List ( String, String )
 getElementStyles elementId (AnimationState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.map .properties
-        |> Maybe.map (List.concatMap propertyToStyles)
+        |> Maybe.map combinePropertyStyles
         |> Maybe.withDefault []

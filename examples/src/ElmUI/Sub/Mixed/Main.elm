@@ -110,7 +110,7 @@ update msg model =
             )
 
         StartFadeMove elementId ->
-            -- Just opacity animation
+            -- Combine opacity + position
             ( { model
                 | animations =
                     model.animations
@@ -120,6 +120,11 @@ update msg model =
                         |> Opacity.speed 2.0
                         |> Opacity.easing Easing.EaseOut
                         |> Opacity.build
+                        |> Position.for elementId
+                        |> Position.toXY 250 80
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.EaseOut
+                        |> Position.build
                         |> Sub.animate
               }
             , Cmd.none
@@ -330,7 +335,7 @@ mixedAnimationBox model =
          , htmlAttribute (Html.Attributes.style "align-items" "center")
          , htmlAttribute (Html.Attributes.style "justify-content" "center")
          ]
-            ++ List.map htmlAttribute (Sub.htmlAttributes "mixed-box" model.animations)
+            ++ List.map htmlAttribute (Sub.htmlAttributes "mixed-box" model.animations |> Debug.log "Attrs")
         )
         (el
             [ centerX
