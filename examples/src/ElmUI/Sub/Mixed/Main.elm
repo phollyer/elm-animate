@@ -94,15 +94,11 @@ update msg model =
                         |> Position.speed 200.0
                         |> Position.easing Easing.EaseOut
                         |> Position.build
-                        |> Sub.animate
-                        |> Sub.builder
                         |> Scale.for elementId
                         |> Scale.toXY 1.5 1.9
                         |> Scale.speed 2.0
                         |> Scale.easing Easing.EaseOut
                         |> Scale.build
-                        |> Sub.animate
-                        |> Sub.builder
                         |> Rotate.for elementId
                         |> Rotate.to 90
                         |> Rotate.speed 120.0
