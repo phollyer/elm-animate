@@ -47,8 +47,11 @@ main =
 
 -- MODEL
 
+
 type alias Model =
-    { animations : Sub.AnimationState  }
+    { animations : Sub.AnimationState }
+
+
 
 -- INIT
 
@@ -58,9 +61,6 @@ init _ =
     ( { animations = Sub.init }
     , Cmd.none
     )
-
-
-
 
 
 type Msg

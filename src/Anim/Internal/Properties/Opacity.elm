@@ -1,6 +1,7 @@
 module Anim.Internal.Properties.Opacity exposing
     ( Opacity
     , distance
+    , duration
     , encode
     , equal
     , fromFloat
@@ -8,11 +9,13 @@ module Anim.Internal.Properties.Opacity exposing
     , isFullyTransparent
     , map
     , one
+    , speed
     , toFloat
     , toString
     , zero
     )
 
+import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
 import Json.Encode as Encode
 
 
@@ -63,6 +66,30 @@ zero =
 distance : Opacity -> Opacity -> Float
 distance (Opacity o1) (Opacity o2) =
     abs (o2 - o1)
+
+
+speed : Float -> Float -> TimeSpec -> Float
+speed distance_ duration_ timeSpec =
+    case timeSpec of
+        TimeSpec.Duration ms ->
+            if ms <= 0 then
+                distance_ * duration_ * 1000
+
+            else
+                distance_ / (Basics.toFloat ms / 1000)
+
+        TimeSpec.Speed unitsPerSecond ->
+            unitsPerSecond
+
+
+duration : Float -> TimeSpec -> Float
+duration distance_ timeSpec =
+    case timeSpec of
+        TimeSpec.Duration ms ->
+            Basics.toFloat ms
+
+        TimeSpec.Speed unitsPerSecond ->
+            distance_ / unitsPerSecond * 1000
 
 
 one : Opacity

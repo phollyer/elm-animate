@@ -160,6 +160,9 @@ createScaleSteps start target frames easingFunction =
 createOpacitySteps : Opacity.Opacity -> Opacity.Opacity -> Int -> (Float -> Float) -> List AnimationValue
 createOpacitySteps start target frames easingFunction =
     let
+        _ =
+            Debug.log "Creating Opacity Steps" frames
+
         startFloat =
             Opacity.toFloat start
 
@@ -168,6 +171,7 @@ createOpacitySteps start target frames easingFunction =
 
         steps =
             AnimationCore.animationStepsWithFrames frames easingFunction startFloat targetFloat
+                |> Debug.log "Opacity Steps"
     in
     List.map (\value -> OpacityAnimationValue (Opacity.fromFloat value)) steps
 
@@ -497,6 +501,9 @@ createPropertyAnimationState startValues property =
 
                         Nothing ->
                             startOpacity
+
+                _ =
+                    Debug.log "Duration" config.duration
 
                 frames =
                     Basics.max 1 (round (toFloat config.duration) // 16)

@@ -25,7 +25,7 @@ module Anim.Internal.Builder exposing
     )
 
 import Anim.Internal.Properties.Color exposing (Color)
-import Anim.Internal.Properties.Opacity exposing (Opacity)
+import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position, distance)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
@@ -485,13 +485,35 @@ processProperty globalData property =
                         }
 
             else
+                let
+                    startAt =
+                        case config.startAt of
+                            Just s ->
+                                s
+
+                            Nothing ->
+                                Opacity.fromFloat 1.0
+
+                    distance =
+                        Opacity.distance startAt config.endAt
+
+                    duration_ =
+                        config.timing
+                            |> Maybe.map (Opacity.duration distance)
+                            |> Maybe.withDefault 0.0
+
+                    speed_ =
+                        config.timing
+                            |> Maybe.map (Opacity.speed distance duration_)
+                            |> Maybe.withDefault 0.0
+                in
                 Just <|
                     ProcessedOpacityConfig
                         { startAt = config.startAt
                         , endAt = config.endAt
-                        , duration = 0 -- TODO: implement opacity timing
-                        , speed = 0.0
-                        , distance = 0.0
+                        , duration = round duration_
+                        , speed = speed_
+                        , distance = distance
                         , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
                         , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
                         , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0

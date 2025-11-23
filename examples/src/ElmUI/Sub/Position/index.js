@@ -5242,6 +5242,7 @@ var $author$project$Anim$Internal$Properties$Opacity$Opacity = function (a) {
 var $author$project$Anim$Internal$Properties$Opacity$fromFloat = function (o) {
 	return $author$project$Anim$Internal$Properties$Opacity$Opacity(o);
 };
+var $elm$core$Debug$log = _Debug_log;
 var $author$project$Anim$Internal$Properties$Opacity$toFloat = function (_v0) {
 	var o = _v0.a;
 	return o;
@@ -5250,7 +5251,11 @@ var $author$project$Anim$Internal$Sub$createOpacitySteps = F4(
 	function (start, target, frames, easingFunction) {
 		var targetFloat = $author$project$Anim$Internal$Properties$Opacity$toFloat(target);
 		var startFloat = $author$project$Anim$Internal$Properties$Opacity$toFloat(start);
-		var steps = A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startFloat, targetFloat);
+		var steps = A2(
+			$elm$core$Debug$log,
+			'Opacity Steps',
+			A4($author$project$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startFloat, targetFloat));
+		var _v0 = A2($elm$core$Debug$log, 'Creating Opacity Steps', frames);
 		return A2(
 			$elm$core$List$map,
 			function (value) {
@@ -5403,7 +5408,6 @@ var $author$project$Anim$Internal$Sub$createScaleSteps = F4(
 			},
 			steps);
 	});
-var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Basics$round = _Basics_round;
 var $elm$core$List$tail = function (list) {
 	if (list.b) {
@@ -5749,15 +5753,16 @@ var $author$project$Anim$Internal$Sub$createPropertyAnimationState = F2(
 					($elm$core$Basics$round(config.duration) / 16) | 0);
 				var easeFunction = $author$project$Anim$Internal$Timing$Easing$toFunction(config.easing);
 				var actualStart = function () {
-					var _v5 = config.startAt;
-					if (_v5.$ === 'Just') {
-						var start = _v5.a;
+					var _v6 = config.startAt;
+					if (_v6.$ === 'Just') {
+						var start = _v6.a;
 						return start;
 					} else {
 						return startOpacity;
 					}
 				}();
 				var steps = A4($author$project$Anim$Internal$Sub$createOpacitySteps, actualStart, config.endAt, frames, easeFunction);
+				var _v5 = A2($elm$core$Debug$log, 'Duration', config.duration);
 				return $elm$core$Maybe$Just(
 					{
 						animationSteps: steps,
@@ -5912,6 +5917,12 @@ var $author$project$Anim$Internal$Builder$ProcessedRotateConfig = function (a) {
 var $author$project$Anim$Internal$Builder$ProcessedScaleConfig = function (a) {
 	return {$: 'ProcessedScaleConfig', a: a};
 };
+var $author$project$Anim$Internal$Properties$Opacity$distance = F2(
+	function (_v0, _v1) {
+		var o1 = _v0.a;
+		var o2 = _v1.a;
+		return $elm$core$Basics$abs(o2 - o1);
+	});
 var $author$project$Anim$Internal$Properties$Position$distance = F2(
 	function (_v0, _v1) {
 		var a = _v0.a;
@@ -5935,6 +5946,16 @@ var $author$project$Anim$Internal$Properties$Scale$distance = F2(
 		var dy = sy2 - sy1;
 		var dx = sx2 - sx1;
 		return $elm$core$Basics$sqrt((dx * dx) + (dy * dy));
+	});
+var $author$project$Anim$Internal$Properties$Opacity$duration = F2(
+	function (distance_, timeSpec) {
+		if (timeSpec.$ === 'Duration') {
+			var ms = timeSpec.a;
+			return ms;
+		} else {
+			var unitsPerSecond = timeSpec.a;
+			return (distance_ / unitsPerSecond) * 1000;
+		}
 	});
 var $author$project$Anim$Internal$Properties$Position$duration = F2(
 	function (distance_, timeSpec) {
@@ -6006,6 +6027,16 @@ var $author$project$Anim$Internal$Builder$resolveTimingWithDefault = F3(
 			} else {
 				return _default;
 			}
+		}
+	});
+var $author$project$Anim$Internal$Properties$Opacity$speed = F3(
+	function (distance_, duration_, timeSpec) {
+		if (timeSpec.$ === 'Duration') {
+			var ms = timeSpec.a;
+			return (ms <= 0) ? ((distance_ * duration_) * 1000) : (distance_ / (ms / 1000));
+		} else {
+			var unitsPerSecond = timeSpec.a;
+			return unitsPerSecond;
 		}
 	});
 var $author$project$Anim$Internal$Properties$Position$speed = F3(
@@ -6249,33 +6280,61 @@ var $author$project$Anim$Internal$Builder$processProperty = F2(
 				}
 			default:
 				var config = property.a;
-				return config.isDirty ? $elm$core$Maybe$Just(
-					$author$project$Anim$Internal$Builder$ProcessedOpacityConfig(
-						{
-							delay: 0,
-							distance: 0,
-							duration: 0,
-							easing: $author$project$Anim$Internal$Timing$Easing$Linear,
-							endAt: config.endAt,
-							speed: 0,
-							startAt: $elm$core$Maybe$Just(config.endAt),
-							timing: $author$project$Anim$Internal$Timing$TimeSpec$Duration(0)
-						})) : $elm$core$Maybe$Just(
-					$author$project$Anim$Internal$Builder$ProcessedOpacityConfig(
-						{
-							delay: A3($author$project$Anim$Internal$Builder$resolveDelayWithDefault, config.delay, globalData.globalDelay, 0),
-							distance: 0.0,
-							duration: 0,
-							easing: A3($author$project$Anim$Internal$Builder$resolveEasingWithDefault, config.easing, globalData.globalEasing, $author$project$Anim$Internal$Timing$Easing$EaseInOut),
-							endAt: config.endAt,
-							speed: 0.0,
-							startAt: config.startAt,
-							timing: A3(
-								$author$project$Anim$Internal$Builder$resolveTimingWithDefault,
-								config.timing,
-								globalData.globalTiming,
-								$author$project$Anim$Internal$Timing$TimeSpec$Duration(1000))
-						}));
+				if (config.isDirty) {
+					return $elm$core$Maybe$Just(
+						$author$project$Anim$Internal$Builder$ProcessedOpacityConfig(
+							{
+								delay: 0,
+								distance: 0,
+								duration: 0,
+								easing: $author$project$Anim$Internal$Timing$Easing$Linear,
+								endAt: config.endAt,
+								speed: 0,
+								startAt: $elm$core$Maybe$Just(config.endAt),
+								timing: $author$project$Anim$Internal$Timing$TimeSpec$Duration(0)
+							}));
+				} else {
+					var startAt = function () {
+						var _v5 = config.startAt;
+						if (_v5.$ === 'Just') {
+							var s = _v5.a;
+							return s;
+						} else {
+							return $author$project$Anim$Internal$Properties$Opacity$fromFloat(1.0);
+						}
+					}();
+					var distance = A2($author$project$Anim$Internal$Properties$Opacity$distance, startAt, config.endAt);
+					var duration_ = A2(
+						$elm$core$Maybe$withDefault,
+						0.0,
+						A2(
+							$elm$core$Maybe$map,
+							$author$project$Anim$Internal$Properties$Opacity$duration(distance),
+							config.timing));
+					var speed_ = A2(
+						$elm$core$Maybe$withDefault,
+						0.0,
+						A2(
+							$elm$core$Maybe$map,
+							A2($author$project$Anim$Internal$Properties$Opacity$speed, distance, duration_),
+							config.timing));
+					return $elm$core$Maybe$Just(
+						$author$project$Anim$Internal$Builder$ProcessedOpacityConfig(
+							{
+								delay: A3($author$project$Anim$Internal$Builder$resolveDelayWithDefault, config.delay, globalData.globalDelay, 0),
+								distance: distance,
+								duration: $elm$core$Basics$round(duration_),
+								easing: A3($author$project$Anim$Internal$Builder$resolveEasingWithDefault, config.easing, globalData.globalEasing, $author$project$Anim$Internal$Timing$Easing$EaseInOut),
+								endAt: config.endAt,
+								speed: speed_,
+								startAt: config.startAt,
+								timing: A3(
+									$author$project$Anim$Internal$Builder$resolveTimingWithDefault,
+									config.timing,
+									globalData.globalTiming,
+									$author$project$Anim$Internal$Timing$TimeSpec$Duration(1000))
+							}));
+				}
 		}
 	});
 var $author$project$Anim$Internal$Builder$processElement = F3(

@@ -87,7 +87,7 @@ update msg model =
                         |> Sub.builder
                         |> Opacity.for "box"
                         |> Opacity.to 1.0
-                        |> Opacity.speed 2.0
+                        |> Opacity.duration 2000
                         |> Opacity.easing Easing.EaseOut
                         |> Opacity.build
                         |> Sub.animate
@@ -103,7 +103,7 @@ update msg model =
                         |> Sub.builder
                         |> Opacity.for "box"
                         |> Opacity.to 0.0
-                        |> Opacity.speed 2.0
+                        |> Opacity.duration 2000
                         |> Opacity.easing Easing.EaseOut
                         |> Opacity.build
                         |> Sub.animate
@@ -227,6 +227,7 @@ animatedBox elementId label color model =
          , htmlAttribute (Html.Attributes.style "justify-content" "center")
          ]
             ++ (Sub.htmlAttributes elementId model.animations
+                |> Debug.log "Opacity box attributes"
                     |> List.map htmlAttribute
                )
         )
