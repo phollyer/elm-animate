@@ -132,7 +132,7 @@ update msg model =
                         |> Position.for "box"
                         |> Position.toX 0
                         |> Position.speed 300.0
-                        |> Position.easing Easing.EaseIn
+                        |> Position.easing Easing.BounceIn
                         |> Position.build
                         |> Sub.animate
               }
@@ -140,12 +140,6 @@ update msg model =
             )
 
         MoveRight ->
-            let
-                currentPos =
-                    Sub.getPosition "box" model.animations
-                        |> Maybe.map Position.asRecord
-                        |> Maybe.withDefault { x = 0, y = 0 }
-            in
             ( { model
                 | animations =
                     model.animations
@@ -153,7 +147,7 @@ update msg model =
                         |> Position.for "box"
                         |> Position.toX 450
                         |> Position.speed 300.0
-                        |> Position.easing Easing.EaseIn
+                        |> Position.easing Easing.BounceOut
                         |> Position.build
                         |> Sub.animate
               }

@@ -55,13 +55,11 @@ import Dict exposing (Dict)
 {-| State for managing subscription-based animations.
 -}
 type AnimationState
-    = AnimationState ElementAnimation
-
-
-type alias ElementAnimation =
-    { elements : Dict String ElementAnimationState
-    , isRunning : Bool
-    }
+    = AnimationState
+        { elements : Dict String ElementAnimationState
+        , isRunning : Bool
+        , builder : AnimBuilder
+        }
 
 
 type alias ElementAnimationState =
@@ -131,10 +129,70 @@ Use this to start new animations based on current state.
 
 -}
 builder : AnimationState -> AnimBuilder
-builder (AnimationState _) =
-    -- Start with a fresh builder, carrying over any current element positions
-    -- This allows chaining animations while preserving current states
-    Anim.init
+builder (AnimationState state) =
+    -- Return the stored builder which contains current state
+    state.builder
+
+
+{-| Extract current values from dirty properties in the builder.
+Dirty properties with duration=0 represent current state.
+-}
+extractCurrentValuesFromBuilder : AnimBuilder -> { position : Maybe { x : Float, y : Float }, rotate : Maybe Float, scale : Maybe { x : Float, y : Float }, color : Maybe Color, opacity : Maybe Float }
+extractCurrentValuesFromBuilder animBuilder =
+    let
+        processedData =
+            Builder.processAnimationData animBuilder
+
+        -- Look through all processed elements for dirty properties (duration=0)
+        extractFromElements =
+            Dict.values processedData.elements
+                |> List.concatMap .properties
+                |> List.foldl extractFromProperty { position = Nothing, rotate = Nothing, scale = Nothing, color = Nothing, opacity = Nothing }
+    in
+    extractFromElements
+
+
+extractFromProperty : Builder.ProcessedPropertyConfig -> { position : Maybe { x : Float, y : Float }, rotate : Maybe Float, scale : Maybe { x : Float, y : Float }, color : Maybe Color, opacity : Maybe Float } -> { position : Maybe { x : Float, y : Float }, rotate : Maybe Float, scale : Maybe { x : Float, y : Float }, color : Maybe Color, opacity : Maybe Float }
+extractFromProperty property acc =
+    case property of
+        Builder.ProcessedPositionConfig config ->
+            if config.duration == 0 then
+                { acc | position = Just (Position.toRecord config.endAt) }
+
+            else
+                acc
+
+        Builder.ProcessedRotateConfig config ->
+            if config.duration == 0 then
+                { acc | rotate = Just (Rotate.toFloat config.endAt) }
+
+            else
+                acc
+
+        Builder.ProcessedScaleConfig config ->
+            if config.duration == 0 then
+                let
+                    ( x, y ) =
+                        Scale.toTuple config.endAt
+                in
+                { acc | scale = Just { x = x, y = y } }
+
+            else
+                acc
+
+        Builder.ProcessedColorConfig config ->
+            if config.duration == 0 then
+                { acc | color = Just config.endAt }
+
+            else
+                acc
+
+        Builder.ProcessedOpacityConfig config ->
+            if config.duration == 0 then
+                { acc | opacity = Just (Opacity.toFloat config.endAt) }
+
+            else
+                acc
 
 
 {-| Create animation state from AnimBuilder.
@@ -155,12 +213,16 @@ animate animBuilder =
         processedData =
             Builder.processAnimationData animBuilder
 
+        -- Extract current values from any existing animations in the builder
+        currentValues =
+            extractCurrentValuesFromBuilder animBuilder
+
         startValues =
-            { position = { x = 0, y = 0 }
-            , rotate = 0
-            , scale = { x = 1.0, y = 1.0 }
-            , color = Color.rgba255 255 255 255 1.0
-            , opacity = 1.0
+            { position = Maybe.withDefault { x = 0, y = 0 } currentValues.position
+            , rotate = Maybe.withDefault 0 currentValues.rotate
+            , scale = Maybe.withDefault { x = 1.0, y = 1.0 } currentValues.scale
+            , color = Maybe.withDefault (Color.rgba255 255 255 255 1.0) currentValues.color
+            , opacity = Maybe.withDefault 1.0 currentValues.opacity
             }
 
         elementStates =
@@ -169,6 +231,7 @@ animate animBuilder =
     AnimationState
         { elements = elementStates
         , isRunning = not (Dict.isEmpty elementStates)
+        , builder = Builder.markDirty animBuilder
         }
 
 
@@ -370,6 +433,7 @@ update msg (AnimationState state) =
             AnimationState
                 { elements = updatedElements
                 , isRunning = stillRunning
+                , builder = state.builder
                 }
 
 

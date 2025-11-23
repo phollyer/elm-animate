@@ -5409,13 +5409,90 @@ var $author$project$Anim$Sub$createElementAnimationState = F3(
 				elementConfig.properties)
 		};
 	});
-var $elm$core$Dict$isEmpty = function (dict) {
-	if (dict.$ === 'RBEmpty_elm_builtin') {
-		return true;
-	} else {
-		return false;
-	}
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
 };
+var $elm$core$List$concatMap = F2(
+	function (f, list) {
+		return $elm$core$List$concat(
+			A2($elm$core$List$map, f, list));
+	});
+var $author$project$Anim$Internal$Properties$Opacity$toFloat = function (_v0) {
+	var o = _v0.a;
+	return o;
+};
+var $author$project$Anim$Internal$Properties$Rotate$toFloat = function (_v0) {
+	var angle = _v0.a;
+	return angle;
+};
+var $author$project$Anim$Internal$Properties$Position$toRecord = function (_v0) {
+	var coords = _v0.a;
+	return {x: coords.x, y: coords.y};
+};
+var $author$project$Anim$Internal$Properties$Scale$toTuple = function (_v0) {
+	var sx = _v0.a;
+	var sy = _v0.b;
+	return _Utils_Tuple2(sx, sy);
+};
+var $author$project$Anim$Sub$extractFromProperty = F2(
+	function (property, acc) {
+		switch (property.$) {
+			case 'ProcessedPositionConfig':
+				var config = property.a;
+				return (!config.duration) ? _Utils_update(
+					acc,
+					{
+						position: $elm$core$Maybe$Just(
+							$author$project$Anim$Internal$Properties$Position$toRecord(config.endAt))
+					}) : acc;
+			case 'ProcessedRotateConfig':
+				var config = property.a;
+				return (!config.duration) ? _Utils_update(
+					acc,
+					{
+						rotate: $elm$core$Maybe$Just(
+							$author$project$Anim$Internal$Properties$Rotate$toFloat(config.endAt))
+					}) : acc;
+			case 'ProcessedScaleConfig':
+				var config = property.a;
+				if (!config.duration) {
+					var _v1 = $author$project$Anim$Internal$Properties$Scale$toTuple(config.endAt);
+					var x = _v1.a;
+					var y = _v1.b;
+					return _Utils_update(
+						acc,
+						{
+							scale: $elm$core$Maybe$Just(
+								{x: x, y: y})
+						});
+				} else {
+					return acc;
+				}
+			case 'ProcessedColorConfig':
+				var config = property.a;
+				return (!config.duration) ? _Utils_update(
+					acc,
+					{
+						color: $elm$core$Maybe$Just(config.endAt)
+					}) : acc;
+			default:
+				var config = property.a;
+				return (!config.duration) ? _Utils_update(
+					acc,
+					{
+						opacity: $elm$core$Maybe$Just(
+							$author$project$Anim$Internal$Properties$Opacity$toFloat(config.endAt))
+					}) : acc;
+		}
+	});
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
@@ -5440,7 +5517,6 @@ var $elm$core$Dict$map = F2(
 				A2($elm$core$Dict$map, func, right));
 		}
 	});
-var $elm$core$Basics$not = _Basics_not;
 var $author$project$Anim$Internal$Timing$TimeSpec$Duration = function (a) {
 	return {$: 'Duration', a: a};
 };
@@ -5861,6 +5937,110 @@ var $author$project$Anim$Internal$Builder$processAnimationData = function (_v0) 
 		data.elements);
 	return {elements: processedElements, globalDelay: data.globalDelay, globalEasing: data.globalEasing, globalTiming: data.globalTiming};
 };
+var $elm$core$Dict$values = function (dict) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2($elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
+};
+var $author$project$Anim$Sub$extractCurrentValuesFromBuilder = function (animBuilder) {
+	var processedData = $author$project$Anim$Internal$Builder$processAnimationData(animBuilder);
+	var extractFromElements = A3(
+		$elm$core$List$foldl,
+		$author$project$Anim$Sub$extractFromProperty,
+		{color: $elm$core$Maybe$Nothing, opacity: $elm$core$Maybe$Nothing, position: $elm$core$Maybe$Nothing, rotate: $elm$core$Maybe$Nothing, scale: $elm$core$Maybe$Nothing},
+		A2(
+			$elm$core$List$concatMap,
+			function ($) {
+				return $.properties;
+			},
+			$elm$core$Dict$values(processedData.elements)));
+	return extractFromElements;
+};
+var $elm$core$Dict$isEmpty = function (dict) {
+	if (dict.$ === 'RBEmpty_elm_builtin') {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $author$project$Anim$Internal$Builder$AnimBuilder = function (a) {
+	return {$: 'AnimBuilder', a: a};
+};
+var $author$project$Anim$Internal$Builder$BackgroundColorConfig = function (a) {
+	return {$: 'BackgroundColorConfig', a: a};
+};
+var $author$project$Anim$Internal$Builder$OpacityConfig = function (a) {
+	return {$: 'OpacityConfig', a: a};
+};
+var $author$project$Anim$Internal$Builder$PositionConfig = function (a) {
+	return {$: 'PositionConfig', a: a};
+};
+var $author$project$Anim$Internal$Builder$RotateConfig = function (a) {
+	return {$: 'RotateConfig', a: a};
+};
+var $author$project$Anim$Internal$Builder$ScaleConfig = function (a) {
+	return {$: 'ScaleConfig', a: a};
+};
+var $author$project$Anim$Internal$Builder$markPropertyDirty = function (property) {
+	switch (property.$) {
+		case 'PositionConfig':
+			var config = property.a;
+			return $author$project$Anim$Internal$Builder$PositionConfig(
+				_Utils_update(
+					config,
+					{isDirty: true}));
+		case 'RotateConfig':
+			var config = property.a;
+			return $author$project$Anim$Internal$Builder$RotateConfig(
+				_Utils_update(
+					config,
+					{isDirty: true}));
+		case 'ScaleConfig':
+			var config = property.a;
+			return $author$project$Anim$Internal$Builder$ScaleConfig(
+				_Utils_update(
+					config,
+					{isDirty: true}));
+		case 'BackgroundColorConfig':
+			var config = property.a;
+			return $author$project$Anim$Internal$Builder$BackgroundColorConfig(
+				_Utils_update(
+					config,
+					{isDirty: true}));
+		default:
+			var config = property.a;
+			return $author$project$Anim$Internal$Builder$OpacityConfig(
+				_Utils_update(
+					config,
+					{isDirty: true}));
+	}
+};
+var $author$project$Anim$Internal$Builder$markDirty = function (_v0) {
+	var data = _v0.a;
+	return $author$project$Anim$Internal$Builder$AnimBuilder(
+		_Utils_update(
+			data,
+			{
+				currentElementId: $elm$core$Maybe$Nothing,
+				elements: A2(
+					$elm$core$Dict$map,
+					F2(
+						function (_v1, el) {
+							return _Utils_update(
+								el,
+								{
+									properties: A2($elm$core$List$map, $author$project$Anim$Internal$Builder$markPropertyDirty, el.properties)
+								});
+						}),
+					data.elements)
+			}));
+};
+var $elm$core$Basics$not = _Basics_not;
 var $author$project$Anim$Internal$Properties$Color$Rgba = function (a) {
 	return {$: 'Rgba', a: a};
 };
@@ -5870,26 +6050,34 @@ var $author$project$Anim$Internal$Properties$Color$rgba255 = F4(
 			{a: a, b: b, g: g, r: r});
 	});
 var $author$project$Anim$Sub$animate = function (animBuilder) {
-	var startValues = {
-		color: A4($author$project$Anim$Internal$Properties$Color$rgba255, 255, 255, 255, 1.0),
-		opacity: 1.0,
-		position: {x: 0, y: 0},
-		rotate: 0,
-		scale: {x: 1.0, y: 1.0}
-	};
 	var processedData = $author$project$Anim$Internal$Builder$processAnimationData(animBuilder);
+	var currentValues = $author$project$Anim$Sub$extractCurrentValuesFromBuilder(animBuilder);
+	var startValues = {
+		color: A2(
+			$elm$core$Maybe$withDefault,
+			A4($author$project$Anim$Internal$Properties$Color$rgba255, 255, 255, 255, 1.0),
+			currentValues.color),
+		opacity: A2($elm$core$Maybe$withDefault, 1.0, currentValues.opacity),
+		position: A2(
+			$elm$core$Maybe$withDefault,
+			{x: 0, y: 0},
+			currentValues.position),
+		rotate: A2($elm$core$Maybe$withDefault, 0, currentValues.rotate),
+		scale: A2(
+			$elm$core$Maybe$withDefault,
+			{x: 1.0, y: 1.0},
+			currentValues.scale)
+	};
 	var elementStates = A2(
 		$elm$core$Dict$map,
 		$author$project$Anim$Sub$createElementAnimationState(startValues),
 		processedData.elements);
 	return $author$project$Anim$Sub$AnimationState(
 		{
+			builder: $author$project$Anim$Internal$Builder$markDirty(animBuilder),
 			elements: elementStates,
 			isRunning: !$elm$core$Dict$isEmpty(elementStates)
 		});
-};
-var $author$project$Anim$Internal$Builder$PositionConfig = function (a) {
-	return {$: 'PositionConfig', a: a};
 };
 var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$get = F2(
@@ -5935,9 +6123,6 @@ var $author$project$Anim$Internal$Builder$getCurrentElementConfig = function (_v
 			{properties: _List_Nil},
 			A2($elm$core$Dict$get, elementId, data.elements));
 	}
-};
-var $author$project$Anim$Internal$Builder$AnimBuilder = function (a) {
-	return {$: 'AnimBuilder', a: a};
 };
 var $elm$core$Dict$Black = {$: 'Black'};
 var $elm$core$Dict$Red = {$: 'Red'};
@@ -6508,18 +6693,13 @@ var $author$project$ElmUI$Sub$Position$Main$subscriptions = function (model) {
 		$author$project$ElmUI$Sub$Position$Main$AnimationMsg,
 		$author$project$Anim$Sub$subscriptions(model.animations));
 };
-var $author$project$Anim$Timing$Easing$EaseIn = {$: 'EaseIn'};
+var $author$project$Anim$Timing$Easing$BounceIn = {$: 'BounceIn'};
+var $author$project$Anim$Timing$Easing$BounceOut = {$: 'BounceOut'};
 var $author$project$Anim$Timing$Easing$EaseInOut = {$: 'EaseInOut'};
 var $author$project$Anim$Timing$Easing$EaseOut = {$: 'EaseOut'};
-var $author$project$Anim$Internal$Properties$Position$toRecord = function (_v0) {
-	var coords = _v0.a;
-	return {x: coords.x, y: coords.y};
-};
-var $author$project$Anim$Properties$Position$asRecord = function (pos) {
-	return $author$project$Anim$Internal$Properties$Position$toRecord(pos);
-};
 var $author$project$Anim$Sub$builder = function (_v0) {
-	return $author$project$Anim$init;
+	var state = _v0.a;
+	return state.builder;
 };
 var $author$project$Anim$Internal$Builders$Position$easing = F2(
 	function (easing_, _v0) {
@@ -6664,36 +6844,6 @@ var $author$project$Anim$Properties$Position$easing = function (easing_) {
 	return $author$project$Anim$Internal$Builders$Position$easing(
 		A2($author$project$Anim$Timing$Easing$mapInternal, $elm$core$Basics$identity, easing_));
 };
-var $elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $author$project$Anim$Sub$getPosition = F2(
-	function (elementId, _v0) {
-		var state = _v0.a;
-		return A2(
-			$elm$core$Maybe$andThen,
-			function (elementState) {
-				return A2(
-					$elm$core$Maybe$andThen,
-					function (propertyState) {
-						var _v1 = propertyState.currentValue;
-						if (_v1.$ === 'PositionAnimationValue') {
-							var pos = _v1.a;
-							return $elm$core$Maybe$Just(pos);
-						} else {
-							return $elm$core$Maybe$Nothing;
-						}
-					},
-					$elm$core$List$head(elementState.properties));
-			},
-			A2($elm$core$Dict$get, elementId, state.elements));
-	});
 var $elm$core$Debug$log = _Debug_log;
 var $author$project$Anim$Internal$Timing$TimeSpec$Speed = function (a) {
 	return {$: 'Speed', a: a};
@@ -6789,22 +6939,9 @@ var $elm$core$List$all = F2(
 			list);
 	});
 var $elm$core$Basics$ge = _Utils_ge;
-var $author$project$Anim$Internal$Properties$Opacity$toFloat = function (_v0) {
-	var o = _v0.a;
-	return o;
-};
-var $author$project$Anim$Internal$Properties$Rotate$toFloat = function (_v0) {
-	var angle = _v0.a;
-	return angle;
-};
 var $author$project$Anim$Internal$Properties$Position$toTuple = function (_v0) {
 	var coords = _v0.a;
 	return _Utils_Tuple2(coords.x, coords.y);
-};
-var $author$project$Anim$Internal$Properties$Scale$toTuple = function (_v0) {
-	var sx = _v0.a;
-	var sy = _v0.b;
-	return _Utils_Tuple2(sx, sy);
 };
 var $author$project$Anim$Sub$interpolateValue = F3(
 	function (progress, startValue, targetValue) {
@@ -7142,16 +7279,6 @@ var $author$project$Anim$Sub$updateElementAnimation = F3(
 			elementState,
 			{isComplete: allComplete, properties: updatedProperties});
 	});
-var $elm$core$Dict$values = function (dict) {
-	return A3(
-		$elm$core$Dict$foldr,
-		F3(
-			function (key, value, valueList) {
-				return A2($elm$core$List$cons, value, valueList);
-			}),
-		_List_Nil,
-		dict);
-};
 var $author$project$Anim$Sub$update = F2(
 	function (msg, _v0) {
 		var state = _v0.a;
@@ -7170,7 +7297,7 @@ var $author$project$Anim$Sub$update = F2(
 				}),
 			$elm$core$Dict$values(updatedElements));
 		return $author$project$Anim$Sub$AnimationState(
-			{elements: updatedElements, isRunning: stillRunning});
+			{builder: state.builder, elements: updatedElements, isRunning: stillRunning});
 	});
 var $author$project$ElmUI$Sub$Position$Main$update = F2(
 	function (msg, model) {
@@ -7231,7 +7358,7 @@ var $author$project$ElmUI$Sub$Position$Main$update = F2(
 								$author$project$Anim$Properties$Position$build(
 									A2(
 										$author$project$Anim$Properties$Position$easing,
-										$author$project$Anim$Timing$Easing$EaseIn,
+										$author$project$Anim$Timing$Easing$BounceIn,
 										A2(
 											$author$project$Anim$Properties$Position$speed,
 											300.0,
@@ -7245,13 +7372,6 @@ var $author$project$ElmUI$Sub$Position$Main$update = F2(
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'MoveRight':
-				var currentPos = A2(
-					$elm$core$Maybe$withDefault,
-					{x: 0, y: 0},
-					A2(
-						$elm$core$Maybe$map,
-						$author$project$Anim$Properties$Position$asRecord,
-						A2($author$project$Anim$Sub$getPosition, 'box', model.animations)));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
@@ -7260,7 +7380,7 @@ var $author$project$ElmUI$Sub$Position$Main$update = F2(
 								$author$project$Anim$Properties$Position$build(
 									A2(
 										$author$project$Anim$Properties$Position$easing,
-										$author$project$Anim$Timing$Easing$EaseIn,
+										$author$project$Anim$Timing$Easing$BounceOut,
 										A2(
 											$author$project$Anim$Properties$Position$speed,
 											300.0,
@@ -8054,22 +8174,6 @@ var $mdgriffith$elm_ui$Internal$Style$CenterY = {$: 'CenterY'};
 var $mdgriffith$elm_ui$Internal$Style$Top = {$: 'Top'};
 var $mdgriffith$elm_ui$Internal$Style$alignments = _List_fromArray(
 	[$mdgriffith$elm_ui$Internal$Style$Top, $mdgriffith$elm_ui$Internal$Style$Bottom, $mdgriffith$elm_ui$Internal$Style$Right, $mdgriffith$elm_ui$Internal$Style$Left, $mdgriffith$elm_ui$Internal$Style$CenterX, $mdgriffith$elm_ui$Internal$Style$CenterY]);
-var $elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
-		}
-	});
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
-var $elm$core$List$concatMap = F2(
-	function (f, list) {
-		return $elm$core$List$concat(
-			A2($elm$core$List$map, f, list));
-	});
 var $mdgriffith$elm_ui$Internal$Style$contentName = function (desc) {
 	switch (desc.a.$) {
 		case 'Top':
@@ -13246,6 +13350,9 @@ var $author$project$Common$UI$Purple = {$: 'Purple'};
 var $author$project$ElmUI$Sub$Position$Main$StopAnimation = {$: 'StopAnimation'};
 var $author$project$Common$UI$Success = {$: 'Success'};
 var $author$project$Common$UI$Warning = {$: 'Warning'};
+var $author$project$Anim$Properties$Position$asRecord = function (pos) {
+	return $author$project$Anim$Internal$Properties$Position$toRecord(pos);
+};
 var $mdgriffith$elm_ui$Internal$Model$Left = {$: 'Left'};
 var $mdgriffith$elm_ui$Element$alignLeft = $mdgriffith$elm_ui$Internal$Model$AlignX($mdgriffith$elm_ui$Internal$Model$Left);
 var $author$project$Common$Colors$backgroundWhite = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
@@ -13383,6 +13490,36 @@ var $mdgriffith$elm_ui$Element$el = F2(
 			$mdgriffith$elm_ui$Internal$Model$Unkeyed(
 				_List_fromArray(
 					[child])));
+	});
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$Anim$Sub$getPosition = F2(
+	function (elementId, _v0) {
+		var state = _v0.a;
+		return A2(
+			$elm$core$Maybe$andThen,
+			function (elementState) {
+				return A2(
+					$elm$core$Maybe$andThen,
+					function (propertyState) {
+						var _v1 = propertyState.currentValue;
+						if (_v1.$ === 'PositionAnimationValue') {
+							var pos = _v1.a;
+							return $elm$core$Maybe$Just(pos);
+						} else {
+							return $elm$core$Maybe$Nothing;
+						}
+					},
+					$elm$core$List$head(elementState.properties));
+			},
+			A2($elm$core$Dict$get, elementId, state.elements));
 	});
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $mdgriffith$elm_ui$Internal$Model$Max = F2(
