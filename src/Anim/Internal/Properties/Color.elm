@@ -6,6 +6,7 @@ module Anim.Internal.Properties.Color exposing
     , RGB
     , RGBA
     , distance
+    , duration
     , encode
     , floatMod
     , hex
@@ -21,9 +22,11 @@ module Anim.Internal.Properties.Color exposing
     , rgbToHsl
     , rgba255
     , rgbaToHsla
+    , speed
     , toString
     )
 
+import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
 import Json.Encode as Encode
 
 
@@ -562,6 +565,30 @@ distance color1 color2 =
             toFloat (rgb2.b - rgb1.b)
     in
     sqrt (dr * dr + dg * dg + db * db)
+
+
+speed : Float -> Float -> TimeSpec -> Float
+speed distance_ duration_ timeSpec =
+    case timeSpec of
+        TimeSpec.Duration ms ->
+            if ms <= 0 then
+                distance_ * duration_ * 1000
+
+            else
+                distance_ / (Basics.toFloat ms / 1000)
+
+        TimeSpec.Speed unitsPerSecond ->
+            unitsPerSecond
+
+
+duration : Float -> TimeSpec -> Float
+duration distance_ timeSpec =
+    case timeSpec of
+        TimeSpec.Duration ms ->
+            Basics.toFloat ms
+
+        TimeSpec.Speed unitsPerSecond ->
+            distance_ / unitsPerSecond * 1000
 
 
 {-| Convert any Color to RGB for distance calculation.

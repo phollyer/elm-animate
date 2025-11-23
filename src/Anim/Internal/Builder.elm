@@ -24,7 +24,7 @@ module Anim.Internal.Builder exposing
     , updateCurrentElement
     )
 
-import Anim.Internal.Properties.Color exposing (Color)
+import Anim.Internal.Properties.Color as Color exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position, distance)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
@@ -439,23 +439,27 @@ processProperty globalData property =
 
             else
                 let
+                    startAt =
+                        case config.startAt of
+                            Just s ->
+                                s
+
+                            Nothing ->
+                                Color.rgb255 0 0 0
+
+                    -- Default to black if no start color
+                    distance =
+                        Color.distance startAt config.endAt
+
                     duration_ =
-                        -- For color, use the same timing approach as scale
-                        case resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000) of
-                            Duration ms ->
-                                toFloat ms
+                        config.timing
+                            |> Maybe.map (Color.duration distance)
+                            |> Maybe.withDefault 0.0
 
-                            Speed _ ->
-                                1000.0
-
-                    -- Default 1 second for speed-based
                     speed_ =
-                        -- For color animations, we don't really use speed/distance
-                        -- but we'll set reasonable defaults
-                        1.0
-
-                    distance_ =
-                        1.0
+                        config.timing
+                            |> Maybe.map (Color.speed distance duration_)
+                            |> Maybe.withDefault 0.0
                 in
                 Just <|
                     ProcessedColorConfig
@@ -463,7 +467,7 @@ processProperty globalData property =
                         , endAt = config.endAt
                         , duration = round duration_
                         , speed = speed_
-                        , distance = distance_
+                        , distance = distance
                         , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
                         , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
                         , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0

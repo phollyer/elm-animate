@@ -160,9 +160,6 @@ createScaleSteps start target frames easingFunction =
 createOpacitySteps : Opacity.Opacity -> Opacity.Opacity -> Int -> (Float -> Float) -> List AnimationValue
 createOpacitySteps start target frames easingFunction =
     let
-        _ =
-            Debug.log "Creating Opacity Steps" frames
-
         startFloat =
             Opacity.toFloat start
 
@@ -171,16 +168,20 @@ createOpacitySteps start target frames easingFunction =
 
         steps =
             AnimationCore.animationStepsWithFrames frames easingFunction startFloat targetFloat
-                |> Debug.log "Opacity Steps"
     in
     List.map (\value -> OpacityAnimationValue (Opacity.fromFloat value)) steps
 
 
 createColorSteps : Color.Color -> Color.Color -> Int -> (Float -> Float) -> List AnimationValue
-createColorSteps _ target _ _ =
-    -- For now, we'll just snap to target (simple implementation)
-    -- Full color interpolation would require RGB conversion
-    [ ColorAnimationValue target ]
+createColorSteps start target frames easingFunction =
+    let
+        progressValues =
+            AnimationCore.animationStepsWithFrames frames easingFunction 0.0 1.0
+
+        steps =
+            List.map (\progress -> Color.interpolate start target progress) progressValues
+    in
+    List.map ColorAnimationValue steps
 
 
 type alias PropertyAnimationState =
@@ -471,6 +472,9 @@ createPropertyAnimationState startValues property =
                         Nothing ->
                             startColor
 
+                _ =
+                    Debug.log "Duration" config.duration
+
                 frames =
                     Basics.max 1 (round (toFloat config.duration) // 16)
 
@@ -479,6 +483,7 @@ createPropertyAnimationState startValues property =
 
                 steps =
                     createColorSteps actualStart config.endAt frames easeFunction
+                        |> Debug.log "Color Steps"
             in
             Just
                 { propertyType = "color"
@@ -501,9 +506,6 @@ createPropertyAnimationState startValues property =
 
                         Nothing ->
                             startOpacity
-
-                _ =
-                    Debug.log "Duration" config.duration
 
                 frames =
                     Basics.max 1 (round (toFloat config.duration) // 16)
