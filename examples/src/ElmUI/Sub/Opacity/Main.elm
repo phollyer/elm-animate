@@ -227,7 +227,6 @@ animatedBox elementId label color model =
          , htmlAttribute (Html.Attributes.style "justify-content" "center")
          ]
             ++ (Sub.htmlAttributes elementId model.animations
-                |> Debug.log "Opacity box attributes"
                     |> List.map htmlAttribute
                )
         )

@@ -5196,184 +5196,12 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$document = _Browser_document;
-var $author$project$Anim$Internal$Sub$AnimationState = function (a) {
-	return {$: 'AnimationState', a: a};
-};
-var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
-var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
-var $author$project$Anim$Internal$Builder$AnimBuilder = function (a) {
-	return {$: 'AnimBuilder', a: a};
-};
-var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
-	{currentElementId: $elm$core$Maybe$Nothing, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing});
-var $author$project$Anim$init = $author$project$Anim$Internal$Builder$init;
-var $author$project$Anim$Internal$Sub$init = $author$project$Anim$Internal$Sub$AnimationState(
-	{builder: $author$project$Anim$init, elementAnimations: $elm$core$Dict$empty, isRunning: false});
-var $author$project$Anim$Sub$init = $author$project$Anim$Internal$Sub$init;
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
-var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$ElmUI$Sub$Color$Main$init = function (_v0) {
-	return _Utils_Tuple2(
-		{animations: $author$project$Anim$Sub$init},
-		$elm$core$Platform$Cmd$none);
-};
-var $author$project$ElmUI$Sub$Color$Main$AnimationMsg = function (a) {
-	return {$: 'AnimationMsg', a: a};
-};
-var $elm$core$Platform$Sub$map = _Platform_map;
-var $author$project$Anim$Internal$Sub$AnimationFrame = function (a) {
-	return {$: 'AnimationFrame', a: a};
-};
-var $elm$core$Platform$Sub$batch = _Platform_batch;
-var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $elm$browser$Browser$AnimationManager$Delta = function (a) {
-	return {$: 'Delta', a: a};
-};
-var $elm$browser$Browser$AnimationManager$State = F3(
-	function (subs, request, oldTime) {
-		return {oldTime: oldTime, request: request, subs: subs};
-	});
-var $elm$browser$Browser$AnimationManager$init = $elm$core$Task$succeed(
-	A3($elm$browser$Browser$AnimationManager$State, _List_Nil, $elm$core$Maybe$Nothing, 0));
-var $elm$core$Process$kill = _Scheduler_kill;
-var $elm$browser$Browser$AnimationManager$now = _Browser_now(_Utils_Tuple0);
-var $elm$browser$Browser$AnimationManager$rAF = _Browser_rAF(_Utils_Tuple0);
-var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
-var $elm$core$Process$spawn = _Scheduler_spawn;
-var $elm$browser$Browser$AnimationManager$onEffects = F3(
-	function (router, subs, _v0) {
-		var request = _v0.request;
-		var oldTime = _v0.oldTime;
-		var _v1 = _Utils_Tuple2(request, subs);
-		if (_v1.a.$ === 'Nothing') {
-			if (!_v1.b.b) {
-				var _v2 = _v1.a;
-				return $elm$browser$Browser$AnimationManager$init;
-			} else {
-				var _v4 = _v1.a;
-				return A2(
-					$elm$core$Task$andThen,
-					function (pid) {
-						return A2(
-							$elm$core$Task$andThen,
-							function (time) {
-								return $elm$core$Task$succeed(
-									A3(
-										$elm$browser$Browser$AnimationManager$State,
-										subs,
-										$elm$core$Maybe$Just(pid),
-										time));
-							},
-							$elm$browser$Browser$AnimationManager$now);
-					},
-					$elm$core$Process$spawn(
-						A2(
-							$elm$core$Task$andThen,
-							$elm$core$Platform$sendToSelf(router),
-							$elm$browser$Browser$AnimationManager$rAF)));
-			}
-		} else {
-			if (!_v1.b.b) {
-				var pid = _v1.a.a;
-				return A2(
-					$elm$core$Task$andThen,
-					function (_v3) {
-						return $elm$browser$Browser$AnimationManager$init;
-					},
-					$elm$core$Process$kill(pid));
-			} else {
-				return $elm$core$Task$succeed(
-					A3($elm$browser$Browser$AnimationManager$State, subs, request, oldTime));
-			}
-		}
-	});
-var $elm$time$Time$Posix = function (a) {
-	return {$: 'Posix', a: a};
-};
-var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
-var $elm$browser$Browser$AnimationManager$onSelfMsg = F3(
-	function (router, newTime, _v0) {
-		var subs = _v0.subs;
-		var oldTime = _v0.oldTime;
-		var send = function (sub) {
-			if (sub.$ === 'Time') {
-				var tagger = sub.a;
-				return A2(
-					$elm$core$Platform$sendToApp,
-					router,
-					tagger(
-						$elm$time$Time$millisToPosix(newTime)));
-			} else {
-				var tagger = sub.a;
-				return A2(
-					$elm$core$Platform$sendToApp,
-					router,
-					tagger(newTime - oldTime));
-			}
-		};
-		return A2(
-			$elm$core$Task$andThen,
-			function (pid) {
-				return A2(
-					$elm$core$Task$andThen,
-					function (_v1) {
-						return $elm$core$Task$succeed(
-							A3(
-								$elm$browser$Browser$AnimationManager$State,
-								subs,
-								$elm$core$Maybe$Just(pid),
-								newTime));
-					},
-					$elm$core$Task$sequence(
-						A2($elm$core$List$map, send, subs)));
-			},
-			$elm$core$Process$spawn(
-				A2(
-					$elm$core$Task$andThen,
-					$elm$core$Platform$sendToSelf(router),
-					$elm$browser$Browser$AnimationManager$rAF)));
-	});
-var $elm$browser$Browser$AnimationManager$Time = function (a) {
-	return {$: 'Time', a: a};
-};
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
-var $elm$browser$Browser$AnimationManager$subMap = F2(
-	function (func, sub) {
-		if (sub.$ === 'Time') {
-			var tagger = sub.a;
-			return $elm$browser$Browser$AnimationManager$Time(
-				A2($elm$core$Basics$composeL, func, tagger));
-		} else {
-			var tagger = sub.a;
-			return $elm$browser$Browser$AnimationManager$Delta(
-				A2($elm$core$Basics$composeL, func, tagger));
-		}
-	});
-_Platform_effectManagers['Browser.AnimationManager'] = _Platform_createManager($elm$browser$Browser$AnimationManager$init, $elm$browser$Browser$AnimationManager$onEffects, $elm$browser$Browser$AnimationManager$onSelfMsg, 0, $elm$browser$Browser$AnimationManager$subMap);
-var $elm$browser$Browser$AnimationManager$subscription = _Platform_leaf('Browser.AnimationManager');
-var $elm$browser$Browser$AnimationManager$onAnimationFrameDelta = function (tagger) {
-	return $elm$browser$Browser$AnimationManager$subscription(
-		$elm$browser$Browser$AnimationManager$Delta(tagger));
-};
-var $elm$browser$Browser$Events$onAnimationFrameDelta = $elm$browser$Browser$AnimationManager$onAnimationFrameDelta;
-var $author$project$Anim$Internal$Sub$subscriptions = function (_v0) {
-	var state = _v0.a;
-	return state.isRunning ? $elm$browser$Browser$Events$onAnimationFrameDelta($author$project$Anim$Internal$Sub$AnimationFrame) : $elm$core$Platform$Sub$none;
-};
-var $author$project$Anim$Sub$subscriptions = $author$project$Anim$Internal$Sub$subscriptions;
-var $author$project$ElmUI$Sub$Color$Main$subscriptions = function (model) {
-	return A2(
-		$elm$core$Platform$Sub$map,
-		$author$project$ElmUI$Sub$Color$Main$AnimationMsg,
-		$author$project$Anim$Sub$subscriptions(model.animations));
-};
 var $author$project$Anim$Timing$Easing$EaseInOut = {$: 'EaseInOut'};
 var $author$project$Anim$Properties$Color$Rgb = function (a) {
 	return {$: 'Rgb', a: a};
+};
+var $author$project$Anim$Internal$Sub$AnimationState = function (a) {
+	return {$: 'AnimationState', a: a};
 };
 var $author$project$Anim$Internal$Sub$ColorAnimationValue = function (a) {
 	return {$: 'ColorAnimationValue', a: a};
@@ -6063,7 +5891,6 @@ var $author$project$Anim$Internal$Sub$createScaleSteps = F4(
 			},
 			steps);
 	});
-var $elm$core$Debug$log = _Debug_log;
 var $elm$core$List$tail = function (list) {
 	if (list.b) {
 		var x = list.a;
@@ -6301,7 +6128,7 @@ var $author$project$Anim$Internal$Sub$createPropertyAnimationState = F2(
 				var steps = A4($author$project$Anim$Internal$Sub$createPositionSteps, actualStart, config.endAt, frames, easeFunction);
 				return $elm$core$Maybe$Just(
 					{
-						animationSteps: A2($elm$core$Debug$log, 'Position Steps', steps),
+						animationSteps: steps,
 						currentDelayFrame: 0,
 						currentStepIndex: 0,
 						delayFrames: A2($elm$core$Basics$max, 0, (config.delay / 16) | 0),
@@ -6372,19 +6199,15 @@ var $author$project$Anim$Internal$Sub$createPropertyAnimationState = F2(
 					($elm$core$Basics$round(config.duration) / 16) | 0);
 				var easeFunction = $author$project$Anim$Internal$Timing$Easing$toFunction(config.easing);
 				var actualStart = function () {
-					var _v5 = config.startAt;
-					if (_v5.$ === 'Just') {
-						var start = _v5.a;
+					var _v4 = config.startAt;
+					if (_v4.$ === 'Just') {
+						var start = _v4.a;
 						return start;
 					} else {
 						return startColor;
 					}
 				}();
-				var steps = A2(
-					$elm$core$Debug$log,
-					'Color Steps',
-					A4($author$project$Anim$Internal$Sub$createColorSteps, actualStart, config.endAt, frames, easeFunction));
-				var _v4 = A2($elm$core$Debug$log, 'Duration', config.duration);
+				var steps = A4($author$project$Anim$Internal$Sub$createColorSteps, actualStart, config.endAt, frames, easeFunction);
 				return $elm$core$Maybe$Just(
 					{
 						animationSteps: steps,
@@ -6403,9 +6226,9 @@ var $author$project$Anim$Internal$Sub$createPropertyAnimationState = F2(
 					($elm$core$Basics$round(config.duration) / 16) | 0);
 				var easeFunction = $author$project$Anim$Internal$Timing$Easing$toFunction(config.easing);
 				var actualStart = function () {
-					var _v6 = config.startAt;
-					if (_v6.$ === 'Just') {
-						var start = _v6.a;
+					var _v5 = config.startAt;
+					if (_v5.$ === 'Just') {
+						var start = _v5.a;
 						return start;
 					} else {
 						return startOpacity;
@@ -6522,6 +6345,7 @@ var $author$project$Anim$Internal$Sub$extractFromProperty = F2(
 					}) : acc;
 		}
 	});
+var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
 		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
@@ -7076,6 +6900,9 @@ var $elm$core$Dict$isEmpty = function (dict) {
 		return false;
 	}
 };
+var $author$project$Anim$Internal$Builder$AnimBuilder = function (a) {
+	return {$: 'AnimBuilder', a: a};
+};
 var $author$project$Anim$Internal$Builder$BackgroundColorConfig = function (a) {
 	return {$: 'BackgroundColorConfig', a: a};
 };
@@ -7426,6 +7253,11 @@ var $author$project$Anim$Internal$Builders$Property$find = F2(
 		return $elm$core$List$head(
 			A2($elm$core$List$filter, predicate, currentElement.properties));
 	});
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
 var $author$project$Anim$Internal$Builders$Property$replace = F2(
 	function (propertyConfig, builder) {
 		var currentElement = $author$project$Anim$Internal$Builder$getCurrentElementConfig(builder);
@@ -7756,6 +7588,15 @@ var $author$project$Anim$Internal$Builders$Color$for = F2(
 var $author$project$Anim$Properties$Color$for = function (elementId) {
 	return $author$project$Anim$Internal$Builders$Color$for(elementId);
 };
+var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
+var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
+	{currentElementId: $elm$core$Maybe$Nothing, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing});
+var $author$project$Anim$init = $author$project$Anim$Internal$Builder$init;
+var $author$project$Anim$Internal$Sub$init = $author$project$Anim$Internal$Sub$AnimationState(
+	{builder: $author$project$Anim$init, elementAnimations: $elm$core$Dict$empty, isRunning: false});
+var $author$project$Anim$Sub$init = $author$project$Anim$Internal$Sub$init;
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Anim$Internal$Builders$Color$to = F2(
 	function (color, _v0) {
 		var config = _v0.a;
@@ -7802,6 +7643,177 @@ var $author$project$Anim$Properties$Color$toInternal = function (color) {
 var $author$project$Anim$Properties$Color$to = function (color) {
 	return $author$project$Anim$Internal$Builders$Color$to(
 		$author$project$Anim$Properties$Color$toInternal(color));
+};
+var $author$project$ElmUI$Sub$Color$Main$init = function (_v0) {
+	return _Utils_Tuple2(
+		{
+			animations: $author$project$Anim$Sub$animate(
+				$author$project$Anim$Properties$Color$build(
+					A2(
+						$author$project$Anim$Properties$Color$easing,
+						$author$project$Anim$Timing$Easing$EaseInOut,
+						A2(
+							$author$project$Anim$Properties$Color$duration,
+							0,
+							A2(
+								$author$project$Anim$Properties$Color$to,
+								$author$project$Anim$Properties$Color$Rgb(
+									{b: 166, g: 165, r: 149}),
+								A2(
+									$author$project$Anim$Properties$Color$for,
+									'box',
+									$author$project$Anim$Sub$builder($author$project$Anim$Sub$init)))))))
+		},
+		$elm$core$Platform$Cmd$none);
+};
+var $author$project$ElmUI$Sub$Color$Main$AnimationMsg = function (a) {
+	return {$: 'AnimationMsg', a: a};
+};
+var $elm$core$Platform$Sub$map = _Platform_map;
+var $author$project$Anim$Internal$Sub$AnimationFrame = function (a) {
+	return {$: 'AnimationFrame', a: a};
+};
+var $elm$core$Platform$Sub$batch = _Platform_batch;
+var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $elm$browser$Browser$AnimationManager$Delta = function (a) {
+	return {$: 'Delta', a: a};
+};
+var $elm$browser$Browser$AnimationManager$State = F3(
+	function (subs, request, oldTime) {
+		return {oldTime: oldTime, request: request, subs: subs};
+	});
+var $elm$browser$Browser$AnimationManager$init = $elm$core$Task$succeed(
+	A3($elm$browser$Browser$AnimationManager$State, _List_Nil, $elm$core$Maybe$Nothing, 0));
+var $elm$core$Process$kill = _Scheduler_kill;
+var $elm$browser$Browser$AnimationManager$now = _Browser_now(_Utils_Tuple0);
+var $elm$browser$Browser$AnimationManager$rAF = _Browser_rAF(_Utils_Tuple0);
+var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
+var $elm$core$Process$spawn = _Scheduler_spawn;
+var $elm$browser$Browser$AnimationManager$onEffects = F3(
+	function (router, subs, _v0) {
+		var request = _v0.request;
+		var oldTime = _v0.oldTime;
+		var _v1 = _Utils_Tuple2(request, subs);
+		if (_v1.a.$ === 'Nothing') {
+			if (!_v1.b.b) {
+				var _v2 = _v1.a;
+				return $elm$browser$Browser$AnimationManager$init;
+			} else {
+				var _v4 = _v1.a;
+				return A2(
+					$elm$core$Task$andThen,
+					function (pid) {
+						return A2(
+							$elm$core$Task$andThen,
+							function (time) {
+								return $elm$core$Task$succeed(
+									A3(
+										$elm$browser$Browser$AnimationManager$State,
+										subs,
+										$elm$core$Maybe$Just(pid),
+										time));
+							},
+							$elm$browser$Browser$AnimationManager$now);
+					},
+					$elm$core$Process$spawn(
+						A2(
+							$elm$core$Task$andThen,
+							$elm$core$Platform$sendToSelf(router),
+							$elm$browser$Browser$AnimationManager$rAF)));
+			}
+		} else {
+			if (!_v1.b.b) {
+				var pid = _v1.a.a;
+				return A2(
+					$elm$core$Task$andThen,
+					function (_v3) {
+						return $elm$browser$Browser$AnimationManager$init;
+					},
+					$elm$core$Process$kill(pid));
+			} else {
+				return $elm$core$Task$succeed(
+					A3($elm$browser$Browser$AnimationManager$State, subs, request, oldTime));
+			}
+		}
+	});
+var $elm$time$Time$Posix = function (a) {
+	return {$: 'Posix', a: a};
+};
+var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
+var $elm$browser$Browser$AnimationManager$onSelfMsg = F3(
+	function (router, newTime, _v0) {
+		var subs = _v0.subs;
+		var oldTime = _v0.oldTime;
+		var send = function (sub) {
+			if (sub.$ === 'Time') {
+				var tagger = sub.a;
+				return A2(
+					$elm$core$Platform$sendToApp,
+					router,
+					tagger(
+						$elm$time$Time$millisToPosix(newTime)));
+			} else {
+				var tagger = sub.a;
+				return A2(
+					$elm$core$Platform$sendToApp,
+					router,
+					tagger(newTime - oldTime));
+			}
+		};
+		return A2(
+			$elm$core$Task$andThen,
+			function (pid) {
+				return A2(
+					$elm$core$Task$andThen,
+					function (_v1) {
+						return $elm$core$Task$succeed(
+							A3(
+								$elm$browser$Browser$AnimationManager$State,
+								subs,
+								$elm$core$Maybe$Just(pid),
+								newTime));
+					},
+					$elm$core$Task$sequence(
+						A2($elm$core$List$map, send, subs)));
+			},
+			$elm$core$Process$spawn(
+				A2(
+					$elm$core$Task$andThen,
+					$elm$core$Platform$sendToSelf(router),
+					$elm$browser$Browser$AnimationManager$rAF)));
+	});
+var $elm$browser$Browser$AnimationManager$Time = function (a) {
+	return {$: 'Time', a: a};
+};
+var $elm$browser$Browser$AnimationManager$subMap = F2(
+	function (func, sub) {
+		if (sub.$ === 'Time') {
+			var tagger = sub.a;
+			return $elm$browser$Browser$AnimationManager$Time(
+				A2($elm$core$Basics$composeL, func, tagger));
+		} else {
+			var tagger = sub.a;
+			return $elm$browser$Browser$AnimationManager$Delta(
+				A2($elm$core$Basics$composeL, func, tagger));
+		}
+	});
+_Platform_effectManagers['Browser.AnimationManager'] = _Platform_createManager($elm$browser$Browser$AnimationManager$init, $elm$browser$Browser$AnimationManager$onEffects, $elm$browser$Browser$AnimationManager$onSelfMsg, 0, $elm$browser$Browser$AnimationManager$subMap);
+var $elm$browser$Browser$AnimationManager$subscription = _Platform_leaf('Browser.AnimationManager');
+var $elm$browser$Browser$AnimationManager$onAnimationFrameDelta = function (tagger) {
+	return $elm$browser$Browser$AnimationManager$subscription(
+		$elm$browser$Browser$AnimationManager$Delta(tagger));
+};
+var $elm$browser$Browser$Events$onAnimationFrameDelta = $elm$browser$Browser$AnimationManager$onAnimationFrameDelta;
+var $author$project$Anim$Internal$Sub$subscriptions = function (_v0) {
+	var state = _v0.a;
+	return state.isRunning ? $elm$browser$Browser$Events$onAnimationFrameDelta($author$project$Anim$Internal$Sub$AnimationFrame) : $elm$core$Platform$Sub$none;
+};
+var $author$project$Anim$Sub$subscriptions = $author$project$Anim$Internal$Sub$subscriptions;
+var $author$project$ElmUI$Sub$Color$Main$subscriptions = function (model) {
+	return A2(
+		$elm$core$Platform$Sub$map,
+		$author$project$ElmUI$Sub$Color$Main$AnimationMsg,
+		$author$project$Anim$Sub$subscriptions(model.animations));
 };
 var $elm$core$List$any = F2(
 	function (isOkay, list) {

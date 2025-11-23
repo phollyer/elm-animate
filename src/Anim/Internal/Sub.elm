@@ -390,7 +390,7 @@ createPropertyAnimationState startValues property =
             in
             Just
                 { propertyType = "position"
-                , animationSteps = steps |> Debug.log "Position Steps"
+                , animationSteps = steps
                 , currentStepIndex = 0
                 , delayFrames = max 0 (config.delay // 16)
                 , currentDelayFrame = 0
@@ -472,9 +472,6 @@ createPropertyAnimationState startValues property =
                         Nothing ->
                             startColor
 
-                _ =
-                    Debug.log "Duration" config.duration
-
                 frames =
                     Basics.max 1 (round (toFloat config.duration) // 16)
 
@@ -483,7 +480,6 @@ createPropertyAnimationState startValues property =
 
                 steps =
                     createColorSteps actualStart config.endAt frames easeFunction
-                        |> Debug.log "Color Steps"
             in
             Just
                 { propertyType = "color"

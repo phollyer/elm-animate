@@ -16,7 +16,6 @@ FEATURES:
 -}
 
 import Anim
-import Anim.Internal.Properties.Color as AnimColor
 import Anim.Properties.Color as ColorBuilder exposing (Color(..))
 import Anim.Sub as Sub
 import Anim.Timing.Easing as Easing exposing (Easing(..))
@@ -60,6 +59,13 @@ type alias Model =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations = Sub.init
+        |> Sub.builder
+        |> ColorBuilder.for "box"
+        |> ColorBuilder.to (Rgb { r = 149, g = 165, b = 166 }) -- Default gray
+        |> ColorBuilder.duration 0
+        |> ColorBuilder.easing Easing.EaseInOut
+        |> ColorBuilder.build
+        |> Sub.animate
       }
     , Cmd.none
     )
