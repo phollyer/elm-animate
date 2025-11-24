@@ -591,11 +591,20 @@ updatePropertyAnimation _ propertyState =
             nextStepIndex =
                 propertyState.currentStepIndex + 1
 
+            stepsLength =
+                List.length propertyState.animationSteps
+
             isComplete =
-                nextStepIndex >= List.length propertyState.animationSteps
+                nextStepIndex >= stepsLength
         in
         { propertyState
-            | currentStepIndex = min nextStepIndex (List.length propertyState.animationSteps - 1)
+            | currentStepIndex =
+                if isComplete then
+                    -- Ensure we can access the final step with exact target value
+                    max 0 (stepsLength - 1)
+
+                else
+                    nextStepIndex
             , isComplete = isComplete
         }
 

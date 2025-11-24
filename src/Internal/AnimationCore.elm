@@ -31,12 +31,25 @@ animationSteps speed easing start stop =
 
             else
                 (+)
+
+        steps =
+            List.map (\weight -> operator start (weight * diff)) weights
+
+        -- Ensure the final step is exactly the target value
+        -- This fixes issues where easing functions don't return exactly 1.0 at progress=1.0
+        finalSteps =
+            case List.reverse steps of
+                [] ->
+                    []
+
+                _ :: rest ->
+                    List.reverse (stop :: rest)
     in
     if speed <= 0 || start == stop then
         []
 
     else
-        List.map (\weight -> operator start (weight * diff)) weights
+        finalSteps
 
 
 {-| Generate animation steps with a specific frame count for synchronized animations.
@@ -60,9 +73,22 @@ animationStepsWithFrames frames easing start stop =
 
             else
                 (+)
+
+        steps =
+            List.map (\weight -> operator start (weight * diff)) weights
+
+        -- Ensure the final step is exactly the target value
+        -- This fixes issues where easing functions don't return exactly 1.0 at progress=1.0
+        finalSteps =
+            case List.reverse steps of
+                [] ->
+                    []
+
+                _ :: rest ->
+                    List.reverse (stop :: rest)
     in
     if frames <= 0 || start == stop then
         []
 
     else
-        List.map (\weight -> operator start (weight * diff)) weights
+        finalSteps
