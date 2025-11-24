@@ -65,7 +65,7 @@ animationStepsWithFrames frames easing start stop =
             toFloat frames
 
         weights =
-            List.map (\i -> easing (toFloat i / framesFloat)) (List.range 0 frames)
+            List.map (\i -> easing (toFloat i / framesFloat)) (List.range 0 (frames - 1))
 
         operator =
             if start > stop then
