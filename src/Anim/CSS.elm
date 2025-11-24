@@ -4,6 +4,7 @@ module Anim.CSS exposing
     , htmlAttributes, getElementKeyframes, animationStyleAttribute, keyframesStyleNode, keyframesStyleNodeFor
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
+    , getPosition
     )
 
 {-| CSS-based animation system with optional state tracking.
@@ -47,6 +48,7 @@ Animation events are different from transition events, so both types of events c
 
 import Anim exposing (AnimBuilder)
 import Anim.Internal.CSS as InternalCSS exposing (TransformOrder(..))
+import Anim.Properties.Position exposing (Position)
 import Html
 
 
@@ -239,6 +241,13 @@ The generated keyframes will have a name based on the element ID (e.g., "my-elem
 getElementKeyframes : String -> AnimationState -> Maybe String
 getElementKeyframes =
     InternalCSS.getElementKeyframes
+
+
+{-| Get the end position of an element being animated.
+-}
+getPosition : String -> AnimationState -> Maybe Position
+getPosition =
+    InternalCSS.getPosition
 
 
 {-| Get all the HTML attributes needed for the CSS animations on the target element.

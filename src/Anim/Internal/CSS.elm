@@ -7,6 +7,10 @@ module Anim.Internal.CSS exposing
     , builder
     , getElementAnimation
     , getElementKeyframes
+    , getPosition
+    , getPositionAnimationDuration
+    , getPositionRange
+    , getStartPosition
     , htmlAttributes
     , init
     , keyframesStyleNode
@@ -28,6 +32,7 @@ import Anim.Internal.CSS.Transform as Transforms
 import Anim.Internal.CSS.Transition as Transitions
 import Anim.Internal.Properties.Color as Color
 import Anim.Internal.Properties.Opacity as Opacity
+import Anim.Internal.Properties.Position exposing (Position)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes
@@ -248,6 +253,109 @@ getElementKeyframes elementId (AnimationState state) =
             )
 
 
+getPosition : String -> AnimationState -> Maybe Position
+getPosition elementId (AnimationState state) =
+    let
+        processedData =
+            Builder.processAnimationData state.builder
+    in
+    Dict.get elementId processedData.elements
+        |> Debug.log "Element Config"
+        |> Maybe.andThen
+            (\elementConfig ->
+                elementConfig.properties
+                    |> Debug.log "==>"
+                    |> List.filterMap
+                        (\prop ->
+                            case prop of
+                                Builder.ProcessedPositionConfig config ->
+                                    Just config.endAt
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> List.head
+            )
+
+
+{-| Get the starting position for an element's animation.
+Returns Nothing if the element has no position animation or no explicit start position.
+-}
+getStartPosition : String -> AnimationState -> Maybe Position
+getStartPosition elementId (AnimationState state) =
+    let
+        processedData =
+            Builder.processAnimationData state.builder
+    in
+    Dict.get elementId processedData.elements
+        |> Maybe.andThen
+            (\elementConfig ->
+                elementConfig.properties
+                    |> List.filterMap
+                        (\prop ->
+                            case prop of
+                                Builder.ProcessedPositionConfig config ->
+                                    config.startAt
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> List.head
+            )
+
+
+{-| Get both start and end positions for an element's animation.
+Returns Nothing if the element has no position animation.
+-}
+getPositionRange : String -> AnimationState -> Maybe { start : Maybe Position, end : Position }
+getPositionRange elementId (AnimationState state) =
+    let
+        processedData =
+            Builder.processAnimationData state.builder
+    in
+    Dict.get elementId processedData.elements
+        |> Maybe.andThen
+            (\elementConfig ->
+                elementConfig.properties
+                    |> List.filterMap
+                        (\prop ->
+                            case prop of
+                                Builder.ProcessedPositionConfig config ->
+                                    Just { start = config.startAt, end = config.endAt }
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> List.head
+            )
+
+
+{-| Get the animation duration for a position animation in milliseconds.
+Returns Nothing if the element has no position animation.
+-}
+getPositionAnimationDuration : String -> AnimationState -> Maybe Int
+getPositionAnimationDuration elementId (AnimationState state) =
+    let
+        processedData =
+            Builder.processAnimationData state.builder
+    in
+    Dict.get elementId processedData.elements
+        |> Maybe.andThen
+            (\elementConfig ->
+                elementConfig.properties
+                    |> List.filterMap
+                        (\prop ->
+                            case prop of
+                                Builder.ProcessedPositionConfig config ->
+                                    Just config.duration
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> List.head
+            )
+
+
 htmlAttributes : String -> AnimationState -> List (Html.Attribute msg)
 htmlAttributes elementId animationResult =
     getElementStyles elementId animationResult
@@ -307,15 +415,3 @@ onAnimationIteration msg =
 onAnimationCancel : msg -> Html.Attribute msg
 onAnimationCancel msg =
     Html.Events.on "animationcancel" (Json.Decode.succeed msg)
-
-
-
---
--- TODO: SUGGESTED MODULE SPLITS
---
--- TRANSFORM HELPERS
--- -> Move transform/consolidation helpers to Transform
--- PROPERTY TIMING
--- -> Move property distance/timing/extraction helpers to PropertyTiming
--- MAIN CSS GENERATION
--- -> Keep top-level animation orchestration here

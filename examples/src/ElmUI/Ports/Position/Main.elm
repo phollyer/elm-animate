@@ -15,15 +15,16 @@ FEATURES:
 
 USAGE:
 
-  - Use animateTo for absolute positioning (Position x y) via ports
-  - Use animateToX/animateToY for single-axis movement
+  - Use builder pattern for animation configuration
   - Position values are in pixels relative to container
   - JavaScript handles animation execution and progress updates
 
 -}
 
 import Anim
-import Anim.Ports exposing (Model, animate, encodeAnimationCommand, getPosition, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
+import Anim.Properties.Position as Position
+import Anim.Ports as Ports
+import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -32,7 +33,6 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
-import Json.Decode as Decode
 import Json.Encode as Encode
 
 
@@ -46,7 +46,7 @@ port animateElement : Encode.Value -> Cmd msg
 port stopElement : Encode.Value -> Cmd msg
 
 
-port positionUpdates : (Decode.Value -> msg) -> Sub msg
+port positionUpdates : (Encode.Value -> msg) -> Sub msg
 
 
 port animationComplete : (String -> msg) -> Sub msg
@@ -71,9 +71,7 @@ main =
 
 
 type alias Model =
-    { animations : Anim.Ports.Model
-    , isAnimating : Bool
-    }
+    { isAnimating : Bool }
 
 
 
@@ -82,9 +80,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Anim.Ports.init
-      , isAnimating = False
-      }
+    ( { isAnimating = False }
     , Cmd.none
     )
 
@@ -94,185 +90,105 @@ init _ =
 
 
 type Msg
-    = MoveToCorner
-    | MoveToCenter
+    = MoveToXY Float Float
     | MoveLeft
-    | MoveRight
+    | MoveRight  
     | MoveUp
     | MoveDown
+    | ResetPosition
     | StopAnimation
     | AnimationComplete String
-    | PositionUpdateReceived (Result Decode.Error Anim.Ports.PropertyUpdate)
+    | PositionUpdateReceived Encode.Value
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        MoveToCorner ->
-            let
-                animation =
-                    Anim.position "box" { x = 100, y = 100 }
-                        |> Anim.pixelsPerSecond 300.0
-                        |> Anim.easeOut
-
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
-            in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel, isAnimating = True }
-                    , animateElement (encodeAnimationCommand command)
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
-
-        MoveToCenter ->
-            let
-                animation =
-                    Anim.position "box" { x = 300, y = 200 }
-                        |> Anim.pixelsPerSecond 400.0
-                        |> Anim.easeInOut
-
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
-            in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel, isAnimating = True }
-                    , animateElement (encodeAnimationCommand command)
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+        MoveToXY x y ->
+            ( { model | isAnimating = True }
+            , Anim.init
+                |> Anim.for "box"
+                |> Position.for "box"
+                |> Position.toXY x y
+                |> Position.speed 200.0
+                |> Position.easing Easing.EaseOut
+                |> Position.build
+                |> Ports.animate animateElement
+            )
 
         MoveLeft ->
-            let
-                currentPos =
-                    getPosition "box" model.animations
-                        |> Maybe.withDefault { x = 0, y = 0 }
-
-                animation =
-                    Anim.position "box" { x = 0, y = currentPos.y }
-                        |> Anim.pixelsPerSecond 350.0
-                        |> Anim.easeIn
-
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
-            in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel, isAnimating = True }
-                    , animateElement (encodeAnimationCommand command)
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ( { model | isAnimating = True }
+            , Anim.init
+                |> Anim.for "box"
+                |> Position.for "box"
+                |> Position.toX 0
+                |> Position.speed 300.0
+                |> Position.easing Easing.BounceIn
+                |> Position.build
+                |> Ports.animate animateElement
+            )
 
         MoveRight ->
-            let
-                currentPos =
-                    getPosition "box" model.animations
-                        |> Maybe.withDefault { x = 0, y = 0 }
-
-                animation =
-                    Anim.position "box" { x = 450, y = currentPos.y }
-                        |> Anim.pixelsPerSecond 350.0
-                        |> Anim.easeIn
-
-                -- 500px container - 50px box = 450px for right edge
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
-            in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel, isAnimating = True }
-                    , animateElement (encodeAnimationCommand command)
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ( { model | isAnimating = True }
+            , Anim.init
+                |> Anim.for "box"
+                |> Position.for "box"
+                |> Position.toX 500
+                |> Position.speed 300.0
+                |> Position.easing Easing.BounceIn
+                |> Position.build
+                |> Ports.animate animateElement
+            )
 
         MoveUp ->
-            let
-                currentPos =
-                    getPosition "box" model.animations
-                        |> Maybe.withDefault { x = 0, y = 0 }
-
-                animation =
-                    Anim.position "box" { x = currentPos.x, y = 0 }
-                        |> Anim.pixelsPerSecond 300.0
-                        |> Anim.easeOut
-
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
-            in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel, isAnimating = True }
-                    , animateElement (encodeAnimationCommand command)
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ( { model | isAnimating = True }
+            , Anim.init
+                |> Anim.for "box"
+                |> Position.for "box"
+                |> Position.toY 0
+                |> Position.speed 250.0
+                |> Position.easing Easing.EaseInOut
+                |> Position.build
+                |> Ports.animate animateElement
+            )
 
         MoveDown ->
-            let
-                currentPos =
-                    getPosition "box" model.animations
-                        |> Maybe.withDefault { x = 0, y = 0 }
+            ( { model | isAnimating = True }
+            , Anim.init
+                |> Anim.for "box"
+                |> Position.for "box"
+                |> Position.toY 300
+                |> Position.speed 250.0
+                |> Position.easing Easing.EaseInOut
+                |> Position.build
+                |> Ports.animate animateElement
+            )
 
-                animation =
-                    Anim.position "box" { x = currentPos.x, y = 350 }
-                        |> Anim.pixelsPerSecond 300.0
-                        |> Anim.easeOut
-
-                -- 400px container - 50px box = 350px for bottom edge
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
-            in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel, isAnimating = True }
-                    , animateElement (encodeAnimationCommand command)
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+        ResetPosition ->
+            ( { model | isAnimating = True }
+            , Anim.init
+                |> Anim.for "box"
+                |> Position.for "box"
+                |> Position.toXY 250 150
+                |> Position.speed 400.0
+                |> Position.easing Easing.EaseOut
+                |> Position.build
+                |> Ports.animate animateElement
+            )
 
         StopAnimation ->
-            let
-                animation =
-                    Anim.position "box" { x = 0, y = 0 }
-                        |> Anim.pixelsPerSecond 200.0
-                        |> Anim.easeInOut
-
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
-            in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel, isAnimating = True }
-                    , animateElement (encodeAnimationCommand command)
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ( { model | isAnimating = False }
+            , stopElement (Encode.string "box")
+            )
 
         AnimationComplete _ ->
             ( { model | isAnimating = False }
             , Cmd.none
             )
 
-        PositionUpdateReceived result ->
-            case result of
-                Ok propertyUpdate ->
-                    ( { model | animations = Anim.Ports.handlePropertyUpdate propertyUpdate model.animations }
-                    , Cmd.none
-                    )
-
-                Err _ ->
-                    ( model, Cmd.none )
+        PositionUpdateReceived _ ->
+            -- Handle position updates from JavaScript if needed
+            ( model, Cmd.none )
 
 
 
@@ -280,9 +196,9 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.batch
-        [ positionUpdates (PositionUpdateReceived << handlePropertyUpdateFromJson)
+        [ positionUpdates PositionUpdateReceived
         , animationComplete AnimationComplete
         ]
 
@@ -300,31 +216,29 @@ viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButton
     , UI.pageHeader "ElmUI & Ports Position Example"
-    , -- Position display
+    , -- Animation status display  
       el
         [ Font.size 14
         , Font.color Colors.textMedium
-        , centerX
+        , padding 10
         ]
-        (case getPosition "box" model.animations of
-            Just position ->
-                text ("Position: (" ++ String.fromFloat position.x ++ ", " ++ String.fromFloat position.y ++ ")")
-
-            Nothing ->
-                text "Position: (0, 0)"
-        )
-    , -- Buttons for predefined moves
+        (text <| if model.isAnimating then "Animating..." else "Ready")
+    , -- Buttons for movement control
       UI.wrappedButtonRow
-        [ ( UI.Primary, MoveToCorner, "Move to (100, 100)" )
-        , ( UI.Success, MoveToCenter, "Move to (300, 200)" )
-        , ( UI.Purple, StopAnimation, "Return to Origin" )
+        [ ( UI.Primary, MoveToXY 100 100, "Move to (100, 100)" )
+        , ( UI.Success, MoveToXY 300 200, "Move to (300, 200)" )
+        , ( UI.Purple, ResetPosition, "Reset to Center" )
         ]
-    , -- Axis-specific movement buttons
+    , -- Directional movement buttons
       UI.wrappedButtonRow
         [ ( UI.Warning, MoveLeft, "← Move Left" )
         , ( UI.Warning, MoveRight, "Move Right →" )
         , ( UI.Success, MoveUp, "↑ Move Up" )
         , ( UI.Success, MoveDown, "Move Down ↓" )
+        ]
+    , -- Stop animation button
+      UI.wrappedButtonRow
+        [ ( UI.Warning, StopAnimation, "Stop Animation" )
         ]
     , -- Animation area with moving box
       el
@@ -343,17 +257,15 @@ viewContent model =
         , htmlAttribute (Html.Attributes.style "overflow" "hidden")
         ]
         (el
-            ([ width (px 50)
-             , height (px 50)
-             , Background.color Colors.primary
-             , Border.rounded 8
-             , htmlAttribute (Html.Attributes.id "box")
-             , htmlAttribute (Html.Attributes.style "position" "absolute")
-             ]
-                ++ (styleProperties "box" model.animations
-                        |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
-                   )
-            )
+            [ width (px 50)
+            , height (px 50)
+            , Background.color Colors.primary
+            , Border.rounded 8
+            , htmlAttribute (Html.Attributes.id "box")
+            , htmlAttribute (Html.Attributes.style "position" "absolute")
+            , htmlAttribute (Html.Attributes.style "left" "250px")  -- Default center position
+            , htmlAttribute (Html.Attributes.style "top" "150px")   -- Default center position
+            ]
             (text "")
         )
     ]

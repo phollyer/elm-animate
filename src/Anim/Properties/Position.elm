@@ -1,5 +1,5 @@
 module Anim.Properties.Position exposing
-    ( Builder, for, build
+    ( Position, Builder, for, build
     , fromXY, fromX, fromY
     , toXY, toX, toY
     , speed, duration, easing, delay
@@ -22,7 +22,7 @@ Use these functions to configure position animations in the builder chain:
 
 # Build
 
-@docs Builder, for, build
+@docs Position, Builder, for, build
 
 
 # Configure
@@ -69,6 +69,8 @@ type alias Builder =
     PB.PositionBuilder
 
 
+{-| Type alias for the internal `Position` type.
+-}
 type alias Position =
     P.Position
 

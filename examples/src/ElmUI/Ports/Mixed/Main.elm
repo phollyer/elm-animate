@@ -1,8 +1,8 @@
 port module ElmUI.Ports.Mixed.Main exposing (main)
 
-{-| Anim.CSS Mixed Properties Example using ElmUI - Combined animation effects
+{-| Anim.Ports Mixed Properties Example using ElmUI - Combined animation effects
 
-This example demonstrates combining multiple CSS properties in single animations.
+This example demonstrates combining multiple animation properties in single animations.
 Shows how to create rich, complex effects by mixing position, scale, rotation, opacity, and color.
 
 FEATURES:
@@ -16,8 +16,13 @@ FEATURES:
 -}
 
 import Anim
+import Anim.Ports as Ports
+import Anim.Properties.Color as Color
+import Anim.Properties.Opacity as Opacity
+import Anim.Properties.Position as Position
+import Anim.Properties.Rotate as Rotate
+import Anim.Properties.Scale as Scale
 import Anim.Timing.Easing as Easing exposing (Easing(..))
-import Anim.Ports exposing (Model, animateMultiple, handlePropertyUpdateFromJson, init, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -37,10 +42,10 @@ import Json.Encode as Encode
 port animateElement : Encode.Value -> Cmd msg
 
 
-port stopElement : Encode.Value -> Cmd msg
+port stopElement : String -> Cmd msg
 
 
-port positionUpdates : (Decode.Value -> msg) -> Sub msg
+port positionUpdates : (Encode.Value -> msg) -> Sub msg
 
 
 port animationComplete : (String -> msg) -> Sub msg
@@ -65,8 +70,7 @@ main =
 
 
 type alias Model =
-    { animations : Anim.Ports.Model
-    }
+    {}
 
 
 type Msg
@@ -76,9 +80,17 @@ type Msg
     | StartColorMorph String
     | StartFullTransform String
     | ResetAll
-    | AnimationComplete String
-    | PositionUpdateReceived (Result Decode.Error Anim.Ports.PropertyUpdate)
+    | NoOp
 
+
+-- INIT
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( {}
+    , Cmd.none
+    )
 
 
 -- UPDATE
@@ -89,139 +101,136 @@ update msg model =
     case msg of
         StartComplexAnimation elementId ->
             -- Combine position + scale + rotation
-            let
-                ( newModel, cmd ) =
-                    element elementId
-                        |> withPosition (Position 200 100)
-                        |> withScale { x = 1.5, y = 1.9 }
-                        |> withRotation 90
-                        |> animateMultiple model.animations
-                            { duration = 1000
-                            , easing = EasePreset EaseInOut
-                            , portFunction = animateElement
-                            }
-            in
-            ( { model | animations = newModel }, cmd )
+            ( model
+            , Anim.init
+                |> Anim.for elementId
+                |> Position.for elementId
+                |> Position.toXY 200 100
+                |> Position.build
+                |> Scale.for elementId
+                |> Scale.toXY 1.5 1.9
+                |> Scale.build
+                |> Rotate.for elementId
+                |> Rotate.to 90
+                |> Rotate.build
+                |> Anim.duration 1000
+                |> Anim.easing Easing.EaseInOut
+                |> Ports.animate animateElement
+            )
 
         StartFadeMove elementId ->
             -- Combine opacity + position
-            let
-                ( newModel, cmd ) =
-                    element elementId
-                        |> withOpacity 0.3
-                        |> withPosition (Position 250 80)
-                        |> animateMultiple model.animations
-                            { duration = 1000
-                            , easing = EasePreset EaseInOut
-                            , portFunction = animateElement
-                            }
-            in
-            ( { model | animations = newModel }, cmd )
+            ( model
+            , Anim.init
+                |> Anim.for elementId
+                |> Opacity.for elementId
+                |> Opacity.to 0.3
+                |> Opacity.build
+                |> Position.for elementId
+                |> Position.toXY 250 80
+                |> Position.build
+                |> Anim.duration 1000
+                |> Anim.easing Easing.EaseInOut
+                |> Ports.animate animateElement
+            )
 
         StartSpinScale elementId ->
             -- Combine rotation + scale + color
-            let
-                ( newModel, cmd ) =
-                    element elementId
-                        |> withRotation 180
-                        |> withScale { x = 0.8, y = 0.8 }
-                        |> withBackgroundColor (Hex "#e74c3c")
-                        |> animateMultiple model.animations
-                            { duration = 1000
-                            , easing = EasePreset EaseInOut
-                            , portFunction = animateElement
-                            }
-            in
-            ( { model | animations = newModel }, cmd )
+            ( model
+            , Anim.init
+                |> Anim.for elementId
+                |> Rotate.for elementId
+                |> Rotate.to 180
+                |> Rotate.build
+                |> Scale.for elementId
+                |> Scale.toXY 0.8 0.8
+                |> Scale.build
+                |> Color.for elementId
+                |> Color.to (Color.Hex "#e74c3c")
+                |> Color.build
+                |> Anim.duration 1000
+                |> Anim.easing Easing.EaseInOut
+                |> Ports.animate animateElement
+            )
 
         StartColorMorph elementId ->
             -- Combine color + scale + opacity
-            let
-                ( newModel, cmd ) =
-                    element elementId
-                        |> withBackgroundColor (Hsl { h = 142, s = 71, l = 45 })
-                        |> withScale { x = 2.0, y = 0.5 }
-                        |> withOpacity 0.8
-                        |> animateMultiple model.animations
-                            { duration = 1000
-                            , easing = EasePreset EaseInOut
-                            , portFunction = animateElement
-                            }
-            in
-            ( { model | animations = newModel }, cmd )
+            ( model
+            , Anim.init
+                |> Anim.for elementId
+                |> Color.for elementId
+                |> Color.to (Color.Hsl { h = 142, s = 71, l = 45 })
+                |> Color.build
+                |> Scale.for elementId
+                |> Scale.toXY 2.0 0.5
+                |> Scale.build
+                |> Opacity.for elementId
+                |> Opacity.to 0.8
+                |> Opacity.build
+                |> Anim.duration 1000
+                |> Anim.easing Easing.EaseInOut
+                |> Ports.animate animateElement
+            )
 
         StartFullTransform elementId ->
-            -- All properties at once with elegant multi-property builder!
-            let
-                ( newModel, cmd ) =
-                    element elementId
-                        |> withPosition (Position 200 200)
-                        |> withScale { x = 1.3, y = 1.3 }
-                        |> withRotation 270
-                        |> withOpacity 0.7
-                        |> withBackgroundColor (Hex "#9b59b6")
-                        |> animateMultiple model.animations
-                            { duration = 1000
-                            , easing = EasePreset EaseInOut
-                            , portFunction = animateElement
-                            }
-            in
-            ( { model | animations = newModel }, cmd )
+            -- All properties at once!
+            ( model
+            , Anim.init
+                |> Anim.for elementId
+                |> Position.for elementId
+                |> Position.toXY 200 200
+                |> Position.build
+                |> Scale.for elementId
+                |> Scale.toXY 1.3 1.3
+                |> Scale.build
+                |> Rotate.for elementId
+                |> Rotate.to 270
+                |> Rotate.build
+                |> Opacity.for elementId
+                |> Opacity.to 0.7
+                |> Opacity.build
+                |> Color.for elementId
+                |> Color.to (Color.Hex "#9b59b6")
+                |> Color.build
+                |> Anim.duration 1000
+                |> Anim.easing Easing.EaseInOut
+                |> Ports.animate animateElement
+            )
 
         ResetAll ->
-            let
-                ( newModel, cmd ) =
-                    element "mixed-box"
-                        |> withPosition (Position 0 0)
-                        |> withScale { x = 1.0, y = 1.0 }
-                        |> withRotation 0
-                        |> withOpacity 1.0
-                        |> withBackgroundColor (Hex "#3498db")
-                        |> animateMultiple model.animations
-                            { duration = 800
-                            , easing = EasePreset EaseInOut
-                            , portFunction = animateElement
-                            }
-            in
-            ( { model | animations = newModel }, cmd )
+            ( model
+            , Anim.init
+                |> Anim.for "mixed-box"
+                |> Position.for "mixed-box"
+                |> Position.toXY 0 0
+                |> Position.build
+                |> Scale.for "mixed-box"
+                |> Scale.toXY 1.0 1.0
+                |> Scale.build
+                |> Rotate.for "mixed-box"
+                |> Rotate.to 0
+                |> Rotate.build
+                |> Opacity.for "mixed-box"
+                |> Opacity.to 1.0
+                |> Opacity.build
+                |> Color.for "mixed-box"
+                |> Color.to (Color.Hex "#3498db")
+                |> Color.build
+                |> Anim.duration 800
+                |> Anim.easing Easing.EaseOut
+                |> Ports.animate animateElement
+            )
 
-        AnimationComplete _ ->
+        NoOp ->
             ( model, Cmd.none )
-
-        PositionUpdateReceived result ->
-            case result of
-                Ok propertyUpdate ->
-                    ( { model | animations = Anim.Ports.handlePropertyUpdate propertyUpdate model.animations }
-                    , Cmd.none
-                    )
-
-                Err _ ->
-                    ( model, Cmd.none )
-
-
-
--- INIT
-
-
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { animations = Anim.Ports.init
-      }
-    , Cmd.none
-    )
-
 
 
 -- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.batch
-        [ positionUpdates (PositionUpdateReceived << handlePropertyUpdateFromJson)
-        , animationComplete AnimationComplete
-        ]
-
+subscriptions _ =
+    Sub.none
 
 
 -- VIEW
@@ -278,21 +287,17 @@ viewContent model =
 mixedAnimationBox : Model -> Element Msg
 mixedAnimationBox model =
     el
-        ([ width (px 80)
-         , height (px 80)
-         , Border.rounded 12
-         , htmlAttribute (Html.Attributes.id "mixed-box")
-         , htmlAttribute (Html.Attributes.style "position" "absolute")
-         , htmlAttribute (Html.Attributes.style "background-color" "#3498db") -- Default blue
-         , htmlAttribute (Html.Attributes.style "transform-origin" "center")
-         , htmlAttribute (Html.Attributes.style "display" "flex")
-         , htmlAttribute (Html.Attributes.style "align-items" "center")
-         , htmlAttribute (Html.Attributes.style "justify-content" "center")
-         ]
-            ++ (styleProperties "mixed-box" model.animations
-                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
-               )
-        )
+        [ width (px 80)
+        , height (px 80)
+        , Border.rounded 12
+        , htmlAttribute (Html.Attributes.id "mixed-box")
+        , htmlAttribute (Html.Attributes.style "position" "absolute")
+        , htmlAttribute (Html.Attributes.style "background-color" "#3498db") -- Default blue
+        , htmlAttribute (Html.Attributes.style "transform-origin" "center")
+        , htmlAttribute (Html.Attributes.style "display" "flex")
+        , htmlAttribute (Html.Attributes.style "align-items" "center")
+        , htmlAttribute (Html.Attributes.style "justify-content" "center")
+        ]
         (el
             [ centerX
             , Element.centerY

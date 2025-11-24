@@ -3,7 +3,7 @@
     "name": "phollyer/elm-smooth-move",
     "summary": "Smooth moving animation for DOM elements",
     "license": "BSD-3-Clause",
-    "version": "3.0.0",
+    "version": "3.0.1",
     "exposed-modules": [
         "Scroll",
         "Scroll.Document.Cmd",

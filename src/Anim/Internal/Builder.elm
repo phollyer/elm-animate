@@ -574,8 +574,134 @@ resolveDelayWithDefault local global default =
 
 
 encode : ProcessedAnimationData -> Encode.Value
-encode _ =
-    Encode.object []
+encode data =
+    -- Create command strings for each element's animations
+    -- Format: "elementId:targetX:targetY:duration:easing:axis"
+    data.elements
+        |> Dict.toList
+        |> List.filterMap (createCommandString data)
+        |> Encode.list Encode.string
+
+
+createCommandString : ProcessedAnimationData -> ( String, ProcessedElementConfig ) -> Maybe String
+createCommandString _ ( elementId, elementConfig ) =
+    -- Create commands for all property types
+    elementConfig.properties
+        |> List.filterMap (extractPropertyCommand elementId)
+        |> List.head
+
+
+extractPropertyCommand : String -> ProcessedPropertyConfig -> Maybe String
+extractPropertyCommand elementId property =
+    case property of
+        ProcessedPositionConfig config ->
+            let
+                ( targetX, targetY ) =
+                    Position.toTuple config.endAt
+
+                easingStr =
+                    easingToJsString config.easing
+            in
+            Just
+                (String.join ":"
+                    [ "position"
+                    , elementId
+                    , String.fromFloat targetX
+                    , String.fromFloat targetY
+                    , String.fromInt config.duration
+                    , easingStr
+                    , "both"
+                    ]
+                )
+
+        ProcessedScaleConfig config ->
+            let
+                easingStr =
+                    easingToJsString config.easing
+
+                ( targetX, targetY ) =
+                    Scale.toTuple config.endAt
+            in
+            Just
+                (String.join ":"
+                    [ "scale"
+                    , elementId
+                    , String.fromFloat targetX
+                    , String.fromFloat targetY
+                    , String.fromInt config.duration
+                    , easingStr
+                    ]
+                )
+
+        ProcessedRotateConfig config ->
+            let
+                easingStr =
+                    easingToJsString config.easing
+            in
+            Just
+                (String.join ":"
+                    [ "rotation"
+                    , elementId
+                    , String.fromFloat (Rotate.toFloat config.endAt)
+                    , String.fromInt config.duration
+                    , easingStr
+                    ]
+                )
+
+        ProcessedOpacityConfig config ->
+            let
+                easingStr =
+                    easingToJsString config.easing
+            in
+            Just
+                (String.join ":"
+                    [ "opacity"
+                    , elementId
+                    , String.fromFloat (Opacity.toFloat config.endAt)
+                    , String.fromInt config.duration
+                    , easingStr
+                    ]
+                )
+
+        ProcessedColorConfig config ->
+            let
+                easingStr =
+                    easingToJsString config.easing
+
+                colorStr =
+                    Color.toString config.endAt
+            in
+            Just
+                (String.join ":"
+                    [ "color"
+                    , elementId
+                    , colorStr
+                    , String.fromInt config.duration
+                    , easingStr
+                    ]
+                )
+
+
+easingToJsString : Easing -> String
+easingToJsString easingValue =
+    case easingValue of
+        Linear ->
+            "linear"
+
+        EaseIn ->
+            "ease-in"
+
+        EaseOut ->
+            "ease-out"
+
+        EaseInOut ->
+            "ease-in-out"
+
+        Ease ->
+            "ease"
+
+        _ ->
+            "ease-in-out"
 
 
 

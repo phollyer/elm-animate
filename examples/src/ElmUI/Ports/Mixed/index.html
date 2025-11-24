@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ElmUI - Anim.CSS Mixed Properties Example</title>
+    <title>ElmUI - Anim.Ports Mixed Properties Example</title>
     <link rel="stylesheet" href="../../../../css/base.css">
     <link rel="stylesheet" href="../../../../css/ui-components.css">
     <style>
@@ -14,16 +14,15 @@
 
 <body>
     <div id="elm"></div>
+    <script src="../../../../js/smooth-move-ports.js"></script>
     <script src="index.js"></script>
     <script>
-        var app = Elm.ElmUI.CSS.Mixed.Main.init({
+        var app = Elm.ElmUI.Ports.Mixed.Main.init({
             node: document.getElementById('elm')
         });
 
-        // Listen for custom animation-complete events
-        document.addEventListener('animation-complete', function () {
-            // Send to Elm if needed
-        });
+        // Initialize SmoothMovePorts with the Elm app's ports
+        SmoothMovePorts.init(app.ports);
     </script>
 </body>
 
