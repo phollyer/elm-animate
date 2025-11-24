@@ -86,7 +86,7 @@ build_example "src/ElmUI/Sub/Choreography/Main.elm" "src/ElmUI/Sub/Choreography/
 
 # ElmUI Ports examples (JavaScript Web Animations API)
 # echo "  🌐 ElmUI Ports examples (Anim.Ports - Web Animations API integration)..."
-# build_example "src/ElmUI/Ports/Position/Main.elm" "src/ElmUI/Ports/Position/index.js" "ElmUI.Ports.Position.Main"
+build_example "src/ElmUI/Ports/Position/Main.elm" "src/ElmUI/Ports/Position/index.js" "ElmUI.Ports.Position.Main"
 # build_example "src/ElmUI/Ports/Opacity/Main.elm" "src/ElmUI/Ports/Opacity/index.js" "ElmUI.Ports.Opacity.Main"
 # build_example "src/ElmUI/Ports/Scale/Main.elm" "src/ElmUI/Ports/Scale/index.js" "ElmUI.Ports.Scale.Main"
 # build_example "src/ElmUI/Ports/Rotation/Main.elm" "src/ElmUI/Ports/Rotation/index.js" "ElmUI.Ports.Rotation.Main"

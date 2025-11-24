@@ -29,7 +29,7 @@ import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position, distance)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
-import Anim.Internal.Timing.Easing exposing (Easing(..))
+import Anim.Internal.Timing.Easing as Easing exposing (Easing(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
 import Json.Encode as Encode
@@ -684,24 +684,8 @@ extractPropertyCommand elementId property =
 
 easingToJsString : Easing -> String
 easingToJsString easingValue =
-    case easingValue of
-        Linear ->
-            "linear"
-
-        EaseIn ->
-            "ease-in"
-
-        EaseOut ->
-            "ease-out"
-
-        EaseInOut ->
-            "ease-in-out"
-
-        Ease ->
-            "ease"
-
-        _ ->
-            "ease-in-out"
+    -- Use the proper Web Animations API conversion
+    Easing.toWebAnimations easingValue
 
 
 

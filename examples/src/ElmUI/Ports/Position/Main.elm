@@ -22,8 +22,8 @@ USAGE:
 -}
 
 import Anim
-import Anim.Properties.Position as Position
 import Anim.Ports as Ports
+import Anim.Properties.Position as Position
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
@@ -71,7 +71,9 @@ main =
 
 
 type alias Model =
-    { isAnimating : Bool }
+    { animationState : Ports.AnimationState
+    , isAnimating : Bool
+    }
 
 
 
@@ -80,7 +82,9 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { isAnimating = False }
+    ( { animationState = Ports.init
+      , isAnimating = False
+      }
     , Cmd.none
     )
 
@@ -92,7 +96,7 @@ init _ =
 type Msg
     = MoveToXY Float Float
     | MoveLeft
-    | MoveRight  
+    | MoveRight
     | MoveUp
     | MoveDown
     | ResetPosition
@@ -105,75 +109,99 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         MoveToXY x y ->
-            ( { model | isAnimating = True }
-            , Anim.init
-                |> Anim.for "box"
-                |> Position.for "box"
-                |> Position.toXY x y
-                |> Position.speed 200.0
-                |> Position.easing Easing.EaseOut
-                |> Position.build
-                |> Ports.animate animateElement
+            let
+                ( newAnimationState, animationData ) =
+                    model.animationState
+                        |> Ports.builder
+                        |> Position.for "box"
+                        |> Position.toXY x y
+                        |> Position.speed 200.0
+                        |> Position.easing Easing.BounceInOut
+                        |> Position.build
+                        |> Ports.animate model.animationState
+            in
+            ( { model | animationState = newAnimationState, isAnimating = True }
+            , animateElement animationData
             )
 
         MoveLeft ->
-            ( { model | isAnimating = True }
-            , Anim.init
-                |> Anim.for "box"
-                |> Position.for "box"
-                |> Position.toX 0
-                |> Position.speed 300.0
-                |> Position.easing Easing.BounceIn
-                |> Position.build
-                |> Ports.animate animateElement
+            let
+                ( newAnimationState, animationData ) =
+                    model.animationState
+                        |> Ports.builder
+                        |> Position.for "box"
+                        |> Position.toX 0
+                        |> Position.speed 300.0
+                        |> Position.easing Easing.BounceIn
+                        |> Position.build
+                        |> Ports.animate model.animationState
+            in
+            ( { model | animationState = newAnimationState, isAnimating = True }
+            , animateElement animationData
             )
 
         MoveRight ->
-            ( { model | isAnimating = True }
-            , Anim.init
-                |> Anim.for "box"
-                |> Position.for "box"
-                |> Position.toX 500
-                |> Position.speed 300.0
-                |> Position.easing Easing.BounceIn
-                |> Position.build
-                |> Ports.animate animateElement
+            let
+                ( newAnimationState, animationData ) =
+                    model.animationState
+                        |> Ports.builder
+                        |> Position.for "box"
+                        |> Position.toX 450
+                        |> Position.speed 300.0
+                        |> Position.easing Easing.BounceOut
+                        |> Position.build
+                        |> Ports.animate model.animationState
+            in
+            ( { model | animationState = newAnimationState, isAnimating = True }
+            , animateElement animationData
             )
 
         MoveUp ->
-            ( { model | isAnimating = True }
-            , Anim.init
-                |> Anim.for "box"
-                |> Position.for "box"
-                |> Position.toY 0
-                |> Position.speed 250.0
-                |> Position.easing Easing.EaseInOut
-                |> Position.build
-                |> Ports.animate animateElement
+            let
+                ( newAnimationState, animationData ) =
+                    model.animationState
+                        |> Ports.builder
+                        |> Position.for "box"
+                        |> Position.toY 0
+                        |> Position.speed 250.0
+                        |> Position.easing Easing.ElasticIn
+                        |> Position.build
+                        |> Ports.animate model.animationState
+            in
+            ( { model | animationState = newAnimationState, isAnimating = True }
+            , animateElement animationData
             )
 
         MoveDown ->
-            ( { model | isAnimating = True }
-            , Anim.init
-                |> Anim.for "box"
-                |> Position.for "box"
-                |> Position.toY 300
-                |> Position.speed 250.0
-                |> Position.easing Easing.EaseInOut
-                |> Position.build
-                |> Ports.animate animateElement
+            let
+                ( newAnimationState, animationData ) =
+                    model.animationState
+                        |> Ports.builder
+                        |> Position.for "box"
+                        |> Position.toY 350
+                        |> Position.speed 350.0
+                        |> Position.easing Easing.ElasticOut
+                        |> Position.build
+                        |> Ports.animate model.animationState
+            in
+            ( { model | animationState = newAnimationState, isAnimating = True }
+            , animateElement animationData
             )
 
         ResetPosition ->
-            ( { model | isAnimating = True }
-            , Anim.init
-                |> Anim.for "box"
-                |> Position.for "box"
-                |> Position.toXY 250 150
-                |> Position.speed 400.0
-                |> Position.easing Easing.EaseOut
-                |> Position.build
-                |> Ports.animate animateElement
+            let
+                ( newAnimationState, animationData ) =
+                    model.animationState
+                        |> Ports.builder
+                        |> Position.for "box"
+                        |> Position.toXY 0 0
+                        |> Position.speed 400.0
+                        |> Position.easing Easing.ElasticInOut
+                        |> Position.build
+                        |> Ports.animate model.animationState
+            in
+            ( { model | animationState = newAnimationState, isAnimating = True }
+            , animateElement animationData
             )
 
         StopAnimation ->
@@ -216,13 +244,19 @@ viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButton
     , UI.pageHeader "ElmUI & Ports Position Example"
-    , -- Animation status display  
+    , -- Animation status display
       el
         [ Font.size 14
         , Font.color Colors.textMedium
         , padding 10
         ]
-        (text <| if model.isAnimating then "Animating..." else "Ready")
+        (text <|
+            if model.isAnimating then
+                "Animating..."
+
+            else
+                "Ready"
+        )
     , -- Buttons for movement control
       UI.wrappedButtonRow
         [ ( UI.Primary, MoveToXY 100 100, "Move to (100, 100)" )
@@ -263,8 +297,6 @@ viewContent model =
             , Border.rounded 8
             , htmlAttribute (Html.Attributes.id "box")
             , htmlAttribute (Html.Attributes.style "position" "absolute")
-            , htmlAttribute (Html.Attributes.style "left" "250px")  -- Default center position
-            , htmlAttribute (Html.Attributes.style "top" "150px")   -- Default center position
             ]
             (text "")
         )

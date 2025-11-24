@@ -1,10 +1,10 @@
 module Anim.CSS exposing
     ( AnimationState, init, builder, animate, animateOrder
     , TransformOrder, defaultTransformOrder
+    , getPosition, isRunning
     , htmlAttributes, getElementKeyframes, animationStyleAttribute, keyframesStyleNode, keyframesStyleNodeFor
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
-    , getPosition
     )
 
 {-| CSS-based animation system with optional state tracking.
@@ -21,6 +21,11 @@ can be easily added to your elements as style tags or css [transform](https://de
 # Transform Ordering
 
 @docs TransformOrder, defaultTransformOrder
+
+
+# Querying Animation State
+
+@docs getPosition, isRunning
 
 
 # View
@@ -248,6 +253,13 @@ getElementKeyframes =
 getPosition : String -> AnimationState -> Maybe Position
 getPosition =
     InternalCSS.getPosition
+
+
+{-| Check if any animations are currently running.
+-}
+isRunning : AnimationState -> Bool
+isRunning =
+    InternalCSS.isRunning
 
 
 {-| Get all the HTML attributes needed for the CSS animations on the target element.

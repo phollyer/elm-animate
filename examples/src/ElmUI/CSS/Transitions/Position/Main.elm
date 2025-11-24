@@ -102,7 +102,7 @@ update msg model =
                     model.animations
                         |> toPositionBuilder
                         |> Position.toXY x y
-                        |> Position.easing (Easing.Bezier 0.3 0 0.7 0)
+                        |> Position.easing Easing.BounceInOut
                         |> Position.speed 200
                         |> Position.build
                         |> CSS.animate
@@ -146,7 +146,7 @@ update msg model =
                         |> Position.toY 350
                         |> Position.delay 1000
                         |> Position.duration 500
-                        |> Position.easing Easing.BackInOut
+                        |> Position.easing Easing.ElasticInOut
                         |> Position.build
                         |> CSS.animate
               }
@@ -159,7 +159,7 @@ update msg model =
                     model.animations
                         |> toPositionBuilder
                         |> Position.toY 0
-                        |> Position.easing Easing.CircInOut
+                        |> Position.easing Easing.ElasticIn
                         |> Position.duration 500
                         |> Position.build
                         |> CSS.animate
@@ -173,7 +173,7 @@ update msg model =
                     model.animations
                         |> toPositionBuilder
                         |> Position.toXY 0 0
-                        |> Position.easing Easing.ElasticInOut
+                        |> Position.easing Easing.ElasticOut
                         |> Position.build
                         |> CSS.animate
               }

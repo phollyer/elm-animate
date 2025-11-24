@@ -83,6 +83,7 @@ type Msg
     | NoOp
 
 
+
 -- INIT
 
 
@@ -91,6 +92,7 @@ init _ =
     ( {}
     , Cmd.none
     )
+
 
 
 -- UPDATE
@@ -225,12 +227,14 @@ update msg model =
             ( model, Cmd.none )
 
 
+
 -- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.none
+
 
 
 -- VIEW

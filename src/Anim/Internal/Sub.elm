@@ -545,7 +545,7 @@ subscriptions (AnimationState state) =
 -}
 update : AnimationMsg -> AnimationState -> AnimationState
 update msg (AnimationState state) =
-    case msg of
+    case msg |> Debug.log "" of
         AnimationFrame deltaMs ->
             let
                 updatedElements =
@@ -555,7 +555,7 @@ update msg (AnimationState state) =
                     Dict.values updatedElements |> List.any (not << .isComplete)
             in
             AnimationState
-                { elementAnimations = updatedElements
+                { elementAnimations = updatedElements |> Debug.log "Updated Elements"
                 , isRunning = stillRunning
                 , builder = state.builder
                 }

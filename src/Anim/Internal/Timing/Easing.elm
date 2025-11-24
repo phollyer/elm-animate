@@ -565,19 +565,19 @@ easingToCSS easing =
         -- Note: Elastic and bounce are complex easing functions that require mathematical implementation
         -- These cubic-bezier approximations provide similar visual character for CSS compatibility
         ElasticIn ->
-            "cubic-bezier(0.175, 0.885, 0.320, 1.275)"
+            "cubic-bezier(0.55, 0.055, 0.675, 0.19)"
 
         ElasticOut ->
-            "cubic-bezier(0.680, -0.550, 0.265, 1.550)"
+            "cubic-bezier(0.175, 0.885, 0.32, 1.275)"
 
         ElasticInOut ->
-            "cubic-bezier(0.680, -0.550, 0.265, 1.550)"
+            "cubic-bezier(0.445, 0.05, 0.55, 0.95)"
 
         BounceIn ->
-            "cubic-bezier(0.600, 0.040, 0.980, 0.335)"
+            "cubic-bezier(0.6, 0.04, 0.98, 0.335)"
 
         BounceOut ->
-            "cubic-bezier(0.175, 0.885, 0.320, 1.275)"
+            "cubic-bezier(0.175, 0.885, 0.32, 1.275)"
 
         BounceInOut ->
             "cubic-bezier(0.445, 0.050, 0.550, 0.950)"
@@ -693,22 +693,22 @@ toWebAnimations easing =
         -- Web Animations API could potentially support these with keyframes
         -- For now, using cubic-bezier approximations that provide similar visual character
         ElasticIn ->
-            "cubic-bezier(0.175, 0.885, 0.320, 1.275)"
+            "cubic-bezier(0.55, 0.055, 0.675, 0.19)"
 
         ElasticOut ->
-            "cubic-bezier(0.680, -0.550, 0.265, 1.550)"
+            "cubic-bezier(0.175, 0.885, 0.32, 1.275)"
 
         ElasticInOut ->
-            "cubic-bezier(0.680, -0.550, 0.265, 1.550)"
+            "cubic-bezier(0.445, 0.05, 0.55, 0.95)"
 
         BounceIn ->
-            "cubic-bezier(0.600, 0.040, 0.980, 0.335)"
+            "cubic-bezier(0.6, 0.04, 0.98, 0.335)"
 
         BounceOut ->
-            "cubic-bezier(0.175, 0.885, 0.320, 1.275)"
+            "cubic-bezier(0.175, 0.885, 0.32, 1.275)"
 
         BounceInOut ->
-            "cubic-bezier(0.445, 0.050, 0.550, 0.950)"
+            "cubic-bezier(0.68, -0.55, 0.265, 1.55)"
 
         Custom value ->
             value

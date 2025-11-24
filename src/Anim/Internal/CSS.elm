@@ -13,6 +13,7 @@ module Anim.Internal.CSS exposing
     , getStartPosition
     , htmlAttributes
     , init
+    , isRunning
     , keyframesStyleNode
     , keyframesStyleNodeFor
     , onAnimationCancel
@@ -70,6 +71,7 @@ transformOrderToString order =
 type AnimationState
     = AnimationState
         { elementAnimations : Dict ElementId ElementAnimation
+        , isRunning : Bool
         , builder : AnimBuilder
         }
 
@@ -88,6 +90,7 @@ init : AnimationState
 init =
     AnimationState
         { elementAnimations = Dict.empty
+        , isRunning = False
         , builder = Anim.init
         }
 
@@ -105,6 +108,7 @@ animate builder_ =
                 |> Builder.elements
                 |> Dict.map (generateElementAnimation Nothing)
         , builder = Builder.markDirty builder_
+        , isRunning = True
         }
 
 
@@ -118,6 +122,7 @@ animateWithOrder order builder_ =
                 |> Builder.elements
                 |> Dict.map (generateElementAnimation (Just order))
         , builder = Builder.markDirty builder_
+        , isRunning = True
         }
 
 
@@ -354,6 +359,13 @@ getPositionAnimationDuration elementId (AnimationState state) =
                         )
                     |> List.head
             )
+
+
+{-| Check if any animations are currently running.
+-}
+isRunning : AnimationState -> Bool
+isRunning (AnimationState state) =
+    state.isRunning
 
 
 htmlAttributes : String -> AnimationState -> List (Html.Attribute msg)
