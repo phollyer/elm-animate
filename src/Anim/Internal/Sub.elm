@@ -380,13 +380,22 @@ createPropertyAnimationState startValues property =
                             startPosition
 
                 frames =
-                    Basics.max 1 (round (toFloat config.duration) // 16)
+                    if config.duration == 0 then
+                        1
+
+                    else
+                        Basics.max 1 (round (toFloat config.duration) // 16)
 
                 easeFunction =
                     Easing.toFunction config.easing
 
                 steps =
-                    createPositionSteps actualStart config.endAt frames easeFunction
+                    if config.duration == 0 then
+                        -- Zero duration: immediately jump to end value
+                        [ PositionAnimationValue config.endAt ]
+
+                    else
+                        createPositionSteps actualStart config.endAt frames easeFunction
             in
             Just
                 { propertyType = "position"
@@ -411,13 +420,22 @@ createPropertyAnimationState startValues property =
                             startRotate
 
                 frames =
-                    Basics.max 1 (round (toFloat config.duration) // 16)
+                    if config.duration == 0 then
+                        1
+
+                    else
+                        Basics.max 1 (round (toFloat config.duration) // 16)
 
                 easeFunction =
                     Easing.toFunction config.easing
 
                 steps =
-                    createRotateSteps actualStart config.endAt frames easeFunction
+                    if config.duration == 0 then
+                        -- Zero duration: immediately jump to end value
+                        [ RotateAnimationValue config.endAt ]
+
+                    else
+                        createRotateSteps actualStart config.endAt frames easeFunction
             in
             Just
                 { propertyType = "rotate"
@@ -442,13 +460,22 @@ createPropertyAnimationState startValues property =
                             startScale
 
                 frames =
-                    Basics.max 1 (round (toFloat config.duration) // 16)
+                    if config.duration == 0 then
+                        1
+
+                    else
+                        Basics.max 1 (round (toFloat config.duration) // 16)
 
                 easeFunction =
                     Easing.toFunction config.easing
 
                 steps =
-                    createScaleSteps actualStart config.endAt frames easeFunction
+                    if config.duration == 0 then
+                        -- Zero duration: immediately jump to end value
+                        [ ScaleAnimationValue config.endAt ]
+
+                    else
+                        createScaleSteps actualStart config.endAt frames easeFunction
             in
             Just
                 { propertyType = "scale"
@@ -473,13 +500,22 @@ createPropertyAnimationState startValues property =
                             startColor
 
                 frames =
-                    Basics.max 1 (round (toFloat config.duration) // 16)
+                    if config.duration == 0 then
+                        1
+
+                    else
+                        Basics.max 1 (round (toFloat config.duration) // 16)
 
                 easeFunction =
                     Easing.toFunction config.easing
 
                 steps =
-                    createColorSteps actualStart config.endAt frames easeFunction
+                    if config.duration == 0 then
+                        -- Zero duration: immediately jump to end value
+                        [ ColorAnimationValue config.endAt ]
+
+                    else
+                        createColorSteps actualStart config.endAt frames easeFunction
             in
             Just
                 { propertyType = "color"
@@ -504,13 +540,22 @@ createPropertyAnimationState startValues property =
                             startOpacity
 
                 frames =
-                    Basics.max 1 (round (toFloat config.duration) // 16)
+                    if config.duration == 0 then
+                        1
+
+                    else
+                        Basics.max 1 (round (toFloat config.duration) // 16)
 
                 easeFunction =
                     Easing.toFunction config.easing
 
                 steps =
-                    createOpacitySteps actualStart config.endAt frames easeFunction
+                    if config.duration == 0 then
+                        -- Zero duration: immediately jump to end value
+                        [ OpacityAnimationValue config.endAt ]
+
+                    else
+                        createOpacitySteps actualStart config.endAt frames easeFunction
             in
             Just
                 { propertyType = "opacity"
