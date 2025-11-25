@@ -53,6 +53,46 @@ import Internal.AnimationCore as AnimationCore
 
 
 
+-- CONSTANTS
+
+
+{-| Frame duration in milliseconds for 60 FPS animations.
+-}
+frameDurationMs : Int
+frameDurationMs =
+    16
+
+
+{-| Convert duration in milliseconds to number of animation frames.
+-}
+durationToFrames : Int -> Int
+durationToFrames durationMs =
+    if durationMs == 0 then
+        1
+
+    else
+        Basics.max 1 (round (toFloat durationMs) // frameDurationMs)
+
+
+{-| Convert delay in milliseconds to number of delay frames.
+-}
+delayToFrames : Int -> Int
+delayToFrames delayMs =
+    max 0 (delayMs // frameDurationMs)
+
+
+{-| Calculate duration from animation step count.
+-}
+framesToDuration : Int -> Int
+framesToDuration stepCount =
+    if stepCount <= 1 then
+        0
+
+    else
+        stepCount * frameDurationMs
+
+
+
 -- ANIMATION STATE
 
 
@@ -424,7 +464,7 @@ createPropertyAnimationState startValues property =
                 { propertyType = "position"
                 , animationSteps = steps
                 , currentStepIndex = 0
-                , delayFrames = max 0 (config.delay // 16)
+                , delayFrames = delayToFrames config.delay
                 , currentDelayFrame = 0
                 , isComplete = False
                 }
@@ -440,11 +480,7 @@ createPropertyAnimationState startValues property =
                             Rotate.fromFloat startValues.rotate
 
                 frames =
-                    if config.duration == 0 then
-                        1
-
-                    else
-                        Basics.max 1 (round (toFloat config.duration) // 16)
+                    durationToFrames config.duration
 
                 easeFunction =
                     Easing.toFunction config.easing
@@ -461,7 +497,7 @@ createPropertyAnimationState startValues property =
                 { propertyType = "rotate"
                 , animationSteps = steps
                 , currentStepIndex = 0
-                , delayFrames = max 0 (config.delay // 16)
+                , delayFrames = delayToFrames config.delay
                 , currentDelayFrame = 0
                 , isComplete = False
                 }
@@ -477,11 +513,7 @@ createPropertyAnimationState startValues property =
                             Scale.fromTuple ( startValues.scale.x, startValues.scale.y )
 
                 frames =
-                    if config.duration == 0 then
-                        1
-
-                    else
-                        Basics.max 1 (round (toFloat config.duration) // 16)
+                    durationToFrames config.duration
 
                 easeFunction =
                     Easing.toFunction config.easing
@@ -498,7 +530,7 @@ createPropertyAnimationState startValues property =
                 { propertyType = "scale"
                 , animationSteps = steps
                 , currentStepIndex = 0
-                , delayFrames = max 0 (config.delay // 16)
+                , delayFrames = delayToFrames config.delay
                 , currentDelayFrame = 0
                 , isComplete = False
                 }
@@ -538,7 +570,7 @@ createPropertyAnimationState startValues property =
                 { propertyType = "color"
                 , animationSteps = steps
                 , currentStepIndex = 0
-                , delayFrames = max 0 (config.delay // 16)
+                , delayFrames = delayToFrames config.delay
                 , currentDelayFrame = 0
                 , isComplete = False
                 }
@@ -557,11 +589,7 @@ createPropertyAnimationState startValues property =
                             startOpacity
 
                 frames =
-                    if config.duration == 0 then
-                        1
-
-                    else
-                        Basics.max 1 (round (toFloat config.duration) // 16)
+                    durationToFrames config.duration
 
                 easeFunction =
                     Easing.toFunction config.easing
@@ -578,7 +606,7 @@ createPropertyAnimationState startValues property =
                 { propertyType = "opacity"
                 , animationSteps = steps
                 , currentStepIndex = 0
-                , delayFrames = max 0 (config.delay // 16)
+                , delayFrames = delayToFrames config.delay
                 , currentDelayFrame = 0
                 , isComplete = False
                 }
@@ -712,18 +740,12 @@ getDuration elementId (AnimationState state) =
                 elementAnimation.properties
                     |> List.filterMap
                         (\prop ->
-                            -- Calculate duration from animation steps (16ms per frame)
+                            -- Calculate duration from animation steps
                             let
                                 stepCount =
                                     List.length prop.animationSteps
                             in
-                            if stepCount <= 1 then
-                                -- Zero or instant animation
-                                Just 0
-
-                            else
-                                -- Each frame is approximately 16ms (60 FPS)
-                                Just (stepCount * 16)
+                            Just (framesToDuration stepCount)
                         )
                     |> List.head
             )
