@@ -4,6 +4,7 @@ module Anim.Internal.Sub exposing
     , subscriptions, update
     , getPosition, getCurrentStyles
     , htmlAttributes
+    , getDuration
     )
 
 {-| Subscription-based animation system for Anim.
@@ -697,6 +698,34 @@ getPosition elementId (AnimationState state) =
                                 _ ->
                                     Nothing
                         )
+            )
+
+
+{-| Get duration of the first animation found for an element.
+Returns Nothing if the element has no animations.
+-}
+getDuration : String -> AnimationState -> Maybe Int
+getDuration elementId (AnimationState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen
+            (\elementAnimation ->
+                elementAnimation.properties
+                    |> List.filterMap
+                        (\prop ->
+                            -- Calculate duration from animation steps (16ms per frame)
+                            let
+                                stepCount =
+                                    List.length prop.animationSteps
+                            in
+                            if stepCount <= 1 then
+                                -- Zero or instant animation
+                                Just 0
+
+                            else
+                                -- Each frame is approximately 16ms (60 FPS)
+                                Just (stepCount * 16)
+                        )
+                    |> List.head
             )
 
 

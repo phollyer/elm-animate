@@ -297,15 +297,14 @@ processProperty globalData property =
                     distance =
                         Position.distance startAt config.endAt
 
+                    resolvedTiming =
+                        resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
+
                     duration_ =
-                        config.timing
-                            |> Maybe.map (Position.duration distance)
-                            |> Maybe.withDefault 0.0
+                        Position.duration distance resolvedTiming
 
                     speed_ =
-                        config.timing
-                            |> Maybe.map (Position.speed distance duration_)
-                            |> Maybe.withDefault 0.0
+                        Position.speed distance duration_ resolvedTiming
                 in
                 Just <|
                     ProcessedPositionConfig
@@ -314,7 +313,7 @@ processProperty globalData property =
                         , duration = round duration_
                         , speed = speed_
                         , distance = distance
-                        , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
+                        , timing = resolvedTiming
                         , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
                         , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
                         }
@@ -347,15 +346,14 @@ processProperty globalData property =
                     distance =
                         Rotate.distance startAt config.endAt
 
+                    resolvedTiming =
+                        resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
+
                     duration_ =
-                        config.timing
-                            |> Maybe.map (Rotate.duration distance)
-                            |> Maybe.withDefault 0.0
+                        Rotate.duration distance resolvedTiming
 
                     speed_ =
-                        config.timing
-                            |> Maybe.map (Rotate.speed distance duration_)
-                            |> Maybe.withDefault 0.0
+                        Rotate.speed distance duration_ resolvedTiming
                 in
                 Just <|
                     ProcessedRotateConfig
@@ -364,7 +362,7 @@ processProperty globalData property =
                         , duration = round duration_
                         , speed = speed_
                         , distance = distance
-                        , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
+                        , timing = resolvedTiming
                         , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
                         , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
                         }
@@ -451,15 +449,14 @@ processProperty globalData property =
                     distance =
                         Color.distance startAt config.endAt
 
+                    resolvedTiming =
+                        resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
+
                     duration_ =
-                        config.timing
-                            |> Maybe.map (Color.duration distance)
-                            |> Maybe.withDefault 0.0
+                        Color.duration distance resolvedTiming
 
                     speed_ =
-                        config.timing
-                            |> Maybe.map (Color.speed distance duration_)
-                            |> Maybe.withDefault 0.0
+                        Color.speed distance duration_ resolvedTiming
                 in
                 Just <|
                     ProcessedColorConfig
@@ -468,7 +465,7 @@ processProperty globalData property =
                         , duration = round duration_
                         , speed = speed_
                         , distance = distance
-                        , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
+                        , timing = resolvedTiming
                         , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
                         , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
                         }
@@ -501,15 +498,14 @@ processProperty globalData property =
                     distance =
                         Opacity.distance startAt config.endAt
 
+                    resolvedTiming =
+                        resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
+
                     duration_ =
-                        config.timing
-                            |> Maybe.map (Opacity.duration distance)
-                            |> Maybe.withDefault 0.0
+                        Opacity.duration distance resolvedTiming
 
                     speed_ =
-                        config.timing
-                            |> Maybe.map (Opacity.speed distance duration_)
-                            |> Maybe.withDefault 0.0
+                        Opacity.speed distance duration_ resolvedTiming
                 in
                 Just <|
                     ProcessedOpacityConfig
@@ -518,7 +514,7 @@ processProperty globalData property =
                         , duration = round duration_
                         , speed = speed_
                         , distance = distance
-                        , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
+                        , timing = resolvedTiming
                         , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
                         , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
                         }
