@@ -131,25 +131,40 @@ createRotateSteps start target frames easingFunction =
             Rotate.toFloat target
 
         steps =
-            AnimationCore.animationStepsWithFrames frames easingFunction startFloat targetFloat
+            case AnimationCore.animationStepsWithFrames frames easingFunction startFloat targetFloat of
+                [] ->
+                    List.repeat frames targetFloat
+
+                vals ->
+                    vals
     in
     List.map (\value -> RotateAnimationValue (Rotate.fromFloat value)) steps
 
 
 createScaleSteps : Scale.Scale -> Scale.Scale -> Int -> (Float -> Float) -> List AnimationValue
-createScaleSteps start target frames easingFunction =
+createScaleSteps start end frames easingFunction =
     let
         ( startX, startY ) =
             Scale.toTuple start
 
         ( targetX, targetY ) =
-            Scale.toTuple target
+            Scale.toTuple end
 
         stepsX =
-            AnimationCore.animationStepsWithFrames frames easingFunction startX targetX
+            case AnimationCore.animationStepsWithFrames frames easingFunction startX targetX of
+                [] ->
+                    List.repeat frames targetX
+
+                vals ->
+                    vals
 
         stepsY =
-            AnimationCore.animationStepsWithFrames frames easingFunction startY targetY
+            case AnimationCore.animationStepsWithFrames frames easingFunction startY targetY of
+                [] ->
+                    List.repeat frames targetY
+
+                vals ->
+                    vals
 
         steps =
             List.map2 Tuple.pair stepsX stepsY
@@ -167,7 +182,12 @@ createOpacitySteps start target frames easingFunction =
             Opacity.toFloat target
 
         steps =
-            AnimationCore.animationStepsWithFrames frames easingFunction startFloat targetFloat
+            case AnimationCore.animationStepsWithFrames frames easingFunction startFloat targetFloat of
+                [] ->
+                    List.repeat frames targetFloat
+
+                vals ->
+                    vals
     in
     List.map (\value -> OpacityAnimationValue (Opacity.fromFloat value)) steps
 
@@ -176,7 +196,12 @@ createColorSteps : Color.Color -> Color.Color -> Int -> (Float -> Float) -> List
 createColorSteps start target frames easingFunction =
     let
         progressValues =
-            AnimationCore.animationStepsWithFrames frames easingFunction 0.0 1.0
+            case AnimationCore.animationStepsWithFrames frames easingFunction 0.0 1.0 of
+                [] ->
+                    List.repeat frames 1.0
+
+                vals ->
+                    vals
 
         steps =
             List.map (\progress -> Color.interpolate start target progress) progressValues
@@ -368,16 +393,13 @@ createPropertyAnimationState startValues property =
     case property of
         Builder.ProcessedPositionConfig config ->
             let
-                startPosition =
-                    Position.fromTuple ( startValues.position.x, startValues.position.y )
-
-                actualStart =
+                startAt =
                     case config.startAt of
                         Just start ->
                             start
 
                         Nothing ->
-                            startPosition
+                            Position.fromTuple ( startValues.position.x, startValues.position.y )
 
                 frames =
                     if config.duration == 0 then
@@ -395,7 +417,7 @@ createPropertyAnimationState startValues property =
                         [ PositionAnimationValue config.endAt ]
 
                     else
-                        createPositionSteps actualStart config.endAt frames easeFunction
+                        createPositionSteps startAt config.endAt frames easeFunction
             in
             Just
                 { propertyType = "position"
@@ -408,16 +430,13 @@ createPropertyAnimationState startValues property =
 
         Builder.ProcessedRotateConfig config ->
             let
-                startRotate =
-                    Rotate.fromFloat startValues.rotate
-
                 actualStart =
                     case config.startAt of
                         Just start ->
                             start
 
                         Nothing ->
-                            startRotate
+                            Rotate.fromFloat startValues.rotate
 
                 frames =
                     if config.duration == 0 then
@@ -448,16 +467,13 @@ createPropertyAnimationState startValues property =
 
         Builder.ProcessedScaleConfig config ->
             let
-                startScale =
-                    Scale.fromTuple ( startValues.scale.x, startValues.scale.y )
-
                 actualStart =
                     case config.startAt of
                         Just start ->
                             start
 
                         Nothing ->
-                            startScale
+                            Scale.fromTuple ( startValues.scale.x, startValues.scale.y )
 
                 frames =
                     if config.duration == 0 then
@@ -590,7 +606,7 @@ subscriptions (AnimationState state) =
 -}
 update : AnimationMsg -> AnimationState -> AnimationState
 update msg (AnimationState state) =
-    case msg |> Debug.log "" of
+    case msg of
         AnimationFrame deltaMs ->
             let
                 updatedElements =
@@ -600,7 +616,7 @@ update msg (AnimationState state) =
                     Dict.values updatedElements |> List.any (not << .isComplete)
             in
             AnimationState
-                { elementAnimations = updatedElements |> Debug.log "Updated Elements"
+                { elementAnimations = updatedElements
                 , isRunning = stillRunning
                 , builder = state.builder
                 }

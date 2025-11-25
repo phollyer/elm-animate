@@ -337,7 +337,7 @@ mixedAnimationBox model =
          , htmlAttribute (Html.Attributes.style "align-items" "center")
          , htmlAttribute (Html.Attributes.style "justify-content" "center")
          ]
-            ++ List.map htmlAttribute (Sub.htmlAttributes "mixed-box" model.animations |> Debug.log "Attrs")
+            ++ List.map htmlAttribute (Sub.htmlAttributes "mixed-box" model.animations)
         )
         (el
             [ centerX

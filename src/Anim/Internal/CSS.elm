@@ -265,11 +265,9 @@ getPosition elementId (AnimationState state) =
             Builder.processAnimationData state.builder
     in
     Dict.get elementId processedData.elements
-        |> Debug.log "Element Config"
         |> Maybe.andThen
             (\elementConfig ->
                 elementConfig.properties
-                    |> Debug.log "==>"
                     |> List.filterMap
                         (\prop ->
                             case prop of
