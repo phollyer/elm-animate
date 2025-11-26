@@ -2,7 +2,7 @@ module Anim.Sub exposing
     ( ElementId
     , init, builder, animate, AnimationState, AnimationMsg
     , subscriptions, update
-    , getPosition, getCurrentStyles, getDuration
+    , getPosition, getCurrentStyles, getDuration, isAnimationRunning
     , htmlAttributes
     )
 
@@ -26,7 +26,7 @@ onAnimationFrameDelta subscriptions for smooth, controlled animations.
 
 # Animation Data
 
-@docs getPosition, getCurrentStyles, getDuration
+@docs getPosition, getCurrentStyles, getDuration, isAnimationRunning
 
 
 # CSS Generation
@@ -149,9 +149,17 @@ getPosition =
 {-| Get duration of the first animation found for an element.
 Returns Nothing if the element has no animations.
 -}
-getDuration : String -> AnimationState -> Maybe Int
+getDuration : ElementId -> AnimationState -> Maybe Int
 getDuration =
     InternalSub.getDuration
+
+
+{-| Check if an animation is currently running for the given element.
+Returns True if the element has active animations, False otherwise.
+-}
+isAnimationRunning : ElementId -> AnimationState -> Bool
+isAnimationRunning =
+    InternalSub.isAnimationRunning
 
 
 

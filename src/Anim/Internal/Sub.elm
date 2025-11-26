@@ -2,7 +2,7 @@ module Anim.Internal.Sub exposing
     ( TargetId
     , init, builder, animate, AnimationState, AnimationMsg(..)
     , subscriptions, update
-    , getPosition, getCurrentStyles
+    , getPosition, getCurrentStyles, isAnimationRunning
     , htmlAttributes
     , getDuration
     )
@@ -27,7 +27,7 @@ onAnimationFrameDelta subscriptions for smooth, controlled animations.
 
 # Animation Data
 
-@docs getPosition, getCurrentStyles
+@docs getPosition, getCurrentStyles, isAnimationRunning
 
 
 # CSS Generation
@@ -667,19 +667,31 @@ updateElementAnimation deltaMs _ elementState =
 
 
 updatePropertyAnimation : Float -> PropertyAnimationState -> PropertyAnimationState
-updatePropertyAnimation _ propertyState =
+updatePropertyAnimation deltaMs propertyState =
     if propertyState.isComplete then
         propertyState
 
     else if propertyState.currentDelayFrame < propertyState.delayFrames then
-        -- Still in delay period, advance delay frame
-        { propertyState | currentDelayFrame = propertyState.currentDelayFrame + 1 }
+        -- Still in delay period, advance delay frame by the appropriate amount
+        let
+            framesToAdvance =
+                round (deltaMs / toFloat frameDurationMs)
+
+            newDelayFrame =
+                propertyState.currentDelayFrame + framesToAdvance
+        in
+        { propertyState
+            | currentDelayFrame = newDelayFrame
+        }
 
     else
-        -- Animation active, advance to next step
+        -- Animation active, advance by appropriate number of steps based on deltaMs
         let
+            framesToAdvance =
+                round (deltaMs / toFloat frameDurationMs)
+
             nextStepIndex =
-                propertyState.currentStepIndex + 1
+                propertyState.currentStepIndex + framesToAdvance
 
             stepsLength =
                 List.length propertyState.animationSteps
@@ -749,6 +761,19 @@ getDuration elementId (AnimationState state) =
                         )
                     |> List.head
             )
+
+
+{-| Check if an animation is currently running for the given element.
+Returns True if the element has active animations, False otherwise.
+-}
+isAnimationRunning : String -> AnimationState -> Bool
+isAnimationRunning elementId (AnimationState state) =
+    case Dict.get elementId state.elementAnimations of
+        Just elementAnimation ->
+            not elementAnimation.isComplete && List.any (not << .isComplete) elementAnimation.properties
+
+        Nothing ->
+            False
 
 
 
