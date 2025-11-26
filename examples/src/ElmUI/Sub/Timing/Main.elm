@@ -68,7 +68,7 @@ type alias Model =
 
 type alias TimingTest =
     { name : String
-    , expectedDuration : Int  -- in milliseconds
+    , expectedDuration : Int -- in milliseconds
     , animationBuilder : Sub.AnimationState -> Sub.AnimationState
     }
 
@@ -77,7 +77,7 @@ type alias CompletedTest =
     { name : String
     , expectedDuration : Int
     , actualDuration : Int
-    , accuracy : Float  -- percentage accuracy
+    , accuracy : Float -- percentage accuracy
     }
 
 
@@ -103,7 +103,7 @@ init _ =
 type Msg
     = StartSpeedTest
     | StartDurationTest
-    | StartCustomTest Int  -- duration in ms
+    | StartCustomTest Int -- duration in ms
     | AnimationMsg Sub.AnimationMsg
     | RecordStartTime Time.Posix
     | RecordEndTime Time.Posix
@@ -115,19 +115,26 @@ update msg model =
     case msg of
         StartSpeedTest ->
             let
-                test = createSpeedTest 400 200  -- 400px distance at 200px/s = 2000ms expected
+                test =
+                    createSpeedTest 400 200
+
+                -- 400px distance at 200px/s = 2000ms expected
             in
             startTimingTest test model
 
         StartDurationTest ->
             let
-                test = createDurationTest 3000  -- explicit 3000ms duration
+                test =
+                    createDurationTest 3000
+
+                -- explicit 3000ms duration
             in
             startTimingTest test model
 
         StartCustomTest duration ->
             let
-                test = createDurationTest duration
+                test =
+                    createDurationTest duration
             in
             startTimingTest test model
 
@@ -135,15 +142,16 @@ update msg model =
             case model.currentTest of
                 Just test ->
                     let
-                        newAnimations = test.animationBuilder model.animations
+                        newAnimations =
+                            test.animationBuilder model.animations
                     in
-                    ( { model 
+                    ( { model
                         | animations = newAnimations
                         , startTime = Just time
                       }
                     , Cmd.none
                     )
-                
+
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -151,16 +159,20 @@ update msg model =
             case ( model.startTime, model.currentTest ) of
                 ( Just startTime, Just test ) ->
                     let
-                        actualDuration = Time.posixToMillis time - Time.posixToMillis startTime
-                        accuracy = calculateAccuracy test.expectedDuration actualDuration
-                        completedTest = 
+                        actualDuration =
+                            Time.posixToMillis time - Time.posixToMillis startTime
+
+                        accuracy =
+                            calculateAccuracy test.expectedDuration actualDuration
+
+                        completedTest =
                             { name = test.name
                             , expectedDuration = test.expectedDuration
                             , actualDuration = actualDuration
                             , accuracy = accuracy
                             }
                     in
-                    ( { model 
+                    ( { model
                         | currentTest = Nothing
                         , completedTests = model.completedTests ++ [ completedTest ]
                         , startTime = Nothing
@@ -173,32 +185,41 @@ update msg model =
 
         AnimationMsg animMsg ->
             let
-                oldAnimations = model.animations
-                newAnimations = Sub.update animMsg model.animations
-                
+                oldAnimations =
+                    model.animations
+
+                newAnimations =
+                    Sub.update animMsg model.animations
+
                 -- Check if animation just completed using the new API function
-                wasRunning = 
+                wasRunning =
                     case model.currentTest of
-                        Just _ -> Sub.isAnimationRunning "timing-box" oldAnimations
-                        Nothing -> False
-                        
-                isStillRunning = Sub.isAnimationRunning "timing-box" newAnimations
-                
+                        Just _ ->
+                            Sub.isAnimationRunning "timing-box" oldAnimations
+
+                        Nothing ->
+                            False
+
+                isStillRunning =
+                    Sub.isAnimationRunning "timing-box" newAnimations
+
                 cmd =
                     case model.currentTest of
                         Just test ->
                             if wasRunning && not isStillRunning then
                                 -- Animation just completed - record the end time
                                 Task.perform RecordEndTime Time.now
+
                             else
                                 Cmd.none
+
                         Nothing ->
                             Cmd.none
             in
             ( { model | animations = newAnimations }, cmd )
 
         ResetTests ->
-            ( { model 
+            ( { model
                 | completedTests = []
                 , currentTest = Nothing
                 , startTime = Nothing
@@ -206,6 +227,7 @@ update msg model =
               }
             , Cmd.none
             )
+
 
 startTimingTest : TimingTest -> Model -> ( Model, Cmd Msg )
 startTimingTest test model =
@@ -217,20 +239,22 @@ startTimingTest test model =
 createSpeedTest : Float -> Float -> TimingTest
 createSpeedTest distance speed =
     let
-        expectedMs = round (distance / speed * 1000)
+        expectedMs =
+            round (distance / speed * 1000)
     in
     { name = "Speed Test (" ++ String.fromFloat distance ++ "px at " ++ String.fromFloat speed ++ "px/s)"
     , expectedDuration = expectedMs
-    , animationBuilder = \animations ->
-        animations
-            |> Sub.builder
-            |> Position.for "timing-box"
-            |> Position.fromXY 0 100
-            |> Position.toX distance
-            |> Position.speed speed
-            |> Position.easing Linear
-            |> Position.build
-            |> Sub.animate
+    , animationBuilder =
+        \animations ->
+            animations
+                |> Sub.builder
+                |> Position.for "timing-box"
+                |> Position.fromXY 0 100
+                |> Position.toX distance
+                |> Position.speed speed
+                |> Position.easing Linear
+                |> Position.build
+                |> Sub.animate
     }
 
 
@@ -238,24 +262,28 @@ createDurationTest : Int -> TimingTest
 createDurationTest durationMs =
     { name = "Duration Test (" ++ String.fromInt durationMs ++ "ms)"
     , expectedDuration = durationMs
-    , animationBuilder = \animations ->
-        animations
-            |> Sub.builder
-            |> Position.for "timing-box"
-            |> Position.fromXY 0 100
-            |> Position.toX 400
-            |> Position.duration durationMs
-            |> Position.easing Linear
-            |> Position.build
-            |> Sub.animate
+    , animationBuilder =
+        \animations ->
+            animations
+                |> Sub.builder
+                |> Position.for "timing-box"
+                |> Position.fromXY 0 100
+                |> Position.toX 400
+                |> Position.duration durationMs
+                |> Position.easing Linear
+                |> Position.build
+                |> Sub.animate
     }
 
 
 calculateAccuracy : Int -> Int -> Float
 calculateAccuracy expected actual =
     let
-        difference = abs (expected - actual)
-        accuracy = (1.0 - (toFloat difference / toFloat expected)) * 100.0
+        difference =
+            abs (expected - actual)
+
+        accuracy =
+            (1.0 - (toFloat difference / toFloat expected)) * 100.0
     in
     max 0.0 accuracy
 
@@ -296,26 +324,30 @@ viewContent model =
 animationView : Model -> Element Msg
 animationView model =
     let
-        currentPosition = Sub.getPosition "timing-box" model.animations
-        
-        calculatedDuration = 
+        currentPosition =
+            Sub.getPosition "timing-box" model.animations
+
+        calculatedDuration =
             Sub.getDuration "timing-box" model.animations
-            |> Maybe.withDefault 0
-            
+                |> Maybe.withDefault 0
+
         positionText =
             case currentPosition of
                 Just pos ->
                     let
-                        posRecord = Position.asRecord pos
+                        posRecord =
+                            Position.asRecord pos
                     in
                     "Position: (" ++ String.fromFloat posRecord.x ++ ", " ++ String.fromFloat posRecord.y ++ ")"
+
                 Nothing ->
                     "Position: (0, 0)"
-                    
+
         statusText =
             case model.currentTest of
                 Just test ->
                     "Running: " ++ test.name
+
                 Nothing ->
                     "Ready for next test"
     in
@@ -337,7 +369,9 @@ animationView model =
                  , Background.color Colors.primary
                  , Border.rounded 4
                  , htmlAttribute (Html.Attributes.style "position" "absolute")
-                 ] ++ (Sub.htmlAttributes "timing-box" model.animations |> List.map htmlAttribute))
+                 ]
+                    ++ (Sub.htmlAttributes "timing-box" model.animations |> List.map htmlAttribute)
+                )
                 Element.none
             )
         , -- Status information
@@ -346,15 +380,25 @@ animationView model =
             , text positionText
             , text ("Calculated Duration: " ++ String.fromInt calculatedDuration ++ "ms")
             , text ("Completed Tests: " ++ String.fromInt (List.length model.completedTests))
-            , text ("Start Time: " ++ 
-                case model.startTime of
-                    Just _ -> "Set"
-                    Nothing -> "Not set"
+            , text
+                ("Start Time: "
+                    ++ (case model.startTime of
+                            Just _ ->
+                                "Set"
+
+                            Nothing ->
+                                "Not set"
+                       )
                 )
-            , text ("Current Test: " ++
-                case model.currentTest of
-                    Just test -> test.name
-                    Nothing -> "None"
+            , text
+                ("Current Test: "
+                    ++ (case model.currentTest of
+                            Just test ->
+                                test.name
+
+                            Nothing ->
+                                "None"
+                       )
                 )
             , text ("Animation Styles: " ++ String.fromInt (List.length (Sub.getCurrentStyles "timing-box" model.animations)))
             ]
@@ -364,12 +408,20 @@ animationView model =
 controlsView : Model -> Element Msg
 controlsView model =
     let
-        isRunning = 
+        isRunning =
             case model.currentTest of
-                Just _ -> True
-                Nothing -> False
-                
-        buttonType = if isRunning then UI.Warning else UI.Primary
+                Just _ ->
+                    True
+
+                Nothing ->
+                    False
+
+        buttonType =
+            if isRunning then
+                UI.Warning
+
+            else
+                UI.Primary
     in
     column [ spacing 20 ]
         [ el [ Font.bold, Font.size 18 ] (text "Timing Tests")
@@ -398,6 +450,7 @@ resultsView model =
         , if List.isEmpty model.completedTests then
             paragraph [ Font.size 16, Font.color (rgb255 150 150 150) ]
                 [ text "No tests completed yet. Run some timing tests to see results." ]
+
           else
             column [ spacing 10 ] (List.map testResultView model.completedTests)
         ]
@@ -409,15 +462,20 @@ testResultView test =
         accuracyColor =
             if test.accuracy >= 95 then
                 Colors.success
+
             else if test.accuracy >= 90 then
-                Colors.warning  
+                Colors.warning
+
             else
                 Colors.red
-                
-        difference = test.actualDuration - test.expectedDuration
-        differenceText = 
+
+        difference =
+            test.actualDuration - test.expectedDuration
+
+        differenceText =
             if difference > 0 then
                 "+" ++ String.fromInt difference ++ "ms"
+
             else
                 String.fromInt difference ++ "ms"
     in
@@ -436,10 +494,10 @@ testResultView test =
                 , text ("Actual: " ++ String.fromInt test.actualDuration ++ "ms")
                 , text ("Difference: " ++ differenceText)
                 ]
-            , el 
+            , el
                 [ Font.color accuracyColor
                 , Font.bold
-                ] 
+                ]
                 (text ("Accuracy: " ++ String.fromFloat (toFloat (round (test.accuracy * 100)) / 100) ++ "%"))
             ]
         )

@@ -66,15 +66,14 @@ suite =
                         Sub.getDuration "test-element" animationState
                             |> Maybe.withDefault 0
 
-                    -- Manual calculation: 3000 // 16 = 187.5 -> 187 frames
+                    -- Manual calculation: round(3000 / 16) = round(187.5) = 188 frames
                     expectedFrames =
-                        187
+                        188
 
-                    -- floor(3000 / 16)
                     expectedReportedDuration =
                         expectedFrames * 16
 
-                    -- 187 * 16 = 2992
+                    -- 188 * 16 = 3008
                 in
                 Expect.equal expectedReportedDuration reportedDuration
         , test "Frame calculation rounding behavior - 2992ms case" <|
@@ -86,7 +85,7 @@ suite =
                     expectedFrames =
                         187
 
-                    -- 2992 // 16 = 187
+                    -- round(2992 / 16) = round(187.0) = 187
                     animationState =
                         Sub.init
                             |> Sub.builder
@@ -125,9 +124,9 @@ suite =
                         Sub.getDuration "timing-test" animationState
                             |> Maybe.withDefault 0
 
-                    -- 1000ms / 16ms = 62.5 -> 62 frames -> 62 * 16 = 992ms
+                    -- 1000ms / 16ms = 62.5 -> round(62.5) = 63 frames -> 63 * 16 = 1008ms
                     expectedDuration =
-                        62 * 16
+                        63 * 16
                 in
                 Expect.equal expectedDuration reportedDuration
         ]

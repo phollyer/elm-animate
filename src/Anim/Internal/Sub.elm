@@ -71,7 +71,7 @@ durationToFrames durationMs =
         1
 
     else
-        Basics.max 1 (round (toFloat durationMs) // frameDurationMs)
+        Basics.max 1 (round (toFloat durationMs / toFloat frameDurationMs))
 
 
 {-| Convert delay in milliseconds to number of delay frames.
@@ -257,6 +257,8 @@ type alias PropertyAnimationState =
     , delayFrames : Int
     , currentDelayFrame : Int
     , isComplete : Bool
+    , totalDurationMs : Float
+    , elapsedMs : Float
     }
 
 
@@ -447,7 +449,7 @@ createPropertyAnimationState startValues property =
                         1
 
                     else
-                        Basics.max 1 (round (toFloat config.duration) // 16)
+                        durationToFrames config.duration
 
                 easeFunction =
                     Easing.toFunction config.easing
@@ -467,6 +469,8 @@ createPropertyAnimationState startValues property =
                 , delayFrames = delayToFrames config.delay
                 , currentDelayFrame = 0
                 , isComplete = False
+                , totalDurationMs = toFloat config.duration
+                , elapsedMs = 0.0
                 }
 
         Builder.ProcessedRotateConfig config ->
@@ -500,6 +504,8 @@ createPropertyAnimationState startValues property =
                 , delayFrames = delayToFrames config.delay
                 , currentDelayFrame = 0
                 , isComplete = False
+                , totalDurationMs = toFloat config.duration
+                , elapsedMs = 0.0
                 }
 
         Builder.ProcessedScaleConfig config ->
@@ -533,6 +539,8 @@ createPropertyAnimationState startValues property =
                 , delayFrames = delayToFrames config.delay
                 , currentDelayFrame = 0
                 , isComplete = False
+                , totalDurationMs = toFloat config.duration
+                , elapsedMs = 0.0
                 }
 
         Builder.ProcessedColorConfig config ->
@@ -553,7 +561,7 @@ createPropertyAnimationState startValues property =
                         1
 
                     else
-                        Basics.max 1 (round (toFloat config.duration) // 16)
+                        durationToFrames config.duration
 
                 easeFunction =
                     Easing.toFunction config.easing
@@ -573,6 +581,8 @@ createPropertyAnimationState startValues property =
                 , delayFrames = delayToFrames config.delay
                 , currentDelayFrame = 0
                 , isComplete = False
+                , totalDurationMs = toFloat config.duration
+                , elapsedMs = 0.0
                 }
 
         Builder.ProcessedOpacityConfig config ->
@@ -609,6 +619,8 @@ createPropertyAnimationState startValues property =
                 , delayFrames = delayToFrames config.delay
                 , currentDelayFrame = 0
                 , isComplete = False
+                , totalDurationMs = toFloat config.duration
+                , elapsedMs = 0.0
                 }
 
 
@@ -635,7 +647,7 @@ subscriptions (AnimationState state) =
 -}
 update : AnimationMsg -> AnimationState -> AnimationState
 update msg (AnimationState state) =
-    case msg of
+    case msg |> Debug.log "==> update" of
         AnimationFrame deltaMs ->
             let
                 updatedElements =
@@ -671,42 +683,41 @@ updatePropertyAnimation deltaMs propertyState =
     if propertyState.isComplete then
         propertyState
 
-    else if propertyState.currentDelayFrame < propertyState.delayFrames then
-        -- Still in delay period, advance delay frame by the appropriate amount
-        let
-            framesToAdvance =
-                round (deltaMs / toFloat frameDurationMs)
-
-            newDelayFrame =
-                propertyState.currentDelayFrame + framesToAdvance
-        in
-        { propertyState
-            | currentDelayFrame = newDelayFrame
-        }
-
     else
-        -- Animation active, advance by appropriate number of steps based on deltaMs
         let
-            framesToAdvance =
-                round (deltaMs / toFloat frameDurationMs)
+            newElapsedMs =
+                propertyState.elapsedMs + deltaMs
 
-            nextStepIndex =
-                propertyState.currentStepIndex + framesToAdvance
+            delayMs =
+                toFloat propertyState.delayFrames * toFloat frameDurationMs
 
-            stepsLength =
-                List.length propertyState.animationSteps
+            isInDelayPeriod =
+                newElapsedMs < delayMs
+
+            animationElapsedMs =
+                max 0 (newElapsedMs - delayMs)
 
             isComplete =
-                nextStepIndex >= stepsLength
-        in
-        { propertyState
-            | currentStepIndex =
-                if isComplete then
-                    -- Ensure we can access the final step with exact target value
-                    max 0 (stepsLength - 1)
+                animationElapsedMs >= propertyState.totalDurationMs
+
+            -- Calculate correct frame index based on elapsed time, not frame stepping
+            correctFrameIndex =
+                if isInDelayPeriod || propertyState.totalDurationMs <= 0 then
+                    0
 
                 else
-                    nextStepIndex
+                    let
+                        progress =
+                            min 1.0 (animationElapsedMs / propertyState.totalDurationMs)
+
+                        maxIndex =
+                            List.length propertyState.animationSteps - 1
+                    in
+                    min maxIndex (round (progress * toFloat maxIndex))
+        in
+        { propertyState
+            | elapsedMs = newElapsedMs
+            , currentStepIndex = correctFrameIndex
             , isComplete = isComplete
         }
 
