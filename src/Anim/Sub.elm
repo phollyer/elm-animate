@@ -3,6 +3,7 @@ module Anim.Sub exposing
     , init, builder, animate, AnimationState, AnimationMsg
     , subscriptions, update
     , getPosition, getPositionXY, getPositionX, getPositionY
+    , getSize, getSizeHW, getSizeH, getSizeW
     , getCurrentStyles
     , isAnimationRunning, getDuration
     , htmlAttributes
@@ -34,6 +35,11 @@ onAnimationFrameDelta subscriptions for smooth, controlled animations.
 @docs getPosition, getPositionXY, getPositionX, getPositionY
 
 
+## Size
+
+@docs getSize, getSizeHW, getSizeH, getSizeW
+
+
 ## Current Styles
 
 @docs getCurrentStyles
@@ -52,6 +58,7 @@ onAnimationFrameDelta subscriptions for smooth, controlled animations.
 
 import Anim exposing (AnimBuilder)
 import Anim.Internal.Properties.Position exposing (Position)
+import Anim.Internal.Properties.Size exposing (Size)
 import Anim.Internal.Sub as InternalSub
 import Anim.Internal.Timing.Easing exposing (Easing(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
@@ -180,6 +187,38 @@ getPositionX =
 getPositionY : String -> AnimationState -> Maybe Float
 getPositionY =
     InternalSub.getPositionY
+
+
+
+-- SIZE
+
+
+{-| Get current size of an element being animated.
+-}
+getSize : String -> AnimationState -> Maybe Size
+getSize =
+    InternalSub.getSize
+
+
+{-| Get current width and height of an element being animated.
+-}
+getSizeHW : String -> AnimationState -> Maybe ( Float, Float )
+getSizeHW =
+    InternalSub.getSizeHW
+
+
+{-| Get current height of an element being animated.
+-}
+getSizeH : String -> AnimationState -> Maybe Float
+getSizeH =
+    InternalSub.getSizeH
+
+
+{-| Get current width of an element being animated.
+-}
+getSizeW : String -> AnimationState -> Maybe Float
+getSizeW =
+    InternalSub.getSizeW
 
 
 {-| Get duration of the first animation found for an element.

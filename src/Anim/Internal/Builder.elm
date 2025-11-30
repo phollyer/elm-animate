@@ -29,6 +29,7 @@ import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position, distance)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
+import Anim.Internal.Properties.Size as Size exposing (Size)
 import Anim.Internal.Timing.Easing as Easing exposing (Easing(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
@@ -63,6 +64,7 @@ type PropertyConfig
       -- TODO: Need to consider how to handle all available color properties
     | BackgroundColorConfig (AnimationConfig Color)
     | OpacityConfig (AnimationConfig Opacity)
+    | SizeConfig (AnimationConfig Size)
 
 
 type ProcessedPropertyConfig
@@ -71,6 +73,7 @@ type ProcessedPropertyConfig
     | ProcessedScaleConfig (ProcessedAnimationConfig Scale)
     | ProcessedColorConfig (ProcessedAnimationConfig Color)
     | ProcessedOpacityConfig (ProcessedAnimationConfig Opacity)
+    | ProcessedSizeConfig (ProcessedAnimationConfig Size)
 
 
 type alias ProcessedElementConfig =
@@ -147,6 +150,9 @@ markPropertyDirty property =
 
         OpacityConfig config ->
             OpacityConfig { config | isDirty = True }
+
+        SizeConfig config ->
+            SizeConfig { config | isDirty = True }
 
 
 for : String -> AnimBuilder -> AnimBuilder
@@ -519,6 +525,55 @@ processProperty globalData property =
                         , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
                         }
 
+        SizeConfig config ->
+            if config.isDirty then
+                -- Return static config to preserve visual state
+                Just <|
+                    ProcessedSizeConfig
+                        { startAt = Just config.endAt
+                        , endAt = config.endAt
+                        , duration = 0 -- No animation, just maintain state
+                        , speed = 0
+                        , distance = 0
+                        , timing = Duration 0
+                        , easing = Linear
+                        , delay = 0
+                        }
+
+            else
+                let
+                    startAt =
+                        case config.startAt of
+                            Just s ->
+                                s
+
+                            Nothing ->
+                                Size.fromTuple ( 100.0, 100.0 )
+
+                    distance =
+                        Size.distance startAt config.endAt
+
+                    resolvedTiming =
+                        resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
+
+                    duration_ =
+                        Size.duration distance resolvedTiming
+
+                    speed_ =
+                        Size.speed distance duration_ resolvedTiming
+                in
+                Just <|
+                    ProcessedSizeConfig
+                        { startAt = config.startAt
+                        , endAt = config.endAt
+                        , duration = round duration_
+                        , speed = speed_
+                        , distance = distance
+                        , timing = resolvedTiming
+                        , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
+                        , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
+                        }
+
 
 resolveTimingWithDefault : Maybe TimeSpec -> Maybe TimeSpec -> TimeSpec -> TimeSpec
 resolveTimingWithDefault local global default =
@@ -624,6 +679,25 @@ extractPropertyCommand elementId property =
                     , elementId
                     , String.fromFloat targetX
                     , String.fromFloat targetY
+                    , String.fromInt config.duration
+                    , easingStr
+                    ]
+                )
+
+        ProcessedSizeConfig config ->
+            let
+                ( targetWidth, targetHeight ) =
+                    Size.toTuple config.endAt
+
+                easingStr =
+                    easingToJsString config.easing
+            in
+            Just
+                (String.join ":"
+                    [ "size"
+                    , elementId
+                    , String.fromFloat targetWidth
+                    , String.fromFloat targetHeight
                     , String.fromInt config.duration
                     , easingStr
                     ]

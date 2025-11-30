@@ -227,8 +227,8 @@ duration =
 
 -}
 easing : Easing -> Builder -> Builder
-easing easing_ =
-    PB.easing (Easing.mapInternal identity easing_)
+easing =
+    Easing.mapInternal identity >> PB.easing
 
 
 {-| Set the delay (milliseconds) before the animation starts.

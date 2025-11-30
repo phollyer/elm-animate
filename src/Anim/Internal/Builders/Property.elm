@@ -107,5 +107,8 @@ configsMatch prop1 prop2 =
         ( Builder.OpacityConfig _, Builder.OpacityConfig _ ) ->
             True
 
+        ( Builder.SizeConfig _, Builder.SizeConfig _ ) ->
+            True
+
         _ ->
             False

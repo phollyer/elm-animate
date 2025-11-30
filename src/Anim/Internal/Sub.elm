@@ -6,7 +6,7 @@ module Anim.Internal.Sub exposing
     , getCurrentStyles
     , isAnimationRunning
     , htmlAttributes
-    , getDuration
+    , getDuration, getSize, getSizeH, getSizeHW, getSizeW
     )
 
 {-| Subscription-based animation system for Anim.
@@ -58,6 +58,7 @@ import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
+import Anim.Internal.Properties.Size as Size exposing (Size)
 import Anim.Internal.Timing.Easing as Easing exposing (Easing(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Events
@@ -265,6 +266,34 @@ createColorSteps start target frames easingFunction =
     List.map ColorAnimationValue steps
 
 
+createSizeSteps : Size.Size -> Size.Size -> Int -> (Float -> Float) -> List AnimationValue
+createSizeSteps startSize endSize frames easingFunction =
+    let
+        ( startWidth, startHeight ) =
+            Size.toTuple startSize
+
+        ( endWidth, endHeight ) =
+            Size.toTuple endSize
+
+        stepsWidth =
+            case AnimationCore.animationStepsWithFrames frames easingFunction startWidth endWidth of
+                [] ->
+                    List.repeat frames endWidth
+
+                vals ->
+                    vals
+
+        stepsHeight =
+            case AnimationCore.animationStepsWithFrames frames easingFunction startHeight endHeight of
+                [] ->
+                    List.repeat frames endHeight
+
+                vals ->
+                    vals
+    in
+    List.map2 (\w h -> SizeAnimationValue (Size.fromTuple ( w, h ))) stepsWidth stepsHeight
+
+
 type alias PropertyAnimationState =
     { propertyType : String
     , animationSteps : List AnimationValue
@@ -283,6 +312,7 @@ type AnimationValue
     | ScaleAnimationValue Scale
     | ColorAnimationValue Color
     | OpacityAnimationValue Opacity
+    | SizeAnimationValue Size
 
 
 {-| Messages for animation updates.
@@ -380,6 +410,10 @@ extractFromProperty property acc =
 
             else
                 acc
+
+        Builder.ProcessedSizeConfig _ ->
+            -- Size doesn't contribute to current styles extraction
+            acc
 
 
 {-| Create animation state from AnimBuilder.
@@ -638,6 +672,42 @@ createPropertyAnimationState startValues property =
                 , elapsedMs = 0.0
                 }
 
+        Builder.ProcessedSizeConfig config ->
+            let
+                actualStart =
+                    case config.startAt of
+                        Just start ->
+                            start
+
+                        Nothing ->
+                            Size.fromTuple ( 100.0, 100.0 )
+
+                -- Default size
+                frames =
+                    durationToFrames config.duration
+
+                easeFunction =
+                    Easing.toFunction config.easing
+
+                steps =
+                    if config.duration == 0 then
+                        -- Zero duration: immediately jump to end value
+                        [ SizeAnimationValue config.endAt ]
+
+                    else
+                        createSizeSteps actualStart config.endAt frames easeFunction
+            in
+            Just
+                { propertyType = "size"
+                , animationSteps = steps
+                , currentStepIndex = 0
+                , delayFrames = delayToFrames config.delay
+                , currentDelayFrame = 0
+                , isComplete = False
+                , totalDurationMs = toFloat config.duration
+                , elapsedMs = 0.0
+                }
+
 
 
 -- SUBSCRIPTIONS
@@ -789,6 +859,60 @@ getPositionY : String -> AnimationState -> Maybe Float
 getPositionY elementId animationState =
     getPosition elementId animationState
         |> Maybe.map (Position.toRecord >> .y)
+
+
+
+-- SIZE
+
+
+{-| Get current size of an element being animated.
+-}
+getSize : String -> AnimationState -> Maybe Size
+getSize elementId (AnimationState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen
+            (\elementState ->
+                List.head elementState.properties
+                    |> Maybe.andThen
+                        (\propertyState ->
+                            let
+                                currentValue =
+                                    List.drop propertyState.currentStepIndex propertyState.animationSteps
+                                        |> List.head
+                                        |> Maybe.withDefault (getLastStep propertyState.animationSteps)
+                            in
+                            case currentValue of
+                                SizeAnimationValue size ->
+                                    Just size
+
+                                _ ->
+                                    Nothing
+                        )
+            )
+
+
+{-| Get current width and height of an element being animated.
+-}
+getSizeHW : String -> AnimationState -> Maybe ( Float, Float )
+getSizeHW elementId animationState =
+    getSize elementId animationState
+        |> Maybe.map Size.toTuple
+
+
+{-| Get current height of an element being animated.
+-}
+getSizeH : String -> AnimationState -> Maybe Float
+getSizeH elementId animationState =
+    getSize elementId animationState
+        |> Maybe.map (Size.toTuple >> Tuple.second)
+
+
+{-| Get current width of an element being animated.
+-}
+getSizeW : String -> AnimationState -> Maybe Float
+getSizeW elementId animationState =
+    getSize elementId animationState
+        |> Maybe.map (Size.toTuple >> Tuple.first)
 
 
 {-| Get duration of the first animation found for an element.
