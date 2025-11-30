@@ -83,6 +83,7 @@ build_example "src/ElmUI/Sub/Rotation/Main.elm" "src/ElmUI/Sub/Rotation/index.js
 build_example "src/ElmUI/Sub/Color/Main.elm" "src/ElmUI/Sub/Color/index.js" "ElmUI.Sub.Color.Main"
 build_example "src/ElmUI/Sub/Mixed/Main.elm" "src/ElmUI/Sub/Mixed/index.js" "ElmUI.Sub.Mixed.Main"
 build_example "src/ElmUI/Sub/Choreography/Main.elm" "src/ElmUI/Sub/Choreography/index.js" "ElmUI.Sub.Choreography.Main"
+build_example "src/ElmUI/Sub/Size/Main.elm" "src/ElmUI/Sub/Size/index.js" "ElmUI.Sub.Size.Main"
 build_example "src/ElmUI/Sub/Timing/Main.elm" "src/ElmUI/Sub/Timing/index.js" "ElmUI.Sub.Timing.Main"
 
 # ElmUI Ports examples (JavaScript Web Animations API)

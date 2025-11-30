@@ -45,23 +45,26 @@ type SizeBuilder
 for : String -> AnimBuilder -> SizeBuilder
 for elementId builder =
     let
+        -- First set the current element ID in the builder
+        builderWithElement =
+            Builder.for elementId builder
+
         existingConfig =
-            case Builder.getElementConfig elementId builder of
-                Just { properties } ->
-                    properties
-                        |> List.filterMap
-                            (\prop ->
-                                case prop of
-                                    Builder.SizeConfig config ->
-                                        Just config
+            Builder.getElementConfig elementId builderWithElement
+                |> Maybe.andThen
+                    (\{ properties } ->
+                        properties
+                            |> List.filterMap
+                                (\prop ->
+                                    case prop of
+                                        Builder.SizeConfig config ->
+                                            Just config
 
-                                    _ ->
-                                        Nothing
-                            )
-                        |> List.head
-
-                Nothing ->
-                    Nothing
+                                        _ ->
+                                            Nothing
+                                )
+                            |> List.head
+                    )
 
         sizeConfig =
             case existingConfig of
@@ -77,7 +80,7 @@ for elementId builder =
                 Nothing ->
                     defaultSizeConfig
     in
-    SizeBuilder sizeConfig builder
+    SizeBuilder sizeConfig builderWithElement
 
 
 type alias SizeConfig =

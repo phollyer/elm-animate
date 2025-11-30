@@ -11,6 +11,7 @@ import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
+import Anim.Internal.Properties.Size as Size
 import Anim.Internal.Timing.Easing as Easing
 import Anim.Internal.Timing.TimeSpec as TimeSpec
 import Dict
@@ -62,6 +63,9 @@ generate elementId properties =
                                     cfg.duration
 
                                 Builder.ProcessedOpacityConfig cfg ->
+                                    cfg.duration
+
+                                Builder.ProcessedSizeConfig cfg ->
                                     cfg.duration
                         )
                     |> List.maximum
@@ -323,6 +327,9 @@ generate elementId properties =
 
                                         Builder.ProcessedOpacityConfig cfg ->
                                             "opacity" ++ String.fromInt cfg.duration ++ Opacity.toString cfg.endAt
+
+                                        Builder.ProcessedSizeConfig cfg ->
+                                            "size" ++ String.fromInt cfg.duration ++ Size.toString cfg.endAt
                                 )
                             |> String.join ""
                        )
@@ -451,6 +458,9 @@ extractAnimatedProperties properties =
 
                 Builder.OpacityConfig _ ->
                     Just "opacity"
+
+                Builder.SizeConfig _ ->
+                    Nothing
         )
         properties
         |> removeDuplicates
@@ -578,6 +588,25 @@ extractPropertyTiming property =
             in
             Just ( { duration = duration_, easing = easing_, delay = delay_ }, property )
 
+        Builder.SizeConfig config ->
+            let
+                distance =
+                    Transitions.calculatePropertyDistance property
+
+                timing =
+                    Maybe.withDefault (TimeSpec.Duration 0) config.timing
+
+                duration_ =
+                    TimeSpec.duration distance timing
+
+                easing_ =
+                    Maybe.withDefault Easing.Linear config.easing
+
+                delay_ =
+                    Maybe.withDefault 0 config.delay
+            in
+            Just ( { duration = duration_, easing = easing_, delay = delay_ }, property )
+
 
 type alias TimingInfo =
     { duration : Int
@@ -653,6 +682,9 @@ generateTimedKeyframeSteps dominantGroup allProperties =
                                         cfg.duration
 
                                     Builder.OpacityConfig cfg ->
+                                        cfg.duration
+
+                                    Builder.SizeConfig cfg ->
                                         cfg.duration
                             )
                         |> List.maximum
@@ -818,6 +850,32 @@ generateTimedKeyframeSteps dominantGroup allProperties =
                                                 Opacity.fromFloat interpolatedValue
                                         in
                                         Just ( "opacity", Opacity.toString interpolatedOpacity )
+
+                                    Builder.SizeConfig cfg ->
+                                        let
+                                            dur =
+                                                cfg.duration
+
+                                            propProgress =
+                                                if time <= toFloat dur then
+                                                    time / toFloat dur
+
+                                                else
+                                                    1.0
+
+                                            startSize =
+                                                Maybe.withDefault (Size.fromTuple ( 0, 0 )) cfg.startAt
+
+                                            endSize =
+                                                cfg.endAt
+
+                                            interpolatedSize =
+                                                Size.interpolate propProgress startSize endSize
+
+                                            ( width, height ) =
+                                                Size.toTuple interpolatedSize
+                                        in
+                                        Just ( "size-component", String.fromFloat width ++ "px " ++ String.fromFloat height ++ "px" )
                             )
 
                 -- Compose transform string from all transform components

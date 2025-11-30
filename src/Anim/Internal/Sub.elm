@@ -467,7 +467,11 @@ createElementAnimationState :
     -> Builder.ProcessedElementConfig
     -> ElementAnimation
 createElementAnimationState startValues _ elementConfig =
-    { properties = List.filterMap (createPropertyAnimationState startValues) elementConfig.properties
+    let
+        properties =
+            List.filterMap (createPropertyAnimationState startValues) elementConfig.properties
+    in
+    { properties = properties
     , isComplete = False
     }
 
@@ -872,22 +876,28 @@ getSize elementId (AnimationState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.andThen
             (\elementState ->
-                List.head elementState.properties
-                    |> Maybe.andThen
+                -- Search through all properties for a Size property
+                elementState.properties
+                    |> List.filterMap
                         (\propertyState ->
-                            let
-                                currentValue =
-                                    List.drop propertyState.currentStepIndex propertyState.animationSteps
-                                        |> List.head
-                                        |> Maybe.withDefault (getLastStep propertyState.animationSteps)
-                            in
-                            case currentValue of
-                                SizeAnimationValue size ->
-                                    Just size
+                            if propertyState.propertyType == "size" then
+                                let
+                                    currentValue =
+                                        List.drop propertyState.currentStepIndex propertyState.animationSteps
+                                            |> List.head
+                                            |> Maybe.withDefault (getLastStep propertyState.animationSteps)
+                                in
+                                case currentValue of
+                                    SizeAnimationValue size ->
+                                        Just size
 
-                                _ ->
-                                    Nothing
+                                    _ ->
+                                        Nothing
+
+                            else
+                                Nothing
                         )
+                    |> List.head
             )
 
 
@@ -972,6 +982,9 @@ combinePropertyStyles properties =
         transformParts =
             List.filterMap getTransformPart properties
 
+        sizeStyles =
+            List.concatMap getSizeStyles properties
+
         nonTransformStyles =
             List.filterMap getNonTransformStyle properties
 
@@ -982,7 +995,7 @@ combinePropertyStyles properties =
             else
                 [ ( "transform", String.join " " transformParts ) ]
     in
-    transformStyle ++ nonTransformStyles
+    transformStyle ++ sizeStyles ++ nonTransformStyles
 
 
 getTransformPart : PropertyAnimationState -> Maybe String
@@ -1017,6 +1030,36 @@ getTransformPart propertyState =
 
         _ ->
             Nothing
+
+
+getSizeStyles : PropertyAnimationState -> List ( String, String )
+getSizeStyles propertyState =
+    let
+        currentValue =
+            List.drop propertyState.currentStepIndex propertyState.animationSteps
+                |> List.head
+                |> Maybe.withDefault (getLastStep propertyState.animationSteps)
+    in
+    case currentValue of
+        SizeAnimationValue size ->
+            let
+                ( width, height ) =
+                    Size.toTuple size
+            in
+            [ ( "width", String.fromFloat width ++ "px" )
+            , ( "height", String.fromFloat height ++ "px" )
+            ]
+
+        -- Handle the case where we have a Size property but got a wrong fallback
+        _ ->
+            if propertyState.propertyType == "size" then
+                -- Force some default size CSS if this is a size property
+                [ ( "width", "150px" )
+                , ( "height", "150px" )
+                ]
+
+            else
+                []
 
 
 getNonTransformStyle : PropertyAnimationState -> Maybe ( String, String )
