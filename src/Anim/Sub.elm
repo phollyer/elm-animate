@@ -2,7 +2,9 @@ module Anim.Sub exposing
     ( ElementId
     , init, builder, animate, AnimationState, AnimationMsg
     , subscriptions, update
-    , getPosition, getCurrentStyles, getDuration, isAnimationRunning
+    , getPosition, getPositionXY, getPositionX, getPositionY
+    , getCurrentStyles
+    , isAnimationRunning, getDuration
     , htmlAttributes
     )
 
@@ -24,9 +26,22 @@ onAnimationFrameDelta subscriptions for smooth, controlled animations.
 @docs subscriptions, update
 
 
-# Animation Data
+# Animation Querying
 
-@docs getPosition, getCurrentStyles, getDuration, isAnimationRunning
+
+## Position
+
+@docs getPosition, getPositionXY, getPositionX, getPositionY
+
+
+## Current Styles
+
+@docs getCurrentStyles
+
+
+## Animation State
+
+@docs isAnimationRunning, getDuration
 
 
 # CSS Generation
@@ -144,6 +159,27 @@ update =
 getPosition : String -> AnimationState -> Maybe Position
 getPosition =
     InternalSub.getPosition
+
+
+{-| Get current X and Y position of an element being animated.
+-}
+getPositionXY : String -> AnimationState -> Maybe ( Float, Float )
+getPositionXY =
+    InternalSub.getPositionXY
+
+
+{-| Get current X position of an element being animated.
+-}
+getPositionX : String -> AnimationState -> Maybe Float
+getPositionX =
+    InternalSub.getPositionX
+
+
+{-| Get current Y position of an element being animated.
+-}
+getPositionY : String -> AnimationState -> Maybe Float
+getPositionY =
+    InternalSub.getPositionY
 
 
 {-| Get duration of the first animation found for an element.

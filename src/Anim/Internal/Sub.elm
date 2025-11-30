@@ -2,7 +2,9 @@ module Anim.Internal.Sub exposing
     ( TargetId
     , init, builder, animate, AnimationState, AnimationMsg(..)
     , subscriptions, update
-    , getPosition, getCurrentStyles, isAnimationRunning
+    , getPosition, getPositionXY, getPositionX, getPositionY
+    , getCurrentStyles
+    , isAnimationRunning
     , htmlAttributes
     , getDuration
     )
@@ -25,9 +27,22 @@ onAnimationFrameDelta subscriptions for smooth, controlled animations.
 @docs subscriptions, update
 
 
-# Animation Data
+# Animation Querying
 
-@docs getPosition, getCurrentStyles, isAnimationRunning
+
+## Position
+
+@docs getPosition, getPositionXY, getPositionX, getPositionY
+
+
+## Current Styles
+
+@docs getCurrentStyles
+
+
+## Animation State
+
+@docs isAnimationRunning
 
 
 # CSS Generation
@@ -647,7 +662,7 @@ subscriptions (AnimationState state) =
 -}
 update : AnimationMsg -> AnimationState -> AnimationState
 update msg (AnimationState state) =
-    case msg |> Debug.log "==> update" of
+    case msg of
         AnimationFrame deltaMs ->
             let
                 updatedElements =
@@ -750,6 +765,30 @@ getPosition elementId (AnimationState state) =
                                     Nothing
                         )
             )
+
+
+{-| Get current X and Y position of an element being animated.
+-}
+getPositionXY : String -> AnimationState -> Maybe ( Float, Float )
+getPositionXY elementId animationState =
+    getPosition elementId animationState
+        |> Maybe.map Position.toTuple
+
+
+{-| Get current X position of an element being animated.
+-}
+getPositionX : String -> AnimationState -> Maybe Float
+getPositionX elementId animationState =
+    getPosition elementId animationState
+        |> Maybe.map (Position.toRecord >> .x)
+
+
+{-| Get current Y position of an element being animated.
+-}
+getPositionY : String -> AnimationState -> Maybe Float
+getPositionY elementId animationState =
+    getPosition elementId animationState
+        |> Maybe.map (Position.toRecord >> .y)
 
 
 {-| Get duration of the first animation found for an element.
