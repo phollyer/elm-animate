@@ -66,39 +66,51 @@ for elementId builder =
                             |> List.head
                     )
 
-        sizeConfig =
+        newConfig =
             case existingConfig of
                 Just config ->
-                    -- Convert from AnimationConfig Size to SizeConfig
-                    { startAt = config.startAt
-                    , endAt = config.endAt
-                    , timing = config.timing
-                    , easing = config.easing
-                    , delay = config.delay
-                    }
+                    PropertyBuilder.applyGlobalDefaults builder <|
+                        { config
+                            | startAt = Just config.endAt
+                            , easing = Nothing
+                            , delay = Nothing
+                            , timing = Nothing
+                            , duration = 0
+                            , speed = 0
+                            , distance = 0
+                            , isDirty = False
+                        }
 
                 Nothing ->
-                    defaultSizeConfig
+                    PropertyBuilder.applyGlobalDefaults builder defaultConfig
     in
-    SizeBuilder sizeConfig builderWithElement
+    SizeBuilder newConfig builderWithElement
 
 
 type alias SizeConfig =
     { startAt : Maybe Size
     , endAt : Size
+    , duration : Int -- Millis
+    , speed : Float -- Pixels per second
+    , distance : Float -- Pixels
     , timing : Maybe TimeSpec
     , easing : Maybe Easing
     , delay : Maybe Int
+    , isDirty : Bool
     }
 
 
-defaultSizeConfig : SizeConfig
-defaultSizeConfig =
+defaultConfig : SizeConfig
+defaultConfig =
     { startAt = Nothing
-    , endAt = Size.fromTuple ( 100, 100 )
+    , endAt = Size.fromTuple ( 0, 0 )
+    , duration = 0
+    , speed = 0
+    , distance = 0
     , timing = Nothing
     , easing = Nothing
     , delay = Nothing
+    , isDirty = False
     }
 
 

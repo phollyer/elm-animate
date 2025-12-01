@@ -58,7 +58,16 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Sub.init }
+    ( { animations =
+            Sub.init
+                |> Sub.builder
+                |> Size.for "box"
+                |> Size.toHW 100 100
+                |> Size.duration 0
+                |> Size.easing Easing.EaseOut
+                |> Size.build
+                |> Sub.animate
+      }
     , Cmd.none
     )
 
@@ -80,13 +89,25 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SizeUp ->
+            let
+                ( newWidth, newHeight ) =
+                    case Sub.getSize "box" model.animations of
+                        Just size ->
+                            let
+                                ( w, h ) =
+                                    Size.toTuple size
+                            in
+                            ( (w + 30) |> max 50, (h + 30) |> max 50 )
+
+                        Nothing ->
+                            ( 100, 100 )
+            in
             ( { model
                 | animations =
                     model.animations
                         |> Sub.builder
                         |> Size.for "box"
-                        |> Size.fromHW 150 150
-                        |> Size.toHW 225 225
+                        |> Size.toHW newHeight newWidth
                         |> Size.duration 2000
                         |> Size.easing Easing.EaseOut
                         |> Size.build
@@ -96,13 +117,25 @@ update msg model =
             )
 
         SizeDown ->
+            let
+                ( newWidth, newHeight ) =
+                    case Sub.getSize "box" model.animations of
+                        Just size ->
+                            let
+                                ( w, h ) =
+                                    Size.toTuple size
+                            in
+                            ( (w - 30) |> max 50, (h - 30) |> max 50 )
+
+                        Nothing ->
+                            ( 100, 100 )
+            in
             ( { model
                 | animations =
                     model.animations
                         |> Sub.builder
                         |> Size.for "box"
-                        |> Size.fromHW 150 150
-                        |> Size.toHW 105 105
+                        |> Size.toHW newHeight newWidth
                         |> Size.duration 2000
                         |> Size.easing Easing.EaseOut
                         |> Size.build
@@ -117,7 +150,6 @@ update msg model =
                     model.animations
                         |> Sub.builder
                         |> Size.for "box"
-                        |> Size.fromHW 225 225
                         |> Size.toHW 150 150
                         |> Size.duration 1500
                         |> Size.easing Easing.EaseInOut
@@ -133,7 +165,6 @@ update msg model =
                     model.animations
                         |> Sub.builder
                         |> Size.for "box"
-                        |> Size.fromHW 150 150
                         |> Size.toHW 90 270
                         |> Size.duration 2500
                         |> Size.easing Easing.EaseOut
@@ -149,7 +180,6 @@ update msg model =
                     model.animations
                         |> Sub.builder
                         |> Size.for "box"
-                        |> Size.fromHW 150 150
                         |> Size.toHW 270 90
                         |> Size.duration 2500
                         |> Size.easing Easing.EaseOut

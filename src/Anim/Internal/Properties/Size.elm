@@ -18,6 +18,7 @@ module Anim.Internal.Properties.Size exposing
     )
 
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
+import Html.Attributes exposing (width)
 import Json.Encode as Encode
 
 
@@ -49,9 +50,9 @@ toTuple (Size dimensions) =
     ( dimensions.w, dimensions.h )
 
 
-toRecord : Size -> { w : Float, h : Float }
+toRecord : Size -> { width : Float, height : Float }
 toRecord (Size dimensions) =
-    dimensions
+    { width = dimensions.w, height = dimensions.h }
 
 
 toString : Size -> String

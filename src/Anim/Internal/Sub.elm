@@ -354,7 +354,7 @@ builder (AnimationState state) =
 {-| Extract current values from dirty properties in the builder.
 Dirty properties with duration=0 represent current state.
 -}
-extractCurrentValuesFromBuilder : AnimBuilder -> { position : Maybe { x : Float, y : Float }, rotate : Maybe Float, scale : Maybe { x : Float, y : Float }, color : Maybe Color, opacity : Maybe Float }
+extractCurrentValuesFromBuilder : AnimBuilder -> { position : Maybe { x : Float, y : Float }, rotate : Maybe Float, scale : Maybe { x : Float, y : Float }, color : Maybe Color, opacity : Maybe Float, size : Maybe { width : Float, height : Float } }
 extractCurrentValuesFromBuilder animBuilder =
     let
         processedData =
@@ -364,12 +364,12 @@ extractCurrentValuesFromBuilder animBuilder =
         extractFromElements =
             Dict.values processedData.elements
                 |> List.concatMap .properties
-                |> List.foldl extractFromProperty { position = Nothing, rotate = Nothing, scale = Nothing, color = Nothing, opacity = Nothing }
+                |> List.foldl extractFromProperty { position = Nothing, rotate = Nothing, scale = Nothing, color = Nothing, opacity = Nothing, size = Nothing }
     in
     extractFromElements
 
 
-extractFromProperty : Builder.ProcessedPropertyConfig -> { position : Maybe { x : Float, y : Float }, rotate : Maybe Float, scale : Maybe { x : Float, y : Float }, color : Maybe Color, opacity : Maybe Float } -> { position : Maybe { x : Float, y : Float }, rotate : Maybe Float, scale : Maybe { x : Float, y : Float }, color : Maybe Color, opacity : Maybe Float }
+extractFromProperty : Builder.ProcessedPropertyConfig -> { position : Maybe { x : Float, y : Float }, rotate : Maybe Float, scale : Maybe { x : Float, y : Float }, color : Maybe Color, opacity : Maybe Float, size : Maybe { width : Float, height : Float } } -> { position : Maybe { x : Float, y : Float }, rotate : Maybe Float, scale : Maybe { x : Float, y : Float }, color : Maybe Color, opacity : Maybe Float, size : Maybe { width : Float, height : Float } }
 extractFromProperty property acc =
     case property of
         Builder.ProcessedPositionConfig config ->
@@ -411,9 +411,12 @@ extractFromProperty property acc =
             else
                 acc
 
-        Builder.ProcessedSizeConfig _ ->
-            -- Size doesn't contribute to current styles extraction
-            acc
+        Builder.ProcessedSizeConfig config ->
+            if config.duration == 0 then
+                { acc | size = Just (Size.toRecord config.endAt) }
+
+            else
+                acc
 
 
 {-| Create animation state from AnimBuilder.
@@ -444,6 +447,7 @@ animate builder_ =
             , scale = Maybe.withDefault { x = 1.0, y = 1.0 } currentValues.scale
             , color = Maybe.withDefault (Color.rgba255 255 255 255 1.0) currentValues.color
             , opacity = Maybe.withDefault 1.0 currentValues.opacity
+            , size = Maybe.withDefault { width = 0, height = 0 } currentValues.size
             }
 
         elementStates =
@@ -462,6 +466,7 @@ createElementAnimationState :
     , scale : { x : Float, y : Float }
     , color : Color
     , opacity : Float
+    , size : { width : Float, height : Float }
     }
     -> String
     -> Builder.ProcessedElementConfig
@@ -482,6 +487,7 @@ createPropertyAnimationState :
     , scale : { x : Float, y : Float }
     , color : Color
     , opacity : Float
+    , size : { width : Float, height : Float }
     }
     -> Builder.ProcessedPropertyConfig
     -> Maybe PropertyAnimationState
@@ -678,13 +684,16 @@ createPropertyAnimationState startValues property =
 
         Builder.ProcessedSizeConfig config ->
             let
+                startSize =
+                    Size.fromTuple ( startValues.size.width, startValues.size.height )
+
                 actualStart =
                     case config.startAt of
                         Just start ->
                             start
 
                         Nothing ->
-                            Size.fromTuple ( 100.0, 100.0 )
+                            startSize
 
                 -- Default size
                 frames =

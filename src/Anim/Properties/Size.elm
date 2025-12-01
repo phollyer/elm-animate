@@ -4,6 +4,7 @@ module Anim.Properties.Size exposing
     , toHW, toH, toW
     , speed, duration, easing, delay
     , asRecord
+    , toTuple
     )
 
 {-| Size animation functions.
@@ -116,6 +117,11 @@ fromHW =
 fromTuple : ( Float, Float ) -> Builder -> Builder
 fromTuple ( width, height ) =
     SB.fromHW width height
+
+
+toTuple : Size -> ( Float, Float )
+toTuple =
+    Internal.toTuple
 
 
 {-| Set the starting height for the current element, keeping the current width.
