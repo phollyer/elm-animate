@@ -39,6 +39,7 @@ import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
+import Anim.Internal.Properties.Size exposing (Size)
 import Dict exposing (Dict)
 import Html
 import Html.Attributes
@@ -75,6 +76,7 @@ type alias ElementEndStates =
     , scale : Maybe Scale
     , color : Maybe Color
     , opacity : Maybe Opacity
+    , size : Maybe Size
     }
 
 
@@ -149,6 +151,7 @@ emptyElementEndStates =
     , scale = Nothing
     , color = Nothing
     , opacity = Nothing
+    , size = Nothing
     }
 
 
@@ -169,6 +172,9 @@ extractPropertyEndState property state =
 
         Builder.ProcessedOpacityConfig config ->
             { state | opacity = Just config.endAt }
+
+        Builder.ProcessedSizeConfig config ->
+            { state | size = Just config.endAt }
 
 
 {-| Get current position of an element.

@@ -97,7 +97,7 @@ update msg model =
                                 ( w, h ) =
                                     Size.toTuple size
                             in
-                            ( (w + 30) |> max 50, (h + 30) |> max 50 )
+                            ( (w * 2) |> min 400, (h * 2) |> min 300 )
 
                         Nothing ->
                             ( 100, 100 )
@@ -109,7 +109,7 @@ update msg model =
                         |> Size.for "box"
                         |> Size.toHW newHeight newWidth
                         |> Size.duration 2000
-                        |> Size.easing Easing.EaseOut
+                        |> Size.easing Easing.BounceOut
                         |> Size.build
                         |> Sub.animate
               }
@@ -125,10 +125,10 @@ update msg model =
                                 ( w, h ) =
                                     Size.toTuple size
                             in
-                            ( (w - 30) |> max 50, (h - 30) |> max 50 )
+                            ( (w / 2) |> max 50, (h / 2) |> max 50 )
 
                         Nothing ->
-                            ( 100, 100 )
+                            ( 50, 50 )
             in
             ( { model
                 | animations =
@@ -136,8 +136,8 @@ update msg model =
                         |> Sub.builder
                         |> Size.for "box"
                         |> Size.toHW newHeight newWidth
-                        |> Size.duration 2000
-                        |> Size.easing Easing.EaseOut
+                        |> Size.duration 1000
+                        |> Size.easing Easing.QuadInOut
                         |> Size.build
                         |> Sub.animate
               }
@@ -160,14 +160,27 @@ update msg model =
             )
 
         SizeWide ->
+            let
+                newWidth =
+                    case Sub.getSize "box" model.animations of
+                        Just size ->
+                            let
+                                ( w, h ) =
+                                    Size.toTuple size
+                            in
+                            (w * 2) |> max 400
+
+                        Nothing ->
+                            400
+            in
             ( { model
                 | animations =
                     model.animations
                         |> Sub.builder
                         |> Size.for "box"
-                        |> Size.toHW 90 270
-                        |> Size.duration 2500
-                        |> Size.easing Easing.EaseOut
+                        |> Size.toW newWidth
+                        |> Size.duration 1000
+                        |> Size.easing Easing.QuintInOut
                         |> Size.build
                         |> Sub.animate
               }
@@ -175,14 +188,27 @@ update msg model =
             )
 
         SizeTall ->
+            let
+                newHeight =
+                    case Sub.getSize "box" model.animations of
+                        Just size ->
+                            let
+                                ( w, h ) =
+                                    Size.toTuple size
+                            in
+                            (h * 2) |> max 300
+
+                        Nothing ->
+                            300
+            in
             ( { model
                 | animations =
                     model.animations
                         |> Sub.builder
                         |> Size.for "box"
-                        |> Size.toHW 270 90
-                        |> Size.duration 2500
-                        |> Size.easing Easing.EaseOut
+                        |> Size.toH newHeight
+                        |> Size.speed 400
+                        |> Size.easing Easing.QuadInOut
                         |> Size.build
                         |> Sub.animate
               }
