@@ -53,6 +53,7 @@ onAnimationFrameDelta subscriptions for smooth, controlled animations.
 
 import Anim exposing (AnimBuilder)
 import Anim.Internal.Builder as Builder
+import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Color as Color exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position)
@@ -346,9 +347,72 @@ Use this to start new animations based on current state.
 
 -}
 builder : AnimationState -> AnimBuilder
-builder (AnimationState state) =
-    -- Return the stored builder which contains current state
-    state.builder
+builder ((AnimationState state) as animationState) =
+    let
+        -- Get the base builder
+        baseBuilder =
+            state.builder
+
+        -- Extract current animated values and add as dirty properties
+        builderWithCurrentValues =
+            Dict.foldl (addCurrentAnimatedValues animationState) baseBuilder state.elementAnimations
+    in
+    builderWithCurrentValues
+
+
+addCurrentAnimatedValues : AnimationState -> String -> ElementAnimation -> AnimBuilder -> AnimBuilder
+addCurrentAnimatedValues animationState elementId _ builderAcc =
+    let
+        builderWithElement =
+            Builder.for elementId builderAcc
+
+        -- Extract current Position value
+        builderWithPosition =
+            case getPosition elementId animationState of
+                Just pos ->
+                    let
+                        positionConfig =
+                            Builder.PositionConfig
+                                { startAt = Nothing
+                                , endAt = pos
+                                , duration = 0
+                                , speed = 0
+                                , distance = 0
+                                , timing = Nothing
+                                , easing = Nothing
+                                , delay = Nothing
+                                , isDirty = True
+                                }
+                    in
+                    PropertyBuilder.upsert positionConfig builderWithElement
+
+                Nothing ->
+                    builderWithElement
+
+        -- Extract current Size value
+        builderWithSize =
+            case getSize elementId animationState of
+                Just size ->
+                    let
+                        sizeConfig =
+                            Builder.SizeConfig
+                                { startAt = Nothing
+                                , endAt = size
+                                , duration = 0
+                                , speed = 0
+                                , distance = 0
+                                , timing = Nothing
+                                , easing = Nothing
+                                , delay = Nothing
+                                , isDirty = True
+                                }
+                    in
+                    PropertyBuilder.upsert sizeConfig builderWithPosition
+
+                Nothing ->
+                    builderWithPosition
+    in
+    builderWithSize
 
 
 {-| Extract current values from dirty properties in the builder.
