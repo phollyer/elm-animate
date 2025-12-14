@@ -348,27 +348,28 @@ Use this to start new animations based on current state.
 -}
 builder : AnimationState -> AnimBuilder
 builder ((AnimationState state) as animationState) =
-    Dict.foldl (setEndValues animationState) state.builder state.elementAnimations
+    Dict.foldl (setInitialValues animationState) state.builder state.elementAnimations
 
 
 
-{- Set the end values for properties that are currently being animated.
+{- Set the start/end values for properties that are currently being animated.
 
-   This ensures that any animations that do not have explicit start values,
-   start from the current animated state.
+   This ensures that if an element is mid-animation, and a new animation is started,
+   the new animation will start from the current position/color/scale/etc.,
+   rather than jumping back to the original start value.
 -}
 
 
-setEndValues : AnimationState -> String -> ElementAnimation -> AnimBuilder -> AnimBuilder
-setEndValues animationState elementId _ builderAcc =
+setInitialValues : AnimationState -> String -> ElementAnimation -> AnimBuilder -> AnimBuilder
+setInitialValues animationState elementId _ builderAcc =
     let
         funcList =
-            [ mapCurrentValue getPosition setEndPosition
-            , mapCurrentValue getSize setEndSize
-            , mapCurrentValue getScale setEndScale
-            , mapCurrentValue getRotate setEndRotate
-            , mapCurrentValue getColor setEndColor
-            , mapCurrentValue getOpacity setEndOpacity
+            [ mapCurrentValue getPosition initPosition
+            , mapCurrentValue getSize initSize
+            , mapCurrentValue getScale initScale
+            , mapCurrentValue getRotate initRotate
+            , mapCurrentValue getColor initColor
+            , mapCurrentValue getOpacity initOpacity
             ]
     in
     List.foldl
@@ -383,14 +384,14 @@ mapCurrentValue getter setter elementId animationState animBuilder =
         |> setter animBuilder
 
 
-setEndPosition : AnimBuilder -> Maybe Position -> AnimBuilder
-setEndPosition animBuilder maybePos =
+initPosition : AnimBuilder -> Maybe Position -> AnimBuilder
+initPosition animBuilder maybePos =
     case maybePos of
         Just pos ->
             let
                 positionConfig =
                     Builder.PositionConfig
-                        { startAt = Nothing
+                        { startAt = Just pos
                         , endAt = pos
                         , duration = 0
                         , speed = 0
@@ -398,7 +399,7 @@ setEndPosition animBuilder maybePos =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
-                        , isDirty = True
+                        , isDirty = False
                         }
             in
             PropertyBuilder.upsert positionConfig animBuilder
@@ -407,14 +408,14 @@ setEndPosition animBuilder maybePos =
             animBuilder
 
 
-setEndSize : AnimBuilder -> Maybe Size -> AnimBuilder
-setEndSize animBuilder maybeSize =
+initSize : AnimBuilder -> Maybe Size -> AnimBuilder
+initSize animBuilder maybeSize =
     case maybeSize of
         Just size ->
             let
                 sizeConfig =
                     Builder.SizeConfig
-                        { startAt = Nothing
+                        { startAt = Just size
                         , endAt = size
                         , duration = 0
                         , speed = 0
@@ -422,7 +423,7 @@ setEndSize animBuilder maybeSize =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
-                        , isDirty = True
+                        , isDirty = False
                         }
             in
             PropertyBuilder.upsert sizeConfig animBuilder
@@ -431,14 +432,14 @@ setEndSize animBuilder maybeSize =
             animBuilder
 
 
-setEndScale : AnimBuilder -> Maybe Scale -> AnimBuilder
-setEndScale animBuilder maybeScale =
+initScale : AnimBuilder -> Maybe Scale -> AnimBuilder
+initScale animBuilder maybeScale =
     case maybeScale of
         Just scale ->
             let
                 scaleConfig =
                     Builder.ScaleConfig
-                        { startAt = Nothing
+                        { startAt = Just scale
                         , endAt = scale
                         , duration = 0
                         , speed = 0
@@ -446,7 +447,7 @@ setEndScale animBuilder maybeScale =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
-                        , isDirty = True
+                        , isDirty = False
                         }
             in
             PropertyBuilder.upsert scaleConfig animBuilder
@@ -455,14 +456,14 @@ setEndScale animBuilder maybeScale =
             animBuilder
 
 
-setEndRotate : AnimBuilder -> Maybe Rotate -> AnimBuilder
-setEndRotate animBuilder maybeRotate =
+initRotate : AnimBuilder -> Maybe Rotate -> AnimBuilder
+initRotate animBuilder maybeRotate =
     case maybeRotate of
         Just rotate ->
             let
                 rotateConfig =
                     Builder.RotateConfig
-                        { startAt = Nothing
+                        { startAt = Just rotate
                         , endAt = rotate
                         , duration = 0
                         , speed = 0
@@ -470,7 +471,7 @@ setEndRotate animBuilder maybeRotate =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
-                        , isDirty = True
+                        , isDirty = False
                         }
             in
             PropertyBuilder.upsert rotateConfig animBuilder
@@ -479,14 +480,14 @@ setEndRotate animBuilder maybeRotate =
             animBuilder
 
 
-setEndColor : AnimBuilder -> Maybe Color -> AnimBuilder
-setEndColor animBuilder maybeColor =
+initColor : AnimBuilder -> Maybe Color -> AnimBuilder
+initColor animBuilder maybeColor =
     case maybeColor of
         Just color ->
             let
                 colorConfig =
                     Builder.BackgroundColorConfig
-                        { startAt = Nothing
+                        { startAt = Just color
                         , endAt = color
                         , duration = 0
                         , speed = 0
@@ -494,7 +495,7 @@ setEndColor animBuilder maybeColor =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
-                        , isDirty = True
+                        , isDirty = False
                         }
             in
             PropertyBuilder.upsert colorConfig animBuilder
@@ -503,14 +504,14 @@ setEndColor animBuilder maybeColor =
             animBuilder
 
 
-setEndOpacity : AnimBuilder -> Maybe Opacity -> AnimBuilder
-setEndOpacity animBuilder maybeOpacity =
+initOpacity : AnimBuilder -> Maybe Opacity -> AnimBuilder
+initOpacity animBuilder maybeOpacity =
     case maybeOpacity of
         Just opacity ->
             let
                 opacityConfig =
                     Builder.OpacityConfig
-                        { startAt = Nothing
+                        { startAt = Just opacity
                         , endAt = opacity
                         , duration = 0
                         , speed = 0
@@ -518,7 +519,7 @@ setEndOpacity animBuilder maybeOpacity =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
-                        , isDirty = True
+                        , isDirty = False
                         }
             in
             PropertyBuilder.upsert opacityConfig animBuilder
