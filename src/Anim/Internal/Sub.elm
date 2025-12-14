@@ -355,25 +355,47 @@ builder ((AnimationState state) as animationState) =
 
         -- Extract current animated values and add as dirty properties
         builderWithCurrentValues =
-            Dict.foldl (addCurrentAnimatedValues animationState) baseBuilder state.elementAnimations
+            Dict.foldl (useCurrentAnimatedValues animationState) baseBuilder state.elementAnimations
     in
     builderWithCurrentValues
 
 
-addCurrentAnimatedValues : AnimationState -> String -> ElementAnimation -> AnimBuilder -> AnimBuilder
-addCurrentAnimatedValues animationState elementId _ builderAcc =
-    Builder.for elementId builderAcc
-        |> addCurrentPosition elementId animationState
-        |> addCurrentSize elementId animationState
-        |> addCurrentScale elementId animationState
-        |> addCurrentRotate elementId animationState
-        |> addCurrentColor elementId animationState
-        |> addCurrentOpacity elementId animationState
+useCurrentAnimatedValues : AnimationState -> String -> ElementAnimation -> AnimBuilder -> AnimBuilder
+useCurrentAnimatedValues animationState elementId _ builderAcc =
+    let
+        funcList =
+            [ mapCurrentValue getPosition addCurrentPosition
+            , mapCurrentValue getSize addCurrentSize
+            , mapCurrentValue getScale addCurrentScale
+            , mapCurrentValue getRotate addCurrentRotate
+            , mapCurrentValue getColor addCurrentColor
+            , mapCurrentValue getOpacity addCurrentOpacity
+            ]
+    in
+    List.foldl
+        (\func acc -> func elementId animationState acc)
+        (Builder.for elementId builderAcc)
+        funcList
 
 
-addCurrentPosition : String -> AnimationState -> AnimBuilder -> AnimBuilder
-addCurrentPosition elementId animationState animBuilder =
-    case getPosition elementId animationState of
+
+{-
+   |> addCurrentScale elementId animationState
+   |> addCurrentRotate elementId animationState
+   |> addCurrentColor elementId animationState
+   |> addCurrentOpacity elementId animationState
+-}
+
+
+mapCurrentValue : (String -> AnimationState -> maybeProp) -> (AnimBuilder -> maybeProp -> AnimBuilder) -> String -> AnimationState -> AnimBuilder -> AnimBuilder
+mapCurrentValue getter setter elementId animationState animBuilder =
+    getter elementId animationState
+        |> setter animBuilder
+
+
+addCurrentPosition : AnimBuilder -> Maybe Position -> AnimBuilder
+addCurrentPosition animBuilder maybePos =
+    case maybePos of
         Just pos ->
             let
                 positionConfig =
@@ -395,9 +417,9 @@ addCurrentPosition elementId animationState animBuilder =
             animBuilder
 
 
-addCurrentSize : String -> AnimationState -> AnimBuilder -> AnimBuilder
-addCurrentSize elementId animationState animBuilder =
-    case getSize elementId animationState of
+addCurrentSize : AnimBuilder -> Maybe Size -> AnimBuilder
+addCurrentSize animBuilder maybeSize =
+    case maybeSize of
         Just size ->
             let
                 sizeConfig =
@@ -419,9 +441,9 @@ addCurrentSize elementId animationState animBuilder =
             animBuilder
 
 
-addCurrentScale : String -> AnimationState -> AnimBuilder -> AnimBuilder
-addCurrentScale elementId animationState animBuilder =
-    case getScale elementId animationState of
+addCurrentScale : AnimBuilder -> Maybe Scale -> AnimBuilder
+addCurrentScale animBuilder maybeScale =
+    case maybeScale of
         Just scale ->
             let
                 scaleConfig =
@@ -443,9 +465,9 @@ addCurrentScale elementId animationState animBuilder =
             animBuilder
 
 
-addCurrentRotate : String -> AnimationState -> AnimBuilder -> AnimBuilder
-addCurrentRotate elementId animationState animBuilder =
-    case getRotate elementId animationState of
+addCurrentRotate : AnimBuilder -> Maybe Rotate -> AnimBuilder
+addCurrentRotate animBuilder maybeRotate =
+    case maybeRotate of
         Just rotate ->
             let
                 rotateConfig =
@@ -467,9 +489,9 @@ addCurrentRotate elementId animationState animBuilder =
             animBuilder
 
 
-addCurrentColor : String -> AnimationState -> AnimBuilder -> AnimBuilder
-addCurrentColor elementId animationState animBuilder =
-    case getColor elementId animationState of
+addCurrentColor : AnimBuilder -> Maybe Color -> AnimBuilder
+addCurrentColor animBuilder maybeColor =
+    case maybeColor of
         Just color ->
             let
                 colorConfig =
@@ -491,9 +513,9 @@ addCurrentColor elementId animationState animBuilder =
             animBuilder
 
 
-addCurrentOpacity : String -> AnimationState -> AnimBuilder -> AnimBuilder
-addCurrentOpacity elementId animationState animBuilder =
-    case getOpacity elementId animationState of
+addCurrentOpacity : AnimBuilder -> Maybe Opacity -> AnimBuilder
+addCurrentOpacity animBuilder maybeOpacity =
+    case maybeOpacity of
         Just opacity ->
             let
                 opacityConfig =
