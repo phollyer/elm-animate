@@ -348,28 +348,27 @@ Use this to start new animations based on current state.
 -}
 builder : AnimationState -> AnimBuilder
 builder ((AnimationState state) as animationState) =
-    let
-        -- Get the base builder
-        baseBuilder =
-            state.builder
-
-        -- Extract current animated values and add as dirty properties
-        builderWithCurrentValues =
-            Dict.foldl (useCurrentAnimatedValues animationState) baseBuilder state.elementAnimations
-    in
-    builderWithCurrentValues
+    Dict.foldl (setEndValues animationState) state.builder state.elementAnimations
 
 
-useCurrentAnimatedValues : AnimationState -> String -> ElementAnimation -> AnimBuilder -> AnimBuilder
-useCurrentAnimatedValues animationState elementId _ builderAcc =
+
+{- Set the end values for properties that are currently being animated.
+
+   This ensures that any animations that do not have explicit start values,
+   start from the current animated state.
+-}
+
+
+setEndValues : AnimationState -> String -> ElementAnimation -> AnimBuilder -> AnimBuilder
+setEndValues animationState elementId _ builderAcc =
     let
         funcList =
-            [ mapCurrentValue getPosition addCurrentPosition
-            , mapCurrentValue getSize addCurrentSize
-            , mapCurrentValue getScale addCurrentScale
-            , mapCurrentValue getRotate addCurrentRotate
-            , mapCurrentValue getColor addCurrentColor
-            , mapCurrentValue getOpacity addCurrentOpacity
+            [ mapCurrentValue getPosition setEndPosition
+            , mapCurrentValue getSize setEndSize
+            , mapCurrentValue getScale setEndScale
+            , mapCurrentValue getRotate setEndRotate
+            , mapCurrentValue getColor setEndColor
+            , mapCurrentValue getOpacity setEndOpacity
             ]
     in
     List.foldl
@@ -378,23 +377,14 @@ useCurrentAnimatedValues animationState elementId _ builderAcc =
         funcList
 
 
-
-{-
-   |> addCurrentScale elementId animationState
-   |> addCurrentRotate elementId animationState
-   |> addCurrentColor elementId animationState
-   |> addCurrentOpacity elementId animationState
--}
-
-
 mapCurrentValue : (String -> AnimationState -> maybeProp) -> (AnimBuilder -> maybeProp -> AnimBuilder) -> String -> AnimationState -> AnimBuilder -> AnimBuilder
 mapCurrentValue getter setter elementId animationState animBuilder =
     getter elementId animationState
         |> setter animBuilder
 
 
-addCurrentPosition : AnimBuilder -> Maybe Position -> AnimBuilder
-addCurrentPosition animBuilder maybePos =
+setEndPosition : AnimBuilder -> Maybe Position -> AnimBuilder
+setEndPosition animBuilder maybePos =
     case maybePos of
         Just pos ->
             let
@@ -417,8 +407,8 @@ addCurrentPosition animBuilder maybePos =
             animBuilder
 
 
-addCurrentSize : AnimBuilder -> Maybe Size -> AnimBuilder
-addCurrentSize animBuilder maybeSize =
+setEndSize : AnimBuilder -> Maybe Size -> AnimBuilder
+setEndSize animBuilder maybeSize =
     case maybeSize of
         Just size ->
             let
@@ -441,8 +431,8 @@ addCurrentSize animBuilder maybeSize =
             animBuilder
 
 
-addCurrentScale : AnimBuilder -> Maybe Scale -> AnimBuilder
-addCurrentScale animBuilder maybeScale =
+setEndScale : AnimBuilder -> Maybe Scale -> AnimBuilder
+setEndScale animBuilder maybeScale =
     case maybeScale of
         Just scale ->
             let
@@ -465,8 +455,8 @@ addCurrentScale animBuilder maybeScale =
             animBuilder
 
 
-addCurrentRotate : AnimBuilder -> Maybe Rotate -> AnimBuilder
-addCurrentRotate animBuilder maybeRotate =
+setEndRotate : AnimBuilder -> Maybe Rotate -> AnimBuilder
+setEndRotate animBuilder maybeRotate =
     case maybeRotate of
         Just rotate ->
             let
@@ -489,8 +479,8 @@ addCurrentRotate animBuilder maybeRotate =
             animBuilder
 
 
-addCurrentColor : AnimBuilder -> Maybe Color -> AnimBuilder
-addCurrentColor animBuilder maybeColor =
+setEndColor : AnimBuilder -> Maybe Color -> AnimBuilder
+setEndColor animBuilder maybeColor =
     case maybeColor of
         Just color ->
             let
@@ -513,8 +503,8 @@ addCurrentColor animBuilder maybeColor =
             animBuilder
 
 
-addCurrentOpacity : AnimBuilder -> Maybe Opacity -> AnimBuilder
-addCurrentOpacity animBuilder maybeOpacity =
+setEndOpacity : AnimBuilder -> Maybe Opacity -> AnimBuilder
+setEndOpacity animBuilder maybeOpacity =
     case maybeOpacity of
         Just opacity ->
             let
