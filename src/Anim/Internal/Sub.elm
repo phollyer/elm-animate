@@ -6,7 +6,7 @@ module Anim.Internal.Sub exposing
     , getCurrentStyles
     , isAnimationRunning
     , htmlAttributes
-    , getDuration, getSize, getSizeH, getSizeHW, getSizeW
+    , getColor, getDuration, getOpacity, getRotate, getScale, getSize, getSizeH, getSizeHW, getSizeW
     )
 
 {-| Subscription-based animation system for Anim.
@@ -362,57 +362,157 @@ builder ((AnimationState state) as animationState) =
 
 addCurrentAnimatedValues : AnimationState -> String -> ElementAnimation -> AnimBuilder -> AnimBuilder
 addCurrentAnimatedValues animationState elementId _ builderAcc =
-    let
-        builderWithElement =
-            Builder.for elementId builderAcc
+    Builder.for elementId builderAcc
+        |> addCurrentPosition elementId animationState
+        |> addCurrentSize elementId animationState
+        |> addCurrentScale elementId animationState
+        |> addCurrentRotate elementId animationState
+        |> addCurrentColor elementId animationState
+        |> addCurrentOpacity elementId animationState
 
-        -- Extract current Position value
-        builderWithPosition =
-            case getPosition elementId animationState of
-                Just pos ->
-                    let
-                        positionConfig =
-                            Builder.PositionConfig
-                                { startAt = Nothing
-                                , endAt = pos
-                                , duration = 0
-                                , speed = 0
-                                , distance = 0
-                                , timing = Nothing
-                                , easing = Nothing
-                                , delay = Nothing
-                                , isDirty = True
-                                }
-                    in
-                    PropertyBuilder.upsert positionConfig builderWithElement
 
-                Nothing ->
-                    builderWithElement
+addCurrentPosition : String -> AnimationState -> AnimBuilder -> AnimBuilder
+addCurrentPosition elementId animationState animBuilder =
+    case getPosition elementId animationState of
+        Just pos ->
+            let
+                positionConfig =
+                    Builder.PositionConfig
+                        { startAt = Nothing
+                        , endAt = pos
+                        , duration = 0
+                        , speed = 0
+                        , distance = 0
+                        , timing = Nothing
+                        , easing = Nothing
+                        , delay = Nothing
+                        , isDirty = True
+                        }
+            in
+            PropertyBuilder.upsert positionConfig animBuilder
 
-        -- Extract current Size value
-        builderWithSize =
-            case getSize elementId animationState of
-                Just size ->
-                    let
-                        sizeConfig =
-                            Builder.SizeConfig
-                                { startAt = Nothing
-                                , endAt = size
-                                , duration = 0
-                                , speed = 0
-                                , distance = 0
-                                , timing = Nothing
-                                , easing = Nothing
-                                , delay = Nothing
-                                , isDirty = True
-                                }
-                    in
-                    PropertyBuilder.upsert sizeConfig builderWithPosition
+        Nothing ->
+            animBuilder
 
-                Nothing ->
-                    builderWithPosition
-    in
-    builderWithSize
+
+addCurrentSize : String -> AnimationState -> AnimBuilder -> AnimBuilder
+addCurrentSize elementId animationState animBuilder =
+    case getSize elementId animationState of
+        Just size ->
+            let
+                sizeConfig =
+                    Builder.SizeConfig
+                        { startAt = Nothing
+                        , endAt = size
+                        , duration = 0
+                        , speed = 0
+                        , distance = 0
+                        , timing = Nothing
+                        , easing = Nothing
+                        , delay = Nothing
+                        , isDirty = True
+                        }
+            in
+            PropertyBuilder.upsert sizeConfig animBuilder
+
+        Nothing ->
+            animBuilder
+
+
+addCurrentScale : String -> AnimationState -> AnimBuilder -> AnimBuilder
+addCurrentScale elementId animationState animBuilder =
+    case getScale elementId animationState of
+        Just scale ->
+            let
+                scaleConfig =
+                    Builder.ScaleConfig
+                        { startAt = Nothing
+                        , endAt = scale
+                        , duration = 0
+                        , speed = 0
+                        , distance = 0
+                        , timing = Nothing
+                        , easing = Nothing
+                        , delay = Nothing
+                        , isDirty = True
+                        }
+            in
+            PropertyBuilder.upsert scaleConfig animBuilder
+
+        Nothing ->
+            animBuilder
+
+
+addCurrentRotate : String -> AnimationState -> AnimBuilder -> AnimBuilder
+addCurrentRotate elementId animationState animBuilder =
+    case getRotate elementId animationState of
+        Just rotate ->
+            let
+                rotateConfig =
+                    Builder.RotateConfig
+                        { startAt = Nothing
+                        , endAt = rotate
+                        , duration = 0
+                        , speed = 0
+                        , distance = 0
+                        , timing = Nothing
+                        , easing = Nothing
+                        , delay = Nothing
+                        , isDirty = True
+                        }
+            in
+            PropertyBuilder.upsert rotateConfig animBuilder
+
+        Nothing ->
+            animBuilder
+
+
+addCurrentColor : String -> AnimationState -> AnimBuilder -> AnimBuilder
+addCurrentColor elementId animationState animBuilder =
+    case getColor elementId animationState of
+        Just color ->
+            let
+                colorConfig =
+                    Builder.BackgroundColorConfig
+                        { startAt = Nothing
+                        , endAt = color
+                        , duration = 0
+                        , speed = 0
+                        , distance = 0
+                        , timing = Nothing
+                        , easing = Nothing
+                        , delay = Nothing
+                        , isDirty = True
+                        }
+            in
+            PropertyBuilder.upsert colorConfig animBuilder
+
+        Nothing ->
+            animBuilder
+
+
+addCurrentOpacity : String -> AnimationState -> AnimBuilder -> AnimBuilder
+addCurrentOpacity elementId animationState animBuilder =
+    case getOpacity elementId animationState of
+        Just opacity ->
+            let
+                opacityConfig =
+                    Builder.OpacityConfig
+                        { startAt = Nothing
+                        , endAt = opacity
+                        , duration = 0
+                        , speed = 0
+                        , distance = 0
+                        , timing = Nothing
+                        , easing = Nothing
+                        , delay = Nothing
+                        , isDirty = True
+                        }
+            in
+            PropertyBuilder.upsert opacityConfig animBuilder
+
+        Nothing ->
+            animBuilder
 
 
 {-| Extract current values from dirty properties in the builder.
@@ -963,6 +1063,130 @@ getSize elementId (AnimationState state) =
                                 case currentValue of
                                     SizeAnimationValue size ->
                                         Just size
+
+                                    _ ->
+                                        Nothing
+
+                            else
+                                Nothing
+                        )
+                    |> List.head
+            )
+
+
+{-| Get current scale of an element being animated.
+-}
+getScale : String -> AnimationState -> Maybe Scale
+getScale elementId (AnimationState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen
+            (\elementState ->
+                elementState.properties
+                    |> List.filterMap
+                        (\propertyState ->
+                            if propertyState.propertyType == "scale" then
+                                let
+                                    currentValue =
+                                        List.drop propertyState.currentStepIndex propertyState.animationSteps
+                                            |> List.head
+                                            |> Maybe.withDefault (getLastStep propertyState.animationSteps)
+                                in
+                                case currentValue of
+                                    ScaleAnimationValue scale ->
+                                        Just scale
+
+                                    _ ->
+                                        Nothing
+
+                            else
+                                Nothing
+                        )
+                    |> List.head
+            )
+
+
+{-| Get current rotation of an element being animated.
+-}
+getRotate : String -> AnimationState -> Maybe Rotate
+getRotate elementId (AnimationState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen
+            (\elementState ->
+                elementState.properties
+                    |> List.filterMap
+                        (\propertyState ->
+                            if propertyState.propertyType == "rotate" then
+                                let
+                                    currentValue =
+                                        List.drop propertyState.currentStepIndex propertyState.animationSteps
+                                            |> List.head
+                                            |> Maybe.withDefault (getLastStep propertyState.animationSteps)
+                                in
+                                case currentValue of
+                                    RotateAnimationValue rotate ->
+                                        Just rotate
+
+                                    _ ->
+                                        Nothing
+
+                            else
+                                Nothing
+                        )
+                    |> List.head
+            )
+
+
+{-| Get current color of an element being animated.
+-}
+getColor : String -> AnimationState -> Maybe Color
+getColor elementId (AnimationState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen
+            (\elementState ->
+                elementState.properties
+                    |> List.filterMap
+                        (\propertyState ->
+                            if propertyState.propertyType == "color" then
+                                let
+                                    currentValue =
+                                        List.drop propertyState.currentStepIndex propertyState.animationSteps
+                                            |> List.head
+                                            |> Maybe.withDefault (getLastStep propertyState.animationSteps)
+                                in
+                                case currentValue of
+                                    ColorAnimationValue color ->
+                                        Just color
+
+                                    _ ->
+                                        Nothing
+
+                            else
+                                Nothing
+                        )
+                    |> List.head
+            )
+
+
+{-| Get current opacity of an element being animated.
+-}
+getOpacity : String -> AnimationState -> Maybe Opacity
+getOpacity elementId (AnimationState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen
+            (\elementState ->
+                elementState.properties
+                    |> List.filterMap
+                        (\propertyState ->
+                            if propertyState.propertyType == "opacity" then
+                                let
+                                    currentValue =
+                                        List.drop propertyState.currentStepIndex propertyState.animationSteps
+                                            |> List.head
+                                            |> Maybe.withDefault (getLastStep propertyState.animationSteps)
+                                in
+                                case currentValue of
+                                    OpacityAnimationValue opacity ->
+                                        Just opacity
 
                                     _ ->
                                         Nothing
