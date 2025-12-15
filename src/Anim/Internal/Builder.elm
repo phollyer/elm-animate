@@ -257,7 +257,7 @@ processAnimationData : AnimBuilder -> ProcessedAnimationData
 processAnimationData (AnimBuilder data) =
     let
         processedElements =
-            Dict.map (processElement data) data.elements
+            Dict.map (\_ elementConfig -> processElement data elementConfig) data.elements
     in
     { elements = processedElements
     , globalTiming = data.globalTiming
@@ -266,8 +266,8 @@ processAnimationData (AnimBuilder data) =
     }
 
 
-processElement : BuilderData -> String -> ElementConfig -> ProcessedElementConfig
-processElement globalData _ elementConfig =
+processElement : BuilderData -> ElementConfig -> ProcessedElementConfig
+processElement globalData elementConfig =
     { properties = List.filterMap (processProperty globalData) elementConfig.properties
     }
 

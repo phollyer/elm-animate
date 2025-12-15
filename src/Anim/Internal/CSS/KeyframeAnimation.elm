@@ -36,7 +36,6 @@ generate elementId properties =
             processed =
                 Builder.processElement
                     { globalTiming = Nothing, globalEasing = Nothing, globalDelay = Nothing, currentElementId = Nothing, elements = Dict.empty }
-                    elementId
                     { properties = properties }
 
             processedProps =
@@ -248,7 +247,8 @@ generate elementId properties =
                                                             interpolatedColor =
                                                                 Color.interpolate startColor endColor propProgress
                                                         in
-                                                        Just ( "background-color", Color.toString interpolatedColor )
+                                                        Just
+                                                            [ ( "background-color", Color.toString interpolatedColor ) ]
 
                                                     Builder.ProcessedOpacityConfig cfg ->
                                                         let
@@ -285,7 +285,48 @@ generate elementId properties =
                                                             interpolatedOpacity =
                                                                 Opacity.fromFloat interpolatedValue
                                                         in
-                                                        Just ( "opacity", Opacity.toString interpolatedOpacity )
+                                                        Just
+                                                            [ ( "opacity", Opacity.toString interpolatedOpacity ) ]
+
+                                                    Builder.ProcessedSizeConfig cfg ->
+                                                        let
+                                                            dur =
+                                                                cfg.duration
+
+                                                            propProgress =
+                                                                if dur > 0 then
+                                                                    clamp 0 1 (time / toFloat dur)
+
+                                                                else
+                                                                    1.0
+
+                                                            startSize =
+                                                                case cfg.startAt of
+                                                                    Just s ->
+                                                                        s
+
+                                                                    Nothing ->
+                                                                        Size.fromTuple ( 100.0, 100.0 )
+
+                                                            endSize =
+                                                                cfg.endAt
+
+                                                            ( startW, startH ) =
+                                                                Size.toTuple startSize
+
+                                                            ( endW, endH ) =
+                                                                Size.toTuple endSize
+
+                                                            interpolatedW =
+                                                                startW + (endW - startW) * propProgress
+
+                                                            interpolatedH =
+                                                                startH + (endH - startH) * propProgress
+                                                        in
+                                                        Just
+                                                            [ ( "width", String.fromFloat interpolatedW ++ "px" )
+                                                            , ( "height", String.fromFloat interpolatedH ++ "px" )
+                                                            ]
 
                                                     _ ->
                                                         Nothing
@@ -294,10 +335,10 @@ generate elementId properties =
                                 styles =
                                     case transformStyle of
                                         Just t ->
-                                            t :: otherStyles
+                                            t :: List.concat otherStyles
 
                                         Nothing ->
-                                            otherStyles
+                                            List.concat otherStyles
                             in
                             ( globalProgress, styles )
                         )
@@ -345,7 +386,7 @@ generate elementId properties =
                 buildKeyframesString animationName keyframeSteps
 
             animatedProperties =
-                [ "transform", "background-color", "opacity" ]
+                [ "transform", "background-color", "opacity", "width", "height" ]
         in
         [ { animationName = animationName
           , keyframes = keyframesString
