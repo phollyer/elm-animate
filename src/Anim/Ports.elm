@@ -2,6 +2,9 @@ module Anim.Ports exposing
     ( animate, animateBatch
     , ElementId
     , init, builder, AnimationState
+    , duration, speed
+    , easing
+    , delay
     , getPosition, getCurrentStyles
     , htmlAttributes
     )
@@ -21,6 +24,26 @@ via Elm ports for maximum performance and browser compatibility.
 @docs init, builder, AnimationState
 
 
+# Global Settings
+
+These settings will be used for all animations unless overridden on a per-animation basis.
+
+
+## Timing
+
+@docs duration, speed
+
+
+## Easing
+
+@docs easing
+
+
+## Delay
+
+@docs delay
+
+
 # Animation Data
 
 @docs getPosition, getCurrentStyles
@@ -32,12 +55,16 @@ via Elm ports for maximum performance and browser compatibility.
 
 -}
 
-import Anim exposing (AnimBuilder)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Ports as InternalPorts
 import Anim.Internal.Properties.Position exposing (Position)
+import Anim.Timing.Easing as Easing exposing (Easing)
 import Html
 import Json.Encode as Encode
+
+
+type alias AnimBuilder =
+    Builder.AnimBuilder
 
 
 
@@ -194,6 +221,66 @@ getPosition =
 getCurrentStyles : String -> AnimationState -> List ( String, String )
 getCurrentStyles =
     InternalPorts.getCurrentStyles
+
+
+{-| Set global duration in milliseconds (overrides any previous speed setting).
+
+    Ports.init
+        |> Ports.duration 1000
+        |> Position.for "element"
+        |> Position.toXY 100 200
+        |> Position.build
+        |> Ports.animate
+
+-}
+duration : Int -> AnimBuilder -> AnimBuilder
+duration =
+    InternalPorts.duration
+
+
+{-| Set global speed in units per second (overrides any previous duration setting).
+
+    Ports.init
+        |> Ports.speed 100
+        |> Position.for "element"
+        |> Position.toXY 100 200
+        |> Position.build
+        |> Ports.animate
+
+-}
+speed : Float -> AnimBuilder -> AnimBuilder
+speed =
+    InternalPorts.speed
+
+
+{-| Set global easing function.
+
+    Ports.init
+        |> Ports.easing EaseInOutQuad
+        |> Position.for "element"
+        |> Position.toXY 100 200
+        |> Position.build
+        |> Ports.animate
+
+-}
+easing : Easing -> AnimBuilder -> AnimBuilder
+easing =
+    Easing.mapInternal InternalPorts.easing
+
+
+{-| Set global delay in milliseconds.
+
+    Ports.init
+        |> Ports.delay 500
+        |> Position.for "element"
+        |> Position.toXY 100 200
+        |> Position.build
+        |> Ports.animate
+
+-}
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
+    InternalPorts.delay
 
 
 {-| Generate HTML attributes for ports-based animations.

@@ -1,6 +1,5 @@
 module TestColorScale exposing (suite)
 
-import Anim
 import Anim.CSS as CSS
 import Anim.Properties.Color as Color
 import Anim.Properties.Scale as Scale
@@ -18,8 +17,8 @@ suite =
                     animations =
                         CSS.init
                             |> CSS.builder
-                            |> Anim.duration 900
-                            |> Anim.easing Easing.QuartInOut
+                            |> CSS.duration 900
+                            |> CSS.easing Easing.QuartInOut
                             |> Color.for "box"
                             |> Color.from (Color.Rgb { r = 59, g = 130, b = 246 })
                             |> Color.to (Color.Rgb { r = 255, g = 100, b = 150 })

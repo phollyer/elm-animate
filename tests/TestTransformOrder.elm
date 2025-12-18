@@ -1,6 +1,5 @@
 module TestTransformOrder exposing (suite)
 
-import Anim
 import Anim.CSS as CSS
 import Anim.Properties.Position as Position
 import Anim.Properties.Rotate as Rotate
@@ -19,8 +18,8 @@ suite =
                     animations =
                         CSS.init
                             |> CSS.builder
-                            |> Anim.duration 1000
-                            |> Anim.easing Easing.Linear
+                            |> CSS.duration 1000
+                            |> CSS.easing Easing.Linear
                             -- First: Position
                             |> Position.for "test-element"
                             |> Position.toXY 100 50

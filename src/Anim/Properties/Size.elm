@@ -3,8 +3,7 @@ module Anim.Properties.Size exposing
     , fromHW, fromH, fromW, fromTuple
     , toHW, toH, toW
     , speed, duration, easing, delay
-    , asRecord
-    , toTuple
+    , asRecord, toTuple
     )
 
 {-| Size animation functions.
@@ -50,7 +49,7 @@ On subsequent animations, it will start from the last known size, so you only ne
 
 ## Convert Size
 
-@docs asRecord
+@docs asRecord, toTuple
 
 -}
 
@@ -119,6 +118,8 @@ fromTuple ( width, height ) =
     SB.fromHW width height
 
 
+{-| Convert a Size to a tuple of ( width, height ).
+-}
 toTuple : Size -> ( Float, Float )
 toTuple =
     Internal.toTuple

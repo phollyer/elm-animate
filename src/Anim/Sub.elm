@@ -1,6 +1,9 @@
 module Anim.Sub exposing
     ( ElementId
     , init, builder, animate, AnimationState, AnimationMsg
+    , duration, speed
+    , easing
+    , delay
     , subscriptions, update
     , getPosition, getPositionXY, getPositionX, getPositionY
     , getSize, getSizeHW, getSizeH, getSizeW
@@ -20,6 +23,26 @@ onAnimationFrameDelta subscriptions for smooth, controlled animations.
 @docs ElementId
 
 @docs init, builder, animate, AnimationState, AnimationMsg
+
+
+# Global Settings
+
+These settings will be used for all animations unless overridden on a per-animation basis.
+
+
+## Timing
+
+@docs duration, speed
+
+
+## Easing
+
+@docs easing
+
+
+## Delay
+
+@docs delay
 
 
 # Animation Management
@@ -56,14 +79,15 @@ onAnimationFrameDelta subscriptions for smooth, controlled animations.
 
 -}
 
-import Anim exposing (AnimBuilder)
 import Anim.Internal.Properties.Position exposing (Position)
 import Anim.Internal.Properties.Size exposing (Size)
 import Anim.Internal.Sub as InternalSub
-import Anim.Internal.Timing.Easing exposing (Easing(..))
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
-import Browser exposing (UrlRequest(..))
+import Anim.Timing.Easing as Easing exposing (Easing)
 import Html
+
+
+type alias AnimBuilder =
+    InternalSub.AnimBuilder
 
 
 
@@ -127,6 +151,66 @@ builder =
 animate : AnimBuilder -> AnimationState
 animate =
     InternalSub.animate
+
+
+{-| Set global duration in milliseconds (overrides any previous speed setting).
+
+    Sub.init
+        |> Sub.duration 1000
+        |> Position.for "element"
+        |> Position.toXY 100 200
+        |> Position.build
+        |> Sub.animate
+
+-}
+duration : Int -> AnimBuilder -> AnimBuilder
+duration =
+    InternalSub.duration
+
+
+{-| Set global speed in units per second (overrides any previous duration setting).
+
+    Sub.init
+        |> Sub.speed 100
+        |> Position.for "element"
+        |> Position.toXY 100 200
+        |> Position.build
+        |> Sub.animate
+
+-}
+speed : Float -> AnimBuilder -> AnimBuilder
+speed =
+    InternalSub.speed
+
+
+{-| Set global easing function.
+
+    Sub.init
+        |> Sub.easing EaseInOutQuad
+        |> Position.for "element"
+        |> Position.toXY 100 200
+        |> Position.build
+        |> Sub.animate
+
+-}
+easing : Easing -> AnimBuilder -> AnimBuilder
+easing =
+    Easing.mapInternal InternalSub.easing
+
+
+{-| Set global delay in milliseconds.
+
+    Sub.init
+        |> Sub.delay 500
+        |> Position.for "element"
+        |> Position.toXY 100 200
+        |> Position.build
+        |> Sub.animate
+
+-}
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
+    InternalSub.delay
 
 
 

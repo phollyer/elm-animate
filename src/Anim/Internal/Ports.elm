@@ -3,6 +3,7 @@ module Anim.Internal.Ports exposing
     , init, builder, animate, AnimationState
     , getPosition, getCurrentStyles
     , htmlAttributes
+    , delay, duration, easing, speed
     )
 
 {-| Ports-based animation system for Anim.
@@ -32,7 +33,6 @@ commands via Elm ports for high-performance, platform-optimized animations.
 
 -}
 
-import Anim exposing (AnimBuilder)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Properties.Color as Color exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
@@ -40,10 +40,15 @@ import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
 import Anim.Internal.Properties.Size exposing (Size)
+import Anim.Internal.Timing.Easing exposing (Easing)
 import Dict exposing (Dict)
 import Html
 import Html.Attributes
 import Json.Encode as Encode
+
+
+type alias AnimBuilder =
+    Builder.AnimBuilder
 
 
 
@@ -93,7 +98,7 @@ init =
     AnimationState
         { elementAnimations = Dict.empty
         , isRunning = False
-        , builder = Anim.init
+        , builder = Builder.init
         }
 
 
@@ -183,6 +188,26 @@ getPosition : String -> AnimationState -> Maybe Position
 getPosition elementId (AnimationState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.andThen (.endStates >> .position)
+
+
+duration : Int -> AnimBuilder -> AnimBuilder
+duration =
+    Builder.duration
+
+
+speed : Float -> AnimBuilder -> AnimBuilder
+speed value =
+    Builder.speed value
+
+
+easing : Easing -> AnimBuilder -> AnimBuilder
+easing =
+    Builder.easing
+
+
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
+    Builder.delay
 
 
 {-| Get current styles for an element (for debugging/display purposes).

@@ -1,10 +1,14 @@
 module Anim.Internal.CSS exposing
-    ( AnimationState
+    ( AnimBuilder
+    , AnimationState
     , TransformOrder(..)
     , animate
     , animateWithOrder
     , animationStyleAttribute
     , builder
+    , delay
+    , duration
+    , easing
     , getElementAnimation
     , getElementKeyframes
     , getPosition
@@ -24,9 +28,9 @@ module Anim.Internal.CSS exposing
     , onTransitionEnd
     , onTransitionRun
     , onTransitionStart
+    , speed
     )
 
-import Anim exposing (AnimBuilder)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.CSS.KeyframeAnimation as KeyframeAnimation exposing (KeyframeAnimation)
 import Anim.Internal.CSS.Transform as Transforms
@@ -34,11 +38,16 @@ import Anim.Internal.CSS.Transition as Transitions
 import Anim.Internal.Properties.Color as Color
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position exposing (Position)
+import Anim.Internal.Timing.Easing exposing (Easing)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes
 import Html.Events
 import Json.Decode
+
+
+type alias AnimBuilder =
+    Builder.AnimBuilder
 
 
 
@@ -91,7 +100,7 @@ init =
     AnimationState
         { elementAnimations = Dict.empty
         , isRunning = False
-        , builder = Anim.init
+        , builder = Builder.init
         }
 
 
@@ -364,6 +373,26 @@ getPositionAnimationDuration elementId (AnimationState state) =
 isRunning : AnimationState -> Bool
 isRunning (AnimationState state) =
     state.isRunning
+
+
+duration : Int -> AnimBuilder -> AnimBuilder
+duration =
+    Builder.duration
+
+
+speed : Float -> AnimBuilder -> AnimBuilder
+speed value =
+    Builder.speed value
+
+
+easing : Easing -> AnimBuilder -> AnimBuilder
+easing =
+    Builder.easing
+
+
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
+    Builder.delay
 
 
 htmlAttributes : String -> AnimationState -> List (Html.Attribute msg)

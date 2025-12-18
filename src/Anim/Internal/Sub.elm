@@ -6,7 +6,7 @@ module Anim.Internal.Sub exposing
     , getCurrentStyles
     , isAnimationRunning
     , htmlAttributes
-    , getColor, getDuration, getOpacity, getRotate, getScale, getSize, getSizeH, getSizeHW, getSizeW
+    , AnimBuilder, delay, duration, easing, getColor, getDuration, getOpacity, getRotate, getScale, getSize, getSizeH, getSizeHW, getSizeW, speed
     )
 
 {-| Subscription-based animation system for Anim.
@@ -51,7 +51,6 @@ onAnimationFrameDelta subscriptions for smooth, controlled animations.
 
 -}
 
-import Anim exposing (AnimBuilder)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Color as Color exposing (Color)
@@ -67,6 +66,10 @@ import Dict exposing (Dict)
 import Html
 import Html.Attributes
 import Internal.AnimationCore as AnimationCore
+
+
+type alias AnimBuilder =
+    Builder.AnimBuilder
 
 
 
@@ -130,7 +133,7 @@ init =
     AnimationState
         { elementAnimations = Dict.empty
         , isRunning = False
-        , builder = Anim.init
+        , builder = Builder.init
         }
 
 
@@ -897,6 +900,26 @@ createPropertyAnimationState startValues property =
                 , totalDurationMs = toFloat config.duration
                 , elapsedMs = 0.0
                 }
+
+
+duration : Int -> AnimBuilder -> AnimBuilder
+duration =
+    Builder.duration
+
+
+speed : Float -> AnimBuilder -> AnimBuilder
+speed value =
+    Builder.speed value
+
+
+easing : Easing -> AnimBuilder -> AnimBuilder
+easing =
+    Builder.easing
+
+
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
+    Builder.delay
 
 
 

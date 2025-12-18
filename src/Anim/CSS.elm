@@ -1,6 +1,9 @@
 module Anim.CSS exposing
-    ( AnimationState, init, builder, animate, animateOrder
+    ( AnimationState, init, AnimBuilder, builder, animate, animateOrder
     , TransformOrder, defaultTransformOrder
+    , duration, speed
+    , easing
+    , delay
     , getPosition, isRunning
     , htmlAttributes, getElementKeyframes, animationStyleAttribute, keyframesStyleNode, keyframesStyleNodeFor
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
@@ -15,12 +18,32 @@ can be easily added to your elements as style tags or css [transform](https://de
 
 # Build
 
-@docs AnimationState, init, builder, animate, animateOrder
+@docs AnimationState, init, AnimBuilder, builder, animate, animateOrder
 
 
 # Transform Ordering
 
 @docs TransformOrder, defaultTransformOrder
+
+
+# Global Settings
+
+These settings will be used for all animations unless overridden on a per-animation basis.
+
+
+## Timing
+
+@docs duration, speed
+
+
+## Easing
+
+@docs easing
+
+
+## Delay
+
+@docs delay
 
 
 # Querying Animation State
@@ -51,9 +74,9 @@ Animation events are different from transition events, so both types of events c
 
 -}
 
-import Anim exposing (AnimBuilder)
 import Anim.Internal.CSS as InternalCSS exposing (TransformOrder(..))
 import Anim.Properties.Position exposing (Position)
+import Anim.Timing.Easing as Easing exposing (Easing)
 import Html
 
 
@@ -98,6 +121,12 @@ so that new animations will be started based on the current state.
 -}
 type alias AnimationState =
     InternalCSS.AnimationState
+
+
+{-| Animation builder for CSS animations.
+-}
+type alias AnimBuilder =
+    InternalCSS.AnimBuilder
 
 
 {-| Generate CSS animations from the builder, and return the
@@ -260,6 +289,66 @@ getPosition =
 isRunning : AnimationState -> Bool
 isRunning =
     InternalCSS.isRunning
+
+
+{-| Set global duration in milliseconds (overrides any previous speed setting).
+
+    Css.init
+        |> Css.duration 1000
+        |> Position.for "element"
+        |> Position.toXY 100 200
+        |> Position.build
+        |> Css.animate
+
+-}
+duration : Int -> AnimBuilder -> AnimBuilder
+duration =
+    InternalCSS.duration
+
+
+{-| Set global speed in units per second (overrides any previous duration setting).
+
+    Css.init
+        |> Css.speed 100
+        |> Position.for "element"
+        |> Position.toXY 100 200
+        |> Position.build
+        |> Css.animate
+
+-}
+speed : Float -> AnimBuilder -> AnimBuilder
+speed =
+    InternalCSS.speed
+
+
+{-| Set global easing function.
+
+    Css.init
+        |> Css.easing EaseInOutQuad
+        |> Position.for "element"
+        |> Position.toXY 100 200
+        |> Position.build
+        |> Css.animate
+
+-}
+easing : Easing -> AnimBuilder -> AnimBuilder
+easing =
+    Easing.mapInternal InternalCSS.easing
+
+
+{-| Set global delay in milliseconds.
+
+    Css.init
+        |> Css.delay 500
+        |> Position.for "element"
+        |> Position.toXY 100 200
+        |> Position.build
+        |> Css.animate
+
+-}
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
+    InternalCSS.delay
 
 
 {-| Get all the HTML attributes needed for the CSS animations on the target element.

@@ -10,7 +10,6 @@
         "Scroll.Document.Task",
         "Scroll.Container.Cmd",
         "Scroll.Container.Task",
-        "Anim",
         "Anim.CSS",
         "Anim.Sub",
         "Anim.Ports",
