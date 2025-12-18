@@ -1,19 +1,19 @@
-module Anim.Properties.Color exposing
+module Anim.Properties.BackgroundColor exposing
     ( Color(..), Builder, for, build
     , from
     , to
     , duration, speed, easing, delay
     )
 
-{-| Color animation functions.
+{-| Background Color animation functions.
 
-Use these functions to configure color animations in the builder chain:
+Use these functions to configure background color animations in the builder chain:
 
     animBuilder
-        |> Color.for "my-element"
-        |> Color.to (Hex "#ff0000")
+        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.to (Hex "#ff0000")
         |> ... -- other color configuration steps
-        |> Color.build
+        |> BackgroundColor.build
         |> ... -- continue with animation
 
 
@@ -47,7 +47,7 @@ On subsequent animations, it will start from the last known color, so you only n
 
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Color as CB
-import Anim.Internal.Properties.Color as C
+import Anim.Internal.Properties.BackgroundColor as BC
 import Anim.Timing.Easing as Easing exposing (Easing)
 
 
@@ -74,7 +74,7 @@ type alias Builder =
 {-| Start configuring a color animation for a specific element.
 
     animBuilder
-        |> Color.for "my-element"
+        |> BackgroundColor.for "my-element"
         |> ...
 
 -}
@@ -87,9 +87,9 @@ for elementId =
 so you can continue building the overall animation.
 
     animBuilder
-        |> Color.for "my-element"
+        |> BackgroundColor.for "my-element"
         |> ... -- Color configuration steps
-        |> Color.build
+        |> BackgroundColor.build
         |> ... -- continue with animation
 
 -}
@@ -105,8 +105,8 @@ build =
 {-| Set the starting color for the current element.
 
     animBuilder
-        |> Color.for "my-element"
-        |> Color.from (Hex "#ff0000")
+        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.from (Hex "#ff0000")
         |> ...
 
 -}
@@ -118,13 +118,13 @@ from color =
 {-| Set the target color for the current element.
 
     animBuilder
-        |> Color.for "my-element"
-        |> Color.to (Hex "#ff0000")
+        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.to (Hex "#ff0000")
         |> ...
 
     animBuilder
-        |> Color.for "my-element"
-        |> Color.to (Rgb { r = 255, g = 0, b = 0 })
+        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.to (Rgb { r = 255, g = 0, b = 0 })
         |> ...
 
 -}
@@ -145,9 +145,9 @@ change at a specific rate". Consider using `duration` unless you specifically ne
 speed-based timing that adapts to color distance.
 
     animBuilder
-        |> Color.for "my-element"
-        |> Color.to (Hex "#ff0000")
-        |> Color.speed 1.0
+        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.to (Hex "#ff0000")
+        |> BackgroundColor.speed 1.0
         |> ...
 
 -}
@@ -159,9 +159,9 @@ speed =
 {-| Set the animation duration (milliseconds).
 
     animBuilder
-        |> Color.for "my-element"
-        |> Color.to (Hex "#ff0000")
-        |> Color.duration 2000
+        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.to (Hex "#ff0000")
+        |> BackgroundColor.duration 2000
         |> ...
 
 -}
@@ -173,9 +173,9 @@ duration milliseconds =
 {-| Set the easing function for the animation.
 
     animBuilder
-        |> Color.for "my-element"
-        |> Color.to (Hex "#ff0000")
-        |> Color.easing Ease.CubicInOut
+        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.to (Hex "#ff0000")
+        |> BackgroundColor.easing Ease.CubicInOut
         |> ...
 
 -}
@@ -187,9 +187,9 @@ easing easing_ =
 {-| Set the delay (milliseconds) before the animation runs.
 
     animBuilder
-        |> Color.for "my-element"
-        |> Color.to (Hex "#ff0000")
-        |> Color.delay 500
+        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.to (Hex "#ff0000")
+        |> BackgroundColor.delay 500
         |> ...
 
 -}
@@ -198,20 +198,20 @@ delay delay_ =
     CB.delay delay_
 
 
-toInternal : Color -> C.Color
+toInternal : Color -> BC.Color
 toInternal color =
     case color of
         Hex hexString ->
-            C.Hex hexString
+            BC.Hex hexString
 
         Rgb rgb ->
-            C.Rgb rgb
+            BC.Rgb rgb
 
         Rgba rgba ->
-            C.Rgba rgba
+            BC.Rgba rgba
 
         Hsl hsl ->
-            C.Hsl hsl
+            BC.Hsl hsl
 
         Hsla hsla ->
-            C.Hsla hsla
+            BC.Hsla hsla

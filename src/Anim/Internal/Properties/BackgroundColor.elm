@@ -1,4 +1,4 @@
-module Anim.Internal.Properties.Color exposing
+module Anim.Internal.Properties.BackgroundColor exposing
     ( Color(..)
     , HSL
     , HSLA

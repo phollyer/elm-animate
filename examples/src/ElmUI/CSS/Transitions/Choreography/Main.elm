@@ -26,7 +26,6 @@ USAGE EXAMPLES:
 
 -- Common UI imports
 
-import Anim
 import Anim.CSS as CSS
 import Anim.Properties.Position as Position
 import Anim.Timing.Easing as Easing exposing (Easing(..))
@@ -100,8 +99,8 @@ update msg model =
                 | animations =
                     model.animations
                         |> CSS.builder
-                        |> Anim.duration 800
-                        |> Anim.easing Easing.QuadInOut
+                        |> CSS.duration 800
+                        |> CSS.easing Easing.QuadInOut
                         |> Position.for "elementA"
                         |> Position.toXY 80 60
                         |> Position.build
@@ -130,8 +129,8 @@ update msg model =
                 | animations =
                     model.animations
                         |> CSS.builder
-                        |> Anim.duration 600
-                        |> Anim.easing Easing.QuadInOut
+                        |> CSS.duration 600
+                        |> CSS.easing Easing.QuadInOut
                         |> Position.for "elementA"
                         |> Position.toXY 0 0
                         |> Position.build
@@ -170,8 +169,8 @@ update msg model =
                 | animations =
                     model.animations
                         |> CSS.builder
-                        |> Anim.duration 1000
-                        |> Anim.easing Easing.backInOut
+                        |> CSS.duration 1000
+                        |> CSS.easing Easing.backInOut
                         |> Position.for "elementA"
                         |> Position.toXY (toFloat (centerX + round radius)) (toFloat centerY)
                         |> Position.build

@@ -15,7 +15,6 @@ FEATURES:
 
 -}
 
-import Anim
 import Anim.CSS as CSS
 import Anim.Properties.Rotate as Rotate
 import Anim.Timing.Delay as Delay
@@ -71,8 +70,8 @@ anim : CSS.AnimationState -> Rotate.Builder
 anim animations =
     animations
         |> CSS.builder
-        |> Anim.duration 700
-        |> Anim.easing Linear
+        |> CSS.duration 700
+        |> CSS.easing Linear
         |> Rotate.for "box"
 
 

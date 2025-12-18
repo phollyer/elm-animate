@@ -14,7 +14,6 @@ FEATURES:
 
 -}
 
-import Anim
 import Anim.CSS as CSS
 import Anim.Properties.Opacity as Opacity
 import Anim.Timing.Delay as Delay
@@ -76,8 +75,8 @@ anim : CSS.AnimationState -> Opacity.Builder
 anim animations =
     animations
         |> CSS.builder
-        |> Anim.duration 600
-        |> Anim.easing Linear
+        |> CSS.duration 600
+        |> CSS.easing Linear
         |> Opacity.for elementId
 
 

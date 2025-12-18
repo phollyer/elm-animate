@@ -34,7 +34,7 @@ commands via Elm ports for high-performance, platform-optimized animations.
 -}
 
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Properties.Color as Color exposing (Color)
+import Anim.Internal.Properties.BackgroundColor as Color exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
@@ -172,7 +172,7 @@ extractPropertyEndState property state =
         Builder.ProcessedScaleConfig config ->
             { state | scale = Just config.endAt }
 
-        Builder.ProcessedColorConfig config ->
+        Builder.ProcessedBackgroundColorConfig config ->
             { state | color = Just config.endAt }
 
         Builder.ProcessedOpacityConfig config ->

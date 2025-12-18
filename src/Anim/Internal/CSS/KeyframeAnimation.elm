@@ -5,7 +5,7 @@ module Anim.Internal.CSS.KeyframeAnimation exposing
     )
 
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Properties.Color as Color
+import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
@@ -55,7 +55,7 @@ generate elementId properties =
                                 Builder.ProcessedRotateConfig cfg ->
                                     cfg.duration
 
-                                Builder.ProcessedColorConfig cfg ->
+                                Builder.ProcessedBackgroundColorConfig cfg ->
                                     cfg.duration
 
                                 Builder.ProcessedOpacityConfig cfg ->
@@ -221,7 +221,7 @@ generate elementId properties =
                                         |> List.filterMap
                                             (\p ->
                                                 case p of
-                                                    Builder.ProcessedColorConfig cfg ->
+                                                    Builder.ProcessedBackgroundColorConfig cfg ->
                                                         let
                                                             dur =
                                                                 cfg.duration
@@ -239,16 +239,16 @@ generate elementId properties =
                                                                         c
 
                                                                     Nothing ->
-                                                                        Color.rgb255 59 130 246
+                                                                        BackgroundColor.rgb255 59 130 246
 
                                                             endColor =
                                                                 cfg.endAt
 
                                                             interpolatedColor =
-                                                                Color.interpolate startColor endColor propProgress
+                                                                BackgroundColor.interpolate startColor endColor propProgress
                                                         in
                                                         Just
-                                                            [ ( "background-color", Color.toString interpolatedColor ) ]
+                                                            [ ( "background-color", BackgroundColor.toString interpolatedColor ) ]
 
                                                     Builder.ProcessedOpacityConfig cfg ->
                                                         let
@@ -360,8 +360,8 @@ generate elementId properties =
                                         Builder.ProcessedRotateConfig cfg ->
                                             "rot" ++ String.fromInt cfg.duration ++ Rotate.toCssString cfg.endAt
 
-                                        Builder.ProcessedColorConfig cfg ->
-                                            "color" ++ String.fromInt cfg.duration ++ Color.toString cfg.endAt
+                                        Builder.ProcessedBackgroundColorConfig cfg ->
+                                            "background-color" ++ String.fromInt cfg.duration ++ BackgroundColor.toString cfg.endAt
 
                                         Builder.ProcessedOpacityConfig cfg ->
                                             "opacity" ++ String.fromInt cfg.duration ++ Opacity.toString cfg.endAt

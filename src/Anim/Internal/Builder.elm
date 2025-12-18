@@ -24,7 +24,7 @@ module Anim.Internal.Builder exposing
     , updateCurrentElement
     )
 
-import Anim.Internal.Properties.Color as Color exposing (Color)
+import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position, distance)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
@@ -71,7 +71,7 @@ type ProcessedPropertyConfig
     = ProcessedPositionConfig (ProcessedAnimationConfig Position)
     | ProcessedRotateConfig (ProcessedAnimationConfig Rotate)
     | ProcessedScaleConfig (ProcessedAnimationConfig Scale)
-    | ProcessedColorConfig (ProcessedAnimationConfig Color)
+    | ProcessedBackgroundColorConfig (ProcessedAnimationConfig Color)
     | ProcessedOpacityConfig (ProcessedAnimationConfig Opacity)
     | ProcessedSizeConfig (ProcessedAnimationConfig Size)
 
@@ -430,7 +430,7 @@ processProperty globalData property =
             if config.isDirty then
                 -- Return static config to preserve visual state
                 Just <|
-                    ProcessedColorConfig
+                    ProcessedBackgroundColorConfig
                         { startAt = Just config.endAt
                         , endAt = config.endAt
                         , duration = 0 -- No animation, just maintain state
@@ -449,23 +449,23 @@ processProperty globalData property =
                                 s
 
                             Nothing ->
-                                Color.rgb255 0 0 0
+                                BackgroundColor.rgb255 0 0 0
 
                     -- Default to black if no start color
                     distance =
-                        Color.distance startAt config.endAt
+                        BackgroundColor.distance startAt config.endAt
 
                     resolvedTiming =
                         resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
 
                     duration_ =
-                        Color.duration distance resolvedTiming
+                        BackgroundColor.duration distance resolvedTiming
 
                     speed_ =
-                        Color.speed distance duration_ resolvedTiming
+                        BackgroundColor.speed distance duration_ resolvedTiming
                 in
                 Just <|
-                    ProcessedColorConfig
+                    ProcessedBackgroundColorConfig
                         { startAt = config.startAt
                         , endAt = config.endAt
                         , duration = round duration_
@@ -733,13 +733,13 @@ extractPropertyCommand elementId property =
                     ]
                 )
 
-        ProcessedColorConfig config ->
+        ProcessedBackgroundColorConfig config ->
             let
                 easingStr =
                     easingToJsString config.easing
 
                 colorStr =
-                    Color.toString config.endAt
+                    BackgroundColor.toString config.endAt
             in
             Just
                 (String.join ":"
@@ -797,7 +797,7 @@ easingToJsString easingValue =
                encode_ "scale" Scale.encode config
 
            ProcessedColorConfig config ->
-               encode_ "color" Color.encode config
+               encode_ "color" BackgroundColor.encode config
 
            ProcessedOpacityConfig config ->
                encode_ "opacity" Opacity.encode config

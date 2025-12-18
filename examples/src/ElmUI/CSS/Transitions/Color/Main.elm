@@ -15,9 +15,8 @@ FEATURES:
 
 -}
 
-import Anim exposing (AnimBuilder)
 import Anim.CSS as CSS
-import Anim.Properties.Color as Color exposing (Color(..))
+import Anim.Properties.BackgroundColor as Color exposing (Color(..))
 import Anim.Timing.Easing as Easing
 import Browser exposing (Document)
 import Common.Colors as Colors
@@ -70,8 +69,8 @@ toColorBuilderWithDefaults : CSS.AnimationState -> Color.Builder
 toColorBuilderWithDefaults =
     CSS.builder
         -- Set default animation parameters
-        >> Anim.duration 1000
-        >> Anim.easing Easing.Linear
+        >> CSS.duration 1000
+        >> CSS.easing Easing.Linear
         -- Start configuring color animation for the element
         >> Color.for "box"
 

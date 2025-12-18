@@ -5,7 +5,7 @@ module Anim.Internal.CSS.Transition exposing
 
 import Anim.Internal.Builder as Builder
 import Anim.Internal.CSS.Transform as TH
-import Anim.Internal.Properties.Color as Color
+import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
@@ -116,9 +116,9 @@ calculatePropertyDistance property =
                             s
 
                         Nothing ->
-                            Color.rgb255 0 0 0
+                            BackgroundColor.rgb255 0 0 0
             in
-            Color.distance startAt config.endAt
+            BackgroundColor.distance startAt config.endAt
 
         Builder.OpacityConfig config ->
             let

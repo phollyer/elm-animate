@@ -23,7 +23,6 @@ TIMING TESTS:
 
 -}
 
-import Anim
 import Anim.Properties.Position as Position
 import Anim.Sub as Sub
 import Anim.Timing.Easing as Easing exposing (Easing(..))

@@ -14,7 +14,7 @@ FEATURES:
 
 -}
 
-import Anim
+
 import Anim.Timing.Easing as Easing
 import Anim.Ports as Ports
 import Anim.Properties.Opacity as Opacity
@@ -81,30 +81,33 @@ update msg model =
         FadeIn ->
             let
                 animation =
-                    Anim.init "box"
+                    Ports.init 
+                        |> Ports.duration 1000
+                        |> Ports.easing Easing.easeInOut
+                        |> Opacity.for "box"
                         |> Opacity.to 1.0
-                        |> Anim.duration 1000
-                        |> Anim.easing Easing.easeInOut
             in
             ( model, Ports.animate animateElement animation )
 
         FadeOut ->
             let
                 animation =
-                    Anim.init "box"
+                    Ports.init 
+                        |> Ports.duration 1000
+                        |> Ports.easing Easing.easeInOut
+                        |> Opacity.for "box"
                         |> Opacity.to 0.0
-                        |> Anim.duration 1000
-                        |> Anim.easing Easing.easeInOut
             in
             ( model, Ports.animate animateElement animation )
 
         ResetOpacity ->
             let
                 animation =
-                    Anim.init "box"
+                    Ports.init 
+                        |> Ports.duration 1000
+                        |> Ports.easing Easing.easeInOut
+                        |> Opacity.for "box"
                         |> Opacity.to 0.5
-                        |> Anim.duration 1000
-                        |> Anim.easing Easing.easeInOut
             in
             ( model, Ports.animate animateElement animation )
 

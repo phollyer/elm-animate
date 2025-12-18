@@ -53,7 +53,7 @@ onAnimationFrameDelta subscriptions for smooth, controlled animations.
 
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builders.Property as PropertyBuilder
-import Anim.Internal.Properties.Color as Color exposing (Color)
+import Anim.Internal.Properties.BackgroundColor as Color exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
@@ -577,7 +577,7 @@ extractFromProperty property acc =
             else
                 acc
 
-        Builder.ProcessedColorConfig config ->
+        Builder.ProcessedBackgroundColorConfig config ->
             if config.duration == 0 then
                 { acc | color = Just config.endAt }
 
@@ -782,7 +782,7 @@ createPropertyAnimationState startValues property =
                 , elapsedMs = 0.0
                 }
 
-        Builder.ProcessedColorConfig config ->
+        Builder.ProcessedBackgroundColorConfig config ->
             let
                 startColor =
                     startValues.color

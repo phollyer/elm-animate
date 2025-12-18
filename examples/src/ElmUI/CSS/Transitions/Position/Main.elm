@@ -22,7 +22,6 @@ USAGE:
 
 -}
 
-import Anim
 import Anim.CSS as CSS
 import Anim.Properties.Position as Position
 import Anim.Timing.Delay as Delay
@@ -78,8 +77,8 @@ toPositionBuilder : CSS.AnimationState -> Position.Builder
 toPositionBuilder animations =
     animations
         |> CSS.builder
-        |> Anim.duration 700
-        |> Anim.easing Linear
+        |> CSS.duration 700
+        |> CSS.easing Linear
         |> Position.for "box"
 
 

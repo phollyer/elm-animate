@@ -15,9 +15,9 @@ FEATURES:
 
 -}
 
-import Anim
+
 import Anim.Ports as Ports
-import Anim.Properties.Color as Color
+import Anim.Properties.BackgroundColor as Color
 import Anim.Properties.Opacity as Opacity
 import Anim.Properties.Position as Position
 import Anim.Properties.Rotate as Rotate
@@ -104,8 +104,9 @@ update msg model =
         StartComplexAnimation elementId ->
             -- Combine position + scale + rotation
             ( model
-            , Anim.init
-                |> Anim.for elementId
+            , Ports.init
+                |> Ports.duration 1000
+                |> Ports.easing Easing.EaseInOut
                 |> Position.for elementId
                 |> Position.toXY 200 100
                 |> Position.build
@@ -115,32 +116,30 @@ update msg model =
                 |> Rotate.for elementId
                 |> Rotate.to 90
                 |> Rotate.build
-                |> Anim.duration 1000
-                |> Anim.easing Easing.EaseInOut
                 |> Ports.animate animateElement
             )
 
         StartFadeMove elementId ->
             -- Combine opacity + position
             ( model
-            , Anim.init
-                |> Anim.for elementId
+            , Ports.init
+                |> Ports.duration 1000
+                |> Ports.easing Easing.EaseInOut
                 |> Opacity.for elementId
                 |> Opacity.to 0.3
                 |> Opacity.build
                 |> Position.for elementId
                 |> Position.toXY 250 80
                 |> Position.build
-                |> Anim.duration 1000
-                |> Anim.easing Easing.EaseInOut
                 |> Ports.animate animateElement
             )
 
         StartSpinScale elementId ->
             -- Combine rotation + scale + color
             ( model
-            , Anim.init
-                |> Anim.for elementId
+            , Ports.init
+                |> Ports.duration 1000
+                |> Ports.easing Easing.EaseInOut
                 |> Rotate.for elementId
                 |> Rotate.to 180
                 |> Rotate.build
@@ -150,16 +149,15 @@ update msg model =
                 |> Color.for elementId
                 |> Color.to (Color.Hex "#e74c3c")
                 |> Color.build
-                |> Anim.duration 1000
-                |> Anim.easing Easing.EaseInOut
                 |> Ports.animate animateElement
             )
 
         StartColorMorph elementId ->
             -- Combine color + scale + opacity
             ( model
-            , Anim.init
-                |> Anim.for elementId
+            , Ports.init
+                |> Ports.duration 1000
+                |> Ports.easing Easing.EaseInOut
                 |> Color.for elementId
                 |> Color.to (Color.Hsl { h = 142, s = 71, l = 45 })
                 |> Color.build
@@ -169,16 +167,15 @@ update msg model =
                 |> Opacity.for elementId
                 |> Opacity.to 0.8
                 |> Opacity.build
-                |> Anim.duration 1000
-                |> Anim.easing Easing.EaseInOut
                 |> Ports.animate animateElement
             )
 
         StartFullTransform elementId ->
             -- All properties at once!
             ( model
-            , Anim.init
-                |> Anim.for elementId
+            , Ports.init
+                |> Ports.duration 1000
+                |> Ports.easing Easing.EaseInOut
                 |> Position.for elementId
                 |> Position.toXY 200 200
                 |> Position.build
@@ -194,15 +191,14 @@ update msg model =
                 |> Color.for elementId
                 |> Color.to (Color.Hex "#9b59b6")
                 |> Color.build
-                |> Anim.duration 1000
-                |> Anim.easing Easing.EaseInOut
                 |> Ports.animate animateElement
             )
 
         ResetAll ->
             ( model
-            , Anim.init
-                |> Anim.for "mixed-box"
+            , Ports.init
+                |> Ports.duration 800
+                |> Ports.easing Easing.EaseOut
                 |> Position.for "mixed-box"
                 |> Position.toXY 0 0
                 |> Position.build
@@ -218,8 +214,6 @@ update msg model =
                 |> Color.for "mixed-box"
                 |> Color.to (Color.Hex "#3498db")
                 |> Color.build
-                |> Anim.duration 800
-                |> Anim.easing Easing.EaseOut
                 |> Ports.animate animateElement
             )
 

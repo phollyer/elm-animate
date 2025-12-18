@@ -22,9 +22,8 @@ USAGE:
 
 -}
 
-import Anim exposing (AnimBuilder)
 import Anim.CSS as CSS
-import Anim.Properties.Color as Color exposing (Color(..))
+import Anim.Properties.BackgroundColor as Color exposing (Color(..))
 import Anim.Timing.Easing as Easing
 import Browser exposing (Document)
 import Common.Colors as Colors
@@ -68,8 +67,8 @@ init _ =
     ( { animations =
             CSS.init
                 |> CSS.builder
-                |> Anim.speed 100
-                |> Anim.easing Easing.BounceOut
+                |> CSS.speed 100
+                |> CSS.easing Easing.BounceOut
                 |> Color.for elementId
                 |> Color.from (Color.Rgb { r = 255, g = 255, b = 255 })
                 |> Color.to (Color.Rgb { r = 149, g = 165, b = 166 })
@@ -93,8 +92,8 @@ toColorBuilderWithDefaults : CSS.AnimationState -> Color.Builder
 toColorBuilderWithDefaults =
     CSS.builder
         -- Set default animation parameters
-        >> Anim.duration 1000
-        >> Anim.easing Easing.Linear
+        >> CSS.duration 1000
+        >> CSS.easing Easing.Linear
         -- Start configuring color animation for the element
         >> Color.for elementId
 

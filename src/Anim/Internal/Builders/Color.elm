@@ -12,25 +12,9 @@ module Anim.Internal.Builders.Color exposing
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Property as PropertyBuilder
-import Anim.Internal.Properties.Color as Color exposing (Color(..))
+import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Color(..))
 import Anim.Internal.Timing.Easing exposing (Easing)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
-
-
-
-{- COLOR CONFIGURATION BUILDER -}
-{- Usage:
-
-   Anim.init
-       |> Color.for "my-element"
-       |> Color.from (Color.rgba 255 0 0 1)
-       |> Color.to (Color.rgba 0 0 255 1)
-       |> Color.duration 2000
-       |> Color.easing Easing.easeInOut
-       |> Color.delay (Delay.millis 500)
-       |> Color.build
-       |> Anim.animate
--}
 
 
 type ColorBuilder
@@ -104,7 +88,7 @@ type alias ColorConfig =
 defaultConfig : ColorConfig
 defaultConfig =
     { startAt = Nothing
-    , endAt = Color.rgb255 0 0 0
+    , endAt = BackgroundColor.rgb255 0 0 0
     , duration = 0
     , speed = 0
     , distance = 0
@@ -129,12 +113,12 @@ to color (ColorBuilder config builder) =
                     opacity_
 
                 Nothing ->
-                    Color.rgb255 0 0 0
+                    BackgroundColor.rgb255 0 0 0
     in
     ColorBuilder
         { config
             | endAt = color
-            , distance = Color.distance startPos color
+            , distance = BackgroundColor.distance startPos color
             , startAt = Just startPos
         }
         builder

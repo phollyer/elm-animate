@@ -35,7 +35,7 @@ import Anim.Internal.Builder as Builder
 import Anim.Internal.CSS.KeyframeAnimation as KeyframeAnimation exposing (KeyframeAnimation)
 import Anim.Internal.CSS.Transform as Transforms
 import Anim.Internal.CSS.Transition as Transitions
-import Anim.Internal.Properties.Color as Color
+import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position exposing (Position)
 import Anim.Internal.Timing.Easing exposing (Easing)
@@ -164,7 +164,7 @@ generateElementAnimation maybeOrder elementId elementConfig =
                 (\prop ->
                     case prop of
                         Builder.BackgroundColorConfig config ->
-                            Just ( "background-color", Color.toString config.endAt )
+                            Just ( "background-color", BackgroundColor.toString config.endAt )
 
                         _ ->
                             Nothing

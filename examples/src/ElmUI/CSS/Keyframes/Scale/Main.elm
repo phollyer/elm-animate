@@ -14,7 +14,6 @@ FEATURES:
 
 -}
 
-import Anim
 import Anim.CSS as CSS
 import Anim.Properties.Scale as Scale
 import Anim.Timing.Delay as Delay
@@ -76,8 +75,8 @@ anim : CSS.AnimationState -> Scale.Builder
 anim animations =
     animations
         |> CSS.builder
-        |> Anim.duration 500
-        |> Anim.easing Linear
+        |> CSS.duration 500
+        |> CSS.easing Linear
         |> Scale.for elementId
 
 

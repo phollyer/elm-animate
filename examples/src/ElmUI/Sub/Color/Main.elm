@@ -15,8 +15,7 @@ FEATURES:
 
 -}
 
-import Anim
-import Anim.Properties.Color as ColorBuilder exposing (Color(..))
+import Anim.Properties.BackgroundColor as ColorBuilder exposing (Color(..))
 import Anim.Sub as Sub
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)

@@ -21,7 +21,6 @@ USAGE:
 
 -}
 
-import Anim
 import Anim.Ports as Ports
 import Anim.Properties.Position as Position
 import Anim.Timing.Easing as Easing exposing (Easing(..))

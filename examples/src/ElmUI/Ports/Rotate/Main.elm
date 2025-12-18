@@ -15,7 +15,7 @@ FEATURES:
 
 -}
 
-import Anim exposing (RotationValue, easeInOut)
+
 import Anim.Ports exposing (Model, animate, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors

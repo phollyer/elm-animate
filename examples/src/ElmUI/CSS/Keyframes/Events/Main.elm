@@ -23,7 +23,6 @@ BENEFITS:
 
 -}
 
-import Anim
 import Anim.CSS as CSS
 import Anim.Properties.Position as Position
 import Anim.Timing.Delay as Delay
@@ -111,8 +110,8 @@ anim : CSS.AnimationState -> Position.Builder
 anim animations =
     animations
         |> CSS.builder
-        |> Anim.duration 1000
-        |> Anim.easing Linear
+        |> CSS.duration 1000
+        |> CSS.easing Linear
         |> Position.for elementId
 
 

@@ -24,9 +24,8 @@ BENEFITS:
 
 -}
 
-import Anim
 import Anim.CSS as CSS
-import Anim.Properties.Color as Color
+import Anim.Properties.BackgroundColor as Color
 import Anim.Properties.Opacity as Opacity
 import Anim.Properties.Position as Position
 import Anim.Properties.Rotate as Rotate
@@ -134,8 +133,8 @@ update msg model =
                     model.animations
                         |> CSS.builder
                         -- Global Defaults
-                        |> Anim.duration 800
-                        |> Anim.easing QuadInOut
+                        |> CSS.duration 800
+                        |> CSS.easing QuadInOut
                         -- Position
                         |> Position.for elementId
                         |> Position.toXY 200 100
@@ -172,8 +171,8 @@ update msg model =
                     model.animations
                         |> CSS.builder
                         -- Global Defaults
-                        |> Anim.duration 800
-                        |> Anim.easing CubicInOut
+                        |> CSS.duration 800
+                        |> CSS.easing CubicInOut
                         -- Position
                         |> Position.for elementId
                         |> Position.toXY 250 150
@@ -198,8 +197,8 @@ update msg model =
                     model.animations
                         |> CSS.builder
                         -- Global Defaults
-                        |> Anim.duration 1000
-                        |> Anim.easing BounceOut
+                        |> CSS.duration 1000
+                        |> CSS.easing BounceOut
                         -- Rotate
                         |> Rotate.for elementId
                         |> Rotate.to 180
@@ -225,8 +224,8 @@ update msg model =
                     model.animations
                         |> CSS.builder
                         -- Global Defaults
-                        |> Anim.duration 900
-                        |> Anim.easing QuartInOut
+                        |> CSS.duration 900
+                        |> CSS.easing QuartInOut
                         -- Color
                         |> Color.for elementId
                         |> Color.to (Color.Rgb { r = 255, g = 100, b = 150 })
@@ -250,9 +249,6 @@ update msg model =
                 | animations =
                     model.animations
                         |> CSS.builder
-                        --|> Anim.duration 800
-                        --|> Anim.easing QuadInOut
-                        --|> Anim.delay 3000
                         -- Position
                         |> Position.for elementId
                         |> Position.toXY 150 200
@@ -300,8 +296,8 @@ update msg model =
                     model.animations
                         |> CSS.builder
                         -- Global Defaults
-                        |> Anim.duration 800
-                        |> Anim.easing QuadInOut
+                        |> CSS.duration 800
+                        |> CSS.easing QuadInOut
                         -- Position
                         |> Position.for elementId
                         |> Position.toXY 0 0

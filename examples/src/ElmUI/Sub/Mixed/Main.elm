@@ -15,8 +15,7 @@ FEATURES:
 
 -}
 
-import Anim
-import Anim.Properties.Color as Color
+import Anim.Properties.BackgroundColor as Color
 import Anim.Properties.Opacity as Opacity
 import Anim.Properties.Position as Position
 import Anim.Properties.Rotate as Rotate

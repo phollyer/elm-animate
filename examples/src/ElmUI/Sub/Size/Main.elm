@@ -15,7 +15,6 @@ FEATURES:
 
 -}
 
-import Anim
 import Anim.Properties.Size as Size
 import Anim.Sub as Sub
 import Anim.Timing.Easing as Easing exposing (Easing(..))
