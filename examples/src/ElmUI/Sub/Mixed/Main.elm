@@ -1,6 +1,6 @@
 module ElmUI.Sub.Mixed.Main exposing (main)
 
-{-| Anim.Sub Mixed Properties Example using ElmUI - Combined animation effects
+{-| Anim.Engine.Sub Mixed Properties Example using ElmUI - Combined animation effects
 
 This example demonstrates combining multiple Subscription-Based properties in single animations.
 Shows how to create rich, complex effects by mixing position, scale, rotation, opacity, and color.
@@ -15,12 +15,12 @@ FEATURES:
 
 -}
 
+import Anim.Engine.Sub as Sub
 import Anim.Properties.BackgroundColor as Color
 import Anim.Properties.Opacity as Opacity
 import Anim.Properties.Position as Position
 import Anim.Properties.Rotate as Rotate
 import Anim.Properties.Scale as Scale
-import Anim.Sub as Sub
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
@@ -277,7 +277,7 @@ subscriptions model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Sub Mixed Properties ElmUI Example"
+        "Anim.Engine.Sub Mixed Properties ElmUI Example"
         UI.Basic
         (viewContent model)
 

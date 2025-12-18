@@ -52,7 +52,7 @@ echo "🎨 Building ElmUI examples..."
 # build_example "src/ElmUI/Scroll/ScrollIntoView/Main.elm" "src/ElmUI/Scroll/ScrollIntoView/index.js" "ElmUI.Scroll.ScrollIntoView.Main"
 
 # ElmUI CSS examples (CSS Transition-based API)
-echo "  🎨 ElmUI CSS Transitions examples (Anim.CSS - Browser-native transitions)..."
+echo "  🎨 ElmUI CSS Transitions examples (Anim.Engine.CSS - Browser-native transitions)..."
 build_example "src/ElmUI/CSS/Transitions/Position/Main.elm" "src/ElmUI/CSS/Transitions/Position/index.js" "ElmUI.CSS.Transitions.Position.Main"
 build_example "src/ElmUI/CSS/Transitions/Opacity/Main.elm" "src/ElmUI/CSS/Transitions/Opacity/index.js" "ElmUI.CSS.Transitions.Opacity.Main"
 build_example "src/ElmUI/CSS/Transitions/Scale/Main.elm" "src/ElmUI/CSS/Transitions/Scale/index.js" "ElmUI.CSS.Transitions.Scale.Main"
@@ -63,7 +63,7 @@ build_example "src/ElmUI/CSS/Transitions/Mixed/Main.elm" "src/ElmUI/CSS/Transiti
 build_example "src/ElmUI/CSS/Transitions/Choreography/Main.elm" "src/ElmUI/CSS/Transitions/Choreography/index.js" "ElmUI.CSS.Transitions.Choreography.Main"
 
 # ElmUI CSS Keyframes examples (CSS Keyframes-based API)
-echo "  🎯 ElmUI CSS Keyframes examples (Anim.CSS - Advanced keyframes control)..."
+echo "  🎯 ElmUI CSS Keyframes examples (Anim.Engine.CSS - Advanced keyframes control)..."
 build_example "src/ElmUI/CSS/Keyframes/Position/Main.elm" "src/ElmUI/CSS/Keyframes/Position/index.js" "ElmUI.CSS.Keyframes.Position.Main"
 build_example "src/ElmUI/CSS/Keyframes/Opacity/Main.elm" "src/ElmUI/CSS/Keyframes/Opacity/index.js" "ElmUI.CSS.Keyframes.Opacity.Main"
 build_example "src/ElmUI/CSS/Keyframes/Scale/Main.elm" "src/ElmUI/CSS/Keyframes/Scale/index.js" "ElmUI.CSS.Keyframes.Scale.Main"
@@ -75,7 +75,7 @@ build_example "src/ElmUI/CSS/Keyframes/Choreography/Main.elm" "src/ElmUI/CSS/Key
 
 
 # ElmUI Sub examples (Subscription-based API)
-echo "  ⚡ ElmUI Sub examples (Anim.Sub - Frame-rate independent timing)..."
+echo "  ⚡ ElmUI Sub examples (Anim.Engine.Sub - Frame-rate independent timing)..."
 build_example "src/ElmUI/Sub/Position/Main.elm" "src/ElmUI/Sub/Position/index.js" "ElmUI.Sub.Position.Main"
 build_example "src/ElmUI/Sub/Opacity/Main.elm" "src/ElmUI/Sub/Opacity/index.js" "ElmUI.Sub.Opacity.Main"
 build_example "src/ElmUI/Sub/Scale/Main.elm" "src/ElmUI/Sub/Scale/index.js" "ElmUI.Sub.Scale.Main"
@@ -87,7 +87,7 @@ build_example "src/ElmUI/Sub/Size/Main.elm" "src/ElmUI/Sub/Size/index.js" "ElmUI
 build_example "src/ElmUI/Sub/Timing/Main.elm" "src/ElmUI/Sub/Timing/index.js" "ElmUI.Sub.Timing.Main"
 
 # ElmUI Ports examples (JavaScript Web Animations API)
-# echo "  🌐 ElmUI Ports examples (Anim.Ports - Web Animations API integration)..."
+# echo "  🌐 ElmUI Ports examples (Anim.Engine.Ports - Web Animations API integration)..."
 build_example "src/ElmUI/Ports/Position/Main.elm" "src/ElmUI/Ports/Position/index.js" "ElmUI.Ports.Position.Main"
 # build_example "src/ElmUI/Ports/Opacity/Main.elm" "src/ElmUI/Ports/Opacity/index.js" "ElmUI.Ports.Opacity.Main"
 # build_example "src/ElmUI/Ports/Scale/Main.elm" "src/ElmUI/Ports/Scale/index.js" "ElmUI.Ports.Scale.Main"

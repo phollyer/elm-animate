@@ -27,7 +27,7 @@ animations
     |> CSS.animate                    -- or Sub.animate, Ports.animate  
 ```
 
-### 1. **Anim.CSS** - Browser-Native Transitions
+### 1. **Anim.Engine.CSS** - Browser-Native Transitions
 **API Style:** CSS generation with hardware acceleration  
 **Benefits:** Maximum performance, battery efficient, "fire and forget", multiple elements  
 **Drawbacks:** No intermediate values, limited control once started  
@@ -51,7 +51,7 @@ div
     [ text "Hardware accelerated!" ]
 ```
 
-### 2. **Anim.Sub** - Subscription-Driven Control  
+### 2. **Anim.Engine.Sub** - Subscription-Driven Control  
 **API Style:** Frame-based updates with full programmatic control  
 **Benefits:** Access to current values, mid-animation changes, precise timing control  
 **Drawbacks:** Requires subscription management, more CPU intensive  
@@ -81,7 +81,7 @@ div
     [ text "Full control!" ]
 ```
 
-### 3. **Anim.Ports** - Web Animations API Integration
+### 3. **Anim.Engine.Ports** - Web Animations API Integration
 **API Style:** JavaScript ports with maximum performance  
 **Benefits:** Web Animations API access, complex sequences, timeline control  
 **Drawbacks:** Requires JavaScript setup, more complex architecture  
@@ -174,7 +174,7 @@ scrollToTop "container-id" NoOp -- returns `Task Dom.Error (List ())`
 elm install phollyer/elm-smooth-move
 ```
 
-**To utilise the Web Animations API with the `Anim.Ports` module, you also need to install the JavaScript companion:**
+**To utilise the Web Animations API with the `Anim.Engine.Ports` module, you also need to install the JavaScript companion:**
 ```bash
 npm install elm-smooth-move
 ```

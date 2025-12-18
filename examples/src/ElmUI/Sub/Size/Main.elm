@@ -1,6 +1,6 @@
 module ElmUI.Sub.Size.Main exposing (main)
 
-{-| Anim.Sub Size Example using ElmUI - Width and height animations
+{-| Anim.Engine.Sub Size Example using ElmUI - Width and height animations
 
 This example demonstrates smooth size animations using browser-native Subscription-Based sizing.
 Perfect for responsive layouts, emphasis animations, and dynamic element sizing.
@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
+import Anim.Engine.Sub as Sub
 import Anim.Properties.Size as Size
-import Anim.Sub as Sub
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Browser.Events
@@ -236,7 +236,7 @@ subscriptions model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Sub Size ElmUI Example"
+        "Anim.Engine.Sub Size ElmUI Example"
         UI.Basic
         (viewContent model)
 

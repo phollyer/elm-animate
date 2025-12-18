@@ -1,6 +1,6 @@
 module ElmUI.Sub.Position.Main exposing (main)
 
-{-| Anim.Sub Position Example using ElmUI - Element position animations with subscription-based timing
+{-| Anim.Engine.Sub Position Example using ElmUI - Element position animations with subscription-based timing
 
 This example demonstrates smooth position transitions using onAnimationFrameDelta subscriptions.
 Perfect for moving elements around the screen with frame-rate independent timing.
@@ -22,8 +22,8 @@ USAGE:
 
 -}
 
+import Anim.Engine.Sub as Sub
 import Anim.Properties.Position as Position
-import Anim.Sub as Sub
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Browser.Events
@@ -205,7 +205,7 @@ subscriptions model =
 
 view : Model -> Document Msg
 view model =
-    UI.createDocument "Anim.Sub Position ElmUI Example" UI.Basic (viewContent model)
+    UI.createDocument "Anim.Engine.Sub Position ElmUI Example" UI.Basic (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)

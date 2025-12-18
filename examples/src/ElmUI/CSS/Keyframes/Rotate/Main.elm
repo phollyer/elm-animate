@@ -1,6 +1,6 @@
 module ElmUI.CSS.Keyframes.Rotate.Main exposing (main)
 
-{-| Anim.CSS Rotation Example using ElmUI - Element rotation animations with CSS keyframes
+{-| Anim.Engine.CSS Rotation Example using ElmUI - Element rotation animations with CSS keyframes
 
 This example demonstrates smooth rotation animations using browser-native CSS keyframes.
 Perfect for creating spin effects and angular transformations with precise timing control.
@@ -14,7 +14,7 @@ FEATURES:
 
 -}
 
-import Anim.CSS as CSS
+import Anim.Engine.CSS as CSS
 import Anim.Properties.Rotate as Rotate
 import Anim.Timing.Delay as Delay
 import Anim.Timing.Easing as Easing exposing (Easing(..))
@@ -188,7 +188,7 @@ update msg model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.CSS Rotate Keyframes ElmUI Example"
+        "Anim.Engine.CSS Rotate Keyframes ElmUI Example"
         UI.Basic
         (viewContent model)
 

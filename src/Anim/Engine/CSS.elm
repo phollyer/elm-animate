@@ -1,4 +1,4 @@
-module Anim.CSS exposing
+module Anim.Engine.CSS exposing
     ( AnimationState, init, AnimBuilder, builder, animate, animateOrder
     , TransformOrder, defaultTransformOrder
     , duration, speed

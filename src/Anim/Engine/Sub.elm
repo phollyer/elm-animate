@@ -1,4 +1,4 @@
-module Anim.Sub exposing
+module Anim.Engine.Sub exposing
     ( ElementId
     , init, builder, animate, AnimationState, AnimationMsg
     , duration, speed

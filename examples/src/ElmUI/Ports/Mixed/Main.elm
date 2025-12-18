@@ -1,6 +1,6 @@
 port module ElmUI.Ports.Mixed.Main exposing (main)
 
-{-| Anim.Ports Mixed Properties Example using ElmUI - Combined animation effects
+{-| Anim.Engine.Ports Mixed Properties Example using ElmUI - Combined animation effects
 
 This example demonstrates combining multiple animation properties in single animations.
 Shows how to create rich, complex effects by mixing position, scale, rotation, opacity, and color.
@@ -16,7 +16,7 @@ FEATURES:
 -}
 
 
-import Anim.Ports as Ports
+import Anim.Engine.Ports as Ports
 import Anim.Properties.BackgroundColor as Color
 import Anim.Properties.Opacity as Opacity
 import Anim.Properties.Position as Position
@@ -237,7 +237,7 @@ subscriptions _ =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Ports Mixed Properties ElmUI Example"
+        "Anim.Engine.Ports Mixed Properties ElmUI Example"
         UI.Basic
         (viewContent model)
 

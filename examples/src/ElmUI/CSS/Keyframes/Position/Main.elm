@@ -1,6 +1,6 @@
 module ElmUI.CSS.Keyframes.Position.Main exposing (main)
 
-{-| Anim.CSS Position Example using ElmUI - Element position animations with CSS keyframes
+{-| Anim.Engine.CSS Position Example using ElmUI - Element position animations with CSS keyframes
 
 This example demonstrates smooth position animations using browser-native CSS keyframes.
 Perfect for moving elements around the screen with hardware acceleration and complex timing control.
@@ -23,7 +23,7 @@ USAGE:
 
 -}
 
-import Anim.CSS as CSS
+import Anim.Engine.CSS as CSS
 import Anim.Properties.Position as Position
 import Anim.Timing.Delay as Delay
 import Anim.Timing.Easing as Easing exposing (Easing(..))
@@ -197,7 +197,7 @@ update msg model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.CSS Position Keyframes ElmUI Example"
+        "Anim.Engine.CSS Position Keyframes ElmUI Example"
         UI.Basic
         (viewContent model)
 

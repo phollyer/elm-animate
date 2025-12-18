@@ -1,6 +1,6 @@
 port module ElmUI.Ports.Opacity.Main exposing (main)
 
-{-| Anim.Ports Opacity Example using ElmUI - Fade animations with Web Animations API
+{-| Anim.Engine.Ports Opacity Example using ElmUI - Fade animations with Web Animations API
 
 This example demonstrates smooth opacity transitions using port-based JavaScript integration with Web Animations API.
 Perfect for fade-in/fade-out effects, modal overlays, and visibility transitions.
@@ -16,7 +16,7 @@ FEATURES:
 
 
 import Anim.Timing.Easing as Easing
-import Anim.Ports as Ports
+import Anim.Engine.Ports as Ports
 import Anim.Properties.Opacity as Opacity
 import Browser exposing (Document)
 import Common.Colors as Colors
@@ -128,7 +128,7 @@ subscriptions model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Ports Opacity ElmUI Example"
+        "Anim.Engine.Ports Opacity ElmUI Example"
         UI.Basic
         (viewContent model)
 

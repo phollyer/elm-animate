@@ -1,6 +1,6 @@
 module ElmUI.Sub.Timing.Main exposing (main)
 
-{-| Anim.Sub Timing Analysis Example using ElmUI - Animation timing verification and comparison
+{-| Anim.Engine.Sub Timing Analysis Example using ElmUI - Animation timing verification and comparison
 
 This example demonstrates animation timing accuracy by comparing calculated vs actual animation durations.
 It tests both speed-based and duration-based animations with real-time timing measurements.
@@ -23,8 +23,8 @@ TIMING TESTS:
 
 -}
 
+import Anim.Engine.Sub as Sub
 import Anim.Properties.Position as Position
-import Anim.Sub as Sub
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Browser.Events
@@ -305,7 +305,7 @@ subscriptions model =
 
 view : Model -> Document Msg
 view model =
-    UI.createDocument "Anim.Sub Timing Analysis Example" UI.Basic [ viewContent model ]
+    UI.createDocument "Anim.Engine.Sub Timing Analysis Example" UI.Basic [ viewContent model ]
 
 
 viewContent : Model -> Element Msg

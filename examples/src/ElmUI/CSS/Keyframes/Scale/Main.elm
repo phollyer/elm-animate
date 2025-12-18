@@ -1,6 +1,6 @@
 module ElmUI.CSS.Keyframes.Scale.Main exposing (main)
 
-{-| Anim.CSS Scale Example using ElmUI - Element scale animations with CSS keyframes
+{-| Anim.Engine.CSS Scale Example using ElmUI - Element scale animations with CSS keyframes
 
 This example demonstrates smooth scale animations using browser-native CSS keyframes.
 Perfect for creating zoom effects and size transformations with precise timing control.
@@ -14,7 +14,7 @@ FEATURES:
 
 -}
 
-import Anim.CSS as CSS
+import Anim.Engine.CSS as CSS
 import Anim.Properties.Scale as Scale
 import Anim.Timing.Delay as Delay
 import Anim.Timing.Easing as Easing exposing (Easing(..))
@@ -174,7 +174,7 @@ update msg model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.CSS Scale Keyframes ElmUI Example"
+        "Anim.Engine.CSS Scale Keyframes ElmUI Example"
         UI.Basic
         (viewContent model)
 

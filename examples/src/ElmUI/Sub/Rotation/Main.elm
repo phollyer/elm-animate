@@ -1,6 +1,6 @@
 module ElmUI.Sub.Rotation.Main exposing (main)
 
-{-| Anim.Sub Rotation Example using ElmUI - Rotation transformation animations
+{-| Anim.Engine.Sub Rotation Example using ElmUI - Rotation transformation animations
 
 This example demonstrates smooth rotation animations using browser-native Subscription-Based transforms.
 Perfect for loading spinners, interactive elements, and dynamic orientation changes.
@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
+import Anim.Engine.Sub as Sub
 import Anim.Properties.Rotate as Rotate exposing (Builder)
-import Anim.Sub as Sub
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Browser.Events
@@ -187,7 +187,7 @@ subscriptions model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Sub Rotation ElmUI Example"
+        "Anim.Engine.Sub Rotation ElmUI Example"
         UI.Basic
         (viewContent model)
 

@@ -1,7 +1,7 @@
 module TestAnimationTiming exposing (suite)
 
+import Anim.Engine.Sub as Sub
 import Anim.Properties.Position as Position
-import Anim.Sub as Sub
 import Expect
 import Test exposing (..)
 

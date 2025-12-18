@@ -1,7 +1,7 @@
 module DebugTest exposing (..)
 
 import Anim.Properties.Position as Position
-import Anim.Sub as Sub
+import Anim.Engine.Sub as Sub
 import Anim.Timing.Easing as Easing
 
 

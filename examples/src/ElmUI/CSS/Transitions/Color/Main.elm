@@ -1,6 +1,6 @@
 module ElmUI.CSS.Transitions.Color.Main exposing (main)
 
-{-| Anim.CSS Color Example using ElmUI - Background color transition animations
+{-| Anim.Engine.CSS Color Example using ElmUI - Background color transition animations
 
 This example demonstrates smooth color transitions using browser-native CSS animations.
 Perfect for theme changes, state indicators, and dynamic color feedback.
@@ -15,7 +15,7 @@ FEATURES:
 
 -}
 
-import Anim.CSS as CSS
+import Anim.Engine.CSS as CSS
 import Anim.Properties.BackgroundColor as Color exposing (Color(..))
 import Anim.Timing.Easing as Easing
 import Browser exposing (Document)
@@ -177,7 +177,7 @@ update msg model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.CSS Color ElmUI Example"
+        "Anim.Engine.CSS Color ElmUI Example"
         UI.Basic
         (viewContent model)
 

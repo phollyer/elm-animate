@@ -1,6 +1,6 @@
 module Example exposing (..)
 
-import Anim.CSS as CSS
+import Anim.Engine.CSS as CSS
 import Anim.Internal.CSS as InternalCSS
 import Anim.Internal.CSS.KeyframeAnimation as KeyframeAnimation
 import Anim.Properties.Position as Position

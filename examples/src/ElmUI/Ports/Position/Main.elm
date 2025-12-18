@@ -1,6 +1,6 @@
 port module ElmUI.Ports.Position.Main exposing (main)
 
-{-| Anim.Ports Position Example using ElmUI - Element position animations using JavaScript Web Animations API
+{-| Anim.Engine.Ports Position Example using ElmUI - Element position animations using JavaScript Web Animations API
 
 This example demonstrates smooth position transitions using port-based JavaScript integration with Web Animations API.
 Perfect for high-performance animations with hardware acceleration and full platform capabilities.
@@ -21,7 +21,7 @@ USAGE:
 
 -}
 
-import Anim.Ports as Ports
+import Anim.Engine.Ports as Ports
 import Anim.Properties.Position as Position
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
@@ -236,7 +236,7 @@ subscriptions _ =
 
 view : Model -> Document Msg
 view model =
-    UI.createDocument "Anim.Ports Position ElmUI Example" UI.Basic (viewContent model)
+    UI.createDocument "Anim.Engine.Ports Position ElmUI Example" UI.Basic (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)

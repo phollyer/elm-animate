@@ -1,6 +1,6 @@
 module TestTransformOrder exposing (suite)
 
-import Anim.CSS as CSS
+import Anim.Engine.CSS as CSS
 import Anim.Properties.Position as Position
 import Anim.Properties.Rotate as Rotate
 import Anim.Properties.Scale as Scale

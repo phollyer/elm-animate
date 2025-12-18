@@ -1,6 +1,6 @@
 port module ElmUI.Ports.Scale.Main exposing (main)
 
-{-| Anim.CSS Scale Example using ElmUI - Size transformation animations
+{-| Anim.Engine.CSS Scale Example using ElmUI - Size transformation animations
 
 This example demonstrates smooth scaling animations using browser-native CSS transforms.
 Perfect for hover effects, emphasis animations, and dynamic sizing.
@@ -16,7 +16,7 @@ FEATURES:
 -}
 
 
-import Anim.Ports exposing (Model, animate, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
+import Anim.Engine.Ports exposing (Model, animate, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -64,7 +64,7 @@ main =
 
 
 type alias Model =
-    { animations : Anim.Ports.Model
+    { animations : Anim.Engine.Ports.Model
     }
 
 
@@ -74,7 +74,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Anim.Ports.init
+    ( { animations = Anim.Engine.Ports.init
       }
     , Cmd.none
     )
@@ -87,7 +87,7 @@ type Msg
     | ScaleWide
     | ScaleTall
     | AnimationComplete String
-    | PositionUpdateReceived (Result Decode.Error Anim.Ports.PropertyUpdate)
+    | PositionUpdateReceived (Result Decode.Error Anim.Engine.Ports.PropertyUpdate)
 
 
 
@@ -198,7 +198,7 @@ update msg model =
         PositionUpdateReceived result ->
             case result of
                 Ok propertyUpdate ->
-                    ( { model | animations = Anim.Ports.handlePropertyUpdate propertyUpdate model.animations }
+                    ( { model | animations = Anim.Engine.Ports.handlePropertyUpdate propertyUpdate model.animations }
                     , Cmd.none
                     )
 
@@ -225,7 +225,7 @@ subscriptions model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Ports Scale ElmUI Example"
+        "Anim.Engine.Ports Scale ElmUI Example"
         UI.Basic
         (viewContent model)
 

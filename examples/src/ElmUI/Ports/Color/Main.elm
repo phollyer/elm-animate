@@ -1,6 +1,6 @@
 port module ElmUI.Ports.Color.Main exposing (main)
 
-{-| Anim.CSS Color Example using ElmUI - Background color transition animations
+{-| Anim.Engine.CSS Color Example using ElmUI - Background color transition animations
 
 This example demonstrates smooth color transitions using browser-native CSS animations.
 Perfect for theme changes, state indicators, and dynamic color feedback.
@@ -16,7 +16,7 @@ FEATURES:
 -}
 
 
-import Anim.Ports exposing (Model, animate, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
+import Anim.Engine.Ports exposing (Model, animate, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -64,7 +64,7 @@ main =
 
 
 type alias Model =
-    { animations : Anim.Ports.Model
+    { animations : Anim.Engine.Ports.Model
     }
 
 
@@ -74,7 +74,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Anim.Ports.init
+    ( { animations = Anim.Engine.Ports.init
       }
     , Cmd.none
     )
@@ -88,7 +88,7 @@ type Msg
     | ChangeToPurple
     | ResetColor
     | AnimationComplete String
-    | PositionUpdateReceived (Result Decode.Error Anim.Ports.PropertyUpdate)
+    | PositionUpdateReceived (Result Decode.Error Anim.Engine.Ports.PropertyUpdate)
 
 
 
@@ -218,7 +218,7 @@ update msg model =
         PositionUpdateReceived result ->
             case result of
                 Ok propertyUpdate ->
-                    ( { model | animations = Anim.Ports.handlePropertyUpdate propertyUpdate model.animations }
+                    ( { model | animations = Anim.Engine.Ports.handlePropertyUpdate propertyUpdate model.animations }
                     , Cmd.none
                     )
 
@@ -245,7 +245,7 @@ subscriptions model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Ports Color ElmUI Example"
+        "Anim.Engine.Ports Color ElmUI Example"
         UI.Basic
         (viewContent model)
 

@@ -1,6 +1,6 @@
 module ElmUI.CSS.Transitions.Choreography.Main exposing (main)
 
-{-| Anim.CSS Choreography Example using ElmUI - Coordinated multi-element animations
+{-| Anim.Engine.CSS Choreography Example using ElmUI - Coordinated multi-element animations
 
 This demonstrates choreographed animations with multiple elements moving together in formations.
 Shows how to create complex patterns like scatter, circle formations, and synchronized group movements.
@@ -26,7 +26,7 @@ USAGE EXAMPLES:
 
 -- Common UI imports
 
-import Anim.CSS as CSS
+import Anim.Engine.CSS as CSS
 import Anim.Properties.Position as Position
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
@@ -202,7 +202,7 @@ update msg model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.CSS Choreography ElmUI Example"
+        "Anim.Engine.CSS Choreography ElmUI Example"
         UI.Basic
         (viewContent model)
 
@@ -258,7 +258,7 @@ viewContent model =
     ]
 
 
-{-| Helper function to create an animated box element using the new Anim.CSS API
+{-| Helper function to create an animated box element using the new Anim.Engine.CSS API
 -}
 animatedBox : String -> String -> Element.Color -> Element.Color -> Model -> Element Msg
 animatedBox elementId label color1 color2 model =

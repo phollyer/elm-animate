@@ -1,6 +1,6 @@
 module ElmUI.Sub.Color.Main exposing (main)
 
-{-| Anim.Sub Color Example using ElmUI - Background color transition animations
+{-| Anim.Engine.Sub Color Example using ElmUI - Background color transition animations
 
 This example demonstrates smooth color transitions using browser-native Subscription-Based animations.
 Perfect for theme changes, state indicators, and dynamic color feedback.
@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
+import Anim.Engine.Sub as Sub
 import Anim.Properties.BackgroundColor as ColorBuilder exposing (Color(..))
-import Anim.Sub as Sub
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
@@ -199,7 +199,7 @@ subscriptions model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Sub Color ElmUI Example"
+        "Anim.Engine.Sub Color ElmUI Example"
         UI.Basic
         (viewContent model)
 
