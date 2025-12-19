@@ -1,7 +1,6 @@
 module Anim.Engine.Ports exposing
-    ( animate, animateBatch
-    , ElementId
-    , init, builder, AnimationState
+    ( AnimationState, init, AnimBuilder, builder
+    , animate, animateBatch
     , duration, speed
     , easing
     , delay
@@ -9,19 +8,17 @@ module Anim.Engine.Ports exposing
     , htmlAttributes
     )
 
-{-| Ports-based animation system for Anim.
+{-| Ports-based animation system utilising the Web Animations API.
 
 This module converts AnimBuilder configurations to JavaScript Web Animations API calls
 via Elm ports for maximum performance and browser compatibility.
+
+@docs AnimationState, init, AnimBuilder, builder
 
 
 # Animation Execution
 
 @docs animate, animateBatch
-
-@docs ElementId
-
-@docs init, builder, AnimationState
 
 
 # Global Settings
@@ -63,49 +60,55 @@ import Html
 import Json.Encode as Encode
 
 
-type alias AnimBuilder =
-    Builder.AnimBuilder
-
-
-
--- ANIMATION STATE
-
-
 {-| State for managing ports-based animations.
+
+This state keeps track of ongoing animations and their configurations.
+
+    import Anim.Engine.Ports as Ports
+
+    { model | animations : Ports.AnimationState }
+
 -}
 type alias AnimationState =
     InternalPorts.AnimationState
 
 
+{-| Initialize empty animation state.
 
--- ANIMATION EXECUTION
+    import Anim.Engine.Ports as Ports
 
+    { model | animations = Ports.init }
 
-{-| The ID of the target element to animate.
--}
-type alias ElementId =
-    String
-
-
-{-| Initialize empty animation builder.
 -}
 init : AnimationState
 init =
     InternalPorts.init
 
 
+{-| Animation builder type.
+
+This is used internally to configure animations before executing them via ports.
+
+-}
+type alias AnimBuilder =
+    Builder.AnimBuilder
+
+
 {-| Turn the AnimationState into an AnimBuilder.
 
 Use this to start new animations based on current state.
 
-    -- Start a new animation based on current state
+
     newBuilder =
         model.animations
+            -- Start a new animation based on current state
             |> Ports.builder
             |> Position.for "element"
             |> Position.to { x = 100, y = 200 }
             |> Position.build
             |> Ports.animate
+
+    -- "element" will animate from its current position
 
 -}
 builder : AnimationState -> AnimBuilder

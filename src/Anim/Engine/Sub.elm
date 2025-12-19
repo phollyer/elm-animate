@@ -1,6 +1,6 @@
 module Anim.Engine.Sub exposing
     ( ElementId
-    , init, builder, animate, AnimationState, AnimationMsg
+    , init, AnimBuilder, builder, animate, AnimationState, AnimationMsg
     , duration, speed
     , easing
     , delay
@@ -22,7 +22,7 @@ onAnimationFrameDelta subscriptions for smooth, controlled animations.
 
 @docs ElementId
 
-@docs init, builder, animate, AnimationState, AnimationMsg
+@docs init, AnimBuilder, builder, animate, AnimationState, AnimationMsg
 
 
 # Global Settings
@@ -86,6 +86,8 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 import Html
 
 
+{-| Animation builder
+-}
 type alias AnimBuilder =
     InternalSub.AnimBuilder
 
