@@ -292,7 +292,7 @@ _[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning F
 
 import Browser.Dom as Dom
 import Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames)
-import Scroll exposing (Axis(..), Config, defaultConfig)
+import Scroll.Common exposing (Axis(..), Config, defaultConfig)
 import Scroll.Internal exposing (Container(..), Direction(..), calculateScrollIntoView, getAxisDirection, getClampedPositions, getContainerInfo, getViewport, timingToSpeed)
 import Task exposing (Task)
 

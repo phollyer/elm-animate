@@ -23,7 +23,7 @@ The animationSteps functions implement frame-based interpolation logic from the 
 
 import Browser.Dom as Dom
 import Ease
-import Scroll exposing (Axis(..), Config, Timing(..), XOffsetFloat, YOffsetFloat)
+import Scroll.Common exposing (Axis(..), Config, Timing(..), XOffsetFloat, YOffsetFloat)
 import Scroll.Types exposing (CoordinatePair, Distance, Frames)
 import Task exposing (Task)
 

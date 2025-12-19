@@ -1,4 +1,4 @@
-module Scroll exposing
+module Scroll.Common exposing
     ( Config
     , defaultConfig
     , Timing(..)

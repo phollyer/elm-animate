@@ -5,7 +5,7 @@
     "license": "BSD-3-Clause",
     "version": "3.0.1",
     "exposed-modules": [
-        "Scroll",
+        "Scroll.Common",
         "Scroll.Document.Cmd",
         "Scroll.Document.Task",
         "Scroll.Container.Cmd",

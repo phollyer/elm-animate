@@ -290,7 +290,7 @@ _[↑ Relative Movement](#relative-movement) | [↑ Advanced Positioning Functio
 
 -}
 
-import Scroll exposing (Config, defaultConfig)
+import Scroll.Common exposing (Config, defaultConfig)
 import Scroll.Document.Task as ScrollTask
 import Task
 
