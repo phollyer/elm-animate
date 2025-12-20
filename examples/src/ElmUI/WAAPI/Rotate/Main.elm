@@ -1,4 +1,4 @@
-port module ElmUI.Ports.Rotate.Main exposing (main)
+port module ElmUI.WAAPI.Rotate.Main exposing (main)
 
 {-| Anim.Engine.CSS Rotate Example using ElmUI - Rotate transformation animations
 

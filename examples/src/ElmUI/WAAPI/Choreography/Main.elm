@@ -1,4 +1,4 @@
-port module ElmUI.Ports.Choreography.Main exposing (main)
+port module ElmUI.WAAPI.Choreography.Main exposing (main)
 
 {-| Anim.Engine.CSS Choreography Example using ElmUI - Coordinated multi-element animations
 

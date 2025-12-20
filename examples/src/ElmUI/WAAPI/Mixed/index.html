@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ElmUI - Anim.Engine.Ports Mixed Properties Example</title>
+    <title>ElmUI - Anim.Engine.WAAPI Mixed Properties Example</title>
     <link rel="stylesheet" href="../../../../css/base.css">
     <link rel="stylesheet" href="../../../../css/ui-components.css">
     <style>
@@ -14,15 +14,15 @@
 
 <body>
     <div id="elm"></div>
-    <script src="../../../../js/smooth-move-ports.js"></script>
+    <script src="../../../../js/smooth-move-waapi.js"></script>
     <script src="index.js"></script>
     <script>
-        var app = Elm.ElmUI.Ports.Mixed.Main.init({
+        var app = Elm.ElmUI.WAAPI.Mixed.Main.init({
             node: document.getElementById('elm')
         });
 
-        // Initialize SmoothMovePorts with the Elm app's ports
-        SmoothMovePorts.init(app.ports);
+        // Initialize SmoothMoveWAAPI with the Elm app's ports
+        SmoothMoveWAAPI.init(app.ports);
     </script>
 </body>
 

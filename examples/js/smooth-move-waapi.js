@@ -1,17 +1,17 @@
 /**
- * SmoothMovePorts JavaScript Integration
+ * SmoothMoveWAAPI JavaScript Integration
  * 
  * This file provides the JavaScript side of port-based animations for the
- * SmoothMovePorts Elm module. It uses the Web Animations API for high-performance
+ * SmoothMoveWAAPI Elm module. It uses the Web Animations API for high-performance
  * hardware-accelerated animations.
  * 
  * Usage:
  * 1. Include this file in your HTML
- * 2. Call SmoothMovePorts.init(app.ports) after initializing your Elm app
+ * 2. Call SmoothMoveWAAPI.init(app.ports) after initializing your Elm app
  * 3. Define the required ports in your Elm application
  */
 
-window.SmoothMovePorts = (function () {
+window.SmoothMoveWAAPI = (function () {
     'use strict';
 
     // Track active animations for cleanup and management

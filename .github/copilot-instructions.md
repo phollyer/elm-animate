@@ -61,7 +61,7 @@ This is an Elm 0.19 package that provides multiple animation approaches for smoo
 - **Usage**: Apply returned CSS styles directly to elements
 - **Best for**: Hardware acceleration, battery efficiency, simple transitions
 
-### 4. Ports-Based API (SmoothMovePorts)
+### 4. WAAPI-Based API (SmoothMoveWAAPI)
 - **Purpose**: Web Animations API integration via JavaScript
 - **API**: Elm ports communicating with JavaScript companion file
 - **Usage**: Requires `smooth-move-ports.js` and port definitions
@@ -99,7 +99,7 @@ moveToWithOptions { defaultConfig | speed = 500, axis = Both } "element-id" 0 0 
   - `Scroll/` - Task-based examples (Basic.elm, Container.elm, etc.)
   - `Sub/` - Subscription-based examples (Basic.elm, Multiple.elm)
   - `CSS/` - CSS-based examples (Basic.elm, Multiple.elm)
-  - `Ports/` - Ports-based examples (Basic.elm, Multiple.elm)
+  - `WAAPI/` - WAAPI-based examples (Basic.elm, Multiple.elm)
   - `Common/` - Reusable functions for duplicated code in the examples.
 - **Compilation**: Use `examples/scripts/build.sh` to compile all examples
 - **Individual Compilation**: `elm make src/ElmUI/Scroll/Basic/Main.elm --output=src/ElmUI/Scroll/Basic/index.js`
@@ -122,7 +122,7 @@ moveToWithOptions { defaultConfig | speed = 500, axis = Both } "element-id" 0 0 
 - **SmoothMoveScroll**: Pre-calculated frame steps using `Internal.AnimationCore.animationSteps` function
 - **SmoothMoveSub**: Time-based interpolation with `onAnimationFrameDelta`
 - **SmoothMoveCSS**: Pure CSS generation functions (`transform`, `transition`, `transitionWithDistance`, `calculateDuration`)
-- **SmoothMovePorts**: Web Animations API via JavaScript integration
+- **SmoothMoveWAAPI**: Web Animations API via JavaScript integration
 - Speed parameter: pixels per second for SmoothMoveSub, frame count divisor for SmoothMoveScroll
 - Easing functions from `elm-community/easing-functions` package applied to progress values
 
@@ -147,7 +147,7 @@ src/
 ├── SmoothMoveScroll.elm      - Task-based scrolling API
 ├── SmoothMoveSub.elm         - Subscription-based positioning API  
 ├── SmoothMoveCSS.elm         - CSS transition-based API
-└── SmoothMovePorts.elm       - Ports-based Web Animations API
+└── SmoothMoveWAAPI.elm       - WAAPI-based Web Animations API
 
 examples/
 ├── scripts/
@@ -160,12 +160,12 @@ examples/
     │   ├── Scroll/           - Task examples (Basic.elm, Container.elm, etc.)
     │   ├── Sub/              - Subscription examples (Basic.elm, Multiple.elm)
     │   ├── CSS/              - CSS examples (Basic.elm, Multiple.elm)
-    │   └── Ports/            - Ports examples (Basic.elm, Multiple.elm)
+    │   └── WAAPI/            - Ports examples (Basic.elm, Multiple.elm)
     └── HTML/
         ├── SmoothMoveScroll/ - HTML task examples
         ├── SmoothMoveSub/    - HTML subscription examples
         ├── SmoothMoveCSS/    - HTML CSS examples
-        └── SmoothMovePorts/  - HTML ports examples
+        └── SmoothMoveWAAPI/  - HTML ports examples
 ```
 
 ## Dependencies & Compatibility

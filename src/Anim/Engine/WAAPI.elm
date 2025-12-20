@@ -1,4 +1,4 @@
-module Anim.Engine.Ports exposing
+module Anim.Engine.WAAPI exposing
     ( AnimationState, init, AnimBuilder, builder
     , animate, animateBatch
     , duration, speed
@@ -12,6 +12,11 @@ module Anim.Engine.Ports exposing
 
 This module converts AnimBuilder configurations to JavaScript Web Animations API calls
 via Elm ports for maximum performance and browser compatibility.
+
+**Note:** This module requires accompanying JavaScript code to handle the ports communication.
+Install the `elm-smooth-move-waapi` package from NPM and include the script in your HTML.
+
+        npm install elm-smooth-move-waapi
 
 @docs AnimationState, init, AnimBuilder, builder
 
@@ -64,9 +69,9 @@ import Json.Encode as Encode
 
 This state keeps track of ongoing animations and their configurations.
 
-    import Anim.Engine.Ports as Ports
+    import Anim.Engine.WAAPI as WAAPI
 
-    { model | animations : Ports.AnimationState }
+    { model | animations : WAAPI.AnimationState }
 
 -}
 type alias AnimationState =
@@ -75,9 +80,9 @@ type alias AnimationState =
 
 {-| Initialize empty animation state.
 
-    import Anim.Engine.Ports as Ports
+    import Anim.Engine.WAAPI as WAAPI
 
-    { model | animations = Ports.init }
+    { model | animations = WAAPI.init }
 
 -}
 init : AnimationState
@@ -102,11 +107,11 @@ Use this to start new animations based on current state.
     newBuilder =
         model.animations
             -- Start a new animation based on current state
-            |> Ports.builder
+            |> WAAPI.builder
             |> Position.for "element"
             |> Position.to { x = 100, y = 200 }
             |> Position.build
-            |> Ports.animate
+            |> WAAPI.animate
 
     -- "element" will animate from its current position
 
@@ -122,12 +127,12 @@ Returns updated animation state and encoded animation data for ports.
 
     let
         ( newAnimationState, animationData ) =
-            Ports.builder model.animationState
+            WAAPI.builder model.animationState
                 |> Position.for "my-element"
                 |> Position.to { x = 100, y = 200 }
                 |> Position.speed 500
                 |> Position.build
-                |> Ports.animate model.animationState
+                |> WAAPI.animate model.animationState
     in
     ( { model | animationState = newAnimationState }
     , sendAnimationCommand animationData
@@ -146,7 +151,7 @@ For state management and position continuity, use `animate` instead.
     Anim.init "my-element"
         |> Position.to { x = 100, y = 200 }
         |> Position.speed 500
-        |> Ports.animateStateless sendAnimationCommand
+        |> WAAPI.animateStateless sendAnimationCommand
 
 The port function should have the signature:
 
@@ -228,12 +233,12 @@ getCurrentStyles =
 
 {-| Set global duration in milliseconds (overrides any previous speed setting).
 
-    Ports.init
-        |> Ports.duration 1000
+    WAAPI.init
+        |> WAAPI.duration 1000
         |> Position.for "element"
         |> Position.toXY 100 200
         |> Position.build
-        |> Ports.animate
+        |> WAAPI.animate
 
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -243,12 +248,12 @@ duration =
 
 {-| Set global speed in units per second (overrides any previous duration setting).
 
-    Ports.init
-        |> Ports.speed 100
+    WAAPI.init
+        |> WAAPI.speed 100
         |> Position.for "element"
         |> Position.toXY 100 200
         |> Position.build
-        |> Ports.animate
+        |> WAAPI.animate
 
 -}
 speed : Float -> AnimBuilder -> AnimBuilder

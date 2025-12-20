@@ -81,7 +81,7 @@ div
     [ text "Full control!" ]
 ```
 
-### 3. **Anim.Engine.Ports** - Web Animations API Integration
+### 3. **Anim.Engine.WAAPI** - Web Animations API Integration
 **API Style:** JavaScript ports with maximum performance  
 **Benefits:** Web Animations API access, complex sequences, timeline control  
 **Drawbacks:** Requires JavaScript setup, more complex architecture  
@@ -174,7 +174,7 @@ scrollToTop "container-id" NoOp -- returns `Task Dom.Error (List ())`
 elm install phollyer/elm-smooth-move
 ```
 
-**To utilise the Web Animations API with the `Anim.Engine.Ports` module, you also need to install the JavaScript companion:**
+**To utilise the Web Animations API with the `Anim.Engine.WAAPI` module, you also need to install the JavaScript companion:**
 ```bash
 npm install elm-smooth-move
 ```

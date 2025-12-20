@@ -1,16 +1,16 @@
-port module ElmUI.Ports.Rotate.Main exposing (main)
+port module ElmUI.WAAPI.Scale.Main exposing (main)
 
-{-| Anim.Engine.CSS Rotate Example using ElmUI - Rotate transformation animations
+{-| Anim.Engine.CSS Scale Example using ElmUI - Size transformation animations
 
-This example demonstrates smooth rotate animations using browser-native CSS transforms.
-Perfect for loading spinners, interactive elements, and dynamic orientation changes.
+This example demonstrates smooth scaling animations using browser-native CSS transforms.
+Perfect for hover effects, emphasis animations, and dynamic sizing.
 
 FEATURES:
 
-  - ✅ Smooth rotate animations in degrees
-  - ✅ Hardware-accelerated transform rotates
-  - ✅ Multiple rotate directions and speeds
-  - ✅ Continuous spinning and specific angle targeting
+  - ✅ Smooth scale up/down animations
+  - ✅ Hardware-accelerated transform scaling
+  - ✅ Multiple scale factors and timing
+  - ✅ Bounce and emphasis effects
   - ✅ Battery efficient browser-native transforms
 
 -}
@@ -68,13 +68,24 @@ type alias Model =
     }
 
 
+
+-- INIT
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { animations = Anim.Engine.WAAPI.init
+      }
+    , Cmd.none
+    )
+
+
 type Msg
-    = Rotate45
-    | Rotate90
-    | Rotate180
-    | RotateLeft
-    | RotateRight
-    | ResetRotation
+    = ScaleUp
+    | ScaleDown
+    | ScaleReset
+    | ScaleWide
+    | ScaleTall
     | AnimationComplete String
     | PositionUpdateReceived (Result Decode.Error Anim.Engine.WAAPI.PropertyUpdate)
 
@@ -86,12 +97,12 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Rotate45 ->
+        ScaleUp ->
             let
                 animation =
-                    Anim.rotation "box" 45
-                        |> Anim.rotationDuration 1000
-                        |> easeInOut
+                    Anim.scale "box" { x = 1.3, y = 1.3 }
+                        |> Anim.scalePerSecond 2.0
+                        |> Anim.easeOut
 
                 ( newModel, maybeCommand ) =
                     animate animation model.animations
@@ -105,12 +116,12 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
-        Rotate90 ->
+        ScaleDown ->
             let
                 animation =
-                    Anim.rotation "box" 90
-                        |> Anim.rotationDuration 1000
-                        |> easeInOut
+                    Anim.scale "box" { x = 0.7, y = 0.7 }
+                        |> Anim.scalePerSecond 3.0
+                        |> Anim.easeIn
 
                 ( newModel, maybeCommand ) =
                     animate animation model.animations
@@ -124,12 +135,12 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
-        Rotate180 ->
+        ScaleReset ->
             let
                 animation =
-                    Anim.rotation "box" 180
-                        |> Anim.rotationDuration 1000
-                        |> easeInOut
+                    Anim.scale "box" { x = 1.0, y = 1.0 }
+                        |> Anim.scaleDuration 800
+                        |> Anim.easeInOut
 
                 ( newModel, maybeCommand ) =
                     animate animation model.animations
@@ -143,12 +154,12 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
-        RotateLeft ->
+        ScaleWide ->
             let
                 animation =
-                    Anim.rotation "box" -90
-                        |> Anim.rotationDuration 1000
-                        |> easeInOut
+                    Anim.scale "box" { x = 2.0, y = 0.8 }
+                        |> Anim.scaleDuration 1200
+                        |> Anim.easeOut
 
                 ( newModel, maybeCommand ) =
                     animate animation model.animations
@@ -162,31 +173,12 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
-        RotateRight ->
+        ScaleTall ->
             let
                 animation =
-                    Anim.rotation "box" 90
-                        |> Anim.rotationDuration 1000
-                        |> easeInOut
-
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
-            in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement command
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
-
-        ResetRotation ->
-            let
-                animation =
-                    Anim.rotation "box" 0
-                        |> Anim.rotationDuration 1000
-                        |> easeInOut
+                    Anim.scale "box" { x = 0.6, y = 1.8 }
+                        |> Anim.scalePerSecond 1.5
+                        |> Anim.easeInOut
 
                 ( newModel, maybeCommand ) =
                     animate animation model.animations
@@ -215,18 +207,6 @@ update msg model =
 
 
 
--- INIT
-
-
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { animations = Anim.Engine.WAAPI.init
-      }
-    , Cmd.none
-    )
-
-
-
 -- SUBSCRIPTIONS
 
 
@@ -245,7 +225,7 @@ subscriptions model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.WAAPI Rotate ElmUI Example"
+        "Anim.Engine.WAAPI Scale ElmUI Example"
         UI.Basic
         (viewContent model)
 
@@ -253,23 +233,23 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButton
-    , UI.pageHeader "ElmUI & Ports Rotate Example"
+    , UI.pageHeader "ElmUI & Ports Scale Example"
     , -- Description
       el
         [ Font.size 16
         , Font.color Colors.textMedium
         , centerX
         ]
-        (text "Smooth rotate transformations using hardware-accelerated CSS transforms")
-    , -- Rotation controls
+        (text "Smooth size transformations using browser-native CSS transitions")
+    , -- Scale controls
       UI.wrappedButtonRow
-        [ ( UI.Success, Rotate45, "45°" )
-        , ( UI.Warning, Rotate90, "90°" )
-        , ( UI.Primary, Rotate180, "180°" )
-        , ( UI.Success, RotateLeft, "← 90°" )
-        , ( UI.Purple, ResetRotation, "Reset" )
+        [ ( UI.Primary, ScaleUp, "Scale Up" )
+        , ( UI.Warning, ScaleDown, "Scale Down" )
+        , ( UI.Success, ScaleWide, "Wide" )
+        , ( UI.Success, ScaleTall, "Tall" )
+        , ( UI.Purple, ScaleReset, "Reset" )
         ]
-    , -- Animation area with boxes
+    , -- Animation area with box
       el
         [ width (fill |> maximum 600)
         , height (px 400)
@@ -296,13 +276,13 @@ viewContent model =
             , width (px 200)
             , height (px 200)
             ]
-            (rotatingElement "box" "→" "Rotate Demo" Colors.primary model)
+            (animatedBox "box" "Scale Demo" Colors.primary model)
         )
     ]
 
 
-rotatingElement : String -> String -> String -> Element.Color -> Model -> Element Msg
-rotatingElement elementId symbol label color model =
+animatedBox : String -> String -> Element.Color -> Model -> Element Msg
+animatedBox elementId label color model =
     el
         ([ width (px 150)
          , height (px 150)
@@ -319,23 +299,12 @@ rotatingElement elementId symbol label color model =
                     |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
                )
         )
-        (column
+        (el
             [ centerX
             , Element.centerY
-            , spacing 8
+            , Font.color Colors.backgroundWhite
+            , Font.bold
+            , Font.size 16
             ]
-            [ el
-                [ centerX
-                , Font.color Colors.backgroundWhite
-                , Font.bold
-                , Font.size 32
-                ]
-                (text symbol)
-            , el
-                [ centerX
-                , Font.color Colors.backgroundWhite
-                , Font.size 14
-                ]
-                (text label)
-            ]
+            (text label)
         )

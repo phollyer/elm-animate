@@ -39,7 +39,8 @@ examples/
 ├── scripts/            - Build scripts
 │   └── build.sh
 ├── js/                 - JavaScript companion files
-│   └── smooth-move-ports.js
+│   ├── smooth-move-waapi.js
+│   └── smooth-move-ports.js (legacy)
 └── src/
     ├── ElmUI/          - Modern ElmUI examples (recommended)
     │   ├── Scroll/     - Task-based scrolling examples

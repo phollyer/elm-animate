@@ -1,7 +1,7 @@
 {
   "name": "elm-smooth-move",
   "version": "1.0.0",
-  "description": "JavaScript companion for elm-smooth-move Ports API - Web Animations integration",
+  "description": "JavaScript companion for elm-smooth-move WAAPI API - Web Animations integration",
   "main": "dist/smooth-move-ports.js",
   "files": [
     "dist/smooth-move-ports.js",
@@ -10,7 +10,7 @@
     "dist/README.md"
   ],
   "scripts": {
-    "build": "cp examples/js/smooth-move-ports.js dist/",
+    "build": "cp examples/js/smooth-move-waapi.js dist/ && cp examples/js/smooth-move-ports.js dist/",
     "prepare": "mkdir -p dist && npm run build"
   },
   "keywords": [

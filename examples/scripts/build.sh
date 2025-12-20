@@ -86,15 +86,15 @@ build_example "src/ElmUI/Sub/Choreography/Main.elm" "src/ElmUI/Sub/Choreography/
 build_example "src/ElmUI/Sub/Size/Main.elm" "src/ElmUI/Sub/Size/index.js" "ElmUI.Sub.Size.Main"
 build_example "src/ElmUI/Sub/Timing/Main.elm" "src/ElmUI/Sub/Timing/index.js" "ElmUI.Sub.Timing.Main"
 
-# ElmUI Ports examples (JavaScript Web Animations API)
-# echo "  🌐 ElmUI Ports examples (Anim.Engine.Ports - Web Animations API integration)..."
-build_example "src/ElmUI/Ports/Position/Main.elm" "src/ElmUI/Ports/Position/index.js" "ElmUI.Ports.Position.Main"
-# build_example "src/ElmUI/Ports/Opacity/Main.elm" "src/ElmUI/Ports/Opacity/index.js" "ElmUI.Ports.Opacity.Main"
-# build_example "src/ElmUI/Ports/Scale/Main.elm" "src/ElmUI/Ports/Scale/index.js" "ElmUI.Ports.Scale.Main"
-# build_example "src/ElmUI/Ports/Rotation/Main.elm" "src/ElmUI/Ports/Rotation/index.js" "ElmUI.Ports.Rotation.Main"
-# build_example "src/ElmUI/Ports/Color/Main.elm" "src/ElmUI/Ports/Color/index.js" "ElmUI.Ports.Color.Main"
-# build_example "src/ElmUI/Ports/Mixed/Main.elm" "src/ElmUI/Ports/Mixed/index.js" "ElmUI.Ports.Mixed.Main"
-# build_example "src/ElmUI/Ports/Choreography/Main.elm" "src/ElmUI/Ports/Choreography/index.js" "ElmUI.Ports.Choreography.Main"
+# ElmUI WAAPI examples (JavaScript Web Animations API)
+# echo "  🌐 ElmUI WAAPI examples (Anim.Engine.WAAPI - Web Animations API integration)..."
+build_example "src/ElmUI/WAAPI/Position/Main.elm" "src/ElmUI/WAAPI/Position/index.js" "ElmUI.WAAPI.Position.Main"
+# build_example "src/ElmUI/WAAPI/Opacity/Main.elm" "src/ElmUI/WAAPI/Opacity/index.js" "ElmUI.WAAPI.Opacity.Main"
+# build_example "src/ElmUI/WAAPI/Scale/Main.elm" "src/ElmUI/WAAPI/Scale/index.js" "ElmUI.WAAPI.Scale.Main"
+# build_example "src/ElmUI/WAAPI/Rotation/Main.elm" "src/ElmUI/WAAPI/Rotation/index.js" "ElmUI.WAAPI.Rotation.Main"
+# build_example "src/ElmUI/WAAPI/Color/Main.elm" "src/ElmUI/WAAPI/Color/index.js" "ElmUI.WAAPI.Color.Main"
+# build_example "src/ElmUI/WAAPI/Mixed/Main.elm" "src/ElmUI/WAAPI/Mixed/index.js" "ElmUI.WAAPI.Mixed.Main"
+# build_example "src/ElmUI/WAAPI/Choreography/Main.elm" "src/ElmUI/WAAPI/Choreography/index.js" "ElmUI.WAAPI.Choreography.Main"
 
 # Report results
 echo ""
@@ -111,7 +111,7 @@ if [ ${#FAILED_BUILDS[@]} -eq 0 ]; then
     echo "   📜 Scroll (Task-based): src/ElmUI/Scroll/"
     echo "   🎨 CSS (Transitions): src/ElmUI/CSS/"
     echo "   ⚡ Sub (Subscriptions): src/ElmUI/Sub/"
-    echo "   🌐 Ports (Web Animations): src/ElmUI/Ports/"
+    echo "   🌐 WAAPI (Web Animations): src/ElmUI/WAAPI/"
     echo ""
     echo "   Animation properties covered:"
     echo "   - Position (X/Y coordinates)"
