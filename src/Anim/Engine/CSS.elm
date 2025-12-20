@@ -373,8 +373,7 @@ For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-la
         ([ htmlAttribute (Html.Attributes.id "my-element")
          , ...
          ]
-            ++ List.map htmlAttribute <|
-                CSS.htmlAttributes "my-element" animationState
+            ++ List.map htmlAttribute (CSS.htmlAttributes "my-element" animationState)
         )
         (text "Animating element")
 

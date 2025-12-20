@@ -1,16 +1,16 @@
 # Smooth Animations And Scrolling
 
 A comprehensive Elm package providing 
-- **3 different animation approaches** optimized for different use cases, and  
+- **3 different animation engines** optimized for different use cases, and  
 - **4 different scrolling modules** for Document and Container scrolling.
 
 Choose the approach that best fits your performance needs and architectural preferences.
 
 ## 🎯 Animation Approaches
 
-This project takes the approach that an animation is an animation regardless of what techniques are used to play the animation. The animation should be able to be described in a single way, and then that description should be able to be passed off to different playback techniques. 
+This project takes the approach that an animation is an animation regardless of what engines are used to play the animation. So an animation should be able to be described in a single way, and then that description should be able to be passed off to different playback engines as required. 
 
-Therefore, all 3 approaches share a **unified fluent API** with type-safe and property-specific builders. This consistent design makes it easy to switch between approaches as your requirements evolve, while the underlying implementations are optimized for different performance characteristics.
+Therefore, all 3 approaches share a **unified fluent Builder API** with type-safe and property-specific builders. This consistent design makes it easy to switch between engines as your requirements evolve, while the underlying engine implementations are optimized for different performance characteristics.
 
 (Stay tuned for WebGL and Canvas integration)
 
