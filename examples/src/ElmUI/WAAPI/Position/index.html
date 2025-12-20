@@ -14,15 +14,15 @@
 
 <body>
     <div id="elm"></div>
-    <script src="../../../../js/smooth-move-waapi.js"></script>
+    <script src="../../../../js/elm-animate-waapi.js"></script>
     <script src="index.js"></script>
     <script>
         var app = Elm.ElmUI.WAAPI.Position.Main.init({
             node: document.getElementById('elm')
         });
 
-        // Initialize SmoothMoveWAAPI with the Elm app's ports
-        SmoothMoveWAAPI.init(app.ports);
+        // Initialize ElmAnimateWAAPI with the Elm app's ports
+        ElmAnimateWAAPI.init(app.ports);
     </script>
 </body>
 

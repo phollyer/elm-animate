@@ -1,17 +1,17 @@
 /**
- * SmoothMoveWAAPI JavaScript Integration
+ * ElmAnimateWAAPI JavaScript Integration
  * 
  * This file provides the JavaScript side of port-based animations for the
- * SmoothMoveWAAPI Elm module. It uses the Web Animations API for high-performance
+ * ElmAnimateWAAPI Elm module. It uses the Web Animations API for high-performance
  * hardware-accelerated animations.
  * 
  * Usage:
  * 1. Include this file in your HTML
- * 2. Call SmoothMoveWAAPI.init(app.ports) after initializing your Elm app
+ * 2. Call ElmAnimateWAAPI.init(app.ports) after initializing your Elm app
  * 3. Define the required ports in your Elm application
  */
 
-window.SmoothMoveWAAPI = (function () {
+window.ElmAnimateWAAPI = (function () {
     'use strict';
 
     // Track active animations for cleanup and management
@@ -251,7 +251,7 @@ window.SmoothMoveWAAPI = (function () {
         elementCommands.forEach((commands, elementId) => {
             const element = document.getElementById(elementId);
             if (!element) {
-                console.warn(`SmoothMovePorts: Element with id "${elementId}" not found`);
+                console.warn(`ElmAnimateWAAPI: Element with id "${elementId}" not found`);
                 return;
             }
 
@@ -345,7 +345,7 @@ window.SmoothMoveWAAPI = (function () {
     }
 
     /**
-     * Initialize SmoothMovePorts with Elm ports
+     * Initialize ElmAnimateWAAPI with Elm ports
      * 
      * Required ports in your Elm app:
      * 
@@ -357,12 +357,12 @@ window.SmoothMoveWAAPI = (function () {
      */
     function init(ports) {
         if (!ports) {
-            throw new Error('SmoothMovePorts.init() requires the Elm ports object');
+            throw new Error('ElmAnimateWAAPI.init() requires the Elm ports object');
         }
 
         // Check for Web Animations API support
         if (!Element.prototype.animate) {
-            console.warn('SmoothMovePorts: Web Animations API not supported. Consider using a polyfill.');
+            console.warn('ElmAnimateWAAPI: Web Animations API not supported. Consider using a polyfill.');
             return;
         }
 
@@ -372,7 +372,7 @@ window.SmoothMoveWAAPI = (function () {
                 animateElement(commandsData, ports.positionUpdates);
             });
         } else {
-            console.warn('SmoothMovePorts: animateElement port not found or not subscribeable');
+            console.warn('ElmAnimateWAAPI: animateElement port not found or not subscribeable');
         }
 
         // Subscribe to stop commands from Elm
@@ -381,10 +381,10 @@ window.SmoothMoveWAAPI = (function () {
                 stopAnimation(elementId);
             });
         } else {
-            console.warn('SmoothMovePorts: stopElement port not found or not subscribeable');
+            console.warn('ElmAnimateWAAPI: stopElement port not found or not subscribeable');
         }
 
-        console.log('SmoothMovePorts initialized successfully');
+        console.log('ElmAnimateWAAPI initialized successfully');
     }
 
     /**

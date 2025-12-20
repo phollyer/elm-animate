@@ -1,4 +1,4 @@
-# Elm Smooth Move Examples
+# Elm Animate Examples
 
 Interactive examples showcasing all 4 animation approaches. Each example is compiled and ready to run directly in your browser!
 
@@ -39,8 +39,7 @@ examples/
 ├── scripts/            - Build scripts
 │   └── build.sh
 ├── js/                 - JavaScript companion files
-│   ├── smooth-move-waapi.js
-│   └── smooth-move-ports.js (legacy)
+│   └── elm-animate-waapi.js
 └── src/
     ├── ElmUI/          - Modern ElmUI examples (recommended)
     │   ├── Scroll/     - Task-based scrolling examples
@@ -104,8 +103,8 @@ This organization makes it clear which UI framework each example uses while foll
 
 The `SmoothMovePorts` examples require JavaScript integration:
 - **For Production**: Install via npm: `npm install elm-smooth-move`
-- **For Development**: Available in `examples/js/smooth-move-ports.js`
+- **For Development**: Available in `examples/js/elm-animate-waapi.js`
 - **HTML Examples**: Local copy at `examples/src/HTML/SmoothMovePorts/smooth-move-ports.js`
-- **CDN Option**: `https://unpkg.com/elm-smooth-move/dist/smooth-move-ports.js`  
+- **CDN Option**: `https://unpkg.com/elm-animate/dist/elm-animate-waapi.js`  
 - **Documentation**: See the respective README.md files for detailed integration guides
 - **Purpose**: Provides Web Animations API integration for hardware-accelerated animations

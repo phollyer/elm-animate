@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Elm Smooth Move Examples Format Script
+# Elm Animate Examples Format Script
 # This script formats all example files using elm-format
 # 
 # Usage: ./scripts/format.sh
 
-echo "🎨 Formatting Elm Smooth Move Examples..."
+echo "🎨 Formatting Elm Animate Examples..."
 
 # Change to examples directory (parent of scripts)
 cd "$(dirname "$0")/.."

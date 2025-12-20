@@ -14,9 +14,9 @@ This module converts AnimBuilder configurations to JavaScript Web Animations API
 via Elm ports for maximum performance and browser compatibility.
 
 **Note:** This module requires accompanying JavaScript code to handle the ports communication.
-Install the `elm-smooth-move-waapi` package from NPM and include the script in your HTML.
+Install the `elm-animate-waapi` package from NPM and include the script in your HTML.
 
-        npm install elm-smooth-move-waapi
+        npm install elm-animate-waapi
 
 @docs AnimationState, init, AnimBuilder, builder
 

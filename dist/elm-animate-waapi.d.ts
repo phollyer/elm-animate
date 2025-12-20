@@ -1,7 +1,7 @@
 /**
- * Elm Smooth Move Ports - JavaScript companion for Web Animations API integration
+ * Elm Animate WAAPI - JavaScript companion for Web Animations API integration
  * 
- * This file provides TypeScript definitions for the smooth-move-ports.js library
+ * This file provides TypeScript definitions for the elm-animate-waapi.js library
  * that enables Elm applications to use the Web Animations API via ports.
  */
 

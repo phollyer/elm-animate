@@ -1,4 +1,4 @@
-# Smooth Move Elm Package - AI Coding Instructions
+# Elm Animate Package - AI Coding Instructions
 
 ## ⚠️ CRITICAL FILE PROTECTION RULES ⚠️
 
@@ -64,7 +64,7 @@ This is an Elm 0.19 package that provides multiple animation approaches for smoo
 ### 4. WAAPI-Based API (SmoothMoveWAAPI)
 - **Purpose**: Web Animations API integration via JavaScript
 - **API**: Elm ports communicating with JavaScript companion file
-- **Usage**: Requires `smooth-move-ports.js` and port definitions
+- **Usage**: Requires `elm-animate-waapi.js` and port definitions
 - **Best for**: Complex animations, platform-specific optimizations
 
 ## Key Architecture Patterns
@@ -109,7 +109,7 @@ moveToWithOptions { defaultConfig | speed = 500, axis = Both } "element-id" 0 0 
 ### Package Structure
 - **Exposed modules**: All 4 main animation approaches in `elm.json`
 - **Internal modules**: Keep implementation details in `Internal/` namespace
-- **JavaScript integration**: Available via npm (`npm install elm-smooth-move`) or in `examples/js/smooth-move-ports.js`
+- **JavaScript integration**: Available via npm (`npm install elm-animate`) or in `examples/js/elm-animate-waapi.js`
 
 ## Critical Implementation Details
 
@@ -153,7 +153,7 @@ examples/
 ├── scripts/
 │   └── build.sh              - Main build script
 ├── js/
-│   └── smooth-move-ports.js  - JavaScript companion for Ports API
+│   └── elm-animate-waapi.js  - JavaScript companion for WAAPI API
 └── src/
     ├── Common/               - Reusable functions for duplicated code in the examples
     ├── ElmUI/

@@ -171,12 +171,12 @@ scrollToTop "container-id" NoOp -- returns `Task Dom.Error (List ())`
 
 ### Install the package
 ```bash
-elm install phollyer/elm-smooth-move
+elm install phollyer/elm-animate
 ```
 
 **To utilise the Web Animations API with the `Anim.Engine.WAAPI` module, you also need to install the JavaScript companion:**
 ```bash
-npm install elm-smooth-move
+npm install elm-animate-waapi
 ```
 
 ## 📚 Explore the examples

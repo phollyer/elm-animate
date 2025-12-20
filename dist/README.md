@@ -1,11 +1,11 @@
-# elm-smooth-move JavaScript Companion
+# elm-animate JavaScript Companion
 
-JavaScript companion library for the `elm-smooth-move` Elm package, providing Web Animations API integration via ports.
+JavaScript companion library for the `elm-animate` Elm package, providing Web Animations API integration via ports.
 
 ## Installation
 
 ```bash
-npm install elm-smooth-move
+npm install elm-animate
 ```
 
 ## Quick Start
@@ -21,7 +21,7 @@ const SmoothMovePorts = require('elm-smooth-move')
 
 **Option B: CDN**
 ```html
-<script src="https://unpkg.com/elm-smooth-move@1.0.0/dist/smooth-move-ports.js"></script>
+<script src="https://unpkg.com/elm-animate@1.0.0/dist/elm-animate-waapi.js"></script>
 ```
 
 ### 2. Initialize in your Elm app
