@@ -19,6 +19,7 @@ module Anim.Internal.Scroll exposing
     , htmlAttributes
     , init
     , isAnimationRunning
+    , setAxis
     , setContainer
     , speed
     , update
@@ -142,6 +143,15 @@ init =
 builder : AnimationState -> AnimBuilder
 builder _ =
     Builder.init
+
+
+setAxis : ScrollTarget.Axis -> AnimBuilder -> AnimBuilder
+setAxis axis animBuilder =
+    Builder.mapScrollTargets
+        (\(ScrollTarget.ScrollTarget data) ->
+            ScrollTarget.ScrollTarget { data | axis = axis }
+        )
+        animBuilder
 
 
 

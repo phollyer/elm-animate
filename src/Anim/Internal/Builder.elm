@@ -23,6 +23,7 @@ module Anim.Internal.Builder exposing
     , getTimeSpec
     , getTimespec
     , init
+    , mapScrollTargets
     , markDirty
     , processAnimationData
     , processElement
@@ -165,6 +166,13 @@ markPropertyDirty property =
 
         SizeConfig config ->
             SizeConfig { config | isDirty = True }
+
+
+{-| Map a function over all scroll targets in the builder.
+-}
+mapScrollTargets : (ScrollTarget -> ScrollTarget) -> AnimBuilder -> AnimBuilder
+mapScrollTargets fn (AnimBuilder data) =
+    AnimBuilder { data | scrollTargets = List.map fn data.scrollTargets }
 
 
 for : String -> AnimBuilder -> AnimBuilder

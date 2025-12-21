@@ -1,6 +1,6 @@
 module Anim.Internal.Properties.ScrollTarget exposing
     ( Axis(..)
-    , ScrollTarget
+    , ScrollTarget(..)
     , ScrollTargetType(..)
     , for
     , getAxis

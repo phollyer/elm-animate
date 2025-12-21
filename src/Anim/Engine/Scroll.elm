@@ -1,6 +1,7 @@
 module Anim.Engine.Scroll exposing
-    ( AnimationState, init, AnimBuilder, builder, animate
-    , toCmd, toTask
+    ( AnimationState, init, AnimBuilder, builder
+    , animate, toCmd, toTask
+    , onBothAxes, onXAxis, onYAxis
     , duration, speed
     , easing
     , delay
@@ -28,14 +29,17 @@ Elm architecture using subscriptions for frame-based animations.
 
 # Build
 
-@docs AnimationState, init, AnimBuilder, builder, animate
+@docs AnimationState, init, AnimBuilder, builder
 
 
-# Alternative Execution
+# Execute
 
-For simpler use cases where you don't need state management:
+@docs animate, toCmd, toTask
 
-@docs toCmd, toTask
+
+# Axis Selection
+
+@docs onBothAxes, onXAxis, onYAxis
 
 
 # Global Settings
@@ -97,7 +101,7 @@ These settings will be used for all scroll animations unless overridden on a per
 
 -}
 
-import Anim.Internal.Properties.ScrollTarget as ScrollTarget
+import Anim.Internal.Properties.ScrollTarget as ScrollTarget exposing (Axis(..))
 import Anim.Internal.Scroll as InternalScroll
 import Anim.Internal.Scroll.Common as ScrollCommon
 import Anim.Internal.Scroll.Container.Cmd as ContainerCmd
@@ -717,3 +721,49 @@ toTask animBuilder =
             in
             -- Convert Task (List ()) to Task ()
             Task.map (\_ -> ()) baseTask
+
+
+
+-- AXIS SELECTION
+
+
+{-| Scroll on both X and Y axes (default).
+
+    Scroll.init
+        |> Scroll.builder
+        |> Scroll.onBothAxes
+        |> Scroll.toElement "section-1"
+        |> Scroll.animate
+
+-}
+onBothAxes : AnimBuilder -> AnimBuilder
+onBothAxes =
+    InternalScroll.setAxis Both
+
+
+{-| Scroll on X axis only.
+
+    Scroll.init
+        |> Scroll.builder
+        |> Scroll.onXAxis
+        |> Scroll.toElement "section-1"
+        |> Scroll.animate
+
+-}
+onXAxis : AnimBuilder -> AnimBuilder
+onXAxis =
+    InternalScroll.setAxis X
+
+
+{-| Scroll on Y axis only.
+
+    Scroll.init
+        |> Scroll.builder
+        |> Scroll.onYAxis
+        |> Scroll.toElement "section-1"
+        |> Scroll.animate
+
+-}
+onYAxis : AnimBuilder -> AnimBuilder
+onYAxis =
+    InternalScroll.setAxis Y
