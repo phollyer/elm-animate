@@ -1,5 +1,6 @@
 module ElmUI.Scroll.Document.Position.Y.Main exposing (main)
 
+import Anim.Engine.Scroll as Scroll
 import Browser exposing (Document)
 import Browser.Dom
 import Common.Colors as Colors
@@ -11,8 +12,6 @@ import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes
-import Scroll exposing (defaultConfig)
-import Scroll.Document.Cmd as Scroll
 import Task
 
 
@@ -35,12 +34,33 @@ main =
 
 
 type alias Model =
-    {}
+    { scrollAnimations : Scroll.AnimationState
+    }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( {}, Cmd.none )
+    ( { scrollAnimations = Scroll.init }, Cmd.none )
+
+
+scrollToElement : String -> Cmd Msg
+scrollToElement targetId =
+    Scroll.init
+        |> Scroll.builder
+        |> Scroll.document
+        |> Scroll.toElement targetId
+        |> Scroll.speed 500
+        |> Scroll.toCmd NoOp
+
+
+scrollToY : Float -> Cmd Msg
+scrollToY yPos =
+    Scroll.init
+        |> Scroll.builder
+        |> Scroll.document
+        |> Scroll.toY yPos
+        |> Scroll.speed 500
+        |> Scroll.toCmd NoOp
 
 
 
@@ -49,6 +69,7 @@ init _ =
 
 type Msg
     = NoOp
+    | ScrollAnimationMsg Scroll.AnimationMsg
     | ScrollToParagraphOne
     | ScrollToParagraphTwo
     | ScrollToParagraphThree
@@ -62,20 +83,25 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
+        ScrollAnimationMsg scrollMsg ->
+            ( { model | scrollAnimations = Scroll.update scrollMsg model.scrollAnimations }
+            , Cmd.none
+            )
+
         ScrollToParagraphOne ->
-            ( model, Scroll.scrollWithConfig "paragraph-one" NoOp defaultConfig )
+            ( model, scrollToElement "paragraph-one" )
 
         ScrollToParagraphTwo ->
-            ( model, Scroll.scrollWithConfig "paragraph-two" NoOp defaultConfig )
+            ( model, scrollToElement "paragraph-two" )
 
         ScrollToParagraphThree ->
-            ( model, Scroll.scrollWithConfig "paragraph-three" NoOp defaultConfig )
+            ( model, scrollToElement "paragraph-three" )
 
         ScrollToTop ->
-            ( model, Scroll.scrollToTop NoOp )
+            ( model, scrollToY 0 )
 
         ScrollToBottom ->
-            ( model, Scroll.scrollToBottom NoOp )
+            ( model, scrollToY 10000 )
 
 
 
@@ -83,8 +109,8 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
+subscriptions model =
+    Scroll.subscriptions ScrollAnimationMsg model.scrollAnimations
 
 
 

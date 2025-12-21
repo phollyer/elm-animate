@@ -1,5 +1,6 @@
 module ElmUI.Scroll.Document.Position.X.Main exposing (main)
 
+import Anim.Engine.Scroll as Scroll
 import Browser exposing (Document)
 import Browser.Dom
 import Browser.Events
@@ -12,8 +13,6 @@ import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes
-import Scroll exposing (Axis(..), defaultConfig)
-import Scroll.Document.Cmd as Scroll
 import Task
 
 
@@ -36,14 +35,39 @@ main =
 
 
 type alias Model =
-    { sectionCount : Int }
+    { sectionCount : Int
+    , scrollAnimations : Scroll.AnimationState
+    }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { sectionCount = 4 }
+    ( { sectionCount = 4
+      , scrollAnimations = Scroll.init
+      }
     , Cmd.none
     )
+
+
+scrollToElement : String -> Cmd Msg
+scrollToElement targetId =
+    Scroll.init
+        |> Scroll.builder
+        |> Scroll.document
+        |> Scroll.toElement targetId
+        |> Scroll.speed 500
+        |> Scroll.offsetX 20
+        |> Scroll.toCmd NoOp
+
+
+scrollToX : Float -> Cmd Msg
+scrollToX xPos =
+    Scroll.init
+        |> Scroll.builder
+        |> Scroll.document
+        |> Scroll.toX xPos
+        |> Scroll.speed 500
+        |> Scroll.toCmd NoOp
 
 
 
@@ -52,6 +76,7 @@ init _ =
 
 type Msg
     = NoOp
+    | ScrollAnimationMsg Scroll.AnimationMsg
     | ScrollToSection String
     | ScrollToStart
     | ScrollToEnd
@@ -65,17 +90,19 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        ScrollToSection id ->
-            ( model
-            , Scroll.scrollWithConfig id NoOp <|
-                { defaultConfig | axis = XWithOffset 20 }
+        ScrollAnimationMsg scrollMsg ->
+            ( { model | scrollAnimations = Scroll.update scrollMsg model.scrollAnimations }
+            , Cmd.none
             )
 
+        ScrollToSection id ->
+            ( model, scrollToElement id )
+
         ScrollToStart ->
-            ( model, Scroll.scrollToLeftEdge NoOp )
+            ( model, scrollToX 0 )
 
         ScrollToEnd ->
-            ( model, Scroll.scrollToRightEdge NoOp )
+            ( model, scrollToX 10000 )
 
         AddSection ->
             ( { model | sectionCount = model.sectionCount + 1 }, Cmd.none )
@@ -90,7 +117,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Scroll.subscriptions ScrollAnimationMsg model.scrollAnimations
 
 
 

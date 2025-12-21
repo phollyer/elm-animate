@@ -5,6 +5,7 @@ module Anim.Internal.Builder exposing
     , ProcessedElementConfig
     , ProcessedPropertyConfig(..)
     , PropertyConfig(..)
+    , addScrollTarget
     , delay
     , duration
     , easing
@@ -13,13 +14,19 @@ module Anim.Internal.Builder exposing
     , for
     , getCurrentElementConfig
     , getDelay
+    , getDelayWithDefault
     , getEasing
+    , getEasingWithDefault
     , getElementConfig
+    , getScrollContainer
+    , getScrollTargets
+    , getTimeSpec
     , getTimespec
     , init
     , markDirty
     , processAnimationData
     , processElement
+    , setScrollContainer
     , speed
     , updateCurrentElement
     )
@@ -29,6 +36,7 @@ import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position, distance)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
+import Anim.Internal.Properties.ScrollTarget exposing (ScrollTarget)
 import Anim.Internal.Properties.Size as Size exposing (Size)
 import Anim.Internal.Timing.Easing as Easing exposing (Easing(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
@@ -46,6 +54,8 @@ type alias BuilderData =
     , globalDelay : Maybe Int
     , currentElementId : Maybe ElementId
     , elements : Dict ElementId ElementConfig
+    , scrollTargets : List ScrollTarget
+    , scrollContainer : String
     }
 
 
@@ -121,6 +131,8 @@ init =
         , globalDelay = Nothing
         , currentElementId = Nothing
         , elements = Dict.empty
+        , scrollTargets = []
+        , scrollContainer = "document"
         }
 
 
@@ -217,14 +229,50 @@ getTimespec (AnimBuilder data) =
     data.globalTiming
 
 
+{-| Get TimeSpec with default fallback.
+-}
+getTimeSpec : AnimBuilder -> TimeSpec
+getTimeSpec (AnimBuilder data) =
+    data.globalTiming |> Maybe.withDefault (Duration 400)
+
+
 getEasing : AnimBuilder -> Maybe Easing
 getEasing (AnimBuilder data) =
     data.globalEasing
 
 
+{-| Get Easing with default fallback.
+-}
+getEasingWithDefault : AnimBuilder -> Easing
+getEasingWithDefault (AnimBuilder data) =
+    data.globalEasing |> Maybe.withDefault QuintOut
+
+
 getDelay : AnimBuilder -> Maybe Int
 getDelay (AnimBuilder data) =
     data.globalDelay
+
+
+{-| Get Delay with default fallback.
+-}
+getDelayWithDefault : AnimBuilder -> Int
+getDelayWithDefault (AnimBuilder data) =
+    data.globalDelay |> Maybe.withDefault 0
+
+
+{-| Get scroll targets from the builder.
+-}
+getScrollTargets : AnimBuilder -> List ScrollTarget
+getScrollTargets (AnimBuilder data) =
+    data.scrollTargets
+
+
+{-| Add a scroll target to the builder.
+-}
+addScrollTarget : ScrollTarget -> AnimBuilder -> AnimBuilder
+addScrollTarget scrollTarget (AnimBuilder data) =
+    AnimBuilder
+        { data | scrollTargets = scrollTarget :: data.scrollTargets }
 
 
 {-| Update the current element configuration.
@@ -847,3 +895,17 @@ easingToJsString easingValue =
        Easing.encode easing_
 
 -}
+
+
+{-| Set the scroll container for scroll animations.
+-}
+setScrollContainer : String -> AnimBuilder -> AnimBuilder
+setScrollContainer containerId (AnimBuilder data) =
+    AnimBuilder { data | scrollContainer = containerId }
+
+
+{-| Get the scroll container for scroll animations.
+-}
+getScrollContainer : AnimBuilder -> String
+getScrollContainer (AnimBuilder data) =
+    data.scrollContainer

@@ -11,6 +11,8 @@ This example shows:
 
 -}
 
+import Anim.Engine.Scroll as Scroll
+
 import Browser exposing (Document)
 import Browser.Events as Event
 import Common.UI as UI
@@ -39,6 +41,7 @@ type alias Model =
     { status : String
     , windowWidth : Int
     , windowHeight : Int
+    , scrollAnimations : Scroll.AnimationState
     }
 
 
@@ -47,6 +50,7 @@ initialModel flags =
     { status = "Ready to scroll elements into view"
     , windowWidth = flags.windowWidth
     , windowHeight = flags.windowHeight
+    , scrollAnimations = Scroll.init
     }
 
 
@@ -60,6 +64,7 @@ type Msg
     | TaskCompleted
     | TaskFailed
     | OnResize Int Int
+    | ScrollAnimationMsg Scroll.AnimationMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -67,14 +72,23 @@ update msg model =
     case msg of
         ScrollToElement elementId ->
             ( { model | status = "Scrolling to " ++ elementId ++ "..." }
-            , DocumentTask.scrollIntoView elementId
-                |> Task.attempt (\_ -> TaskCompleted)
+            , Scroll.init
+                |> Scroll.builder
+                |> Scroll.document
+                |> Scroll.toElement elementId
+                |> Scroll.speed 500
+                |> Scroll.toCmd TaskCompleted
             )
 
         JumpToElement elementId ->
             ( { model | status = "Jumping to " ++ elementId ++ "..." }
             , DocumentTask.jumpIntoView elementId
                 |> Task.attempt (\_ -> TaskCompleted)
+            )
+
+        ScrollAnimationMsg scrollMsg ->
+            ( { model | scrollAnimations = Scroll.update scrollMsg model.scrollAnimations }
+            , Cmd.none
             )
 
         TaskCompleted ->
@@ -95,7 +109,10 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Event.onResize OnResize
+    Sub.batch
+        [ Event.onResize OnResize
+        , Scroll.subscriptions ScrollAnimationMsg model.scrollAnimations
+        ]
 
 
 

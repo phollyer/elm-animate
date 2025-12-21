@@ -1,4 +1,4 @@
-module Scroll.Common exposing
+module Anim.Internal.Scroll.Common exposing
     ( Config
     , defaultConfig
     , Timing(..)

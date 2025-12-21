@@ -36,6 +36,10 @@ If you accidentally overwrite a dashboard file, it must be restored manually fro
 
 - **Never** account for backward compatibility unless explicitly instructed by the user
 - **Always** remove deprecated functions and comments when refactoring
+- **NEVER** leave incomplete implementations without explicit user disclosure
+  - **Always** complete implementations or inform user about incomplete work
+  - **Never** use TODO comments or placeholder implementations without user awareness
+  - **If implementation cannot be completed immediately, explicitly tell the user**
 
 
 ## Project Overview

@@ -1,4 +1,4 @@
-module Scroll.Container.Task exposing
+module Anim.Internal.Scroll.Container.Task exposing
     ( ContainerId, TargetId
     , scroll, scrollWithConfig, jump, jumpWithConfig
     , scrollIntoView, scrollIntoViewWithConfig, jumpIntoView, jumpIntoViewWithConfig
@@ -290,10 +290,10 @@ _[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning F
 
 -}
 
+import Anim.Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames)
+import Anim.Internal.Scroll.Common exposing (Axis(..), Config, defaultConfig)
+import Anim.Internal.Scroll.Internal exposing (Container(..), Direction(..), calculateScrollIntoView, getAxisDirection, getClampedPositions, getContainerInfo, getViewport, timingToSpeed)
 import Browser.Dom as Dom
-import Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames)
-import Scroll.Common exposing (Axis(..), Config, defaultConfig)
-import Scroll.Internal exposing (Container(..), Direction(..), calculateScrollIntoView, getAxisDirection, getClampedPositions, getContainerInfo, getViewport, timingToSpeed)
 import Task exposing (Task)
 
 

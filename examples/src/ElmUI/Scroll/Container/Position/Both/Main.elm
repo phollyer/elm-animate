@@ -1,5 +1,6 @@
 module ElmUI.Scroll.Container.Position.Both.Main exposing (main)
 
+import Anim.Engine.Scroll as Scroll
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -11,8 +12,6 @@ import Element.Font as Font
 import Element.Input as Input
 import Html
 import Html.Attributes
-import Scroll exposing (Axis(..), defaultConfig)
-import Scroll.Container.Cmd as Scroll
 
 
 
@@ -25,7 +24,7 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
 
 
@@ -34,12 +33,24 @@ main =
 
 
 type alias Model =
-    {}
+    { scrollAnimations : Scroll.AnimationState
+    }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( {}, Cmd.none )
+    ( { scrollAnimations = Scroll.init }, Cmd.none )
+
+
+scrollToElement : String -> Cmd Msg
+scrollToElement targetId =
+    Scroll.init
+        |> Scroll.builder
+        |> Scroll.container "scroll-container"
+        |> Scroll.toElement targetId
+        |> Scroll.speed 500
+        |> Scroll.offset 20 20
+        |> Scroll.toCmd NoOp
 
 
 
@@ -48,6 +59,7 @@ init _ =
 
 type Msg
     = NoOp
+    | ScrollAnimationMsg Scroll.AnimationMsg
     | ScrollToTopLeft
     | ScrollToTopRight
     | ScrollToBottomLeft
@@ -61,50 +73,30 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        ScrollToTopLeft ->
-            ( model
-            , Scroll.scrollWithConfig
-                "scroll-container"
-                "top-left-element"
-                NoOp
-                { defaultConfig | axis = BothWithOffset 20 20 }
+        ScrollAnimationMsg scrollMsg ->
+            ( { model | scrollAnimations = Scroll.update scrollMsg model.scrollAnimations }
+            , Cmd.none
             )
+
+        ScrollToTopLeft ->
+            ( model, scrollToElement "top-left-element" )
 
         ScrollToTopRight ->
-            ( model
-            , Scroll.scrollWithConfig
-                "scroll-container"
-                "top-right-element"
-                NoOp
-                { defaultConfig | axis = BothWithOffset 20 20 }
-            )
+            ( model, scrollToElement "top-right-element" )
 
         ScrollToBottomLeft ->
-            ( model
-            , Scroll.scrollWithConfig
-                "scroll-container"
-                "bottom-left-element"
-                NoOp
-                { defaultConfig | axis = BothWithOffset 20 20 }
-            )
+            ( model, scrollToElement "bottom-left-element" )
 
         ScrollToBottomRight ->
-            ( model
-            , Scroll.scrollWithConfig
-                "scroll-container"
-                "bottom-right-element"
-                NoOp
-                { defaultConfig | axis = BothWithOffset 20 20 }
-            )
+            ( model, scrollToElement "bottom-right-element" )
 
         ScrollToCenter ->
-            ( model
-            , Scroll.scrollWithConfig
-                "scroll-container"
-                "center-element"
-                NoOp
-                { defaultConfig | axis = BothWithOffset 20 20 }
-            )
+            ( model, scrollToElement "center-element" )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Scroll.subscriptions ScrollAnimationMsg model.scrollAnimations
 
 
 

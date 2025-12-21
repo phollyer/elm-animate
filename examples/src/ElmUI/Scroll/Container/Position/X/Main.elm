@@ -1,5 +1,6 @@
 module ElmUI.Scroll.Container.Position.X.Main exposing (main)
 
+import Anim.Engine.Scroll as Scroll
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -9,8 +10,6 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Html.Attributes
-import Scroll exposing (Axis(..), defaultConfig)
-import Scroll.Container.Cmd as Scroll
 
 
 
@@ -32,12 +31,33 @@ main =
 
 
 type alias Model =
-    {}
+    { scrollAnimations : Scroll.AnimationState
+    }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( {}, Cmd.none )
+    ( { scrollAnimations = Scroll.init }, Cmd.none )
+
+
+scrollToElement : String -> Cmd Msg
+scrollToElement targetId =
+    Scroll.init
+        |> Scroll.builder
+        |> Scroll.container "horizontal-scroll-container"
+        |> Scroll.toElement targetId
+        |> Scroll.speed 500
+        |> Scroll.toCmd NoOp
+
+
+scrollToX : Float -> Cmd Msg
+scrollToX xPos =
+    Scroll.init
+        |> Scroll.builder
+        |> Scroll.container "horizontal-scroll-container"
+        |> Scroll.toX xPos
+        |> Scroll.speed 500
+        |> Scroll.toCmd NoOp
 
 
 
@@ -46,6 +66,7 @@ init _ =
 
 type Msg
     = NoOp
+    | ScrollAnimationMsg Scroll.AnimationMsg
     | ScrollToCard Int
     | ScrollToStart
     | ScrollToEnd
@@ -57,28 +78,19 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        ScrollToCard cardNum ->
-            ( model
-            , Scroll.scrollWithConfig
-                "horizontal-scroll-container"
-                ("card-" ++ String.fromInt cardNum)
-                NoOp
-                { defaultConfig | axis = X }
+        ScrollAnimationMsg scrollMsg ->
+            ( { model | scrollAnimations = Scroll.update scrollMsg model.scrollAnimations }
+            , Cmd.none
             )
+
+        ScrollToCard cardNum ->
+            ( model, scrollToElement ("card-" ++ String.fromInt cardNum) )
 
         ScrollToStart ->
-            ( model
-            , Scroll.scrollToLeftEdge
-                "horizontal-scroll-container"
-                NoOp
-            )
+            ( model, scrollToX 0 )
 
         ScrollToEnd ->
-            ( model
-            , Scroll.scrollToRightEdge
-                "horizontal-scroll-container"
-                NoOp
-            )
+            ( model, scrollToX 10000 )
 
 
 
@@ -86,8 +98,8 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
+subscriptions model =
+    Scroll.subscriptions ScrollAnimationMsg model.scrollAnimations
 
 
 

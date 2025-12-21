@@ -1,5 +1,6 @@
 module ElmUI.Scroll.Document.Position.Both.Main exposing (main)
 
+import Anim.Engine.Scroll as Scroll
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -8,9 +9,6 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
-import Scroll exposing (Axis(..), defaultConfig)
-import Scroll.Document.Cmd as Scroll
-import Task
 
 
 
@@ -23,7 +21,7 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
 
 
@@ -32,18 +30,23 @@ main =
 
 
 type alias Model =
-    {}
+    { scrollAnimations : Scroll.AnimationState
+    }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( {}, Cmd.none )
+    ( { scrollAnimations = Scroll.init }, Cmd.none )
 
 
-scrollTo : String -> Cmd Msg
-scrollTo targetId =
-    Scroll.scrollWithConfig targetId NoOp <|
-        { defaultConfig | axis = BothWithOffset 0 0 }
+scrollToElement : String -> Cmd Msg
+scrollToElement targetId =
+    Scroll.init
+        |> Scroll.builder
+        |> Scroll.document
+        |> Scroll.toElement targetId
+        |> Scroll.speed 500
+        |> Scroll.toCmd NoOp
 
 
 
@@ -52,6 +55,7 @@ scrollTo targetId =
 
 type Msg
     = NoOp
+    | ScrollAnimationMsg Scroll.AnimationMsg
     | ScrollToTopLeft
     | ScrollToTopRight
     | ScrollToBottomLeft
@@ -65,20 +69,30 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
+        ScrollAnimationMsg scrollMsg ->
+            ( { model | scrollAnimations = Scroll.update scrollMsg model.scrollAnimations }
+            , Cmd.none
+            )
+
         ScrollToTopLeft ->
-            ( model, scrollTo "top-left" )
+            ( model, scrollToElement "top-left" )
 
         ScrollToTopRight ->
-            ( model, scrollTo "top-right" )
+            ( model, scrollToElement "top-right" )
 
         ScrollToBottomLeft ->
-            ( model, scrollTo "bottom-left" )
+            ( model, scrollToElement "bottom-left" )
 
         ScrollToBottomRight ->
-            ( model, scrollTo "bottom-right" )
+            ( model, scrollToElement "bottom-right" )
 
         ScrollToCenter ->
-            ( model, scrollTo "center" )
+            ( model, scrollToElement "center" )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Scroll.subscriptions ScrollAnimationMsg model.scrollAnimations
 
 
 

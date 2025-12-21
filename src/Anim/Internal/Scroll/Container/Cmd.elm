@@ -1,4 +1,4 @@
-module Scroll.Container.Cmd exposing
+module Anim.Internal.Scroll.Container.Cmd exposing
     ( ContainerId, TargetId
     , scroll, scrollWithConfig, jump, jumpWithConfig
     , scrollIntoView, scrollIntoViewWithConfig, jumpIntoView, jumpIntoViewWithConfig
@@ -291,8 +291,8 @@ _[↑ Relative Movement](#relative-movement) | [↑ Advanced Positioning Functio
 
 -}
 
-import Scroll.Common exposing (Config, defaultConfig)
-import Scroll.Container.Task as ScrollTask
+import Anim.Internal.Scroll.Common exposing (Config, defaultConfig)
+import Anim.Internal.Scroll.Container.Task as ScrollTask
 import Task
 
 

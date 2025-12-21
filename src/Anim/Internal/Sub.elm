@@ -51,6 +51,7 @@ onAnimationFrameDelta subscriptions for smooth, controlled animations.
 
 -}
 
+import Anim.Internal.AnimationCore as AnimationCore
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.BackgroundColor as Color exposing (Color)
@@ -65,7 +66,6 @@ import Browser.Events
 import Dict exposing (Dict)
 import Html
 import Html.Attributes
-import Internal.AnimationCore as AnimationCore
 
 
 type alias AnimBuilder =

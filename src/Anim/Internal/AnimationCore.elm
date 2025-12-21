@@ -1,4 +1,4 @@
-module Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames)
+module Anim.Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames)
 
 {-| Core animation interpolation functions.
 

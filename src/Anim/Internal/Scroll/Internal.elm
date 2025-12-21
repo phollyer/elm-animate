@@ -1,4 +1,4 @@
-module Scroll.Internal exposing
+module Anim.Internal.Scroll.Internal exposing
     ( Container(..)
     , Direction(..)
     , animationSteps
@@ -21,11 +21,28 @@ The animationSteps functions implement frame-based interpolation logic from the 
 
 -}
 
+import Anim.Internal.Scroll.Common exposing (Axis(..), Config, Timing(..), XOffsetFloat, YOffsetFloat)
 import Browser.Dom as Dom
 import Ease
-import Scroll.Common exposing (Axis(..), Config, Timing(..), XOffsetFloat, YOffsetFloat)
-import Scroll.Types exposing (CoordinatePair, Distance, Frames)
 import Task exposing (Task)
+
+
+{-| Type alias for pixel distances, offsets, and sizes.
+-}
+type alias Distance =
+    Float
+
+
+{-| Type alias for animation frame counts.
+-}
+type alias Frames =
+    Int
+
+
+{-| Type alias for coordinate position pairs (x, y).
+-}
+type alias CoordinatePair =
+    ( Float, Float )
 
 
 {-| Extract horizontal offset from axis configuration.
