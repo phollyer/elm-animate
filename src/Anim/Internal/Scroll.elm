@@ -21,6 +21,9 @@ module Anim.Internal.Scroll exposing
     , isAnimationRunning
     , setAxis
     , setContainer
+    , setOffset
+    , setOffsetX
+    , setOffsetY
     , speed
     , update
     )
@@ -150,6 +153,33 @@ setAxis axis animBuilder =
     Builder.mapScrollTargets
         (\(ScrollTarget.ScrollTarget data) ->
             ScrollTarget.ScrollTarget { data | axis = axis }
+        )
+        animBuilder
+
+
+setOffsetX : Float -> AnimBuilder -> AnimBuilder
+setOffsetX offset animBuilder =
+    Builder.mapScrollTargets
+        (\(ScrollTarget.ScrollTarget data) ->
+            ScrollTarget.ScrollTarget { data | offset = ( offset, Tuple.second data.offset ) }
+        )
+        animBuilder
+
+
+setOffsetY : Float -> AnimBuilder -> AnimBuilder
+setOffsetY offset animBuilder =
+    Builder.mapScrollTargets
+        (\(ScrollTarget.ScrollTarget data) ->
+            ScrollTarget.ScrollTarget { data | offset = ( Tuple.first data.offset, offset ) }
+        )
+        animBuilder
+
+
+setOffset : ( Float, Float ) -> AnimBuilder -> AnimBuilder
+setOffset ( offsetX, offsetY ) animBuilder =
+    Builder.mapScrollTargets
+        (\(ScrollTarget.ScrollTarget data) ->
+            ScrollTarget.ScrollTarget { data | offset = ( offsetX, offsetY ) }
         )
         animBuilder
 

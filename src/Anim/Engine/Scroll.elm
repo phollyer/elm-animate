@@ -2,6 +2,7 @@ module Anim.Engine.Scroll exposing
     ( AnimationState, init, AnimBuilder, builder
     , animate, toCmd, toTask
     , onBothAxes, onXAxis, onYAxis
+    , onBothAxesWithOffset, onXAxisWithOffset, onYAxisWithOffset
     , duration, speed
     , easing
     , delay
@@ -40,6 +41,11 @@ Elm architecture using subscriptions for frame-based animations.
 # Axis Selection
 
 @docs onBothAxes, onXAxis, onYAxis
+
+
+## With Offsets
+
+@docs onBothAxesWithOffset, onXAxisWithOffset, onYAxisWithOffset
 
 
 # Global Settings
@@ -767,3 +773,45 @@ onXAxis =
 onYAxis : AnimBuilder -> AnimBuilder
 onYAxis =
     InternalScroll.setAxis Y
+
+
+{-| Scroll on both X and Y axes with an offset.
+
+    Scroll.init
+        |> Scroll.builder
+        |> Scroll.onBothAxesWithOffset 60
+        |> Scroll.toElement "section-1"
+        |> Scroll.animate
+
+-}
+onBothAxesWithOffset : Float -> Float -> AnimBuilder -> AnimBuilder
+onBothAxesWithOffset offsetX offsetY =
+    InternalScroll.setAxis Both >> InternalScroll.setOffset ( offsetX, offsetY )
+
+
+{-| Scroll on X axis only with an offset.
+
+    Scroll.init
+        |> Scroll.builder
+        |> Scroll.onXAxisWithOffset 60
+        |> Scroll.toElement "section-1"
+        |> Scroll.animate
+
+-}
+onXAxisWithOffset : Float -> AnimBuilder -> AnimBuilder
+onXAxisWithOffset offset =
+    InternalScroll.setAxis X >> InternalScroll.setOffsetX offset
+
+
+{-| Scroll on Y axis only with an offset.
+
+    Scroll.init
+        |> Scroll.builder
+        |> Scroll.onYAxisWithOffset 60
+        |> Scroll.toElement "section-1"
+        |> Scroll.animate
+
+-}
+onYAxisWithOffset : Float -> AnimBuilder -> AnimBuilder
+onYAxisWithOffset offset =
+    InternalScroll.setAxis Y >> InternalScroll.setOffsetY offset

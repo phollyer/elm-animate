@@ -38,6 +38,7 @@ type alias ScrollTargetData =
     { containerId : String
     , target : ScrollTargetType
     , axis : Axis
+    , offset : ( Float, Float )
     }
 
 
@@ -75,6 +76,7 @@ for containerId =
         { containerId = containerId
         , target = Coordinates 0 0
         , axis = Both
+        , offset = ( 0, 0 )
         }
 
 
