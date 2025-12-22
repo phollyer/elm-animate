@@ -1,216 +1,180 @@
-# Smooth Animations And Scrolling
+# Elm Animate
 
-A comprehensive Elm package providing 
-- **3 different animation engines** optimized for different use cases, and  
-- **4 different scrolling modules** for Document and Container scrolling.
+A comprehensive Elm package for smooth, high-performance DOM animations and scrolling. Supports multiple animation engines and a unified, flexible scroll engine for both documents and containers.
 
-Choose the approach that best fits your performance needs and architectural preferences.
+## ✨ Features
 
-## 🎯 Animation Approaches
+- **Multiple Animation Engines:** Choose the best engine for your use case: CSS, Subscriptions, or Web Animations API (WAAPI).
+- **Unified Fluent API:** Consistent builder pattern for all engines and scrolling.
+- **Flexible Scrolling:** Document and container scrolling with axis and offset control.
+- **Hardware-accelerated CSS transitions, frame-based control, or WAAPI integration.**
+- **Composable, type-safe, and easy to integrate.**
 
-This project takes the approach that an animation is an animation regardless of what engines are used to play the animation. So an animation should be able to be described in a single way, and then that description should be able to be passed off to different playback engines as required. 
+---
 
-Therefore, all 3 approaches share a **unified fluent Builder API** with type-safe and property-specific builders. This consistent design makes it easy to switch between engines as your requirements evolve, while the underlying engine implementations are optimized for different performance characteristics.
+## 🚦 Engines
 
-(Stay tuned for WebGL and Canvas integration)
+All engines use a unified builder API, so you can switch between them with minimal changes.
 
-**Unified API Pattern:**
-```elm
--- All modules follow the same builder pattern
-animations
-    |> CSS.builder                    -- or Sub.builder, Ports.builder
-    |> Position.for "element-id" 
-    |> Position.toXY 100 200
-    |> Position.duration 500          -- or .speed 200
-    |> Position.easing EaseInOut
-    |> Position.build
-    |> CSS.animate                    -- or Sub.animate, Ports.animate  
-```
+### 1. `Anim.Engine.CSS` – Hardware-Accelerated CSS
 
-### 1. **Anim.Engine.CSS** - Browser-Native Transitions
-**API Style:** CSS generation with hardware acceleration  
-**Benefits:** Maximum performance, battery efficient, "fire and forget", multiple elements  
-**Drawbacks:** No intermediate values, limited control once started  
+- **Best for:** Simple, high-performance transitions.
+- **API:** Generates CSS for browser-native transitions.
 
 ```elm
--- Update animation state in your model  
-{ model | animations = 
-    model.animations
-        |> CSS.builder
-        |> Position.for "my-element"
-        |> Position.toXY 100 200
-        |> Position.speed 150           -- pixels per second
-        |> Position.easing EaseInOut
-        |> Position.build
-        |> CSS.animate
-}
+model.animations
+    |> CSS.builder
+    |> CSS.toElement "my-element"
+    |> CSS.toXY 100 200
+    |> CSS.speed 150
+    |> CSS.easing EaseInOut
+    |> CSS.animate
 
--- Apply in your view with generated CSS
 div 
-    (CSS.htmlAttributes "my-element" model.animations)
-    [ text "Hardware accelerated!" ]
+    [CSS.htmlAttributes "my-element" model.animations] 
+    [ text "CSS Animation!" ]
 ```
 
-### 2. **Anim.Engine.Sub** - Subscription-Driven Control  
-**API Style:** Frame-based updates with full programmatic control  
-**Benefits:** Access to current values, mid-animation changes, precise timing control  
-**Drawbacks:** Requires subscription management, more CPU intensive  
+---
+
+### 2. `Anim.Engine.Sub` – Subscription-Based Control
+
+- **Best for:** Full programmatic control, live values, mid-animation changes.
+- **API:** Frame-based updates, requires subscriptions.
 
 ```elm
--- Update animation state in your model
-{ model | animations = 
-    model.animations
-        |> Sub.builder  
-        |> Position.for "my-element"
-        |> Position.toXY 100 200
-        |> Position.duration 1000       -- milliseconds
-        |> Position.easing BounceOut
-        |> Position.build
-        |> Sub.animate
-}
+model.animations
+    |> Sub.builder
+    |> Sub.toElement "my-element"
+    |> Sub.toXY 100 200
+    |> Sub.duration 1000
+    |> Sub.easing BounceOut
+    |> Sub.animate
 
--- Handle animation updates in your subscriptions
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.subscriptions model.animations
+subscriptions model = 
+    Sub.subscriptions model.animations 
         |> Sub.map AnimationMsg
 
--- Apply in your view with live position tracking  
 div 
-    (Sub.htmlAttributes "my-element" model.animations)
-    [ text "Full control!" ]
+    [Sub.htmlAttributes "my-element" model.animations] 
+    [ text "Subscription Animation!" ]
 ```
 
-### 3. **Anim.Engine.WAAPI** - Web Animations API Integration
-**API Style:** JavaScript ports with maximum performance  
-**Benefits:** Web Animations API access, complex sequences, timeline control  
-**Drawbacks:** Requires JavaScript setup, more complex architecture  
+---
+
+### 3. `Anim.Engine.WAAPI` – Web Animations API (via Ports)
+
+- **Best for:** Complex, timeline-based, or native browser animations.
+- **API:** Uses Elm ports to communicate with a JavaScript companion.
 
 ```elm
--- Define ports for JavaScript integration
 port sendAnimationCommand : Encode.Value -> Cmd msg
 port positionUpdates : (Decode.Value -> msg) -> Sub msg
-port animationComplete : (String -> msg) -> Sub msg
 
--- Update animation state with port commands
 let
-    (newAnimations, animationCmd) = 
+    (newAnimations, animationCmd) =
         model.animations
-            |> Ports.builder
-            |> Position.for "my-element"  
-            |> Position.toXY 100 200
-            |> Position.speed 200
-            |> Position.easing (Bezier 0.4 0 0.6 1)
-            |> Position.build
-            |> Ports.animate sendAnimationCommand
+            |> WAAPI.builder
+            |> WAAPI.toElement "my-element"
+            |> WAAPI.toXY 100 200
+            |> WAAPI.speed 200
+            |> WAAPI.easing (Bezier 0.4 0 0.6 1)
+            |> WAAPI.animate sendAnimationCommand
 in
-({ model | animations = newAnimations }
-, animationCmd
-)
-
--- Handle animation updates in subscriptions
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.batch
-        [ positionUpdates PositionUpdateReceived
-        , animationComplete AnimationComplete
-        ]
-
--- Apply in your view with optimized transforms
-div 
-    (Ports.htmlAttributes "my-element" model.animations)
-    [ text "Web Animations API!" ]
+({ model | animations = newAnimations }, animationCmd)
 ```
 
+---
 
-## 🎯 Scrolling Modules
+### 4. `Anim.Engine.Scroll`
 
-All modules provide X, Y and Both axes scrolling.
+- **Document and container scrolling**
+- **X, Y, or Both axes**
+- **Offset configuration**
+- **Subscription-based animation management**
+- **Fire-and-forget (Cmd/Task) execution**
 
-### Document Scrolling
+### Example: Animated Scroll to Element
 
-
-### 1. **Scroll.Document.Cmd** 
-**API Style:** All functions return `Cmd msg`    
-**Benefits:** Simple integration, fire-and-forget  
-**Drawbacks:** No Error handling 
 ```elm
-scrollToTop NoOp  -- returns `Cmd msg`
+model.scrollAnimations
+    |> Scroll.builder
+    |> Scroll.toElement "target-id"
+    |> Scroll.onYAxisWithOffset 60
+    |> Scroll.speed 800
+    |> Scroll.animate
 ```
-
-### 2. **Scroll.Document.Task**  
-**API Style:** All functions return `Task Browser.Dom.Error [() | List ()]`   
-**Benefits:** Composable with access to Errors   
-**Drawbacks:** More complex - must handle the `Task`
-```elm
-scrollToTop NoOp -- returns `Task Error (List ())`
-```
-
 
 ### Container Scrolling
 
-
-### 1. **Scroll.Container.Cmd**   
-**API Style:** All functions return `Cmd msg`   
-**Benefits:** Simple integration, fire-and-forget  
-**Drawbacks:** No Error handling  
 ```elm
-scrollToTop "container-id" NoOp  -- returns `Cmd msg`
+model.scrollAnimations
+    |> Scroll.builder
+    |> Scroll.container "container-id"
+    |> Scroll.toElement "target-id"
+    |> Scroll.onBothAxes
+    |> Scroll.animate
 ```
 
-### 2. **Scroll.Container.Task**  
-**API Style:** All functions return `Task Browser.Dom.Error [() | List ()]`   
-**Benefits:** Composable with access to Errors   
-**Drawbacks:** More complex - must handle the `Task`
+### Fire-and-Forget (Cmd/Task) Execution
+
+For simple, one-off scrolls:
+
 ```elm
-scrollToTop "container-id" NoOp -- returns `Task Dom.Error (List ())`
+Scroll.init
+    |> Scroll.builder
+    |> Scroll.toElement "target-id"
+    |> Scroll.onYAxis
+    |> Scroll.toCmd ScrollCompleted
 ```
 
+Or with error handling:
+
+```elm
+Scroll.init
+    |> Scroll.builder
+    |> Scroll.toElement "target-id"
+    |> Scroll.onYAxis
+    |> Scroll.toTask
+    |> Task.attempt HandleScrollResult
+```
+
+### Subscriptions
+
+For animated, stateful scrolling:
+
+```elm
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Scroll.subscriptions ScrollAnimationMsg model.scrollAnimations
+```
+
+---
 
 ## 🚀 Quick Start
 
-### Install the package
+Install the package:
 ```bash
 elm install phollyer/elm-animate
 ```
 
-**To utilise the Web Animations API with the `Anim.Engine.WAAPI` module, you also need to install the JavaScript companion:**
+For WAAPI support:
 ```bash
 npm install elm-animate-waapi
 ```
 
-## 📚 Explore the examples
+---
 
+## 📚 Examples
 
-Interactive examples are ready to run! Open `examples/index.html` to see the main dashboard, or browse the examples:
+- Run `examples/index.html` for a dashboard of all demos.
+- Explore `examples/src/ElmUI/` for categorized examples by engine and feature.
 
-- **`ElmUI/Scroll/`**
-- **`ElmUI/Sub/`**
-- **`ElmUI/CSS/`**
-- **`ElmUI/Ports/`**
-
-**Option A: Direct HTML files (recommended)**
-```bash
-cd examples/
-
-# Open the main examples page in your browser
-open index.html 
-
-# Or open any specific example directly
-open src/ElmUI/CSS/Color/index.html
-```
-
-**Option B: Using elm reactor**
-```bash
-cd examples/
-elm reactor
-# Navigate to: http://localhost:8000/index.html
-```
-
+---
 
 ## 🙏 Credits
 
-This package builds upon the excellent foundation of [`linuss/smooth-scroll`](https://package.elm-lang.org/packages/linuss/smooth-scroll/latest/). The original design and architecture provided the starting point for this expanded multi-approach animation library.
+Based on [`linuss/smooth-scroll`](https://package.elm-lang.org/packages/linuss/smooth-scroll/latest/), expanded for multi-engine animation.
 
 ## 📄 License
 
