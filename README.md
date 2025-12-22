@@ -4,10 +4,8 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 ## ✨ Features
 
-- **Multiple Animation Engines:** Choose the best engine for your use case: CSS, Subscriptions, or Web Animations API (WAAPI).
-- **Unified Fluent API:** Consistent builder pattern for all engines and scrolling.
-- **Flexible Scrolling:** Document and container scrolling with axis and offset control.
-- **Hardware-accelerated CSS transitions, frame-based control, or WAAPI integration.**
+- **Multiple Animation Engines:** Choose the best engine for your use case: CSS, Sub, WAAPI, or Scroll.
+- **Unified Fluent API:** Consistent builder pattern for all engines.
 - **Composable, type-safe, and easy to integrate.**
 
 ---
