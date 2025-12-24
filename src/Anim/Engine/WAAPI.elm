@@ -58,8 +58,8 @@ These settings will be used for all animations unless overridden on a per-animat
 -}
 
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Ports as InternalPorts
 import Anim.Internal.Properties.Position exposing (Position)
+import Anim.Internal.WAAPI as InternalPorts
 import Anim.Timing.Easing as Easing exposing (Easing)
 import Html
 import Json.Encode as Encode

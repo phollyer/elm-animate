@@ -1,4 +1,4 @@
-module Anim.Internal.Ports exposing
+module Anim.Internal.WAAPI exposing
     ( TargetId
     , init, builder, animate, AnimationState
     , getPosition, getCurrentStyles
