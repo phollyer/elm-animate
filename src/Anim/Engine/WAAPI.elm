@@ -59,7 +59,7 @@ These settings will be used for all animations unless overridden on a per-animat
 
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Properties.Position exposing (Position)
-import Anim.Internal.WAAPI as InternalPorts
+import Anim.Internal.WAAPI as InternalWAAPI
 import Anim.Timing.Easing as Easing exposing (Easing)
 import Html
 import Json.Encode as Encode
@@ -75,7 +75,7 @@ This state keeps track of ongoing animations and their configurations.
 
 -}
 type alias AnimationState =
-    InternalPorts.AnimationState
+    InternalWAAPI.AnimationState
 
 
 {-| Initialize empty animation state.
@@ -87,7 +87,7 @@ type alias AnimationState =
 -}
 init : AnimationState
 init =
-    InternalPorts.init
+    InternalWAAPI.init
 
 
 {-| Animation builder type.
@@ -118,7 +118,7 @@ Use this to start new animations based on current state.
 -}
 builder : AnimationState -> AnimBuilder
 builder =
-    InternalPorts.builder
+    InternalWAAPI.builder
 
 
 {-| Execute stateful animation using JavaScript Web Animations API via ports.
@@ -141,7 +141,7 @@ Returns updated animation state and encoded animation data for ports.
 -}
 animate : AnimationState -> AnimBuilder -> ( AnimationState, Encode.Value )
 animate =
-    InternalPorts.animate
+    InternalWAAPI.animate
 
 
 {-| Execute animations using JavaScript Web Animations API via ports (stateless).
@@ -221,14 +221,14 @@ animateBatch portFunction builders =
 -}
 getPosition : String -> AnimationState -> Maybe Position
 getPosition =
-    InternalPorts.getPosition
+    InternalWAAPI.getPosition
 
 
 {-| Get current styles for an element (for debugging/display purposes).
 -}
 getCurrentStyles : String -> AnimationState -> List ( String, String )
 getCurrentStyles =
-    InternalPorts.getCurrentStyles
+    InternalWAAPI.getCurrentStyles
 
 
 {-| Set global duration in milliseconds (overrides any previous speed setting).
@@ -243,7 +243,7 @@ getCurrentStyles =
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
 duration =
-    InternalPorts.duration
+    InternalWAAPI.duration
 
 
 {-| Set global speed in units per second (overrides any previous duration setting).
@@ -258,7 +258,7 @@ duration =
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
 speed =
-    InternalPorts.speed
+    InternalWAAPI.speed
 
 
 {-| Set global easing function.
@@ -273,7 +273,7 @@ speed =
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
-    Easing.mapInternal InternalPorts.easing
+    Easing.mapInternal InternalWAAPI.easing
 
 
 {-| Set global delay in milliseconds.
@@ -288,7 +288,7 @@ easing =
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
-    InternalPorts.delay
+    InternalWAAPI.delay
 
 
 {-| Generate HTML attributes for ports-based animations.
@@ -299,4 +299,4 @@ which can be useful for debugging or JavaScript integration.
 -}
 htmlAttributes : String -> AnimationState -> List (Html.Attribute msg)
 htmlAttributes =
-    InternalPorts.htmlAttributes
+    InternalWAAPI.htmlAttributes
