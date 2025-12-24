@@ -38,74 +38,14 @@ window.ElmAnimateWAAPI = (function () {
      * Process animation data received from Elm
      */
     function processAnimationData(animationData) {
-        // Handle both old string format and new object format for backward compatibility
-        if (Array.isArray(animationData)) {
-            // Old string array format
-            animationData.forEach(commandString => {
-                const command = parseOldCommandString(commandString);
-                if (command) {
-                    processLegacyCommand(command);
-                }
-            });
-        } else if (animationData && animationData.elements) {
-            // New structured format from Elm Builder
+        if (animationData && animationData.elements) {
+            // Structured format from Elm Builder
             Object.entries(animationData.elements).forEach(([elementId, elementConfig]) => {
                 processElementAnimation(elementId, elementConfig, animationData);
             });
+        } else {
+            console.warn('ElmAnimateWAAPI: Invalid animation data format received');
         }
-    }
-
-    /**
-     * Parse old command string format for backward compatibility
-     */
-    function parseOldCommandString(commandString) {
-        const parts = commandString.split(':');
-        if (parts.length < 6) return null;
-
-        return {
-            type: parts[0] || 'position',
-            elementId: parts[1],
-            values: parts.slice(2, -3),
-            duration: parseFloat(parts[parts.length - 3]),
-            easing: parts[parts.length - 2],
-            extra: parts[parts.length - 1]
-        };
-    }
-
-    /**
-     * Process legacy command format
-     */
-    function processLegacyCommand(command) {
-        const element = document.getElementById(command.elementId);
-        if (!element) {
-            console.warn(`ElmAnimateWAAPI: Element with id "${command.elementId}" not found`);
-            return;
-        }
-
-        let keyframes = [{}];
-
-        switch (command.type) {
-            case 'position':
-                const x = parseFloat(command.values[0]) || 0;
-                const y = parseFloat(command.values[1]) || 0;
-                keyframes = [
-                    { transform: getCurrentTransform(element).transform || 'translate(0px, 0px)' },
-                    { transform: `translate(${x}px, ${y}px)` }
-                ];
-                break;
-            default:
-                console.warn(`ElmAnimateWAAPI: Legacy command type "${command.type}" not fully supported`);
-                return;
-        }
-
-        const animation = element.animate(keyframes, {
-            duration: command.duration,
-            easing: easingFunctions[command.easing] || command.easing,
-            fill: 'forwards'
-        });
-
-        activeAnimations.set(command.elementId, [animation]);
-        setupAnimationEvents(command.elementId, element, animation);
     }
 
     /**
