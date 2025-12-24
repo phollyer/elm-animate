@@ -12,11 +12,16 @@ module Anim.Engine.CSS exposing
 
 {-| CSS-based animation system with optional state tracking.
 
-This module provides the ability to create simple CSS animations that
-can be easily applied to your elements as either:
+This module converts [AnimBuilder](#AnimBuilder) configurations to CSS animations that can take
+advantage of the browser's native CSS engine to handle the animations.
 
-1.  Style tags defining keyframe animations or,
-2.  CSS [transform](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transforms) attributes.
+The CSS animations can then be easily applied to your elements as either:
+
+1.  **Style tags** defining keyframe animations, or,
+2.  **CSS [transform](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transforms) attributes**.
+
+You decide how to apply the generated CSS to your elements in your view - giving you full control
+over how the CSS is integrated into your application.
 
 
 # Build
@@ -109,26 +114,26 @@ defaultTransformOrder =
     [ Position, Rotate, Scale ]
 
 
-{-| Optional state tracker.
+{-| Optional State for managing animations.
 
-Add this to your model to enable state tracking for CSS animations.
+This state keeps track of animations and their configurations.
 
-    type alias Model =
-        { animations : CSS.AnimationState
-        , ...
-        }
+    import Anim.Engine.CSS as CSS
 
-For simple CSS animations, such as one-off transitions, you probably do not need to track state.
+    { model | animations : CSS.AnimationState }
 
-If you want more complex animations that depend on current positions or colors etc, include this in your model
-so that new animations will be started based on the current state.
+If you only need to create fire-and-forget animations without tracking state,
+you don't need to add this type to your model.
 
 -}
 type alias AnimationState =
     InternalCSS.AnimationState
 
 
-{-| Animation builder for CSS animations.
+{-| Animation builder type.
+
+This is used internally to configure animations before executing them.
+
 -}
 type alias AnimBuilder =
     InternalCSS.AnimBuilder
@@ -190,6 +195,20 @@ animateOrder order =
 
 
 {-| Initialize empty animation state.
+
+    import Anim.Engine.CSS as CSS
+
+    { model | animations = CSS.init }
+
+Or use this to initialize your animation state when you want fire-and-forget animations.
+
+    import Anim.Engine.CSS as CSS
+
+    CSS.init
+        |> CSS.builder
+        |> ... -- continue building the animation
+        |> CSS.animate
+
 -}
 init : AnimationState
 init =

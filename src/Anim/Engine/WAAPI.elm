@@ -1,6 +1,7 @@
 module Anim.Engine.WAAPI exposing
     ( AnimationState, init, AnimBuilder, builder
     , animate, animateBatch
+    , update
     , duration, speed
     , easing
     , delay
@@ -8,15 +9,29 @@ module Anim.Engine.WAAPI exposing
     , htmlAttributes
     )
 
-{-| Ports-based animation system utilising the Web Animations API.
+{-| Ports-based animation system utilising the Web Animations API with optional state tracking.
 
-This module converts AnimBuilder configurations to JavaScript Web Animations API calls
+This module converts [AnimBuilder](#AnimBuilder) configurations to JavaScript Web Animations API calls
 via Elm ports for maximum performance and browser compatibility.
 
-**Note:** This module requires accompanying JavaScript code to handle the ports communication.
-Install the `elm-animate-waapi` package from NPM and include the script in your HTML.
+**Note:** This module requires the accompanying JavaScript library to handle the Web Animations API.
+
+Install the `elm-animate-waapi` package from npm.
 
         npm install elm-animate-waapi
+
+Then import and initialize it in your JavaScript code:
+
+```javascript
+    import ElmAnimateWAAPI from 'elm-animate-waapi';
+
+    const app = Elm.Main.init({ ... });
+
+    ElmAnimateWAAPI.init(app.ports);
+```
+
+
+# Build
 
 @docs AnimationState, init, AnimBuilder, builder
 
@@ -24,6 +39,11 @@ Install the `elm-animate-waapi` package from NPM and include the script in your 
 # Animation Execution
 
 @docs animate, animateBatch
+
+
+# Animation Updates
+
+@docs update
 
 
 # Global Settings
@@ -62,16 +82,20 @@ import Anim.Internal.Properties.Position exposing (Position)
 import Anim.Internal.WAAPI as InternalWAAPI
 import Anim.Timing.Easing as Easing exposing (Easing)
 import Html
+import Json.Decode as Decode
 import Json.Encode as Encode
 
 
-{-| State for managing ports-based animations.
+{-| Optional State for managing animations.
 
-This state keeps track of ongoing animations and their configurations.
+This state keeps track of animations and their configurations.
 
     import Anim.Engine.WAAPI as WAAPI
 
     { model | animations : WAAPI.AnimationState }
+
+If you only need to create fire-and-forget animations without tracking state,
+you don't need to add this type to your model.
 
 -}
 type alias AnimationState =
@@ -92,7 +116,7 @@ init =
 
 {-| Animation builder type.
 
-This is used internally to configure animations before executing them via ports.
+This is used internally to configure animations before executing them.
 
 -}
 type alias AnimBuilder =
@@ -300,3 +324,24 @@ which can be useful for debugging or JavaScript integration.
 htmlAttributes : String -> AnimationState -> List (Html.Attribute msg)
 htmlAttributes =
     InternalWAAPI.htmlAttributes
+
+
+{-| Update animation state with data received from JavaScript via ports.
+
+This function processes animation update data received from the JavaScript WAAPI
+integration and updates the internal animation state accordingly.
+
+    type Msg
+        = ReceiveWAAPI Decode.Value
+        | ...
+
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            ReceiveWAAPI value ->
+                ( { model | animations = WAAPI.update value model.animations }, Cmd.none )
+
+-}
+update : Decode.Value -> AnimationState -> AnimationState
+update =
+    InternalWAAPI.update

@@ -10,9 +10,26 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 ---
 
-## 🚦 Engines
+## 🚦 Animation Engines
 
-All engines use a unified builder API, so you can switch between them with minimal changes.
+All animation engines use a unified builder API, so you can switch between them with minimal changes.
+
+Here's a `Position` animation that can be used by all of the CSS, Sub and WAAPI engines, without any changes to the animation itself:
+
+```elm
+positionAnimation : AnimBuilder -> AnimBuilder
+positionAnimation builder =
+    builder
+        |> Position.for "my-element"
+        |> Position.toXY 100 200
+        |> Position.speed 50
+        |> Position.easing BounceOut
+        |> Position.build
+```
+
+We will use this example animation in each of the Engine examples below.
+
+---
 
 ### 1. `Anim.Engine.CSS` – Hardware-Accelerated CSS
 
@@ -23,13 +40,16 @@ The CSS Engine will create both CSS Transforms and Keyframe Animations. Choose t
 in your view code.
 
 ```elm
-model.animations
-    |> CSS.builder
-    |> CSS.toElement "my-element"
-    |> CSS.toXY 100 200
-    |> CSS.speed 150
-    |> CSS.easing EaseInOut
-    |> CSS.animate
+-- Build
+
+buildAnimation : CSS.AnimationState -> CSS.AnimationState
+buildAnimation animations =
+    animations
+        |> CSS.builder
+        |> positionAnimation
+        |> CSS.animate
+
+-- View
 
 -- For CSS Transforms
 div 
@@ -50,17 +70,37 @@ div
 - **API:** Frame-based updates, requires subscriptions.
 
 ```elm
-model.animations
-    |> Sub.builder
-    |> Sub.toElement "my-element"
-    |> Sub.toXY 100 200
-    |> Sub.duration 1000
-    |> Sub.easing BounceOut
-    |> Sub.animate
+-- Build
 
+buildAnimation : Sub.AnimationState -> Sub.AnimationState
+buildAnimation animations =
+    animations
+        |> Sub.builder
+        |> positionAnimation
+        |> Sub.animate
+
+-- Update
+
+type Msg 
+    = AnimationMsg Sub.AnimationMsg
+    | ...
+
+update : Msg -> Model -> (Model, Cmd Msg)
+update msg model =
+    case msg of 
+        AnimationMsg animMsg ->
+            ({ model | animations = Sub.update animMsg model.animations }
+            , Cmd.none
+            )
+
+        ...
+
+subscriptions : Model -> Sub Msg
 subscriptions model = 
     Sub.subscriptions model.animations 
         |> Sub.map AnimationMsg
+
+-- View
 
 div 
     [Sub.htmlAttributes "my-element" model.animations] 
@@ -75,23 +115,55 @@ div
 - **API:** Uses Elm ports to communicate with a JavaScript companion.
 
 ```elm
+-- MyModule.elm
+port MyModule exposing (..)
+
+-- Port functions
+
 port sendAnimationCommand : Encode.Value -> Cmd msg
 port positionUpdates : (Decode.Value -> msg) -> Sub msg
 
-let
-    (newAnimations, animationCmd) =
-        model.animations
-            |> WAAPI.builder
-            |> WAAPI.toElement "my-element"
-            |> WAAPI.toXY 100 200
-            |> WAAPI.speed 200
-            |> WAAPI.easing (Bezier 0.4 0 0.6 1)
-            |> WAAPI.animate sendAnimationCommand
-in
-({ model | animations = newAnimations }, animationCmd)
+-- Build 
+
+buildAnimation : WAAPI.AnimationState -> WAAPI.AnimationState
+buildAnimation animations =
+    animations
+        |> WAAPI.builder
+        |> positionAnimation
+        |> WAAPI.animate
+
+
+-- Send to JS
+
+sendAnimation : Model -> Cmd msg 
+sendAnimation model =
+    let
+        (newAnimations, animationCmd) =
+            buildAnimation model.animations
+    in
+    ({ model | animations = newAnimations }, animationCmd)
+
+-- Receive updates
+
+type Msg
+    = ReceiveWAAPI Decode.Value
+    | ...
+
+update : Msg -> Model -> (Model, Cmd Msg)
+update msg model =
+    case msg of 
+        ReceiveWAAPI value ->
+            { model | animations = WAAPI.update value model.animations }
+
+        ...
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    positionUpdates ReceiveWAAPI 
 ```
 
 ---
+## 🚦 Scroll Engine
 
 ### 4. `Anim.Engine.Scroll`
 

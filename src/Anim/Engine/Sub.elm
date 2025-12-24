@@ -12,9 +12,9 @@ module Anim.Engine.Sub exposing
     , htmlAttributes
     )
 
-{-| Subscription-based animation system for Anim.
+{-| Subscription-based animation system with state tracking.
 
-This module converts AnimBuilder configurations to frame-based animations using
+This module converts [AnimBuilder](#AnimBuilder) configurations to frame-based animations using
 onAnimationFrameDelta subscriptions for smooth, controlled animations.
 
 
@@ -86,7 +86,10 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 import Html
 
 
-{-| Animation builder
+{-| Animation builder type.
+
+This is used internally to configure animations before executing them.
+
 -}
 type alias AnimBuilder =
     InternalSub.AnimBuilder
@@ -96,7 +99,14 @@ type alias AnimBuilder =
 -- ANIMATION STATE
 
 
-{-| State for managing subscription-based animations.
+{-| State for managing animations.
+
+This state keeps track of animations and their configurations.
+
+    import Anim.Engine.Sub as Sub
+
+    { model | animations : Sub.AnimationState }
+
 -}
 type alias AnimationState =
     InternalSub.AnimationState

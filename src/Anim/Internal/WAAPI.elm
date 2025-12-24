@@ -3,7 +3,7 @@ module Anim.Internal.WAAPI exposing
     , init, builder, animate, AnimationState
     , getPosition, getCurrentStyles
     , htmlAttributes
-    , delay, duration, easing, speed
+    , delay, duration, easing, speed, update
     )
 
 {-| Ports-based animation system for Anim.
@@ -44,6 +44,7 @@ import Anim.Internal.Timing.Easing exposing (Easing)
 import Dict exposing (Dict)
 import Html
 import Html.Attributes
+import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 
 
@@ -277,6 +278,147 @@ colorToStyle col =
 opacityToStyle : Opacity -> ( String, String )
 opacityToStyle op =
     ( "opacity", String.fromFloat (Opacity.toFloat op) )
+
+
+{-| Update animation state with data received from JavaScript via ports.
+
+This function processes animation update data received from the JavaScript WAAPI
+integration and updates the internal animation state accordingly.
+
+    case msg of
+        ReceiveWAAPI value ->
+            { model | animations = WAAPI.update value model.animations }
+
+-}
+update : Decode.Value -> AnimationState -> AnimationState
+update jsonValue (AnimationState state) =
+    case Decode.decodeValue animationUpdateDecoder jsonValue of
+        Ok animationUpdate ->
+            let
+                updatedAnimations =
+                    Dict.update animationUpdate.elementId
+                        (Maybe.map (updateElementAnimation animationUpdate))
+                        state.elementAnimations
+
+                newState =
+                    AnimationState
+                        { state
+                            | elementAnimations = updatedAnimations
+                            , isRunning = not (Dict.isEmpty updatedAnimations)
+                        }
+            in
+            newState
+
+        Err _ ->
+            -- Silently ignore decode errors since we control the data shape
+            AnimationState state
+
+
+type alias AnimationUpdate =
+    { elementId : String
+    , x : Maybe Float
+    , y : Maybe Float
+    , opacity : Maybe Float
+    , rotation : Maybe Float
+    , scaleX : Maybe Float
+    , scaleY : Maybe Float
+    , backgroundColor : Maybe String
+    , isAnimating : Bool
+    }
+
+
+animationUpdateDecoder : Decoder AnimationUpdate
+animationUpdateDecoder =
+    -- For now, just handle the basic position update format that JavaScript sends
+    Decode.map4
+        (\elementId x y isAnimating ->
+            { elementId = elementId
+            , x = x
+            , y = y
+            , opacity = Nothing
+            , rotation = Nothing
+            , scaleX = Nothing
+            , scaleY = Nothing
+            , backgroundColor = Nothing
+            , isAnimating = isAnimating
+            }
+        )
+        (Decode.field "elementId" Decode.string)
+        (Decode.maybe (Decode.field "x" Decode.float))
+        (Decode.maybe (Decode.field "y" Decode.float))
+        (Decode.field "isAnimating" Decode.bool)
+
+
+updateElementAnimation : AnimationUpdate -> ElementAnimation -> ElementAnimation
+updateElementAnimation animUpdate elementAnimation =
+    let
+        currentEndStates =
+            elementAnimation.endStates
+
+        updatedEndStates =
+            { currentEndStates
+                | position =
+                    case ( animUpdate.x, animUpdate.y ) of
+                        ( Just x, Just y ) ->
+                            Just (Position.fromTuple ( x, y ))
+
+                        ( Just x, Nothing ) ->
+                            currentEndStates.position
+                                |> Maybe.map (\pos -> Position.fromTuple ( x, Position.toTuple pos |> Tuple.second ))
+                                |> Maybe.withDefault (Position.fromTuple ( x, 0 ))
+                                |> Just
+
+                        ( Nothing, Just y ) ->
+                            currentEndStates.position
+                                |> Maybe.map (\pos -> Position.fromTuple ( Position.toTuple pos |> Tuple.first, y ))
+                                |> Maybe.withDefault (Position.fromTuple ( 0, y ))
+                                |> Just
+
+                        ( Nothing, Nothing ) ->
+                            currentEndStates.position
+                , opacity =
+                    case animUpdate.opacity of
+                        Just opacityValue ->
+                            Just (Opacity.fromFloat opacityValue)
+
+                        Nothing ->
+                            currentEndStates.opacity
+                , rotate =
+                    case animUpdate.rotation of
+                        Just rotationValue ->
+                            Just (Rotate.fromFloat rotationValue)
+
+                        Nothing ->
+                            currentEndStates.rotate
+                , scale =
+                    case ( animUpdate.scaleX, animUpdate.scaleY ) of
+                        ( Just x, Just y ) ->
+                            Just (Scale.fromTuple ( x, y ))
+
+                        ( Just x, Nothing ) ->
+                            currentEndStates.scale
+                                |> Maybe.map (\scl -> Scale.fromTuple ( x, Scale.toTuple scl |> Tuple.second ))
+                                |> Maybe.withDefault (Scale.fromTuple ( x, 1 ))
+                                |> Just
+
+                        ( Nothing, Just y ) ->
+                            currentEndStates.scale
+                                |> Maybe.map (\scl -> Scale.fromTuple ( Scale.toTuple scl |> Tuple.first, y ))
+                                |> Maybe.withDefault (Scale.fromTuple ( 1, y ))
+                                |> Just
+
+                        ( Nothing, Nothing ) ->
+                            currentEndStates.scale
+                , color =
+                    case animUpdate.backgroundColor of
+                        Just colorString ->
+                            Just (Color.hex colorString)
+
+                        Nothing ->
+                            currentEndStates.color
+            }
+    in
+    { elementAnimation | endStates = updatedEndStates }
 
 
 {-| Generate HTML attributes for ports-based animations.
