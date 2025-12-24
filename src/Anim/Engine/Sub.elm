@@ -1,15 +1,16 @@
 module Anim.Engine.Sub exposing
-    ( init, AnimBuilder, builder, animate, AnimationState, AnimationMsg
+    ( AnimationState, init, AnimBuilder, builder
+    , animate, AnimationMsg
+    , update, subscriptions
+    , htmlAttributes
     , duration, speed
     , easing
     , delay
-    , subscriptions, update
     , ElementId
     , getPosition, getPositionXY, getPositionX, getPositionY
     , getSize, getSizeHW, getSizeH, getSizeW
     , getCurrentStyles
     , isAnimationRunning, getDuration
-    , htmlAttributes
     )
 
 {-| Subscription-based animation system with state tracking.
@@ -18,9 +19,27 @@ This module converts [AnimBuilder](#AnimBuilder) configurations to frame-based a
 subscriptions for smooth, controlled animations.
 
 
-# Animation Execution
+# Build
 
-@docs init, AnimBuilder, builder, animate, AnimationState, AnimationMsg
+@docs AnimationState, init, AnimBuilder, builder
+
+
+# Execute
+
+@docs animate, AnimationMsg
+
+
+# Update
+
+@docs update, subscriptions
+
+
+# View
+
+
+# CSS Generation
+
+@docs htmlAttributes
 
 
 # Global Settings
@@ -41,11 +60,6 @@ These settings will be used for all animations unless overridden on a per-animat
 ## Delay
 
 @docs delay
-
-
-# Animation Management
-
-@docs subscriptions, update
 
 
 # Animation Querying
@@ -71,11 +85,6 @@ These settings will be used for all animations unless overridden on a per-animat
 ## Animation State
 
 @docs isAnimationRunning, getDuration
-
-
-# CSS Generation
-
-@docs htmlAttributes
 
 -}
 
@@ -122,7 +131,12 @@ type alias ElementId =
     String
 
 
-{-| Initialize empty animation builder.
+{-| Initialize empty animation state.
+
+    import Anim.Engine.Sub as Sub
+
+    { model | animations = Sub.init }
+
 -}
 init : AnimationState
 init =
