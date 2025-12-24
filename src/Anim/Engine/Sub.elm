@@ -1,10 +1,10 @@
 module Anim.Engine.Sub exposing
-    ( ElementId
-    , init, AnimBuilder, builder, animate, AnimationState, AnimationMsg
+    ( init, AnimBuilder, builder, animate, AnimationState, AnimationMsg
     , duration, speed
     , easing
     , delay
     , subscriptions, update
+    , ElementId
     , getPosition, getPositionXY, getPositionX, getPositionY
     , getSize, getSizeHW, getSizeH, getSizeW
     , getCurrentStyles
@@ -15,12 +15,10 @@ module Anim.Engine.Sub exposing
 {-| Subscription-based animation system with state tracking.
 
 This module converts [AnimBuilder](#AnimBuilder) configurations to frame-based animations using
-onAnimationFrameDelta subscriptions for smooth, controlled animations.
+subscriptions for smooth, controlled animations.
 
 
 # Animation Execution
-
-@docs ElementId
 
 @docs init, AnimBuilder, builder, animate, AnimationState, AnimationMsg
 
@@ -51,6 +49,8 @@ These settings will be used for all animations unless overridden on a per-animat
 
 
 # Animation Querying
+
+@docs ElementId
 
 
 ## Position
@@ -116,7 +116,7 @@ type alias AnimationState =
 -- ANIMATION EXECUTION
 
 
-{-| The ID of the target element to animate.
+{-| The ID of the target element being animated.
 -}
 type alias ElementId =
     String
@@ -259,28 +259,28 @@ update =
 
 {-| Get current position of an element being animated.
 -}
-getPosition : String -> AnimationState -> Maybe Position
+getPosition : ElementId -> AnimationState -> Maybe Position
 getPosition =
     InternalSub.getPosition
 
 
 {-| Get current X and Y position of an element being animated.
 -}
-getPositionXY : String -> AnimationState -> Maybe ( Float, Float )
+getPositionXY : ElementId -> AnimationState -> Maybe ( Float, Float )
 getPositionXY =
     InternalSub.getPositionXY
 
 
 {-| Get current X position of an element being animated.
 -}
-getPositionX : String -> AnimationState -> Maybe Float
+getPositionX : ElementId -> AnimationState -> Maybe Float
 getPositionX =
     InternalSub.getPositionX
 
 
 {-| Get current Y position of an element being animated.
 -}
-getPositionY : String -> AnimationState -> Maybe Float
+getPositionY : ElementId -> AnimationState -> Maybe Float
 getPositionY =
     InternalSub.getPositionY
 
@@ -291,28 +291,28 @@ getPositionY =
 
 {-| Get current size of an element being animated.
 -}
-getSize : String -> AnimationState -> Maybe Size
+getSize : ElementId -> AnimationState -> Maybe Size
 getSize =
     InternalSub.getSize
 
 
 {-| Get current width and height of an element being animated.
 -}
-getSizeHW : String -> AnimationState -> Maybe ( Float, Float )
+getSizeHW : ElementId -> AnimationState -> Maybe ( Float, Float )
 getSizeHW =
     InternalSub.getSizeHW
 
 
 {-| Get current height of an element being animated.
 -}
-getSizeH : String -> AnimationState -> Maybe Float
+getSizeH : ElementId -> AnimationState -> Maybe Float
 getSizeH =
     InternalSub.getSizeH
 
 
 {-| Get current width of an element being animated.
 -}
-getSizeW : String -> AnimationState -> Maybe Float
+getSizeW : ElementId -> AnimationState -> Maybe Float
 getSizeW =
     InternalSub.getSizeW
 
@@ -339,7 +339,7 @@ isAnimationRunning =
 
 {-| Get current animation values as CSS-compatible styles.
 -}
-getCurrentStyles : String -> AnimationState -> List ( String, String )
+getCurrentStyles : ElementId -> AnimationState -> List ( String, String )
 getCurrentStyles =
     InternalSub.getCurrentStyles
 

@@ -5,7 +5,7 @@
  * 
  * This file provides the JavaScript side of port-based animations for the
  * ElmAnimateWAAPI Elm module. It uses the Web Animations API for high-performance
- * hardware-accelerated animations.
+ * hardware-accelerated animations supporting all animation properties.
  * 
  * Usage:
  * 1. Include this file in your HTML
@@ -19,7 +19,7 @@ window.ElmAnimateWAAPI = (function () {
     // Track active animations for cleanup and management
     const activeAnimations = new Map();
 
-    // Default easing functions mapping
+    // Default easing functions mapping for Web Animations API
     const easingFunctions = {
         'linear': 'linear',
         'ease': 'ease',
@@ -35,134 +35,361 @@ window.ElmAnimateWAAPI = (function () {
     };
 
     /**
-     * Parse animation command string from Elm
-     * Format: "elementId:targetX:targetY:duration:easing:axis"
+     * Process animation data received from Elm
      */
-    function parseAnimationCommand(commandString) {
+    function processAnimationData(animationData) {
+        // Handle both old string format and new object format for backward compatibility
+        if (Array.isArray(animationData)) {
+            // Old string array format
+            animationData.forEach(commandString => {
+                const command = parseOldCommandString(commandString);
+                if (command) {
+                    processLegacyCommand(command);
+                }
+            });
+        } else if (animationData && animationData.elements) {
+            // New structured format from Elm Builder
+            Object.entries(animationData.elements).forEach(([elementId, elementConfig]) => {
+                processElementAnimation(elementId, elementConfig, animationData);
+            });
+        }
+    }
+
+    /**
+     * Parse old command string format for backward compatibility
+     */
+    function parseOldCommandString(commandString) {
         const parts = commandString.split(':');
+        if (parts.length < 6) return null;
+
         return {
-            elementId: parts[0],
-            targetX: parseFloat(parts[1]),
-            targetY: parseFloat(parts[2]),
-            duration: parseFloat(parts[3]),
-            easing: parts[4],
-            axis: parts[5]
+            type: parts[0] || 'position',
+            elementId: parts[1],
+            values: parts.slice(2, -3),
+            duration: parseFloat(parts[parts.length - 3]),
+            easing: parts[parts.length - 2],
+            extra: parts[parts.length - 1]
         };
     }
 
     /**
-     * Get element's current position
+     * Process legacy command format
      */
-    function getCurrentPosition(element) {
-        const style = window.getComputedStyle(element);
-        const transform = style.transform;
-
-        if (transform === 'none') {
-            return { x: 0, y: 0 };
-        }
-
-        // Parse transform matrix
-        const matrix = transform.match(/matrix.*\((.+)\)/);
-        if (matrix) {
-            const values = matrix[1].split(', ');
-            return {
-                x: parseFloat(values[4]) || 0,
-                y: parseFloat(values[5]) || 0
-            };
-        }
-
-        return { x: 0, y: 0 };
-    }
-
-    /**
-     * Get element's current position from left/top style properties (container-relative)
-     */
-    function getCurrentElementPosition(element) {
-        const style = window.getComputedStyle(element);
-        return {
-            x: parseFloat(style.left) || 0,
-            y: parseFloat(style.top) || 0
-        };
-    }
-
-    /**
-     * Create keyframes for animation based on axis constraint
-     */
-    function createKeyframes(currentPos, targetX, targetY, axis) {
-        const startFrame = {
-            left: currentPos.x + 'px',
-            top: currentPos.y + 'px'
-        };
-
-        let endFrame;
-        switch (axis) {
-            case 'x':
-                endFrame = {
-                    left: targetX + 'px',
-                    top: currentPos.y + 'px'
-                };
-                break;
-            case 'y':
-                endFrame = {
-                    left: currentPos.x + 'px',
-                    top: targetY + 'px'
-                };
-                break;
-            case 'both':
-            default:
-                endFrame = {
-                    left: targetX + 'px',
-                    top: targetY + 'px'
-                };
-                break;
-        }
-
-        return [startFrame, endFrame];
-    }
-
-    /**
-     * Animate element using Web Animations API
-     */
-    function animateElement(command, positionUpdatePort) {
+    function processLegacyCommand(command) {
         const element = document.getElementById(command.elementId);
         if (!element) {
             console.warn(`ElmAnimateWAAPI: Element with id "${command.elementId}" not found`);
             return;
         }
 
-        // Stop any existing animation for this element
-        stopAnimation(command.elementId);
+        let keyframes = [{}];
 
-        // Get current position from the element's style (container-relative)
-        const currentPos = getCurrentElementPosition(element);
-        const keyframes = createKeyframes(currentPos, command.targetX, command.targetY, command.axis);
+        switch (command.type) {
+            case 'position':
+                const x = parseFloat(command.values[0]) || 0;
+                const y = parseFloat(command.values[1]) || 0;
+                keyframes = [
+                    { transform: getCurrentTransform(element).transform || 'translate(0px, 0px)' },
+                    { transform: `translate(${x}px, ${y}px)` }
+                ];
+                break;
+            default:
+                console.warn(`ElmAnimateWAAPI: Legacy command type "${command.type}" not fully supported`);
+                return;
+        }
 
-        // Get easing function
-        const easing = easingFunctions[command.easing] || command.easing;
-
-        // Create animation
         const animation = element.animate(keyframes, {
             duration: command.duration,
-            easing: easing,
+            easing: easingFunctions[command.easing] || command.easing,
             fill: 'forwards'
         });
 
-        // Store animation reference
-        activeAnimations.set(command.elementId, animation);
+        activeAnimations.set(command.elementId, [animation]);
+        setupAnimationEvents(command.elementId, element, animation);
+    }
 
-        // Send position updates during animation (optional, for smooth integration)
+    /**
+     * Process animation for a single element with all its properties
+     */
+    function processElementAnimation(elementId, elementConfig, globalConfig) {
+        const element = document.getElementById(elementId);
+        if (!element) {
+            console.warn(`ElmAnimateWAAPI: Element with id "${elementId}" not found`);
+            return;
+        }
+
+        // Stop any existing animation for this element
+        stopAnimation(elementId);
+
+        // Group properties that can be animated together (transforms)
+        const transforms = [];
+        const separateAnimations = [];
+
+        elementConfig.properties.forEach(property => {
+            if (property.type === 'position' || property.type === 'scale' || property.type === 'rotate') {
+                transforms.push(property);
+            } else {
+                separateAnimations.push(property);
+            }
+        });
+
+        const animations = [];
+
+        // Create combined transform animation if we have transform properties
+        if (transforms.length > 0) {
+            const transformAnimation = createTransformAnimation(element, transforms, globalConfig);
+            if (transformAnimation) {
+                animations.push(transformAnimation);
+            }
+        }
+
+        // Create separate animations for non-transform properties
+        separateAnimations.forEach(property => {
+            const animation = createPropertyAnimation(element, property, globalConfig);
+            if (animation) {
+                animations.push(animation);
+            }
+        });
+
+        // Store and set up animations
+        if (animations.length > 0) {
+            activeAnimations.set(elementId, animations);
+            setupAnimationEvents(elementId, element, animations[0]); // Use first animation for events
+        }
+    }
+
+    /**
+     * Create combined transform animation for position, scale, and rotate
+     */
+    function createTransformAnimation(element, transformProperties, globalConfig) {
+        const currentTransform = getCurrentTransform(element);
+        let startTransform = '';
+        let endTransform = '';
+
+        // Default values
+        let translateX = currentTransform.x;
+        let translateY = currentTransform.y;
+        let scaleX = currentTransform.scaleX;
+        let scaleY = currentTransform.scaleY;
+        let rotation = currentTransform.rotation;
+
+        // Get animation config from first property (they should all be similar)
+        const firstProperty = transformProperties[0];
+        const duration = getPropertyDuration(firstProperty, globalConfig);
+        const easing = getPropertyEasing(firstProperty, globalConfig);
+        const delay = getPropertyDelay(firstProperty, globalConfig);
+
+        // Apply property changes
+        transformProperties.forEach(property => {
+            switch (property.type) {
+                case 'position':
+                    translateX = property.target.x;
+                    translateY = property.target.y;
+                    break;
+                case 'scale':
+                    scaleX = property.target.x;
+                    scaleY = property.target.y;
+                    break;
+                case 'rotate':
+                    rotation = property.target;
+                    break;
+            }
+        });
+
+        // Build transform strings
+        startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.scaleX, currentTransform.scaleY, currentTransform.rotation);
+        endTransform = buildTransformString(translateX, translateY, scaleX, scaleY, rotation);
+
+        const keyframes = [
+            { transform: startTransform },
+            { transform: endTransform }
+        ];
+
+        return element.animate(keyframes, {
+            duration: duration,
+            easing: easingFunctions[easing] || easing,
+            delay: delay,
+            fill: 'forwards'
+        });
+    }
+
+    /**
+     * Create animation for non-transform properties
+     */
+    function createPropertyAnimation(element, property, globalConfig) {
+        const duration = getPropertyDuration(property, globalConfig);
+        const easing = getPropertyEasing(property, globalConfig);
+        const delay = getPropertyDelay(property, globalConfig);
+
+        let keyframes = [];
+
+        switch (property.type) {
+            case 'opacity':
+                keyframes = [
+                    { opacity: window.getComputedStyle(element).opacity || '1' },
+                    { opacity: property.target.toString() }
+                ];
+                break;
+
+            case 'color':
+                keyframes = [
+                    { backgroundColor: window.getComputedStyle(element).backgroundColor || 'transparent' },
+                    { backgroundColor: property.target }
+                ];
+                break;
+
+            case 'size':
+                keyframes = [
+                    {
+                        width: window.getComputedStyle(element).width,
+                        height: window.getComputedStyle(element).height
+                    },
+                    {
+                        width: `${property.target.width}px`,
+                        height: `${property.target.height}px`
+                    }
+                ];
+                break;
+
+            default:
+                console.warn(`ElmAnimateWAAPI: Unknown property type "${property.type}"`);
+                return null;
+        }
+
+        return element.animate(keyframes, {
+            duration: duration,
+            easing: easingFunctions[easing] || easing,
+            delay: delay,
+            fill: 'forwards'
+        });
+    }
+
+    /**
+     * Build a complete transform string
+     */
+    function buildTransformString(x, y, scaleX, scaleY, rotation) {
+        const parts = [];
+        if (x !== 0 || y !== 0) {
+            parts.push(`translate(${x}px, ${y}px)`);
+        }
+        if (rotation !== 0) {
+            parts.push(`rotate(${rotation}deg)`);
+        }
+        if (scaleX !== 1 || scaleY !== 1) {
+            parts.push(`scale(${scaleX}, ${scaleY})`);
+        }
+        return parts.join(' ') || 'none';
+    }
+
+    /**
+     * Extract duration from property or global config
+     */
+    function getPropertyDuration(property, globalConfig) {
+        if (property.timing && property.timing.value) {
+            return property.timing.value;
+        }
+        if (globalConfig && globalConfig.globalTiming && globalConfig.globalTiming.value) {
+            return globalConfig.globalTiming.value;
+        }
+        return 1000; // default
+    }
+
+    /**
+     * Extract easing from property or global config
+     */
+    function getPropertyEasing(property, globalConfig) {
+        if (property.easing) {
+            return property.easing;
+        }
+        if (globalConfig && globalConfig.globalEasing) {
+            return globalConfig.globalEasing;
+        }
+        return 'ease';
+    }
+
+    /**
+     * Extract delay from property or global config
+     */
+    function getPropertyDelay(property, globalConfig) {
+        if (property.delay) {
+            return property.delay;
+        }
+        if (globalConfig && globalConfig.globalDelay) {
+            return globalConfig.globalDelay;
+        }
+        return 0;
+    }
+
+    /**
+     * Get current transform state of an element
+     */
+    function getCurrentTransform(element) {
+        const style = window.getComputedStyle(element);
+        const transform = style.transform;
+
+        if (transform === 'none' || !transform) {
+            return { transform: 'none', x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 };
+        }
+
+        // Parse transform matrix
+        const matrix = transform.match(/matrix.*\((.+)\)/);
+        if (matrix) {
+            const values = matrix[1].split(', ').map(parseFloat);
+
+            if (values.length === 6) {
+                // 2D matrix: matrix(a, b, c, d, tx, ty)
+                const a = values[0];
+                const b = values[1];
+                const c = values[2];
+                const d = values[3];
+                const tx = values[4] || 0;
+                const ty = values[5] || 0;
+
+                const scaleX = Math.sqrt(a * a + b * b);
+                const scaleY = Math.sqrt(c * c + d * d);
+                const rotation = Math.atan2(b, a) * (180 / Math.PI);
+
+                return { transform, x: tx, y: ty, scaleX, scaleY, rotation };
+            }
+        }
+
+        return { transform, x: 0, y: 0, scaleX: 1, scaleY: 1, rotation: 0 };
+    }
+
+    /**
+     * Set up animation event listeners and property updates
+     */
+    function setupAnimationEvents(elementId, element, animation) {
+        let updatePort = null;
+
+        // Find the update port
+        if (typeof window.app !== 'undefined' &&
+            window.app.ports &&
+            window.app.ports.positionUpdates &&
+            typeof window.app.ports.positionUpdates.send === 'function') {
+            updatePort = window.app.ports.positionUpdates;
+        }
+
+        // Send updates during animation
         let lastTime = 0;
         const updateInterval = 16; // ~60fps
 
-        function sendPositionUpdate() {
+        function sendAnimationUpdate() {
             const now = performance.now();
             if (now - lastTime >= updateInterval) {
-                const currentPos = getCurrentElementPosition(element);
-                if (positionUpdatePort) {
-                    positionUpdatePort.send({
-                        elementId: command.elementId,
-                        x: currentPos.x,
-                        y: currentPos.y,
+                const transformState = getCurrentTransform(element);
+                const computedStyle = window.getComputedStyle(element);
+
+                if (updatePort) {
+                    updatePort.send({
+                        elementId: elementId,
+                        x: transformState.x,
+                        y: transformState.y,
+                        opacity: parseFloat(computedStyle.opacity),
+                        rotation: transformState.rotation,
+                        scaleX: transformState.scaleX,
+                        scaleY: transformState.scaleY,
+                        backgroundColor: computedStyle.backgroundColor,
                         isAnimating: true
                     });
                 }
@@ -170,38 +397,51 @@ window.ElmAnimateWAAPI = (function () {
             }
 
             if (animation.playState === 'running') {
-                requestAnimationFrame(sendPositionUpdate);
+                requestAnimationFrame(sendAnimationUpdate);
             }
         }
 
-        // Start position updates
-        requestAnimationFrame(sendPositionUpdate);
+        // Start sending updates
+        requestAnimationFrame(sendAnimationUpdate);
 
         // Handle animation completion
         animation.addEventListener('finish', () => {
-            activeAnimations.delete(command.elementId);
+            activeAnimations.delete(elementId);
 
-            // Send final position update
-            if (positionUpdatePort) {
-                positionUpdatePort.send({
-                    elementId: command.elementId,
-                    x: command.targetX,
-                    y: command.targetY,
+            if (updatePort) {
+                const finalState = getCurrentTransform(element);
+                const computedStyle = window.getComputedStyle(element);
+
+                updatePort.send({
+                    elementId: elementId,
+                    x: finalState.x,
+                    y: finalState.y,
+                    opacity: parseFloat(computedStyle.opacity),
+                    rotation: finalState.rotation,
+                    scaleX: finalState.scaleX,
+                    scaleY: finalState.scaleY,
+                    backgroundColor: computedStyle.backgroundColor,
                     isAnimating: false
                 });
             }
         });
 
         animation.addEventListener('cancel', () => {
-            activeAnimations.delete(command.elementId);
+            activeAnimations.delete(elementId);
 
-            // Send current position when cancelled
-            if (positionUpdatePort) {
-                const currentPos = getCurrentElementPosition(element);
-                positionUpdatePort.send({
-                    elementId: command.elementId,
-                    x: currentPos.x,
-                    y: currentPos.y,
+            if (updatePort) {
+                const currentState = getCurrentTransform(element);
+                const computedStyle = window.getComputedStyle(element);
+
+                updatePort.send({
+                    elementId: elementId,
+                    x: currentState.x,
+                    y: currentState.y,
+                    opacity: parseFloat(computedStyle.opacity),
+                    rotation: currentState.rotation,
+                    scaleX: currentState.scaleX,
+                    scaleY: currentState.scaleY,
+                    backgroundColor: computedStyle.backgroundColor,
                     isAnimating: false
                 });
             }
@@ -212,40 +452,33 @@ window.ElmAnimateWAAPI = (function () {
      * Stop animation for specific element
      */
     function stopAnimation(elementId) {
-        const animation = activeAnimations.get(elementId);
-        if (animation) {
-            animation.cancel();
+        const animations = activeAnimations.get(elementId);
+        if (animations) {
+            if (Array.isArray(animations)) {
+                animations.forEach(animation => animation.cancel());
+            } else {
+                animations.cancel();
+            }
             activeAnimations.delete(elementId);
         }
     }
 
     /**
-     * Initialize ElmAnimateWAAPI with Elm ports
-     * 
-     * Required ports in your Elm app:
-     * 
-     * port animateElement : String -> Cmd msg
-     * port stopElementAnimation : String -> Cmd msg  
-     * port positionUpdates : (Value -> msg) -> Sub msg
-     * 
-     * @param {Object} ports - The Elm app's ports object
+     * Initialize the WAAPI system with Elm ports
      */
     function init(ports) {
         if (!ports) {
-            throw new Error('ElmAnimateWAAPI.init() requires the Elm ports object');
-        }
-
-        // Check for Web Animations API support
-        if (!Element.prototype.animate) {
-            console.warn('ElmAnimateWAAPI: Web Animations API not supported. Consider using a polyfill.');
+            console.error('ElmAnimateWAAPI: No ports provided to init()');
             return;
         }
 
+        // Store reference for updates
+        window.app = { ports: ports };
+
         // Subscribe to animation commands from Elm
         if (ports.animateElement && ports.animateElement.subscribe) {
-            ports.animateElement.subscribe(function (commandString) {
-                const command = parseAnimationCommand(commandString);
-                animateElement(command, ports.positionUpdates);
+            ports.animateElement.subscribe(function (animationData) {
+                processAnimationData(animationData);
             });
         } else {
             console.warn('ElmAnimateWAAPI: animateElement port not found or not subscribeable');
@@ -260,7 +493,7 @@ window.ElmAnimateWAAPI = (function () {
             console.warn('ElmAnimateWAAPI: stopElementAnimation port not found or not subscribeable');
         }
 
-        console.log('ElmAnimateWAAPI initialized successfully');
+        console.log('ElmAnimateWAAPI initialized successfully with full property support');
     }
 
     /**
@@ -270,7 +503,7 @@ window.ElmAnimateWAAPI = (function () {
         init: init,
 
         // Expose utilities for advanced usage
-        getCurrentPosition: getCurrentPosition,
+        getCurrentTransform: getCurrentTransform,
         stopAnimation: stopAnimation,
         activeAnimations: activeAnimations,
 
