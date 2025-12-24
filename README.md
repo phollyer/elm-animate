@@ -4,7 +4,7 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 ## ✨ Features
 
-- **Multiple Animation Engines:** Choose the best engine for your use case: CSS, Sub, WAAPI, or Scroll.
+- **Multiple Engines:** Choose the best engine for your use case.
 - **Unified Fluent API:** Consistent builder pattern for all engines.
 - **Composable, type-safe, and easy to integrate.**
 
@@ -19,6 +19,9 @@ All engines use a unified builder API, so you can switch between them with minim
 - **Best for:** Simple, high-performance transitions.
 - **API:** Generates CSS for browser-native transitions.
 
+The CSS Engine will create both CSS Transforms and Keyframe Animations. Choose the one you want
+in your view code.
+
 ```elm
 model.animations
     |> CSS.builder
@@ -28,9 +31,15 @@ model.animations
     |> CSS.easing EaseInOut
     |> CSS.animate
 
+-- For CSS Transforms
 div 
-    [CSS.htmlAttributes "my-element" model.animations] 
+    [ CSS.htmlAttributes "my-element" model.animations ] 
     [ text "CSS Animation!" ]
+
+-- For Keyframe Animations
+div
+    []
+    [ CSS.keyframeStyleNodes model.animations ]
 ```
 
 ---

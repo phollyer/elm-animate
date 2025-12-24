@@ -1,6 +1,6 @@
 module Anim.Engine.CSS exposing
     ( AnimationState, init, AnimBuilder, builder, animate, animateOrder
-    , TransformOrder, defaultTransformOrder
+    , TransformOrder(..), defaultTransformOrder
     , duration, speed
     , easing
     , delay
@@ -13,7 +13,10 @@ module Anim.Engine.CSS exposing
 {-| CSS-based animation system with optional state tracking.
 
 This module provides the ability to create simple CSS animations that
-can be easily added to your elements as style tags or css [transform](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transforms) attributes.
+can be easily applied to your elements as either:
+
+1.  Style tags defining keyframe animations or,
+2.  CSS [transform](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transforms) attributes.
 
 
 # Build
@@ -74,7 +77,7 @@ Animation events are different from transition events, so both types of events c
 
 -}
 
-import Anim.Internal.CSS as InternalCSS exposing (TransformOrder(..))
+import Anim.Internal.CSS as InternalCSS
 import Anim.Properties.Position exposing (Position)
 import Anim.Timing.Easing as Easing exposing (Easing)
 import Html
@@ -86,8 +89,10 @@ Defines the order in which transform properties (position, rotate, scale)
 should appear in the final CSS transform string.
 
 -}
-type alias TransformOrder =
-    InternalCSS.TransformOrder
+type TransformOrder
+    = Position
+    | Rotate
+    | Scale
 
 
 {-| Default transform order: Position → Rotate → Scale.
@@ -150,7 +155,12 @@ animate =
 
 This is an alternative to `animate` that allows you to specify the order
 in which transform properties should appear in the CSS.
-Uses the default transform order (Position → Rotate → Scale) by default.
+
+`animate` uses the transform order (Position → Rotate → Scale) which should
+be suitable for most use cases. Use `animateOrder` if you need a different order.
+
+Beware that changing the transform order can lead to unexpected visual results,
+as the order of transforms affects how they are applied by the browser.
 
     -- Custom transform order: Scale → Rotate → Position
     newState =
@@ -162,7 +172,21 @@ Uses the default transform order (Position → Rotate → Scale) by default.
 -}
 animateOrder : List TransformOrder -> AnimBuilder -> AnimationState
 animateOrder order =
-    InternalCSS.animateWithOrder order
+    let
+        mapOrder transform =
+            case transform of
+                Position ->
+                    InternalCSS.Position
+
+                Rotate ->
+                    InternalCSS.Rotate
+
+                Scale ->
+                    InternalCSS.Scale
+    in
+    order
+        |> List.map mapOrder
+        |> InternalCSS.animateWithOrder
 
 
 {-| Initialize empty animation state.
@@ -176,14 +200,14 @@ init =
 
 Use this to start new animations.
 
-    -- Start a new animation based on current state
+    -- Create a new animation based on current state
     newBuilder =
         model.animations
             |> CSS.builder
             |> ... -- continue building the animation
 
 
-    -- Start a new animation with no state tracking
+    -- Create a new animation with no state tracking
     newBuilder =
         CSS.init
             |> CSS.builder
@@ -291,9 +315,10 @@ isRunning =
     InternalCSS.isRunning
 
 
-{-| Set global duration in milliseconds (overrides any previous speed setting).
+{-| Set the global duration in milliseconds (overrides any previous speed setting).
 
     Css.init
+        |> CSS.builder
         |> Css.duration 1000
         |> Position.for "element"
         |> Position.toXY 100 200
@@ -306,9 +331,13 @@ duration =
     InternalCSS.duration
 
 
-{-| Set global speed in units per second (overrides any previous duration setting).
+{-| Set the global speed in units per second (overrides any previous duration setting).
+
+Exactly what "units" means depends on the properties being animated. For position properties, this is pixels per second.
+Refer to the relevant property documentation for specific details for each property.
 
     Css.init
+        |> CSS.builder
         |> Css.speed 100
         |> Position.for "element"
         |> Position.toXY 100 200
