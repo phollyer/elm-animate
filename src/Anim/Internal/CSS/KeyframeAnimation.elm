@@ -95,6 +95,10 @@ generate elementId properties =
                     |> List.maximum
                     |> Maybe.withDefault 0
 
+            -- Calculate total animation time (max duration + max delay)
+            totalAnimationTime =
+                maxDuration + maxDelay
+
             keyframeCount =
                 30
 
@@ -106,8 +110,9 @@ generate elementId properties =
                                 globalProgress =
                                     toFloat i / toFloat keyframeCount
 
-                                time =
-                                    globalProgress * toFloat maxDuration
+                                -- Total time from start including delays
+                                totalTime =
+                                    globalProgress * toFloat totalAnimationTime
 
                                 -- Collect transform components using canonical ordering pattern
                                 transformParts =
@@ -120,15 +125,26 @@ generate elementId properties =
                                                             dur =
                                                                 cfg.duration
 
+                                                            delay =
+                                                                cfg.delay
+
+                                                            -- Calculate progress considering individual delay
                                                             linearProgress =
-                                                                if time == 0 || dur == 0 then
+                                                                if totalTime < toFloat delay then
+                                                                    -- Still in delay phase, no progress
                                                                     0
 
-                                                                else if time <= toFloat dur then
-                                                                    time / toFloat dur
+                                                                else if dur == 0 then
+                                                                    -- Instant animation after delay
+                                                                    1.0
 
                                                                 else
-                                                                    1.0
+                                                                    -- Animation phase: (totalTime - delay) / duration
+                                                                    let
+                                                                        animationTime =
+                                                                            totalTime - toFloat delay
+                                                                    in
+                                                                    clamp 0 1 (animationTime / toFloat dur)
 
                                                             -- Apply easing to the linear progress
                                                             easingFunction =
@@ -158,15 +174,26 @@ generate elementId properties =
                                                             dur =
                                                                 cfg.duration
 
+                                                            delay =
+                                                                cfg.delay
+
+                                                            -- Calculate progress considering individual delay
                                                             linearProgress =
-                                                                if time == 0 || dur == 0 then
+                                                                if totalTime < toFloat delay then
+                                                                    -- Still in delay phase, no progress
                                                                     0
 
-                                                                else if time <= toFloat dur then
-                                                                    time / toFloat dur
+                                                                else if dur == 0 then
+                                                                    -- Instant animation after delay
+                                                                    1.0
 
                                                                 else
-                                                                    1.0
+                                                                    -- Animation phase: (totalTime - delay) / duration
+                                                                    let
+                                                                        animationTime =
+                                                                            totalTime - toFloat delay
+                                                                    in
+                                                                    clamp 0 1 (animationTime / toFloat dur)
 
                                                             -- Apply easing to the linear progress
                                                             easingFunction =
@@ -205,12 +232,26 @@ generate elementId properties =
                                                             dur =
                                                                 cfg.duration
 
+                                                            delay =
+                                                                cfg.delay
+
+                                                            -- Calculate progress considering individual delay
                                                             linearProgress =
-                                                                if dur > 0 then
-                                                                    clamp 0 1 (time / toFloat dur)
+                                                                if totalTime < toFloat delay then
+                                                                    -- Still in delay phase, no progress
+                                                                    0
+
+                                                                else if dur == 0 then
+                                                                    -- Instant animation after delay
+                                                                    1.0
 
                                                                 else
-                                                                    1.0
+                                                                    -- Animation phase: (totalTime - delay) / duration
+                                                                    let
+                                                                        animationTime =
+                                                                            totalTime - toFloat delay
+                                                                    in
+                                                                    clamp 0 1 (animationTime / toFloat dur)
 
                                                             -- Apply easing to the linear progress
                                                             easingFunction =
@@ -275,12 +316,26 @@ generate elementId properties =
                                                             dur =
                                                                 cfg.duration
 
+                                                            delay =
+                                                                cfg.delay
+
+                                                            -- Calculate progress considering individual delay
                                                             linearProgress =
-                                                                if dur > 0 then
-                                                                    clamp 0 1 (time / toFloat dur)
+                                                                if totalTime < toFloat delay then
+                                                                    -- Still in delay phase, no progress
+                                                                    0
+
+                                                                else if dur == 0 then
+                                                                    -- Instant animation after delay
+                                                                    1.0
 
                                                                 else
-                                                                    1.0
+                                                                    -- Animation phase: (totalTime - delay) / duration
+                                                                    let
+                                                                        animationTime =
+                                                                            totalTime - toFloat delay
+                                                                    in
+                                                                    clamp 0 1 (animationTime / toFloat dur)
 
                                                             -- Apply easing to the linear progress
                                                             easingFunction =
@@ -311,12 +366,26 @@ generate elementId properties =
                                                             dur =
                                                                 cfg.duration
 
+                                                            delay =
+                                                                cfg.delay
+
+                                                            -- Calculate progress considering individual delay
                                                             linearProgress =
-                                                                if time <= toFloat dur then
-                                                                    time / toFloat dur
+                                                                if totalTime < toFloat delay then
+                                                                    -- Still in delay phase, no progress
+                                                                    0
+
+                                                                else if dur == 0 then
+                                                                    -- Instant animation after delay
+                                                                    1.0
 
                                                                 else
-                                                                    1.0
+                                                                    -- Animation phase: (totalTime - delay) / duration
+                                                                    let
+                                                                        animationTime =
+                                                                            totalTime - toFloat delay
+                                                                    in
+                                                                    clamp 0 1 (animationTime / toFloat dur)
 
                                                             -- Apply easing to the linear progress
                                                             easingFunction =
@@ -356,12 +425,26 @@ generate elementId properties =
                                                             dur =
                                                                 cfg.duration
 
+                                                            delay =
+                                                                cfg.delay
+
+                                                            -- Calculate progress considering individual delay
                                                             linearProgress =
-                                                                if dur > 0 then
-                                                                    clamp 0 1 (time / toFloat dur)
+                                                                if totalTime < toFloat delay then
+                                                                    -- Still in delay phase, no progress
+                                                                    0
+
+                                                                else if dur == 0 then
+                                                                    -- Instant animation after delay
+                                                                    1.0
 
                                                                 else
-                                                                    1.0
+                                                                    -- Animation phase: (totalTime - delay) / duration
+                                                                    let
+                                                                        animationTime =
+                                                                            totalTime - toFloat delay
+                                                                    in
+                                                                    clamp 0 1 (animationTime / toFloat dur)
 
                                                             -- Apply easing to the linear progress
                                                             easingFunction =
@@ -460,9 +543,9 @@ generate elementId properties =
         in
         [ { animationName = animationName
           , keyframes = keyframesString
-          , duration = maxDuration
+          , duration = totalAnimationTime
           , easing = "linear"
-          , delay = maxDelay
+          , delay = 0
           , properties = animatedProperties
           }
         ]
