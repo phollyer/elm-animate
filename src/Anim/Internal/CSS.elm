@@ -1,23 +1,36 @@
 module Anim.Internal.CSS exposing
     ( AnimBuilder
     , AnimState
+    , ElementState(..)
+    , Event(..)
     , TransformOrder(..)
+    , allComplete
     , animate
     , animateWithOrder
     , animationStyleAttribute
+    , anyRunning
     , builder
     , delay
     , duration
     , easing
+    , getBackgroundColorRange
     , getElementAnimation
     , getElementKeyframes
+    , getOpacityRange
     , getPosition
     , getPositionAnimationDuration
     , getPositionRange
+    , getRotateRange
+    , getScaleRange
+    , getSizeRange
     , getStartPosition
+    , getState
+    , handleEvent
     , htmlAttributes
+    , htmlAttributesWithEvents
     , init
-    , isRunning
+    , isElementComplete
+    , isElementRunning
     , keyframesStyleNode
     , keyframesStyleNodeFor
     , onAnimationCancel
@@ -38,6 +51,9 @@ import Anim.Internal.CSS.Transition as Transitions
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position exposing (Position)
+import Anim.Internal.Properties.Rotate as Rotate
+import Anim.Internal.Properties.Scale as Scale
+import Anim.Internal.Properties.Size as Size
 import Anim.Internal.Timing.Easing exposing (Easing)
 import Dict exposing (Dict)
 import Html exposing (Html)
@@ -77,10 +93,26 @@ transformOrderToString order =
             "scale"
 
 
+{-| Individual element animation lifecycle state.
+-}
+type ElementState
+    = NotStarted
+    | Running
+    | Complete
+
+
+{-| Animation lifecycle events.
+-}
+type Event
+    = AnimationStarted String
+    | AnimationEnded String
+    | AnimationCancelled String
+
+
 type AnimState
     = AnimState
         { elementAnimations : Dict ElementId ElementAnimation
-        , isRunning : Bool
+        , elementStates : Dict ElementId ElementState
         , builder : AnimBuilder
         }
 
@@ -99,7 +131,7 @@ init : AnimState
 init =
     AnimState
         { elementAnimations = Dict.empty
-        , isRunning = False
+        , elementStates = Dict.empty
         , builder = Builder.init
         }
 
@@ -111,13 +143,22 @@ builder (AnimState state) =
 
 animate : AnimBuilder -> AnimState
 animate builder_ =
+    let
+        elementIds =
+            builder_
+                |> Builder.elements
+                |> Dict.keys
+    in
     AnimState
         { elementAnimations =
             builder_
                 |> Builder.elements
                 |> Dict.map (generateElementAnimation Nothing)
+        , elementStates =
+            elementIds
+                |> List.map (\id -> ( id, NotStarted ))
+                |> Dict.fromList
         , builder = Builder.markDirty builder_
-        , isRunning = True
         }
 
 
@@ -125,13 +166,22 @@ animate builder_ =
 -}
 animateWithOrder : List TransformOrder -> AnimBuilder -> AnimState
 animateWithOrder order builder_ =
+    let
+        elementIds =
+            builder_
+                |> Builder.elements
+                |> Dict.keys
+    in
     AnimState
         { elementAnimations =
             builder_
                 |> Builder.elements
                 |> Dict.map (generateElementAnimation (Just order))
+        , elementStates =
+            elementIds
+                |> List.map (\id -> ( id, NotStarted ))
+                |> Dict.fromList
         , builder = Builder.markDirty builder_
-        , isRunning = True
         }
 
 
@@ -316,6 +366,11 @@ getStartPosition elementId (AnimState state) =
             )
 
 
+getState : String -> AnimState -> Maybe ElementState
+getState elementId (AnimState state) =
+    Dict.get elementId state.elementStates
+
+
 {-| Get both start and end positions for an element's animation.
 Returns Nothing if the element has no position animation.
 -}
@@ -333,6 +388,136 @@ getPositionRange elementId (AnimState state) =
                         (\prop ->
                             case prop of
                                 Builder.ProcessedPositionConfig config ->
+                                    Just { start = config.startAt, end = config.endAt }
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> List.head
+            )
+
+
+{-| Get both start and end scales for an element's animation.
+Returns Nothing if the element has no scale animation.
+-}
+getScaleRange : String -> AnimState -> Maybe { start : Maybe Scale.Scale, end : Scale.Scale }
+getScaleRange elementId (AnimState state) =
+    let
+        processedData =
+            Builder.processAnimationData state.builder
+    in
+    Dict.get elementId processedData.elements
+        |> Maybe.andThen
+            (\elementConfig ->
+                elementConfig.properties
+                    |> List.filterMap
+                        (\prop ->
+                            case prop of
+                                Builder.ProcessedScaleConfig config ->
+                                    Just { start = config.startAt, end = config.endAt }
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> List.head
+            )
+
+
+{-| Get both start and end rotations for an element's animation.
+Returns Nothing if the element has no rotate animation.
+-}
+getRotateRange : String -> AnimState -> Maybe { start : Maybe Rotate.Rotate, end : Rotate.Rotate }
+getRotateRange elementId (AnimState state) =
+    let
+        processedData =
+            Builder.processAnimationData state.builder
+    in
+    Dict.get elementId processedData.elements
+        |> Maybe.andThen
+            (\elementConfig ->
+                elementConfig.properties
+                    |> List.filterMap
+                        (\prop ->
+                            case prop of
+                                Builder.ProcessedRotateConfig config ->
+                                    Just { start = config.startAt, end = config.endAt }
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> List.head
+            )
+
+
+{-| Get both start and end background colors for an element's animation.
+Returns Nothing if the element has no background color animation.
+-}
+getBackgroundColorRange : String -> AnimState -> Maybe { start : Maybe BackgroundColor.Color, end : BackgroundColor.Color }
+getBackgroundColorRange elementId (AnimState state) =
+    let
+        processedData =
+            Builder.processAnimationData state.builder
+    in
+    Dict.get elementId processedData.elements
+        |> Maybe.andThen
+            (\elementConfig ->
+                elementConfig.properties
+                    |> List.filterMap
+                        (\prop ->
+                            case prop of
+                                Builder.ProcessedBackgroundColorConfig config ->
+                                    Just { start = config.startAt, end = config.endAt }
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> List.head
+            )
+
+
+{-| Get both start and end opacity for an element's animation.
+Returns Nothing if the element has no opacity animation.
+-}
+getOpacityRange : String -> AnimState -> Maybe { start : Maybe Opacity.Opacity, end : Opacity.Opacity }
+getOpacityRange elementId (AnimState state) =
+    let
+        processedData =
+            Builder.processAnimationData state.builder
+    in
+    Dict.get elementId processedData.elements
+        |> Maybe.andThen
+            (\elementConfig ->
+                elementConfig.properties
+                    |> List.filterMap
+                        (\prop ->
+                            case prop of
+                                Builder.ProcessedOpacityConfig config ->
+                                    Just { start = config.startAt, end = config.endAt }
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> List.head
+            )
+
+
+{-| Get both start and end sizes for an element's animation.
+Returns Nothing if the element has no size animation.
+-}
+getSizeRange : String -> AnimState -> Maybe { start : Maybe Size.Size, end : Size.Size }
+getSizeRange elementId (AnimState state) =
+    let
+        processedData =
+            Builder.processAnimationData state.builder
+    in
+    Dict.get elementId processedData.elements
+        |> Maybe.andThen
+            (\elementConfig ->
+                elementConfig.properties
+                    |> List.filterMap
+                        (\prop ->
+                            case prop of
+                                Builder.ProcessedSizeConfig config ->
                                     Just { start = config.startAt, end = config.endAt }
 
                                 _ ->
@@ -370,9 +555,79 @@ getPositionAnimationDuration elementId (AnimState state) =
 
 {-| Check if any animations are currently running.
 -}
-isRunning : AnimState -> Bool
-isRunning (AnimState state) =
-    state.isRunning
+anyRunning : AnimState -> Bool
+anyRunning (AnimState state) =
+    case Dict.values state.elementStates of
+        [] ->
+            False
+
+        values ->
+            List.any (\elementState -> elementState == Running) values
+
+
+{-| Check if all animations are complete.
+-}
+allComplete : AnimState -> Maybe Bool
+allComplete (AnimState state) =
+    if Dict.isEmpty state.elementStates then
+        Nothing
+
+    else
+        state.elementStates
+            |> Dict.values
+            |> List.all (\elementState -> elementState == Complete)
+            |> Just
+
+
+{-| Check if a specific element has any animations currently running.
+-}
+isElementRunning : String -> AnimState -> Bool
+isElementRunning elementId (AnimState state) =
+    Dict.get elementId state.elementStates == Just Running
+
+
+{-| Check if a specific element's animations have completed.
+-}
+isElementComplete : String -> AnimState -> Maybe Bool
+isElementComplete elementId (AnimState state) =
+    Dict.get elementId state.elementStates
+        |> Maybe.map
+            (\elementState ->
+                case elementState of
+                    Complete ->
+                        True
+
+                    _ ->
+                        False
+            )
+
+
+{-| Handle animation lifecycle events to update element states.
+-}
+handleEvent : String -> String -> AnimState -> AnimState
+handleEvent eventType elementId (AnimState state) =
+    let
+        newElementState =
+            case eventType of
+                "animationstart" ->
+                    Running
+
+                "animationend" ->
+                    Complete
+
+                "animationcancel" ->
+                    Complete
+
+                _ ->
+                    -- Unknown event, don't change state
+                    Dict.get elementId state.elementStates
+                        |> Maybe.withDefault NotStarted
+    in
+    AnimState
+        { state
+            | elementStates =
+                Dict.insert elementId newElementState state.elementStates
+        }
 
 
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -399,6 +654,24 @@ htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
 htmlAttributes elementId animationResult =
     getElementStyles elementId animationResult
         |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
+
+
+{-| Get HTML attributes including automatic animation event handlers.
+-}
+htmlAttributesWithEvents : String -> AnimState -> List (Html.Attribute Event)
+htmlAttributesWithEvents elementId animationResult =
+    let
+        styleAttrs =
+            getElementStyles elementId animationResult
+                |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
+
+        eventHandlers =
+            [ onAnimationStart (AnimationStarted elementId)
+            , onAnimationEnd (AnimationEnded elementId)
+            , onAnimationCancel (AnimationCancelled elementId)
+            ]
+    in
+    styleAttrs ++ eventHandlers
 
 
 getElementStyles : String -> AnimState -> List ( String, String )
