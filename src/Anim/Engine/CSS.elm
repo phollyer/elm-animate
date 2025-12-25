@@ -1,11 +1,12 @@
 module Anim.Engine.CSS exposing
-    ( AnimationState, init, AnimBuilder, builder, animate, animateOrder
+    ( AnimationState, init, AnimBuilder, builder
+    , animate, animateOrder
     , TransformOrder(..), defaultTransformOrder
+    , htmlAttributes, getElementKeyframes, animationStyleAttribute, keyframesStyleNode, keyframesStyleNodeFor
     , duration, speed
     , easing
     , delay
     , getPosition, isRunning
-    , htmlAttributes, getElementKeyframes, animationStyleAttribute, keyframesStyleNode, keyframesStyleNodeFor
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
     )
@@ -26,12 +27,22 @@ over how the CSS is integrated into your application.
 
 # Build
 
-@docs AnimationState, init, AnimBuilder, builder, animate, animateOrder
+@docs AnimationState, init, AnimBuilder, builder
+
+
+# Execute
+
+@docs animate, animateOrder
 
 
 # Transform Ordering
 
 @docs TransformOrder, defaultTransformOrder
+
+
+# View
+
+@docs htmlAttributes, getElementKeyframes, animationStyleAttribute, keyframesStyleNode, keyframesStyleNodeFor
 
 
 # Global Settings
@@ -57,11 +68,6 @@ These settings will be used for all animations unless overridden on a per-animat
 # Querying Animation State
 
 @docs getPosition, isRunning
-
-
-# View
-
-@docs htmlAttributes, getElementKeyframes, animationStyleAttribute, keyframesStyleNode, keyframesStyleNodeFor
 
 
 # Event Handling
@@ -404,18 +410,25 @@ delay =
 
 ### HTML Example
 
+    import Anim.Engine.CSS as CSS
+    import Html exposing (div, text)
+    import Html.Attributes exposing (id)
+
     div
-        ([ Html.Attributes.id "my-element"
+        ([ id "my-element"
          , ...
          ]
             ++ CSS.htmlAttributes "my-element" animationState
         )
         [ text "Animating element" ]
 
+For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/Element#htmlAttribute).
+
 
 ### Elm UI Example
 
-For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/Element#htmlAttribute):
+    import Anim.Engine.CSS as CSS
+    import Element exposing (el, htmlAttribute, text)
 
     el
         ([ htmlAttribute (Html.Attributes.id "my-element")

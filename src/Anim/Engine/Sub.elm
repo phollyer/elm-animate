@@ -1,7 +1,7 @@
 module Anim.Engine.Sub exposing
     ( AnimationState, init, AnimBuilder, builder
-    , animate, AnimationMsg
-    , update, subscriptions
+    , animate
+    , AnimationMsg, update, subscriptions
     , htmlAttributes
     , duration, speed
     , easing
@@ -26,18 +26,15 @@ subscriptions for smooth, controlled animations.
 
 # Execute
 
-@docs animate, AnimationMsg
+@docs animate
 
 
 # Update
 
-@docs update, subscriptions
+@docs AnimationMsg, update, subscriptions
 
 
 # View
-
-
-# CSS Generation
 
 @docs htmlAttributes
 
@@ -145,9 +142,8 @@ init =
 
 {-| Turn the AnimationState into an AnimBuilder.
 
-Use this to start new animations based on current state.
+Use this to start new animations based.
 
-    -- Start a new animation based on current state
     newBuilder =
         model.animations
             |> Sub.builder
@@ -162,16 +158,19 @@ builder =
     InternalSub.builder
 
 
-{-| Create animation state from AnimBuilder.
+{-| Create animations ready to be applied in the view.
 
     let
-        animationState =
-            Anim.init "my-element"
-                |> Position.to { x = 100, y = 200 }
-                |> Scale.to { x = 1.5, y = 1.5 }
+        newAnimations =
+            model.animations
+                |> Sub.builder
+                |> Position.for "element"
+                |> Position.toXY 100 200
+                |> Position.duration 1000
+                |> Position.build
                 |> Sub.animate
     in
-    -- Use with subscriptions and update
+    { model | animations = newAnimations }
 
 -}
 animate : AnimBuilder -> AnimationState
@@ -240,31 +239,59 @@ delay =
 
 
 
--- SUBSCRIPTIONS
-
-
-{-| Subscribe to animation frames when animations are running.
--}
-subscriptions : AnimationState -> Sub AnimationMsg
-subscriptions =
-    InternalSub.subscriptions
-
-
-
 -- UPDATE
 
 
 {-| Messages for animation updates.
+
+    import Anim.Engine.Sub as Sub
+
+    type Msg
+        = SubAnimationMsg Sub.AnimationMsg
+        | ...
+
 -}
 type alias AnimationMsg =
     InternalSub.AnimationMsg
 
 
-{-| Update animation state with frame delta time.
+{-| Update animation state.
+
+    import Anim.Engine.Sub as Sub
+
+    update : Msg -> Model -> Model
+    update msg model =
+        case msg of
+            SubAnimationMsg subMsg ->
+                { model | animations = Sub.update msg model.animations }
+
+            ...
+
 -}
 update : AnimationMsg -> AnimationState -> AnimationState
 update =
     InternalSub.update
+
+
+
+-- SUBSCRIPTIONS
+
+
+{-| Subscribe to receive animation updates - this is **required**.
+
+Your animations will not run without this subscription.
+
+    import Anim.Engine.Sub as Sub
+
+    subscriptions : Model -> Sub AnimationMsg
+    subscriptions model =
+        Sub.subscriptions model.animations
+            |> Sub.map SubAnimationMsg
+
+-}
+subscriptions : AnimationState -> Sub AnimationMsg
+subscriptions =
+    InternalSub.subscriptions
 
 
 
