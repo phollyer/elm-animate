@@ -68,6 +68,33 @@ generate elementId properties =
                     |> List.maximum
                     |> Maybe.withDefault 0
 
+            -- Extract the maximum delay from all properties
+            maxDelay =
+                processedProps
+                    |> List.map
+                        (\p ->
+                            case p of
+                                Builder.ProcessedPositionConfig cfg ->
+                                    cfg.delay
+
+                                Builder.ProcessedScaleConfig cfg ->
+                                    cfg.delay
+
+                                Builder.ProcessedRotateConfig cfg ->
+                                    cfg.delay
+
+                                Builder.ProcessedBackgroundColorConfig cfg ->
+                                    cfg.delay
+
+                                Builder.ProcessedOpacityConfig cfg ->
+                                    cfg.delay
+
+                                Builder.ProcessedSizeConfig cfg ->
+                                    cfg.delay
+                        )
+                    |> List.maximum
+                    |> Maybe.withDefault 0
+
             keyframeCount =
                 30
 
@@ -435,7 +462,7 @@ generate elementId properties =
           , keyframes = keyframesString
           , duration = maxDuration
           , easing = "linear"
-          , delay = 0
+          , delay = maxDelay
           , properties = animatedProperties
           }
         ]
