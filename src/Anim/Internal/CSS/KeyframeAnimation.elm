@@ -11,6 +11,7 @@ import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
+import Anim.Internal.Timing.Easing as Easing
 import Dict
 
 
@@ -92,7 +93,7 @@ generate elementId properties =
                                                             dur =
                                                                 cfg.duration
 
-                                                            propProgress =
+                                                            linearProgress =
                                                                 if time == 0 || dur == 0 then
                                                                     0
 
@@ -101,6 +102,13 @@ generate elementId properties =
 
                                                                 else
                                                                     1.0
+
+                                                            -- Apply easing to the linear progress
+                                                            easingFunction =
+                                                                Easing.toFunction cfg.easing
+
+                                                            propProgress =
+                                                                easingFunction linearProgress
 
                                                             startPos =
                                                                 case cfg.startAt of
@@ -123,7 +131,7 @@ generate elementId properties =
                                                             dur =
                                                                 cfg.duration
 
-                                                            propProgress =
+                                                            linearProgress =
                                                                 if time == 0 || dur == 0 then
                                                                     0
 
@@ -132,6 +140,13 @@ generate elementId properties =
 
                                                                 else
                                                                     1.0
+
+                                                            -- Apply easing to the linear progress
+                                                            easingFunction =
+                                                                Easing.toFunction cfg.easing
+
+                                                            propProgress =
+                                                                easingFunction linearProgress
 
                                                             startRot =
                                                                 case cfg.startAt of
@@ -163,12 +178,19 @@ generate elementId properties =
                                                             dur =
                                                                 cfg.duration
 
-                                                            propProgress =
+                                                            linearProgress =
                                                                 if dur > 0 then
                                                                     clamp 0 1 (time / toFloat dur)
 
                                                                 else
                                                                     1.0
+
+                                                            -- Apply easing to the linear progress
+                                                            easingFunction =
+                                                                Easing.toFunction cfg.easing
+
+                                                            propProgress =
+                                                                easingFunction linearProgress
 
                                                             startScale =
                                                                 case cfg.startAt of
@@ -226,12 +248,19 @@ generate elementId properties =
                                                             dur =
                                                                 cfg.duration
 
-                                                            propProgress =
+                                                            linearProgress =
                                                                 if dur > 0 then
                                                                     clamp 0 1 (time / toFloat dur)
 
                                                                 else
                                                                     1.0
+
+                                                            -- Apply easing to the linear progress
+                                                            easingFunction =
+                                                                Easing.toFunction cfg.easing
+
+                                                            propProgress =
+                                                                easingFunction linearProgress
 
                                                             startColor =
                                                                 case cfg.startAt of
@@ -255,12 +284,19 @@ generate elementId properties =
                                                             dur =
                                                                 cfg.duration
 
-                                                            propProgress =
+                                                            linearProgress =
                                                                 if time <= toFloat dur then
                                                                     time / toFloat dur
 
                                                                 else
                                                                     1.0
+
+                                                            -- Apply easing to the linear progress
+                                                            easingFunction =
+                                                                Easing.toFunction cfg.easing
+
+                                                            propProgress =
+                                                                easingFunction linearProgress
 
                                                             startOpacity =
                                                                 case cfg.startAt of
@@ -293,12 +329,19 @@ generate elementId properties =
                                                             dur =
                                                                 cfg.duration
 
-                                                            propProgress =
+                                                            linearProgress =
                                                                 if dur > 0 then
                                                                     clamp 0 1 (time / toFloat dur)
 
                                                                 else
                                                                     1.0
+
+                                                            -- Apply easing to the linear progress
+                                                            easingFunction =
+                                                                Easing.toFunction cfg.easing
+
+                                                            propProgress =
+                                                                easingFunction linearProgress
 
                                                             startSize =
                                                                 case cfg.startAt of
