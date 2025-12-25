@@ -1,5 +1,5 @@
 module Anim.Engine.Sub exposing
-    ( AnimationState, init, AnimBuilder, builder
+    ( AnimState, init, AnimBuilder, builder
     , animate
     , AnimationMsg, update, subscriptions
     , htmlAttributes
@@ -21,7 +21,7 @@ subscriptions for smooth, controlled animations.
 
 # Build
 
-@docs AnimationState, init, AnimBuilder, builder
+@docs AnimState, init, AnimBuilder, builder
 
 
 # Execute
@@ -111,11 +111,11 @@ This state keeps track of animations and their configurations.
 
     import Anim.Engine.Sub as Sub
 
-    { model | animations : Sub.AnimationState }
+    { model | animations : Sub.AnimState }
 
 -}
-type alias AnimationState =
-    InternalSub.AnimationState
+type alias AnimState =
+    InternalSub.AnimState
 
 
 
@@ -135,12 +135,12 @@ type alias ElementId =
     { model | animations = Sub.init }
 
 -}
-init : AnimationState
+init : AnimState
 init =
     InternalSub.init
 
 
-{-| Turn the AnimationState into an AnimBuilder.
+{-| Turn the AnimState into an AnimBuilder.
 
 Use this to start new animations based.
 
@@ -153,7 +153,7 @@ Use this to start new animations based.
             |> Sub.animate
 
 -}
-builder : AnimationState -> AnimBuilder
+builder : AnimState -> AnimBuilder
 builder =
     InternalSub.builder
 
@@ -173,7 +173,7 @@ builder =
     { model | animations = newAnimations }
 
 -}
-animate : AnimBuilder -> AnimationState
+animate : AnimBuilder -> AnimState
 animate =
     InternalSub.animate
 
@@ -268,7 +268,7 @@ type alias AnimationMsg =
             ...
 
 -}
-update : AnimationMsg -> AnimationState -> AnimationState
+update : AnimationMsg -> AnimState -> AnimState
 update =
     InternalSub.update
 
@@ -289,7 +289,7 @@ Your animations will not run without this subscription.
             |> Sub.map SubAnimationMsg
 
 -}
-subscriptions : AnimationState -> Sub AnimationMsg
+subscriptions : AnimState -> Sub AnimationMsg
 subscriptions =
     InternalSub.subscriptions
 
@@ -300,28 +300,28 @@ subscriptions =
 
 {-| Get current position of an element being animated.
 -}
-getPosition : ElementId -> AnimationState -> Maybe Position
+getPosition : ElementId -> AnimState -> Maybe Position
 getPosition =
     InternalSub.getPosition
 
 
 {-| Get current X and Y position of an element being animated.
 -}
-getPositionXY : ElementId -> AnimationState -> Maybe ( Float, Float )
+getPositionXY : ElementId -> AnimState -> Maybe ( Float, Float )
 getPositionXY =
     InternalSub.getPositionXY
 
 
 {-| Get current X position of an element being animated.
 -}
-getPositionX : ElementId -> AnimationState -> Maybe Float
+getPositionX : ElementId -> AnimState -> Maybe Float
 getPositionX =
     InternalSub.getPositionX
 
 
 {-| Get current Y position of an element being animated.
 -}
-getPositionY : ElementId -> AnimationState -> Maybe Float
+getPositionY : ElementId -> AnimState -> Maybe Float
 getPositionY =
     InternalSub.getPositionY
 
@@ -332,28 +332,28 @@ getPositionY =
 
 {-| Get current size of an element being animated.
 -}
-getSize : ElementId -> AnimationState -> Maybe Size
+getSize : ElementId -> AnimState -> Maybe Size
 getSize =
     InternalSub.getSize
 
 
 {-| Get current width and height of an element being animated.
 -}
-getSizeHW : ElementId -> AnimationState -> Maybe ( Float, Float )
+getSizeHW : ElementId -> AnimState -> Maybe ( Float, Float )
 getSizeHW =
     InternalSub.getSizeHW
 
 
 {-| Get current height of an element being animated.
 -}
-getSizeH : ElementId -> AnimationState -> Maybe Float
+getSizeH : ElementId -> AnimState -> Maybe Float
 getSizeH =
     InternalSub.getSizeH
 
 
 {-| Get current width of an element being animated.
 -}
-getSizeW : ElementId -> AnimationState -> Maybe Float
+getSizeW : ElementId -> AnimState -> Maybe Float
 getSizeW =
     InternalSub.getSizeW
 
@@ -361,7 +361,7 @@ getSizeW =
 {-| Get duration of the first animation found for an element.
 Returns Nothing if the element has no animations.
 -}
-getDuration : ElementId -> AnimationState -> Maybe Int
+getDuration : ElementId -> AnimState -> Maybe Int
 getDuration =
     InternalSub.getDuration
 
@@ -369,7 +369,7 @@ getDuration =
 {-| Check if an animation is currently running for the given element.
 Returns True if the element has active animations, False otherwise.
 -}
-isAnimationRunning : ElementId -> AnimationState -> Bool
+isAnimationRunning : ElementId -> AnimState -> Bool
 isAnimationRunning =
     InternalSub.isAnimationRunning
 
@@ -380,7 +380,7 @@ isAnimationRunning =
 
 {-| Get current animation values as CSS-compatible styles.
 -}
-getCurrentStyles : ElementId -> AnimationState -> List ( String, String )
+getCurrentStyles : ElementId -> AnimState -> List ( String, String )
 getCurrentStyles =
     InternalSub.getCurrentStyles
 
@@ -413,6 +413,6 @@ For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-la
         (text "Animating element")
 
 -}
-htmlAttributes : ElementId -> AnimationState -> List (Html.Attribute msg)
+htmlAttributes : ElementId -> AnimState -> List (Html.Attribute msg)
 htmlAttributes =
     InternalSub.htmlAttributes

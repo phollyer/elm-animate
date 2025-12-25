@@ -1,5 +1,5 @@
 module Anim.Engine.WAAPI exposing
-    ( AnimationState, init, AnimBuilder, builder
+    ( AnimState, init, AnimBuilder, builder
     , animate, animateBatch
     , update
     , duration, speed
@@ -33,7 +33,7 @@ Then import and initialize it in your JavaScript code:
 
 # Build
 
-@docs AnimationState, init, AnimBuilder, builder
+@docs AnimState, init, AnimBuilder, builder
 
 
 # Animation Execution
@@ -92,14 +92,14 @@ This state keeps track of animations and their configurations.
 
     import Anim.Engine.WAAPI as WAAPI
 
-    { model | animations : WAAPI.AnimationState }
+    { model | animations : WAAPI.AnimState }
 
 If you only need to create fire-and-forget animations without tracking state,
 you don't need to add this type to your model.
 
 -}
-type alias AnimationState =
-    InternalWAAPI.AnimationState
+type alias AnimState =
+    InternalWAAPI.AnimState
 
 
 {-| Initialize empty animation state.
@@ -109,7 +109,7 @@ type alias AnimationState =
     { model | animations = WAAPI.init }
 
 -}
-init : AnimationState
+init : AnimState
 init =
     InternalWAAPI.init
 
@@ -123,7 +123,7 @@ type alias AnimBuilder =
     Builder.AnimBuilder
 
 
-{-| Turn the AnimationState into an AnimBuilder.
+{-| Turn the AnimState into an AnimBuilder.
 
 Use this to start new animations based on current state.
 
@@ -140,7 +140,7 @@ Use this to start new animations based on current state.
     -- "element" will animate from its current position
 
 -}
-builder : AnimationState -> AnimBuilder
+builder : AnimState -> AnimBuilder
 builder =
     InternalWAAPI.builder
 
@@ -150,7 +150,7 @@ builder =
 Returns updated animation state and encoded animation data for ports.
 
     let
-        ( newAnimationState, animationData ) =
+        ( newAnimState, animationData ) =
             WAAPI.builder model.animationState
                 |> Position.for "my-element"
                 |> Position.to { x = 100, y = 200 }
@@ -158,12 +158,12 @@ Returns updated animation state and encoded animation data for ports.
                 |> Position.build
                 |> WAAPI.animate model.animationState
     in
-    ( { model | animationState = newAnimationState }
+    ( { model | animationState = newAnimState }
     , sendAnimationCommand animationData
     )
 
 -}
-animate : AnimationState -> AnimBuilder -> ( AnimationState, Encode.Value )
+animate : AnimState -> AnimBuilder -> ( AnimState, Encode.Value )
 animate =
     InternalWAAPI.animate
 
@@ -243,14 +243,14 @@ animateBatch portFunction builders =
 
 {-| Get current position of an element.
 -}
-getPosition : String -> AnimationState -> Maybe Position
+getPosition : String -> AnimState -> Maybe Position
 getPosition =
     InternalWAAPI.getPosition
 
 
 {-| Get current styles for an element (for debugging/display purposes).
 -}
-getCurrentStyles : String -> AnimationState -> List ( String, String )
+getCurrentStyles : String -> AnimState -> List ( String, String )
 getCurrentStyles =
     InternalWAAPI.getCurrentStyles
 
@@ -321,7 +321,7 @@ This function provides a way to add animation data attributes to elements,
 which can be useful for debugging or JavaScript integration.
 
 -}
-htmlAttributes : String -> AnimationState -> List (Html.Attribute msg)
+htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
 htmlAttributes =
     InternalWAAPI.htmlAttributes
 
@@ -342,6 +342,6 @@ integration and updates the internal animation state accordingly.
                 ( { model | animations = WAAPI.update value model.animations }, Cmd.none )
 
 -}
-update : Decode.Value -> AnimationState -> AnimationState
+update : Decode.Value -> AnimState -> AnimState
 update =
     InternalWAAPI.update

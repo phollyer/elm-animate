@@ -1,7 +1,7 @@
 module Anim.Internal.Scroll exposing
     ( AnimBuilder
+    , AnimState
     , AnimationMsg(..)
-    , AnimationState
     , addScrollTarget
     , animate
     , builder
@@ -103,8 +103,8 @@ type alias AnimationData =
 
 {-| Main animation state
 -}
-type AnimationState
-    = AnimationState AnimationData
+type AnimState
+    = AnimState AnimationData
 
 
 {-| Animation messages
@@ -133,17 +133,17 @@ speedToDuration speedPxPerSec distance =
 
 {-| Initialize empty scroll animation state.
 -}
-init : AnimationState
+init : AnimState
 init =
-    AnimationState
+    AnimState
         { animations = Dict.empty
         , nextId = 1
         }
 
 
-{-| Turn the AnimationState into an AnimBuilder.
+{-| Turn the AnimState into an AnimBuilder.
 -}
-builder : AnimationState -> AnimBuilder
+builder : AnimState -> AnimBuilder
 builder _ =
     Builder.init
 
@@ -237,7 +237,7 @@ setContainer containerId animBuilder =
 
 {-| Create scroll animation from AnimBuilder.
 -}
-animate : AnimBuilder -> AnimationState
+animate : AnimBuilder -> AnimState
 animate animBuilder =
     let
         animData =
@@ -261,7 +261,7 @@ animate animBuilder =
         newNextId =
             animData.nextId + List.length scrollTargets
     in
-    AnimationState
+    AnimState
         { animData
             | animations = newAnimations
             , nextId = newNextId
@@ -359,8 +359,8 @@ calculateDistance axis startX startY targetX targetY =
 
 {-| Update scroll animation state with animation frame.
 -}
-update : AnimationMsg -> AnimationState -> AnimationState
-update msg (AnimationState animData) =
+update : AnimationMsg -> AnimState -> AnimState
+update msg (AnimState animData) =
     case msg of
         AnimationFrame deltaMs ->
             let
@@ -371,7 +371,7 @@ update msg (AnimationState animData) =
                 activeAnimations =
                     Dict.filter (\_ anim -> anim.progress < 1.0) updatedAnimations
             in
-            AnimationState { animData | animations = activeAnimations }
+            AnimState { animData | animations = activeAnimations }
 
         DomElementReceived animId (Ok element) ->
             let
@@ -389,11 +389,11 @@ update msg (AnimationState animData) =
                         )
                         animData.animations
             in
-            AnimationState { animData | animations = updatedAnimations }
+            AnimState { animData | animations = updatedAnimations }
 
         DomElementReceived animId (Err _) ->
             -- Handle DOM error (remove failed animation)
-            AnimationState { animData | animations = Dict.remove animId animData.animations }
+            AnimState { animData | animations = Dict.remove animId animData.animations }
 
         ViewportReceived animId (Ok viewport) ->
             -- Update animation with actual viewport scroll position
@@ -412,11 +412,11 @@ update msg (AnimationState animData) =
                         )
                         animData.animations
             in
-            AnimationState { animData | animations = updatedAnimations }
+            AnimState { animData | animations = updatedAnimations }
 
         ViewportReceived animId (Err _) ->
             -- Handle viewport error (remove failed animation)
-            AnimationState { animData | animations = Dict.remove animId animData.animations }
+            AnimState { animData | animations = Dict.remove animId animData.animations }
 
 
 {-| Update a single scroll animation.
@@ -477,15 +477,15 @@ updateScrollAnimation deltaMs animation =
 
 {-| Check if any scroll animations are currently running.
 -}
-isAnimationRunning : AnimationState -> Bool
-isAnimationRunning (AnimationState animData) =
+isAnimationRunning : AnimState -> Bool
+isAnimationRunning (AnimState animData) =
     not (Dict.isEmpty animData.animations)
 
 
 {-| Get the duration of currently running scroll animations.
 -}
-getDuration : AnimationState -> Maybe Int
-getDuration (AnimationState animData) =
+getDuration : AnimState -> Maybe Int
+getDuration (AnimState animData) =
     animData.animations
         |> Dict.values
         |> List.head
@@ -498,8 +498,8 @@ getDuration (AnimationState animData) =
 
 {-| Get current scroll position for a specific container.
 -}
-getScrollPosition : String -> AnimationState -> Maybe { x : Float, y : Float }
-getScrollPosition containerId (AnimationState animData) =
+getScrollPosition : String -> AnimState -> Maybe { x : Float, y : Float }
+getScrollPosition containerId (AnimState animData) =
     animData.animations
         |> Dict.values
         |> List.filter (\anim -> containerIdMatches containerId anim.config.containerId)
@@ -509,7 +509,7 @@ getScrollPosition containerId (AnimationState animData) =
 
 {-| Get current scroll position as a tuple for a specific container.
 -}
-getScrollPositionXY : String -> AnimationState -> Maybe ( Float, Float )
+getScrollPositionXY : String -> AnimState -> Maybe ( Float, Float )
 getScrollPositionXY containerId animState =
     getScrollPosition containerId animState
         |> Maybe.map (\pos -> ( pos.x, pos.y ))
@@ -517,7 +517,7 @@ getScrollPositionXY containerId animState =
 
 {-| Get current horizontal scroll position for a specific container.
 -}
-getScrollPositionX : String -> AnimationState -> Maybe Float
+getScrollPositionX : String -> AnimState -> Maybe Float
 getScrollPositionX containerId animState =
     getScrollPosition containerId animState
         |> Maybe.map .x
@@ -525,7 +525,7 @@ getScrollPositionX containerId animState =
 
 {-| Get current vertical scroll position for a specific container.
 -}
-getScrollPositionY : String -> AnimationState -> Maybe Float
+getScrollPositionY : String -> AnimState -> Maybe Float
 getScrollPositionY containerId animState =
     getScrollPosition containerId animState
         |> Maybe.map .y
@@ -549,7 +549,7 @@ containerIdMatches id containerId =
 
 {-| Generate HTML attributes for scroll containers.
 -}
-htmlAttributes : String -> AnimationState -> List (Html.Attribute msg)
+htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
 htmlAttributes containerId animState =
     case getScrollPosition containerId animState of
         Just position ->

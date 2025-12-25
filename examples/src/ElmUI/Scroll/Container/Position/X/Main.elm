@@ -31,7 +31,7 @@ main =
 
 
 type alias Model =
-    { scrollAnimations : Scroll.AnimationState
+    { scrollAnimations : Scroll.AnimState
     }
 
 

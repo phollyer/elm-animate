@@ -48,7 +48,7 @@ main =
 
 
 type alias Model =
-    { animations : Sub.AnimationState }
+    { animations : Sub.AnimState }
 
 
 
@@ -72,7 +72,7 @@ type Msg
     | AnimationMsg Sub.AnimationMsg
 
 
-anim : Sub.AnimationState -> Builder
+anim : Sub.AnimState -> Builder
 anim animation =
     animation
         |> Sub.builder

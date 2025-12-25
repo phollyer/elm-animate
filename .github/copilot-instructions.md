@@ -56,7 +56,7 @@ This is an Elm 0.19 package that provides multiple animation approaches for smoo
 ### 2. Subscription-Based API (SmoothMoveSub) 
 - **Purpose**: Element positioning with frame-rate independent animations
 - **API**: `onAnimationFrameDelta` subscriptions with model updates
-- **Usage**: Create `AnimationState`, subscribe to `subscriptions`, apply via CSS transform
+- **Usage**: Create `AnimState`, subscribe to `subscriptions`, apply via CSS transform
 - **Best for**: Multiple simultaneous element animations
 
 ### 3. CSS Transition-Based API (SmoothMoveCSS)

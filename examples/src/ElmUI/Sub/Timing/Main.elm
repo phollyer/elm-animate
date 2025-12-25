@@ -58,7 +58,7 @@ main =
 
 
 type alias Model =
-    { animations : Sub.AnimationState
+    { animations : Sub.AnimState
     , currentTest : Maybe TimingTest
     , completedTests : List CompletedTest
     , startTime : Maybe Time.Posix
@@ -68,7 +68,7 @@ type alias Model =
 type alias TimingTest =
     { name : String
     , expectedDuration : Int -- in milliseconds
-    , animationBuilder : Sub.AnimationState -> Sub.AnimationState
+    , animationBuilder : Sub.AnimState -> Sub.AnimState
     }
 
 

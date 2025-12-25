@@ -1,6 +1,6 @@
 module Anim.Internal.WAAPI exposing
     ( TargetId
-    , init, builder, animate, AnimationState
+    , init, builder, animate, AnimState
     , getPosition, getCurrentStyles
     , htmlAttributes
     , delay, duration, easing, speed, update
@@ -19,7 +19,7 @@ commands via Elm ports for high-performance, platform-optimized animations.
 
 # State Management
 
-@docs init, builder, animate, AnimationState
+@docs init, builder, animate, AnimState
 
 
 # Animation Data
@@ -58,8 +58,8 @@ type alias AnimBuilder =
 
 {-| State for managing ports-based animations.
 -}
-type AnimationState
-    = AnimationState
+type AnimState
+    = AnimState
         { elementAnimations : Dict ElementId ElementAnimation
         , isRunning : Bool
         , builder : AnimBuilder
@@ -94,26 +94,26 @@ type alias TargetId =
 
 {-| Initialize empty animation builder.
 -}
-init : AnimationState
+init : AnimState
 init =
-    AnimationState
+    AnimState
         { elementAnimations = Dict.empty
         , isRunning = False
         , builder = Builder.init
         }
 
 
-{-| Turn the AnimationState into an AnimBuilder with current state preserved.
+{-| Turn the AnimState into an AnimBuilder with current state preserved.
 -}
-builder : AnimationState -> AnimBuilder
-builder (AnimationState state) =
+builder : AnimState -> AnimBuilder
+builder (AnimState state) =
     state.builder
 
 
 {-| Create animation command with state tracking.
 -}
-animate : AnimationState -> AnimBuilder -> ( AnimationState, Encode.Value )
-animate (AnimationState state) builder_ =
+animate : AnimState -> AnimBuilder -> ( AnimState, Encode.Value )
+animate (AnimState state) builder_ =
     let
         processedData =
             Builder.processAnimationData builder_
@@ -132,8 +132,8 @@ animate (AnimationState state) builder_ =
         updatedElementAnimations =
             Dict.union newElementAnimations state.elementAnimations
 
-        newAnimationState =
-            AnimationState
+        newAnimState =
+            AnimState
                 { elementAnimations = updatedElementAnimations
                 , isRunning = not (Dict.isEmpty newElementAnimations)
                 , builder = Builder.markDirty builder_
@@ -142,7 +142,7 @@ animate (AnimationState state) builder_ =
         encodedData =
             Builder.encode processedData
     in
-    ( newAnimationState, encodedData )
+    ( newAnimState, encodedData )
 
 
 extractElementEndStates : Builder.ProcessedElementConfig -> ElementEndStates
@@ -185,8 +185,8 @@ extractPropertyEndState property state =
 
 {-| Get current position of an element.
 -}
-getPosition : String -> AnimationState -> Maybe Position
-getPosition elementId (AnimationState state) =
+getPosition : String -> AnimState -> Maybe Position
+getPosition elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.andThen (.endStates >> .position)
 
@@ -213,8 +213,8 @@ delay =
 
 {-| Get current styles for an element (for debugging/display purposes).
 -}
-getCurrentStyles : String -> AnimationState -> List ( String, String )
-getCurrentStyles elementId (AnimationState state) =
+getCurrentStyles : String -> AnimState -> List ( String, String )
+getCurrentStyles elementId (AnimState state) =
     case Dict.get elementId state.elementAnimations of
         Nothing ->
             []
@@ -290,8 +290,8 @@ integration and updates the internal animation state accordingly.
             { model | animations = WAAPI.update value model.animations }
 
 -}
-update : Decode.Value -> AnimationState -> AnimationState
-update jsonValue (AnimationState state) =
+update : Decode.Value -> AnimState -> AnimState
+update jsonValue (AnimState state) =
     case Decode.decodeValue animationUpdateDecoder jsonValue of
         Ok animationUpdate ->
             let
@@ -301,7 +301,7 @@ update jsonValue (AnimationState state) =
                         state.elementAnimations
 
                 newState =
-                    AnimationState
+                    AnimState
                         { state
                             | elementAnimations = updatedAnimations
                             , isRunning = not (Dict.isEmpty updatedAnimations)
@@ -311,7 +311,7 @@ update jsonValue (AnimationState state) =
 
         Err _ ->
             -- Silently ignore decode errors since we control the data shape
-            AnimationState state
+            AnimState state
 
 
 type alias AnimationUpdate =
@@ -427,8 +427,8 @@ This function provides a way to add animation data attributes to elements,
 which can be useful for debugging or JavaScript integration.
 
 -}
-htmlAttributes : String -> AnimationState -> List (Html.Attribute msg)
-htmlAttributes elementId (AnimationState state) =
+htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
+htmlAttributes elementId (AnimState state) =
     case Dict.get elementId state.elementAnimations of
         Nothing ->
             []

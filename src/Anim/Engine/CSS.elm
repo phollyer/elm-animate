@@ -1,24 +1,23 @@
 module Anim.Engine.CSS exposing
-    ( AnimationState, init, AnimBuilder, builder
+    ( AnimState, init, AnimBuilder, builder
     , animate, animateOrder
     , TransformOrder(..), defaultTransformOrder
-    , htmlAttributes, getElementKeyframes, animationStyleAttribute, keyframesStyleNode, keyframesStyleNodeFor
+    , htmlAttributes
+    , keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
+    , animationStyleAttribute
     , duration, speed
     , easing
     , delay
-    , getPosition, isRunning
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
+    , isRunning
     )
 
 {-| CSS-based animation system with optional state tracking.
 
-This module converts [AnimBuilder](#AnimBuilder) configurations to CSS animations that can take
-advantage of the browser's native CSS engine to handle the animations.
+This Engine converts [AnimBuilder](#AnimBuilder) configurations to CSS animations which you can apply as either:
 
-The CSS animations can then be easily applied to your elements as either:
-
-1.  **Style tags** defining keyframe animations, or,
+1.  **Keyframe animations**, or,
 2.  **CSS [transform](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transforms) attributes**.
 
 You decide how to apply the generated CSS to your elements in your view - giving you full control
@@ -27,7 +26,7 @@ over how the CSS is integrated into your application.
 
 # Build
 
-@docs AnimationState, init, AnimBuilder, builder
+@docs AnimState, init, AnimBuilder, builder
 
 
 # Execute
@@ -42,12 +41,47 @@ over how the CSS is integrated into your application.
 
 # View
 
-@docs htmlAttributes, getElementKeyframes, animationStyleAttribute, keyframesStyleNode, keyframesStyleNodeFor
+
+## Design Decisions (Keyframes vs Transforms)
+
+**Choosing Between Keyframes and Transforms**
+
+The choice between keyframes and transforms should be based on your animation requirements:
+
+**Use Keyframes when you need:**
+
+  - Complex easing curves (bounce, elastic, back, etc.)
+  - Individual delays per property
+  - Fine-grained control over animation timing
+  - Better debugging visibility in DevTools
+
+**Use Transforms for:**
+
+  - Simple easing (ease, ease-in-out, cubic-bezier)
+  - Basic A→B animations
+  - Minimal setup (no style node required)
+
+
+## CSS Transform Attributes
+
+For CSS transform animations, just apply the generated HTML attributes to your elements.
+
+@docs htmlAttributes
+
+
+## Keyframes and Animation Styles
+
+For Keyframe animations, add the Keyframes `<style>` node to your DOM. Then apply the
+animation style attribute directly to the element you want to animate.
+
+@docs keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
+
+@docs animationStyleAttribute
 
 
 # Global Settings
 
-These settings will be used for all animations unless overridden on a per-animation basis.
+These settings will be used for all property animations unless overridden on a per-property basis.
 
 
 ## Timing
@@ -65,11 +99,6 @@ These settings will be used for all animations unless overridden on a per-animat
 @docs delay
 
 
-# Querying Animation State
-
-@docs getPosition, isRunning
-
-
 # Event Handling
 
 CSS animations and transitions can trigger events when they start, end, or are cancelled.
@@ -79,12 +108,21 @@ Animation events are different from transition events, so both types of events c
 
 ## Animation Events
 
+For CSS keyframe animations.
+
 @docs onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
 
 
 ## Transition Events
 
+For CSS transitions (used in CSS transform animations).
+
 @docs onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
+
+
+# Querying Animation State
+
+@docs isRunning
 
 -}
 
@@ -122,23 +160,27 @@ defaultTransformOrder =
 
 {-| Optional State for managing animations.
 
-This state keeps track of animations and their configurations.
-
     import Anim.Engine.CSS as CSS
 
-    { model | animations : CSS.AnimationState }
+    { model | animations : CSS.AnimState }
 
-If you only need to create fire-and-forget animations without tracking state,
+This state keeps track of animations and their configurations.
+
+If you want animations that need to start from their previous end state, i.e. you only
+set the start state once and then keep updating the end state over time, or after user interactions,
+you should include this type in your model.
+
+If you only need to create fire-and-forget animations where you control both the start and end states,
 you don't need to add this type to your model.
 
 -}
-type alias AnimationState =
-    InternalCSS.AnimationState
+type alias AnimState =
+    InternalCSS.AnimState
 
 
 {-| Animation builder type.
 
-This is used internally to configure animations before executing them.
+This is used internally to configure animations.
 
 -}
 type alias AnimBuilder =
@@ -146,7 +188,7 @@ type alias AnimBuilder =
 
 
 {-| Generate CSS animations from the builder, and return the
-updated AnimationState.
+updated [AnimState](#AnimState).
 
     animationState =
         model.animations -- Or `CSS.init`
@@ -154,10 +196,8 @@ updated AnimationState.
             |> ... -- continue building the animation
             |> CSS.animate
 
-The AnimationState can then be used by the view.
-
 -}
-animate : AnimBuilder -> AnimationState
+animate : AnimBuilder -> AnimState
 animate =
     InternalCSS.animate
 
@@ -167,7 +207,7 @@ animate =
 This is an alternative to `animate` that allows you to specify the order
 in which transform properties should appear in the CSS.
 
-`animate` uses the transform order (Position → Rotate → Scale) which should
+[animate](#animate) uses the transform order (Position → Rotate → Scale) which should
 be suitable for most use cases. Use `animateOrder` if you need a different order.
 
 Beware that changing the transform order can lead to unexpected visual results,
@@ -181,7 +221,7 @@ as the order of transforms affects how they are applied by the browser.
             |> CSS.animateOrder [ Scale, Rotate, Position ]
 
 -}
-animateOrder : List TransformOrder -> AnimBuilder -> AnimationState
+animateOrder : List TransformOrder -> AnimBuilder -> AnimState
 animateOrder order =
     let
         mapOrder transform =
@@ -206,7 +246,7 @@ animateOrder order =
 
     { model | animations = CSS.init }
 
-Or use this to initialize your animation state when you want fire-and-forget animations.
+Or, when you want fire-and-forget animations.
 
     import Anim.Engine.CSS as CSS
 
@@ -216,14 +256,14 @@ Or use this to initialize your animation state when you want fire-and-forget ani
         |> CSS.animate
 
 -}
-init : AnimationState
+init : AnimState
 init =
     InternalCSS.init
 
 
-{-| Turn the AnimationState into an AnimBuilder.
+{-| Turn the [AnimState](#AnimState) into an [AnimBuilder](#AnimBuilder).
 
-Use this to start new animations.
+Use this to start building new animations.
 
     -- Create a new animation based on current state
     newBuilder =
@@ -239,14 +279,14 @@ Use this to start new animations.
             |> ... -- continue building the animation
 
 -}
-builder : AnimationState -> AnimBuilder
+builder : AnimState -> AnimBuilder
 builder =
     InternalCSS.builder
 
 
-{-| Generate the CSS animation property for an element.
+{-| Generate the animation `<style>` attribute and apply it directly to the element you want to animate.
 
-This creates the `animation` CSS property value that should be applied to the element.
+This creates the `animation` CSS property value that tells the browser which keyframe animation to run on this element.
 
     div
         [ Html.Attributes.id "my-element"
@@ -254,12 +294,20 @@ This creates the `animation` CSS property value that should be applied to the el
         ]
         [ text "Animating element" ]
 
-This is equivalent to manually writing:
+This is equivalent to manually writing something like:
 
-    Html.Attributes.style "animation" "my-element-animation 2000ms ease-out 100ms"
+    Html.Attributes.style "animation" "animation-name 2000ms linear 0ms"
+
+**Note:**
+
+1.  You still need to include the keyframes in your DOM separately with
+    [ keyframesStyleNode ](#keyframesStyleNode) or [ keyframesStyleNodeFor ](#keyframesStyleNodeFor).
+2.  The Easing function will always be "linear" for CSS keyframe animations, as the easing
+    is baked into the keyframes themselves, so we need to transition between keyframe values linearly.
+3.  The Delay is also baked into the keyframes, so it will always be 0 in the CSS animation property.
 
 -}
-animationStyleAttribute : String -> AnimationState -> Html.Attribute msg
+animationStyleAttribute : String -> AnimState -> Html.Attribute msg
 animationStyleAttribute =
     InternalCSS.animationStyleAttribute
 
@@ -270,16 +318,12 @@ This creates a style node that can be added to your view to include all the keyf
 
     view model =
         div []
-            [ CSS.keyframesStyleNode model.animationState
-            , div
-                [ Html.Attributes.id "my-element"
-                , CSS.animationStyleAttribute "my-element" model.animationState
-                ]
-                [ text "Animating element" ]
-            ]
+            [ CSS.keyframesStyleNode model.animationState ]
+
+If there are no animations, this returns an empty text node.
 
 -}
-keyframesStyleNode : AnimationState -> Html.Html msg
+keyframesStyleNode : AnimState -> Html.Html msg
 keyframesStyleNode =
     InternalCSS.keyframesStyleNode
 
@@ -291,51 +335,32 @@ keyframes are included in your DOM.
 
     view model =
         div []
-            [ CSS.keyframesStyleNodeFor "my-element" model.animationState
-            , div
-                [ Html.Attributes.id "my-element"
-                , CSS.animationStyleAttribute "my-element" model.animationState
-                ]
-                [ text "Animating element" ]
-            ]
+            [ CSS.keyframesStyleNodeFor "my-element" model.animationState ]
 
 If the element has no animations, this returns an empty text node.
 
 -}
-keyframesStyleNodeFor : String -> AnimationState -> Html.Html msg
+keyframesStyleNodeFor : String -> AnimState -> Html.Html msg
 keyframesStyleNodeFor =
     InternalCSS.keyframesStyleNodeFor
 
 
-{-| Get the keyframes CSS string for a specific element from the animation state.
+{-| Get the raw generated CSS keyframes string that can be inserted into a `<style>` tag.
 
-This function returns the generated CSS keyframes that can be inserted into a `<style>` tag.
+However, you probably want to use [ keyframesStyleNodeFor ](#keyframesStyleNodeFor) instead, which
+handles creating the full `<style>` node for you.
 
-    case CSS.getElementKeyframes "my-element" animationState of
-        Just keyframes ->
-            Html.node "style" [] [ Html.text keyframes ]
-
-        Nothing ->
-            Html.text ""
-
-The generated keyframes will have a name based on the element ID (e.g., "my-element-animation").
+This function is mainly provided for advanced use cases where you need direct access to the keyframes string prior to inserting it into the DOM.
 
 -}
-getElementKeyframes : String -> AnimationState -> Maybe String
+getElementKeyframes : String -> AnimState -> Maybe String
 getElementKeyframes =
     InternalCSS.getElementKeyframes
 
 
-{-| Get the end position of an element being animated.
--}
-getPosition : String -> AnimationState -> Maybe Position
-getPosition =
-    InternalCSS.getPosition
-
-
 {-| Check if any animations are currently running.
 -}
-isRunning : AnimationState -> Bool
+isRunning : AnimState -> Bool
 isRunning =
     InternalCSS.isRunning
 
@@ -345,9 +370,7 @@ isRunning =
     Css.init
         |> CSS.builder
         |> Css.duration 1000
-        |> Position.for "element"
-        |> Position.toXY 100 200
-        |> Position.build
+        |> ... -- Property animations
         |> Css.animate
 
 -}
@@ -364,9 +387,7 @@ Refer to the relevant property documentation for specific details for each prope
     Css.init
         |> CSS.builder
         |> Css.speed 100
-        |> Position.for "element"
-        |> Position.toXY 100 200
-        |> Position.build
+        |> ... -- Property animations
         |> Css.animate
 
 -}
@@ -378,11 +399,13 @@ speed =
 {-| Set global easing function.
 
     Css.init
+        |> CSS.builder
         |> Css.easing EaseInOutQuad
-        |> Position.for "element"
-        |> Position.toXY 100 200
-        |> Position.build
+        |> ... -- Property animations
         |> Css.animate
+
+**Note:** For CSS keyframe animations, the easing is baked into the keyframes themselves,
+for CSS transform animations, the easing function will be applied to the `transition-timing-function` property.
 
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
@@ -393,10 +416,9 @@ easing =
 {-| Set global delay in milliseconds.
 
     Css.init
+        |> CSS.builder
         |> Css.delay 500
-        |> Position.for "element"
-        |> Position.toXY 100 200
-        |> Position.build
+        |> ... -- Property animations
         |> Css.animate
 
 -}
@@ -439,7 +461,7 @@ For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-la
         (text "Animating element")
 
 -}
-htmlAttributes : String -> AnimationState -> List (Html.Attribute msg)
+htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
 htmlAttributes =
     InternalCSS.htmlAttributes
 

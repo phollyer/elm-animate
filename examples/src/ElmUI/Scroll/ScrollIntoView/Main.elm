@@ -41,7 +41,7 @@ type alias Model =
     { status : String
     , windowWidth : Int
     , windowHeight : Int
-    , scrollAnimations : Scroll.AnimationState
+    , scrollAnimations : Scroll.AnimState
     }
 
 

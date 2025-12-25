@@ -70,7 +70,7 @@ main =
 
 
 type alias Model =
-    { animationState : WAAPI.AnimationState
+    { animationState : WAAPI.AnimState
     , isAnimating : Bool
     }
 
@@ -109,7 +109,7 @@ update msg model =
     case msg of
         MoveToXY x y ->
             let
-                ( newAnimationState, animationData ) =
+                ( newAnimState, animationData ) =
                     model.animationState
                         |> WAAPI.builder
                         |> Position.for "box"
@@ -119,13 +119,13 @@ update msg model =
                         |> Position.build
                         |> WAAPI.animate model.animationState
             in
-            ( { model | animationState = newAnimationState, isAnimating = True }
+            ( { model | animationState = newAnimState, isAnimating = True }
             , animateElement animationData
             )
 
         MoveLeft ->
             let
-                ( newAnimationState, animationData ) =
+                ( newAnimState, animationData ) =
                     model.animationState
                         |> WAAPI.builder
                         |> Position.for "box"
@@ -135,13 +135,13 @@ update msg model =
                         |> Position.build
                         |> WAAPI.animate model.animationState
             in
-            ( { model | animationState = newAnimationState, isAnimating = True }
+            ( { model | animationState = newAnimState, isAnimating = True }
             , animateElement animationData
             )
 
         MoveRight ->
             let
-                ( newAnimationState, animationData ) =
+                ( newAnimState, animationData ) =
                     model.animationState
                         |> WAAPI.builder
                         |> Position.for "box"
@@ -151,13 +151,13 @@ update msg model =
                         |> Position.build
                         |> WAAPI.animate model.animationState
             in
-            ( { model | animationState = newAnimationState, isAnimating = True }
+            ( { model | animationState = newAnimState, isAnimating = True }
             , animateElement animationData
             )
 
         MoveUp ->
             let
-                ( newAnimationState, animationData ) =
+                ( newAnimState, animationData ) =
                     model.animationState
                         |> WAAPI.builder
                         |> Position.for "box"
@@ -167,13 +167,13 @@ update msg model =
                         |> Position.build
                         |> WAAPI.animate model.animationState
             in
-            ( { model | animationState = newAnimationState, isAnimating = True }
+            ( { model | animationState = newAnimState, isAnimating = True }
             , animateElement animationData
             )
 
         MoveDown ->
             let
-                ( newAnimationState, animationData ) =
+                ( newAnimState, animationData ) =
                     model.animationState
                         |> WAAPI.builder
                         |> Position.for "box"
@@ -183,13 +183,13 @@ update msg model =
                         |> Position.build
                         |> WAAPI.animate model.animationState
             in
-            ( { model | animationState = newAnimationState, isAnimating = True }
+            ( { model | animationState = newAnimState, isAnimating = True }
             , animateElement animationData
             )
 
         ResetPosition ->
             let
-                ( newAnimationState, animationData ) =
+                ( newAnimState, animationData ) =
                     model.animationState
                         |> WAAPI.builder
                         |> Position.for "box"
@@ -199,7 +199,7 @@ update msg model =
                         |> Position.build
                         |> WAAPI.animate model.animationState
             in
-            ( { model | animationState = newAnimationState, isAnimating = True }
+            ( { model | animationState = newAnimState, isAnimating = True }
             , animateElement animationData
             )
 

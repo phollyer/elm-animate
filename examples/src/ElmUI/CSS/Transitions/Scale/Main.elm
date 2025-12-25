@@ -48,7 +48,7 @@ main =
 
 
 type alias Model =
-    { animations : CSS.AnimationState }
+    { animations : CSS.AnimState }
 
 
 
@@ -66,7 +66,7 @@ init _ =
 -- UPDATE
 
 
-anim : CSS.AnimationState -> Scale.Builder
+anim : CSS.AnimState -> Scale.Builder
 anim animations =
     animations
         |> CSS.builder

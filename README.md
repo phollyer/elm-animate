@@ -42,7 +42,7 @@ in your view code.
 ```elm
 -- Build
 
-buildAnimation : CSS.AnimationState -> CSS.AnimationState
+buildAnimation : CSS.AnimState -> CSS.AnimState
 buildAnimation animations =
     animations
         |> CSS.builder
@@ -57,9 +57,16 @@ div
     [ text "CSS Animation!" ]
 
 -- For Keyframe Animations
+
+-- Place your `<style>` node anywhere in your DOM
 div
     []
     [ CSS.keyframeStyleNodes model.animations ]
+
+-- Connect your element to the keyframe animation defined in the `<style>` node
+div
+    []
+    [ CSS.animationStyleAttribute "my-element" model.animations ]
 ```
 
 ---
@@ -72,7 +79,7 @@ div
 ```elm
 -- Build
 
-buildAnimation : Sub.AnimationState -> Sub.AnimationState
+buildAnimation : Sub.AnimState -> Sub.AnimState
 buildAnimation animations =
     animations
         |> Sub.builder
@@ -125,7 +132,7 @@ port positionUpdates : (Decode.Value -> msg) -> Sub msg
 
 -- Build 
 
-buildAnimation : WAAPI.AnimationState -> WAAPI.AnimationState
+buildAnimation : WAAPI.AnimState -> WAAPI.AnimState
 buildAnimation animations =
     animations
         |> WAAPI.builder

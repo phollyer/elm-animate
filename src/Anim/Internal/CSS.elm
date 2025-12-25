@@ -1,6 +1,6 @@
 module Anim.Internal.CSS exposing
     ( AnimBuilder
-    , AnimationState
+    , AnimState
     , TransformOrder(..)
     , animate
     , animateWithOrder
@@ -77,8 +77,8 @@ transformOrderToString order =
             "scale"
 
 
-type AnimationState
-    = AnimationState
+type AnimState
+    = AnimState
         { elementAnimations : Dict ElementId ElementAnimation
         , isRunning : Bool
         , builder : AnimBuilder
@@ -95,23 +95,23 @@ type alias ElementAnimation =
     }
 
 
-init : AnimationState
+init : AnimState
 init =
-    AnimationState
+    AnimState
         { elementAnimations = Dict.empty
         , isRunning = False
         , builder = Builder.init
         }
 
 
-builder : AnimationState -> AnimBuilder
-builder (AnimationState state) =
+builder : AnimState -> AnimBuilder
+builder (AnimState state) =
     state.builder
 
 
-animate : AnimBuilder -> AnimationState
+animate : AnimBuilder -> AnimState
 animate builder_ =
-    AnimationState
+    AnimState
         { elementAnimations =
             builder_
                 |> Builder.elements
@@ -123,9 +123,9 @@ animate builder_ =
 
 {-| Apply animation with custom transform ordering.
 -}
-animateWithOrder : List TransformOrder -> AnimBuilder -> AnimationState
+animateWithOrder : List TransformOrder -> AnimBuilder -> AnimState
 animateWithOrder order builder_ =
-    AnimationState
+    AnimState
         { elementAnimations =
             builder_
                 |> Builder.elements
@@ -196,7 +196,7 @@ generateElementAnimation maybeOrder elementId elementConfig =
     }
 
 
-animationStyleAttribute : String -> AnimationState -> Html.Attribute msg
+animationStyleAttribute : String -> AnimState -> Html.Attribute msg
 animationStyleAttribute elementId animationState =
     case getElementAnimation elementId animationState of
         Just elementAnimation ->
@@ -210,8 +210,8 @@ animationStyleAttribute elementId animationState =
             Html.Attributes.style "animation" ""
 
 
-keyframesStyleNode : AnimationState -> Html msg
-keyframesStyleNode (AnimationState state) =
+keyframesStyleNode : AnimState -> Html msg
+keyframesStyleNode (AnimState state) =
     let
         allKeyframes =
             Dict.values state.elementAnimations
@@ -226,8 +226,8 @@ keyframesStyleNode (AnimationState state) =
         Html.node "style" [] [ Html.text allKeyframes ]
 
 
-keyframesStyleNodeFor : String -> AnimationState -> Html msg
-keyframesStyleNodeFor elementId (AnimationState state) =
+keyframesStyleNodeFor : String -> AnimState -> Html msg
+keyframesStyleNodeFor elementId (AnimState state) =
     case Dict.get elementId state.elementAnimations of
         Just elementAnimation ->
             if List.isEmpty elementAnimation.animationLayers then
@@ -246,13 +246,13 @@ keyframesStyleNodeFor elementId (AnimationState state) =
             Html.text ""
 
 
-getElementAnimation : String -> AnimationState -> Maybe ElementAnimation
-getElementAnimation elementId (AnimationState state) =
+getElementAnimation : String -> AnimState -> Maybe ElementAnimation
+getElementAnimation elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
 
 
-getElementKeyframes : String -> AnimationState -> Maybe String
-getElementKeyframes elementId (AnimationState state) =
+getElementKeyframes : String -> AnimState -> Maybe String
+getElementKeyframes elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.andThen
             (\elementAnimation ->
@@ -267,8 +267,8 @@ getElementKeyframes elementId (AnimationState state) =
             )
 
 
-getPosition : String -> AnimationState -> Maybe Position
-getPosition elementId (AnimationState state) =
+getPosition : String -> AnimState -> Maybe Position
+getPosition elementId (AnimState state) =
     let
         processedData =
             Builder.processAnimationData state.builder
@@ -293,8 +293,8 @@ getPosition elementId (AnimationState state) =
 {-| Get the starting position for an element's animation.
 Returns Nothing if the element has no position animation or no explicit start position.
 -}
-getStartPosition : String -> AnimationState -> Maybe Position
-getStartPosition elementId (AnimationState state) =
+getStartPosition : String -> AnimState -> Maybe Position
+getStartPosition elementId (AnimState state) =
     let
         processedData =
             Builder.processAnimationData state.builder
@@ -319,8 +319,8 @@ getStartPosition elementId (AnimationState state) =
 {-| Get both start and end positions for an element's animation.
 Returns Nothing if the element has no position animation.
 -}
-getPositionRange : String -> AnimationState -> Maybe { start : Maybe Position, end : Position }
-getPositionRange elementId (AnimationState state) =
+getPositionRange : String -> AnimState -> Maybe { start : Maybe Position, end : Position }
+getPositionRange elementId (AnimState state) =
     let
         processedData =
             Builder.processAnimationData state.builder
@@ -345,8 +345,8 @@ getPositionRange elementId (AnimationState state) =
 {-| Get the animation duration for a position animation in milliseconds.
 Returns Nothing if the element has no position animation.
 -}
-getPositionAnimationDuration : String -> AnimationState -> Maybe Int
-getPositionAnimationDuration elementId (AnimationState state) =
+getPositionAnimationDuration : String -> AnimState -> Maybe Int
+getPositionAnimationDuration elementId (AnimState state) =
     let
         processedData =
             Builder.processAnimationData state.builder
@@ -370,8 +370,8 @@ getPositionAnimationDuration elementId (AnimationState state) =
 
 {-| Check if any animations are currently running.
 -}
-isRunning : AnimationState -> Bool
-isRunning (AnimationState state) =
+isRunning : AnimState -> Bool
+isRunning (AnimState state) =
     state.isRunning
 
 
@@ -395,14 +395,14 @@ delay =
     Builder.delay
 
 
-htmlAttributes : String -> AnimationState -> List (Html.Attribute msg)
+htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
 htmlAttributes elementId animationResult =
     getElementStyles elementId animationResult
         |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
 
 
-getElementStyles : String -> AnimationState -> List ( String, String )
-getElementStyles elementId (AnimationState state) =
+getElementStyles : String -> AnimState -> List ( String, String )
+getElementStyles elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.map .styles
         |> Maybe.withDefault []

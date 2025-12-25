@@ -1,5 +1,5 @@
 module Anim.Engine.Scroll exposing
-    ( AnimationState, init, AnimBuilder, builder
+    ( AnimState, init, AnimBuilder, builder
     , animate, toCmd, toTask
     , onBothAxes, onXAxis, onYAxis
     , onBothAxesWithOffset, onXAxisWithOffset, onYAxisWithOffset
@@ -30,7 +30,7 @@ Elm architecture using subscriptions for frame-based animations.
 
 # Build
 
-@docs AnimationState, init, AnimBuilder, builder
+@docs AnimState, init, AnimBuilder, builder
 
 
 # Execute
@@ -131,8 +131,8 @@ type alias AnimBuilder =
 
 {-| State for managing subscription-based scroll animations.
 -}
-type alias AnimationState =
-    InternalScroll.AnimationState
+type alias AnimState =
+    InternalScroll.AnimState
 
 
 {-| Animation message type for scroll animations
@@ -154,12 +154,12 @@ type alias AnimationMsg =
         }
 
 -}
-init : AnimationState
+init : AnimState
 init =
     InternalScroll.init
 
 
-{-| Turn the AnimationState into an AnimBuilder.
+{-| Turn the AnimState into an AnimBuilder.
 
 Use this to start new scroll animations based on current state.
 
@@ -173,7 +173,7 @@ Use this to start new scroll animations based on current state.
             |> Scroll.animate
 
 -}
-builder : AnimationState -> AnimBuilder
+builder : AnimState -> AnimBuilder
 builder =
     InternalScroll.builder
 
@@ -191,7 +191,7 @@ builder =
     { model | scrollAnimations = scrollState }
 
 -}
-animate : AnimBuilder -> AnimationState
+animate : AnimBuilder -> AnimState
 animate =
     InternalScroll.animate
 
@@ -434,7 +434,7 @@ Add this to your application's subscriptions function:
             ]
 
 -}
-subscriptions : (AnimationMsg -> msg) -> AnimationState -> Sub msg
+subscriptions : (AnimationMsg -> msg) -> AnimState -> Sub msg
 subscriptions toMsg animationState =
     if InternalScroll.isAnimationRunning animationState then
         Browser.Events.onAnimationFrameDelta (InternalScroll.AnimationFrame >> toMsg)
@@ -463,7 +463,7 @@ Add this to your application's update function:
     -- ... other message handling
 
 -}
-update : AnimationMsg -> AnimationState -> AnimationState
+update : AnimationMsg -> AnimState -> AnimState
 update =
     InternalScroll.update
 
@@ -483,14 +483,14 @@ update =
             div [] []
 
 -}
-isAnimationRunning : AnimationState -> Bool
+isAnimationRunning : AnimState -> Bool
 isAnimationRunning =
     InternalScroll.isAnimationRunning
 
 
 {-| Get the duration of currently running scroll animations.
 -}
-getDuration : AnimationState -> Maybe Int
+getDuration : AnimState -> Maybe Int
 getDuration =
     InternalScroll.getDuration
 
@@ -501,28 +501,28 @@ getDuration =
 
 {-| Get current scroll position for a specific container.
 -}
-getScrollPosition : String -> AnimationState -> Maybe { x : Float, y : Float }
+getScrollPosition : String -> AnimState -> Maybe { x : Float, y : Float }
 getScrollPosition =
     InternalScroll.getScrollPosition
 
 
 {-| Get current scroll position as a tuple (x, y) for a specific container.
 -}
-getScrollPositionXY : String -> AnimationState -> Maybe ( Float, Float )
+getScrollPositionXY : String -> AnimState -> Maybe ( Float, Float )
 getScrollPositionXY =
     InternalScroll.getScrollPositionXY
 
 
 {-| Get current horizontal scroll position for a specific container.
 -}
-getScrollPositionX : String -> AnimationState -> Maybe Float
+getScrollPositionX : String -> AnimState -> Maybe Float
 getScrollPositionX =
     InternalScroll.getScrollPositionX
 
 
 {-| Get current vertical scroll position for a specific container.
 -}
-getScrollPositionY : String -> AnimationState -> Maybe Float
+getScrollPositionY : String -> AnimState -> Maybe Float
 getScrollPositionY =
     InternalScroll.getScrollPositionY
 
@@ -540,7 +540,7 @@ This is typically used to add scroll event listeners or styling to containers.
         [ -- content -- ]
 
 -}
-htmlAttributes : String -> AnimationState -> List (Html.Attribute msg)
+htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
 htmlAttributes =
     InternalScroll.htmlAttributes
 

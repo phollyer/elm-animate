@@ -47,7 +47,7 @@ main =
 
 
 type alias Model =
-    { animations : CSS.AnimationState }
+    { animations : CSS.AnimState }
 
 
 
@@ -65,7 +65,7 @@ init _ =
 -- UPDATE
 
 
-toColorBuilderWithDefaults : CSS.AnimationState -> Color.Builder
+toColorBuilderWithDefaults : CSS.AnimState -> Color.Builder
 toColorBuilderWithDefaults =
     CSS.builder
         -- Set default animation parameters

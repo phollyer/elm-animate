@@ -60,7 +60,7 @@ main =
 
 
 type alias Model =
-    { animations : CSS.AnimationState
+    { animations : CSS.AnimState
     }
 
 

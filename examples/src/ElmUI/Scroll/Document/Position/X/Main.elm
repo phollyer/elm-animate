@@ -36,7 +36,7 @@ main =
 
 type alias Model =
     { sectionCount : Int
-    , scrollAnimations : Scroll.AnimationState
+    , scrollAnimations : Scroll.AnimState
     }
 
 

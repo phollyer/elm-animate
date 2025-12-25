@@ -1,6 +1,6 @@
 module Anim.Internal.Sub exposing
     ( TargetId
-    , init, builder, animate, AnimationState, AnimationMsg(..)
+    , init, builder, animate, AnimState, AnimationMsg(..)
     , subscriptions, update
     , getPosition, getPositionXY, getPositionX, getPositionY
     , getCurrentStyles
@@ -19,7 +19,7 @@ onAnimationFrameDelta subscriptions for smooth, controlled animations.
 
 @docs TargetId
 
-@docs init, builder, animate, AnimationState, AnimationMsg
+@docs init, builder, animate, AnimState, AnimationMsg
 
 
 # Animation Management
@@ -118,8 +118,8 @@ framesToDuration stepCount =
 
 {-| State for managing subscription-based animations.
 -}
-type AnimationState
-    = AnimationState
+type AnimState
+    = AnimState
         { elementAnimations : Dict ElementId ElementAnimation
         , isRunning : Bool
         , builder : AnimBuilder
@@ -128,9 +128,9 @@ type AnimationState
 
 {-| Initialize empty animation builder.
 -}
-init : AnimationState
+init : AnimState
 init =
-    AnimationState
+    AnimState
         { elementAnimations = Dict.empty
         , isRunning = False
         , builder = Builder.init
@@ -142,7 +142,7 @@ type alias ElementId =
 
 
 type alias ElementAnimation =
-    { properties : List PropertyAnimationState
+    { properties : List PropertyAnimState
     , isComplete : Bool
     }
 
@@ -298,7 +298,7 @@ createSizeSteps startSize endSize frames easingFunction =
     List.map2 (\w h -> SizeAnimationValue (Size.fromTuple ( w, h ))) stepsWidth stepsHeight
 
 
-type alias PropertyAnimationState =
+type alias PropertyAnimState =
     { propertyType : String
     , animationSteps : List AnimationValue
     , currentStepIndex : Int
@@ -335,7 +335,7 @@ type alias TargetId =
     String
 
 
-{-| Turn the AnimationState into an AnimBuilder.
+{-| Turn the AnimState into an AnimBuilder.
 
 Use this to start new animations based on current state.
 
@@ -349,8 +349,8 @@ Use this to start new animations based on current state.
             |> Sub.animate
 
 -}
-builder : AnimationState -> AnimBuilder
-builder ((AnimationState state) as animationState) =
+builder : AnimState -> AnimBuilder
+builder ((AnimState state) as animationState) =
     Dict.foldl (setInitialValues animationState) state.builder state.elementAnimations
 
 
@@ -363,7 +363,7 @@ builder ((AnimationState state) as animationState) =
 -}
 
 
-setInitialValues : AnimationState -> String -> ElementAnimation -> AnimBuilder -> AnimBuilder
+setInitialValues : AnimState -> String -> ElementAnimation -> AnimBuilder -> AnimBuilder
 setInitialValues animationState elementId _ builderAcc =
     let
         funcList =
@@ -381,7 +381,7 @@ setInitialValues animationState elementId _ builderAcc =
         funcList
 
 
-mapCurrentValue : (String -> AnimationState -> maybeProp) -> (AnimBuilder -> maybeProp -> AnimBuilder) -> String -> AnimationState -> AnimBuilder -> AnimBuilder
+mapCurrentValue : (String -> AnimState -> maybeProp) -> (AnimBuilder -> maybeProp -> AnimBuilder) -> String -> AnimState -> AnimBuilder -> AnimBuilder
 mapCurrentValue getter setter elementId animationState animBuilder =
     getter elementId animationState
         |> setter animBuilder
@@ -611,7 +611,7 @@ extractFromProperty property acc =
     -- Use with subscriptions and update
 
 -}
-animate : AnimBuilder -> AnimationState
+animate : AnimBuilder -> AnimState
 animate builder_ =
     let
         processedData =
@@ -631,16 +631,16 @@ animate builder_ =
             }
 
         elementStates =
-            Dict.map (createElementAnimationState startValues) processedData.elements
+            Dict.map (createElementAnimState startValues) processedData.elements
     in
-    AnimationState
+    AnimState
         { elementAnimations = elementStates
         , isRunning = not (Dict.isEmpty elementStates)
         , builder = Builder.markDirty builder_
         }
 
 
-createElementAnimationState :
+createElementAnimState :
     { position : { x : Float, y : Float }
     , rotate : Float
     , scale : { x : Float, y : Float }
@@ -651,17 +651,17 @@ createElementAnimationState :
     -> String
     -> Builder.ProcessedElementConfig
     -> ElementAnimation
-createElementAnimationState startValues _ elementConfig =
+createElementAnimState startValues _ elementConfig =
     let
         properties =
-            List.filterMap (createPropertyAnimationState startValues) elementConfig.properties
+            List.filterMap (createPropertyAnimState startValues) elementConfig.properties
     in
     { properties = properties
     , isComplete = False
     }
 
 
-createPropertyAnimationState :
+createPropertyAnimState :
     { position : { x : Float, y : Float }
     , rotate : Float
     , scale : { x : Float, y : Float }
@@ -670,8 +670,8 @@ createPropertyAnimationState :
     , size : { width : Float, height : Float }
     }
     -> Builder.ProcessedPropertyConfig
-    -> Maybe PropertyAnimationState
-createPropertyAnimationState startValues property =
+    -> Maybe PropertyAnimState
+createPropertyAnimState startValues property =
     case property of
         Builder.ProcessedPositionConfig config ->
             let
@@ -928,8 +928,8 @@ delay =
 
 {-| Subscribe to animation frames when animations are running.
 -}
-subscriptions : AnimationState -> Sub AnimationMsg
-subscriptions (AnimationState state) =
+subscriptions : AnimState -> Sub AnimationMsg
+subscriptions (AnimState state) =
     if state.isRunning then
         Browser.Events.onAnimationFrameDelta AnimationFrame
 
@@ -943,8 +943,8 @@ subscriptions (AnimationState state) =
 
 {-| Update animation state with frame delta time.
 -}
-update : AnimationMsg -> AnimationState -> AnimationState
-update msg (AnimationState state) =
+update : AnimationMsg -> AnimState -> AnimState
+update msg (AnimState state) =
     case msg of
         AnimationFrame deltaMs ->
             let
@@ -954,7 +954,7 @@ update msg (AnimationState state) =
                 stillRunning =
                     Dict.values updatedElements |> List.any (not << .isComplete)
             in
-            AnimationState
+            AnimState
                 { elementAnimations = updatedElements
                 , isRunning = stillRunning
                 , builder = state.builder
@@ -976,7 +976,7 @@ updateElementAnimation deltaMs _ elementState =
     }
 
 
-updatePropertyAnimation : Float -> PropertyAnimationState -> PropertyAnimationState
+updatePropertyAnimation : Float -> PropertyAnimState -> PropertyAnimState
 updatePropertyAnimation deltaMs propertyState =
     if propertyState.isComplete then
         propertyState
@@ -1026,8 +1026,8 @@ updatePropertyAnimation deltaMs propertyState =
 
 {-| Get current position of an element being animated.
 -}
-getPosition : String -> AnimationState -> Maybe Position
-getPosition elementId (AnimationState state) =
+getPosition : String -> AnimState -> Maybe Position
+getPosition elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.andThen
             (\elementState ->
@@ -1052,7 +1052,7 @@ getPosition elementId (AnimationState state) =
 
 {-| Get current X and Y position of an element being animated.
 -}
-getPositionXY : String -> AnimationState -> Maybe ( Float, Float )
+getPositionXY : String -> AnimState -> Maybe ( Float, Float )
 getPositionXY elementId animationState =
     getPosition elementId animationState
         |> Maybe.map Position.toTuple
@@ -1060,7 +1060,7 @@ getPositionXY elementId animationState =
 
 {-| Get current X position of an element being animated.
 -}
-getPositionX : String -> AnimationState -> Maybe Float
+getPositionX : String -> AnimState -> Maybe Float
 getPositionX elementId animationState =
     getPosition elementId animationState
         |> Maybe.map (Position.toRecord >> .x)
@@ -1068,7 +1068,7 @@ getPositionX elementId animationState =
 
 {-| Get current Y position of an element being animated.
 -}
-getPositionY : String -> AnimationState -> Maybe Float
+getPositionY : String -> AnimState -> Maybe Float
 getPositionY elementId animationState =
     getPosition elementId animationState
         |> Maybe.map (Position.toRecord >> .y)
@@ -1080,8 +1080,8 @@ getPositionY elementId animationState =
 
 {-| Get current size of an element being animated.
 -}
-getSize : String -> AnimationState -> Maybe Size
-getSize elementId (AnimationState state) =
+getSize : String -> AnimState -> Maybe Size
+getSize elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.andThen
             (\elementState ->
@@ -1112,8 +1112,8 @@ getSize elementId (AnimationState state) =
 
 {-| Get current scale of an element being animated.
 -}
-getScale : String -> AnimationState -> Maybe Scale
-getScale elementId (AnimationState state) =
+getScale : String -> AnimState -> Maybe Scale
+getScale elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.andThen
             (\elementState ->
@@ -1143,8 +1143,8 @@ getScale elementId (AnimationState state) =
 
 {-| Get current rotation of an element being animated.
 -}
-getRotate : String -> AnimationState -> Maybe Rotate
-getRotate elementId (AnimationState state) =
+getRotate : String -> AnimState -> Maybe Rotate
+getRotate elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.andThen
             (\elementState ->
@@ -1174,8 +1174,8 @@ getRotate elementId (AnimationState state) =
 
 {-| Get current color of an element being animated.
 -}
-getColor : String -> AnimationState -> Maybe Color
-getColor elementId (AnimationState state) =
+getColor : String -> AnimState -> Maybe Color
+getColor elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.andThen
             (\elementState ->
@@ -1205,8 +1205,8 @@ getColor elementId (AnimationState state) =
 
 {-| Get current opacity of an element being animated.
 -}
-getOpacity : String -> AnimationState -> Maybe Opacity
-getOpacity elementId (AnimationState state) =
+getOpacity : String -> AnimState -> Maybe Opacity
+getOpacity elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.andThen
             (\elementState ->
@@ -1236,7 +1236,7 @@ getOpacity elementId (AnimationState state) =
 
 {-| Get current width and height of an element being animated.
 -}
-getSizeHW : String -> AnimationState -> Maybe ( Float, Float )
+getSizeHW : String -> AnimState -> Maybe ( Float, Float )
 getSizeHW elementId animationState =
     getSize elementId animationState
         |> Maybe.map Size.toTuple
@@ -1244,7 +1244,7 @@ getSizeHW elementId animationState =
 
 {-| Get current height of an element being animated.
 -}
-getSizeH : String -> AnimationState -> Maybe Float
+getSizeH : String -> AnimState -> Maybe Float
 getSizeH elementId animationState =
     getSize elementId animationState
         |> Maybe.map (Size.toTuple >> Tuple.second)
@@ -1252,7 +1252,7 @@ getSizeH elementId animationState =
 
 {-| Get current width of an element being animated.
 -}
-getSizeW : String -> AnimationState -> Maybe Float
+getSizeW : String -> AnimState -> Maybe Float
 getSizeW elementId animationState =
     getSize elementId animationState
         |> Maybe.map (Size.toTuple >> Tuple.first)
@@ -1261,8 +1261,8 @@ getSizeW elementId animationState =
 {-| Get duration of the first animation found for an element.
 Returns Nothing if the element has no animations.
 -}
-getDuration : String -> AnimationState -> Maybe Int
-getDuration elementId (AnimationState state) =
+getDuration : String -> AnimState -> Maybe Int
+getDuration elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.andThen
             (\elementAnimation ->
@@ -1283,8 +1283,8 @@ getDuration elementId (AnimationState state) =
 {-| Check if an animation is currently running for the given element.
 Returns True if the element has active animations, False otherwise.
 -}
-isAnimationRunning : String -> AnimationState -> Bool
-isAnimationRunning elementId (AnimationState state) =
+isAnimationRunning : String -> AnimState -> Bool
+isAnimationRunning elementId (AnimState state) =
     case Dict.get elementId state.elementAnimations of
         Just elementAnimation ->
             not elementAnimation.isComplete && List.any (not << .isComplete) elementAnimation.properties
@@ -1299,8 +1299,8 @@ isAnimationRunning elementId (AnimationState state) =
 
 {-| Get current animation values as CSS-compatible styles.
 -}
-getCurrentStyles : String -> AnimationState -> List ( String, String )
-getCurrentStyles elementId (AnimationState state) =
+getCurrentStyles : String -> AnimState -> List ( String, String )
+getCurrentStyles elementId (AnimState state) =
     case Dict.get elementId state.elementAnimations of
         Nothing ->
             []
@@ -1309,7 +1309,7 @@ getCurrentStyles elementId (AnimationState state) =
             combinePropertyStyles elementState.properties
 
 
-combinePropertyStyles : List PropertyAnimationState -> List ( String, String )
+combinePropertyStyles : List PropertyAnimState -> List ( String, String )
 combinePropertyStyles properties =
     let
         transformParts =
@@ -1331,7 +1331,7 @@ combinePropertyStyles properties =
     transformStyle ++ sizeStyles ++ nonTransformStyles
 
 
-getTransformPart : PropertyAnimationState -> Maybe String
+getTransformPart : PropertyAnimState -> Maybe String
 getTransformPart propertyState =
     let
         currentValue =
@@ -1365,7 +1365,7 @@ getTransformPart propertyState =
             Nothing
 
 
-getSizeStyles : PropertyAnimationState -> List ( String, String )
+getSizeStyles : PropertyAnimState -> List ( String, String )
 getSizeStyles propertyState =
     let
         currentValue =
@@ -1395,7 +1395,7 @@ getSizeStyles propertyState =
                 []
 
 
-getNonTransformStyle : PropertyAnimationState -> Maybe ( String, String )
+getNonTransformStyle : PropertyAnimState -> Maybe ( String, String )
 getNonTransformStyle propertyState =
     let
         currentValue =
@@ -1429,14 +1429,14 @@ getLastStep steps =
 -- HELPER FUNCTIONS
 
 
-htmlAttributes : String -> AnimationState -> List (Html.Attribute msg)
+htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
 htmlAttributes elementId animationResult =
     getElementStyles elementId animationResult
         |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
 
 
-getElementStyles : String -> AnimationState -> List ( String, String )
-getElementStyles elementId (AnimationState state) =
+getElementStyles : String -> AnimState -> List ( String, String )
+getElementStyles elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.map .properties
         |> Maybe.map combinePropertyStyles

@@ -48,7 +48,7 @@ main =
 
 
 type alias Model =
-    { animations : CSS.AnimationState }
+    { animations : CSS.AnimState }
 
 
 
@@ -71,7 +71,7 @@ elementId =
     "box"
 
 
-anim : CSS.AnimationState -> Rotate.Builder
+anim : CSS.AnimState -> Rotate.Builder
 anim animations =
     animations
         |> CSS.builder

@@ -57,7 +57,7 @@ main =
 
 
 type alias Model =
-    { animations : CSS.AnimationState
+    { animations : CSS.AnimState
     , isAnimating : Bool
     , eventLog : List EventLogEntry
     , eventCounter : Int
@@ -100,7 +100,7 @@ init _ =
 -- UPDATE
 
 
-anim : CSS.AnimationState -> Position.Builder
+anim : CSS.AnimState -> Position.Builder
 anim animations =
     animations
         |> CSS.builder

@@ -55,7 +55,7 @@ main =
 
 
 type alias Model =
-    { animations : CSS.AnimationState }
+    { animations : CSS.AnimState }
 
 
 
@@ -73,7 +73,7 @@ init _ =
 -- UPDATE
 
 
-toPositionBuilder : CSS.AnimationState -> Position.Builder
+toPositionBuilder : CSS.AnimState -> Position.Builder
 toPositionBuilder animations =
     animations
         |> CSS.builder

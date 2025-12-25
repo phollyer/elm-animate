@@ -57,7 +57,7 @@ main =
 
 
 type alias Model =
-    { animations : CSS.AnimationState }
+    { animations : CSS.AnimState }
 
 
 
@@ -80,7 +80,7 @@ elementId =
     "box"
 
 
-anim : CSS.AnimationState -> Position.Builder
+anim : CSS.AnimState -> Position.Builder
 anim animations =
     animations
         |> CSS.builder

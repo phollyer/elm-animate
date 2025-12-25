@@ -60,7 +60,7 @@ main =
 
 
 type alias Model =
-    { animations : Sub.AnimationState
+    { animations : Sub.AnimState
     }
 
 
