@@ -27,7 +27,6 @@ module Anim.Internal.CSS exposing
     , getState
     , handleEvent
     , htmlAttributes
-    , htmlAttributesWithEvents
     , init
     , isElementComplete
     , isElementRunning
@@ -107,6 +106,11 @@ type Event
     = AnimationStarted String
     | AnimationEnded String
     | AnimationCancelled String
+    | AnimationIteration String
+    | TransitionStarted String
+    | TransitionEnded String
+    | TransitionRun String
+    | TransitionCancelled String
 
 
 type AnimState
@@ -604,24 +608,34 @@ isElementComplete elementId (AnimState state) =
 
 {-| Handle animation lifecycle events to update element states.
 -}
-handleEvent : String -> String -> AnimState -> AnimState
-handleEvent eventType elementId (AnimState state) =
+handleEvent : Event -> AnimState -> AnimState
+handleEvent event (AnimState state) =
     let
-        newElementState =
-            case eventType of
-                "animationstart" ->
-                    Running
+        ( elementId, newElementState ) =
+            case event of
+                AnimationStarted id ->
+                    ( id, Running )
 
-                "animationend" ->
-                    Complete
+                AnimationEnded id ->
+                    ( id, Complete )
 
-                "animationcancel" ->
-                    Complete
+                AnimationCancelled id ->
+                    ( id, Complete )
 
-                _ ->
-                    -- Unknown event, don't change state
-                    Dict.get elementId state.elementStates
-                        |> Maybe.withDefault NotStarted
+                AnimationIteration id ->
+                    ( id, Running )
+
+                TransitionStarted id ->
+                    ( id, Running )
+
+                TransitionEnded id ->
+                    ( id, Complete )
+
+                TransitionRun id ->
+                    ( id, Running )
+
+                TransitionCancelled id ->
+                    ( id, Complete )
     in
     AnimState
         { state
@@ -654,24 +668,6 @@ htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
 htmlAttributes elementId animationResult =
     getElementStyles elementId animationResult
         |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
-
-
-{-| Get HTML attributes including automatic animation event handlers.
--}
-htmlAttributesWithEvents : String -> AnimState -> List (Html.Attribute Event)
-htmlAttributesWithEvents elementId animationResult =
-    let
-        styleAttrs =
-            getElementStyles elementId animationResult
-                |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
-
-        eventHandlers =
-            [ onAnimationStart (AnimationStarted elementId)
-            , onAnimationEnd (AnimationEnded elementId)
-            , onAnimationCancel (AnimationCancelled elementId)
-            ]
-    in
-    styleAttrs ++ eventHandlers
 
 
 getElementStyles : String -> AnimState -> List ( String, String )

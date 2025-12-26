@@ -1,16 +1,15 @@
 module Anim.Engine.CSS exposing
     ( AnimState, init, AnimBuilder, builder
-    , animate, animateOrder
-    , TransformOrder(..), defaultTransformOrder
-    , htmlAttributes
+    , animate, TransformOrder(..), animateOrder
     , keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
-    , animationStyleAttribute
+    , animationStyleAttribute, animationStyleAttributeWithEvents
+    , htmlAttributes, htmlAttributesWithEvents
+    , Event(..), handleEvent
+    , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
+    , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
     , duration, speed
     , easing
     , delay
-    , Event, handleEvent
-    , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
-    , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
     , anyRunning, isRunning, allComplete, isComplete
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
     , getStartOpacity, getEndOpacity, getCurrentOpacity
@@ -38,18 +37,13 @@ over how the CSS is integrated into your application.
 
 # Execute
 
-@docs animate, animateOrder
-
-
-# Transform Ordering
-
-@docs TransformOrder, defaultTransformOrder
+@docs animate, TransformOrder, animateOrder
 
 
 # View
 
 
-## Design Decisions (Keyframes vs Transforms)
+## Design Decisions
 
 **Choosing Between Keyframes and Transforms**
 
@@ -57,33 +51,73 @@ The choice between keyframes and transforms should be based on your animation re
 
 **Use Keyframes when you need:**
 
-  - Complex easing curves (bounce, elastic, back, etc.)
-  - Individual delays per property
+  - Complex animations
+  - Advanced easing curves (bounce, elastic, back, etc.)
   - Fine-grained control over animation timing
   - Better debugging visibility in DevTools
 
 **Use Transforms for:**
 
-  - Simple easing (ease, ease-in-out, cubic-bezier)
   - Basic A→B animations
+  - Simple easing (ease, ease-in-out, cubic-bezier)
   - Minimal setup (no style node required)
+
+
+## Keyframes
+
+For Keyframe animations, you would create your Keyframes string, add it to a `<style>` node in your DOM,
+then apply the animation style attribute directly to the element you want to animate.
+
+The following functions help with this process:
+
+@docs keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
+
+@docs animationStyleAttribute, animationStyleAttributeWithEvents
 
 
 ## CSS Transform Attributes
 
 For CSS transform animations, just apply the generated HTML attributes to your elements.
 
-@docs htmlAttributes
+@docs htmlAttributes, htmlAttributesWithEvents
 
 
-## Keyframes and Animation Styles
+# Event Handling
 
-For Keyframe animations, add the Keyframes `<style>` node to your DOM. Then apply the
-animation style attribute directly to the element you want to animate.
+CSS animations and transitions can trigger events when they start, end, or are cancelled. You have two options for handling
+these events in your application:
 
-@docs keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
+1.  **Automatic Event Handling:** Use the [htmlAttributesWithEvents](#htmlAttributesWithEvents) or [animationStyleAttributeWithEvents](#animationStyleAttributeWithEvents) functions to automatically add event handlers
+    to your elements. These handlers will generate [Event](#Event) messages that you can process in your update function.
 
-@docs animationStyleAttribute
+2.  **Manual Event Handling:** Manually add event handlers to your elements using the provided event handler functions:
+
+    [onAnimationStart](#onAnimationStart), [onAnimationEnd](#onAnimationEnd), [onAnimationIteration](#onAnimationIteration), [onAnimationCancel](#onAnimationCancel)
+
+    [onTransitionStart](#onTransitionStart), [onTransitionEnd](#onTransitionEnd), [onTransitionRun](#onTransitionRun), [onTransitionCancel](#onTransitionCancel)
+
+You should only use one of these approaches at a time. Mixing both can lead to unexpected behavior as they don't play well together.
+
+
+## Automatic Event Handling
+
+@docs Event, handleEvent
+
+
+## Manual Event Handling
+
+Animation events are different from transition events, so both types of events can be handled using the following functions:
+
+For CSS keyframe animations.
+
+@docs onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
+
+
+## Transition Events
+
+For CSS transitions (used in CSS transform animations).
+
+@docs onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
 
 
 # Global Settings
@@ -104,29 +138,6 @@ These settings will be used for all property animations unless overridden on a p
 ## Delay
 
 @docs delay
-
-
-# Event Handling
-
-CSS animations and transitions can trigger events when they start, end, or are cancelled.
-
-Animation events are different from transition events, so both types of events can be handled using the following functions:
-
-
-## Animation Events
-
-@docs Event, handleEvent
-
-For CSS keyframe animations.
-
-@docs onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
-
-
-## Transition Events
-
-For CSS transitions (used in CSS transform animations).
-
-@docs onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
 
 
 # Querying Animation State
@@ -178,12 +189,22 @@ import Anim.Internal.Properties.Size as Size
 import Anim.Timing.Easing as Easing exposing (Easing)
 import Browser exposing (UrlRequest(..))
 import Html
+import Html.Attributes
 
 
-{-| Transform property ordering for CSS generation.
+{-| Transform property ordering.
 
-Defines the order in which transform properties (position, rotate, scale)
-should appear in the final CSS transform string.
+The default (recommended) transform order is: Position → Rotate → Scale.
+
+[animate](#animate) uses this transform order which should
+be suitable for most use cases:
+
+  - Position sets the base location
+  - Rotation happens around that position
+  - Scale happens last to avoid affecting rotation radius
+
+Be aware that changing the transform order can lead to unexpected visual results,
+as the order of transforms affects how they are applied.
 
 -}
 type TransformOrder
@@ -193,28 +214,16 @@ type TransformOrder
 
 
 {-| Animation lifecycle events.
-
-These events are automatically generated by the CSS engine when animations
-start, end, or are cancelled. Users handle these events to keep animation
-state synchronized.
-
 -}
-type alias Event =
-    InternalCSS.Event
-
-
-{-| Default transform order: Position → Rotate → Scale.
-
-This is the recommended order for most use cases:
-
-  - Position sets the base location
-  - Rotation happens around that position
-  - Scale happens last to avoid affecting rotation radius
-
--}
-defaultTransformOrder : List TransformOrder
-defaultTransformOrder =
-    [ Position, Rotate, Scale ]
+type Event
+    = AnimationStarted String
+    | AnimationEnded String
+    | AnimationCancelled String
+    | AnimationIteration String
+    | TransitionStarted String
+    | TransitionEnded String
+    | TransitionRun String
+    | TransitionCancelled String
 
 
 {-| Optional State for managing animations.
@@ -225,12 +234,7 @@ defaultTransformOrder =
 
 This state keeps track of animations and their configurations.
 
-If you want animations that need to start from their previous end state, i.e. you only
-set the start state once and then keep updating the end state over time, or after user interactions,
-you should include this type in your model.
-
-If you only need to create fire-and-forget animations where you control both the start and end states,
-you don't need to add this type to your model.
+If you only need to create fire-and-forget animations you don't need to add this type to your model.
 
 -}
 type alias AnimState =
@@ -263,14 +267,8 @@ animate =
 
 {-| Apply animation configuration with custom transform ordering.
 
-This is an alternative to `animate` that allows you to specify the order
-in which transform properties should appear in the CSS.
-
-[animate](#animate) uses the transform order (Position → Rotate → Scale) which should
-be suitable for most use cases. Use `animateOrder` if you need a different order.
-
-Beware that changing the transform order can lead to unexpected visual results,
-as the order of transforms affects how they are applied by the browser.
+This is an alternative to [animate](#animate) that allows you to specify the order
+in which properties should be animated.
 
     -- Custom transform order: Scale → Rotate → Position
     newState =
@@ -343,9 +341,71 @@ builder =
     InternalCSS.builder
 
 
+{-| This is an alternative to [animationStyleAttribute](#animationStyleAttribute) that also adds
+event handlers for animation lifecycle events.
+
+
+### HTML Example
+
+    import Anim.Engine.CSS as CSS
+    import Html exposing (div, text)
+    import Html.Attributes exposing (id)
+
+    div
+        ([ id "my-element"
+        , ...
+        ]
+            ++ CSS.animationStyleAttributeWithEvents "my-element" AnimationEvent animationState
+        )
+        [ text "Animating element" ]
+
+For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/Element#htmlAttribute).
+
+
+### Elm UI Example
+
+    import Anim.Engine.CSS as CSS
+    import Element exposing (el, htmlAttribute, map, text)
+    import Html.Attributes exposing (id)
+
+    el
+        ([ htmlAttribute (id "my-element")
+         , ...
+         ]
+            ++ (List.map htmlAttribute <|
+                    CSS.animationStyleAttributeWithEvents "my-element" AnimationEvent animationState
+               )
+        )
+        (text "Animating element")
+
+-}
+animationStyleAttributeWithEvents : String -> (Event -> msg) -> AnimState -> List (Html.Attribute msg)
+animationStyleAttributeWithEvents elementId toMsg animationState =
+    let
+        eventHandlers =
+            [ onAnimationStart (AnimationStarted elementId)
+                |> Html.Attributes.map toMsg
+            , onAnimationEnd (AnimationEnded elementId)
+                |> Html.Attributes.map toMsg
+            , onAnimationCancel (AnimationCancelled elementId)
+                |> Html.Attributes.map toMsg
+            , onAnimationIteration (AnimationIteration elementId)
+                |> Html.Attributes.map toMsg
+            ]
+    in
+    InternalCSS.animationStyleAttribute elementId animationState :: eventHandlers
+
+
 {-| Generate the animation `<style>` attribute and apply it directly to the element you want to animate.
 
 This creates the `animation` CSS property value that tells the browser which keyframe animation to run on this element.
+
+
+### HTML Example
+
+    import Anim.Engine.CSS as CSS
+    import Html exposing (div, text)
+    import Html.Attributes exposing (id)
 
     div
         [ Html.Attributes.id "my-element"
@@ -353,7 +413,20 @@ This creates the `animation` CSS property value that tells the browser which key
         ]
         [ text "Animating element" ]
 
-This is equivalent to manually writing something like:
+
+### Elm UI Example
+
+    import Anim.Engine.CSS as CSS
+    import Element exposing (el, htmlAttribute, map, text)
+    import Html.Attributes exposing (id)
+
+    el
+        [ htmlAttribute (id "my-element")
+        , htmlAttribute (CSS.animationStyleAttribute "my-element" animationState)
+        ]
+        (text "Animating element")
+
+Using this function is equivalent to manually writing something like:
 
     Html.Attributes.style "animation" "animation-name 2000ms linear 0ms"
 
@@ -361,8 +434,13 @@ This is equivalent to manually writing something like:
 
 1.  You still need to include the keyframes in your DOM separately with
     [ keyframesStyleNode ](#keyframesStyleNode) or [ keyframesStyleNodeFor ](#keyframesStyleNodeFor).
-2.  The Easing function will always be "linear" for CSS keyframe animations, as the easing
+
+2.  The Easing function will always be "linear" for the CSS animation property. This is because the easing
     is baked into the keyframes themselves, so we need to transition between keyframe values linearly.
+    This is the only way to achieve:
+      - Accurate curves for advanced easing functions (like bounce, elastic, etc.)
+      - Independent easing per property within the same animation
+
 3.  The Delay is also baked into the keyframes, so it will always be 0 in the CSS animation property.
 
 -}
@@ -455,23 +533,48 @@ allComplete animState =
 
 Call this function from your update function when you receive CSS animation events:
 
+    type Msg
+        = CSSEvent CSS.Event
+        | ...
+
     update msg model =
         case msg of
             CSSEvent event ->
                 { model | animState = CSS.handleEvent event model.animState }
+
+    div
+        [ CSS.animationStyleAttributeWithEvents "element-id" CSSEvent model.animState
+        , ...
+        ]
+        [ ... ]
 
 -}
 handleEvent : Event -> AnimState -> AnimState
 handleEvent event animState =
     case event of
         AnimationStarted elementId ->
-            InternalCSS.handleEvent "animationstart" elementId animState
+            InternalCSS.handleEvent (InternalCSS.AnimationStarted elementId) animState
 
         AnimationEnded elementId ->
-            InternalCSS.handleEvent "animationend" elementId animState
+            InternalCSS.handleEvent (InternalCSS.AnimationEnded elementId) animState
 
         AnimationCancelled elementId ->
-            InternalCSS.handleEvent "animationcancel" elementId animState
+            InternalCSS.handleEvent (InternalCSS.AnimationCancelled elementId) animState
+
+        AnimationIteration elementId ->
+            InternalCSS.handleEvent (InternalCSS.AnimationIteration elementId) animState
+
+        TransitionStarted elementId ->
+            InternalCSS.handleEvent (InternalCSS.TransitionStarted elementId) animState
+
+        TransitionEnded elementId ->
+            InternalCSS.handleEvent (InternalCSS.TransitionEnded elementId) animState
+
+        TransitionRun elementId ->
+            InternalCSS.handleEvent (InternalCSS.TransitionRun elementId) animState
+
+        TransitionCancelled elementId ->
+            InternalCSS.handleEvent (InternalCSS.TransitionCancelled elementId) animState
 
 
 getCurrent : String -> Maybe a -> a -> a -> AnimState -> Maybe a
@@ -850,6 +953,7 @@ delay =
          , ...
          ]
             ++ CSS.htmlAttributes "my-element" animationState
+
         )
         [ text "Animating element" ]
 
@@ -859,20 +963,76 @@ For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-la
 ### Elm UI Example
 
     import Anim.Engine.CSS as CSS
-    import Element exposing (el, htmlAttribute, text)
+    import Element exposing (el, htmlAttribute, map, text)
 
     el
         ([ htmlAttribute (Html.Attributes.id "my-element")
          , ...
          ]
             ++ List.map htmlAttribute (CSS.htmlAttributes "my-element" animationState)
+
         )
         (text "Animating element")
 
 -}
-htmlAttributes : String -> AnimState -> List (Html.Attribute Event)
+htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
 htmlAttributes =
-    InternalCSS.htmlAttributesWithEvents
+    InternalCSS.htmlAttributes
+
+
+{-| This is an alternative to [htmlAttributes](#htmlAttributes) that also adds
+event handlers for animation lifecycle events.
+
+
+### HTML Example
+
+    import Anim.Engine.CSS as CSS
+    import Html exposing (div, text)
+    import Html.Attributes exposing (id)
+
+    div
+        ([ id "my-element"
+         , ...
+         ]
+            ++ CSS.htmlAttributesWithEvents "my-element" AnimationEvent animationState
+        )
+        [ text "Animating element" ]
+
+For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/Element#htmlAttribute).
+
+
+### Elm UI Example
+
+    import Anim.Engine.CSS as CSS
+    import Element exposing (el, htmlAttribute, map, text)
+    import Html.Attributes exposing (id)
+
+    el
+        ([ htmlAttribute (id "my-element")
+         , ...
+         ]
+            ++ (List.map htmlAttribute <|
+                    CSS.htmlAttributesWithEvents "my-element" AnimationEvent animationState
+               )
+        )
+        (text "Animating element")
+
+-}
+htmlAttributesWithEvents : String -> (Event -> msg) -> AnimState -> List (Html.Attribute msg)
+htmlAttributesWithEvents elementId msg animationState =
+    let
+        eventHandlers =
+            [ onTransitionStart (TransitionStarted elementId)
+                |> Html.Attributes.map msg
+            , onTransitionEnd (TransitionEnded elementId)
+                |> Html.Attributes.map msg
+            , onTransitionCancel (TransitionCancelled elementId)
+                |> Html.Attributes.map msg
+            , onTransitionRun (TransitionRun elementId)
+                |> Html.Attributes.map msg
+            ]
+    in
+    InternalCSS.htmlAttributes elementId animationState ++ eventHandlers
 
 
 
