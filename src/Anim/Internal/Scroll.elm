@@ -300,7 +300,6 @@ animate toMsg animBuilder =
 
                                                 Err _ ->
                                                     toMsg NoOp
-                                         -- Ignore errors
                                         )
                     )
     in
@@ -452,8 +451,8 @@ calculateDistance axis startX startY targetX targetY =
 
 {-| Update scroll animation state with animation frame.
 -}
-update : AnimationMsg -> AnimState -> ( AnimState, Cmd AnimationMsg )
-update msg (AnimState animData) =
+update : (AnimationMsg -> msg) -> AnimationMsg -> AnimState -> ( AnimState, Cmd msg )
+update toMsg msg (AnimState animData) =
     case msg of
         AnimationFrame deltaMs ->
             let
@@ -470,11 +469,11 @@ update msg (AnimState animData) =
                                         case updatedAnim.config.containerId of
                                             DocumentBody ->
                                                 Dom.setViewport updatedAnim.currentX updatedAnim.currentY
-                                                    |> Task.attempt (\_ -> NoOp)
+                                                    |> Task.attempt (\_ -> toMsg NoOp)
 
                                             ElementId containerId ->
                                                 Dom.setViewportOf containerId updatedAnim.currentX updatedAnim.currentY
-                                                    |> Task.attempt (\_ -> NoOp)
+                                                    |> Task.attempt (\_ -> toMsg NoOp)
 
                                     else
                                         Cmd.none

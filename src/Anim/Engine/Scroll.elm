@@ -1,6 +1,6 @@
 module Anim.Engine.Scroll exposing
     ( AnimState, init, AnimBuilder, builder
-    , animate, toCmd, toTask
+    , toCmd, toTask, animate
     , AnimationMsg, update, subscriptions
     , onBothAxes, onXAxis, onYAxis
     , onBothAxesWithOffset, onXAxisWithOffset, onYAxisWithOffset
@@ -16,12 +16,12 @@ module Anim.Engine.Scroll exposing
 
 {-| Smooth Document and Container scrolling.
 
-This module provides smooth scrolling animations using `subscriptions`, `Cmd`s, and `Task`s.
+This module provides smooth scrolling animations using `Cmd`s, `Task`s, and `subscriptions`.
 Choose the approach that best fits your application's architecture.
 
-  - **Cmd**: For simple, fire-and-forget scrolling where you don't need state management.
-  - **Tasks**: For scroll animations that require error handling and composition with other tasks.
-  - **Subscriptions**: For managing ongoing scroll animations with state tracking.
+  - **Cmd**: For fire-and-forget scrolling - this is the simplest to set up.
+  - **Tasks**: For scroll animations that require error handling and/or composition with other tasks.
+  - **Subscriptions**: For managing scroll animations with state tracking and mid-flight control - requires handling animation state updates.
 
 
 # Build
@@ -31,10 +31,13 @@ Choose the approach that best fits your application's architecture.
 
 # Execute
 
-@docs animate, toCmd, toTask
+@docs toCmd, toTask, animate
 
 
-# Manage
+# Update
+
+If using subscription-based scroll animations with the [animate](#animate) function,
+you need to handle updates to the animation state.
 
 @docs AnimationMsg, update, subscriptions
 
@@ -195,30 +198,19 @@ builder =
 
     type Msg
         = ScrollMsg Scroll.AnimationMsg
-        | ScrollToSection String
         | ...
 
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
-        case msg of
-            ScrollMsg scrollMsg ->
-                let
-                    ( newScrollState, scrollCmd ) =
-                        Scroll.update ScrollMsg scrollMsg model.scrollAnimations
-
-                in
-                ( { model | scrollAnimations = newScrollState }, scrollCmd )
-
-            ScrollToSection sectionId ->
-                let
-                    ( scrollState, scrollCmd ) =
-                        Scroll.init
-                            |> Scroll.builder
-                            |> Scroll.toElement "section-1"
-                            |> Scroll.speed 500
-                            |> Scroll.animate ScrollMsg
-                in
-                ( { model | scrollAnimations = scrollState }, scrollCmd )
+    let
+        ( scrollState, scrollCmd ) =
+            model.scrollAnimations
+                |> Scroll.builder
+                |> Scroll.toElement sectionId
+                |> Scroll.speed 500
+                |> Scroll.animate ScrollMsg
+    in
+    ( { model | scrollAnimations = scrollState }
+    , scrollCmd
+    )
 
 -}
 animate : (AnimationMsg -> msg) -> AnimBuilder -> ( AnimState, Cmd msg )
@@ -451,16 +443,13 @@ container containerId =
 -- ANIMATION MANAGEMENT
 
 
-{-| Subscription for scroll animations.
-
-Add this to your application's subscriptions function:
+{-| Subscribe for scroll animation updates.
 
     subscriptions : Model -> Sub Msg
     subscriptions model =
         Sub.batch
-            [ Scroll.subscriptions ScrollAnimationMsg model.scrollAnimations
-
-            -- ... other subscriptions
+            [ Scroll.subscriptions ScrollMsg model.scrollAnimations
+            , ...
             ]
 
 -}
@@ -473,29 +462,30 @@ subscriptions toMsg animationState =
         Sub.none
 
 
-{-| Update scroll animation state.
-
-Add this to your application's update function:
-
+{-| Update the scroll animation state.
 
     type Msg
-        = ScrollAnimationMsg Scroll.AnimationMsg
+        = ScrollMsg Scroll.AnimationMsg
 
     -- ... other messages
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
         case msg of
-            ScrollAnimationMsg scrollMsg ->
-                ( { model | scrollAnimations = Scroll.update scrollMsg model.scrollAnimations }
-                , Cmd.none
+            ScrollMsg scrollMsg ->
+                let
+                    ( newScrollState, scrollCmd ) =
+                        Scroll.update ScrollMsg scrollMsg model.scrollAnimations
+                in
+                ( { model | scrollAnimations = newScrollState }
+                , scrollCmd
                 )
 
-    -- ... other message handling
+            ...
 
 -}
-update : AnimationMsg -> AnimState -> ( AnimState, Cmd AnimationMsg )
-update animationMsg animState =
-    InternalScroll.update animationMsg animState
+update : (AnimationMsg -> msg) -> AnimationMsg -> AnimState -> ( AnimState, Cmd msg )
+update =
+    InternalScroll.update
 
 
 
@@ -566,10 +556,8 @@ The animation will run automatically without requiring subscriptions.
         scrollCmd =
             Scroll.init
                 |> Scroll.builder
-                |> Scroll.duration 1000
-                |> Scroll.speed 800
                 |> Scroll.toElement "target-element"
-                |> Scroll.document
+                |> Scroll.duration 1000
                 |> Scroll.toCmd ScrollCompleted
     in
     ( model, scrollCmd )
@@ -653,9 +641,8 @@ for cases where the scroll target cannot be found or accessed.
         scrollTask =
             Scroll.init
                 |> Scroll.builder
-                |> Scroll.duration 1000
                 |> Scroll.toElement "target-element"
-                |> Scroll.document
+                |> Scroll.duration 1000
                 |> Scroll.toTask
 
         handleResult result =
