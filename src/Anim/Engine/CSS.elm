@@ -1,9 +1,9 @@
 module Anim.Engine.CSS exposing
-    ( AnimState, init, AnimBuilder, builder
-    , animate, TransformOrder(..), animateOrder
+    ( htmlAttributes, htmlAttributesWithEvents
     , keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
     , animationStyleAttribute, animationStyleAttributeWithEvents
-    , htmlAttributes, htmlAttributesWithEvents
+    , AnimState, init, AnimBuilder, builder
+    , animate, TransformOrder(..), animateOrder
     , Event(..), handleEvent
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
@@ -23,31 +23,25 @@ module Anim.Engine.CSS exposing
 
 This Engine converts [AnimBuilder](#AnimBuilder) configurations to CSS animations which you can apply as either:
 
-1.  **Keyframe animations**, or,
-2.  **CSS [transform](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transforms) attributes**.
+1.  **CSS [transform](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transforms) attributes**, or,
+2.  **Keyframe animations**
 
 You decide how to apply the generated CSS to your elements in your view - giving you full control
 over how the CSS is integrated into your application.
 
 
-# Build
-
-@docs AnimState, init, AnimBuilder, builder
-
-
-# Execute
-
-@docs animate, TransformOrder, animateOrder
-
-
-# View
-
-
 ## Design Decisions
 
-**Choosing Between Keyframes and Transforms**
+**Choosing Between Transforms and Keyframes**
 
-The choice between keyframes and transforms should be based on your animation requirements:
+The choice between transforms and keyframes is the only decision you need to make when using this engine,
+creating animations with either approach is exactly the same using the [AnimBuilder](#AnimBuilder) API.
+
+**Use Transforms for:**
+
+  - Basic A→B animations
+  - Simple easing (ease, ease-in-out, cubic-bezier)
+  - Minimal setup (no style node required)
 
 **Use Keyframes when you need:**
 
@@ -56,14 +50,18 @@ The choice between keyframes and transforms should be based on your animation re
   - Fine-grained control over animation timing
   - Better debugging visibility in DevTools
 
-**Use Transforms for:**
 
-  - Basic A→B animations
-  - Simple easing (ease, ease-in-out, cubic-bezier)
-  - Minimal setup (no style node required)
+# View
 
 
-## Keyframes
+## CSS Transform Animations
+
+For CSS transform animations, you just need to apply the generated HTML attributes to your elements.
+
+@docs htmlAttributes, htmlAttributesWithEvents
+
+
+## Keyframe Animations
 
 For Keyframe animations, you would create your Keyframes string, add it to a `<style>` node in your DOM,
 then apply the animation style attribute directly to the element you want to animate.
@@ -75,11 +73,14 @@ The following functions help with this process:
 @docs animationStyleAttribute, animationStyleAttributeWithEvents
 
 
-## CSS Transform Attributes
+# Build
 
-For CSS transform animations, just apply the generated HTML attributes to your elements.
+@docs AnimState, init, AnimBuilder, builder
 
-@docs htmlAttributes, htmlAttributesWithEvents
+
+# Execute
+
+@docs animate, TransformOrder, animateOrder
 
 
 # Event Handling
@@ -108,14 +109,13 @@ You should only use one of these approaches at a time. Mixing both can lead to u
 
 Animation events are different from transition events, so both types of events can be handled using the following functions:
 
-For CSS keyframe animations.
+
+### Keyframe Animation Events
 
 @docs onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
 
 
-## Transition Events
-
-For CSS transitions (used in CSS transform animations).
+### Transform Animation Events
 
 @docs onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
 
@@ -133,6 +133,13 @@ These settings will be used for all property animations unless overridden on a p
 ## Easing
 
 @docs easing
+
+**Reminder:**
+
+  - **Keyframe Animations:** the easing is baked into the keyframes themselves, enabling complex easing
+    curves like bounce and elastic to be accurately represented,
+  - **Transform Animations:** complex easing curves like bounce and elastic have to be approximated by a `cubic-bezier` curve, meaning that
+    they **can not** be perfectly represented.
 
 
 ## Delay
@@ -216,14 +223,14 @@ type TransformOrder
 {-| Animation lifecycle events.
 -}
 type Event
-    = AnimationStarted String
-    | AnimationEnded String
-    | AnimationCancelled String
-    | AnimationIteration String
+    = KeyframeAnimationStarted String
+    | KeyframeAnimationEnded String
+    | KeyframeAnimationCancelled String
+    | KeyframeAnimationIteration String
     | TransitionStarted String
     | TransitionEnded String
-    | TransitionRun String
     | TransitionCancelled String
+    | TransitionRun String
 
 
 {-| Optional State for managing animations.
@@ -383,13 +390,13 @@ animationStyleAttributeWithEvents : String -> (Event -> msg) -> AnimState -> Lis
 animationStyleAttributeWithEvents elementId toMsg animationState =
     let
         eventHandlers =
-            [ onAnimationStart (AnimationStarted elementId)
+            [ onAnimationStart (KeyframeAnimationStarted elementId)
                 |> Html.Attributes.map toMsg
-            , onAnimationEnd (AnimationEnded elementId)
+            , onAnimationEnd (KeyframeAnimationEnded elementId)
                 |> Html.Attributes.map toMsg
-            , onAnimationCancel (AnimationCancelled elementId)
+            , onAnimationCancel (KeyframeAnimationCancelled elementId)
                 |> Html.Attributes.map toMsg
-            , onAnimationIteration (AnimationIteration elementId)
+            , onAnimationIteration (KeyframeAnimationIteration elementId)
                 |> Html.Attributes.map toMsg
             ]
     in
@@ -441,7 +448,7 @@ Using this function is equivalent to manually writing something like:
       - Accurate curves for advanced easing functions (like bounce, elastic, etc.)
       - Independent easing per property within the same animation
 
-3.  The Delay is also baked into the keyframes, so it will always be 0 in the CSS animation property.
+3.  The Delay is also baked into the keyframes in order to enable different delays per property, so it will always be 0 in the CSS animation property.
 
 -}
 animationStyleAttribute : String -> AnimState -> Html.Attribute msg
@@ -552,16 +559,16 @@ Call this function from your update function when you receive CSS animation even
 handleEvent : Event -> AnimState -> AnimState
 handleEvent event animState =
     case event of
-        AnimationStarted elementId ->
+        KeyframeAnimationStarted elementId ->
             InternalCSS.handleEvent (InternalCSS.AnimationStarted elementId) animState
 
-        AnimationEnded elementId ->
+        KeyframeAnimationEnded elementId ->
             InternalCSS.handleEvent (InternalCSS.AnimationEnded elementId) animState
 
-        AnimationCancelled elementId ->
+        KeyframeAnimationCancelled elementId ->
             InternalCSS.handleEvent (InternalCSS.AnimationCancelled elementId) animState
 
-        AnimationIteration elementId ->
+        KeyframeAnimationIteration elementId ->
             InternalCSS.handleEvent (InternalCSS.AnimationIteration elementId) animState
 
         TransitionStarted elementId ->
@@ -601,7 +608,9 @@ getCurrent elementId maybeStart end default animState =
 {-| Get the start position of an element being animated.
 
 Returns `Nothing` if the element has no position animation.
-If no explicit start position was set, returns (0, 0) as the default.
+
+Returns `(0, 0)` if no explicit start value was set, which is where the animation
+**will** start if no explicit start value is set.
 
 -}
 getStartPosition : String -> AnimState -> Maybe Position
@@ -631,11 +640,11 @@ getEndPosition elementId animState =
 
 {-| Get the current position of an element based on its animation state.
 
-Returns the start position if the animation has not started yet, or the end position
-if the animation is running or has completed.
+Returns `Nothing` if the element has no position animation.
 
-This is useful for determining where an element is positioned at any point in time,
-regardless of animation state.
+Returns the start position if the animation has not started yet.
+
+Returns the end position if the animation is running or has completed.
 
 -}
 getCurrentPosition : String -> AnimState -> Maybe Position
@@ -650,7 +659,9 @@ getCurrentPosition elementId animState =
 {-| Get the start scale of an element being animated.
 
 Returns `Nothing` if the element has no scale animation.
-If no explicit start scale was set, returns uniform scale of 1.0 as the default.
+
+Returns `uniform scale of 1.0` if no explicit start value was set, which is where the animation
+**will** start if no explicit start value is set.
 
 -}
 getStartScale : String -> AnimState -> Maybe Scale.Scale
@@ -680,8 +691,11 @@ getEndScale elementId animState =
 
 {-| Get the current scale of an element based on its animation state.
 
-Returns the start scale if the animation has not started yet, or the end scale
-if the animation is running or has completed.
+Returns `Nothing` if the element has no scale animation.
+
+Returns the start scale if the animation has not started yet.
+
+Returns the end scale if the animation is running or has completed.
 
 -}
 getCurrentScale : String -> AnimState -> Maybe Scale.Scale
@@ -696,7 +710,9 @@ getCurrentScale elementId animState =
 {-| Get the start rotation of an element being animated.
 
 Returns `Nothing` if the element has no rotate animation.
-If no explicit start rotation was set, returns 0.0 degrees as the default.
+
+Returns `0.0 degrees` if no explicit start value was set, which is where the animation
+**will** start if no explicit start value is set.
 
 -}
 getStartRotate : String -> AnimState -> Maybe Rotate.Rotate
@@ -726,8 +742,11 @@ getEndRotate elementId animState =
 
 {-| Get the current rotation of an element based on its animation state.
 
-Returns the start rotation if the animation has not started yet, or the end rotation
-if the animation is running or has completed.
+Returns `Nothing` if the element has no rotate animation.
+
+Returns the start rotation if the animation has not started yet.
+
+Returns the end rotation if the animation is running or has completed.
 
 -}
 getCurrentRotate : String -> AnimState -> Maybe Rotate.Rotate
@@ -742,7 +761,9 @@ getCurrentRotate elementId animState =
 {-| Get the start background color of an element being animated.
 
 Returns `Nothing` if the element has no background color animation.
-If no explicit start color was set, returns black (rgb 0 0 0) as the default.
+
+Returns `black (rgb 0 0 0)` if no explicit start value was set, which is where the animation
+**will** start if no explicit start value is set.
 
 -}
 getStartBackgroundColor : String -> AnimState -> Maybe BackgroundColor.Color
@@ -772,8 +793,11 @@ getEndBackgroundColor elementId animState =
 
 {-| Get the current background color of an element based on its animation state.
 
-Returns the start color if the animation has not started yet, or the end color
-if the animation is running or has completed.
+Returns `Nothing` if the element has no background color animation.
+
+Returns the start color if the animation has not started yet.
+
+Returns the end color if the animation is running or has completed.
 
 -}
 getCurrentBackgroundColor : String -> AnimState -> Maybe BackgroundColor.Color
@@ -788,7 +812,9 @@ getCurrentBackgroundColor elementId animState =
 {-| Get the start opacity of an element being animated.
 
 Returns `Nothing` if the element has no opacity animation.
-If no explicit start opacity was set, returns 1.0 (fully opaque) as the default.
+
+Returns `1.0 (fully opaque)` if no explicit start value was set, which is where the animation
+**will** start if no explicit start value is set.
 
 -}
 getStartOpacity : String -> AnimState -> Maybe Opacity.Opacity
@@ -818,8 +844,11 @@ getEndOpacity elementId animState =
 
 {-| Get the current opacity of an element based on its animation state.
 
-Returns the start opacity if the animation has not started yet, or the end opacity
-if the animation is running or has completed.
+Returns `Nothing` if the element has no opacity animation.
+
+Returns the start opacity if the animation has not started yet.
+
+Returns the end opacity if the animation is running or has completed.
 
 -}
 getCurrentOpacity : String -> AnimState -> Maybe Opacity.Opacity
@@ -834,7 +863,9 @@ getCurrentOpacity elementId animState =
 {-| Get the start size of an element being animated.
 
 Returns `Nothing` if the element has no size animation.
-If no explicit start size was set, returns (0, 0) as the default.
+
+Returns `(0, 0)` if no explicit start value was set, which is where the animation
+**will** start if no explicit start value is set.
 
 -}
 getStartSize : String -> AnimState -> Maybe Size.Size
@@ -864,8 +895,11 @@ getEndSize elementId animState =
 
 {-| Get the current size of an element based on its animation state.
 
-Returns the start size if the animation has not started yet, or the end size
-if the animation is running or has completed.
+Returns `Nothing` if the element has no size animation.
+
+Returns the start size if the animation has not started yet.
+
+Returns the end size if the animation is running or has completed.
 
 -}
 getCurrentSize : String -> AnimState -> Maybe Size.Size
@@ -908,7 +942,7 @@ speed =
     InternalCSS.speed
 
 
-{-| Set global easing function.
+{-| Set the global easing function.
 
     Css.init
         |> CSS.builder
@@ -916,16 +950,13 @@ speed =
         |> ... -- Property animations
         |> Css.animate
 
-**Note:** For CSS keyframe animations, the easing is baked into the keyframes themselves,
-for CSS transform animations, the easing function will be applied to the `transition-timing-function` property.
-
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
     Easing.mapInternal InternalCSS.easing
 
 
-{-| Set global delay in milliseconds.
+{-| Set the global delay in milliseconds.
 
     Css.init
         |> CSS.builder
@@ -990,6 +1021,10 @@ event handlers for animation lifecycle events.
     import Html exposing (div, text)
     import Html.Attributes exposing (id)
 
+    type Msg
+        = AnimationEvent CSS.Event
+        | ...
+
     div
         ([ id "my-element"
          , ...
@@ -1006,6 +1041,10 @@ For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-la
     import Anim.Engine.CSS as CSS
     import Element exposing (el, htmlAttribute, map, text)
     import Html.Attributes exposing (id)
+
+    type Msg
+        = AnimationEvent CSS.Event
+        | ...
 
     el
         ([ htmlAttribute (id "my-element")

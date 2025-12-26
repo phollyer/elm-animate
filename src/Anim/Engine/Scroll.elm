@@ -1,6 +1,6 @@
 module Anim.Engine.Scroll exposing
-    ( AnimState, init, AnimBuilder, builder
-    , toCmd, toTask, animate
+    ( toCmd, toTask, animate
+    , AnimState, init, AnimBuilder, builder
     , AnimationMsg, update, subscriptions
     , onBothAxes, onXAxis, onYAxis
     , onBothAxesWithOffset, onXAxisWithOffset, onYAxisWithOffset
@@ -24,14 +24,14 @@ Choose the approach that best fits your application's architecture.
   - **Subscriptions**: For managing scroll animations with state tracking and mid-flight control - requires handling animation state updates.
 
 
-# Build
-
-@docs AnimState, init, AnimBuilder, builder
-
-
 # Execute
 
 @docs toCmd, toTask, animate
+
+
+# Build
+
+@docs AnimState, init, AnimBuilder, builder
 
 
 # Update
