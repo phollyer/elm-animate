@@ -40,6 +40,7 @@ import Anim.Internal.Timing.Easing as Easing exposing (Easing(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
 import Dict exposing (Dict)
+import Task
 
 
 type alias AnimBuilder =
@@ -108,8 +109,8 @@ type AnimState
 -}
 type AnimationMsg
     = AnimationFrame Float
-    | DomElementReceived String (Result Dom.Error Dom.Element)
-    | ViewportReceived String (Result Dom.Error Dom.Viewport)
+    | DomQueriesCompleted String ScrollTarget AnimBuilder Dom.Viewport (Maybe Dom.Element)
+    | NoOp
 
 
 {-| Convert speed (pixels per second) to duration based on distance.
@@ -234,52 +235,105 @@ setContainer containerId animBuilder =
 
 {-| Create scroll animation from AnimBuilder.
 -}
-animate : AnimBuilder -> AnimState
-animate animBuilder =
+animate : (AnimationMsg -> msg) -> AnimBuilder -> ( AnimState, Cmd msg )
+animate toMsg animBuilder =
     let
-        animData =
-            { animations = Dict.empty
-            , nextId = 1
-            }
-
         scrollTargets =
             Builder.getScrollTargets animBuilder
 
-        newAnimations =
-            List.foldl
-                (\scrollTarget acc ->
-                    createScrollAnimation animBuilder scrollTarget
-                        |> Maybe.map (\anim -> Dict.insert (String.fromInt animData.nextId) anim acc)
-                        |> Maybe.withDefault acc
-                )
-                animData.animations
-                scrollTargets
+        initAnimState =
+            AnimState
+                { animations = Dict.empty
+                , nextId = 1
+                }
 
-        newNextId =
-            animData.nextId + List.length scrollTargets
+        -- Create DOM query commands for each scroll target
+        domQueries =
+            scrollTargets
+                |> List.indexedMap
+                    (\index scrollTarget ->
+                        let
+                            animId =
+                                String.fromInt (index + 1)
+
+                            containerId =
+                                ScrollTarget.getContainerId scrollTarget
+
+                            targetType =
+                                ScrollTarget.getTargetType scrollTarget
+                        in
+                        case targetType of
+                            ScrollTarget.Element elementId ->
+                                -- Query both viewport and target element
+                                Task.map2 Tuple.pair
+                                    (if containerId == "document" then
+                                        Dom.getViewport
+
+                                     else
+                                        Dom.getViewportOf containerId
+                                    )
+                                    (Dom.getElement elementId)
+                                    |> Task.attempt
+                                        (\result ->
+                                            case result of
+                                                Ok ( viewport, element ) ->
+                                                    toMsg (DomQueriesCompleted animId scrollTarget animBuilder viewport (Just element))
+
+                                                Err _ ->
+                                                    toMsg NoOp
+                                         -- Ignore errors
+                                        )
+
+                            _ ->
+                                -- For coordinates and other target types, just query viewport
+                                (if containerId == "document" then
+                                    Dom.getViewport
+
+                                 else
+                                    Dom.getViewportOf containerId
+                                )
+                                    |> Task.attempt
+                                        (\result ->
+                                            case result of
+                                                Ok viewport ->
+                                                    toMsg (DomQueriesCompleted animId scrollTarget animBuilder viewport Nothing)
+
+                                                Err _ ->
+                                                    toMsg NoOp
+                                         -- Ignore errors
+                                        )
+                    )
     in
-    AnimState
-        { animData
-            | animations = newAnimations
-            , nextId = newNextId
-        }
+    ( initAnimState, Cmd.batch domQueries )
 
 
-{-| Create a single scroll animation from builder and scroll target.
+{-| Create scroll animation from DOM query results.
 -}
-createScrollAnimation : AnimBuilder -> ScrollTarget -> Maybe ScrollAnimation
-createScrollAnimation animBuilder scrollTarget =
+createScrollAnimationFromDom : AnimBuilder -> ScrollTarget -> Dom.Viewport -> Dom.Element -> ScrollAnimation
+createScrollAnimationFromDom animBuilder scrollTarget viewport element =
     let
         config =
             createScrollAnimationConfig animBuilder scrollTarget
 
-        -- For now, we'll start with current scroll position as (0, 0)
-        -- In a real implementation, we'd query the DOM for current position
         startPosition =
-            { x = 0, y = 0 }
+            { x = viewport.viewport.x, y = viewport.viewport.y }
+
+        targetPosition =
+            case ScrollTarget.getTargetType scrollTarget of
+                ScrollTarget.Element _ ->
+                    -- Calculate target position based on element location
+                    { x = element.element.x - viewport.scene.width / 2 + element.element.width / 2
+                    , y = element.element.y - viewport.scene.height / 2 + element.element.height / 2
+                    }
+
+                ScrollTarget.Coordinates x y ->
+                    { x = x, y = y }
+
+                _ ->
+                    startPosition
 
         distance =
-            calculateDistance config.axis startPosition.x startPosition.y config.targetX config.targetY
+            calculateDistance config.axis startPosition.x startPosition.y targetPosition.x targetPosition.y
 
         actualDuration =
             case Builder.getTimeSpec animBuilder of
@@ -292,18 +346,60 @@ createScrollAnimation animBuilder scrollTarget =
         delayMs =
             toFloat (Builder.getDelay animBuilder |> Maybe.withDefault 0)
     in
-    Just
-        { config = config
-        , startX = startPosition.x
-        , startY = startPosition.y
-        , currentX = startPosition.x
-        , currentY = startPosition.y
-        , progress = 0.0
-        , durationMs = toFloat actualDuration
-        , elapsedMs = 0.0
-        , delayMs = delayMs
-        , delayComplete = delayMs == 0.0
-        }
+    { config = config
+    , startX = startPosition.x
+    , startY = startPosition.y
+    , currentX = startPosition.x
+    , currentY = startPosition.y
+    , progress = 0.0
+    , durationMs = toFloat actualDuration
+    , elapsedMs = 0.0
+    , delayMs = delayMs
+    , delayComplete = delayMs == 0.0
+    }
+
+
+{-| Create scroll animation from viewport only (for coordinate scrolling).
+-}
+createScrollAnimationFromViewport : AnimBuilder -> ScrollTarget -> Dom.Viewport -> ScrollAnimation
+createScrollAnimationFromViewport animBuilder scrollTarget viewport =
+    let
+        config =
+            createScrollAnimationConfig animBuilder scrollTarget
+
+        startPosition =
+            { x = viewport.viewport.x, y = viewport.viewport.y }
+
+        targetPosition =
+            { x = ScrollTarget.getTargetX scrollTarget
+            , y = ScrollTarget.getTargetY scrollTarget
+            }
+
+        distance =
+            calculateDistance config.axis startPosition.x startPosition.y targetPosition.x targetPosition.y
+
+        actualDuration =
+            case Builder.getTimeSpec animBuilder of
+                Duration ms ->
+                    ms
+
+                Speed pxPerSec ->
+                    speedToDuration pxPerSec distance
+
+        delayMs =
+            toFloat (Builder.getDelay animBuilder |> Maybe.withDefault 0)
+    in
+    { config = config
+    , startX = startPosition.x
+    , startY = startPosition.y
+    , currentX = startPosition.x
+    , currentY = startPosition.y
+    , progress = 0.0
+    , durationMs = toFloat actualDuration
+    , elapsedMs = 0.0
+    , delayMs = delayMs
+    , delayComplete = delayMs == 0.0
+    }
 
 
 {-| Create scroll animation configuration from builder and target.
@@ -356,64 +452,65 @@ calculateDistance axis startX startY targetX targetY =
 
 {-| Update scroll animation state with animation frame.
 -}
-update : AnimationMsg -> AnimState -> AnimState
-update msg (AnimState animData) =
+update : (AnimationMsg -> msg) -> AnimationMsg -> AnimState -> ( AnimState, Cmd msg )
+update toMsg msg (AnimState animData) =
     case msg of
         AnimationFrame deltaMs ->
             let
-                updatedAnimations =
-                    Dict.map (\_ -> updateScrollAnimation deltaMs) animData.animations
+                ( updatedAnimations, scrollCommands ) =
+                    Dict.foldl
+                        (\animId anim ( accAnims, accCmds ) ->
+                            let
+                                updatedAnim =
+                                    updateScrollAnimation deltaMs anim
 
-                -- Remove completed animations
-                activeAnimations =
-                    Dict.filter (\_ anim -> anim.progress < 1.0) updatedAnimations
-            in
-            AnimState { animData | animations = activeAnimations }
+                                scrollCmd =
+                                    if updatedAnim.progress < 1.0 then
+                                        -- Perform scroll operation during animation
+                                        case updatedAnim.config.containerId of
+                                            DocumentBody ->
+                                                Dom.setViewport updatedAnim.currentX updatedAnim.currentY
+                                                    |> Task.attempt (\_ -> toMsg NoOp)
 
-        DomElementReceived animId (Ok element) ->
-            let
-                updatedAnimations =
-                    Dict.update animId
-                        (Maybe.map
-                            (\anim ->
-                                { anim
-                                    | startX = element.element.x
-                                    , startY = element.element.y
-                                    , currentX = element.element.x
-                                    , currentY = element.element.y
-                                }
-                            )
+                                            ElementId containerId ->
+                                                Dom.setViewportOf containerId updatedAnim.currentX updatedAnim.currentY
+                                                    |> Task.attempt (\_ -> toMsg NoOp)
+
+                                    else
+                                        Cmd.none
+                            in
+                            if updatedAnim.progress < 1.0 then
+                                ( Dict.insert animId updatedAnim accAnims, scrollCmd :: accCmds )
+
+                            else
+                                ( accAnims, accCmds )
                         )
+                        ( Dict.empty, [] )
                         animData.animations
             in
-            AnimState { animData | animations = updatedAnimations }
+            ( AnimState { animData | animations = updatedAnimations }
+            , Cmd.batch scrollCommands
+            )
 
-        DomElementReceived animId (Err _) ->
-            -- Handle DOM error (remove failed animation)
-            AnimState { animData | animations = Dict.remove animId animData.animations }
-
-        ViewportReceived animId (Ok viewport) ->
-            -- Update animation with actual viewport scroll position
+        DomQueriesCompleted animId scrollTarget animBuilder viewport maybeElement ->
             let
-                updatedAnimations =
-                    Dict.update animId
-                        (Maybe.map
-                            (\anim ->
-                                { anim
-                                    | startX = viewport.viewport.x
-                                    , startY = viewport.viewport.y
-                                    , currentX = viewport.viewport.x
-                                    , currentY = viewport.viewport.y
-                                }
-                            )
-                        )
-                        animData.animations
-            in
-            AnimState { animData | animations = updatedAnimations }
+                animation =
+                    case maybeElement of
+                        Just element ->
+                            createScrollAnimationFromDom animBuilder scrollTarget viewport element
 
-        ViewportReceived animId (Err _) ->
-            -- Handle viewport error (remove failed animation)
-            AnimState { animData | animations = Dict.remove animId animData.animations }
+                        Nothing ->
+                            createScrollAnimationFromViewport animBuilder scrollTarget viewport
+
+                updatedAnimations =
+                    Dict.insert animId animation animData.animations
+            in
+            ( AnimState { animData | animations = updatedAnimations }
+            , Cmd.none
+            )
+
+        NoOp ->
+            ( AnimState animData, Cmd.none )
 
 
 {-| Update a single scroll animation.

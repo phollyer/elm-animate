@@ -16,14 +16,12 @@ module Anim.Engine.Scroll exposing
 
 {-| Smooth Document and Container scrolling.
 
-This module provides smooth scrolling animations using subscriptions for frame-based animations.
+This module provides smooth scrolling animations using `subscriptions`, `Cmd`s, and `Task`s.
+Choose the approach that best fits your application's architecture.
 
-**Use this module when you need:**
-
-  - Single or multiple simultaneous scroll animations
-  - Accurate control over scroll timing and easing
-  - State management and tracking of scroll progress
-  - Ability to cancel or modify scroll animations mid-flight
+  - **Cmd**: For simple, fire-and-forget scrolling where you don't need state management.
+  - **Tasks**: For scroll animations that require error handling and composition with other tasks.
+  - **Subscriptions**: For managing ongoing scroll animations with state tracking.
 
 
 # Build
@@ -122,6 +120,13 @@ type alias AnimBuilder =
 
 
 {-| State for managing subscription-based scroll animations.
+
+    import Anim.Engine.Scroll as Scroll
+
+    { model | scrollAnimations : Scroll.AnimState }
+
+You don't need to include this in your model if you only use `Cmd` or `Task` based scrolling.
+
 -}
 type alias AnimState =
     InternalScroll.AnimState
@@ -139,11 +144,20 @@ type alias AnimationMsg =
 
 {-| Initialize empty scroll animation state.
 
+    -- For subscription-based scroll animations
     init : Model
     init =
         { scrollAnimations = Scroll.init
         , ...
         }
+
+    -- For fire-and-forget Cmd or Task based scrolling
+    scrollCmd =
+        Scroll.init
+            |> Scroll.builder
+            |> Scroll.toElement "target-element"
+            |> Scroll.speed 500
+            |> Scroll.toCmd ScrollCompleted
 
 -}
 init : AnimState
@@ -153,10 +167,17 @@ init =
 
 {-| Turn the AnimState into an AnimBuilder.
 
-Use this to start new scroll animations based on current state.
+Use this to start new scroll animations.
 
-    -- Helpers to set axis on a ScrollTarget
     -- Start a new scroll animation based on current state
+    newAnimations =
+        model.scrollAnimations
+            |> Scroll.builder
+            |> Scroll.toElement "section-1"
+            |> Scroll.speed 500
+            |> Scroll.animate
+
+    -- Start a new fire-and-forget scroll animation
     newAnimations =
         Scroll.init
             |> Scroll.builder
@@ -170,20 +191,37 @@ builder =
     InternalScroll.builder
 
 
-{-| Create animation state from AnimBuilder.
+{-| Generate scroll animation state and command from the builder.
 
-    let
-        scrollState =
-            Scroll.init
-                |> Scroll.builder
-                |> Scroll.toElement "section-1"
-                |> Scroll.speed 500
-                |> Scroll.animate
-    in
-    { model | scrollAnimations = scrollState }
+    type Msg
+        = ScrollMsg Scroll.AnimationMsg
+        | ScrollToSection String
+        | ...
+
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            ScrollMsg scrollMsg ->
+                let
+                    ( newScrollState, scrollCmd ) =
+                        Scroll.update ScrollMsg scrollMsg model.scrollAnimations
+
+                in
+                ( { model | scrollAnimations = newScrollState }, scrollCmd )
+
+            ScrollToSection sectionId ->
+                let
+                    ( scrollState, scrollCmd ) =
+                        Scroll.init
+                            |> Scroll.builder
+                            |> Scroll.toElement "section-1"
+                            |> Scroll.speed 500
+                            |> Scroll.animate ScrollMsg
+                in
+                ( { model | scrollAnimations = scrollState }, scrollCmd )
 
 -}
-animate : AnimBuilder -> AnimState
+animate : (AnimationMsg -> msg) -> AnimBuilder -> ( AnimState, Cmd msg )
 animate =
     InternalScroll.animate
 
@@ -455,9 +493,9 @@ Add this to your application's update function:
     -- ... other message handling
 
 -}
-update : AnimationMsg -> AnimState -> AnimState
-update =
-    InternalScroll.update
+update : (AnimationMsg -> msg) -> AnimationMsg -> AnimState -> ( AnimState, Cmd msg )
+update toMsg animationMsg animState =
+    InternalScroll.update toMsg animationMsg animState
 
 
 
