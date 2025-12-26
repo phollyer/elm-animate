@@ -1,6 +1,7 @@
 module Anim.Engine.Scroll exposing
     ( AnimState, init, AnimBuilder, builder
     , animate, toCmd, toTask
+    , AnimationMsg, update, subscriptions
     , onBothAxes, onXAxis, onYAxis
     , onBothAxesWithOffset, onXAxisWithOffset, onYAxisWithOffset
     , duration, speed
@@ -9,22 +10,19 @@ module Anim.Engine.Scroll exposing
     , toElement, toTop, toBottom, toCenter
     , toXY, toX, toY, toCoordinates, toPercentage
     , document, container
-    , subscriptions, update, AnimationMsg
     , isAnimationRunning, getDuration
     , getScrollPosition, getScrollPositionXY, getScrollPositionX, getScrollPositionY
-    , htmlAttributes
     )
 
-{-| Subscription-based scroll animation system for Anim.
+{-| Smooth Document and Container scrolling.
 
-This module provides smooth scrolling animations that integrate with the standard
-Elm architecture using subscriptions for frame-based animations.
+This module provides smooth scrolling animations using subscriptions for frame-based animations.
 
 **Use this module when you need:**
 
-  - Multiple simultaneous scroll animations
+  - Single or multiple simultaneous scroll animations
+  - Accurate control over scroll timing and easing
   - State management and tracking of scroll progress
-  - Integration with standard Elm subscription architecture
   - Ability to cancel or modify scroll animations mid-flight
 
 
@@ -36,6 +34,11 @@ Elm architecture using subscriptions for frame-based animations.
 # Execute
 
 @docs animate, toCmd, toTask
+
+
+# Manage
+
+@docs AnimationMsg, update, subscriptions
 
 
 # Axis Selection
@@ -86,11 +89,6 @@ These settings will be used for all scroll animations unless overridden on a per
 @docs document, container
 
 
-# Animation Management
-
-@docs subscriptions, update, AnimationMsg
-
-
 # Querying Animation State
 
 @docs isAnimationRunning, getDuration
@@ -99,11 +97,6 @@ These settings will be used for all scroll animations unless overridden on a per
 # Querying Scroll Position
 
 @docs getScrollPosition, getScrollPositionXY, getScrollPositionX, getScrollPositionY
-
-
-# CSS Generation
-
-@docs htmlAttributes
 
 -}
 
@@ -119,7 +112,6 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 import Browser.Dom as Dom
 import Browser.Events
 import Ease
-import Html
 import Task exposing (Task)
 
 
@@ -525,24 +517,6 @@ getScrollPositionX =
 getScrollPositionY : String -> AnimState -> Maybe Float
 getScrollPositionY =
     InternalScroll.getScrollPositionY
-
-
-
--- CSS GENERATION
-
-
-{-| Generate HTML attributes for scroll containers.
-
-This is typically used to add scroll event listeners or styling to containers.
-
-    div
-        (Scroll.htmlAttributes "main-container" model.scrollAnimations)
-        [ -- content -- ]
-
--}
-htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
-htmlAttributes =
-    InternalScroll.htmlAttributes
 
 
 {-| Execute a scroll animation as a command.

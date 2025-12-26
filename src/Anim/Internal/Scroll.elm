@@ -16,7 +16,6 @@ module Anim.Internal.Scroll exposing
     , getScrollPositionXY
     , getScrollPositionY
     , getScrollTargets
-    , htmlAttributes
     , init
     , isAnimationRunning
     , setAxis
@@ -41,8 +40,6 @@ import Anim.Internal.Timing.Easing as Easing exposing (Easing(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
 import Dict exposing (Dict)
-import Html
-import Html.Attributes
 
 
 type alias AnimBuilder =
@@ -544,24 +541,7 @@ containerIdMatches id containerId =
 
 
 
--- CSS GENERATION
-
-
-{-| Generate HTML attributes for scroll containers.
--}
-htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
-htmlAttributes containerId animState =
-    case getScrollPosition containerId animState of
-        Just position ->
-            -- Add data attributes for current scroll position
-            [ Html.Attributes.attribute "data-scroll-x" (String.fromFloat position.x)
-            , Html.Attributes.attribute "data-scroll-y" (String.fromFloat position.y)
-            , Html.Attributes.attribute "data-scrolling" "true"
-            ]
-
-        Nothing ->
-            [ Html.Attributes.attribute "data-scrolling" "false"
-            ]
+-- HELPER FUNCTIONS
 
 
 {-| Attach data attributes to your scrollable container elements:
