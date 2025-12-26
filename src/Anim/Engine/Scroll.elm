@@ -493,9 +493,9 @@ Add this to your application's update function:
     -- ... other message handling
 
 -}
-update : (AnimationMsg -> msg) -> AnimationMsg -> AnimState -> ( AnimState, Cmd msg )
-update toMsg animationMsg animState =
-    InternalScroll.update toMsg animationMsg animState
+update : AnimationMsg -> AnimState -> ( AnimState, Cmd AnimationMsg )
+update animationMsg animState =
+    InternalScroll.update animationMsg animState
 
 
 
