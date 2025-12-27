@@ -51,9 +51,6 @@ creating animations with either approach is exactly the same using the [AnimBuil
   - Better debugging visibility in DevTools
 
 
-# View
-
-
 ## CSS Transform Animations
 
 For CSS transform animations, you just need to apply the generated HTML attributes to your elements.
@@ -489,7 +486,7 @@ keyframesStyleNodeFor =
     InternalCSS.keyframesStyleNodeFor
 
 
-{-| Get the raw generated CSS keyframes string that can be inserted into a `<style>` tag.
+{-| Get the raw generated CSS keyframes string that can be inserted into a `<style>` node.
 
 However, you probably want to use [ keyframesStyleNodeFor ](#keyframesStyleNodeFor) instead, which
 handles creating the full `<style>` node for you.
@@ -550,9 +547,7 @@ Call this function from your update function when you receive CSS animation even
                 { model | animState = CSS.handleEvent event model.animState }
 
     div
-        [ CSS.animationStyleAttributeWithEvents "element-id" CSSEvent model.animState
-        , ...
-        ]
+        ([ ... ] ++ CSS.htmlAttributesWithEvents "element" CSSEvent model.animState)
         [ ... ]
 
 -}
@@ -660,7 +655,7 @@ getCurrentPosition elementId animState =
 
 Returns `Nothing` if the element has no scale animation.
 
-Returns `uniform scale of 1.0` if no explicit start value was set, which is where the animation
+Returns `1.0` if no explicit start value was set, which is where the animation
 **will** start if no explicit start value is set.
 
 -}

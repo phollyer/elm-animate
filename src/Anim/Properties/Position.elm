@@ -1,9 +1,8 @@
 module Anim.Properties.Position exposing
-    ( Position, Builder, for, build
+    ( Builder, for, build
     , fromXY, fromX, fromY
     , toXY, toX, toY
     , speed, duration, easing, delay
-    , asRecord
     )
 
 {-| Position animation functions.
@@ -22,7 +21,7 @@ Use these functions to configure position animations in the builder chain:
 
 # Build
 
-@docs Position, Builder, for, build
+@docs Builder, for, build
 
 
 # Configure
@@ -46,11 +45,6 @@ On subsequent animations, it will start from the last known position, so you onl
 
 @docs speed, duration, easing, delay
 
-
-## Convert Position
-
-@docs asRecord
-
 -}
 
 import Anim.Internal.Builder exposing (AnimBuilder)
@@ -67,12 +61,6 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 -}
 type alias Builder =
     PB.PositionBuilder
-
-
-{-| Type alias for the internal `Position` type.
--}
-type alias Position =
-    P.Position
 
 
 {-| Start configuring a position animation for a specific element.
@@ -244,18 +232,3 @@ easing =
 delay : Int -> Builder -> Builder
 delay delay_ =
     PB.delay delay_
-
-
-{-| Convert a `Position` to a record with `x` and `y` fields.
-
-    let
-        pos =
-            Position.fromXY 150 250
-    in
-    Position.asRecord pos
-    -- Result: { x = 150, y = 250 }
-
--}
-asRecord : Position -> { x : Float, y : Float }
-asRecord pos =
-    P.toRecord pos

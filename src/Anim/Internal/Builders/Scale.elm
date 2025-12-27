@@ -22,7 +22,6 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
 
-{- Scale CONFIGURATION BUILDER -}
 {- Usage:
 
    Anim.init

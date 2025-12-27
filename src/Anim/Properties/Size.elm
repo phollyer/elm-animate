@@ -1,9 +1,8 @@
 module Anim.Properties.Size exposing
-    ( Size, Builder, for, build
+    ( Builder, for, build
     , fromHW, fromH, fromW, fromTuple
     , toHW, toH, toW
     , speed, duration, easing, delay
-    , asRecord, toTuple
     )
 
 {-| Size animation functions.
@@ -22,7 +21,7 @@ Use these functions to configure size animations in the builder chain:
 
 # Build
 
-@docs Size, Builder, for, build
+@docs Builder, for, build
 
 
 # Configure
@@ -46,23 +45,11 @@ On subsequent animations, it will start from the last known size, so you only ne
 
 @docs speed, duration, easing, delay
 
-
-## Convert Size
-
-@docs asRecord, toTuple
-
 -}
 
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Size as SB
-import Anim.Internal.Properties.Size as Internal
 import Anim.Timing.Easing as Easing exposing (Easing)
-
-
-{-| Type representing a size with width and height dimensions.
--}
-type alias Size =
-    Internal.Size
 
 
 {-| Type alias for the internal `SizeBuilder`.
@@ -116,13 +103,6 @@ fromHW =
 fromTuple : ( Float, Float ) -> Builder -> Builder
 fromTuple ( width, height ) =
     SB.fromHW width height
-
-
-{-| Convert a Size to a tuple of ( width, height ).
--}
-toTuple : Size -> ( Float, Float )
-toTuple =
-    Internal.toTuple
 
 
 {-| Set the starting height for the current element, keeping the current width.
@@ -213,21 +193,3 @@ easing =
 delay : Int -> Builder -> Builder
 delay =
     SB.delay
-
-
-{-| Convert a Size to a record for external use.
-
-    -- This would work in the context of a builder pattern:
-    -- mySize |> Size.asRecord
-    -- --> { width = 100, height = 50 }
-
-
-
--}
-asRecord : Size -> { width : Float, height : Float }
-asRecord size =
-    let
-        ( width, height ) =
-            Internal.toTuple size
-    in
-    { width = width, height = height }
