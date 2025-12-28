@@ -1012,8 +1012,13 @@ This function generates the necessary CSS perspective attributes for container e
 to properly display 3D transforms. Apply these attributes to the parent containers
 of animated elements.
 
+**Important:** You must provide the `id` attribute yourself - this function only returns
+the perspective-related CSS properties.
+
     div
-        (CSS.containerStyles "my-container" animationState)
+        ([ id "my-container" ]
+            ++ CSS.containerStyles "my-container" animationState
+        )
         [ div
             [ id "animated-element" ]
             [ text "3D animated content" ]

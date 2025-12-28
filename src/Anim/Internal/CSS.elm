@@ -713,8 +713,7 @@ getContainerPerspectiveStyles targetContainerId (AnimState state) =
     in
     case perspectiveValue of
         Just value ->
-            [ Html.Attributes.id targetContainerId
-            , Html.Attributes.style "perspective" (String.fromFloat value ++ "px")
+            [ Html.Attributes.style "perspective" (String.fromFloat value ++ "px")
             , Html.Attributes.style "transform-style" "preserve-3d"
             ]
 

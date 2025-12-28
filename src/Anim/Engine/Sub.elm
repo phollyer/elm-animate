@@ -283,8 +283,13 @@ perspective =
 This function generates the necessary CSS perspective attributes for container elements
 that will contain 3D-transformed children. Specify which container you want attributes for.
 
+**Important:** You must provide the `id` attribute yourself - this function only returns
+the perspective-related CSS properties.
+
     div
-        (Sub.containerStyles "my-container" animState)
+        ([ id "my-container" ]
+            ++ Sub.containerStyles "my-container" animState
+        )
         [ div
             [ id "animated-element" ]
             [ text "3D animated content" ]
@@ -356,10 +361,15 @@ extractPerspective property =
 
 {-| Generate HTML attributes for a specific container with a given perspective value.
 
-This is useful when you want to manually specify the perspective value:
+This is useful when you want to manually specify the perspective value.
+
+**Important:** You must provide the `id` attribute yourself - this function only returns
+the perspective-related CSS properties.
 
     div
-        (Sub.containerStylesFor "my-container" 1000)
+        ([ id "my-container" ]
+            ++ Sub.containerStylesFor "my-container" 1000
+        )
         [ div
             [ id "animated-element" ]
             [ text "3D animated content" ]
@@ -368,8 +378,7 @@ This is useful when you want to manually specify the perspective value:
 -}
 containerStylesFor : String -> Float -> List (Html.Attribute msg)
 containerStylesFor containerId perspectiveValue =
-    [ Html.Attributes.id containerId
-    , Html.Attributes.style "perspective" (String.fromFloat perspectiveValue ++ "px")
+    [ Html.Attributes.style "perspective" (String.fromFloat perspectiveValue ++ "px")
     , Html.Attributes.style "transform-style" "preserve-3d"
     ]
 
