@@ -8,7 +8,6 @@ module Anim.Engine.WAAPI exposing
     , easing
     , delay
     , getPosition, getCurrentStyles
-    , htmlAttributes
     )
 
 {-| Ports-based animation system utilising the Web Animations API with optional state tracking.
@@ -87,11 +86,6 @@ These settings will be used for all animations unless overridden on a per-animat
 # Animation Data
 
 @docs getPosition, getCurrentStyles
-
-
-# JavaScript Integration
-
-@docs htmlAttributes
 
 -}
 
@@ -399,17 +393,6 @@ perspectiveWith perspectiveValue =
     , Html.Attributes.style "transform-style" "preserve-3d"
     , Html.Attributes.attribute "data-perspective-source" "elm"
     ]
-
-
-{-| Generate HTML attributes for ports-based animations.
-
-This function provides a way to add animation data attributes to elements,
-which can be useful for debugging or JavaScript integration.
-
--}
-htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
-htmlAttributes =
-    InternalWAAPI.htmlAttributes
 
 
 {-| Update animation state with data received from JavaScript via ports.

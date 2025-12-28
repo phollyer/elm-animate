@@ -2,7 +2,6 @@ module Anim.Internal.WAAPI exposing
     ( TargetId
     , init, builder, animate, AnimState
     , getPosition, getCurrentStyles
-    , htmlAttributes
     , delay, duration, easing, speed, update
     )
 
@@ -26,11 +25,6 @@ commands via Elm ports for high-performance, platform-optimized animations.
 
 @docs getPosition, getCurrentStyles
 
-
-# JavaScript Integration
-
-@docs htmlAttributes
-
 -}
 
 import Anim.Internal.Builder as Builder
@@ -42,8 +36,6 @@ import Anim.Internal.Properties.Scale as Scale exposing (Scale)
 import Anim.Internal.Properties.Size exposing (Size)
 import Anim.Internal.Timing.Easing exposing (Easing)
 import Dict exposing (Dict)
-import Html
-import Html.Attributes
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 
@@ -419,21 +411,3 @@ updateElementAnimation animUpdate elementAnimation =
             }
     in
     { elementAnimation | endStates = updatedEndStates }
-
-
-{-| Generate HTML attributes for ports-based animations.
-
-This function provides a way to add animation data attributes to elements,
-which can be useful for debugging or JavaScript integration.
-
--}
-htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
-htmlAttributes elementId (AnimState state) =
-    case Dict.get elementId state.elementAnimations of
-        Nothing ->
-            []
-
-        Just _ ->
-            [ Html.Attributes.attribute "data-animation-state" "ports"
-            , Html.Attributes.attribute "data-element-id" elementId
-            ]
