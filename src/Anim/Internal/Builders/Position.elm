@@ -7,11 +7,16 @@ module Anim.Internal.Builders.Position exposing
     , for
     , fromX
     , fromXY
+    , fromXYZ
     , fromY
+    , fromZ
     , speed
     , to
     , toX
+    , toXY
+    , toXYZ
     , toY
+    , toZ
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
@@ -108,7 +113,7 @@ type alias PositionConfig =
 defaultConfig : PositionConfig
 defaultConfig =
     { startAt = Nothing
-    , endAt = Position.fromTuple ( 0, 0 )
+    , endAt = Position.fromTriple ( 0, 0, 0 )
     , duration = 0
     , speed = 0
     , distance = 0
@@ -124,14 +129,45 @@ fromXY x y (PositionBuilder config builder) =
     PositionBuilder { config | startAt = Just (Position.fromTuple ( x, y )) } builder
 
 
+fromXYZ : Float -> Float -> Float -> PositionBuilder -> PositionBuilder
+fromXYZ x y z (PositionBuilder config builder) =
+    PositionBuilder { config | startAt = Just (Position.fromTriple ( x, y, z )) } builder
+
+
 fromX : Float -> PositionBuilder -> PositionBuilder
 fromX x (PositionBuilder config builder) =
-    PositionBuilder { config | startAt = Just (Position.fromTuple ( x, Maybe.withDefault 0 (Maybe.map Position.y config.startAt) )) } builder
+    let
+        existingY =
+            Maybe.withDefault 0 (Maybe.map Position.y config.startAt)
+
+        existingZ =
+            Maybe.withDefault 0 (Maybe.map Position.z config.startAt)
+    in
+    PositionBuilder { config | startAt = Just (Position.fromTriple ( x, existingY, existingZ )) } builder
 
 
 fromY : Float -> PositionBuilder -> PositionBuilder
 fromY y (PositionBuilder config builder) =
-    PositionBuilder { config | startAt = Just (Position.fromTuple ( Maybe.withDefault 0 (Maybe.map Position.x config.startAt), y )) } builder
+    let
+        existingX =
+            Maybe.withDefault 0 (Maybe.map Position.x config.startAt)
+
+        existingZ =
+            Maybe.withDefault 0 (Maybe.map Position.z config.startAt)
+    in
+    PositionBuilder { config | startAt = Just (Position.fromTriple ( existingX, y, existingZ )) } builder
+
+
+fromZ : Float -> PositionBuilder -> PositionBuilder
+fromZ z (PositionBuilder config builder) =
+    let
+        existingX =
+            Maybe.withDefault 0 (Maybe.map Position.x config.startAt)
+
+        existingY =
+            Maybe.withDefault 0 (Maybe.map Position.y config.startAt)
+    in
+    PositionBuilder { config | startAt = Just (Position.fromTriple ( existingX, existingY, z )) } builder
 
 
 to : Position -> PositionBuilder -> PositionBuilder
@@ -143,7 +179,7 @@ to position (PositionBuilder config builder) =
                     pos
 
                 Nothing ->
-                    Position.fromTuple ( 0, 0 )
+                    Position.fromTriple ( 0, 0, 0 )
     in
     PositionBuilder
         { config
@@ -156,12 +192,27 @@ to position (PositionBuilder config builder) =
 
 toX : Float -> PositionBuilder -> PositionBuilder
 toX x (PositionBuilder config builder) =
-    to (Position.fromTuple ( x, Position.y config.endAt )) (PositionBuilder config builder)
+    to (Position.fromTriple ( x, Position.y config.endAt, Position.z config.endAt )) (PositionBuilder config builder)
 
 
 toY : Float -> PositionBuilder -> PositionBuilder
 toY y (PositionBuilder config builder) =
-    to (Position.fromTuple ( Position.x config.endAt, y )) (PositionBuilder config builder)
+    to (Position.fromTriple ( Position.x config.endAt, y, Position.z config.endAt )) (PositionBuilder config builder)
+
+
+toZ : Float -> PositionBuilder -> PositionBuilder
+toZ z (PositionBuilder config builder) =
+    to (Position.fromTriple ( Position.x config.endAt, Position.y config.endAt, z )) (PositionBuilder config builder)
+
+
+toXY : Float -> Float -> PositionBuilder -> PositionBuilder
+toXY x y (PositionBuilder config builder) =
+    to (Position.fromTriple ( x, y, Position.z config.endAt )) (PositionBuilder config builder)
+
+
+toXYZ : Float -> Float -> Float -> PositionBuilder -> PositionBuilder
+toXYZ x y z (PositionBuilder config builder) =
+    to (Position.fromTriple ( x, y, z )) (PositionBuilder config builder)
 
 
 speed : Float -> PositionBuilder -> PositionBuilder

@@ -40,13 +40,13 @@ suite =
                             |> Maybe.withDefault ""
                 in
                 Expect.all
-                    [ \_ -> keyframes |> String.contains "translate(" |> Expect.equal True
+                    [ \_ -> keyframes |> String.contains "translate3d(" |> Expect.equal True
                     , \_ -> keyframes |> String.contains "scale(" |> Expect.equal True
                     , \_ -> keyframes |> String.contains "rotate(" |> Expect.equal True
                     , \_ ->
                         let
                             translateIndex =
-                                String.indexes "translate(" keyframes |> List.head |> Maybe.withDefault -1
+                                String.indexes "translate3d(" keyframes |> List.head |> Maybe.withDefault -1
 
                             scaleIndex =
                                 String.indexes "scale(" keyframes |> List.head |> Maybe.withDefault -1
@@ -60,7 +60,7 @@ suite =
                                     Expect.equal True (translateIndex < rotateIndex)
 
                                 else
-                                    Expect.fail "Could not find both translate and rotate functions"
+                                    Expect.fail "Could not find both translate3d and rotate functions"
                             , \_ ->
                                 if rotateIndex >= 0 && scaleIndex >= 0 then
                                     Expect.equal True (rotateIndex < scaleIndex)
@@ -70,11 +70,11 @@ suite =
                             ]
                             keyframes
 
-                    -- Verify that translate comes before rotate in the string
+                    -- Verify that translate3d comes before rotate in the string
                     , \_ ->
                         let
                             translateIndex =
-                                String.indexes "translate(" keyframes |> List.head |> Maybe.withDefault -1
+                                String.indexes "translate3d(" keyframes |> List.head |> Maybe.withDefault -1
 
                             rotateIndex =
                                 String.indexes "rotate(" keyframes |> List.head |> Maybe.withDefault -1
@@ -83,7 +83,7 @@ suite =
                             Expect.equal True (translateIndex < rotateIndex)
 
                         else
-                            Expect.fail "Could not find both translate and rotate functions"
+                            Expect.fail "Could not find both translate3d and rotate functions"
 
                     -- Verify that rotate comes before scale in the string
                     , \_ ->

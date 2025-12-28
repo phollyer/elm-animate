@@ -250,10 +250,10 @@ getCurrentStyles elementId (AnimState state) =
 positionToTransform : Position -> String
 positionToTransform pos =
     let
-        ( x, y ) =
-            Position.toTuple pos
+        ( x, y, z ) =
+            Position.toTriple pos
     in
-    "translate(" ++ String.fromFloat x ++ "px, " ++ String.fromFloat y ++ "px)"
+    "translate3d(" ++ String.fromFloat x ++ "px, " ++ String.fromFloat y ++ "px, " ++ String.fromFloat z ++ "px)"
 
 
 rotateToTransform : Rotate -> String

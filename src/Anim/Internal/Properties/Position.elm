@@ -4,6 +4,7 @@ module Anim.Internal.Properties.Position exposing
     , distance
     , duration
     , encode
+    , fromTriple
     , fromTuple
     , interpolate
     , scale
@@ -12,9 +13,11 @@ module Anim.Internal.Properties.Position exposing
     , toCssString
     , toRecord
     , toString
+    , toTriple
     , toTuple
     , x
     , y
+    , z
     )
 
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
@@ -26,7 +29,7 @@ import Json.Encode as Encode
 
 
 type Position
-    = Position { x : Float, y : Float }
+    = Position { x : Float, y : Float, z : Float }
 
 
 x : Position -> Float
@@ -39,9 +42,19 @@ y (Position coords) =
     coords.y
 
 
+z : Position -> Float
+z (Position coords) =
+    coords.z
+
+
 fromTuple : ( Float, Float ) -> Position
 fromTuple ( xCoord, yCoord ) =
-    Position { x = xCoord, y = yCoord }
+    Position { x = xCoord, y = yCoord, z = 0 }
+
+
+fromTriple : ( Float, Float, Float ) -> Position
+fromTriple ( xCoord, yCoord, zCoord ) =
+    Position { x = xCoord, y = yCoord, z = zCoord }
 
 
 toTuple : Position -> ( Float, Float )
@@ -49,19 +62,24 @@ toTuple (Position coords) =
     ( coords.x, coords.y )
 
 
+toTriple : Position -> ( Float, Float, Float )
+toTriple (Position coords) =
+    ( coords.x, coords.y, coords.z )
+
+
 add : Position -> Position -> Position
 add (Position a) (Position b) =
-    Position { x = a.x + b.x, y = a.y + b.y }
+    Position { x = a.x + b.x, y = a.y + b.y, z = a.z + b.z }
 
 
 subtract : Position -> Position -> Position
 subtract (Position a) (Position b) =
-    Position { x = a.x - b.x, y = a.y - b.y }
+    Position { x = a.x - b.x, y = a.y - b.y, z = a.z - b.z }
 
 
 scale : Float -> Position -> Position
 scale factor (Position coords) =
-    Position { x = coords.x * factor, y = coords.y * factor }
+    Position { x = coords.x * factor, y = coords.y * factor, z = coords.z * factor }
 
 
 distance : Position -> Position -> Float
@@ -72,8 +90,11 @@ distance (Position a) (Position b) =
 
         dy =
             a.y - b.y
+
+        dz =
+            a.z - b.z
     in
-    sqrt (dx * dx + dy * dy)
+    sqrt (dx * dx + dy * dy + dz * dz)
 
 
 speed : Float -> Float -> TimeSpec -> Float
@@ -105,22 +126,23 @@ interpolate t (Position start) (Position endPos) =
     Position
         { x = start.x + (endPos.x - start.x) * t
         , y = start.y + (endPos.y - start.y) * t
+        , z = start.z + (endPos.z - start.z) * t
         }
 
 
 toString : Position -> String
 toString (Position coords) =
-    "Position(x: " ++ String.fromFloat coords.x ++ ", y: " ++ String.fromFloat coords.y ++ ")"
+    "Position(x: " ++ String.fromFloat coords.x ++ ", y: " ++ String.fromFloat coords.y ++ ", z: " ++ String.fromFloat coords.z ++ ")"
 
 
 toCssString : Position -> String
 toCssString (Position coords) =
-    String.fromFloat coords.x ++ "px, " ++ String.fromFloat coords.y ++ "px"
+    String.fromFloat coords.x ++ "px, " ++ String.fromFloat coords.y ++ "px, " ++ String.fromFloat coords.z ++ "px"
 
 
-toRecord : Position -> { x : Float, y : Float }
+toRecord : Position -> { x : Float, y : Float, z : Float }
 toRecord (Position coords) =
-    { x = coords.x, y = coords.y }
+    { x = coords.x, y = coords.y, z = coords.z }
 
 
 encode : Position -> Encode.Value
@@ -128,4 +150,5 @@ encode (Position coords) =
     Encode.object
         [ ( "x", Encode.float coords.x )
         , ( "y", Encode.float coords.y )
+        , ( "z", Encode.float coords.z )
         ]

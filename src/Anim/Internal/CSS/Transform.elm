@@ -86,7 +86,7 @@ transformFromProperty property acc =
                 acc
 
             else
-                { acc | position = "translate(" ++ Position.toCssString config.endAt ++ ")" }
+                { acc | position = "translate3d(" ++ Position.toCssString config.endAt ++ ")" }
 
         Builder.RotateConfig config ->
             if config.isDirty then

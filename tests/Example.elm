@@ -41,8 +41,8 @@ suite =
                         , \_ -> actualKeyframes |> String.contains "box-anim-" |> Expect.equal True
                         , \_ -> actualKeyframes |> String.contains "0%" |> Expect.equal True
                         , \_ -> actualKeyframes |> String.contains "100%" |> Expect.equal True
-                        , \_ -> actualKeyframes |> String.contains "translate(0px, 0px)" |> Expect.equal True
-                        , \_ -> actualKeyframes |> String.contains "translate(100px, 100px)" |> Expect.equal True
+                        , \_ -> actualKeyframes |> String.contains "translate3d(0px, 0px, 0px)" |> Expect.equal True
+                        , \_ -> actualKeyframes |> String.contains "translate3d(100px, 100px, 0px)" |> Expect.equal True
                         ]
                         actualKeyframes
             , test "generateAnimationAttributeString produces valid animation CSS property" <|
@@ -106,8 +106,8 @@ suite =
                             , \_ -> actualCSS |> String.contains "box-anim-" |> Expect.equal True
                             , \_ -> actualCSS |> String.contains "0%" |> Expect.equal True
                             , \_ -> actualCSS |> String.contains "100%" |> Expect.equal True
-                            , \_ -> actualCSS |> String.contains "translate(0px, 0px)" |> Expect.equal True
-                            , \_ -> actualCSS |> String.contains "translate(100px, 100px)" |> Expect.equal True
+                            , \_ -> actualCSS |> String.contains "translate3d(0px, 0px, 0px)" |> Expect.equal True
+                            , \_ -> actualCSS |> String.contains "translate3d(100px, 100px, 0px)" |> Expect.equal True
                             ]
                             actualCSS
             , test "CSS.keyframesStyleNodeFor produces HTML style element (integration test)" <|

@@ -167,7 +167,7 @@ generate elementId properties =
                                                             interpolatedPos =
                                                                 Position.interpolate propProgress startPos endPos
                                                         in
-                                                        { acc | position = "translate(" ++ Position.toCssString interpolatedPos ++ ")" }
+                                                        { acc | position = "translate3d(" ++ Position.toCssString interpolatedPos ++ ")" }
 
                                                     Builder.ProcessedRotateConfig cfg ->
                                                         let

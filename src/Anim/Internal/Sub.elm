@@ -554,7 +554,7 @@ extractFromProperty property acc =
     case property of
         Builder.ProcessedPositionConfig config ->
             if config.duration == 0 then
-                { acc | position = Just (Position.toRecord config.endAt) }
+                { acc | position = Just { x = Position.x config.endAt, y = Position.y config.endAt } }
 
             else
                 acc
@@ -1342,10 +1342,10 @@ getTransformPart propertyState =
     case currentValue of
         PositionAnimationValue pos ->
             let
-                ( x, y ) =
-                    Position.toTuple pos
+                ( x, y, z ) =
+                    Position.toTriple pos
             in
-            Just ("translate(" ++ String.fromFloat x ++ "px, " ++ String.fromFloat y ++ "px)")
+            Just ("translate3d(" ++ String.fromFloat x ++ "px, " ++ String.fromFloat y ++ "px, " ++ String.fromFloat z ++ "px)")
 
         RotateAnimationValue rotate ->
             let

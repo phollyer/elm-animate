@@ -1,8 +1,9 @@
 module Anim.Properties.Position exposing
     ( Builder, for, build
-    , fromXY, fromX, fromY
-    , toXY, toX, toY
+    , fromXY, fromX, fromY, fromXYZ, fromZ
+    , toXY, toX, toY, toXYZ, toZ
     , speed, duration, easing, delay
+    , Position, getX, getY, getZ, toTuple, toTriple, toRecord
     )
 
 {-| Position animation functions.
@@ -18,6 +19,15 @@ Use these functions to configure position animations in the builder chain:
         |> Position.build
         |> ... -- continue with animation
 
+For 3D positioning, use the XYZ functions:
+
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.fromXYZ 100 20 50
+        |> Position.toZ 200
+        |> Position.speed 500
+        |> Position.build
+
 
 # Build
 
@@ -29,21 +39,26 @@ Use these functions to configure position animations in the builder chain:
 
 ## Start Position
 
-The first time the animation runs, if no starting position is set, it will default to (0, 0).
+The first time the animation runs, if no starting position is set, it will default to (0, 0, 0).
 
-On subsequent animations, it will start from the last known position, so you only need to set this when you want to override that behavior.
+On subsequent animations, providing you are tracking animation state in your model, it will start from the last known position - unless explicitly overridden.
 
-@docs fromXY, fromX, fromY
+@docs fromXY, fromX, fromY, fromXYZ, fromZ
 
 
 ## End Position
 
-@docs toXY, toX, toY
+@docs toXY, toX, toY, toXYZ, toZ
 
 
 ## Timing
 
 @docs speed, duration, easing, delay
+
+
+## Accessor Functions
+
+@docs Position, getX, getY, getZ, toTuple, toTriple, toRecord
 
 -}
 
@@ -51,10 +66,6 @@ import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Position as PB
 import Anim.Internal.Properties.Position as P
 import Anim.Timing.Easing as Easing exposing (Easing)
-
-
-
--- POSITION CONFIGURATION
 
 
 {-| Type alias for the internal `PositionBuilder`.
@@ -133,6 +144,34 @@ fromY =
     PB.fromY
 
 
+{-| Set the starting X, Y, and Z position for the current element.
+
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.fromXYZ 100 20 50
+        |> ...
+
+-}
+fromXYZ : Float -> Float -> Float -> Builder -> Builder
+fromXYZ =
+    PB.fromXYZ
+
+
+{-| Set the starting Z position for the current element.
+
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.fromZ 75
+        |> ...
+
+The starting X and Y positions remain unchanged, or zero if not set.
+
+-}
+fromZ : Float -> Builder -> Builder
+fromZ =
+    PB.fromZ
+
+
 {-| Set the target X and Y position for the current element.
 
     animBuilder
@@ -143,7 +182,20 @@ fromY =
 -}
 toXY : Float -> Float -> Builder -> Builder
 toXY x y =
-    PB.to (P.fromTuple ( x, y ))
+    PB.toXY x y
+
+
+{-| Set the target X, Y, and Z position for the current element.
+
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.toXYZ 100 200 50
+        |> ...
+
+-}
+toXYZ : Float -> Float -> Float -> Builder -> Builder
+toXYZ x y z =
+    PB.toXYZ x y z
 
 
 {-| Set the target X position for the current element.
@@ -153,7 +205,7 @@ toXY x y =
         |> Position.toX 150
         |> ...
 
-The Y position remains unchanged, or zero if not set.
+The Y and Z positions remain unchanged, or zero if not set.
 
 -}
 toX : Float -> Builder -> Builder
@@ -168,12 +220,27 @@ toX x =
         |> Position.toY 250
         |> ...
 
-The X position remains unchanged, or zero if not set.
+The X and Z positions remain unchanged, or zero if not set.
 
 -}
 toY : Float -> Builder -> Builder
 toY y =
     PB.toY y
+
+
+{-| Set the target Z position for the current element.
+
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.toZ 75
+        |> ...
+
+The X and Y positions remain unchanged, or zero if not set.
+
+-}
+toZ : Float -> Builder -> Builder
+toZ z =
+    PB.toZ z
 
 
 {-| Set the animation speed (pixels per second).
@@ -232,3 +299,55 @@ easing =
 delay : Int -> Builder -> Builder
 delay delay_ =
     PB.delay delay_
+
+
+
+-- Accessor Functions
+
+
+{-| Type alias for the internal `Position`.
+-}
+type alias Position =
+    P.Position
+
+
+{-| Get the X coordinate from a `Position`.
+-}
+getX : Position -> Float
+getX =
+    P.x
+
+
+{-| Get the Y coordinate from a `Position`.
+-}
+getY : Position -> Float
+getY =
+    P.y
+
+
+{-| Get the Z coordinate from a `Position`.
+-}
+getZ : Position -> Float
+getZ =
+    P.z
+
+
+{-| Convert a `Position` to a tuple `( x, y )`.
+-}
+toTuple : Position -> ( Float, Float )
+toTuple =
+    P.toTuple
+
+
+{-| Convert a `Position` to a triple `( x, y, z )`.
+-}
+toTriple : Position -> ( Float, Float, Float )
+toTriple =
+    P.toTriple
+
+
+{-| Convert a `Position` to a record `{ x : Float, y : Float, z : Float }`.
+-}
+toRecord : Position -> { x : Float, y : Float, z : Float }
+toRecord =
+    P.toRecord

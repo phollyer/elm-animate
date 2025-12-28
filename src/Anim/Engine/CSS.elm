@@ -184,12 +184,12 @@ These settings will be used for all property animations unless overridden on a p
 -}
 
 import Anim.Internal.CSS as InternalCSS exposing (ElementState(..), Event(..))
-import Anim.Internal.Properties.BackgroundColor as BackgroundColor
+import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity
-import Anim.Internal.Properties.Position as Position exposing (Position)
+import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
-import Anim.Internal.Properties.Scale as Scale
-import Anim.Internal.Properties.Size as Size
+import Anim.Internal.Properties.Scale as Scale exposing (Scale)
+import Anim.Internal.Properties.Size as Size exposing (Size)
 import Anim.Timing.Easing as Easing exposing (Easing)
 import Browser exposing (UrlRequest(..))
 import Html
@@ -602,24 +602,28 @@ getCurrent elementId maybeStart end default animState =
 
 {-| Get the start position of an element being animated.
 
+The first time the animation runs, if no starting position is set, it will default to (0, 0, 0).
+
+Once an animation is complete, providing you are tracking animation state in your model, it's end position becomes the next start position - unless explicitly set otherwise.
+
+Therefore, if the animation has not been run yet, or is running, the start position is returned, if the animation is complete, the end position is returned. This allows you to always get the correct start position for the next animation.
+
 Returns `Nothing` if the element has no position animation.
 
-Returns `(0, 0)` if no explicit start value was set, which is where the animation
-**will** start if no explicit start value is set.
-
 -}
-getStartPosition : String -> AnimState -> Maybe Position
+getStartPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getStartPosition elementId animState =
     InternalCSS.getPositionRange elementId animState
         |> Maybe.map
             (\{ start } ->
                 case start of
                     Nothing ->
-                        Position.fromTuple ( 0, 0 )
+                        Position.fromTriple ( 0, 0, 0 )
 
                     Just startPos ->
                         startPos
             )
+        |> Maybe.map Position.toRecord
 
 
 {-| Get the end position of an element being animated.
@@ -627,39 +631,41 @@ getStartPosition elementId animState =
 Returns `Nothing` if the element has no position animation.
 
 -}
-getEndPosition : String -> AnimState -> Maybe Position
+getEndPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getEndPosition elementId animState =
     InternalCSS.getPositionRange elementId animState
         |> Maybe.map .end
+        |> Maybe.map Position.toRecord
 
 
 {-| Get the current position of an element based on its animation state.
-
-Returns `Nothing` if the element has no position animation.
 
 Returns the start position if the animation has not started yet.
 
 Returns the end position if the animation is running or has completed.
 
+Returns `Nothing` if the element has no position animation.
+
 -}
-getCurrentPosition : String -> AnimState -> Maybe Position
+getCurrentPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getCurrentPosition elementId animState =
     InternalCSS.getPositionRange elementId animState
         |> Maybe.andThen
             (\{ start, end } ->
-                getCurrent elementId start end (Position.fromTuple ( 0, 0 )) animState
+                getCurrent elementId start end (Position.fromTriple ( 0, 0, 0 )) animState
             )
+        |> Maybe.map Position.toRecord
 
 
 {-| Get the start scale of an element being animated.
 
-Returns `Nothing` if the element has no scale animation.
-
 Returns `1.0` if no explicit start value was set, which is where the animation
 **will** start if no explicit start value is set.
 
+Returns `Nothing` if the element has no scale animation.
+
 -}
-getStartScale : String -> AnimState -> Maybe Scale.Scale
+getStartScale : String -> AnimState -> Maybe Scale
 getStartScale elementId animState =
     InternalCSS.getScaleRange elementId animState
         |> Maybe.map
@@ -678,7 +684,7 @@ getStartScale elementId animState =
 Returns `Nothing` if the element has no scale animation.
 
 -}
-getEndScale : String -> AnimState -> Maybe Scale.Scale
+getEndScale : String -> AnimState -> Maybe Scale
 getEndScale elementId animState =
     InternalCSS.getScaleRange elementId animState
         |> Maybe.map .end
@@ -693,7 +699,7 @@ Returns the start scale if the animation has not started yet.
 Returns the end scale if the animation is running or has completed.
 
 -}
-getCurrentScale : String -> AnimState -> Maybe Scale.Scale
+getCurrentScale : String -> AnimState -> Maybe Scale
 getCurrentScale elementId animState =
     InternalCSS.getScaleRange elementId animState
         |> Maybe.andThen
@@ -761,7 +767,7 @@ Returns `black (rgb 0 0 0)` if no explicit start value was set, which is where t
 **will** start if no explicit start value is set.
 
 -}
-getStartBackgroundColor : String -> AnimState -> Maybe BackgroundColor.Color
+getStartBackgroundColor : String -> AnimState -> Maybe Color
 getStartBackgroundColor elementId animState =
     InternalCSS.getBackgroundColorRange elementId animState
         |> Maybe.map
@@ -780,7 +786,7 @@ getStartBackgroundColor elementId animState =
 Returns `Nothing` if the element has no background color animation.
 
 -}
-getEndBackgroundColor : String -> AnimState -> Maybe BackgroundColor.Color
+getEndBackgroundColor : String -> AnimState -> Maybe Color
 getEndBackgroundColor elementId animState =
     InternalCSS.getBackgroundColorRange elementId animState
         |> Maybe.map .end
@@ -795,7 +801,7 @@ Returns the start color if the animation has not started yet.
 Returns the end color if the animation is running or has completed.
 
 -}
-getCurrentBackgroundColor : String -> AnimState -> Maybe BackgroundColor.Color
+getCurrentBackgroundColor : String -> AnimState -> Maybe Color
 getCurrentBackgroundColor elementId animState =
     InternalCSS.getBackgroundColorRange elementId animState
         |> Maybe.andThen
@@ -808,21 +814,21 @@ getCurrentBackgroundColor elementId animState =
 
 Returns `Nothing` if the element has no opacity animation.
 
-Returns `1.0 (fully opaque)` if no explicit start value was set, which is where the animation
+Returns `Just 1.0` (fully opaque) if no explicit start value was set, which is where the animation
 **will** start if no explicit start value is set.
 
 -}
-getStartOpacity : String -> AnimState -> Maybe Opacity.Opacity
+getStartOpacity : String -> AnimState -> Maybe Float
 getStartOpacity elementId animState =
     InternalCSS.getOpacityRange elementId animState
         |> Maybe.map
             (\{ start } ->
                 case start of
                     Nothing ->
-                        Opacity.fromFloat 1.0
+                        1.0
 
                     Just startOpacity ->
-                        startOpacity
+                        Opacity.toFloat startOpacity
             )
 
 
@@ -831,10 +837,10 @@ getStartOpacity elementId animState =
 Returns `Nothing` if the element has no opacity animation.
 
 -}
-getEndOpacity : String -> AnimState -> Maybe Opacity.Opacity
+getEndOpacity : String -> AnimState -> Maybe Float
 getEndOpacity elementId animState =
     InternalCSS.getOpacityRange elementId animState
-        |> Maybe.map .end
+        |> Maybe.map (.end >> Opacity.toFloat)
 
 
 {-| Get the current opacity of an element based on its animation state.
@@ -846,12 +852,13 @@ Returns the start opacity if the animation has not started yet.
 Returns the end opacity if the animation is running or has completed.
 
 -}
-getCurrentOpacity : String -> AnimState -> Maybe Opacity.Opacity
+getCurrentOpacity : String -> AnimState -> Maybe Float
 getCurrentOpacity elementId animState =
     InternalCSS.getOpacityRange elementId animState
         |> Maybe.andThen
             (\{ start, end } ->
                 getCurrent elementId start end (Opacity.fromFloat 1.0) animState
+                    |> Maybe.map Opacity.toFloat
             )
 
 
@@ -863,7 +870,7 @@ Returns `(0, 0)` if no explicit start value was set, which is where the animatio
 **will** start if no explicit start value is set.
 
 -}
-getStartSize : String -> AnimState -> Maybe Size.Size
+getStartSize : String -> AnimState -> Maybe Size
 getStartSize elementId animState =
     InternalCSS.getSizeRange elementId animState
         |> Maybe.map
@@ -882,7 +889,7 @@ getStartSize elementId animState =
 Returns `Nothing` if the element has no size animation.
 
 -}
-getEndSize : String -> AnimState -> Maybe Size.Size
+getEndSize : String -> AnimState -> Maybe Size
 getEndSize elementId animState =
     InternalCSS.getSizeRange elementId animState
         |> Maybe.map .end
@@ -897,7 +904,7 @@ Returns the start size if the animation has not started yet.
 Returns the end size if the animation is running or has completed.
 
 -}
-getCurrentSize : String -> AnimState -> Maybe Size.Size
+getCurrentSize : String -> AnimState -> Maybe Size
 getCurrentSize elementId animState =
     InternalCSS.getSizeRange elementId animState
         |> Maybe.andThen
