@@ -90,13 +90,9 @@ update msg model =
         SizeUp ->
             let
                 ( newWidth, newHeight ) =
-                    case Sub.getSize "box" model.animations of
+                    case Sub.getCurrentSize "box" model.animations of
                         Just size ->
-                            let
-                                ( w, h ) =
-                                    Size.toTuple size
-                            in
-                            ( (w * 2) |> min 400, (h * 2) |> min 300 )
+                            ( (size.width * 2) |> min 400, (size.height * 2) |> min 300 )
 
                         Nothing ->
                             ( 100, 100 )
@@ -118,13 +114,9 @@ update msg model =
         SizeDown ->
             let
                 ( newWidth, newHeight ) =
-                    case Sub.getSize "box" model.animations of
+                    case Sub.getCurrentSize "box" model.animations of
                         Just size ->
-                            let
-                                ( w, h ) =
-                                    Size.toTuple size
-                            in
-                            ( (w / 2) |> max 50, (h / 2) |> max 50 )
+                            ( (size.width / 2) |> max 50, (size.height / 2) |> max 50 )
 
                         Nothing ->
                             ( 50, 50 )
@@ -161,13 +153,9 @@ update msg model =
         SizeWide ->
             let
                 newWidth =
-                    case Sub.getSize "box" model.animations of
+                    case Sub.getCurrentSize "box" model.animations of
                         Just size ->
-                            let
-                                ( w, h ) =
-                                    Size.toTuple size
-                            in
-                            (w * 2) |> max 400
+                            (size.width * 2) |> max 400
 
                         Nothing ->
                             400
@@ -189,13 +177,9 @@ update msg model =
         SizeTall ->
             let
                 newHeight =
-                    case Sub.getSize "box" model.animations of
+                    case Sub.getCurrentSize "box" model.animations of
                         Just size ->
-                            let
-                                ( w, h ) =
-                                    Size.toTuple size
-                            in
-                            (h * 2) |> max 300
+                            (size.height * 2) |> max 300
 
                         Nothing ->
                             300

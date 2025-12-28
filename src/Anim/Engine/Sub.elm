@@ -121,10 +121,10 @@ These settings will be used for all animations unless overridden on a per-animat
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity
-import Anim.Internal.Properties.Position as Position exposing (Position)
+import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
-import Anim.Internal.Properties.Size as Size exposing (Size)
+import Anim.Internal.Properties.Size as Size
 import Anim.Internal.Sub as InternalSub
 import Anim.Timing.Easing as Easing exposing (Easing)
 import Dict
@@ -465,86 +465,6 @@ subscriptions =
     InternalSub.subscriptions
 
 
-
--- POSITION
-
-
-{-| Get current position of an element being animated.
--}
-getPosition : ElementId -> AnimState -> Maybe Position
-getPosition =
-    InternalSub.getPosition
-
-
-{-| Get current X and Y position of an element being animated.
--}
-getPositionXY : ElementId -> AnimState -> Maybe ( Float, Float )
-getPositionXY =
-    InternalSub.getPositionXY
-
-
-{-| Get current X position of an element being animated.
--}
-getPositionX : ElementId -> AnimState -> Maybe Float
-getPositionX =
-    InternalSub.getPositionX
-
-
-{-| Get current Y position of an element being animated.
--}
-getPositionY : ElementId -> AnimState -> Maybe Float
-getPositionY =
-    InternalSub.getPositionY
-
-
-
--- SIZE
-
-
-{-| Get current size of an element being animated.
--}
-getSize : ElementId -> AnimState -> Maybe Size
-getSize =
-    InternalSub.getSize
-
-
-{-| Get current width and height of an element being animated.
--}
-getSizeHW : ElementId -> AnimState -> Maybe ( Float, Float )
-getSizeHW =
-    InternalSub.getSizeHW
-
-
-{-| Get current height of an element being animated.
--}
-getSizeH : ElementId -> AnimState -> Maybe Float
-getSizeH =
-    InternalSub.getSizeH
-
-
-{-| Get current width of an element being animated.
--}
-getSizeW : ElementId -> AnimState -> Maybe Float
-getSizeW =
-    InternalSub.getSizeW
-
-
-{-| Get duration of the first animation found for an element.
-Returns Nothing if the element has no animations.
--}
-getDuration : ElementId -> AnimState -> Maybe Int
-getDuration =
-    InternalSub.getDuration
-
-
-{-| Check if an animation is currently running for the given element.
-Returns True if the element has active animations, False otherwise.
--}
-isAnimationRunning : ElementId -> AnimState -> Bool
-isAnimationRunning =
-    InternalSub.isAnimationRunning
-
-
 {-| Check if any animations are currently running.
 -}
 anyRunning : AnimState -> Bool
@@ -557,6 +477,7 @@ anyRunning =
 isRunning : ElementId -> AnimState -> Bool
 isRunning =
     InternalSub.isElementRunning
+
 
 {-| Check if all animations are complete.
 
@@ -576,6 +497,7 @@ Returns `Nothing` if there are no animations for the element.
 isComplete : String -> AnimState -> Maybe Bool
 isComplete =
     InternalSub.isElementComplete
+
 
 {-| Get the start background color of an element being animated.
 
@@ -875,17 +797,6 @@ getCurrentSize : String -> AnimState -> Maybe { width : Float, height : Float }
 getCurrentSize elementId animState =
     InternalSub.getSize elementId animState
         |> Maybe.map Size.toRecord
-
-
-
--- CURRENT STYLES
-
-
-{-| Get current animation values as CSS-compatible styles.
--}
-getCurrentStyles : ElementId -> AnimState -> List ( String, String )
-getCurrentStyles =
-    InternalSub.getCurrentStyles
 
 
 {-| Get all the HTML attributes needed for the CSS animations on the target element.

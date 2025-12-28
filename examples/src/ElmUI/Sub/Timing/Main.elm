@@ -194,13 +194,13 @@ update msg model =
                 wasRunning =
                     case model.currentTest of
                         Just _ ->
-                            Sub.isAnimationRunning "timing-box" oldAnimations
+                            Sub.isRunning "timing-box" oldAnimations
 
                         Nothing ->
                             False
 
                 isStillRunning =
-                    Sub.isAnimationRunning "timing-box" newAnimations
+                    Sub.isRunning "timing-box" newAnimations
 
                 cmd =
                     case model.currentTest of
@@ -324,20 +324,12 @@ animationView : Model -> Element Msg
 animationView model =
     let
         currentPosition =
-            Sub.getPosition "timing-box" model.animations
-
-        calculatedDuration =
-            Sub.getDuration "timing-box" model.animations
-                |> Maybe.withDefault 0
+            Sub.getCurrentPosition "timing-box" model.animations
 
         positionText =
             case currentPosition of
                 Just pos ->
-                    let
-                        posRecord =
-                            Position.asRecord pos
-                    in
-                    "Position: (" ++ String.fromFloat posRecord.x ++ ", " ++ String.fromFloat posRecord.y ++ ")"
+                    "Position: (" ++ String.fromFloat pos.x ++ ", " ++ String.fromFloat pos.y ++ ")"
 
                 Nothing ->
                     "Position: (0, 0)"
@@ -377,7 +369,6 @@ animationView model =
           column [ spacing 8 ]
             [ text ("Status: " ++ statusText)
             , text positionText
-            , text ("Calculated Duration: " ++ String.fromInt calculatedDuration ++ "ms")
             , text ("Completed Tests: " ++ String.fromInt (List.length model.completedTests))
             , text
                 ("Start Time: "
@@ -399,7 +390,6 @@ animationView model =
                                 "None"
                        )
                 )
-            , text ("Animation Styles: " ++ String.fromInt (List.length (Sub.getCurrentStyles "timing-box" model.animations)))
             ]
         ]
 

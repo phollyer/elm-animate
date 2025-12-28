@@ -3,6 +3,7 @@ module Anim.Internal.Properties.Scale exposing
     , distance
     , encode
     , equal
+    , fromRecord
     , fromTriple
     , fromTuple
     , fromUniform
@@ -101,6 +102,11 @@ fromTriple ( x, y, z ) =
 toRecord : Scale -> { x : Float, y : Float, z : Float }
 toRecord (Scale record) =
     record
+
+
+fromRecord : { x : Float, y : Float, z : Float } -> Scale
+fromRecord record =
+    Scale record
 
 
 fromUniform : Float -> Scale

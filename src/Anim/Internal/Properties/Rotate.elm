@@ -6,6 +6,7 @@ module Anim.Internal.Properties.Rotate exposing
     , encode
     , equal
     , fromFloat
+    , fromRecord
     , fromTriple
     , isZero
     , map
@@ -94,6 +95,11 @@ to3DCssString (Rotate angles) =
 fromFloat : Float -> Rotate
 fromFloat angle =
     Rotate { x = 0, y = 0, z = angle }
+
+
+fromRecord : { x : Float, y : Float, z : Float } -> Rotate
+fromRecord record =
+    Rotate record
 
 
 toRecord : Rotate -> { x : Float, y : Float, z : Float }

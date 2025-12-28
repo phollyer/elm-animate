@@ -4,6 +4,7 @@ module Anim.Internal.Properties.Position exposing
     , distance
     , duration
     , encode
+    , fromRecord
     , fromTriple
     , fromTuple
     , interpolate
@@ -138,6 +139,11 @@ toString (Position coords) =
 toCssString : Position -> String
 toCssString (Position coords) =
     String.fromFloat coords.x ++ "px, " ++ String.fromFloat coords.y ++ "px, " ++ String.fromFloat coords.z ++ "px"
+
+
+fromRecord : { x : Float, y : Float, z : Float } -> Position
+fromRecord record =
+    Position record
 
 
 toRecord : Position -> { x : Float, y : Float, z : Float }

@@ -220,9 +220,8 @@ viewContent model =
         ]
         (let
             pos =
-                Sub.getPosition "box" model.animations
-                    |> Maybe.map Position.asRecord
-                    |> Maybe.withDefault { x = 0, y = 0 }
+                Sub.getCurrentPosition "box" model.animations
+                    |> Maybe.withDefault { x = 0, y = 0, z = 0 }
          in
          text ("Position: (" ++ String.fromInt (round pos.x) ++ ", " ++ String.fromInt (round pos.y) ++ ")")
         )

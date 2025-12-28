@@ -131,7 +131,7 @@ These settings will be used for all animations unless overridden on a per-animat
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity
-import Anim.Internal.Properties.Position as Position exposing (Position)
+import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
@@ -292,24 +292,6 @@ animateBatch portFunction builders =
     builders
         |> List.map (animateStateless portFunction)
         |> Cmd.batch
-
-
-
--- ANIMATION DATA
-
-
-{-| Get current position of an element.
--}
-getPosition : String -> AnimState -> Maybe Position
-getPosition =
-    InternalWAAPI.getPosition
-
-
-{-| Get current styles for an element (for debugging/display purposes).
--}
-getCurrentStyles : String -> AnimState -> List ( String, String )
-getCurrentStyles =
-    InternalWAAPI.getCurrentStyles
 
 
 {-| Check if any animations are currently running.

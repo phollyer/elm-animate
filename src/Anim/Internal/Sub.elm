@@ -1,55 +1,35 @@
 module Anim.Internal.Sub exposing
-    ( TargetId
-    , init, builder, animate, AnimState, AnimationMsg(..)
-    , subscriptions, update
-    , getPosition, getPositionXY, getPositionX, getPositionY
-    , getCurrentStyles
-    , isAnimationRunning
+    ( AnimBuilder
+    , AnimState
+    , AnimationMsg(..)
+    , allComplete
+    , animate
+    , anyRunning
+    , builder
+    , delay
+    , duration
+    , easing
+    , getBackgroundColorRange
+    , getColor
+    , getOpacity
+    , getOpacityRange
+    , getPosition
+    , getPositionRange
+    , getRotate
+    , getRotateRange
+    , getScale
+    , getScaleRange
+    , getSize
+    , getSizeRange
     , htmlAttributes
-    , AnimBuilder, allComplete, anyRunning, delay, duration, easing, getBackgroundColorRange, getColor, getDuration, getOpacity, getOpacityRange, getPositionRange, getRotate, getRotateRange, getScale, getScaleRange, getSize, getSizeH, getSizeHW, getSizeRange, getSizeW, isElementComplete, isElementRunning, speed
+    , init
+    , isAnimationRunning
+    , isElementComplete
+    , isElementRunning
+    , speed
+    , subscriptions
+    , update
     )
-
-{-| Subscription-based animation system for Anim.
-
-This module converts AnimBuilder configurations to frame-based animations using
-onAnimationFrameDelta subscriptions for smooth, controlled animations.
-
-
-# Animation Execution
-
-@docs TargetId
-
-@docs init, builder, animate, AnimState, AnimationMsg
-
-
-# Animation Management
-
-@docs subscriptions, update
-
-
-# Animation Querying
-
-
-## Position
-
-@docs getPosition, getPositionXY, getPositionX, getPositionY
-
-
-## Current Styles
-
-@docs getCurrentStyles
-
-
-## Animation State
-
-@docs isAnimationRunning
-
-
-# CSS Generation
-
-@docs htmlAttributes
-
--}
 
 import Anim.Internal.AnimationCore as AnimationCore
 import Anim.Internal.Builder as Builder
@@ -68,8 +48,153 @@ import Html
 import Html.Attributes
 
 
+
+-- Build
+
+
+type alias ElementId =
+    String
+
+
+type Animation
+    = PositionAnimation Position
+    | RotateAnimation Rotate
+    | ScaleAnimation Scale
+    | BackgroundColorAnimation Color
+    | OpacityAnimation Opacity
+    | SizeAnimation Size
+
+
+type alias PropertyAnimation =
+    { propertyType : String
+    , animationSteps : List Animation
+    , currentStepIndex : Int
+    , delayFrames : Int
+    , currentDelayFrame : Int
+    , isComplete : Bool
+    , totalDurationMs : Float
+    , elapsedMs : Float
+    }
+
+
+type alias ElementAnimation =
+    { properties : List PropertyAnimation
+    , isComplete : Bool
+    }
+
+
+type AnimState
+    = AnimState
+        { elementAnimations : Dict ElementId ElementAnimation
+        , isRunning : Bool
+        , builder : AnimBuilder
+        }
+
+
+init : AnimState
+init =
+    AnimState
+        { elementAnimations = Dict.empty
+        , isRunning = False
+        , builder = Builder.init
+        }
+
+
 type alias AnimBuilder =
     Builder.AnimBuilder
+
+
+builder : AnimState -> AnimBuilder
+builder ((AnimState state) as animationState) =
+    Dict.foldl (setInitialValues animationState) state.builder state.elementAnimations
+
+
+animate : AnimBuilder -> AnimState
+animate builder_ =
+    let
+        processedData =
+            Builder.processAnimationData builder_
+
+        -- Extract current values from any existing animations in the builder
+        currentValues =
+            extractCurrentValuesFromBuilder builder_
+
+        startValues =
+            { position = Maybe.withDefault { x = 0, y = 0, z = 0 } currentValues.position
+            , rotate = Maybe.withDefault { x = 0, y = 0, z = 0 } currentValues.rotate
+            , scale = Maybe.withDefault { x = 1.0, y = 1.0, z = 1.0 } currentValues.scale
+            , color = Maybe.withDefault (Color.rgba255 255 255 255 1.0) currentValues.color
+            , opacity = Maybe.withDefault 1.0 currentValues.opacity
+            , size = Maybe.withDefault { width = 0, height = 0 } currentValues.size
+            }
+
+        elementStates =
+            Dict.map (createElementAnimState startValues) processedData.elements
+    in
+    AnimState
+        { elementAnimations = elementStates
+        , isRunning = not (Dict.isEmpty elementStates)
+        , builder = Builder.markDirty builder_
+        }
+
+
+duration : Int -> AnimBuilder -> AnimBuilder
+duration =
+    Builder.duration
+
+
+speed : Float -> AnimBuilder -> AnimBuilder
+speed value =
+    Builder.speed value
+
+
+easing : Easing -> AnimBuilder -> AnimBuilder
+easing =
+    Builder.easing
+
+
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
+    Builder.delay
+
+
+
+-- UPDATE
+
+
+type AnimationMsg
+    = AnimationFrame Float -- delta time in milliseconds
+
+
+update : AnimationMsg -> AnimState -> AnimState
+update msg (AnimState state) =
+    case msg of
+        AnimationFrame deltaMs ->
+            let
+                updatedElements =
+                    Dict.map (updateElementAnimation deltaMs) state.elementAnimations
+
+                stillRunning =
+                    Dict.values updatedElements |> List.any (not << .isComplete)
+            in
+            AnimState
+                { elementAnimations = updatedElements
+                , isRunning = stillRunning
+                , builder = state.builder
+                }
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : AnimState -> Sub AnimationMsg
+subscriptions (AnimState state) =
+    if state.isRunning then
+        Browser.Events.onAnimationFrameDelta AnimationFrame
+
+    else
+        Sub.none
 
 
 
@@ -101,266 +226,8 @@ delayToFrames delayMs =
     max 0 (delayMs // frameDurationMs)
 
 
-{-| Calculate duration from animation step count.
--}
-framesToDuration : Int -> Int
-framesToDuration stepCount =
-    if stepCount <= 1 then
-        0
 
-    else
-        stepCount * frameDurationMs
-
-
-
--- ANIMATION STATE
-
-
-{-| State for managing subscription-based animations.
--}
-type AnimState
-    = AnimState
-        { elementAnimations : Dict ElementId ElementAnimation
-        , isRunning : Bool
-        , builder : AnimBuilder
-        }
-
-
-{-| Initialize empty animation builder.
--}
-init : AnimState
-init =
-    AnimState
-        { elementAnimations = Dict.empty
-        , isRunning = False
-        , builder = Builder.init
-        }
-
-
-type alias ElementId =
-    String
-
-
-type alias ElementAnimation =
-    { properties : List PropertyAnimState
-    , isComplete : Bool
-    }
-
-
-
--- Helper functions to create animation steps using AnimationCore
-
-
-createPositionSteps : Position.Position -> Position.Position -> Int -> (Float -> Float) -> List AnimationValue
-createPositionSteps startPos endPos frames easingFunction =
-    let
-        ( startX, startY ) =
-            Position.toTuple startPos
-
-        ( endX, endY ) =
-            Position.toTuple endPos
-
-        stepsX =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startX endX of
-                [] ->
-                    List.repeat frames endX
-
-                vals ->
-                    vals
-
-        stepsY =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startY endY of
-                [] ->
-                    List.repeat frames endY
-
-                vals ->
-                    vals
-
-        steps =
-            List.map2 Tuple.pair stepsX stepsY
-    in
-    List.map (\( x, y ) -> PositionAnimationValue (Position.fromTuple ( x, y ))) steps
-
-
-createRotateSteps : Rotate.Rotate -> Rotate.Rotate -> Int -> (Float -> Float) -> List AnimationValue
-createRotateSteps start target frames easingFunction =
-    let
-        startFloat =
-            Rotate.toFloat start
-
-        targetFloat =
-            Rotate.toFloat target
-
-        steps =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startFloat targetFloat of
-                [] ->
-                    List.repeat frames targetFloat
-
-                vals ->
-                    vals
-    in
-    List.map (\value -> RotateAnimationValue (Rotate.fromFloat value)) steps
-
-
-createScaleSteps : Scale.Scale -> Scale.Scale -> Int -> (Float -> Float) -> List AnimationValue
-createScaleSteps start end frames easingFunction =
-    let
-        ( startX, startY ) =
-            Scale.toTuple start
-
-        ( targetX, targetY ) =
-            Scale.toTuple end
-
-        stepsX =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startX targetX of
-                [] ->
-                    List.repeat frames targetX
-
-                vals ->
-                    vals
-
-        stepsY =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startY targetY of
-                [] ->
-                    List.repeat frames targetY
-
-                vals ->
-                    vals
-
-        steps =
-            List.map2 Tuple.pair stepsX stepsY
-    in
-    List.map (\( x, y ) -> ScaleAnimationValue (Scale.fromTuple ( x, y ))) steps
-
-
-createOpacitySteps : Opacity.Opacity -> Opacity.Opacity -> Int -> (Float -> Float) -> List AnimationValue
-createOpacitySteps start target frames easingFunction =
-    let
-        startFloat =
-            Opacity.toFloat start
-
-        targetFloat =
-            Opacity.toFloat target
-
-        steps =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startFloat targetFloat of
-                [] ->
-                    List.repeat frames targetFloat
-
-                vals ->
-                    vals
-    in
-    List.map (\value -> OpacityAnimationValue (Opacity.fromFloat value)) steps
-
-
-createColorSteps : Color.Color -> Color.Color -> Int -> (Float -> Float) -> List AnimationValue
-createColorSteps start target frames easingFunction =
-    let
-        progressValues =
-            case AnimationCore.animationStepsWithFrames frames easingFunction 0.0 1.0 of
-                [] ->
-                    List.repeat frames 1.0
-
-                vals ->
-                    vals
-
-        steps =
-            List.map (\progress -> Color.interpolate start target progress) progressValues
-    in
-    List.map ColorAnimationValue steps
-
-
-createSizeSteps : Size.Size -> Size.Size -> Int -> (Float -> Float) -> List AnimationValue
-createSizeSteps startSize endSize frames easingFunction =
-    let
-        ( startWidth, startHeight ) =
-            Size.toTuple startSize
-
-        ( endWidth, endHeight ) =
-            Size.toTuple endSize
-
-        stepsWidth =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startWidth endWidth of
-                [] ->
-                    List.repeat frames endWidth
-
-                vals ->
-                    vals
-
-        stepsHeight =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startHeight endHeight of
-                [] ->
-                    List.repeat frames endHeight
-
-                vals ->
-                    vals
-    in
-    List.map2 (\w h -> SizeAnimationValue (Size.fromTuple ( w, h ))) stepsWidth stepsHeight
-
-
-type alias PropertyAnimState =
-    { propertyType : String
-    , animationSteps : List AnimationValue
-    , currentStepIndex : Int
-    , delayFrames : Int
-    , currentDelayFrame : Int
-    , isComplete : Bool
-    , totalDurationMs : Float
-    , elapsedMs : Float
-    }
-
-
-type AnimationValue
-    = PositionAnimationValue Position
-    | RotateAnimationValue Rotate
-    | ScaleAnimationValue Scale
-    | ColorAnimationValue Color
-    | OpacityAnimationValue Opacity
-    | SizeAnimationValue Size
-
-
-{-| Messages for animation updates.
--}
-type AnimationMsg
-    = AnimationFrame Float -- delta time in milliseconds (converted to frame tick)
-
-
-
--- ANIMATION EXECUTION
-
-
-{-| The ID of the target element to animate.
--}
-type alias TargetId =
-    String
-
-
-{-| Turn the AnimState into an AnimBuilder.
-
-Use this to start new animations based on current state.
-
-    -- Start a new animation based on current state
-    newBuilder =
-        model.animations
-            |> Sub.builder
-            |> Position.for "element"
-            |> Position.to { x = 100, y = 200 }
-            |> Position.build
-            |> Sub.animate
-
--}
-builder : AnimState -> AnimBuilder
-builder ((AnimState state) as animationState) =
-    Dict.foldl (setInitialValues animationState) state.builder state.elementAnimations
-
-
-
-{- Set the start/end values for properties that are currently being animated.
-
-   This ensures that if an element is mid-animation, and a new animation is started,
-   the new animation will start from the current position/color/scale/etc.,
-   rather than jumping back to the original start value.
--}
+-- Builder Helpers
 
 
 setInitialValues : AnimState -> String -> ElementAnimation -> AnimBuilder -> AnimBuilder
@@ -371,7 +238,7 @@ setInitialValues animationState elementId _ builderAcc =
             , mapCurrentValue getSize initSize
             , mapCurrentValue getScale initScale
             , mapCurrentValue getRotate initRotate
-            , mapCurrentValue getColor initColor
+            , mapCurrentValue getColor initBackgroundColor
             , mapCurrentValue getOpacity initOpacity
             ]
     in
@@ -387,108 +254,8 @@ mapCurrentValue getter setter elementId animationState animBuilder =
         |> setter animBuilder
 
 
-initPosition : AnimBuilder -> Maybe Position -> AnimBuilder
-initPosition animBuilder maybePos =
-    case maybePos of
-        Just pos ->
-            let
-                positionConfig =
-                    Builder.PositionConfig
-                        { startAt = Just pos
-                        , endAt = pos
-                        , duration = 0
-                        , speed = 0
-                        , distance = 0
-                        , timing = Nothing
-                        , easing = Nothing
-                        , delay = Nothing
-                        , perspective = Nothing
-                        , isDirty = False
-                        }
-            in
-            PropertyBuilder.upsert positionConfig animBuilder
-
-        Nothing ->
-            animBuilder
-
-
-initSize : AnimBuilder -> Maybe Size -> AnimBuilder
-initSize animBuilder maybeSize =
-    case maybeSize of
-        Just size ->
-            let
-                sizeConfig =
-                    Builder.SizeConfig
-                        { startAt = Just size
-                        , endAt = size
-                        , duration = 0
-                        , speed = 0
-                        , distance = 0
-                        , timing = Nothing
-                        , easing = Nothing
-                        , delay = Nothing
-                        , perspective = Nothing
-                        , isDirty = False
-                        }
-            in
-            PropertyBuilder.upsert sizeConfig animBuilder
-
-        Nothing ->
-            animBuilder
-
-
-initScale : AnimBuilder -> Maybe Scale -> AnimBuilder
-initScale animBuilder maybeScale =
-    case maybeScale of
-        Just scale ->
-            let
-                scaleConfig =
-                    Builder.ScaleConfig
-                        { startAt = Just scale
-                        , endAt = scale
-                        , duration = 0
-                        , speed = 0
-                        , distance = 0
-                        , timing = Nothing
-                        , easing = Nothing
-                        , delay = Nothing
-                        , perspective = Nothing
-                        , isDirty = False
-                        }
-            in
-            PropertyBuilder.upsert scaleConfig animBuilder
-
-        Nothing ->
-            animBuilder
-
-
-initRotate : AnimBuilder -> Maybe Rotate -> AnimBuilder
-initRotate animBuilder maybeRotate =
-    case maybeRotate of
-        Just rotate ->
-            let
-                rotateConfig =
-                    Builder.RotateConfig
-                        { startAt = Just rotate
-                        , endAt = rotate
-                        , duration = 0
-                        , speed = 0
-                        , distance = 0
-                        , timing = Nothing
-                        , easing = Nothing
-                        , delay = Nothing
-                        , perspective = Nothing
-                        , isDirty = False
-                        }
-            in
-            PropertyBuilder.upsert rotateConfig animBuilder
-
-        Nothing ->
-            animBuilder
-
-
-initColor : AnimBuilder -> Maybe Color -> AnimBuilder
-initColor animBuilder maybeColor =
+initBackgroundColor : AnimBuilder -> Maybe Color -> AnimBuilder
+initBackgroundColor animBuilder maybeColor =
     case maybeColor of
         Just color ->
             let
@@ -537,52 +304,307 @@ initOpacity animBuilder maybeOpacity =
             animBuilder
 
 
-{-| Extract current values from dirty properties in the builder.
-Dirty properties with duration=0 represent current state.
--}
-extractCurrentValuesFromBuilder : AnimBuilder -> { position : Maybe { x : Float, y : Float }, rotate : Maybe Float, scale : Maybe { x : Float, y : Float }, color : Maybe Color, opacity : Maybe Float, size : Maybe { width : Float, height : Float } }
-extractCurrentValuesFromBuilder animBuilder =
+initPosition : AnimBuilder -> Maybe Position -> AnimBuilder
+initPosition animBuilder maybePos =
+    case maybePos of
+        Just pos ->
+            let
+                positionConfig =
+                    Builder.PositionConfig
+                        { startAt = Just pos
+                        , endAt = pos
+                        , duration = 0
+                        , speed = 0
+                        , distance = 0
+                        , timing = Nothing
+                        , easing = Nothing
+                        , delay = Nothing
+                        , perspective = Nothing
+                        , isDirty = False
+                        }
+            in
+            PropertyBuilder.upsert positionConfig animBuilder
+
+        Nothing ->
+            animBuilder
+
+
+initRotate : AnimBuilder -> Maybe Rotate -> AnimBuilder
+initRotate animBuilder maybeRotate =
+    case maybeRotate of
+        Just rotate ->
+            let
+                rotateConfig =
+                    Builder.RotateConfig
+                        { startAt = Just rotate
+                        , endAt = rotate
+                        , duration = 0
+                        , speed = 0
+                        , distance = 0
+                        , timing = Nothing
+                        , easing = Nothing
+                        , delay = Nothing
+                        , perspective = Nothing
+                        , isDirty = False
+                        }
+            in
+            PropertyBuilder.upsert rotateConfig animBuilder
+
+        Nothing ->
+            animBuilder
+
+
+initScale : AnimBuilder -> Maybe Scale -> AnimBuilder
+initScale animBuilder maybeScale =
+    case maybeScale of
+        Just scale ->
+            let
+                scaleConfig =
+                    Builder.ScaleConfig
+                        { startAt = Just scale
+                        , endAt = scale
+                        , duration = 0
+                        , speed = 0
+                        , distance = 0
+                        , timing = Nothing
+                        , easing = Nothing
+                        , delay = Nothing
+                        , perspective = Nothing
+                        , isDirty = False
+                        }
+            in
+            PropertyBuilder.upsert scaleConfig animBuilder
+
+        Nothing ->
+            animBuilder
+
+
+initSize : AnimBuilder -> Maybe Size -> AnimBuilder
+initSize animBuilder maybeSize =
+    case maybeSize of
+        Just size ->
+            let
+                sizeConfig =
+                    Builder.SizeConfig
+                        { startAt = Just size
+                        , endAt = size
+                        , duration = 0
+                        , speed = 0
+                        , distance = 0
+                        , timing = Nothing
+                        , easing = Nothing
+                        , delay = Nothing
+                        , perspective = Nothing
+                        , isDirty = False
+                        }
+            in
+            PropertyBuilder.upsert sizeConfig animBuilder
+
+        Nothing ->
+            animBuilder
+
+
+
+-- Step Creators
+
+
+createBackgroundColorSteps : Color.Color -> Color.Color -> Int -> (Float -> Float) -> List Animation
+createBackgroundColorSteps start target frames easingFunction =
     let
-        processedData =
-            Builder.processAnimationData animBuilder
+        progressValues =
+            case AnimationCore.animationStepsWithFrames frames easingFunction 0.0 1.0 of
+                [] ->
+                    List.repeat frames 1.0
 
-        -- Look through all processed elements for dirty properties (duration=0)
-        extractFromElements =
-            Dict.values processedData.elements
-                |> List.concatMap .properties
-                |> List.foldl extractFromProperty { position = Nothing, rotate = Nothing, scale = Nothing, color = Nothing, opacity = Nothing, size = Nothing }
+                vals ->
+                    vals
+
+        steps =
+            List.map (Color.interpolate start target) progressValues
     in
-    extractFromElements
+    List.map BackgroundColorAnimation steps
 
 
-extractFromProperty : Builder.ProcessedPropertyConfig -> { position : Maybe { x : Float, y : Float }, rotate : Maybe Float, scale : Maybe { x : Float, y : Float }, color : Maybe Color, opacity : Maybe Float, size : Maybe { width : Float, height : Float } } -> { position : Maybe { x : Float, y : Float }, rotate : Maybe Float, scale : Maybe { x : Float, y : Float }, color : Maybe Color, opacity : Maybe Float, size : Maybe { width : Float, height : Float } }
+createOpacitySteps : Opacity.Opacity -> Opacity.Opacity -> Int -> (Float -> Float) -> List Animation
+createOpacitySteps start target frames easingFunction =
+    let
+        startFloat =
+            Opacity.toFloat start
+
+        targetFloat =
+            Opacity.toFloat target
+
+        steps =
+            case AnimationCore.animationStepsWithFrames frames easingFunction startFloat targetFloat of
+                [] ->
+                    List.repeat frames targetFloat
+
+                vals ->
+                    vals
+    in
+    List.map (OpacityAnimation << Opacity.fromFloat) steps
+
+
+createPositionSteps : Position.Position -> Position.Position -> Int -> (Float -> Float) -> List Animation
+createPositionSteps startPos endPos frames easingFunction =
+    let
+        ( startX, startY ) =
+            Position.toTuple startPos
+
+        ( endX, endY ) =
+            Position.toTuple endPos
+
+        stepsX =
+            case AnimationCore.animationStepsWithFrames frames easingFunction startX endX of
+                [] ->
+                    List.repeat frames endX
+
+                vals ->
+                    vals
+
+        stepsY =
+            case AnimationCore.animationStepsWithFrames frames easingFunction startY endY of
+                [] ->
+                    List.repeat frames endY
+
+                vals ->
+                    vals
+
+        steps =
+            List.map2 Tuple.pair stepsX stepsY
+    in
+    List.map (PositionAnimation << Position.fromTuple) steps
+
+
+createRotateSteps : Rotate.Rotate -> Rotate.Rotate -> Int -> (Float -> Float) -> List Animation
+createRotateSteps start target frames easingFunction =
+    let
+        startFloat =
+            Rotate.toFloat start
+
+        targetFloat =
+            Rotate.toFloat target
+
+        steps =
+            case AnimationCore.animationStepsWithFrames frames easingFunction startFloat targetFloat of
+                [] ->
+                    List.repeat frames targetFloat
+
+                vals ->
+                    vals
+    in
+    List.map (RotateAnimation << Rotate.fromFloat) steps
+
+
+createScaleSteps : Scale.Scale -> Scale.Scale -> Int -> (Float -> Float) -> List Animation
+createScaleSteps start end frames easingFunction =
+    let
+        ( startX, startY ) =
+            Scale.toTuple start
+
+        ( targetX, targetY ) =
+            Scale.toTuple end
+
+        stepsX =
+            case AnimationCore.animationStepsWithFrames frames easingFunction startX targetX of
+                [] ->
+                    List.repeat frames targetX
+
+                vals ->
+                    vals
+
+        stepsY =
+            case AnimationCore.animationStepsWithFrames frames easingFunction startY targetY of
+                [] ->
+                    List.repeat frames targetY
+
+                vals ->
+                    vals
+
+        steps =
+            List.map2 Tuple.pair stepsX stepsY
+    in
+    List.map (ScaleAnimation << Scale.fromTuple) steps
+
+
+createSizeSteps : Size.Size -> Size.Size -> Int -> (Float -> Float) -> List Animation
+createSizeSteps startSize endSize frames easingFunction =
+    let
+        ( startWidth, startHeight ) =
+            Size.toTuple startSize
+
+        ( endWidth, endHeight ) =
+            Size.toTuple endSize
+
+        stepsWidth =
+            case AnimationCore.animationStepsWithFrames frames easingFunction startWidth endWidth of
+                [] ->
+                    List.repeat frames endWidth
+
+                vals ->
+                    vals
+
+        stepsHeight =
+            case AnimationCore.animationStepsWithFrames frames easingFunction startHeight endHeight of
+                [] ->
+                    List.repeat frames endHeight
+
+                vals ->
+                    vals
+
+        steps =
+            List.map2 Tuple.pair stepsWidth stepsHeight
+    in
+    List.map (SizeAnimation << Size.fromTuple) steps
+
+
+
+-- Extract Current Values
+
+
+type alias PropertyValues =
+    { position : Maybe { x : Float, y : Float, z : Float }
+    , rotate : Maybe { x : Float, y : Float, z : Float }
+    , scale : Maybe { x : Float, y : Float, z : Float }
+    , color : Maybe Color
+    , opacity : Maybe Float
+    , size : Maybe { width : Float, height : Float }
+    }
+
+
+propertyValuesEmpty : PropertyValues
+propertyValuesEmpty =
+    { position = Nothing
+    , rotate = Nothing
+    , scale = Nothing
+    , color = Nothing
+    , opacity = Nothing
+    , size = Nothing
+    }
+
+
+type alias UnwrappedPropertyValues =
+    { position : { x : Float, y : Float, z : Float }
+    , rotate : { x : Float, y : Float, z : Float }
+    , scale : { x : Float, y : Float, z : Float }
+    , color : Color
+    , opacity : Float
+    , size : { width : Float, height : Float }
+    }
+
+
+extractCurrentValuesFromBuilder : AnimBuilder -> PropertyValues
+extractCurrentValuesFromBuilder =
+    Builder.processAnimationData
+        >> .elements
+        >> Dict.values
+        >> List.concatMap .properties
+        >> List.foldl extractFromProperty propertyValuesEmpty
+
+
+extractFromProperty : Builder.ProcessedPropertyConfig -> PropertyValues -> PropertyValues
 extractFromProperty property acc =
     case property of
-        Builder.ProcessedPositionConfig config ->
-            if config.duration == 0 then
-                { acc | position = Just { x = Position.x config.endAt, y = Position.y config.endAt } }
-
-            else
-                acc
-
-        Builder.ProcessedRotateConfig config ->
-            if config.duration == 0 then
-                { acc | rotate = Just (Rotate.toFloat config.endAt) }
-
-            else
-                acc
-
-        Builder.ProcessedScaleConfig config ->
-            if config.duration == 0 then
-                let
-                    ( x, y ) =
-                        Scale.toTuple config.endAt
-                in
-                { acc | scale = Just { x = x, y = y } }
-
-            else
-                acc
-
         Builder.ProcessedBackgroundColorConfig config ->
             if config.duration == 0 then
                 { acc | color = Just config.endAt }
@@ -592,71 +614,45 @@ extractFromProperty property acc =
 
         Builder.ProcessedOpacityConfig config ->
             if config.duration == 0 then
-                { acc | opacity = Just (Opacity.toFloat config.endAt) }
+                { acc | opacity = Just <| Opacity.toFloat config.endAt }
+
+            else
+                acc
+
+        Builder.ProcessedPositionConfig config ->
+            if config.duration == 0 then
+                { acc | position = Just <| Position.toRecord config.endAt }
+
+            else
+                acc
+
+        Builder.ProcessedRotateConfig config ->
+            if config.duration == 0 then
+                { acc | rotate = Just <| Rotate.toRecord config.endAt }
+
+            else
+                acc
+
+        Builder.ProcessedScaleConfig config ->
+            if config.duration == 0 then
+                { acc | scale = Just <| Scale.toRecord config.endAt }
 
             else
                 acc
 
         Builder.ProcessedSizeConfig config ->
             if config.duration == 0 then
-                { acc | size = Just (Size.toRecord config.endAt) }
+                { acc | size = Just <| Size.toRecord config.endAt }
 
             else
                 acc
 
 
-{-| Create animation state from AnimBuilder.
 
-    let
-        animationState =
-            Anim.init "my-element"
-                |> Position.to { x = 100, y = 200 }
-                |> Scale.to { x = 1.5, y = 1.5 }
-                |> Sub.animate
-    in
-    -- Use with subscriptions and update
-
--}
-animate : AnimBuilder -> AnimState
-animate builder_ =
-    let
-        processedData =
-            Builder.processAnimationData builder_
-
-        -- Extract current values from any existing animations in the builder
-        currentValues =
-            extractCurrentValuesFromBuilder builder_
-
-        startValues =
-            { position = Maybe.withDefault { x = 0, y = 0 } currentValues.position
-            , rotate = Maybe.withDefault 0 currentValues.rotate
-            , scale = Maybe.withDefault { x = 1.0, y = 1.0 } currentValues.scale
-            , color = Maybe.withDefault (Color.rgba255 255 255 255 1.0) currentValues.color
-            , opacity = Maybe.withDefault 1.0 currentValues.opacity
-            , size = Maybe.withDefault { width = 0, height = 0 } currentValues.size
-            }
-
-        elementStates =
-            Dict.map (createElementAnimState startValues) processedData.elements
-    in
-    AnimState
-        { elementAnimations = elementStates
-        , isRunning = not (Dict.isEmpty elementStates)
-        , builder = Builder.markDirty builder_
-        }
+-- Create Element Animation State
 
 
-createElementAnimState :
-    { position : { x : Float, y : Float }
-    , rotate : Float
-    , scale : { x : Float, y : Float }
-    , color : Color
-    , opacity : Float
-    , size : { width : Float, height : Float }
-    }
-    -> String
-    -> Builder.ProcessedElementConfig
-    -> ElementAnimation
+createElementAnimState : UnwrappedPropertyValues -> String -> Builder.ProcessedElementConfig -> ElementAnimation
 createElementAnimState startValues _ elementConfig =
     let
         properties =
@@ -667,16 +663,7 @@ createElementAnimState startValues _ elementConfig =
     }
 
 
-createPropertyAnimState :
-    { position : { x : Float, y : Float }
-    , rotate : Float
-    , scale : { x : Float, y : Float }
-    , color : Color
-    , opacity : Float
-    , size : { width : Float, height : Float }
-    }
-    -> Builder.ProcessedPropertyConfig
-    -> Maybe PropertyAnimState
+createPropertyAnimState : UnwrappedPropertyValues -> Builder.ProcessedPropertyConfig -> Maybe PropertyAnimation
 createPropertyAnimState startValues property =
     case property of
         Builder.ProcessedPositionConfig config ->
@@ -687,7 +674,7 @@ createPropertyAnimState startValues property =
                             start
 
                         Nothing ->
-                            Position.fromTuple ( startValues.position.x, startValues.position.y )
+                            Position.fromRecord startValues.position
 
                 frames =
                     if config.duration == 0 then
@@ -702,7 +689,7 @@ createPropertyAnimState startValues property =
                 steps =
                     if config.duration == 0 then
                         -- Zero duration: immediately jump to end value
-                        [ PositionAnimationValue config.endAt ]
+                        [ PositionAnimation config.endAt ]
 
                     else
                         createPositionSteps startAt config.endAt frames easeFunction
@@ -726,7 +713,7 @@ createPropertyAnimState startValues property =
                             start
 
                         Nothing ->
-                            Rotate.fromFloat startValues.rotate
+                            Rotate.fromRecord startValues.rotate
 
                 frames =
                     durationToFrames config.duration
@@ -737,7 +724,7 @@ createPropertyAnimState startValues property =
                 steps =
                     if config.duration == 0 then
                         -- Zero duration: immediately jump to end value
-                        [ RotateAnimationValue config.endAt ]
+                        [ RotateAnimation config.endAt ]
 
                     else
                         createRotateSteps actualStart config.endAt frames easeFunction
@@ -761,7 +748,7 @@ createPropertyAnimState startValues property =
                             start
 
                         Nothing ->
-                            Scale.fromTuple ( startValues.scale.x, startValues.scale.y )
+                            Scale.fromRecord startValues.scale
 
                 frames =
                     durationToFrames config.duration
@@ -772,7 +759,7 @@ createPropertyAnimState startValues property =
                 steps =
                     if config.duration == 0 then
                         -- Zero duration: immediately jump to end value
-                        [ ScaleAnimationValue config.endAt ]
+                        [ ScaleAnimation config.endAt ]
 
                     else
                         createScaleSteps actualStart config.endAt frames easeFunction
@@ -814,10 +801,10 @@ createPropertyAnimState startValues property =
                 steps =
                     if config.duration == 0 then
                         -- Zero duration: immediately jump to end value
-                        [ ColorAnimationValue config.endAt ]
+                        [ BackgroundColorAnimation config.endAt ]
 
                     else
-                        createColorSteps actualStart config.endAt frames easeFunction
+                        createBackgroundColorSteps actualStart config.endAt frames easeFunction
             in
             Just
                 { propertyType = "color"
@@ -852,7 +839,7 @@ createPropertyAnimState startValues property =
                 steps =
                     if config.duration == 0 then
                         -- Zero duration: immediately jump to end value
-                        [ OpacityAnimationValue config.endAt ]
+                        [ OpacityAnimation config.endAt ]
 
                     else
                         createOpacitySteps actualStart config.endAt frames easeFunction
@@ -891,7 +878,7 @@ createPropertyAnimState startValues property =
                 steps =
                     if config.duration == 0 then
                         -- Zero duration: immediately jump to end value
-                        [ SizeAnimationValue config.endAt ]
+                        [ SizeAnimation config.endAt ]
 
                     else
                         createSizeSteps actualStart config.endAt frames easeFunction
@@ -908,63 +895,8 @@ createPropertyAnimState startValues property =
                 }
 
 
-duration : Int -> AnimBuilder -> AnimBuilder
-duration =
-    Builder.duration
 
-
-speed : Float -> AnimBuilder -> AnimBuilder
-speed value =
-    Builder.speed value
-
-
-easing : Easing -> AnimBuilder -> AnimBuilder
-easing =
-    Builder.easing
-
-
-delay : Int -> AnimBuilder -> AnimBuilder
-delay =
-    Builder.delay
-
-
-
--- SUBSCRIPTIONS
-
-
-{-| Subscribe to animation frames when animations are running.
--}
-subscriptions : AnimState -> Sub AnimationMsg
-subscriptions (AnimState state) =
-    if state.isRunning then
-        Browser.Events.onAnimationFrameDelta AnimationFrame
-
-    else
-        Sub.none
-
-
-
--- UPDATE
-
-
-{-| Update animation state with frame delta time.
--}
-update : AnimationMsg -> AnimState -> AnimState
-update msg (AnimState state) =
-    case msg of
-        AnimationFrame deltaMs ->
-            let
-                updatedElements =
-                    Dict.map (updateElementAnimation deltaMs) state.elementAnimations
-
-                stillRunning =
-                    Dict.values updatedElements |> List.any (not << .isComplete)
-            in
-            AnimState
-                { elementAnimations = updatedElements
-                , isRunning = stillRunning
-                , builder = state.builder
-                }
+-- Update Element Animation
 
 
 updateElementAnimation : Float -> String -> ElementAnimation -> ElementAnimation
@@ -982,7 +914,7 @@ updateElementAnimation deltaMs _ elementState =
     }
 
 
-updatePropertyAnimation : Float -> PropertyAnimState -> PropertyAnimState
+updatePropertyAnimation : Float -> PropertyAnimation -> PropertyAnimation
 updatePropertyAnimation deltaMs propertyState =
     if propertyState.isComplete then
         propertyState
@@ -1047,37 +979,13 @@ getPosition elementId (AnimState state) =
                                         |> Maybe.withDefault (getLastStep propertyState.animationSteps)
                             in
                             case currentValue of
-                                PositionAnimationValue pos ->
+                                PositionAnimation pos ->
                                     Just pos
 
                                 _ ->
                                     Nothing
                         )
             )
-
-
-{-| Get current X and Y position of an element being animated.
--}
-getPositionXY : String -> AnimState -> Maybe ( Float, Float )
-getPositionXY elementId animationState =
-    getPosition elementId animationState
-        |> Maybe.map Position.toTuple
-
-
-{-| Get current X position of an element being animated.
--}
-getPositionX : String -> AnimState -> Maybe Float
-getPositionX elementId animationState =
-    getPosition elementId animationState
-        |> Maybe.map (Position.toRecord >> .x)
-
-
-{-| Get current Y position of an element being animated.
--}
-getPositionY : String -> AnimState -> Maybe Float
-getPositionY elementId animationState =
-    getPosition elementId animationState
-        |> Maybe.map (Position.toRecord >> .y)
 
 
 
@@ -1103,7 +1011,7 @@ getSize elementId (AnimState state) =
                                             |> Maybe.withDefault (getLastStep propertyState.animationSteps)
                                 in
                                 case currentValue of
-                                    SizeAnimationValue size ->
+                                    SizeAnimation size ->
                                         Just size
 
                                     _ ->
@@ -1134,7 +1042,7 @@ getScale elementId (AnimState state) =
                                             |> Maybe.withDefault (getLastStep propertyState.animationSteps)
                                 in
                                 case currentValue of
-                                    ScaleAnimationValue scale ->
+                                    ScaleAnimation scale ->
                                         Just scale
 
                                     _ ->
@@ -1165,7 +1073,7 @@ getRotate elementId (AnimState state) =
                                             |> Maybe.withDefault (getLastStep propertyState.animationSteps)
                                 in
                                 case currentValue of
-                                    RotateAnimationValue rotate ->
+                                    RotateAnimation rotate ->
                                         Just rotate
 
                                     _ ->
@@ -1196,7 +1104,7 @@ getColor elementId (AnimState state) =
                                             |> Maybe.withDefault (getLastStep propertyState.animationSteps)
                                 in
                                 case currentValue of
-                                    ColorAnimationValue color ->
+                                    BackgroundColorAnimation color ->
                                         Just color
 
                                     _ ->
@@ -1227,7 +1135,7 @@ getOpacity elementId (AnimState state) =
                                             |> Maybe.withDefault (getLastStep propertyState.animationSteps)
                                 in
                                 case currentValue of
-                                    OpacityAnimationValue opacity ->
+                                    OpacityAnimation opacity ->
                                         Just opacity
 
                                     _ ->
@@ -1235,52 +1143,6 @@ getOpacity elementId (AnimState state) =
 
                             else
                                 Nothing
-                        )
-                    |> List.head
-            )
-
-
-{-| Get current width and height of an element being animated.
--}
-getSizeHW : String -> AnimState -> Maybe ( Float, Float )
-getSizeHW elementId animationState =
-    getSize elementId animationState
-        |> Maybe.map Size.toTuple
-
-
-{-| Get current height of an element being animated.
--}
-getSizeH : String -> AnimState -> Maybe Float
-getSizeH elementId animationState =
-    getSize elementId animationState
-        |> Maybe.map (Size.toTuple >> Tuple.second)
-
-
-{-| Get current width of an element being animated.
--}
-getSizeW : String -> AnimState -> Maybe Float
-getSizeW elementId animationState =
-    getSize elementId animationState
-        |> Maybe.map (Size.toTuple >> Tuple.first)
-
-
-{-| Get duration of the first animation found for an element.
-Returns Nothing if the element has no animations.
--}
-getDuration : String -> AnimState -> Maybe Int
-getDuration elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
-        |> Maybe.andThen
-            (\elementAnimation ->
-                elementAnimation.properties
-                    |> List.filterMap
-                        (\prop ->
-                            -- Calculate duration from animation steps
-                            let
-                                stepCount =
-                                    List.length prop.animationSteps
-                            in
-                            Just (framesToDuration stepCount)
                         )
                     |> List.head
             )
@@ -1501,44 +1363,37 @@ getSizeRange elementId (AnimState state) =
 
 
 
--- CURRENT STYLES
+-- HELPER FUNCTIONS
 
 
-{-| Get current animation values as CSS-compatible styles.
--}
-getCurrentStyles : String -> AnimState -> List ( String, String )
-getCurrentStyles elementId (AnimState state) =
+htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
+htmlAttributes elementId (AnimState state) =
     case Dict.get elementId state.elementAnimations of
         Nothing ->
             []
 
-        Just elementState ->
-            combinePropertyStyles elementState.properties
+        Just elementAnimation ->
+            let
+                transformParts =
+                    List.filterMap getTransformPart elementAnimation.properties
+
+                sizeStyles =
+                    List.concatMap getSizeStyleAttributes elementAnimation.properties
+
+                nonTransformStyles =
+                    List.filterMap getNonTransformStyleAttribute elementAnimation.properties
+
+                transformStyle =
+                    if List.isEmpty transformParts then
+                        []
+
+                    else
+                        [ Html.Attributes.style "transform" (String.join " " transformParts) ]
+            in
+            transformStyle ++ sizeStyles ++ nonTransformStyles
 
 
-combinePropertyStyles : List PropertyAnimState -> List ( String, String )
-combinePropertyStyles properties =
-    let
-        transformParts =
-            List.filterMap getTransformPart properties
-
-        sizeStyles =
-            List.concatMap getSizeStyles properties
-
-        nonTransformStyles =
-            List.filterMap getNonTransformStyle properties
-
-        transformStyle =
-            if List.isEmpty transformParts then
-                []
-
-            else
-                [ ( "transform", String.join " " transformParts ) ]
-    in
-    transformStyle ++ sizeStyles ++ nonTransformStyles
-
-
-getTransformPart : PropertyAnimState -> Maybe String
+getTransformPart : PropertyAnimation -> Maybe String
 getTransformPart propertyState =
     let
         currentValue =
@@ -1547,17 +1402,17 @@ getTransformPart propertyState =
                 |> Maybe.withDefault (getLastStep propertyState.animationSteps)
     in
     case currentValue of
-        PositionAnimationValue pos ->
+        PositionAnimation pos ->
             let
                 ( x, y, z ) =
                     Position.toTriple pos
             in
             Just ("translate3d(" ++ String.fromFloat x ++ "px, " ++ String.fromFloat y ++ "px, " ++ String.fromFloat z ++ "px)")
 
-        RotateAnimationValue rotate ->
+        RotateAnimation rotate ->
             Just (Rotate.to3DCssString rotate)
 
-        ScaleAnimationValue scale ->
+        ScaleAnimation scale ->
             let
                 ( x, y ) =
                     Scale.toTuple scale
@@ -1568,8 +1423,8 @@ getTransformPart propertyState =
             Nothing
 
 
-getSizeStyles : PropertyAnimState -> List ( String, String )
-getSizeStyles propertyState =
+getSizeStyleAttributes : PropertyAnimation -> List (Html.Attribute msg)
+getSizeStyleAttributes propertyState =
     let
         currentValue =
             List.drop propertyState.currentStepIndex propertyState.animationSteps
@@ -1577,29 +1432,21 @@ getSizeStyles propertyState =
                 |> Maybe.withDefault (getLastStep propertyState.animationSteps)
     in
     case currentValue of
-        SizeAnimationValue size ->
+        SizeAnimation size ->
             let
                 ( width, height ) =
                     Size.toTuple size
             in
-            [ ( "width", String.fromFloat width ++ "px" )
-            , ( "height", String.fromFloat height ++ "px" )
+            [ Html.Attributes.style "width" (String.fromFloat width ++ "px")
+            , Html.Attributes.style "height" (String.fromFloat height ++ "px")
             ]
 
-        -- Handle the case where we have a Size property but got a wrong fallback
         _ ->
-            if propertyState.propertyType == "size" then
-                -- Force some default size CSS if this is a size property
-                [ ( "width", "150px" )
-                , ( "height", "150px" )
-                ]
-
-            else
-                []
+            []
 
 
-getNonTransformStyle : PropertyAnimState -> Maybe ( String, String )
-getNonTransformStyle propertyState =
+getNonTransformStyleAttribute : PropertyAnimation -> Maybe (Html.Attribute msg)
+getNonTransformStyleAttribute propertyState =
     let
         currentValue =
             List.drop propertyState.currentStepIndex propertyState.animationSteps
@@ -1607,40 +1454,18 @@ getNonTransformStyle propertyState =
                 |> Maybe.withDefault (getLastStep propertyState.animationSteps)
     in
     case currentValue of
-        ColorAnimationValue colorValue ->
-            Just ( "background-color", Color.toString colorValue )
+        BackgroundColorAnimation colorValue ->
+            Just (Html.Attributes.style "background-color" (Color.toString colorValue))
 
-        OpacityAnimationValue opacity ->
-            let
-                opacityValue =
-                    Opacity.toFloat opacity
-            in
-            Just ( "opacity", String.fromFloat opacityValue )
+        OpacityAnimation opacity ->
+            Just (Html.Attributes.style "opacity" (String.fromFloat (Opacity.toFloat opacity)))
 
         _ ->
             Nothing
 
 
-getLastStep : List AnimationValue -> AnimationValue
+getLastStep : List Animation -> Animation
 getLastStep steps =
     List.reverse steps
         |> List.head
-        |> Maybe.withDefault (PositionAnimationValue (Position.fromTuple ( 0, 0 )))
-
-
-
--- HELPER FUNCTIONS
-
-
-htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
-htmlAttributes elementId animationResult =
-    getElementStyles elementId animationResult
-        |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
-
-
-getElementStyles : String -> AnimState -> List ( String, String )
-getElementStyles elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
-        |> Maybe.map .properties
-        |> Maybe.map combinePropertyStyles
-        |> Maybe.withDefault []
+        |> Maybe.withDefault (PositionAnimation (Position.fromTuple ( 0, 0 )))

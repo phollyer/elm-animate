@@ -257,22 +257,22 @@ viewContent : Model -> List (Element Msg)
 viewContent model =
     let
         positionA =
-            Sub.getPosition "elementA" model.animations
+            Sub.getCurrentPosition "elementA" model.animations
 
         positionB =
-            Sub.getPosition "elementB" model.animations
+            Sub.getCurrentPosition "elementB" model.animations
 
         positionC =
-            Sub.getPosition "elementC" model.animations
+            Sub.getCurrentPosition "elementC" model.animations
 
         positionD =
-            Sub.getPosition "elementD" model.animations
+            Sub.getCurrentPosition "elementD" model.animations
 
         positionE =
-            Sub.getPosition "elementE" model.animations
+            Sub.getCurrentPosition "elementE" model.animations
 
         positionF =
-            Sub.getPosition "elementF" model.animations
+            Sub.getCurrentPosition "elementF" model.animations
     in
     [ UI.backButton
     , UI.pageHeader "ElmUI & Subscription Choreography Example"
