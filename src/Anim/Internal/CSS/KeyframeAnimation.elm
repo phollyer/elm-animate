@@ -225,7 +225,7 @@ generate elementId properties =
                                                             interpolatedRot =
                                                                 Rotate.fromFloat interpolatedAngle
                                                         in
-                                                        { acc | rotate = "rotate(" ++ Rotate.toCssString interpolatedRot ++ ")" }
+                                                        { acc | rotate = Rotate.to3DCssString interpolatedRot }
 
                                                     Builder.ProcessedScaleConfig cfg ->
                                                         let

@@ -6,8 +6,16 @@ module Anim.Internal.Builders.Rotate exposing
     , easing
     , for
     , from
+    , fromX
+    , fromXYZ
+    , fromY
+    , fromZ
     , speed
     , to
+    , toX
+    , toXYZ
+    , toY
+    , toZ
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
@@ -104,7 +112,7 @@ type alias RotateConfig =
 defaultConfig : RotateConfig
 defaultConfig =
     { startAt = Nothing
-    , endAt = Rotate.fromFloat 0.0
+    , endAt = Rotate.fromTriple ( 0.0, 0.0, 0.0 )
     , duration = 0
     , speed = 0.0
     , distance = 0.0
@@ -120,11 +128,11 @@ from rotation (RotateBuilder config builder) =
     let
         startPos =
             case config.startAt of
-                Just opacity_ ->
-                    opacity_
+                Just rotation_ ->
+                    rotation_
 
                 Nothing ->
-                    Rotate.fromFloat 0.0
+                    Rotate.fromTriple ( 0.0, 0.0, 0.0 )
     in
     RotateBuilder
         { config
@@ -138,6 +146,67 @@ from rotation (RotateBuilder config builder) =
 to : Rotate -> RotateBuilder -> RotateBuilder
 to rotation (RotateBuilder config builder) =
     RotateBuilder { config | endAt = rotation } builder
+
+
+fromX : Float -> RotateBuilder -> RotateBuilder
+fromX x (RotateBuilder config builder) =
+    let
+        existingY =
+            Maybe.withDefault 0 (Maybe.map Rotate.rotateY config.startAt)
+
+        existingZ =
+            Maybe.withDefault 0 (Maybe.map Rotate.rotateZ config.startAt)
+    in
+    RotateBuilder { config | startAt = Just (Rotate.fromTriple ( x, existingY, existingZ )) } builder
+
+
+fromY : Float -> RotateBuilder -> RotateBuilder
+fromY y (RotateBuilder config builder) =
+    let
+        existingX =
+            Maybe.withDefault 0 (Maybe.map Rotate.rotateX config.startAt)
+
+        existingZ =
+            Maybe.withDefault 0 (Maybe.map Rotate.rotateZ config.startAt)
+    in
+    RotateBuilder { config | startAt = Just (Rotate.fromTriple ( existingX, y, existingZ )) } builder
+
+
+fromZ : Float -> RotateBuilder -> RotateBuilder
+fromZ z (RotateBuilder config builder) =
+    let
+        existingX =
+            Maybe.withDefault 0 (Maybe.map Rotate.rotateX config.startAt)
+
+        existingY =
+            Maybe.withDefault 0 (Maybe.map Rotate.rotateY config.startAt)
+    in
+    RotateBuilder { config | startAt = Just (Rotate.fromTriple ( existingX, existingY, z )) } builder
+
+
+fromXYZ : Float -> Float -> Float -> RotateBuilder -> RotateBuilder
+fromXYZ x y z (RotateBuilder config builder) =
+    RotateBuilder { config | startAt = Just (Rotate.fromTriple ( x, y, z )) } builder
+
+
+toX : Float -> RotateBuilder -> RotateBuilder
+toX x (RotateBuilder config builder) =
+    to (Rotate.fromTriple ( x, Rotate.rotateY config.endAt, Rotate.rotateZ config.endAt )) (RotateBuilder config builder)
+
+
+toY : Float -> RotateBuilder -> RotateBuilder
+toY y (RotateBuilder config builder) =
+    to (Rotate.fromTriple ( Rotate.rotateX config.endAt, y, Rotate.rotateZ config.endAt )) (RotateBuilder config builder)
+
+
+toZ : Float -> RotateBuilder -> RotateBuilder
+toZ z (RotateBuilder config builder) =
+    to (Rotate.fromTriple ( Rotate.rotateX config.endAt, Rotate.rotateY config.endAt, z )) (RotateBuilder config builder)
+
+
+toXYZ : Float -> Float -> Float -> RotateBuilder -> RotateBuilder
+toXYZ x y z (RotateBuilder config builder) =
+    to (Rotate.fromTriple ( x, y, z )) (RotateBuilder config builder)
 
 
 speed : Float -> RotateBuilder -> RotateBuilder

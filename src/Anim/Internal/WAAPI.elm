@@ -258,7 +258,7 @@ positionToTransform pos =
 
 rotateToTransform : Rotate -> String
 rotateToTransform rot =
-    "rotate(" ++ String.fromFloat (Rotate.toFloat rot) ++ "deg)"
+    Rotate.to3DCssString rot
 
 
 scaleToTransform : Scale -> String

@@ -606,7 +606,8 @@ The first time the animation runs, if no starting position is set, it will defau
 
 Once an animation is complete, providing you are tracking animation state in your model, it's end position becomes the next start position - unless explicitly set otherwise.
 
-Therefore, if the animation has not been run yet, or is running, the start position is returned, if the animation is complete, the end position is returned. This allows you to always get the correct start position for the next animation.
+Therefore, if the animation has not been run yet, or is running, the start position is returned, if the animation is complete, the end position is returned.
+This allows you to always get the correct start position before, during, and after the animation runs.
 
 Returns `Nothing` if the element has no position animation.
 

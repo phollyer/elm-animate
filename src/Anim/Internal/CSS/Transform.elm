@@ -93,7 +93,7 @@ transformFromProperty property acc =
                 acc
 
             else
-                { acc | rotate = "rotate(" ++ Rotate.toCssString config.endAt ++ ")" }
+                { acc | rotate = Rotate.to3DCssString config.endAt }
 
         Builder.ScaleConfig config ->
             if config.isDirty then

@@ -1348,11 +1348,7 @@ getTransformPart propertyState =
             Just ("translate3d(" ++ String.fromFloat x ++ "px, " ++ String.fromFloat y ++ "px, " ++ String.fromFloat z ++ "px)")
 
         RotateAnimationValue rotate ->
-            let
-                degrees =
-                    Rotate.toFloat rotate
-            in
-            Just ("rotate(" ++ String.fromFloat degrees ++ "deg)")
+            Just (Rotate.to3DCssString rotate)
 
         ScaleAnimationValue scale ->
             let
