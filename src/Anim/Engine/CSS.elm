@@ -602,14 +602,13 @@ getCurrent elementId maybeStart end default animState =
 
 {-| Get the start position of an element being animated.
 
-The first time the animation runs, if no starting position is set, it will default to (0, 0, 0).
+Returns the start position if the animation has not started yet, or is running.
 
-Once an animation is complete, providing you are tracking animation state in your model, it's end position becomes the next start position - unless explicitly set otherwise.
-
-Therefore, if the animation has not been run yet, or is running, the start position is returned, if the animation is complete, the end position is returned.
-This allows you to always get the correct start position before, during, and after the animation runs.
+Returns the end position if the animation has completed.
 
 Returns `Nothing` if the element has no position animation.
+
+See also: [Start Positions](Anim.Properties.Position#configure) documentation.
 
 -}
 getStartPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }

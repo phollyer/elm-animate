@@ -39,7 +39,7 @@ For 3D positioning, use the XYZ functions:
 
 ## Start Position
 
-The first time the animation runs, if no starting position is set, it will default to (0, 0, 0).
+The first time an animation runs, if no starting position is set, it will be set to the default (0, 0, 0).
 
 On subsequent animations, providing you are tracking animation state in your model, it will start from the last known position, so you
 only need to set this when you want to override that behaviour.
