@@ -1,17 +1,17 @@
 module Anim.Properties.Scale exposing
     ( Builder, for, build
-    , from, fromXY, fromX, fromY
-    , to, toXY, toX, toY
+    , from, fromXY, fromXYZ, fromX, fromY, fromZ
+    , to, toXY, toXYZ, toX, toY, toZ
     , speed, duration, easing, delay
     )
 
-{-| Scale animation functions.
+{-| Scale animation functions with 3D support.
 
 Use these functions to configure scale animations in the builder chain:
 
     animBuilder
         |> Scale.for "my-element"
-        |> Scale.to (ScaleXY 1.5 1.5)
+        |> Scale.toXYZ 1.5 1.5 1.2  -- 3D scaling
         |> Scale.speed 2.0
         |> ... -- other scale configuration steps
         |> Scale.build
@@ -28,16 +28,16 @@ Use these functions to configure scale animations in the builder chain:
 
 ## Start Scale
 
-The first time the animation runs, if no starting scale is set, it will default to (1.0, 1.0).
+The first time the animation runs, if no starting scale is set, it will default to (1.0, 1.0, 1.0).
 
 On subsequent animations, it will start from the last known scale, so you only need to set this when you want to override that behavior.
 
-@docs from, fromXY, fromX, fromY
+@docs from, fromXY, fromXYZ, fromX, fromY, fromZ
 
 
 ## End Scale
 
-@docs to, toXY, toX, toY
+@docs to, toXY, toXYZ, toX, toY, toZ
 
 
 ## Timing
@@ -98,7 +98,7 @@ build =
 -}
 from : Float -> Builder -> Builder
 from uniformScale =
-    SB.fromXY uniformScale uniformScale
+    SB.fromXYZ uniformScale uniformScale uniformScale
 
 
 {-| Set the starting scale for the X and Y axes of the current element.
@@ -114,6 +114,19 @@ fromXY =
     SB.fromXY
 
 
+{-| Set the starting scale for the X, Y, and Z axes of the current element.
+
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.fromXYZ 0.8 1.2 0.9
+        |> ...
+
+-}
+fromXYZ : Float -> Float -> Float -> Builder -> Builder
+fromXYZ =
+    SB.fromXYZ
+
+
 {-| Set the starting scale for the X axis of the current element.
 
     animBuilder
@@ -121,7 +134,7 @@ fromXY =
         |> Scale.fromX 0.8
         |> ...
 
-The starting X position remains unchanged, or 1.0 if not set.
+The Y and Z scales remain unchanged, or 1.0 if not set.
 
 -}
 fromX : Float -> Builder -> Builder
@@ -136,12 +149,27 @@ fromX =
         |> Scale.fromY 1.2
         |> ...
 
-The starting Y position remains unchanged, or 1.0 if not set.
+The X and Z scales remain unchanged, or 1.0 if not set.
 
 -}
 fromY : Float -> Builder -> Builder
 fromY =
     SB.fromY
+
+
+{-| Set the starting scale for the Z axis of the current element.
+
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.fromZ 1.1
+        |> ...
+
+The X and Y scales remain unchanged, or 1.0 if not set.
+
+-}
+fromZ : Float -> Builder -> Builder
+fromZ =
+    SB.fromZ
 
 
 {-| Set the uniform target scale for the current element.
@@ -154,7 +182,7 @@ fromY =
 -}
 to : Float -> Builder -> Builder
 to targetScale =
-    SB.toXY targetScale targetScale
+    SB.toXYZ targetScale targetScale targetScale
 
 
 {-| Set the target scale for the X and Y axes of the current element.
@@ -170,17 +198,17 @@ toXY =
     SB.toXY
 
 
-{-| Set the target scale for the Y axis of the current element.
+{-| Set the target scale for the X, Y, and Z axes of the current element.
 
     animBuilder
         |> Scale.for "my-element"
-        |> Scale.toY 1.5
+        |> Scale.toXYZ 1.5 2.0 0.8
         |> ...
 
 -}
-toY : Float -> Builder -> Builder
-toY =
-    SB.toY
+toXYZ : Float -> Float -> Float -> Builder -> Builder
+toXYZ =
+    SB.toXYZ
 
 
 {-| Set the target scale for the X axis of the current element.
@@ -190,10 +218,42 @@ toY =
         |> Scale.toX 2.0
         |> ...
 
+The Y and Z scales remain unchanged.
+
 -}
 toX : Float -> Builder -> Builder
 toX =
     SB.toX
+
+
+{-| Set the target scale for the Y axis of the current element.
+
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.toY 1.5
+        |> ...
+
+The X and Z scales remain unchanged.
+
+-}
+toY : Float -> Builder -> Builder
+toY =
+    SB.toY
+
+
+{-| Set the target scale for the Z axis of the current element.
+
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.toZ 0.8
+        |> ...
+
+The X and Y scales remain unchanged.
+
+-}
+toZ : Float -> Builder -> Builder
+toZ =
+    SB.toZ
 
 
 {-| Set the animation speed (scale factor units per second).

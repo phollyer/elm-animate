@@ -3,14 +3,19 @@ module Anim.Internal.Properties.Scale exposing
     , distance
     , encode
     , equal
+    , fromTriple
     , fromTuple
     , fromUniform
     , getX
     , getY
+    , getZ
     , isUniform
     , map
+    , to3DCssString
     , toCssString
+    , toRecord
     , toString
+    , toTriple
     , toTuple
     , toUniform
     )
@@ -19,97 +24,162 @@ import Json.Encode as Encode
 
 
 type Scale
-    = ScaleXY Float Float
+    = Scale { x : Float, y : Float, z : Float }
 
 
 toString : Scale -> String
-toString (ScaleXY sx sy) =
-    "Scale(x: " ++ String.fromFloat sx ++ ", y: " ++ String.fromFloat sy ++ ")"
+toString (Scale { x, y, z }) =
+    "Scale(x: " ++ String.fromFloat x ++ ", y: " ++ String.fromFloat y ++ ", z: " ++ String.fromFloat z ++ ")"
+
+
+
+-- 2D backward compatible CSS string
 
 
 toCssString : Scale -> String
-toCssString (ScaleXY sx sy) =
-    String.fromFloat sx ++ "," ++ String.fromFloat sy
+toCssString (Scale { x, y }) =
+    String.fromFloat x ++ "," ++ String.fromFloat y
+
+
+
+-- 3D CSS string using scale3d()
+
+
+to3DCssString : Scale -> String
+to3DCssString (Scale { x, y, z }) =
+    let
+        parts =
+            [ if x /= 1.0 then
+                Just ("scaleX(" ++ String.fromFloat x ++ ")")
+
+              else
+                Nothing
+            , if y /= 1.0 then
+                Just ("scaleY(" ++ String.fromFloat y ++ ")")
+
+              else
+                Nothing
+            , if z /= 1.0 then
+                Just ("scaleZ(" ++ String.fromFloat z ++ ")")
+
+              else
+                Nothing
+            ]
+                |> List.filterMap identity
+    in
+    case parts of
+        [] ->
+            "scale3d(1,1,1)"
+
+        [ single ] ->
+            single
+
+        multiple ->
+            String.join " " multiple
 
 
 toTuple : Scale -> ( Float, Float )
-toTuple (ScaleXY sx sy) =
-    ( sx, sy )
+toTuple (Scale { x, y }) =
+    ( x, y )
 
 
 fromTuple : ( Float, Float ) -> Scale
-fromTuple ( sx, sy ) =
-    ScaleXY sx sy
+fromTuple ( x, y ) =
+    Scale { x = x, y = y, z = 1.0 }
+
+
+toTriple : Scale -> ( Float, Float, Float )
+toTriple (Scale { x, y, z }) =
+    ( x, y, z )
+
+
+fromTriple : ( Float, Float, Float ) -> Scale
+fromTriple ( x, y, z ) =
+    Scale { x = x, y = y, z = z }
+
+
+toRecord : Scale -> { x : Float, y : Float, z : Float }
+toRecord (Scale record) =
+    record
 
 
 fromUniform : Float -> Scale
 fromUniform s =
-    ScaleXY s s
+    Scale { x = s, y = s, z = s }
 
 
 toUniform : Scale -> Float
-toUniform (ScaleXY sx sy) =
-    if sx == sy then
-        sx
+toUniform (Scale { x, y, z }) =
+    if x == y && y == z then
+        x
 
     else
         1
 
 
 isUniform : Scale -> Bool
-isUniform (ScaleXY sx sy) =
-    sx == sy
+isUniform (Scale { x, y, z }) =
+    x == y && y == z
 
 
 equal : Scale -> Scale -> Bool
-equal (ScaleXY sx1 sy1) (ScaleXY sx2 sy2) =
-    sx1 == sx2 && sy1 == sy2
+equal (Scale scale1) (Scale scale2) =
+    scale1.x == scale2.x && scale1.y == scale2.y && scale1.z == scale2.z
 
 
 map : (Float -> Float) -> Scale -> Scale
-map fn (ScaleXY sx sy) =
-    ScaleXY (fn sx) (fn sy)
+map fn (Scale { x, y, z }) =
+    Scale { x = fn x, y = fn y, z = fn z }
 
 
 encode : Scale -> Encode.Value
-encode (ScaleXY sx sy) =
+encode (Scale { x, y, z }) =
     Encode.object
-        [ ( "x", Encode.float sx )
-        , ( "y", Encode.float sy )
+        [ ( "x", Encode.float x )
+        , ( "y", Encode.float y )
+        , ( "z", Encode.float z )
         ]
 
 
 getY : Scale -> Float
-getY (ScaleXY _ sy) =
-    sy
+getY (Scale { y }) =
+    y
 
 
 getX : Scale -> Float
-getX (ScaleXY sx _) =
-    sx
+getX (Scale { x }) =
+    x
+
+
+getZ : Scale -> Float
+getZ (Scale { z }) =
+    z
 
 
 
-{- Calculate distance between two Scale values using Euclidean distance in scale space.
+{- Calculate distance between two Scale values using Euclidean distance in 3D scale space.
 
-   This follows industry standard vector magnitude calculation for 2D scale transformations:
+   This follows industry standard vector magnitude calculation for 3D scale transformations:
 
-     - distance = sqrt((sx2-sx1)² + (sy2-sy1)²)
+     - distance = sqrt((sx2-sx1)² + (sy2-sy1)² + (sz2-sz1)²)
 
    Example:
-   distance (fromTuple (1.0, 1.0)) (fromTuple (2.0, 1.5))
-   -- Returns: sqrt((2-1)² + (1.5-1)²) = sqrt(1.25) ≈ 1.118
+   distance (fromTriple (1.0, 1.0, 1.0)) (fromTriple (2.0, 1.5, 1.2))
+   -- Returns: sqrt((2-1)² + (1.5-1)² + (1.2-1)²) = sqrt(1.29) ≈ 1.136
 
 -}
 
 
 distance : Scale -> Scale -> Float
-distance (ScaleXY sx1 sy1) (ScaleXY sx2 sy2) =
+distance (Scale scale1) (Scale scale2) =
     let
         dx =
-            sx2 - sx1
+            scale2.x - scale1.x
 
         dy =
-            sy2 - sy1
+            scale2.y - scale1.y
+
+        dz =
+            scale2.z - scale1.z
     in
-    sqrt (dx * dx + dy * dy)
+    sqrt (dx * dx + dy * dy + dz * dz)

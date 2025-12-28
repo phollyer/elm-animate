@@ -100,7 +100,7 @@ transformFromProperty property acc =
                 acc
 
             else
-                { acc | scale = "scale(" ++ Scale.toCssString config.endAt ++ ")" }
+                { acc | scale = Scale.to3DCssString config.endAt }
 
         _ ->
             acc

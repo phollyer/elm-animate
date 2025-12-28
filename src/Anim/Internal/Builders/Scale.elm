@@ -7,11 +7,15 @@ module Anim.Internal.Builders.Scale exposing
     , for
     , fromX
     , fromXY
+    , fromXYZ
     , fromY
+    , fromZ
     , speed
     , toX
     , toXY
+    , toXYZ
     , toY
+    , toZ
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
@@ -129,22 +133,36 @@ fromXY scaleX scaleY (ScaleBuilder config builder) =
         builder
 
 
+fromXYZ : Float -> Float -> Float -> ScaleBuilder -> ScaleBuilder
+fromXYZ scaleX scaleY scaleZ (ScaleBuilder config builder) =
+    ScaleBuilder
+        { config
+            | startAt =
+                Just <|
+                    Scale.fromTriple ( scaleX, scaleY, scaleZ )
+        }
+        builder
+
+
 fromX : Float -> ScaleBuilder -> ScaleBuilder
 fromX scaleX (ScaleBuilder config builder) =
     let
-        startPos =
+        startScale =
             case config.startAt of
                 Just scale_ ->
                     scale_
 
                 Nothing ->
-                    Scale.fromTuple ( 1, 1 )
+                    Scale.fromTriple ( 1, 1, 1 )
+
+        { y, z } =
+            Scale.toRecord startScale
     in
     ScaleBuilder
         { config
             | startAt =
                 Just <|
-                    Scale.fromTuple ( scaleX, Scale.getY startPos )
+                    Scale.fromTriple ( scaleX, y, z )
         }
         builder
 
@@ -152,19 +170,45 @@ fromX scaleX (ScaleBuilder config builder) =
 fromY : Float -> ScaleBuilder -> ScaleBuilder
 fromY scaleY (ScaleBuilder config builder) =
     let
-        startPos =
+        startScale =
             case config.startAt of
                 Just scale_ ->
                     scale_
 
                 Nothing ->
-                    Scale.fromTuple ( 1, 1 )
+                    Scale.fromTriple ( 1, 1, 1 )
+
+        { x, z } =
+            Scale.toRecord startScale
     in
     ScaleBuilder
         { config
             | startAt =
                 Just <|
-                    Scale.fromTuple ( Scale.getX startPos, scaleY )
+                    Scale.fromTriple ( x, scaleY, z )
+        }
+        builder
+
+
+fromZ : Float -> ScaleBuilder -> ScaleBuilder
+fromZ scaleZ (ScaleBuilder config builder) =
+    let
+        startScale =
+            case config.startAt of
+                Just scale_ ->
+                    scale_
+
+                Nothing ->
+                    Scale.fromTriple ( 1, 1, 1 )
+
+        { x, y } =
+            Scale.toRecord startScale
+    in
+    ScaleBuilder
+        { config
+            | startAt =
+                Just <|
+                    Scale.fromTriple ( x, y, scaleZ )
         }
         builder
 
@@ -172,13 +216,13 @@ fromY scaleY (ScaleBuilder config builder) =
 toXY : Float -> Float -> ScaleBuilder -> ScaleBuilder
 toXY scaleX scaleY (ScaleBuilder config builder) =
     let
-        startPos =
+        startScale =
             case config.startAt of
-                Just opacity_ ->
-                    opacity_
+                Just scale_ ->
+                    scale_
 
                 Nothing ->
-                    Scale.fromTuple ( 1, 1 )
+                    Scale.fromTriple ( 1, 1, 1 )
 
         scale =
             Scale.fromTuple ( scaleX, scaleY )
@@ -186,8 +230,31 @@ toXY scaleX scaleY (ScaleBuilder config builder) =
     ScaleBuilder
         { config
             | endAt = scale
-            , distance = Scale.distance startPos scale
-            , startAt = Just startPos
+            , distance = Scale.distance startScale scale
+            , startAt = Just startScale
+        }
+        builder
+
+
+toXYZ : Float -> Float -> Float -> ScaleBuilder -> ScaleBuilder
+toXYZ scaleX scaleY scaleZ (ScaleBuilder config builder) =
+    let
+        startScale =
+            case config.startAt of
+                Just scale_ ->
+                    scale_
+
+                Nothing ->
+                    Scale.fromTriple ( 1, 1, 1 )
+
+        scale =
+            Scale.fromTriple ( scaleX, scaleY, scaleZ )
+    in
+    ScaleBuilder
+        { config
+            | endAt = scale
+            , distance = Scale.distance startScale scale
+            , startAt = Just startScale
         }
         builder
 
@@ -195,21 +262,24 @@ toXY scaleX scaleY (ScaleBuilder config builder) =
 toX : Float -> ScaleBuilder -> ScaleBuilder
 toX scaleX (ScaleBuilder config builder) =
     let
-        startPos =
+        startScale =
             case config.startAt of
                 Just scale_ ->
                     scale_
 
                 Nothing ->
-                    Scale.fromTuple ( 1, 1 )
+                    Scale.fromTriple ( 1, 1, 1 )
+
+        { y, z } =
+            Scale.toRecord startScale
 
         scale =
-            Scale.fromTuple ( scaleX, Scale.getY startPos )
+            Scale.fromTriple ( scaleX, y, z )
     in
     ScaleBuilder
         { config
             | endAt = scale
-            , distance = Scale.distance startPos scale
+            , distance = Scale.distance startScale scale
         }
         builder
 
@@ -217,21 +287,49 @@ toX scaleX (ScaleBuilder config builder) =
 toY : Float -> ScaleBuilder -> ScaleBuilder
 toY scaleY (ScaleBuilder config builder) =
     let
-        startPos =
+        startScale =
             case config.startAt of
                 Just scale_ ->
                     scale_
 
                 Nothing ->
-                    Scale.fromTuple ( 1, 1 )
+                    Scale.fromTriple ( 1, 1, 1 )
+
+        { x, z } =
+            Scale.toRecord startScale
 
         scale =
-            Scale.fromTuple ( Scale.getX startPos, scaleY )
+            Scale.fromTriple ( x, scaleY, z )
     in
     ScaleBuilder
         { config
             | endAt = scale
-            , distance = Scale.distance startPos scale
+            , distance = Scale.distance startScale scale
+        }
+        builder
+
+
+toZ : Float -> ScaleBuilder -> ScaleBuilder
+toZ scaleZ (ScaleBuilder config builder) =
+    let
+        startScale =
+            case config.startAt of
+                Just scale_ ->
+                    scale_
+
+                Nothing ->
+                    Scale.fromTriple ( 1, 1, 1 )
+
+        { x, y } =
+            Scale.toRecord startScale
+
+        scale =
+            Scale.fromTriple ( x, y, scaleZ )
+    in
+    ScaleBuilder
+        { config
+            | endAt = scale
+            , distance = Scale.distance startScale scale
         }
         builder
 

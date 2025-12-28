@@ -188,8 +188,8 @@ import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Col
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
-import Anim.Internal.Properties.Scale as Scale exposing (Scale)
-import Anim.Internal.Properties.Size as Size exposing (Size)
+import Anim.Internal.Properties.Scale as Scale
+import Anim.Internal.Properties.Size as Size
 import Anim.Timing.Easing as Easing exposing (Easing)
 import Browser exposing (UrlRequest(..))
 import Html
@@ -618,12 +618,11 @@ getStartPosition elementId animState =
             (\{ start } ->
                 case start of
                     Nothing ->
-                        Position.fromTriple ( 0, 0, 0 )
+                        { x = 0, y = 0, z = 0 }
 
                     Just startPos ->
-                        startPos
+                        Position.toRecord startPos
             )
-        |> Maybe.map Position.toRecord
 
 
 {-| Get the end position of an element being animated.
@@ -665,17 +664,17 @@ Returns `1.0` if no explicit start value was set, which is where the animation
 Returns `Nothing` if the element has no scale animation.
 
 -}
-getStartScale : String -> AnimState -> Maybe Scale
+getStartScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getStartScale elementId animState =
     InternalCSS.getScaleRange elementId animState
         |> Maybe.map
             (\{ start } ->
                 case start of
                     Nothing ->
-                        Scale.fromUniform 1.0
+                        { x = 1, y = 1, z = 1 }
 
                     Just startScale ->
-                        startScale
+                        Scale.toRecord startScale
             )
 
 
@@ -684,10 +683,10 @@ getStartScale elementId animState =
 Returns `Nothing` if the element has no scale animation.
 
 -}
-getEndScale : String -> AnimState -> Maybe Scale
+getEndScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getEndScale elementId animState =
     InternalCSS.getScaleRange elementId animState
-        |> Maybe.map .end
+        |> Maybe.map (.end >> Scale.toRecord)
 
 
 {-| Get the current scale of an element based on its animation state.
@@ -699,13 +698,14 @@ Returns the start scale if the animation has not started yet.
 Returns the end scale if the animation is running or has completed.
 
 -}
-getCurrentScale : String -> AnimState -> Maybe Scale
+getCurrentScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getCurrentScale elementId animState =
     InternalCSS.getScaleRange elementId animState
         |> Maybe.andThen
             (\{ start, end } ->
                 getCurrent elementId start end (Scale.fromUniform 1.0) animState
             )
+        |> Maybe.map Scale.toRecord
 
 
 {-| Get the start rotation of an element being animated.
@@ -716,17 +716,17 @@ Returns `0.0 degrees` if no explicit start value was set, which is where the ani
 **will** start if no explicit start value is set.
 
 -}
-getStartRotate : String -> AnimState -> Maybe Rotate.Rotate
+getStartRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getStartRotate elementId animState =
     InternalCSS.getRotateRange elementId animState
         |> Maybe.map
             (\{ start } ->
                 case start of
                     Nothing ->
-                        Rotate.fromFloat 0.0
+                        { x = 0, y = 0, z = 0 }
 
                     Just startRotate ->
-                        startRotate
+                        Rotate.toRecord startRotate
             )
 
 
@@ -735,10 +735,10 @@ getStartRotate elementId animState =
 Returns `Nothing` if the element has no rotate animation.
 
 -}
-getEndRotate : String -> AnimState -> Maybe Rotate.Rotate
+getEndRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getEndRotate elementId animState =
     InternalCSS.getRotateRange elementId animState
-        |> Maybe.map .end
+        |> Maybe.map (.end >> Rotate.toRecord)
 
 
 {-| Get the current rotation of an element based on its animation state.
@@ -750,13 +750,14 @@ Returns the start rotation if the animation has not started yet.
 Returns the end rotation if the animation is running or has completed.
 
 -}
-getCurrentRotate : String -> AnimState -> Maybe Rotate.Rotate
+getCurrentRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getCurrentRotate elementId animState =
     InternalCSS.getRotateRange elementId animState
         |> Maybe.andThen
             (\{ start, end } ->
                 getCurrent elementId start end (Rotate.fromFloat 0.0) animState
             )
+        |> Maybe.map Rotate.toRecord
 
 
 {-| Get the start background color of an element being animated.
@@ -870,17 +871,17 @@ Returns `(0, 0)` if no explicit start value was set, which is where the animatio
 **will** start if no explicit start value is set.
 
 -}
-getStartSize : String -> AnimState -> Maybe Size
+getStartSize : String -> AnimState -> Maybe { width : Float, height : Float }
 getStartSize elementId animState =
     InternalCSS.getSizeRange elementId animState
         |> Maybe.map
             (\{ start } ->
                 case start of
                     Nothing ->
-                        Size.fromTuple ( 0, 0 )
+                        { width = 0, height = 0 }
 
                     Just startSize ->
-                        startSize
+                        Size.toRecord startSize
             )
 
 
@@ -889,10 +890,10 @@ getStartSize elementId animState =
 Returns `Nothing` if the element has no size animation.
 
 -}
-getEndSize : String -> AnimState -> Maybe Size
+getEndSize : String -> AnimState -> Maybe { width : Float, height : Float }
 getEndSize elementId animState =
     InternalCSS.getSizeRange elementId animState
-        |> Maybe.map .end
+        |> Maybe.map (.end >> Size.toRecord)
 
 
 {-| Get the current size of an element based on its animation state.
@@ -904,13 +905,14 @@ Returns the start size if the animation has not started yet.
 Returns the end size if the animation is running or has completed.
 
 -}
-getCurrentSize : String -> AnimState -> Maybe Size
+getCurrentSize : String -> AnimState -> Maybe { width : Float, height : Float }
 getCurrentSize elementId animState =
     InternalCSS.getSizeRange elementId animState
         |> Maybe.andThen
             (\{ start, end } ->
                 getCurrent elementId start end (Size.fromTuple ( 0, 0 )) animState
             )
+        |> Maybe.map Size.toRecord
 
 
 {-| Set the global duration in milliseconds (overrides any previous speed setting).
