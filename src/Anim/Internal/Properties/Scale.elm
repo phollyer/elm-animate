@@ -157,15 +157,17 @@ getZ (Scale { z }) =
 
 
 
-{- Calculate distance between two Scale values using Euclidean distance in 3D scale space.
+{- Calculate distance between two Scale values using max-axis distance.
 
-   This follows industry standard vector magnitude calculation for 3D scale transformations:
+   Uses the maximum absolute difference across all scale axes (x, y, z).
+   This provides more intuitive animation timing where the longest-changing axis
+   determines the duration.
 
-     - distance = sqrt((sx2-sx1)² + (sy2-sy1)² + (sz2-sz1)²)
+     - distance = max(|sx2-sx1|, |sy2-sy1|, |sz2-sz1|)
 
    Example:
    distance (fromTriple (1.0, 1.0, 1.0)) (fromTriple (2.0, 1.5, 1.2))
-   -- Returns: sqrt((2-1)² + (1.5-1)² + (1.2-1)²) = sqrt(1.29) ≈ 1.136
+   -- Returns: max(1.0, 0.5, 0.2) = 1.0
 
 -}
 
@@ -174,12 +176,12 @@ distance : Scale -> Scale -> Float
 distance (Scale scale1) (Scale scale2) =
     let
         dx =
-            scale2.x - scale1.x
+            abs (scale2.x - scale1.x)
 
         dy =
-            scale2.y - scale1.y
+            abs (scale2.y - scale1.y)
 
         dz =
-            scale2.z - scale1.z
+            abs (scale2.z - scale1.z)
     in
-    sqrt (dx * dx + dy * dy + dz * dz)
+    max dx (max dy dz)

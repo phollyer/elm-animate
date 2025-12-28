@@ -12,17 +12,23 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 ## 🚦 Animation Engines
 
-All animation engines use a unified builder API, so you can switch between them with minimal changes.
+All animation engines use a unified builder API, so you can switch between them with minimal changes. They also support both 2D and 3D animations.
 
-Here's a `Position` animation that can be used by all of the CSS, Sub and WAAPI engines, without any changes to the animation itself:
+Here's a 3D `Position` animation that can be used by all of the CSS, Sub and WAAPI engines, without any changes to the animation itself:
 
 ```elm
+-- move left by 50px
+-- move up by 100px
+-- zoom in by 300px - 1/3 of the distance from the camera
+-- 2s animation (max-axis: 300px / 150px/s = 2s)
 positionAnimation : AnimBuilder -> AnimBuilder
 positionAnimation builder =
     builder
         |> Position.for "my-element"
-        |> Position.toXY 100 200
-        |> Position.speed 50
+        |> Position.perspective "my-element-container" 900
+        |> Position.fromXYZ 100 200 0
+        |> Position.toXYZ 50 100 300
+        |> Position.speed 150
         |> Position.easing BounceOut
         |> Position.build
 ```
@@ -53,7 +59,7 @@ buildAnimation animations =
 
 -- For CSS Transforms
 div 
-    [ CSS.htmlAttributes "my-element" model.animations ] 
+    ( CSS.htmlAttributes "my-element" model.animations )
     [ text "CSS Animation!" ]
 
 -- For Keyframe Animations
@@ -65,8 +71,8 @@ div
 
 -- Connect your element to the keyframe animation defined in the `<style>` node
 div
-    []
-    [ CSS.animationStyleAttribute "my-element" model.animations ]
+    [CSS.animationStyleAttribute "my-element" model.animations]
+    [ text "Animated Element" ]
 ```
 
 ---

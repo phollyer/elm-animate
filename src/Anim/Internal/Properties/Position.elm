@@ -86,15 +86,15 @@ distance : Position -> Position -> Float
 distance (Position a) (Position b) =
     let
         dx =
-            a.x - b.x
+            abs (a.x - b.x)
 
         dy =
-            a.y - b.y
+            abs (a.y - b.y)
 
         dz =
-            a.z - b.z
+            abs (a.z - b.z)
     in
-    sqrt (dx * dx + dy * dy + dz * dz)
+    max dx (max dy dz)
 
 
 speed : Float -> Float -> TimeSpec -> Float

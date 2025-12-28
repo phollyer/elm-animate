@@ -153,7 +153,7 @@ distance (Rotate start) (Rotate end) =
         dz =
             abs (end.z - start.z)
     in
-    sqrt (dx * dx + dy * dy + dz * dz)
+    max dx (max dy dz)
 
 
 speed : Float -> Float -> TimeSpec -> Float
