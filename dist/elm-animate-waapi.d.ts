@@ -36,7 +36,7 @@ export interface ElementConfig {
 
 export interface PropertyAnimation {
     type: 'position' | 'scale' | 'rotate' | 'opacity' | 'color' | 'size';
-    target: any; // Type varies by property
+    target: PositionTarget | ScaleTarget | RotateTarget | number | string | SizeTarget; // Typed targets
     timing?: TimingConfig;
     easing?: string;
     delay?: number;
@@ -49,11 +49,19 @@ export interface TimingConfig {
 export interface PositionTarget {
     x: number;
     y: number;
+    z?: number; // Optional for 3D positioning
 }
 
 export interface ScaleTarget {
     x: number;
     y: number;
+    z?: number; // Optional for 3D scaling
+}
+
+export interface RotateTarget {
+    x?: number; // Optional X-axis rotation in degrees
+    y?: number; // Optional Y-axis rotation in degrees
+    z?: number; // Optional Z-axis rotation in degrees
 }
 
 export interface SizeTarget {
@@ -65,10 +73,14 @@ export interface AnimationUpdate {
     elementId: string;
     x: number;
     y: number;
+    z: number;  // 3D position support
     opacity: number;
-    rotation: number;
+    rotationX: number;  // 3D rotation X-axis
+    rotationY: number;  // 3D rotation Y-axis
+    rotationZ: number;  // 3D rotation Z-axis (backward compatible)
     scaleX: number;
     scaleY: number;
+    scaleZ: number;     // 3D scale support
     backgroundColor: string;
     isAnimating: boolean;
 }
@@ -77,9 +89,13 @@ export interface TransformState {
     transform: string;
     x: number;
     y: number;
+    z: number;          // 3D position support
     scaleX: number;
     scaleY: number;
-    rotation: number;
+    scaleZ: number;     // 3D scale support
+    rotationX: number;  // 3D rotation X-axis
+    rotationY: number;  // 3D rotation Y-axis
+    rotationZ: number;  // 3D rotation Z-axis (backward compatible)
 }
 
 export interface ElmAnimateWAAPI {
