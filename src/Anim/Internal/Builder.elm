@@ -849,106 +849,11 @@ easingToJsString easingValue =
     Easing.toWebAnimations easingValue
 
 
-
--- TODO: Complete encoding function for the Port module
--- maybe this should be moved to the Port module itself
-{-
-        [ ( "elements", Encode.dict identity encodeProcessedElementConfig data.elements )
-        , ( "globalTiming", encodeMaybeProcessedTiming data.globalTiming )
-        , ( "globalEasing", encodeMaybeProcessedEasing data.globalEasing )
-        , ( "globalDelay", Delay.encodeMaybe data.globalDelay )
-        ]
-
-
-   encodeProcessedElementConfig : ProcessedElementConfig -> Encode.Value
-   encodeProcessedElementConfig config =
-       Encode.object
-           [ ( "properties", Encode.list encodeProcessedPropertyConfig config.properties )
-           ]
-
-
-   encodeProcessedPropertyConfig : ProcessedPropertyConfig -> Encode.Value
-   encodeProcessedPropertyConfig property =
-       let
-           encode_ : String -> (target -> Encode.Value) -> { target : target, timing : TimeSpec, easing : Easing, delay : Delay } -> Encode.Value
-           encode_ type_ targetEncoder config =
-               Encode.object <|
-                   [ ( "type", Encode.string type_ )
-                   , ( "target", targetEncoder config.target )
-                   , ( "timing", TimeSpec.encode config.timing )
-                   , ( "easing", Easing.encode config.easing )
-                   , ( "delay", Delay.encode config.delay )
-                   ]
-       in
-       case property of
-           ProcessedPositionConfig config ->
-               encode_ "position" Position.encode config.target
-
-           ProcessedScaleConfig config ->
-               encode_ "scale" Scale.encode config
-
-           ProcessedColorConfig config ->
-               encode_ "color" BackgroundColor.encode config
-
-           ProcessedOpacityConfig config ->
-               encode_ "opacity" Opacity.encode config
-
-           ProcessedRotateConfig config ->
-               encode_ "rotate" Rotate.encode config
-
-
-   encodeMaybeProcessedTiming : Maybe TimeSpec -> Encode.Value
-   encodeMaybeProcessedTiming maybeTiming =
-       case maybeTiming of
-           Nothing ->
-               Encode.null
-
-           Just timing ->
-               encodeProcessedTiming timing
-
-
-   encodeProcessedTiming : TimeSpec -> Encode.Value
-   encodeProcessedTiming timing =
-       case timing of
-           Duration ms ->
-               Encode.object
-                   [ ( "type", Encode.string "duration" )
-                   , ( "value", Encode.int ms )
-                   ]
-
-           Speed value ->
-               Encode.object
-                   [ ( "type", Encode.string "speed" )
-                   , ( "value", Encode.float value )
-                   ]
-
-
-   encodeMaybeProcessedEasing : Maybe Easing -> Encode.Value
-   encodeMaybeProcessedEasing maybeEasing =
-       case maybeEasing of
-           Nothing ->
-               Encode.null
-
-           Just easing_ ->
-               encodeProcessedEasing easing_
-
-
-   encodeProcessedEasing : Easing -> Encode.Value
-   encodeProcessedEasing easing_ =
-       Easing.encode easing_
-
--}
-
-
-{-| Set the scroll container for scroll animations.
--}
 setScrollContainer : String -> AnimBuilder -> AnimBuilder
 setScrollContainer containerId (AnimBuilder data) =
     AnimBuilder { data | scrollContainer = containerId }
 
 
-{-| Get the scroll container for scroll animations.
--}
 getScrollContainer : AnimBuilder -> String
 getScrollContainer (AnimBuilder data) =
     data.scrollContainer

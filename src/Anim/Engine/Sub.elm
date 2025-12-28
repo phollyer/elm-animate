@@ -545,7 +545,7 @@ Returns the end color if the animation has completed.
 -}
 getCurrentBackgroundColor : String -> AnimState -> Maybe Color
 getCurrentBackgroundColor elementId animState =
-    InternalSub.getColor elementId animState
+    InternalSub.getBackgroundColor elementId animState
 
 
 {-| Get the start opacity of an element being animated.

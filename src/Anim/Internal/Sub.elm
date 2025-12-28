@@ -9,8 +9,8 @@ module Anim.Internal.Sub exposing
     , delay
     , duration
     , easing
+    , getBackgroundColor
     , getBackgroundColorRange
-    , getColor
     , getOpacity
     , getOpacityRange
     , getPosition
@@ -198,6 +198,180 @@ subscriptions (AnimState state) =
 
 
 
+-- Getters
+
+
+getBackgroundColor : String -> AnimState -> Maybe Color
+getBackgroundColor elementId (AnimState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen
+            (\elementState ->
+                elementState.properties
+                    |> List.filterMap
+                        (\propertyState ->
+                            if propertyState.propertyType == "backgroundColor" then
+                                let
+                                    currentValue =
+                                        List.drop propertyState.currentStepIndex propertyState.animationSteps
+                                            |> List.head
+                                            |> Maybe.withDefault (getLastStep propertyState.animationSteps)
+                                in
+                                case currentValue of
+                                    BackgroundColorAnimation color ->
+                                        Just color
+
+                                    _ ->
+                                        Nothing
+
+                            else
+                                Nothing
+                        )
+                    |> List.head
+            )
+
+
+getOpacity : String -> AnimState -> Maybe Opacity
+getOpacity elementId (AnimState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen
+            (\elementState ->
+                elementState.properties
+                    |> List.filterMap
+                        (\propertyState ->
+                            if propertyState.propertyType == "opacity" then
+                                let
+                                    currentValue =
+                                        List.drop propertyState.currentStepIndex propertyState.animationSteps
+                                            |> List.head
+                                            |> Maybe.withDefault (getLastStep propertyState.animationSteps)
+                                in
+                                case currentValue of
+                                    OpacityAnimation opacity ->
+                                        Just opacity
+
+                                    _ ->
+                                        Nothing
+
+                            else
+                                Nothing
+                        )
+                    |> List.head
+            )
+
+
+getPosition : String -> AnimState -> Maybe Position
+getPosition elementId (AnimState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen
+            (\elementState ->
+                List.head elementState.properties
+                    |> Maybe.andThen
+                        (\propertyState ->
+                            let
+                                currentValue =
+                                    List.drop propertyState.currentStepIndex propertyState.animationSteps
+                                        |> List.head
+                                        |> Maybe.withDefault (getLastStep propertyState.animationSteps)
+                            in
+                            case currentValue of
+                                PositionAnimation pos ->
+                                    Just pos
+
+                                _ ->
+                                    Nothing
+                        )
+            )
+
+
+getRotate : String -> AnimState -> Maybe Rotate
+getRotate elementId (AnimState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen
+            (\elementState ->
+                elementState.properties
+                    |> List.filterMap
+                        (\propertyState ->
+                            if propertyState.propertyType == "rotate" then
+                                let
+                                    currentValue =
+                                        List.drop propertyState.currentStepIndex propertyState.animationSteps
+                                            |> List.head
+                                            |> Maybe.withDefault (getLastStep propertyState.animationSteps)
+                                in
+                                case currentValue of
+                                    RotateAnimation rotate ->
+                                        Just rotate
+
+                                    _ ->
+                                        Nothing
+
+                            else
+                                Nothing
+                        )
+                    |> List.head
+            )
+
+
+getScale : String -> AnimState -> Maybe Scale
+getScale elementId (AnimState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen
+            (\elementState ->
+                elementState.properties
+                    |> List.filterMap
+                        (\propertyState ->
+                            if propertyState.propertyType == "scale" then
+                                let
+                                    currentValue =
+                                        List.drop propertyState.currentStepIndex propertyState.animationSteps
+                                            |> List.head
+                                            |> Maybe.withDefault (getLastStep propertyState.animationSteps)
+                                in
+                                case currentValue of
+                                    ScaleAnimation scale ->
+                                        Just scale
+
+                                    _ ->
+                                        Nothing
+
+                            else
+                                Nothing
+                        )
+                    |> List.head
+            )
+
+
+getSize : String -> AnimState -> Maybe Size
+getSize elementId (AnimState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen
+            (\elementState ->
+                -- Search through all properties for a Size property
+                elementState.properties
+                    |> List.filterMap
+                        (\propertyState ->
+                            if propertyState.propertyType == "size" then
+                                let
+                                    currentValue =
+                                        List.drop propertyState.currentStepIndex propertyState.animationSteps
+                                            |> List.head
+                                            |> Maybe.withDefault (getLastStep propertyState.animationSteps)
+                                in
+                                case currentValue of
+                                    SizeAnimation size ->
+                                        Just size
+
+                                    _ ->
+                                        Nothing
+
+                            else
+                                Nothing
+                        )
+                    |> List.head
+            )
+
+
+
 -- CONSTANTS
 
 
@@ -238,7 +412,7 @@ setInitialValues animationState elementId _ builderAcc =
             , mapCurrentValue getSize initSize
             , mapCurrentValue getScale initScale
             , mapCurrentValue getRotate initRotate
-            , mapCurrentValue getColor initBackgroundColor
+            , mapCurrentValue getBackgroundColor initBackgroundColor
             , mapCurrentValue getOpacity initOpacity
             ]
     in
@@ -807,7 +981,7 @@ createPropertyAnimState startValues property =
                         createBackgroundColorSteps actualStart config.endAt frames easeFunction
             in
             Just
-                { propertyType = "color"
+                { propertyType = "backgroundColor"
                 , animationSteps = steps
                 , currentStepIndex = 0
                 , delayFrames = delayToFrames config.delay
@@ -956,196 +1130,6 @@ updatePropertyAnimation deltaMs propertyState =
             , currentStepIndex = correctFrameIndex
             , isComplete = isComplete
         }
-
-
-
--- POSITION
-
-
-{-| Get current position of an element being animated.
--}
-getPosition : String -> AnimState -> Maybe Position
-getPosition elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
-        |> Maybe.andThen
-            (\elementState ->
-                List.head elementState.properties
-                    |> Maybe.andThen
-                        (\propertyState ->
-                            let
-                                currentValue =
-                                    List.drop propertyState.currentStepIndex propertyState.animationSteps
-                                        |> List.head
-                                        |> Maybe.withDefault (getLastStep propertyState.animationSteps)
-                            in
-                            case currentValue of
-                                PositionAnimation pos ->
-                                    Just pos
-
-                                _ ->
-                                    Nothing
-                        )
-            )
-
-
-
--- SIZE
-
-
-{-| Get current size of an element being animated.
--}
-getSize : String -> AnimState -> Maybe Size
-getSize elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
-        |> Maybe.andThen
-            (\elementState ->
-                -- Search through all properties for a Size property
-                elementState.properties
-                    |> List.filterMap
-                        (\propertyState ->
-                            if propertyState.propertyType == "size" then
-                                let
-                                    currentValue =
-                                        List.drop propertyState.currentStepIndex propertyState.animationSteps
-                                            |> List.head
-                                            |> Maybe.withDefault (getLastStep propertyState.animationSteps)
-                                in
-                                case currentValue of
-                                    SizeAnimation size ->
-                                        Just size
-
-                                    _ ->
-                                        Nothing
-
-                            else
-                                Nothing
-                        )
-                    |> List.head
-            )
-
-
-{-| Get current scale of an element being animated.
--}
-getScale : String -> AnimState -> Maybe Scale
-getScale elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
-        |> Maybe.andThen
-            (\elementState ->
-                elementState.properties
-                    |> List.filterMap
-                        (\propertyState ->
-                            if propertyState.propertyType == "scale" then
-                                let
-                                    currentValue =
-                                        List.drop propertyState.currentStepIndex propertyState.animationSteps
-                                            |> List.head
-                                            |> Maybe.withDefault (getLastStep propertyState.animationSteps)
-                                in
-                                case currentValue of
-                                    ScaleAnimation scale ->
-                                        Just scale
-
-                                    _ ->
-                                        Nothing
-
-                            else
-                                Nothing
-                        )
-                    |> List.head
-            )
-
-
-{-| Get current rotation of an element being animated.
--}
-getRotate : String -> AnimState -> Maybe Rotate
-getRotate elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
-        |> Maybe.andThen
-            (\elementState ->
-                elementState.properties
-                    |> List.filterMap
-                        (\propertyState ->
-                            if propertyState.propertyType == "rotate" then
-                                let
-                                    currentValue =
-                                        List.drop propertyState.currentStepIndex propertyState.animationSteps
-                                            |> List.head
-                                            |> Maybe.withDefault (getLastStep propertyState.animationSteps)
-                                in
-                                case currentValue of
-                                    RotateAnimation rotate ->
-                                        Just rotate
-
-                                    _ ->
-                                        Nothing
-
-                            else
-                                Nothing
-                        )
-                    |> List.head
-            )
-
-
-{-| Get current color of an element being animated.
--}
-getColor : String -> AnimState -> Maybe Color
-getColor elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
-        |> Maybe.andThen
-            (\elementState ->
-                elementState.properties
-                    |> List.filterMap
-                        (\propertyState ->
-                            if propertyState.propertyType == "color" then
-                                let
-                                    currentValue =
-                                        List.drop propertyState.currentStepIndex propertyState.animationSteps
-                                            |> List.head
-                                            |> Maybe.withDefault (getLastStep propertyState.animationSteps)
-                                in
-                                case currentValue of
-                                    BackgroundColorAnimation color ->
-                                        Just color
-
-                                    _ ->
-                                        Nothing
-
-                            else
-                                Nothing
-                        )
-                    |> List.head
-            )
-
-
-{-| Get current opacity of an element being animated.
--}
-getOpacity : String -> AnimState -> Maybe Opacity
-getOpacity elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
-        |> Maybe.andThen
-            (\elementState ->
-                elementState.properties
-                    |> List.filterMap
-                        (\propertyState ->
-                            if propertyState.propertyType == "opacity" then
-                                let
-                                    currentValue =
-                                        List.drop propertyState.currentStepIndex propertyState.animationSteps
-                                            |> List.head
-                                            |> Maybe.withDefault (getLastStep propertyState.animationSteps)
-                                in
-                                case currentValue of
-                                    OpacityAnimation opacity ->
-                                        Just opacity
-
-                                    _ ->
-                                        Nothing
-
-                            else
-                                Nothing
-                        )
-                    |> List.head
-            )
 
 
 {-| Check if an animation is currently running for the given element.
