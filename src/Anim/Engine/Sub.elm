@@ -3,10 +3,11 @@ module Anim.Engine.Sub exposing
     , animate
     , AnimationMsg, update, subscriptions
     , htmlAttributes
+    , perspective
+    , containerStyles, containerStylesFor
     , duration, speed
     , easing
     , delay
-    , perspective, containerStyles, containerStylesFor
     , ElementId
     , getPosition, getPositionXY, getPositionX, getPositionY
     , getSize, getSizeHW, getSizeH, getSizeW
@@ -40,6 +41,22 @@ subscriptions for smooth, controlled animations.
 @docs htmlAttributes
 
 
+# 3D Animations
+
+When using 3D transforms with Position, Rotate, or Scale animations, you need to set a perspective
+to give a sense of depth. Without perspective, 3D transformations will have no visual effect, and will appear flat.
+
+
+## Perspective
+
+@docs perspective
+
+
+## HTML
+
+@docs containerStyles, containerStylesFor
+
+
 # Global Settings
 
 These settings will be used for all animations unless overridden on a per-animation basis.
@@ -58,11 +75,6 @@ These settings will be used for all animations unless overridden on a per-animat
 ## Delay
 
 @docs delay
-
-
-## Perspective
-
-@docs perspective, containerStyles, containerStylesFor
 
 
 # Animation Querying
@@ -249,7 +261,7 @@ delay =
 
 {-| Set the global perspective value for 3D transforms.
 
-The perspective value determines the distance between the viewer and the z=0 plane.
+The perspective value determines the distance between the viewer and the `z = 0` plane.
 A smaller value creates a more pronounced 3D effect, while a larger value creates
 a more subtle effect.
 
@@ -260,17 +272,7 @@ a more subtle effect.
         |> Position.build
         |> Sub.animate
 
-You can override this global setting for specific properties using property-specific perspective functions:
-
-    Sub.init
-        |> Sub.perspective "default-container" 1000
-        -- Global setting
-        |> Position.for "special-element"
-        |> Position.toXYZ 100 200 50
-        |> Position.perspective "special-container" 800
-        -- Override for position
-        |> Position.build
-        |> Sub.animate
+You can override this global setting for specific properties using property-specific perspective functions.
 
 -}
 perspective : String -> Float -> AnimBuilder -> AnimBuilder
@@ -338,7 +340,7 @@ containerStyles containerId animState =
     in
     case perspectiveValue of
         Just value ->
-            containerStylesFor containerId value
+            containerStylesFor value
 
         Nothing ->
             []
@@ -360,23 +362,29 @@ extractPerspective property =
             Nothing
 
 
-{-| Generate HTML attributes for a specific container with a given perspective value.
+{-| Manually generate HTML attributes with a given perspective value.
 
-This is useful when you want to manually specify the perspective value without looking it up
-from the animation state.
+Think zoom level for 3D transforms!!
 
-The `containerId` parameter is just a label - it's NOT used as a DOM selector.
+    -- Zoom in/out by changing the perspective value
+
+    update msg model =
+        case msg of
+            ZoomIn ->
+                { model | zoomLevel = model.zoomLevel - 100 }
+
+            ZoomOut ->
+                { model | zoomLevel = model.zoomLevel + 100 }
+
 
     div
-        (Sub.containerStylesFor "main-container" 1000)
-        [ div
-            [ id "animated-element" ]
-            [ text "3D animated content" ]
+        (Sub.containerStylesFor  model.zoomLevel)
+        [ -- Animated content
         ]
 
 -}
-containerStylesFor : String -> Float -> List (Html.Attribute msg)
-containerStylesFor containerId perspectiveValue =
+containerStylesFor : Float -> List (Html.Attribute msg)
+containerStylesFor perspectiveValue =
     [ Html.Attributes.style "perspective" (String.fromFloat perspectiveValue ++ "px")
     , Html.Attributes.style "transform-style" "preserve-3d"
     ]

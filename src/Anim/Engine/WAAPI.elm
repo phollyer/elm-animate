@@ -2,10 +2,11 @@ module Anim.Engine.WAAPI exposing
     ( AnimState, init, AnimBuilder, builder
     , animate, animateBatch
     , update
+    , perspective
+    , containerStylesFor
     , duration, speed
     , easing
     , delay
-    , perspective, containerStylesFor
     , getPosition, getCurrentStyles
     , htmlAttributes
     )
@@ -47,6 +48,22 @@ Then import and initialize it in your JavaScript code:
 @docs update
 
 
+# 3D Animations
+
+When using 3D transforms with Position, Rotate, or Scale animations, you need to set a perspective
+to give a sense of depth. Without perspective, 3D transformations will have no visual effect, and will appear flat.
+
+
+## Perspective
+
+@docs perspective
+
+
+## HTML
+
+@docs containerStylesFor
+
+
 # Global Settings
 
 These settings will be used for all animations unless overridden on a per-animation basis.
@@ -67,11 +84,6 @@ These settings will be used for all animations unless overridden on a per-animat
 @docs delay
 
 
-## Perspective
-
-@docs perspective, containerStylesFor
-
-
 # Animation Data
 
 @docs getPosition, getCurrentStyles
@@ -87,7 +99,6 @@ import Anim.Internal.Builder as Builder
 import Anim.Internal.Properties.Position exposing (Position)
 import Anim.Internal.WAAPI as InternalWAAPI
 import Anim.Timing.Easing as Easing exposing (Easing)
-import Dict
 import Html
 import Html.Attributes
 import Json.Decode as Decode
@@ -325,7 +336,7 @@ delay =
 
 {-| Set the global perspective value for 3D transforms.
 
-The perspective value determines the distance between the viewer and the z=0 plane.
+The perspective value determines the distance between the viewer and the `z = 0` plane.
 A smaller value creates a more pronounced 3D effect, while a larger value creates
 a more subtle effect.
 
@@ -347,17 +358,7 @@ The JavaScript will automatically apply perspective CSS to this container.
         |> Position.build
         |> WAAPI.animate
 
-You can override this global setting for specific properties using property-specific perspective functions:
-
-    WAAPI.init
-        |> WAAPI.perspective "default-container" 1000
-        -- Global setting
-        |> Position.for "special-element"
-        |> Position.toXYZ 100 200 50
-        |> Position.perspective "special-container" 800
-        -- Override for position
-        |> Position.build
-        |> WAAPI.animate
+You can override this global setting for specific properties using property-specific perspective functions.
 
 **For dynamic perspective control** (e.g., zoom in/out), use [containerStylesFor](#containerStylesFor)
 instead of relying on this automatic behavior.
@@ -368,36 +369,32 @@ perspective =
     Builder.perspective
 
 
-{-| Manually apply perspective styles to a container element.
+{-| Manually generate HTML attributes with a given perspective value.
 
-This function gives you direct control over the perspective value applied to a container,
-which is useful for dynamic effects like zoom in/out where the perspective changes in
-response to user interaction.
+Think zoom level for 3D transforms!!
+
+    -- Zoom in/out by changing the perspective value
+
+    update msg model =
+        case msg of
+            ZoomIn ->
+                { model | zoomLevel = model.zoomLevel - 100 }
+
+            ZoomOut ->
+                { model | zoomLevel = model.zoomLevel + 100 }
+
+
+    div
+        (CSS.containerStylesFor  model.zoomLevel)
+        [ -- Animated content
+        ]
 
 **Elm-side styles take precedence**: When you use this function, the JavaScript will detect
 the existing inline style and skip auto-applying perspective, giving you full control.
 
-    div
-        (WAAPI.containerStylesFor "my-container" model.zoomLevel)
-        [ div
-            [ id "animated-element" ]
-            [ text "3D content" ]
-        ]
-
-    -- In your update:
-    case msg of
-        ZoomIn ->
-            ( { model | zoomLevel = model.zoomLevel - 100 }, Cmd.none )
-
-        ZoomOut ->
-            ( { model | zoomLevel = model.zoomLevel + 100 }, Cmd.none )
-
-The perspective value changes dynamically based on `model.zoomLevel`, and JavaScript
-will respect your manual styles rather than overwriting them.
-
 -}
-containerStylesFor : String -> Float -> List (Html.Attribute msg)
-containerStylesFor _ perspectiveValue =
+containerStylesFor : Float -> List (Html.Attribute msg)
+containerStylesFor perspectiveValue =
     [ Html.Attributes.style "perspective" (String.fromFloat perspectiveValue ++ "px")
     , Html.Attributes.style "transform-style" "preserve-3d"
     , Html.Attributes.attribute "data-perspective-source" "elm"

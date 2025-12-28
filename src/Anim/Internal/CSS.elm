@@ -688,7 +688,7 @@ getContainerPerspectiveStyles targetContainerId (AnimState state) =
                 |> Dict.values
                 |> List.concatMap .properties
                 |> List.filterMap extractPerspectiveFromProperty
-                |> List.filter (\{ containerId, value } -> containerId == targetContainerId)
+                |> List.filter (\{ containerId } -> containerId == targetContainerId)
                 |> List.map .value
                 |> List.head
 

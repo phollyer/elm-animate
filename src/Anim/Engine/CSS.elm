@@ -84,8 +84,8 @@ The following functions help with this process:
 
 # 3D Animations
 
-When using 3D transforms (Z axis) with Position, Rotate, or Scale animations, you need to set a perspective
-to give a sense of depth. Without perspective, Z axis transformations will have no visual effect.
+When using 3D transforms with Position, Rotate, or Scale animations, you need to set a perspective
+to give a sense of depth. Without perspective, 3D transformations will have no visual effect, and will appear flat.
 
 
 ## Perspective
@@ -1028,16 +1028,16 @@ of animated elements.
             [ text "3D animated content" ]
         ]
 
+This looks up perspective settings for the specified container from both global settings
+and property-level overrides, with property-level taking precedence.
+
 -}
 containerStyles : String -> AnimState -> List (Html.Attribute msg)
 containerStyles =
     InternalCSS.containerStyles
 
 
-{-| Generate HTML attributes with a given perspective value.
-
-This is useful when you want to manually specify the perspective value without looking it up
-from the animation state.
+{-| Manually generate HTML attributes with a given perspective value.
 
 Think zoom level for 3D transforms!!
 
@@ -1053,13 +1053,13 @@ Think zoom level for 3D transforms!!
 
 
     div
-        (CSS.containerStylesFor "main-container" model.zoomLevel)
+        (CSS.containerStylesFor  model.zoomLevel)
         [ -- Animated content
         ]
 
 -}
-containerStylesFor : String -> Float -> List (Html.Attribute msg)
-containerStylesFor _ perspectiveValue =
+containerStylesFor : Float -> List (Html.Attribute msg)
+containerStylesFor perspectiveValue =
     [ Html.Attributes.style "perspective" (String.fromFloat perspectiveValue ++ "px")
     , Html.Attributes.style "transform-style" "preserve-3d"
     ]
