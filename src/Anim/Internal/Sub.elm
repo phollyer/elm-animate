@@ -402,6 +402,7 @@ initPosition animBuilder maybePos =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
+                        , perspective = Nothing
                         , isDirty = False
                         }
             in
@@ -426,6 +427,7 @@ initSize animBuilder maybeSize =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
+                        , perspective = Nothing
                         , isDirty = False
                         }
             in
@@ -450,6 +452,7 @@ initScale animBuilder maybeScale =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
+                        , perspective = Nothing
                         , isDirty = False
                         }
             in
@@ -474,6 +477,7 @@ initRotate animBuilder maybeRotate =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
+                        , perspective = Nothing
                         , isDirty = False
                         }
             in
@@ -498,6 +502,7 @@ initColor animBuilder maybeColor =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
+                        , perspective = Nothing
                         , isDirty = False
                         }
             in
@@ -522,6 +527,7 @@ initOpacity animBuilder maybeOpacity =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
+                        , perspective = Nothing
                         , isDirty = False
                         }
             in

@@ -10,6 +10,8 @@ module Anim.Internal.CSS exposing
     , animationStyleAttribute
     , anyRunning
     , builder
+    , containerStyles
+    , containerStylesFor
     , delay
     , duration
     , easing
@@ -40,6 +42,7 @@ module Anim.Internal.CSS exposing
     , onTransitionEnd
     , onTransitionRun
     , onTransitionStart
+    , perspective
     , speed
     )
 
@@ -662,6 +665,80 @@ easing =
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
     Builder.delay
+
+
+perspective : String -> Float -> AnimBuilder -> AnimBuilder
+perspective =
+    Builder.perspective
+
+
+containerStyles : String -> AnimState -> List (Html.Attribute msg)
+containerStyles containerId animationState =
+    getContainerPerspectiveStyles containerId animationState
+
+
+containerStylesFor : String -> AnimState -> List (Html.Attribute msg)
+containerStylesFor containerId animationState =
+    getContainerPerspectiveStyles containerId animationState
+
+
+getContainerPerspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
+getContainerPerspectiveStyles targetContainerId (AnimState state) =
+    let
+        processedData =
+            Builder.processAnimationData state.builder
+
+        -- Check if any elements use this containerId for perspective
+        perspectiveValues =
+            processedData.elements
+                |> Dict.values
+                |> List.concatMap .properties
+                |> List.filterMap extractPerspectiveFromProperty
+                |> List.filter (\{ containerId, value } -> containerId == targetContainerId)
+                |> List.map .value
+                |> List.head
+
+        globalPerspective =
+            processedData.globalPerspective
+                |> Maybe.andThen
+                    (\{ containerId, value } ->
+                        if containerId == targetContainerId then
+                            Just value
+
+                        else
+                            Nothing
+                    )
+
+        perspectiveValue =
+            case perspectiveValues of
+                Just value ->
+                    Just value
+
+                Nothing ->
+                    globalPerspective
+    in
+    case perspectiveValue of
+        Just value ->
+            [ Html.Attributes.style "perspective" (String.fromFloat value ++ "px") ]
+
+        Nothing ->
+            []
+
+
+extractPerspectiveFromProperty : Builder.ProcessedPropertyConfig -> Maybe { containerId : String, value : Float }
+extractPerspectiveFromProperty property =
+    case property of
+        Builder.ProcessedPositionConfig config ->
+            config.perspective
+
+        Builder.ProcessedRotateConfig config ->
+            config.perspective
+
+        Builder.ProcessedScaleConfig config ->
+            config.perspective
+
+        _ ->
+            Nothing
 
 
 htmlAttributes : String -> AnimState -> List (Html.Attribute msg)

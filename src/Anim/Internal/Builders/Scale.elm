@@ -10,6 +10,7 @@ module Anim.Internal.Builders.Scale exposing
     , fromXYZ
     , fromY
     , fromZ
+    , perspective
     , speed
     , toX
     , toXY
@@ -41,7 +42,7 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
 type ScaleBuilder
-    = ScaleBuilder ScaleConfig AnimBuilder
+    = ScaleBuilder (Builder.AnimationConfig Scale) AnimBuilder
 
 
 for : String -> AnimBuilder -> ScaleBuilder
@@ -73,6 +74,7 @@ for elementId builder =
                             | startAt = Just config.endAt
                             , easing = Nothing
                             , delay = Nothing
+                            , perspective = Nothing
                             , timing = Nothing
                             , duration = 0
                             , speed = 0
@@ -96,16 +98,7 @@ build (ScaleBuilder config builder) =
 
 
 type alias ScaleConfig =
-    { startAt : Maybe Scale
-    , endAt : Scale
-    , duration : Int -- Millis
-    , speed : Float -- Pixels per second
-    , distance : Float -- Pixels
-    , timing : Maybe TimeSpec
-    , easing : Maybe Easing
-    , delay : Maybe Int
-    , isDirty : Bool
-    }
+    Builder.AnimationConfig Scale
 
 
 defaultConfig : ScaleConfig
@@ -118,6 +111,7 @@ defaultConfig =
     , timing = Nothing
     , easing = Nothing
     , delay = Nothing
+    , perspective = Nothing
     , isDirty = False
     }
 
@@ -366,3 +360,8 @@ easing easing_ (ScaleBuilder config builder) =
 delay : Int -> ScaleBuilder -> ScaleBuilder
 delay delay_ (ScaleBuilder config builder) =
     ScaleBuilder { config | delay = Just delay_ } builder
+
+
+perspective : String -> Float -> ScaleBuilder -> ScaleBuilder
+perspective containerId value (ScaleBuilder config builder) =
+    ScaleBuilder { config | perspective = Just { containerId = containerId, value = value } } builder

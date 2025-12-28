@@ -39,7 +39,7 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
 type SizeBuilder
-    = SizeBuilder SizeConfig AnimBuilder
+    = SizeBuilder (Builder.AnimationConfig Size) AnimBuilder
 
 
 for : String -> AnimBuilder -> SizeBuilder
@@ -74,6 +74,7 @@ for elementId builder =
                             | startAt = Just config.endAt
                             , easing = Nothing
                             , delay = Nothing
+                            , perspective = Nothing
                             , timing = Nothing
                             , duration = 0
                             , speed = 0
@@ -88,16 +89,7 @@ for elementId builder =
 
 
 type alias SizeConfig =
-    { startAt : Maybe Size
-    , endAt : Size
-    , duration : Int -- Millis
-    , speed : Float -- Pixels per second
-    , distance : Float -- Pixels
-    , timing : Maybe TimeSpec
-    , easing : Maybe Easing
-    , delay : Maybe Int
-    , isDirty : Bool
-    }
+    Builder.AnimationConfig Size
 
 
 defaultConfig : SizeConfig
@@ -110,6 +102,7 @@ defaultConfig =
     , timing = Nothing
     , easing = Nothing
     , delay = Nothing
+    , perspective = Nothing
     , isDirty = False
     }
 
@@ -252,6 +245,7 @@ build (SizeBuilder config builder) =
             , timing = config.timing
             , easing = config.easing
             , delay = config.delay
+            , perspective = Nothing -- Size animations don't use perspective
             , isDirty = False
             }
 

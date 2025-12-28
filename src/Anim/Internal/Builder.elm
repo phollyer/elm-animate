@@ -18,6 +18,8 @@ module Anim.Internal.Builder exposing
     , getEasing
     , getEasingWithDefault
     , getElementConfig
+    , getPerspective
+    , getPerspectiveWithDefault
     , getScrollContainer
     , getScrollTargets
     , getTimeSpec
@@ -25,6 +27,7 @@ module Anim.Internal.Builder exposing
     , init
     , mapScrollTargets
     , markDirty
+    , perspective
     , processAnimationData
     , processElement
     , setScrollContainer
@@ -53,6 +56,7 @@ type alias BuilderData =
     { globalTiming : Maybe TimeSpec
     , globalEasing : Maybe Easing
     , globalDelay : Maybe Int
+    , globalPerspective : Maybe { containerId : String, value : Float }
     , currentElementId : Maybe ElementId
     , elements : Dict ElementId ElementConfig
     , scrollTargets : List ScrollTarget
@@ -100,6 +104,7 @@ type alias AnimationConfig targetProperty =
     , timing : Maybe TimeSpec
     , easing : Maybe Easing
     , delay : Maybe Int
+    , perspective : Maybe { containerId : String, value : Float }
     , isDirty : Bool
     }
 
@@ -109,6 +114,7 @@ type alias ProcessedAnimationData =
     , globalTiming : Maybe TimeSpec
     , globalEasing : Maybe Easing
     , globalDelay : Maybe Int
+    , globalPerspective : Maybe { containerId : String, value : Float }
     }
 
 
@@ -121,6 +127,7 @@ type alias ProcessedAnimationConfig targetProperty =
     , timing : TimeSpec
     , easing : Easing
     , delay : Int
+    , perspective : Maybe { containerId : String, value : Float }
     }
 
 
@@ -130,6 +137,7 @@ init =
         { globalTiming = Nothing
         , globalEasing = Nothing
         , globalDelay = Nothing
+        , globalPerspective = Nothing
         , currentElementId = Nothing
         , elements = Dict.empty
         , scrollTargets = []
@@ -209,6 +217,14 @@ delay ms (AnimBuilder data) =
         }
 
 
+perspective : String -> Float -> AnimBuilder -> AnimBuilder
+perspective containerId value (AnimBuilder data) =
+    AnimBuilder
+        { data
+            | globalPerspective = Just { containerId = containerId, value = value }
+        }
+
+
 elements : AnimBuilder -> Dict ElementId ElementConfig
 elements (AnimBuilder data) =
     data.elements
@@ -268,6 +284,20 @@ getDelayWithDefault (AnimBuilder data) =
     data.globalDelay |> Maybe.withDefault 0
 
 
+{-| Get global perspective setting.
+-}
+getPerspective : AnimBuilder -> Maybe { containerId : String, value : Float }
+getPerspective (AnimBuilder data) =
+    data.globalPerspective
+
+
+{-| Get perspective with default fallback.
+-}
+getPerspectiveWithDefault : AnimBuilder -> Maybe { containerId : String, value : Float }
+getPerspectiveWithDefault (AnimBuilder data) =
+    data.globalPerspective
+
+
 {-| Get scroll targets from the builder.
 -}
 getScrollTargets : AnimBuilder -> List ScrollTarget
@@ -319,6 +349,7 @@ processAnimationData (AnimBuilder data) =
     , globalTiming = data.globalTiming
     , globalEasing = data.globalEasing
     , globalDelay = data.globalDelay
+    , globalPerspective = data.globalPerspective
     }
 
 
@@ -344,6 +375,7 @@ processProperty globalData property =
                         , timing = Duration 0
                         , easing = Linear
                         , delay = 0
+                        , perspective = resolvePerspectiveWithDefault config.perspective globalData.globalPerspective Nothing
                         }
 
             else
@@ -378,6 +410,7 @@ processProperty globalData property =
                         , timing = resolvedTiming
                         , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
                         , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
+                        , perspective = resolvePerspectiveWithDefault config.perspective globalData.globalPerspective Nothing
                         }
 
         RotateConfig config ->
@@ -393,6 +426,7 @@ processProperty globalData property =
                         , timing = Duration 0
                         , easing = Linear
                         , delay = 0
+                        , perspective = resolvePerspectiveWithDefault config.perspective globalData.globalPerspective Nothing
                         }
 
             else
@@ -427,6 +461,7 @@ processProperty globalData property =
                         , timing = resolvedTiming
                         , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
                         , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
+                        , perspective = resolvePerspectiveWithDefault config.perspective globalData.globalPerspective Nothing
                         }
 
         ScaleConfig config ->
@@ -442,6 +477,7 @@ processProperty globalData property =
                         , timing = Duration 0
                         , easing = Linear
                         , delay = 0
+                        , perspective = resolvePerspectiveWithDefault config.perspective globalData.globalPerspective Nothing
                         }
 
             else
@@ -480,6 +516,7 @@ processProperty globalData property =
                         , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
                         , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
                         , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
+                        , perspective = resolvePerspectiveWithDefault config.perspective globalData.globalPerspective Nothing
                         }
 
         BackgroundColorConfig config ->
@@ -495,6 +532,7 @@ processProperty globalData property =
                         , timing = Duration 0
                         , easing = Linear
                         , delay = 0
+                        , perspective = Nothing
                         }
 
             else
@@ -530,6 +568,7 @@ processProperty globalData property =
                         , timing = resolvedTiming
                         , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
                         , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
+                        , perspective = Nothing
                         }
 
         OpacityConfig config ->
@@ -545,6 +584,7 @@ processProperty globalData property =
                         , timing = Duration 0
                         , easing = Linear
                         , delay = 0
+                        , perspective = Nothing
                         }
 
             else
@@ -579,6 +619,7 @@ processProperty globalData property =
                         , timing = resolvedTiming
                         , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
                         , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
+                        , perspective = Nothing
                         }
 
         SizeConfig config ->
@@ -594,6 +635,7 @@ processProperty globalData property =
                         , timing = Duration 0
                         , easing = Linear
                         , delay = 0
+                        , perspective = Nothing
                         }
 
             else
@@ -628,6 +670,7 @@ processProperty globalData property =
                         , timing = resolvedTiming
                         , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
                         , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
+                        , perspective = Nothing
                         }
 
 
@@ -671,6 +714,21 @@ resolveDelayWithDefault local global default =
             case global of
                 Just delay_ ->
                     delay_
+
+                Nothing ->
+                    default
+
+
+resolvePerspectiveWithDefault : Maybe { containerId : String, value : Float } -> Maybe { containerId : String, value : Float } -> Maybe { containerId : String, value : Float } -> Maybe { containerId : String, value : Float }
+resolvePerspectiveWithDefault local global default =
+    case local of
+        Just perspective_ ->
+            Just perspective_
+
+        Nothing ->
+            case global of
+                Just perspective_ ->
+                    Just perspective_
 
                 Nothing ->
                     default

@@ -2,7 +2,7 @@ module Anim.Properties.Scale exposing
     ( Builder, for, build
     , from, fromXY, fromXYZ, fromX, fromY, fromZ
     , to, toXY, toXYZ, toX, toY, toZ
-    , speed, duration, easing, delay
+    , speed, duration, easing, delay, perspective
     )
 
 {-| Scale animation functions with 3D support.
@@ -42,7 +42,7 @@ On subsequent animations, it will start from the last known scale, so you only n
 
 ## Timing
 
-@docs speed, duration, easing, delay
+@docs speed, duration, easing, delay, perspective
 
 -}
 
@@ -309,3 +309,24 @@ easing easing_ =
 delay : Int -> Builder -> Builder
 delay =
     SB.delay
+
+
+{-| Set the perspective for 3D scaling on this specific property.
+
+This allows you to override the global perspective setting for scale animations
+on a per-container basis. The perspective value determines the distance between
+the viewer and the z=0 plane, affecting how 3D scaling appears.
+
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.toXYZ 1.5 1.5 1.2
+        |> Scale.perspective "special-container" 800
+        |> ...
+
+The first parameter is the container ID, and the second is the perspective value in pixels.
+This will override any global perspective set via `Css.perspective` for this scale animation.
+
+-}
+perspective : String -> Float -> Builder -> Builder
+perspective =
+    SB.perspective

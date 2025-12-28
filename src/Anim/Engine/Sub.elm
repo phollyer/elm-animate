@@ -6,6 +6,7 @@ module Anim.Engine.Sub exposing
     , duration, speed
     , easing
     , delay
+    , perspective, containerStyles, containerStylesFor
     , ElementId
     , getPosition, getPositionXY, getPositionX, getPositionY
     , getSize, getSizeHW, getSizeH, getSizeW
@@ -59,6 +60,11 @@ These settings will be used for all animations unless overridden on a per-animat
 @docs delay
 
 
+## Perspective
+
+@docs perspective, containerStyles, containerStylesFor
+
+
 # Animation Querying
 
 @docs ElementId
@@ -85,11 +91,13 @@ These settings will be used for all animations unless overridden on a per-animat
 
 -}
 
+import Anim.Internal.Builder as Builder
 import Anim.Internal.Properties.Position exposing (Position)
 import Anim.Internal.Properties.Size exposing (Size)
 import Anim.Internal.Sub as InternalSub
 import Anim.Timing.Easing as Easing exposing (Easing)
 import Html
+import Html.Attributes
 
 
 {-| Animation builder type.
@@ -236,6 +244,80 @@ easing =
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
     InternalSub.delay
+
+
+{-| Set the global perspective value for 3D transforms.
+
+The perspective value determines the distance between the viewer and the z=0 plane.
+A smaller value creates a more pronounced 3D effect, while a larger value creates
+a more subtle effect.
+
+    Sub.init
+        |> Sub.perspective "container-id" 1000
+        |> Position.for "element"
+        |> Position.toXYZ 100 200 50
+        |> Position.build
+        |> Sub.animate
+
+You can override this global setting for specific properties using property-specific perspective functions:
+
+    Sub.init
+        |> Sub.perspective "default-container" 1000
+        -- Global setting
+        |> Position.for "special-element"
+        |> Position.toXYZ 100 200 50
+        |> Position.perspective "special-container" 800
+        -- Override for position
+        |> Position.build
+        |> Sub.animate
+
+-}
+perspective : String -> Float -> AnimBuilder -> AnimBuilder
+perspective =
+    Builder.perspective
+
+
+{-| Generate HTML attributes for container elements that need perspective.
+
+This function generates the necessary CSS perspective attributes for container elements
+that will contain 3D-transformed children. Use this on the parent container element
+to establish the perspective context.
+
+    div
+        (Sub.containerStyles animState)
+        [-- children with 3D transforms
+        ]
+
+The function will look for any elements in the animation state that have perspective
+settings and generate the appropriate container styles.
+
+-}
+containerStyles : AnimState -> List (Html.Attribute msg)
+containerStyles animState =
+    case Builder.getPerspective (builder animState) of
+        Just { containerId, value } ->
+            containerStylesFor containerId value
+
+        Nothing ->
+            []
+
+
+{-| Generate HTML attributes for a specific container with a given perspective value.
+
+This is useful when you only need perspective styles for one container:
+
+    div
+        (Sub.containerStylesFor "my-container" 1000)
+        [-- children with 3D transforms
+        ]
+
+-}
+containerStylesFor : String -> Float -> List (Html.Attribute msg)
+containerStylesFor containerId perspectiveValue =
+    [ Html.Attributes.id containerId
+    , Html.Attributes.style "perspective" (String.fromFloat perspectiveValue ++ "px")
+    , Html.Attributes.style "transform-style" "preserve-3d"
+    ]
 
 
 

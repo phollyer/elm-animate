@@ -35,7 +35,7 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
 type OpacityBuilder
-    = OpacityBuilder OpacityConfig AnimBuilder
+    = OpacityBuilder (Builder.AnimationConfig Opacity) AnimBuilder
 
 
 for : String -> AnimBuilder -> OpacityBuilder
@@ -67,6 +67,7 @@ for elementId builder =
                             | startAt = Just config.endAt
                             , easing = Nothing
                             , delay = Nothing
+                            , perspective = Nothing
                             , timing = Nothing
                             , duration = 0
                             , speed = 0
@@ -90,16 +91,7 @@ build (OpacityBuilder config builder) =
 
 
 type alias OpacityConfig =
-    { startAt : Maybe Opacity
-    , endAt : Opacity
-    , duration : Int -- Millis
-    , speed : Float -- Opacity units per second
-    , distance : Float -- Opacity units
-    , timing : Maybe TimeSpec
-    , easing : Maybe Easing
-    , delay : Maybe Int
-    , isDirty : Bool
-    }
+    Builder.AnimationConfig Opacity
 
 
 defaultConfig : OpacityConfig
@@ -112,6 +104,7 @@ defaultConfig =
     , timing = Nothing
     , easing = Nothing
     , delay = Nothing
+    , perspective = Nothing
     , isDirty = False
     }
 

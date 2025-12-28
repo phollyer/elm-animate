@@ -2,6 +2,7 @@ module Anim.Properties.Position exposing
     ( Builder, for, build
     , fromXY, fromX, fromY, fromXYZ, fromZ
     , toXY, toX, toY, toXYZ, toZ
+    , perspective
     , speed, duration, easing, delay
     , Position, getX, getY, getZ, toTuple, toTriple, toRecord
     )
@@ -50,6 +51,15 @@ only need to set this when you want to override that behaviour.
 ## End Position
 
 @docs toXY, toX, toY, toXYZ, toZ
+
+
+## Perspective
+
+For 3D positioning this is required to give a sense of depth. Without it, Z positioning will have no visual effect.
+
+You can set a global perspective for all 3D position animations directly on the Engine you are using, or you can set it on a per-property basis using this function.
+
+@docs perspective
 
 
 ## Timing
@@ -300,6 +310,24 @@ easing =
 delay : Int -> Builder -> Builder
 delay delay_ =
     PB.delay delay_
+
+
+{-| Set the perspective for 3D positioning.
+
+The first parameter is the container ID, and the second is the perspective value in pixels.
+
+This will override any global perspective set via an Engine for this position animation.
+
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.perspective "my-element-container" 800
+        |> Position.toZ 200
+        |> ...
+
+-}
+perspective : String -> Float -> Builder -> Builder
+perspective =
+    PB.perspective
 
 
 

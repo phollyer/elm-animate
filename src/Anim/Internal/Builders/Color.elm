@@ -18,7 +18,7 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
 type ColorBuilder
-    = ColorBuilder ColorConfig AnimBuilder
+    = ColorBuilder (Builder.AnimationConfig Color) AnimBuilder
 
 
 for : String -> AnimBuilder -> ColorBuilder
@@ -50,6 +50,7 @@ for elementId builder =
                             | startAt = Just config.endAt
                             , easing = Nothing
                             , delay = Nothing
+                            , perspective = Nothing
                             , timing = Nothing
                             , duration = 0
                             , speed = 0
@@ -73,16 +74,7 @@ build (ColorBuilder config builder) =
 
 
 type alias ColorConfig =
-    { startAt : Maybe Color
-    , endAt : Color
-    , duration : Int
-    , speed : Float
-    , distance : Float
-    , timing : Maybe TimeSpec
-    , delay : Maybe Int
-    , easing : Maybe Easing
-    , isDirty : Bool
-    }
+    Builder.AnimationConfig Color
 
 
 defaultConfig : ColorConfig
@@ -95,6 +87,7 @@ defaultConfig =
     , timing = Nothing
     , delay = Nothing
     , easing = Nothing
+    , perspective = Nothing
     , isDirty = False
     }
 

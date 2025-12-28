@@ -2,7 +2,7 @@ module Anim.Properties.Rotate exposing
     ( Builder, for, build
     , from, fromX, fromY, fromZ, fromXYZ
     , to, toX, toY, toZ, toXYZ
-    , speed, duration, easing, delay
+    , speed, duration, easing, delay, perspective
     )
 
 {-| Rotate animation functions.
@@ -52,7 +52,7 @@ so you only need to set this when you want to override that behavior.
 
 ## Timing
 
-@docs speed, duration, easing, delay
+@docs speed, duration, easing, delay, perspective
 
 -}
 
@@ -295,3 +295,24 @@ easing easingFunction =
 delay : Int -> Builder -> Builder
 delay delay_ =
     RB.delay delay_
+
+
+{-| Set the perspective for 3D rotation on this specific property.
+
+This allows you to override the global perspective setting for rotation animations
+on a per-container basis. The perspective value determines the distance between
+the viewer and the z=0 plane, affecting how 3D rotations appear.
+
+    animBuilder
+        |> Rotate.for "my-element"
+        |> Rotate.toXYZ 45 90 180
+        |> Rotate.perspective "special-container" 800
+        |> ...
+
+The first parameter is the container ID, and the second is the perspective value in pixels.
+This will override any global perspective set via `Css.perspective` for this rotation animation.
+
+-}
+perspective : String -> Float -> Builder -> Builder
+perspective =
+    RB.perspective

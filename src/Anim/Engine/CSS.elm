@@ -10,6 +10,7 @@ module Anim.Engine.CSS exposing
     , duration, speed
     , easing
     , delay
+    , perspective, containerStyles, containerStylesFor
     , anyRunning, isRunning, allComplete, isComplete
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
     , getStartOpacity, getEndOpacity, getCurrentOpacity
@@ -142,6 +143,11 @@ These settings will be used for all property animations unless overridden on a p
 ## Delay
 
 @docs delay
+
+
+## Perspective
+
+@docs perspective, containerStyles, containerStylesFor
 
 
 # Querying Animation State
@@ -972,6 +978,68 @@ easing =
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
     InternalCSS.delay
+
+
+{-| Set the global perspective value for 3D transforms.
+
+The perspective value determines the distance between the viewer and the z=0 plane.
+Smaller values create more dramatic 3D effects, while larger values create subtler effects.
+
+    Css.init
+        |> CSS.builder
+        |> Css.perspective "container-id" 1000
+        |> ... -- Property animations
+        |> Css.animate
+
+You can override this global setting for specific properties using property-specific perspective functions:
+
+    Css.init
+        |> CSS.builder
+        |> Css.perspective "default-container" 1000  -- Global setting
+        |> Position.for "element1"
+        |> Position.perspective "special-container" 800  -- Override for position
+        |> ...
+
+-}
+perspective : String -> Float -> AnimBuilder -> AnimBuilder
+perspective =
+    InternalCSS.perspective
+
+
+{-| Generate HTML attributes for container elements that need perspective.
+
+This function generates the necessary CSS perspective attributes for container elements
+to properly display 3D transforms. Apply these attributes to the parent containers
+of animated elements.
+
+    div
+        (CSS.containerStyles "my-container" animationState)
+        [ div
+            [ id "animated-element" ]
+            [ text "3D animated content" ]
+        ]
+
+-}
+containerStyles : String -> AnimState -> List (Html.Attribute msg)
+containerStyles =
+    InternalCSS.containerStyles
+
+
+{-| Generate HTML attributes for a specific container element.
+
+This is useful when you only need perspective styles for one container:
+
+    div
+        (CSS.containerStylesFor "specific-container" animationState)
+        [ div
+            [ id "animated-element" ]
+            [ text "3D animated content" ]
+        ]
+
+-}
+containerStylesFor : String -> AnimState -> List (Html.Attribute msg)
+containerStylesFor =
+    InternalCSS.containerStylesFor
 
 
 {-| Get all the HTML attributes needed for the CSS animations on the target element.

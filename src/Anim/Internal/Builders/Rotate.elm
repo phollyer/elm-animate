@@ -10,6 +10,7 @@ module Anim.Internal.Builders.Rotate exposing
     , fromXYZ
     , fromY
     , fromZ
+    , perspective
     , speed
     , to
     , toX
@@ -42,7 +43,7 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
 type RotateBuilder
-    = RotateBuilder RotateConfig AnimBuilder
+    = RotateBuilder (Builder.AnimationConfig Rotate) AnimBuilder
 
 
 for : String -> AnimBuilder -> RotateBuilder
@@ -74,6 +75,7 @@ for elementId builder =
                             | startAt = Just config.endAt
                             , easing = Nothing
                             , delay = Nothing
+                            , perspective = Nothing
                             , timing = Nothing
                             , duration = 0
                             , speed = 0
@@ -97,16 +99,7 @@ build (RotateBuilder config builder) =
 
 
 type alias RotateConfig =
-    { startAt : Maybe Rotate
-    , endAt : Rotate
-    , duration : Int -- Millis
-    , speed : Float -- Pixels per second
-    , distance : Float -- Pixels
-    , timing : Maybe TimeSpec
-    , easing : Maybe Easing
-    , delay : Maybe Int
-    , isDirty : Bool
-    }
+    Builder.AnimationConfig Rotate
 
 
 defaultConfig : RotateConfig
@@ -119,6 +112,7 @@ defaultConfig =
     , timing = Nothing
     , easing = Nothing
     , delay = Nothing
+    , perspective = Nothing
     , isDirty = False
     }
 
@@ -241,3 +235,8 @@ easing easing_ (RotateBuilder config builder) =
 delay : Int -> RotateBuilder -> RotateBuilder
 delay delay_ (RotateBuilder config builder) =
     RotateBuilder { config | delay = Just delay_ } builder
+
+
+perspective : String -> Float -> RotateBuilder -> RotateBuilder
+perspective containerId value (RotateBuilder config builder) =
+    RotateBuilder { config | perspective = Just { containerId = containerId, value = value } } builder

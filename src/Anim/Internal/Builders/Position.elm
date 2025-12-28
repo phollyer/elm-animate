@@ -10,6 +10,7 @@ module Anim.Internal.Builders.Position exposing
     , fromXYZ
     , fromY
     , fromZ
+    , perspective
     , speed
     , to
     , toX
@@ -43,7 +44,7 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
 type PositionBuilder
-    = PositionBuilder PositionConfig AnimBuilder
+    = PositionBuilder (Builder.AnimationConfig Position) AnimBuilder
 
 
 for : String -> AnimBuilder -> PositionBuilder
@@ -75,6 +76,7 @@ for elementId builder =
                             | startAt = Just config.endAt
                             , easing = Nothing
                             , delay = Nothing
+                            , perspective = Nothing
                             , timing = Nothing
                             , duration = 0
                             , speed = 0
@@ -98,16 +100,7 @@ build (PositionBuilder config builder) =
 
 
 type alias PositionConfig =
-    { startAt : Maybe Position
-    , endAt : Position
-    , duration : Int -- Millis
-    , speed : Float -- Pixels per second
-    , distance : Float -- Pixels
-    , timing : Maybe TimeSpec
-    , easing : Maybe Easing
-    , delay : Maybe Int
-    , isDirty : Bool
-    }
+    Builder.AnimationConfig Position
 
 
 defaultConfig : PositionConfig
@@ -120,6 +113,7 @@ defaultConfig =
     , timing = Nothing
     , easing = Nothing
     , delay = Nothing
+    , perspective = Nothing
     , isDirty = False
     }
 
@@ -247,3 +241,8 @@ easing easing_ (PositionBuilder config builder) =
 delay : Int -> PositionBuilder -> PositionBuilder
 delay delay_ (PositionBuilder config builder) =
     PositionBuilder { config | delay = Just delay_ } builder
+
+
+perspective : String -> Float -> PositionBuilder -> PositionBuilder
+perspective containerId value (PositionBuilder config builder) =
+    PositionBuilder { config | perspective = Just { containerId = containerId, value = value } } builder
