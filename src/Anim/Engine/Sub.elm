@@ -4,7 +4,7 @@ module Anim.Engine.Sub exposing
     , AnimationMsg, update, subscriptions
     , htmlAttributes
     , perspective
-    , containerStyles, containerStylesFor
+    , perspectiveStyles, perspectiveWith
     , duration, speed
     , easing
     , delay
@@ -54,7 +54,7 @@ to give a sense of depth. Without perspective, 3D transformations will have no v
 
 ## HTML
 
-@docs containerStyles, containerStylesFor
+@docs perspectiveStyles, perspectiveWith
 
 
 # Global Settings
@@ -292,7 +292,7 @@ that will contain 3D-transformed children. Specify which container you want attr
 
     -- Apply it using the same label
     div
-        (Sub.containerStyles "main-container" animState)
+        (Sub.perspectiveStyles "main-container" animState)
         [ div
             [ id "animated-element" ]  -- Only the animated elements need id
             [ text "3D animated content" ]
@@ -302,8 +302,8 @@ This looks up perspective settings for the specified container from both global 
 and property-level overrides, with property-level taking precedence.
 
 -}
-containerStyles : String -> AnimState -> List (Html.Attribute msg)
-containerStyles containerId animState =
+perspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
+perspectiveStyles containerId animState =
     let
         processedData =
             Builder.processAnimationData (builder animState)
@@ -340,7 +340,7 @@ containerStyles containerId animState =
     in
     case perspectiveValue of
         Just value ->
-            containerStylesFor value
+            perspectiveWith value
 
         Nothing ->
             []
@@ -378,13 +378,13 @@ Think zoom level for 3D transforms!!
 
 
     div
-        (Sub.containerStylesFor  model.zoomLevel)
+        (Sub.perspectiveWith model.zoomLevel)
         [ -- Animated content
         ]
 
 -}
-containerStylesFor : Float -> List (Html.Attribute msg)
-containerStylesFor perspectiveValue =
+perspectiveWith : Float -> List (Html.Attribute msg)
+perspectiveWith perspectiveValue =
     [ Html.Attributes.style "perspective" (String.fromFloat perspectiveValue ++ "px")
     , Html.Attributes.style "transform-style" "preserve-3d"
     ]

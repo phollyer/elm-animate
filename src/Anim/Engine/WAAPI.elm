@@ -3,7 +3,7 @@ module Anim.Engine.WAAPI exposing
     , animate, animateBatch
     , update
     , perspective
-    , containerStylesFor
+    , perspectiveWith
     , duration, speed
     , easing
     , delay
@@ -61,7 +61,7 @@ to give a sense of depth. Without perspective, 3D transformations will have no v
 
 ## HTML
 
-@docs containerStylesFor
+@docs perspectiveWith
 
 
 # Global Settings
@@ -360,7 +360,7 @@ The JavaScript will automatically apply perspective CSS to this container.
 
 You can override this global setting for specific properties using property-specific perspective functions.
 
-**For dynamic perspective control** (e.g., zoom in/out), use [containerStylesFor](#containerStylesFor)
+**For dynamic perspective control** (e.g., zoom in/out), use [perspectiveWith](#perspectiveWith)
 instead of relying on this automatic behavior.
 
 -}
@@ -385,7 +385,7 @@ Think zoom level for 3D transforms!!
 
 
     div
-        (CSS.containerStylesFor  model.zoomLevel)
+        (CSS.perspectiveWith model.zoomLevel)
         [ -- Animated content
         ]
 
@@ -393,8 +393,8 @@ Think zoom level for 3D transforms!!
 the existing inline style and skip auto-applying perspective, giving you full control.
 
 -}
-containerStylesFor : Float -> List (Html.Attribute msg)
-containerStylesFor perspectiveValue =
+perspectiveWith : Float -> List (Html.Attribute msg)
+perspectiveWith perspectiveValue =
     [ Html.Attributes.style "perspective" (String.fromFloat perspectiveValue ++ "px")
     , Html.Attributes.style "transform-style" "preserve-3d"
     , Html.Attributes.attribute "data-perspective-source" "elm"

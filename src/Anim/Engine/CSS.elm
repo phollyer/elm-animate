@@ -5,7 +5,7 @@ module Anim.Engine.CSS exposing
     , AnimState, init, AnimBuilder, builder
     , animate, TransformOrder(..), animateOrder
     , perspective
-    , containerStyles, containerStylesFor
+    , perspectiveStyles, perspectiveWith
     , Event(..), handleEvent
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
@@ -95,7 +95,7 @@ to give a sense of depth. Without perspective, 3D transformations will have no v
 
 ## HTML
 
-@docs containerStyles, containerStylesFor
+@docs perspectiveStyles, perspectiveWith
 
 
 # Event Handling
@@ -1022,7 +1022,7 @@ of animated elements.
         |> ...
 
     div
-        (CSS.containerStyles "main-container" animationState)
+        (CSS.perspectiveStyles "main-container" animationState)
         [ div
             [ id "animated-element" ]
             [ text "3D animated content" ]
@@ -1032,9 +1032,9 @@ This looks up perspective settings for the specified container from both global 
 and property-level overrides, with property-level taking precedence.
 
 -}
-containerStyles : String -> AnimState -> List (Html.Attribute msg)
-containerStyles =
-    InternalCSS.containerStyles
+perspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
+perspectiveStyles =
+    InternalCSS.perspectiveStyles
 
 
 {-| Manually generate HTML attributes with a given perspective value.
@@ -1053,13 +1053,13 @@ Think zoom level for 3D transforms!!
 
 
     div
-        (CSS.containerStylesFor  model.zoomLevel)
+        (CSS.perspectiveWith model.zoomLevel)
         [ -- Animated content
         ]
 
 -}
-containerStylesFor : Float -> List (Html.Attribute msg)
-containerStylesFor perspectiveValue =
+perspectiveWith : Float -> List (Html.Attribute msg)
+perspectiveWith perspectiveValue =
     [ Html.Attributes.style "perspective" (String.fromFloat perspectiveValue ++ "px")
     , Html.Attributes.style "transform-style" "preserve-3d"
     ]

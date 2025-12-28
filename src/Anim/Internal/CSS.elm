@@ -10,7 +10,6 @@ module Anim.Internal.CSS exposing
     , animationStyleAttribute
     , anyRunning
     , builder
-    , containerStyles
     , delay
     , duration
     , easing
@@ -42,6 +41,7 @@ module Anim.Internal.CSS exposing
     , onTransitionRun
     , onTransitionStart
     , perspective
+    , perspectiveStyles
     , speed
     )
 
@@ -671,8 +671,8 @@ perspective =
     Builder.perspective
 
 
-containerStyles : String -> AnimState -> List (Html.Attribute msg)
-containerStyles containerId animationState =
+perspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
+perspectiveStyles containerId animationState =
     getContainerPerspectiveStyles containerId animationState
 
 
