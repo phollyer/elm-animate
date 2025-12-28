@@ -10,7 +10,7 @@ module Anim.Engine.CSS exposing
     , duration, speed
     , easing
     , delay
-    , perspective, containerStyles, containerStylesFor
+    , perspective, containerStyles
     , anyRunning, isRunning, allComplete, isComplete
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
     , getStartOpacity, getEndOpacity, getCurrentOpacity
@@ -147,7 +147,7 @@ These settings will be used for all property animations unless overridden on a p
 
 ## Perspective
 
-@docs perspective, containerStyles, containerStylesFor
+@docs perspective, containerStyles
 
 
 # Querying Animation State
@@ -1023,23 +1023,6 @@ of animated elements.
 containerStyles : String -> AnimState -> List (Html.Attribute msg)
 containerStyles =
     InternalCSS.containerStyles
-
-
-{-| Generate HTML attributes for a specific container element.
-
-This is useful when you only need perspective styles for one container:
-
-    div
-        (CSS.containerStylesFor "specific-container" animationState)
-        [ div
-            [ id "animated-element" ]
-            [ text "3D animated content" ]
-        ]
-
--}
-containerStylesFor : String -> AnimState -> List (Html.Attribute msg)
-containerStylesFor =
-    InternalCSS.containerStylesFor
 
 
 {-| Get all the HTML attributes needed for the CSS animations on the target element.

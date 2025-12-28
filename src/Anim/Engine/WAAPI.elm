@@ -87,6 +87,7 @@ import Anim.Internal.Builder as Builder
 import Anim.Internal.Properties.Position exposing (Position)
 import Anim.Internal.WAAPI as InternalWAAPI
 import Anim.Timing.Easing as Easing exposing (Easing)
+import Dict
 import Html
 import Html.Attributes
 import Json.Decode as Decode
@@ -356,35 +357,88 @@ perspective =
 {-| Generate HTML attributes for container elements that need perspective.
 
 This function generates the necessary CSS perspective attributes for container elements
-that will contain 3D-transformed children. Use this on the parent container element
-to establish the perspective context.
+that will contain 3D-transformed children. Specify which container you want attributes for.
 
     div
-        (WAAPI.containerStyles animState)
-        [-- children with 3D transforms
+        (WAAPI.containerStyles "my-container" animState)
+        [ div
+            [ id "animated-element" ]
+            [ text "3D animated content" ]
         ]
 
-The function will look for any elements in the animation state that have perspective
-settings and generate the appropriate container styles.
+This looks up perspective settings for the specified container from both global settings
+and property-level overrides, with property-level taking precedence.
 
 -}
-containerStyles : AnimState -> List (Html.Attribute msg)
-containerStyles animState =
-    case Builder.getPerspective (builder animState) of
-        Just { containerId, value } ->
+containerStyles : String -> AnimState -> List (Html.Attribute msg)
+containerStyles containerId animState =
+    let
+        processedData =
+            Builder.processAnimationData (builder animState)
+
+        -- Check property-level perspectives first
+        propertyPerspective =
+            processedData.elements
+                |> Dict.values
+                |> List.concatMap .properties
+                |> List.filterMap extractPerspective
+                |> List.filter (\p -> p.containerId == containerId)
+                |> List.head
+                |> Maybe.map .value
+
+        -- Fall back to global perspective
+        globalPerspective =
+            processedData.globalPerspective
+                |> Maybe.andThen
+                    (\p ->
+                        if p.containerId == containerId then
+                            Just p.value
+
+                        else
+                            Nothing
+                    )
+
+        perspectiveValue =
+            case propertyPerspective of
+                Just value ->
+                    Just value
+
+                Nothing ->
+                    globalPerspective
+    in
+    case perspectiveValue of
+        Just value ->
             containerStylesFor containerId value
 
         Nothing ->
             []
 
 
+extractPerspective : Builder.ProcessedPropertyConfig -> Maybe { containerId : String, value : Float }
+extractPerspective property =
+    case property of
+        Builder.ProcessedPositionConfig config ->
+            config.perspective
+
+        Builder.ProcessedRotateConfig config ->
+            config.perspective
+
+        Builder.ProcessedScaleConfig config ->
+            config.perspective
+
+        _ ->
+            Nothing
+
+
 {-| Generate HTML attributes for a specific container with a given perspective value.
 
-This is useful when you only need perspective styles for one container:
+This is useful when you want to manually specify the perspective value:
 
     div
         (WAAPI.containerStylesFor "my-container" 1000)
-        [-- children with 3D transforms
+        [ div
+            [ id "animated-element" ]
+            [ text "3D animated content" ]
         ]
 
 -}

@@ -1,6 +1,9 @@
 elm-stuff
 example/index.html
 
+# Ignore generated documentation files
+docs.json
+documentation.json
 
 #Ignore vscode AI rules
 .github/instructions/codacy.instructions.md

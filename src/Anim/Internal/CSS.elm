@@ -11,7 +11,6 @@ module Anim.Internal.CSS exposing
     , anyRunning
     , builder
     , containerStyles
-    , containerStylesFor
     , delay
     , duration
     , easing
@@ -677,11 +676,6 @@ containerStyles containerId animationState =
     getContainerPerspectiveStyles containerId animationState
 
 
-containerStylesFor : String -> AnimState -> List (Html.Attribute msg)
-containerStylesFor containerId animationState =
-    getContainerPerspectiveStyles containerId animationState
-
-
 getContainerPerspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
 getContainerPerspectiveStyles targetContainerId (AnimState state) =
     let
@@ -719,7 +713,10 @@ getContainerPerspectiveStyles targetContainerId (AnimState state) =
     in
     case perspectiveValue of
         Just value ->
-            [ Html.Attributes.style "perspective" (String.fromFloat value ++ "px") ]
+            [ Html.Attributes.id targetContainerId
+            , Html.Attributes.style "perspective" (String.fromFloat value ++ "px")
+            , Html.Attributes.style "transform-style" "preserve-3d"
+            ]
 
         Nothing ->
             []
