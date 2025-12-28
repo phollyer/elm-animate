@@ -8,11 +8,13 @@ module Anim.Engine.Sub exposing
     , duration, speed
     , easing
     , delay
-    , ElementId
-    , getPosition, getPositionXY, getPositionX, getPositionY
-    , getSize, getSizeHW, getSizeH, getSizeW
-    , getCurrentStyles
-    , isAnimationRunning, getDuration
+    , anyRunning, isRunning, allComplete, isComplete
+    , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
+    , getStartOpacity, getEndOpacity, getCurrentOpacity
+    , getStartPosition, getEndPosition, getCurrentPosition
+    , getStartRotate, getEndRotate, getCurrentRotate
+    , getStartScale, getEndScale, getCurrentScale
+    , getStartSize, getEndSize, getCurrentSize
     )
 
 {-| Subscription-based animation system with state tracking.
@@ -77,35 +79,52 @@ These settings will be used for all animations unless overridden on a per-animat
 @docs delay
 
 
-# Animation Querying
+# Querying Animation State
 
-@docs ElementId
+@docs anyRunning, isRunning, allComplete, isComplete
+
+
+# Querying Animated Properties
+
+
+## Background Color
+
+@docs getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
+
+
+## Opacity
+
+@docs getStartOpacity, getEndOpacity, getCurrentOpacity
 
 
 ## Position
 
-@docs getPosition, getPositionXY, getPositionX, getPositionY
+@docs getStartPosition, getEndPosition, getCurrentPosition
+
+
+## Rotate
+
+@docs getStartRotate, getEndRotate, getCurrentRotate
+
+
+## Scale
+
+@docs getStartScale, getEndScale, getCurrentScale
 
 
 ## Size
 
-@docs getSize, getSizeHW, getSizeH, getSizeW
-
-
-## Current Styles
-
-@docs getCurrentStyles
-
-
-## Animation State
-
-@docs isAnimationRunning, getDuration
+@docs getStartSize, getEndSize, getCurrentSize
 
 -}
 
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Properties.Position exposing (Position)
-import Anim.Internal.Properties.Size exposing (Size)
+import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Color)
+import Anim.Internal.Properties.Opacity as Opacity
+import Anim.Internal.Properties.Position as Position exposing (Position)
+import Anim.Internal.Properties.Rotate as Rotate
+import Anim.Internal.Properties.Scale as Scale
+import Anim.Internal.Properties.Size as Size exposing (Size)
 import Anim.Internal.Sub as InternalSub
 import Anim.Timing.Easing as Easing exposing (Easing)
 import Dict
@@ -524,6 +543,338 @@ Returns True if the element has active animations, False otherwise.
 isAnimationRunning : ElementId -> AnimState -> Bool
 isAnimationRunning =
     InternalSub.isAnimationRunning
+
+
+{-| Check if any animations are currently running.
+-}
+anyRunning : AnimState -> Bool
+anyRunning =
+    InternalSub.anyRunning
+
+
+{-| Check if a specific element has any animations currently running.
+-}
+isRunning : ElementId -> AnimState -> Bool
+isRunning =
+    InternalSub.isElementRunning
+
+{-| Check if all animations are complete.
+
+Returns `Nothing` if there are no animations.
+
+-}
+allComplete : AnimState -> Maybe Bool
+allComplete =
+    InternalSub.allComplete
+
+
+{-| Check if a specific element's animations have completed.
+
+Returns `Nothing` if there are no animations for the element.
+
+-}
+isComplete : String -> AnimState -> Maybe Bool
+isComplete =
+    InternalSub.isElementComplete
+
+{-| Get the start background color of an element being animated.
+
+Returns `Nothing` if the element has no background color animation.
+
+Returns `black (rgb 0 0 0)` if no explicit start value was set, which is where the animation
+**will** start if no explicit start value is set.
+
+-}
+getStartBackgroundColor : String -> AnimState -> Maybe Color
+getStartBackgroundColor elementId animState =
+    InternalSub.getBackgroundColorRange elementId animState
+        |> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        BackgroundColor.rgb255 0 0 0
+
+                    Just startColor ->
+                        startColor
+            )
+
+
+{-| Get the end background color of an element being animated.
+
+Returns `Nothing` if the element has no background color animation.
+
+-}
+getEndBackgroundColor : String -> AnimState -> Maybe Color
+getEndBackgroundColor elementId animState =
+    InternalSub.getBackgroundColorRange elementId animState
+        |> Maybe.map .end
+
+
+{-| Get the current background color of an element based on its animation state.
+
+Returns `Nothing` if the element has no background color animation.
+
+Returns the start color if the animation has not started yet.
+
+Returns the current interpolated color if the animation is running.
+
+Returns the end color if the animation has completed.
+
+-}
+getCurrentBackgroundColor : String -> AnimState -> Maybe Color
+getCurrentBackgroundColor elementId animState =
+    InternalSub.getColor elementId animState
+
+
+{-| Get the start opacity of an element being animated.
+
+Returns `Nothing` if the element has no opacity animation.
+
+Returns `Just 1.0` (fully opaque) if no explicit start value was set, which is where the animation
+**will** start if no explicit start value is set.
+
+-}
+getStartOpacity : String -> AnimState -> Maybe Float
+getStartOpacity elementId animState =
+    InternalSub.getOpacityRange elementId animState
+        |> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        1.0
+
+                    Just startOpacity ->
+                        Opacity.toFloat startOpacity
+            )
+
+
+{-| Get the end opacity of an element being animated.
+
+Returns `Nothing` if the element has no opacity animation.
+
+-}
+getEndOpacity : String -> AnimState -> Maybe Float
+getEndOpacity elementId animState =
+    InternalSub.getOpacityRange elementId animState
+        |> Maybe.map (.end >> Opacity.toFloat)
+
+
+{-| Get the current opacity of an element based on its animation state.
+
+Returns `Nothing` if the element has no opacity animation.
+
+Returns the start opacity if the animation has not started yet.
+
+Returns the current interpolated opacity if the animation is running.
+
+Returns the end opacity if the animation has completed.
+
+-}
+getCurrentOpacity : String -> AnimState -> Maybe Float
+getCurrentOpacity elementId animState =
+    InternalSub.getOpacity elementId animState
+        |> Maybe.map Opacity.toFloat
+
+
+{-| Get the start position of an element being animated.
+
+Returns `Nothing` if the element has no position animation.
+
+Returns `(0, 0, 0)` if no explicit start value was set, which is where the animation
+**will** start if no explicit start value is set.
+
+-}
+getStartPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getStartPosition elementId animState =
+    InternalSub.getPositionRange elementId animState
+        |> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        { x = 0, y = 0, z = 0 }
+
+                    Just startPos ->
+                        Position.toRecord startPos
+            )
+
+
+{-| Get the end position of an element being animated.
+
+Returns `Nothing` if the element has no position animation.
+
+-}
+getEndPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getEndPosition elementId animState =
+    InternalSub.getPositionRange elementId animState
+        |> Maybe.map .end
+        |> Maybe.map Position.toRecord
+
+
+{-| Get the current position of an element based on its animation state.
+
+Returns the start position if the animation has not started yet.
+
+Returns the current interpolated position if the animation is running.
+
+Returns the end position if the animation has completed.
+
+Returns `Nothing` if the element has no position animation.
+
+-}
+getCurrentPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getCurrentPosition elementId animState =
+    InternalSub.getPosition elementId animState
+        |> Maybe.map Position.toRecord
+
+
+{-| Get the start rotation of an element being animated.
+
+Returns `Nothing` if the element has no rotate animation.
+
+Returns `0.0 degrees` if no explicit start value was set, which is where the animation
+**will** start if no explicit start value is set.
+
+-}
+getStartRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getStartRotate elementId animState =
+    InternalSub.getRotateRange elementId animState
+        |> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        { x = 0, y = 0, z = 0 }
+
+                    Just startRotate ->
+                        Rotate.toRecord startRotate
+            )
+
+
+{-| Get the end rotation of an element being animated.
+
+Returns `Nothing` if the element has no rotate animation.
+
+-}
+getEndRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getEndRotate elementId animState =
+    InternalSub.getRotateRange elementId animState
+        |> Maybe.map (.end >> Rotate.toRecord)
+
+
+{-| Get the current rotation of an element based on its animation state.
+
+Returns `Nothing` if the element has no rotate animation.
+
+Returns the start rotation if the animation has not started yet.
+
+Returns the current interpolated rotation if the animation is running.
+
+Returns the end rotation if the animation has completed.
+
+-}
+getCurrentRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getCurrentRotate elementId animState =
+    InternalSub.getRotate elementId animState
+        |> Maybe.map Rotate.toRecord
+
+
+{-| Get the start scale of an element being animated.
+
+Returns `1.0` if no explicit start value was set, which is where the animation
+**will** start if no explicit start value is set.
+
+Returns `Nothing` if the element has no scale animation.
+
+-}
+getStartScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getStartScale elementId animState =
+    InternalSub.getScaleRange elementId animState
+        |> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        { x = 1, y = 1, z = 1 }
+
+                    Just startScale ->
+                        Scale.toRecord startScale
+            )
+
+
+{-| Get the end scale of an element being animated.
+
+Returns `Nothing` if the element has no scale animation.
+
+-}
+getEndScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getEndScale elementId animState =
+    InternalSub.getScaleRange elementId animState
+        |> Maybe.map (.end >> Scale.toRecord)
+
+
+{-| Get the current scale of an element based on its animation state.
+
+Returns `Nothing` if the element has no scale animation.
+
+Returns the start scale if the animation has not started yet.
+
+Returns the current interpolated scale if the animation is running.
+
+Returns the end scale if the animation has completed.
+
+-}
+getCurrentScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getCurrentScale elementId animState =
+    InternalSub.getScale elementId animState
+        |> Maybe.map Scale.toRecord
+
+
+{-| Get the start size of an element being animated.
+
+Returns `Nothing` if the element has no size animation.
+
+Returns `(0, 0)` if no explicit start value was set, which is where the animation
+**will** start if no explicit start value is set.
+
+-}
+getStartSize : String -> AnimState -> Maybe { width : Float, height : Float }
+getStartSize elementId animState =
+    InternalSub.getSizeRange elementId animState
+        |> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        { width = 0, height = 0 }
+
+                    Just startSize ->
+                        Size.toRecord startSize
+            )
+
+
+{-| Get the end size of an element being animated.
+
+Returns `Nothing` if the element has no size animation.
+
+-}
+getEndSize : String -> AnimState -> Maybe { width : Float, height : Float }
+getEndSize elementId animState =
+    InternalSub.getSizeRange elementId animState
+        |> Maybe.map (.end >> Size.toRecord)
+
+
+{-| Get the current size of an element based on its animation state.
+
+Returns `Nothing` if the element has no size animation.
+
+Returns the start size if the animation has not started yet.
+
+Returns the current interpolated size if the animation is running.
+
+Returns the end size if the animation has completed.
+
+-}
+getCurrentSize : String -> AnimState -> Maybe { width : Float, height : Float }
+getCurrentSize elementId animState =
+    InternalSub.getSize elementId animState
+        |> Maybe.map Size.toRecord
 
 
 

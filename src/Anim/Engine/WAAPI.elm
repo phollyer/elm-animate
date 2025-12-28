@@ -7,7 +7,13 @@ module Anim.Engine.WAAPI exposing
     , duration, speed
     , easing
     , delay
-    , getPosition, getCurrentStyles
+    , anyRunning, isRunning, allComplete, isComplete
+    , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
+    , getStartOpacity, getEndOpacity, getCurrentOpacity
+    , getStartPosition, getEndPosition, getCurrentPosition
+    , getStartRotate, getEndRotate, getCurrentRotate
+    , getStartScale, getEndScale, getCurrentScale
+    , getStartSize, getEndSize, getCurrentSize
     )
 
 {-| Ports-based animation system utilising the Web Animations API with optional state tracking.
@@ -83,14 +89,52 @@ These settings will be used for all animations unless overridden on a per-animat
 @docs delay
 
 
-# Animation Data
+# Querying Animation State
 
-@docs getPosition, getCurrentStyles
+@docs anyRunning, isRunning, allComplete, isComplete
+
+
+# Querying Animated Properties
+
+
+## Background Color
+
+@docs getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
+
+
+## Opacity
+
+@docs getStartOpacity, getEndOpacity, getCurrentOpacity
+
+
+## Position
+
+@docs getStartPosition, getEndPosition, getCurrentPosition
+
+
+## Rotate
+
+@docs getStartRotate, getEndRotate, getCurrentRotate
+
+
+## Scale
+
+@docs getStartScale, getEndScale, getCurrentScale
+
+
+## Size
+
+@docs getStartSize, getEndSize, getCurrentSize
 
 -}
 
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Properties.Position exposing (Position)
+import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Color)
+import Anim.Internal.Properties.Opacity as Opacity
+import Anim.Internal.Properties.Position as Position exposing (Position)
+import Anim.Internal.Properties.Rotate as Rotate
+import Anim.Internal.Properties.Scale as Scale
+import Anim.Internal.Properties.Size as Size
 import Anim.Internal.WAAPI as InternalWAAPI
 import Anim.Timing.Easing as Easing exposing (Easing)
 import Html
@@ -266,6 +310,318 @@ getPosition =
 getCurrentStyles : String -> AnimState -> List ( String, String )
 getCurrentStyles =
     InternalWAAPI.getCurrentStyles
+
+
+{-| Check if any animations are currently running.
+-}
+anyRunning : AnimState -> Bool
+anyRunning =
+    InternalWAAPI.anyRunning
+
+
+{-| Check if a specific element has any animations currently running.
+-}
+isRunning : String -> AnimState -> Bool
+isRunning =
+    InternalWAAPI.isElementRunning
+
+
+{-| Check if all animations are complete.
+
+Returns `Nothing` if there are no animations.
+
+-}
+allComplete : AnimState -> Maybe Bool
+allComplete =
+    InternalWAAPI.allComplete
+
+
+{-| Check if a specific element's animations have completed.
+
+Returns `Nothing` if there are no animations for the element.
+
+-}
+isComplete : String -> AnimState -> Maybe Bool
+isComplete =
+    InternalWAAPI.isElementComplete
+
+
+{-| Get the start background color of an element being animated.
+
+Returns `Nothing` if the element has no background color animation.
+
+Returns `black (rgb 0 0 0)` if no explicit start value was set, which is where the animation
+**will** start if no explicit start value is set.
+
+-}
+getStartBackgroundColor : String -> AnimState -> Maybe Color
+getStartBackgroundColor elementId animState =
+    InternalWAAPI.getBackgroundColorRange elementId animState
+        |> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        BackgroundColor.rgb255 0 0 0
+
+                    Just startColor ->
+                        startColor
+            )
+
+
+{-| Get the end background color of an element being animated.
+
+Returns `Nothing` if the element has no background color animation.
+
+-}
+getEndBackgroundColor : String -> AnimState -> Maybe Color
+getEndBackgroundColor elementId animState =
+    InternalWAAPI.getBackgroundColorRange elementId animState
+        |> Maybe.map .end
+
+
+{-| Get the current background color of an element based on its animation state.
+
+Returns `Nothing` if the element has no background color animation.
+
+This returns the end state color as WAAPI manages the interpolation in JavaScript.
+
+-}
+getCurrentBackgroundColor : String -> AnimState -> Maybe Color
+getCurrentBackgroundColor elementId animState =
+    InternalWAAPI.getBackgroundColorRange elementId animState
+        |> Maybe.map .end
+
+
+{-| Get the start opacity of an element being animated.
+
+Returns `Nothing` if the element has no opacity animation.
+
+Returns `Just 1.0` (fully opaque) if no explicit start value was set, which is where the animation
+**will** start if no explicit start value is set.
+
+-}
+getStartOpacity : String -> AnimState -> Maybe Float
+getStartOpacity elementId animState =
+    InternalWAAPI.getOpacityRange elementId animState
+        |> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        1.0
+
+                    Just startOpacity ->
+                        Opacity.toFloat startOpacity
+            )
+
+
+{-| Get the end opacity of an element being animated.
+
+Returns `Nothing` if the element has no opacity animation.
+
+-}
+getEndOpacity : String -> AnimState -> Maybe Float
+getEndOpacity elementId animState =
+    InternalWAAPI.getOpacityRange elementId animState
+        |> Maybe.map (.end >> Opacity.toFloat)
+
+
+{-| Get the current opacity of an element based on its animation state.
+
+Returns `Nothing` if the element has no opacity animation.
+
+This returns the end state opacity as WAAPI manages the interpolation in JavaScript.
+
+-}
+getCurrentOpacity : String -> AnimState -> Maybe Float
+getCurrentOpacity elementId animState =
+    InternalWAAPI.getOpacityRange elementId animState
+        |> Maybe.map (.end >> Opacity.toFloat)
+
+
+{-| Get the start position of an element being animated.
+
+Returns `Nothing` if the element has no position animation.
+
+Returns `(0, 0, 0)` if no explicit start value was set, which is where the animation
+**will** start if no explicit start value is set.
+
+-}
+getStartPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getStartPosition elementId animState =
+    InternalWAAPI.getPositionRange elementId animState
+        |> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        { x = 0, y = 0, z = 0 }
+
+                    Just startPos ->
+                        Position.toRecord startPos
+            )
+
+
+{-| Get the end position of an element being animated.
+
+Returns `Nothing` if the element has no position animation.
+
+-}
+getEndPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getEndPosition elementId animState =
+    InternalWAAPI.getPositionRange elementId animState
+        |> Maybe.map .end
+        |> Maybe.map Position.toRecord
+
+
+{-| Get the current position of an element based on its animation state.
+
+Returns `Nothing` if the element has no position animation.
+
+This returns the end state position as WAAPI manages the interpolation in JavaScript.
+
+-}
+getCurrentPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getCurrentPosition elementId animState =
+    InternalWAAPI.getPositionRange elementId animState
+        |> Maybe.map .end
+        |> Maybe.map Position.toRecord
+
+
+{-| Get the start rotation of an element being animated.
+
+Returns `Nothing` if the element has no rotate animation.
+
+Returns `0.0 degrees` if no explicit start value was set, which is where the animation
+**will** start if no explicit start value is set.
+
+-}
+getStartRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getStartRotate elementId animState =
+    InternalWAAPI.getRotateRange elementId animState
+        |> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        { x = 0, y = 0, z = 0 }
+
+                    Just startRotate ->
+                        Rotate.toRecord startRotate
+            )
+
+
+{-| Get the end rotation of an element being animated.
+
+Returns `Nothing` if the element has no rotate animation.
+
+-}
+getEndRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getEndRotate elementId animState =
+    InternalWAAPI.getRotateRange elementId animState
+        |> Maybe.map (.end >> Rotate.toRecord)
+
+
+{-| Get the current rotation of an element based on its animation state.
+
+Returns `Nothing` if the element has no rotate animation.
+
+This returns the end state rotation as WAAPI manages the interpolation in JavaScript.
+
+-}
+getCurrentRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getCurrentRotate elementId animState =
+    InternalWAAPI.getRotateRange elementId animState
+        |> Maybe.map (.end >> Rotate.toRecord)
+
+
+{-| Get the start scale of an element being animated.
+
+Returns `1.0` if no explicit start value was set, which is where the animation
+**will** start if no explicit start value is set.
+
+Returns `Nothing` if the element has no scale animation.
+
+-}
+getStartScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getStartScale elementId animState =
+    InternalWAAPI.getScaleRange elementId animState
+        |> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        { x = 1, y = 1, z = 1 }
+
+                    Just startScale ->
+                        Scale.toRecord startScale
+            )
+
+
+{-| Get the end scale of an element being animated.
+
+Returns `Nothing` if the element has no scale animation.
+
+-}
+getEndScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getEndScale elementId animState =
+    InternalWAAPI.getScaleRange elementId animState
+        |> Maybe.map (.end >> Scale.toRecord)
+
+
+{-| Get the current scale of an element based on its animation state.
+
+Returns `Nothing` if the element has no scale animation.
+
+This returns the end state scale as WAAPI manages the interpolation in JavaScript.
+
+-}
+getCurrentScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getCurrentScale elementId animState =
+    InternalWAAPI.getScaleRange elementId animState
+        |> Maybe.map (.end >> Scale.toRecord)
+
+
+{-| Get the start size of an element being animated.
+
+Returns `Nothing` if the element has no size animation.
+
+Returns `(0, 0)` if no explicit start value was set, which is where the animation
+**will** start if no explicit start value is set.
+
+-}
+getStartSize : String -> AnimState -> Maybe { width : Float, height : Float }
+getStartSize elementId animState =
+    InternalWAAPI.getSizeRange elementId animState
+        |> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        { width = 0, height = 0 }
+
+                    Just startSize ->
+                        Size.toRecord startSize
+            )
+
+
+{-| Get the end size of an element being animated.
+
+Returns `Nothing` if the element has no size animation.
+
+-}
+getEndSize : String -> AnimState -> Maybe { width : Float, height : Float }
+getEndSize elementId animState =
+    InternalWAAPI.getSizeRange elementId animState
+        |> Maybe.map (.end >> Size.toRecord)
+
+
+{-| Get the current size of an element based on its animation state.
+
+Returns `Nothing` if the element has no size animation.
+
+This returns the end state size as WAAPI manages the interpolation in JavaScript.
+
+-}
+getCurrentSize : String -> AnimState -> Maybe { width : Float, height : Float }
+getCurrentSize elementId animState =
+    InternalWAAPI.getSizeRange elementId animState
+        |> Maybe.map (.end >> Size.toRecord)
 
 
 {-| Set global duration in milliseconds (overrides any previous speed setting).

@@ -2,7 +2,7 @@ module Anim.Internal.WAAPI exposing
     ( TargetId
     , init, builder, animate, AnimState
     , getPosition, getCurrentStyles
-    , delay, duration, easing, speed, update
+    , allComplete, anyRunning, delay, duration, easing, getBackgroundColorRange, getOpacityRange, getPositionRange, getRotateRange, getScaleRange, getSizeRange, isElementComplete, isElementRunning, speed, update
     )
 
 {-| Ports-based animation system for Anim.
@@ -181,6 +181,202 @@ getPosition : String -> AnimState -> Maybe Position
 getPosition elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.andThen (.endStates >> .position)
+
+
+{-| Check if any animations are currently running.
+-}
+anyRunning : AnimState -> Bool
+anyRunning (AnimState state) =
+    not (Dict.isEmpty state.elementAnimations) && state.isRunning
+
+
+{-| Check if a specific element has any animations currently running.
+-}
+isElementRunning : String -> AnimState -> Bool
+isElementRunning elementId (AnimState state) =
+    Dict.member elementId state.elementAnimations && state.isRunning
+
+
+
+-- RANGE QUERYING (Start/End values)
+
+
+{-| Get both start and end positions for an element's animation.
+Returns Nothing if the element has no position animation.
+-}
+getPositionRange : String -> AnimState -> Maybe { start : Maybe Position, end : Position }
+getPositionRange elementId (AnimState state) =
+    let
+        processedData =
+            Builder.processAnimationData state.builder
+    in
+    Dict.get elementId processedData.elements
+        |> Maybe.andThen
+            (\elementConfig ->
+                elementConfig.properties
+                    |> List.filterMap
+                        (\prop ->
+                            case prop of
+                                Builder.ProcessedPositionConfig config ->
+                                    Just { start = config.startAt, end = config.endAt }
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> List.head
+            )
+
+
+{-| Get both start and end scales for an element's animation.
+Returns Nothing if the element has no scale animation.
+-}
+getScaleRange : String -> AnimState -> Maybe { start : Maybe Scale, end : Scale }
+getScaleRange elementId (AnimState state) =
+    let
+        processedData =
+            Builder.processAnimationData state.builder
+    in
+    Dict.get elementId processedData.elements
+        |> Maybe.andThen
+            (\elementConfig ->
+                elementConfig.properties
+                    |> List.filterMap
+                        (\prop ->
+                            case prop of
+                                Builder.ProcessedScaleConfig config ->
+                                    Just { start = config.startAt, end = config.endAt }
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> List.head
+            )
+
+
+{-| Get both start and end rotations for an element's animation.
+Returns Nothing if the element has no rotate animation.
+-}
+getRotateRange : String -> AnimState -> Maybe { start : Maybe Rotate, end : Rotate }
+getRotateRange elementId (AnimState state) =
+    let
+        processedData =
+            Builder.processAnimationData state.builder
+    in
+    Dict.get elementId processedData.elements
+        |> Maybe.andThen
+            (\elementConfig ->
+                elementConfig.properties
+                    |> List.filterMap
+                        (\prop ->
+                            case prop of
+                                Builder.ProcessedRotateConfig config ->
+                                    Just { start = config.startAt, end = config.endAt }
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> List.head
+            )
+
+
+{-| Get both start and end opacity values for an element's animation.
+Returns Nothing if the element has no opacity animation.
+-}
+getOpacityRange : String -> AnimState -> Maybe { start : Maybe Opacity, end : Opacity }
+getOpacityRange elementId (AnimState state) =
+    let
+        processedData =
+            Builder.processAnimationData state.builder
+    in
+    Dict.get elementId processedData.elements
+        |> Maybe.andThen
+            (\elementConfig ->
+                elementConfig.properties
+                    |> List.filterMap
+                        (\prop ->
+                            case prop of
+                                Builder.ProcessedOpacityConfig config ->
+                                    Just { start = config.startAt, end = config.endAt }
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> List.head
+            )
+
+
+{-| Get both start and end background colors for an element's animation.
+Returns Nothing if the element has no background color animation.
+-}
+getBackgroundColorRange : String -> AnimState -> Maybe { start : Maybe Color, end : Color }
+getBackgroundColorRange elementId (AnimState state) =
+    let
+        processedData =
+            Builder.processAnimationData state.builder
+    in
+    Dict.get elementId processedData.elements
+        |> Maybe.andThen
+            (\elementConfig ->
+                elementConfig.properties
+                    |> List.filterMap
+                        (\prop ->
+                            case prop of
+                                Builder.ProcessedBackgroundColorConfig config ->
+                                    Just { start = config.startAt, end = config.endAt }
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> List.head
+            )
+
+
+{-| Get both start and end sizes for an element's animation.
+Returns Nothing if the element has no size animation.
+-}
+getSizeRange : String -> AnimState -> Maybe { start : Maybe Size, end : Size }
+getSizeRange elementId (AnimState state) =
+    let
+        processedData =
+            Builder.processAnimationData state.builder
+    in
+    Dict.get elementId processedData.elements
+        |> Maybe.andThen
+            (\elementConfig ->
+                elementConfig.properties
+                    |> List.filterMap
+                        (\prop ->
+                            case prop of
+                                Builder.ProcessedSizeConfig config ->
+                                    Just { start = config.startAt, end = config.endAt }
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> List.head
+            )
+
+
+{-| Check if all animations are complete.
+-}
+allComplete : AnimState -> Maybe Bool
+allComplete (AnimState state) =
+    if Dict.isEmpty state.elementAnimations then
+        Nothing
+
+    else
+        Just (not state.isRunning)
+
+
+{-| Check if a specific element's animations have completed.
+-}
+isElementComplete : String -> AnimState -> Maybe Bool
+isElementComplete elementId (AnimState state) =
+    if Dict.member elementId state.elementAnimations then
+        Just (not state.isRunning)
+
+    else
+        Nothing
 
 
 duration : Int -> AnimBuilder -> AnimBuilder

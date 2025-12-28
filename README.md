@@ -14,7 +14,7 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 All animation engines use a unified builder API, so you can switch between them with minimal changes. They also support both 2D and 3D animations.
 
-Here's a 3D `Position` animation that can be used by all of the CSS, Sub and WAAPI engines, without any changes to the animation itself:
+Here's a 3D [Position](Anim.Properties.Position) animation that can be used by all of the engines - without any changes to the animation itself:
 
 ```elm
 -- move left by 50px
@@ -67,7 +67,7 @@ div
 -- Place your `<style>` node anywhere in your DOM
 div
     []
-    [ CSS.keyframeStyleNodes model.animations ]
+    [ CSS.keyframeStyleNode model.animations ]
 
 -- Connect your element to the keyframe animation defined in the `<style>` node
 div
