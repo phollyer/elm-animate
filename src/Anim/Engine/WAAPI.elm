@@ -5,7 +5,7 @@ module Anim.Engine.WAAPI exposing
     , duration, speed
     , easing
     , delay
-    , perspective, containerStyles, containerStylesFor
+    , perspective, containerStylesFor
     , getPosition, getCurrentStyles
     , htmlAttributes
     )
@@ -69,7 +69,7 @@ These settings will be used for all animations unless overridden on a per-animat
 
 ## Perspective
 
-@docs perspective, containerStyles, containerStylesFor
+@docs perspective, containerStylesFor
 
 
 # Animation Data
@@ -329,9 +329,20 @@ The perspective value determines the distance between the viewer and the z=0 pla
 A smaller value creates a more pronounced 3D effect, while a larger value creates
 a more subtle effect.
 
+**Important:** The `containerId` must match the `id` attribute of the DOM container element.
+The JavaScript will automatically apply perspective CSS to this container.
+
+    div
+        [ id "my-container" ]
+        -- Must match the containerId below
+        [ div
+            [ id "animated-element" ]
+            [ text "3D content" ]
+        ]
+
     WAAPI.init
-        |> WAAPI.perspective "container-id" 1000
-        |> Position.for "element"
+        |> WAAPI.perspective "my-container" 1000
+        |> Position.for "animated-element"
         |> Position.toXYZ 100 200 50
         |> Position.build
         |> WAAPI.animate
@@ -348,114 +359,48 @@ You can override this global setting for specific properties using property-spec
         |> Position.build
         |> WAAPI.animate
 
+**For dynamic perspective control** (e.g., zoom in/out), use [containerStylesFor](#containerStylesFor)
+instead of relying on this automatic behavior.
+
 -}
 perspective : String -> Float -> AnimBuilder -> AnimBuilder
 perspective =
     Builder.perspective
 
 
-{-| Generate HTML attributes for container elements that need perspective.
+{-| Manually apply perspective styles to a container element.
 
-This function generates the necessary CSS perspective attributes for container elements
-that will contain 3D-transformed children. Specify which container you want attributes for.
+This function gives you direct control over the perspective value applied to a container,
+which is useful for dynamic effects like zoom in/out where the perspective changes in
+response to user interaction.
 
-**Important:** You must provide the `id` attribute yourself - this function only returns
-the perspective-related CSS properties.
-
-    div
-        ([ id "my-container" ]
-            ++ WAAPI.containerStyles "my-container" animState
-        )
-        [ div
-            [ id "animated-element" ]
-            [ text "3D animated content" ]
-        ]
-
-This looks up perspective settings for the specified container from both global settings
-and property-level overrides, with property-level taking precedence.
-
--}
-containerStyles : String -> AnimState -> List (Html.Attribute msg)
-containerStyles containerId animState =
-    let
-        processedData =
-            Builder.processAnimationData (builder animState)
-
-        -- Check property-level perspectives first
-        propertyPerspective =
-            processedData.elements
-                |> Dict.values
-                |> List.concatMap .properties
-                |> List.filterMap extractPerspective
-                |> List.filter (\p -> p.containerId == containerId)
-                |> List.head
-                |> Maybe.map .value
-
-        -- Fall back to global perspective
-        globalPerspective =
-            processedData.globalPerspective
-                |> Maybe.andThen
-                    (\p ->
-                        if p.containerId == containerId then
-                            Just p.value
-
-                        else
-                            Nothing
-                    )
-
-        perspectiveValue =
-            case propertyPerspective of
-                Just value ->
-                    Just value
-
-                Nothing ->
-                    globalPerspective
-    in
-    case perspectiveValue of
-        Just value ->
-            containerStylesFor containerId value
-
-        Nothing ->
-            []
-
-
-extractPerspective : Builder.ProcessedPropertyConfig -> Maybe { containerId : String, value : Float }
-extractPerspective property =
-    case property of
-        Builder.ProcessedPositionConfig config ->
-            config.perspective
-
-        Builder.ProcessedRotateConfig config ->
-            config.perspective
-
-        Builder.ProcessedScaleConfig config ->
-            config.perspective
-
-        _ ->
-            Nothing
-
-
-{-| Generate HTML attributes for a specific container with a given perspective value.
-
-This is useful when you want to manually specify the perspective value.
-
-**Important:** You must provide the `id` attribute yourself - this function only returns
-the perspective-related CSS properties.
+**Elm-side styles take precedence**: When you use this function, the JavaScript will detect
+the existing inline style and skip auto-applying perspective, giving you full control.
 
     div
-        ([ id "my-container" ]
-            ++ WAAPI.containerStylesFor "my-container" 1000
-        )
+        (WAAPI.containerStylesFor "my-container" model.zoomLevel)
         [ div
             [ id "animated-element" ]
-            [ text "3D animated content" ]
+            [ text "3D content" ]
         ]
+
+    -- In your update:
+    case msg of
+        ZoomIn ->
+            ( { model | zoomLevel = model.zoomLevel - 100 }, Cmd.none )
+
+        ZoomOut ->
+            ( { model | zoomLevel = model.zoomLevel + 100 }, Cmd.none )
+
+The perspective value changes dynamically based on `model.zoomLevel`, and JavaScript
+will respect your manual styles rather than overwriting them.
 
 -}
 containerStylesFor : String -> Float -> List (Html.Attribute msg)
-containerStylesFor containerId perspectiveValue =
+containerStylesFor _ perspectiveValue =
     [ Html.Attributes.style "perspective" (String.fromFloat perspectiveValue ++ "px")
     , Html.Attributes.style "transform-style" "preserve-3d"
+    , Html.Attributes.attribute "data-perspective-source" "elm"
     ]
 
 

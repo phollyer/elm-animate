@@ -4,13 +4,14 @@ module Anim.Engine.CSS exposing
     , animationStyleAttribute, animationStyleAttributeWithEvents
     , AnimState, init, AnimBuilder, builder
     , animate, TransformOrder(..), animateOrder
+    , perspective
+    , containerStyles, containerStylesFor
     , Event(..), handleEvent
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
     , duration, speed
     , easing
     , delay
-    , perspective, containerStyles
     , anyRunning, isRunning, allComplete, isComplete
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
     , getStartOpacity, getEndOpacity, getCurrentOpacity
@@ -81,6 +82,22 @@ The following functions help with this process:
 @docs animate, TransformOrder, animateOrder
 
 
+# 3D Animations
+
+When using 3D transforms (Z axis) with Position, Rotate, or Scale animations, you need to set a perspective
+to give a sense of depth. Without perspective, Z axis transformations will have no visual effect.
+
+
+## Perspective
+
+@docs perspective
+
+
+## HTML
+
+@docs containerStyles, containerStylesFor
+
+
 # Event Handling
 
 CSS animations and transitions can trigger events when they start, end, or are cancelled. You have two options for handling
@@ -143,11 +160,6 @@ These settings will be used for all property animations unless overridden on a p
 ## Delay
 
 @docs delay
-
-
-## Perspective
-
-@docs perspective, containerStyles
 
 
 # Querying Animation State
@@ -982,7 +994,7 @@ delay =
 
 {-| Set the global perspective value for 3D transforms.
 
-The perspective value determines the distance between the viewer and the z=0 plane.
+The perspective value determines the distance between the viewer and the `z = 0` plane.
 Smaller values create more dramatic 3D effects, while larger values create subtler effects.
 
     Css.init
@@ -991,14 +1003,7 @@ Smaller values create more dramatic 3D effects, while larger values create subtl
         |> ... -- Property animations
         |> Css.animate
 
-You can override this global setting for specific properties using property-specific perspective functions:
-
-    Css.init
-        |> CSS.builder
-        |> Css.perspective "default-container" 1000  -- Global setting
-        |> Position.for "element1"
-        |> Position.perspective "special-container" 800  -- Override for position
-        |> ...
+You can override this global setting for specific properties using property-specific perspective functions.
 
 -}
 perspective : String -> Float -> AnimBuilder -> AnimBuilder
@@ -1012,13 +1017,12 @@ This function generates the necessary CSS perspective attributes for container e
 to properly display 3D transforms. Apply these attributes to the parent containers
 of animated elements.
 
-**Important:** You must provide the `id` attribute yourself - this function only returns
-the perspective-related CSS properties.
+    animBuilder
+        |> CSS.perspective "main-container" 1000
+        |> ...
 
     div
-        ([ id "my-container" ]
-            ++ CSS.containerStyles "my-container" animationState
-        )
+        (CSS.containerStyles "main-container" animationState)
         [ div
             [ id "animated-element" ]
             [ text "3D animated content" ]
@@ -1028,6 +1032,37 @@ the perspective-related CSS properties.
 containerStyles : String -> AnimState -> List (Html.Attribute msg)
 containerStyles =
     InternalCSS.containerStyles
+
+
+{-| Generate HTML attributes with a given perspective value.
+
+This is useful when you want to manually specify the perspective value without looking it up
+from the animation state.
+
+Think zoom level for 3D transforms!!
+
+    -- Zoom in/out by changing the perspective value
+
+    update msg model =
+        case msg of
+            ZoomIn ->
+                { model | zoomLevel = model.zoomLevel - 100 }
+
+            ZoomOut ->
+                { model | zoomLevel = model.zoomLevel + 100 }
+
+
+    div
+        (CSS.containerStylesFor "main-container" model.zoomLevel)
+        [ -- Animated content
+        ]
+
+-}
+containerStylesFor : String -> Float -> List (Html.Attribute msg)
+containerStylesFor _ perspectiveValue =
+    [ Html.Attributes.style "perspective" (String.fromFloat perspectiveValue ++ "px")
+    , Html.Attributes.style "transform-style" "preserve-3d"
+    ]
 
 
 {-| Get all the HTML attributes needed for the CSS animations on the target element.

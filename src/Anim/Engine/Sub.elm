@@ -283,15 +283,16 @@ perspective =
 This function generates the necessary CSS perspective attributes for container elements
 that will contain 3D-transformed children. Specify which container you want attributes for.
 
-**Important:** You must provide the `id` attribute yourself - this function only returns
-the perspective-related CSS properties.
+    -- Set perspective with a label
+    animBuilder
+        |> Sub.perspective "main-container" 1000
+        |> ...
 
+    -- Apply it using the same label
     div
-        ([ id "my-container" ]
-            ++ Sub.containerStyles "my-container" animState
-        )
+        (Sub.containerStyles "main-container" animState)
         [ div
-            [ id "animated-element" ]
+            [ id "animated-element" ]  -- Only the animated elements need id
             [ text "3D animated content" ]
         ]
 
@@ -361,15 +362,13 @@ extractPerspective property =
 
 {-| Generate HTML attributes for a specific container with a given perspective value.
 
-This is useful when you want to manually specify the perspective value.
+This is useful when you want to manually specify the perspective value without looking it up
+from the animation state.
 
-**Important:** You must provide the `id` attribute yourself - this function only returns
-the perspective-related CSS properties.
+The `containerId` parameter is just a label - it's NOT used as a DOM selector.
 
     div
-        ([ id "my-container" ]
-            ++ Sub.containerStylesFor "my-container" 1000
-        )
+        (Sub.containerStylesFor "main-container" 1000)
         [ div
             [ id "animated-element" ]
             [ text "3D animated content" ]

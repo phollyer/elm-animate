@@ -1,5 +1,5 @@
 /* eslint-env browser */
-/* global window, console, document, performance, requestAnimationFrame, Element */
+/* global window, console, document, performance, requestAnimationFrame */
 /**
  * ElmAnimateWAAPI JavaScript Integration
  * 
@@ -35,13 +35,67 @@ window.ElmAnimateWAAPI = (function () {
     };
 
     /**
+     * Apply perspective to containers
+     */
+    function applyPerspective(animationData) {
+        const perspectiveContainers = new Set();
+
+        // Collect all perspective settings (global and property-level)
+        const perspectiveSettings = {};
+
+        // Global perspective
+        if (animationData.globalPerspective) {
+            const { containerId, value } = animationData.globalPerspective;
+            perspectiveSettings[containerId] = value;
+            perspectiveContainers.add(containerId);
+        }
+
+        // Property-level perspectives (override global)
+        if (animationData.elements) {
+            Object.values(animationData.elements).forEach(elementConfig => {
+                elementConfig.properties.forEach(property => {
+                    if (property.perspective) {
+                        const { containerId, value } = property.perspective;
+                        perspectiveSettings[containerId] = value;
+                        perspectiveContainers.add(containerId);
+                    }
+                });
+            });
+        }
+
+        // Apply perspective styles to containers
+        perspectiveContainers.forEach(containerId => {
+            const container = document.getElementById(containerId);
+            if (container) {
+                const perspectiveSource = container.getAttribute('data-perspective-source');
+
+                // Only apply if:
+                // - No perspective set yet, OR
+                // - Perspective was set by JS (can be updated)
+                // Never overwrite Elm-controlled perspective
+                if (perspectiveSource !== 'elm') {
+                    const perspectiveValue = perspectiveSettings[containerId];
+                    container.style.perspective = `${perspectiveValue}px`;
+                    container.style.transformStyle = 'preserve-3d';
+                    container.setAttribute('data-perspective-source', 'js');
+                }
+            } else {
+                console.warn(`ElmAnimateWAAPI: Container with id "${containerId}" not found for perspective`);
+            }
+        });
+    }
+
+    /**
      * Process animation data received from Elm
      */
     function processAnimationData(animationData) {
         if (animationData && animationData.elements) {
-            // Structured format from Elm Builder
+            // Apply perspective to containers first
+            applyPerspective(animationData);
+
+            // Then process element animations
             Object.entries(animationData.elements).forEach(([elementId, elementConfig]) => {
-                processElementAnimation(elementId, elementConfig, animationData);
+                processElementAnimation(elementId, elementConfig);
             });
         } else {
             console.warn('ElmAnimateWAAPI: Invalid animation data format received');
@@ -51,7 +105,7 @@ window.ElmAnimateWAAPI = (function () {
     /**
      * Process animation for a single element with all its properties
      */
-    function processElementAnimation(elementId, elementConfig, globalConfig) {
+    function processElementAnimation(elementId, elementConfig) {
         const element = document.getElementById(elementId);
         if (!element) {
             console.warn(`ElmAnimateWAAPI: Element with id "${elementId}" not found`);
@@ -77,7 +131,7 @@ window.ElmAnimateWAAPI = (function () {
 
         // Create combined transform animation if we have transform properties
         if (transforms.length > 0) {
-            const transformAnimation = createTransformAnimation(element, transforms, globalConfig);
+            const transformAnimation = createTransformAnimation(element, transforms);
             if (transformAnimation) {
                 animations.push(transformAnimation);
             }
@@ -85,7 +139,7 @@ window.ElmAnimateWAAPI = (function () {
 
         // Create separate animations for non-transform properties
         separateAnimations.forEach(property => {
-            const animation = createPropertyAnimation(element, property, globalConfig);
+            const animation = createPropertyAnimation(element, property);
             if (animation) {
                 animations.push(animation);
             }
@@ -101,7 +155,7 @@ window.ElmAnimateWAAPI = (function () {
     /**
      * Create combined transform animation for position, scale, and rotate
      */
-    function createTransformAnimation(element, transformProperties, globalConfig) {
+    function createTransformAnimation(element, transformProperties) {
         const currentTransform = getCurrentTransform(element);
         let startTransform = '';
         let endTransform = '';
@@ -119,44 +173,36 @@ window.ElmAnimateWAAPI = (function () {
 
         // Get animation config from first property (they should all be similar)
         const firstProperty = transformProperties[0];
-        const duration = getPropertyDuration(firstProperty, globalConfig);
-        const easing = getPropertyEasing(firstProperty, globalConfig);
-        const delay = getPropertyDelay(firstProperty, globalConfig);
+        const duration = firstProperty.duration;
+        const easing = firstProperty.easing;
 
         // Apply property changes
         transformProperties.forEach(property => {
             switch (property.type) {
                 case 'position':
-                    translateX = property.target.x || translateX;
-                    translateY = property.target.y || translateY;
-                    translateZ = property.target.z || translateZ;
+                    translateX = property.x !== undefined ? property.x : translateX;
+                    translateY = property.y !== undefined ? property.y : translateY;
+                    translateZ = property.z !== undefined ? property.z : translateZ;
                     break;
                 case 'scale':
-                    scaleX = property.target.x || scaleX;
-                    scaleY = property.target.y || scaleY;
-                    scaleZ = property.target.z || scaleZ;
+                    scaleX = property.x !== undefined ? property.x : scaleX;
+                    scaleY = property.y !== undefined ? property.y : scaleY;
+                    scaleZ = property.z !== undefined ? property.z : scaleZ;
                     break;
                 case 'rotate':
-                    // Handle both old single rotation and new 3D rotation formats
-                    if (typeof property.target === 'number') {
-                        // Old format: single rotation value (z-axis)
-                        rotationZ = property.target;
-                    } else {
-                        // New format: 3D rotation object
-                        rotationX = property.target.x || rotationX;
-                        rotationY = property.target.y || rotationY;
-                        rotationZ = property.target.z || rotationZ;
-                    }
+                    rotationX = property.x !== undefined ? property.x : rotationX;
+                    rotationY = property.y !== undefined ? property.y : rotationY;
+                    rotationZ = property.z !== undefined ? property.z : rotationZ;
                     break;
             }
         });
 
         // Build transform strings
-        startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z, 
-                                           currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                                           currentTransform.rotationX, currentTransform.rotationY, currentTransform.rotationZ);
-        endTransform = buildTransformString(translateX, translateY, translateZ, scaleX, scaleY, scaleZ, 
-                                          rotationX, rotationY, rotationZ);
+        startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
+            currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
+            currentTransform.rotationX, currentTransform.rotationY, currentTransform.rotationZ);
+        endTransform = buildTransformString(translateX, translateY, translateZ, scaleX, scaleY, scaleZ,
+            rotationX, rotationY, rotationZ);
 
         const keyframes = [
             { transform: startTransform },
@@ -166,7 +212,6 @@ window.ElmAnimateWAAPI = (function () {
         return element.animate(keyframes, {
             duration: duration,
             easing: easingFunctions[easing] || easing,
-            delay: delay,
             fill: 'forwards'
         });
     }
@@ -174,10 +219,9 @@ window.ElmAnimateWAAPI = (function () {
     /**
      * Create animation for non-transform properties
      */
-    function createPropertyAnimation(element, property, globalConfig) {
-        const duration = getPropertyDuration(property, globalConfig);
-        const easing = getPropertyEasing(property, globalConfig);
-        const delay = getPropertyDelay(property, globalConfig);
+    function createPropertyAnimation(element, property) {
+        const duration = property.duration;
+        const easing = property.easing;
 
         let keyframes = [];
 
@@ -185,14 +229,14 @@ window.ElmAnimateWAAPI = (function () {
             case 'opacity':
                 keyframes = [
                     { opacity: window.getComputedStyle(element).opacity || '1' },
-                    { opacity: property.target.toString() }
+                    { opacity: property.value.toString() }
                 ];
                 break;
 
-            case 'color':
+            case 'backgroundColor':
                 keyframes = [
                     { backgroundColor: window.getComputedStyle(element).backgroundColor || 'transparent' },
-                    { backgroundColor: property.target }
+                    { backgroundColor: property.color }
                 ];
                 break;
 
@@ -203,8 +247,8 @@ window.ElmAnimateWAAPI = (function () {
                         height: window.getComputedStyle(element).height
                     },
                     {
-                        width: `${property.target.width}px`,
-                        height: `${property.target.height}px`
+                        width: `${property.width}px`,
+                        height: `${property.height}px`
                     }
                 ];
                 break;
@@ -217,7 +261,6 @@ window.ElmAnimateWAAPI = (function () {
         return element.animate(keyframes, {
             duration: duration,
             easing: easingFunctions[easing] || easing,
-            delay: delay,
             fill: 'forwards'
         });
     }
@@ -227,12 +270,12 @@ window.ElmAnimateWAAPI = (function () {
      */
     function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotationX, rotationY, rotationZ) {
         const parts = [];
-        
+
         // Position: use translate3d for hardware acceleration
         if (x !== 0 || y !== 0 || z !== 0) {
             parts.push(`translate3d(${x}px, ${y}px, ${z}px)`);
         }
-        
+
         // Rotation: apply in order X, Y, Z for consistent results
         if (rotationX !== 0) {
             parts.push(`rotateX(${rotationX}deg)`);
@@ -243,7 +286,7 @@ window.ElmAnimateWAAPI = (function () {
         if (rotationZ !== 0) {
             parts.push(`rotateZ(${rotationZ}deg)`);
         }
-        
+
         // Scale: use individual scale functions for better control
         if (scaleX !== 1) {
             parts.push(`scaleX(${scaleX})`);
@@ -254,47 +297,8 @@ window.ElmAnimateWAAPI = (function () {
         if (scaleZ !== 1) {
             parts.push(`scaleZ(${scaleZ})`);
         }
-        
+
         return parts.join(' ') || 'none';
-    }
-
-    /**
-     * Extract duration from property or global config
-     */
-    function getPropertyDuration(property, globalConfig) {
-        if (property.timing && property.timing.value) {
-            return property.timing.value;
-        }
-        if (globalConfig && globalConfig.globalTiming && globalConfig.globalTiming.value) {
-            return globalConfig.globalTiming.value;
-        }
-        return 1000; // default
-    }
-
-    /**
-     * Extract easing from property or global config
-     */
-    function getPropertyEasing(property, globalConfig) {
-        if (property.easing) {
-            return property.easing;
-        }
-        if (globalConfig && globalConfig.globalEasing) {
-            return globalConfig.globalEasing;
-        }
-        return 'ease';
-    }
-
-    /**
-     * Extract delay from property or global config
-     */
-    function getPropertyDelay(property, globalConfig) {
-        if (property.delay) {
-            return property.delay;
-        }
-        if (globalConfig && globalConfig.globalDelay) {
-            return globalConfig.globalDelay;
-        }
-        return 0;
     }
 
     /**
@@ -305,37 +309,37 @@ window.ElmAnimateWAAPI = (function () {
         const transform = style.transform;
 
         if (transform === 'none' || !transform) {
-            return { 
-                transform: 'none', 
-                x: 0, y: 0, z: 0, 
-                scaleX: 1, scaleY: 1, scaleZ: 1, 
-                rotationX: 0, rotationY: 0, rotationZ: 0 
+            return {
+                transform: 'none',
+                x: 0, y: 0, z: 0,
+                scaleX: 1, scaleY: 1, scaleZ: 1,
+                rotationX: 0, rotationY: 0, rotationZ: 0
             };
         }
 
         // Parse transform matrix (2D or 3D)
         const matrix2d = transform.match(/matrix\((.+)\)/);
         const matrix3d = transform.match(/matrix3d\((.+)\)/);
-        
+
         if (matrix3d) {
             // 3D matrix: matrix3d(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44)
             const values = matrix3d[1].split(', ').map(parseFloat);
-            
+
             if (values.length === 16) {
                 // Extract translation (m41, m42, m43)
                 const tx = values[12] || 0;
                 const ty = values[13] || 0;
                 const tz = values[14] || 0;
-                
+
                 // Extract scale (approximation from first 3 diagonal elements)
                 const scaleX = Math.sqrt(values[0] * values[0] + values[1] * values[1] + values[2] * values[2]);
                 const scaleY = Math.sqrt(values[4] * values[4] + values[5] * values[5] + values[6] * values[6]);
                 const scaleZ = Math.sqrt(values[8] * values[8] + values[9] * values[9] + values[10] * values[10]);
-                
+
                 // For 3D rotations, we'll approximate with simple extraction
                 // This is complex for full 3D rotation extraction, so we'll provide basic support
                 let rotationX = 0, rotationY = 0, rotationZ = 0;
-                
+
                 // Simple Z rotation extraction (most common)
                 if (scaleX !== 0 && scaleY !== 0) {
                     rotationZ = Math.atan2(values[1] / scaleX, values[0] / scaleX) * (180 / Math.PI);
@@ -359,20 +363,20 @@ window.ElmAnimateWAAPI = (function () {
                 const scaleY = Math.sqrt(c * c + d * d);
                 const rotationZ = Math.atan2(b, a) * (180 / Math.PI);
 
-                return { 
-                    transform, 
-                    x: tx, y: ty, z: 0, 
-                    scaleX, scaleY, scaleZ: 1, 
-                    rotationX: 0, rotationY: 0, rotationZ 
+                return {
+                    transform,
+                    x: tx, y: ty, z: 0,
+                    scaleX, scaleY, scaleZ: 1,
+                    rotationX: 0, rotationY: 0, rotationZ
                 };
             }
         }
 
-        return { 
-            transform, 
-            x: 0, y: 0, z: 0, 
-            scaleX: 1, scaleY: 1, scaleZ: 1, 
-            rotationX: 0, rotationY: 0, rotationZ: 0 
+        return {
+            transform,
+            x: 0, y: 0, z: 0,
+            scaleX: 1, scaleY: 1, scaleZ: 1,
+            rotationX: 0, rotationY: 0, rotationZ: 0
         };
     }
 

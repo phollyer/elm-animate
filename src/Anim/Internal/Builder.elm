@@ -740,135 +740,112 @@ resolvePerspectiveWithDefault local global default =
 
 encode : ProcessedAnimationData -> Encode.Value
 encode data =
-    -- Create command strings for each element's animations
-    -- Format: "elementId:targetX:targetY:duration:easing:axis"
-    data.elements
-        |> Dict.toList
-        |> List.filterMap (createCommandString data)
-        |> Encode.list Encode.string
+    Encode.object
+        [ ( "elements", Encode.dict identity encodeProcessedElementConfig data.elements )
+        , ( "globalPerspective", encodeMaybePerspective data.globalPerspective )
+        ]
 
 
-createCommandString : ProcessedAnimationData -> ( String, ProcessedElementConfig ) -> Maybe String
-createCommandString _ ( elementId, elementConfig ) =
-    -- Create commands for all property types
-    elementConfig.properties
-        |> List.filterMap (extractPropertyCommand elementId)
-        |> List.head
+encodeMaybePerspective : Maybe { containerId : String, value : Float } -> Encode.Value
+encodeMaybePerspective maybePerspective =
+    case maybePerspective of
+        Nothing ->
+            Encode.null
+
+        Just perspectiveData ->
+            Encode.object
+                [ ( "containerId", Encode.string perspectiveData.containerId )
+                , ( "value", Encode.float perspectiveData.value )
+                ]
 
 
-extractPropertyCommand : String -> ProcessedPropertyConfig -> Maybe String
-extractPropertyCommand elementId property =
+encodeProcessedElementConfig : ProcessedElementConfig -> Encode.Value
+encodeProcessedElementConfig config =
+    Encode.object
+        [ ( "properties", Encode.list encodeProcessedPropertyConfig config.properties )
+        ]
+
+
+encodeProcessedPropertyConfig : ProcessedPropertyConfig -> Encode.Value
+encodeProcessedPropertyConfig property =
     case property of
         ProcessedPositionConfig config ->
             let
-                ( targetX, targetY ) =
-                    Position.toTuple config.endAt
-
-                easingStr =
-                    easingToJsString config.easing
+                ( x, y, z ) =
+                    Position.toTriple config.endAt
             in
-            Just
-                (String.join ":"
-                    [ "position"
-                    , elementId
-                    , String.fromFloat targetX
-                    , String.fromFloat targetY
-                    , String.fromInt config.duration
-                    , easingStr
-                    , "both"
-                    ]
-                )
+            Encode.object
+                [ ( "type", Encode.string "position" )
+                , ( "x", Encode.float x )
+                , ( "y", Encode.float y )
+                , ( "z", Encode.float z )
+                , ( "duration", Encode.int config.duration )
+                , ( "easing", Encode.string (easingToJsString config.easing) )
+                , ( "perspective", encodeMaybePerspective config.perspective )
+                ]
 
         ProcessedScaleConfig config ->
             let
-                easingStr =
-                    easingToJsString config.easing
-
-                ( targetX, targetY ) =
-                    Scale.toTuple config.endAt
+                ( x, y, z ) =
+                    Scale.toTriple config.endAt
             in
-            Just
-                (String.join ":"
-                    [ "scale"
-                    , elementId
-                    , String.fromFloat targetX
-                    , String.fromFloat targetY
-                    , String.fromInt config.duration
-                    , easingStr
-                    ]
-                )
-
-        ProcessedSizeConfig config ->
-            let
-                ( targetWidth, targetHeight ) =
-                    Size.toTuple config.endAt
-
-                easingStr =
-                    easingToJsString config.easing
-            in
-            Just
-                (String.join ":"
-                    [ "size"
-                    , elementId
-                    , String.fromFloat targetWidth
-                    , String.fromFloat targetHeight
-                    , String.fromInt config.duration
-                    , easingStr
-                    ]
-                )
+            Encode.object
+                [ ( "type", Encode.string "scale" )
+                , ( "x", Encode.float x )
+                , ( "y", Encode.float y )
+                , ( "z", Encode.float z )
+                , ( "duration", Encode.int config.duration )
+                , ( "easing", Encode.string (easingToJsString config.easing) )
+                , ( "perspective", encodeMaybePerspective config.perspective )
+                ]
 
         ProcessedRotateConfig config ->
             let
-                easingStr =
-                    easingToJsString config.easing
+                ( x, y, z ) =
+                    Rotate.toTriple config.endAt
             in
-            Just
-                (String.join ":"
-                    [ "rotation"
-                    , elementId
-                    , String.fromFloat (Rotate.toFloat config.endAt)
-                    , String.fromInt config.duration
-                    , easingStr
-                    ]
-                )
+            Encode.object
+                [ ( "type", Encode.string "rotate" )
+                , ( "x", Encode.float x )
+                , ( "y", Encode.float y )
+                , ( "z", Encode.float z )
+                , ( "duration", Encode.int config.duration )
+                , ( "easing", Encode.string (easingToJsString config.easing) )
+                , ( "perspective", encodeMaybePerspective config.perspective )
+                ]
+
+        ProcessedSizeConfig config ->
+            let
+                ( width, height ) =
+                    Size.toTuple config.endAt
+            in
+            Encode.object
+                [ ( "type", Encode.string "size" )
+                , ( "width", Encode.float width )
+                , ( "height", Encode.float height )
+                , ( "duration", Encode.int config.duration )
+                , ( "easing", Encode.string (easingToJsString config.easing) )
+                ]
 
         ProcessedOpacityConfig config ->
-            let
-                easingStr =
-                    easingToJsString config.easing
-            in
-            Just
-                (String.join ":"
-                    [ "opacity"
-                    , elementId
-                    , String.fromFloat (Opacity.toFloat config.endAt)
-                    , String.fromInt config.duration
-                    , easingStr
-                    ]
-                )
+            Encode.object
+                [ ( "type", Encode.string "opacity" )
+                , ( "value", Encode.float (Opacity.toFloat config.endAt) )
+                , ( "duration", Encode.int config.duration )
+                , ( "easing", Encode.string (easingToJsString config.easing) )
+                ]
 
         ProcessedBackgroundColorConfig config ->
-            let
-                easingStr =
-                    easingToJsString config.easing
-
-                colorStr =
-                    BackgroundColor.toString config.endAt
-            in
-            Just
-                (String.join ":"
-                    [ "color"
-                    , elementId
-                    , colorStr
-                    , String.fromInt config.duration
-                    , easingStr
-                    ]
-                )
+            Encode.object
+                [ ( "type", Encode.string "backgroundColor" )
+                , ( "color", Encode.string (BackgroundColor.toString config.endAt) )
+                , ( "duration", Encode.int config.duration )
+                , ( "easing", Encode.string (easingToJsString config.easing) )
+                ]
 
 
 easingToJsString : Easing -> String
 easingToJsString easingValue =
-    -- Use the proper Web Animations API conversion
     Easing.toWebAnimations easingValue
 
 

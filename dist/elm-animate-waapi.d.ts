@@ -25,9 +25,12 @@ export interface ElmApp {
 
 export interface AnimationData {
     elements: { [elementId: string]: ElementConfig };
-    globalTiming?: TimingConfig;
-    globalEasing?: string;
-    globalDelay?: number;
+    globalPerspective?: PerspectiveConfig;
+}
+
+export interface PerspectiveConfig {
+    containerId: string;
+    value: number;
 }
 
 export interface ElementConfig {
@@ -35,38 +38,23 @@ export interface ElementConfig {
 }
 
 export interface PropertyAnimation {
-    type: 'position' | 'scale' | 'rotate' | 'opacity' | 'color' | 'size';
-    target: PositionTarget | ScaleTarget | RotateTarget | number | string | SizeTarget; // Typed targets
-    timing?: TimingConfig;
-    easing?: string;
-    delay?: number;
-}
-
-export interface TimingConfig {
-    value: number;
-}
-
-export interface PositionTarget {
-    x: number;
-    y: number;
-    z?: number; // Optional for 3D positioning
-}
-
-export interface ScaleTarget {
-    x: number;
-    y: number;
-    z?: number; // Optional for 3D scaling
-}
-
-export interface RotateTarget {
-    x?: number; // Optional X-axis rotation in degrees
-    y?: number; // Optional Y-axis rotation in degrees
-    z?: number; // Optional Z-axis rotation in degrees
-}
-
-export interface SizeTarget {
-    width: number;
-    height: number;
+    type: 'position' | 'scale' | 'rotate' | 'opacity' | 'backgroundColor' | 'size';
+    // Position properties
+    x?: number;
+    y?: number;
+    z?: number;
+    // Scale properties
+    // Rotation properties (x, y, z)
+    // Size properties
+    width?: number;
+    height?: number;
+    // Opacity/color properties
+    value?: number;
+    color?: string;
+    // Animation settings
+    duration: number;
+    easing: string;
+    perspective?: PerspectiveConfig;
 }
 
 export interface AnimationUpdate {
