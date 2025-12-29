@@ -21,6 +21,7 @@ import Anim.Properties.Opacity as Opacity
 import Anim.Properties.Position as Position
 import Anim.Properties.Rotate as Rotate
 import Anim.Properties.Scale as Scale
+import Anim.Properties.Size as Size
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
@@ -60,7 +61,35 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Sub.init }
+    ( { animations =
+            Sub.init
+                |> Sub.builder
+                |> Position.for "mixed-box"
+                |> Position.toXY 0 0
+                |> Position.duration 0
+                |> Position.build
+                |> Scale.for "mixed-box"
+                |> Scale.toXY 1.0 1.0
+                |> Scale.duration 0
+                |> Scale.build
+                |> Size.for "mixed-box"
+                |> Size.toHW 80 80
+                |> Size.duration 0
+                |> Size.build
+                |> Rotate.for "mixed-box"
+                |> Rotate.to 0
+                |> Rotate.duration 0
+                |> Rotate.build
+                |> Opacity.for "mixed-box"
+                |> Opacity.to 1.0
+                |> Opacity.duration 0
+                |> Opacity.build
+                |> Color.for "mixed-box"
+                |> Color.to (Color.Hsl { h = 207, s = 90, l = 54 })
+                |> Color.duration 0
+                |> Color.build
+                |> Sub.animate
+      }
     , Cmd.none
     )
 
@@ -70,11 +99,11 @@ init _ =
 
 
 type Msg
-    = StartComplexAnimation String
-    | StartFadeMove String
-    | StartSpinScale String
-    | StartColorMorph String
-    | StartFullTransform String
+    = MoveScaleRotate String
+    | FadeMove String
+    | ColorSizeOpacity String
+    | SpinScaleColor String
+    | AllProperties String
     | ResetAll
     | AnimationMsg Sub.AnimationMsg
 
@@ -82,8 +111,7 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        StartComplexAnimation elementId ->
-            -- Combine position + scale + rotation
+        MoveScaleRotate elementId ->
             ( { model
                 | animations =
                     model.animations
@@ -110,8 +138,7 @@ update msg model =
             , Cmd.none
             )
 
-        StartFadeMove elementId ->
-            -- Combine opacity + position
+        FadeMove elementId ->
             ( { model
                 | animations =
                     model.animations
@@ -131,8 +158,7 @@ update msg model =
             , Cmd.none
             )
 
-        StartSpinScale elementId ->
-            -- Combine rotation + scale + color
+        SpinScaleColor elementId ->
             ( { model
                 | animations =
                     model.animations
@@ -157,8 +183,7 @@ update msg model =
             , Cmd.none
             )
 
-        StartColorMorph elementId ->
-            -- Combine color + scale + opacity
+        ColorSizeOpacity elementId ->
             ( { model
                 | animations =
                     model.animations
@@ -168,11 +193,11 @@ update msg model =
                         |> Color.speed 300.0
                         |> Color.easing Easing.EaseInOut
                         |> Color.build
-                        |> Scale.for elementId
-                        |> Scale.toXY 2.0 0.5
-                        |> Scale.speed 2.0
-                        |> Scale.easing Easing.EaseOut
-                        |> Scale.build
+                        |> Size.for elementId
+                        |> Size.toHW 100 100
+                        |> Size.duration 2000
+                        |> Size.easing Easing.EaseOut
+                        |> Size.build
                         |> Opacity.for elementId
                         |> Opacity.to 0.8
                         |> Opacity.speed 1.5
@@ -183,8 +208,7 @@ update msg model =
             , Cmd.none
             )
 
-        StartFullTransform elementId ->
-            -- All properties at once!
+        AllProperties elementId ->
             ( { model
                 | animations =
                     model.animations
@@ -199,6 +223,11 @@ update msg model =
                         |> Scale.speed 1.5
                         |> Scale.easing Easing.EaseOut
                         |> Scale.build
+                        |> Size.for elementId
+                        |> Size.toHW 120 120
+                        |> Size.duration 2000
+                        |> Size.easing Easing.EaseInOut
+                        |> Size.build
                         |> Rotate.for elementId
                         |> Rotate.to 270
                         |> Rotate.speed 180.0
@@ -234,6 +263,11 @@ update msg model =
                         |> Scale.speed 1.5
                         |> Scale.easing Easing.EaseInOut
                         |> Scale.build
+                        |> Size.for "mixed-box"
+                        |> Size.toHW 80 80
+                        |> Size.speed 2000
+                        |> Size.easing Easing.EaseInOut
+                        |> Size.build
                         |> Rotate.for "mixed-box"
                         |> Rotate.to 0
                         |> Rotate.speed 180.0
@@ -295,11 +329,10 @@ viewContent model =
         (text "Combining multiple Subscription-Based properties in single animations for complex transformations")
     , -- Mixed property animation controls
       UI.wrappedButtonRow
-        [ ( UI.Primary, StartComplexAnimation "mixed-box", "Move + Scale + Rotate" )
-        , ( UI.Success, StartFadeMove "mixed-box", "Fade + Move" )
-        , ( UI.Warning, StartSpinScale "mixed-box", "Spin + Scale + Color" )
-        , ( UI.Purple, StartColorMorph "mixed-box", "Color + Shape + Opacity" )
-        , ( UI.Primary, StartFullTransform "mixed-box", "ALL Properties!" )
+        [ ( UI.Primary, MoveScaleRotate "mixed-box", "Move + Scale + Rotate" )
+        , ( UI.Success, FadeMove "mixed-box", "Fade + Move" )
+        , ( UI.Purple, ColorSizeOpacity "mixed-box", "Color + Size + Opacity" )
+        , ( UI.Primary, AllProperties "mixed-box", "ALL Properties!" )
         , ( UI.Success, ResetAll, "Reset" )
         ]
     , -- Animation area

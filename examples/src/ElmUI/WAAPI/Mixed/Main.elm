@@ -258,7 +258,7 @@ viewContent model =
         [ ( UI.Primary, StartComplexAnimation "mixed-box", "Move + Scale + Rotate" )
         , ( UI.Success, StartFadeMove "mixed-box", "Fade + Move" )
         , ( UI.Warning, StartSpinScale "mixed-box", "Spin + Scale + Color" )
-        , ( UI.Purple, StartColorMorph "mixed-box", "Color + Shape + Opacity" )
+        , ( UI.Purple, StartColorMorph "mixed-box", "Color + Size + Opacity" )
         , ( UI.Primary, StartFullTransform "mixed-box", "ALL Properties!" )
         , ( UI.Success, ResetAll, "Reset" )
         ]
