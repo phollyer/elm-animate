@@ -476,7 +476,7 @@ anyRunning =
 -}
 isRunning : ElementId -> AnimState -> Bool
 isRunning =
-    InternalSub.isElementRunning
+    InternalSub.isAnimationRunning
 
 
 {-| Check if all animations are complete.
@@ -496,7 +496,7 @@ Returns `Nothing` if there are no animations for the element.
 -}
 isComplete : String -> AnimState -> Maybe Bool
 isComplete =
-    InternalSub.isElementComplete
+    InternalSub.isComplete
 
 
 {-| Get the start background color of an element being animated.
