@@ -7,9 +7,6 @@ module Anim.Internal.CSS.Transform exposing
     )
 
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Properties.Position as Position
-import Anim.Internal.Properties.Rotate as Rotate
-import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Timing.Easing as Easing
 import Anim.Internal.Timing.TimeSpec as TimeSpec
 
@@ -20,11 +17,9 @@ generate : List Builder.PropertyConfig -> String
 generate properties =
     let
         transformParts =
-            List.foldl transformFromProperty
-                { position = "", rotate = "", scale = "" }
-                properties
+            Builder.extractTransformsFromProperty properties
     in
-    transformParts.position ++ " " ++ transformParts.rotate ++ " " ++ transformParts.scale
+    String.trim (transformParts.position ++ " " ++ transformParts.rotate ++ " " ++ transformParts.scale)
 
 
 {-| Generate transform with custom property ordering.
@@ -38,11 +33,9 @@ generateWithOrder order properties =
             sortPropertiesByOrder order properties
 
         transformParts =
-            List.foldl transformFromProperty
-                { position = "", rotate = "", scale = "" }
-                sortedProperties
+            Builder.extractTransformsFromProperty sortedProperties
     in
-    transformParts.position ++ " " ++ transformParts.rotate ++ " " ++ transformParts.scale
+    String.trim (transformParts.position ++ " " ++ transformParts.rotate ++ " " ++ transformParts.scale)
 
 
 {-| Sort properties according to specified order.
@@ -74,36 +67,6 @@ sortPropertiesByOrder order properties =
                 |> Maybe.withDefault 999
     in
     List.sortBy getPropertyPriority properties
-
-
-{-| Convert a property config to a transform string, if applicable.
--}
-transformFromProperty : Builder.PropertyConfig -> { position : String, rotate : String, scale : String } -> { position : String, rotate : String, scale : String }
-transformFromProperty property acc =
-    case property of
-        Builder.PositionConfig config ->
-            if config.isDirty then
-                acc
-
-            else
-                { acc | position = "translate3d(" ++ Position.toCssString config.endAt ++ ")" }
-
-        Builder.RotateConfig config ->
-            if config.isDirty then
-                acc
-
-            else
-                { acc | rotate = Rotate.to3DCssString config.endAt }
-
-        Builder.ScaleConfig config ->
-            if config.isDirty then
-                acc
-
-            else
-                { acc | scale = Scale.to3DCssString config.endAt }
-
-        _ ->
-            acc
 
 
 {-| Combine multiple transform styles into a single transform style.

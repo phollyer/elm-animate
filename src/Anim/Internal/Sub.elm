@@ -208,8 +208,23 @@ htmlAttributes elementId (AnimState state) =
 
         Just elementAnimation ->
             let
+                -- Get current animated values for each property
+                currentProperties =
+                    List.map getCurrentPropertyValue elementAnimation.properties
+
+                -- Extract transforms in correct order using Builder's shared function
                 transformParts =
-                    List.filterMap getTransformPart elementAnimation.properties
+                    Builder.extractTransformsFromProcessed currentProperties
+
+                -- Build transform string in fixed order: position, rotate, scale
+                transformString =
+                    String.trim
+                        (transformParts.position
+                            ++ " "
+                            ++ transformParts.rotate
+                            ++ " "
+                            ++ transformParts.scale
+                        )
 
                 sizeStyles =
                     List.concatMap getSizeStyleAttributes elementAnimation.properties
@@ -218,13 +233,102 @@ htmlAttributes elementId (AnimState state) =
                     List.filterMap getNonTransformStyleAttribute elementAnimation.properties
 
                 transformStyle =
-                    if List.isEmpty transformParts then
+                    if String.isEmpty transformString then
                         []
 
                     else
-                        [ Html.Attributes.style "transform" (String.join " " transformParts) ]
+                        [ Html.Attributes.style "transform" transformString ]
             in
             transformStyle ++ sizeStyles ++ nonTransformStyles
+
+
+{-| Get the current property value as a ProcessedPropertyConfig.
+This is used to extract current animated values for transform ordering.
+-}
+getCurrentPropertyValue : PropertyAnimation -> Builder.ProcessedPropertyConfig
+getCurrentPropertyValue propertyState =
+    let
+        currentValue =
+            getCurrentValue propertyState
+    in
+    case currentValue of
+        PositionAnimation pos ->
+            Builder.ProcessedPositionConfig
+                { startAt = Just pos
+                , endAt = pos
+                , duration = 0
+                , speed = 0
+                , distance = 0
+                , timing = Duration 0
+                , easing = Linear
+                , delay = 0
+                , perspective = Nothing
+                }
+
+        RotateAnimation rotate ->
+            Builder.ProcessedRotateConfig
+                { startAt = Just rotate
+                , endAt = rotate
+                , duration = 0
+                , speed = 0
+                , distance = 0
+                , timing = Duration 0
+                , easing = Linear
+                , delay = 0
+                , perspective = Nothing
+                }
+
+        ScaleAnimation scale ->
+            Builder.ProcessedScaleConfig
+                { startAt = Just scale
+                , endAt = scale
+                , duration = 0
+                , speed = 0
+                , distance = 0
+                , timing = Duration 0
+                , easing = Linear
+                , delay = 0
+                , perspective = Nothing
+                }
+
+        BackgroundColorAnimation color ->
+            Builder.ProcessedBackgroundColorConfig
+                { startAt = Just color
+                , endAt = color
+                , duration = 0
+                , speed = 0
+                , distance = 0
+                , timing = Duration 0
+                , easing = Linear
+                , delay = 0
+                , perspective = Nothing
+                }
+
+        OpacityAnimation opacity ->
+            Builder.ProcessedOpacityConfig
+                { startAt = Just opacity
+                , endAt = opacity
+                , duration = 0
+                , speed = 0
+                , distance = 0
+                , timing = Duration 0
+                , easing = Linear
+                , delay = 0
+                , perspective = Nothing
+                }
+
+        SizeAnimation size ->
+            Builder.ProcessedSizeConfig
+                { startAt = Just size
+                , endAt = size
+                , duration = 0
+                , speed = 0
+                , distance = 0
+                , timing = Duration 0
+                , easing = Linear
+                , delay = 0
+                , perspective = Nothing
+                }
 
 
 
@@ -1126,36 +1230,7 @@ updatePropertyAnimation deltaMs propertyState =
 
 
 -- View Helpers
-
-
-getTransformPart : PropertyAnimation -> Maybe String
-getTransformPart propertyState =
-    let
-        currentValue =
-            List.drop propertyState.currentStepIndex propertyState.animationSteps
-                |> List.head
-                |> Maybe.withDefault (getLastStep propertyState.animationSteps)
-    in
-    case currentValue of
-        PositionAnimation pos ->
-            let
-                ( x, y, z ) =
-                    Position.toTriple pos
-            in
-            Just ("translate3d(" ++ String.fromFloat x ++ "px, " ++ String.fromFloat y ++ "px, " ++ String.fromFloat z ++ "px)")
-
-        RotateAnimation rotate ->
-            Just (Rotate.to3DCssString rotate)
-
-        ScaleAnimation scale ->
-            let
-                ( x, y ) =
-                    Scale.toTuple scale
-            in
-            Just ("scale(" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")")
-
-        _ ->
-            Nothing
+-- View Helpers
 
 
 getSizeStyleAttributes : PropertyAnimation -> List (Html.Attribute msg)

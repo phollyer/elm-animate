@@ -5,12 +5,15 @@ module Anim.Internal.Builder exposing
     , ProcessedElementConfig
     , ProcessedPropertyConfig(..)
     , PropertyConfig(..)
+    , TransformParts
     , addScrollTarget
     , delay
     , duration
     , easing
     , elements
     , encode
+    , extractTransformsFromProcessed
+    , extractTransformsFromProperty
     , for
     , getCurrentElementConfig
     , getDelay
@@ -857,3 +860,93 @@ setScrollContainer containerId (AnimBuilder data) =
 getScrollContainer : AnimBuilder -> String
 getScrollContainer (AnimBuilder data) =
     data.scrollContainer
+
+
+
+-- TRANSFORM ORDERING
+-- Shared logic for consistent transform ordering across CSS and Sub engines
+
+
+{-| Record to hold transform parts in the correct order.
+-}
+type alias TransformParts =
+    { position : String
+    , rotate : String
+    , scale : String
+    }
+
+
+{-| Extract transforms from ProcessedPropertyConfig list in correct order.
+Used by Sub engine.
+-}
+extractTransformsFromProcessed : List ProcessedPropertyConfig -> TransformParts
+extractTransformsFromProcessed properties =
+    List.foldl collectProcessedTransform emptyTransformParts properties
+
+
+{-| Extract transforms from PropertyConfig list in correct order.
+Used by CSS engine.
+-}
+extractTransformsFromProperty : List PropertyConfig -> TransformParts
+extractTransformsFromProperty properties =
+    List.foldl collectPropertyTransform emptyTransformParts properties
+
+
+emptyTransformParts : TransformParts
+emptyTransformParts =
+    { position = ""
+    , rotate = ""
+    , scale = ""
+    }
+
+
+{-| Collect transform from ProcessedPropertyConfig.
+-}
+collectProcessedTransform : ProcessedPropertyConfig -> TransformParts -> TransformParts
+collectProcessedTransform property acc =
+    case property of
+        ProcessedPositionConfig config ->
+            { acc | position = "translate3d(" ++ Position.toCssString config.endAt ++ ")" }
+
+        ProcessedRotateConfig config ->
+            { acc | rotate = Rotate.to3DCssString config.endAt }
+
+        ProcessedScaleConfig config ->
+            let
+                ( x, y ) =
+                    Scale.toTuple config.endAt
+            in
+            { acc | scale = "scale(" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")" }
+
+        _ ->
+            acc
+
+
+{-| Collect transform from PropertyConfig (skips dirty properties).
+-}
+collectPropertyTransform : PropertyConfig -> TransformParts -> TransformParts
+collectPropertyTransform property acc =
+    case property of
+        PositionConfig config ->
+            if config.isDirty then
+                acc
+
+            else
+                { acc | position = "translate3d(" ++ Position.toCssString config.endAt ++ ")" }
+
+        RotateConfig config ->
+            if config.isDirty then
+                acc
+
+            else
+                { acc | rotate = Rotate.to3DCssString config.endAt }
+
+        ScaleConfig config ->
+            if config.isDirty then
+                acc
+
+            else
+                { acc | scale = Scale.to3DCssString config.endAt }
+
+        _ ->
+            acc
