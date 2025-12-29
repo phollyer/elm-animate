@@ -109,15 +109,16 @@ update msg model =
     case msg of
         MoveToXY x y ->
             let
-                ( newAnimState, animationData ) =
-                    model.animationState
-                        |> WAAPI.builder
+                builder =
+                    WAAPI.builder model.animationState
                         |> Position.for "box"
                         |> Position.toXY x y
                         |> Position.speed 200.0
                         |> Position.easing Easing.BounceInOut
                         |> Position.build
-                        |> WAAPI.animate model.animationState
+
+                ( newAnimState, animationData ) =
+                    WAAPI.animate model.animationState builder
             in
             ( { model | animationState = newAnimState, isAnimating = True }
             , animateElement animationData
@@ -125,15 +126,16 @@ update msg model =
 
         MoveLeft ->
             let
-                ( newAnimState, animationData ) =
-                    model.animationState
-                        |> WAAPI.builder
+                builder =
+                    WAAPI.builder model.animationState
                         |> Position.for "box"
                         |> Position.toX 0
                         |> Position.speed 300.0
                         |> Position.easing Easing.BounceIn
                         |> Position.build
-                        |> WAAPI.animate model.animationState
+
+                ( newAnimState, animationData ) =
+                    WAAPI.animate model.animationState builder
             in
             ( { model | animationState = newAnimState, isAnimating = True }
             , animateElement animationData
@@ -141,15 +143,16 @@ update msg model =
 
         MoveRight ->
             let
-                ( newAnimState, animationData ) =
-                    model.animationState
-                        |> WAAPI.builder
+                builder =
+                    WAAPI.builder model.animationState
                         |> Position.for "box"
                         |> Position.toX 450
                         |> Position.speed 300.0
                         |> Position.easing Easing.BounceOut
                         |> Position.build
-                        |> WAAPI.animate model.animationState
+
+                ( newAnimState, animationData ) =
+                    WAAPI.animate model.animationState builder
             in
             ( { model | animationState = newAnimState, isAnimating = True }
             , animateElement animationData
@@ -157,15 +160,16 @@ update msg model =
 
         MoveUp ->
             let
-                ( newAnimState, animationData ) =
-                    model.animationState
-                        |> WAAPI.builder
+                builder =
+                    WAAPI.builder model.animationState
                         |> Position.for "box"
                         |> Position.toY 0
                         |> Position.speed 250.0
                         |> Position.easing Easing.ElasticIn
                         |> Position.build
-                        |> WAAPI.animate model.animationState
+
+                ( newAnimState, animationData ) =
+                    WAAPI.animate model.animationState builder
             in
             ( { model | animationState = newAnimState, isAnimating = True }
             , animateElement animationData
@@ -173,15 +177,16 @@ update msg model =
 
         MoveDown ->
             let
-                ( newAnimState, animationData ) =
-                    model.animationState
-                        |> WAAPI.builder
+                builder =
+                    WAAPI.builder model.animationState
                         |> Position.for "box"
                         |> Position.toY 350
                         |> Position.speed 350.0
                         |> Position.easing Easing.ElasticOut
                         |> Position.build
-                        |> WAAPI.animate model.animationState
+
+                ( newAnimState, animationData ) =
+                    WAAPI.animate model.animationState builder
             in
             ( { model | animationState = newAnimState, isAnimating = True }
             , animateElement animationData
@@ -189,15 +194,16 @@ update msg model =
 
         ResetPosition ->
             let
-                ( newAnimState, animationData ) =
-                    model.animationState
-                        |> WAAPI.builder
+                builder =
+                    WAAPI.builder model.animationState
                         |> Position.for "box"
                         |> Position.toXY 0 0
                         |> Position.speed 400.0
                         |> Position.easing Easing.ElasticInOut
                         |> Position.build
-                        |> WAAPI.animate model.animationState
+
+                ( newAnimState, animationData ) =
+                    WAAPI.animate model.animationState builder
             in
             ( { model | animationState = newAnimState, isAnimating = True }
             , animateElement animationData

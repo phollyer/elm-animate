@@ -15,8 +15,9 @@ FEATURES:
 
 -}
 
-
-import Anim.Engine.WAAPI exposing (Model, animate, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
+import Anim.Engine.WAAPI as WAAPI
+import Anim.Properties.Scale as Scale
+import Anim.Timing.Easing as Easing
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -34,15 +35,6 @@ import Json.Encode as Encode
 
 
 port animateElement : Encode.Value -> Cmd msg
-
-
-port stopElement : Encode.Value -> Cmd msg
-
-
-port positionUpdates : (Decode.Value -> msg) -> Sub msg
-
-
-port animationComplete : (String -> msg) -> Sub msg
 
 
 
@@ -64,7 +56,7 @@ main =
 
 
 type alias Model =
-    { animations : Anim.Engine.WAAPI.Model
+    { animState : WAAPI.AnimState
     }
 
 
@@ -74,7 +66,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Anim.Engine.WAAPI.init
+    ( { animState = WAAPI.init
       }
     , Cmd.none
     )
@@ -86,8 +78,7 @@ type Msg
     | ScaleReset
     | ScaleWide
     | ScaleTall
-    | AnimationComplete String
-    | PositionUpdateReceived (Result Decode.Error Anim.Engine.WAAPI.PropertyUpdate)
+    | NoOp
 
 
 
@@ -99,111 +90,81 @@ update msg model =
     case msg of
         ScaleUp ->
             let
-                animation =
-                    Anim.scale "box" { x = 1.3, y = 1.3 }
-                        |> Anim.scalePerSecond 2.0
-                        |> Anim.easeOut
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 500
+                        |> WAAPI.easing Easing.EaseOut
+                        |> Scale.for "box"
+                        |> Scale.toXY 1.3 1.3
+                        |> Scale.build
 
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
             in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement command
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ScaleDown ->
             let
-                animation =
-                    Anim.scale "box" { x = 0.7, y = 0.7 }
-                        |> Anim.scalePerSecond 3.0
-                        |> Anim.easeIn
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 333
+                        |> WAAPI.easing Easing.EaseIn
+                        |> Scale.for "box"
+                        |> Scale.toXY 0.7 0.7
+                        |> Scale.build
 
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
             in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement command
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ScaleReset ->
             let
-                animation =
-                    Anim.scale "box" { x = 1.0, y = 1.0 }
-                        |> Anim.scaleDuration 800
-                        |> Anim.easeInOut
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 800
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Scale.for "box"
+                        |> Scale.toXY 1.0 1.0
+                        |> Scale.build
 
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
             in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement command
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ScaleWide ->
             let
-                animation =
-                    Anim.scale "box" { x = 2.0, y = 0.8 }
-                        |> Anim.scaleDuration 1200
-                        |> Anim.easeOut
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 1200
+                        |> WAAPI.easing Easing.EaseOut
+                        |> Scale.for "box"
+                        |> Scale.toXY 2.0 0.8
+                        |> Scale.build
 
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
             in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement command
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ScaleTall ->
             let
-                animation =
-                    Anim.scale "box" { x = 0.6, y = 1.8 }
-                        |> Anim.scalePerSecond 1.5
-                        |> Anim.easeInOut
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 667
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Scale.for "box"
+                        |> Scale.toXY 0.6 1.8
+                        |> Scale.build
 
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
             in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement command
-                    )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
-                Nothing ->
-                    ( model, Cmd.none )
-
-        AnimationComplete _ ->
+        NoOp ->
             ( model, Cmd.none )
-
-        PositionUpdateReceived result ->
-            case result of
-                Ok propertyUpdate ->
-                    ( { model | animations = Anim.Engine.WAAPI.handlePropertyUpdate propertyUpdate model.animations }
-                    , Cmd.none
-                    )
-
-                Err _ ->
-                    ( model, Cmd.none )
 
 
 
@@ -212,10 +173,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ positionUpdates (PositionUpdateReceived << handlePropertyUpdateFromJson)
-        , animationComplete AnimationComplete
-        ]
+    Sub.none
 
 
 
@@ -284,21 +242,17 @@ viewContent model =
 animatedBox : String -> String -> Element.Color -> Model -> Element Msg
 animatedBox elementId label color model =
     el
-        ([ width (px 150)
-         , height (px 150)
-         , Background.color color
-         , Border.rounded 12
-         , centerX
-         , htmlAttribute (Html.Attributes.id elementId)
-         , htmlAttribute (Html.Attributes.style "transform-origin" "center")
-         , htmlAttribute (Html.Attributes.style "display" "flex")
-         , htmlAttribute (Html.Attributes.style "align-items" "center")
-         , htmlAttribute (Html.Attributes.style "justify-content" "center")
-         ]
-            ++ (styleProperties elementId model.animations
-                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
-               )
-        )
+        [ width (px 150)
+        , height (px 150)
+        , Background.color color
+        , Border.rounded 12
+        , centerX
+        , htmlAttribute (Html.Attributes.id elementId)
+        , htmlAttribute (Html.Attributes.style "transform-origin" "center")
+        , htmlAttribute (Html.Attributes.style "display" "flex")
+        , htmlAttribute (Html.Attributes.style "align-items" "center")
+        , htmlAttribute (Html.Attributes.style "justify-content" "center")
+        ]
         (el
             [ centerX
             , Element.centerY

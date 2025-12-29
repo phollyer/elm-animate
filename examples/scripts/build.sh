@@ -89,12 +89,12 @@ build_example "src/ElmUI/Sub/Timing/Main.elm" "src/ElmUI/Sub/Timing/index.js" "E
 # ElmUI WAAPI examples (JavaScript Web Animations API)
 # echo "  🌐 ElmUI WAAPI examples (Anim.Engine.WAAPI - Web Animations API integration)..."
 build_example "src/ElmUI/WAAPI/Position/Main.elm" "src/ElmUI/WAAPI/Position/index.js" "ElmUI.WAAPI.Position.Main"
-# build_example "src/ElmUI/WAAPI/Opacity/Main.elm" "src/ElmUI/WAAPI/Opacity/index.js" "ElmUI.WAAPI.Opacity.Main"
-# build_example "src/ElmUI/WAAPI/Scale/Main.elm" "src/ElmUI/WAAPI/Scale/index.js" "ElmUI.WAAPI.Scale.Main"
-# build_example "src/ElmUI/WAAPI/Rotation/Main.elm" "src/ElmUI/WAAPI/Rotation/index.js" "ElmUI.WAAPI.Rotation.Main"
-# build_example "src/ElmUI/WAAPI/Color/Main.elm" "src/ElmUI/WAAPI/Color/index.js" "ElmUI.WAAPI.Color.Main"
-# build_example "src/ElmUI/WAAPI/Mixed/Main.elm" "src/ElmUI/WAAPI/Mixed/index.js" "ElmUI.WAAPI.Mixed.Main"
-# build_example "src/ElmUI/WAAPI/Choreography/Main.elm" "src/ElmUI/WAAPI/Choreography/index.js" "ElmUI.WAAPI.Choreography.Main"
+build_example "src/ElmUI/WAAPI/Opacity/Main.elm" "src/ElmUI/WAAPI/Opacity/index.js" "ElmUI.WAAPI.Opacity.Main"
+build_example "src/ElmUI/WAAPI/Scale/Main.elm" "src/ElmUI/WAAPI/Scale/index.js" "ElmUI.WAAPI.Scale.Main"
+build_example "src/ElmUI/WAAPI/Rotate/Main.elm" "src/ElmUI/WAAPI/Rotate/index.js" "ElmUI.WAAPI.Rotate.Main"
+build_example "src/ElmUI/WAAPI/Color/Main.elm" "src/ElmUI/WAAPI/Color/index.js" "ElmUI.WAAPI.Color.Main"
+build_example "src/ElmUI/WAAPI/Mixed/Main.elm" "src/ElmUI/WAAPI/Mixed/index.js" "ElmUI.WAAPI.Mixed.Main"
+build_example "src/ElmUI/WAAPI/Choreography/Main.elm" "src/ElmUI/WAAPI/Choreography/index.js" "ElmUI.WAAPI.Choreography.Main"
 
 # Report results
 echo ""

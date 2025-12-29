@@ -14,10 +14,9 @@ FEATURES:
 
 -}
 
-
-import Anim.Timing.Easing as Easing
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Properties.Opacity as Opacity
+import Anim.Timing.Easing as Easing
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -55,7 +54,8 @@ main =
 
 
 type alias Model =
-    {}
+    { animState : WAAPI.AnimState
+    }
 
 
 
@@ -64,7 +64,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( {}
+    ( { animState = WAAPI.init }
     , Cmd.none
     )
 
@@ -80,36 +80,48 @@ update msg model =
     case msg of
         FadeIn ->
             let
-                animation =
-                    WAAPI.init 
+                builder =
+                    WAAPI.builder model.animState
                         |> WAAPI.duration 1000
                         |> WAAPI.easing Easing.easeInOut
                         |> Opacity.for "box"
                         |> Opacity.to 1.0
+                        |> Opacity.build
+
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
             in
-            ( model, WAAPI.animate animateElement animation )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         FadeOut ->
             let
-                animation =
-                    WAAPI.init 
+                builder =
+                    WAAPI.builder model.animState
                         |> WAAPI.duration 1000
                         |> WAAPI.easing Easing.easeInOut
                         |> Opacity.for "box"
                         |> Opacity.to 0.0
+                        |> Opacity.build
+
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
             in
-            ( model, WAAPI.animate animateElement animation )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ResetOpacity ->
             let
-                animation =
-                    WAAPI.init 
+                builder =
+                    WAAPI.builder model.animState
                         |> WAAPI.duration 1000
                         |> WAAPI.easing Easing.easeInOut
                         |> Opacity.for "box"
                         |> Opacity.to 0.5
+                        |> Opacity.build
+
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
             in
-            ( model, WAAPI.animate animateElement animation )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
 
 

@@ -15,8 +15,9 @@ FEATURES:
 
 -}
 
-
-import Anim.Engine.WAAPI exposing (Model, animate, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
+import Anim.Engine.WAAPI as WAAPI
+import Anim.Properties.BackgroundColor as Color
+import Anim.Timing.Easing as Easing
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -34,15 +35,6 @@ import Json.Encode as Encode
 
 
 port animateElement : Encode.Value -> Cmd msg
-
-
-port stopElement : Encode.Value -> Cmd msg
-
-
-port positionUpdates : (Decode.Value -> msg) -> Sub msg
-
-
-port animationComplete : (String -> msg) -> Sub msg
 
 
 
@@ -64,7 +56,7 @@ main =
 
 
 type alias Model =
-    { animations : Anim.Engine.WAAPI.Model
+    { animState : WAAPI.AnimState
     }
 
 
@@ -74,7 +66,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Anim.Engine.WAAPI.init
+    ( { animState = WAAPI.init
       }
     , Cmd.none
     )
@@ -87,8 +79,7 @@ type Msg
     | ChangeToRed
     | ChangeToPurple
     | ResetColor
-    | AnimationComplete String
-    | PositionUpdateReceived (Result Decode.Error Anim.Engine.WAAPI.PropertyUpdate)
+    | NoOp
 
 
 
@@ -100,130 +91,96 @@ update msg model =
     case msg of
         ChangeToBlue ->
             let
-                animation =
-                    Anim.backgroundColor "box" (Hex "#3498db")
-                        |> Anim.backgroundColorDuration 1000
-                        |> easeInOut
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 1000
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Color.for "box"
+                        |> Color.to (Color.Hex "#3498db")
+                        |> Color.build
 
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
             in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement command
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ChangeToGreen ->
             let
-                animation =
-                    Anim.backgroundColor "box" (Hex "#2ecc71")
-                        |> Anim.backgroundColorDuration 1000
-                        |> easeInOut
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 1000
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Color.for "box"
+                        |> Color.to (Color.Hex "#2ecc71")
+                        |> Color.build
 
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
             in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement command
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ChangeToOrange ->
             let
-                animation =
-                    Anim.backgroundColor "box" (Hex "#f39c12")
-                        |> Anim.backgroundColorDuration 1000
-                        |> easeInOut
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 1000
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Color.for "box"
+                        |> Color.to (Color.Hex "#f39c12")
+                        |> Color.build
 
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
             in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement command
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ChangeToRed ->
             let
-                animation =
-                    Anim.backgroundColor "box" (Hex "#e74c3c")
-                        |> Anim.backgroundColorDuration 1000
-                        |> easeInOut
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 1000
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Color.for "box"
+                        |> Color.to (Color.Hex "#e74c3c")
+                        |> Color.build
 
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
             in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement command
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ChangeToPurple ->
             let
-                animation =
-                    Anim.backgroundColor "box" (Hex "#9b59b6")
-                        |> Anim.backgroundColorDuration 1000
-                        |> easeInOut
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 1000
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Color.for "box"
+                        |> Color.to (Color.Hex "#9b59b6")
+                        |> Color.build
 
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
             in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement command
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ResetColor ->
             let
-                animation =
-                    Anim.backgroundColor "box" (Hex "#95a5a6")
-                        |> Anim.backgroundColorDuration 1000
-                        |> easeInOut
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 1000
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Color.for "box"
+                        |> Color.to (Color.Hex "#95a5a6")
+                        |> Color.build
 
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
             in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement command
-                    )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
-                Nothing ->
-                    ( model, Cmd.none )
-
-        AnimationComplete _ ->
+        NoOp ->
             ( model, Cmd.none )
-
-        PositionUpdateReceived result ->
-            case result of
-                Ok propertyUpdate ->
-                    ( { model | animations = Anim.Engine.WAAPI.handlePropertyUpdate propertyUpdate model.animations }
-                    , Cmd.none
-                    )
-
-                Err _ ->
-                    ( model, Cmd.none )
 
 
 
@@ -232,10 +189,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ positionUpdates (PositionUpdateReceived << handlePropertyUpdateFromJson)
-        , animationComplete AnimationComplete
-        ]
+    Sub.none
 
 
 
@@ -287,19 +241,15 @@ viewContent model =
         , htmlAttribute (Html.Attributes.style "overflow" "hidden")
         ]
         (el
-            ([ centerX
-             , centerY
-             , width (px 150)
-             , height (px 150)
-             , Background.color (rgb 0.8 0.8 0.8)
-             , Border.rounded 8
-             , htmlAttribute (Html.Attributes.id "box")
-             , htmlAttribute (Html.Attributes.style "background-color" "#95a5a6") -- Default gray
-             ]
-                ++ (styleProperties "box" model.animations
-                        |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
-                   )
-            )
+            [ centerX
+            , centerY
+            , width (px 150)
+            , height (px 150)
+            , Background.color (rgb 0.8 0.8 0.8)
+            , Border.rounded 8
+            , htmlAttribute (Html.Attributes.id "box")
+            , htmlAttribute (Html.Attributes.style "background-color" "#95a5a6") -- Default gray
+            ]
             (el [ centerX, centerY ] (text "Color"))
         )
     ]

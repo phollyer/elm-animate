@@ -14,16 +14,15 @@
 
 <body>
     <div id="elm"></div>
+    <script src="../../../../js/elm-animate-waapi.js"></script>
     <script src="index.js"></script>
     <script>
-        var app = Elm.ElmUI.CSS.Scale.Main.init({
+        var app = Elm.ElmUI.WAAPI.Scale.Main.init({
             node: document.getElementById('elm')
         });
 
-        // Listen for custom animation-complete events
-        document.addEventListener('animation-complete', function () {
-            // Send to Elm if needed
-        });
+        // Initialize ElmAnimateWAAPI with the Elm app's ports
+        ElmAnimateWAAPI.init(app.ports);
     </script>
 </body>
 

@@ -15,7 +15,6 @@ FEATURES:
 
 -}
 
-
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Properties.BackgroundColor as Color
 import Anim.Properties.Opacity as Opacity
@@ -70,7 +69,8 @@ main =
 
 
 type alias Model =
-    {}
+    { animState : WAAPI.AnimState
+    }
 
 
 type Msg
@@ -89,7 +89,7 @@ type Msg
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( {}
+    ( { animState = WAAPI.init }
     , Cmd.none
     )
 
@@ -103,119 +103,143 @@ update msg model =
     case msg of
         StartComplexAnimation elementId ->
             -- Combine position + scale + rotation
-            ( model
-            , WAAPI.init
-                |> WAAPI.duration 1000
-                |> WAAPI.easing Easing.EaseInOut
-                |> Position.for elementId
-                |> Position.toXY 200 100
-                |> Position.build
-                |> Scale.for elementId
-                |> Scale.toXY 1.5 1.9
-                |> Scale.build
-                |> Rotate.for elementId
-                |> Rotate.to 90
-                |> Rotate.build
-                |> WAAPI.animate animateElement
-            )
+            let
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 1000
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Position.for elementId
+                        |> Position.toXY 200 100
+                        |> Position.build
+                        |> Scale.for elementId
+                        |> Scale.toXY 1.5 1.9
+                        |> Scale.build
+                        |> Rotate.for elementId
+                        |> Rotate.to 90
+                        |> Rotate.build
+
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
+            in
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         StartFadeMove elementId ->
             -- Combine opacity + position
-            ( model
-            , WAAPI.init
-                |> WAAPI.duration 1000
-                |> WAAPI.easing Easing.EaseInOut
-                |> Opacity.for elementId
-                |> Opacity.to 0.3
-                |> Opacity.build
-                |> Position.for elementId
-                |> Position.toXY 250 80
-                |> Position.build
-                |> WAAPI.animate animateElement
-            )
+            let
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 1000
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Opacity.for elementId
+                        |> Opacity.to 0.3
+                        |> Opacity.build
+                        |> Position.for elementId
+                        |> Position.toXY 250 80
+                        |> Position.build
+
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
+            in
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         StartSpinScale elementId ->
             -- Combine rotation + scale + color
-            ( model
-            , WAAPI.init
-                |> WAAPI.duration 1000
-                |> WAAPI.easing Easing.EaseInOut
-                |> Rotate.for elementId
-                |> Rotate.to 180
-                |> Rotate.build
-                |> Scale.for elementId
-                |> Scale.toXY 0.8 0.8
-                |> Scale.build
-                |> Color.for elementId
-                |> Color.to (Color.Hex "#e74c3c")
-                |> Color.build
-                |> WAAPI.animate animateElement
-            )
+            let
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 1000
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Rotate.for elementId
+                        |> Rotate.to 180
+                        |> Rotate.build
+                        |> Scale.for elementId
+                        |> Scale.toXY 0.8 0.8
+                        |> Scale.build
+                        |> Color.for elementId
+                        |> Color.to (Color.Hex "#e74c3c")
+                        |> Color.build
+
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
+            in
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         StartColorMorph elementId ->
             -- Combine color + scale + opacity
-            ( model
-            , WAAPI.init
-                |> WAAPI.duration 1000
-                |> WAAPI.easing Easing.EaseInOut
-                |> Color.for elementId
-                |> Color.to (Color.Hsl { h = 142, s = 71, l = 45 })
-                |> Color.build
-                |> Scale.for elementId
-                |> Scale.toXY 2.0 0.5
-                |> Scale.build
-                |> Opacity.for elementId
-                |> Opacity.to 0.8
-                |> Opacity.build
-                |> WAAPI.animate animateElement
-            )
+            let
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 1000
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Color.for elementId
+                        |> Color.to (Color.Hsl { h = 142, s = 71, l = 45 })
+                        |> Color.build
+                        |> Scale.for elementId
+                        |> Scale.toXY 2.0 0.5
+                        |> Scale.build
+                        |> Opacity.for elementId
+                        |> Opacity.to 0.8
+                        |> Opacity.build
+
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
+            in
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         StartFullTransform elementId ->
             -- All properties at once!
-            ( model
-            , WAAPI.init
-                |> WAAPI.duration 1000
-                |> WAAPI.easing Easing.EaseInOut
-                |> Position.for elementId
-                |> Position.toXY 200 200
-                |> Position.build
-                |> Scale.for elementId
-                |> Scale.toXY 1.3 1.3
-                |> Scale.build
-                |> Rotate.for elementId
-                |> Rotate.to 270
-                |> Rotate.build
-                |> Opacity.for elementId
-                |> Opacity.to 0.7
-                |> Opacity.build
-                |> Color.for elementId
-                |> Color.to (Color.Hex "#9b59b6")
-                |> Color.build
-                |> WAAPI.animate animateElement
-            )
+            let
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 1000
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Position.for elementId
+                        |> Position.toXY 200 200
+                        |> Position.build
+                        |> Scale.for elementId
+                        |> Scale.toXY 1.3 1.3
+                        |> Scale.build
+                        |> Rotate.for elementId
+                        |> Rotate.to 270
+                        |> Rotate.build
+                        |> Opacity.for elementId
+                        |> Opacity.to 0.7
+                        |> Opacity.build
+                        |> Color.for elementId
+                        |> Color.to (Color.Hex "#9b59b6")
+                        |> Color.build
+
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
+            in
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ResetAll ->
-            ( model
-            , WAAPI.init
-                |> WAAPI.duration 800
-                |> WAAPI.easing Easing.EaseOut
-                |> Position.for "mixed-box"
-                |> Position.toXY 0 0
-                |> Position.build
-                |> Scale.for "mixed-box"
-                |> Scale.toXY 1.0 1.0
-                |> Scale.build
-                |> Rotate.for "mixed-box"
-                |> Rotate.to 0
-                |> Rotate.build
-                |> Opacity.for "mixed-box"
-                |> Opacity.to 1.0
-                |> Opacity.build
-                |> Color.for "mixed-box"
-                |> Color.to (Color.Hex "#3498db")
-                |> Color.build
-                |> WAAPI.animate animateElement
-            )
+            let
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 800
+                        |> WAAPI.easing Easing.EaseOut
+                        |> Position.for "mixed-box"
+                        |> Position.toXY 0 0
+                        |> Position.build
+                        |> Scale.for "mixed-box"
+                        |> Scale.toXY 1.0 1.0
+                        |> Scale.build
+                        |> Rotate.for "mixed-box"
+                        |> Rotate.to 0
+                        |> Rotate.build
+                        |> Opacity.for "mixed-box"
+                        |> Opacity.to 1.0
+                        |> Opacity.build
+                        |> Color.for "mixed-box"
+                        |> Color.to (Color.Hex "#3498db")
+                        |> Color.build
+
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
+            in
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         NoOp ->
             ( model, Cmd.none )

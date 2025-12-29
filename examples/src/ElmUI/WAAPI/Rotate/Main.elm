@@ -15,8 +15,9 @@ FEATURES:
 
 -}
 
-
-import Anim.Engine.WAAPI exposing (Model, animate, handlePropertyUpdateFromJson, init, sendAnimationCommand, styleProperties)
+import Anim.Engine.WAAPI as WAAPI
+import Anim.Properties.Rotate as Rotate
+import Anim.Timing.Easing as Easing
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -34,15 +35,6 @@ import Json.Encode as Encode
 
 
 port animateElement : Encode.Value -> Cmd msg
-
-
-port stopElement : Encode.Value -> Cmd msg
-
-
-port positionUpdates : (Decode.Value -> msg) -> Sub msg
-
-
-port animationComplete : (String -> msg) -> Sub msg
 
 
 
@@ -64,7 +56,7 @@ main =
 
 
 type alias Model =
-    { animations : Anim.Engine.WAAPI.Model
+    { animState : WAAPI.AnimState
     }
 
 
@@ -75,8 +67,7 @@ type Msg
     | RotateLeft
     | RotateRight
     | ResetRotation
-    | AnimationComplete String
-    | PositionUpdateReceived (Result Decode.Error Anim.Engine.WAAPI.PropertyUpdate)
+    | NoOp
 
 
 
@@ -88,130 +79,96 @@ update msg model =
     case msg of
         Rotate45 ->
             let
-                animation =
-                    Anim.rotation "box" 45
-                        |> Anim.rotationDuration 1000
-                        |> easeInOut
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 1000
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Rotate.for "box"
+                        |> Rotate.to 45
+                        |> Rotate.build
 
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
             in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement command
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         Rotate90 ->
             let
-                animation =
-                    Anim.rotation "box" 90
-                        |> Anim.rotationDuration 1000
-                        |> easeInOut
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 1000
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Rotate.for "box"
+                        |> Rotate.to 90
+                        |> Rotate.build
 
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
             in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement command
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         Rotate180 ->
             let
-                animation =
-                    Anim.rotation "box" 180
-                        |> Anim.rotationDuration 1000
-                        |> easeInOut
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 1000
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Rotate.for "box"
+                        |> Rotate.to 180
+                        |> Rotate.build
 
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
             in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement command
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         RotateLeft ->
             let
-                animation =
-                    Anim.rotation "box" -90
-                        |> Anim.rotationDuration 1000
-                        |> easeInOut
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 1000
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Rotate.for "box"
+                        |> Rotate.to -90
+                        |> Rotate.build
 
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
             in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement command
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         RotateRight ->
             let
-                animation =
-                    Anim.rotation "box" 90
-                        |> Anim.rotationDuration 1000
-                        |> easeInOut
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 1000
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Rotate.for "box"
+                        |> Rotate.to 90
+                        |> Rotate.build
 
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
             in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement command
-                    )
-
-                Nothing ->
-                    ( model, Cmd.none )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ResetRotation ->
             let
-                animation =
-                    Anim.rotation "box" 0
-                        |> Anim.rotationDuration 1000
-                        |> easeInOut
+                builder =
+                    WAAPI.builder model.animState
+                        |> WAAPI.duration 1000
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Rotate.for "box"
+                        |> Rotate.to 0
+                        |> Rotate.build
 
-                ( newModel, maybeCommand ) =
-                    animate animation model.animations
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState builder
             in
-            case maybeCommand of
-                Just command ->
-                    ( { model | animations = newModel }
-                    , sendAnimationCommand animateElement command
-                    )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
-                Nothing ->
-                    ( model, Cmd.none )
-
-        AnimationComplete _ ->
+        NoOp ->
             ( model, Cmd.none )
-
-        PositionUpdateReceived result ->
-            case result of
-                Ok propertyUpdate ->
-                    ( { model | animations = Anim.Engine.WAAPI.handlePropertyUpdate propertyUpdate model.animations }
-                    , Cmd.none
-                    )
-
-                Err _ ->
-                    ( model, Cmd.none )
 
 
 
@@ -220,7 +177,7 @@ update msg model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Anim.Engine.WAAPI.init
+    ( { animState = WAAPI.init
       }
     , Cmd.none
     )
@@ -232,10 +189,7 @@ init _ =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ positionUpdates (PositionUpdateReceived << handlePropertyUpdateFromJson)
-        , animationComplete AnimationComplete
-        ]
+    Sub.none
 
 
 
@@ -304,21 +258,17 @@ viewContent model =
 rotatingElement : String -> String -> String -> Element.Color -> Model -> Element Msg
 rotatingElement elementId symbol label color model =
     el
-        ([ width (px 150)
-         , height (px 150)
-         , Background.color color
-         , Border.rounded 12
-         , centerX
-         , htmlAttribute (Html.Attributes.id elementId)
-         , htmlAttribute (Html.Attributes.style "transform-origin" "center")
-         , htmlAttribute (Html.Attributes.style "display" "flex")
-         , htmlAttribute (Html.Attributes.style "align-items" "center")
-         , htmlAttribute (Html.Attributes.style "justify-content" "center")
-         ]
-            ++ (styleProperties elementId model.animations
-                    |> List.map (\( prop, value ) -> htmlAttribute (Html.Attributes.style prop value))
-               )
-        )
+        [ width (px 150)
+        , height (px 150)
+        , Background.color color
+        , Border.rounded 12
+        , centerX
+        , htmlAttribute (Html.Attributes.id elementId)
+        , htmlAttribute (Html.Attributes.style "transform-origin" "center")
+        , htmlAttribute (Html.Attributes.style "display" "flex")
+        , htmlAttribute (Html.Attributes.style "align-items" "center")
+        , htmlAttribute (Html.Attributes.style "justify-content" "center")
+        ]
         (column
             [ centerX
             , Element.centerY
