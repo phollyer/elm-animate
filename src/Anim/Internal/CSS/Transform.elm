@@ -28,45 +28,44 @@ Position = "position", Rotate = "rotate", Scale = "scale"
 generateWithOrder : List String -> List Builder.PropertyConfig -> String
 generateWithOrder order properties =
     let
-        -- Sort properties according to the specified order
-        sortedProperties =
-            sortPropertiesByOrder order properties
-
         transformParts =
-            Builder.extractTransformsFromProperty sortedProperties
+            Builder.extractTransformsFromProperty properties
+
+        -- Build transform string in the specified order
+        orderedTransforms =
+            List.filterMap (getTransformByName transformParts) order
     in
-    String.trim (transformParts.position ++ " " ++ transformParts.rotate ++ " " ++ transformParts.scale)
+    String.trim (String.join " " orderedTransforms)
 
 
-{-| Sort properties according to specified order.
+{-| Get the transform string for a given property name.
 -}
-sortPropertiesByOrder : List String -> List Builder.PropertyConfig -> List Builder.PropertyConfig
-sortPropertiesByOrder order properties =
-    let
-        getPropertyPriority prop =
-            case prop of
-                Builder.PositionConfig _ ->
-                    getOrderIndex "position" order
+getTransformByName : Builder.TransformParts -> String -> Maybe String
+getTransformByName parts name =
+    case name of
+        "position" ->
+            if String.isEmpty parts.position then
+                Nothing
 
-                Builder.RotateConfig _ ->
-                    getOrderIndex "rotate" order
+            else
+                Just parts.position
 
-                Builder.ScaleConfig _ ->
-                    getOrderIndex "scale" order
+        "rotate" ->
+            if String.isEmpty parts.rotate then
+                Nothing
 
-                _ ->
-                    999
+            else
+                Just parts.rotate
 
-        -- Non-transform properties go last
-        getOrderIndex propType orderList =
-            orderList
-                |> List.indexedMap Tuple.pair
-                |> List.filter (\( _, item ) -> item == propType)
-                |> List.head
-                |> Maybe.map Tuple.first
-                |> Maybe.withDefault 999
-    in
-    List.sortBy getPropertyPriority properties
+        "scale" ->
+            if String.isEmpty parts.scale then
+                Nothing
+
+            else
+                Just parts.scale
+
+        _ ->
+            Nothing
 
 
 {-| Combine multiple transform styles into a single transform style.
