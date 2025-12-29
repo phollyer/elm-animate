@@ -63,56 +63,16 @@ import Html.Events
 import Json.Decode
 
 
+
+-- Build
+
+
 type alias AnimBuilder =
     Builder.AnimBuilder
 
 
-
--- TYPES
-
-
-{-| Transform property ordering for CSS generation.
--}
-type TransformOrder
-    = Position
-    | Rotate
-    | Scale
-
-
-{-| Convert TransformOrder to string for the transform generation.
--}
-transformOrderToString : TransformOrder -> String
-transformOrderToString order =
-    case order of
-        Position ->
-            "position"
-
-        Rotate ->
-            "rotate"
-
-        Scale ->
-            "scale"
-
-
-{-| Individual element animation lifecycle state.
--}
-type ElementState
-    = NotStarted
-    | Running
-    | Complete
-
-
-{-| Animation lifecycle events.
--}
-type Event
-    = AnimationStarted String
-    | AnimationEnded String
-    | AnimationCancelled String
-    | AnimationIteration String
-    | TransitionStarted String
-    | TransitionEnded String
-    | TransitionRun String
-    | TransitionCancelled String
+type alias ElementId =
+    String
 
 
 type AnimState
@@ -121,10 +81,6 @@ type AnimState
         , elementStates : Dict ElementId ElementState
         , builder : AnimBuilder
         }
-
-
-type alias ElementId =
-    String
 
 
 type alias ElementAnimation =
@@ -168,6 +124,12 @@ animate builder_ =
         }
 
 
+type TransformOrder
+    = Position
+    | Rotate
+    | Scale
+
+
 {-| Apply animation with custom transform ordering.
 -}
 animateWithOrder : List TransformOrder -> AnimBuilder -> AnimState
@@ -191,136 +153,204 @@ animateWithOrder order builder_ =
         }
 
 
+duration : Int -> AnimBuilder -> AnimBuilder
+duration =
+    Builder.duration
 
--- CSS GENERATION
+
+speed : Float -> AnimBuilder -> AnimBuilder
+speed value =
+    Builder.speed value
 
 
-generateElementAnimation : Maybe (List TransformOrder) -> String -> Builder.ElementConfig -> ElementAnimation
-generateElementAnimation maybeOrder elementId elementConfig =
+easing : Easing -> AnimBuilder -> AnimBuilder
+easing =
+    Builder.easing
+
+
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
+    Builder.delay
+
+
+perspective : String -> Float -> AnimBuilder -> AnimBuilder
+perspective =
+    Builder.perspective
+
+
+perspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
+perspectiveStyles containerId animationState =
+    getContainerPerspectiveStyles containerId animationState
+
+
+{-| Individual element animation lifecycle state.
+-}
+type ElementState
+    = NotStarted
+    | Running
+    | Complete
+
+
+
+-- Update
+
+
+{-| Animation lifecycle events.
+-}
+type Event
+    = AnimationStarted String
+    | AnimationEnded String
+    | AnimationCancelled String
+    | AnimationIteration String
+    | TransitionStarted String
+    | TransitionEnded String
+    | TransitionRun String
+    | TransitionCancelled String
+
+
+{-| Handle animation lifecycle events to update element states.
+-}
+handleEvent : Event -> AnimState -> AnimState
+handleEvent event (AnimState state) =
     let
-        transforms =
-            case maybeOrder of
-                Nothing ->
-                    -- Use default ordering: Position -> Rotate -> Scale
-                    Transforms.generate elementConfig.properties
+        ( elementId, newElementState ) =
+            case event of
+                AnimationStarted id ->
+                    ( id, Running )
 
-                Just order ->
-                    -- Use custom ordering
-                    let
-                        orderStrings =
-                            List.map transformOrderToString order
-                    in
-                    Transforms.generateWithOrder orderStrings elementConfig.properties
+                AnimationEnded id ->
+                    ( id, Complete )
 
-        transitions =
-            Transitions.generate elementConfig.properties
+                AnimationCancelled id ->
+                    ( id, Complete )
 
-        colorStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.BackgroundColorConfig config ->
-                            Just ( "background-color", BackgroundColor.toString config.endAt )
+                AnimationIteration id ->
+                    ( id, Running )
 
-                        _ ->
-                            Nothing
-                )
-                elementConfig.properties
+                TransitionStarted id ->
+                    ( id, Running )
 
-        opacityStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.OpacityConfig config ->
-                            Just ( "opacity", Opacity.toString config.endAt )
+                TransitionEnded id ->
+                    ( id, Complete )
 
-                        _ ->
-                            Nothing
-                )
-                elementConfig.properties
+                TransitionRun id ->
+                    ( id, Running )
 
-        allStyles =
-            [ ( "transform", transforms )
-            , ( "transition", transitions )
-            ]
-                ++ colorStyles
-                ++ opacityStyles
-                |> List.filter (\( _, value ) -> not (String.isEmpty value))
+                TransitionCancelled id ->
+                    ( id, Complete )
     in
-    { styles = allStyles
-    , animationLayers = KeyframeAnimation.generate elementId elementConfig.properties
-    }
+    AnimState
+        { state
+            | elementStates =
+                Dict.insert elementId newElementState state.elementStates
+        }
 
 
-animationStyleAttribute : String -> AnimState -> Html.Attribute msg
-animationStyleAttribute elementId animationState =
-    case getElementAnimation elementId animationState of
-        Just elementAnimation ->
-            let
-                animationValues =
-                    KeyframeAnimation.toAttributeString elementAnimation.animationLayers
-            in
-            Html.Attributes.style "animation" animationValues
 
-        Nothing ->
-            Html.Attributes.style "animation" ""
+-- Event Handlers
+-- Keyframe ANIMATION EVENT HANDLERS
 
 
-keyframesStyleNode : AnimState -> Html msg
-keyframesStyleNode (AnimState state) =
-    let
-        allKeyframes =
-            Dict.values state.elementAnimations
-                |> List.concatMap .animationLayers
-                |> List.map .keyframes
-                |> String.join "\n\n"
-    in
-    if String.isEmpty allKeyframes then
-        Html.text ""
+onTransitionStart : msg -> Html.Attribute msg
+onTransitionStart msg =
+    Html.Events.on "transitionstart" (Json.Decode.succeed msg)
+
+
+onTransitionEnd : msg -> Html.Attribute msg
+onTransitionEnd msg =
+    Html.Events.on "transitionend" (Json.Decode.succeed msg)
+
+
+onTransitionRun : msg -> Html.Attribute msg
+onTransitionRun msg =
+    Html.Events.on "transitionrun" (Json.Decode.succeed msg)
+
+
+onTransitionCancel : msg -> Html.Attribute msg
+onTransitionCancel msg =
+    Html.Events.on "transitioncancel" (Json.Decode.succeed msg)
+
+
+
+-- CSS ANIMATION EVENT HANDLERS
+
+
+onAnimationStart : msg -> Html.Attribute msg
+onAnimationStart msg =
+    Html.Events.on "animationstart" (Json.Decode.succeed msg)
+
+
+onAnimationEnd : msg -> Html.Attribute msg
+onAnimationEnd msg =
+    Html.Events.on "animationend" (Json.Decode.succeed msg)
+
+
+onAnimationIteration : msg -> Html.Attribute msg
+onAnimationIteration msg =
+    Html.Events.on "animationiteration" (Json.Decode.succeed msg)
+
+
+onAnimationCancel : msg -> Html.Attribute msg
+onAnimationCancel msg =
+    Html.Events.on "animationcancel" (Json.Decode.succeed msg)
+
+
+
+-- Query
+
+
+{-| Check if any animations are currently running.
+-}
+anyRunning : AnimState -> Bool
+anyRunning (AnimState state) =
+    case Dict.values state.elementStates of
+        [] ->
+            False
+
+        values ->
+            List.any (\elementState -> elementState == Running) values
+
+
+{-| Check if all animations are complete.
+-}
+allComplete : AnimState -> Maybe Bool
+allComplete (AnimState state) =
+    if Dict.isEmpty state.elementStates then
+        Nothing
 
     else
-        Html.node "style" [] [ Html.text allKeyframes ]
+        state.elementStates
+            |> Dict.values
+            |> List.all (\elementState -> elementState == Complete)
+            |> Just
 
 
-keyframesStyleNodeFor : String -> AnimState -> Html msg
-keyframesStyleNodeFor elementId (AnimState state) =
-    case Dict.get elementId state.elementAnimations of
-        Just elementAnimation ->
-            if List.isEmpty elementAnimation.animationLayers then
-                Html.text ""
+{-| Check if a specific element has any animations currently running.
+-}
+isElementRunning : String -> AnimState -> Bool
+isElementRunning elementId (AnimState state) =
+    Dict.get elementId state.elementStates == Just Running
 
-            else
-                let
-                    elementKeyframes =
-                        elementAnimation.animationLayers
-                            |> List.map .keyframes
-                            |> String.join "\n\n"
-                in
-                Html.node "style" [] [ Html.text elementKeyframes ]
 
-        Nothing ->
-            Html.text ""
+{-| Check if a specific element's animations have completed.
+-}
+isElementComplete : String -> AnimState -> Maybe Bool
+isElementComplete elementId (AnimState state) =
+    Dict.get elementId state.elementStates
+        |> Maybe.map
+            (\elementState ->
+                case elementState of
+                    Complete ->
+                        True
+
+                    _ ->
+                        False
+            )
 
 
 getElementAnimation : String -> AnimState -> Maybe ElementAnimation
 getElementAnimation elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
-
-
-getElementKeyframes : String -> AnimState -> Maybe String
-getElementKeyframes elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
-        |> Maybe.andThen
-            (\elementAnimation ->
-                if List.isEmpty elementAnimation.animationLayers then
-                    Nothing
-
-                else
-                    elementAnimation.animationLayers
-                        |> List.map .keyframes
-                        |> String.join "\n\n"
-                        |> Just
-            )
 
 
 getPosition : String -> AnimState -> Maybe Position
@@ -559,121 +589,160 @@ getPositionAnimationDuration elementId (AnimState state) =
             )
 
 
-{-| Check if any animations are currently running.
--}
-anyRunning : AnimState -> Bool
-anyRunning (AnimState state) =
-    case Dict.values state.elementStates of
-        [] ->
-            False
 
-        values ->
-            List.any (\elementState -> elementState == Running) values
+-- View
 
 
-{-| Check if all animations are complete.
--}
-allComplete : AnimState -> Maybe Bool
-allComplete (AnimState state) =
-    if Dict.isEmpty state.elementStates then
-        Nothing
+animationStyleAttribute : String -> AnimState -> Html.Attribute msg
+animationStyleAttribute elementId animationState =
+    case getElementAnimation elementId animationState of
+        Just elementAnimation ->
+            let
+                animationValues =
+                    KeyframeAnimation.toAttributeString elementAnimation.animationLayers
+            in
+            Html.Attributes.style "animation" animationValues
+
+        Nothing ->
+            Html.Attributes.style "animation" ""
+
+
+htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
+htmlAttributes elementId animationResult =
+    getElementStyles elementId animationResult
+        |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
+
+
+keyframesStyleNode : AnimState -> Html msg
+keyframesStyleNode (AnimState state) =
+    let
+        allKeyframes =
+            Dict.values state.elementAnimations
+                |> List.concatMap .animationLayers
+                |> List.map .keyframes
+                |> String.join "\n\n"
+    in
+    if String.isEmpty allKeyframes then
+        Html.text ""
 
     else
-        state.elementStates
-            |> Dict.values
-            |> List.all (\elementState -> elementState == Complete)
-            |> Just
+        Html.node "style" [] [ Html.text allKeyframes ]
 
 
-{-| Check if a specific element has any animations currently running.
--}
-isElementRunning : String -> AnimState -> Bool
-isElementRunning elementId (AnimState state) =
-    Dict.get elementId state.elementStates == Just Running
+keyframesStyleNodeFor : String -> AnimState -> Html msg
+keyframesStyleNodeFor elementId (AnimState state) =
+    case Dict.get elementId state.elementAnimations of
+        Just elementAnimation ->
+            if List.isEmpty elementAnimation.animationLayers then
+                Html.text ""
+
+            else
+                let
+                    elementKeyframes =
+                        elementAnimation.animationLayers
+                            |> List.map .keyframes
+                            |> String.join "\n\n"
+                in
+                Html.node "style" [] [ Html.text elementKeyframes ]
+
+        Nothing ->
+            Html.text ""
 
 
-{-| Check if a specific element's animations have completed.
--}
-isElementComplete : String -> AnimState -> Maybe Bool
-isElementComplete elementId (AnimState state) =
-    Dict.get elementId state.elementStates
-        |> Maybe.map
-            (\elementState ->
-                case elementState of
-                    Complete ->
-                        True
+getElementKeyframes : String -> AnimState -> Maybe String
+getElementKeyframes elementId (AnimState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen
+            (\elementAnimation ->
+                if List.isEmpty elementAnimation.animationLayers then
+                    Nothing
 
-                    _ ->
-                        False
+                else
+                    elementAnimation.animationLayers
+                        |> List.map .keyframes
+                        |> String.join "\n\n"
+                        |> Just
             )
 
 
-{-| Handle animation lifecycle events to update element states.
+
+-- HELPERS
+
+
+{-| Convert TransformOrder to string for the transform generation.
 -}
-handleEvent : Event -> AnimState -> AnimState
-handleEvent event (AnimState state) =
+transformOrderToString : TransformOrder -> String
+transformOrderToString order =
+    case order of
+        Position ->
+            "position"
+
+        Rotate ->
+            "rotate"
+
+        Scale ->
+            "scale"
+
+
+
+-- CSS GENERATION
+
+
+generateElementAnimation : Maybe (List TransformOrder) -> String -> Builder.ElementConfig -> ElementAnimation
+generateElementAnimation maybeOrder elementId elementConfig =
     let
-        ( elementId, newElementState ) =
-            case event of
-                AnimationStarted id ->
-                    ( id, Running )
+        transforms =
+            case maybeOrder of
+                Nothing ->
+                    -- Use default ordering: Position -> Rotate -> Scale
+                    Transforms.generate elementConfig.properties
 
-                AnimationEnded id ->
-                    ( id, Complete )
+                Just order ->
+                    -- Use custom ordering
+                    let
+                        orderStrings =
+                            List.map transformOrderToString order
+                    in
+                    Transforms.generateWithOrder orderStrings elementConfig.properties
 
-                AnimationCancelled id ->
-                    ( id, Complete )
+        transitions =
+            Transitions.generate elementConfig.properties
 
-                AnimationIteration id ->
-                    ( id, Running )
+        colorStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.BackgroundColorConfig config ->
+                            Just ( "background-color", BackgroundColor.toString config.endAt )
 
-                TransitionStarted id ->
-                    ( id, Running )
+                        _ ->
+                            Nothing
+                )
+                elementConfig.properties
 
-                TransitionEnded id ->
-                    ( id, Complete )
+        opacityStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.OpacityConfig config ->
+                            Just ( "opacity", Opacity.toString config.endAt )
 
-                TransitionRun id ->
-                    ( id, Running )
+                        _ ->
+                            Nothing
+                )
+                elementConfig.properties
 
-                TransitionCancelled id ->
-                    ( id, Complete )
+        allStyles =
+            [ ( "transform", transforms )
+            , ( "transition", transitions )
+            ]
+                ++ colorStyles
+                ++ opacityStyles
+                |> List.filter (\( _, value ) -> not (String.isEmpty value))
     in
-    AnimState
-        { state
-            | elementStates =
-                Dict.insert elementId newElementState state.elementStates
-        }
-
-
-duration : Int -> AnimBuilder -> AnimBuilder
-duration =
-    Builder.duration
-
-
-speed : Float -> AnimBuilder -> AnimBuilder
-speed value =
-    Builder.speed value
-
-
-easing : Easing -> AnimBuilder -> AnimBuilder
-easing =
-    Builder.easing
-
-
-delay : Int -> AnimBuilder -> AnimBuilder
-delay =
-    Builder.delay
-
-
-perspective : String -> Float -> AnimBuilder -> AnimBuilder
-perspective =
-    Builder.perspective
-
-
-perspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
-perspectiveStyles containerId animationState =
-    getContainerPerspectiveStyles containerId animationState
+    { styles = allStyles
+    , animationLayers = KeyframeAnimation.generate elementId elementConfig.properties
+    }
 
 
 getContainerPerspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
@@ -737,62 +806,8 @@ extractPerspectiveFromProperty property =
             Nothing
 
 
-htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
-htmlAttributes elementId animationResult =
-    getElementStyles elementId animationResult
-        |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
-
-
 getElementStyles : String -> AnimState -> List ( String, String )
 getElementStyles elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.map .styles
         |> Maybe.withDefault []
-
-
-
--- CSS TRANSITION EVENT HANDLERS
-
-
-onTransitionStart : msg -> Html.Attribute msg
-onTransitionStart msg =
-    Html.Events.on "transitionstart" (Json.Decode.succeed msg)
-
-
-onTransitionEnd : msg -> Html.Attribute msg
-onTransitionEnd msg =
-    Html.Events.on "transitionend" (Json.Decode.succeed msg)
-
-
-onTransitionRun : msg -> Html.Attribute msg
-onTransitionRun msg =
-    Html.Events.on "transitionrun" (Json.Decode.succeed msg)
-
-
-onTransitionCancel : msg -> Html.Attribute msg
-onTransitionCancel msg =
-    Html.Events.on "transitioncancel" (Json.Decode.succeed msg)
-
-
-
--- CSS ANIMATION EVENT HANDLERS
-
-
-onAnimationStart : msg -> Html.Attribute msg
-onAnimationStart msg =
-    Html.Events.on "animationstart" (Json.Decode.succeed msg)
-
-
-onAnimationEnd : msg -> Html.Attribute msg
-onAnimationEnd msg =
-    Html.Events.on "animationend" (Json.Decode.succeed msg)
-
-
-onAnimationIteration : msg -> Html.Attribute msg
-onAnimationIteration msg =
-    Html.Events.on "animationiteration" (Json.Decode.succeed msg)
-
-
-onAnimationCancel : msg -> Html.Attribute msg
-onAnimationCancel msg =
-    Html.Events.on "animationcancel" (Json.Decode.succeed msg)
