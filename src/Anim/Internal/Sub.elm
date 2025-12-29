@@ -923,234 +923,142 @@ createElementAnimState startValues _ elementConfig =
 
 createPropertyAnimState : UnwrappedPropertyValues -> Builder.ProcessedPropertyConfig -> Maybe PropertyAnimation
 createPropertyAnimState startValues property =
-    case property of
-        Builder.ProcessedPositionConfig config ->
+    let
+        buildPropertyAnimation :
+            String
+            -> a
+            -> a
+            -> Int
+            -> Int
+            -> Easing
+            -> (a -> a -> Int -> (Float -> Float) -> List Animation)
+            -> (a -> Animation)
+            -> PropertyAnimation
+        buildPropertyAnimation propertyType actualStart endAt duration_ delay_ easing_ stepCreator wrapper =
             let
-                startAt =
-                    case config.startAt of
-                        Just start ->
-                            start
-
-                        Nothing ->
-                            Position.fromRecord startValues.position
-
                 frames =
-                    if config.duration == 0 then
+                    if duration_ == 0 then
                         1
 
                     else
-                        durationToFrames config.duration
+                        durationToFrames duration_
 
                 easeFunction =
-                    Easing.toFunction config.easing
+                    Easing.toFunction easing_
 
                 steps =
-                    if config.duration == 0 then
-                        -- Zero duration: immediately jump to end value
-                        [ PositionAnimation config.endAt ]
+                    if duration_ == 0 then
+                        [ wrapper endAt ]
 
                     else
-                        createPositionSteps startAt config.endAt frames easeFunction
+                        stepCreator actualStart endAt frames easeFunction
             in
-            Just
-                { propertyType = "position"
-                , animationSteps = steps
-                , currentStepIndex = 0
-                , delayFrames = delayToFrames config.delay
-                , currentDelayFrame = 0
-                , isComplete = False
-                , totalDurationMs = toFloat config.duration
-                , elapsedMs = 0.0
-                }
+            { propertyType = propertyType
+            , animationSteps = steps
+            , currentStepIndex = 0
+            , delayFrames = delayToFrames delay_
+            , currentDelayFrame = 0
+            , isComplete = False
+            , totalDurationMs = toFloat duration_
+            , elapsedMs = 0.0
+            }
+    in
+    case property of
+        Builder.ProcessedPositionConfig config ->
+            let
+                actualStart =
+                    Maybe.withDefault (Position.fromRecord startValues.position) config.startAt
+            in
+            Just <|
+                buildPropertyAnimation
+                    "position"
+                    actualStart
+                    config.endAt
+                    config.duration
+                    config.delay
+                    config.easing
+                    createPositionSteps
+                    PositionAnimation
 
         Builder.ProcessedRotateConfig config ->
             let
                 actualStart =
-                    case config.startAt of
-                        Just start ->
-                            start
-
-                        Nothing ->
-                            Rotate.fromRecord startValues.rotate
-
-                frames =
-                    durationToFrames config.duration
-
-                easeFunction =
-                    Easing.toFunction config.easing
-
-                steps =
-                    if config.duration == 0 then
-                        -- Zero duration: immediately jump to end value
-                        [ RotateAnimation config.endAt ]
-
-                    else
-                        createRotateSteps actualStart config.endAt frames easeFunction
+                    Maybe.withDefault (Rotate.fromRecord startValues.rotate) config.startAt
             in
-            Just
-                { propertyType = "rotate"
-                , animationSteps = steps
-                , currentStepIndex = 0
-                , delayFrames = delayToFrames config.delay
-                , currentDelayFrame = 0
-                , isComplete = False
-                , totalDurationMs = toFloat config.duration
-                , elapsedMs = 0.0
-                }
+            Just <|
+                buildPropertyAnimation
+                    "rotate"
+                    actualStart
+                    config.endAt
+                    config.duration
+                    config.delay
+                    config.easing
+                    createRotateSteps
+                    RotateAnimation
 
         Builder.ProcessedScaleConfig config ->
             let
                 actualStart =
-                    case config.startAt of
-                        Just start ->
-                            start
-
-                        Nothing ->
-                            Scale.fromRecord startValues.scale
-
-                frames =
-                    durationToFrames config.duration
-
-                easeFunction =
-                    Easing.toFunction config.easing
-
-                steps =
-                    if config.duration == 0 then
-                        -- Zero duration: immediately jump to end value
-                        [ ScaleAnimation config.endAt ]
-
-                    else
-                        createScaleSteps actualStart config.endAt frames easeFunction
+                    Maybe.withDefault (Scale.fromRecord startValues.scale) config.startAt
             in
-            Just
-                { propertyType = "scale"
-                , animationSteps = steps
-                , currentStepIndex = 0
-                , delayFrames = delayToFrames config.delay
-                , currentDelayFrame = 0
-                , isComplete = False
-                , totalDurationMs = toFloat config.duration
-                , elapsedMs = 0.0
-                }
+            Just <|
+                buildPropertyAnimation
+                    "scale"
+                    actualStart
+                    config.endAt
+                    config.duration
+                    config.delay
+                    config.easing
+                    createScaleSteps
+                    ScaleAnimation
 
         Builder.ProcessedBackgroundColorConfig config ->
             let
-                startColor =
-                    startValues.color
-
                 actualStart =
-                    case config.startAt of
-                        Just start ->
-                            start
-
-                        Nothing ->
-                            startColor
-
-                frames =
-                    if config.duration == 0 then
-                        1
-
-                    else
-                        durationToFrames config.duration
-
-                easeFunction =
-                    Easing.toFunction config.easing
-
-                steps =
-                    if config.duration == 0 then
-                        -- Zero duration: immediately jump to end value
-                        [ BackgroundColorAnimation config.endAt ]
-
-                    else
-                        createBackgroundColorSteps actualStart config.endAt frames easeFunction
+                    Maybe.withDefault startValues.color config.startAt
             in
-            Just
-                { propertyType = "backgroundColor"
-                , animationSteps = steps
-                , currentStepIndex = 0
-                , delayFrames = delayToFrames config.delay
-                , currentDelayFrame = 0
-                , isComplete = False
-                , totalDurationMs = toFloat config.duration
-                , elapsedMs = 0.0
-                }
+            Just <|
+                buildPropertyAnimation
+                    "backgroundColor"
+                    actualStart
+                    config.endAt
+                    config.duration
+                    config.delay
+                    config.easing
+                    createBackgroundColorSteps
+                    BackgroundColorAnimation
 
         Builder.ProcessedOpacityConfig config ->
             let
-                startOpacity =
-                    Opacity.fromFloat startValues.opacity
-
                 actualStart =
-                    case config.startAt of
-                        Just start ->
-                            start
-
-                        Nothing ->
-                            startOpacity
-
-                frames =
-                    durationToFrames config.duration
-
-                easeFunction =
-                    Easing.toFunction config.easing
-
-                steps =
-                    if config.duration == 0 then
-                        -- Zero duration: immediately jump to end value
-                        [ OpacityAnimation config.endAt ]
-
-                    else
-                        createOpacitySteps actualStart config.endAt frames easeFunction
+                    Maybe.withDefault (Opacity.fromFloat startValues.opacity) config.startAt
             in
-            Just
-                { propertyType = "opacity"
-                , animationSteps = steps
-                , currentStepIndex = 0
-                , delayFrames = delayToFrames config.delay
-                , currentDelayFrame = 0
-                , isComplete = False
-                , totalDurationMs = toFloat config.duration
-                , elapsedMs = 0.0
-                }
+            Just <|
+                buildPropertyAnimation
+                    "opacity"
+                    actualStart
+                    config.endAt
+                    config.duration
+                    config.delay
+                    config.easing
+                    createOpacitySteps
+                    OpacityAnimation
 
         Builder.ProcessedSizeConfig config ->
             let
-                startSize =
-                    Size.fromTuple ( startValues.size.width, startValues.size.height )
-
                 actualStart =
-                    case config.startAt of
-                        Just start ->
-                            start
-
-                        Nothing ->
-                            startSize
-
-                -- Default size
-                frames =
-                    durationToFrames config.duration
-
-                easeFunction =
-                    Easing.toFunction config.easing
-
-                steps =
-                    if config.duration == 0 then
-                        -- Zero duration: immediately jump to end value
-                        [ SizeAnimation config.endAt ]
-
-                    else
-                        createSizeSteps actualStart config.endAt frames easeFunction
+                    Maybe.withDefault (Size.fromTuple ( startValues.size.width, startValues.size.height )) config.startAt
             in
-            Just
-                { propertyType = "size"
-                , animationSteps = steps
-                , currentStepIndex = 0
-                , delayFrames = delayToFrames config.delay
-                , currentDelayFrame = 0
-                , isComplete = False
-                , totalDurationMs = toFloat config.duration
-                , elapsedMs = 0.0
-                }
+            Just <|
+                buildPropertyAnimation
+                    "size"
+                    actualStart
+                    config.endAt
+                    config.duration
+                    config.delay
+                    config.easing
+                    createSizeSteps
+                    SizeAnimation
 
 
 
