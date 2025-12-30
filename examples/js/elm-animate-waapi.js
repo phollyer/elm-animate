@@ -112,12 +112,9 @@ window.ElmAnimateWAAPI = (function () {
             return;
         }
 
-        console.log('[WAAPI Debug] Processing animation for', elementId, 'with config:', elementConfig);
-
         // IMPORTANT: Get current transform BEFORE stopping animation
         // Once animation is cancelled, getComputedStyle returns base CSS values
         const currentTransformBeforeCancel = getCurrentTransform(element);
-        console.log('[WAAPI Debug] Transform BEFORE cancel:', currentTransformBeforeCancel);
 
         // Stop any existing animation for this element
         stopAnimation(elementId);
@@ -128,11 +125,8 @@ window.ElmAnimateWAAPI = (function () {
         const separateAnimations = [];
 
         elementConfig.properties.forEach(property => {
-            console.log('[WAAPI Debug] Property:', property.type, 'duration:', property.duration);
-
             // Skip properties with duration 0 - they're for state preservation only
             if (property.duration === 0) {
-                console.log('[WAAPI Debug] Skipping property with duration 0:', property.type);
                 return;
             }
 
@@ -174,7 +168,6 @@ window.ElmAnimateWAAPI = (function () {
     function createTransformAnimation(element, transformProperties, savedCurrentTransform) {
         // Use the saved transform state (from before cancel) instead of reading it now
         const currentTransform = savedCurrentTransform || getCurrentTransform(element);
-        console.log('[WAAPI Debug] getCurrentTransform for', element.id, ':', currentTransform);
 
         let startTransform = '';
         let endTransform = '';
@@ -195,9 +188,6 @@ window.ElmAnimateWAAPI = (function () {
         const duration = Math.max(...transformProperties.map(p => p.duration));
         const firstProperty = transformProperties[0];
         const easing = firstProperty.easing;
-
-        console.log('[WAAPI Debug] Transform properties for', element.id, ':', transformProperties);
-        console.log('[WAAPI Debug] Using duration:', duration, 'easing:', easing);
 
         // Apply property changes
         transformProperties.forEach(property => {
@@ -226,10 +216,6 @@ window.ElmAnimateWAAPI = (function () {
             currentTransform.rotationX, currentTransform.rotationY, currentTransform.rotationZ);
         endTransform = buildTransformString(translateX, translateY, translateZ, scaleX, scaleY, scaleZ,
             rotationX, rotationY, rotationZ);
-
-        console.log('[WAAPI Debug] Keyframes for', element.id, ':');
-        console.log('  Start:', startTransform);
-        console.log('  End:  ', endTransform);
 
         const keyframes = [
             { transform: startTransform },
@@ -517,7 +503,6 @@ window.ElmAnimateWAAPI = (function () {
     function stopAnimation(elementId) {
         const animations = activeAnimations.get(elementId);
         if (animations) {
-            console.log('[WAAPI Debug] Stopping animation for', elementId);
             if (Array.isArray(animations)) {
                 animations.forEach(animation => {
                     // Just cancel without committing - let the next animation
