@@ -1,31 +1,26 @@
 module Anim.Internal.WAAPI exposing
-    ( TargetId
-    , init, builder, animate, AnimState
-    , getPosition, getCurrentStyles
-    , allComplete, anyRunning, delay, duration, easing, getBackgroundColorRange, getOpacityRange, getPositionRange, getRotateRange, getScaleRange, getSizeRange, isElementComplete, isElementRunning, speed, update
+    ( AnimState
+    , allComplete
+    , animate
+    , anyRunning
+    , builder
+    , delay
+    , duration
+    , easing
+    , getBackgroundColorRange
+    , getCurrentStyles
+    , getOpacityRange
+    , getPosition
+    , getPositionRange
+    , getRotateRange
+    , getScaleRange
+    , getSizeRange
+    , init
+    , isElementComplete
+    , isElementRunning
+    , speed
+    , update
     )
-
-{-| Ports-based animation system for Anim.
-
-This module converts AnimBuilder configurations to JavaScript Web Animations API
-commands via Elm ports for high-performance, platform-optimized animations.
-
-
-# Animation Execution
-
-@docs TargetId
-
-
-# State Management
-
-@docs init, builder, animate, AnimState
-
-
-# Animation Data
-
-@docs getPosition, getCurrentStyles
-
--}
 
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Properties.BackgroundColor as Color exposing (Color)
@@ -40,32 +35,16 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 
 
+
+-- Build
+
+
 type alias AnimBuilder =
     Builder.AnimBuilder
 
 
-
--- ANIMATION STATE
-
-
-{-| State for managing ports-based animations.
--}
-type AnimState
-    = AnimState
-        { elementAnimations : Dict ElementId ElementAnimation
-        , isRunning : Bool
-        , builder : AnimBuilder
-        }
-
-
 type alias ElementId =
     String
-
-
-type alias ElementAnimation =
-    { commands : Encode.Value
-    , endStates : ElementEndStates
-    }
 
 
 type alias ElementEndStates =
@@ -78,14 +57,20 @@ type alias ElementEndStates =
     }
 
 
-{-| The ID of the target element to animate.
--}
-type alias TargetId =
-    String
+type alias ElementAnimation =
+    { commands : Encode.Value
+    , endStates : ElementEndStates
+    }
 
 
-{-| Initialize empty animation builder.
--}
+type AnimState
+    = AnimState
+        { elementAnimations : Dict ElementId ElementAnimation
+        , isRunning : Bool
+        , builder : AnimBuilder
+        }
+
+
 init : AnimState
 init =
     AnimState
@@ -95,15 +80,11 @@ init =
         }
 
 
-{-| Turn the AnimState into an AnimBuilder with current state preserved.
--}
 builder : AnimState -> AnimBuilder
 builder (AnimState state) =
     state.builder
 
 
-{-| Create animation command with state tracking.
--}
 animate : AnimState -> AnimBuilder -> ( AnimState, Encode.Value )
 animate (AnimState state) builder_ =
     let
