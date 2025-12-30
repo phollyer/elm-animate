@@ -367,12 +367,12 @@ processProperty globalData property =
     case property of
         PositionConfig config ->
             if config.isDirty then
-                -- Return static config to preserve visual state
+                -- Send dirty properties with duration=0 to preserve their state
                 Just <|
                     ProcessedPositionConfig
                         { startAt = Just config.endAt
                         , endAt = config.endAt
-                        , duration = 0 -- No animation, just maintain state
+                        , duration = 0
                         , speed = 0
                         , distance = 0
                         , timing = Duration 0
@@ -418,12 +418,12 @@ processProperty globalData property =
 
         RotateConfig config ->
             if config.isDirty then
-                -- Return static config to preserve visual state
+                -- Send dirty properties with duration=0 to preserve their state
                 Just <|
                     ProcessedRotateConfig
                         { startAt = Just config.endAt
                         , endAt = config.endAt
-                        , duration = 0 -- No animation, just maintain state
+                        , duration = 0
                         , speed = 0
                         , distance = 0
                         , timing = Duration 0
@@ -469,12 +469,12 @@ processProperty globalData property =
 
         ScaleConfig config ->
             if config.isDirty then
-                -- Return static config to preserve visual state
+                -- Send dirty properties with duration=0 to preserve their state
                 Just <|
                     ProcessedScaleConfig
                         { startAt = Just config.endAt
                         , endAt = config.endAt
-                        , duration = 0 -- No animation, just maintain state
+                        , duration = 0
                         , speed = 0
                         , distance = 0
                         , timing = Duration 0
@@ -774,14 +774,22 @@ encodeProcessedPropertyConfig property =
     case property of
         ProcessedPositionConfig config ->
             let
-                ( x, y, z ) =
+                ( endX, endY, endZ ) =
                     Position.toTriple config.endAt
+
+                ( startX, startY, startZ ) =
+                    config.startAt
+                        |> Maybe.map Position.toTriple
+                        |> Maybe.withDefault ( 0, 0, 0 )
             in
             Encode.object
                 [ ( "type", Encode.string "position" )
-                , ( "x", Encode.float x )
-                , ( "y", Encode.float y )
-                , ( "z", Encode.float z )
+                , ( "x", Encode.float endX )
+                , ( "y", Encode.float endY )
+                , ( "z", Encode.float endZ )
+                , ( "startX", Encode.float startX )
+                , ( "startY", Encode.float startY )
+                , ( "startZ", Encode.float startZ )
                 , ( "duration", Encode.int config.duration )
                 , ( "easing", Encode.string (easingToJsString config.easing) )
                 , ( "perspective", encodeMaybePerspective config.perspective )
@@ -789,14 +797,22 @@ encodeProcessedPropertyConfig property =
 
         ProcessedScaleConfig config ->
             let
-                ( x, y, z ) =
+                ( endX, endY, endZ ) =
                     Scale.toTriple config.endAt
+
+                ( startX, startY, startZ ) =
+                    config.startAt
+                        |> Maybe.map Scale.toTriple
+                        |> Maybe.withDefault ( 1, 1, 1 )
             in
             Encode.object
                 [ ( "type", Encode.string "scale" )
-                , ( "x", Encode.float x )
-                , ( "y", Encode.float y )
-                , ( "z", Encode.float z )
+                , ( "x", Encode.float endX )
+                , ( "y", Encode.float endY )
+                , ( "z", Encode.float endZ )
+                , ( "startX", Encode.float startX )
+                , ( "startY", Encode.float startY )
+                , ( "startZ", Encode.float startZ )
                 , ( "duration", Encode.int config.duration )
                 , ( "easing", Encode.string (easingToJsString config.easing) )
                 , ( "perspective", encodeMaybePerspective config.perspective )
@@ -804,14 +820,22 @@ encodeProcessedPropertyConfig property =
 
         ProcessedRotateConfig config ->
             let
-                ( x, y, z ) =
+                ( endX, endY, endZ ) =
                     Rotate.toTriple config.endAt
+
+                ( startX, startY, startZ ) =
+                    config.startAt
+                        |> Maybe.map Rotate.toTriple
+                        |> Maybe.withDefault ( 0, 0, 0 )
             in
             Encode.object
                 [ ( "type", Encode.string "rotate" )
-                , ( "x", Encode.float x )
-                , ( "y", Encode.float y )
-                , ( "z", Encode.float z )
+                , ( "x", Encode.float endX )
+                , ( "y", Encode.float endY )
+                , ( "z", Encode.float endZ )
+                , ( "startX", Encode.float startX )
+                , ( "startY", Encode.float startY )
+                , ( "startZ", Encode.float startZ )
                 , ( "duration", Encode.int config.duration )
                 , ( "easing", Encode.string (easingToJsString config.easing) )
                 , ( "perspective", encodeMaybePerspective config.perspective )
@@ -831,17 +855,31 @@ encodeProcessedPropertyConfig property =
                 ]
 
         ProcessedOpacityConfig config ->
+            let
+                startValue =
+                    config.startAt
+                        |> Maybe.map Opacity.toFloat
+                        |> Maybe.withDefault 1.0
+            in
             Encode.object
                 [ ( "type", Encode.string "opacity" )
                 , ( "value", Encode.float (Opacity.toFloat config.endAt) )
+                , ( "startValue", Encode.float startValue )
                 , ( "duration", Encode.int config.duration )
                 , ( "easing", Encode.string (easingToJsString config.easing) )
                 ]
 
         ProcessedBackgroundColorConfig config ->
+            let
+                startColor =
+                    config.startAt
+                        |> Maybe.map BackgroundColor.toString
+                        |> Maybe.withDefault "rgba(255, 255, 255, 1)"
+            in
             Encode.object
                 [ ( "type", Encode.string "backgroundColor" )
                 , ( "color", Encode.string (BackgroundColor.toString config.endAt) )
+                , ( "startColor", Encode.string startColor )
                 , ( "duration", Encode.int config.duration )
                 , ( "easing", Encode.string (easingToJsString config.easing) )
                 ]

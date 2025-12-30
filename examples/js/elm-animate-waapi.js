@@ -112,24 +112,17 @@ window.ElmAnimateWAAPI = (function () {
             return;
         }
 
-        // IMPORTANT: Get current transform BEFORE stopping animation
-        // Once animation is cancelled, getComputedStyle returns base CSS values
-        const currentTransformBeforeCancel = getCurrentTransform(element);
+        console.log('[WAAPI Debug] Received from Elm for', elementId, ':', elementConfig.properties);
 
         // Stop any existing animation for this element
         stopAnimation(elementId);
 
         // Group properties that can be animated together (transforms)
-        // Filter out properties with duration 0 (they're just state placeholders)
         const transforms = [];
         const separateAnimations = [];
 
         elementConfig.properties.forEach(property => {
-            // Skip properties with duration 0 - they're for state preservation only
-            if (property.duration === 0) {
-                return;
-            }
-
+            console.log('[WAAPI Debug] Property:', property.type, property);
             if (property.type === 'position' || property.type === 'scale' || property.type === 'rotate') {
                 transforms.push(property);
             } else {
@@ -141,7 +134,7 @@ window.ElmAnimateWAAPI = (function () {
 
         // Create combined transform animation if we have transform properties
         if (transforms.length > 0) {
-            const transformAnimation = createTransformAnimation(element, transforms, currentTransformBeforeCancel);
+            const transformAnimation = createTransformAnimation(element, transforms);
             if (transformAnimation) {
                 animations.push(transformAnimation);
             }
@@ -164,58 +157,99 @@ window.ElmAnimateWAAPI = (function () {
 
     /**
      * Create combined transform animation for position, scale, and rotate
+     * Uses start values provided by Elm (source of truth) instead of reading from DOM
      */
-    function createTransformAnimation(element, transformProperties, savedCurrentTransform) {
-        // Use the saved transform state (from before cancel) instead of reading it now
-        const currentTransform = savedCurrentTransform || getCurrentTransform(element);
-
+    function createTransformAnimation(element, transformProperties) {
         let startTransform = '';
         let endTransform = '';
 
-        // Default values - now including z-axis
-        let translateX = currentTransform.x;
-        let translateY = currentTransform.y;
-        let translateZ = currentTransform.z;
-        let scaleX = currentTransform.scaleX;
-        let scaleY = currentTransform.scaleY;
-        let scaleZ = currentTransform.scaleZ;
-        let rotationX = currentTransform.rotationX;
-        let rotationY = currentTransform.rotationY;
-        let rotationZ = currentTransform.rotationZ;
+        // Initialize with identity values
+        let startTranslateX = 0, startTranslateY = 0, startTranslateZ = 0;
+        let endTranslateX = 0, endTranslateY = 0, endTranslateZ = 0;
+        let startScaleX = 1, startScaleY = 1, startScaleZ = 1;
+        let endScaleX = 1, endScaleY = 1, endScaleZ = 1;
+        let startRotationX = 0, startRotationY = 0, startRotationZ = 0;
+        let endRotationX = 0, endRotationY = 0, endRotationZ = 0;
 
         // Get animation config - use maximum duration from all properties
-        // (some properties may have duration 0 if they're just preserving state)
         const duration = Math.max(...transformProperties.map(p => p.duration));
         const firstProperty = transformProperties[0];
         const easing = firstProperty.easing;
 
-        // Apply property changes
+        // Apply property values from Elm (Elm is source of truth)
+        // For properties with duration=0, use the end value for both start and end (static preservation)
         transformProperties.forEach(property => {
+            const isStatic = property.duration === 0;
+
             switch (property.type) {
                 case 'position':
-                    translateX = property.x !== undefined ? property.x : translateX;
-                    translateY = property.y !== undefined ? property.y : translateY;
-                    translateZ = property.z !== undefined ? property.z : translateZ;
+                    if (isStatic) {
+                        // Static: use end value for both start and end
+                        startTranslateX = property.x !== undefined ? property.x : startTranslateX;
+                        startTranslateY = property.y !== undefined ? property.y : startTranslateY;
+                        startTranslateZ = property.z !== undefined ? property.z : startTranslateZ;
+                        endTranslateX = property.x !== undefined ? property.x : endTranslateX;
+                        endTranslateY = property.y !== undefined ? property.y : endTranslateY;
+                        endTranslateZ = property.z !== undefined ? property.z : endTranslateZ;
+                    } else {
+                        // Animating: use start and end values
+                        startTranslateX = property.startX !== undefined ? property.startX : startTranslateX;
+                        startTranslateY = property.startY !== undefined ? property.startY : startTranslateY;
+                        startTranslateZ = property.startZ !== undefined ? property.startZ : startTranslateZ;
+                        endTranslateX = property.x !== undefined ? property.x : endTranslateX;
+                        endTranslateY = property.y !== undefined ? property.y : endTranslateY;
+                        endTranslateZ = property.z !== undefined ? property.z : endTranslateZ;
+                    }
                     break;
                 case 'scale':
-                    scaleX = property.x !== undefined ? property.x : scaleX;
-                    scaleY = property.y !== undefined ? property.y : scaleY;
-                    scaleZ = property.z !== undefined ? property.z : scaleZ;
+                    if (isStatic) {
+                        startScaleX = property.x !== undefined ? property.x : startScaleX;
+                        startScaleY = property.y !== undefined ? property.y : startScaleY;
+                        startScaleZ = property.z !== undefined ? property.z : startScaleZ;
+                        endScaleX = property.x !== undefined ? property.x : endScaleX;
+                        endScaleY = property.y !== undefined ? property.y : endScaleY;
+                        endScaleZ = property.z !== undefined ? property.z : endScaleZ;
+                    } else {
+                        startScaleX = property.startX !== undefined ? property.startX : startScaleX;
+                        startScaleY = property.startY !== undefined ? property.startY : startScaleY;
+                        startScaleZ = property.startZ !== undefined ? property.startZ : startScaleZ;
+                        endScaleX = property.x !== undefined ? property.x : endScaleX;
+                        endScaleY = property.y !== undefined ? property.y : endScaleY;
+                        endScaleZ = property.z !== undefined ? property.z : endScaleZ;
+                    }
                     break;
                 case 'rotate':
-                    rotationX = property.x !== undefined ? property.x : rotationX;
-                    rotationY = property.y !== undefined ? property.y : rotationY;
-                    rotationZ = property.z !== undefined ? property.z : rotationZ;
+                    if (isStatic) {
+                        startRotationX = property.x !== undefined ? property.x : startRotationX;
+                        startRotationY = property.y !== undefined ? property.y : startRotationY;
+                        startRotationZ = property.z !== undefined ? property.z : startRotationZ;
+                        endRotationX = property.x !== undefined ? property.x : endRotationX;
+                        endRotationY = property.y !== undefined ? property.y : endRotationY;
+                        endRotationZ = property.z !== undefined ? property.z : endRotationZ;
+                    } else {
+                        startRotationX = property.startX !== undefined ? property.startX : startRotationX;
+                        startRotationY = property.startY !== undefined ? property.startY : startRotationY;
+                        startRotationZ = property.startZ !== undefined ? property.startZ : startRotationZ;
+                        endRotationX = property.x !== undefined ? property.x : endRotationX;
+                        endRotationY = property.y !== undefined ? property.y : endRotationY;
+                        endRotationZ = property.z !== undefined ? property.z : endRotationZ;
+                    }
                     break;
             }
         });
 
         // Build transform strings
-        startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
-            currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-            currentTransform.rotationX, currentTransform.rotationY, currentTransform.rotationZ);
-        endTransform = buildTransformString(translateX, translateY, translateZ, scaleX, scaleY, scaleZ,
-            rotationX, rotationY, rotationZ);
+        startTransform = buildTransformString(startTranslateX, startTranslateY, startTranslateZ,
+            startScaleX, startScaleY, startScaleZ,
+            startRotationX, startRotationY, startRotationZ);
+        endTransform = buildTransformString(endTranslateX, endTranslateY, endTranslateZ,
+            endScaleX, endScaleY, endScaleZ,
+            endRotationX, endRotationY, endRotationZ);
+
+        console.log('[WAAPI Debug] Transform keyframes for', element.id, ':');
+        console.log('  Start:', startTransform);
+        console.log('  End:  ', endTransform);
+        console.log('  Duration:', duration, 'Easing:', easing);
 
         const keyframes = [
             { transform: startTransform },
@@ -241,16 +275,18 @@ window.ElmAnimateWAAPI = (function () {
         switch (property.type) {
             case 'opacity':
                 keyframes = [
-                    { opacity: window.getComputedStyle(element).opacity || '1' },
+                    { opacity: property.startValue !== undefined ? property.startValue.toString() : '1' },
                     { opacity: property.value.toString() }
                 ];
+                console.log('[WAAPI Debug] Opacity keyframes:', keyframes, 'Duration:', duration);
                 break;
 
             case 'backgroundColor':
                 keyframes = [
-                    { backgroundColor: window.getComputedStyle(element).backgroundColor || 'transparent' },
+                    { backgroundColor: property.startColor || 'transparent' },
                     { backgroundColor: property.color }
                 ];
+                console.log('[WAAPI Debug] BackgroundColor keyframes:', keyframes, 'Duration:', duration);
                 break;
 
             case 'size':
