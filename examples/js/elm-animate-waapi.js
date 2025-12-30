@@ -112,8 +112,6 @@ window.ElmAnimateWAAPI = (function () {
             return;
         }
 
-        console.log('[WAAPI Debug] Received from Elm for', elementId, ':', elementConfig.properties);
-
         // Stop any existing animation for this element
         stopAnimation(elementId);
 
@@ -122,7 +120,6 @@ window.ElmAnimateWAAPI = (function () {
         const separateAnimations = [];
 
         elementConfig.properties.forEach(property => {
-            console.log('[WAAPI Debug] Property:', property.type, property);
             if (property.type === 'position' || property.type === 'scale' || property.type === 'rotate') {
                 transforms.push(property);
             } else {
@@ -246,11 +243,6 @@ window.ElmAnimateWAAPI = (function () {
             endScaleX, endScaleY, endScaleZ,
             endRotationX, endRotationY, endRotationZ);
 
-        console.log('[WAAPI Debug] Transform keyframes for', element.id, ':');
-        console.log('  Start:', startTransform);
-        console.log('  End:  ', endTransform);
-        console.log('  Duration:', duration, 'Easing:', easing);
-
         const keyframes = [
             { transform: startTransform },
             { transform: endTransform }
@@ -278,7 +270,6 @@ window.ElmAnimateWAAPI = (function () {
                     { opacity: property.startValue !== undefined ? property.startValue.toString() : '1' },
                     { opacity: property.value.toString() }
                 ];
-                console.log('[WAAPI Debug] Opacity keyframes:', keyframes, 'Duration:', duration);
                 break;
 
             case 'backgroundColor':
@@ -286,7 +277,6 @@ window.ElmAnimateWAAPI = (function () {
                     { backgroundColor: property.startColor || 'transparent' },
                     { backgroundColor: property.color }
                 ];
-                console.log('[WAAPI Debug] BackgroundColor keyframes:', keyframes, 'Duration:', duration);
                 break;
 
             case 'size':
