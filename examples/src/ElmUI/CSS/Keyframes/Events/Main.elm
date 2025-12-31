@@ -25,7 +25,6 @@ BENEFITS:
 
 import Anim.Engine.CSS as CSS
 import Anim.Properties.Position as Position
-import Anim.Timing.Delay as Delay
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors

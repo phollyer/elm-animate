@@ -10,8 +10,6 @@
         "Anim.Engine.WAAPI",
         "Anim.Engine.Scroll",
         "Anim.Timing.Easing",
-        "Anim.Timing.TimeSpec",
-        "Anim.Timing.Delay",
         "Anim.Properties.Position",
         "Anim.Properties.Rotate",
         "Anim.Properties.Scale",

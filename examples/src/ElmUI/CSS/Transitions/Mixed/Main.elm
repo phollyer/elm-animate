@@ -30,7 +30,6 @@ import Anim.Properties.Opacity as Opacity
 import Anim.Properties.Position as Position
 import Anim.Properties.Rotate as Rotate
 import Anim.Properties.Scale as Scale
-import Anim.Timing.Delay as Delay
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
