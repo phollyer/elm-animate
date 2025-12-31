@@ -55,6 +55,10 @@ type AnimBuilder
     = AnimBuilder BuilderData
 
 
+type alias ElementId =
+    String
+
+
 type alias BuilderData =
     { globalTiming : Maybe TimeSpec
     , globalEasing : Maybe Easing
@@ -67,10 +71,6 @@ type alias BuilderData =
     }
 
 
-type alias ElementId =
-    String
-
-
 type alias ElementConfig =
     { properties : List PropertyConfig }
 
@@ -79,7 +79,6 @@ type PropertyConfig
     = PositionConfig (AnimationConfig Position)
     | RotateConfig (AnimationConfig Rotate)
     | ScaleConfig (AnimationConfig Scale)
-      -- TODO: Need to consider how to handle all available color properties
     | BackgroundColorConfig (AnimationConfig Color)
     | OpacityConfig (AnimationConfig Opacity)
     | SizeConfig (AnimationConfig Size)
