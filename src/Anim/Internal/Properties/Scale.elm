@@ -1,6 +1,7 @@
 module Anim.Internal.Properties.Scale exposing
     ( Scale(..)
     , distance
+    , duration
     , encode
     , equal
     , fromRecord
@@ -12,6 +13,7 @@ module Anim.Internal.Properties.Scale exposing
     , getZ
     , isUniform
     , map
+    , speed
     , to3DCssString
     , toCssString
     , toRecord
@@ -21,6 +23,7 @@ module Anim.Internal.Properties.Scale exposing
     , toUniform
     )
 
+import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
 import Json.Encode as Encode
 
 
@@ -191,3 +194,39 @@ distance (Scale scale1) (Scale scale2) =
             abs (scale2.z - scale1.z)
     in
     max dx (max dy dz)
+
+
+{-| Calculate animation speed from distance, duration, and time specification.
+
+For Duration-based timing: speed = distance / (duration in seconds)
+For Speed-based timing: returns the specified speed directly
+
+-}
+speed : Float -> Float -> TimeSpec -> Float
+speed distance_ duration_ timeSpec =
+    case timeSpec of
+        TimeSpec.Duration ms ->
+            if ms == 0 then
+                distance_ * duration_ * 1000
+
+            else
+                distance_ / (Basics.toFloat ms / 1000)
+
+        TimeSpec.Speed unitsPerSecond ->
+            unitsPerSecond
+
+
+{-| Calculate animation duration from distance and time specification.
+
+For Duration-based timing: returns the specified duration in milliseconds
+For Speed-based timing: duration = (distance / speed) \* 1000
+
+-}
+duration : Float -> TimeSpec -> Float
+duration distance_ timeSpec =
+    case timeSpec of
+        TimeSpec.Duration ms ->
+            Basics.toFloat ms
+
+        TimeSpec.Speed unitsPerSecond ->
+            distance_ / unitsPerSecond * 1000

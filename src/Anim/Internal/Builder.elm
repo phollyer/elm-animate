@@ -387,379 +387,248 @@ processElement globalData elementConfig =
     }
 
 
+{-| Helper to create a dirty (static) processed config.
+-}
+createDirtyConfig :
+    { end : a
+    , propPerspective : Maybe { containerId : String, value : Float }
+    , globalPerspective : Maybe { containerId : String, value : Float }
+    , wrapper : ProcessedAnimationConfig a -> ProcessedPropertyConfig
+    }
+    -> ProcessedPropertyConfig
+createDirtyConfig { end, propPerspective, globalPerspective, wrapper } =
+    wrapper
+        { start = Just end
+        , end = end
+        , duration = 0
+        , speed = 0
+        , distance = 0
+        , timing = Duration 0
+        , easing = Linear
+        , delay = 0
+        , perspective = resolvePerspective propPerspective globalPerspective
+        }
+
+
+{-| Generic animation processor for properties that follow the standard pattern.
+-}
+processStandardAnimation :
+    { config : AnimationConfig a
+    , globalData : BuilderData
+    , defaultStart : a
+    , distanceFn : a -> a -> Float
+    , durationFn : Float -> TimeSpec -> Float
+    , speedFn : Float -> Float -> TimeSpec -> Float
+    , wrapper : ProcessedAnimationConfig a -> ProcessedPropertyConfig
+    }
+    -> ProcessedPropertyConfig
+processStandardAnimation { config, globalData, defaultStart, distanceFn, durationFn, speedFn, wrapper } =
+    let
+        start =
+            Maybe.withDefault defaultStart config.start
+
+        distance_ =
+            distanceFn start config.end
+
+        resolvedTiming =
+            resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
+
+        duration_ =
+            durationFn distance_ resolvedTiming
+
+        speed_ =
+            speedFn distance_ duration_ resolvedTiming
+    in
+    wrapper
+        { start = config.start
+        , end = config.end
+        , duration = round duration_
+        , speed = speed_
+        , distance = distance_
+        , timing = resolvedTiming
+        , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
+        , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
+        , perspective = resolvePerspective config.perspective globalData.globalPerspective
+        }
+
+
 processProperty : BuilderData -> PropertyConfig -> Maybe ProcessedPropertyConfig
 processProperty globalData property =
     case property of
         PositionConfig config ->
             if config.isDirty then
-                -- Send dirty properties with duration=0 to preserve their state
                 Just <|
-                    ProcessedPositionConfig
-                        { start = Just config.end
-                        , end = config.end
-                        , duration = 0
-                        , speed = 0
-                        , distance = 0
-                        , timing = Duration 0
-                        , easing = Linear
-                        , delay = 0
-                        , perspective = resolvePerspectiveWithDefault config.perspective globalData.globalPerspective Nothing
+                    createDirtyConfig
+                        { end = config.end
+                        , propPerspective = config.perspective
+                        , globalPerspective = globalData.globalPerspective
+                        , wrapper = ProcessedPositionConfig
                         }
 
             else
-                let
-                    start =
-                        case config.start of
-                            Just s ->
-                                s
-
-                            Nothing ->
-                                Position.fromTuple ( 0.0, 0.0 )
-
-                    distance =
-                        Position.distance start config.end
-
-                    resolvedTiming =
-                        resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
-
-                    duration_ =
-                        Position.duration distance resolvedTiming
-
-                    speed_ =
-                        Position.speed distance duration_ resolvedTiming
-                in
                 Just <|
-                    ProcessedPositionConfig
-                        { start = config.start
-                        , end = config.end
-                        , duration = round duration_
-                        , speed = speed_
-                        , distance = distance
-                        , timing = resolvedTiming
-                        , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
-                        , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
-                        , perspective = resolvePerspectiveWithDefault config.perspective globalData.globalPerspective Nothing
+                    processStandardAnimation
+                        { config = config
+                        , globalData = globalData
+                        , defaultStart = Position.fromTuple ( 0.0, 0.0 )
+                        , distanceFn = Position.distance
+                        , durationFn = Position.duration
+                        , speedFn = Position.speed
+                        , wrapper = ProcessedPositionConfig
                         }
 
         RotateConfig config ->
             if config.isDirty then
-                -- Send dirty properties with duration=0 to preserve their state
                 Just <|
-                    ProcessedRotateConfig
-                        { start = Just config.end
-                        , end = config.end
-                        , duration = 0
-                        , speed = 0
-                        , distance = 0
-                        , timing = Duration 0
-                        , easing = Linear
-                        , delay = 0
-                        , perspective = resolvePerspectiveWithDefault config.perspective globalData.globalPerspective Nothing
+                    createDirtyConfig
+                        { end = config.end
+                        , propPerspective = config.perspective
+                        , globalPerspective = globalData.globalPerspective
+                        , wrapper = ProcessedRotateConfig
                         }
 
             else
-                let
-                    start =
-                        case config.start of
-                            Just s ->
-                                s
-
-                            Nothing ->
-                                Rotate.fromFloat 0.0
-
-                    distance =
-                        Rotate.distance start config.end
-
-                    resolvedTiming =
-                        resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
-
-                    duration_ =
-                        Rotate.duration distance resolvedTiming
-
-                    speed_ =
-                        Rotate.speed distance duration_ resolvedTiming
-                in
                 Just <|
-                    ProcessedRotateConfig
-                        { start = config.start
-                        , end = config.end
-                        , duration = round duration_
-                        , speed = speed_
-                        , distance = distance
-                        , timing = resolvedTiming
-                        , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
-                        , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
-                        , perspective = resolvePerspectiveWithDefault config.perspective globalData.globalPerspective Nothing
+                    processStandardAnimation
+                        { config = config
+                        , globalData = globalData
+                        , defaultStart = Rotate.fromFloat 0.0
+                        , distanceFn = Rotate.distance
+                        , durationFn = Rotate.duration
+                        , speedFn = Rotate.speed
+                        , wrapper = ProcessedRotateConfig
                         }
 
         ScaleConfig config ->
             if config.isDirty then
-                -- Send dirty properties with duration=0 to preserve their state
                 Just <|
-                    ProcessedScaleConfig
-                        { start = Just config.end
-                        , end = config.end
-                        , duration = 0
-                        , speed = 0
-                        , distance = 0
-                        , timing = Duration 0
-                        , easing = Linear
-                        , delay = 0
-                        , perspective = resolvePerspectiveWithDefault config.perspective globalData.globalPerspective Nothing
+                    createDirtyConfig
+                        { end = config.end
+                        , propPerspective = config.perspective
+                        , globalPerspective = globalData.globalPerspective
+                        , wrapper = ProcessedScaleConfig
                         }
 
             else
-                let
-                    start =
-                        Maybe.withDefault (Scale.fromTuple ( 1.0, 1.0 )) config.start
-
-                    distance =
-                        Scale.distance start config.end
-
-                    duration_ =
-                        -- For scale, we need a way to calculate duration from timing
-                        -- Let's use a simple approach based on timing spec
-                        case resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000) of
-                            Duration ms ->
-                                toFloat ms
-
-                            Speed _ ->
-                                1000.0
-
-                    -- Default 1 second for speed-based
-                    speed_ =
-                        if duration_ > 0 then
-                            distance / (duration_ / 1000.0)
-
-                        else
-                            0.0
-                in
                 Just <|
-                    ProcessedScaleConfig
-                        { start = config.start
-                        , end = config.end
-                        , duration = round duration_
-                        , speed = speed_
-                        , distance = distance
-                        , timing = resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
-                        , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
-                        , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
-                        , perspective = resolvePerspectiveWithDefault config.perspective globalData.globalPerspective Nothing
+                    processStandardAnimation
+                        { config = config
+                        , globalData = globalData
+                        , defaultStart = Scale.fromTuple ( 1.0, 1.0 )
+                        , distanceFn = Scale.distance
+                        , durationFn = Scale.duration
+                        , speedFn = Scale.speed
+                        , wrapper = ProcessedScaleConfig
                         }
 
         BackgroundColorConfig config ->
             if config.isDirty then
-                -- Return static config to preserve visual state
                 Just <|
-                    ProcessedBackgroundColorConfig
-                        { start = Just config.end
-                        , end = config.end
-                        , duration = 0 -- No animation, just maintain state
-                        , speed = 0
-                        , distance = 0
-                        , timing = Duration 0
-                        , easing = Linear
-                        , delay = 0
-                        , perspective = Nothing
+                    createDirtyConfig
+                        { end = config.end
+                        , propPerspective = Nothing
+                        , globalPerspective = Nothing
+                        , wrapper = ProcessedBackgroundColorConfig
                         }
 
             else
-                let
-                    start =
-                        case config.start of
-                            Just s ->
-                                s
-
-                            Nothing ->
-                                BackgroundColor.rgb255 0 0 0
-
-                    -- Default to black if no start color
-                    distance =
-                        BackgroundColor.distance start config.end
-
-                    resolvedTiming =
-                        resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
-
-                    duration_ =
-                        BackgroundColor.duration distance resolvedTiming
-
-                    speed_ =
-                        BackgroundColor.speed distance duration_ resolvedTiming
-                in
                 Just <|
-                    ProcessedBackgroundColorConfig
-                        { start = config.start
-                        , end = config.end
-                        , duration = round duration_
-                        , speed = speed_
-                        , distance = distance
-                        , timing = resolvedTiming
-                        , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
-                        , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
-                        , perspective = Nothing
+                    processStandardAnimation
+                        { config = config
+                        , globalData = globalData
+                        , defaultStart = BackgroundColor.rgb255 0 0 0
+                        , distanceFn = BackgroundColor.distance
+                        , durationFn = BackgroundColor.duration
+                        , speedFn = BackgroundColor.speed
+                        , wrapper = ProcessedBackgroundColorConfig
                         }
 
         OpacityConfig config ->
             if config.isDirty then
-                -- Return static config to preserve visual state
                 Just <|
-                    ProcessedOpacityConfig
-                        { start = Just config.end
-                        , end = config.end
-                        , duration = 0 -- No animation, just maintain state
-                        , speed = 0
-                        , distance = 0
-                        , timing = Duration 0
-                        , easing = Linear
-                        , delay = 0
-                        , perspective = Nothing
+                    createDirtyConfig
+                        { end = config.end
+                        , propPerspective = Nothing
+                        , globalPerspective = Nothing
+                        , wrapper = ProcessedOpacityConfig
                         }
 
             else
-                let
-                    start =
-                        case config.start of
-                            Just s ->
-                                s
-
-                            Nothing ->
-                                Opacity.fromFloat 1.0
-
-                    distance =
-                        Opacity.distance start config.end
-
-                    resolvedTiming =
-                        resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
-
-                    duration_ =
-                        Opacity.duration distance resolvedTiming
-
-                    speed_ =
-                        Opacity.speed distance duration_ resolvedTiming
-                in
                 Just <|
-                    ProcessedOpacityConfig
-                        { start = config.start
-                        , end = config.end
-                        , duration = round duration_
-                        , speed = speed_
-                        , distance = distance
-                        , timing = resolvedTiming
-                        , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
-                        , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
-                        , perspective = Nothing
+                    processStandardAnimation
+                        { config = config
+                        , globalData = globalData
+                        , defaultStart = Opacity.fromFloat 1.0
+                        , distanceFn = Opacity.distance
+                        , durationFn = Opacity.duration
+                        , speedFn = Opacity.speed
+                        , wrapper = ProcessedOpacityConfig
                         }
 
         SizeConfig config ->
             if config.isDirty then
-                -- Return static config to preserve visual state
                 Just <|
-                    ProcessedSizeConfig
-                        { start = Just config.end
-                        , end = config.end
-                        , duration = 0 -- No animation, just maintain state
-                        , speed = 0
-                        , distance = 0
-                        , timing = Duration 0
-                        , easing = Linear
-                        , delay = 0
-                        , perspective = Nothing
+                    createDirtyConfig
+                        { end = config.end
+                        , propPerspective = Nothing
+                        , globalPerspective = Nothing
+                        , wrapper = ProcessedSizeConfig
                         }
 
             else
-                let
-                    start =
-                        case config.start of
-                            Just s ->
-                                s
-
-                            Nothing ->
-                                Size.fromTuple ( 100.0, 100.0 )
-
-                    distance =
-                        Size.distance start config.end
-
-                    resolvedTiming =
-                        resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
-
-                    duration_ =
-                        Size.duration distance resolvedTiming
-
-                    speed_ =
-                        Size.speed distance duration_ resolvedTiming
-                in
                 Just <|
-                    ProcessedSizeConfig
-                        { start = config.start
-                        , end = config.end
-                        , duration = round duration_
-                        , speed = speed_
-                        , distance = distance
-                        , timing = resolvedTiming
-                        , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
-                        , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
-                        , perspective = Nothing
+                    processStandardAnimation
+                        { config = config
+                        , globalData = globalData
+                        , defaultStart = Size.fromTuple ( 100.0, 100.0 )
+                        , distanceFn = Size.distance
+                        , durationFn = Size.duration
+                        , speedFn = Size.speed
+                        , wrapper = ProcessedSizeConfig
                         }
 
 
+{-| Generic resolver for optional values with local, global, and default fallback.
+-}
+resolveMaybeWithDefault : Maybe a -> Maybe a -> a -> a
+resolveMaybeWithDefault local global default =
+    case ( local, global ) of
+        ( Just value, _ ) ->
+            value
+
+        ( Nothing, Just value ) ->
+            value
+
+        ( Nothing, Nothing ) ->
+            default
+
+
 resolveTimingWithDefault : Maybe TimeSpec -> Maybe TimeSpec -> TimeSpec -> TimeSpec
-resolveTimingWithDefault local global default =
-    case local of
-        Just timing ->
-            timing
-
-        Nothing ->
-            case global of
-                Just timing ->
-                    timing
-
-                Nothing ->
-                    default
+resolveTimingWithDefault =
+    resolveMaybeWithDefault
 
 
 resolveEasingWithDefault : Maybe Easing -> Maybe Easing -> Easing -> Easing
-resolveEasingWithDefault local global default =
-    case local of
-        Just easing_ ->
-            easing_
-
-        Nothing ->
-            case global of
-                Just easing_ ->
-                    easing_
-
-                Nothing ->
-                    default
+resolveEasingWithDefault =
+    resolveMaybeWithDefault
 
 
 resolveDelayWithDefault : Maybe Int -> Maybe Int -> Int -> Int
-resolveDelayWithDefault local global default =
+resolveDelayWithDefault =
+    resolveMaybeWithDefault
+
+
+{-| Resolve perspective with Nothing as the ultimate fallback.
+Perspective is special because Nothing is a valid final value (no perspective).
+-}
+resolvePerspective : Maybe a -> Maybe a -> Maybe a
+resolvePerspective local global =
     case local of
-        Just delay_ ->
-            delay_
+        Just value ->
+            Just value
 
         Nothing ->
-            case global of
-                Just delay_ ->
-                    delay_
-
-                Nothing ->
-                    default
-
-
-resolvePerspectiveWithDefault : Maybe { containerId : String, value : Float } -> Maybe { containerId : String, value : Float } -> Maybe { containerId : String, value : Float } -> Maybe { containerId : String, value : Float }
-resolvePerspectiveWithDefault local global default =
-    case local of
-        Just perspective_ ->
-            Just perspective_
-
-        Nothing ->
-            case global of
-                Just perspective_ ->
-                    Just perspective_
-
-                Nothing ->
-                    default
+            global
 
 
 
