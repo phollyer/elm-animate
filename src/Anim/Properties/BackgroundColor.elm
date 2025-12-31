@@ -55,6 +55,7 @@ import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.BackgroundColor as CB
 import Anim.Internal.Properties.BackgroundColor as BC
 import Anim.Timing.Easing as Easing exposing (Easing)
+import Color
 
 
 
@@ -62,6 +63,13 @@ import Anim.Timing.Easing as Easing exposing (Easing)
 
 
 {-| Color values in different formats.
+
+  - Use `Hex` for hex color strings like "#ff0000"
+  - Use `Rgb` or `Rgba` for RGB values
+  - Use `Hsl` or `Hsla` for HSL values
+  - Use `ElmColor` to integrate with the [avh4/elm-color](https://package.elm-lang.org/packages/avh4/elm-color/latest/) package,
+    which provides named colors (`Color.red`, `Color.blue`, etc.) and color manipulation functions
+
 -}
 type Color
     = Hex String
@@ -69,6 +77,7 @@ type Color
     | Rgba { r : Int, g : Int, b : Int, a : Float }
     | Hsl { h : Float, s : Float, l : Float }
     | Hsla { h : Float, s : Float, l : Float, a : Float }
+    | ElmColor Color.Color
 
 
 {-| Type alias for the internal `ColorBuilder`.
@@ -115,6 +124,11 @@ build =
         |> BackgroundColor.from (Hex "#ff0000")
         |> ...
 
+    animBuilder
+        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.from (ElmColor Color.red)
+        |> ...
+
 -}
 from : Color -> Builder -> Builder
 from color =
@@ -131,6 +145,11 @@ from color =
     animBuilder
         |> BackgroundColor.for "my-element"
         |> BackgroundColor.to (Rgb { r = 255, g = 0, b = 0 })
+        |> ...
+
+    animBuilder
+        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.to (ElmColor Color.blue)
         |> ...
 
 -}
@@ -218,3 +237,15 @@ toInternal color =
 
         Hsla hsla ->
             BC.Hsla hsla
+
+        ElmColor elmColor ->
+            let
+                rgba =
+                    Color.toRgba elmColor
+            in
+            BC.Rgba
+                { r = round (rgba.red * 255)
+                , g = round (rgba.green * 255)
+                , b = round (rgba.blue * 255)
+                , a = rgba.alpha
+                }

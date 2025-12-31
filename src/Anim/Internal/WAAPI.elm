@@ -36,6 +36,7 @@ module Anim.Internal.WAAPI exposing
     , isElementComplete
     , isElementRunning
     , perspective
+    , perspectiveStyles
     , perspectiveWith
     , speed
     , update
@@ -130,6 +131,68 @@ delay =
 perspective : String -> Float -> AnimBuilder -> AnimBuilder
 perspective =
     Builder.perspective
+
+
+perspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
+perspectiveStyles targetContainerId (AnimState state) =
+    let
+        processedData =
+            Builder.processAnimationData state.builder
+
+        -- Check if any elements use this containerId for perspective
+        perspectiveValues =
+            processedData.elements
+                |> Dict.values
+                |> List.concatMap .properties
+                |> List.filterMap extractPerspectiveFromProperty
+                |> List.filter (\{ containerId } -> containerId == targetContainerId)
+                |> List.map .value
+                |> List.head
+
+        globalPerspective =
+            processedData.globalPerspective
+                |> Maybe.andThen
+                    (\{ containerId, value } ->
+                        if containerId == targetContainerId then
+                            Just value
+
+                        else
+                            Nothing
+                    )
+
+        perspectiveValue =
+            case perspectiveValues of
+                Just value ->
+                    Just value
+
+                Nothing ->
+                    globalPerspective
+    in
+    case perspectiveValue of
+        Just value ->
+            [ Html.Attributes.style "perspective" (String.fromFloat value ++ "px")
+            , Html.Attributes.style "transform-style" "preserve-3d"
+            , Html.Attributes.attribute "data-perspective-source" "elm"
+            ]
+
+        Nothing ->
+            []
+
+
+extractPerspectiveFromProperty : Builder.ProcessedPropertyConfig -> Maybe { containerId : String, value : Float }
+extractPerspectiveFromProperty property =
+    case property of
+        Builder.ProcessedPositionConfig config ->
+            config.perspective
+
+        Builder.ProcessedRotateConfig config ->
+            config.perspective
+
+        Builder.ProcessedScaleConfig config ->
+            config.perspective
+
+        _ ->
+            Nothing
 
 
 perspectiveWith : Float -> List (Html.Attribute msg)

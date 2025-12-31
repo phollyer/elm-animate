@@ -3,7 +3,7 @@ module Anim.Engine.WAAPI exposing
     , animate, animateBatch
     , update
     , perspective
-    , perspectiveWith
+    , perspectiveStyles, perspectiveWith
     , duration, speed
     , easing
     , delay
@@ -66,7 +66,7 @@ to give a sense of depth. Without perspective, 3D transformations will have no v
 
 ## HTML
 
-@docs perspectiveWith
+@docs perspectiveStyles, perspectiveWith
 
 
 # Global Settings
@@ -298,6 +298,38 @@ instead of relying on this automatic behavior.
 perspective : String -> Float -> AnimBuilder -> AnimBuilder
 perspective =
     InternalWAAPI.perspective
+
+
+{-| Generate HTML attributes for a container element based on the animation state.
+
+**This function is optional for WAAPI** - the JavaScript automatically applies perspective
+based on your animation configuration. However, this function is provided for API consistency
+with the CSS and Sub engines, making it easier to switch between engines.
+
+When you use this function, it tells the JavaScript to skip automatic perspective application
+and use your manually specified styles instead.
+
+    -- Attach to the container element
+    div
+        (id "my-container"
+            :: WAAPI.perspectiveStyles "my-container" animState
+        )
+        [ div
+            [ id "animated-element" ]
+            [ text "3D content" ]
+        ]
+
+If you don't use this function, the JavaScript will automatically apply perspective based
+on your animation configuration, so you only need this if:
+
+  - You're migrating from CSS or Sub engines and want to keep existing code
+  - You need explicit control over when perspective is applied
+  - The automatic behavior doesn't work for your use case
+
+-}
+perspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
+perspectiveStyles =
+    InternalWAAPI.perspectiveStyles
 
 
 {-| Manually generate HTML attributes with a given perspective value.

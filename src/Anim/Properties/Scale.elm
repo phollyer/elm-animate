@@ -13,11 +13,23 @@ Use these functions to configure scale animations in the builder chain:
 
     animBuilder
         |> Scale.for "my-element"
-        |> Scale.toXYZ 1.5 1.5 1.2  -- 3D scaling
+        |> Scale.fromXY 0.8 0.8
+        |> Scale.toXY 1.5 1.5
         |> Scale.speed 2.0
         |> ... -- other scale configuration steps
         |> Scale.build
         |> ... -- continue with animation
+
+For 3D scaling, you just need to set a non-zero value for the 'Z' axis and a perspective (either globally on the Engine or using the [perspective](#perspective) function for this property):
+
+    -- 3D scale up effect
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.perspective "container-id" 800
+        |> Scale.fromXYZ 0.8 0.8 0.8
+        |> Scale.toXYZ 1.5 1.5 1.5
+        |> Scale.speed 2.0
+        |> Scale.build
 
 
 # Build
@@ -33,7 +45,7 @@ Use these functions to configure scale animations in the builder chain:
 The first time a scale animation is configured, if no starting scale is set, it will default to: `{x = 1.0, y = 1.0, z = 1.0}`
 i.e. no scaling. On subsequent animations, it will start from the last known scale.
 
-The last known scale is tracked in your model, so you only need to set this when you want to override that behavior.
+The last known scale is tracked in your Engine's model, so you only need to set this when you want to override that behavior, or, if you choose not to track state in your model.
 
 @docs from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
 
@@ -53,7 +65,11 @@ The last known scale is tracked in your model, so you only need to set this when
 @docs easing
 
 
-## 3D Animations
+## Perspective
+
+For 3D scaling this is required to give a sense of depth. Without it, Z scaling will have no visual effect.
+
+You can set a global perspective for all 3D animations directly on the Engine you are using, or you can set it on a per-property basis using this function.
 
 @docs perspective
 
@@ -136,6 +152,8 @@ fromXYZ =
         |> Scale.fromXY 0.8 1.2
         |> ...
 
+The Z scale remains unchanged, or 1.0 if not set.
+
 -}
 fromXY : Float -> Float -> Builder -> Builder
 fromXY =
@@ -148,6 +166,8 @@ fromXY =
         |> Scale.for "my-element"
         |> Scale.fromXZ 0.8 0.9
         |> ...
+
+The Y scale remains unchanged, or 1.0 if not set.
 
 -}
 fromXZ : Float -> Float -> Builder -> Builder
@@ -176,6 +196,8 @@ fromX =
         |> Scale.for "my-element"
         |> Scale.fromYZ 1.2 0.9
         |> ...
+
+The X scale remains unchanged, or 1.0 if not set.
 
 -}
 fromYZ : Float -> Float -> Builder -> Builder
@@ -220,6 +242,8 @@ fromZ =
         |> Scale.to 1.5
         |> ...
 
+This is equivalent to `toXYZ 1.5 1.5 1.5`.
+
 -}
 to : Float -> Builder -> Builder
 to targetScale =
@@ -246,6 +270,8 @@ toXYZ =
         |> Scale.toXY 1.5 2.0
         |> ...
 
+The Z scale remains unchanged, or 1.0 if not set.
+
 -}
 toXY : Float -> Float -> Builder -> Builder
 toXY =
@@ -258,6 +284,8 @@ toXY =
         |> Scale.for "my-element"
         |> Scale.toXZ 1.5 0.8
         |> ...
+
+The Y scale remains unchanged, or 1.0 if not set.
 
 -}
 toXZ : Float -> Float -> Builder -> Builder
@@ -272,7 +300,7 @@ toXZ =
         |> Scale.toX 2.0
         |> ...
 
-The Y and Z scales remain unchanged.
+The Y and Z scales remain unchanged, or 1.0 if not set.
 
 -}
 toX : Float -> Builder -> Builder
@@ -287,6 +315,8 @@ toX =
         |> Scale.toYZ 1.5 0.8
         |> ...
 
+The X scale remains unchanged, or 1.0 if not set.
+
 -}
 toYZ : Float -> Float -> Builder -> Builder
 toYZ =
@@ -300,7 +330,7 @@ toYZ =
         |> Scale.toY 1.5
         |> ...
 
-The X and Z scales remain unchanged.
+The X and Z scales remain unchanged, or 1.0 if not set.
 
 -}
 toY : Float -> Builder -> Builder
@@ -315,12 +345,38 @@ toY =
         |> Scale.toZ 0.8
         |> ...
 
-The X and Y scales remain unchanged.
+The X and Y scales remain unchanged, or 1.0 if not set.
 
 -}
 toZ : Float -> Builder -> Builder
 toZ =
     SB.toZ
+
+
+{-| Set the delay (milliseconds) before the animation starts.
+
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.delay 500
+        |> ...
+
+-}
+delay : Int -> Builder -> Builder
+delay =
+    SB.delay
+
+
+{-| Set the animation duration (milliseconds).
+
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.duration 2000
+        |> ...
+
+-}
+duration : Int -> Builder -> Builder
+duration =
+    SB.duration
 
 
 {-| The speed represents how much the scale factor changes per second.
@@ -342,19 +398,6 @@ speed =
     SB.speed
 
 
-{-| Set the animation duration (milliseconds).
-
-    animBuilder
-        |> Scale.for "my-element"
-        |> Scale.duration 2000
-        |> ...
-
--}
-duration : Int -> Builder -> Builder
-duration =
-    SB.duration
-
-
 {-| Set the easing function for the animation.
 
     animBuilder
@@ -368,20 +411,7 @@ easing easing_ =
     SB.easing (Easing.mapInternal identity easing_)
 
 
-{-| Set the delay (milliseconds) before the animation starts.
-
-    animBuilder
-        |> Scale.for "my-element"
-        |> Scale.delay 500
-        |> ...
-
--}
-delay : Int -> Builder -> Builder
-delay =
-    SB.delay
-
-
-{-| Set the perspective for 3D scaling on this specific property.
+{-| Set the perspective for 3D scaling.
 
 This allows you to override the global perspective setting for scale animations
 on a per-container basis. The perspective value determines the distance between
@@ -395,6 +425,9 @@ the viewer and the `z = 0` plane, affecting how 3D scaling appears.
 
 The first parameter is the container ID, and the second is the perspective value in pixels.
 This will override any global perspective set by one of the Engines.
+
+**Note**: You also need to set the perspective attributes on the container element in your HTML/CSS
+for the effect to be visible. You can do this with the `perspectiveStyles` function in each of the Engines.
 
 -}
 perspective : String -> Float -> Builder -> Builder

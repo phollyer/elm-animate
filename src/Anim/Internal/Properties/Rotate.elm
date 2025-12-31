@@ -94,7 +94,7 @@ to3DCssString (Rotate angles) =
 
 fromFloat : Float -> Rotate
 fromFloat angle =
-    Rotate { x = 0, y = 0, z = angle }
+    Rotate { x = angle, y = angle, z = angle }
 
 
 fromRecord : { x : Float, y : Float, z : Float } -> Rotate

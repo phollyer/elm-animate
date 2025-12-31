@@ -1,7 +1,7 @@
 module Anim.Properties.Rotate exposing
     ( Builder, for, build
-    , from, fromX, fromY, fromZ, fromXYZ
-    , to, toX, toY, toZ, toXYZ
+    , from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
+    , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
     , delay, duration, speed
     , easing
     , perspective
@@ -18,13 +18,12 @@ Use these functions to configure rotate animations in the builder chain:
         |> Rotate.build
         |> ... -- continue with animation
 
-For 3D rotation, use the XYZ functions:
+For 3D rotations, you just need to set a value for the 'Z' axis and a perspective (either globally on the Engine or per-property using [perspective](#perspective)):
 
     animBuilder
         |> Rotate.for "my-element"
         |> Rotate.fromXYZ 0 0 0
         |> Rotate.toXYZ 45 90 180
-        -- X, Y, Z axis rotations
         |> Rotate.speed 90
         |> Rotate.build
 
@@ -39,17 +38,17 @@ For 3D rotation, use the XYZ functions:
 
 ## Start Rotation
 
-The first time the animation runs, if no starting rotation is set, it will default to (0, 0, 0) degrees.
+The first time a rotation animation is configured, if no starting rotation is set, it will default to: `{ x = 0, y = 0, z = 0 }`, i.e. no rotation.
+On subsequent animations, it will start from the last known rotation.
 
-On subsequent animations, providing you are tracking animation state in your model, it will start from the last known rotation,
-so you only need to set this when you want to override that behavior.
+The last known rotation is tracked in your Engine's model, so you only need to set this when you want to override that behavior, or, if you choose not to track state in your model.
 
-@docs from, fromX, fromY, fromZ, fromXYZ
+@docs from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
 
 
 ## End Rotation
 
-@docs to, toX, toY, toZ, toXYZ
+@docs to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
 
 
 ## Timing
@@ -62,7 +61,11 @@ so you only need to set this when you want to override that behavior.
 @docs easing
 
 
-## 3D Animations
+## Perspective
+
+For 3D scaling this is required to give a sense of depth. Without it, Z scaling will have no visual effect.
+
+You can set a global perspective for all 3D animations directly on the Engine you are using, or you can set it on a per-property basis using this function.
 
 @docs perspective
 
@@ -92,8 +95,8 @@ type alias Builder =
 
 -}
 for : String -> AnimBuilder -> Builder
-for elementId =
-    RB.for elementId
+for =
+    RB.for
 
 
 {-| Complete the rotation animation configuration and return an [AnimBuilder](Anim.AnimBuilder)
@@ -111,17 +114,62 @@ build =
     RB.build
 
 
-{-| Set the starting rotation for the current element (degrees).
+{-| Set the starting uniform rotation for the current element (degrees).
 
     animBuilder
         |> Rotation.for "my-element"
         |> Rotation.from 45
         |> ...
 
+This is equivalent to `fromXYZ 45 45 45`.
+
 -}
 from : Float -> Builder -> Builder
-from rotation =
-    RB.from (R.fromFloat rotation)
+from =
+    RB.from << R.fromFloat
+
+
+{-| Set the starting X, Y, and Z rotations for the current element (degrees).
+
+    animBuilder
+        |> Rotate.for "my-element"
+        |> Rotate.fromXYZ 45 90 180
+        |> ...
+
+-}
+fromXYZ : Float -> Float -> Float -> Builder -> Builder
+fromXYZ =
+    RB.fromXYZ
+
+
+{-| Set the starting X and Y rotations for the current element (degrees).
+
+    animBuilder
+        |> Rotate.for "my-element"
+        |> Rotate.fromXY 45 90
+        |> ...
+
+The Z rotation remains unchanged, or zero if not set.
+
+-}
+fromXY : Float -> Float -> Builder -> Builder
+fromXY =
+    RB.fromXY
+
+
+{-| Set the starting X and Z rotations for the current element (degrees).
+
+    animBuilder
+        |> Rotate.for "my-element"
+        |> Rotate.fromXZ 45 180
+        |> ...
+
+The Y rotation remains unchanged, or zero if not set.
+
+-}
+fromXZ : Float -> Float -> Builder -> Builder
+fromXZ =
+    RB.fromXZ
 
 
 {-| Set the starting X-axis rotation for the current element (degrees).
@@ -135,8 +183,23 @@ The Y and Z rotations remain unchanged, or zero if not set.
 
 -}
 fromX : Float -> Builder -> Builder
-fromX x =
-    RB.fromX x
+fromX =
+    RB.fromX
+
+
+{-| Set the starting Y and Z rotations for the current element (degrees).
+
+    animBuilder
+        |> Rotate.for "my-element"
+        |> Rotate.fromYZ 90 180
+        |> ...
+
+The X rotation remains unchanged, or zero if not set.
+
+-}
+fromYZ : Float -> Float -> Builder -> Builder
+fromYZ =
+    RB.fromYZ
 
 
 {-| Set the starting Y-axis rotation for the current element (degrees).
@@ -150,8 +213,8 @@ The X and Z rotations remain unchanged, or zero if not set.
 
 -}
 fromY : Float -> Builder -> Builder
-fromY y =
-    RB.fromY y
+fromY =
+    RB.fromY
 
 
 {-| Set the starting Z-axis rotation for the current element (degrees).
@@ -165,34 +228,62 @@ The X and Y rotations remain unchanged, or zero if not set.
 
 -}
 fromZ : Float -> Builder -> Builder
-fromZ z =
-    RB.fromZ z
+fromZ =
+    RB.fromZ
 
 
-{-| Set the starting X, Y, and Z rotations for the current element (degrees).
-
-    animBuilder
-        |> Rotate.for "my-element"
-        |> Rotate.fromXYZ 45 90 180
-        |> ...
-
--}
-fromXYZ : Float -> Float -> Float -> Builder -> Builder
-fromXYZ x y z =
-    RB.fromXYZ x y z
-
-
-{-| Set the target rotation for the current element.
+{-| Set the target uniform rotation for the current element.
 
     animBuilder
         |> Rotation.for "my-element"
         |> Rotation.to 180
         |> ...
 
+This is equivalent to `toXYZ 180 180 180`.
+
 -}
 to : Float -> Builder -> Builder
-to targetRotation =
-    RB.to (R.fromFloat targetRotation)
+to =
+    RB.to << R.fromFloat
+
+
+{-| Set the target X, Y, and Z rotations for the current element (degrees).
+
+    animBuilder
+        |> Rotate.for "my-element"
+        |> Rotate.toXYZ 45 90 180
+        |> ...
+
+-}
+toXYZ : Float -> Float -> Float -> Builder -> Builder
+toXYZ =
+    RB.toXYZ
+
+
+{-| Set the target X and Y rotations for the current element (degrees).
+
+    animBuilder
+        |> Rotate.for "my-element"
+        |> Rotate.toXY 45 90
+        |> ...
+
+-}
+toXY : Float -> Float -> Builder -> Builder
+toXY =
+    RB.toXY
+
+
+{-| Set the target X and Z rotations for the current element (degrees).
+
+    animBuilder
+        |> Rotate.for "my-element"
+        |> Rotate.toXZ 45 180
+        |> ...
+
+-}
+toXZ : Float -> Float -> Builder -> Builder
+toXZ =
+    RB.toXZ
 
 
 {-| Set the target X-axis rotation for the current element (degrees).
@@ -206,8 +297,21 @@ The Y and Z rotations remain unchanged, or zero if not set.
 
 -}
 toX : Float -> Builder -> Builder
-toX x =
-    RB.toX x
+toX =
+    RB.toX
+
+
+{-| Set the target Y and Z rotations for the current element (degrees).
+
+    animBuilder
+        |> Rotate.for "my-element"
+        |> Rotate.toYZ 90 180
+        |> ...
+
+-}
+toYZ : Float -> Float -> Builder -> Builder
+toYZ =
+    RB.toYZ
 
 
 {-| Set the target Y-axis rotation for the current element (degrees).
@@ -221,8 +325,8 @@ The X and Z rotations remain unchanged, or zero if not set.
 
 -}
 toY : Float -> Builder -> Builder
-toY y =
-    RB.toY y
+toY =
+    RB.toY
 
 
 {-| Set the target Z-axis rotation for the current element (degrees).
@@ -236,21 +340,8 @@ The X and Y rotations remain unchanged, or zero if not set.
 
 -}
 toZ : Float -> Builder -> Builder
-toZ z =
-    RB.toZ z
-
-
-{-| Set the target X, Y, and Z rotations for the current element (degrees).
-
-    animBuilder
-        |> Rotate.for "my-element"
-        |> Rotate.toXYZ 45 90 180
-        |> ...
-
--}
-toXYZ : Float -> Float -> Float -> Builder -> Builder
-toXYZ x y z =
-    RB.toXYZ x y z
+toZ =
+    RB.toZ
 
 
 {-| The speed represents how many degrees the element rotates per second.
@@ -268,8 +359,8 @@ Similarly, a speed of `180.0` would complete the same animation in 1 second, and
 
 -}
 speed : Float -> Builder -> Builder
-speed degreesPerSecond =
-    RB.speed degreesPerSecond
+speed =
+    RB.speed
 
 
 {-| Set the animation duration (milliseconds).
@@ -281,8 +372,8 @@ speed degreesPerSecond =
 
 -}
 duration : Int -> Builder -> Builder
-duration milliseconds =
-    RB.duration milliseconds
+duration =
+    RB.duration
 
 
 {-| Set the easing function for the animation.
@@ -294,8 +385,8 @@ duration milliseconds =
 
 -}
 easing : Easing -> Builder -> Builder
-easing easingFunction =
-    RB.easing (Easing.mapInternal identity easingFunction)
+easing =
+    RB.easing << Easing.mapInternal identity
 
 
 {-| Set the delay (milliseconds) before the animation starts.
@@ -307,11 +398,11 @@ easing easingFunction =
 
 -}
 delay : Int -> Builder -> Builder
-delay delay_ =
-    RB.delay delay_
+delay =
+    RB.delay
 
 
-{-| Set the perspective for 3D rotation on this specific property.
+{-| Set the perspective for 3D rotation.
 
 This allows you to override the global perspective setting for rotation animations
 on a per-container basis. The perspective value determines the distance between
@@ -325,6 +416,9 @@ the viewer and the `z = 0` plane, affecting how 3D rotations appear.
 
 The first parameter is the container ID, and the second is the perspective value in pixels.
 This will override any global perspective set by one of the Engines.
+
+**Note**: You also need to set the perspective attributes on the container element in your HTML/CSS
+for the effect to be visible. You can do this with the `perspectiveStyles` function in each of the Engines.
 
 -}
 perspective : String -> Float -> Builder -> Builder

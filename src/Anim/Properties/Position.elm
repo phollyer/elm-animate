@@ -1,13 +1,13 @@
 module Anim.Properties.Position exposing
     ( Builder, for, build
-    , fromXY, fromX, fromY, fromXYZ, fromZ
-    , toXY, toX, toY, toXYZ, toZ
+    , from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
+    , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
+    , delay, duration, speed
+    , easing
     , perspective
-    , speed, duration, easing, delay
-    , Position, getX, getY, getZ, toTuple, toTriple, toRecord
     )
 
-{-| Position animation functions.
+{-| Position animation functions with 3D support.
 
 Use these functions to configure position animations in the builder chain:
 
@@ -20,10 +20,12 @@ Use these functions to configure position animations in the builder chain:
         |> Position.build
         |> ... -- continue with animation
 
-For 3D positioning, use the XYZ functions:
+For 3D positioning, you just need to set a non-zero value for the 'Z' axis and a perspective (either globally on the Engine or using the [perspective](#perspective) function for this property):
 
+    -- 3D zoom in effect
     animBuilder
         |> Position.for "my-element"
+        |> Position.perspective "container-id" 800
         |> Position.fromXYZ 100 20 50
         |> Position.toZ 200
         |> Position.speed 500
@@ -40,36 +42,36 @@ For 3D positioning, use the XYZ functions:
 
 ## Start Position
 
-The first time an animation runs, if no starting position is set, it will be set to the default (0, 0, 0).
+The first time a position animation is configured, if no starting position is set, it will default to: `{ x = 0, y = 0, z = 0 }`, i.e. the origin.
+On subsequent animations, it will start from the last known position.
 
-On subsequent animations, providing you are tracking animation state in your model, it will start from the last known position, so you
-only need to set this when you want to override that behaviour.
+The last known position is tracked in your Engine's model, so you only need to set this when you want to override that behavior, or, if you choose not to track state in your model.
 
-@docs fromXY, fromX, fromY, fromXYZ, fromZ
+@docs from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
 
 
 ## End Position
 
-@docs toXY, toX, toY, toXYZ, toZ
+@docs to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
+
+
+## Timing
+
+@docs delay, duration, speed
+
+
+## Easing
+
+@docs easing
 
 
 ## Perspective
 
 For 3D positioning this is required to give a sense of depth. Without it, Z positioning will have no visual effect.
 
-You can set a global perspective for all 3D position animations directly on the Engine you are using, or you can set it on a per-property basis using this function.
+You can set a global perspective for all 3D animations directly on the Engine you are using, or you can set it on a per-property basis using this function.
 
 @docs perspective
-
-
-## Timing
-
-@docs speed, duration, easing, delay
-
-
-## Accessor Functions
-
-@docs Position, getX, getY, getZ, toTuple, toTriple, toRecord
 
 -}
 
@@ -112,47 +114,19 @@ build =
     PB.build
 
 
-{-| Set the starting position for the current element.
+{-| Set the uniform starting position for the current element.
 
     animBuilder
         |> Position.for "my-element"
-        |> Position.fromXY 100 20
+        |> Position.from 100
         |> ...
 
--}
-fromXY : Float -> Float -> Builder -> Builder
-fromXY =
-    PB.fromXY
-
-
-{-| Set the starting X position for the current element.
-
-    animBuilder
-        |> Position.for "my-element"
-        |> Position.fromX 100
-        |> ...
-
-The starting Y position remains unchanged, or zero if not set.
+This is equivalent to calling `fromXYZ 100 100 100`.
 
 -}
-fromX : Float -> Builder -> Builder
-fromX =
-    PB.fromX
-
-
-{-| Set the starting Y position for the current element.
-
-    animBuilder
-        |> Position.for "my-element"
-        |> Position.fromY 50
-        |> ...
-
-The starting X position remains unchanged, or zero if not set.
-
--}
-fromY : Float -> Builder -> Builder
-fromY =
-    PB.fromY
+from : Float -> Builder -> Builder
+from =
+    PB.from << P.fromTriple << (\v -> ( v, v, v ))
 
 
 {-| Set the starting X, Y, and Z position for the current element.
@@ -168,6 +142,81 @@ fromXYZ =
     PB.fromXYZ
 
 
+{-| Set the starting position for the current element.
+
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.fromXY 100 20
+        |> ...
+
+The Z position remains unchanged, or zero if not set.
+
+-}
+fromXY : Float -> Float -> Builder -> Builder
+fromXY =
+    PB.fromXY
+
+
+{-| Set the starting X and Z position for the current element.
+
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.fromXZ 100 50
+        |> ...
+
+The Y position remains unchanged, or zero if not set.
+
+-}
+fromXZ : Float -> Float -> Builder -> Builder
+fromXZ =
+    PB.fromXZ
+
+
+{-| Set the starting X position for the current element.
+
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.fromX 100
+        |> ...
+
+The Y and Z positions remain unchanged, or zero if not set.
+
+-}
+fromX : Float -> Builder -> Builder
+fromX =
+    PB.fromX
+
+
+{-| Set the starting Y and Z position for the current element.
+
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.fromYZ 200 50
+        |> ...
+
+The X position remains unchanged, or zero if not set.
+
+-}
+fromYZ : Float -> Float -> Builder -> Builder
+fromYZ =
+    PB.fromYZ
+
+
+{-| Set the starting Y position for the current element.
+
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.fromY 50
+        |> ...
+
+The X and Z positions remain unchanged, or zero if not set.
+
+-}
+fromY : Float -> Builder -> Builder
+fromY =
+    PB.fromY
+
+
 {-| Set the starting Z position for the current element.
 
     animBuilder
@@ -175,7 +224,7 @@ fromXYZ =
         |> Position.fromZ 75
         |> ...
 
-The starting X and Y positions remain unchanged, or zero if not set.
+The X and Y positions remain unchanged, or zero if not set.
 
 -}
 fromZ : Float -> Builder -> Builder
@@ -183,17 +232,19 @@ fromZ =
     PB.fromZ
 
 
-{-| Set the target X and Y position for the current element.
+{-| Set the target uniform position for the current element.
 
     animBuilder
         |> Position.for "my-element"
-        |> Position.toXY 100 200
+        |> Position.to 100
         |> ...
 
+This is equivalent to calling `toXYZ 100 100 100`.
+
 -}
-toXY : Float -> Float -> Builder -> Builder
-toXY x y =
-    PB.toXY x y
+to : Float -> Builder -> Builder
+to =
+    PB.to << P.fromTriple << (\v -> ( v, v, v ))
 
 
 {-| Set the target X, Y, and Z position for the current element.
@@ -209,6 +260,36 @@ toXYZ x y z =
     PB.toXYZ x y z
 
 
+{-| Set the target X and Y position for the current element.
+
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.toXY 100 200
+        |> ...
+
+The Z position remains unchanged, or zero if not set.
+
+-}
+toXY : Float -> Float -> Builder -> Builder
+toXY x y =
+    PB.toXY x y
+
+
+{-| Set the target X and Z position for the current element.
+
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.toXZ 100 50
+        |> ...
+
+The Y position remains unchanged, or zero if not set.
+
+-}
+toXZ : Float -> Float -> Builder -> Builder
+toXZ =
+    PB.toXZ
+
+
 {-| Set the target X position for the current element.
 
     animBuilder
@@ -222,6 +303,21 @@ The Y and Z positions remain unchanged, or zero if not set.
 toX : Float -> Builder -> Builder
 toX x =
     PB.toX x
+
+
+{-| Set the target Y and Z position for the current element.
+
+    animBuilder
+        |> Position.for "my-element"
+        |> Position.toYZ 200 75
+        |> ...
+
+The X position remains unchanged, or zero if not set.
+
+-}
+toYZ : Float -> Float -> Builder -> Builder
+toYZ =
+    PB.toYZ
 
 
 {-| Set the target Y position for the current element.
@@ -332,59 +428,10 @@ the viewer and the `z = 0` plane, affecting how 3D positioning appears.
 The first parameter is the container ID, and the second is the perspective value in pixels.
 This will override any global perspective set by one of the Engines.
 
+**Note**: You also need to set the perspective attributes on the container element in your HTML/CSS
+for the effect to be visible. You can do this with the `perspectiveStyles` function in each of the Engines.
+
 -}
 perspective : String -> Float -> Builder -> Builder
 perspective =
     PB.perspective
-
-
-
--- Accessor Functions
-
-
-{-| Type alias for the internal `Position`.
--}
-type alias Position =
-    P.Position
-
-
-{-| Get the X coordinate from a `Position`.
--}
-getX : Position -> Float
-getX =
-    P.x
-
-
-{-| Get the Y coordinate from a `Position`.
--}
-getY : Position -> Float
-getY =
-    P.y
-
-
-{-| Get the Z coordinate from a `Position`.
--}
-getZ : Position -> Float
-getZ =
-    P.z
-
-
-{-| Convert a `Position` to a tuple `( x, y )`.
--}
-toTuple : Position -> ( Float, Float )
-toTuple =
-    P.toTuple
-
-
-{-| Convert a `Position` to a triple `( x, y, z )`.
--}
-toTriple : Position -> ( Float, Float, Float )
-toTriple =
-    P.toTriple
-
-
-{-| Convert a `Position` to a record `{ x : Float, y : Float, z : Float }`.
--}
-toRecord : Position -> { x : Float, y : Float, z : Float }
-toRecord =
-    P.toRecord
