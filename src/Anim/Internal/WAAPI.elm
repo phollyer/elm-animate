@@ -404,21 +404,47 @@ isElementRunning elementId (AnimState state) =
 -- Query Animated Properties
 --
 --
+-- Helper functions for extracting property ranges
+
+
+getPropertyRange :
+    String
+    -> AnimState
+    -> (Builder.ProcessedPropertyConfig -> Maybe { startAt : Maybe a, endAt : a })
+    -> Maybe { start : Maybe a, end : a }
+getPropertyRange elementId (AnimState state) extractor =
+    let
+        processedData =
+            Builder.processAnimationData state.builder
+    in
+    Dict.get elementId processedData.elements
+        |> Maybe.andThen
+            (\elementConfig ->
+                elementConfig.properties
+                    |> List.filterMap extractor
+                    |> List.head
+            )
+        |> Maybe.map (\config -> { start = config.startAt, end = config.endAt })
+
+
+getStartWithDefault : a -> Maybe { start : Maybe a, end : a } -> Maybe a
+getStartWithDefault defaultScale maybeScale =
+    case maybeScale of
+        Nothing ->
+            Just defaultScale
+
+        Just { start } ->
+            start
+
+
+
 -- Background Color
 
 
 getStartBackgroundColor : String -> AnimState -> Maybe Color
 getStartBackgroundColor elementId animState =
     getBackgroundColorRange elementId animState
-        |> Maybe.map
-            (\{ start } ->
-                case start of
-                    Nothing ->
-                        BackgroundColor.rgb255 0 0 0
-
-                    Just startColor ->
-                        startColor
-            )
+        |> getStartWithDefault (BackgroundColor.rgb255 0 0 0)
 
 
 getEndBackgroundColor : String -> AnimState -> Maybe Color
@@ -434,67 +460,25 @@ getCurrentBackgroundColor elementId (AnimState state) =
 
 
 getBackgroundColorRange : String -> AnimState -> Maybe { start : Maybe Color, end : Color }
-getBackgroundColorRange elementId (AnimState state) =
-    let
-        processedData =
-            Builder.processAnimationData state.builder
-    in
-    Dict.get elementId processedData.elements
-        |> Maybe.andThen
-            (\elementConfig ->
-                elementConfig.properties
-                    |> List.filterMap
-                        (\prop ->
-                            case prop of
-                                Builder.ProcessedBackgroundColorConfig config ->
-                                    Just { start = config.startAt, end = config.endAt }
+getBackgroundColorRange elementId animState =
+    getPropertyRange elementId animState <|
+        \prop ->
+            case prop of
+                Builder.ProcessedBackgroundColorConfig config ->
+                    Just { startAt = config.startAt, endAt = config.endAt }
 
-                                _ ->
-                                    Nothing
-                        )
-                    |> List.head
-            )
+                _ ->
+                    Nothing
 
 
 
 -- Opacity
 
 
-getOpacityRange : String -> AnimState -> Maybe { start : Maybe Opacity, end : Opacity }
-getOpacityRange elementId (AnimState state) =
-    let
-        processedData =
-            Builder.processAnimationData state.builder
-    in
-    Dict.get elementId processedData.elements
-        |> Maybe.andThen
-            (\elementConfig ->
-                elementConfig.properties
-                    |> List.filterMap
-                        (\prop ->
-                            case prop of
-                                Builder.ProcessedOpacityConfig config ->
-                                    Just { start = config.startAt, end = config.endAt }
-
-                                _ ->
-                                    Nothing
-                        )
-                    |> List.head
-            )
-
-
 getStartOpacity : String -> AnimState -> Maybe Opacity
 getStartOpacity elementId animState =
     getOpacityRange elementId animState
-        |> Maybe.map
-            (\{ start } ->
-                case start of
-                    Nothing ->
-                        Opacity.fromFloat 1.0
-
-                    Just startOpacity ->
-                        startOpacity
-            )
+        |> getStartWithDefault (Opacity.fromFloat 1.0)
 
 
 getEndOpacity : String -> AnimState -> Maybe Opacity
@@ -509,6 +493,18 @@ getCurrentOpacity elementId (AnimState state) =
         |> Maybe.andThen (.currentStates >> .opacity)
 
 
+getOpacityRange : String -> AnimState -> Maybe { start : Maybe Opacity, end : Opacity }
+getOpacityRange elementId animState =
+    getPropertyRange elementId animState <|
+        \prop ->
+            case prop of
+                Builder.ProcessedOpacityConfig config ->
+                    Just { startAt = config.startAt, endAt = config.endAt }
+
+                _ ->
+                    Nothing
+
+
 
 -- Position
 
@@ -516,15 +512,7 @@ getCurrentOpacity elementId (AnimState state) =
 getStartPosition : String -> AnimState -> Maybe Position
 getStartPosition elementId animState =
     getPositionRange elementId animState
-        |> Maybe.map
-            (\{ start } ->
-                case start of
-                    Nothing ->
-                        Position.fromTriple ( 0, 0, 0 )
-
-                    Just startPos ->
-                        startPos
-            )
+        |> getStartWithDefault (Position.fromTriple ( 0, 0, 0 ))
 
 
 getEndPosition : String -> AnimState -> Maybe Position
@@ -540,67 +528,25 @@ getCurrentPosition elementId (AnimState state) =
 
 
 getPositionRange : String -> AnimState -> Maybe { start : Maybe Position, end : Position }
-getPositionRange elementId (AnimState state) =
-    let
-        processedData =
-            Builder.processAnimationData state.builder
-    in
-    Dict.get elementId processedData.elements
-        |> Maybe.andThen
-            (\elementConfig ->
-                elementConfig.properties
-                    |> List.filterMap
-                        (\prop ->
-                            case prop of
-                                Builder.ProcessedPositionConfig config ->
-                                    Just { start = config.startAt, end = config.endAt }
+getPositionRange elementId animState =
+    getPropertyRange elementId animState <|
+        \prop ->
+            case prop of
+                Builder.ProcessedPositionConfig config ->
+                    Just { startAt = config.startAt, endAt = config.endAt }
 
-                                _ ->
-                                    Nothing
-                        )
-                    |> List.head
-            )
+                _ ->
+                    Nothing
 
 
 
 -- Rotate
 
 
-getRotateRange : String -> AnimState -> Maybe { start : Maybe Rotate, end : Rotate }
-getRotateRange elementId (AnimState state) =
-    let
-        processedData =
-            Builder.processAnimationData state.builder
-    in
-    Dict.get elementId processedData.elements
-        |> Maybe.andThen
-            (\elementConfig ->
-                elementConfig.properties
-                    |> List.filterMap
-                        (\prop ->
-                            case prop of
-                                Builder.ProcessedRotateConfig config ->
-                                    Just { start = config.startAt, end = config.endAt }
-
-                                _ ->
-                                    Nothing
-                        )
-                    |> List.head
-            )
-
-
 getStartRotate : String -> AnimState -> Maybe Rotate
 getStartRotate elementId animState =
     getRotateRange elementId animState
-        |> Maybe.map
-            (\{ start } ->
-                case start of
-                    Nothing ->
-                        Rotate.fromTriple ( 0, 0, 0 )
-
-                    Just startRotate ->
-                        startRotate
-            )
+        |> getStartWithDefault (Rotate.fromTriple ( 0, 0, 0 ))
 
 
 getEndRotate : String -> AnimState -> Maybe Rotate
@@ -615,45 +561,26 @@ getCurrentRotate elementId (AnimState state) =
         |> Maybe.andThen (.currentStates >> .rotate)
 
 
+getRotateRange : String -> AnimState -> Maybe { start : Maybe Rotate, end : Rotate }
+getRotateRange elementId animState =
+    getPropertyRange elementId animState <|
+        \prop ->
+            case prop of
+                Builder.ProcessedRotateConfig config ->
+                    Just { startAt = config.startAt, endAt = config.endAt }
+
+                _ ->
+                    Nothing
+
+
 
 -- Scale
-
-
-getScaleRange : String -> AnimState -> Maybe { start : Maybe Scale, end : Scale }
-getScaleRange elementId (AnimState state) =
-    let
-        processedData =
-            Builder.processAnimationData state.builder
-    in
-    Dict.get elementId processedData.elements
-        |> Maybe.andThen
-            (\elementConfig ->
-                elementConfig.properties
-                    |> List.filterMap
-                        (\prop ->
-                            case prop of
-                                Builder.ProcessedScaleConfig config ->
-                                    Just { start = config.startAt, end = config.endAt }
-
-                                _ ->
-                                    Nothing
-                        )
-                    |> List.head
-            )
 
 
 getStartScale : String -> AnimState -> Maybe Scale
 getStartScale elementId animState =
     getScaleRange elementId animState
-        |> Maybe.map
-            (\{ start } ->
-                case start of
-                    Nothing ->
-                        Scale.fromTriple ( 1, 1, 1 )
-
-                    Just startScale ->
-                        startScale
-            )
+        |> getStartWithDefault (Scale.fromTriple ( 1, 1, 1 ))
 
 
 getEndScale : String -> AnimState -> Maybe Scale
@@ -668,45 +595,26 @@ getCurrentScale elementId (AnimState state) =
         |> Maybe.andThen (.currentStates >> .scale)
 
 
+getScaleRange : String -> AnimState -> Maybe { start : Maybe Scale, end : Scale }
+getScaleRange elementId animState =
+    getPropertyRange elementId animState <|
+        \prop ->
+            case prop of
+                Builder.ProcessedScaleConfig config ->
+                    Just { startAt = config.startAt, endAt = config.endAt }
+
+                _ ->
+                    Nothing
+
+
 
 -- Size
-
-
-getSizeRange : String -> AnimState -> Maybe { start : Maybe Size, end : Size }
-getSizeRange elementId (AnimState state) =
-    let
-        processedData =
-            Builder.processAnimationData state.builder
-    in
-    Dict.get elementId processedData.elements
-        |> Maybe.andThen
-            (\elementConfig ->
-                elementConfig.properties
-                    |> List.filterMap
-                        (\prop ->
-                            case prop of
-                                Builder.ProcessedSizeConfig config ->
-                                    Just { start = config.startAt, end = config.endAt }
-
-                                _ ->
-                                    Nothing
-                        )
-                    |> List.head
-            )
 
 
 getStartSize : String -> AnimState -> Maybe Size
 getStartSize elementId animState =
     getSizeRange elementId animState
-        |> Maybe.map
-            (\{ start } ->
-                case start of
-                    Nothing ->
-                        Size.fromTuple ( 0, 0 )
-
-                    Just startSize ->
-                        startSize
-            )
+        |> getStartWithDefault (Size.fromTuple ( 0, 0 ))
 
 
 getEndSize : String -> AnimState -> Maybe Size
@@ -719,6 +627,18 @@ getCurrentSize : String -> AnimState -> Maybe Size
 getCurrentSize elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.andThen (.currentStates >> .size)
+
+
+getSizeRange : String -> AnimState -> Maybe { start : Maybe Size, end : Size }
+getSizeRange elementId animState =
+    getPropertyRange elementId animState <|
+        \prop ->
+            case prop of
+                Builder.ProcessedSizeConfig config ->
+                    Just { startAt = config.startAt, endAt = config.endAt }
+
+                _ ->
+                    Nothing
 
 
 
