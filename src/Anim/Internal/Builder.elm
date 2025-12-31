@@ -41,7 +41,7 @@ module Anim.Internal.Builder exposing
 
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
-import Anim.Internal.Properties.Position as Position exposing (Position, distance)
+import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
 import Anim.Internal.Properties.ScrollTarget exposing (ScrollTarget)
@@ -296,8 +296,6 @@ updateElementConfig elementId elementConfig (AnimBuilder data) =
         { data | elements = Dict.insert elementId elementConfig data.elements }
 
 
-{-| Update the current element configuration.
--}
 updateCurrentElement : ElementConfig -> AnimBuilder -> AnimBuilder
 updateCurrentElement config (AnimBuilder data) =
     case data.currentElementId of
@@ -340,15 +338,11 @@ markPropertyDirty property =
             SizeConfig { config | isDirty = True }
 
 
-{-| Map a function over all scroll targets in the builder.
--}
 mapScrollTargets : (ScrollTarget -> ScrollTarget) -> AnimBuilder -> AnimBuilder
 mapScrollTargets fn (AnimBuilder data) =
     AnimBuilder { data | scrollTargets = List.map fn data.scrollTargets }
 
 
-{-| Add a scroll target to the builder.
--}
 addScrollTarget : ScrollTarget -> AnimBuilder -> AnimBuilder
 addScrollTarget scrollTarget (AnimBuilder data) =
     AnimBuilder
@@ -387,8 +381,6 @@ processElement globalData elementConfig =
     }
 
 
-{-| Helper to create a dirty (static) processed config.
--}
 createDirtyConfig :
     { end : a
     , propPerspective : Maybe { containerId : String, value : Float }
@@ -410,8 +402,6 @@ createDirtyConfig { end, propPerspective, globalPerspective, wrapper } =
         }
 
 
-{-| Generic animation processor for properties that follow the standard pattern.
--}
 processStandardAnimation :
     { config : AnimationConfig a
     , globalData : BuilderData
