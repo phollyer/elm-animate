@@ -103,36 +103,36 @@ update msg model =
                     Anim.init "elementA"
                         |> Position.to { x = 70, y = 250 }
                         |> Position.duration 1000
-                        |> Position.easing Easing.easeInOut
+                        |> Position.easing EaseInOut
                         |> WAAPI.animate animateElement
 
                 animationCmd2 =
                     Anim.init "elementB"
                         |> Position.to { x = 220, y = 280 }
                         |> Position.duration 1000
-                        |> Position.easing Easing.easeInOut
+                        |> Position.easing EaseInOut
                         |> WAAPI.animate animateElement
 
                 animationCmd3 =
                     Anim.init "elementC"
                         |> Position.to { x = 370, y = 260 }
                         |> Position.duration 1000
-                        |> Position.easing Easing.easeInOut
+                        |> Position.easing EaseInOut
                         |> WAAPI.animate animateElement
 
                 animationCmd4 =
                     Anim.init "elementD"
                         |> Position.to { x = 50, y = 50 }
                         |> Position.duration 1000
-                        |> Position.easing Easing.easeInOut
+                        |> Position.easing EaseInOut
                         |> Anim.for "elementE"
                         |> Position.to { x = 200, y = 80 }
                         |> Position.duration 1000
-                        |> Position.easing Easing.easeInOut
+                        |> Position.easing EaseInOut
                         |> Anim.for "elementF"
                         |> Position.to { x = 350, y = 60 }
                         |> Position.duration 1000
-                        |> Position.easing Easing.easeInOut
+                        |> Position.easing EaseInOut
                         |> Ports.animate animateElement
             in
             ( model
@@ -173,7 +173,7 @@ update msg model =
                     Anim.init elementId
                         |> Position.to { x = x, y = y }
                         |> Position.duration 1000
-                        |> Position.easing Easing.easeInOut
+                        |> Position.easing EaseInOut
             in
             ( model
             , WAAPI.animateBatch animateElement <|
@@ -193,7 +193,7 @@ update msg model =
                     Anim.init elementId
                         |> Position.to { x = toFloat (50 + col * 150), y = toFloat (50 + row * 150) }
                         |> Position.duration 1000
-                        |> Position.easing Easing.easeInOut
+                        |> Position.easing EaseInOut
             in
             ( model
             , WAAPI.animateBatch animateElement <|

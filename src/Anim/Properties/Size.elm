@@ -54,7 +54,7 @@ The last known size is tracked in your Engine's model, so you only need to set t
 
 -}
 
-import Anim.Easing as Easing exposing (Easing)
+import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Size as SB
 import Anim.Internal.Properties.Size as S
@@ -264,4 +264,4 @@ speed =
 -}
 easing : Easing -> Builder -> Builder
 easing =
-    Easing.mapInternal identity >> SB.easing
+    identity >> SB.easing

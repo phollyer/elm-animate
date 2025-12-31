@@ -124,7 +124,7 @@ update msg model =
                     model.animations
                         |> anim
                         |> Scale.toXY 2.0 0.8
-                        |> Scale.easing Easing.backInOut
+                        |> Scale.easing BackInOut
                         |> Scale.duration 700
                         |> Scale.build
                         |> CSS.animate
@@ -138,7 +138,7 @@ update msg model =
                     model.animations
                         |> anim
                         |> Scale.toXY 0.6 1.8
-                        |> Scale.easing Easing.bounceInOut
+                        |> Scale.easing BounceInOut
                         |> Scale.delay 200
                         |> Scale.build
                         |> CSS.animate
@@ -152,7 +152,7 @@ update msg model =
                     model.animations
                         |> anim
                         |> Scale.toXY 1.0 1.0
-                        |> Scale.easing Easing.elasticInOut
+                        |> Scale.easing ElasticInOut
                         |> Scale.duration 800
                         |> Scale.build
                         |> CSS.animate

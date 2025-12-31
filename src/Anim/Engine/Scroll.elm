@@ -101,6 +101,7 @@ These settings will be used for all scroll animations unless overridden on a per
 
 -}
 
+import Anim.Easing exposing (Easing)
 import Anim.Internal.Properties.ScrollTarget as ScrollTarget exposing (Axis(..))
 import Anim.Internal.Scroll as InternalScroll
 import Anim.Internal.Scroll.Common as ScrollCommon
@@ -109,7 +110,6 @@ import Anim.Internal.Scroll.Container.Task as ContainerTask
 import Anim.Internal.Scroll.Document.Cmd as DocumentCmd
 import Anim.Internal.Scroll.Document.Task as DocumentTask
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
-import Anim.Easing as Easing exposing (Easing)
 import Browser.Dom as Dom
 import Browser.Events
 import Ease
@@ -261,7 +261,7 @@ speed =
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
-    Easing.mapInternal InternalScroll.easing
+    InternalScroll.easing
 
 
 {-| Set global delay in milliseconds.

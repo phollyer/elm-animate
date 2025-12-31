@@ -45,6 +45,7 @@ module Anim.Internal.CSS exposing
     , speed
     )
 
+import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.CSS.KeyframeAnimation as KeyframeAnimation exposing (KeyframeAnimation)
 import Anim.Internal.CSS.Transform as Transforms
@@ -55,7 +56,6 @@ import Anim.Internal.Properties.Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
-import Anim.Internal.Timing.Easing exposing (Easing)
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes

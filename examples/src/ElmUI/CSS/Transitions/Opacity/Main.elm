@@ -120,7 +120,7 @@ update msg model =
                     model.animations
                         |> anim
                         |> Opacity.to 0.5
-                        |> Opacity.easing Easing.backInOut
+                        |> Opacity.easing BackInOut
                         |> Opacity.duration 800
                         |> Opacity.build
                         |> CSS.animate
@@ -134,7 +134,7 @@ update msg model =
                     model.animations
                         |> anim
                         |> Opacity.to 0.25
-                        |> Opacity.easing Easing.bounceInOut
+                        |> Opacity.easing BounceInOut
                         |> Opacity.delay 300
                         |> Opacity.build
                         |> CSS.animate
@@ -148,7 +148,7 @@ update msg model =
                     model.animations
                         |> anim
                         |> Opacity.to 1.0
-                        |> Opacity.easing Easing.elasticInOut
+                        |> Opacity.easing ElasticInOut
                         |> Opacity.duration 1000
                         |> Opacity.build
                         |> CSS.animate

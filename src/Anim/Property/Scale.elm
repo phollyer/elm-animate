@@ -75,9 +75,9 @@ You can set a global perspective for all 3D animations directly on the Engine yo
 
 -}
 
+import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Scale as SB
-import Anim.Easing as Easing exposing (Easing)
 
 
 
@@ -98,8 +98,8 @@ type alias Builder =
 
 -}
 for : String -> AnimBuilder -> Builder
-for elementId =
-    SB.for elementId
+for =
+    SB.for
 
 
 {-| Complete the scale animation configuration and return an [AnimBuilder](Anim.AnimBuilder)
@@ -407,8 +407,8 @@ speed =
 
 -}
 easing : Easing -> Builder -> Builder
-easing easing_ =
-    SB.easing (Easing.mapInternal identity easing_)
+easing =
+    SB.easing
 
 
 {-| Set the perspective for 3D scaling.

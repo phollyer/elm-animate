@@ -34,9 +34,10 @@ frame-based scroll animations with state management.
 
 -}
 
+import Anim.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
+import Anim.Internal.Easing as Easing
 import Anim.Internal.Properties.ScrollTarget as ScrollTarget exposing (ScrollTarget)
-import Anim.Internal.Timing.Easing as Easing exposing (Easing(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
 import Dict exposing (Dict)
@@ -661,14 +662,14 @@ getScrollTargets animBuilder =
 
 {-| Get global settings from AnimBuilder for toCmd/toTask implementations.
 -}
-getGlobalSettings : AnimBuilder -> { timeSpec : TimeSpec, easing : Easing.Easing, offset : Float }
+getGlobalSettings : AnimBuilder -> { timeSpec : TimeSpec, easing : Easing, offset : Float }
 getGlobalSettings animBuilder =
     let
         timeSpec =
             Builder.getTimeSpec animBuilder
 
         builderEasing =
-            Builder.getEasing animBuilder |> Maybe.withDefault Easing.Linear
+            Builder.getEasing animBuilder |> Maybe.withDefault Linear
     in
     { timeSpec = timeSpec
     , easing = builderEasing

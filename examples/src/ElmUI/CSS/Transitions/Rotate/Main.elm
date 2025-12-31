@@ -120,7 +120,7 @@ update msg model =
                     model.animations
                         |> anim
                         |> Rotate.to 180
-                        |> Rotate.easing Easing.backInOut
+                        |> Rotate.easing BackInOut
                         |> Rotate.duration 900
                         |> Rotate.build
                         |> CSS.animate
@@ -134,7 +134,7 @@ update msg model =
                     model.animations
                         |> anim
                         |> Rotate.to -90
-                        |> Rotate.easing Easing.bounceInOut
+                        |> Rotate.easing BounceInOut
                         |> Rotate.delay 500
                         |> Rotate.build
                         |> CSS.animate
@@ -148,7 +148,7 @@ update msg model =
                     model.animations
                         |> anim
                         |> Rotate.to 90
-                        |> Rotate.easing Easing.elasticInOut
+                        |> Rotate.easing ElasticInOut
                         |> Rotate.duration 600
                         |> Rotate.build
                         |> CSS.animate

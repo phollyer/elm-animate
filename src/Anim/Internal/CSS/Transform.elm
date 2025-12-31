@@ -6,8 +6,9 @@ module Anim.Internal.CSS.Transform exposing
     , isTransformProperty
     )
 
+import Anim.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Timing.Easing as Easing
+import Anim.Internal.Easing as Easing
 import Anim.Internal.Timing.TimeSpec as TimeSpec
 
 
@@ -216,13 +217,13 @@ chooseLongerDuration calcDuration a b =
         b
 
 
-findLatestEasing : List Builder.PropertyConfig -> Easing.Easing
+findLatestEasing : List Builder.PropertyConfig -> Easing
 findLatestEasing properties =
     properties
         |> List.filterMap extractEasing
         |> List.reverse
         |> List.head
-        |> Maybe.withDefault Easing.Linear
+        |> Maybe.withDefault Linear
 
 
 findEarliestDelay : List Builder.PropertyConfig -> Maybe Int
@@ -266,7 +267,7 @@ extractTiming property =
             Nothing
 
 
-extractEasing : Builder.PropertyConfig -> Maybe Easing.Easing
+extractEasing : Builder.PropertyConfig -> Maybe Easing
 extractEasing property =
     case property of
         Builder.PositionConfig config ->

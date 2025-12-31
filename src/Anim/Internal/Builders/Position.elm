@@ -25,10 +25,10 @@ module Anim.Internal.Builders.Position exposing
     , toZ
     )
 
+import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Position as Position exposing (Position)
-import Anim.Internal.Timing.Easing exposing (Easing)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 

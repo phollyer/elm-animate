@@ -71,10 +71,10 @@ You can set a global perspective for all 3D animations directly on the Engine yo
 
 -}
 
+import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Rotate as RB
 import Anim.Internal.Properties.Rotate as R
-import Anim.Easing as Easing exposing (Easing)
 
 
 
@@ -386,7 +386,7 @@ duration =
 -}
 easing : Easing -> Builder -> Builder
 easing =
-    RB.easing << Easing.mapInternal identity
+    RB.easing
 
 
 {-| Set the delay (milliseconds) before the animation starts.

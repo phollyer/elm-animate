@@ -40,6 +40,7 @@ module Anim.Internal.Builder exposing
     , updateElementConfig
     )
 
+import Anim.Easing exposing (Easing(..))
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position)
@@ -47,7 +48,6 @@ import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
 import Anim.Internal.Properties.ScrollTarget exposing (ScrollTarget)
 import Anim.Internal.Properties.Size as Size exposing (Size)
-import Anim.Internal.Timing.Easing exposing (Easing(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
 

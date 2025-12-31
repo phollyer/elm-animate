@@ -52,10 +52,10 @@ The last known background color is tracked in your Engine's model, so you only n
 
 -}
 
+import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.BackgroundColor as CB
 import Anim.Internal.Properties.BackgroundColor as BC
-import Anim.Easing as Easing exposing (Easing)
 import Color
 
 
@@ -191,8 +191,8 @@ speed =
 
 -}
 duration : Int -> Builder -> Builder
-duration milliseconds =
-    CB.duration milliseconds
+duration =
+    CB.duration
 
 
 {-| Set the easing function for the animation.
@@ -204,8 +204,8 @@ duration milliseconds =
 
 -}
 easing : Easing -> Builder -> Builder
-easing easing_ =
-    Easing.mapInternal CB.easing easing_
+easing =
+    CB.easing
 
 
 {-| Set the delay (milliseconds) before the animation starts.
@@ -217,8 +217,8 @@ easing easing_ =
 
 -}
 delay : Int -> Builder -> Builder
-delay delay_ =
-    CB.delay delay_
+delay =
+    CB.delay
 
 
 toInternal : Color -> BC.Color

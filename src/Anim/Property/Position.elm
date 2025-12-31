@@ -75,10 +75,10 @@ You can set a global perspective for all 3D animations directly on the Engine yo
 
 -}
 
+import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Position as PB
 import Anim.Internal.Properties.Position as P
-import Anim.Easing as Easing exposing (Easing)
 
 
 {-| Type alias for the internal `PositionBuilder`.
@@ -95,8 +95,8 @@ type alias Builder =
 
 -}
 for : String -> AnimBuilder -> Builder
-for elementId =
-    PB.for elementId
+for =
+    PB.for
 
 
 {-| Complete the position animation configuration and return an [AnimBuilder](Anim.AnimBuilder)
@@ -256,8 +256,8 @@ to =
 
 -}
 toXYZ : Float -> Float -> Float -> Builder -> Builder
-toXYZ x y z =
-    PB.toXYZ x y z
+toXYZ =
+    PB.toXYZ
 
 
 {-| Set the target X and Y position for the current element.
@@ -271,8 +271,8 @@ The Z position remains unchanged, or zero if not set.
 
 -}
 toXY : Float -> Float -> Builder -> Builder
-toXY x y =
-    PB.toXY x y
+toXY =
+    PB.toXY
 
 
 {-| Set the target X and Z position for the current element.
@@ -301,8 +301,8 @@ The Y and Z positions remain unchanged, or zero if not set.
 
 -}
 toX : Float -> Builder -> Builder
-toX x =
-    PB.toX x
+toX =
+    PB.toX
 
 
 {-| Set the target Y and Z position for the current element.
@@ -331,8 +331,8 @@ The X and Z positions remain unchanged, or zero if not set.
 
 -}
 toY : Float -> Builder -> Builder
-toY y =
-    PB.toY y
+toY =
+    PB.toY
 
 
 {-| Set the target Z position for the current element.
@@ -346,8 +346,8 @@ The X and Y positions remain unchanged, or zero if not set.
 
 -}
 toZ : Float -> Builder -> Builder
-toZ z =
-    PB.toZ z
+toZ =
+    PB.toZ
 
 
 {-| The speed represents how many pixels the element moves per second.
@@ -395,7 +395,7 @@ duration =
 -}
 easing : Easing -> Builder -> Builder
 easing =
-    Easing.mapInternal identity >> PB.easing
+    PB.easing
 
 
 {-| Set the delay (milliseconds) before the animation starts.
@@ -409,8 +409,8 @@ easing =
 
 -}
 delay : Int -> Builder -> Builder
-delay delay_ =
-    PB.delay delay_
+delay =
+    PB.delay
 
 
 {-| Set the perspective for 3D positioning on this specific property.

@@ -1,6 +1,5 @@
 module Anim.Internal.Timing.Delay exposing
     ( encode
-    , encodeMaybe
     , toCssString
     )
 
@@ -15,16 +14,6 @@ toCssString maybeDelayValue =
 
         Nothing ->
             "0ms"
-
-
-encodeMaybe : Maybe Int -> Encode.Value
-encodeMaybe maybeDelay =
-    case maybeDelay of
-        Just delayValue ->
-            encode delayValue
-
-        Nothing ->
-            Encode.null
 
 
 encode : Int -> Encode.Value

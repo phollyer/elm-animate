@@ -54,10 +54,10 @@ The last known size is tracked in your Engine's model, so you only need to set t
 
 -}
 
+import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Size as SB
 import Anim.Internal.Properties.Size as S
-import Anim.Easing as Easing exposing (Easing)
 
 
 {-| Type alias for the internal `SizeBuilder`.
@@ -175,8 +175,8 @@ to =
 
 -}
 toHW : Float -> Float -> Builder -> Builder
-toHW height width =
-    SB.toHW height width
+toHW =
+    SB.toHW
 
 
 {-| Set the target height for the animation, keeping the current target width.
@@ -264,4 +264,4 @@ speed =
 -}
 easing : Easing -> Builder -> Builder
 easing =
-    Easing.mapInternal identity >> SB.easing
+    SB.easing

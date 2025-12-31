@@ -30,16 +30,17 @@ module Anim.Internal.Sub exposing
     , update
     )
 
+import Anim.Easing exposing (Easing(..))
 import Anim.Internal.AnimationCore as AnimationCore
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builders.Property as PropertyBuilder
+import Anim.Internal.Easing as Easing
 import Anim.Internal.Properties.BackgroundColor as Color exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
 import Anim.Internal.Properties.Size as Size exposing (Size)
-import Anim.Internal.Timing.Easing as Easing exposing (Easing(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Events
 import Dict exposing (Dict)

@@ -52,7 +52,7 @@ The last known opacity is tracked in your Engine's model, so you only need to se
 
 -}
 
-import Anim.Easing as Easing exposing (Easing)
+import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Opacity as OB
 import Anim.Internal.Properties.Opacity as O
@@ -174,5 +174,5 @@ delay delay_ =
 
 -}
 easing : Easing -> Builder -> Builder
-easing easing_ =
-    OB.easing (Easing.mapInternal identity easing_)
+easing =
+    OB.easing

@@ -170,7 +170,7 @@ update msg model =
                     model.animations
                         |> CSS.builder
                         |> CSS.duration 1000
-                        |> CSS.easing Easing.backInOut
+                        |> CSS.easing BackInOut
                         |> Position.for "elementA"
                         |> Position.toXY (toFloat (centerX + round radius)) (toFloat centerY)
                         |> Position.build

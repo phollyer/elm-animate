@@ -14,7 +14,7 @@ FEATURES:
 
 -}
 
-import Anim.Easing as Easing
+import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Opacity as Opacity
 import Browser exposing (Document)
@@ -83,7 +83,7 @@ update msg model =
                 builder =
                     WAAPI.builder model.animState
                         |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.easeInOut
+                        |> WAAPI.easing EaseInOut
                         |> Opacity.for "box"
                         |> Opacity.to 1.0
                         |> Opacity.build
@@ -98,7 +98,7 @@ update msg model =
                 builder =
                     WAAPI.builder model.animState
                         |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.easeInOut
+                        |> WAAPI.easing EaseInOut
                         |> Opacity.for "box"
                         |> Opacity.to 0.0
                         |> Opacity.build
@@ -113,7 +113,7 @@ update msg model =
                 builder =
                     WAAPI.builder model.animState
                         |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.easeInOut
+                        |> WAAPI.easing EaseInOut
                         |> Opacity.for "box"
                         |> Opacity.to 0.5
                         |> Opacity.build

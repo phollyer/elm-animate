@@ -118,7 +118,7 @@ These settings will be used for all animations unless overridden on a per-animat
 
 -}
 
-import Anim.Easing as Easing exposing (Easing)
+import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity
@@ -260,7 +260,7 @@ speed =
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
-    Easing.mapInternal InternalSub.easing
+    InternalSub.easing
 
 
 {-| Set global delay in milliseconds.

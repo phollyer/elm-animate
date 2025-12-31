@@ -125,7 +125,7 @@ update msg model =
                     model.animations
                         |> anim
                         |> Opacity.to 0.5
-                        |> Opacity.easing Easing.backInOut
+                        |> Opacity.easing BackInOut
                         |> Opacity.duration 800
                         |> Opacity.build
                         |> CSS.animate
@@ -141,7 +141,7 @@ update msg model =
                         |> Opacity.to 0.25
                         -- TODO: Fix bug -> Adding delay causes animation to jump to opacity == 1
                         --|> Opacity.delay 300
-                        |> Opacity.easing Easing.bounceInOut
+                        |> Opacity.easing BounceInOut
                         |> Opacity.build
                         |> CSS.animate
               }
@@ -154,7 +154,7 @@ update msg model =
                     model.animations
                         |> anim
                         |> Opacity.to 1.0
-                        |> Opacity.easing Easing.elasticInOut
+                        |> Opacity.easing ElasticInOut
                         |> Opacity.duration 1000
                         |> Opacity.build
                         |> CSS.animate

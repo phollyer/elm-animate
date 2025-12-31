@@ -52,10 +52,10 @@ The last known opacity is tracked in your Engine's model, so you only need to se
 
 -}
 
+import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Opacity as OB
 import Anim.Internal.Properties.Opacity as O
-import Anim.Easing as Easing exposing (Easing)
 
 
 
@@ -76,8 +76,8 @@ type alias Builder =
 
 -}
 for : String -> AnimBuilder -> Builder
-for elementId =
-    OB.for elementId
+for =
+    OB.for
 
 
 {-| Complete the opacity animation configuration and return an [AnimBuilder](Anim.AnimBuilder)
@@ -104,8 +104,8 @@ build =
 
 -}
 from : Float -> Builder -> Builder
-from opacity =
-    OB.from (O.fromFloat opacity)
+from =
+    OB.from << O.fromFloat
 
 
 {-| Animate to a specific opacity value.
@@ -117,8 +117,8 @@ from opacity =
 
 -}
 to : Float -> Builder -> Builder
-to opacity =
-    OB.to (O.fromFloat opacity)
+to =
+    OB.to << O.fromFloat
 
 
 {-| Set the animation speed (opacity units per second).
@@ -135,8 +135,8 @@ will change by 2.0 units per second (e.g., from 0.0 to 1.0 takes 0.5 seconds).
 
 -}
 speed : Float -> Builder -> Builder
-speed pixelsPerSecond =
-    OB.speed pixelsPerSecond
+speed =
+    OB.speed
 
 
 {-| Set the animation duration (milliseconds).
@@ -148,8 +148,8 @@ speed pixelsPerSecond =
 
 -}
 duration : Int -> Builder -> Builder
-duration milliseconds =
-    OB.duration milliseconds
+duration =
+    OB.duration
 
 
 {-| Set the delay (milliseconds) before the animation starts.
@@ -161,8 +161,8 @@ duration milliseconds =
 
 -}
 delay : Int -> Builder -> Builder
-delay delay_ =
-    OB.delay delay_
+delay =
+    OB.delay
 
 
 {-| Set the easing function for the animation.
@@ -174,5 +174,5 @@ delay delay_ =
 
 -}
 easing : Easing -> Builder -> Builder
-easing easing_ =
-    OB.easing (Easing.mapInternal identity easing_)
+easing =
+    OB.easing

@@ -83,7 +83,7 @@ update msg model =
                 animation =
                     WAAPI.init 
                         |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.easeInOut
+                        |> WAAPI.easing EaseInOut
                         |> Opacity.for "box"
                         |> Opacity.to 1.0
             in
@@ -94,7 +94,7 @@ update msg model =
                 animation =
                     WAAPI.init 
                         |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.easeInOut
+                        |> WAAPI.easing EaseInOut
                         |> Opacity.for "box"
                         |> Opacity.to 0.0
             in
@@ -105,7 +105,7 @@ update msg model =
                 animation =
                     WAAPI.init 
                         |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.easeInOut
+                        |> WAAPI.easing EaseInOut
                         |> Opacity.for "box"
                         |> Opacity.to 0.5
             in

@@ -201,7 +201,7 @@ These settings will be used for all property animations unless overridden on a p
 
 -}
 
-import Anim.Easing as Easing exposing (Easing)
+import Anim.Easing exposing (Easing)
 import Anim.Internal.CSS as InternalCSS exposing (ElementState(..), Event(..))
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity
@@ -975,7 +975,7 @@ speed =
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
-    Easing.mapInternal InternalCSS.easing
+    InternalCSS.easing
 
 
 {-| Set the global delay in milliseconds.

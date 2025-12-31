@@ -128,6 +128,7 @@ These settings will be used for all animations unless overridden on a per-animat
 
 -}
 
+import Anim.Easing exposing (Easing)
 import Anim.Internal.Properties.BackgroundColor exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position as Position
@@ -135,7 +136,6 @@ import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
 import Anim.Internal.WAAPI as InternalWAAPI
-import Anim.Easing as Easing exposing (Easing)
 import Browser exposing (UrlRequest(..))
 import Html
 import Json.Decode as Decode
@@ -247,7 +247,7 @@ speed =
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
-    Easing.mapInternal InternalWAAPI.easing
+    InternalWAAPI.easing
 
 
 {-| Set global delay in milliseconds.

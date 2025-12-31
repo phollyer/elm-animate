@@ -158,7 +158,7 @@ update msg model =
                     model.animations
                         |> anim
                         |> Position.toXY 0 0
-                        |> Position.easing Easing.elasticInOut
+                        |> Position.easing ElasticInOut
                         |> Position.build
                         |> CSS.animate
                 , isAnimating = True
