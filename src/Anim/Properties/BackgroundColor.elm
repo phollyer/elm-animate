@@ -52,7 +52,7 @@ On subsequent animations, it will start from the last known color, so you only n
 -}
 
 import Anim.Internal.Builder exposing (AnimBuilder)
-import Anim.Internal.Builders.Color as CB
+import Anim.Internal.Builders.BackgroundColor as CB
 import Anim.Internal.Properties.BackgroundColor as BC
 import Anim.Timing.Easing as Easing exposing (Easing)
 

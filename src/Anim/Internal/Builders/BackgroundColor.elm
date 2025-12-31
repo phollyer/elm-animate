@@ -1,4 +1,4 @@
-module Anim.Internal.Builders.Color exposing
+module Anim.Internal.Builders.BackgroundColor exposing
     ( ColorBuilder
     , build
     , delay
