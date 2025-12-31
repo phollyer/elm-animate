@@ -211,7 +211,7 @@ update msg model =
                         |> Color.to (Color.Hsl { h = 142, s = 71, l = 45 })
                         |> Color.build
                         |> Size.for elementId
-                        |> Size.toHW 100 120
+                        |> Size.toHW 60 150
                         |> Size.build
                         |> Opacity.for elementId
                         |> Opacity.to 0.8
@@ -234,6 +234,9 @@ update msg model =
                         |> Scale.for elementId
                         |> Scale.toXY 1.3 1.3
                         |> Scale.build
+                        |> Size.for elementId
+                        |> Size.toHW 150 60
+                        |> Size.build
                         |> Rotate.for elementId
                         |> Rotate.to 270
                         |> Rotate.build
