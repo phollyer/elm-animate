@@ -2,6 +2,7 @@ module Anim.Internal.Builder exposing
     ( AnimBuilder
     , AnimationConfig
     , ElementConfig
+    , ProcessedAnimationData
     , ProcessedElementConfig
     , ProcessedPropertyConfig(..)
     , PropertyConfig(..)
@@ -11,7 +12,6 @@ module Anim.Internal.Builder exposing
     , duration
     , easing
     , elements
-    , encode
     , extractTransformsFromProcessed
     , extractTransformsFromProperty
     , for
@@ -46,10 +46,9 @@ import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
 import Anim.Internal.Properties.ScrollTarget exposing (ScrollTarget)
 import Anim.Internal.Properties.Size as Size exposing (Size)
-import Anim.Internal.Timing.Easing as Easing exposing (Easing(..))
+import Anim.Internal.Timing.Easing exposing (Easing(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
-import Json.Encode as Encode
 
 
 type AnimBuilder
@@ -746,155 +745,6 @@ resolvePerspectiveWithDefault local global default =
 
 
 -- ENCODING FOR JAVASCRIPT
-
-
-encode : ProcessedAnimationData -> Encode.Value
-encode data =
-    Encode.object
-        [ ( "elements", Encode.dict identity encodeProcessedElementConfig data.elements )
-        , ( "globalPerspective", encodeMaybePerspective data.globalPerspective )
-        ]
-
-
-encodeMaybePerspective : Maybe { containerId : String, value : Float } -> Encode.Value
-encodeMaybePerspective maybePerspective =
-    case maybePerspective of
-        Nothing ->
-            Encode.null
-
-        Just perspectiveData ->
-            Encode.object
-                [ ( "containerId", Encode.string perspectiveData.containerId )
-                , ( "value", Encode.float perspectiveData.value )
-                ]
-
-
-encodeProcessedElementConfig : ProcessedElementConfig -> Encode.Value
-encodeProcessedElementConfig config =
-    Encode.object
-        [ ( "properties", Encode.list encodeProcessedPropertyConfig config.properties )
-        ]
-
-
-encodeProcessedPropertyConfig : ProcessedPropertyConfig -> Encode.Value
-encodeProcessedPropertyConfig property =
-    case property of
-        ProcessedPositionConfig config ->
-            let
-                ( endX, endY, endZ ) =
-                    Position.toTriple config.endAt
-
-                ( startX, startY, startZ ) =
-                    config.startAt
-                        |> Maybe.map Position.toTriple
-                        |> Maybe.withDefault ( 0, 0, 0 )
-            in
-            Encode.object
-                [ ( "type", Encode.string "position" )
-                , ( "x", Encode.float endX )
-                , ( "y", Encode.float endY )
-                , ( "z", Encode.float endZ )
-                , ( "startX", Encode.float startX )
-                , ( "startY", Encode.float startY )
-                , ( "startZ", Encode.float startZ )
-                , ( "duration", Encode.int config.duration )
-                , ( "easing", Encode.string (easingToJsString config.easing) )
-                , ( "perspective", encodeMaybePerspective config.perspective )
-                ]
-
-        ProcessedScaleConfig config ->
-            let
-                ( endX, endY, endZ ) =
-                    Scale.toTriple config.endAt
-
-                ( startX, startY, startZ ) =
-                    config.startAt
-                        |> Maybe.map Scale.toTriple
-                        |> Maybe.withDefault ( 1, 1, 1 )
-            in
-            Encode.object
-                [ ( "type", Encode.string "scale" )
-                , ( "x", Encode.float endX )
-                , ( "y", Encode.float endY )
-                , ( "z", Encode.float endZ )
-                , ( "startX", Encode.float startX )
-                , ( "startY", Encode.float startY )
-                , ( "startZ", Encode.float startZ )
-                , ( "duration", Encode.int config.duration )
-                , ( "easing", Encode.string (easingToJsString config.easing) )
-                , ( "perspective", encodeMaybePerspective config.perspective )
-                ]
-
-        ProcessedRotateConfig config ->
-            let
-                ( endX, endY, endZ ) =
-                    Rotate.toTriple config.endAt
-
-                ( startX, startY, startZ ) =
-                    config.startAt
-                        |> Maybe.map Rotate.toTriple
-                        |> Maybe.withDefault ( 0, 0, 0 )
-            in
-            Encode.object
-                [ ( "type", Encode.string "rotate" )
-                , ( "x", Encode.float endX )
-                , ( "y", Encode.float endY )
-                , ( "z", Encode.float endZ )
-                , ( "startX", Encode.float startX )
-                , ( "startY", Encode.float startY )
-                , ( "startZ", Encode.float startZ )
-                , ( "duration", Encode.int config.duration )
-                , ( "easing", Encode.string (easingToJsString config.easing) )
-                , ( "perspective", encodeMaybePerspective config.perspective )
-                ]
-
-        ProcessedSizeConfig config ->
-            let
-                ( width, height ) =
-                    Size.toTuple config.endAt
-            in
-            Encode.object
-                [ ( "type", Encode.string "size" )
-                , ( "width", Encode.float width )
-                , ( "height", Encode.float height )
-                , ( "duration", Encode.int config.duration )
-                , ( "easing", Encode.string (easingToJsString config.easing) )
-                ]
-
-        ProcessedOpacityConfig config ->
-            let
-                startValue =
-                    config.startAt
-                        |> Maybe.map Opacity.toFloat
-                        |> Maybe.withDefault 1.0
-            in
-            Encode.object
-                [ ( "type", Encode.string "opacity" )
-                , ( "value", Encode.float (Opacity.toFloat config.endAt) )
-                , ( "startValue", Encode.float startValue )
-                , ( "duration", Encode.int config.duration )
-                , ( "easing", Encode.string (easingToJsString config.easing) )
-                ]
-
-        ProcessedBackgroundColorConfig config ->
-            let
-                startColor =
-                    config.startAt
-                        |> Maybe.map BackgroundColor.toString
-                        |> Maybe.withDefault "rgba(255, 255, 255, 1)"
-            in
-            Encode.object
-                [ ( "type", Encode.string "backgroundColor" )
-                , ( "color", Encode.string (BackgroundColor.toString config.endAt) )
-                , ( "startColor", Encode.string startColor )
-                , ( "duration", Encode.int config.duration )
-                , ( "easing", Encode.string (easingToJsString config.easing) )
-                ]
-
-
-easingToJsString : Easing -> String
-easingToJsString easingValue =
-    Easing.toWebAnimations easingValue
 
 
 setScrollContainer : String -> AnimBuilder -> AnimBuilder

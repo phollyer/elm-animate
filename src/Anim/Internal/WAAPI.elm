@@ -7,6 +7,7 @@ module Anim.Internal.WAAPI exposing
     , delay
     , duration
     , easing
+    , encode
     , getBackgroundColorRange
     , getOpacityRange
     , getPositionRange
@@ -27,7 +28,7 @@ import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
 import Anim.Internal.Properties.Size as Size exposing (Size)
-import Anim.Internal.Timing.Easing exposing (Easing)
+import Anim.Internal.Timing.Easing as Easing exposing (Easing(..))
 import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
@@ -133,7 +134,7 @@ animate (AnimState state) builder_ =
                                     |> Maybe.map .currentStates
                                     |> Maybe.withDefault endStates
                         in
-                        { commands = Builder.encode processedData
+                        { commands = encode processedData
                         , endStates = endStates
                         , currentStates = currentStates
                         }
@@ -148,7 +149,7 @@ animate (AnimState state) builder_ =
         , isRunning = not (Dict.isEmpty newElementAnimations)
         , builder = Builder.markDirty builderWithCurrentStates
         }
-    , Builder.encode processedData
+    , encode processedData
     )
 
 
@@ -540,3 +541,156 @@ animationUpdateDecoder =
 andMap : Decoder a -> Decoder (a -> b) -> Decoder b
 andMap =
     Decode.map2 (|>)
+
+
+
+-- Encoders
+
+
+encode : Builder.ProcessedAnimationData -> Encode.Value
+encode data =
+    Encode.object
+        [ ( "elements", Encode.dict identity encodeProcessedElementConfig data.elements )
+        , ( "globalPerspective", encodeMaybePerspective data.globalPerspective )
+        ]
+
+
+encodeMaybePerspective : Maybe { containerId : String, value : Float } -> Encode.Value
+encodeMaybePerspective maybePerspective =
+    case maybePerspective of
+        Nothing ->
+            Encode.null
+
+        Just perspectiveData ->
+            Encode.object
+                [ ( "containerId", Encode.string perspectiveData.containerId )
+                , ( "value", Encode.float perspectiveData.value )
+                ]
+
+
+encodeProcessedElementConfig : Builder.ProcessedElementConfig -> Encode.Value
+encodeProcessedElementConfig config =
+    Encode.object
+        [ ( "properties", Encode.list encodeProcessedPropertyConfig config.properties )
+        ]
+
+
+encodeProcessedPropertyConfig : Builder.ProcessedPropertyConfig -> Encode.Value
+encodeProcessedPropertyConfig property =
+    case property of
+        Builder.ProcessedPositionConfig config ->
+            let
+                ( endX, endY, endZ ) =
+                    Position.toTriple config.endAt
+
+                ( startX, startY, startZ ) =
+                    config.startAt
+                        |> Maybe.map Position.toTriple
+                        |> Maybe.withDefault ( 0, 0, 0 )
+            in
+            Encode.object
+                [ ( "type", Encode.string "position" )
+                , ( "x", Encode.float endX )
+                , ( "y", Encode.float endY )
+                , ( "z", Encode.float endZ )
+                , ( "startX", Encode.float startX )
+                , ( "startY", Encode.float startY )
+                , ( "startZ", Encode.float startZ )
+                , ( "duration", Encode.int config.duration )
+                , ( "easing", Encode.string (easingToJsString config.easing) )
+                , ( "perspective", encodeMaybePerspective config.perspective )
+                ]
+
+        Builder.ProcessedScaleConfig config ->
+            let
+                ( endX, endY, endZ ) =
+                    Scale.toTriple config.endAt
+
+                ( startX, startY, startZ ) =
+                    config.startAt
+                        |> Maybe.map Scale.toTriple
+                        |> Maybe.withDefault ( 1, 1, 1 )
+            in
+            Encode.object
+                [ ( "type", Encode.string "scale" )
+                , ( "x", Encode.float endX )
+                , ( "y", Encode.float endY )
+                , ( "z", Encode.float endZ )
+                , ( "startX", Encode.float startX )
+                , ( "startY", Encode.float startY )
+                , ( "startZ", Encode.float startZ )
+                , ( "duration", Encode.int config.duration )
+                , ( "easing", Encode.string (easingToJsString config.easing) )
+                , ( "perspective", encodeMaybePerspective config.perspective )
+                ]
+
+        Builder.ProcessedRotateConfig config ->
+            let
+                ( endX, endY, endZ ) =
+                    Rotate.toTriple config.endAt
+
+                ( startX, startY, startZ ) =
+                    config.startAt
+                        |> Maybe.map Rotate.toTriple
+                        |> Maybe.withDefault ( 0, 0, 0 )
+            in
+            Encode.object
+                [ ( "type", Encode.string "rotate" )
+                , ( "x", Encode.float endX )
+                , ( "y", Encode.float endY )
+                , ( "z", Encode.float endZ )
+                , ( "startX", Encode.float startX )
+                , ( "startY", Encode.float startY )
+                , ( "startZ", Encode.float startZ )
+                , ( "duration", Encode.int config.duration )
+                , ( "easing", Encode.string (easingToJsString config.easing) )
+                , ( "perspective", encodeMaybePerspective config.perspective )
+                ]
+
+        Builder.ProcessedSizeConfig config ->
+            let
+                ( width, height ) =
+                    Size.toTuple config.endAt
+            in
+            Encode.object
+                [ ( "type", Encode.string "size" )
+                , ( "width", Encode.float width )
+                , ( "height", Encode.float height )
+                , ( "duration", Encode.int config.duration )
+                , ( "easing", Encode.string (easingToJsString config.easing) )
+                ]
+
+        Builder.ProcessedOpacityConfig config ->
+            let
+                startValue =
+                    config.startAt
+                        |> Maybe.map Opacity.toFloat
+                        |> Maybe.withDefault 1.0
+            in
+            Encode.object
+                [ ( "type", Encode.string "opacity" )
+                , ( "value", Encode.float (Opacity.toFloat config.endAt) )
+                , ( "startValue", Encode.float startValue )
+                , ( "duration", Encode.int config.duration )
+                , ( "easing", Encode.string (easingToJsString config.easing) )
+                ]
+
+        Builder.ProcessedBackgroundColorConfig config ->
+            let
+                startColor =
+                    config.startAt
+                        |> Maybe.map BackgroundColor.toString
+                        |> Maybe.withDefault "rgba(255, 255, 255, 1)"
+            in
+            Encode.object
+                [ ( "type", Encode.string "backgroundColor" )
+                , ( "color", Encode.string (BackgroundColor.toString config.endAt) )
+                , ( "startColor", Encode.string startColor )
+                , ( "duration", Encode.int config.duration )
+                , ( "easing", Encode.string (easingToJsString config.easing) )
+                ]
+
+
+easingToJsString : Easing -> String
+easingToJsString easingValue =
+    Easing.toWebAnimations easingValue

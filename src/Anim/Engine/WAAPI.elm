@@ -246,7 +246,7 @@ animateStateless portFunction animBuilder =
             Builder.processAnimationData animBuilder
 
         encodedData =
-            Builder.encode processedData
+            InternalWAAPI.encode processedData
     in
     portFunction encodedData
 

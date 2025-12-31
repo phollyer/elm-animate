@@ -255,6 +255,7 @@ update msg model =
                     initAnim 800 model.animState
             in
             ( { model | animState = newAnimState }, animCmd )
+
         NoOp ->
             ( model, Cmd.none )
 
