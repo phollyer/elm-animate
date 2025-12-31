@@ -457,6 +457,8 @@ window.ElmAnimateWAAPI = (function () {
                         scaleY: transformState.scaleY,
                         scaleZ: transformState.scaleZ,
                         backgroundColor: computedStyle.backgroundColor,
+                        width: parseFloat(computedStyle.width),
+                        height: parseFloat(computedStyle.height),
                         isAnimating: true
                     });
                 }
@@ -492,6 +494,8 @@ window.ElmAnimateWAAPI = (function () {
                     scaleY: finalState.scaleY,
                     scaleZ: finalState.scaleZ,
                     backgroundColor: computedStyle.backgroundColor,
+                    width: parseFloat(computedStyle.width),
+                    height: parseFloat(computedStyle.height),
                     isAnimating: false
                 });
             }

@@ -9,6 +9,7 @@ module Anim.Internal.Properties.BackgroundColor exposing
     , duration
     , encode
     , floatMod
+    , fromRgbString
     , hex
     , hexStringToInt
     , hexToRgb
@@ -276,6 +277,35 @@ toString color =
 
         Hsla hsla ->
             "hsla(" ++ String.fromFloat hsla.h ++ ", " ++ String.fromFloat hsla.s ++ "%, " ++ String.fromFloat hsla.l ++ "%, " ++ String.fromFloat hsla.a ++ ")"
+
+
+fromRgbString : String -> Maybe Color
+fromRgbString str =
+    -- Simple parser for "rgb(r, g, b)" format
+    let
+        prefix =
+            "rgb("
+
+        suffix =
+            ")"
+
+        content =
+            String.dropLeft (String.length prefix) (String.dropRight (String.length suffix) str)
+
+        parts =
+            String.split "," content |> List.map String.trim
+    in
+    case parts of
+        [ rStr, gStr, bStr ] ->
+            case ( String.toInt rStr, String.toInt gStr, String.toInt bStr ) of
+                ( Just r, Just g, Just b ) ->
+                    RGB r g b |> Rgb |> Just
+
+                _ ->
+                    Nothing
+
+        _ ->
+            Nothing
 
 
 floatMod : Float -> Float -> Float

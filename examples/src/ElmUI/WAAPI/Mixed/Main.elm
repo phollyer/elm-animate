@@ -21,6 +21,7 @@ import Anim.Properties.Opacity as Opacity
 import Anim.Properties.Position as Position
 import Anim.Properties.Rotate as Rotate
 import Anim.Properties.Scale as Scale
+import Anim.Properties.Size as Size
 import Anim.Timing.Easing as Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
@@ -44,7 +45,7 @@ port animateElement : Encode.Value -> Cmd msg
 port stopElement : String -> Cmd msg
 
 
-port positionUpdates : (Encode.Value -> msg) -> Sub msg
+port animationUpdates : (Encode.Value -> msg) -> Sub msg
 
 
 port animationComplete : (String -> msg) -> Sub msg
@@ -74,12 +75,13 @@ type alias Model =
 
 
 type Msg
-    = StartComplexAnimation String
-    | StartFadeMove String
-    | StartSpinScale String
-    | StartColorMorph String
-    | StartFullTransform String
+    = MoveScaleRotate String
+    | FadeMove String
+    | SpinScaleColor String
+    | ColorSizeOpacity String
+    | AllProperties String
     | ResetAll
+    | ReceiveAnimationUpdate Encode.Value
     | NoOp
 
 
@@ -89,9 +91,44 @@ type Msg
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animState = WAAPI.init }
-    , Cmd.none
+    let
+        ( initialAnimState, initCmd ) =
+            initAnim 0 WAAPI.init
+    in
+    ( { animState = initialAnimState }
+    , initCmd
     )
+
+
+initAnim : Int -> WAAPI.AnimState -> ( WAAPI.AnimState, Cmd msg )
+initAnim duration animState =
+    let
+        ( newAnimState, encodedValue ) =
+            animState
+                |> WAAPI.builder
+                |> WAAPI.duration duration
+                |> WAAPI.easing Easing.EaseOut
+                |> Position.for "mixed-box"
+                |> Position.toXY 0 0
+                |> Position.build
+                |> Scale.for "mixed-box"
+                |> Scale.toXY 1.0 1.0
+                |> Scale.build
+                |> Size.for "mixed-box"
+                |> Size.toHW 80 80
+                |> Size.build
+                |> Rotate.for "mixed-box"
+                |> Rotate.to 0
+                |> Rotate.build
+                |> Opacity.for "mixed-box"
+                |> Opacity.to 1.0
+                |> Opacity.build
+                |> Color.for "mixed-box"
+                |> Color.to (Color.Hex "#3498db")
+                |> Color.build
+                |> WAAPI.animate animState
+    in
+    ( newAnimState, animateElement encodedValue )
 
 
 
@@ -101,8 +138,10 @@ init _ =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        StartComplexAnimation elementId ->
-            -- Combine position + scale + rotation
+        ReceiveAnimationUpdate jsonValue ->
+            ( { model | animState = WAAPI.update jsonValue model.animState }, Cmd.none )
+
+        MoveScaleRotate elementId ->
             let
                 builder =
                     WAAPI.builder model.animState
@@ -123,8 +162,7 @@ update msg model =
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
-        StartFadeMove elementId ->
-            -- Combine opacity + position
+        FadeMove elementId ->
             let
                 builder =
                     WAAPI.builder model.animState
@@ -142,8 +180,7 @@ update msg model =
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
-        StartSpinScale elementId ->
-            -- Combine rotation + scale + color
+        SpinScaleColor elementId ->
             let
                 builder =
                     WAAPI.builder model.animState
@@ -164,8 +201,7 @@ update msg model =
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
-        StartColorMorph elementId ->
-            -- Combine color + scale + opacity
+        ColorSizeOpacity elementId ->
             let
                 builder =
                     WAAPI.builder model.animState
@@ -174,9 +210,9 @@ update msg model =
                         |> Color.for elementId
                         |> Color.to (Color.Hsl { h = 142, s = 71, l = 45 })
                         |> Color.build
-                        |> Scale.for elementId
-                        |> Scale.toXY 2.0 0.5
-                        |> Scale.build
+                        |> Size.for elementId
+                        |> Size.toHW 100 120
+                        |> Size.build
                         |> Opacity.for elementId
                         |> Opacity.to 0.8
                         |> Opacity.build
@@ -186,8 +222,7 @@ update msg model =
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
-        StartFullTransform elementId ->
-            -- All properties at once!
+        AllProperties elementId ->
             let
                 builder =
                     WAAPI.builder model.animState
@@ -216,31 +251,10 @@ update msg model =
 
         ResetAll ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 800
-                        |> WAAPI.easing Easing.EaseOut
-                        |> Position.for "mixed-box"
-                        |> Position.toXY 0 0
-                        |> Position.build
-                        |> Scale.for "mixed-box"
-                        |> Scale.toXY 1.0 1.0
-                        |> Scale.build
-                        |> Rotate.for "mixed-box"
-                        |> Rotate.to 0
-                        |> Rotate.build
-                        |> Opacity.for "mixed-box"
-                        |> Opacity.to 1.0
-                        |> Opacity.build
-                        |> Color.for "mixed-box"
-                        |> Color.to (Color.Hex "#3498db")
-                        |> Color.build
-
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                ( newAnimState, animCmd ) =
+                    initAnim 800 model.animState
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
-
+            ( { model | animState = newAnimState }, animCmd )
         NoOp ->
             ( model, Cmd.none )
 
@@ -251,7 +265,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.none
+    animationUpdates ReceiveAnimationUpdate
 
 
 
@@ -279,11 +293,11 @@ viewContent model =
         (text "Combining multiple CSS properties in single animations for complex transformations")
     , -- Mixed property animation controls
       UI.wrappedButtonRow
-        [ ( UI.Primary, StartComplexAnimation "mixed-box", "Move + Scale + Rotate" )
-        , ( UI.Success, StartFadeMove "mixed-box", "Fade + Move" )
-        , ( UI.Warning, StartSpinScale "mixed-box", "Spin + Scale + Color" )
-        , ( UI.Purple, StartColorMorph "mixed-box", "Color + Size + Opacity" )
-        , ( UI.Primary, StartFullTransform "mixed-box", "ALL Properties!" )
+        [ ( UI.Primary, MoveScaleRotate "mixed-box", "Move + Scale + Rotate" )
+        , ( UI.Success, FadeMove "mixed-box", "Fade + Move" )
+        , ( UI.Warning, SpinScaleColor "mixed-box", "Spin + Scale + Color" )
+        , ( UI.Purple, ColorSizeOpacity "mixed-box", "Color + Size + Opacity" )
+        , ( UI.Primary, AllProperties "mixed-box", "ALL Properties!" )
         , ( UI.Success, ResetAll, "Reset" )
         ]
     , -- Animation area

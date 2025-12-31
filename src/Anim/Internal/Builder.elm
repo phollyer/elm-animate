@@ -36,6 +36,7 @@ module Anim.Internal.Builder exposing
     , setScrollContainer
     , speed
     , updateCurrentElement
+    , updateElementConfig
     )
 
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Color)
@@ -249,6 +250,12 @@ getCurrentElementConfig (AnimBuilder data) =
 getElementConfig : String -> AnimBuilder -> Maybe ElementConfig
 getElementConfig elementId (AnimBuilder data) =
     Dict.get elementId data.elements
+
+
+updateElementConfig : String -> ElementConfig -> AnimBuilder -> AnimBuilder
+updateElementConfig elementId elementConfig (AnimBuilder data) =
+    AnimBuilder
+        { data | elements = Dict.insert elementId elementConfig data.elements }
 
 
 getTimespec : AnimBuilder -> Maybe TimeSpec

@@ -23,12 +23,12 @@ module Anim.Internal.WAAPI exposing
     )
 
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Properties.BackgroundColor as Color exposing (Color)
+import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
-import Anim.Internal.Properties.Size exposing (Size)
+import Anim.Internal.Properties.Size as Size exposing (Size)
 import Anim.Internal.Timing.Easing exposing (Easing)
 import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder)
@@ -51,7 +51,7 @@ type alias ElementEndStates =
     { position : Maybe Position
     , rotate : Maybe Rotate
     , scale : Maybe Scale
-    , color : Maybe Color
+    , backgroundColor : Maybe Color
     , opacity : Maybe Opacity
     , size : Maybe Size
     }
@@ -60,6 +60,7 @@ type alias ElementEndStates =
 type alias ElementAnimation =
     { commands : Encode.Value
     , endStates : ElementEndStates
+    , currentStates : ElementEndStates -- Track current animated states for smooth interruption
     }
 
 
@@ -82,22 +83,138 @@ init =
 
 builder : AnimState -> AnimBuilder
 builder (AnimState state) =
+    -- Just return the base builder - currentStates will be injected in animate function
     state.builder
+
+
+{-| Inject current animated states into builder's element configs
+-}
+injectCurrentStatesForElement : ElementId -> ElementAnimation -> AnimBuilder -> AnimBuilder
+injectCurrentStatesForElement elementId elementAnim baseBuilder =
+    case Builder.getElementConfig elementId baseBuilder of
+        Just elementConfig ->
+            let
+                updatedProperties =
+                    List.map (injectCurrentStateIntoProperty elementAnim.currentStates) elementConfig.properties
+
+                updatedElementConfig =
+                    { elementConfig | properties = updatedProperties }
+            in
+            Builder.updateElementConfig elementId updatedElementConfig baseBuilder
+
+        Nothing ->
+            baseBuilder
+
+
+{-| Update a property config to use current animated state as its startAt
+-}
+injectCurrentStateIntoProperty : ElementEndStates -> Builder.PropertyConfig -> Builder.PropertyConfig
+injectCurrentStateIntoProperty currentStates propertyConfig =
+    case propertyConfig of
+        Builder.PositionConfig config ->
+            Builder.PositionConfig
+                { config
+                    | startAt =
+                        case config.startAt of
+                            Just _ ->
+                                config.startAt
+
+                            -- Don't override explicit startAt
+                            Nothing ->
+                                currentStates.position
+
+                    -- Use current animated position
+                }
+
+        Builder.RotateConfig config ->
+            Builder.RotateConfig
+                { config
+                    | startAt =
+                        case config.startAt of
+                            Just _ ->
+                                config.startAt
+
+                            Nothing ->
+                                currentStates.rotate
+                }
+
+        Builder.ScaleConfig config ->
+            Builder.ScaleConfig
+                { config
+                    | startAt =
+                        case config.startAt of
+                            Just _ ->
+                                config.startAt
+
+                            Nothing ->
+                                currentStates.scale
+                }
+
+        Builder.OpacityConfig config ->
+            Builder.OpacityConfig
+                { config
+                    | startAt =
+                        case config.startAt of
+                            Just _ ->
+                                config.startAt
+
+                            Nothing ->
+                                currentStates.opacity
+                }
+
+        Builder.BackgroundColorConfig config ->
+            Builder.BackgroundColorConfig
+                { config
+                    | startAt =
+                        case config.startAt of
+                            Just _ ->
+                                config.startAt
+
+                            Nothing ->
+                                currentStates.backgroundColor
+                }
+
+        Builder.SizeConfig config ->
+            Builder.SizeConfig
+                { config
+                    | startAt =
+                        case config.startAt of
+                            Just _ ->
+                                config.startAt
+
+                            Nothing ->
+                                currentStates.size
+                }
 
 
 animate : AnimState -> AnimBuilder -> ( AnimState, Encode.Value )
 animate (AnimState state) builder_ =
     let
+        -- Inject current animated states into builder BEFORE processing
+        builderWithCurrentStates =
+            Dict.foldl injectCurrentStatesForElement builder_ state.elementAnimations
+
         processedData =
-            Builder.processAnimationData builder_
+            Builder.processAnimationData builderWithCurrentStates
 
         -- Create element animations from processed data
         newElementAnimations =
             processedData.elements
                 |> Dict.map
-                    (\_ elementConfig ->
+                    (\elementId elementConfig ->
+                        let
+                            endStates =
+                                extractElementEndStates elementConfig
+
+                            -- Use current states from existing animation if available, otherwise use end states
+                            currentStates =
+                                Dict.get elementId state.elementAnimations
+                                    |> Maybe.map .currentStates
+                                    |> Maybe.withDefault endStates
+                        in
                         { commands = Builder.encode processedData
-                        , endStates = extractElementEndStates elementConfig
+                        , endStates = endStates
+                        , currentStates = currentStates
                         }
                     )
 
@@ -109,7 +226,7 @@ animate (AnimState state) builder_ =
             AnimState
                 { elementAnimations = updatedElementAnimations
                 , isRunning = not (Dict.isEmpty newElementAnimations)
-                , builder = Builder.markDirty builder_
+                , builder = Builder.markDirty builderWithCurrentStates
                 }
 
         encodedData =
@@ -128,7 +245,7 @@ emptyElementEndStates =
     { position = Nothing
     , rotate = Nothing
     , scale = Nothing
-    , color = Nothing
+    , backgroundColor = Nothing
     , opacity = Nothing
     , size = Nothing
     }
@@ -147,7 +264,7 @@ extractPropertyEndState property state =
             { state | scale = Just config.endAt }
 
         Builder.ProcessedBackgroundColorConfig config ->
-            { state | color = Just config.endAt }
+            { state | backgroundColor = Just config.endAt }
 
         Builder.ProcessedOpacityConfig config ->
             { state | opacity = Just config.endAt }
@@ -401,7 +518,7 @@ getCurrentStyles elementId (AnimState state) =
                         |> List.filterMap identity
 
                 nonTransformStyles =
-                    [ endStates.color |> Maybe.map colorToStyle
+                    [ endStates.backgroundColor |> Maybe.map colorToStyle
                     , endStates.opacity |> Maybe.map opacityToStyle
                     ]
                         |> List.filterMap identity
@@ -441,7 +558,7 @@ scaleToTransform scl =
 
 colorToStyle : Color -> ( String, String )
 colorToStyle col =
-    ( "background-color", Color.toString col )
+    ( "background-color", BackgroundColor.toString col )
 
 
 opacityToStyle : Opacity -> ( String, String )
@@ -485,106 +602,63 @@ update jsonValue (AnimState state) =
 
 type alias AnimationUpdate =
     { elementId : String
-    , x : Maybe Float
-    , y : Maybe Float
-    , opacity : Maybe Float
-    , rotation : Maybe Float
-    , scaleX : Maybe Float
-    , scaleY : Maybe Float
-    , backgroundColor : Maybe String
+    , x : Float
+    , y : Float
+    , z : Float
+    , opacity : Float
+    , rotationX : Float
+    , rotationY : Float
+    , rotationZ : Float
+    , scaleX : Float
+    , scaleY : Float
+    , scaleZ : Float
+    , backgroundColor : String
+    , width : Float
+    , height : Float
     , isAnimating : Bool
     }
 
 
 animationUpdateDecoder : Decoder AnimationUpdate
 animationUpdateDecoder =
-    -- For now, just handle the basic position update format that JavaScript sends
-    Decode.map4
-        (\elementId x y isAnimating ->
-            { elementId = elementId
-            , x = x
-            , y = y
-            , opacity = Nothing
-            , rotation = Nothing
-            , scaleX = Nothing
-            , scaleY = Nothing
-            , backgroundColor = Nothing
-            , isAnimating = isAnimating
-            }
-        )
-        (Decode.field "elementId" Decode.string)
-        (Decode.maybe (Decode.field "x" Decode.float))
-        (Decode.maybe (Decode.field "y" Decode.float))
-        (Decode.field "isAnimating" Decode.bool)
+    Decode.succeed AnimationUpdate
+        |> andMap (Decode.field "elementId" Decode.string)
+        |> andMap (Decode.field "x" Decode.float)
+        |> andMap (Decode.field "y" Decode.float)
+        |> andMap (Decode.field "z" Decode.float)
+        |> andMap (Decode.field "opacity" Decode.float)
+        |> andMap (Decode.field "rotationX" Decode.float)
+        |> andMap (Decode.field "rotationY" Decode.float)
+        |> andMap (Decode.field "rotationZ" Decode.float)
+        |> andMap (Decode.field "scaleX" Decode.float)
+        |> andMap (Decode.field "scaleY" Decode.float)
+        |> andMap (Decode.field "scaleZ" Decode.float)
+        |> andMap (Decode.field "backgroundColor" Decode.string)
+        |> andMap (Decode.field "width" Decode.float)
+        |> andMap (Decode.field "height" Decode.float)
+        |> andMap (Decode.field "isAnimating" Decode.bool)
+
+
+andMap : Decoder a -> Decoder (a -> b) -> Decoder b
+andMap =
+    Decode.map2 (|>)
 
 
 updateElementAnimation : AnimationUpdate -> ElementAnimation -> ElementAnimation
 updateElementAnimation animUpdate elementAnimation =
     let
-        currentEndStates =
-            elementAnimation.endStates
-
-        updatedEndStates =
-            { currentEndStates
-                | position =
-                    case ( animUpdate.x, animUpdate.y ) of
-                        ( Just x, Just y ) ->
-                            Just (Position.fromTuple ( x, y ))
-
-                        ( Just x, Nothing ) ->
-                            currentEndStates.position
-                                |> Maybe.map (\pos -> Position.fromTuple ( x, Position.toTuple pos |> Tuple.second ))
-                                |> Maybe.withDefault (Position.fromTuple ( x, 0 ))
-                                |> Just
-
-                        ( Nothing, Just y ) ->
-                            currentEndStates.position
-                                |> Maybe.map (\pos -> Position.fromTuple ( Position.toTuple pos |> Tuple.first, y ))
-                                |> Maybe.withDefault (Position.fromTuple ( 0, y ))
-                                |> Just
-
-                        ( Nothing, Nothing ) ->
-                            currentEndStates.position
-                , opacity =
-                    case animUpdate.opacity of
-                        Just opacityValue ->
-                            Just (Opacity.fromFloat opacityValue)
-
-                        Nothing ->
-                            currentEndStates.opacity
-                , rotate =
-                    case animUpdate.rotation of
-                        Just rotationValue ->
-                            Just (Rotate.fromFloat rotationValue)
-
-                        Nothing ->
-                            currentEndStates.rotate
-                , scale =
-                    case ( animUpdate.scaleX, animUpdate.scaleY ) of
-                        ( Just x, Just y ) ->
-                            Just (Scale.fromTuple ( x, y ))
-
-                        ( Just x, Nothing ) ->
-                            currentEndStates.scale
-                                |> Maybe.map (\scl -> Scale.fromTuple ( x, Scale.toTuple scl |> Tuple.second ))
-                                |> Maybe.withDefault (Scale.fromTuple ( x, 1 ))
-                                |> Just
-
-                        ( Nothing, Just y ) ->
-                            currentEndStates.scale
-                                |> Maybe.map (\scl -> Scale.fromTuple ( Scale.toTuple scl |> Tuple.first, y ))
-                                |> Maybe.withDefault (Scale.fromTuple ( 1, y ))
-                                |> Just
-
-                        ( Nothing, Nothing ) ->
-                            currentEndStates.scale
-                , color =
-                    case animUpdate.backgroundColor of
-                        Just colorString ->
-                            Just (Color.hex colorString)
-
-                        Nothing ->
-                            currentEndStates.color
+        -- Update current animated states based on port data
+        updatedCurrentStates =
+            { position = Just (Position.fromTriple ( animUpdate.x, animUpdate.y, animUpdate.z ))
+            , rotate = Just (Rotate.fromTriple ( animUpdate.rotationX, animUpdate.rotationY, animUpdate.rotationZ ))
+            , scale = Just (Scale.fromTriple ( animUpdate.scaleX, animUpdate.scaleY, animUpdate.scaleZ ))
+            , opacity = Just (Opacity.fromFloat animUpdate.opacity)
+            , backgroundColor = BackgroundColor.fromRgbString animUpdate.backgroundColor
+            , size = Just (Size.fromTuple ( animUpdate.width, animUpdate.height ))
             }
     in
-    { elementAnimation | endStates = updatedEndStates }
+    { elementAnimation
+        | currentStates = updatedCurrentStates
+
+        -- Keep endStates as-is - they represent target, not current
+    }
