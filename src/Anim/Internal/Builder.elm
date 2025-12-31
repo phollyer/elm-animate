@@ -99,8 +99,8 @@ type alias ProcessedElementConfig =
 
 
 type alias AnimationConfig targetProperty =
-    { startAt : Maybe targetProperty
-    , endAt : targetProperty
+    { start : Maybe targetProperty
+    , end : targetProperty
     , duration : Int
     , speed : Float
     , distance : Float
@@ -122,8 +122,8 @@ type alias ProcessedAnimationData =
 
 
 type alias ProcessedAnimationConfig targetProperty =
-    { startAt : Maybe targetProperty
-    , endAt : targetProperty
+    { start : Maybe targetProperty
+    , end : targetProperty
     , duration : Int
     , speed : Float
     , distance : Float
@@ -376,8 +376,8 @@ processProperty globalData property =
                 -- Send dirty properties with duration=0 to preserve their state
                 Just <|
                     ProcessedPositionConfig
-                        { startAt = Just config.endAt
-                        , endAt = config.endAt
+                        { start = Just config.end
+                        , end = config.end
                         , duration = 0
                         , speed = 0
                         , distance = 0
@@ -389,8 +389,8 @@ processProperty globalData property =
 
             else
                 let
-                    startAt =
-                        case config.startAt of
+                    start =
+                        case config.start of
                             Just s ->
                                 s
 
@@ -398,7 +398,7 @@ processProperty globalData property =
                                 Position.fromTuple ( 0.0, 0.0 )
 
                     distance =
-                        Position.distance startAt config.endAt
+                        Position.distance start config.end
 
                     resolvedTiming =
                         resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
@@ -411,8 +411,8 @@ processProperty globalData property =
                 in
                 Just <|
                     ProcessedPositionConfig
-                        { startAt = config.startAt
-                        , endAt = config.endAt
+                        { start = config.start
+                        , end = config.end
                         , duration = round duration_
                         , speed = speed_
                         , distance = distance
@@ -427,8 +427,8 @@ processProperty globalData property =
                 -- Send dirty properties with duration=0 to preserve their state
                 Just <|
                     ProcessedRotateConfig
-                        { startAt = Just config.endAt
-                        , endAt = config.endAt
+                        { start = Just config.end
+                        , end = config.end
                         , duration = 0
                         , speed = 0
                         , distance = 0
@@ -440,8 +440,8 @@ processProperty globalData property =
 
             else
                 let
-                    startAt =
-                        case config.startAt of
+                    start =
+                        case config.start of
                             Just s ->
                                 s
 
@@ -449,7 +449,7 @@ processProperty globalData property =
                                 Rotate.fromFloat 0.0
 
                     distance =
-                        Rotate.distance startAt config.endAt
+                        Rotate.distance start config.end
 
                     resolvedTiming =
                         resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
@@ -462,8 +462,8 @@ processProperty globalData property =
                 in
                 Just <|
                     ProcessedRotateConfig
-                        { startAt = config.startAt
-                        , endAt = config.endAt
+                        { start = config.start
+                        , end = config.end
                         , duration = round duration_
                         , speed = speed_
                         , distance = distance
@@ -478,8 +478,8 @@ processProperty globalData property =
                 -- Send dirty properties with duration=0 to preserve their state
                 Just <|
                     ProcessedScaleConfig
-                        { startAt = Just config.endAt
-                        , endAt = config.endAt
+                        { start = Just config.end
+                        , end = config.end
                         , duration = 0
                         , speed = 0
                         , distance = 0
@@ -491,11 +491,11 @@ processProperty globalData property =
 
             else
                 let
-                    startAt =
-                        Maybe.withDefault (Scale.fromTuple ( 1.0, 1.0 )) config.startAt
+                    start =
+                        Maybe.withDefault (Scale.fromTuple ( 1.0, 1.0 )) config.start
 
                     distance =
-                        Scale.distance startAt config.endAt
+                        Scale.distance start config.end
 
                     duration_ =
                         -- For scale, we need a way to calculate duration from timing
@@ -517,8 +517,8 @@ processProperty globalData property =
                 in
                 Just <|
                     ProcessedScaleConfig
-                        { startAt = config.startAt
-                        , endAt = config.endAt
+                        { start = config.start
+                        , end = config.end
                         , duration = round duration_
                         , speed = speed_
                         , distance = distance
@@ -533,8 +533,8 @@ processProperty globalData property =
                 -- Return static config to preserve visual state
                 Just <|
                     ProcessedBackgroundColorConfig
-                        { startAt = Just config.endAt
-                        , endAt = config.endAt
+                        { start = Just config.end
+                        , end = config.end
                         , duration = 0 -- No animation, just maintain state
                         , speed = 0
                         , distance = 0
@@ -546,8 +546,8 @@ processProperty globalData property =
 
             else
                 let
-                    startAt =
-                        case config.startAt of
+                    start =
+                        case config.start of
                             Just s ->
                                 s
 
@@ -556,7 +556,7 @@ processProperty globalData property =
 
                     -- Default to black if no start color
                     distance =
-                        BackgroundColor.distance startAt config.endAt
+                        BackgroundColor.distance start config.end
 
                     resolvedTiming =
                         resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
@@ -569,8 +569,8 @@ processProperty globalData property =
                 in
                 Just <|
                     ProcessedBackgroundColorConfig
-                        { startAt = config.startAt
-                        , endAt = config.endAt
+                        { start = config.start
+                        , end = config.end
                         , duration = round duration_
                         , speed = speed_
                         , distance = distance
@@ -585,8 +585,8 @@ processProperty globalData property =
                 -- Return static config to preserve visual state
                 Just <|
                     ProcessedOpacityConfig
-                        { startAt = Just config.endAt
-                        , endAt = config.endAt
+                        { start = Just config.end
+                        , end = config.end
                         , duration = 0 -- No animation, just maintain state
                         , speed = 0
                         , distance = 0
@@ -598,8 +598,8 @@ processProperty globalData property =
 
             else
                 let
-                    startAt =
-                        case config.startAt of
+                    start =
+                        case config.start of
                             Just s ->
                                 s
 
@@ -607,7 +607,7 @@ processProperty globalData property =
                                 Opacity.fromFloat 1.0
 
                     distance =
-                        Opacity.distance startAt config.endAt
+                        Opacity.distance start config.end
 
                     resolvedTiming =
                         resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
@@ -620,8 +620,8 @@ processProperty globalData property =
                 in
                 Just <|
                     ProcessedOpacityConfig
-                        { startAt = config.startAt
-                        , endAt = config.endAt
+                        { start = config.start
+                        , end = config.end
                         , duration = round duration_
                         , speed = speed_
                         , distance = distance
@@ -636,8 +636,8 @@ processProperty globalData property =
                 -- Return static config to preserve visual state
                 Just <|
                     ProcessedSizeConfig
-                        { startAt = Just config.endAt
-                        , endAt = config.endAt
+                        { start = Just config.end
+                        , end = config.end
                         , duration = 0 -- No animation, just maintain state
                         , speed = 0
                         , distance = 0
@@ -649,8 +649,8 @@ processProperty globalData property =
 
             else
                 let
-                    startAt =
-                        case config.startAt of
+                    start =
+                        case config.start of
                             Just s ->
                                 s
 
@@ -658,7 +658,7 @@ processProperty globalData property =
                                 Size.fromTuple ( 100.0, 100.0 )
 
                     distance =
-                        Size.distance startAt config.endAt
+                        Size.distance start config.end
 
                     resolvedTiming =
                         resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
@@ -671,8 +671,8 @@ processProperty globalData property =
                 in
                 Just <|
                     ProcessedSizeConfig
-                        { startAt = config.startAt
-                        , endAt = config.endAt
+                        { start = config.start
+                        , end = config.end
                         , duration = round duration_
                         , speed = speed_
                         , distance = distance
@@ -801,15 +801,15 @@ collectProcessedTransform : ProcessedPropertyConfig -> TransformParts -> Transfo
 collectProcessedTransform property acc =
     case property of
         ProcessedPositionConfig config ->
-            { acc | position = "translate3d(" ++ Position.toCssString config.endAt ++ ")" }
+            { acc | position = "translate3d(" ++ Position.toCssString config.end ++ ")" }
 
         ProcessedRotateConfig config ->
-            { acc | rotate = Rotate.to3DCssString config.endAt }
+            { acc | rotate = Rotate.to3DCssString config.end }
 
         ProcessedScaleConfig config ->
             let
                 ( x, y ) =
-                    Scale.toTuple config.endAt
+                    Scale.toTuple config.end
             in
             { acc | scale = "scale(" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")" }
 
@@ -827,21 +827,21 @@ collectPropertyTransform property acc =
                 acc
 
             else
-                { acc | position = "translate3d(" ++ Position.toCssString config.endAt ++ ")" }
+                { acc | position = "translate3d(" ++ Position.toCssString config.end ++ ")" }
 
         RotateConfig config ->
             if config.isDirty then
                 acc
 
             else
-                { acc | rotate = Rotate.to3DCssString config.endAt }
+                { acc | rotate = Rotate.to3DCssString config.end }
 
         ScaleConfig config ->
             if config.isDirty then
                 acc
 
             else
-                { acc | scale = Scale.to3DCssString config.endAt }
+                { acc | scale = Scale.to3DCssString config.end }
 
         _ ->
             acc

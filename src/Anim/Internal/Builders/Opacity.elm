@@ -64,7 +64,7 @@ for elementId builder =
                 Just config ->
                     PropertyBuilder.applyGlobalDefaults builder <|
                         { config
-                            | startAt = Just config.endAt
+                            | start = Just config.end
                             , easing = Nothing
                             , delay = Nothing
                             , perspective = Nothing
@@ -96,8 +96,8 @@ type alias OpacityConfig =
 
 defaultConfig : OpacityConfig
 defaultConfig =
-    { startAt = Nothing
-    , endAt = Opacity.fromFloat 1
+    { start = Nothing
+    , end = Opacity.fromFloat 1
     , duration = 0
     , speed = 0
     , distance = 0
@@ -111,14 +111,14 @@ defaultConfig =
 
 from : Opacity -> OpacityBuilder -> OpacityBuilder
 from opacity (OpacityBuilder config builder) =
-    OpacityBuilder { config | startAt = Just opacity } builder
+    OpacityBuilder { config | start = Just opacity } builder
 
 
 to : Opacity -> OpacityBuilder -> OpacityBuilder
 to opacity (OpacityBuilder config builder) =
     let
         startPos =
-            case config.startAt of
+            case config.start of
                 Just opacity_ ->
                     opacity_
 
@@ -127,9 +127,9 @@ to opacity (OpacityBuilder config builder) =
     in
     OpacityBuilder
         { config
-            | endAt = opacity
+            | end = opacity
             , distance = Opacity.distance startPos opacity
-            , startAt = Just startPos
+            , start = Just startPos
         }
         builder
 

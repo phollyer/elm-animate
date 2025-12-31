@@ -72,7 +72,7 @@ for elementId builder =
                 Just config ->
                     PropertyBuilder.applyGlobalDefaults builder <|
                         { config
-                            | startAt = Just config.endAt
+                            | start = Just config.end
                             , easing = Nothing
                             , delay = Nothing
                             , perspective = Nothing
@@ -104,8 +104,8 @@ type alias RotateConfig =
 
 defaultConfig : RotateConfig
 defaultConfig =
-    { startAt = Nothing
-    , endAt = Rotate.fromTriple ( 0.0, 0.0, 0.0 )
+    { start = Nothing
+    , end = Rotate.fromTriple ( 0.0, 0.0, 0.0 )
     , duration = 0
     , speed = 0.0
     , distance = 0.0
@@ -121,7 +121,7 @@ from : Rotate -> RotateBuilder -> RotateBuilder
 from rotation (RotateBuilder config builder) =
     let
         startPos =
-            case config.startAt of
+            case config.start of
                 Just rotation_ ->
                     rotation_
 
@@ -130,72 +130,72 @@ from rotation (RotateBuilder config builder) =
     in
     RotateBuilder
         { config
-            | endAt = rotation
+            | end = rotation
             , distance = Rotate.distance startPos rotation
-            , startAt = Just startPos
+            , start = Just startPos
         }
         builder
 
 
 to : Rotate -> RotateBuilder -> RotateBuilder
 to rotation (RotateBuilder config builder) =
-    RotateBuilder { config | endAt = rotation } builder
+    RotateBuilder { config | end = rotation } builder
 
 
 fromX : Float -> RotateBuilder -> RotateBuilder
 fromX x (RotateBuilder config builder) =
     let
         existingY =
-            Maybe.withDefault 0 (Maybe.map Rotate.rotateY config.startAt)
+            Maybe.withDefault 0 (Maybe.map Rotate.rotateY config.start)
 
         existingZ =
-            Maybe.withDefault 0 (Maybe.map Rotate.rotateZ config.startAt)
+            Maybe.withDefault 0 (Maybe.map Rotate.rotateZ config.start)
     in
-    RotateBuilder { config | startAt = Just (Rotate.fromTriple ( x, existingY, existingZ )) } builder
+    RotateBuilder { config | start = Just (Rotate.fromTriple ( x, existingY, existingZ )) } builder
 
 
 fromY : Float -> RotateBuilder -> RotateBuilder
 fromY y (RotateBuilder config builder) =
     let
         existingX =
-            Maybe.withDefault 0 (Maybe.map Rotate.rotateX config.startAt)
+            Maybe.withDefault 0 (Maybe.map Rotate.rotateX config.start)
 
         existingZ =
-            Maybe.withDefault 0 (Maybe.map Rotate.rotateZ config.startAt)
+            Maybe.withDefault 0 (Maybe.map Rotate.rotateZ config.start)
     in
-    RotateBuilder { config | startAt = Just (Rotate.fromTriple ( existingX, y, existingZ )) } builder
+    RotateBuilder { config | start = Just (Rotate.fromTriple ( existingX, y, existingZ )) } builder
 
 
 fromZ : Float -> RotateBuilder -> RotateBuilder
 fromZ z (RotateBuilder config builder) =
     let
         existingX =
-            Maybe.withDefault 0 (Maybe.map Rotate.rotateX config.startAt)
+            Maybe.withDefault 0 (Maybe.map Rotate.rotateX config.start)
 
         existingY =
-            Maybe.withDefault 0 (Maybe.map Rotate.rotateY config.startAt)
+            Maybe.withDefault 0 (Maybe.map Rotate.rotateY config.start)
     in
-    RotateBuilder { config | startAt = Just (Rotate.fromTriple ( existingX, existingY, z )) } builder
+    RotateBuilder { config | start = Just (Rotate.fromTriple ( existingX, existingY, z )) } builder
 
 
 fromXYZ : Float -> Float -> Float -> RotateBuilder -> RotateBuilder
 fromXYZ x y z (RotateBuilder config builder) =
-    RotateBuilder { config | startAt = Just (Rotate.fromTriple ( x, y, z )) } builder
+    RotateBuilder { config | start = Just (Rotate.fromTriple ( x, y, z )) } builder
 
 
 toX : Float -> RotateBuilder -> RotateBuilder
 toX x (RotateBuilder config builder) =
-    to (Rotate.fromTriple ( x, Rotate.rotateY config.endAt, Rotate.rotateZ config.endAt )) (RotateBuilder config builder)
+    to (Rotate.fromTriple ( x, Rotate.rotateY config.end, Rotate.rotateZ config.end )) (RotateBuilder config builder)
 
 
 toY : Float -> RotateBuilder -> RotateBuilder
 toY y (RotateBuilder config builder) =
-    to (Rotate.fromTriple ( Rotate.rotateX config.endAt, y, Rotate.rotateZ config.endAt )) (RotateBuilder config builder)
+    to (Rotate.fromTriple ( Rotate.rotateX config.end, y, Rotate.rotateZ config.end )) (RotateBuilder config builder)
 
 
 toZ : Float -> RotateBuilder -> RotateBuilder
 toZ z (RotateBuilder config builder) =
-    to (Rotate.fromTriple ( Rotate.rotateX config.endAt, Rotate.rotateY config.endAt, z )) (RotateBuilder config builder)
+    to (Rotate.fromTriple ( Rotate.rotateX config.end, Rotate.rotateY config.end, z )) (RotateBuilder config builder)
 
 
 toXYZ : Float -> Float -> Float -> RotateBuilder -> RotateBuilder

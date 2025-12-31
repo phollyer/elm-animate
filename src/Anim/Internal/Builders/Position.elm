@@ -73,7 +73,7 @@ for elementId builder =
                 Just config ->
                     PropertyBuilder.applyGlobalDefaults builder <|
                         { config
-                            | startAt = Just config.endAt
+                            | start = Just config.end
                             , easing = Nothing
                             , delay = Nothing
                             , perspective = Nothing
@@ -105,8 +105,8 @@ type alias PositionConfig =
 
 defaultConfig : PositionConfig
 defaultConfig =
-    { startAt = Nothing
-    , endAt = Position.fromTriple ( 0, 0, 0 )
+    { start = Nothing
+    , end = Position.fromTriple ( 0, 0, 0 )
     , duration = 0
     , speed = 0
     , distance = 0
@@ -120,55 +120,55 @@ defaultConfig =
 
 fromXY : Float -> Float -> PositionBuilder -> PositionBuilder
 fromXY x y (PositionBuilder config builder) =
-    PositionBuilder { config | startAt = Just (Position.fromTuple ( x, y )) } builder
+    PositionBuilder { config | start = Just (Position.fromTuple ( x, y )) } builder
 
 
 fromXYZ : Float -> Float -> Float -> PositionBuilder -> PositionBuilder
 fromXYZ x y z (PositionBuilder config builder) =
-    PositionBuilder { config | startAt = Just (Position.fromTriple ( x, y, z )) } builder
+    PositionBuilder { config | start = Just (Position.fromTriple ( x, y, z )) } builder
 
 
 fromX : Float -> PositionBuilder -> PositionBuilder
 fromX x (PositionBuilder config builder) =
     let
         existingY =
-            Maybe.withDefault 0 (Maybe.map Position.y config.startAt)
+            Maybe.withDefault 0 (Maybe.map Position.y config.start)
 
         existingZ =
-            Maybe.withDefault 0 (Maybe.map Position.z config.startAt)
+            Maybe.withDefault 0 (Maybe.map Position.z config.start)
     in
-    PositionBuilder { config | startAt = Just (Position.fromTriple ( x, existingY, existingZ )) } builder
+    PositionBuilder { config | start = Just (Position.fromTriple ( x, existingY, existingZ )) } builder
 
 
 fromY : Float -> PositionBuilder -> PositionBuilder
 fromY y (PositionBuilder config builder) =
     let
         existingX =
-            Maybe.withDefault 0 (Maybe.map Position.x config.startAt)
+            Maybe.withDefault 0 (Maybe.map Position.x config.start)
 
         existingZ =
-            Maybe.withDefault 0 (Maybe.map Position.z config.startAt)
+            Maybe.withDefault 0 (Maybe.map Position.z config.start)
     in
-    PositionBuilder { config | startAt = Just (Position.fromTriple ( existingX, y, existingZ )) } builder
+    PositionBuilder { config | start = Just (Position.fromTriple ( existingX, y, existingZ )) } builder
 
 
 fromZ : Float -> PositionBuilder -> PositionBuilder
 fromZ z (PositionBuilder config builder) =
     let
         existingX =
-            Maybe.withDefault 0 (Maybe.map Position.x config.startAt)
+            Maybe.withDefault 0 (Maybe.map Position.x config.start)
 
         existingY =
-            Maybe.withDefault 0 (Maybe.map Position.y config.startAt)
+            Maybe.withDefault 0 (Maybe.map Position.y config.start)
     in
-    PositionBuilder { config | startAt = Just (Position.fromTriple ( existingX, existingY, z )) } builder
+    PositionBuilder { config | start = Just (Position.fromTriple ( existingX, existingY, z )) } builder
 
 
 to : Position -> PositionBuilder -> PositionBuilder
 to position (PositionBuilder config builder) =
     let
         startPos =
-            case config.startAt of
+            case config.start of
                 Just pos ->
                     pos
 
@@ -177,31 +177,31 @@ to position (PositionBuilder config builder) =
     in
     PositionBuilder
         { config
-            | endAt = position
+            | end = position
             , distance = Position.distance startPos position
-            , startAt = Just startPos
+            , start = Just startPos
         }
         builder
 
 
 toX : Float -> PositionBuilder -> PositionBuilder
 toX x (PositionBuilder config builder) =
-    to (Position.fromTriple ( x, Position.y config.endAt, Position.z config.endAt )) (PositionBuilder config builder)
+    to (Position.fromTriple ( x, Position.y config.end, Position.z config.end )) (PositionBuilder config builder)
 
 
 toY : Float -> PositionBuilder -> PositionBuilder
 toY y (PositionBuilder config builder) =
-    to (Position.fromTriple ( Position.x config.endAt, y, Position.z config.endAt )) (PositionBuilder config builder)
+    to (Position.fromTriple ( Position.x config.end, y, Position.z config.end )) (PositionBuilder config builder)
 
 
 toZ : Float -> PositionBuilder -> PositionBuilder
 toZ z (PositionBuilder config builder) =
-    to (Position.fromTriple ( Position.x config.endAt, Position.y config.endAt, z )) (PositionBuilder config builder)
+    to (Position.fromTriple ( Position.x config.end, Position.y config.end, z )) (PositionBuilder config builder)
 
 
 toXY : Float -> Float -> PositionBuilder -> PositionBuilder
 toXY x y (PositionBuilder config builder) =
-    to (Position.fromTriple ( x, y, Position.z config.endAt )) (PositionBuilder config builder)
+    to (Position.fromTriple ( x, y, Position.z config.end )) (PositionBuilder config builder)
 
 
 toXYZ : Float -> Float -> Float -> PositionBuilder -> PositionBuilder

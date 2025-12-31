@@ -367,7 +367,7 @@ getPosition elementId (AnimState state) =
                         (\prop ->
                             case prop of
                                 Builder.ProcessedPositionConfig config ->
-                                    Just config.endAt
+                                    Just config.end
 
                                 _ ->
                                     Nothing
@@ -393,7 +393,7 @@ getStartPosition elementId (AnimState state) =
                         (\prop ->
                             case prop of
                                 Builder.ProcessedPositionConfig config ->
-                                    config.startAt
+                                    config.start
 
                                 _ ->
                                     Nothing
@@ -424,7 +424,7 @@ getPositionRange elementId (AnimState state) =
                         (\prop ->
                             case prop of
                                 Builder.ProcessedPositionConfig config ->
-                                    Just { start = config.startAt, end = config.endAt }
+                                    Just { start = config.start, end = config.end }
 
                                 _ ->
                                     Nothing
@@ -450,7 +450,7 @@ getScaleRange elementId (AnimState state) =
                         (\prop ->
                             case prop of
                                 Builder.ProcessedScaleConfig config ->
-                                    Just { start = config.startAt, end = config.endAt }
+                                    Just { start = config.start, end = config.end }
 
                                 _ ->
                                     Nothing
@@ -476,7 +476,7 @@ getRotateRange elementId (AnimState state) =
                         (\prop ->
                             case prop of
                                 Builder.ProcessedRotateConfig config ->
-                                    Just { start = config.startAt, end = config.endAt }
+                                    Just { start = config.start, end = config.end }
 
                                 _ ->
                                     Nothing
@@ -502,7 +502,7 @@ getBackgroundColorRange elementId (AnimState state) =
                         (\prop ->
                             case prop of
                                 Builder.ProcessedBackgroundColorConfig config ->
-                                    Just { start = config.startAt, end = config.endAt }
+                                    Just { start = config.start, end = config.end }
 
                                 _ ->
                                     Nothing
@@ -528,7 +528,7 @@ getOpacityRange elementId (AnimState state) =
                         (\prop ->
                             case prop of
                                 Builder.ProcessedOpacityConfig config ->
-                                    Just { start = config.startAt, end = config.endAt }
+                                    Just { start = config.start, end = config.end }
 
                                 _ ->
                                     Nothing
@@ -554,7 +554,7 @@ getSizeRange elementId (AnimState state) =
                         (\prop ->
                             case prop of
                                 Builder.ProcessedSizeConfig config ->
-                                    Just { start = config.startAt, end = config.endAt }
+                                    Just { start = config.start, end = config.end }
 
                                 _ ->
                                     Nothing
@@ -713,7 +713,7 @@ generateElementAnimation maybeOrder elementId elementConfig =
                 (\prop ->
                     case prop of
                         Builder.BackgroundColorConfig config ->
-                            Just ( "background-color", BackgroundColor.toString config.endAt )
+                            Just ( "background-color", BackgroundColor.toString config.end )
 
                         _ ->
                             Nothing
@@ -725,7 +725,7 @@ generateElementAnimation maybeOrder elementId elementConfig =
                 (\prop ->
                     case prop of
                         Builder.OpacityConfig config ->
-                            Just ( "opacity", Opacity.toString config.endAt )
+                            Just ( "opacity", Opacity.toString config.end )
 
                         _ ->
                             Nothing

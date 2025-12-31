@@ -47,7 +47,7 @@ for elementId builder =
                 Just config ->
                     PropertyBuilder.applyGlobalDefaults builder <|
                         { config
-                            | startAt = Just config.endAt
+                            | start = Just config.end
                             , easing = Nothing
                             , delay = Nothing
                             , perspective = Nothing
@@ -79,8 +79,8 @@ type alias ColorConfig =
 
 defaultConfig : ColorConfig
 defaultConfig =
-    { startAt = Nothing
-    , endAt = BackgroundColor.rgb255 0 0 0
+    { start = Nothing
+    , end = BackgroundColor.rgb255 0 0 0
     , duration = 0
     , speed = 0
     , distance = 0
@@ -94,14 +94,14 @@ defaultConfig =
 
 from : Color -> ColorBuilder -> ColorBuilder
 from color (ColorBuilder config builder) =
-    ColorBuilder { config | startAt = Just color } builder
+    ColorBuilder { config | start = Just color } builder
 
 
 to : Color -> ColorBuilder -> ColorBuilder
 to color (ColorBuilder config builder) =
     let
         startPos =
-            case config.startAt of
+            case config.start of
                 Just opacity_ ->
                     opacity_
 
@@ -110,9 +110,9 @@ to color (ColorBuilder config builder) =
     in
     ColorBuilder
         { config
-            | endAt = color
+            | end = color
             , distance = BackgroundColor.distance startPos color
-            , startAt = Just startPos
+            , start = Just startPos
         }
         builder
 

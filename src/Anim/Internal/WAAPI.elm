@@ -216,22 +216,22 @@ extractElementEndStates elementConfig =
         extractPropertyEndState property state =
             case property of
                 Builder.ProcessedPositionConfig config ->
-                    { state | position = Just config.endAt }
+                    { state | position = Just config.end }
 
                 Builder.ProcessedRotateConfig config ->
-                    { state | rotate = Just config.endAt }
+                    { state | rotate = Just config.end }
 
                 Builder.ProcessedScaleConfig config ->
-                    { state | scale = Just config.endAt }
+                    { state | scale = Just config.end }
 
                 Builder.ProcessedBackgroundColorConfig config ->
-                    { state | backgroundColor = Just config.endAt }
+                    { state | backgroundColor = Just config.end }
 
                 Builder.ProcessedOpacityConfig config ->
-                    { state | opacity = Just config.endAt }
+                    { state | opacity = Just config.end }
 
                 Builder.ProcessedSizeConfig config ->
-                    { state | size = Just config.endAt }
+                    { state | size = Just config.end }
     in
     List.foldl extractPropertyEndState emptyElementEndStates elementConfig.properties
 
@@ -259,10 +259,10 @@ injectCurrentStateIntoProperty currentStates propertyConfig =
         Builder.PositionConfig config ->
             Builder.PositionConfig
                 { config
-                    | startAt =
-                        case config.startAt of
+                    | start =
+                        case config.start of
                             Just _ ->
-                                config.startAt
+                                config.start
 
                             Nothing ->
                                 currentStates.position
@@ -271,10 +271,10 @@ injectCurrentStateIntoProperty currentStates propertyConfig =
         Builder.RotateConfig config ->
             Builder.RotateConfig
                 { config
-                    | startAt =
-                        case config.startAt of
+                    | start =
+                        case config.start of
                             Just _ ->
-                                config.startAt
+                                config.start
 
                             Nothing ->
                                 currentStates.rotate
@@ -283,10 +283,10 @@ injectCurrentStateIntoProperty currentStates propertyConfig =
         Builder.ScaleConfig config ->
             Builder.ScaleConfig
                 { config
-                    | startAt =
-                        case config.startAt of
+                    | start =
+                        case config.start of
                             Just _ ->
-                                config.startAt
+                                config.start
 
                             Nothing ->
                                 currentStates.scale
@@ -295,10 +295,10 @@ injectCurrentStateIntoProperty currentStates propertyConfig =
         Builder.OpacityConfig config ->
             Builder.OpacityConfig
                 { config
-                    | startAt =
-                        case config.startAt of
+                    | start =
+                        case config.start of
                             Just _ ->
-                                config.startAt
+                                config.start
 
                             Nothing ->
                                 currentStates.opacity
@@ -307,10 +307,10 @@ injectCurrentStateIntoProperty currentStates propertyConfig =
         Builder.BackgroundColorConfig config ->
             Builder.BackgroundColorConfig
                 { config
-                    | startAt =
-                        case config.startAt of
+                    | start =
+                        case config.start of
                             Just _ ->
-                                config.startAt
+                                config.start
 
                             Nothing ->
                                 currentStates.backgroundColor
@@ -319,10 +319,10 @@ injectCurrentStateIntoProperty currentStates propertyConfig =
         Builder.SizeConfig config ->
             Builder.SizeConfig
                 { config
-                    | startAt =
-                        case config.startAt of
+                    | start =
+                        case config.start of
                             Just _ ->
-                                config.startAt
+                                config.start
 
                             Nothing ->
                                 currentStates.size
@@ -410,7 +410,7 @@ isElementRunning elementId (AnimState state) =
 getPropertyRange :
     String
     -> AnimState
-    -> (Builder.ProcessedPropertyConfig -> Maybe { startAt : Maybe a, endAt : a })
+    -> (Builder.ProcessedPropertyConfig -> Maybe { start : Maybe a, end : a })
     -> Maybe { start : Maybe a, end : a }
 getPropertyRange elementId (AnimState state) extractor =
     let
@@ -424,14 +424,13 @@ getPropertyRange elementId (AnimState state) extractor =
                     |> List.filterMap extractor
                     |> List.head
             )
-        |> Maybe.map (\config -> { start = config.startAt, end = config.endAt })
 
 
 getStartWithDefault : a -> Maybe { start : Maybe a, end : a } -> Maybe a
-getStartWithDefault defaultScale maybeScale =
-    case maybeScale of
+getStartWithDefault default maybeRange =
+    case maybeRange of
         Nothing ->
-            Just defaultScale
+            Just default
 
         Just { start } ->
             start
@@ -465,7 +464,7 @@ getBackgroundColorRange elementId animState =
         \prop ->
             case prop of
                 Builder.ProcessedBackgroundColorConfig config ->
-                    Just { startAt = config.startAt, endAt = config.endAt }
+                    Just { start = config.start, end = config.end }
 
                 _ ->
                     Nothing
@@ -499,7 +498,7 @@ getOpacityRange elementId animState =
         \prop ->
             case prop of
                 Builder.ProcessedOpacityConfig config ->
-                    Just { startAt = config.startAt, endAt = config.endAt }
+                    Just { start = config.start, end = config.end }
 
                 _ ->
                     Nothing
@@ -533,7 +532,7 @@ getPositionRange elementId animState =
         \prop ->
             case prop of
                 Builder.ProcessedPositionConfig config ->
-                    Just { startAt = config.startAt, endAt = config.endAt }
+                    Just { start = config.start, end = config.end }
 
                 _ ->
                     Nothing
@@ -567,7 +566,7 @@ getRotateRange elementId animState =
         \prop ->
             case prop of
                 Builder.ProcessedRotateConfig config ->
-                    Just { startAt = config.startAt, endAt = config.endAt }
+                    Just { start = config.start, end = config.end }
 
                 _ ->
                     Nothing
@@ -601,7 +600,7 @@ getScaleRange elementId animState =
         \prop ->
             case prop of
                 Builder.ProcessedScaleConfig config ->
-                    Just { startAt = config.startAt, endAt = config.endAt }
+                    Just { start = config.start, end = config.end }
 
                 _ ->
                     Nothing
@@ -635,7 +634,7 @@ getSizeRange elementId animState =
         \prop ->
             case prop of
                 Builder.ProcessedSizeConfig config ->
-                    Just { startAt = config.startAt, endAt = config.endAt }
+                    Just { start = config.start, end = config.end }
 
                 _ ->
                     Nothing
@@ -726,10 +725,10 @@ encodeProcessedPropertyConfig property =
         Builder.ProcessedPositionConfig config ->
             let
                 ( endX, endY, endZ ) =
-                    Position.toTriple config.endAt
+                    Position.toTriple config.end
 
                 ( startX, startY, startZ ) =
-                    config.startAt
+                    config.start
                         |> Maybe.map Position.toTriple
                         |> Maybe.withDefault ( 0, 0, 0 )
             in
@@ -749,10 +748,10 @@ encodeProcessedPropertyConfig property =
         Builder.ProcessedScaleConfig config ->
             let
                 ( endX, endY, endZ ) =
-                    Scale.toTriple config.endAt
+                    Scale.toTriple config.end
 
                 ( startX, startY, startZ ) =
-                    config.startAt
+                    config.start
                         |> Maybe.map Scale.toTriple
                         |> Maybe.withDefault ( 1, 1, 1 )
             in
@@ -772,10 +771,10 @@ encodeProcessedPropertyConfig property =
         Builder.ProcessedRotateConfig config ->
             let
                 ( endX, endY, endZ ) =
-                    Rotate.toTriple config.endAt
+                    Rotate.toTriple config.end
 
                 ( startX, startY, startZ ) =
-                    config.startAt
+                    config.start
                         |> Maybe.map Rotate.toTriple
                         |> Maybe.withDefault ( 0, 0, 0 )
             in
@@ -795,7 +794,7 @@ encodeProcessedPropertyConfig property =
         Builder.ProcessedSizeConfig config ->
             let
                 ( width, height ) =
-                    Size.toTuple config.endAt
+                    Size.toTuple config.end
             in
             Encode.object
                 [ ( "type", Encode.string "size" )
@@ -808,13 +807,13 @@ encodeProcessedPropertyConfig property =
         Builder.ProcessedOpacityConfig config ->
             let
                 startValue =
-                    config.startAt
+                    config.start
                         |> Maybe.map Opacity.toFloat
                         |> Maybe.withDefault 1.0
             in
             Encode.object
                 [ ( "type", Encode.string "opacity" )
-                , ( "value", Encode.float (Opacity.toFloat config.endAt) )
+                , ( "value", Encode.float (Opacity.toFloat config.end) )
                 , ( "startValue", Encode.float startValue )
                 , ( "duration", Encode.int config.duration )
                 , ( "easing", Encode.string (easingToJsString config.easing) )
@@ -823,13 +822,13 @@ encodeProcessedPropertyConfig property =
         Builder.ProcessedBackgroundColorConfig config ->
             let
                 startColor =
-                    config.startAt
+                    config.start
                         |> Maybe.map BackgroundColor.toString
                         |> Maybe.withDefault "rgba(255, 255, 255, 1)"
             in
             Encode.object
                 [ ( "type", Encode.string "backgroundColor" )
-                , ( "color", Encode.string (BackgroundColor.toString config.endAt) )
+                , ( "color", Encode.string (BackgroundColor.toString config.end) )
                 , ( "startColor", Encode.string startColor )
                 , ( "duration", Encode.int config.duration )
                 , ( "easing", Encode.string (easingToJsString config.easing) )

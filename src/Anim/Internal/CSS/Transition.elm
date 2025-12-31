@@ -74,72 +74,72 @@ calculatePropertyDistance property =
     case property of
         Builder.PositionConfig config ->
             let
-                startAt =
-                    case config.startAt of
+                start =
+                    case config.start of
                         Just s ->
                             s
 
                         Nothing ->
                             Position.fromTuple ( 0, 0 )
             in
-            Position.distance startAt config.endAt
+            Position.distance start config.end
 
         Builder.RotateConfig config ->
             let
-                startAt =
-                    case config.startAt of
+                start =
+                    case config.start of
                         Just s ->
                             s
 
                         Nothing ->
                             Rotate.fromFloat 0
             in
-            Rotate.distance startAt config.endAt
+            Rotate.distance start config.end
 
         Builder.ScaleConfig config ->
             let
-                startAt =
-                    case config.startAt of
+                start =
+                    case config.start of
                         Just s ->
                             s
 
                         Nothing ->
                             Scale.fromTuple ( 1, 1 )
             in
-            Scale.distance startAt config.endAt
+            Scale.distance start config.end
 
         Builder.BackgroundColorConfig config ->
             let
-                startAt =
-                    case config.startAt of
+                start =
+                    case config.start of
                         Just s ->
                             s
 
                         Nothing ->
                             BackgroundColor.rgb255 0 0 0
             in
-            BackgroundColor.distance startAt config.endAt
+            BackgroundColor.distance start config.end
 
         Builder.OpacityConfig config ->
             let
-                startAt =
-                    case config.startAt of
+                start =
+                    case config.start of
                         Just s ->
                             s
 
                         Nothing ->
                             Opacity.fromFloat 1.0
             in
-            Opacity.distance startAt config.endAt
+            Opacity.distance start config.end
 
         Builder.SizeConfig config ->
             let
-                startAt =
-                    case config.startAt of
+                start =
+                    case config.start of
                         Just s ->
                             s
 
                         Nothing ->
                             Size.fromTuple ( 0, 0 )
             in
-            Size.distance startAt config.endAt
+            Size.distance start config.end

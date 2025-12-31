@@ -254,8 +254,8 @@ getCurrentPropertyValue propertyState =
     case currentValue of
         PositionAnimation pos ->
             Builder.ProcessedPositionConfig
-                { startAt = Just pos
-                , endAt = pos
+                { start = Just pos
+                , end = pos
                 , duration = 0
                 , speed = 0
                 , distance = 0
@@ -267,8 +267,8 @@ getCurrentPropertyValue propertyState =
 
         RotateAnimation rotate ->
             Builder.ProcessedRotateConfig
-                { startAt = Just rotate
-                , endAt = rotate
+                { start = Just rotate
+                , end = rotate
                 , duration = 0
                 , speed = 0
                 , distance = 0
@@ -280,8 +280,8 @@ getCurrentPropertyValue propertyState =
 
         ScaleAnimation scale ->
             Builder.ProcessedScaleConfig
-                { startAt = Just scale
-                , endAt = scale
+                { start = Just scale
+                , end = scale
                 , duration = 0
                 , speed = 0
                 , distance = 0
@@ -293,8 +293,8 @@ getCurrentPropertyValue propertyState =
 
         BackgroundColorAnimation color ->
             Builder.ProcessedBackgroundColorConfig
-                { startAt = Just color
-                , endAt = color
+                { start = Just color
+                , end = color
                 , duration = 0
                 , speed = 0
                 , distance = 0
@@ -306,8 +306,8 @@ getCurrentPropertyValue propertyState =
 
         OpacityAnimation opacity ->
             Builder.ProcessedOpacityConfig
-                { startAt = Just opacity
-                , endAt = opacity
+                { start = Just opacity
+                , end = opacity
                 , duration = 0
                 , speed = 0
                 , distance = 0
@@ -319,8 +319,8 @@ getCurrentPropertyValue propertyState =
 
         SizeAnimation size ->
             Builder.ProcessedSizeConfig
-                { startAt = Just size
-                , endAt = size
+                { start = Just size
+                , end = size
                 , duration = 0
                 , speed = 0
                 , distance = 0
@@ -422,7 +422,7 @@ getBackgroundColorRange =
         (\prop ->
             case prop of
                 Builder.ProcessedBackgroundColorConfig config ->
-                    Just { start = config.startAt, end = config.endAt }
+                    Just { start = config.start, end = config.end }
 
                 _ ->
                     Nothing
@@ -435,7 +435,7 @@ getOpacityRange =
         (\prop ->
             case prop of
                 Builder.ProcessedOpacityConfig config ->
-                    Just { start = config.startAt, end = config.endAt }
+                    Just { start = config.start, end = config.end }
 
                 _ ->
                     Nothing
@@ -474,7 +474,7 @@ getPositionRange =
         (\prop ->
             case prop of
                 Builder.ProcessedPositionConfig config ->
-                    Just { start = config.startAt, end = config.endAt }
+                    Just { start = config.start, end = config.end }
 
                 _ ->
                     Nothing
@@ -500,7 +500,7 @@ getRotateRange =
         (\prop ->
             case prop of
                 Builder.ProcessedRotateConfig config ->
-                    Just { start = config.startAt, end = config.endAt }
+                    Just { start = config.start, end = config.end }
 
                 _ ->
                     Nothing
@@ -526,7 +526,7 @@ getScaleRange =
         (\prop ->
             case prop of
                 Builder.ProcessedScaleConfig config ->
-                    Just { start = config.startAt, end = config.endAt }
+                    Just { start = config.start, end = config.end }
 
                 _ ->
                     Nothing
@@ -552,7 +552,7 @@ getSizeRange =
         (\prop ->
             case prop of
                 Builder.ProcessedSizeConfig config ->
-                    Just { start = config.startAt, end = config.endAt }
+                    Just { start = config.start, end = config.end }
 
                 _ ->
                     Nothing
@@ -623,8 +623,8 @@ initBackgroundColor animBuilder maybeColor =
             let
                 colorConfig =
                     Builder.BackgroundColorConfig
-                        { startAt = Just color
-                        , endAt = color
+                        { start = Just color
+                        , end = color
                         , duration = 0
                         , speed = 0
                         , distance = 0
@@ -648,8 +648,8 @@ initOpacity animBuilder maybeOpacity =
             let
                 opacityConfig =
                     Builder.OpacityConfig
-                        { startAt = Just opacity
-                        , endAt = opacity
+                        { start = Just opacity
+                        , end = opacity
                         , duration = 0
                         , speed = 0
                         , distance = 0
@@ -673,8 +673,8 @@ initPosition animBuilder maybePos =
             let
                 positionConfig =
                     Builder.PositionConfig
-                        { startAt = Just pos
-                        , endAt = pos
+                        { start = Just pos
+                        , end = pos
                         , duration = 0
                         , speed = 0
                         , distance = 0
@@ -698,8 +698,8 @@ initRotate animBuilder maybeRotate =
             let
                 rotateConfig =
                     Builder.RotateConfig
-                        { startAt = Just rotate
-                        , endAt = rotate
+                        { start = Just rotate
+                        , end = rotate
                         , duration = 0
                         , speed = 0
                         , distance = 0
@@ -723,8 +723,8 @@ initScale animBuilder maybeScale =
             let
                 scaleConfig =
                     Builder.ScaleConfig
-                        { startAt = Just scale
-                        , endAt = scale
+                        { start = Just scale
+                        , end = scale
                         , duration = 0
                         , speed = 0
                         , distance = 0
@@ -748,8 +748,8 @@ initSize animBuilder maybeSize =
             let
                 sizeConfig =
                     Builder.SizeConfig
-                        { startAt = Just size
-                        , endAt = size
+                        { start = Just size
+                        , end = size
                         , duration = 0
                         , speed = 0
                         , distance = 0
@@ -969,42 +969,42 @@ extractFromProperty property acc =
     case property of
         Builder.ProcessedBackgroundColorConfig config ->
             if config.duration == 0 then
-                { acc | color = Just config.endAt }
+                { acc | color = Just config.end }
 
             else
                 acc
 
         Builder.ProcessedOpacityConfig config ->
             if config.duration == 0 then
-                { acc | opacity = Just <| Opacity.toFloat config.endAt }
+                { acc | opacity = Just <| Opacity.toFloat config.end }
 
             else
                 acc
 
         Builder.ProcessedPositionConfig config ->
             if config.duration == 0 then
-                { acc | position = Just <| Position.toRecord config.endAt }
+                { acc | position = Just <| Position.toRecord config.end }
 
             else
                 acc
 
         Builder.ProcessedRotateConfig config ->
             if config.duration == 0 then
-                { acc | rotate = Just <| Rotate.toRecord config.endAt }
+                { acc | rotate = Just <| Rotate.toRecord config.end }
 
             else
                 acc
 
         Builder.ProcessedScaleConfig config ->
             if config.duration == 0 then
-                { acc | scale = Just <| Scale.toRecord config.endAt }
+                { acc | scale = Just <| Scale.toRecord config.end }
 
             else
                 acc
 
         Builder.ProcessedSizeConfig config ->
             if config.duration == 0 then
-                { acc | size = Just <| Size.toRecord config.endAt }
+                { acc | size = Just <| Size.toRecord config.end }
 
             else
                 acc
@@ -1038,7 +1038,7 @@ createPropertyAnimState startValues property =
             -> (a -> a -> Int -> (Float -> Float) -> List Animation)
             -> (a -> Animation)
             -> PropertyAnimation
-        buildPropertyAnimation propertyType actualStart endAt duration_ delay_ easing_ stepCreator wrapper =
+        buildPropertyAnimation propertyType actualStart end duration_ delay_ easing_ stepCreator wrapper =
             let
                 frames =
                     if duration_ == 0 then
@@ -1052,10 +1052,10 @@ createPropertyAnimState startValues property =
 
                 steps =
                     if duration_ == 0 then
-                        [ wrapper endAt ]
+                        [ wrapper end ]
 
                     else
-                        stepCreator actualStart endAt frames easeFunction
+                        stepCreator actualStart end frames easeFunction
             in
             { propertyType = propertyType
             , animationSteps = steps
@@ -1071,13 +1071,13 @@ createPropertyAnimState startValues property =
         Builder.ProcessedPositionConfig config ->
             let
                 actualStart =
-                    Maybe.withDefault (Position.fromRecord startValues.position) config.startAt
+                    Maybe.withDefault (Position.fromRecord startValues.position) config.start
             in
             Just <|
                 buildPropertyAnimation
                     "position"
                     actualStart
-                    config.endAt
+                    config.end
                     config.duration
                     config.delay
                     config.easing
@@ -1087,13 +1087,13 @@ createPropertyAnimState startValues property =
         Builder.ProcessedRotateConfig config ->
             let
                 actualStart =
-                    Maybe.withDefault (Rotate.fromRecord startValues.rotate) config.startAt
+                    Maybe.withDefault (Rotate.fromRecord startValues.rotate) config.start
             in
             Just <|
                 buildPropertyAnimation
                     "rotate"
                     actualStart
-                    config.endAt
+                    config.end
                     config.duration
                     config.delay
                     config.easing
@@ -1103,13 +1103,13 @@ createPropertyAnimState startValues property =
         Builder.ProcessedScaleConfig config ->
             let
                 actualStart =
-                    Maybe.withDefault (Scale.fromRecord startValues.scale) config.startAt
+                    Maybe.withDefault (Scale.fromRecord startValues.scale) config.start
             in
             Just <|
                 buildPropertyAnimation
                     "scale"
                     actualStart
-                    config.endAt
+                    config.end
                     config.duration
                     config.delay
                     config.easing
@@ -1119,13 +1119,13 @@ createPropertyAnimState startValues property =
         Builder.ProcessedBackgroundColorConfig config ->
             let
                 actualStart =
-                    Maybe.withDefault startValues.color config.startAt
+                    Maybe.withDefault startValues.color config.start
             in
             Just <|
                 buildPropertyAnimation
                     "backgroundColor"
                     actualStart
-                    config.endAt
+                    config.end
                     config.duration
                     config.delay
                     config.easing
@@ -1135,13 +1135,13 @@ createPropertyAnimState startValues property =
         Builder.ProcessedOpacityConfig config ->
             let
                 actualStart =
-                    Maybe.withDefault (Opacity.fromFloat startValues.opacity) config.startAt
+                    Maybe.withDefault (Opacity.fromFloat startValues.opacity) config.start
             in
             Just <|
                 buildPropertyAnimation
                     "opacity"
                     actualStart
-                    config.endAt
+                    config.end
                     config.duration
                     config.delay
                     config.easing
@@ -1151,13 +1151,13 @@ createPropertyAnimState startValues property =
         Builder.ProcessedSizeConfig config ->
             let
                 actualStart =
-                    Maybe.withDefault (Size.fromTuple ( startValues.size.width, startValues.size.height )) config.startAt
+                    Maybe.withDefault (Size.fromTuple ( startValues.size.width, startValues.size.height )) config.start
             in
             Just <|
                 buildPropertyAnimation
                     "size"
                     actualStart
-                    config.endAt
+                    config.end
                     config.duration
                     config.delay
                     config.easing

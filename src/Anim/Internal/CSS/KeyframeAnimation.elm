@@ -154,7 +154,7 @@ generate elementId properties =
                                                                 easingFunction linearProgress
 
                                                             startPos =
-                                                                case cfg.startAt of
+                                                                case cfg.start of
                                                                     Just s ->
                                                                         s
 
@@ -162,7 +162,7 @@ generate elementId properties =
                                                                         Position.fromTuple ( 0.0, 0.0 )
 
                                                             endPos =
-                                                                cfg.endAt
+                                                                cfg.end
 
                                                             interpolatedPos =
                                                                 Position.interpolate propProgress startPos endPos
@@ -203,7 +203,7 @@ generate elementId properties =
                                                                 easingFunction linearProgress
 
                                                             startRot =
-                                                                case cfg.startAt of
+                                                                case cfg.start of
                                                                     Just s ->
                                                                         s
 
@@ -211,7 +211,7 @@ generate elementId properties =
                                                                         Rotate.fromFloat 0.0
 
                                                             endRot =
-                                                                cfg.endAt
+                                                                cfg.end
 
                                                             startAngle =
                                                                 Rotate.toFloat startRot
@@ -261,7 +261,7 @@ generate elementId properties =
                                                                 easingFunction linearProgress
 
                                                             startScale =
-                                                                case cfg.startAt of
+                                                                case cfg.start of
                                                                     Just s ->
                                                                         s
 
@@ -269,7 +269,7 @@ generate elementId properties =
                                                                         Scale.fromTuple ( 1.0, 1.0 )
 
                                                             endScale =
-                                                                cfg.endAt
+                                                                cfg.end
 
                                                             ( startX, startY ) =
                                                                 Scale.toTuple startScale
@@ -345,7 +345,7 @@ generate elementId properties =
                                                                 easingFunction linearProgress
 
                                                             startColor =
-                                                                case cfg.startAt of
+                                                                case cfg.start of
                                                                     Just c ->
                                                                         c
 
@@ -353,7 +353,7 @@ generate elementId properties =
                                                                         BackgroundColor.rgb255 59 130 246
 
                                                             endColor =
-                                                                cfg.endAt
+                                                                cfg.end
 
                                                             interpolatedColor =
                                                                 BackgroundColor.interpolate startColor endColor propProgress
@@ -395,7 +395,7 @@ generate elementId properties =
                                                                 easingFunction linearProgress
 
                                                             startOpacity =
-                                                                case cfg.startAt of
+                                                                case cfg.start of
                                                                     Just s ->
                                                                         s
 
@@ -403,7 +403,7 @@ generate elementId properties =
                                                                         Opacity.fromFloat 1.0
 
                                                             endOpacity =
-                                                                cfg.endAt
+                                                                cfg.end
 
                                                             startValue =
                                                                 Opacity.toFloat startOpacity
@@ -454,7 +454,7 @@ generate elementId properties =
                                                                 easingFunction linearProgress
 
                                                             startSize =
-                                                                case cfg.startAt of
+                                                                case cfg.start of
                                                                     Just s ->
                                                                         s
 
@@ -462,7 +462,7 @@ generate elementId properties =
                                                                         Size.fromTuple ( 100.0, 100.0 )
 
                                                             endSize =
-                                                                cfg.endAt
+                                                                cfg.end
 
                                                             ( startW, startH ) =
                                                                 Size.toTuple startSize
@@ -505,22 +505,22 @@ generate elementId properties =
                                 (\p ->
                                     case p of
                                         Builder.ProcessedPositionConfig cfg ->
-                                            "pos" ++ String.fromInt cfg.duration ++ Position.toCssString cfg.endAt
+                                            "pos" ++ String.fromInt cfg.duration ++ Position.toCssString cfg.end
 
                                         Builder.ProcessedScaleConfig cfg ->
-                                            "scale" ++ String.fromInt cfg.duration ++ Scale.toCssString cfg.endAt
+                                            "scale" ++ String.fromInt cfg.duration ++ Scale.toCssString cfg.end
 
                                         Builder.ProcessedRotateConfig cfg ->
-                                            "rot" ++ String.fromInt cfg.duration ++ Rotate.toCssString cfg.endAt
+                                            "rot" ++ String.fromInt cfg.duration ++ Rotate.toCssString cfg.end
 
                                         Builder.ProcessedBackgroundColorConfig cfg ->
-                                            "background-color" ++ String.fromInt cfg.duration ++ BackgroundColor.toString cfg.endAt
+                                            "background-color" ++ String.fromInt cfg.duration ++ BackgroundColor.toString cfg.end
 
                                         Builder.ProcessedOpacityConfig cfg ->
-                                            "opacity" ++ String.fromInt cfg.duration ++ Opacity.toString cfg.endAt
+                                            "opacity" ++ String.fromInt cfg.duration ++ Opacity.toString cfg.end
 
                                         Builder.ProcessedSizeConfig cfg ->
-                                            "size" ++ String.fromInt cfg.duration ++ Size.toString cfg.endAt
+                                            "size" ++ String.fromInt cfg.duration ++ Size.toString cfg.end
                                 )
                             |> String.join ""
                        )

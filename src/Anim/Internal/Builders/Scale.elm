@@ -71,7 +71,7 @@ for elementId builder =
                 Just config ->
                     PropertyBuilder.applyGlobalDefaults builder <|
                         { config
-                            | startAt = Just config.endAt
+                            | start = Just config.end
                             , easing = Nothing
                             , delay = Nothing
                             , perspective = Nothing
@@ -103,8 +103,8 @@ type alias ScaleConfig =
 
 defaultConfig : ScaleConfig
 defaultConfig =
-    { startAt = Nothing
-    , endAt = Scale.fromTuple ( 0, 0 )
+    { start = Nothing
+    , end = Scale.fromTuple ( 0, 0 )
     , duration = 0
     , speed = 0
     , distance = 0
@@ -120,7 +120,7 @@ fromXY : Float -> Float -> ScaleBuilder -> ScaleBuilder
 fromXY scaleX scaleY (ScaleBuilder config builder) =
     ScaleBuilder
         { config
-            | startAt =
+            | start =
                 Just <|
                     Scale.fromTuple ( scaleX, scaleY )
         }
@@ -131,7 +131,7 @@ fromXYZ : Float -> Float -> Float -> ScaleBuilder -> ScaleBuilder
 fromXYZ scaleX scaleY scaleZ (ScaleBuilder config builder) =
     ScaleBuilder
         { config
-            | startAt =
+            | start =
                 Just <|
                     Scale.fromTriple ( scaleX, scaleY, scaleZ )
         }
@@ -142,7 +142,7 @@ fromX : Float -> ScaleBuilder -> ScaleBuilder
 fromX scaleX (ScaleBuilder config builder) =
     let
         startScale =
-            case config.startAt of
+            case config.start of
                 Just scale_ ->
                     scale_
 
@@ -154,7 +154,7 @@ fromX scaleX (ScaleBuilder config builder) =
     in
     ScaleBuilder
         { config
-            | startAt =
+            | start =
                 Just <|
                     Scale.fromTriple ( scaleX, y, z )
         }
@@ -165,7 +165,7 @@ fromY : Float -> ScaleBuilder -> ScaleBuilder
 fromY scaleY (ScaleBuilder config builder) =
     let
         startScale =
-            case config.startAt of
+            case config.start of
                 Just scale_ ->
                     scale_
 
@@ -177,7 +177,7 @@ fromY scaleY (ScaleBuilder config builder) =
     in
     ScaleBuilder
         { config
-            | startAt =
+            | start =
                 Just <|
                     Scale.fromTriple ( x, scaleY, z )
         }
@@ -188,7 +188,7 @@ fromZ : Float -> ScaleBuilder -> ScaleBuilder
 fromZ scaleZ (ScaleBuilder config builder) =
     let
         startScale =
-            case config.startAt of
+            case config.start of
                 Just scale_ ->
                     scale_
 
@@ -200,7 +200,7 @@ fromZ scaleZ (ScaleBuilder config builder) =
     in
     ScaleBuilder
         { config
-            | startAt =
+            | start =
                 Just <|
                     Scale.fromTriple ( x, y, scaleZ )
         }
@@ -211,7 +211,7 @@ toXY : Float -> Float -> ScaleBuilder -> ScaleBuilder
 toXY scaleX scaleY (ScaleBuilder config builder) =
     let
         startScale =
-            case config.startAt of
+            case config.start of
                 Just scale_ ->
                     scale_
 
@@ -223,9 +223,9 @@ toXY scaleX scaleY (ScaleBuilder config builder) =
     in
     ScaleBuilder
         { config
-            | endAt = scale
+            | end = scale
             , distance = Scale.distance startScale scale
-            , startAt = Just startScale
+            , start = Just startScale
         }
         builder
 
@@ -234,7 +234,7 @@ toXYZ : Float -> Float -> Float -> ScaleBuilder -> ScaleBuilder
 toXYZ scaleX scaleY scaleZ (ScaleBuilder config builder) =
     let
         startScale =
-            case config.startAt of
+            case config.start of
                 Just scale_ ->
                     scale_
 
@@ -246,9 +246,9 @@ toXYZ scaleX scaleY scaleZ (ScaleBuilder config builder) =
     in
     ScaleBuilder
         { config
-            | endAt = scale
+            | end = scale
             , distance = Scale.distance startScale scale
-            , startAt = Just startScale
+            , start = Just startScale
         }
         builder
 
@@ -257,7 +257,7 @@ toX : Float -> ScaleBuilder -> ScaleBuilder
 toX scaleX (ScaleBuilder config builder) =
     let
         startScale =
-            case config.startAt of
+            case config.start of
                 Just scale_ ->
                     scale_
 
@@ -272,7 +272,7 @@ toX scaleX (ScaleBuilder config builder) =
     in
     ScaleBuilder
         { config
-            | endAt = scale
+            | end = scale
             , distance = Scale.distance startScale scale
         }
         builder
@@ -282,7 +282,7 @@ toY : Float -> ScaleBuilder -> ScaleBuilder
 toY scaleY (ScaleBuilder config builder) =
     let
         startScale =
-            case config.startAt of
+            case config.start of
                 Just scale_ ->
                     scale_
 
@@ -297,7 +297,7 @@ toY scaleY (ScaleBuilder config builder) =
     in
     ScaleBuilder
         { config
-            | endAt = scale
+            | end = scale
             , distance = Scale.distance startScale scale
         }
         builder
@@ -307,7 +307,7 @@ toZ : Float -> ScaleBuilder -> ScaleBuilder
 toZ scaleZ (ScaleBuilder config builder) =
     let
         startScale =
-            case config.startAt of
+            case config.start of
                 Just scale_ ->
                     scale_
 
@@ -322,7 +322,7 @@ toZ scaleZ (ScaleBuilder config builder) =
     in
     ScaleBuilder
         { config
-            | endAt = scale
+            | end = scale
             , distance = Scale.distance startScale scale
         }
         builder

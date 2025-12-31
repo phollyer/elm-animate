@@ -71,7 +71,7 @@ for elementId builder =
                 Just config ->
                     PropertyBuilder.applyGlobalDefaults builder <|
                         { config
-                            | startAt = Just config.endAt
+                            | start = Just config.end
                             , easing = Nothing
                             , delay = Nothing
                             , perspective = Nothing
@@ -94,8 +94,8 @@ type alias SizeConfig =
 
 defaultConfig : SizeConfig
 defaultConfig =
-    { startAt = Nothing
-    , endAt = Size.fromTuple ( 0, 0 )
+    { start = Nothing
+    , end = Size.fromTuple ( 0, 0 )
     , duration = 0
     , speed = 0
     , distance = 0
@@ -112,7 +112,7 @@ defaultConfig =
 fromHW : Float -> Float -> SizeBuilder -> SizeBuilder
 fromHW height width (SizeBuilder config builder) =
     SizeBuilder
-        { config | startAt = Just (Size.fromTuple ( width, height )) }
+        { config | start = Just (Size.fromTuple ( width, height )) }
         builder
 
 
@@ -122,14 +122,14 @@ fromH : Float -> SizeBuilder -> SizeBuilder
 fromH height (SizeBuilder config builder) =
     let
         currentSize =
-            config.startAt
+            config.start
                 |> Maybe.withDefault (Size.fromTuple ( 0, 0 ))
 
         ( currentWidth, _ ) =
             Size.toTuple currentSize
     in
     SizeBuilder
-        { config | startAt = Just (Size.fromTuple ( currentWidth, height )) }
+        { config | start = Just (Size.fromTuple ( currentWidth, height )) }
         builder
 
 
@@ -139,14 +139,14 @@ fromW : Float -> SizeBuilder -> SizeBuilder
 fromW width (SizeBuilder config builder) =
     let
         currentSize =
-            config.startAt
+            config.start
                 |> Maybe.withDefault (Size.fromTuple ( 0, 0 ))
 
         ( _, currentHeight ) =
             Size.toTuple currentSize
     in
     SizeBuilder
-        { config | startAt = Just (Size.fromTuple ( width, currentHeight )) }
+        { config | start = Just (Size.fromTuple ( width, currentHeight )) }
         builder
 
 
@@ -155,7 +155,7 @@ fromW width (SizeBuilder config builder) =
 to : Size -> SizeBuilder -> SizeBuilder
 to size (SizeBuilder config builder) =
     SizeBuilder
-        { config | endAt = size }
+        { config | end = size }
         builder
 
 
@@ -164,7 +164,7 @@ to size (SizeBuilder config builder) =
 toHW : Float -> Float -> SizeBuilder -> SizeBuilder
 toHW height width (SizeBuilder config builder) =
     SizeBuilder
-        { config | endAt = Size.fromTuple ( width, height ) }
+        { config | end = Size.fromTuple ( width, height ) }
         builder
 
 
@@ -174,10 +174,10 @@ toH : Float -> SizeBuilder -> SizeBuilder
 toH height (SizeBuilder config builder) =
     let
         ( currentTargetWidth, _ ) =
-            Size.toTuple config.endAt
+            Size.toTuple config.end
     in
     SizeBuilder
-        { config | endAt = Size.fromTuple ( currentTargetWidth, height ) }
+        { config | end = Size.fromTuple ( currentTargetWidth, height ) }
         builder
 
 
@@ -187,10 +187,10 @@ toW : Float -> SizeBuilder -> SizeBuilder
 toW width (SizeBuilder config builder) =
     let
         ( _, currentTargetHeight ) =
-            Size.toTuple config.endAt
+            Size.toTuple config.end
     in
     SizeBuilder
-        { config | endAt = Size.fromTuple ( width, currentTargetHeight ) }
+        { config | end = Size.fromTuple ( width, currentTargetHeight ) }
         builder
 
 
@@ -237,8 +237,8 @@ build (SizeBuilder config builder) =
     let
         -- Convert our SizeConfig to Builder.AnimationConfig Size
         newSizeConfig =
-            { startAt = config.startAt
-            , endAt = config.endAt
+            { start = config.start
+            , end = config.end
             , duration = 0 -- Will be calculated during processing
             , speed = 0 -- Will be calculated during processing
             , distance = 0 -- Will be calculated during processing
