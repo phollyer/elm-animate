@@ -201,6 +201,7 @@ These settings will be used for all property animations unless overridden on a p
 
 -}
 
+import Anim.Easing as Easing exposing (Easing)
 import Anim.Internal.CSS as InternalCSS exposing (ElementState(..), Event(..))
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity
@@ -208,7 +209,6 @@ import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
-import Anim.Timing.Easing as Easing exposing (Easing)
 import Browser exposing (UrlRequest(..))
 import Html
 import Html.Attributes

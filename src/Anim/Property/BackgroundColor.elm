@@ -1,4 +1,4 @@
-module Anim.Properties.BackgroundColor exposing
+module Anim.Property.BackgroundColor exposing
     ( Color(..), Builder, for, build
     , from
     , to
@@ -52,10 +52,10 @@ The last known background color is tracked in your Engine's model, so you only n
 
 -}
 
-import Anim.Easing as Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.BackgroundColor as CB
 import Anim.Internal.Properties.BackgroundColor as BC
+import Anim.Easing as Easing exposing (Easing)
 import Color
 
 

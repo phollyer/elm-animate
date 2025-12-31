@@ -1,7 +1,7 @@
 module ElmUI.ScrollEngine.Basic.Main exposing (main)
 
 import Anim.Engine.Scroll as Scroll
-import Anim.Timing.Easing exposing (Easing(..))
+import Anim.Easing exposing (Easing(..))
 import Browser
 import Element exposing (..)
 import Element.Background as Background

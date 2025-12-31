@@ -1,4 +1,4 @@
-module Anim.Properties.Size exposing
+module Anim.Property.Size exposing
     ( Builder, for, build
     , from, fromHW, fromH, fromW
     , to, toHW, toH, toW
@@ -54,10 +54,10 @@ The last known size is tracked in your Engine's model, so you only need to set t
 
 -}
 
-import Anim.Easing as Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Size as SB
 import Anim.Internal.Properties.Size as S
+import Anim.Easing as Easing exposing (Easing)
 
 
 {-| Type alias for the internal `SizeBuilder`.

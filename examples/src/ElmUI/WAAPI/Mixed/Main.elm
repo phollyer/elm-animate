@@ -15,14 +15,14 @@ FEATURES:
 
 -}
 
+import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.WAAPI as WAAPI
-import Anim.Properties.BackgroundColor as Color
-import Anim.Properties.Opacity as Opacity
-import Anim.Properties.Position as Position
-import Anim.Properties.Rotate as Rotate
-import Anim.Properties.Scale as Scale
-import Anim.Properties.Size as Size
-import Anim.Timing.Easing as Easing exposing (Easing(..))
+import Anim.Property.BackgroundColor as Color
+import Anim.Property.Opacity as Opacity
+import Anim.Property.Position as Position
+import Anim.Property.Rotate as Rotate
+import Anim.Property.Scale as Scale
+import Anim.Property.Size as Size
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI

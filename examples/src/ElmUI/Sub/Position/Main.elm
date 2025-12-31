@@ -22,9 +22,9 @@ USAGE:
 
 -}
 
+import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.Sub as Sub
-import Anim.Properties.Position as Position
-import Anim.Timing.Easing as Easing exposing (Easing(..))
+import Anim.Property.Position as Position
 import Browser exposing (Document)
 import Browser.Events
 import Common.Colors as Colors

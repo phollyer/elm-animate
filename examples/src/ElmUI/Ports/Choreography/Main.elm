@@ -27,9 +27,9 @@ USAGE EXAMPLES:
 -- Common UI imports
 
 
-import Anim.Timing.Easing as Easing
+import Anim.Easing as Easing
 import Anim.Engine.WAAPI as WAAPI
-import Anim.Properties.Position as Position
+import Anim.Property.Position as Position
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI

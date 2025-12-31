@@ -1,4 +1,4 @@
-module Anim.Timing.Easing exposing
+module Anim.Easing exposing
     ( Easing(..)
     , linear, ease, easeIn, easeOut, easeInOut
     , sineIn, sineOut, sineInOut

@@ -15,9 +15,9 @@ FEATURES:
 -}
 
 
-import Anim.Timing.Easing as Easing
+import Anim.Easing as Easing
 import Anim.Engine.WAAPI as WAAPI
-import Anim.Properties.Opacity as Opacity
+import Anim.Property.Opacity as Opacity
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI

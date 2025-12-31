@@ -9,13 +9,13 @@
         "Anim.Engine.Sub",
         "Anim.Engine.WAAPI",
         "Anim.Engine.Scroll",
-        "Anim.Timing.Easing",
-        "Anim.Properties.Position",
-        "Anim.Properties.Rotate",
-        "Anim.Properties.Scale",
-        "Anim.Properties.Opacity",
-        "Anim.Properties.BackgroundColor",
-        "Anim.Properties.Size"
+        "Anim.Easing",
+        "Anim.Property.Position",
+        "Anim.Property.Rotate",
+        "Anim.Property.Scale",
+        "Anim.Property.Opacity",
+        "Anim.Property.BackgroundColor",
+        "Anim.Property.Size"
     ],
     "elm-version": "0.19.0 <= v < 0.20.0",
     "dependencies": {

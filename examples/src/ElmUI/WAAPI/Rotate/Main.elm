@@ -15,9 +15,9 @@ FEATURES:
 
 -}
 
+import Anim.Easing as Easing
 import Anim.Engine.WAAPI as WAAPI
-import Anim.Properties.Rotate as Rotate
-import Anim.Timing.Easing as Easing
+import Anim.Property.Rotate as Rotate
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI

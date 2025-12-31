@@ -1,10 +1,10 @@
 module TestTransformOrder exposing (suite)
 
 import Anim.Engine.CSS as CSS
-import Anim.Properties.Position as Position
-import Anim.Properties.Rotate as Rotate
-import Anim.Properties.Scale as Scale
-import Anim.Timing.Easing as Easing
+import Anim.Property.Position as Position
+import Anim.Property.Rotate as Rotate
+import Anim.Property.Scale as Scale
+import Anim.Easing as Easing
 import Expect
 import Test exposing (..)
 

@@ -1,4 +1,4 @@
-module Anim.Properties.Position exposing
+module Anim.Property.Position exposing
     ( Builder, for, build
     , from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
     , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
@@ -78,7 +78,7 @@ You can set a global perspective for all 3D animations directly on the Engine yo
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Position as PB
 import Anim.Internal.Properties.Position as P
-import Anim.Timing.Easing as Easing exposing (Easing)
+import Anim.Easing as Easing exposing (Easing)
 
 
 {-| Type alias for the internal `PositionBuilder`.

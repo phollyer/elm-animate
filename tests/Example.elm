@@ -3,8 +3,8 @@ module Example exposing (..)
 import Anim.Engine.CSS as CSS
 import Anim.Internal.CSS as InternalCSS
 import Anim.Internal.CSS.KeyframeAnimation as KeyframeAnimation
-import Anim.Properties.Position as Position
-import Anim.Timing.Easing as Easing
+import Anim.Property.Position as Position
+import Anim.Easing as Easing
 import Expect
 import Test exposing (..)
 

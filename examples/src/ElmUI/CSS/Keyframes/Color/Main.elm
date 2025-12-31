@@ -22,9 +22,9 @@ USAGE:
 
 -}
 
+import Anim.Easing as Easing
 import Anim.Engine.CSS as CSS
-import Anim.Properties.BackgroundColor as Color exposing (Color(..))
-import Anim.Timing.Easing as Easing
+import Anim.Property.BackgroundColor as Color exposing (Color(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI

@@ -135,7 +135,7 @@ import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
 import Anim.Internal.WAAPI as InternalWAAPI
-import Anim.Timing.Easing as Easing exposing (Easing)
+import Anim.Easing as Easing exposing (Easing)
 import Browser exposing (UrlRequest(..))
 import Html
 import Json.Decode as Decode

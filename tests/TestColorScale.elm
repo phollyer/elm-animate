@@ -1,9 +1,9 @@
 module TestColorScale exposing (suite)
 
 import Anim.Engine.CSS as CSS
-import Anim.Properties.BackgroundColor as BackgroundColor
-import Anim.Properties.Scale as Scale
-import Anim.Timing.Easing as Easing
+import Anim.Property.BackgroundColor as BackgroundColor
+import Anim.Property.Scale as Scale
+import Anim.Easing as Easing
 import Expect
 import Test exposing (..)
 

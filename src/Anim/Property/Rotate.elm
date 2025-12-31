@@ -1,4 +1,4 @@
-module Anim.Properties.Rotate exposing
+module Anim.Property.Rotate exposing
     ( Builder, for, build
     , from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
     , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
@@ -74,7 +74,7 @@ You can set a global perspective for all 3D animations directly on the Engine yo
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Rotate as RB
 import Anim.Internal.Properties.Rotate as R
-import Anim.Timing.Easing as Easing exposing (Easing)
+import Anim.Easing as Easing exposing (Easing)
 
 
 

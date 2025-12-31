@@ -15,9 +15,9 @@ FEATURES:
 
 -}
 
+import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.Sub as Sub
-import Anim.Properties.Size as Size
-import Anim.Timing.Easing as Easing exposing (Easing(..))
+import Anim.Property.Size as Size
 import Browser exposing (Document)
 import Browser.Events
 import Common.Colors as Colors

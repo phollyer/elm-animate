@@ -118,6 +118,7 @@ These settings will be used for all animations unless overridden on a per-animat
 
 -}
 
+import Anim.Easing as Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity
@@ -126,7 +127,6 @@ import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
 import Anim.Internal.Sub as InternalSub
-import Anim.Timing.Easing as Easing exposing (Easing)
 import Dict
 import Html
 import Html.Attributes
