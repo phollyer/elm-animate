@@ -51,6 +51,10 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
 
 
+
+-- TYPES
+
+
 type AnimBuilder
     = AnimBuilder BuilderData
 
@@ -133,6 +137,10 @@ type alias ProcessedAnimationConfig targetProperty =
     }
 
 
+
+-- BUILD
+
+
 init : AnimBuilder
 init =
     AnimBuilder
@@ -145,44 +153,6 @@ init =
         , scrollTargets = []
         , scrollContainer = "document"
         }
-
-
-markDirty : AnimBuilder -> AnimBuilder
-markDirty (AnimBuilder data) =
-    AnimBuilder
-        { data
-            | currentElementId = Nothing
-            , elements = Dict.map (\_ el -> { el | properties = List.map markPropertyDirty el.properties }) data.elements
-        }
-
-
-markPropertyDirty : PropertyConfig -> PropertyConfig
-markPropertyDirty property =
-    case property of
-        PositionConfig config ->
-            PositionConfig { config | isDirty = True }
-
-        RotateConfig config ->
-            RotateConfig { config | isDirty = True }
-
-        ScaleConfig config ->
-            ScaleConfig { config | isDirty = True }
-
-        BackgroundColorConfig config ->
-            BackgroundColorConfig { config | isDirty = True }
-
-        OpacityConfig config ->
-            OpacityConfig { config | isDirty = True }
-
-        SizeConfig config ->
-            SizeConfig { config | isDirty = True }
-
-
-{-| Map a function over all scroll targets in the builder.
--}
-mapScrollTargets : (ScrollTarget -> ScrollTarget) -> AnimBuilder -> AnimBuilder
-mapScrollTargets fn (AnimBuilder data) =
-    AnimBuilder { data | scrollTargets = List.map fn data.scrollTargets }
 
 
 for : String -> AnimBuilder -> AnimBuilder
@@ -227,6 +197,10 @@ perspective containerId value (AnimBuilder data) =
         }
 
 
+
+-- QUERY BUILDER
+
+
 elements : AnimBuilder -> Dict ElementId ElementConfig
 elements (AnimBuilder data) =
     data.elements
@@ -248,12 +222,6 @@ getCurrentElementConfig (AnimBuilder data) =
 getElementConfig : String -> AnimBuilder -> Maybe ElementConfig
 getElementConfig elementId (AnimBuilder data) =
     Dict.get elementId data.elements
-
-
-updateElementConfig : String -> ElementConfig -> AnimBuilder -> AnimBuilder
-updateElementConfig elementId elementConfig (AnimBuilder data) =
-    AnimBuilder
-        { data | elements = Dict.insert elementId elementConfig data.elements }
 
 
 getTimespec : AnimBuilder -> Maybe TimeSpec
@@ -313,12 +281,19 @@ getScrollTargets (AnimBuilder data) =
     data.scrollTargets
 
 
-{-| Add a scroll target to the builder.
--}
-addScrollTarget : ScrollTarget -> AnimBuilder -> AnimBuilder
-addScrollTarget scrollTarget (AnimBuilder data) =
+getScrollContainer : AnimBuilder -> String
+getScrollContainer (AnimBuilder data) =
+    data.scrollContainer
+
+
+
+-- UPDATE BUILDER
+
+
+updateElementConfig : String -> ElementConfig -> AnimBuilder -> AnimBuilder
+updateElementConfig elementId elementConfig (AnimBuilder data) =
     AnimBuilder
-        { data | scrollTargets = scrollTarget :: data.scrollTargets }
+        { data | elements = Dict.insert elementId elementConfig data.elements }
 
 
 {-| Update the current element configuration.
@@ -334,19 +309,64 @@ updateCurrentElement config (AnimBuilder data) =
                 { data | elements = Dict.insert elementId config data.elements }
 
 
+markDirty : AnimBuilder -> AnimBuilder
+markDirty (AnimBuilder data) =
+    AnimBuilder
+        { data
+            | currentElementId = Nothing
+            , elements = Dict.map (\_ el -> { el | properties = List.map markPropertyDirty el.properties }) data.elements
+        }
 
-{- PROCESSSING HELPERS
 
-   Process animation data to resolve timing and easing values.
+markPropertyDirty : PropertyConfig -> PropertyConfig
+markPropertyDirty property =
+    case property of
+        PositionConfig config ->
+            PositionConfig { config | isDirty = True }
+
+        RotateConfig config ->
+            RotateConfig { config | isDirty = True }
+
+        ScaleConfig config ->
+            ScaleConfig { config | isDirty = True }
+
+        BackgroundColorConfig config ->
+            BackgroundColorConfig { config | isDirty = True }
+
+        OpacityConfig config ->
+            OpacityConfig { config | isDirty = True }
+
+        SizeConfig config ->
+            SizeConfig { config | isDirty = True }
+
+
+{-| Map a function over all scroll targets in the builder.
 -}
+mapScrollTargets : (ScrollTarget -> ScrollTarget) -> AnimBuilder -> AnimBuilder
+mapScrollTargets fn (AnimBuilder data) =
+    AnimBuilder { data | scrollTargets = List.map fn data.scrollTargets }
 
 
-{-| Process animation data to resolve timing and easing values.
-
-This function applies global defaults to property-specific configurations
-and returns processed animation data that can be used by different animation systems.
-
+{-| Add a scroll target to the builder.
 -}
+addScrollTarget : ScrollTarget -> AnimBuilder -> AnimBuilder
+addScrollTarget scrollTarget (AnimBuilder data) =
+    AnimBuilder
+        { data | scrollTargets = scrollTarget :: data.scrollTargets }
+
+
+setScrollContainer : String -> AnimBuilder -> AnimBuilder
+setScrollContainer containerId (AnimBuilder data) =
+    AnimBuilder { data | scrollContainer = containerId }
+
+
+
+-- PROCESSING
+--
+--
+-- Process animation data to resolve timing and easing values
+
+
 processAnimationData : AnimBuilder -> ProcessedAnimationData
 processAnimationData (AnimBuilder data) =
     let
@@ -743,26 +763,12 @@ resolvePerspectiveWithDefault local global default =
 
 
 
--- ENCODING FOR JAVASCRIPT
-
-
-setScrollContainer : String -> AnimBuilder -> AnimBuilder
-setScrollContainer containerId (AnimBuilder data) =
-    AnimBuilder { data | scrollContainer = containerId }
-
-
-getScrollContainer : AnimBuilder -> String
-getScrollContainer (AnimBuilder data) =
-    data.scrollContainer
-
-
-
 -- TRANSFORM ORDERING
--- Shared logic for consistent transform ordering across CSS and Sub engines
+--
+--
+-- Shared logic for consistent transform ordering across engines
 
 
-{-| Record to hold transform parts in the correct order.
--}
 type alias TransformParts =
     { position : String
     , rotate : String
@@ -771,7 +777,6 @@ type alias TransformParts =
 
 
 {-| Extract transforms from ProcessedPropertyConfig list in correct order.
-Used by Sub engine.
 -}
 extractTransformsFromProcessed : List ProcessedPropertyConfig -> TransformParts
 extractTransformsFromProcessed properties =
@@ -779,7 +784,6 @@ extractTransformsFromProcessed properties =
 
 
 {-| Extract transforms from PropertyConfig list in correct order.
-Used by CSS engine.
 -}
 extractTransformsFromProperty : List PropertyConfig -> TransformParts
 extractTransformsFromProperty properties =
