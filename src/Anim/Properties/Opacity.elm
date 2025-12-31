@@ -28,9 +28,10 @@ Use these functions to configure opacity animations in the builder chain:
 
 ## Start Opacity
 
-The first time the animation runs, if no starting opacity is set, it will default to 1.0 (fully opaque).
+The first time an opacity animation is configured, if no starting opacity is set, it will default to: `1.0` (fully opaque).
+On subsequent animations, it will start from the last known opacity.
 
-On subsequent animations, it will start from the last known opacity, so you only need to set this when you want to override that behavior.
+The last known opacity is tracked in your Engine's model, so you only need to set this when you want to override that behavior, or, if you choose not to track state in your model.
 
 @docs from
 

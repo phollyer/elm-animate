@@ -5,6 +5,7 @@ module Anim.Internal.Builders.Size exposing
     , duration
     , easing
     , for
+    , from
     , fromH
     , fromHW
     , fromW
@@ -52,6 +53,13 @@ defaultConfig : SizeConfig
 defaultConfig =
     PropertyBuilder.defaultConfig <|
         Size.fromTuple ( 0, 0 )
+
+
+from : Size -> SizeBuilder -> SizeBuilder
+from size (SizeBuilder config builder) =
+    SizeBuilder
+        { config | start = Just size }
+        builder
 
 
 fromHW : Float -> Float -> SizeBuilder -> SizeBuilder

@@ -1,7 +1,7 @@
 module Anim.Properties.Size exposing
     ( Builder, for, build
-    , fromHW, fromH, fromW, fromTuple
-    , toHW, toH, toW
+    , from, fromHW, fromH, fromW
+    , to, toHW, toH, toW
     , delay, duration, speed
     , easing
     )
@@ -30,16 +30,17 @@ Use these functions to configure size animations in the builder chain:
 
 ## Start Size
 
-The first time the animation runs, if no starting size is set, it will default to (0, 0).
+The first time a size animation is configured, if no starting size is set, it will default to: `{height = 0, width = 0}`. On subsequent animations,
+it will start from the last known size.
 
-On subsequent animations, it will start from the last known size, so you only need to set this when you want to override that behavior.
+The last known size is tracked in your Engine's model, so you only need to set this when you want to override that behavior, or, if you choose not to track state in your model.
 
-@docs fromHW, fromH, fromW, fromTuple
+@docs from, fromHW, fromH, fromW
 
 
 ## End Size
 
-@docs toHW, toH, toW
+@docs to, toHW, toH, toW
 
 
 ## Timing
@@ -55,6 +56,7 @@ On subsequent animations, it will start from the last known size, so you only ne
 
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Size as SB
+import Anim.Internal.Properties.Size as S
 import Anim.Timing.Easing as Easing exposing (Easing)
 
 
@@ -91,9 +93,27 @@ build =
     SB.build
 
 
-{-| Set the starting width and height for the current element.
+{-| Set the uniform starting size (width and height) for the current element.
 
-    Size.fromHW 100 50 -- Start from width=100, height=50
+    animBuilder
+        |> Size.for "my-element"
+        |> Size.from 100
+        |> ...
+
+This is equivalent to `fromHW 100 100`.
+
+-}
+from : Float -> Builder -> Builder
+from =
+    SB.from << S.fromTuple << (\v -> ( v, v ))
+
+
+{-| Set the starting height and width for the current element.
+
+    animBuilder
+        |> Size.for "my-element"
+        |> Size.fromHW 200 100
+        |> ...
 
 -}
 fromHW : Float -> Float -> Builder -> Builder
@@ -101,19 +121,14 @@ fromHW =
     SB.fromHW
 
 
-{-| Set the starting width and height from a tuple.
-
-    Size.fromTuple ( 100, 50 ) -- Start from width=100, height=50
-
--}
-fromTuple : ( Float, Float ) -> Builder -> Builder
-fromTuple ( width, height ) =
-    SB.fromHW width height
-
-
 {-| Set the starting height for the current element, keeping the current width.
 
-    Size.fromH 100 -- Start from height=100
+    animBuilder
+        |> Size.for "my-element"
+        |> Size.fromH 150
+        |> ...
+
+The width remains unchanged, or 0 if not set.
 
 -}
 fromH : Float -> Builder -> Builder
@@ -123,7 +138,12 @@ fromH =
 
 {-| Set the starting width for the current element, keeping the current height.
 
-    Size.fromW 200 -- Start from width=200
+    animBuilder
+        |> Size.for "my-element"
+        |> Size.fromW 250
+        |> ...
+
+The height remains unchanged, or 0 if not set.
 
 -}
 fromW : Float -> Builder -> Builder
@@ -131,9 +151,27 @@ fromW =
     SB.fromW
 
 
-{-| Set the target width and height for the animation.
+{-| Set the uniform target size (height and width) for the animation.
 
-    Size.toHW 200 300 -- animate to height=200, width=300
+    animBuilder
+        |> Size.for "my-element"
+        |> Size.to 150
+        |> ...
+
+This is equivalent to `toHW 150 150`.
+
+-}
+to : Float -> Builder -> Builder
+to =
+    SB.to << S.fromTuple << (\v -> ( v, v ))
+
+
+{-| Set the target height and width for the animation.
+
+    animBuilder
+        |> Size.for "my-element"
+        |> Size.toHW 200 100
+        |> ...
 
 -}
 toHW : Float -> Float -> Builder -> Builder
@@ -143,7 +181,12 @@ toHW height width =
 
 {-| Set the target height for the animation, keeping the current target width.
 
-    Size.toH 200 -- animate to height=200
+    animBuilder
+        |> Size.for "my-element"
+        |> Size.toH 150
+        |> ...
+
+The width remains unchanged, or 0 if not set.
 
 -}
 toH : Float -> Builder -> Builder
@@ -153,12 +196,43 @@ toH =
 
 {-| Set the target width for the animation, keeping the current target height.
 
-    Size.toW 300 -- animate to width=300
+    animBuilder
+        |> Size.for "my-element"
+        |> Size.toW 250
+        |> ...
+
+The height remains unchanged, or 0 if not set.
 
 -}
 toW : Float -> Builder -> Builder
 toW =
     SB.toW
+
+
+{-| Set the delay (milliseconds) before the animation starts.
+
+    animBuilder
+        |> Size.for "my-element"
+        |> Size.delay 500
+        |> ...
+
+-}
+delay : Int -> Builder -> Builder
+delay =
+    SB.delay
+
+
+{-| Set the animation duration (milliseconds).
+
+    animBuilder
+        |> Size.for "my-element"
+        |> Size.duration 2000
+        |> ...
+
+-}
+duration : Int -> Builder -> Builder
+duration =
+    SB.duration
 
 
 {-| The speed represents how many pixels the element's size changes per second.
@@ -180,19 +254,6 @@ speed =
     SB.speed
 
 
-{-| Set the animation duration (milliseconds).
-
-    animBuilder
-        |> Size.for "my-element"
-        |> Size.duration 2000
-        |> ...
-
--}
-duration : Int -> Builder -> Builder
-duration =
-    SB.duration
-
-
 {-| Set the easing function for the animation.
 
     animBuilder
@@ -204,16 +265,3 @@ duration =
 easing : Easing -> Builder -> Builder
 easing =
     Easing.mapInternal identity >> SB.easing
-
-
-{-| Set the delay (milliseconds) before the animation starts.
-
-    animBuilder
-        |> Size.for "my-element"
-        |> Size.delay 500
-        |> ...
-
--}
-delay : Int -> Builder -> Builder
-delay =
-    SB.delay
