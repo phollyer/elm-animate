@@ -2,7 +2,8 @@ module Anim.Properties.BackgroundColor exposing
     ( Color(..), Builder, for, build
     , from
     , to
-    , duration, speed, easing, delay
+    , delay, duration, speed
+    , easing
     )
 
 {-| Background Color animation functions.
@@ -41,7 +42,12 @@ On subsequent animations, it will start from the last known color, so you only n
 
 ## Timing
 
-@docs duration, speed, easing, delay
+@docs delay, duration, speed
+
+
+## Easing
+
+@docs easing
 
 -}
 
@@ -160,7 +166,6 @@ speed =
 
     animBuilder
         |> BackgroundColor.for "my-element"
-        |> BackgroundColor.to (Hex "#ff0000")
         |> BackgroundColor.duration 2000
         |> ...
 
@@ -174,8 +179,7 @@ duration milliseconds =
 
     animBuilder
         |> BackgroundColor.for "my-element"
-        |> BackgroundColor.to (Hex "#ff0000")
-        |> BackgroundColor.easing Ease.CubicInOut
+        |> BackgroundColor.easing EaseInOut
         |> ...
 
 -}
@@ -184,11 +188,10 @@ easing easing_ =
     Easing.mapInternal CB.easing easing_
 
 
-{-| Set the delay (milliseconds) before the animation runs.
+{-| Set the delay (milliseconds) before the animation starts.
 
     animBuilder
         |> BackgroundColor.for "my-element"
-        |> BackgroundColor.to (Hex "#ff0000")
         |> BackgroundColor.delay 500
         |> ...
 

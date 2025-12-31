@@ -2,7 +2,9 @@ module Anim.Properties.Rotate exposing
     ( Builder, for, build
     , from, fromX, fromY, fromZ, fromXYZ
     , to, toX, toY, toZ, toXYZ
-    , speed, duration, easing, delay, perspective
+    , delay, duration, speed
+    , easing
+    , perspective
     )
 
 {-| Rotate animation functions.
@@ -52,7 +54,17 @@ so you only need to set this when you want to override that behavior.
 
 ## Timing
 
-@docs speed, duration, easing, delay, perspective
+@docs delay, duration, speed
+
+
+## Easing
+
+@docs easing
+
+
+## 3D Animations
+
+@docs perspective
 
 -}
 
@@ -241,13 +253,18 @@ toXYZ x y z =
     RB.toXYZ x y z
 
 
-{-| Set animation speed for rotation (degrees per second).
+{-| The speed represents how many degrees the element rotates per second.
+
+For example, lets take a rotation animation from `0°` to `180°`.
+A speed of `90.0` means the element will rotate 90 degrees per second, so our animation will take 2 seconds to complete (0° -> 90° in 1 second, then 90° -> 180° in the next second).
 
     animBuilder
-        |> Rotation.for "my-element"
-        |> Rotation.to 180
-        |> Rotation.speed 90
+        |> Rotate.for "my-element"
+        |> Rotate.to 180
+        |> Rotate.speed 90
         |> ...
+
+Similarly, a speed of `180.0` would complete the same animation in 1 second, and a speed of `45.0` would take 4 seconds.
 
 -}
 speed : Float -> Builder -> Builder
@@ -255,12 +272,11 @@ speed degreesPerSecond =
     RB.speed degreesPerSecond
 
 
-{-| Set animation duration for rotation (milliseconds).
+{-| Set the animation duration (milliseconds).
 
     animBuilder
-        |> Rotation.for "my-element"
-        |> Rotation.to 180
-        |> Rotation.duration 2000
+        |> Rotate.for "my-element"
+        |> Rotate.duration 2000
         |> ...
 
 -}
@@ -269,12 +285,11 @@ duration milliseconds =
     RB.duration milliseconds
 
 
-{-| Set easing function for rotation animation.
+{-| Set the easing function for the animation.
 
     animBuilder
-        |> Rotation.for "my-element"
-        |> Rotation.to 180
-        |> Rotation.easing EaseInOut
+        |> Rotate.for "my-element"
+        |> Rotate.easing EaseInOut
         |> ...
 
 -}
@@ -283,12 +298,11 @@ easing easingFunction =
     RB.easing (Easing.mapInternal identity easingFunction)
 
 
-{-| Set delay for rotation animation (milliseconds).
+{-| Set the delay (milliseconds) before the animation starts.
 
     animBuilder
-        |> Rotation.for "my-element"
-        |> Rotation.to 180
-        |> Rotation.delay 500
+        |> Rotate.for "my-element"
+        |> Rotate.delay 500
         |> ...
 
 -}
@@ -301,16 +315,16 @@ delay delay_ =
 
 This allows you to override the global perspective setting for rotation animations
 on a per-container basis. The perspective value determines the distance between
-the viewer and the z=0 plane, affecting how 3D rotations appear.
+the viewer and the `z = 0` plane, affecting how 3D rotations appear.
 
     animBuilder
         |> Rotate.for "my-element"
-        |> Rotate.toXYZ 45 90 180
         |> Rotate.perspective "special-container" 800
+        |> Rotate.toXYZ 45 90 180
         |> ...
 
 The first parameter is the container ID, and the second is the perspective value in pixels.
-This will override any global perspective set via `Css.perspective` for this rotation animation.
+This will override any global perspective set by one of the Engines.
 
 -}
 perspective : String -> Float -> Builder -> Builder

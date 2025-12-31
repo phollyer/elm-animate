@@ -254,13 +254,18 @@ toZ z =
     PB.toZ z
 
 
-{-| Set the animation speed (pixels per second).
+{-| The speed represents how many pixels the element moves per second.
+
+For example, lets take a position animation from `(0, 0)` to `(100, 0)`.
+A speed of `50.0` means the element will move 50 pixels per second, so our animation will take 2 seconds to complete (0 -> 50 in 1 second, then 50 -> 100 in the next second).
 
     animBuilder
         |> Position.for "my-element"
         |> Position.toY 300
         |> Position.speed 500
         |> ...
+
+Similarly, a speed of `100.0` would complete the same animation in 1 second, and a speed of `25.0` would take 4 seconds.
 
 -}
 speed : Float -> Builder -> Builder
@@ -312,17 +317,20 @@ delay delay_ =
     PB.delay delay_
 
 
-{-| Set the perspective for 3D positioning.
+{-| Set the perspective for 3D positioning on this specific property.
 
-The first parameter is the container ID, and the second is the perspective value in pixels.
-
-This will override any global perspective set via an Engine for this position animation.
+This allows you to override the global perspective setting for position animations
+on a per-container basis. The perspective value determines the distance between
+the viewer and the `z = 0` plane, affecting how 3D positioning appears.
 
     animBuilder
         |> Position.for "my-element"
-        |> Position.perspective "my-element-container" 800
+        |> Position.perspective "special-container" 800
         |> Position.toZ 200
         |> ...
+
+The first parameter is the container ID, and the second is the perspective value in pixels.
+This will override any global perspective set by one of the Engines.
 
 -}
 perspective : String -> Float -> Builder -> Builder

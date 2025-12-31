@@ -2,7 +2,8 @@ module Anim.Properties.Size exposing
     ( Builder, for, build
     , fromHW, fromH, fromW, fromTuple
     , toHW, toH, toW
-    , speed, duration, easing, delay
+    , delay, duration, speed
+    , easing
     )
 
 {-| Size animation functions.
@@ -43,7 +44,12 @@ On subsequent animations, it will start from the last known size, so you only ne
 
 ## Timing
 
-@docs speed, duration, easing, delay
+@docs delay, duration, speed
+
+
+## Easing
+
+@docs easing
 
 -}
 
@@ -155,9 +161,18 @@ toW =
     SB.toW
 
 
-{-| Set the animation speed in pixels per second.
+{-| The speed represents how many pixels the element's size changes per second.
 
-    Size.speed 100 -- pixels per second
+For example, lets take a size animation from `(100, 100)` to `(200, 200)`.
+A speed of `50.0` means the size will change by 50 pixels per second, so our animation will take 2 seconds to complete.
+
+    animBuilder
+        |> Size.for "my-element"
+        |> Size.toHW 200 200
+        |> Size.speed 50
+        |> ...
+
+Similarly, a speed of `100.0` would complete the same animation in 1 second, and a speed of `25.0` would take 4 seconds.
 
 -}
 speed : Float -> Builder -> Builder
@@ -165,9 +180,12 @@ speed =
     SB.speed
 
 
-{-| Set the animation duration in milliseconds.
+{-| Set the animation duration (milliseconds).
 
-    Size.duration 2000 -- 2 seconds
+    animBuilder
+        |> Size.for "my-element"
+        |> Size.duration 2000
+        |> ...
 
 -}
 duration : Int -> Builder -> Builder
@@ -177,7 +195,10 @@ duration =
 
 {-| Set the easing function for the animation.
 
-    Size.easing Easing.easeInOutQuad
+    animBuilder
+        |> Size.for "my-element"
+        |> Size.easing EaseInOut
+        |> ...
 
 -}
 easing : Easing -> Builder -> Builder
@@ -185,9 +206,12 @@ easing =
     Easing.mapInternal identity >> SB.easing
 
 
-{-| Set the delay before starting the animation.
+{-| Set the delay (milliseconds) before the animation starts.
 
-    Size.delay 500 -- 500ms delay
+    animBuilder
+        |> Size.for "my-element"
+        |> Size.delay 500
+        |> ...
 
 -}
 delay : Int -> Builder -> Builder

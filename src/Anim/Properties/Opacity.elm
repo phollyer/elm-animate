@@ -2,7 +2,8 @@ module Anim.Properties.Opacity exposing
     ( Builder, for, build
     , from
     , to
-    , speed, duration, easing, delay
+    , delay, duration, speed
+    , easing
     )
 
 {-| Opacity animation functions.
@@ -41,7 +42,12 @@ On subsequent animations, it will start from the last known opacity, so you only
 
 ## Timing
 
-@docs speed, duration, easing, delay
+@docs delay, duration, speed
+
+
+## Easing
+
+@docs easing
 
 -}
 
@@ -136,7 +142,6 @@ speed pixelsPerSecond =
 
     animBuilder
         |> Opacity.for "my-element"
-        |> Opacity.to 1.0
         |> Opacity.duration 2000
         |> ...
 
@@ -146,11 +151,10 @@ duration milliseconds =
     OB.duration milliseconds
 
 
-{-| Set the delay (milliseconds) before the animation runs.
+{-| Set the delay (milliseconds) before the animation starts.
 
     animBuilder
         |> Opacity.for "my-element"
-        |> Opacity.to 0.5
         |> Opacity.delay 500
         |> ...
 
@@ -164,7 +168,6 @@ delay delay_ =
 
     animBuilder
         |> Opacity.for "my-element"
-        |> Opacity.to 0.5
         |> Opacity.easing EaseInOut
         |> ...
 
