@@ -22,22 +22,6 @@ import Anim.Internal.Timing.Easing exposing (Easing)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
-
-{- SIZE CONFIGURATION BUILDER -}
-{- Usage:
-
-   Anim.init
-       |> Size.for "my-element"
-       |> Size.from (Size.fromTuple (100, 50))
-       |> Size.to (Size.fromTuple (200, 100))
-       |> Size.duration 2000
-       |> Size.easing Easing.easeInOut
-       |> Size.delay (Delay.millis 500)
-       |> Size.build
-       |> Anim.animate
--}
-
-
 type SizeBuilder
     = SizeBuilder (Builder.AnimationConfig Size) AnimBuilder
 
@@ -45,47 +29,19 @@ type SizeBuilder
 for : String -> AnimBuilder -> SizeBuilder
 for elementId builder =
     let
-        -- First set the current element ID in the builder
-        builderWithElement =
-            Builder.for elementId builder
+        extractExisting propertyConfig =
+            case propertyConfig of
+                Builder.SizeConfig cfg ->
+                    Just cfg
 
-        existingConfig =
-            Builder.getElementConfig elementId builderWithElement
-                |> Maybe.andThen
-                    (\{ properties } ->
-                        properties
-                            |> List.filterMap
-                                (\prop ->
-                                    case prop of
-                                        Builder.SizeConfig config ->
-                                            Just config
+                _ ->
+                    Nothing
 
-                                        _ ->
-                                            Nothing
-                                )
-                            |> List.head
-                    )
-
-        newConfig =
-            case existingConfig of
-                Just config ->
-                    PropertyBuilder.applyGlobalDefaults builder <|
-                        { config
-                            | start = Just config.end
-                            , easing = Nothing
-                            , delay = Nothing
-                            , perspective = Nothing
-                            , timing = Nothing
-                            , duration = 0
-                            , speed = 0
-                            , distance = 0
-                            , isDirty = False
-                        }
-
-                Nothing ->
-                    PropertyBuilder.applyGlobalDefaults builder defaultConfig
+        config =
+            PropertyBuilder.createFor extractExisting defaultConfig elementId builder
     in
-    SizeBuilder newConfig builderWithElement
+    SizeBuilder config <|
+        Builder.for elementId builder
 
 
 type alias SizeConfig =
@@ -94,30 +50,21 @@ type alias SizeConfig =
 
 defaultConfig : SizeConfig
 defaultConfig =
-    { start = Nothing
-    , end = Size.fromTuple ( 0, 0 )
-    , duration = 0
-    , speed = 0
-    , distance = 0
-    , timing = Nothing
-    , easing = Nothing
-    , delay = Nothing
-    , perspective = Nothing
-    , isDirty = False
-    }
+    PropertyBuilder.defaultConfig <|
+        Size.fromTuple ( 0, 0 )
 
 
-{-| Set the starting size for the animation.
--}
 fromHW : Float -> Float -> SizeBuilder -> SizeBuilder
 fromHW height width (SizeBuilder config builder) =
     SizeBuilder
-        { config | start = Just (Size.fromTuple ( width, height )) }
+        { config
+            | start =
+                Just <|
+                    Size.fromTuple ( width, height )
+        }
         builder
 
 
-{-| Set the starting height for the animation, keeping the current width.
--}
 fromH : Float -> SizeBuilder -> SizeBuilder
 fromH height (SizeBuilder config builder) =
     let
@@ -129,12 +76,14 @@ fromH height (SizeBuilder config builder) =
             Size.toTuple currentSize
     in
     SizeBuilder
-        { config | start = Just (Size.fromTuple ( currentWidth, height )) }
+        { config
+            | start =
+                Just <|
+                    Size.fromTuple ( currentWidth, height )
+        }
         builder
 
 
-{-| Set the starting width for the animation, keeping the current height.
--}
 fromW : Float -> SizeBuilder -> SizeBuilder
 fromW width (SizeBuilder config builder) =
     let
@@ -146,12 +95,14 @@ fromW width (SizeBuilder config builder) =
             Size.toTuple currentSize
     in
     SizeBuilder
-        { config | start = Just (Size.fromTuple ( width, currentHeight )) }
+        { config
+            | start =
+                Just <|
+                    Size.fromTuple ( width, currentHeight )
+        }
         builder
 
 
-{-| Set the target size for the animation.
--}
 to : Size -> SizeBuilder -> SizeBuilder
 to size (SizeBuilder config builder) =
     SizeBuilder
@@ -159,8 +110,6 @@ to size (SizeBuilder config builder) =
         builder
 
 
-{-| Set the target width and height for the animation.
--}
 toHW : Float -> Float -> SizeBuilder -> SizeBuilder
 toHW height width (SizeBuilder config builder) =
     SizeBuilder
@@ -168,8 +117,6 @@ toHW height width (SizeBuilder config builder) =
         builder
 
 
-{-| Set the target height for the animation, keeping the current target width.
--}
 toH : Float -> SizeBuilder -> SizeBuilder
 toH height (SizeBuilder config builder) =
     let
@@ -181,8 +128,6 @@ toH height (SizeBuilder config builder) =
         builder
 
 
-{-| Set the target width for the animation, keeping the current target height.
--}
 toW : Float -> SizeBuilder -> SizeBuilder
 toW width (SizeBuilder config builder) =
     let
@@ -194,62 +139,26 @@ toW width (SizeBuilder config builder) =
         builder
 
 
-{-| Set the animation speed in pixels per second.
--}
 speed : Float -> SizeBuilder -> SizeBuilder
 speed pixelsPerSecond (SizeBuilder config builder) =
-    SizeBuilder
-        { config | timing = Just (Speed pixelsPerSecond) }
-        builder
+    SizeBuilder (PropertyBuilder.withSpeed pixelsPerSecond config) builder
 
 
-{-| Set the animation duration in milliseconds.
--}
 duration : Int -> SizeBuilder -> SizeBuilder
 duration ms (SizeBuilder config builder) =
-    SizeBuilder
-        { config | timing = Just (Duration ms) }
-        builder
+    SizeBuilder (PropertyBuilder.withDuration ms config) builder
 
 
-{-| Set the easing function for the animation.
--}
 easing : Easing -> SizeBuilder -> SizeBuilder
 easing easingFunction (SizeBuilder config builder) =
-    SizeBuilder
-        { config | easing = Just easingFunction }
-        builder
+    SizeBuilder (PropertyBuilder.withEasing easingFunction config) builder
 
 
-{-| Set the delay before starting the animation.
--}
 delay : Int -> SizeBuilder -> SizeBuilder
 delay ms (SizeBuilder config builder) =
-    SizeBuilder
-        { config | delay = Just ms }
-        builder
+    SizeBuilder (PropertyBuilder.withDelay ms config) builder
 
 
-{-| Build the size animation and add it to the AnimBuilder.
--}
 build : SizeBuilder -> AnimBuilder
 build (SizeBuilder config builder) =
-    let
-        -- Convert our SizeConfig to Builder.AnimationConfig Size
-        newSizeConfig =
-            { start = config.start
-            , end = config.end
-            , duration = 0 -- Will be calculated during processing
-            , speed = 0 -- Will be calculated during processing
-            , distance = 0 -- Will be calculated during processing
-            , timing = config.timing
-            , easing = config.easing
-            , delay = config.delay
-            , perspective = Nothing -- Size animations don't use perspective
-            , isDirty = False
-            }
-
-        builderPropertyConfig =
-            Builder.SizeConfig newSizeConfig
-    in
-    PropertyBuilder.upsert builderPropertyConfig builder
+    PropertyBuilder.upsert (Builder.SizeConfig config) builder

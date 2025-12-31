@@ -8,14 +8,18 @@ module Anim.Internal.Builders.Scale exposing
     , fromX
     , fromXY
     , fromXYZ
+    , fromXZ
     , fromY
+    , fromYZ
     , fromZ
     , perspective
     , speed
     , toX
     , toXY
     , toXYZ
+    , toXZ
     , toY
+    , toYZ
     , toZ
     )
 
@@ -26,21 +30,6 @@ import Anim.Internal.Timing.Easing exposing (Easing)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
-
-{- Usage:
-
-   Anim.init
-       |> Scale.for "my-element"
-       |> Scale.from (Scale.fromTuple (0, 0))
-       |> Scale.to (Scale.fromTuple (100, 200))
-       |> Scale.duration 2000
-       |> Scale.easing Easing.easeInOut
-       |> Scale.delay (Delay.millis 500)
-       |> Scale.build
-       |> Anim.animate
--}
-
-
 type ScaleBuilder
     = ScaleBuilder (Builder.AnimationConfig Scale) AnimBuilder
 
@@ -48,53 +37,24 @@ type ScaleBuilder
 for : String -> AnimBuilder -> ScaleBuilder
 for elementId builder =
     let
-        existingConfig =
-            case Builder.getElementConfig elementId builder of
-                Just { properties } ->
-                    properties
-                        |> List.filterMap
-                            (\prop ->
-                                case prop of
-                                    Builder.ScaleConfig config ->
-                                        Just config
-
-                                    _ ->
-                                        Nothing
-                            )
-                        |> List.head
+        extractExisting propertyConfig =
+            case propertyConfig of
+                Builder.ScaleConfig cfg ->
+                    Just cfg
 
                 _ ->
                     Nothing
 
-        newConfig =
-            case existingConfig of
-                Just config ->
-                    PropertyBuilder.applyGlobalDefaults builder <|
-                        { config
-                            | start = Just config.end
-                            , easing = Nothing
-                            , delay = Nothing
-                            , perspective = Nothing
-                            , timing = Nothing
-                            , duration = 0
-                            , speed = 0
-                            , distance = 0
-                            , isDirty = False
-                        }
-
-                Nothing ->
-                    PropertyBuilder.applyGlobalDefaults builder defaultConfig
+        config =
+            PropertyBuilder.createFor extractExisting defaultConfig elementId builder
     in
-    ScaleBuilder newConfig (Builder.for elementId builder)
+    ScaleBuilder config <|
+        Builder.for elementId builder
 
 
 build : ScaleBuilder -> AnimBuilder
 build (ScaleBuilder config builder) =
-    let
-        newScaleConfig =
-            Builder.ScaleConfig config
-    in
-    PropertyBuilder.upsert newScaleConfig builder
+    PropertyBuilder.upsert (Builder.ScaleConfig config) builder
 
 
 type alias ScaleConfig =
@@ -103,17 +63,19 @@ type alias ScaleConfig =
 
 defaultConfig : ScaleConfig
 defaultConfig =
-    { start = Nothing
-    , end = Scale.fromTuple ( 0, 0 )
-    , duration = 0
-    , speed = 0
-    , distance = 0
-    , timing = Nothing
-    , easing = Nothing
-    , delay = Nothing
-    , perspective = Nothing
-    , isDirty = False
-    }
+    PropertyBuilder.defaultConfig <|
+        Scale.fromTriple ( 1, 1, 1 )
+
+
+fromXYZ : Float -> Float -> Float -> ScaleBuilder -> ScaleBuilder
+fromXYZ scaleX scaleY scaleZ (ScaleBuilder config builder) =
+    ScaleBuilder
+        { config
+            | start =
+                Just <|
+                    Scale.fromTriple ( scaleX, scaleY, scaleZ )
+        }
+        builder
 
 
 fromXY : Float -> Float -> ScaleBuilder -> ScaleBuilder
@@ -127,13 +89,25 @@ fromXY scaleX scaleY (ScaleBuilder config builder) =
         builder
 
 
-fromXYZ : Float -> Float -> Float -> ScaleBuilder -> ScaleBuilder
-fromXYZ scaleX scaleY scaleZ (ScaleBuilder config builder) =
+fromXZ : Float -> Float -> ScaleBuilder -> ScaleBuilder
+fromXZ scaleX scaleZ (ScaleBuilder config builder) =
+    let
+        startScale =
+            case config.start of
+                Just scale_ ->
+                    scale_
+
+                Nothing ->
+                    Scale.fromTriple ( 1, 1, 1 )
+
+        { y } =
+            Scale.toRecord startScale
+    in
     ScaleBuilder
         { config
             | start =
                 Just <|
-                    Scale.fromTriple ( scaleX, scaleY, scaleZ )
+                    Scale.fromTriple ( scaleX, y, scaleZ )
         }
         builder
 
@@ -157,6 +131,29 @@ fromX scaleX (ScaleBuilder config builder) =
             | start =
                 Just <|
                     Scale.fromTriple ( scaleX, y, z )
+        }
+        builder
+
+
+fromYZ : Float -> Float -> ScaleBuilder -> ScaleBuilder
+fromYZ scaleY scaleZ (ScaleBuilder config builder) =
+    let
+        startScale =
+            case config.start of
+                Just scale_ ->
+                    scale_
+
+                Nothing ->
+                    Scale.fromTriple ( 1, 1, 1 )
+
+        { x } =
+            Scale.toRecord startScale
+    in
+    ScaleBuilder
+        { config
+            | start =
+                Just <|
+                    Scale.fromTriple ( x, scaleY, scaleZ )
         }
         builder
 
@@ -207,29 +204,6 @@ fromZ scaleZ (ScaleBuilder config builder) =
         builder
 
 
-toXY : Float -> Float -> ScaleBuilder -> ScaleBuilder
-toXY scaleX scaleY (ScaleBuilder config builder) =
-    let
-        startScale =
-            case config.start of
-                Just scale_ ->
-                    scale_
-
-                Nothing ->
-                    Scale.fromTriple ( 1, 1, 1 )
-
-        scale =
-            Scale.fromTuple ( scaleX, scaleY )
-    in
-    ScaleBuilder
-        { config
-            | end = scale
-            , distance = Scale.distance startScale scale
-            , start = Just startScale
-        }
-        builder
-
-
 toXYZ : Float -> Float -> Float -> ScaleBuilder -> ScaleBuilder
 toXYZ scaleX scaleY scaleZ (ScaleBuilder config builder) =
     let
@@ -241,14 +215,66 @@ toXYZ scaleX scaleY scaleZ (ScaleBuilder config builder) =
                 Nothing ->
                     Scale.fromTriple ( 1, 1, 1 )
 
-        scale =
+        endScale =
             Scale.fromTriple ( scaleX, scaleY, scaleZ )
     in
     ScaleBuilder
         { config
-            | end = scale
-            , distance = Scale.distance startScale scale
-            , start = Just startScale
+            | start = Just startScale
+            , end = endScale
+            , distance = Scale.distance startScale endScale
+        }
+        builder
+
+
+toXY : Float -> Float -> ScaleBuilder -> ScaleBuilder
+toXY scaleX scaleY (ScaleBuilder config builder) =
+    let
+        startScale =
+            case config.start of
+                Just scale_ ->
+                    scale_
+
+                Nothing ->
+                    Scale.fromTriple ( 1, 1, 1 )
+
+        { z } =
+            Scale.toRecord startScale
+
+        endScale =
+            Scale.fromTriple ( scaleX, scaleY, z )
+    in
+    ScaleBuilder
+        { config
+            | start = Just startScale
+            , end = endScale
+            , distance = Scale.distance startScale endScale
+        }
+        builder
+
+
+toXZ : Float -> Float -> ScaleBuilder -> ScaleBuilder
+toXZ scaleX scaleZ (ScaleBuilder config builder) =
+    let
+        startScale =
+            case config.start of
+                Just scale_ ->
+                    scale_
+
+                Nothing ->
+                    Scale.fromTriple ( 1, 1, 1 )
+
+        { y } =
+            Scale.toRecord startScale
+
+        endScale =
+            Scale.fromTriple ( scaleX, y, scaleZ )
+    in
+    ScaleBuilder
+        { config
+            | start = Just startScale
+            , end = endScale
+            , distance = Scale.distance startScale endScale
         }
         builder
 
@@ -267,13 +293,40 @@ toX scaleX (ScaleBuilder config builder) =
         { y, z } =
             Scale.toRecord startScale
 
-        scale =
+        endScale =
             Scale.fromTriple ( scaleX, y, z )
     in
     ScaleBuilder
         { config
-            | end = scale
-            , distance = Scale.distance startScale scale
+            | start = Just startScale
+            , end = endScale
+            , distance = Scale.distance startScale endScale
+        }
+        builder
+
+
+toYZ : Float -> Float -> ScaleBuilder -> ScaleBuilder
+toYZ scaleY scaleZ (ScaleBuilder config builder) =
+    let
+        startScale =
+            case config.start of
+                Just scale_ ->
+                    scale_
+
+                Nothing ->
+                    Scale.fromTriple ( 1, 1, 1 )
+
+        { x } =
+            Scale.toRecord startScale
+
+        endScale =
+            Scale.fromTriple ( x, scaleY, scaleZ )
+    in
+    ScaleBuilder
+        { config
+            | start = Just startScale
+            , end = endScale
+            , distance = Scale.distance startScale endScale
         }
         builder
 
@@ -292,13 +345,14 @@ toY scaleY (ScaleBuilder config builder) =
         { x, z } =
             Scale.toRecord startScale
 
-        scale =
+        endScale =
             Scale.fromTriple ( x, scaleY, z )
     in
     ScaleBuilder
         { config
-            | end = scale
-            , distance = Scale.distance startScale scale
+            | start = Just startScale
+            , end = endScale
+            , distance = Scale.distance startScale endScale
         }
         builder
 
@@ -317,51 +371,38 @@ toZ scaleZ (ScaleBuilder config builder) =
         { x, y } =
             Scale.toRecord startScale
 
-        scale =
+        endScale =
             Scale.fromTriple ( x, y, scaleZ )
     in
     ScaleBuilder
         { config
-            | end = scale
-            , distance = Scale.distance startScale scale
+            | start = Just startScale
+            , end = endScale
+            , distance = Scale.distance startScale endScale
         }
         builder
 
 
 speed : Float -> ScaleBuilder -> ScaleBuilder
 speed value (ScaleBuilder config builder) =
-    ScaleBuilder
-        { config
-            | speed = value
-            , timing =
-                Just <|
-                    Speed value
-        }
-        builder
+    ScaleBuilder (PropertyBuilder.withSpeed value config) builder
 
 
 duration : Int -> ScaleBuilder -> ScaleBuilder
 duration ms (ScaleBuilder config builder) =
-    ScaleBuilder
-        { config
-            | duration = ms
-            , timing =
-                Just <|
-                    Duration ms
-        }
-        builder
+    ScaleBuilder (PropertyBuilder.withDuration ms config) builder
 
 
 easing : Easing -> ScaleBuilder -> ScaleBuilder
 easing easing_ (ScaleBuilder config builder) =
-    ScaleBuilder { config | easing = Just easing_ } builder
+    ScaleBuilder (PropertyBuilder.withEasing easing_ config) builder
 
 
 delay : Int -> ScaleBuilder -> ScaleBuilder
 delay delay_ (ScaleBuilder config builder) =
-    ScaleBuilder { config | delay = Just delay_ } builder
+    ScaleBuilder (PropertyBuilder.withDelay delay_ config) builder
 
 
 perspective : String -> Float -> ScaleBuilder -> ScaleBuilder
 perspective containerId value (ScaleBuilder config builder) =
-    ScaleBuilder { config | perspective = Just { containerId = containerId, value = value } } builder
+    ScaleBuilder (PropertyBuilder.withPerspective containerId value config) builder

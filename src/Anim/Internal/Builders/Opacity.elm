@@ -17,23 +17,6 @@ import Anim.Internal.Timing.Easing exposing (Easing)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
-
-{- OPACITY CONFIGURATION BUILDER -}
-{- Usage:
-
-   Anim.init
-       |> Opacity.for "my-element"
-       |> Opacity.from (Opacity.rgba 255 0 0 1)
-       |> Opacity.to (Opacity.rgba 0 0 255 1)
-       |> Opacity.duration 2000
-       |> Opacity.easing Easing.easeInOut
-       |> Opacity.delay (Delay.millis 500)
-       |> Opacity.build
-       |> Anim.animate
-
--}
-
-
 type OpacityBuilder
     = OpacityBuilder (Builder.AnimationConfig Opacity) AnimBuilder
 
@@ -41,53 +24,23 @@ type OpacityBuilder
 for : String -> AnimBuilder -> OpacityBuilder
 for elementId builder =
     let
-        existingConfig =
-            case Builder.getElementConfig elementId builder of
-                Just { properties } ->
-                    properties
-                        |> List.filterMap
-                            (\prop ->
-                                case prop of
-                                    Builder.OpacityConfig config ->
-                                        Just config
-
-                                    _ ->
-                                        Nothing
-                            )
-                        |> List.head
+        extractExisting propertyConfig =
+            case propertyConfig of
+                Builder.OpacityConfig cfg ->
+                    Just cfg
 
                 _ ->
                     Nothing
 
-        newConfig =
-            case existingConfig of
-                Just config ->
-                    PropertyBuilder.applyGlobalDefaults builder <|
-                        { config
-                            | start = Just config.end
-                            , easing = Nothing
-                            , delay = Nothing
-                            , perspective = Nothing
-                            , timing = Nothing
-                            , duration = 0
-                            , speed = 0
-                            , distance = 0
-                            , isDirty = False
-                        }
-
-                Nothing ->
-                    PropertyBuilder.applyGlobalDefaults builder defaultConfig
+        config =
+            PropertyBuilder.createFor extractExisting defaultConfig elementId builder
     in
-    OpacityBuilder newConfig (Builder.for elementId builder)
+    OpacityBuilder config (Builder.for elementId builder)
 
 
 build : OpacityBuilder -> AnimBuilder
 build (OpacityBuilder config builder) =
-    let
-        newOpacityConfig =
-            Builder.OpacityConfig config
-    in
-    PropertyBuilder.upsert newOpacityConfig builder
+    PropertyBuilder.upsert (Builder.OpacityConfig config) builder
 
 
 type alias OpacityConfig =
@@ -96,17 +49,8 @@ type alias OpacityConfig =
 
 defaultConfig : OpacityConfig
 defaultConfig =
-    { start = Nothing
-    , end = Opacity.fromFloat 1
-    , duration = 0
-    , speed = 0
-    , distance = 0
-    , timing = Nothing
-    , easing = Nothing
-    , delay = Nothing
-    , perspective = Nothing
-    , isDirty = False
-    }
+    PropertyBuilder.defaultConfig <|
+        Opacity.fromFloat 1
 
 
 from : Opacity -> OpacityBuilder -> OpacityBuilder
@@ -136,33 +80,19 @@ to opacity (OpacityBuilder config builder) =
 
 speed : Float -> OpacityBuilder -> OpacityBuilder
 speed spd (OpacityBuilder config builder) =
-    OpacityBuilder
-        { config
-            | speed = spd
-            , timing =
-                Just <|
-                    Speed spd
-        }
-        builder
+    OpacityBuilder (PropertyBuilder.withSpeed spd config) builder
 
 
 duration : Int -> OpacityBuilder -> OpacityBuilder
 duration dur (OpacityBuilder config builder) =
-    OpacityBuilder
-        { config
-            | duration = dur
-            , timing =
-                Just <|
-                    Duration dur
-        }
-        builder
+    OpacityBuilder (PropertyBuilder.withDuration dur config) builder
 
 
 easing : Easing -> OpacityBuilder -> OpacityBuilder
 easing ease (OpacityBuilder config builder) =
-    OpacityBuilder { config | easing = Just ease } builder
+    OpacityBuilder (PropertyBuilder.withEasing ease config) builder
 
 
 delay : Int -> OpacityBuilder -> OpacityBuilder
 delay dly (OpacityBuilder config builder) =
-    OpacityBuilder { config | delay = Just dly } builder
+    OpacityBuilder (PropertyBuilder.withDelay dly config) builder

@@ -50,53 +50,23 @@ type PositionBuilder
 for : String -> AnimBuilder -> PositionBuilder
 for elementId builder =
     let
-        existingConfig =
-            case Builder.getElementConfig elementId builder of
-                Just { properties } ->
-                    properties
-                        |> List.filterMap
-                            (\prop ->
-                                case prop of
-                                    Builder.PositionConfig config ->
-                                        Just config
-
-                                    _ ->
-                                        Nothing
-                            )
-                        |> List.head
+        extractExisting propertyConfig =
+            case propertyConfig of
+                Builder.PositionConfig cfg ->
+                    Just cfg
 
                 _ ->
                     Nothing
 
-        newConfig =
-            case existingConfig of
-                Just config ->
-                    PropertyBuilder.applyGlobalDefaults builder <|
-                        { config
-                            | start = Just config.end
-                            , easing = Nothing
-                            , delay = Nothing
-                            , perspective = Nothing
-                            , timing = Nothing
-                            , duration = 0
-                            , speed = 0
-                            , distance = 0
-                            , isDirty = False
-                        }
-
-                Nothing ->
-                    PropertyBuilder.applyGlobalDefaults builder defaultConfig
+        config =
+            PropertyBuilder.createFor extractExisting defaultConfig elementId builder
     in
-    PositionBuilder newConfig (Builder.for elementId builder)
+    PositionBuilder config (Builder.for elementId builder)
 
 
 build : PositionBuilder -> AnimBuilder
 build (PositionBuilder config builder) =
-    let
-        newPositionConfig =
-            Builder.PositionConfig config
-    in
-    PropertyBuilder.upsert newPositionConfig builder
+    PropertyBuilder.upsert (Builder.PositionConfig config) builder
 
 
 type alias PositionConfig =
@@ -105,17 +75,8 @@ type alias PositionConfig =
 
 defaultConfig : PositionConfig
 defaultConfig =
-    { start = Nothing
-    , end = Position.fromTriple ( 0, 0, 0 )
-    , duration = 0
-    , speed = 0
-    , distance = 0
-    , timing = Nothing
-    , easing = Nothing
-    , delay = Nothing
-    , perspective = Nothing
-    , isDirty = False
-    }
+    PropertyBuilder.defaultConfig <|
+        Position.fromTriple ( 0, 0, 0 )
 
 
 fromXY : Float -> Float -> PositionBuilder -> PositionBuilder
@@ -211,38 +172,24 @@ toXYZ x y z (PositionBuilder config builder) =
 
 speed : Float -> PositionBuilder -> PositionBuilder
 speed value (PositionBuilder config builder) =
-    PositionBuilder
-        { config
-            | speed = value
-            , timing =
-                Just <|
-                    Speed value
-        }
-        builder
+    PositionBuilder (PropertyBuilder.withSpeed value config) builder
 
 
 duration : Int -> PositionBuilder -> PositionBuilder
 duration ms (PositionBuilder config builder) =
-    PositionBuilder
-        { config
-            | duration = ms
-            , timing =
-                Just <|
-                    Duration ms
-        }
-        builder
+    PositionBuilder (PropertyBuilder.withDuration ms config) builder
 
 
 easing : Easing -> PositionBuilder -> PositionBuilder
 easing easing_ (PositionBuilder config builder) =
-    PositionBuilder { config | easing = Just easing_ } builder
+    PositionBuilder (PropertyBuilder.withEasing easing_ config) builder
 
 
 delay : Int -> PositionBuilder -> PositionBuilder
 delay delay_ (PositionBuilder config builder) =
-    PositionBuilder { config | delay = Just delay_ } builder
+    PositionBuilder (PropertyBuilder.withDelay delay_ config) builder
 
 
 perspective : String -> Float -> PositionBuilder -> PositionBuilder
 perspective containerId value (PositionBuilder config builder) =
-    PositionBuilder { config | perspective = Just { containerId = containerId, value = value } } builder
+    PositionBuilder (PropertyBuilder.withPerspective containerId value config) builder

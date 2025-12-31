@@ -1,13 +1,128 @@
 module Anim.Internal.Builders.Property exposing
     ( add
     , applyGlobalDefaults
+    , createFor
+    , defaultConfig
     , replace
     , upsert
+    , withDelay
+    , withDuration
+    , withEasing
+    , withPerspective
+    , withSpeed
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Timing.Easing exposing (Easing)
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec)
+import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
+
+
+type alias Config a =
+    { start : Maybe a
+    , end : a
+    , easing : Maybe Easing
+    , delay : Maybe Int
+    , perspective : Maybe { containerId : String, value : Float }
+    , timing : Maybe TimeSpec
+    , duration : Int
+    , speed : Float
+    , distance : Float
+    , isDirty : Bool
+    }
+
+
+defaultConfig : a -> Config a
+defaultConfig defaultEnd =
+    { start = Nothing
+    , end = defaultEnd
+    , duration = 0
+    , speed = 0
+    , distance = 0
+    , timing = Nothing
+    , delay = Nothing
+    , easing = Nothing
+    , perspective = Nothing
+    , isDirty = False
+    }
+
+
+createFor : (Builder.PropertyConfig -> Maybe (Config a)) -> Config a -> String -> AnimBuilder -> Config a
+createFor extractExisting defaultConfig_ elementId builder =
+    let
+        existingConfig =
+            builder
+                |> Builder.getElementConfig elementId
+                |> Maybe.andThen
+                    (\{ properties } ->
+                        properties
+                            |> List.filterMap extractExisting
+                            |> List.head
+                    )
+    in
+    case existingConfig of
+        Just config ->
+            applyGlobalDefaults builder
+                { config
+                    | start = Just config.end
+                    , easing = Nothing
+                    , delay = Nothing
+                    , perspective = Nothing
+                    , timing = Nothing
+                    , duration = 0
+                    , speed = 0
+                    , distance = 0
+                    , isDirty = False
+                }
+
+        Nothing ->
+            applyGlobalDefaults builder defaultConfig_
+
+
+withSpeed :
+    Float
+    -> { config | speed : Float, timing : Maybe TimeSpec }
+    -> { config | speed : Float, timing : Maybe TimeSpec }
+withSpeed value config =
+    { config
+        | speed = value
+        , timing = Just <| Speed value
+    }
+
+
+withDuration :
+    Int
+    -> { config | duration : Int, timing : Maybe TimeSpec }
+    -> { config | duration : Int, timing : Maybe TimeSpec }
+withDuration ms config =
+    { config
+        | duration = ms
+        , timing = Just <| Duration ms
+    }
+
+
+withEasing :
+    Easing
+    -> { config | easing : Maybe Easing }
+    -> { config | easing : Maybe Easing }
+withEasing easing_ config =
+    { config | easing = Just easing_ }
+
+
+withDelay :
+    Int
+    -> { config | delay : Maybe Int }
+    -> { config | delay : Maybe Int }
+withDelay delay_ config =
+    { config | delay = Just delay_ }
+
+
+withPerspective :
+    String
+    -> Float
+    -> { config | perspective : Maybe { containerId : String, value : Float } }
+    -> { config | perspective : Maybe { containerId : String, value : Float } }
+withPerspective containerId value config =
+    { config | perspective = Just { containerId = containerId, value = value } }
 
 
 applyGlobalDefaults :
@@ -58,8 +173,6 @@ replace propertyConfig builder =
         currentElement =
             Builder.getCurrentElementConfig builder
 
-        -- Remove existing property of same type and append new one to end
-        -- This respects pipeline order instead of maintaining original position
         updatedProperties =
             List.filter (not << configsMatch propertyConfig) currentElement.properties
                 ++ [ propertyConfig ]

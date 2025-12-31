@@ -24,53 +24,24 @@ type ColorBuilder
 for : String -> AnimBuilder -> ColorBuilder
 for elementId builder =
     let
-        existingConfig =
-            case Builder.getElementConfig elementId builder of
-                Just { properties } ->
-                    properties
-                        |> List.filterMap
-                            (\prop ->
-                                case prop of
-                                    Builder.BackgroundColorConfig config ->
-                                        Just config
-
-                                    _ ->
-                                        Nothing
-                            )
-                        |> List.head
+        extractExisting propertyConfig =
+            case propertyConfig of
+                Builder.BackgroundColorConfig cfg ->
+                    Just cfg
 
                 _ ->
                     Nothing
 
-        newConfig =
-            case existingConfig of
-                Just config ->
-                    PropertyBuilder.applyGlobalDefaults builder <|
-                        { config
-                            | start = Just config.end
-                            , easing = Nothing
-                            , delay = Nothing
-                            , perspective = Nothing
-                            , timing = Nothing
-                            , duration = 0
-                            , speed = 0
-                            , distance = 0
-                            , isDirty = False
-                        }
-
-                Nothing ->
-                    PropertyBuilder.applyGlobalDefaults builder defaultConfig
+        config =
+            PropertyBuilder.createFor extractExisting defaultConfig elementId builder
     in
-    ColorBuilder newConfig (Builder.for elementId builder)
+    ColorBuilder config <|
+        Builder.for elementId builder
 
 
 build : ColorBuilder -> AnimBuilder
 build (ColorBuilder config builder) =
-    let
-        newColorConfig =
-            Builder.BackgroundColorConfig config
-    in
-    PropertyBuilder.upsert newColorConfig builder
+    PropertyBuilder.upsert (Builder.BackgroundColorConfig config) builder
 
 
 type alias ColorConfig =
@@ -79,17 +50,8 @@ type alias ColorConfig =
 
 defaultConfig : ColorConfig
 defaultConfig =
-    { start = Nothing
-    , end = BackgroundColor.rgb255 0 0 0
-    , duration = 0
-    , speed = 0
-    , distance = 0
-    , timing = Nothing
-    , delay = Nothing
-    , easing = Nothing
-    , perspective = Nothing
-    , isDirty = False
-    }
+    PropertyBuilder.defaultConfig <|
+        BackgroundColor.rgb255 0 0 0
 
 
 from : Color -> ColorBuilder -> ColorBuilder
@@ -139,27 +101,14 @@ speed spd (ColorBuilder config builder) =
 
 duration : Int -> ColorBuilder -> ColorBuilder
 duration ms (ColorBuilder config builder) =
-    ColorBuilder
-        { config
-            | duration = ms
-            , timing =
-                Just <|
-                    Duration ms
-        }
-        builder
+    ColorBuilder (PropertyBuilder.withDuration ms config) builder
 
 
 easing : Easing -> ColorBuilder -> ColorBuilder
 easing ease (ColorBuilder config builder) =
-    ColorBuilder { config | easing = Just ease } builder
+    ColorBuilder (PropertyBuilder.withEasing ease config) builder
 
 
 delay : Int -> ColorBuilder -> ColorBuilder
 delay dly (ColorBuilder config builder) =
-    ColorBuilder
-        { config
-            | delay =
-                Just <|
-                    dly
-        }
-        builder
+    ColorBuilder (PropertyBuilder.withDelay dly config) builder

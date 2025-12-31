@@ -49,53 +49,23 @@ type RotateBuilder
 for : String -> AnimBuilder -> RotateBuilder
 for elementId builder =
     let
-        existingConfig =
-            case Builder.getElementConfig elementId builder of
-                Just { properties } ->
-                    properties
-                        |> List.filterMap
-                            (\prop ->
-                                case prop of
-                                    Builder.RotateConfig config ->
-                                        Just config
-
-                                    _ ->
-                                        Nothing
-                            )
-                        |> List.head
+        extractExisting propertyConfig =
+            case propertyConfig of
+                Builder.RotateConfig cfg ->
+                    Just cfg
 
                 _ ->
                     Nothing
 
-        newConfig =
-            case existingConfig of
-                Just config ->
-                    PropertyBuilder.applyGlobalDefaults builder <|
-                        { config
-                            | start = Just config.end
-                            , easing = Nothing
-                            , delay = Nothing
-                            , perspective = Nothing
-                            , timing = Nothing
-                            , duration = 0
-                            , speed = 0
-                            , distance = 0
-                            , isDirty = False
-                        }
-
-                Nothing ->
-                    PropertyBuilder.applyGlobalDefaults builder defaultConfig
+        config =
+            PropertyBuilder.createFor extractExisting defaultConfig elementId builder
     in
-    RotateBuilder newConfig (Builder.for elementId builder)
+    RotateBuilder config (Builder.for elementId builder)
 
 
 build : RotateBuilder -> AnimBuilder
 build (RotateBuilder config builder) =
-    let
-        newRotationConfig =
-            Builder.RotateConfig config
-    in
-    PropertyBuilder.upsert newRotationConfig builder
+    PropertyBuilder.upsert (Builder.RotateConfig config) builder
 
 
 type alias RotateConfig =
@@ -104,17 +74,8 @@ type alias RotateConfig =
 
 defaultConfig : RotateConfig
 defaultConfig =
-    { start = Nothing
-    , end = Rotate.fromTriple ( 0.0, 0.0, 0.0 )
-    , duration = 0
-    , speed = 0.0
-    , distance = 0.0
-    , timing = Nothing
-    , easing = Nothing
-    , delay = Nothing
-    , perspective = Nothing
-    , isDirty = False
-    }
+    PropertyBuilder.defaultConfig <|
+        Rotate.fromTriple ( 0.0, 0.0, 0.0 )
 
 
 from : Rotate -> RotateBuilder -> RotateBuilder
@@ -205,38 +166,24 @@ toXYZ x y z (RotateBuilder config builder) =
 
 speed : Float -> RotateBuilder -> RotateBuilder
 speed value (RotateBuilder config builder) =
-    RotateBuilder
-        { config
-            | speed = value
-            , timing =
-                Just <|
-                    Speed value
-        }
-        builder
+    RotateBuilder (PropertyBuilder.withSpeed value config) builder
 
 
 duration : Int -> RotateBuilder -> RotateBuilder
 duration ms (RotateBuilder config builder) =
-    RotateBuilder
-        { config
-            | duration = ms
-            , timing =
-                Just <|
-                    Duration ms
-        }
-        builder
+    RotateBuilder (PropertyBuilder.withDuration ms config) builder
 
 
 easing : Easing -> RotateBuilder -> RotateBuilder
 easing easing_ (RotateBuilder config builder) =
-    RotateBuilder { config | easing = Just easing_ } builder
+    RotateBuilder (PropertyBuilder.withEasing easing_ config) builder
 
 
 delay : Int -> RotateBuilder -> RotateBuilder
 delay delay_ (RotateBuilder config builder) =
-    RotateBuilder { config | delay = Just delay_ } builder
+    RotateBuilder (PropertyBuilder.withDelay delay_ config) builder
 
 
 perspective : String -> Float -> RotateBuilder -> RotateBuilder
 perspective containerId value (RotateBuilder config builder) =
-    RotateBuilder { config | perspective = Just { containerId = containerId, value = value } } builder
+    RotateBuilder (PropertyBuilder.withPerspective containerId value config) builder

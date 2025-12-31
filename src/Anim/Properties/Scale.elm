@@ -1,8 +1,10 @@
 module Anim.Properties.Scale exposing
     ( Builder, for, build
-    , from, fromXY, fromXYZ, fromX, fromY, fromZ
-    , to, toXY, toXYZ, toX, toY, toZ
-    , speed, duration, easing, delay, perspective
+    , from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
+    , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
+    , delay, duration, speed
+    , easing
+    , perspective
     )
 
 {-| Scale animation functions with 3D support.
@@ -28,21 +30,32 @@ Use these functions to configure scale animations in the builder chain:
 
 ## Start Scale
 
-The first time the animation runs, if no starting scale is set, it will default to (1.0, 1.0, 1.0).
+The first time a scale animation is configured, if no starting scale is set, it will default to: `{x = 1.0, y = 1.0, z = 1.0}`
+i.e. no scaling. On subsequent animations, it will start from the last known scale.
 
-On subsequent animations, it will start from the last known scale, so you only need to set this when you want to override that behavior.
+The last known scale is tracked in your model, so you only need to set this when you want to override that behavior.
 
-@docs from, fromXY, fromXYZ, fromX, fromY, fromZ
+@docs from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
 
 
 ## End Scale
 
-@docs to, toXY, toXYZ, toX, toY, toZ
+@docs to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
 
 
 ## Timing
 
-@docs speed, duration, easing, delay, perspective
+@docs delay, duration, speed
+
+
+## Easing
+
+@docs easing
+
+
+## 3D Animations
+
+@docs perspective
 
 -}
 
@@ -95,23 +108,12 @@ build =
         |> Scale.from 0.8
         |> ...
 
+This is equivalent to `Scale.fromXYZ 0.8 0.8 0.8`.
+
 -}
 from : Float -> Builder -> Builder
 from uniformScale =
     SB.fromXYZ uniformScale uniformScale uniformScale
-
-
-{-| Set the starting scale for the X and Y axes of the current element.
-
-    animBuilder
-        |> Scale.for "my-element"
-        |> Scale.fromXY 0.8 1.2
-        |> ...
-
--}
-fromXY : Float -> Float -> Builder -> Builder
-fromXY =
-    SB.fromXY
 
 
 {-| Set the starting scale for the X, Y, and Z axes of the current element.
@@ -127,6 +129,32 @@ fromXYZ =
     SB.fromXYZ
 
 
+{-| Set the starting scale for the X and Y axes of the current element.
+
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.fromXY 0.8 1.2
+        |> ...
+
+-}
+fromXY : Float -> Float -> Builder -> Builder
+fromXY =
+    SB.fromXY
+
+
+{-| Set the starting scale for the X and Z axes of the current element.
+
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.fromXZ 0.8 0.9
+        |> ...
+
+-}
+fromXZ : Float -> Float -> Builder -> Builder
+fromXZ =
+    SB.fromXZ
+
+
 {-| Set the starting scale for the X axis of the current element.
 
     animBuilder
@@ -140,6 +168,19 @@ The Y and Z scales remain unchanged, or 1.0 if not set.
 fromX : Float -> Builder -> Builder
 fromX =
     SB.fromX
+
+
+{-| Set the starting scale for the Y and Z axes of the current element.
+
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.fromYZ 1.2 0.9
+        |> ...
+
+-}
+fromYZ : Float -> Float -> Builder -> Builder
+fromYZ =
+    SB.fromYZ
 
 
 {-| Set the starting scale for the Y axis of the current element.
@@ -185,6 +226,19 @@ to targetScale =
     SB.toXYZ targetScale targetScale targetScale
 
 
+{-| Set the target scale for the X, Y, and Z axes of the current element.
+
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.toXYZ 1.5 2.0 0.8
+        |> ...
+
+-}
+toXYZ : Float -> Float -> Float -> Builder -> Builder
+toXYZ =
+    SB.toXYZ
+
+
 {-| Set the target scale for the X and Y axes of the current element.
 
     animBuilder
@@ -198,17 +252,17 @@ toXY =
     SB.toXY
 
 
-{-| Set the target scale for the X, Y, and Z axes of the current element.
+{-| Set the target scale for the X and Z axes of the current element.
 
     animBuilder
         |> Scale.for "my-element"
-        |> Scale.toXYZ 1.5 2.0 0.8
+        |> Scale.toXZ 1.5 0.8
         |> ...
 
 -}
-toXYZ : Float -> Float -> Float -> Builder -> Builder
-toXYZ =
-    SB.toXYZ
+toXZ : Float -> Float -> Builder -> Builder
+toXZ =
+    SB.toXZ
 
 
 {-| Set the target scale for the X axis of the current element.
@@ -224,6 +278,19 @@ The Y and Z scales remain unchanged.
 toX : Float -> Builder -> Builder
 toX =
     SB.toX
+
+
+{-| Set the target scale for the Y and Z axes of the current element.
+
+    animBuilder
+        |> Scale.for "my-element"
+        |> Scale.toYZ 1.5 0.8
+        |> ...
+
+-}
+toYZ : Float -> Float -> Builder -> Builder
+toYZ =
+    SB.toYZ
 
 
 {-| Set the target scale for the Y axis of the current element.
@@ -256,15 +323,18 @@ toZ =
     SB.toZ
 
 
-{-| Set the animation speed (scale factor units per second).
+{-| The speed represents how much the scale factor changes per second.
 
-The speed represents how much the scale factor changes per second. For example,
-a speed of `2.0` means the scale will change by 2.0 units per second (e.g., from 1.0 to 3.0 takes 1 second).
+For example, lets take a scale animation from `1.0` to `5.0`.
+A speed of `2.0` means the scale will change by 2.0 units per second, so our animation will take 2 seconds to complete (1.0 -> 3.0 in 1 second, then 3.0 -> 5.0 in the next second).
 
     animBuilder
         |> Scale.for "my-element"
+        |> Scale.toXYZ 5.0 5.0 5.0
         |> Scale.speed 2.0
         |> ...
+
+Similarly, a speed of `4.0` would complete the same animation in 1 second, and a speed of `1.0` would take 4 seconds.
 
 -}
 speed : Float -> Builder -> Builder
@@ -315,16 +385,16 @@ delay =
 
 This allows you to override the global perspective setting for scale animations
 on a per-container basis. The perspective value determines the distance between
-the viewer and the z=0 plane, affecting how 3D scaling appears.
+the viewer and the `z = 0` plane, affecting how 3D scaling appears.
 
     animBuilder
         |> Scale.for "my-element"
-        |> Scale.toXYZ 1.5 1.5 1.2
         |> Scale.perspective "special-container" 800
+        |> Scale.toXYZ 1.5 1.5 1.2
         |> ...
 
 The first parameter is the container ID, and the second is the perspective value in pixels.
-This will override any global perspective set via `Css.perspective` for this scale animation.
+This will override any global perspective set by one of the Engines.
 
 -}
 perspective : String -> Float -> Builder -> Builder
