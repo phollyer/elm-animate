@@ -194,7 +194,10 @@ animate (AnimState state) builder_ =
     ( AnimState
         { elementAnimations = updatedElementAnimations
         , isRunning = not (Dict.isEmpty newElementAnimations)
-        , builder = Builder.markDirty builderWithCurrentStates
+        , builder =
+            builderWithCurrentStates
+                |> Builder.markDirty
+                |> Builder.clearCurrentElement
         }
     , encode processedData
     )

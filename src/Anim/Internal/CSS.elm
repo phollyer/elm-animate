@@ -120,7 +120,10 @@ animate builder_ =
             elementIds
                 |> List.map (\id -> ( id, NotStarted ))
                 |> Dict.fromList
-        , builder = Builder.markDirty builder_
+        , builder =
+            builder_
+                |> Builder.markDirty
+                |> Builder.clearCurrentElement
         }
 
 

@@ -8,6 +8,7 @@ module Anim.Internal.Builder exposing
     , PropertyConfig(..)
     , TransformParts
     , addScrollTarget
+    , clearCurrentElement
     , delay
     , duration
     , easing
@@ -206,8 +207,6 @@ elements (AnimBuilder data) =
     data.elements
 
 
-{-| Get the current element configuration, creating one if it doesn't exist.
--}
 getCurrentElementConfig : AnimBuilder -> ElementConfig
 getCurrentElementConfig (AnimBuilder data) =
     case data.currentElementId of
@@ -290,6 +289,11 @@ getScrollContainer (AnimBuilder data) =
 -- UPDATE BUILDER
 
 
+clearCurrentElement : AnimBuilder -> AnimBuilder
+clearCurrentElement (AnimBuilder data) =
+    AnimBuilder { data | currentElementId = Nothing }
+
+
 updateElementConfig : String -> ElementConfig -> AnimBuilder -> AnimBuilder
 updateElementConfig elementId elementConfig (AnimBuilder data) =
     AnimBuilder
@@ -311,8 +315,15 @@ markDirty : AnimBuilder -> AnimBuilder
 markDirty (AnimBuilder data) =
     AnimBuilder
         { data
-            | currentElementId = Nothing
-            , elements = Dict.map (\_ el -> { el | properties = List.map markPropertyDirty el.properties }) data.elements
+            | elements =
+                Dict.map
+                    (\_ el ->
+                        { el
+                            | properties =
+                                List.map markPropertyDirty el.properties
+                        }
+                    )
+                    data.elements
         }
 
 

@@ -133,7 +133,10 @@ animate builder_ =
     AnimState
         { elementAnimations = elementStates
         , isRunning = not (Dict.isEmpty elementStates)
-        , builder = Builder.markDirty builder_
+        , builder =
+            builder_
+                |> Builder.markDirty
+                |> Builder.clearCurrentElement
         }
 
 
