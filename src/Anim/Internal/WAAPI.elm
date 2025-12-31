@@ -1,22 +1,42 @@
 module Anim.Internal.WAAPI exposing
-    ( AnimState
+    ( AnimBuilder
+    , AnimState
     , allComplete
     , animate
+    , animateStateless
     , anyRunning
     , builder
     , delay
     , duration
     , easing
     , encode
-    , getBackgroundColorRange
+    , getCurrentBackgroundColor
+    , getCurrentOpacity
+    , getCurrentPosition
+    , getCurrentRotate
+    , getCurrentScale
+    , getCurrentSize
+    , getEndBackgroundColor
+    , getEndOpacity
+    , getEndPosition
+    , getEndRotate
+    , getEndScale
+    , getEndSize
     , getOpacityRange
-    , getPositionRange
     , getRotateRange
     , getScaleRange
     , getSizeRange
+    , getStartBackgroundColor
+    , getStartOpacity
+    , getStartPosition
+    , getStartRotate
+    , getStartScale
+    , getStartSize
     , init
     , isElementComplete
     , isElementRunning
+    , perspective
+    , perspectiveWith
     , speed
     , update
     )
@@ -30,6 +50,8 @@ import Anim.Internal.Properties.Scale as Scale exposing (Scale)
 import Anim.Internal.Properties.Size as Size exposing (Size)
 import Anim.Internal.Timing.Easing as Easing exposing (Easing(..))
 import Dict exposing (Dict)
+import Html
+import Html.Attributes
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 
@@ -105,8 +127,33 @@ delay =
     Builder.delay
 
 
+perspective : String -> Float -> AnimBuilder -> AnimBuilder
+perspective =
+    Builder.perspective
+
+
+perspectiveWith : Float -> List (Html.Attribute msg)
+perspectiveWith perspectiveValue =
+    [ Html.Attributes.style "perspective" (String.fromFloat perspectiveValue ++ "px")
+    , Html.Attributes.style "transform-style" "preserve-3d"
+    , Html.Attributes.attribute "data-perspective-source" "elm"
+    ]
+
+
 
 -- Execute Animation
+
+
+animateStateless : (Encode.Value -> Cmd msg) -> AnimBuilder -> Cmd msg
+animateStateless portFunction animBuilder =
+    let
+        processedData =
+            Builder.processAnimationData animBuilder
+
+        encodedData =
+            encode processedData
+    in
+    portFunction encodedData
 
 
 animate : AnimState -> AnimBuilder -> ( AnimState, Encode.Value )
@@ -354,7 +401,36 @@ isElementRunning elementId (AnimState state) =
 
 
 
--- Query Property Ranges (Start/End values)
+-- Query Animated Properties
+--
+--
+-- Background Color
+
+
+getStartBackgroundColor : String -> AnimState -> Maybe Color
+getStartBackgroundColor elementId animState =
+    getBackgroundColorRange elementId animState
+        |> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        BackgroundColor.rgb255 0 0 0
+
+                    Just startColor ->
+                        startColor
+            )
+
+
+getEndBackgroundColor : String -> AnimState -> Maybe Color
+getEndBackgroundColor elementId animState =
+    getBackgroundColorRange elementId animState
+        |> Maybe.map .end
+
+
+getCurrentBackgroundColor : String -> AnimState -> Maybe Color
+getCurrentBackgroundColor elementId (AnimState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen (.currentStates >> .backgroundColor)
 
 
 getBackgroundColorRange : String -> AnimState -> Maybe { start : Maybe Color, end : Color }
@@ -380,6 +456,10 @@ getBackgroundColorRange elementId (AnimState state) =
             )
 
 
+
+-- Opacity
+
+
 getOpacityRange : String -> AnimState -> Maybe { start : Maybe Opacity, end : Opacity }
 getOpacityRange elementId (AnimState state) =
     let
@@ -401,6 +481,62 @@ getOpacityRange elementId (AnimState state) =
                         )
                     |> List.head
             )
+
+
+getStartOpacity : String -> AnimState -> Maybe Opacity
+getStartOpacity elementId animState =
+    getOpacityRange elementId animState
+        |> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        Opacity.fromFloat 1.0
+
+                    Just startOpacity ->
+                        startOpacity
+            )
+
+
+getEndOpacity : String -> AnimState -> Maybe Opacity
+getEndOpacity elementId animState =
+    getOpacityRange elementId animState
+        |> Maybe.map .end
+
+
+getCurrentOpacity : String -> AnimState -> Maybe Opacity
+getCurrentOpacity elementId (AnimState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen (.currentStates >> .opacity)
+
+
+
+-- Position
+
+
+getStartPosition : String -> AnimState -> Maybe Position
+getStartPosition elementId animState =
+    getPositionRange elementId animState
+        |> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        Position.fromTriple ( 0, 0, 0 )
+
+                    Just startPos ->
+                        startPos
+            )
+
+
+getEndPosition : String -> AnimState -> Maybe Position
+getEndPosition elementId animState =
+    getPositionRange elementId animState
+        |> Maybe.map .end
+
+
+getCurrentPosition : String -> AnimState -> Maybe Position
+getCurrentPosition elementId (AnimState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen (.currentStates >> .position)
 
 
 getPositionRange : String -> AnimState -> Maybe { start : Maybe Position, end : Position }
@@ -426,6 +562,10 @@ getPositionRange elementId (AnimState state) =
             )
 
 
+
+-- Rotate
+
+
 getRotateRange : String -> AnimState -> Maybe { start : Maybe Rotate, end : Rotate }
 getRotateRange elementId (AnimState state) =
     let
@@ -447,6 +587,36 @@ getRotateRange elementId (AnimState state) =
                         )
                     |> List.head
             )
+
+
+getStartRotate : String -> AnimState -> Maybe Rotate
+getStartRotate elementId animState =
+    getRotateRange elementId animState
+        |> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        Rotate.fromTriple ( 0, 0, 0 )
+
+                    Just startRotate ->
+                        startRotate
+            )
+
+
+getEndRotate : String -> AnimState -> Maybe Rotate
+getEndRotate elementId animState =
+    getRotateRange elementId animState
+        |> Maybe.map .end
+
+
+getCurrentRotate : String -> AnimState -> Maybe Rotate
+getCurrentRotate elementId (AnimState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen (.currentStates >> .rotate)
+
+
+
+-- Scale
 
 
 getScaleRange : String -> AnimState -> Maybe { start : Maybe Scale, end : Scale }
@@ -472,6 +642,36 @@ getScaleRange elementId (AnimState state) =
             )
 
 
+getStartScale : String -> AnimState -> Maybe Scale
+getStartScale elementId animState =
+    getScaleRange elementId animState
+        |> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        Scale.fromTriple ( 1, 1, 1 )
+
+                    Just startScale ->
+                        startScale
+            )
+
+
+getEndScale : String -> AnimState -> Maybe Scale
+getEndScale elementId animState =
+    getScaleRange elementId animState
+        |> Maybe.map .end
+
+
+getCurrentScale : String -> AnimState -> Maybe Scale
+getCurrentScale elementId (AnimState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen (.currentStates >> .scale)
+
+
+
+-- Size
+
+
 getSizeRange : String -> AnimState -> Maybe { start : Maybe Size, end : Size }
 getSizeRange elementId (AnimState state) =
     let
@@ -493,6 +693,32 @@ getSizeRange elementId (AnimState state) =
                         )
                     |> List.head
             )
+
+
+getStartSize : String -> AnimState -> Maybe Size
+getStartSize elementId animState =
+    getSizeRange elementId animState
+        |> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        Size.fromTuple ( 0, 0 )
+
+                    Just startSize ->
+                        startSize
+            )
+
+
+getEndSize : String -> AnimState -> Maybe Size
+getEndSize elementId animState =
+    getSizeRange elementId animState
+        |> Maybe.map .end
+
+
+getCurrentSize : String -> AnimState -> Maybe Size
+getCurrentSize elementId (AnimState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen (.currentStates >> .size)
 
 
 
@@ -571,8 +797,7 @@ encodeMaybePerspective maybePerspective =
 encodeProcessedElementConfig : Builder.ProcessedElementConfig -> Encode.Value
 encodeProcessedElementConfig config =
     Encode.object
-        [ ( "properties", Encode.list encodeProcessedPropertyConfig config.properties )
-        ]
+        [ ( "properties", Encode.list encodeProcessedPropertyConfig config.properties ) ]
 
 
 encodeProcessedPropertyConfig : Builder.ProcessedPropertyConfig -> Encode.Value
