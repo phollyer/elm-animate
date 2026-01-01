@@ -2,6 +2,10 @@ module Anim.Easing exposing (Easing(..))
 
 {-| Easing's for animations.
 
+**Note**: All engines produce accurate easing curves using the easing functions from [elm-community/ease](https://package.elm-lang.org/packages/elm-community/easing-functions/latest/Ease).
+Cubic Bezier approximations are used in the [CSS Engine](Anim-Engine-CSS#easing) for transform animations, which is a CSS limitation. However, the CSS Engine does produce
+accurate easing curves for keyframe animations.
+
 
 # Easing Type
 

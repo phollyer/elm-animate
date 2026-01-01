@@ -48,12 +48,12 @@ in your view code.
 ```elm
 -- Build
 
-buildAnimation : CSS.AnimState -> CSS.AnimState
-buildAnimation animations =
-    animations
+{ model | animations = 
+    model.animations
         |> CSS.builder
         |> positionAnimation
         |> CSS.animate
+}
 
 -- View
 
@@ -67,7 +67,7 @@ div
 -- Place your `<style>` node anywhere in your DOM
 div
     []
-    [ CSS.keyframeStyleNode model.animations ]
+    [ CSS.keyframesStyleNode model.animations ]
 
 -- Connect your element to the keyframe animation defined in the `<style>` node
 div
@@ -85,12 +85,12 @@ div
 ```elm
 -- Build
 
-buildAnimation : Sub.AnimState -> Sub.AnimState
-buildAnimation animations =
-    animations
+{ model | animations = 
+    model.animations
         |> Sub.builder
         |> positionAnimation
         |> Sub.animate
+}
 
 -- Update
 
@@ -116,7 +116,7 @@ subscriptions model =
 -- View
 
 div 
-    [Sub.htmlAttributes "my-element" model.animations] 
+    (Sub.htmlAttributes "my-element" model.animations)
     [ text "Subscription Animation!" ]
 ```
 
@@ -138,7 +138,7 @@ port positionUpdates : (Decode.Value -> msg) -> Sub msg
 
 -- Build 
 
-buildAnimation : WAAPI.AnimState -> WAAPI.AnimState
+buildAnimation : WAAPI.AnimState -> (WAAPI.AnimState, Json.Encode.Value)
 buildAnimation animations =
     animations
         |> WAAPI.builder
