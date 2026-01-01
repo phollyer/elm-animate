@@ -11,12 +11,13 @@ module Common.Animations.Rotate exposing
 -}
 
 import Anim.Easing as Easing
+import Anim.Internal.Builder as Builder
 import Anim.Property.Rotate as Rotate
 
 
 {-| Rotate 45 degrees clockwise
 -}
-rotate45 : String -> builder -> builder
+rotate45 : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 rotate45 elementId builder =
     builder
         |> Rotate.for elementId
@@ -28,7 +29,7 @@ rotate45 elementId builder =
 
 {-| Rotate 90 degrees clockwise
 -}
-rotate90 : String -> builder -> builder
+rotate90 : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 rotate90 elementId builder =
     builder
         |> Rotate.for elementId
@@ -40,7 +41,7 @@ rotate90 elementId builder =
 
 {-| Rotate 180 degrees clockwise
 -}
-rotate180 : String -> builder -> builder
+rotate180 : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 rotate180 elementId builder =
     builder
         |> Rotate.for elementId
@@ -52,7 +53,7 @@ rotate180 elementId builder =
 
 {-| Rotate 90 degrees counter-clockwise
 -}
-rotateLeft : String -> builder -> builder
+rotateLeft : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 rotateLeft elementId builder =
     builder
         |> Rotate.for elementId
@@ -65,7 +66,7 @@ rotateLeft elementId builder =
 
 {-| Rotate 90 degrees clockwise with elastic effect
 -}
-rotateRight : String -> builder -> builder
+rotateRight : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 rotateRight elementId builder =
     builder
         |> Rotate.for elementId
@@ -77,7 +78,7 @@ rotateRight elementId builder =
 
 {-| Reset rotation to 0 degrees
 -}
-resetRotate : String -> builder -> builder
+resetRotate : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 resetRotate elementId builder =
     builder
         |> Rotate.for elementId

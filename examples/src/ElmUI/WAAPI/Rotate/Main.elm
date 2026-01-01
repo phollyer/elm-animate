@@ -19,6 +19,7 @@ import Anim.Easing as Easing
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Rotate as Rotate
 import Browser exposing (Document)
+import Common.Animations.Rotate as Animations
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
@@ -79,91 +80,55 @@ update msg model =
     case msg of
         Rotate45 ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Rotate.for "box"
-                        |> Rotate.toZ 45
-                        |> Rotate.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.builder model.animState
+                        |> Animations.rotate45 "box"
+                        |> WAAPI.animate model.animState
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         Rotate90 ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Rotate.for "box"
-                        |> Rotate.toZ 90
-                        |> Rotate.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.builder model.animState
+                        |> Animations.rotate90 "box"
+                        |> WAAPI.animate model.animState
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         Rotate180 ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Rotate.for "box"
-                        |> Rotate.toZ 180
-                        |> Rotate.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.builder model.animState
+                        |> Animations.rotate180 "box"
+                        |> WAAPI.animate model.animState
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         RotateLeft ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Rotate.for "box"
-                        |> Rotate.toZ -90
-                        |> Rotate.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.builder model.animState
+                        |> Animations.rotateLeft "box"
+                        |> WAAPI.animate model.animState
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         RotateRight ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Rotate.for "box"
-                        |> Rotate.toZ 90
-                        |> Rotate.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.builder model.animState
+                        |> Animations.rotateRight "box"
+                        |> WAAPI.animate model.animState
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ResetRotation ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Rotate.for "box"
-                        |> Rotate.toZ 0
-                        |> Rotate.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.builder model.animState
+                        |> Animations.resetRotate "box"
+                        |> WAAPI.animate model.animState
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 

@@ -19,6 +19,7 @@ import Anim.Easing as Easing
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Scale as Scale
 import Browser exposing (Document)
+import Common.Animations.Scale as Animations
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
@@ -90,76 +91,46 @@ update msg model =
     case msg of
         ScaleUp ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 500
-                        |> WAAPI.easing Easing.EaseOut
-                        |> Scale.for "box"
-                        |> Scale.toXY 1.3 1.3
-                        |> Scale.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.builder model.animState
+                        |> Animations.scaleUp "box"
+                        |> WAAPI.animate model.animState
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ScaleDown ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 333
-                        |> WAAPI.easing Easing.EaseIn
-                        |> Scale.for "box"
-                        |> Scale.toXY 0.7 0.7
-                        |> Scale.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.builder model.animState
+                        |> Animations.scaleDown "box"
+                        |> WAAPI.animate model.animState
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ScaleReset ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 800
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Scale.for "box"
-                        |> Scale.toXY 1.0 1.0
-                        |> Scale.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.builder model.animState
+                        |> Animations.scaleReset "box"
+                        |> WAAPI.animate model.animState
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ScaleWide ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 1200
-                        |> WAAPI.easing Easing.EaseOut
-                        |> Scale.for "box"
-                        |> Scale.toXY 2.0 0.8
-                        |> Scale.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.builder model.animState
+                        |> Animations.scaleWide "box"
+                        |> WAAPI.animate model.animState
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ScaleTall ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 667
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Scale.for "box"
-                        |> Scale.toXY 0.6 1.8
-                        |> Scale.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.builder model.animState
+                        |> Animations.scaleTall "box"
+                        |> WAAPI.animate model.animState
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 

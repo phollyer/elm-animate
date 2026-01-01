@@ -1,4 +1,4 @@
-module Common.Animations.Color exposing
+module Common.Animations.BackgroundColor exposing
     ( changeToBlue
     , changeToGreen
     , changeToOrange
@@ -7,12 +7,12 @@ module Common.Animations.Color exposing
     , resetColor
     )
 
-{-| Common Color animations that work across all animation engines.
+{-| Common BackgroundColor animations that work across all animation engines.
 -}
 
 import Anim.Easing as Easing
 import Anim.Internal.Builder as Builder
-import Anim.Property.Color as ColorBuilder exposing (ColorValue(..))
+import Anim.Property.BackgroundColor as ColorBuilder exposing (Color(..))
 
 
 {-| Change to blue color
@@ -21,7 +21,7 @@ changeToBlue : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 changeToBlue elementId builder =
     builder
         |> ColorBuilder.for elementId
-        |> ColorBuilder.to (Rgb { r = 52, g = 152, b = 219 })
+        |> ColorBuilder.to (Hex "#3498db")
         |> ColorBuilder.duration 1000
         |> ColorBuilder.easing Easing.EaseInOut
         |> ColorBuilder.build
@@ -33,7 +33,7 @@ changeToGreen : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 changeToGreen elementId builder =
     builder
         |> ColorBuilder.for elementId
-        |> ColorBuilder.to (Rgb { r = 46, g = 204, b = 113 })
+        |> ColorBuilder.to (Hex "#2ecc71")
         |> ColorBuilder.duration 1000
         |> ColorBuilder.easing Easing.EaseInOut
         |> ColorBuilder.build
@@ -45,7 +45,7 @@ changeToOrange : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 changeToOrange elementId builder =
     builder
         |> ColorBuilder.for elementId
-        |> ColorBuilder.to (Rgb { r = 243, g = 156, b = 18 })
+        |> ColorBuilder.to (Hex "#f39c12")
         |> ColorBuilder.duration 1000
         |> ColorBuilder.easing Easing.EaseInOut
         |> ColorBuilder.build
@@ -57,7 +57,7 @@ changeToRed : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 changeToRed elementId builder =
     builder
         |> ColorBuilder.for elementId
-        |> ColorBuilder.to (Rgb { r = 231, g = 76, b = 60 })
+        |> ColorBuilder.to (Hex "#e74c3c")
         |> ColorBuilder.duration 1000
         |> ColorBuilder.easing Easing.EaseInOut
         |> ColorBuilder.build
@@ -69,19 +69,19 @@ changeToPurple : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 changeToPurple elementId builder =
     builder
         |> ColorBuilder.for elementId
-        |> ColorBuilder.to (Rgb { r = 155, g = 89, b = 182 })
+        |> ColorBuilder.to (Hex "#9b59b6")
         |> ColorBuilder.duration 1000
         |> ColorBuilder.easing Easing.EaseInOut
         |> ColorBuilder.build
 
 
-{-| Reset to original gray color
+{-| Reset to default gray color
 -}
 resetColor : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 resetColor elementId builder =
     builder
         |> ColorBuilder.for elementId
-        |> ColorBuilder.to (Rgb { r = 149, g = 165, b = 166 })
+        |> ColorBuilder.to (Hex "#95a5a6")
         |> ColorBuilder.duration 1000
         |> ColorBuilder.easing Easing.EaseInOut
         |> ColorBuilder.build

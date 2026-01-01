@@ -19,6 +19,7 @@ import Anim.Easing as Easing
 import Anim.Engine.CSS as CSS
 import Anim.Property.BackgroundColor as Color exposing (Color(..))
 import Browser exposing (Document)
+import Common.Animations.BackgroundColor as Animations
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, centerY, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb, rgb255, spacing, text, width)
@@ -65,16 +66,6 @@ init _ =
 -- UPDATE
 
 
-toColorBuilderWithDefaults : CSS.AnimState -> Color.Builder
-toColorBuilderWithDefaults =
-    CSS.builder
-        -- Set default animation parameters
-        >> CSS.duration 1000
-        >> CSS.easing Easing.Linear
-        -- Start configuring color animation for the element
-        >> Color.for "box"
-
-
 type Msg
     = ChangeToBlue
     | ChangeToGreen
@@ -92,10 +83,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> toColorBuilderWithDefaults
-                        |> Color.to (Color.Hex "#3498db")
-                        |> Color.duration 2000
-                        |> Color.build
+                        |> CSS.builder
+                        |> Animations.changeToBlue "box"
                         |> CSS.animate
               }
             , Cmd.none
@@ -105,11 +94,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> toColorBuilderWithDefaults
-                        |> Color.to (Color.Hex "#2ecc71")
-                        |> Color.speed 25
-                        --|> Color.easing Easing.BackInOut
-                        |> Color.build
+                        |> CSS.builder
+                        |> Animations.changeToGreen "box"
                         |> CSS.animate
               }
             , Cmd.none
@@ -119,10 +105,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> toColorBuilderWithDefaults
-                        |> Color.to (Color.Hex "#f39c12")
-                        |> Color.easing Easing.ElasticOut
-                        |> Color.build
+                        |> CSS.builder
+                        |> Animations.changeToOrange "box"
                         |> CSS.animate
               }
             , Cmd.none
@@ -132,10 +116,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> toColorBuilderWithDefaults
-                        |> Color.to (Color.Hex "#e74c3c")
-                        |> Color.easing Easing.BounceOut
-                        |> Color.build
+                        |> CSS.builder
+                        |> Animations.changeToRed "box"
                         |> CSS.animate
               }
             , Cmd.none
@@ -145,10 +127,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> toColorBuilderWithDefaults
-                        |> Color.to (Color.Hex "#9b59b6")
-                        |> Color.easing Easing.CubicInOut
-                        |> Color.build
+                        |> CSS.builder
+                        |> Animations.changeToPurple "box"
                         |> CSS.animate
               }
             , Cmd.none
@@ -158,9 +138,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> toColorBuilderWithDefaults
-                        |> Color.to (Color.Hex "#95a5a6")
-                        |> Color.build
+                        |> CSS.builder
+                        |> Animations.resetColor "box"
                         |> CSS.animate
               }
             , Cmd.none

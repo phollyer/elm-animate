@@ -10,12 +10,13 @@ module Common.Animations.Scale exposing
 -}
 
 import Anim.Easing as Easing
+import Anim.Internal.Builder as Builder
 import Anim.Property.Scale as Scale
 
 
 {-| Scale up to 1.5x
 -}
-scaleUp : String -> builder -> builder
+scaleUp : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 scaleUp elementId builder =
     builder
         |> Scale.for elementId
@@ -27,7 +28,7 @@ scaleUp elementId builder =
 
 {-| Scale down to 0.7x
 -}
-scaleDown : String -> builder -> builder
+scaleDown : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 scaleDown elementId builder =
     builder
         |> Scale.for elementId
@@ -39,7 +40,7 @@ scaleDown elementId builder =
 
 {-| Reset scale to 1.0 (normal size)
 -}
-scaleReset : String -> builder -> builder
+scaleReset : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 scaleReset elementId builder =
     builder
         |> Scale.for elementId
@@ -51,7 +52,7 @@ scaleReset elementId builder =
 
 {-| Scale wider (2x width, normal height)
 -}
-scaleWide : String -> builder -> builder
+scaleWide : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 scaleWide elementId builder =
     builder
         |> Scale.for elementId
@@ -63,7 +64,7 @@ scaleWide elementId builder =
 
 {-| Scale taller (normal width, 2x height)
 -}
-scaleTall : String -> builder -> builder
+scaleTall : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 scaleTall elementId builder =
     builder
         |> Scale.for elementId

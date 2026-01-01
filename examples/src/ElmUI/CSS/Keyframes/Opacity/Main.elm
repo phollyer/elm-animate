@@ -18,6 +18,7 @@ import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.CSS as CSS
 import Anim.Property.Opacity as Opacity
 import Browser exposing (Document)
+import Common.Animations.Opacity as Animations
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, centerY, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
@@ -70,15 +71,6 @@ elementId =
     "box"
 
 
-anim : CSS.AnimState -> Opacity.Builder
-anim animations =
-    animations
-        |> CSS.builder
-        |> CSS.duration 600
-        |> CSS.easing Linear
-        |> Opacity.for elementId
-
-
 type Msg
     = FadeIn
     | FadeOut
@@ -95,11 +87,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Opacity.to 1.0
-                        |> Opacity.easing Easing.QuadInOut
-                        |> Opacity.speed 1
-                        |> Opacity.build
+                        |> CSS.builder
+                        |> Animations.fadeIn elementId
                         |> CSS.animate
               }
             , Cmd.none
@@ -109,11 +98,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Opacity.to 0.0
-                        |> Opacity.easing Easing.SineInOut
-                        |> Opacity.speed 0.2
-                        |> Opacity.build
+                        |> CSS.builder
+                        |> Animations.fadeOut elementId
                         |> CSS.animate
               }
             , Cmd.none
@@ -123,11 +109,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Opacity.to 0.5
-                        |> Opacity.easing BackInOut
-                        |> Opacity.duration 800
-                        |> Opacity.build
+                        |> CSS.builder
+                        |> Animations.fadeToHalf elementId
                         |> CSS.animate
               }
             , Cmd.none
@@ -137,12 +120,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Opacity.to 0.25
-                        -- TODO: Fix bug -> Adding delay causes animation to jump to opacity == 1
-                        --|> Opacity.delay 300
-                        |> Opacity.easing BounceInOut
-                        |> Opacity.build
+                        |> CSS.builder
+                        |> Animations.fadeToQuarter elementId
                         |> CSS.animate
               }
             , Cmd.none
@@ -152,11 +131,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Opacity.to 1.0
-                        |> Opacity.easing ElasticInOut
-                        |> Opacity.duration 1000
-                        |> Opacity.build
+                        |> CSS.builder
+                        |> Animations.fadeIn elementId
                         |> CSS.animate
               }
             , Cmd.none

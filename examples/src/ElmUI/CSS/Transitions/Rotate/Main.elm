@@ -19,6 +19,7 @@ import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.CSS as CSS
 import Anim.Property.Rotate as Rotate
 import Browser exposing (Document)
+import Common.Animations.Rotate as Animations
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, centerY, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
@@ -65,15 +66,6 @@ init _ =
 -- UPDATE
 
 
-anim : CSS.AnimState -> Rotate.Builder
-anim animations =
-    animations
-        |> CSS.builder
-        |> CSS.duration 700
-        |> CSS.easing Linear
-        |> Rotate.for "box"
-
-
 type Msg
     = Rotate45
     | Rotate90
@@ -91,10 +83,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Rotate.toZ 45
-                        |> Rotate.easing Easing.QuadInOut
-                        |> Rotate.build
+                        |> CSS.builder
+                        |> Animations.rotate45 "box"
                         |> CSS.animate
               }
             , Cmd.none
@@ -104,11 +94,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Rotate.toZ 90
-                        |> Rotate.easing Easing.SineInOut
-                        |> Rotate.speed 100
-                        |> Rotate.build
+                        |> CSS.builder
+                        |> Animations.rotate90 "box"
                         |> CSS.animate
               }
             , Cmd.none
@@ -118,11 +105,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Rotate.toZ 180
-                        |> Rotate.easing BackInOut
-                        |> Rotate.duration 900
-                        |> Rotate.build
+                        |> CSS.builder
+                        |> Animations.rotate180 "box"
                         |> CSS.animate
               }
             , Cmd.none
@@ -132,11 +116,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Rotate.toZ -90
-                        |> Rotate.easing BounceInOut
-                        |> Rotate.delay 500
-                        |> Rotate.build
+                        |> CSS.builder
+                        |> Animations.rotateLeft "box"
                         |> CSS.animate
               }
             , Cmd.none
@@ -146,11 +127,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Rotate.toZ 90
-                        |> Rotate.easing ElasticInOut
-                        |> Rotate.duration 600
-                        |> Rotate.build
+                        |> CSS.builder
+                        |> Animations.rotateRight "box"
                         |> CSS.animate
               }
             , Cmd.none
@@ -160,10 +138,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Rotate.toZ 0
-                        |> Rotate.easing Easing.EaseInOut
-                        |> Rotate.build
+                        |> CSS.builder
+                        |> Animations.resetRotate "box"
                         |> CSS.animate
               }
             , Cmd.none

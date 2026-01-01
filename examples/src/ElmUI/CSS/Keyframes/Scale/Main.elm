@@ -18,6 +18,7 @@ import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.CSS as CSS
 import Anim.Property.Scale as Scale
 import Browser exposing (Document)
+import Common.Animations.Scale as Animations
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, centerY, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
@@ -70,15 +71,6 @@ elementId =
     "box"
 
 
-anim : CSS.AnimState -> Scale.Builder
-anim animations =
-    animations
-        |> CSS.builder
-        |> CSS.duration 500
-        |> CSS.easing Linear
-        |> Scale.for elementId
-
-
 type Msg
     = ScaleUp
     | ScaleDown
@@ -95,10 +87,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Scale.toXY 1.5 1.5
-                        |> Scale.easing Easing.QuadInOut
-                        |> Scale.build
+                        |> CSS.builder
+                        |> Animations.scaleUp elementId
                         |> CSS.animate
               }
             , Cmd.none
@@ -108,11 +98,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Scale.toXY 0.7 0.7
-                        |> Scale.easing Easing.SineInOut
-                        |> Scale.speed 2.0
-                        |> Scale.build
+                        |> CSS.builder
+                        |> Animations.scaleDown elementId
                         |> CSS.animate
               }
             , Cmd.none
@@ -122,11 +109,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Scale.toXY 2.0 0.8
-                        |> Scale.easing BackInOut
-                        |> Scale.duration 700
-                        |> Scale.build
+                        |> CSS.builder
+                        |> Animations.scaleWide elementId
                         |> CSS.animate
               }
             , Cmd.none
@@ -136,11 +120,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Scale.toXY 0.6 1.8
-                        |> Scale.easing BounceInOut
-                        |> Scale.delay 200
-                        |> Scale.build
+                        |> CSS.builder
+                        |> Animations.scaleTall elementId
                         |> CSS.animate
               }
             , Cmd.none
@@ -150,11 +131,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Scale.toXY 1.0 1.0
-                        |> Scale.easing ElasticInOut
-                        |> Scale.duration 800
-                        |> Scale.build
+                        |> CSS.builder
+                        |> Animations.scaleReset elementId
                         |> CSS.animate
               }
             , Cmd.none

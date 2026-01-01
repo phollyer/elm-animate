@@ -19,6 +19,7 @@ import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.Sub as Sub
 import Anim.Property.BackgroundColor as ColorBuilder exposing (Color(..))
 import Browser exposing (Document)
+import Common.Animations.BackgroundColor as Animations
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, centerY, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb, rgb255, spacing, text, width)
@@ -60,12 +61,7 @@ init _ =
     ( { animations =
             Sub.init
                 |> Sub.builder
-                |> ColorBuilder.for "box"
-                |> ColorBuilder.to (Rgb { r = 149, g = 165, b = 166 })
-                -- Default gray
-                |> ColorBuilder.duration 0
-                |> ColorBuilder.easing Easing.EaseInOut
-                |> ColorBuilder.build
+                |> Animations.resetColor "box"
                 |> Sub.animate
       }
     , Cmd.none
@@ -94,11 +90,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> ColorBuilder.for "box"
-                        |> ColorBuilder.to (Rgb { r = 52, g = 152, b = 219 })
-                        |> ColorBuilder.duration 1000
-                        |> ColorBuilder.easing Easing.EaseInOut
-                        |> ColorBuilder.build
+                        |> Animations.changeToBlue "box"
                         |> Sub.animate
               }
             , Cmd.none
@@ -109,11 +101,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> ColorBuilder.for "box"
-                        |> ColorBuilder.to (Rgb { r = 46, g = 204, b = 113 })
-                        |> ColorBuilder.duration 1000
-                        |> ColorBuilder.easing Easing.EaseInOut
-                        |> ColorBuilder.build
+                        |> Animations.changeToGreen "box"
                         |> Sub.animate
               }
             , Cmd.none
@@ -124,11 +112,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> ColorBuilder.for "box"
-                        |> ColorBuilder.to (Rgb { r = 243, g = 156, b = 18 })
-                        |> ColorBuilder.duration 1000
-                        |> ColorBuilder.easing Easing.EaseInOut
-                        |> ColorBuilder.build
+                        |> Animations.changeToOrange "box"
                         |> Sub.animate
               }
             , Cmd.none
@@ -139,11 +123,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> ColorBuilder.for "box"
-                        |> ColorBuilder.to (Rgb { r = 231, g = 76, b = 60 })
-                        |> ColorBuilder.duration 1000
-                        |> ColorBuilder.easing Easing.EaseInOut
-                        |> ColorBuilder.build
+                        |> Animations.changeToRed "box"
                         |> Sub.animate
               }
             , Cmd.none
@@ -154,11 +134,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> ColorBuilder.for "box"
-                        |> ColorBuilder.to (Rgb { r = 155, g = 89, b = 182 })
-                        |> ColorBuilder.duration 1000
-                        |> ColorBuilder.easing Easing.EaseInOut
-                        |> ColorBuilder.build
+                        |> Animations.changeToPurple "box"
                         |> Sub.animate
               }
             , Cmd.none
@@ -169,11 +145,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> ColorBuilder.for "box"
-                        |> ColorBuilder.to (Rgb { r = 149, g = 165, b = 166 })
-                        |> ColorBuilder.duration 1000
-                        |> ColorBuilder.easing Easing.EaseInOut
-                        |> ColorBuilder.build
+                        |> Animations.resetColor "box"
                         |> Sub.animate
               }
             , Cmd.none

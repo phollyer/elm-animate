@@ -283,7 +283,9 @@ viewCube model =
             100
 
         depth =
-            cubeSize // 2 + 2 -- +2 for border thickness
+            cubeSize // 2 + 2
+
+        -- +2 for border thickness
     in
     Element.html <|
         Html.div

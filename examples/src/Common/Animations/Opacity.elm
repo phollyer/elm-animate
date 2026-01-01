@@ -10,12 +10,13 @@ module Common.Animations.Opacity exposing
 -}
 
 import Anim.Easing as Easing
+import Anim.Internal.Builder as Builder
 import Anim.Property.Opacity as Opacity
 
 
 {-| Fade in to fully visible (opacity 1.0)
 -}
-fadeIn : String -> builder -> builder
+fadeIn : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 fadeIn elementId builder =
     builder
         |> Opacity.for elementId
@@ -27,7 +28,7 @@ fadeIn elementId builder =
 
 {-| Fade out to fully invisible (opacity 0.0)
 -}
-fadeOut : String -> builder -> builder
+fadeOut : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 fadeOut elementId builder =
     builder
         |> Opacity.for elementId
@@ -39,7 +40,7 @@ fadeOut elementId builder =
 
 {-| Toggle between visible (1.0) and invisible (0.0)
 -}
-fadeToggle : String -> Float -> builder -> builder
+fadeToggle : String -> Float -> Builder.AnimBuilder -> Builder.AnimBuilder
 fadeToggle elementId currentOpacity builder =
     let
         newOpacity =
@@ -59,7 +60,7 @@ fadeToggle elementId currentOpacity builder =
 
 {-| Fade to half opacity (0.5)
 -}
-fadeToHalf : String -> builder -> builder
+fadeToHalf : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 fadeToHalf elementId builder =
     builder
         |> Opacity.for elementId
@@ -71,7 +72,7 @@ fadeToHalf elementId builder =
 
 {-| Fade to quarter opacity (0.25)
 -}
-fadeToQuarter : String -> builder -> builder
+fadeToQuarter : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 fadeToQuarter elementId builder =
     builder
         |> Opacity.for elementId

@@ -20,6 +20,7 @@ import Anim.Engine.Sub as Sub
 import Anim.Property.Rotate as Rotate exposing (Builder)
 import Browser exposing (Document)
 import Browser.Events
+import Common.Animations.Rotate as Animations
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
@@ -72,13 +73,6 @@ type Msg
     | AnimationMsg Sub.AnimationMsg
 
 
-anim : Sub.AnimState -> Builder
-anim animation =
-    animation
-        |> Sub.builder
-        |> Rotate.for "box"
-
-
 
 -- UPDATE
 
@@ -90,10 +84,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Rotate.toZ 45
-                        |> Rotate.speed 180.0
-                        |> Rotate.build
+                        |> Sub.builder
+                        |> Animations.rotate45 "box"
                         |> Sub.animate
               }
             , Cmd.none
@@ -103,10 +95,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Rotate.toZ 90
-                        |> Rotate.speed 180.0
-                        |> Rotate.build
+                        |> Sub.builder
+                        |> Animations.rotate90 "box"
                         |> Sub.animate
               }
             , Cmd.none
@@ -116,10 +106,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Rotate.toZ 180
-                        |> Rotate.speed 200.0
-                        |> Rotate.build
+                        |> Sub.builder
+                        |> Animations.rotate180 "box"
                         |> Sub.animate
               }
             , Cmd.none
@@ -129,10 +117,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Rotate.toZ -90
-                        |> Rotate.speed 150.0
-                        |> Rotate.build
+                        |> Sub.builder
+                        |> Animations.rotateLeft "box"
                         |> Sub.animate
               }
             , Cmd.none
@@ -142,10 +128,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Rotate.toZ 90
-                        |> Rotate.speed 150.0
-                        |> Rotate.build
+                        |> Sub.builder
+                        |> Animations.rotateRight "box"
                         |> Sub.animate
               }
             , Cmd.none
@@ -155,10 +139,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Rotate.toZ 0
-                        |> Rotate.speed 180.0
-                        |> Rotate.build
+                        |> Sub.builder
+                        |> Animations.resetRotate "box"
                         |> Sub.animate
               }
             , Cmd.none

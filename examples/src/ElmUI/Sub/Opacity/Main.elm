@@ -17,8 +17,8 @@ FEATURES:
 
 import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.Sub as Sub
-import Anim.Property.Opacity as Opacity
 import Browser exposing (Document)
+import Common.Animations.Opacity as Animations
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
@@ -84,11 +84,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Opacity.for "box"
-                        |> Opacity.to 1.0
-                        |> Opacity.duration 2000
-                        |> Opacity.easing Easing.EaseOut
-                        |> Opacity.build
+                        |> Animations.fadeIn "box"
                         |> Sub.animate
                 , isVisible = True
               }
@@ -100,11 +96,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Opacity.for "box"
-                        |> Opacity.to 0.0
-                        |> Opacity.duration 2000
-                        |> Opacity.easing Easing.EaseOut
-                        |> Opacity.build
+                        |> Animations.fadeOut "box"
                         |> Sub.animate
                 , isVisible = False
               }
@@ -114,12 +106,12 @@ update msg model =
         FadeToggle ->
             -- Toggle between fully visible (1.0) and fully invisible (0.0)
             let
-                newOpacity =
+                currentOpacity =
                     if model.isVisible then
-                        0.0
+                        1.0
 
                     else
-                        1.0
+                        0.0
 
                 newVisible =
                     not model.isVisible
@@ -128,11 +120,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Opacity.for "box"
-                        |> Opacity.to newOpacity
-                        |> Opacity.speed 3.0
-                        |> Opacity.easing Easing.EaseInOut
-                        |> Opacity.build
+                        |> Animations.fadeToggle "box" currentOpacity
                         |> Sub.animate
                 , isVisible = newVisible
               }

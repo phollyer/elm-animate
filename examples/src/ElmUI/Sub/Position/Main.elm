@@ -27,6 +27,7 @@ import Anim.Engine.Sub as Sub
 import Anim.Property.Position as Position
 import Browser exposing (Document)
 import Browser.Events
+import Common.Animations.Position as Animations
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
@@ -113,11 +114,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Position.for "box"
-                        |> Position.toX 0
-                        |> Position.speed 300.0
-                        |> Position.easing Easing.BounceIn
-                        |> Position.build
+                        |> Animations.moveLeft "box"
                         |> Sub.animate
               }
             , Cmd.none
@@ -128,11 +125,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Position.for "box"
-                        |> Position.toX 450
-                        |> Position.speed 300.0
-                        |> Position.easing Easing.BounceOut
-                        |> Position.build
+                        |> Animations.moveRight "box"
                         |> Sub.animate
               }
             , Cmd.none
@@ -143,11 +136,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Position.for "box"
-                        |> Position.toY 0
-                        |> Position.speed 250.0
-                        |> Position.easing Easing.EaseOut
-                        |> Position.build
+                        |> Animations.moveUp "box"
                         |> Sub.animate
               }
             , Cmd.none
@@ -158,11 +147,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Position.for "box"
-                        |> Position.toY 350
-                        |> Position.speed 250.0
-                        |> Position.easing Easing.EaseOut
-                        |> Position.build
+                        |> Animations.moveDown "box"
                         |> Sub.animate
               }
             , Cmd.none
@@ -173,11 +158,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Position.for "box"
-                        |> Position.toXY 0 0
-                        |> Position.speed 400.0
-                        |> Position.easing Easing.EaseOut
-                        |> Position.build
+                        |> Animations.returnToOrigin "box"
                         |> Sub.animate
               }
             , Cmd.none

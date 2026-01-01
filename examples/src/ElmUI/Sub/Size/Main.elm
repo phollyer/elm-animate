@@ -17,9 +17,9 @@ FEATURES:
 
 import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.Sub as Sub
-import Anim.Property.Size as Size
 import Browser exposing (Document)
 import Browser.Events
+import Common.Animations.Size as Animations
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
@@ -60,11 +60,7 @@ init _ =
     ( { animations =
             Sub.init
                 |> Sub.builder
-                |> Size.for "box"
-                |> Size.toHW 100 100
-                |> Size.duration 0
-                |> Size.easing Easing.EaseOut
-                |> Size.build
+                |> Animations.sizeReset "box"
                 |> Sub.animate
       }
     , Cmd.none
@@ -72,8 +68,8 @@ init _ =
 
 
 type Msg
-    = SizeUp
-    | SizeDown
+    = SizeLarge
+    | SizeSquare
     | SizeReset
     | SizeWide
     | SizeTall
@@ -87,49 +83,23 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        SizeUp ->
-            let
-                ( newWidth, newHeight ) =
-                    case Sub.getCurrentSize "box" model.animations of
-                        Just size ->
-                            ( (size.width * 2) |> min 400, (size.height * 2) |> min 300 )
-
-                        Nothing ->
-                            ( 100, 100 )
-            in
+        SizeLarge ->
             ( { model
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Size.for "box"
-                        |> Size.toHW newHeight newWidth
-                        |> Size.duration 2000
-                        |> Size.easing Easing.BounceOut
-                        |> Size.build
+                        |> Animations.sizeLarge "box"
                         |> Sub.animate
               }
             , Cmd.none
             )
 
-        SizeDown ->
-            let
-                ( newWidth, newHeight ) =
-                    case Sub.getCurrentSize "box" model.animations of
-                        Just size ->
-                            ( (size.width / 2) |> max 50, (size.height / 2) |> max 50 )
-
-                        Nothing ->
-                            ( 50, 50 )
-            in
+        SizeSquare ->
             ( { model
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Size.for "box"
-                        |> Size.toHW newHeight newWidth
-                        |> Size.duration 1000
-                        |> Size.easing Easing.QuadInOut
-                        |> Size.build
+                        |> Animations.sizeSquare "box"
                         |> Sub.animate
               }
             , Cmd.none
@@ -140,59 +110,29 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Size.for "box"
-                        |> Size.toHW 150 150
-                        |> Size.duration 1500
-                        |> Size.easing Easing.EaseInOut
-                        |> Size.build
+                        |> Animations.sizeReset "box"
                         |> Sub.animate
               }
             , Cmd.none
             )
 
         SizeWide ->
-            let
-                newWidth =
-                    case Sub.getCurrentSize "box" model.animations of
-                        Just size ->
-                            (size.width * 2) |> max 400
-
-                        Nothing ->
-                            400
-            in
             ( { model
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Size.for "box"
-                        |> Size.toW newWidth
-                        |> Size.duration 1000
-                        |> Size.easing Easing.QuintInOut
-                        |> Size.build
+                        |> Animations.sizeWide "box"
                         |> Sub.animate
               }
             , Cmd.none
             )
 
         SizeTall ->
-            let
-                newHeight =
-                    case Sub.getCurrentSize "box" model.animations of
-                        Just size ->
-                            (size.height * 2) |> max 300
-
-                        Nothing ->
-                            300
-            in
             ( { model
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Size.for "box"
-                        |> Size.toH newHeight
-                        |> Size.speed 400
-                        |> Size.easing Easing.QuadInOut
-                        |> Size.build
+                        |> Animations.sizeTall "box"
                         |> Sub.animate
               }
             , Cmd.none
@@ -238,8 +178,8 @@ viewContent model =
         (text "Smooth width and height animations using browser-native Subscription-Based transitions")
     , -- Size controls
       UI.wrappedButtonRow
-        [ ( UI.Primary, SizeUp, "Size Up" )
-        , ( UI.Warning, SizeDown, "Size Down" )
+        [ ( UI.Primary, SizeLarge, "Large" )
+        , ( UI.Warning, SizeSquare, "Square" )
         , ( UI.Success, SizeWide, "Wide" )
         , ( UI.Success, SizeTall, "Tall" )
         , ( UI.Purple, SizeReset, "Reset" )

@@ -17,9 +17,9 @@ FEATURES:
 
 import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.Sub as Sub
-import Anim.Property.Scale as Scale
 import Browser exposing (Document)
 import Browser.Events
+import Common.Animations.Scale as Animations
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
@@ -83,11 +83,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Scale.for "box"
-                        |> Scale.toXY 1.5 1.5
-                        |> Scale.speed 2.0
-                        |> Scale.easing Easing.EaseOut
-                        |> Scale.build
+                        |> Animations.scaleUp "box"
                         |> Sub.animate
               }
             , Cmd.none
@@ -98,11 +94,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Scale.for "box"
-                        |> Scale.toXY 0.7 0.7
-                        |> Scale.speed 2.0
-                        |> Scale.easing Easing.EaseOut
-                        |> Scale.build
+                        |> Animations.scaleDown "box"
                         |> Sub.animate
               }
             , Cmd.none
@@ -113,11 +105,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Scale.for "box"
-                        |> Scale.toXY 1.0 1.0
-                        |> Scale.speed 1.5
-                        |> Scale.easing Easing.EaseInOut
-                        |> Scale.build
+                        |> Animations.scaleReset "box"
                         |> Sub.animate
               }
             , Cmd.none
@@ -128,11 +116,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Scale.for "box"
-                        |> Scale.toXY 1.8 0.6
-                        |> Scale.speed 2.5
-                        |> Scale.easing Easing.EaseOut
-                        |> Scale.build
+                        |> Animations.scaleWide "box"
                         |> Sub.animate
               }
             , Cmd.none
@@ -143,11 +127,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Scale.for "box"
-                        |> Scale.toXY 0.6 1.8
-                        |> Scale.speed 2.5
-                        |> Scale.easing Easing.EaseOut
-                        |> Scale.build
+                        |> Animations.scaleTall "box"
                         |> Sub.animate
               }
             , Cmd.none

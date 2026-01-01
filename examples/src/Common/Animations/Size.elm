@@ -14,12 +14,13 @@ fixed-target animations. More complex relative sizing can be done in examples.
 -}
 
 import Anim.Easing as Easing
+import Anim.Internal.Builder as Builder
 import Anim.Property.Size as Size
 
 
 {-| Reset to default size (150x150)
 -}
-sizeReset : String -> builder -> builder
+sizeReset : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 sizeReset elementId builder =
     builder
         |> Size.for elementId
@@ -31,7 +32,7 @@ sizeReset elementId builder =
 
 {-| Make element wide (300x100)
 -}
-sizeWide : String -> builder -> builder
+sizeWide : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 sizeWide elementId builder =
     builder
         |> Size.for elementId
@@ -43,7 +44,7 @@ sizeWide elementId builder =
 
 {-| Make element tall (100x300)
 -}
-sizeTall : String -> builder -> builder
+sizeTall : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 sizeTall elementId builder =
     builder
         |> Size.for elementId
@@ -55,7 +56,7 @@ sizeTall elementId builder =
 
 {-| Make element a small square (100x100)
 -}
-sizeSquare : String -> builder -> builder
+sizeSquare : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 sizeSquare elementId builder =
     builder
         |> Size.for elementId
@@ -67,7 +68,7 @@ sizeSquare elementId builder =
 
 {-| Make element large (250x250)
 -}
-sizeLarge : String -> builder -> builder
+sizeLarge : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 sizeLarge elementId builder =
     builder
         |> Size.for elementId

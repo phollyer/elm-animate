@@ -26,6 +26,7 @@ import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.CSS as CSS
 import Anim.Property.Position as Position
 import Browser exposing (Document)
+import Common.Animations.Position as Animations
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, none, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
@@ -72,15 +73,6 @@ init _ =
 -- UPDATE
 
 
-toPositionBuilder : CSS.AnimState -> Position.Builder
-toPositionBuilder animations =
-    animations
-        |> CSS.builder
-        |> CSS.duration 700
-        |> CSS.easing Linear
-        |> Position.for "box"
-
-
 type Msg
     = MoveToPosition Float Float
     | MoveLeft
@@ -98,11 +90,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> toPositionBuilder
-                        |> Position.toXY x y
-                        |> Position.easing Easing.BounceInOut
-                        |> Position.speed 200
-                        |> Position.build
+                        |> CSS.builder
+                        |> Animations.moveToXY "box" x y
                         |> CSS.animate
               }
             , Cmd.none
@@ -112,11 +101,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> toPositionBuilder
-                        |> Position.toX 0
-                        |> Position.easing Easing.BounceOut
-                        |> Position.duration 500
-                        |> Position.build
+                        |> CSS.builder
+                        |> Animations.moveLeft "box"
                         |> CSS.animate
               }
             , Cmd.none
@@ -126,11 +112,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> toPositionBuilder
-                        |> Position.toX 450
-                        |> Position.duration 800
-                        |> Position.easing Easing.BounceIn
-                        |> Position.build
+                        |> CSS.builder
+                        |> Animations.moveRight "box"
                         |> CSS.animate
               }
             , Cmd.none
@@ -140,12 +123,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> toPositionBuilder
-                        |> Position.toY 350
-                        |> Position.delay 1000
-                        |> Position.duration 500
-                        |> Position.easing Easing.ElasticInOut
-                        |> Position.build
+                        |> CSS.builder
+                        |> Animations.moveDown "box"
                         |> CSS.animate
               }
             , Cmd.none
@@ -155,11 +134,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> toPositionBuilder
-                        |> Position.toY 0
-                        |> Position.easing Easing.ElasticIn
-                        |> Position.duration 500
-                        |> Position.build
+                        |> CSS.builder
+                        |> Animations.moveUp "box"
                         |> CSS.animate
               }
             , Cmd.none
@@ -169,10 +145,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> toPositionBuilder
-                        |> Position.toXY 0 0
-                        |> Position.easing Easing.ElasticOut
-                        |> Position.build
+                        |> CSS.builder
+                        |> Animations.returnToOrigin "box"
                         |> CSS.animate
               }
             , Cmd.none

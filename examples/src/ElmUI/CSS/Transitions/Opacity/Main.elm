@@ -19,6 +19,7 @@ import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.CSS as CSS
 import Anim.Property.Opacity as Opacity
 import Browser exposing (Document)
+import Common.Animations.Opacity as Animations
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, centerY, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
@@ -65,15 +66,6 @@ init _ =
 -- UPDATE
 
 
-anim : CSS.AnimState -> Opacity.Builder
-anim animations =
-    animations
-        |> CSS.builder
-        |> CSS.duration 600
-        |> CSS.easing Linear
-        |> Opacity.for "box"
-
-
 type Msg
     = FadeIn
     | FadeOut
@@ -90,11 +82,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Opacity.to 1.0
-                        |> Opacity.easing Easing.QuadInOut
-                        |> Opacity.speed 1
-                        |> Opacity.build
+                        |> CSS.builder
+                        |> Animations.fadeIn "box"
                         |> CSS.animate
               }
             , Cmd.none
@@ -104,11 +93,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Opacity.to 0.0
-                        |> Opacity.easing Easing.SineInOut
-                        |> Opacity.speed 0.2
-                        |> Opacity.build
+                        |> CSS.builder
+                        |> Animations.fadeOut "box"
                         |> CSS.animate
               }
             , Cmd.none
@@ -118,11 +104,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Opacity.to 0.5
-                        |> Opacity.easing BackInOut
-                        |> Opacity.duration 800
-                        |> Opacity.build
+                        |> CSS.builder
+                        |> Animations.fadeToHalf "box"
                         |> CSS.animate
               }
             , Cmd.none
@@ -132,11 +115,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Opacity.to 0.25
-                        |> Opacity.easing BounceInOut
-                        |> Opacity.delay 300
-                        |> Opacity.build
+                        |> CSS.builder
+                        |> Animations.fadeToQuarter "box"
                         |> CSS.animate
               }
             , Cmd.none
@@ -146,11 +126,8 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Opacity.to 1.0
-                        |> Opacity.easing ElasticInOut
-                        |> Opacity.duration 1000
-                        |> Opacity.build
+                        |> CSS.builder
+                        |> Animations.fadeIn "box"
                         |> CSS.animate
               }
             , Cmd.none

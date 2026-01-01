@@ -19,6 +19,7 @@ import Anim.Easing as Easing
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.BackgroundColor as Color
 import Browser exposing (Document)
+import Common.Animations.BackgroundColor as Animations
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, centerY, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb, rgb255, spacing, text, width)
@@ -91,91 +92,55 @@ update msg model =
     case msg of
         ChangeToBlue ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Color.for "box"
-                        |> Color.to (Color.Hex "#3498db")
-                        |> Color.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.builder model.animState
+                        |> Animations.changeToBlue "box"
+                        |> WAAPI.animate model.animState
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ChangeToGreen ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Color.for "box"
-                        |> Color.to (Color.Hex "#2ecc71")
-                        |> Color.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.builder model.animState
+                        |> Animations.changeToGreen "box"
+                        |> WAAPI.animate model.animState
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ChangeToOrange ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Color.for "box"
-                        |> Color.to (Color.Hex "#f39c12")
-                        |> Color.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.builder model.animState
+                        |> Animations.changeToOrange "box"
+                        |> WAAPI.animate model.animState
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ChangeToRed ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Color.for "box"
-                        |> Color.to (Color.Hex "#e74c3c")
-                        |> Color.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.builder model.animState
+                        |> Animations.changeToRed "box"
+                        |> WAAPI.animate model.animState
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ChangeToPurple ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Color.for "box"
-                        |> Color.to (Color.Hex "#9b59b6")
-                        |> Color.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.builder model.animState
+                        |> Animations.changeToPurple "box"
+                        |> WAAPI.animate model.animState
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ResetColor ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Color.for "box"
-                        |> Color.to (Color.Hex "#95a5a6")
-                        |> Color.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.builder model.animState
+                        |> Animations.resetColor "box"
+                        |> WAAPI.animate model.animState
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
