@@ -114,7 +114,7 @@ update msg model =
                 |> Scale.toXY 1.5 1.9
                 |> Scale.build
                 |> Rotate.for elementId
-                |> Rotate.to 90
+                |> Rotate.toZ 90
                 |> Rotate.build
                 |> WAAPI.animate animateElement
             )
@@ -141,7 +141,7 @@ update msg model =
                 |> WAAPI.duration 1000
                 |> WAAPI.easing Easing.EaseInOut
                 |> Rotate.for elementId
-                |> Rotate.to 180
+                |> Rotate.toZ 180
                 |> Rotate.build
                 |> Scale.for elementId
                 |> Scale.toXY 0.8 0.8
@@ -183,7 +183,7 @@ update msg model =
                 |> Scale.toXY 1.3 1.3
                 |> Scale.build
                 |> Rotate.for elementId
-                |> Rotate.to 270
+                |> Rotate.toZ 270
                 |> Rotate.build
                 |> Opacity.for elementId
                 |> Opacity.to 0.7
@@ -206,7 +206,7 @@ update msg model =
                 |> Scale.toXY 1.0 1.0
                 |> Scale.build
                 |> Rotate.for "mixed-box"
-                |> Rotate.to 0
+                |> Rotate.toZ 0
                 |> Rotate.build
                 |> Opacity.for "mixed-box"
                 |> Opacity.to 1.0

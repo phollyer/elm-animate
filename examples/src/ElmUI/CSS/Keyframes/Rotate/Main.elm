@@ -97,7 +97,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Rotate.to 45
+                        |> Rotate.toZ 45
                         |> Rotate.easing Easing.QuadInOut
                         |> Rotate.build
                         |> CSS.animate
@@ -110,7 +110,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Rotate.to 90
+                        |> Rotate.toZ 90
                         |> Rotate.easing Easing.SineInOut
                         |> Rotate.speed 100
                         |> Rotate.build
@@ -124,7 +124,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Rotate.to 180
+                        |> Rotate.toZ 180
                         |> Rotate.easing BackInOut
                         |> Rotate.duration 900
                         |> Rotate.build
@@ -138,7 +138,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Rotate.to -90
+                        |> Rotate.toZ -90
                         |> Rotate.easing BounceInOut
                         |> Rotate.delay 500
                         |> Rotate.build
@@ -152,7 +152,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Rotate.to 90
+                        |> Rotate.toZ 90
                         |> Rotate.easing ElasticInOut
                         |> Rotate.duration 600
                         |> Rotate.build
@@ -166,7 +166,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Rotate.to 0
+                        |> Rotate.toZ 0
                         |> Rotate.easing Easing.EaseInOut
                         |> Rotate.build
                         |> CSS.animate

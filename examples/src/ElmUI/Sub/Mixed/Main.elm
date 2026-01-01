@@ -77,7 +77,7 @@ init _ =
                 |> Size.duration 0
                 |> Size.build
                 |> Rotate.for "mixed-box"
-                |> Rotate.to 0
+                |> Rotate.toZ 0
                 |> Rotate.duration 0
                 |> Rotate.build
                 |> Opacity.for "mixed-box"
@@ -123,7 +123,7 @@ update msg model =
                         |> Position.build
                         |> Rotate.for elementId
                         |> Rotate.delay 500
-                        |> Rotate.to 90
+                        |> Rotate.toZ 90
                         |> Rotate.speed 120.0
                         |> Rotate.easing Easing.BounceOut
                         |> Rotate.build
@@ -164,7 +164,7 @@ update msg model =
                     model.animations
                         |> Sub.builder
                         |> Rotate.for elementId
-                        |> Rotate.to 180
+                        |> Rotate.toZ 180
                         |> Rotate.speed 180.0
                         |> Rotate.easing Easing.EaseInOut
                         |> Rotate.build
@@ -229,7 +229,7 @@ update msg model =
                         |> Size.easing Easing.EaseInOut
                         |> Size.build
                         |> Rotate.for elementId
-                        |> Rotate.to 270
+                        |> Rotate.toZ 270
                         |> Rotate.speed 180.0
                         |> Rotate.easing Easing.EaseInOut
                         |> Rotate.build
@@ -269,7 +269,7 @@ update msg model =
                         |> Size.easing Easing.EaseInOut
                         |> Size.build
                         |> Rotate.for "mixed-box"
-                        |> Rotate.to 0
+                        |> Rotate.toZ 0
                         |> Rotate.speed 180.0
                         |> Rotate.easing Easing.EaseInOut
                         |> Rotate.build

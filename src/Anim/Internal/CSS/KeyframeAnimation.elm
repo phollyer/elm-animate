@@ -208,22 +208,28 @@ generate elementId properties =
                                                                         s
 
                                                                     Nothing ->
-                                                                        Rotate.fromFloat 0.0
+                                                                        Rotate.fromTriple ( 0.0, 0.0, 0.0 )
 
                                                             endRot =
                                                                 cfg.end
 
-                                                            startAngle =
-                                                                Rotate.toFloat startRot
+                                                            ( startX, startY, startZ ) =
+                                                                Rotate.toTriple startRot
 
-                                                            endAngle =
-                                                                Rotate.toFloat endRot
+                                                            ( endX, endY, endZ ) =
+                                                                Rotate.toTriple endRot
 
-                                                            interpolatedAngle =
-                                                                startAngle + (endAngle - startAngle) * propProgress
+                                                            interpolatedX =
+                                                                startX + (endX - startX) * propProgress
+
+                                                            interpolatedY =
+                                                                startY + (endY - startY) * propProgress
+
+                                                            interpolatedZ =
+                                                                startZ + (endZ - startZ) * propProgress
 
                                                             interpolatedRot =
-                                                                Rotate.fromFloat interpolatedAngle
+                                                                Rotate.fromTriple ( interpolatedX, interpolatedY, interpolatedZ )
                                                         in
                                                         { acc | rotate = Rotate.to3DCssString interpolatedRot }
 

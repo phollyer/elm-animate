@@ -91,7 +91,7 @@ init _ =
                 |> Position.toXY 0 0
                 |> Position.build
                 |> Rotate.for elementId
-                |> Rotate.to 0
+                |> Rotate.toZ 0
                 |> Rotate.build
                 |> Scale.for elementId
                 |> Scale.toXY 1 1
@@ -142,7 +142,7 @@ update msg model =
                         |> Position.build
                         -- Rotate
                         |> Rotate.for elementId
-                        |> Rotate.to 45
+                        |> Rotate.toZ 45
                         |> Rotate.duration 800
                         |> Rotate.easing ElasticOut
                         |> Rotate.build
@@ -200,7 +200,7 @@ update msg model =
                         |> CSS.easing BounceOut
                         -- Rotate
                         |> Rotate.for elementId
-                        |> Rotate.to 180
+                        |> Rotate.toZ 180
                         |> Rotate.duration 1000
                         |> Rotate.build
                         -- Scale
@@ -256,7 +256,7 @@ update msg model =
                         |> Position.build
                         -- Rotate
                         |> Rotate.for elementId
-                        |> Rotate.to 135
+                        |> Rotate.toZ 135
                         |> Rotate.easing ElasticInOut
                         |> Rotate.duration 1400
                         |> Rotate.delay 300
@@ -311,7 +311,7 @@ update msg model =
                         |> Scale.build
                         -- Rotate
                         |> Rotate.for elementId
-                        |> Rotate.to 0
+                        |> Rotate.toZ 0
                         |> Rotate.build
                         -- Color
                         |> Color.for elementId

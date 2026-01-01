@@ -91,7 +91,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Rotate.to 45
+                        |> Rotate.toZ 45
                         |> Rotate.speed 180.0
                         |> Rotate.build
                         |> Sub.animate
@@ -104,7 +104,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Rotate.to 90
+                        |> Rotate.toZ 90
                         |> Rotate.speed 180.0
                         |> Rotate.build
                         |> Sub.animate
@@ -117,7 +117,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Rotate.to 180
+                        |> Rotate.toZ 180
                         |> Rotate.speed 200.0
                         |> Rotate.build
                         |> Sub.animate
@@ -130,7 +130,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Rotate.to -90
+                        |> Rotate.toZ -90
                         |> Rotate.speed 150.0
                         |> Rotate.build
                         |> Sub.animate
@@ -143,7 +143,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Rotate.to 90
+                        |> Rotate.toZ 90
                         |> Rotate.speed 150.0
                         |> Rotate.build
                         |> Sub.animate
@@ -156,7 +156,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> anim
-                        |> Rotate.to 0
+                        |> Rotate.toZ 0
                         |> Rotate.speed 180.0
                         |> Rotate.build
                         |> Sub.animate

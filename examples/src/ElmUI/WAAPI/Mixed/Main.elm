@@ -118,7 +118,7 @@ initAnim duration animState =
                 |> Size.toHW 80 80
                 |> Size.build
                 |> Rotate.for "mixed-box"
-                |> Rotate.to 0
+                |> Rotate.toZ 0
                 |> Rotate.build
                 |> Opacity.for "mixed-box"
                 |> Opacity.to 1.0
@@ -154,7 +154,7 @@ update msg model =
                         |> Scale.toXY 1.5 1.9
                         |> Scale.build
                         |> Rotate.for elementId
-                        |> Rotate.to 90
+                        |> Rotate.toZ 90
                         |> Rotate.build
 
                 ( newAnimState, encodedValue ) =
@@ -187,7 +187,7 @@ update msg model =
                         |> WAAPI.duration 1000
                         |> WAAPI.easing Easing.EaseInOut
                         |> Rotate.for elementId
-                        |> Rotate.to 180
+                        |> Rotate.toZ 180
                         |> Rotate.build
                         |> Scale.for elementId
                         |> Scale.toXY 0.8 0.8
@@ -238,7 +238,7 @@ update msg model =
                         |> Size.toHW 150 60
                         |> Size.build
                         |> Rotate.for elementId
-                        |> Rotate.to 270
+                        |> Rotate.toZ 270
                         |> Rotate.build
                         |> Opacity.for elementId
                         |> Opacity.to 0.7

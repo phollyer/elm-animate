@@ -126,7 +126,7 @@ update msg model =
                         |> Scale.build
                         -- Rotate
                         |> Rotate.for "mixed-box"
-                        |> Rotate.to 45
+                        |> Rotate.toZ 45
                         |> Rotate.easing ElasticOut
                         |> Rotate.duration 1200
                         |> Rotate.build
@@ -172,7 +172,7 @@ update msg model =
                         |> CSS.easing BounceOut
                         -- Rotate
                         |> Rotate.for "mixed-box"
-                        |> Rotate.to 180
+                        |> Rotate.toZ 180
                         |> Rotate.build
                         -- Scale
                         |> Scale.for "mixed-box"
@@ -224,7 +224,7 @@ update msg model =
                         |> Position.build
                         -- Rotate
                         |> Rotate.for "mixed-box"
-                        |> Rotate.to 135
+                        |> Rotate.toZ 135
                         |> Rotate.easing ElasticInOut
                         |> Rotate.duration 1400
                         |> Rotate.delay 300
@@ -279,7 +279,7 @@ update msg model =
                         |> Scale.build
                         -- Rotate
                         |> Rotate.for "mixed-box"
-                        |> Rotate.to 0
+                        |> Rotate.toZ 0
                         |> Rotate.build
                         -- Color
                         |> Color.for "mixed-box"

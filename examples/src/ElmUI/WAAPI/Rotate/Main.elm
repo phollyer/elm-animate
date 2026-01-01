@@ -84,7 +84,7 @@ update msg model =
                         |> WAAPI.duration 1000
                         |> WAAPI.easing Easing.EaseInOut
                         |> Rotate.for "box"
-                        |> Rotate.to 45
+                        |> Rotate.toZ 45
                         |> Rotate.build
 
                 ( newAnimState, encodedValue ) =
@@ -99,7 +99,7 @@ update msg model =
                         |> WAAPI.duration 1000
                         |> WAAPI.easing Easing.EaseInOut
                         |> Rotate.for "box"
-                        |> Rotate.to 90
+                        |> Rotate.toZ 90
                         |> Rotate.build
 
                 ( newAnimState, encodedValue ) =
@@ -114,7 +114,7 @@ update msg model =
                         |> WAAPI.duration 1000
                         |> WAAPI.easing Easing.EaseInOut
                         |> Rotate.for "box"
-                        |> Rotate.to 180
+                        |> Rotate.toZ 180
                         |> Rotate.build
 
                 ( newAnimState, encodedValue ) =
@@ -129,7 +129,7 @@ update msg model =
                         |> WAAPI.duration 1000
                         |> WAAPI.easing Easing.EaseInOut
                         |> Rotate.for "box"
-                        |> Rotate.to -90
+                        |> Rotate.toZ -90
                         |> Rotate.build
 
                 ( newAnimState, encodedValue ) =
@@ -144,7 +144,7 @@ update msg model =
                         |> WAAPI.duration 1000
                         |> WAAPI.easing Easing.EaseInOut
                         |> Rotate.for "box"
-                        |> Rotate.to 90
+                        |> Rotate.toZ 90
                         |> Rotate.build
 
                 ( newAnimState, encodedValue ) =
@@ -159,7 +159,7 @@ update msg model =
                         |> WAAPI.duration 1000
                         |> WAAPI.easing Easing.EaseInOut
                         |> Rotate.for "box"
-                        |> Rotate.to 0
+                        |> Rotate.toZ 0
                         |> Rotate.build
 
                 ( newAnimState, encodedValue ) =
