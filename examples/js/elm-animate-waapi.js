@@ -184,12 +184,7 @@ window.ElmAnimateWAAPI = (function () {
         if (typeof start === 'string' && typeof end === 'string' &&
             (start === 'none' || end === 'none' ||
                 start.includes('translate') || start.includes('scale') || start.includes('rotate'))) {
-            const result = interpolateTransform(start, end, progress);
-            // Debug: log a few sample interpolations
-            if (progress === 0 || progress === 1 || Math.abs(progress - 0.5) < 0.01) {
-                console.log(`[WAAPI Debug] interpolateTransform progress=${progress.toFixed(3)}:`, result);
-            }
-            return result;
+            return interpolateTransform(start, end, progress);
         }
 
         // For numeric values (opacity)
@@ -386,21 +381,7 @@ window.ElmAnimateWAAPI = (function () {
 
         if (easingKeyframes) {
             // Complex easing: generate 30 keyframes with linear interpolation
-            console.log('[WAAPI Debug] Found easingKeyframes:', {
-                easing: easing,
-                keyframeCount: easingKeyframes.length,
-                firstFew: easingKeyframes.slice(0, 5),
-                lastFew: easingKeyframes.slice(-5),
-                startTransform: startTransform,
-                endTransform: endTransform
-            });
             keyframes = generateKeyframesWithEasing(startTransform, endTransform, easingKeyframes, 'transform');
-            console.log('[WAAPI Debug] Generated keyframes:', {
-                count: keyframes.length,
-                first: keyframes[0],
-                middle: keyframes[Math.floor(keyframes.length / 2)],
-                last: keyframes[keyframes.length - 1]
-            });
             animationEasing = 'linear';
         } else {
             // Simple easing: use 2 keyframes with easing curve
