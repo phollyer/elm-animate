@@ -9,6 +9,7 @@
         "Anim.Engine.Sub",
         "Anim.Engine.WAAPI",
         "Anim.Engine.Scroll",
+        "Anim.Action.Scroll",
         "Anim.Easing",
         "Anim.Property.Position",
         "Anim.Property.Rotate",

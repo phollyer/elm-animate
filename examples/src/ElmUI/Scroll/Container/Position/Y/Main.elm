@@ -1,5 +1,6 @@
 module ElmUI.Scroll.Container.Position.Y.Main exposing (main)
 
+import Anim.Action.Scroll as ScrollAction
 import Anim.Engine.Scroll as Scroll
 import Browser exposing (Document)
 import Common.Colors as Colors
@@ -46,9 +47,10 @@ scrollToElement : String -> Cmd Msg
 scrollToElement targetId =
     Scroll.init
         |> Scroll.builder
-        |> Scroll.container "scroll-container"
-        |> Scroll.toElement targetId
         |> Scroll.speed 500
+        |> ScrollAction.forContainer "scroll-container"
+        |> ScrollAction.toElement targetId
+        |> ScrollAction.build
         |> Scroll.toCmd NoOp
 
 

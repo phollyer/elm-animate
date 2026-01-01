@@ -18,7 +18,7 @@ module Anim.Engine.WAAPI exposing
 
 {-| Ports-based animation system utilising the Web Animations API with optional state tracking.
 
-This module converts [AnimBuilder](#AnimBuilder) configurations to JavaScript Web Animations API calls
+This Engine converts [AnimBuilder](#AnimBuilder) configurations to JavaScript Web Animations API calls
 via Elm ports for maximum performance and browser compatibility.
 
 **Note:** This module requires the accompanying JavaScript library to handle the Web Animations API.

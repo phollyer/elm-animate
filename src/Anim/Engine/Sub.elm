@@ -19,7 +19,7 @@ module Anim.Engine.Sub exposing
 
 {-| Subscription-based animation system with state tracking.
 
-This module converts [AnimBuilder](#AnimBuilder) configurations to frame-based animations using
+This Engine converts [AnimBuilder](#AnimBuilder) configurations to frame-based animations using
 subscriptions for smooth, controlled animations.
 
 

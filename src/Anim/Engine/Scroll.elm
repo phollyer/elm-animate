@@ -1,37 +1,62 @@
 module Anim.Engine.Scroll exposing
-    ( toCmd, toTask, animate
-    , AnimState, init, AnimBuilder, builder
+    ( AnimState, init, AnimBuilder, builder
+    , toCmd, toTask, animate
     , AnimationMsg, update, subscriptions
-    , onBothAxes, onXAxis, onYAxis
-    , onBothAxesWithOffset, onXAxisWithOffset, onYAxisWithOffset
     , duration, speed
     , easing
     , delay
-    , toElement, toTop, toBottom, toCenter
-    , toXY, toX, toY, toCoordinates, toPercentage
-    , document, container
     , isAnimationRunning, getDuration
     , getScrollPosition, getScrollPositionXY, getScrollPositionX, getScrollPositionY
     )
 
 {-| Smooth Document and Container scrolling.
 
-This module provides smooth scrolling animations using `Cmd`s, `Task`s, and `subscriptions`.
-Choose the approach that best fits your application's architecture.
-
-  - **Cmd**: For fire-and-forget scrolling - this is the simplest to set up.
-  - **Tasks**: For scroll animations that require error handling and/or composition with other tasks.
-  - **Subscriptions**: For managing scroll animations with state tracking and mid-flight control - requires handling animation state updates.
+This Engine converts [AnimBuilder](#AnimBuilder) configurations to scroll animations
+that can target specific elements or coordinates within the document or scrollable containers.
 
 
-# Execute
+## Usage
 
-@docs toCmd, toTask, animate
+    import Anim.Engine.Scroll as Scroll
+    import Anim.Action.Scroll as ScrollAction
+
+    -- Single scroll with subscription-based state management
+    ( scrollState, scrollCmd ) =
+        Scroll.init
+            |> Scroll.builder
+            |> Scroll.speed 500  -- global default
+            |> ScrollAction.for "document"
+            |> ScrollAction.toElement "section-1"
+            |> ScrollAction.build
+            |> Scroll.animate ScrollMsg
+
+    -- Single fire-and-forget Cmd with multiple scrolls in different containers
+    scrollCmd =
+        Scroll.init
+            |> Scroll.builder
+            |> Scroll.duration 1000  -- global default
+            |> ScrollAction.forDocument
+            |> ScrollAction.toTop
+            |> ScrollAction.easing BounceOut
+            |> ScrollAction.build
+            |> ScrollAction.for "container-1"
+            |> ScrollAction.toElement "target-1"
+            |> ScrollAction.speed 800  -- override global duration for this scroll
+            |> ScrollAction.build
+            |> ScrollAction.for "container-2"
+            |> ScrollAction.toElement "target-2"
+            |> ScrollAction.build
+            |> Scroll.toCmd ScrollCompleted
 
 
 # Build
 
 @docs AnimState, init, AnimBuilder, builder
+
+
+# Execute
+
+@docs toCmd, toTask, animate
 
 
 # Update
@@ -40,16 +65,6 @@ If using subscription-based scroll animations with the [animate](#animate) funct
 you need to handle updates to the animation state.
 
 @docs AnimationMsg, update, subscriptions
-
-
-# Axis Selection
-
-@docs onBothAxes, onXAxis, onYAxis
-
-
-## With Offsets
-
-@docs onBothAxesWithOffset, onXAxisWithOffset, onYAxisWithOffset
 
 
 # Global Settings
@@ -70,24 +85,6 @@ These settings will be used for all scroll animations unless overridden on a per
 ## Delay
 
 @docs delay
-
-
-# Scroll Targeting
-
-
-## Element and Position Targeting
-
-@docs toElement, toTop, toBottom, toCenter
-
-
-## Coordinate Targeting
-
-@docs toXY, toX, toY, toCoordinates, toPercentage
-
-
-## Container Selection
-
-@docs document, container
 
 
 # Querying Animation State
@@ -158,8 +155,7 @@ type alias AnimationMsg =
     scrollCmd =
         Scroll.init
             |> Scroll.builder
-            |> Scroll.toElement "target-element"
-            |> Scroll.speed 500
+            |> ... -- configure scroll animation
             |> Scroll.toCmd ScrollCompleted
 
 -}
@@ -173,20 +169,18 @@ init =
 Use this to start new scroll animations.
 
     -- Start a new scroll animation based on current state
-    newAnimations =
+    (newAnimations, scrollCmd) =
         model.scrollAnimations
             |> Scroll.builder
-            |> Scroll.toElement "section-1"
-            |> Scroll.speed 500
+            |> ... -- configure scroll animation
             |> Scroll.animate
 
     -- Start a new fire-and-forget scroll animation
-    newAnimations =
+    scrollCmd =
         Scroll.init
             |> Scroll.builder
-            |> Scroll.toElement "section-1"
-            |> Scroll.speed 500
-            |> Scroll.animate
+            |>.. -- configure scroll animation
+            |> Scroll.toCmd ScrollCompleted
 
 -}
 builder : AnimState -> AnimBuilder
@@ -196,6 +190,8 @@ builder =
 
 {-| Generate scroll animation state and command from the builder.
 
+    import Anim.Action.Scroll as ScrollAction
+
     type Msg
         = ScrollMsg Scroll.AnimationMsg
         | ...
@@ -204,8 +200,10 @@ builder =
         ( scrollState, scrollCmd ) =
             model.scrollAnimations
                 |> Scroll.builder
-                |> Scroll.toElement sectionId
                 |> Scroll.speed 500
+                |> ScrollAction.forDocument
+                |> ScrollAction.toElement sectionId
+                |> ScrollAction.build
                 |> Scroll.animate ScrollMsg
     in
     ( { model | scrollAnimations = scrollState }
@@ -224,10 +222,14 @@ animate =
 
 {-| Set global duration in milliseconds (overrides any previous speed setting).
 
+    import Anim.Action.Scroll as ScrollAction
+
     Scroll.init
         |> Scroll.builder
         |> Scroll.duration 1000
-        |> Scroll.toElement "section-1"
+        |> ScrollAction.forDocument
+        |> ScrollAction.toElement "section-1"
+        |> ScrollAction.build
         |> Scroll.animate
 
 -}
@@ -238,10 +240,14 @@ duration =
 
 {-| Set global speed in pixels per second (overrides any previous duration setting).
 
+    import Anim.Action.Scroll as ScrollAction
+
     Scroll.init
         |> Scroll.builder
         |> Scroll.speed 500
-        |> Scroll.toElement "section-1"
+        |> ScrollAction.forDocument
+        |> ScrollAction.toElement "section-1"
+        |> ScrollAction.build
         |> Scroll.animate
 
 -}
@@ -252,10 +258,14 @@ speed =
 
 {-| Set global easing function.
 
+    import Anim.Action.Scroll as ScrollAction
+
     Scroll.init
         |> Scroll.builder
         |> Scroll.easing EaseInOutQuad
-        |> Scroll.toElement "section-1"
+        |> ScrollAction.forDocument
+        |> ScrollAction.toElement "section-1"
+        |> ScrollAction.build
         |> Scroll.animate
 
 -}
@@ -266,177 +276,20 @@ easing =
 
 {-| Set global delay in milliseconds.
 
+    import Anim.Action.Scroll as ScrollAction
+
     Scroll.init
         |> Scroll.builder
         |> Scroll.delay 500
-        |> Scroll.toElement "section-1"
+        |> ScrollAction.forDocument
+        |> ScrollAction.toElement "section-1"
+        |> ScrollAction.build
         |> Scroll.animate
 
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
     InternalScroll.delay
-
-
-
--- SCROLL TARGETING
-
-
-{-| Scroll to a specific element by ID.
-
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.toElement "section-header"
-        |> Scroll.speed 500
-        |> Scroll.animate
-
--}
-toElement : String -> AnimBuilder -> AnimBuilder
-toElement elementId =
-    InternalScroll.addScrollTarget (ScrollTarget.for "document" |> ScrollTarget.toElement elementId)
-
-
-{-| Scroll to specific X and Y coordinates.
-
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.toXY 100 200
-        |> Scroll.speed 500
-        |> Scroll.animate
-
--}
-toXY : Float -> Float -> AnimBuilder -> AnimBuilder
-toXY x y =
-    InternalScroll.addScrollTarget (ScrollTarget.for "document" |> ScrollTarget.toXY x y)
-
-
-{-| Scroll to specific X coordinate only.
-
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.toX 100
-        |> Scroll.speed 500
-        |> Scroll.animate
-
--}
-toX : Float -> AnimBuilder -> AnimBuilder
-toX x =
-    InternalScroll.addScrollTarget (ScrollTarget.for "document" |> ScrollTarget.toX x)
-
-
-{-| Scroll to specific Y coordinate only.
-
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.toY 200
-        |> Scroll.speed 500
-        |> Scroll.animate
-
--}
-toY : Float -> AnimBuilder -> AnimBuilder
-toY y =
-    InternalScroll.addScrollTarget (ScrollTarget.for "document" |> ScrollTarget.toY y)
-
-
-{-| Scroll to the top of the container.
-
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.toTop
-        |> Scroll.speed 500
-        |> Scroll.animate
-
--}
-toTop : AnimBuilder -> AnimBuilder
-toTop =
-    InternalScroll.addScrollTarget (ScrollTarget.for "document" |> ScrollTarget.toTop)
-
-
-{-| Scroll to the bottom of the container.
-
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.toBottom
-        |> Scroll.speed 500
-        |> Scroll.animate
-
--}
-toBottom : AnimBuilder -> AnimBuilder
-toBottom =
-    InternalScroll.addScrollTarget (ScrollTarget.for "document" |> ScrollTarget.toBottom)
-
-
-{-| Scroll to the center of the container.
-
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.toCenter
-        |> Scroll.speed 500
-        |> Scroll.animate
-
--}
-toCenter : AnimBuilder -> AnimBuilder
-toCenter =
-    InternalScroll.addScrollTarget (ScrollTarget.for "document" |> ScrollTarget.toCenter)
-
-
-{-| Scroll to specific coordinates.
-
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.toCoordinates 150 300
-        |> Scroll.speed 500
-        |> Scroll.animate
-
--}
-toCoordinates : Float -> Float -> AnimBuilder -> AnimBuilder
-toCoordinates x y =
-    InternalScroll.addScrollTarget (ScrollTarget.for "document" |> ScrollTarget.toCoordinates x y)
-
-
-{-| Scroll to percentage of container size.
-
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.toPercentage 0.5 0.8
-        -- 50% width, 80% height
-        |> Scroll.speed 500
-        |> Scroll.animate
-
--}
-toPercentage : Float -> Float -> AnimBuilder -> AnimBuilder
-toPercentage xPercent yPercent =
-    InternalScroll.addScrollTarget (ScrollTarget.for "document" |> ScrollTarget.toPercentage xPercent yPercent)
-
-
-{-| Set the container to the document body (default).
-
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.document
-        |> Scroll.toElement "section-1"
-        |> Scroll.speed 500
-        |> Scroll.animate
-
--}
-document : AnimBuilder -> AnimBuilder
-document =
-    InternalScroll.setContainer "document"
-
-
-{-| Set the container to a specific element ID.
-
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.container "scrollable-content"
-        |> Scroll.toElement "section-1"
-        |> Scroll.speed 500
-        |> Scroll.animate
-
--}
-container : String -> AnimBuilder -> AnimBuilder
-container containerId =
-    InternalScroll.setContainer containerId
 
 
 
@@ -549,18 +402,14 @@ getScrollPositionY =
 
 {-| Execute a scroll animation as a command.
 
-For simple, fire-and-forget scrolling where you don't need state management.
+Use this for fire-and-forget scrolling where you don't need state management.
 The animation will run automatically without requiring subscriptions.
 
-    let
-        scrollCmd =
-            Scroll.init
-                |> Scroll.builder
-                |> Scroll.toElement "target-element"
-                |> Scroll.duration 1000
-                |> Scroll.toCmd ScrollCompleted
-    in
-    ( model, scrollCmd )
+    scrollCmd =
+        Scroll.init
+            |> Scroll.builder
+            |> ... -- configure scroll animation
+            |> Scroll.toCmd ScrollCompleted
 
 -}
 toCmd : msg -> AnimBuilder -> Cmd msg
@@ -632,17 +481,20 @@ toCmd completionMsg animBuilder =
             baseCmd
 
 
-{-| Execute a scroll animation as a task.
+{-| Execute a scroll animation as a [Task](https://package.elm-lang.org/packages/elm/core/latest/Task).
 
-Returns a task that can be composed with other tasks and provides error handling
-for cases where the scroll target cannot be found or accessed.
+Use this when you want to handle success or failure of the scroll animation, or compose it with other tasks.
+
+    type Msg
+        = NoOp
+        | ShowError String
+        | ...
 
     let
         scrollTask =
             Scroll.init
                 |> Scroll.builder
-                |> Scroll.toElement "target-element"
-                |> Scroll.duration 1000
+                |> ... -- configure scroll animation
                 |> Scroll.toTask
 
         handleResult result =
@@ -726,91 +578,3 @@ toTask animBuilder =
             in
             -- Convert Task (List ()) to Task ()
             Task.map (\_ -> ()) baseTask
-
-
-
--- AXIS SELECTION
-
-
-{-| Scroll on both X and Y axes (default).
-
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.onBothAxes
-        |> Scroll.toElement "section-1"
-        |> Scroll.animate
-
--}
-onBothAxes : AnimBuilder -> AnimBuilder
-onBothAxes =
-    InternalScroll.setAxis Both
-
-
-{-| Scroll on X axis only.
-
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.onXAxis
-        |> Scroll.toElement "section-1"
-        |> Scroll.animate
-
--}
-onXAxis : AnimBuilder -> AnimBuilder
-onXAxis =
-    InternalScroll.setAxis X
-
-
-{-| Scroll on Y axis only.
-
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.onYAxis
-        |> Scroll.toElement "section-1"
-        |> Scroll.animate
-
--}
-onYAxis : AnimBuilder -> AnimBuilder
-onYAxis =
-    InternalScroll.setAxis Y
-
-
-{-| Scroll on both X and Y axes with an offset.
-
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.onBothAxesWithOffset 60
-        |> Scroll.toElement "section-1"
-        |> Scroll.animate
-
--}
-onBothAxesWithOffset : Float -> Float -> AnimBuilder -> AnimBuilder
-onBothAxesWithOffset offsetX offsetY =
-    InternalScroll.setAxis Both >> InternalScroll.setOffset ( offsetX, offsetY )
-
-
-{-| Scroll on X axis only with an offset.
-
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.onXAxisWithOffset 60
-        |> Scroll.toElement "section-1"
-        |> Scroll.animate
-
--}
-onXAxisWithOffset : Float -> AnimBuilder -> AnimBuilder
-onXAxisWithOffset offset =
-    InternalScroll.setAxis X >> InternalScroll.setOffsetX offset
-
-
-{-| Scroll on Y axis only with an offset.
-
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.onYAxisWithOffset 60
-        |> Scroll.toElement "section-1"
-        |> Scroll.animate
-
--}
-onYAxisWithOffset : Float -> AnimBuilder -> AnimBuilder
-onYAxisWithOffset offset =
-    InternalScroll.setAxis Y >> InternalScroll.setOffsetY offset

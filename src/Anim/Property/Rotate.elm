@@ -7,7 +7,7 @@ module Anim.Property.Rotate exposing
     , perspective
     )
 
-{-| Rotate animation functions.
+{-| Rotate animation functions with 3D support.
 
 Use these functions to configure rotate animations in the builder chain:
 

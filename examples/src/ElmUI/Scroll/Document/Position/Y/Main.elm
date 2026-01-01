@@ -1,5 +1,6 @@
 module ElmUI.Scroll.Document.Position.Y.Main exposing (main)
 
+import Anim.Action.Scroll as ScrollAction
 import Anim.Engine.Scroll as Scroll
 import Browser exposing (Document)
 import Browser.Dom
@@ -47,9 +48,10 @@ scrollToElement : String -> Cmd Msg
 scrollToElement targetId =
     Scroll.init
         |> Scroll.builder
-        |> Scroll.document
-        |> Scroll.toElement targetId
         |> Scroll.speed 500
+        |> ScrollAction.forDocument
+        |> ScrollAction.toElement targetId
+        |> ScrollAction.build
         |> Scroll.toCmd NoOp
 
 
@@ -57,9 +59,10 @@ scrollToY : Float -> Cmd Msg
 scrollToY yPos =
     Scroll.init
         |> Scroll.builder
-        |> Scroll.document
-        |> Scroll.toY yPos
         |> Scroll.speed 500
+        |> ScrollAction.forDocument
+        |> ScrollAction.toY yPos
+        |> ScrollAction.build
         |> Scroll.toCmd NoOp
 
 
