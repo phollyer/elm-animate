@@ -9,6 +9,8 @@ module Anim.Internal.Builder exposing
     , TransformParts
     , addScrollTarget
     , clearCurrentElement
+    , computeAndCachePerspectiveStyles
+    , computePerspectiveStyles
     , delay
     , duration
     , easing
@@ -23,6 +25,7 @@ module Anim.Internal.Builder exposing
     , getEasingWithDefault
     , getElementConfig
     , getPerspective
+    , getPerspectiveStylesCache
     , getPerspectiveWithDefault
     , getScrollContainer
     , getScrollTargets
@@ -73,6 +76,7 @@ type alias BuilderData =
     , elements : Dict ElementId ElementConfig
     , scrollTargets : List ScrollTarget
     , scrollContainer : String
+    , perspectiveStylesCache : Maybe (Dict String (List { attribute : String, value : String }))
     }
 
 
@@ -153,6 +157,7 @@ init =
         , elements = Dict.empty
         , scrollTargets = []
         , scrollContainer = "document"
+        , perspectiveStylesCache = Nothing
         }
 
 
@@ -283,6 +288,13 @@ getScrollTargets (AnimBuilder data) =
 getScrollContainer : AnimBuilder -> String
 getScrollContainer (AnimBuilder data) =
     data.scrollContainer
+
+
+{-| Get cached perspective styles from builder.
+-}
+getPerspectiveStylesCache : AnimBuilder -> Maybe (Dict String (List { attribute : String, value : String }))
+getPerspectiveStylesCache (AnimBuilder data) =
+    data.perspectiveStylesCache
 
 
 
@@ -718,3 +730,123 @@ collectPropertyTransform property acc =
 
         _ ->
             acc
+
+
+
+-- PERSPECTIVE STYLES
+--
+--
+-- Pre-computed perspective styles for all containers
+
+
+{-| Extract perspective from a processed property config.
+-}
+extractPerspectiveFromProperty : ProcessedPropertyConfig -> Maybe { containerId : String, value : Float }
+extractPerspectiveFromProperty property =
+    case property of
+        ProcessedPositionConfig config ->
+            config.perspective
+
+        ProcessedRotateConfig config ->
+            config.perspective
+
+        ProcessedScaleConfig config ->
+            config.perspective
+
+        _ ->
+            Nothing
+
+
+computePerspectiveStyles : ProcessedAnimationData -> Dict String (List { attribute : String, value : String })
+computePerspectiveStyles processedData =
+    let
+        -- Get all unique container IDs from properties
+        propertyContainerIds =
+            processedData.elements
+                |> Dict.values
+                |> List.concatMap .properties
+                |> List.filterMap extractPerspectiveFromProperty
+                |> List.map .containerId
+
+        -- Get global perspective container ID if present
+        maybeGlobalContainerId =
+            processedData.globalPerspective
+                |> Maybe.map .containerId
+
+        allContainerIds =
+            case maybeGlobalContainerId of
+                Just globalId ->
+                    if List.member globalId propertyContainerIds then
+                        propertyContainerIds
+
+                    else
+                        propertyContainerIds ++ [ globalId ]
+
+                Nothing ->
+                    propertyContainerIds
+    in
+    -- For each container ID, compute the perspective value and styles
+    allContainerIds
+        |> List.filterMap
+            (\containerId ->
+                let
+                    -- Check property-level perspective first
+                    propertyPerspective =
+                        processedData.elements
+                            |> Dict.values
+                            |> List.concatMap .properties
+                            |> List.filterMap extractPerspectiveFromProperty
+                            |> List.filter (\p -> p.containerId == containerId)
+                            |> List.head
+                            |> Maybe.map .value
+
+                    maybePerspectiveValue =
+                        case propertyPerspective of
+                            Just value ->
+                                Just value
+
+                            Nothing ->
+                                -- Fall back to global perspective
+                                processedData.globalPerspective
+                                    |> Maybe.andThen
+                                        (\p ->
+                                            if p.containerId == containerId then
+                                                Just p.value
+
+                                            else
+                                                Nothing
+                                        )
+                in
+                Maybe.map
+                    (\value ->
+                        ( containerId
+                        , [ { attribute = "perspective", value = String.fromFloat value ++ "px" }
+                          , { attribute = "transform-style", value = "preserve-3d" }
+                          , { attribute = "data-perspective-source", value = "elm" }
+                          ]
+                        )
+                    )
+                    maybePerspectiveValue
+            )
+        |> Dict.fromList
+
+
+{-| Compute and cache perspective styles on the builder.
+This should be called by each engine's animate function before creating AnimState.
+-}
+computeAndCachePerspectiveStyles : AnimBuilder -> AnimBuilder
+computeAndCachePerspectiveStyles ((AnimBuilder data) as builder) =
+    case data.perspectiveStylesCache of
+        Just _ ->
+            -- Already cached
+            builder
+
+        Nothing ->
+            let
+                processedData =
+                    processAnimationData builder
+
+                cache =
+                    computePerspectiveStyles processedData
+            in
+            AnimBuilder { data | perspectiveStylesCache = Just cache }

@@ -323,62 +323,17 @@ and property-level overrides, with property-level taking precedence.
 -}
 perspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
 perspectiveStyles containerId animState =
-    let
-        processedData =
-            Builder.processAnimationData (builder animState)
-
-        -- Check property-level perspectives first
-        propertyPerspective =
-            processedData.elements
-                |> Dict.values
-                |> List.concatMap .properties
-                |> List.filterMap extractPerspective
-                |> List.filter (\p -> p.containerId == containerId)
-                |> List.head
-                |> Maybe.map .value
-
-        -- Fall back to global perspective
-        globalPerspective =
-            processedData.globalPerspective
-                |> Maybe.andThen
-                    (\p ->
-                        if p.containerId == containerId then
-                            Just p.value
-
-                        else
-                            Nothing
-                    )
-
-        perspectiveValue =
-            case propertyPerspective of
-                Just value ->
-                    Just value
+    case Builder.getPerspectiveStylesCache (builder animState) of
+        Just cache ->
+            case Dict.get containerId cache of
+                Just styles ->
+                    List.map (\{ attribute, value } -> Html.Attributes.style attribute value) styles
 
                 Nothing ->
-                    globalPerspective
-    in
-    case perspectiveValue of
-        Just value ->
-            perspectiveWith value
+                    []
 
         Nothing ->
             []
-
-
-extractPerspective : Builder.ProcessedPropertyConfig -> Maybe { containerId : String, value : Float }
-extractPerspective property =
-    case property of
-        Builder.ProcessedPositionConfig config ->
-            config.perspective
-
-        Builder.ProcessedRotateConfig config ->
-            config.perspective
-
-        Builder.ProcessedScaleConfig config ->
-            config.perspective
-
-        _ ->
-            Nothing
 
 
 {-| Manually generate HTML attributes with a given perspective value.

@@ -136,64 +136,17 @@ perspective =
 
 perspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
 perspectiveStyles targetContainerId (AnimState state) =
-    let
-        processedData =
-            Builder.processAnimationData state.builder
-
-        -- Check if any elements use this containerId for perspective
-        perspectiveValues =
-            processedData.elements
-                |> Dict.values
-                |> List.concatMap .properties
-                |> List.filterMap extractPerspectiveFromProperty
-                |> List.filter (\{ containerId } -> containerId == targetContainerId)
-                |> List.map .value
-                |> List.head
-
-        globalPerspective =
-            processedData.globalPerspective
-                |> Maybe.andThen
-                    (\{ containerId, value } ->
-                        if containerId == targetContainerId then
-                            Just value
-
-                        else
-                            Nothing
-                    )
-
-        perspectiveValue =
-            case perspectiveValues of
-                Just value ->
-                    Just value
+    case Builder.getPerspectiveStylesCache state.builder of
+        Just cache ->
+            case Dict.get targetContainerId cache of
+                Just styles ->
+                    List.map (\{ attribute, value } -> Html.Attributes.style attribute value) styles
 
                 Nothing ->
-                    globalPerspective
-    in
-    case perspectiveValue of
-        Just value ->
-            [ Html.Attributes.style "perspective" (String.fromFloat value ++ "px")
-            , Html.Attributes.style "transform-style" "preserve-3d"
-            , Html.Attributes.attribute "data-perspective-source" "elm"
-            ]
+                    []
 
         Nothing ->
             []
-
-
-extractPerspectiveFromProperty : Builder.ProcessedPropertyConfig -> Maybe { containerId : String, value : Float }
-extractPerspectiveFromProperty property =
-    case property of
-        Builder.ProcessedPositionConfig config ->
-            config.perspective
-
-        Builder.ProcessedRotateConfig config ->
-            config.perspective
-
-        Builder.ProcessedScaleConfig config ->
-            config.perspective
-
-        _ ->
-            Nothing
 
 
 perspectiveWith : Float -> List (Html.Attribute msg)
@@ -211,8 +164,11 @@ perspectiveWith perspectiveValue =
 animateStateless : (Encode.Value -> Cmd msg) -> AnimBuilder -> Cmd msg
 animateStateless portFunction animBuilder =
     let
+        builderWithCache =
+            Builder.computeAndCachePerspectiveStyles animBuilder
+
         processedData =
-            Builder.processAnimationData animBuilder
+            Builder.processAnimationData builderWithCache
 
         encodedData =
             encode processedData
@@ -223,9 +179,12 @@ animateStateless portFunction animBuilder =
 animate : AnimState -> AnimBuilder -> ( AnimState, Encode.Value )
 animate (AnimState state) builder_ =
     let
+        builderWithCache =
+            Builder.computeAndCachePerspectiveStyles builder_
+
         -- Inject current animated states into builder before processing
         builderWithCurrentStates =
-            Dict.foldl injectCurrentStatesForElement builder_ state.elementAnimations
+            Dict.foldl injectCurrentStatesForElement builderWithCache state.elementAnimations
 
         processedData =
             Builder.processAnimationData builderWithCurrentStates

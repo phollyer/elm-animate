@@ -106,14 +106,17 @@ builder (AnimState state) =
 animate : AnimBuilder -> AnimState
 animate builder_ =
     let
+        builderWithCache =
+            Builder.computeAndCachePerspectiveStyles builder_
+
         elementIds =
-            builder_
+            builderWithCache
                 |> Builder.elements
                 |> Dict.keys
     in
     AnimState
         { elementAnimations =
-            builder_
+            builderWithCache
                 |> Builder.elements
                 |> Dict.map (generateElementAnimation Nothing)
         , elementStates =
@@ -121,7 +124,7 @@ animate builder_ =
                 |> List.map (\id -> ( id, NotStarted ))
                 |> Dict.fromList
         , builder =
-            builder_
+            builderWithCache
                 |> Builder.markDirty
                 |> Builder.clearCurrentElement
         }
@@ -138,21 +141,24 @@ type TransformOrder
 animateWithOrder : List TransformOrder -> AnimBuilder -> AnimState
 animateWithOrder order builder_ =
     let
+        builderWithCache =
+            Builder.computeAndCachePerspectiveStyles builder_
+
         elementIds =
-            builder_
+            builderWithCache
                 |> Builder.elements
                 |> Dict.keys
     in
     AnimState
         { elementAnimations =
-            builder_
+            builderWithCache
                 |> Builder.elements
                 |> Dict.map (generateElementAnimation (Just order))
         , elementStates =
             elementIds
                 |> List.map (\id -> ( id, NotStarted ))
                 |> Dict.fromList
-        , builder = Builder.markDirty builder_
+        , builder = Builder.markDirty builderWithCache
         }
 
 
@@ -182,8 +188,18 @@ perspective =
 
 
 perspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
-perspectiveStyles containerId animationState =
-    getContainerPerspectiveStyles containerId animationState
+perspectiveStyles containerId (AnimState state) =
+    case Builder.getPerspectiveStylesCache state.builder of
+        Just cache ->
+            case Dict.get containerId cache of
+                Just styles ->
+                    List.map (\{ attribute, value } -> Html.Attributes.style attribute value) styles
+
+                Nothing ->
+                    []
+
+        Nothing ->
+            []
 
 
 {-| Individual element animation lifecycle state.
@@ -746,67 +762,6 @@ generateElementAnimation maybeOrder elementId elementConfig =
     { styles = allStyles
     , animationLayers = KeyframeAnimation.generate elementId elementConfig.properties
     }
-
-
-getContainerPerspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
-getContainerPerspectiveStyles targetContainerId (AnimState state) =
-    let
-        processedData =
-            Builder.processAnimationData state.builder
-
-        -- Check if any elements use this containerId for perspective
-        perspectiveValues =
-            processedData.elements
-                |> Dict.values
-                |> List.concatMap .properties
-                |> List.filterMap extractPerspectiveFromProperty
-                |> List.filter (\{ containerId } -> containerId == targetContainerId)
-                |> List.map .value
-                |> List.head
-
-        globalPerspective =
-            processedData.globalPerspective
-                |> Maybe.andThen
-                    (\{ containerId, value } ->
-                        if containerId == targetContainerId then
-                            Just value
-
-                        else
-                            Nothing
-                    )
-
-        perspectiveValue =
-            case perspectiveValues of
-                Just value ->
-                    Just value
-
-                Nothing ->
-                    globalPerspective
-    in
-    case perspectiveValue of
-        Just value ->
-            [ Html.Attributes.style "perspective" (String.fromFloat value ++ "px")
-            , Html.Attributes.style "transform-style" "preserve-3d"
-            ]
-
-        Nothing ->
-            []
-
-
-extractPerspectiveFromProperty : Builder.ProcessedPropertyConfig -> Maybe { containerId : String, value : Float }
-extractPerspectiveFromProperty property =
-    case property of
-        Builder.ProcessedPositionConfig config ->
-            config.perspective
-
-        Builder.ProcessedRotateConfig config ->
-            config.perspective
-
-        Builder.ProcessedScaleConfig config ->
-            config.perspective
-
-        _ ->
-            Nothing
 
 
 getElementStyles : String -> AnimState -> List ( String, String )

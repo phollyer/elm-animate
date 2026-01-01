@@ -36,7 +36,7 @@ generate elementId properties =
         let
             processed =
                 Builder.processElement
-                    { globalTiming = Nothing, globalEasing = Nothing, globalDelay = Nothing, globalPerspective = Nothing, currentElementId = Nothing, elements = Dict.empty, scrollTargets = [], scrollContainer = "document" }
+                    { globalTiming = Nothing, globalEasing = Nothing, globalDelay = Nothing, globalPerspective = Nothing, currentElementId = Nothing, elements = Dict.empty, scrollTargets = [], scrollContainer = "document", perspectiveStylesCache = Nothing }
                     { properties = properties }
 
             processedProps =

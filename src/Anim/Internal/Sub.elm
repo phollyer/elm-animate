@@ -112,12 +112,15 @@ builder ((AnimState state) as animationState) =
 animate : AnimBuilder -> AnimState
 animate builder_ =
     let
+        builderWithCache =
+            Builder.computeAndCachePerspectiveStyles builder_
+
         processedData =
-            Builder.processAnimationData builder_
+            Builder.processAnimationData builderWithCache
 
         -- Extract current values from any existing animations in the builder
         currentValues =
-            extractCurrentValuesFromBuilder builder_
+            extractCurrentValuesFromBuilder builderWithCache
 
         startValues =
             { position = Maybe.withDefault { x = 0, y = 0, z = 0 } currentValues.position
@@ -135,7 +138,7 @@ animate builder_ =
         { elementAnimations = elementStates
         , isRunning = not (Dict.isEmpty elementStates)
         , builder =
-            builder_
+            builderWithCache
                 |> Builder.markDirty
                 |> Builder.clearCurrentElement
         }
