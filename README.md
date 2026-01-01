@@ -1,42 +1,43 @@
 # Elm Animate
 
-A comprehensive Elm package for smooth, high-performance DOM animations and scrolling. Supports multiple animation engines and a unified, flexible scroll engine for both documents and containers.
+A comprehensive Elm package for smooth, high-performance DOM animations and scrolling.
 
 ## ✨ Features
 
 - **Multiple Engines:** Choose the best engine for your use case.
 - **Unified Fluent API:** Consistent builder pattern for all engines.
-- **GPU-Accelerated:** All engines use `translate3d` for hardware-accelerated transforms, offloading work to the GPU for smoother 60fps animations and better battery efficiency.
+- **GPU-Accelerated:** All animation engines offload work to the GPU for smoother animations and better battery efficiency.
+- **Full 3D Support:** Transform elements in 3D space with XYZ positioning, multi-axis rotation, and configurable perspective for depth.
 - **Composable, type-safe, and easy to integrate.**
 
 ---
 
 ## 🚦 Animation Engines
 
-All animation engines use a unified builder API, so you can switch between them with minimal changes. They also support both 2D and 3D animations.
+All animation engines use a unified builder API, so you can switch between them with minimal changes.
 
-Here's a 3D [Position](Anim.Properties.Position) animation that can be used by all of the engines - without any changes to the animation itself:
+Here's a 3D [Position](Anim.Properties.Position) animation that zooms in on the element.
 
 ```elm
--- move left by 50px
--- move up by 100px
--- zoom in by 300px - 1/3 of the distance from the camera
--- 2s animation (max-axis: 300px / 150px/s = 2s)
 positionAnimation : AnimBuilder -> AnimBuilder
 positionAnimation builder =
     builder
         |> Position.for "my-element"
         |> Position.perspective "my-element-container" 900
         |> Position.fromXYZ 100 200 0
-        |> Position.toXYZ 50 100 300
+        |> Position.toZ 300
         |> Position.speed 150
         |> Position.easing BounceOut
         |> Position.build
 ```
+It can be used by all of the engines - without any changes to the animation itself. Switching
+between engines is simply a matter of changing a few implementation details, you never have to touch the animations themselves.
+
+This makes it easy to start off with the CSS Engine for simple CSS transitions, and then migrate to the Sub or WAAPI Engines as your requirements change.
 
 ---
 
-### 1. [Anim.Engine.CSS](Anim-Engine-CSS) – Hardware-Accelerated CSS (HACSS)
+### 1. [Anim.Engine.CSS](Anim-Engine-CSS) 
 
 - **Best for:** Simple, high-performance transitions.
 - **API:** Generates CSS for browser-native transitions.
@@ -47,14 +48,14 @@ in your view code.
 
 ---
 
-### 2. [Anim.Engine.Sub](Anim-Engine-Sub) – HACCS + Subscription-Based Control (SBC)
+### 2. [Anim.Engine.Sub](Anim-Engine-Sub) 
 
 - **Best for:** Full programmatic control, live values, mid-flight changes.
 - **API:** Frame-based updates, requires subscriptions.
 
 ---
 
-### 3. [Anim.Engine.WAAPI](Anim-Engine-WAAPI) – HACCS + SBC + Web Animations API (via Ports)
+### 3. [Anim.Engine.WAAPI](Anim-Engine-WAAPI) 
 
 - **Best for:** Complex, timeline-based, or native browser animations.
 - **API:** Uses Elm ports to communicate with a JavaScript companion.
@@ -62,13 +63,56 @@ in your view code.
 ---
 ## 🚦 Scroll Engine
 
+Uses the same fluent builder API as the animation engines. This makes it easy to start with fire-and-forget scrolls, and introduce more complexity as your requirements change.
+
+```elm
+-- Reusable scroll animation
+
+scrollToElement : String -> String -> AnimState -> AnimBuilder
+scrollToElement targetElementId elementContainerId animState =
+    animState
+        |> Scroll.builder
+        |> Scroll.toElement targetElementId
+        |> Scroll.container elementContainerId
+        |> Scroll.onXAxisWithOffset 20
+        |> Scroll.delay 100
+        |> Scroll.duration 1000
+        |> Scroll.easing BounceOut
+
+-- Fire-and-forget Cmd
+
+doScroll : Cmd Msg 
+doScroll =
+    Scroll.init
+        |> scrollToElement "my-element" "my-element-container"
+        |> Scroll.toCmd NoOp
+
+-- Composable Tasks with errors
+
+doScroll : Task Error ()
+doScroll =
+    Scroll.init
+        |> scrollToElement "my-element" "my-element-container"
+        |> Scroll.toTask
+
+-- Mid-flight control/updates with state tracking and subscriptions
+
+doScroll : Model -> (AnimState, Cmd Msg)
+doScroll model =
+    model.scrollAnimations
+        |> scrollToElement "my-element" "me-element-container" 
+        |> Scroll.animate ScrollMsg
+```
+
 ### 4. [Anim.Engine.Scroll](Anim-Engine-Scroll)
 
 - **Document and container scrolling**
 - **X, Y, or Both axes**
 - **Offset configuration**
-- **Subscription-based animation management**
-- **Fire-and-forget (Cmd/Task) execution**
+- **Full easing support**
+- **Fire-and-forget execution:** `Cmd` based.
+- **Composable with error handling:** `Task` based.
+- **Mid-flight interuptions:** Subscription based.
 ---
 
 ## 🚀 Quick Start
