@@ -207,7 +207,7 @@ viewContent model =
         , Background.color (Element.rgb 0.95 0.95 0.97)
         , Border.rounded 8
         ]
-        [ viewSlider "Perspective (Zoom)" model.perspectiveValue "px" 200 3000 50 SetPerspective
+        [ viewSlider "Perspective" model.perspectiveValue "px" 500 1500 10 SetPerspective
         , viewSlider "Z Position" model.zPosition "px" -50 300 10 SetZPosition
         , viewSlider "Rotate X" model.rotateX "°" 0 360 1 SetRotateX
         , viewSlider "Rotate Y" model.rotateY "°" 0 360 1 SetRotateY
@@ -283,7 +283,7 @@ viewCube model =
             100
 
         depth =
-            cubeSize // 2
+            cubeSize // 2 + 2 -- +2 for border thickness
     in
     Element.html <|
         Html.div
@@ -401,7 +401,7 @@ viewExplanation =
         [ width (fill |> maximum 700)
         , centerX
         , padding 20
-        , spacing 10
+        , spacing 15
         , Background.color (Element.rgb 1 0.95 0.8)
         , Border.rounded 8
         , Font.size 14
@@ -416,6 +416,30 @@ viewExplanation =
             ]
         , Element.paragraph []
             [ text "The entire cube rotates as one unit when you animate the container div. "
-            , text "This solves the 'disappearing back side' problem of flat 2D elements!"
+            ]
+        , el [ Font.bold, Font.size 16, Element.paddingEach { top = 10, bottom = 0, left = 0, right = 0 } ] (text "The Near Clipping Plane")
+        , Element.paragraph []
+            [ text "The perspective origin acts as an "
+            , el [ Font.bold ] (text "opaque clipping plane")
+            , text ". Any part of the cube that passes behind this plane (negative Z direction) becomes invisible."
+            ]
+        , Element.paragraph []
+            [ text "This is why the cube disappears when Z Position is too small. The cube is 100px deep (±50px from center), so at Z=50px, the back face reaches Z=0px. Any closer (Z<50px) causes parts to go behind the plane and disappear."
+            ]
+        , Element.paragraph []
+            [ text "When rotating or scaling, parts can also disappear if they move behind the plane."
+            ]
+        , Element.paragraph []
+            [ text "The safe rule: "
+            , el [ Font.bold ] (text "Z Position ≥ (object depth / 2)")
+            , text " ensures all faces stay visible during any rotation. For this 100px cube, that means Z ≥ 50px."
+            ]
+        , el [ Font.bold, Font.size 16, Element.paddingEach { top = 10, bottom = 0, left = 0, right = 0 } ] (text "Perspective and Depth")
+        , Element.paragraph []
+            [ text "The perspective value controls how pronounced the 3D effect appears. Lower values create a stronger perspective, making depth changes more dramatic."
+            ]
+        , Element.paragraph []
+            [ text "Experiment with the sliders to see how perspective, Z position, and rotations affect the cube's appearance! "
+            , text "For maximum zoom effect, set Perspective low (closer to the viewer) and Z Position high (closer to the viewer)."
             ]
         ]
