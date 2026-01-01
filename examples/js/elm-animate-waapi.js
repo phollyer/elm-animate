@@ -153,6 +153,141 @@ window.ElmAnimateWAAPI = (function () {
     }
 
     /**
+     * Helper to generate keyframes with easing applied.
+     * If easingKeyframes is provided (for Bounce/Elastic), generates 30 keyframes with linear interpolation.
+     * Otherwise, returns 2 keyframes with the specified easing.
+     */
+    function generateKeyframesWithEasing(startValue, endValue, easingKeyframes, propertyName) {
+        if (easingKeyframes && Array.isArray(easingKeyframes)) {
+            // Complex easing: generate 30 keyframes using pre-computed easing values
+            return easingKeyframes.map(easingProgress => {
+                // Interpolate between start and end using the easing progress
+                const interpolatedValue = interpolateValue(startValue, endValue, easingProgress);
+                return { [propertyName]: interpolatedValue };
+            });
+        } else {
+            // Simple easing: use standard 2-keyframe animation
+            return [
+                { [propertyName]: startValue },
+                { [propertyName]: endValue }
+            ];
+        }
+    }
+
+    /**
+     * Interpolate between start and end values based on progress (0.0 to 1.0).
+     * Handles both strings (transforms, colors) and numbers.
+     */
+    function interpolateValue(start, end, progress) {
+        // For transform strings, interpolate each component
+        // Check for 'none' or any transform function (translate, scale, rotate)
+        if (typeof start === 'string' && typeof end === 'string' &&
+            (start === 'none' || end === 'none' ||
+                start.includes('translate') || start.includes('scale') || start.includes('rotate'))) {
+            const result = interpolateTransform(start, end, progress);
+            // Debug: log a few sample interpolations
+            if (progress === 0 || progress === 1 || Math.abs(progress - 0.5) < 0.01) {
+                console.log(`[WAAPI Debug] interpolateTransform progress=${progress.toFixed(3)}:`, result);
+            }
+            return result;
+        }
+
+        // For numeric values (opacity)
+        if (typeof start === 'number' && typeof end === 'number') {
+            return start + (end - start) * progress;
+        }
+
+        // For color strings
+        if (typeof start === 'string' && (start.startsWith('rgb') || start.startsWith('#'))) {
+            return interpolateColor(start, end, progress);
+        }
+
+        // Fallback: return end value
+        return end;
+    }
+
+    /**
+     * Interpolate between two transform strings.
+     */
+    function interpolateTransform(startTransform, endTransform, progress) {
+        // Parse transform components using regex
+        const parseTransform = (str) => {
+            const translate = str.match(/translate3d\(([-\d.]+)px, ([-\d.]+)px, ([-\d.]+)px\)/);
+            const scale = str.match(/scale3d\(([-\d.]+), ([-\d.]+), ([-\d.]+)\)/);
+            const rotateX = str.match(/rotateX\(([-\d.]+)deg\)/);
+            const rotateY = str.match(/rotateY\(([-\d.]+)deg\)/);
+            const rotateZ = str.match(/rotateZ\(([-\d.]+)deg\)/);
+
+            return {
+                tx: translate ? parseFloat(translate[1]) : 0,
+                ty: translate ? parseFloat(translate[2]) : 0,
+                tz: translate ? parseFloat(translate[3]) : 0,
+                sx: scale ? parseFloat(scale[1]) : 1,
+                sy: scale ? parseFloat(scale[2]) : 1,
+                sz: scale ? parseFloat(scale[3]) : 1,
+                rx: rotateX ? parseFloat(rotateX[1]) : 0,
+                ry: rotateY ? parseFloat(rotateY[1]) : 0,
+                rz: rotateZ ? parseFloat(rotateZ[1]) : 0,
+            };
+        };
+
+        const start = parseTransform(startTransform);
+        const end = parseTransform(endTransform);
+
+        // Interpolate each component
+        const tx = start.tx + (end.tx - start.tx) * progress;
+        const ty = start.ty + (end.ty - start.ty) * progress;
+        const tz = start.tz + (end.tz - start.tz) * progress;
+        const sx = start.sx + (end.sx - start.sx) * progress;
+        const sy = start.sy + (end.sy - start.sy) * progress;
+        const sz = start.sz + (end.sz - start.sz) * progress;
+        const rx = start.rx + (end.rx - start.rx) * progress;
+        const ry = start.ry + (end.ry - start.ry) * progress;
+        const rz = start.rz + (end.rz - start.rz) * progress;
+
+        return buildTransformString(tx, ty, tz, sx, sy, sz, rx, ry, rz);
+    }
+
+    /**
+     * Interpolate between two color strings.
+     */
+    function interpolateColor(startColor, endColor, progress) {
+        // Parse rgb/rgba colors
+        const parseColor = (str) => {
+            const match = str.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+            if (match) {
+                return {
+                    r: parseInt(match[1]),
+                    g: parseInt(match[2]),
+                    b: parseInt(match[3]),
+                    a: match[4] !== undefined ? parseFloat(match[4]) : 1
+                };
+            }
+            // Fallback for hex colors (convert to rgb)
+            if (str.startsWith('#')) {
+                const hex = str.substring(1);
+                return {
+                    r: parseInt(hex.substring(0, 2), 16),
+                    g: parseInt(hex.substring(2, 4), 16),
+                    b: parseInt(hex.substring(4, 6), 16),
+                    a: 1
+                };
+            }
+            return { r: 0, g: 0, b: 0, a: 1 };
+        };
+
+        const start = parseColor(startColor);
+        const end = parseColor(endColor);
+
+        const r = Math.round(start.r + (end.r - start.r) * progress);
+        const g = Math.round(start.g + (end.g - start.g) * progress);
+        const b = Math.round(start.b + (end.b - start.b) * progress);
+        const a = start.a + (end.a - start.a) * progress;
+
+        return `rgba(${r}, ${g}, ${b}, ${a})`;
+    }
+
+    /**
      * Create combined transform animation for position, scale, and rotate
      * Uses start values provided by Elm (source of truth) instead of reading from DOM
      */
@@ -243,14 +378,42 @@ window.ElmAnimateWAAPI = (function () {
             endScaleX, endScaleY, endScaleZ,
             endRotationX, endRotationY, endRotationZ);
 
-        const keyframes = [
-            { transform: startTransform },
-            { transform: endTransform }
-        ];
+        // Check if any property has easingKeyframes (for complex easings like Bounce/Elastic)
+        const easingKeyframes = transformProperties.find(p => p.easingKeyframes)?.easingKeyframes;
+
+        let keyframes;
+        let animationEasing;
+
+        if (easingKeyframes) {
+            // Complex easing: generate 30 keyframes with linear interpolation
+            console.log('[WAAPI Debug] Found easingKeyframes:', {
+                easing: easing,
+                keyframeCount: easingKeyframes.length,
+                firstFew: easingKeyframes.slice(0, 5),
+                lastFew: easingKeyframes.slice(-5),
+                startTransform: startTransform,
+                endTransform: endTransform
+            });
+            keyframes = generateKeyframesWithEasing(startTransform, endTransform, easingKeyframes, 'transform');
+            console.log('[WAAPI Debug] Generated keyframes:', {
+                count: keyframes.length,
+                first: keyframes[0],
+                middle: keyframes[Math.floor(keyframes.length / 2)],
+                last: keyframes[keyframes.length - 1]
+            });
+            animationEasing = 'linear';
+        } else {
+            // Simple easing: use 2 keyframes with easing curve
+            keyframes = [
+                { transform: startTransform },
+                { transform: endTransform }
+            ];
+            animationEasing = easingFunctions[easing] || easing;
+        }
 
         return element.animate(keyframes, {
             duration: duration,
-            easing: easingFunctions[easing] || easing,
+            easing: animationEasing,
             fill: 'forwards'
         });
     }
@@ -261,22 +424,54 @@ window.ElmAnimateWAAPI = (function () {
     function createPropertyAnimation(element, property) {
         const duration = property.duration;
         const easing = property.easing;
+        const easingKeyframes = property.easingKeyframes;
 
         let keyframes = [];
+        let animationEasing;
 
         switch (property.type) {
             case 'opacity':
-                keyframes = [
-                    { opacity: property.startValue !== undefined ? property.startValue.toString() : '1' },
-                    { opacity: property.value.toString() }
-                ];
+                {
+                    const startValue = property.startValue !== undefined ? property.startValue : 1;
+                    const endValue = property.value;
+
+                    if (easingKeyframes) {
+                        // Complex easing: generate keyframes with easing applied
+                        keyframes = easingKeyframes.map(progress => ({
+                            opacity: (startValue + (endValue - startValue) * progress).toString()
+                        }));
+                        animationEasing = 'linear';
+                    } else {
+                        // Simple easing: use 2 keyframes
+                        keyframes = [
+                            { opacity: startValue.toString() },
+                            { opacity: endValue.toString() }
+                        ];
+                        animationEasing = easingFunctions[easing] || easing;
+                    }
+                }
                 break;
 
             case 'backgroundColor':
-                keyframes = [
-                    { backgroundColor: property.startColor || 'transparent' },
-                    { backgroundColor: property.color }
-                ];
+                {
+                    const startColor = property.startColor || 'transparent';
+                    const endColor = property.color;
+
+                    if (easingKeyframes) {
+                        // Complex easing: generate keyframes with easing applied
+                        keyframes = easingKeyframes.map(progress => ({
+                            backgroundColor: interpolateColor(startColor, endColor, progress)
+                        }));
+                        animationEasing = 'linear';
+                    } else {
+                        // Simple easing: use 2 keyframes
+                        keyframes = [
+                            { backgroundColor: startColor },
+                            { backgroundColor: endColor }
+                        ];
+                        animationEasing = easingFunctions[easing] || easing;
+                    }
+                }
                 break;
 
             case 'size':
@@ -290,6 +485,7 @@ window.ElmAnimateWAAPI = (function () {
                         height: `${property.height}px`
                     }
                 ];
+                animationEasing = easingFunctions[easing] || easing;
                 break;
 
             default:
@@ -299,7 +495,7 @@ window.ElmAnimateWAAPI = (function () {
 
         return element.animate(keyframes, {
             duration: duration,
-            easing: easingFunctions[easing] || easing,
+            easing: animationEasing,
             fill: 'forwards'
         });
     }

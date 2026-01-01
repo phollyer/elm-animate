@@ -153,65 +153,267 @@ window.ElmAnimateWAAPI = (function () {
     }
 
     /**
+     * Helper to generate keyframes with easing applied.
+     * If easingKeyframes is provided (for Bounce/Elastic), generates 30 keyframes with linear interpolation.
+     * Otherwise, returns 2 keyframes with the specified easing.
+     */
+    function generateKeyframesWithEasing(startValue, endValue, easingKeyframes, propertyName) {
+        if (easingKeyframes && Array.isArray(easingKeyframes)) {
+            // Complex easing: generate 30 keyframes using pre-computed easing values
+            return easingKeyframes.map(easingProgress => {
+                // Interpolate between start and end using the easing progress
+                const interpolatedValue = interpolateValue(startValue, endValue, easingProgress);
+                return { [propertyName]: interpolatedValue };
+            });
+        } else {
+            // Simple easing: use standard 2-keyframe animation
+            return [
+                { [propertyName]: startValue },
+                { [propertyName]: endValue }
+            ];
+        }
+    }
+
+    /**
+     * Interpolate between start and end values based on progress (0.0 to 1.0).
+     * Handles both strings (transforms, colors) and numbers.
+     */
+    function interpolateValue(start, end, progress) {
+        // For transform strings, interpolate each component
+        // Check for 'none' or any transform function (translate, scale, rotate)
+        if (typeof start === 'string' && typeof end === 'string' &&
+            (start === 'none' || end === 'none' ||
+                start.includes('translate') || start.includes('scale') || start.includes('rotate'))) {
+            const result = interpolateTransform(start, end, progress);
+            // Debug: log a few sample interpolations
+            if (progress === 0 || progress === 1 || Math.abs(progress - 0.5) < 0.01) {
+                console.log(`[WAAPI Debug] interpolateTransform progress=${progress.toFixed(3)}:`, result);
+            }
+            return result;
+        }
+
+        // For numeric values (opacity)
+        if (typeof start === 'number' && typeof end === 'number') {
+            return start + (end - start) * progress;
+        }
+
+        // For color strings
+        if (typeof start === 'string' && (start.startsWith('rgb') || start.startsWith('#'))) {
+            return interpolateColor(start, end, progress);
+        }
+
+        // Fallback: return end value
+        return end;
+    }
+
+    /**
+     * Interpolate between two transform strings.
+     */
+    function interpolateTransform(startTransform, endTransform, progress) {
+        // Parse transform components using regex
+        const parseTransform = (str) => {
+            const translate = str.match(/translate3d\(([-\d.]+)px, ([-\d.]+)px, ([-\d.]+)px\)/);
+            const scale = str.match(/scale3d\(([-\d.]+), ([-\d.]+), ([-\d.]+)\)/);
+            const rotateX = str.match(/rotateX\(([-\d.]+)deg\)/);
+            const rotateY = str.match(/rotateY\(([-\d.]+)deg\)/);
+            const rotateZ = str.match(/rotateZ\(([-\d.]+)deg\)/);
+
+            return {
+                tx: translate ? parseFloat(translate[1]) : 0,
+                ty: translate ? parseFloat(translate[2]) : 0,
+                tz: translate ? parseFloat(translate[3]) : 0,
+                sx: scale ? parseFloat(scale[1]) : 1,
+                sy: scale ? parseFloat(scale[2]) : 1,
+                sz: scale ? parseFloat(scale[3]) : 1,
+                rx: rotateX ? parseFloat(rotateX[1]) : 0,
+                ry: rotateY ? parseFloat(rotateY[1]) : 0,
+                rz: rotateZ ? parseFloat(rotateZ[1]) : 0,
+            };
+        };
+
+        const start = parseTransform(startTransform);
+        const end = parseTransform(endTransform);
+
+        // Interpolate each component
+        const tx = start.tx + (end.tx - start.tx) * progress;
+        const ty = start.ty + (end.ty - start.ty) * progress;
+        const tz = start.tz + (end.tz - start.tz) * progress;
+        const sx = start.sx + (end.sx - start.sx) * progress;
+        const sy = start.sy + (end.sy - start.sy) * progress;
+        const sz = start.sz + (end.sz - start.sz) * progress;
+        const rx = start.rx + (end.rx - start.rx) * progress;
+        const ry = start.ry + (end.ry - start.ry) * progress;
+        const rz = start.rz + (end.rz - start.rz) * progress;
+
+        return buildTransformString(tx, ty, tz, sx, sy, sz, rx, ry, rz);
+    }
+
+    /**
+     * Interpolate between two color strings.
+     */
+    function interpolateColor(startColor, endColor, progress) {
+        // Parse rgb/rgba colors
+        const parseColor = (str) => {
+            const match = str.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+            if (match) {
+                return {
+                    r: parseInt(match[1]),
+                    g: parseInt(match[2]),
+                    b: parseInt(match[3]),
+                    a: match[4] !== undefined ? parseFloat(match[4]) : 1
+                };
+            }
+            // Fallback for hex colors (convert to rgb)
+            if (str.startsWith('#')) {
+                const hex = str.substring(1);
+                return {
+                    r: parseInt(hex.substring(0, 2), 16),
+                    g: parseInt(hex.substring(2, 4), 16),
+                    b: parseInt(hex.substring(4, 6), 16),
+                    a: 1
+                };
+            }
+            return { r: 0, g: 0, b: 0, a: 1 };
+        };
+
+        const start = parseColor(startColor);
+        const end = parseColor(endColor);
+
+        const r = Math.round(start.r + (end.r - start.r) * progress);
+        const g = Math.round(start.g + (end.g - start.g) * progress);
+        const b = Math.round(start.b + (end.b - start.b) * progress);
+        const a = start.a + (end.a - start.a) * progress;
+
+        return `rgba(${r}, ${g}, ${b}, ${a})`;
+    }
+
+    /**
      * Create combined transform animation for position, scale, and rotate
+     * Uses start values provided by Elm (source of truth) instead of reading from DOM
      */
     function createTransformAnimation(element, transformProperties) {
-        const currentTransform = getCurrentTransform(element);
         let startTransform = '';
         let endTransform = '';
 
-        // Default values - now including z-axis
-        let translateX = currentTransform.x;
-        let translateY = currentTransform.y;
-        let translateZ = currentTransform.z;
-        let scaleX = currentTransform.scaleX;
-        let scaleY = currentTransform.scaleY;
-        let scaleZ = currentTransform.scaleZ;
-        let rotationX = currentTransform.rotationX;
-        let rotationY = currentTransform.rotationY;
-        let rotationZ = currentTransform.rotationZ;
+        // Initialize with identity values
+        let startTranslateX = 0, startTranslateY = 0, startTranslateZ = 0;
+        let endTranslateX = 0, endTranslateY = 0, endTranslateZ = 0;
+        let startScaleX = 1, startScaleY = 1, startScaleZ = 1;
+        let endScaleX = 1, endScaleY = 1, endScaleZ = 1;
+        let startRotationX = 0, startRotationY = 0, startRotationZ = 0;
+        let endRotationX = 0, endRotationY = 0, endRotationZ = 0;
 
-        // Get animation config from first property (they should all be similar)
+        // Get animation config - use maximum duration from all properties
+        const duration = Math.max(...transformProperties.map(p => p.duration));
         const firstProperty = transformProperties[0];
-        const duration = firstProperty.duration;
         const easing = firstProperty.easing;
 
-        // Apply property changes
+        // Apply property values from Elm (Elm is source of truth)
+        // For properties with duration=0, use the end value for both start and end (static preservation)
         transformProperties.forEach(property => {
+            const isStatic = property.duration === 0;
+
             switch (property.type) {
                 case 'position':
-                    translateX = property.x !== undefined ? property.x : translateX;
-                    translateY = property.y !== undefined ? property.y : translateY;
-                    translateZ = property.z !== undefined ? property.z : translateZ;
+                    if (isStatic) {
+                        // Static: use end value for both start and end
+                        startTranslateX = property.x !== undefined ? property.x : startTranslateX;
+                        startTranslateY = property.y !== undefined ? property.y : startTranslateY;
+                        startTranslateZ = property.z !== undefined ? property.z : startTranslateZ;
+                        endTranslateX = property.x !== undefined ? property.x : endTranslateX;
+                        endTranslateY = property.y !== undefined ? property.y : endTranslateY;
+                        endTranslateZ = property.z !== undefined ? property.z : endTranslateZ;
+                    } else {
+                        // Animating: use start and end values
+                        startTranslateX = property.startX !== undefined ? property.startX : startTranslateX;
+                        startTranslateY = property.startY !== undefined ? property.startY : startTranslateY;
+                        startTranslateZ = property.startZ !== undefined ? property.startZ : startTranslateZ;
+                        endTranslateX = property.x !== undefined ? property.x : endTranslateX;
+                        endTranslateY = property.y !== undefined ? property.y : endTranslateY;
+                        endTranslateZ = property.z !== undefined ? property.z : endTranslateZ;
+                    }
                     break;
                 case 'scale':
-                    scaleX = property.x !== undefined ? property.x : scaleX;
-                    scaleY = property.y !== undefined ? property.y : scaleY;
-                    scaleZ = property.z !== undefined ? property.z : scaleZ;
+                    if (isStatic) {
+                        startScaleX = property.x !== undefined ? property.x : startScaleX;
+                        startScaleY = property.y !== undefined ? property.y : startScaleY;
+                        startScaleZ = property.z !== undefined ? property.z : startScaleZ;
+                        endScaleX = property.x !== undefined ? property.x : endScaleX;
+                        endScaleY = property.y !== undefined ? property.y : endScaleY;
+                        endScaleZ = property.z !== undefined ? property.z : endScaleZ;
+                    } else {
+                        startScaleX = property.startX !== undefined ? property.startX : startScaleX;
+                        startScaleY = property.startY !== undefined ? property.startY : startScaleY;
+                        startScaleZ = property.startZ !== undefined ? property.startZ : startScaleZ;
+                        endScaleX = property.x !== undefined ? property.x : endScaleX;
+                        endScaleY = property.y !== undefined ? property.y : endScaleY;
+                        endScaleZ = property.z !== undefined ? property.z : endScaleZ;
+                    }
                     break;
                 case 'rotate':
-                    rotationX = property.x !== undefined ? property.x : rotationX;
-                    rotationY = property.y !== undefined ? property.y : rotationY;
-                    rotationZ = property.z !== undefined ? property.z : rotationZ;
+                    if (isStatic) {
+                        startRotationX = property.x !== undefined ? property.x : startRotationX;
+                        startRotationY = property.y !== undefined ? property.y : startRotationY;
+                        startRotationZ = property.z !== undefined ? property.z : startRotationZ;
+                        endRotationX = property.x !== undefined ? property.x : endRotationX;
+                        endRotationY = property.y !== undefined ? property.y : endRotationY;
+                        endRotationZ = property.z !== undefined ? property.z : endRotationZ;
+                    } else {
+                        startRotationX = property.startX !== undefined ? property.startX : startRotationX;
+                        startRotationY = property.startY !== undefined ? property.startY : startRotationY;
+                        startRotationZ = property.startZ !== undefined ? property.startZ : startRotationZ;
+                        endRotationX = property.x !== undefined ? property.x : endRotationX;
+                        endRotationY = property.y !== undefined ? property.y : endRotationY;
+                        endRotationZ = property.z !== undefined ? property.z : endRotationZ;
+                    }
                     break;
             }
         });
 
         // Build transform strings
-        startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
-            currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-            currentTransform.rotationX, currentTransform.rotationY, currentTransform.rotationZ);
-        endTransform = buildTransformString(translateX, translateY, translateZ, scaleX, scaleY, scaleZ,
-            rotationX, rotationY, rotationZ);
+        startTransform = buildTransformString(startTranslateX, startTranslateY, startTranslateZ,
+            startScaleX, startScaleY, startScaleZ,
+            startRotationX, startRotationY, startRotationZ);
+        endTransform = buildTransformString(endTranslateX, endTranslateY, endTranslateZ,
+            endScaleX, endScaleY, endScaleZ,
+            endRotationX, endRotationY, endRotationZ);
 
-        const keyframes = [
-            { transform: startTransform },
-            { transform: endTransform }
-        ];
+        // Check if any property has easingKeyframes (for complex easings like Bounce/Elastic)
+        const easingKeyframes = transformProperties.find(p => p.easingKeyframes)?.easingKeyframes;
+
+        let keyframes;
+        let animationEasing;
+
+        if (easingKeyframes) {
+            // Complex easing: generate 30 keyframes with linear interpolation
+            console.log('[WAAPI Debug] Found easingKeyframes:', {
+                easing: easing,
+                keyframeCount: easingKeyframes.length,
+                firstFew: easingKeyframes.slice(0, 5),
+                lastFew: easingKeyframes.slice(-5),
+                startTransform: startTransform,
+                endTransform: endTransform
+            });
+            keyframes = generateKeyframesWithEasing(startTransform, endTransform, easingKeyframes, 'transform');
+            console.log('[WAAPI Debug] Generated keyframes:', {
+                count: keyframes.length,
+                first: keyframes[0],
+                middle: keyframes[Math.floor(keyframes.length / 2)],
+                last: keyframes[keyframes.length - 1]
+            });
+            animationEasing = 'linear';
+        } else {
+            // Simple easing: use 2 keyframes with easing curve
+            keyframes = [
+                { transform: startTransform },
+                { transform: endTransform }
+            ];
+            animationEasing = easingFunctions[easing] || easing;
+        }
 
         return element.animate(keyframes, {
             duration: duration,
-            easing: easingFunctions[easing] || easing,
+            easing: animationEasing,
             fill: 'forwards'
         });
     }
@@ -222,22 +424,54 @@ window.ElmAnimateWAAPI = (function () {
     function createPropertyAnimation(element, property) {
         const duration = property.duration;
         const easing = property.easing;
+        const easingKeyframes = property.easingKeyframes;
 
         let keyframes = [];
+        let animationEasing;
 
         switch (property.type) {
             case 'opacity':
-                keyframes = [
-                    { opacity: window.getComputedStyle(element).opacity || '1' },
-                    { opacity: property.value.toString() }
-                ];
+                {
+                    const startValue = property.startValue !== undefined ? property.startValue : 1;
+                    const endValue = property.value;
+
+                    if (easingKeyframes) {
+                        // Complex easing: generate keyframes with easing applied
+                        keyframes = easingKeyframes.map(progress => ({
+                            opacity: (startValue + (endValue - startValue) * progress).toString()
+                        }));
+                        animationEasing = 'linear';
+                    } else {
+                        // Simple easing: use 2 keyframes
+                        keyframes = [
+                            { opacity: startValue.toString() },
+                            { opacity: endValue.toString() }
+                        ];
+                        animationEasing = easingFunctions[easing] || easing;
+                    }
+                }
                 break;
 
             case 'backgroundColor':
-                keyframes = [
-                    { backgroundColor: window.getComputedStyle(element).backgroundColor || 'transparent' },
-                    { backgroundColor: property.color }
-                ];
+                {
+                    const startColor = property.startColor || 'transparent';
+                    const endColor = property.color;
+
+                    if (easingKeyframes) {
+                        // Complex easing: generate keyframes with easing applied
+                        keyframes = easingKeyframes.map(progress => ({
+                            backgroundColor: interpolateColor(startColor, endColor, progress)
+                        }));
+                        animationEasing = 'linear';
+                    } else {
+                        // Simple easing: use 2 keyframes
+                        keyframes = [
+                            { backgroundColor: startColor },
+                            { backgroundColor: endColor }
+                        ];
+                        animationEasing = easingFunctions[easing] || easing;
+                    }
+                }
                 break;
 
             case 'size':
@@ -251,6 +485,7 @@ window.ElmAnimateWAAPI = (function () {
                         height: `${property.height}px`
                     }
                 ];
+                animationEasing = easingFunctions[easing] || easing;
                 break;
 
             default:
@@ -260,7 +495,7 @@ window.ElmAnimateWAAPI = (function () {
 
         return element.animate(keyframes, {
             duration: duration,
-            easing: easingFunctions[easing] || easing,
+            easing: animationEasing,
             fill: 'forwards'
         });
     }
@@ -418,6 +653,8 @@ window.ElmAnimateWAAPI = (function () {
                         scaleY: transformState.scaleY,
                         scaleZ: transformState.scaleZ,
                         backgroundColor: computedStyle.backgroundColor,
+                        width: parseFloat(computedStyle.width),
+                        height: parseFloat(computedStyle.height),
                         isAnimating: true
                     });
                 }
@@ -453,6 +690,8 @@ window.ElmAnimateWAAPI = (function () {
                     scaleY: finalState.scaleY,
                     scaleZ: finalState.scaleZ,
                     backgroundColor: computedStyle.backgroundColor,
+                    width: parseFloat(computedStyle.width),
+                    height: parseFloat(computedStyle.height),
                     isAnimating: false
                 });
             }
@@ -491,7 +730,11 @@ window.ElmAnimateWAAPI = (function () {
         const animations = activeAnimations.get(elementId);
         if (animations) {
             if (Array.isArray(animations)) {
-                animations.forEach(animation => animation.cancel());
+                animations.forEach(animation => {
+                    // Just cancel without committing - let the next animation
+                    // read from getComputedStyle which includes animation state
+                    animation.cancel();
+                });
             } else {
                 animations.cancel();
             }

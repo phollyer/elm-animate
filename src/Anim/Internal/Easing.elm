@@ -1,5 +1,7 @@
 module Anim.Internal.Easing exposing
     ( encode
+    , generateKeyframes
+    , isComplexEasing
     , toCSS
     , toFunction
     , toWebAnimations
@@ -383,6 +385,59 @@ toFunction easing =
         Custom _ ->
             -- TODO: Handle custom easing functions properly
             E.inOutQuad
+
+
+{-| Check if an easing type requires keyframe pre-computation for accuracy.
+Bounce and Elastic easings cannot be represented accurately with a single cubic-bezier curve.
+-}
+isComplexEasing : Easing -> Bool
+isComplexEasing easing =
+    case easing of
+        ElasticIn ->
+            True
+
+        ElasticOut ->
+            True
+
+        ElasticInOut ->
+            True
+
+        BounceIn ->
+            True
+
+        BounceOut ->
+            True
+
+        BounceInOut ->
+            True
+
+        _ ->
+            False
+
+
+{-| Generate keyframe progress values for complex easings.
+Returns a list of 30 progress values (0.0 to 1.0) with the easing function applied.
+This allows WAAPI to use accurate easing through linear interpolation between keyframes.
+-}
+generateKeyframes : Easing -> List Float
+generateKeyframes easing =
+    let
+        keyframeCount =
+            30
+
+        easingFunction =
+            toFunction easing
+
+        -- Generate linear progress values from 0.0 to 1.0
+        linearProgress i =
+            toFloat i / toFloat (keyframeCount - 1)
+
+        -- Apply easing function to each linear progress value
+        keyframeValues =
+            List.range 0 (keyframeCount - 1)
+                |> List.map (\i -> easingFunction (linearProgress i))
+    in
+    keyframeValues
 
 
 encode : Easing -> Encode.Value

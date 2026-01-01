@@ -2,12 +2,6 @@ module Anim.Easing exposing (Easing(..))
 
 {-| Easing's for animations.
 
-**Note**: If accurate physics-based easing is required (like bounce or elastic), you need to consider your Engine choice.
-
-  - **CSS Engine**:
-      - **Transforms**: Uses approximations via cubic-bezier curves - this is a CSS limitation.
-      - **Keyframe Animations**: Accurate easing curves using the functions from the [Elm-Community/Ease](https://package.elm-lang.org/packages/elm-community/ease/latest/) package.
-
 
 # Easing Type
 

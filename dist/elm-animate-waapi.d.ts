@@ -43,6 +43,9 @@ export interface PropertyAnimation {
     x?: number;
     y?: number;
     z?: number;
+    startX?: number;
+    startY?: number;
+    startZ?: number;
     // Scale properties
     // Rotation properties (x, y, z)
     // Size properties
@@ -50,10 +53,13 @@ export interface PropertyAnimation {
     height?: number;
     // Opacity/color properties
     value?: number;
+    startValue?: number;
     color?: string;
+    startColor?: string;
     // Animation settings
     duration: number;
     easing: string;
+    easingKeyframes?: number[];  // Pre-computed keyframes for complex easings (Bounce, Elastic)
     perspective?: PerspectiveConfig;
 }
 

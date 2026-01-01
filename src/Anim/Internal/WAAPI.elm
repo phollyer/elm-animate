@@ -798,19 +798,23 @@ encodeProcessedPropertyConfig property =
                     config.start
                         |> Maybe.map Position.toTriple
                         |> Maybe.withDefault ( 0, 0, 0 )
+
+                baseFields =
+                    [ ( "type", Encode.string "position" )
+                    , ( "x", Encode.float endX )
+                    , ( "y", Encode.float endY )
+                    , ( "z", Encode.float endZ )
+                    , ( "startX", Encode.float startX )
+                    , ( "startY", Encode.float startY )
+                    , ( "startZ", Encode.float startZ )
+                    , ( "duration", Encode.int config.duration )
+                    , ( "perspective", encodeMaybePerspective config.perspective )
+                    ]
+
+                easingFields =
+                    encodeEasingWithKeyframes config.easing
             in
-            Encode.object
-                [ ( "type", Encode.string "position" )
-                , ( "x", Encode.float endX )
-                , ( "y", Encode.float endY )
-                , ( "z", Encode.float endZ )
-                , ( "startX", Encode.float startX )
-                , ( "startY", Encode.float startY )
-                , ( "startZ", Encode.float startZ )
-                , ( "duration", Encode.int config.duration )
-                , ( "easing", Encode.string (easingToJsString config.easing) )
-                , ( "perspective", encodeMaybePerspective config.perspective )
-                ]
+            Encode.object (baseFields ++ easingFields)
 
         Builder.ProcessedScaleConfig config ->
             let
@@ -821,19 +825,23 @@ encodeProcessedPropertyConfig property =
                     config.start
                         |> Maybe.map Scale.toTriple
                         |> Maybe.withDefault ( 1, 1, 1 )
+
+                baseFields =
+                    [ ( "type", Encode.string "scale" )
+                    , ( "x", Encode.float endX )
+                    , ( "y", Encode.float endY )
+                    , ( "z", Encode.float endZ )
+                    , ( "startX", Encode.float startX )
+                    , ( "startY", Encode.float startY )
+                    , ( "startZ", Encode.float startZ )
+                    , ( "duration", Encode.int config.duration )
+                    , ( "perspective", encodeMaybePerspective config.perspective )
+                    ]
+
+                easingFields =
+                    encodeEasingWithKeyframes config.easing
             in
-            Encode.object
-                [ ( "type", Encode.string "scale" )
-                , ( "x", Encode.float endX )
-                , ( "y", Encode.float endY )
-                , ( "z", Encode.float endZ )
-                , ( "startX", Encode.float startX )
-                , ( "startY", Encode.float startY )
-                , ( "startZ", Encode.float startZ )
-                , ( "duration", Encode.int config.duration )
-                , ( "easing", Encode.string (easingToJsString config.easing) )
-                , ( "perspective", encodeMaybePerspective config.perspective )
-                ]
+            Encode.object (baseFields ++ easingFields)
 
         Builder.ProcessedRotateConfig config ->
             let
@@ -844,32 +852,40 @@ encodeProcessedPropertyConfig property =
                     config.start
                         |> Maybe.map Rotate.toTriple
                         |> Maybe.withDefault ( 0, 0, 0 )
+
+                baseFields =
+                    [ ( "type", Encode.string "rotate" )
+                    , ( "x", Encode.float endX )
+                    , ( "y", Encode.float endY )
+                    , ( "z", Encode.float endZ )
+                    , ( "startX", Encode.float startX )
+                    , ( "startY", Encode.float startY )
+                    , ( "startZ", Encode.float startZ )
+                    , ( "duration", Encode.int config.duration )
+                    , ( "perspective", encodeMaybePerspective config.perspective )
+                    ]
+
+                easingFields =
+                    encodeEasingWithKeyframes config.easing
             in
-            Encode.object
-                [ ( "type", Encode.string "rotate" )
-                , ( "x", Encode.float endX )
-                , ( "y", Encode.float endY )
-                , ( "z", Encode.float endZ )
-                , ( "startX", Encode.float startX )
-                , ( "startY", Encode.float startY )
-                , ( "startZ", Encode.float startZ )
-                , ( "duration", Encode.int config.duration )
-                , ( "easing", Encode.string (easingToJsString config.easing) )
-                , ( "perspective", encodeMaybePerspective config.perspective )
-                ]
+            Encode.object (baseFields ++ easingFields)
 
         Builder.ProcessedSizeConfig config ->
             let
                 ( width, height ) =
                     Size.toTuple config.end
+
+                baseFields =
+                    [ ( "type", Encode.string "size" )
+                    , ( "width", Encode.float width )
+                    , ( "height", Encode.float height )
+                    , ( "duration", Encode.int config.duration )
+                    ]
+
+                easingFields =
+                    encodeEasingWithKeyframes config.easing
             in
-            Encode.object
-                [ ( "type", Encode.string "size" )
-                , ( "width", Encode.float width )
-                , ( "height", Encode.float height )
-                , ( "duration", Encode.int config.duration )
-                , ( "easing", Encode.string (easingToJsString config.easing) )
-                ]
+            Encode.object (baseFields ++ easingFields)
 
         Builder.ProcessedOpacityConfig config ->
             let
@@ -877,14 +893,18 @@ encodeProcessedPropertyConfig property =
                     config.start
                         |> Maybe.map Opacity.toFloat
                         |> Maybe.withDefault 1.0
+
+                baseFields =
+                    [ ( "type", Encode.string "opacity" )
+                    , ( "value", Encode.float (Opacity.toFloat config.end) )
+                    , ( "startValue", Encode.float startValue )
+                    , ( "duration", Encode.int config.duration )
+                    ]
+
+                easingFields =
+                    encodeEasingWithKeyframes config.easing
             in
-            Encode.object
-                [ ( "type", Encode.string "opacity" )
-                , ( "value", Encode.float (Opacity.toFloat config.end) )
-                , ( "startValue", Encode.float startValue )
-                , ( "duration", Encode.int config.duration )
-                , ( "easing", Encode.string (easingToJsString config.easing) )
-                ]
+            Encode.object (baseFields ++ easingFields)
 
         Builder.ProcessedBackgroundColorConfig config ->
             let
@@ -892,16 +912,35 @@ encodeProcessedPropertyConfig property =
                     config.start
                         |> Maybe.map BackgroundColor.toString
                         |> Maybe.withDefault "rgba(255, 255, 255, 1)"
+
+                baseFields =
+                    [ ( "type", Encode.string "backgroundColor" )
+                    , ( "color", Encode.string (BackgroundColor.toString config.end) )
+                    , ( "startColor", Encode.string startColor )
+                    , ( "duration", Encode.int config.duration )
+                    ]
+
+                easingFields =
+                    encodeEasingWithKeyframes config.easing
             in
-            Encode.object
-                [ ( "type", Encode.string "backgroundColor" )
-                , ( "color", Encode.string (BackgroundColor.toString config.end) )
-                , ( "startColor", Encode.string startColor )
-                , ( "duration", Encode.int config.duration )
-                , ( "easing", Encode.string (easingToJsString config.easing) )
-                ]
+            Encode.object (baseFields ++ easingFields)
 
 
 easingToJsString : Easing -> String
 easingToJsString =
     Easing.toWebAnimations
+
+
+{-| Encode easing with keyframes for complex easings (Bounce, Elastic).
+For complex easings, returns list with easing="linear" and keyframes array.
+For simple easings, returns list with just easing string.
+-}
+encodeEasingWithKeyframes : Easing -> List ( String, Encode.Value )
+encodeEasingWithKeyframes easingValue =
+    if Easing.isComplexEasing easingValue then
+        [ ( "easing", Encode.string "linear" )
+        , ( "easingKeyframes", Encode.list Encode.float (Easing.generateKeyframes easingValue) )
+        ]
+
+    else
+        [ ( "easing", Encode.string (easingToJsString easingValue) ) ]
