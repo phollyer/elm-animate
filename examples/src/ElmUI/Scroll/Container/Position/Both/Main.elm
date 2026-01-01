@@ -47,9 +47,9 @@ scrollToElement targetId =
     Scroll.init
         |> Scroll.builder
         |> Scroll.container "scroll-container"
+        |> Scroll.onBothAxesWithOffset 20 20
         |> Scroll.toElement targetId
         |> Scroll.speed 500
-        |> Scroll.offset 20 20
         |> Scroll.toCmd NoOp
 
 
@@ -74,8 +74,12 @@ update msg model =
             ( model, Cmd.none )
 
         ScrollAnimationMsg scrollMsg ->
-            ( { model | scrollAnimations = Scroll.update scrollMsg model.scrollAnimations }
-            , Cmd.none
+            let
+                ( newScrollState, scrollCmd ) =
+                    Scroll.update ScrollAnimationMsg scrollMsg model.scrollAnimations
+            in
+            ( { model | scrollAnimations = newScrollState }
+            , scrollCmd
             )
 
         ScrollToTopLeft ->
@@ -110,7 +114,7 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ UI.backButton
+    [ UI.backButtonWithPath "../../../../index.html"
     , UI.pageHeader "ElmUI & Scroll Container Both Example"
     , UI.wrappedButtonRow
         [ ( UI.Primary, ScrollToTopLeft, "Top Left" )

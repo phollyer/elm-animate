@@ -84,8 +84,12 @@ update msg model =
             ( model, Cmd.none )
 
         ScrollAnimationMsg scrollMsg ->
-            ( { model | scrollAnimations = Scroll.update scrollMsg model.scrollAnimations }
-            , Cmd.none
+            let
+                ( newScrollState, scrollCmd ) =
+                    Scroll.update ScrollAnimationMsg scrollMsg model.scrollAnimations
+            in
+            ( { model | scrollAnimations = newScrollState }
+            , scrollCmd
             )
 
         ScrollToParagraphOne ->
@@ -138,7 +142,7 @@ viewContent model =
                 }
     in
     [ -- Back Button
-      UI.backButton
+      UI.backButtonWithPath "../../../../index.html"
     , -- Header
       UI.pageHeader "ElmUI & Scroll Document Y Example"
 

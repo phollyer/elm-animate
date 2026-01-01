@@ -54,9 +54,9 @@ scrollToElement targetId =
     Scroll.init
         |> Scroll.builder
         |> Scroll.document
+        |> Scroll.onXAxisWithOffset 20
         |> Scroll.toElement targetId
         |> Scroll.speed 500
-        |> Scroll.offsetX 20
         |> Scroll.toCmd NoOp
 
 
@@ -91,8 +91,12 @@ update msg model =
             ( model, Cmd.none )
 
         ScrollAnimationMsg scrollMsg ->
-            ( { model | scrollAnimations = Scroll.update scrollMsg model.scrollAnimations }
-            , Cmd.none
+            let
+                ( newScrollState, scrollCmd ) =
+                    Scroll.update ScrollAnimationMsg scrollMsg model.scrollAnimations
+            in
+            ( { model | scrollAnimations = newScrollState }
+            , scrollCmd
             )
 
         ScrollToSection id ->
@@ -224,7 +228,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ -- Back Button
-      UI.backButton
+      UI.backButtonWithPath "../../../../index.html"
     , -- Header
       UI.pageHeader "ElmUI & Scroll Document X Example"
     , -- Add/Remove Section Controls

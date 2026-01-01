@@ -71,8 +71,12 @@ update msg model =
             ( model, Cmd.none )
 
         ScrollAnimationMsg scrollMsg ->
-            ( { model | scrollAnimations = Scroll.update scrollMsg model.scrollAnimations }
-            , Cmd.none
+            let
+                ( newScrollState, scrollCmd ) =
+                    Scroll.update ScrollAnimationMsg scrollMsg model.scrollAnimations
+            in
+            ( { model | scrollAnimations = newScrollState }
+            , scrollCmd
             )
 
         ScrollToTop ->
@@ -101,7 +105,7 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ UI.backButton
+    [ UI.backButtonWithPath "../../../../index.html"
     , UI.pageHeader "ElmUI & Scroll Container Y Example"
     , UI.wrappedButtonRow
         [ ( UI.Primary, ScrollToTop, "Scroll to Top" )
