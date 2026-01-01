@@ -36,7 +36,7 @@ positionAnimation builder =
 
 ---
 
-### 1. [Anim.Engine.CSS](Anim-Engine-CSS) – Hardware-Accelerated CSS
+### 1. [Anim.Engine.CSS](Anim-Engine-CSS) – Hardware-Accelerated CSS (HACSS)
 
 - **Best for:** Simple, high-performance transitions.
 - **API:** Generates CSS for browser-native transitions.
@@ -47,14 +47,14 @@ in your view code.
 
 ---
 
-### 2. [Anim.Engine.Sub](Anim-Engine-Sub) – Subscription-Based Control
+### 2. [Anim.Engine.Sub](Anim-Engine-Sub) – HACCS + Subscription-Based Control (SBC)
 
 - **Best for:** Full programmatic control, live values, mid-flight changes.
 - **API:** Frame-based updates, requires subscriptions.
 
 ---
 
-### 3. [Anim.Engine.WAAPI](Anim-Engine-WAAPI) – Web Animations API (via Ports)
+### 3. [Anim.Engine.WAAPI](Anim-Engine-WAAPI) – HACCS + SBC + Web Animations API (via Ports)
 
 - **Best for:** Complex, timeline-based, or native browser animations.
 - **API:** Uses Elm ports to communicate with a JavaScript companion.
@@ -88,7 +88,7 @@ npm install elm-animate-waapi
 ## 📚 Examples
 
 All the examples for the CSS, Sub and WAAPI engines use the same animations which can
-be found in `examples/src/Common/Animations/`. The only differences between the Engine
+be found in `examples/src/Common/Animations/`. The only differences between the animation
 examples, are the implementation details for each Engine.
 
 To view the examples, in the project root run:
