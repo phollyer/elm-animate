@@ -6,6 +6,7 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 - **Multiple Engines:** Choose the best engine for your use case.
 - **Unified Fluent API:** Consistent builder pattern for all engines.
+- **GPU-Accelerated:** All engines use `translate3d` for hardware-accelerated transforms, offloading work to the GPU for smoother 60fps animations and better battery efficiency.
 - **Composable, type-safe, and easy to integrate.**
 
 ---
