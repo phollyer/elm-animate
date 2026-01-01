@@ -48,7 +48,7 @@ in your view code.
 
 ### 2. [Anim.Engine.Sub](Anim-Engine-Sub) – Subscription-Based Control
 
-- **Best for:** Full programmatic control, live values, mid-animation changes.
+- **Best for:** Full programmatic control, live values, mid-flight changes.
 - **API:** Frame-based updates, requires subscriptions.
 
 ---
@@ -86,8 +86,13 @@ npm install elm-animate-waapi
 
 ## 📚 Examples
 
-- Run `examples/index.html` for a dashboard of all demos.
-- Explore `examples/src/ElmUI/` for categorized examples by engine and feature.
+All the examples for the CSS, Sub and WAAPI engines use the same animations which can
+be found in `examples/src/Common/Animations/`. The only differences between the Engine
+examples, are the implementation details for each Engine.
+
+To view the examples, in the project root run:
+
+`open examples/index.html`
 
 ---
 
