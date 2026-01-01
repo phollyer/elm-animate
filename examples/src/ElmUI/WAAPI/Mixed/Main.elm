@@ -112,13 +112,14 @@ initAnim duration animState =
                 |> Position.toXY 0 0
                 |> Position.build
                 |> Scale.for "mixed-box"
-                |> Scale.toXY 1.0 1.0
+                |> Scale.toXYZ 1.0 1.0 1.0
                 |> Scale.build
                 |> Size.for "mixed-box"
                 |> Size.toHW 80 80
                 |> Size.build
                 |> Rotate.for "mixed-box"
-                |> Rotate.toZ 0
+                |> Rotate.perspective "animation-container" 1000
+                |> Rotate.toXYZ 0 0 0
                 |> Rotate.build
                 |> Opacity.for "mixed-box"
                 |> Opacity.to 1.0
@@ -306,20 +307,24 @@ viewContent model =
         ]
     , -- Animation area
       el
-        [ width (fill |> maximum 600)
-        , height (px 400)
-        , Background.color Colors.backgroundWhite
-        , Border.rounded 12
-        , Border.shadow
+        ([ htmlAttribute <|
+            Html.Attributes.id "animation-container"
+         , width (fill |> maximum 600)
+         , height (px 400)
+         , Background.color Colors.backgroundWhite
+         , Border.rounded 12
+         , Border.shadow
             { offset = ( 0, 4 )
             , size = 0
             , blur = 8
             , color = Element.rgba 0 0 0 0.1
             }
-        , centerX
-        , htmlAttribute (Html.Attributes.style "position" "relative")
-        , htmlAttribute (Html.Attributes.style "overflow" "visible")
-        ]
+         , centerX
+         , htmlAttribute (Html.Attributes.style "position" "relative")
+         , htmlAttribute (Html.Attributes.style "overflow" "visible")
+         ]
+            ++ List.map htmlAttribute (WAAPI.perspectiveWith 1000)
+        )
         (mixedAnimationBox model)
     ]
 

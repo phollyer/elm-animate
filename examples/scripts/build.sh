@@ -68,6 +68,7 @@ build_example "src/ElmUI/CSS/Keyframes/Position/Main.elm" "src/ElmUI/CSS/Keyfram
 build_example "src/ElmUI/CSS/Keyframes/Opacity/Main.elm" "src/ElmUI/CSS/Keyframes/Opacity/index.js" "ElmUI.CSS.Keyframes.Opacity.Main"
 build_example "src/ElmUI/CSS/Keyframes/Scale/Main.elm" "src/ElmUI/CSS/Keyframes/Scale/index.js" "ElmUI.CSS.Keyframes.Scale.Main"
 build_example "src/ElmUI/CSS/Keyframes/Rotate/Main.elm" "src/ElmUI/CSS/Keyframes/Rotate/index.js" "ElmUI.CSS.Keyframes.Rotate.Main"
+build_example "src/ElmUI/CSS/Keyframes/Cube/Main.elm" "src/ElmUI/CSS/Keyframes/Cube/index.js" "ElmUI.CSS.Keyframes.Cube.Main"
 build_example "src/ElmUI/CSS/Keyframes/Color/Main.elm" "src/ElmUI/CSS/Keyframes/Color/index.js" "ElmUI.CSS.Keyframes.Color.Main"
 build_example "src/ElmUI/CSS/Keyframes/Events/Main.elm" "src/ElmUI/CSS/Keyframes/Events/index.js" "ElmUI.CSS.Keyframes.Events.Main"
 build_example "src/ElmUI/CSS/Keyframes/Mixed/Main.elm" "src/ElmUI/CSS/Keyframes/Mixed/index.js" "ElmUI.CSS.Keyframes.Mixed.Main"
