@@ -1,6 +1,8 @@
 module Anim.Engine.Scroll exposing
     ( AnimState, init, AnimBuilder, builder
-    , toCmd, toTask, animate
+    , toCmd
+    , ScrollError(..), ScrollResult, toTask
+    , animate
     , AnimationMsg, update, subscriptions
     , duration, speed
     , easing
@@ -56,13 +58,25 @@ that can target specific elements or coordinates within the document or scrollab
 
 # Execute
 
-@docs toCmd, toTask, animate
+
+## Cmd
+
+@docs toCmd
+
+
+## Task
+
+@docs ScrollError, ScrollResult, toTask
+
+
+## Stateful Animation
+
+@docs animate
 
 
 # Update
 
-If using subscription-based scroll animations with the [animate](#animate) function,
-you need to handle updates to the animation state.
+Only required for stateful subscription-based animations. Not needed for Cmd or Task based scrolling.
 
 @docs AnimationMsg, update, subscriptions
 
@@ -138,6 +152,39 @@ type alias AnimationMsg =
     InternalScroll.AnimationMsg
 
 
+{-| Error type for scroll tasks with rich context information.
+
+Provides details about what failed during a scroll operation:
+
+  - `containerId`: The container that was being scrolled ("document" for document body)
+  - `targetElementId`: The element ID if scrolling to an element target
+  - `domError`: The underlying DOM error (typically element not found)
+
+-}
+type ScrollError
+    = ScrollError
+        { containerId : String
+        , targetElementId : Maybe String
+        , domError : Dom.Error
+        }
+
+
+{-| Result type for successful scroll tasks with context information.
+
+Provides details about the completed scroll operation:
+
+  - `containerId`: The container that was scrolled
+  - `targetElementId`: The element ID if scrolled to an element target
+  - `targetDescription`: Human-readable description of the scroll target
+
+-}
+type alias ScrollResult =
+    { containerId : String
+    , targetElementId : Maybe String
+    , targetDescription : String
+    }
+
+
 
 -- ANIMATION EXECUTION
 
@@ -188,27 +235,48 @@ builder =
     InternalScroll.builder
 
 
-{-| Generate scroll animation state and command from the builder.
+{-| Execute a scroll animation as a Cmd, keeping the animation state updated.
 
-    import Anim.Action.Scroll as ScrollAction
+Use this when you want to manage animation state, or receive updates
+during a scroll animation and intervene or react accordingly.
+
+    doScroll : Model -> ( Model, Cmd Msg )
+    doScroll model =
+        let
+            ( scrollState, scrollCmd ) =
+                model.scrollAnimations
+                    |> Scroll.builder
+                    |> ... -- configure scroll animation
+                    |> Scroll.animate ScrollMsg
+        in
+        ( { model | scrollAnimations = scrollState }
+        , scrollCmd
+        )
 
     type Msg
         = ScrollMsg Scroll.AnimationMsg
         | ...
 
-    let
-        ( scrollState, scrollCmd ) =
-            model.scrollAnimations
-                |> Scroll.builder
-                |> Scroll.speed 500
-                |> ScrollAction.forDocument
-                |> ScrollAction.toElement sectionId
-                |> ScrollAction.build
-                |> Scroll.animate ScrollMsg
-    in
-    ( { model | scrollAnimations = scrollState }
-    , scrollCmd
-    )
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            ScrollMsg scrollMsg ->
+                let
+                    ( newScrollState, scrollCmd ) =
+                        Scroll.update ScrollMsg scrollMsg model.scrollAnimations
+                in
+                ( { model | scrollAnimations = newScrollState }
+                , scrollCmd
+                )
+
+            ...
+
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        Sub.batch
+            [ Scroll.subscriptions ScrollMsg model.scrollAnimations
+            , ...
+            ]
 
 -}
 animate : (AnimationMsg -> msg) -> AnimBuilder -> ( AnimState, Cmd msg )
@@ -220,16 +288,14 @@ animate =
 -- GLOBAL SETTINGS
 
 
-{-| Set global duration in milliseconds (overrides any previous speed setting).
+{-| Set the global duration in milliseconds (overrides any previous speed setting).
 
     import Anim.Action.Scroll as ScrollAction
 
     Scroll.init
         |> Scroll.builder
         |> Scroll.duration 1000
-        |> ScrollAction.forDocument
-        |> ScrollAction.toElement "section-1"
-        |> ScrollAction.build
+        |> ... -- configure scroll animation
         |> Scroll.animate
 
 -}
@@ -238,16 +304,14 @@ duration =
     InternalScroll.duration
 
 
-{-| Set global speed in pixels per second (overrides any previous duration setting).
+{-| Set the global speed in pixels per second (overrides any previous duration setting).
 
     import Anim.Action.Scroll as ScrollAction
 
     Scroll.init
         |> Scroll.builder
         |> Scroll.speed 500
-        |> ScrollAction.forDocument
-        |> ScrollAction.toElement "section-1"
-        |> ScrollAction.build
+        |> ... -- configure scroll animation
         |> Scroll.animate
 
 -}
@@ -256,16 +320,14 @@ speed =
     InternalScroll.speed
 
 
-{-| Set global easing function.
+{-| Set the global easing function.
 
     import Anim.Action.Scroll as ScrollAction
 
     Scroll.init
         |> Scroll.builder
         |> Scroll.easing EaseInOutQuad
-        |> ScrollAction.forDocument
-        |> ScrollAction.toElement "section-1"
-        |> ScrollAction.build
+        |> ... -- configure scroll animation
         |> Scroll.animate
 
 -}
@@ -274,16 +336,14 @@ easing =
     InternalScroll.easing
 
 
-{-| Set global delay in milliseconds.
+{-| Set the global delay in milliseconds.
 
     import Anim.Action.Scroll as ScrollAction
 
     Scroll.init
         |> Scroll.builder
         |> Scroll.delay 500
-        |> ScrollAction.forDocument
-        |> ScrollAction.toElement "section-1"
-        |> ScrollAction.build
+        |> ... -- configure scroll animation
         |> Scroll.animate
 
 -}
@@ -485,32 +545,25 @@ toCmd completionMsg animBuilder =
 
 Use this when you want to handle success or failure of the scroll animation, or compose it with other tasks.
 
+The task returns [ScrollResult](#ScrollResult) on success with information about what was scrolled,
+and [ScrollError](#ScrollError) on failure with detailed error context.
+
     type Msg
-        = NoOp
-        | ShowError String
+        = GotScrollResult (Result ScrollError ScrollResult)
         | ...
 
     let
-        scrollTask =
+        scrollCmd =
             Scroll.init
                 |> Scroll.builder
                 |> ... -- configure scroll animation
                 |> Scroll.toTask
-
-        handleResult result =
-            case result of
-                Ok () ->
-                    -- Scroll completed successfully
-                    NoOp
-
-                Err domError ->
-                    -- Handle error (element not found, etc.)
-                    ShowError "Could not scroll to element"
+                |> Task.attempt GotScrollResult
     in
-    ( model, Task.attempt handleResult scrollTask )
+    ( model, scrollCmd )
 
 -}
-toTask : AnimBuilder -> Task Dom.Error ()
+toTask : AnimBuilder -> Task ScrollError ScrollResult
 toTask animBuilder =
     let
         scrollTargets =
@@ -537,10 +590,47 @@ toTask animBuilder =
     in
     case scrollTargets of
         [] ->
-            Task.succeed ()
+            Task.succeed
+                { containerId = containerType
+                , targetElementId = Nothing
+                , targetDescription = "No scroll target"
+                }
 
         target :: _ ->
             let
+                -- Extract context information
+                containerId =
+                    ScrollTarget.getContainerId target
+
+                targetElementId =
+                    ScrollTarget.getTargetElement target
+
+                targetDescription =
+                    case ScrollTarget.getTargetType target of
+                        ScrollTarget.Element id ->
+                            "element '" ++ id ++ "'"
+
+                        ScrollTarget.Coordinates x y ->
+                            "coordinates (" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")"
+
+                        ScrollTarget.Top ->
+                            "top"
+
+                        ScrollTarget.Bottom ->
+                            "bottom"
+
+                        ScrollTarget.Center ->
+                            "center"
+
+                        ScrollTarget.Percentage x y ->
+                            "percentage (" ++ String.fromFloat (x * 100) ++ "%, " ++ String.fromFloat (y * 100) ++ "%)"
+
+                scrollResult =
+                    { containerId = containerId
+                    , targetElementId = targetElementId
+                    , targetDescription = targetDescription
+                    }
+
                 baseTask =
                     case ( containerType, ScrollTarget.getTargetType target ) of
                         ( "document", ScrollTarget.Element elementId ) ->
@@ -558,23 +648,32 @@ toTask animBuilder =
                         ( "document", ScrollTarget.Center ) ->
                             DocumentTask.scrollToCenterWithConfig config
 
-                        ( containerId, ScrollTarget.Element elementId ) ->
-                            ContainerTask.scrollWithConfig containerId elementId config
+                        ( otherContainerId, ScrollTarget.Element elementId ) ->
+                            ContainerTask.scrollWithConfig otherContainerId elementId config
 
-                        ( containerId, ScrollTarget.Coordinates x y ) ->
-                            ContainerTask.scrollToCoordinatesWithConfig containerId x y config
+                        ( otherContainerId, ScrollTarget.Coordinates x y ) ->
+                            ContainerTask.scrollToCoordinatesWithConfig otherContainerId x y config
 
-                        ( containerId, ScrollTarget.Top ) ->
-                            ContainerTask.scrollToTopWithConfig containerId config
+                        ( otherContainerId, ScrollTarget.Top ) ->
+                            ContainerTask.scrollToTopWithConfig otherContainerId config
 
-                        ( containerId, ScrollTarget.Bottom ) ->
-                            ContainerTask.scrollToBottomWithConfig containerId config
+                        ( otherContainerId, ScrollTarget.Bottom ) ->
+                            ContainerTask.scrollToBottomWithConfig otherContainerId config
 
-                        ( containerId, ScrollTarget.Center ) ->
-                            ContainerTask.scrollToCenterWithConfig containerId config
+                        ( otherContainerId, ScrollTarget.Center ) ->
+                            ContainerTask.scrollToCenterWithConfig otherContainerId config
 
                         _ ->
                             Task.succeed []
             in
-            -- Convert Task (List ()) to Task ()
-            Task.map (\_ -> ()) baseTask
+            -- Convert Task Dom.Error (List ()) to Task ScrollError ScrollResult
+            baseTask
+                |> Task.map (\_ -> scrollResult)
+                |> Task.mapError
+                    (\domError ->
+                        ScrollError
+                            { containerId = containerId
+                            , targetElementId = targetElementId
+                            , domError = domError
+                            }
+                    )
