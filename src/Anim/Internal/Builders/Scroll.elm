@@ -18,7 +18,6 @@ module Anim.Internal.Builders.Scroll exposing
     , toBottomLeft
     , toBottomRight
     , toCenter
-    , toCoordinates
     , toElement
     , toLeft
     , toPercentage
@@ -249,13 +248,6 @@ toBottomRight (ScrollBuilder config) =
         { config
             | scrollTarget = config.scrollTarget |> ScrollTarget.toPercentage 1.0 1.0
         }
-
-
-{-| Scroll to specific coordinates (alias for toXY).
--}
-toCoordinates : Float -> Float -> ScrollBuilder -> ScrollBuilder
-toCoordinates x y =
-    toXY x y
 
 
 {-| Scroll to percentage of container size.

@@ -129,7 +129,6 @@ import Anim.Internal.Scroll.Document.Task as DocumentTask
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
 import Browser.Events
-import Ease
 import Task exposing (Task)
 
 

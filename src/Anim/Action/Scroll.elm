@@ -4,7 +4,7 @@ module Anim.Action.Scroll exposing
     , toTop, toBottom, toCenter
     , toLeft, toRight
     , toTopLeft, toTopRight, toBottomLeft, toBottomRight
-    , toXY, toX, toY, toCoordinates, toPercentage
+    , toXY, toX, toY, toPercentage
     , onBothAxes, onXAxis, onYAxis
     , onBothAxesWithOffset, onXAxisWithOffset, onYAxisWithOffset
     , delay, duration, speed
@@ -68,7 +68,7 @@ You can chain multiple scroll targets with different containers:
 
 ## Coordinate Targeting
 
-@docs toXY, toX, toY, toCoordinates, toPercentage
+@docs toXY, toX, toY, toPercentage
 
 
 # Axis Selection
@@ -83,14 +83,14 @@ You can chain multiple scroll targets with different containers:
 
 # Timing
 
-These override global timing settings for this specific scroll.
+These override their equivalent global settings.
 
 @docs delay, duration, speed
 
 
 # Easing
 
-This overrides the global easing setting for this specific scroll.
+This overrides any global easing setting.
 
 @docs easing
 
@@ -351,19 +351,6 @@ toBottomRight =
     SB.toBottomRight
 
 
-{-| Scroll to specific coordinates.
-
-    animBuilder
-        |> Scroll.for "container"
-        |> Scroll.toCoordinates 150 300
-        |> Scroll.build
-
--}
-toCoordinates : Float -> Float -> Builder -> Builder
-toCoordinates =
-    SB.toCoordinates
-
-
 {-| Scroll to percentage of container size.
 
     animBuilder
@@ -470,7 +457,7 @@ onYAxisWithOffset =
 -- TIMING
 
 
-{-| Set delay before this scroll animation starts (overrides global).
+{-| Set the delay before this scroll animation starts.
 
     animBuilder
         |> Scroll.for "document"
@@ -484,7 +471,7 @@ delay =
     SB.delay
 
 
-{-| Set duration for this scroll animation (overrides global).
+{-| Set the duration (ms) for this scroll animation.
 
     animBuilder
         |> Scroll.for "container"
@@ -498,7 +485,7 @@ duration =
     SB.duration
 
 
-{-| Set speed for this scroll animation (overrides global).
+{-| Set the speed (pixels per second) for this scroll animation.
 
     animBuilder
         |> Scroll.for "document"
@@ -516,7 +503,7 @@ speed =
 -- EASING
 
 
-{-| Set easing function for this scroll animation (overrides global).
+{-| Set the easing function for this scroll animation.
 
     animBuilder
         |> Scroll.for "document"
