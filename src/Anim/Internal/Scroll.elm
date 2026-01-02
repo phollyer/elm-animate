@@ -576,14 +576,16 @@ isAnimationRunning (AnimState animData) =
     not (Dict.isEmpty animData.animations)
 
 
-{-| Get the duration of currently running scroll animations.
+{-| Get the maximum duration of currently running scroll animations.
+Returns the longest duration when multiple animations are running.
 -}
 getDuration : AnimState -> Maybe Int
 getDuration (AnimState animData) =
     animData.animations
         |> Dict.values
-        |> List.head
-        |> Maybe.map (\anim -> round anim.durationMs)
+        |> List.map .durationMs
+        |> List.maximum
+        |> Maybe.map round
 
 
 

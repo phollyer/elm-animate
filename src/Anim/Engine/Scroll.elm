@@ -3,12 +3,12 @@ module Anim.Engine.Scroll exposing
     , toCmd
     , ScrollError(..), ScrollResult, toTask
     , animate
-    , AnimationMsg, update, subscriptions
     , duration, speed
     , easing
     , delay
+    , AnimationMsg, update, subscriptions
     , isAnimationRunning, getDuration
-    , getScrollPosition, getScrollPositionXY, getScrollPositionX, getScrollPositionY
+    , getPosition, getPositionXY, getPositionX, getPositionY
     )
 
 {-| Smooth Document and Container scrolling.
@@ -74,16 +74,9 @@ that can target specific elements or coordinates within the document or scrollab
 @docs animate
 
 
-# Update
-
-Only required for stateful subscription-based animations. Not needed for Cmd or Task based scrolling.
-
-@docs AnimationMsg, update, subscriptions
-
-
 # Global Settings
 
-These settings will be used for all scroll animations unless overridden on a per-animation basis.
+These settings will be used for all scroll animations unless overridden on a per-scroll basis.
 
 
 ## Timing
@@ -101,18 +94,31 @@ These settings will be used for all scroll animations unless overridden on a per
 @docs delay
 
 
-# Querying Animation State
+# Update
+
+**Note:** Only required for stateful subscription-based animations. Not needed for Cmd or Task based scrolling.
+
+@docs AnimationMsg, update, subscriptions
+
+
+# Query
+
+**Note:** These functions are only applicable for stateful subscription-based animations.
+
+
+## Animation State
 
 @docs isAnimationRunning, getDuration
 
 
-# Querying Scroll Position
+## Scroll Position
 
-@docs getScrollPosition, getScrollPositionXY, getScrollPositionX, getScrollPositionY
+@docs getPosition, getPositionXY, getPositionX, getPositionY
 
 -}
 
 import Anim.Easing exposing (Easing)
+import Anim.Internal.Easing as InternalEasing
 import Anim.Internal.Properties.ScrollTarget as ScrollTarget exposing (Axis(..))
 import Anim.Internal.Scroll as InternalScroll
 import Anim.Internal.Scroll.Common as ScrollCommon
@@ -290,8 +296,6 @@ animate =
 
 {-| Set the global duration in milliseconds (overrides any previous speed setting).
 
-    import Anim.Action.Scroll as ScrollAction
-
     Scroll.init
         |> Scroll.builder
         |> Scroll.duration 1000
@@ -305,8 +309,6 @@ duration =
 
 
 {-| Set the global speed in pixels per second (overrides any previous duration setting).
-
-    import Anim.Action.Scroll as ScrollAction
 
     Scroll.init
         |> Scroll.builder
@@ -322,13 +324,15 @@ speed =
 
 {-| Set the global easing function.
 
-    import Anim.Action.Scroll as ScrollAction
-
     Scroll.init
         |> Scroll.builder
         |> Scroll.easing EaseInOutQuad
         |> ... -- configure scroll animation
         |> Scroll.animate
+
+**Note**: Cmd and Task based scrolling should handle easings fine, although,
+because they run a sequence of Tasks or Cmds under the hood, they may not appear as smooth
+as subscription-based scrolling animations.
 
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
@@ -337,8 +341,6 @@ easing =
 
 
 {-| Set the global delay in milliseconds.
-
-    import Anim.Action.Scroll as ScrollAction
 
     Scroll.init
         |> Scroll.builder
@@ -421,7 +423,8 @@ isAnimationRunning =
     InternalScroll.isAnimationRunning
 
 
-{-| Get the duration of currently running scroll animations.
+{-| Get the maximum duration of currently running scroll animations.
+Returns the longest duration when multiple animations are running.
 -}
 getDuration : AnimState -> Maybe Int
 getDuration =
@@ -432,43 +435,63 @@ getDuration =
 -- QUERYING SCROLL POSITION
 
 
-{-| Get current scroll position for a specific container.
+{-| Get the current scroll position for a specific container.
+
+Returns X and Y coordinates as a record.
+
+Returns `Nothing` if the container is not found or scroll position is unavailable.
+
 -}
-getScrollPosition : String -> AnimState -> Maybe { x : Float, y : Float }
-getScrollPosition =
+getPosition : String -> AnimState -> Maybe { x : Float, y : Float }
+getPosition =
     InternalScroll.getScrollPosition
 
 
-{-| Get current scroll position as a tuple (x, y) for a specific container.
+{-| Get the current scroll position for a specific container.
+
+Returns X and Y coordinates as a tuple `(x, y)`.
+
+Returns `Nothing` if the container is not found or scroll position is unavailable.
+
 -}
-getScrollPositionXY : String -> AnimState -> Maybe ( Float, Float )
-getScrollPositionXY =
+getPositionXY : String -> AnimState -> Maybe ( Float, Float )
+getPositionXY =
     InternalScroll.getScrollPositionXY
 
 
 {-| Get current horizontal scroll position for a specific container.
 -}
-getScrollPositionX : String -> AnimState -> Maybe Float
-getScrollPositionX =
+getPositionX : String -> AnimState -> Maybe Float
+getPositionX =
     InternalScroll.getScrollPositionX
 
 
 {-| Get current vertical scroll position for a specific container.
 -}
-getScrollPositionY : String -> AnimState -> Maybe Float
-getScrollPositionY =
+getPositionY : String -> AnimState -> Maybe Float
+getPositionY =
     InternalScroll.getScrollPositionY
 
 
-{-| Execute a scroll animation as a command.
+{-| Execute scroll animations as a command.
 
 Use this for fire-and-forget scrolling where you don't need state management.
 The animation will run automatically without requiring subscriptions.
 
+When multiple scroll targets are configured, all scroll animations will be batched into
+a single command. The browser should then execute them simultaneously.
+
+    -- Multiple scrolls happening at once
     scrollCmd =
         Scroll.init
             |> Scroll.builder
-            |> ... -- configure scroll animation
+            |> Scroll.duration 1000
+            |> ScrollAction.for "container-1"
+            |> ScrollAction.toElement "target-1"
+            |> ScrollAction.build
+            |> ScrollAction.for "document"
+            |> ScrollAction.toTop
+            |> ScrollAction.build
             |> Scroll.toCmd ScrollCompleted
 
 -}
@@ -490,63 +513,58 @@ toCmd completionMsg animBuilder =
 
                     Duration d ->
                         ScrollCommon.Duration d
-            , easing = Ease.linear -- Default easing for compatibility
+            , easing = InternalEasing.toFunction globalSettings.easing
             , axis = ScrollCommon.Both
             }
 
-        containerType =
-            InternalScroll.getContainer animBuilder
-    in
-    case scrollTargets of
-        [] ->
-            Cmd.none
-
-        target :: _ ->
+        -- Create a command for each scroll target
+        createScrollCmd target =
             let
-                baseCmd =
-                    case ( containerType, ScrollTarget.getTargetType target ) of
-                        ( "document", ScrollTarget.Element elementId ) ->
-                            DocumentCmd.scrollWithConfig elementId completionMsg config
-
-                        ( "document", ScrollTarget.Coordinates x y ) ->
-                            DocumentCmd.scrollToCoordinatesWithConfig x y completionMsg config
-
-                        ( "document", ScrollTarget.Top ) ->
-                            DocumentCmd.scrollToTopWithConfig completionMsg config
-
-                        ( "document", ScrollTarget.Bottom ) ->
-                            DocumentCmd.scrollToBottomWithConfig completionMsg config
-
-                        ( "document", ScrollTarget.Center ) ->
-                            DocumentCmd.scrollToCenterWithConfig completionMsg config
-
-                        ( containerId, ScrollTarget.Element elementId ) ->
-                            ContainerCmd.scrollWithConfig containerId elementId completionMsg config
-
-                        ( containerId, ScrollTarget.Coordinates x y ) ->
-                            ContainerCmd.scrollToCoordinatesWithConfig containerId x y completionMsg config
-
-                        ( containerId, ScrollTarget.Top ) ->
-                            ContainerCmd.scrollToTopWithConfig containerId completionMsg config
-
-                        ( containerId, ScrollTarget.Bottom ) ->
-                            ContainerCmd.scrollToBottomWithConfig containerId completionMsg config
-
-                        ( containerId, ScrollTarget.Center ) ->
-                            ContainerCmd.scrollToCenterWithConfig containerId completionMsg config
-
-                        _ ->
-                            Cmd.none
+                containerType =
+                    ScrollTarget.getContainerId target
             in
-            baseCmd
+            case ( containerType, ScrollTarget.getTargetType target ) of
+                ( "document", ScrollTarget.Element elementId ) ->
+                    DocumentCmd.scrollWithConfig elementId completionMsg config
+
+                ( "document", ScrollTarget.Coordinates x y ) ->
+                    DocumentCmd.scrollToCoordinatesWithConfig x y completionMsg config
+
+                ( "document", ScrollTarget.Top ) ->
+                    DocumentCmd.scrollToTopWithConfig completionMsg config
+
+                ( "document", ScrollTarget.Bottom ) ->
+                    DocumentCmd.scrollToBottomWithConfig completionMsg config
+
+                ( "document", ScrollTarget.Center ) ->
+                    DocumentCmd.scrollToCenterWithConfig completionMsg config
+
+                ( containerId, ScrollTarget.Element elementId ) ->
+                    ContainerCmd.scrollWithConfig containerId elementId completionMsg config
+
+                ( containerId, ScrollTarget.Coordinates x y ) ->
+                    ContainerCmd.scrollToCoordinatesWithConfig containerId x y completionMsg config
+
+                ( containerId, ScrollTarget.Top ) ->
+                    ContainerCmd.scrollToTopWithConfig containerId completionMsg config
+
+                ( containerId, ScrollTarget.Bottom ) ->
+                    ContainerCmd.scrollToBottomWithConfig containerId completionMsg config
+
+                ( containerId, ScrollTarget.Center ) ->
+                    ContainerCmd.scrollToCenterWithConfig containerId completionMsg config
+
+                _ ->
+                    Cmd.none
+    in
+    scrollTargets
+        |> List.map createScrollCmd
+        |> Cmd.batch
 
 
-{-| Execute a scroll animation as a [Task](https://package.elm-lang.org/packages/elm/core/latest/Task).
+{-| Execute scroll animations as a [Task](https://package.elm-lang.org/packages/elm/core/latest/Task).
 
-Use this when you want to handle success or failure of the scroll animation, or compose it with other tasks.
-
-The task returns [ScrollResult](#ScrollResult) on success with information about what was scrolled,
-and [ScrollError](#ScrollError) on failure with detailed error context.
+Use this when you want to handle success or failure of the scroll animations, or compose them with other tasks.
 
     type Msg
         = GotScrollResult (Result ScrollError ScrollResult)
@@ -561,6 +579,13 @@ and [ScrollError](#ScrollError) on failure with detailed error context.
                 |> Task.attempt GotScrollResult
     in
     ( model, scrollCmd )
+
+When multiple scroll targets are configured, they execute in sequence (one after another, top to bottom in the builder pipeline).
+The task then returns [ScrollResult](#ScrollResult) for the last scroll on success, and [ScrollError](#ScrollError)
+on failure if any scroll fails (subsequent scrolls will not execute).
+
+To run multiple scrolls simultaneously and/or get individual results per scroll, create separate tasks for each scroll target
+and `Cmd.batch` them together as a single Cmd.
 
 -}
 toTask : AnimBuilder -> Task ScrollError ScrollResult
@@ -581,22 +606,12 @@ toTask animBuilder =
 
                     Duration d ->
                         ScrollCommon.Duration d
-            , easing = Ease.linear -- Default easing for compatibility
+            , easing = InternalEasing.toFunction globalSettings.easing
             , axis = ScrollCommon.Both
             }
 
-        containerType =
-            InternalScroll.getContainer animBuilder
-    in
-    case scrollTargets of
-        [] ->
-            Task.succeed
-                { containerId = containerType
-                , targetElementId = Nothing
-                , targetDescription = "No scroll target"
-                }
-
-        target :: _ ->
+        -- Create a task for a single scroll target
+        createScrollTask target =
             let
                 -- Extract context information
                 containerId =
@@ -632,7 +647,7 @@ toTask animBuilder =
                     }
 
                 baseTask =
-                    case ( containerType, ScrollTarget.getTargetType target ) of
+                    case ( containerId, ScrollTarget.getTargetType target ) of
                         ( "document", ScrollTarget.Element elementId ) ->
                             DocumentTask.scrollWithConfig elementId config
 
@@ -677,3 +692,24 @@ toTask animBuilder =
                             , domError = domError
                             }
                     )
+
+        -- Sequence all scroll tasks and return the last result
+        sequenceTasks tasks =
+            case tasks of
+                [] ->
+                    Task.succeed
+                        { containerId = "document"
+                        , targetElementId = Nothing
+                        , targetDescription = "No scroll target"
+                        }
+
+                [ single ] ->
+                    single
+
+                first :: rest ->
+                    first
+                        |> Task.andThen (\_ -> sequenceTasks rest)
+    in
+    scrollTargets
+        |> List.map createScrollTask
+        |> sequenceTasks
