@@ -15,12 +15,12 @@ module Anim.Action.Scroll exposing
 
 Use these functions to configure scroll animations in the builder chain:
 
-    import Anim.Engine.Scroll as Scroll
     import Anim.Action.Scroll as ScrollAction
+    import Anim.Engine.Scroll as Scroll
 
     Scroll.init
         |> Scroll.builder
-        |> Scroll.speed 500  -- global default
+        |> Scroll.speed 500
         |> ScrollAction.for "document"
         |> ScrollAction.toElement "section-1"
         |> ScrollAction.onYAxisWithOffset 60
@@ -32,16 +32,14 @@ You can chain multiple scroll targets with different containers:
     Scroll.init
         |> Scroll.builder
         |> Scroll.easing EaseInOut
-        -- global default
         |> ScrollAction.for "container-1"
         |> ScrollAction.toElement "target-1"
         |> ScrollAction.speed 800
-        -- override for this scroll
         |> ScrollAction.build
         |> ScrollAction.for "document"
         |> ScrollAction.toTop
         |> ScrollAction.duration 1000
-        -- different timing
+        |> ScrollAction.easing BounceOut
         |> ScrollAction.build
         |> Scroll.toCmd ScrollCompleted
 

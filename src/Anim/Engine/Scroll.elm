@@ -19,8 +19,8 @@ that can target specific elements or coordinates within the document or scrollab
 
 ## Usage
 
-    import Anim.Engine.Scroll as Scroll
     import Anim.Action.Scroll as ScrollAction
+    import Anim.Engine.Scroll as Scroll
 
     -- Single scroll with subscription-based state management
     ( scrollState, scrollCmd ) =
