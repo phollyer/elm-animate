@@ -66,18 +66,19 @@ in your view code.
 Uses the same fluent builder API as the animation engines. This makes it easy to start with fire-and-forget scrolls, and introduce more complexity as your requirements change.
 
 ```elm
+
+import Anim.Action.Scroll as ScrollAction
+import Anim.Engine.Scroll as Scroll
+
 -- Reusable scroll animation
 
 scrollToElement : String -> String -> AnimState -> AnimBuilder
 scrollToElement targetElementId elementContainerId animState =
     animState
         |> Scroll.builder
-        |> Scroll.toElement targetElementId
-        |> Scroll.container elementContainerId
-        |> Scroll.onXAxisWithOffset 20
-        |> Scroll.delay 100
-        |> Scroll.duration 1000
-        |> Scroll.easing BounceOut
+        |> ScrollAction.forContainer elementContainerId
+        |> ScrollAction.toElement targetElementId
+        |> ScrollAction.build
 
 -- Fire-and-forget Cmd
 
@@ -152,7 +153,7 @@ In no particular order, and no particular time frame at the moment...
 
 ## 🙏 Credits
 
-Based on [`linuss/smooth-scroll`](https://package.elm-lang.org/packages/linuss/smooth-scroll/latest/), expanded for multi-engine animation.
+Uses code from [`linuss/smooth-scroll`](https://package.elm-lang.org/packages/linuss/smooth-scroll/latest/), expanded for multi-engine animations.
 
 ---
 
