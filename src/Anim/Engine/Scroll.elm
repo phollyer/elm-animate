@@ -121,13 +121,11 @@ import Anim.Internal.Easing as InternalEasing
 import Anim.Internal.Properties.ScrollTarget as ScrollTarget exposing (Axis(..))
 import Anim.Internal.Scroll as InternalScroll
 import Anim.Internal.Scroll.Common as ScrollCommon
-import Anim.Internal.Scroll.Container.Cmd as ContainerCmd
 import Anim.Internal.Scroll.Container.Task as ContainerTask
-import Anim.Internal.Scroll.Document.Cmd as DocumentCmd
 import Anim.Internal.Scroll.Document.Task as DocumentTask
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
+import Browser exposing (UrlRequest(..))
 import Browser.Dom as Dom
-import Browser.Events
 import Task exposing (Task)
 
 
@@ -325,12 +323,8 @@ delay =
 
 -}
 subscriptions : (AnimationMsg -> msg) -> AnimState -> Sub msg
-subscriptions toMsg animationState =
-    if InternalScroll.isAnimationRunning animationState then
-        Browser.Events.onAnimationFrameDelta (InternalScroll.AnimationFrame >> toMsg)
-
-    else
-        Sub.none
+subscriptions =
+    InternalScroll.subscriptions
 
 
 {-| Update the scroll animation state.
@@ -463,70 +457,8 @@ a single command. The browser should then execute them simultaneously.
 
 -}
 toCmd : msg -> AnimBuilder -> Cmd msg
-toCmd completionMsg animBuilder =
-    let
-        scrollTargets =
-            InternalScroll.getScrollTargets animBuilder
-
-        globalSettings =
-            InternalScroll.getGlobalSettings animBuilder
-
-        -- Create scroll config from global settings
-        config =
-            { timing =
-                case globalSettings.timeSpec of
-                    Speed s ->
-                        ScrollCommon.Speed s
-
-                    Duration d ->
-                        ScrollCommon.Duration d
-            , easing = InternalEasing.toFunction globalSettings.easing
-            , axis = ScrollCommon.Both
-            }
-
-        -- Create a command for each scroll target
-        createScrollCmd target =
-            let
-                containerType =
-                    ScrollTarget.getContainerId target
-            in
-            case ( containerType, ScrollTarget.getTargetType target ) of
-                ( "document", ScrollTarget.Element elementId ) ->
-                    DocumentCmd.scrollWithConfig elementId completionMsg config
-
-                ( "document", ScrollTarget.Coordinates x y ) ->
-                    DocumentCmd.scrollToCoordinatesWithConfig x y completionMsg config
-
-                ( "document", ScrollTarget.Top ) ->
-                    DocumentCmd.scrollToTopWithConfig completionMsg config
-
-                ( "document", ScrollTarget.Bottom ) ->
-                    DocumentCmd.scrollToBottomWithConfig completionMsg config
-
-                ( "document", ScrollTarget.Center ) ->
-                    DocumentCmd.scrollToCenterWithConfig completionMsg config
-
-                ( containerId, ScrollTarget.Element elementId ) ->
-                    ContainerCmd.scrollWithConfig containerId elementId completionMsg config
-
-                ( containerId, ScrollTarget.Coordinates x y ) ->
-                    ContainerCmd.scrollToCoordinatesWithConfig containerId x y completionMsg config
-
-                ( containerId, ScrollTarget.Top ) ->
-                    ContainerCmd.scrollToTopWithConfig containerId completionMsg config
-
-                ( containerId, ScrollTarget.Bottom ) ->
-                    ContainerCmd.scrollToBottomWithConfig containerId completionMsg config
-
-                ( containerId, ScrollTarget.Center ) ->
-                    ContainerCmd.scrollToCenterWithConfig containerId completionMsg config
-
-                _ ->
-                    Cmd.none
-    in
-    scrollTargets
-        |> List.map createScrollCmd
-        |> Cmd.batch
+toCmd =
+    InternalScroll.toCmd
 
 
 {-| Execute scroll animations as a [Task](https://package.elm-lang.org/packages/elm/core/latest/Task).

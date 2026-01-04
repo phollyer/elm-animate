@@ -26,6 +26,8 @@ module Anim.Internal.Scroll exposing
     , setOffsetX
     , setOffsetY
     , speed
+    , subscriptions
+    , toCmd
     , update
     )
 
@@ -40,8 +42,12 @@ import Anim.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Easing as Easing
 import Anim.Internal.Properties.ScrollTarget as ScrollTarget exposing (ScrollTarget)
+import Anim.Internal.Scroll.Common as ScrollCommon
+import Anim.Internal.Scroll.Container.Cmd as ContainerCmd
+import Anim.Internal.Scroll.Document.Cmd as DocumentCmd
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
+import Browser.Events
 import Dict exposing (Dict)
 import Task
 
@@ -234,6 +240,73 @@ setContainer containerId animBuilder =
 
 
 -- ANIMATION EXECUTION
+
+
+toCmd : msg -> AnimBuilder -> Cmd msg
+toCmd completionMsg animBuilder =
+    let
+        scrollTargets =
+            getScrollTargets animBuilder
+
+        globalSettings =
+            getGlobalSettings animBuilder
+
+        -- Create scroll config from global settings
+        config =
+            { timing =
+                case globalSettings.timeSpec of
+                    Speed s ->
+                        ScrollCommon.Speed s
+
+                    Duration d ->
+                        ScrollCommon.Duration d
+            , easing = Easing.toFunction globalSettings.easing
+            , axis = ScrollCommon.Both
+            }
+
+        -- Create a command for each scroll target
+        createScrollCmd target =
+            let
+                containerType =
+                    ScrollTarget.getContainerId target
+            in
+            case ( containerType, ScrollTarget.getTargetType target ) of
+                ( "document", ScrollTarget.Element elementId ) ->
+                    DocumentCmd.scrollWithConfig elementId completionMsg config
+
+                ( "document", ScrollTarget.Coordinates x y ) ->
+                    DocumentCmd.scrollToCoordinatesWithConfig x y completionMsg config
+
+                ( "document", ScrollTarget.Top ) ->
+                    DocumentCmd.scrollToTopWithConfig completionMsg config
+
+                ( "document", ScrollTarget.Bottom ) ->
+                    DocumentCmd.scrollToBottomWithConfig completionMsg config
+
+                ( "document", ScrollTarget.Center ) ->
+                    DocumentCmd.scrollToCenterWithConfig completionMsg config
+
+                ( containerId, ScrollTarget.Element elementId ) ->
+                    ContainerCmd.scrollWithConfig containerId elementId completionMsg config
+
+                ( containerId, ScrollTarget.Coordinates x y ) ->
+                    ContainerCmd.scrollToCoordinatesWithConfig containerId x y completionMsg config
+
+                ( containerId, ScrollTarget.Top ) ->
+                    ContainerCmd.scrollToTopWithConfig containerId completionMsg config
+
+                ( containerId, ScrollTarget.Bottom ) ->
+                    ContainerCmd.scrollToBottomWithConfig containerId completionMsg config
+
+                ( containerId, ScrollTarget.Center ) ->
+                    ContainerCmd.scrollToCenterWithConfig containerId completionMsg config
+
+                _ ->
+                    Cmd.none
+    in
+    scrollTargets
+        |> List.map createScrollCmd
+        |> Cmd.batch
 
 
 {-| Create scroll animation from AnimBuilder.
@@ -565,6 +638,15 @@ updateScrollAnimation deltaMs animation =
             , currentX = newCurrentX
             , currentY = newCurrentY
         }
+
+
+subscriptions : (AnimationMsg -> msg) -> AnimState -> Sub msg
+subscriptions toMsg animationState =
+    if isAnimationRunning animationState then
+        Browser.Events.onAnimationFrameDelta (AnimationFrame >> toMsg)
+
+    else
+        Sub.none
 
 
 
