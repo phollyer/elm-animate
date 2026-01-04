@@ -3,10 +3,10 @@ module Anim.Engine.Scroll exposing
     , toCmd
     , ScrollError(..), ScrollResult, toTask
     , animate
+    , AnimationMsg, update, subscriptions
     , duration, speed
     , easing
     , delay
-    , AnimationMsg, update, subscriptions
     , isAnimationRunning, getDuration
     , getPosition, getPositionXY, getPositionX, getPositionY
     )
@@ -40,6 +40,13 @@ that can target specific elements or coordinates within the document or scrollab
 @docs animate
 
 
+# Update
+
+**Note:** Only required for stateful subscription-based animations. Not needed for Cmd or Task based scrolling.
+
+@docs AnimationMsg, update, subscriptions
+
+
 # Global Settings
 
 These settings will be used for all scroll animations unless overridden on a per-scroll basis.
@@ -58,13 +65,6 @@ These settings will be used for all scroll animations unless overridden on a per
 ## Delay
 
 @docs delay
-
-
-# Update
-
-**Note:** Only required for stateful subscription-based animations. Not needed for Cmd or Task based scrolling.
-
-@docs AnimationMsg, update, subscriptions
 
 
 # Query
