@@ -430,14 +430,8 @@ getPositionY =
 
 -}
 isAnimationRunning : String -> AnimState -> Bool
-isAnimationRunning containerId animState =
-    -- Check if there's an animation running for this specific container
-    case InternalScroll.getScrollPosition containerId animState of
-        Just _ ->
-            InternalScroll.isAnimationRunning animState
-
-        Nothing ->
-            False
+isAnimationRunning =
+    InternalScroll.isContainerAnimating
 
 
 {-| Get the duration of the scroll animation for a specific container.
@@ -455,14 +449,8 @@ Returns `Nothing` if no animation is running for the specified container.
 
 -}
 getDuration : String -> AnimState -> Maybe Int
-getDuration containerId animState =
-    -- If this container has a current position, it means it's being animated
-    case InternalScroll.getScrollPosition containerId animState of
-        Just _ ->
-            InternalScroll.getDuration animState
-
-        Nothing ->
-            Nothing
+getDuration =
+    InternalScroll.getContainerDuration
 
 
 {-| Execute scroll animations as a command.

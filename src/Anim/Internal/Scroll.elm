@@ -9,6 +9,7 @@ module Anim.Internal.Scroll exposing
     , duration
     , easing
     , getContainer
+    , getContainerDuration
     , getDuration
     , getGlobalSettings
     , getScrollPosition
@@ -18,6 +19,7 @@ module Anim.Internal.Scroll exposing
     , getScrollTargets
     , init
     , isAnimationRunning
+    , isContainerAnimating
     , setAxis
     , setContainer
     , setOffset
@@ -637,6 +639,26 @@ containerIdMatches id containerId =
 
         ElementId elementId ->
             id == elementId
+
+
+{-| Check if a specific container is currently animating.
+-}
+isContainerAnimating : String -> AnimState -> Bool
+isContainerAnimating containerId (AnimState animData) =
+    animData.animations
+        |> Dict.values
+        |> List.any (\anim -> containerIdMatches containerId anim.config.containerId)
+
+
+{-| Get the duration for a specific container's animation.
+-}
+getContainerDuration : String -> AnimState -> Maybe Int
+getContainerDuration containerId (AnimState animData) =
+    animData.animations
+        |> Dict.values
+        |> List.filter (\anim -> containerIdMatches containerId anim.config.containerId)
+        |> List.head
+        |> Maybe.map (\anim -> round anim.durationMs)
 
 
 
