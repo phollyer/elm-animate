@@ -6,9 +6,9 @@ module Anim.Engine.CSS exposing
     , animate, TransformOrder(..), animateOrder
     , perspective
     , perspectiveStyles, perspectiveWith
-    , Event(..), handleEvent
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
+    , Event(..), handleEvent
     , duration, speed
     , easing
     , delay
@@ -36,7 +36,7 @@ over how the CSS is integrated into your application.
 
 **Choosing Between Transforms and Keyframes**
 
-The choice between transforms and keyframes is the only decision you need to make when using this engine,
+The choice between transforms and keyframes is the main decision you need to make when using this engine,
 creating animations with either approach is exactly the same using the [AnimBuilder](#AnimBuilder) API.
 
 **Use Transforms for:**
@@ -62,10 +62,7 @@ For CSS transform animations, you just need to apply the generated HTML attribut
 
 ## Keyframe Animations
 
-For Keyframe animations, you would create your Keyframes string, add it to a `<style>` node in your DOM,
-then apply the animation style attribute directly to the element you want to animate.
-
-The following functions help with this process:
+For Keyframe animations, you also need to add the generated keyframes to a node in your DOM.
 
 @docs keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
 
@@ -84,8 +81,8 @@ The following functions help with this process:
 
 # 3D Animations
 
-When using 3D transforms with Position, Rotate, or Scale animations, you need to set a perspective
-to give a sense of depth. Without perspective, 3D transformations will have no visual effect, and will appear flat.
+For 3D animations you need to set a perspective
+to give a sense of depth. Without perspective, 3D animations will have no visual effect, and will appear flat.
 
 
 ## Perspective
@@ -103,26 +100,20 @@ to give a sense of depth. Without perspective, 3D transformations will have no v
 CSS animations and transitions can trigger events when they start, end, or are cancelled. You have two options for handling
 these events in your application:
 
-1.  **Automatic Event Handling:** Use the [htmlAttributesWithEvents](#htmlAttributesWithEvents) or [animationStyleAttributeWithEvents](#animationStyleAttributeWithEvents) functions to automatically add event handlers
-    to your elements. These handlers will generate [Event](#Event) messages that you can process in your update function.
+1.  **Manual Event Handling:** Manually add event handlers to your elements using the provided event handler functions. This is the recommended approach for
+    fire-and-forget animations where you don't track state in your model.
 
-2.  **Manual Event Handling:** Manually add event handlers to your elements using the provided event handler functions:
+2.  **Automatic Event Handling**: Generate [Event](#Event) messages that you can process in your update function.
+    This is the recommended approach when tracking animation state in your model.
 
-    [onAnimationStart](#onAnimationStart), [onAnimationEnd](#onAnimationEnd), [onAnimationIteration](#onAnimationIteration), [onAnimationCancel](#onAnimationCancel)
-
-    [onTransitionStart](#onTransitionStart), [onTransitionEnd](#onTransitionEnd), [onTransitionRun](#onTransitionRun), [onTransitionCancel](#onTransitionCancel)
-
-You should only use one of these approaches at a time. Mixing both can lead to unexpected behavior as they don't play well together.
-
-
-## Automatic Event Handling
-
-@docs Event, handleEvent
+You should only use one of these approaches at a time. Mixing both for the same animation can lead to unexpected behavior as they don't play well together.
 
 
 ## Manual Event Handling
 
-Animation events are different from transition events, so both types of events can be handled using the following functions:
+**Note**: Manual event handling is for fire-and-forget animations where you don't track state in your model.
+
+Animation events are different from transition events, so both types of events can be handled using the following functions.
 
 
 ### Keyframe Animation Events
@@ -133,6 +124,13 @@ Animation events are different from transition events, so both types of events c
 ### Transform Animation Events
 
 @docs onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
+
+
+## Automatic Event Handling
+
+**Note**: Automatic event handling is for when you are tracking animation state in your model.
+
+@docs Event, handleEvent
 
 
 # Global Settings
@@ -154,7 +152,7 @@ These settings will be used for all property animations unless overridden on a p
   - **Keyframe Animations:** the easing is baked into the keyframes themselves, enabling complex easing
     curves like bounce and elastic to be accurately represented,
   - **Transform Animations:** complex easing curves like bounce and elastic have to be approximated by a `cubic-bezier` curve, meaning that
-    they **can not** be perfectly represented.
+    they **can not** be perfectly represented. _This is a limitation of CSS transitions, not the animation engine itself._
 
 
 ## Delay
@@ -168,6 +166,13 @@ These settings will be used for all property animations unless overridden on a p
 
 
 # Querying Animated Properties
+
+CSS animations, whether using transforms or keyframes, do not provide direct mid-flight access to the current values of properties.
+_This is a limitation of CSS itself._
+However, this engine tracks the start and end values of animated properties, allowing you to query these values as needed.
+
+If you need accurate mid-flight values, consider using the [Anim.Engine.Sub](Anim.EngineSub) or [Anim.Engine.WAAPI](Anim.Engine.WAAPI) engines instead,
+which provide real-time access to animated property values.
 
 
 ## Background Color
@@ -256,7 +261,7 @@ type Event
 
 This state keeps track of animations and their configurations.
 
-If you only need to create fire-and-forget animations you don't need to add this type to your model.
+**Note**: You do not need this for fire-and-forget animations.
 
 -}
 type alias AnimState =
@@ -364,21 +369,19 @@ builder =
 
 
 {-| This is an alternative to [animationStyleAttribute](#animationStyleAttribute) that also adds
-event handlers for animation lifecycle events.
+event handlers for animation lifecycle [Event](#Event)s.
 
 
 ### HTML Example
 
     import Anim.Engine.CSS as CSS
     import Html exposing (div, text)
-    import Html.Attributes exposing (id)
+
+    type Msg
+        = AnimationEvent CSS.Event
 
     div
-        ([ id "my-element"
-        , ...
-        ]
-            ++ CSS.animationStyleAttributeWithEvents "my-element" AnimationEvent animationState
-        )
+        (CSS.animationStyleAttributeWithEvents "my-element" AnimationEvent animationState)
         [ text "Animating element" ]
 
 For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/Element#htmlAttribute).
@@ -387,16 +390,14 @@ For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-la
 ### Elm UI Example
 
     import Anim.Engine.CSS as CSS
-    import Element exposing (el, htmlAttribute, map, text)
-    import Html.Attributes exposing (id)
+    import Element exposing (el, htmlAttribute, text)
+
+    type Msg
+        = AnimationEvent CSS.Event
 
     el
-        ([ htmlAttribute (id "my-element")
-         , ...
-         ]
-            ++ (List.map htmlAttribute <|
-                    CSS.animationStyleAttributeWithEvents "my-element" AnimationEvent animationState
-               )
+        (List.map htmlAttribute <|
+            CSS.animationStyleAttributeWithEvents "my-element" AnimationEvent animationState
         )
         (text "Animating element")
 
@@ -427,25 +428,19 @@ This creates the `animation` CSS property value that tells the browser which key
 
     import Anim.Engine.CSS as CSS
     import Html exposing (div, text)
-    import Html.Attributes exposing (id)
 
     div
-        [ Html.Attributes.id "my-element"
-        , CSS.animationStyleAttribute "my-element" animationState
-        ]
+        [ CSS.animationStyleAttribute "my-element" animationState ]
         [ text "Animating element" ]
 
 
 ### Elm UI Example
 
     import Anim.Engine.CSS as CSS
-    import Element exposing (el, htmlAttribute, map, text)
-    import Html.Attributes exposing (id)
+    import Element exposing (el, htmlAttribute, text)
 
     el
-        [ htmlAttribute (id "my-element")
-        , htmlAttribute (CSS.animationStyleAttribute "my-element" animationState)
-        ]
+        [ htmlAttribute (CSS.animationStyleAttribute "my-element" animationState) ]
         (text "Animating element")
 
 Using this function is equivalent to manually writing something like:
@@ -471,9 +466,8 @@ animationStyleAttribute =
     InternalCSS.animationStyleAttribute
 
 
-{-| Generate a `<style>` node containing keyframes for all animated elements.
-
-This creates a style node that can be added to your view to include all the keyframe definitions.
+{-| Generate a `<style>` node containing keyframes for all animated elements. You
+can add this node anywhere in your DOM, typically near the top.
 
     view model =
         div []
@@ -487,10 +481,8 @@ keyframesStyleNode =
     InternalCSS.keyframesStyleNode
 
 
-{-| Generate a `<style>` node containing keyframes for a specific element.
-
-This creates a style node for just one element, giving you fine-grained control over which
-keyframes are included in your DOM.
+{-| Generate a `<style>` node containing keyframes for a specific element, giving you fine-grained control over which
+keyframes are included in your DOM. You can add this node anywhere in your DOM, typically near the top.
 
     view model =
         div []
@@ -553,7 +545,7 @@ allComplete animState =
 
 {-| Handle animation lifecycle events.
 
-Call this function from your update function when you receive CSS animation events:
+Call this function from your update function.
 
     type Msg
         = CSSEvent CSS.Event
@@ -562,10 +554,10 @@ Call this function from your update function when you receive CSS animation even
     update msg model =
         case msg of
             CSSEvent event ->
-                { model | animState = CSS.handleEvent event model.animState }
+                { model | animations = CSS.handleEvent event model.animations }
 
     div
-        ([ ... ] ++ CSS.htmlAttributesWithEvents "element" CSSEvent model.animState)
+        (CSS.htmlAttributesWithEvents "element" CSSEvent model.animations)
         [ ... ]
 
 -}
@@ -992,7 +984,7 @@ delay =
     InternalCSS.delay
 
 
-{-| Set the global perspective value for 3D transforms.
+{-| Set the global perspective value.
 
 The perspective value determines the distance between the viewer and the `z = 0` plane.
 Smaller values create more dramatic 3D effects, while larger values create subtler effects.
@@ -1014,7 +1006,7 @@ perspective =
 {-| Generate HTML attributes for container elements that need perspective.
 
 This function generates the necessary CSS perspective attributes for container elements
-to properly display 3D transforms. Apply these attributes to the parent containers
+to properly display 3D animations. Apply these attributes to the parent containers
 of animated elements.
 
     animBuilder
@@ -1024,7 +1016,7 @@ of animated elements.
     div
         (CSS.perspectiveStyles "main-container" animationState)
         [ div
-            [ id "animated-element" ]
+            (CSS.htmlAttributes "animated-element" animationState)
             [ text "3D animated content" ]
         ]
 
@@ -1072,15 +1064,9 @@ perspectiveWith perspectiveValue =
 
     import Anim.Engine.CSS as CSS
     import Html exposing (div, text)
-    import Html.Attributes exposing (id)
 
     div
-        ([ id "my-element"
-         , ...
-         ]
-            ++ CSS.htmlAttributes "my-element" animationState
-
-        )
+        (CSS.htmlAttributes "my-element" animationState)
         [ text "Animating element" ]
 
 For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/Element#htmlAttribute).
@@ -1089,15 +1075,11 @@ For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-la
 ### Elm UI Example
 
     import Anim.Engine.CSS as CSS
-    import Element exposing (el, htmlAttribute, map, text)
+    import Element exposing (el, htmlAttribute, text)
 
     el
-        ([ htmlAttribute (Html.Attributes.id "my-element")
-         , ...
-         ]
-            ++ List.map htmlAttribute (CSS.htmlAttributes "my-element" animationState)
-
-        )
+        (List.map htmlAttribute <|
+            CSS.htmlAttributes "my-element" animationState)
         (text "Animating element")
 
 -}
@@ -1107,25 +1089,20 @@ htmlAttributes =
 
 
 {-| This is an alternative to [htmlAttributes](#htmlAttributes) that also adds
-event handlers for animation lifecycle events.
+event handlers for animation lifecycle [Event](#Event)s.
 
 
 ### HTML Example
 
     import Anim.Engine.CSS as CSS
     import Html exposing (div, text)
-    import Html.Attributes exposing (id)
 
     type Msg
         = AnimationEvent CSS.Event
         | ...
 
     div
-        ([ id "my-element"
-         , ...
-         ]
-            ++ CSS.htmlAttributesWithEvents "my-element" AnimationEvent animationState
-        )
+        (CSS.htmlAttributesWithEvents "my-element" AnimationEvent animationState)
         [ text "Animating element" ]
 
 For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/Element#htmlAttribute).
@@ -1134,20 +1111,15 @@ For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-la
 ### Elm UI Example
 
     import Anim.Engine.CSS as CSS
-    import Element exposing (el, htmlAttribute, map, text)
-    import Html.Attributes exposing (id)
+    import Element exposing (el, htmlAttribute, text)
 
     type Msg
         = AnimationEvent CSS.Event
         | ...
 
     el
-        ([ htmlAttribute (id "my-element")
-         , ...
-         ]
-            ++ (List.map htmlAttribute <|
-                    CSS.htmlAttributesWithEvents "my-element" AnimationEvent animationState
-               )
+        (List.map htmlAttribute <|
+            CSS.htmlAttributesWithEvents "my-element" AnimationEvent animationState
         )
         (text "Animating element")
 

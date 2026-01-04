@@ -17,40 +17,6 @@ This Engine converts [AnimBuilder](#AnimBuilder) configurations to scroll animat
 that can target specific elements or coordinates within the document or scrollable containers.
 
 
-## Usage
-
-    import Anim.Action.Scroll as ScrollAction
-    import Anim.Engine.Scroll as Scroll
-
-    -- Single scroll with subscription-based state management
-    ( scrollState, scrollCmd ) =
-        Scroll.init
-            |> Scroll.builder
-            |> Scroll.speed 500  -- global default
-            |> ScrollAction.for "document"
-            |> ScrollAction.toElement "section-1"
-            |> ScrollAction.build
-            |> Scroll.animate ScrollMsg
-
-    -- Single fire-and-forget Cmd with multiple scrolls in different containers
-    scrollCmd =
-        Scroll.init
-            |> Scroll.builder
-            |> Scroll.duration 1000  -- global default
-            |> ScrollAction.forDocument
-            |> ScrollAction.toTop
-            |> ScrollAction.easing BounceOut
-            |> ScrollAction.build
-            |> ScrollAction.for "container-1"
-            |> ScrollAction.toElement "target-1"
-            |> ScrollAction.speed 800  -- override global duration for this scroll
-            |> ScrollAction.build
-            |> ScrollAction.for "container-2"
-            |> ScrollAction.toElement "target-2"
-            |> ScrollAction.build
-            |> Scroll.toCmd ScrollCompleted
-
-
 # Build
 
 @docs AnimState, init, AnimBuilder, builder
@@ -157,7 +123,7 @@ type alias AnimationMsg =
     InternalScroll.AnimationMsg
 
 
-{-| Error type for scroll tasks with rich context information.
+{-| Error type for scroll Tasks.
 
 Provides details about what failed during a scroll operation:
 
@@ -204,11 +170,9 @@ type alias ScrollResult =
         }
 
     -- For fire-and-forget Cmd or Task based scrolling
-    scrollCmd =
-        Scroll.init
-            |> Scroll.builder
-            |> ... -- configure scroll animation
-            |> Scroll.toCmd ScrollCompleted
+    Scroll.init
+        |> Scroll.builder
+        |> ... -- configure scroll animation
 
 -}
 init : AnimState
@@ -228,11 +192,9 @@ Use this to start new scroll animations.
             |> Scroll.animate
 
     -- Start a new fire-and-forget scroll animation
-    scrollCmd =
-        Scroll.init
-            |> Scroll.builder
-            |>.. -- configure scroll animation
-            |> Scroll.toCmd ScrollCompleted
+    Scroll.init
+        |> Scroll.builder
+        |>.. -- configure scroll animation
 
 -}
 builder : AnimState -> AnimBuilder
@@ -488,7 +450,7 @@ a single command. The browser should then execute them simultaneously.
             |> ScrollAction.for "container-1"
             |> ScrollAction.toElement "target-1"
             |> ScrollAction.build
-            |> ScrollAction.for "document"
+            |> ScrollAction.forDocument
             |> ScrollAction.toTop
             |> ScrollAction.build
             |> Scroll.toCmd ScrollCompleted

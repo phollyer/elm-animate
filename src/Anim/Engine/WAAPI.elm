@@ -50,6 +50,13 @@ Then import and initialize it in your JavaScript code:
 
 # Animation Updates
 
+The JavaScript companion library sends real-time property updates back to Elm during animations,
+enabling mid-flight access to animated values via the `getCurrent*` query functions.
+
+Updates are throttled to approximately 60 FPS (~16ms intervals) regardless of display refresh rate.
+This balances real-time feedback with performance, preventing message flooding on high-refresh-rate
+displays (120Hz, 144Hz, etc.) while maintaining smooth visual feedback.
+
 @docs update
 
 
