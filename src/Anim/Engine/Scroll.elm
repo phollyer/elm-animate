@@ -102,7 +102,7 @@ These settings will be used for all scroll animations unless overridden on a per
 
 # Query
 
-**Note:** These functions are only applicable for stateful subscription-based animations.
+**Note:** These functions are only applicable for stateful subscription-based animations executed with [animate](#animate).
 
 
 ## Animation State
@@ -240,44 +240,6 @@ builder =
 Use this when you want to manage animation state, or receive updates
 during a scroll animation and intervene or react accordingly.
 
-    doScroll : Model -> ( Model, Cmd Msg )
-    doScroll model =
-        let
-            ( scrollState, scrollCmd ) =
-                model.scrollAnimations
-                    |> Scroll.builder
-                    |> ... -- configure scroll animation
-                    |> Scroll.animate ScrollMsg
-        in
-        ( { model | scrollAnimations = scrollState }
-        , scrollCmd
-        )
-
-    type Msg
-        = ScrollMsg Scroll.AnimationMsg
-        | ...
-
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
-        case msg of
-            ScrollMsg scrollMsg ->
-                let
-                    ( newScrollState, scrollCmd ) =
-                        Scroll.update ScrollMsg scrollMsg model.scrollAnimations
-                in
-                ( { model | scrollAnimations = newScrollState }
-                , scrollCmd
-                )
-
-            ...
-
-    subscriptions : Model -> Sub Msg
-    subscriptions model =
-        Sub.batch
-            [ Scroll.subscriptions ScrollMsg model.scrollAnimations
-            , ...
-            ]
-
 -}
 animate : (AnimationMsg -> msg) -> AnimBuilder -> ( AnimState, Cmd msg )
 animate =
@@ -324,8 +286,8 @@ speed =
         |> ... -- configure scroll animation
         |> Scroll.animate
 
-**Note**: Cmd and Task based scrolling should handle easings fine, although,
-because they run a sequence of Tasks or Cmds under the hood, they may not appear as smooth
+**Note**: Cmd and Task based scrolling _should handle easings fine_, although,
+because they run a sequence of Tasks under the hood, they may not appear as smooth
 as subscription-based scrolling animations.
 
 -}
@@ -375,8 +337,8 @@ subscriptions toMsg animationState =
 
     type Msg
         = ScrollMsg Scroll.AnimationMsg
+        | ...
 
-    -- ... other messages
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
         case msg of
@@ -475,22 +437,6 @@ The animation will run automatically without requiring subscriptions.
 When multiple scroll targets are configured, all scroll animations will be batched into
 a single command. The browser should then execute them simultaneously.
 
-    type Msg
-        = ScrollCompleted
-        | ...
-
-    scrollCmd =
-        Scroll.init
-            |> Scroll.builder
-            |> Scroll.duration 1000
-            |> ScrollAction.for "container-1"
-            |> ScrollAction.toElement "target-1"
-            |> ScrollAction.build
-            |> ScrollAction.forDocument
-            |> ScrollAction.toTop
-            |> ScrollAction.build
-            |> Scroll.toCmd ScrollCompleted
-
 -}
 toCmd : msg -> AnimBuilder -> Cmd msg
 toCmd completionMsg animBuilder =
@@ -562,20 +508,6 @@ toCmd completionMsg animBuilder =
 {-| Execute scroll animations as a [Task](https://package.elm-lang.org/packages/elm/core/latest/Task).
 
 Use this when you want to handle success or failure of the scroll animations, or compose them with other tasks.
-
-    type Msg
-        = GotScrollResult (Result ScrollError ScrollResult)
-        | ...
-
-    let
-        scrollCmd =
-            Scroll.init
-                |> Scroll.builder
-                |> ... -- configure scroll animation
-                |> Scroll.toTask
-                |> Task.attempt GotScrollResult
-    in
-    ( model, scrollCmd )
 
 When multiple scroll targets are configured, they execute in sequence (one after another, top to bottom in the builder pipeline).
 The task then returns [ScrollResult](#ScrollResult) for the last scroll on success, and [ScrollError](#ScrollError)
