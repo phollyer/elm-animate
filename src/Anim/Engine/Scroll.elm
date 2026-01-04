@@ -7,8 +7,8 @@ module Anim.Engine.Scroll exposing
     , duration, speed
     , easing
     , delay
-    , isAnimationRunning, getDuration
-    , getPosition, getPositionXY, getPositionX, getPositionY
+    , anyAnimationsRunning, isAnimationRunning, getMaxDuration, getDuration
+    , getPosition, getPositionX, getPositionY
     )
 
 {-| Smooth Document and Container scrolling.
@@ -102,17 +102,17 @@ These settings will be used for all scroll animations unless overridden on a per
 
 # Query
 
-**Note:** These functions are only applicable for stateful subscription-based animations executed with [animate](#animate).
+**Note:** These functions are only applicable for stateful, subscription-based animations executed with [animate](#animate).
 
 
 ## Animation State
 
-@docs isAnimationRunning, getDuration
+@docs anyAnimationsRunning, isAnimationRunning, getMaxDuration, getDuration
 
 
 ## Scroll Position
 
-@docs getPosition, getPositionXY, getPositionX, getPositionY
+@docs getPosition, getPositionX, getPositionY
 
 -}
 
@@ -367,23 +367,23 @@ update =
 
     view : Model -> Html Msg
     view model =
-        if Scroll.isAnimationRunning model.scrollAnimations then
+        if Scroll.anyAnimationsRunning model.scrollAnimations then
             div [ class "scrolling-indicator" ] [ text "Scrolling..." ]
 
         else
             div [] []
 
 -}
-isAnimationRunning : AnimState -> Bool
-isAnimationRunning =
+anyAnimationsRunning : AnimState -> Bool
+anyAnimationsRunning =
     InternalScroll.isAnimationRunning
 
 
 {-| Get the maximum duration of currently running scroll animations.
 Returns the longest duration when multiple animations are running.
 -}
-getDuration : AnimState -> Maybe Int
-getDuration =
+getMaxDuration : AnimState -> Maybe Int
+getMaxDuration =
     InternalScroll.getDuration
 
 
@@ -403,18 +403,6 @@ getPosition =
     InternalScroll.getScrollPosition
 
 
-{-| Get the current scroll position for a specific container.
-
-Returns X and Y coordinates as a tuple `(x, y)`.
-
-Returns `Nothing` if the container is not found or scroll position is unavailable.
-
--}
-getPositionXY : String -> AnimState -> Maybe ( Float, Float )
-getPositionXY =
-    InternalScroll.getScrollPositionXY
-
-
 {-| Get current horizontal scroll position for a specific container.
 -}
 getPositionX : String -> AnimState -> Maybe Float
@@ -427,6 +415,54 @@ getPositionX =
 getPositionY : String -> AnimState -> Maybe Float
 getPositionY =
     InternalScroll.getScrollPositionY
+
+
+
+-- CONTAINER-SPECIFIC QUERIES
+
+
+{-| Check if a scroll animation for a specific container is currently running. Use "document" for document body.
+
+    if Scroll.isAnimationRunning "my-container" model.scrollAnimations then
+        ...
+    else
+        ...
+
+-}
+isAnimationRunning : String -> AnimState -> Bool
+isAnimationRunning containerId animState =
+    -- Check if there's an animation running for this specific container
+    case InternalScroll.getScrollPosition containerId animState of
+        Just _ ->
+            InternalScroll.isAnimationRunning animState
+
+        Nothing ->
+            False
+
+
+{-| Get the duration of the scroll animation for a specific container.
+
+Returns `Nothing` if no animation is running for the specified container.
+
+    case Scroll.getDuration "my-container" model.scrollAnimations of
+        Just durationMs ->
+            -- Animation duration in milliseconds
+            ...
+
+        Nothing ->
+            -- No animation for this container
+            ...
+
+-}
+getDuration : String -> AnimState -> Maybe Int
+getDuration containerId animState =
+    -- If this container has a current position, it means it's being animated
+    case InternalScroll.getScrollPosition containerId animState of
+        Just _ ->
+            InternalScroll.getDuration animState
+
+        Nothing ->
+            Nothing
 
 
 {-| Execute scroll animations as a command.
