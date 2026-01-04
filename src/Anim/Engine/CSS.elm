@@ -25,7 +25,7 @@ module Anim.Engine.CSS exposing
 
 This Engine converts [AnimBuilder](#AnimBuilder) configurations to CSS animations which you can apply as either:
 
-1.  **CSS [transform](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transforms) attributes**, or,
+1.  **CSS transform attributes**, or,
 2.  **Keyframe animations**
 
 You decide how to apply the generated CSS to your elements in your view - giving you full control

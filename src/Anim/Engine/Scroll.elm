@@ -1,8 +1,8 @@
 module Anim.Engine.Scroll exposing
-    ( AnimState, init, AnimBuilder, builder
-    , toCmd
+    ( toCmd
     , ScrollError(..), ScrollResult, toTask
     , animate
+    , AnimState, init, AnimBuilder, builder
     , AnimationMsg, update, subscriptions
     , duration, speed
     , easing
@@ -14,12 +14,40 @@ module Anim.Engine.Scroll exposing
 {-| Smooth Document and Container scrolling.
 
 This Engine converts [AnimBuilder](#AnimBuilder) configurations to scroll animations
-that can target specific elements or coordinates within the document or scrollable containers.
+that can target the Document or scrollable containers as:
+
+1.  **Fire-and-forget** commands
+2.  **Tasks** that can be composed with other tasks
+3.  **Stateful subscription-based animations** that keep track of ongoing scrolls
 
 
-# Build
+## Design Decisions
 
-@docs AnimState, init, AnimBuilder, builder
+**Choosing Your Execution Method**
+
+The choice between `toCmd`, `toTask`, and `animate` is the main decision you need to make when using this engine.
+The way you configure animations using the [AnimBuilder](#AnimBuilder) API is the same regardless of execution method.
+
+**Use `toCmd` for:**
+
+  - Fire-and-forget scrolling
+  - Simple use cases without error handling
+  - No state management or subscriptions
+  - Minimal boilerplate
+
+**Use `toTask` when you need:**
+
+  - Error handling (element not found, etc.)
+  - Task composition (chain multiple operations)
+  - Sequential scrolling with intermediate logic
+  - Integration with other task-based operations
+
+**Use `animate` when you need:**
+
+  - Real-time position tracking during scroll
+  - Ability to query scroll state mid-flight
+  - Ability to react to or interrupt ongoing scrolls
+  - Duration and progress information
 
 
 # Execute
@@ -38,6 +66,11 @@ that can target specific elements or coordinates within the document or scrollab
 ## Stateful Animation
 
 @docs animate
+
+
+# Build
+
+@docs AnimState, init, AnimBuilder, builder
 
 
 # Update
@@ -442,7 +475,10 @@ The animation will run automatically without requiring subscriptions.
 When multiple scroll targets are configured, all scroll animations will be batched into
 a single command. The browser should then execute them simultaneously.
 
-    -- Multiple scrolls happening at once
+    type Msg
+        = ScrollCompleted
+        | ...
+
     scrollCmd =
         Scroll.init
             |> Scroll.builder
