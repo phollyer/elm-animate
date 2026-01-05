@@ -471,31 +471,32 @@ getDuration =
 
 **To run multiple scrolls concurrently:** Simply configure _multiple scroll targets_ in the same [AnimBuilder](#AnimBuilder) pipeline.
 
-**Completion behavior:**
-
-  - The completion message fires when the scroll animation finishes (success or failure)
-  - With multiple targets, the message fires once per scroll as each completes
-  - The `String` parameter identifies the target: element ID for element targets, or a description like "document:top" for position targets
-
 
 ### **How it works:**
 
 **Single scroll target:**
 
-1.  Animation steps are pre-calculated based on distance and timing
-2.  Steps are sequenced into a Task chain
-3.  Task is converted to a Cmd via `Task.attempt`
-4.  Elm runtime executes each step in sequence
-5.  Completion message fires with target identifier
+1.  DOM queries retrieve current scroll position and target element position
+2.  Distance is calculated from current to target position
+3.  Animation steps are pre-calculated based on distance, timing and easing
+4.  Animation steps are sequenced into a `Task` chain
+5.  `Task` chain is converted to a `Cmd` via `Task.attempt`
+6.  Elm runtime receives the `Cmd` and executes each step in sequence
+7.  Completion message fires with target identifier
 
 **Multiple scroll targets:**
 
-  - Each scroll is independently converted to a Cmd (following steps 1-4 above)
-  - All Cmds are batched using `Cmd.batch`
-  - `Cmd.batch` initiates all commands immediately without waiting
-  - All scroll animations start at the same time and run concurrently
+  - Each scroll is independently converted to a `Cmd` (following steps 1-5 above)
+  - All `Cmd`s are `Cmd.batch`ed into a single `Cmd`
+  - Elm runtime receives the single `Cmd` and executes all scrolls concurrently
   - Browser's rendering engine handles all simultaneous scroll animations in parallel
   - Each scroll fires the completion message independently as it finishes
+
+**Completion behavior:**
+
+  - The completion message fires when the scroll animation finishes (success or failure)
+  - With multiple targets, the message fires once per target as each scroll completes
+  - The `String` parameter identifies the target: element ID for element targets, or a description like "document:top" for position targets
 
 -}
 toCmd : (String -> msg) -> AnimBuilder -> Cmd msg
