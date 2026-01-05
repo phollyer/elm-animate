@@ -242,8 +242,8 @@ setContainer containerId animBuilder =
 -- ANIMATION EXECUTION
 
 
-toCmd : msg -> AnimBuilder -> Cmd msg
-toCmd completionMsg animBuilder =
+toCmd : (String -> msg) -> AnimBuilder -> Cmd msg
+toCmd toMsg animBuilder =
     let
         scrollTargets =
             getScrollTargets animBuilder
@@ -269,8 +269,35 @@ toCmd completionMsg animBuilder =
             let
                 containerType =
                     ScrollTarget.getContainerId target
+
+                targetType =
+                    ScrollTarget.getTargetType target
+
+                -- Generate identifier for this scroll target
+                targetId =
+                    case targetType of
+                        ScrollTarget.Element elementId ->
+                            elementId
+
+                        ScrollTarget.Coordinates x y ->
+                            containerType ++ ":coordinates:" ++ String.fromFloat x ++ "," ++ String.fromFloat y
+
+                        ScrollTarget.Top ->
+                            containerType ++ ":top"
+
+                        ScrollTarget.Bottom ->
+                            containerType ++ ":bottom"
+
+                        ScrollTarget.Center ->
+                            containerType ++ ":center"
+
+                        ScrollTarget.Percentage x y ->
+                            containerType ++ ":percentage:" ++ String.fromFloat (x * 100) ++ "," ++ String.fromFloat (y * 100)
+
+                completionMsg =
+                    toMsg targetId
             in
-            case ( containerType, ScrollTarget.getTargetType target ) of
+            case ( containerType, targetType ) of
                 ( "document", ScrollTarget.Element elementId ) ->
                     DocumentCmd.scrollWithConfig elementId completionMsg config
 

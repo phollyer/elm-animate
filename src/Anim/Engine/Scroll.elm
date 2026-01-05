@@ -17,32 +17,31 @@ This Engine converts [AnimBuilder](#AnimBuilder) configurations to scroll animat
 that can target the Document or scrollable containers as:
 
 1.  **Fire-and-forget** commands
-2.  **Tasks** that can be composed with other tasks
+2.  **Tasks** that can be composed with other tasks, or,
 3.  **Stateful subscription-based animations** that keep track of ongoing scrolls
 
 
 ## Design Decisions
 
-**Choosing Your Execution Method**
+**Choose Your Execution Method**
 
-The choice between `toCmd`, `toTask`, and `animate` is the main decision you need to make when using this engine.
-The way you configure animations using the [AnimBuilder](#AnimBuilder) API is the same regardless of execution method.
+The choice between **fire-and-forget**, **task-based**, and **stateful subscription-based** execution is the main decision you need to make when using this engine.
+The way you configure scroll animations using the [AnimBuilder](#AnimBuilder) API is the same regardless of execution method.
 
-**Use `toCmd` for:**
+**For fire-and-forget scrolling, use [toCmd](#cmd) for:**
 
-  - Fire-and-forget scrolling
   - Simple use cases without error handling
   - No state management or subscriptions
   - Minimal boilerplate
 
-**Use `toTask` when you need:**
+**For Task-based scrolling, use [toTask](#task) when you need:**
 
   - Error handling (element not found, etc.)
-  - Task composition (chain multiple operations)
   - Sequential scrolling with intermediate logic
+  - No state management or subscriptions
   - Integration with other task-based operations
 
-**Use `animate` when you need:**
+**For stateful subscription-based scrolling, use [animate](#stateful-animation) when you need:**
 
   - Real-time position tracking during scroll
   - Ability to query scroll state mid-flight
@@ -55,10 +54,15 @@ The way you configure animations using the [AnimBuilder](#AnimBuilder) API is th
 
 ## Cmd
 
+Use `Cmd` execution for fire-and-forget scrolling when you don't need state management or error handling.
+The animation will run automatically without requiring subscriptions, and any errors will be ignored.
+
 @docs toCmd
 
 
 ## Task
+
+Use this when you want to handle success or failure of the scroll animations, or compose them with other tasks.
 
 @docs ScrollError, ScrollResult, toTask
 
@@ -154,7 +158,7 @@ type alias AnimationMsg =
     InternalScroll.AnimationMsg
 
 
-{-| Error type for scroll Tasks.
+{-| Error type for failed scroll [Task](http://package.elm-lang.org/packages/elm/core/latest/Task)s.
 
 Provides details about what failed during a scroll operation:
 
@@ -171,7 +175,7 @@ type ScrollError
         }
 
 
-{-| Result type for successful scroll tasks with context information.
+{-| Result type for successful scroll [Task](http://package.elm-lang.org/packages/elm/core/latest/Task)s.
 
 Provides details about the completed scroll operation:
 
@@ -233,10 +237,13 @@ builder =
     InternalScroll.builder
 
 
-{-| Execute a scroll animation as a Cmd, keeping the animation state updated.
+{-| Execute scroll animations using subscription-based animation with state management.
 
-Use this when you want to manage animation state, or receive updates
-during a scroll animation and intervene or react accordingly.
+**To run multiple scrolls concurrently:** Simply configure _multiple scroll targets_ in the same [AnimBuilder](#AnimBuilder).
+
+When _multiple scroll targets_ are configured, each is converted to a `Cmd` (via `Task.attempt` under the hood)
+and then batched using `Cmd.batch` - the same way as [toCmd](#toCmd) does. The key difference is that [toCmd](#toCmd) batches the whole animation sequence, while each `Cmd` created by `animate` is for the next step
+in the subscription-based animation process, allowing you to track and manage ongoing scrolls.
 
 -}
 animate : (AnimationMsg -> msg) -> AnimBuilder -> ( AnimState, Cmd msg )
@@ -447,30 +454,63 @@ getDuration =
     InternalScroll.getContainerDuration
 
 
-{-| Execute scroll animations as a command.
+{-| Execute scroll animations as a [Cmd](https://package.elm-lang.org/packages/elm/core/latest/Cmd).
 
-Use this for fire-and-forget scrolling where you don't need state management.
-The animation will run automatically without requiring subscriptions.
+    ... -- Build your AnimBuilder
+    |> Scroll.toCmd ScrollCompleted
 
-When multiple scroll targets are configured, all scroll animations will be batched into
-a single command. The browser should then execute them simultaneously.
+    type Msg
+        = ScrollCompleted String
+        | ...
+
+    update msg model =
+        case msg of
+            ScrollCompleted targetId ->
+                -- targetId identifies which scroll completed
+                ...
+
+**To run multiple scrolls concurrently:** Simply configure _multiple scroll targets_ in the same [AnimBuilder](#AnimBuilder) pipeline.
+
+**Completion behavior:**
+
+  - The completion message fires when the scroll animation finishes (success or failure)
+  - With multiple targets, the message fires once per scroll as each completes
+  - The `String` parameter identifies the target: element ID for element targets, or a description like "document:top" for position targets
+
+
+### **How it works:**
+
+**Single scroll target:**
+
+1.  Animation steps are pre-calculated based on distance and timing
+2.  Steps are sequenced into a Task chain
+3.  Task is converted to a Cmd via `Task.attempt`
+4.  Elm runtime executes each step in sequence
+5.  Completion message fires with target identifier
+
+**Multiple scroll targets:**
+
+  - Each scroll is independently converted to a Cmd (following steps 1-4 above)
+  - All Cmds are batched using `Cmd.batch`
+  - `Cmd.batch` initiates all commands immediately without waiting
+  - All scroll animations start at the same time and run concurrently
+  - Browser's rendering engine handles all simultaneous scroll animations in parallel
+  - Each scroll fires the completion message independently as it finishes
 
 -}
-toCmd : msg -> AnimBuilder -> Cmd msg
+toCmd : (String -> msg) -> AnimBuilder -> Cmd msg
 toCmd =
     InternalScroll.toCmd
 
 
 {-| Execute scroll animations as a [Task](https://package.elm-lang.org/packages/elm/core/latest/Task).
 
-Use this when you want to handle success or failure of the scroll animations, or compose them with other tasks.
-
 When multiple scroll targets are configured, they execute in sequence (one after another, top to bottom in the builder pipeline).
 The task then returns [ScrollResult](#ScrollResult) for the last scroll on success, and [ScrollError](#ScrollError)
 on failure if any scroll fails (subsequent scrolls will not execute).
 
-To run multiple scrolls simultaneously and/or get individual results per scroll, create separate tasks for each scroll target
-and `Cmd.batch` them together as a single Cmd.
+**To run multiple scrolls concurrently with individual error handling:** Create separate [AnimBuilder](#AnimBuilder)s for each scroll,
+convert each to a `Cmd` via `Task.attempt`, then batch them with `Cmd.batch`.
 
 -}
 toTask : AnimBuilder -> Task ScrollError ScrollResult

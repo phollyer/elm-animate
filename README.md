@@ -37,7 +37,7 @@ This makes it easy to start off with the CSS Engine for simple CSS transitions, 
 
 ---
 
-### 1. [Anim.Engine.CSS](Anim-Engine-CSS) 
+### 1. [Anim.Engine.CSS](Anim-Engine-CSS#design-decisions) 
 
 - **Best for:** Simple, high-performance transitions.
 - **API:** Generates CSS for browser-native transitions.
