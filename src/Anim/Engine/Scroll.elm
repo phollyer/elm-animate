@@ -127,7 +127,8 @@ These settings will be used for all scroll animations unless overridden on a per
 
 ## How To Use
 
-You can configure and execute single or multiple scroll animations using any of the three execution methods, as described below.
+You can configure and execute single or multiple scroll animations using any of the three execution methods.
+Here's a quick guide on how to set up each method.
 
 
 ### Cmd Execution
@@ -135,13 +136,13 @@ You can configure and execute single or multiple scroll animations using any of 
 **Single scroll:**
 
   - Configure one scroll target in your [AnimBuilder](#AnimBuilder) pipeline
-  - Call `toCmd` with your completion message constructor
+  - Call [toCmd](#cmd) with your completion message constructor
   - Handle the completion message in your update function
 
 **Multiple concurrent scrolls:**
 
   - Configure multiple scroll targets in the same [AnimBuilder](#AnimBuilder) pipeline
-  - Call `toCmd` with your completion message constructor
+  - Call [toCmd](#cmd) with your completion message constructor
   - Handle multiple completion messages (one per target) in your update function
 
 
@@ -150,24 +151,24 @@ You can configure and execute single or multiple scroll animations using any of 
 **Single scroll:**
 
   - Configure one scroll target in your [AnimBuilder](#AnimBuilder) pipeline
-  - Call `toTask` to get a `Task ScrollError ScrollResult`
-  - Convert to Cmd with `Task.attempt`
-  - Handle the `Result` in your update function
+  - Call [toTask](#task) to get a [Task](http://package.elm-lang.org/packages/elm/core/latest/Task) [ScrollError](#ScrollError) [ScrollResult](#ScrollResult)
+  - Convert to [Cmd](http://package.elm-lang.org/packages/elm/core/latest/Platform-Cmd) with [Task.attempt](http://package.elm-lang.org/packages/elm/core/latest/Task#attempt)
+  - Handle the [Result](http://package.elm-lang.org/packages/elm/core/latest/Result) [ScrollError](#ScrollError) [ScrollResult](#ScrollResult) in your update function
 
 **Multiple sequential scrolls:**
 
   - Configure multiple scroll targets in the same [AnimBuilder](#AnimBuilder) pipeline
-  - Call `toTask` to get a `Task ScrollError ScrollResult`
-  - Convert to Cmd with `Task.attempt` (scrolls execute one after another)
-  - Handle the `Result` in your update function (single result for last scroll or first error)
+  - Call [toTask](#task) to get a [Task](http://package.elm-lang.org/packages/elm/core/latest/Task) [ScrollError](#ScrollError) [ScrollResult](#ScrollResult)
+  - Convert to [Cmd](http://package.elm-lang.org/packages/elm/core/latest/Platform-Cmd) with [Task.attempt](http://package.elm-lang.org/packages/elm/core/latest/Task#attempt) (scrolls execute one after another)
+  - Handle the [Result](http://package.elm-lang.org/packages/elm/core/latest/Result) [ScrollError](#ScrollError) [ScrollResult](#ScrollResult) in your update function (single [ScrollResult](#ScrollResult) for last successful scroll or [ScrollError](#ScrollError) first error - subsequent scrolls not attempted)
 
 **Multiple concurrent scrolls with individual error handling:**
 
   - Create separate [AnimBuilder](#AnimBuilder)s for each scroll target
-  - Convert each to a `Task` with `toTask`
-  - Convert each `Task` to a `Cmd` with `Task.attempt`
-  - Batch all `Cmd`s with `Cmd.batch`
-  - Handle individual `Result`s for each scroll in your update function
+  - Convert each to a [Task](http://package.elm-lang.org/packages/elm/core/latest/Task) with [toTask](#task)
+  - Convert each [Task](http://package.elm-lang.org/packages/elm/core/latest/Task) to a [Cmd](http://package.elm-lang.org/packages/elm/core/latest/Platform-Cmd) with [Task.attempt](http://package.elm-lang.org/packages/elm/core/latest/Task#attempt)
+  - Batch all [Cmd](http://package.elm-lang.org/packages/elm/core/latest/Platform-Cmd)s with [Cmd.batch](http://package.elm-lang.org/packages/elm/core/latest/Platform-Cmd#batch)
+  - Handle individual [Result](http://package.elm-lang.org/packages/elm/core/latest/Result) [ScrollError](#ScrollError) [ScrollResult](#ScrollResult) for each scroll in your update function
 
 
 ### Stateful Subscription-based Animation
@@ -176,7 +177,7 @@ You can configure and execute single or multiple scroll animations using any of 
 
   - Add [AnimState](#AnimState) to your model
   - Configure one scroll target in your [AnimBuilder](#AnimBuilder) pipeline
-  - Call `animate` with your message constructor
+  - Call [animate](#animate) with your message constructor
   - Store the returned [AnimState](#AnimState) in your model
   - Add [subscriptions](#subscriptions) to your subscriptions function
   - Handle animation messages in your update function with [update](#update)
@@ -185,7 +186,7 @@ You can configure and execute single or multiple scroll animations using any of 
 
   - Add [AnimState](#AnimState) to your model
   - Configure multiple scroll targets in the same [AnimBuilder](#AnimBuilder) pipeline
-  - Call `animate` with your message constructor
+  - Call [animate](#animate) with your message constructor
   - Store the returned [AnimState](#AnimState) in your model
   - Add [subscriptions](#subscriptions) to your subscriptions function
   - Handle animation messages in your update function with [update](#update)
