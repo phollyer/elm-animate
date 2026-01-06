@@ -48,12 +48,17 @@ The way you configure scroll animations using the [AnimBuilder](#AnimBuilder) AP
   - Ability to react to or interrupt ongoing scrolls
   - Duration and progress information
 
+**Note**: Because [Cmd](#cmd) and [Task](#task) based scrolling both execute a sequence of Tasks under the hood,
+which Elm executes as fast as it can, they may not appear as smooth as subscription-based
+scrolling animations. They should be perfectly sufficient for most use cases, but if you find the animation
+is not smooth enough, consider using subscription-based scrolling with [animate](#animate) instead.
+
+**Further Reading**: [How To Use](#how-to-use) and [Under The Hood](#under-the-hood) sections.
+
+---
+
 
 # Execute
-
-For how to use each execution method, see the [How To Use](#how-to-use) section towards the end of this document.
-
-For technical details on how each execution method works under the hood, see the [Under The Hood](#under-the-hood) section at the end of this document.
 
 
 ## Cmd
@@ -66,12 +71,14 @@ The animation will run automatically without requiring subscriptions, and any er
 
 ## Task
 
-Use this when you want to handle success or failure of the scroll animations, or compose them with other tasks.
+Use `Task` execution when you want to handle success or failure of the scroll animations, or compose them with other tasks.
 
 @docs ScrollError, ScrollResult, toTask
 
 
 ## Stateful Animation
+
+Use stateful subscription-based animations when you need to track ongoing scrolls, query their state, or react to their progress.
 
 @docs animate
 
@@ -90,7 +97,7 @@ Use this when you want to handle success or failure of the scroll animations, or
 
 # Global Settings
 
-These settings will be used for all scroll animations unless overridden on a per-scroll basis.
+These settings will be used for all scroll animations unless overridden on a per-[scroll](Anim.Action.Scroll#build) basis.
 
 
 ## Timing
@@ -210,7 +217,7 @@ For the curious, here's how the different execution methods work after following
 4.  Animation steps are sequenced into a `Task` chain
 5.  `Task` chain is converted to a `Cmd` via `Task.attempt`
 6.  Elm runtime receives the `Cmd` and executes each step in the `Task` chain in sequence
-7.  Completion message fires with target identifier
+7.  Completion message fires with target identifier - errors are silently ignored
 
 **Multiple scroll targets:**
 
@@ -218,7 +225,7 @@ For the curious, here's how the different execution methods work after following
   - All `Cmd`s are `Cmd.batch`ed into a single `Cmd`
   - Elm runtime receives the single `Cmd` and executes all scrolls concurrently
   - Browser's rendering engine handles all simultaneous scroll animations in parallel
-  - Each scroll fires the completion message independently as it finishes
+  - Each scroll fires the completion message independently as it finishes - errors are silently ignored
 
 **Completion behavior:**
 
@@ -389,9 +396,8 @@ init =
     InternalScroll.init
 
 
-{-| Turn the [AnimState](#AnimState) into an [AnimBuilder](#AnimBuilder).
-
-Use this to start new scroll animations.
+{-| Turn the [AnimState](#AnimState) into an [AnimBuilder](#AnimBuilder) in order to
+start building a new scroll animation.
 
     -- Start a new fire-and-forget scroll animation
     Scroll.init
@@ -410,7 +416,7 @@ builder =
     InternalScroll.builder
 
 
-{-| Execute scroll animations using subscription-based animation with state management.
+{-| Execute a subscription-based scroll animation with state management.
 
     (newAnimState, cmd) =
         model.scrollAnimations
@@ -481,10 +487,6 @@ speed =
         |> Scroll.easing EaseInOutQuad
         |> ... -- configure scroll animation
         |> Scroll.animate
-
-**Note**: Cmd and Task based scrolling _should handle easings fine_, although,
-because they run a sequence of Tasks under the hood, they may not appear as smooth
-as subscription-based scrolling animations.
 
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
