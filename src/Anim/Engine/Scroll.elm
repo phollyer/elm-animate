@@ -51,6 +51,10 @@ The way you configure scroll animations using the [AnimBuilder](#AnimBuilder) AP
 
 # Execute
 
+For how to use each execution method, see the [How To Use](#how-to-use) section towards the end of this document.
+
+For technical details on how each execution method works under the hood, see the [Under The Hood](#under-the-hood) section at the end of this document.
+
 
 ## Cmd
 
@@ -79,7 +83,7 @@ Use this when you want to handle success or failure of the scroll animations, or
 
 # Update
 
-**Note:** Only required for stateful subscription-based animations. Not needed for Cmd or Task based scrolling.
+**Note:** Only required for stateful subscription-based animations. Not needed for [Cmd](#cmd) or [Task](#task) based scrolling.
 
 @docs AnimationMsg, update, subscriptions
 
@@ -118,6 +122,173 @@ These settings will be used for all scroll animations unless overridden on a per
 
 @docs getPosition, getPositionX, getPositionY
 
+---
+
+
+## How To Use
+
+You can configure and execute single or multiple scroll animations using any of the three execution methods, as described below.
+
+
+### Cmd Execution
+
+**Single scroll:**
+
+  - Configure one scroll target in your [AnimBuilder](#AnimBuilder) pipeline
+  - Call `toCmd` with your completion message constructor
+  - Handle the completion message in your update function
+
+**Multiple concurrent scrolls:**
+
+  - Configure multiple scroll targets in the same [AnimBuilder](#AnimBuilder) pipeline
+  - Call `toCmd` with your completion message constructor
+  - Handle multiple completion messages (one per target) in your update function
+
+
+### Task Execution
+
+**Single scroll:**
+
+  - Configure one scroll target in your [AnimBuilder](#AnimBuilder) pipeline
+  - Call `toTask` to get a `Task ScrollError ScrollResult`
+  - Convert to Cmd with `Task.attempt`
+  - Handle the `Result` in your update function
+
+**Multiple sequential scrolls:**
+
+  - Configure multiple scroll targets in the same [AnimBuilder](#AnimBuilder) pipeline
+  - Call `toTask` to get a `Task ScrollError ScrollResult`
+  - Convert to Cmd with `Task.attempt` (scrolls execute one after another)
+  - Handle the `Result` in your update function (single result for last scroll or first error)
+
+**Multiple concurrent scrolls with individual error handling:**
+
+  - Create separate [AnimBuilder](#AnimBuilder)s for each scroll target
+  - Convert each to a `Task` with `toTask`
+  - Convert each `Task` to a `Cmd` with `Task.attempt`
+  - Batch all `Cmd`s with `Cmd.batch`
+  - Handle individual `Result`s for each scroll in your update function
+
+
+### Stateful Subscription-based Animation
+
+**Single scroll:**
+
+  - Add [AnimState](#AnimState) to your model
+  - Configure one scroll target in your [AnimBuilder](#AnimBuilder) pipeline
+  - Call `animate` with your message constructor
+  - Store the returned [AnimState](#AnimState) in your model
+  - Add [subscriptions](#subscriptions) to your subscriptions function
+  - Handle animation messages in your update function with [update](#update)
+
+**Multiple concurrent scrolls:**
+
+  - Add [AnimState](#AnimState) to your model
+  - Configure multiple scroll targets in the same [AnimBuilder](#AnimBuilder) pipeline
+  - Call `animate` with your message constructor
+  - Store the returned [AnimState](#AnimState) in your model
+  - Add [subscriptions](#subscriptions) to your subscriptions function
+  - Handle animation messages in your update function with [update](#update)
+  - Use [query functions](#query) to track individual scroll progress
+
+---
+
+
+## Under The Hood
+
+For the curious, here's how the different execution methods work after following the [How To Use](#how-to-use) guide.
+
+
+### Cmd Execution
+
+**Single scroll target:**
+
+1.  DOM queries retrieve current scroll position and target element position
+2.  Distance is calculated from current to target position
+3.  Animation steps are pre-calculated based on distance, timing and easing
+4.  Animation steps are sequenced into a `Task` chain
+5.  `Task` chain is converted to a `Cmd` via `Task.attempt`
+6.  Elm runtime receives the `Cmd` and executes each step in the `Task` chain in sequence
+7.  Completion message fires with target identifier
+
+**Multiple scroll targets:**
+
+  - Each scroll is independently converted to a `Cmd` (following steps 1-5 above)
+  - All `Cmd`s are `Cmd.batch`ed into a single `Cmd`
+  - Elm runtime receives the single `Cmd` and executes all scrolls concurrently
+  - Browser's rendering engine handles all simultaneous scroll animations in parallel
+  - Each scroll fires the completion message independently as it finishes
+
+**Completion behavior:**
+
+  - The completion message fires when the scroll animation finishes (success or failure)
+  - With multiple targets, the message fires once per target as each scroll completes
+  - The `String` parameter identifies the target: element ID for element targets, or a description like "document:top" for position targets
+
+
+### Task Execution
+
+**Single scroll target:**
+
+1.  DOM queries retrieve current scroll position and target element position
+2.  Distance is calculated from current to target position
+3.  Animation steps are pre-calculated based on distance, timing and easing
+4.  Steps are sequenced into a `Task` chain
+5.  `Task` is executed when converted to `Cmd` with [Task.attempt](https://package.elm-lang.org/packages/elm/core/latest/Task#attempt) or composed with other tasks
+6.  Returns [ScrollResult](#ScrollResult) on success or [ScrollError](#ScrollError) on failure
+
+**Multiple, sequential scroll targets:**
+
+  - Each scroll is processed sequentially (one after another, in pipeline order)
+  - First scroll goes through steps 1-5, then second scroll begins
+  - Returns [ScrollError](#ScrollError) for the first scroll that fails, subsequent scrolls are not attempted
+  - Returns [ScrollResult](#ScrollResult) only if all scrolls succeed, with details of the last completed scroll
+
+**Multiple, concurrent scroll targets:**
+
+  - Each scroll is independently converted to a `Task` (following steps 1-5 above)
+  - Each `Task` is independently converted to a `Cmd` via [Task.attempt](https://package.elm-lang.org/packages/elm/core/latest/Task#attempt)
+  - All `Cmd`s are `Cmd.batch`ed into a single `Cmd`
+  - Elm runtime receives the single `Cmd` and executes all scrolls concurrently
+  - Browser's rendering engine handles all simultaneous scroll animations in parallel
+  - Each scroll returns its own [ScrollResult](#ScrollResult) or [ScrollError](#ScrollError) independently
+
+**Error handling:**
+
+  - Returns [ScrollResult](#ScrollResult) on success with details about the completed scroll
+  - Returns [ScrollError](#ScrollError) on failure with details about what failed
+  - Errors typically occur when target elements don't exist in the DOM
+  - Can be composed with other tasks using [Task.andThen](https://package.elm-lang.org/packages/elm/core/latest/Task#andThen), [Task.map](https://package.elm-lang.org/packages/elm/core/latest/Task#map), etc.
+
+
+### Stateful Subscription-based Animation
+
+**Single scroll target:**
+
+1.  DOM queries retrieve current scroll position and target element position
+2.  Distance is calculated from current to target position
+3.  AnimState is updated with new animation data
+4.  Initial Cmd is returned (may trigger immediate first step)
+5.  [subscriptions](#subscriptions) listen for animation frame updates
+6.  Each frame: current position is updated and next scroll step is calculated
+7.  Animation continues until target is reached
+
+**Multiple scroll targets:**
+
+  - Each scroll independently goes through steps 1-7 above
+  - All scroll animations are tracked in the same AnimState
+  - [subscriptions](#subscriptions) handle all animations simultaneously
+  - All scroll animations run concurrently
+  - Each animation can be queried independently during execution
+  - Animations complete independently as they reach their targets
+
+**State management:**
+
+  - Returns updated [AnimState](#AnimState) that must be stored in your model
+  - Requires [subscriptions](#subscriptions) to be active for animation to progress
+  - Enables real-time [queries](#query) during animation (position, duration, status)
+  - Allows intervention and reaction to ongoing animations
+
 -}
 
 import Anim.Easing exposing (Easing)
@@ -133,7 +304,10 @@ import Browser.Dom as Dom
 import Task exposing (Task)
 
 
-{-| Animation builder for scroll animations
+{-| Animation builder type.
+
+This is used internally to configure scroll animations.
+
 -}
 type alias AnimBuilder =
     InternalScroll.AnimBuilder
@@ -145,7 +319,7 @@ type alias AnimBuilder =
 
     { model | scrollAnimations : Scroll.AnimState }
 
-You don't need to include this in your model if you only use `Cmd` or `Task` based scrolling.
+You don't need to include this in your model if you only use [Cmd](#cmd) or [Task](#task) based scrolling.
 
 -}
 type alias AnimState =
@@ -197,7 +371,7 @@ type alias ScrollResult =
 
 {-| Initialize empty scroll animation state.
 
-    -- For subscription-based scroll animations
+    -- For stateful subscription-based scroll animations
     init : Model
     init =
         { scrollAnimations = Scroll.init
@@ -206,7 +380,6 @@ type alias ScrollResult =
 
     -- For fire-and-forget Cmd or Task based scrolling
     Scroll.init
-        |> Scroll.builder
         |> ... -- configure scroll animation
 
 -}
@@ -215,21 +388,20 @@ init =
     InternalScroll.init
 
 
-{-| Turn the AnimState into an AnimBuilder.
+{-| Turn the [AnimState](#AnimState) into an [AnimBuilder](#AnimBuilder).
 
 Use this to start new scroll animations.
-
-    -- Start a new scroll animation based on current state
-    (newAnimations, scrollCmd) =
-        model.scrollAnimations
-            |> Scroll.builder
-            |> ... -- configure scroll animation
-            |> Scroll.animate
 
     -- Start a new fire-and-forget scroll animation
     Scroll.init
         |> Scroll.builder
         |>.. -- configure scroll animation
+
+    -- Start a new scroll animation based on current state
+    (newState, scrollCmd) =
+        model.scrollAnimations
+            |> Scroll.builder
+            |> ... -- configure scroll animation
 
 -}
 builder : AnimState -> AnimBuilder
@@ -239,11 +411,29 @@ builder =
 
 {-| Execute scroll animations using subscription-based animation with state management.
 
-**To run multiple scrolls concurrently:** Simply configure _multiple scroll targets_ in the same [AnimBuilder](#AnimBuilder).
+    (newAnimState, cmd) =
+        model.scrollAnimations
+            |> Scroll.builder
+            |> ... -- configure scroll animation
+            |> Scroll.animate ScrollMsg
 
-When _multiple scroll targets_ are configured, each is converted to a `Cmd` (via `Task.attempt` under the hood)
-and then batched using `Cmd.batch` - the same way as [toCmd](#toCmd) does. The key difference is that [toCmd](#toCmd) batches the whole animation sequence, while each `Cmd` created by `animate` is for the next step
-in the subscription-based animation process, allowing you to track and manage ongoing scrolls.
+    type Msg
+        = ScrollMsg Scroll.AnimationMsg
+        | ...
+
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            ScrollMsg scrollMsg ->
+                let
+                    ( newScrollState, scrollCmd ) =
+                        Scroll.update ScrollMsg scrollMsg model.scrollAnimations
+                in
+                ( { model | scrollAnimations = newScrollState }
+                , scrollCmd
+                )
+
+            ...
 
 -}
 animate : (AnimationMsg -> msg) -> AnimBuilder -> ( AnimState, Cmd msg )
@@ -469,35 +659,6 @@ getDuration =
                 -- targetId identifies which scroll completed
                 ...
 
-**To run multiple scrolls concurrently:** Simply configure _multiple scroll targets_ in the same [AnimBuilder](#AnimBuilder) pipeline.
-
-
-### **How it works:**
-
-**Single scroll target:**
-
-1.  DOM queries retrieve current scroll position and target element position
-2.  Distance is calculated from current to target position
-3.  Animation steps are pre-calculated based on distance, timing and easing
-4.  Animation steps are sequenced into a `Task` chain
-5.  `Task` chain is converted to a `Cmd` via `Task.attempt`
-6.  Elm runtime receives the `Cmd` and executes each step in sequence
-7.  Completion message fires with target identifier
-
-**Multiple scroll targets:**
-
-  - Each scroll is independently converted to a `Cmd` (following steps 1-5 above)
-  - All `Cmd`s are `Cmd.batch`ed into a single `Cmd`
-  - Elm runtime receives the single `Cmd` and executes all scrolls concurrently
-  - Browser's rendering engine handles all simultaneous scroll animations in parallel
-  - Each scroll fires the completion message independently as it finishes
-
-**Completion behavior:**
-
-  - The completion message fires when the scroll animation finishes (success or failure)
-  - With multiple targets, the message fires once per target as each scroll completes
-  - The `String` parameter identifies the target: element ID for element targets, or a description like "document:top" for position targets
-
 -}
 toCmd : (String -> msg) -> AnimBuilder -> Cmd msg
 toCmd =
@@ -506,12 +667,23 @@ toCmd =
 
 {-| Execute scroll animations as a [Task](https://package.elm-lang.org/packages/elm/core/latest/Task).
 
-When multiple scroll targets are configured, they execute in sequence (one after another, top to bottom in the builder pipeline).
-The task then returns [ScrollResult](#ScrollResult) for the last scroll on success, and [ScrollError](#ScrollError)
-on failure if any scroll fails (subsequent scrolls will not execute).
+    ... -- Build your AnimBuilder
+    |> Scroll.toTask
+    |> Task.attempt HandleScrollResult
 
-**To run multiple scrolls concurrently with individual error handling:** Create separate [AnimBuilder](#AnimBuilder)s for each scroll,
-convert each to a `Cmd` via `Task.attempt`, then batch them with `Cmd.batch`.
+    type Msg
+        = HandleScrollResult (Result Scroll.ScrollError Scroll.ScrollResult)
+        | ...
+
+    update msg model =
+        case msg of
+            HandleScrollResult (Ok result) ->
+                -- result contains: containerId, targetElementId, targetDescription
+                ...
+
+            HandleScrollResult (Err error) ->
+                -- error contains: containerId, targetElementId, domError
+                ...
 
 -}
 toTask : AnimBuilder -> Task ScrollError ScrollResult
