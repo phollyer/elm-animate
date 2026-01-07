@@ -1,5 +1,5 @@
 module Anim.Property.BackgroundColor exposing
-    ( Color(..), Builder, for, build
+    ( Color(..), Builder, for, init, build
     , from
     , to
     , delay, duration, speed
@@ -20,7 +20,7 @@ Use these functions to configure background color animations in the builder chai
 
 # Build
 
-@docs Color, Builder, for, build
+@docs Color, Builder, for, init, build
 
 
 # Configure
@@ -97,6 +97,24 @@ type alias Builder =
 for : String -> AnimBuilder -> Builder
 for elementId =
     CB.for elementId
+
+
+{-| Set initial background color value without animation.
+
+Use this to initialize property values in the builder pipeline:
+
+    animBuilder
+        |> BackgroundColor.init "my-element" (Hex "#ff0000")
+        |> ... -- continue with animation
+
+-}
+init : String -> Color -> AnimBuilder -> AnimBuilder
+init elementId color animBuilder =
+    animBuilder
+        |> CB.for elementId
+        |> CB.from (toInternal color)
+        |> CB.to (toInternal color)
+        |> CB.build
 
 
 {-| Complete the color animation configuration and return an [AnimBuilder](Anim#AnimBuilder)

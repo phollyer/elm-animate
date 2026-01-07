@@ -1,5 +1,5 @@
 module Anim.Property.Opacity exposing
-    ( Builder, for, build
+    ( Builder, for, init, build
     , from
     , to
     , delay, duration, speed
@@ -20,7 +20,7 @@ Use these functions to configure opacity animations in the builder chain:
 
 # Build
 
-@docs Builder, for, build
+@docs Builder, for, init, build
 
 
 # Configure
@@ -78,6 +78,24 @@ type alias Builder =
 for : String -> AnimBuilder -> Builder
 for =
     OB.for
+
+
+{-| Set initial opacity value without animation.
+
+Use this to initialize property values in the builder pipeline:
+
+    animBuilder
+        |> Opacity.init "my-element" 0.5
+        |> ... -- continue with animation
+
+-}
+init : String -> Float -> AnimBuilder -> AnimBuilder
+init elementId value animBuilder =
+    animBuilder
+        |> OB.for elementId
+        |> OB.from (O.fromFloat value)
+        |> OB.to (O.fromFloat value)
+        |> OB.build
 
 
 {-| Complete the opacity animation configuration and return an [AnimBuilder](Anim.AnimBuilder)

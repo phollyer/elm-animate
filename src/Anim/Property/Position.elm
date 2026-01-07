@@ -1,5 +1,5 @@
 module Anim.Property.Position exposing
-    ( Builder, for, build
+    ( Builder, for, init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ, build
     , from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
     , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
     , delay, duration, speed
@@ -34,7 +34,7 @@ For 3D positioning, you just need to set a non-zero value for the 'Z' axis and a
 
 # Build
 
-@docs Builder, for, build
+@docs Builder, for, init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ, build
 
 
 # Configure
@@ -97,6 +97,138 @@ type alias Builder =
 for : String -> AnimBuilder -> Builder
 for =
     PB.for
+
+
+{-| Set initial position value without animation.
+
+Use this to initialize property values in the builder pipeline:
+
+    animBuilder
+        |> Position.init "my-element" 100
+        |> ... -- continue with animation
+
+This is equivalent to calling `initXYZ 100 100 100`.
+
+-}
+init : String -> Float -> AnimBuilder -> AnimBuilder
+init elementId value animBuilder =
+    animBuilder
+        |> PB.for elementId
+        |> from value
+        |> to value
+        |> PB.build
+
+
+{-| Set initial X, Y, and Z position without animation.
+
+    animBuilder
+        |> Position.initXYZ "my-element" 100 20 50
+        |> ... -- continue with animation
+
+-}
+initXYZ : String -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXYZ elementId x y z animBuilder =
+    animBuilder
+        |> PB.for elementId
+        |> fromXYZ x y z
+        |> PB.toXYZ x y z
+        |> PB.build
+
+
+{-| Set initial X and Y position without animation.
+
+    animBuilder
+        |> Position.initXY "my-element" 100 20
+        |> ... -- continue with animation
+
+-}
+initXY : String -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXY elementId x y animBuilder =
+    animBuilder
+        |> PB.for elementId
+        |> fromXY x y
+        |> PB.toXY x y
+        |> PB.build
+
+
+{-| Set initial X and Z position without animation.
+
+    animBuilder
+        |> Position.initXZ "my-element" 100 50
+        |> ... -- continue with animation
+
+-}
+initXZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXZ elementId x z animBuilder =
+    animBuilder
+        |> PB.for elementId
+        |> fromXZ x z
+        |> PB.toXZ x z
+        |> PB.build
+
+
+{-| Set initial X position without animation.
+
+    animBuilder
+        |> Position.initX "my-element" 100
+        |> ... -- continue with animation
+
+-}
+initX : String -> Float -> AnimBuilder -> AnimBuilder
+initX elementId x animBuilder =
+    animBuilder
+        |> PB.for elementId
+        |> fromX x
+        |> PB.toX x
+        |> PB.build
+
+
+{-| Set initial Y and Z position without animation.
+
+    animBuilder
+        |> Position.initYZ "my-element" 20 50
+        |> ... -- continue with animation
+
+-}
+initYZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
+initYZ elementId y z animBuilder =
+    animBuilder
+        |> PB.for elementId
+        |> fromYZ y z
+        |> PB.toYZ y z
+        |> PB.build
+
+
+{-| Set initial Y position without animation.
+
+    animBuilder
+        |> Position.initY "my-element" 20
+        |> ... -- continue with animation
+
+-}
+initY : String -> Float -> AnimBuilder -> AnimBuilder
+initY elementId y animBuilder =
+    animBuilder
+        |> PB.for elementId
+        |> fromY y
+        |> PB.toY y
+        |> PB.build
+
+
+{-| Set initial Z position without animation.
+
+    animBuilder
+        |> Position.initZ "my-element" 50
+        |> ... -- continue with animation
+
+-}
+initZ : String -> Float -> AnimBuilder -> AnimBuilder
+initZ elementId z animBuilder =
+    animBuilder
+        |> PB.for elementId
+        |> fromZ z
+        |> PB.toZ z
+        |> PB.build
 
 
 {-| Complete the position animation configuration and return an [AnimBuilder](Anim.AnimBuilder)

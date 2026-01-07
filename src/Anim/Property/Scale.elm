@@ -1,5 +1,5 @@
 module Anim.Property.Scale exposing
-    ( Builder, for, build
+    ( Builder, for, init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ, build
     , from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
     , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
     , delay, duration, speed
@@ -34,7 +34,7 @@ For 3D scaling, you just need to set a non-zero value for the 'Z' axis and a per
 
 # Build
 
-@docs Builder, for, build
+@docs Builder, for, init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ, build
 
 
 # Configure
@@ -100,6 +100,138 @@ type alias Builder =
 for : String -> AnimBuilder -> Builder
 for =
     SB.for
+
+
+{-| Set initial scale value without animation.
+
+Use this to initialize property values in the builder pipeline:
+
+    animBuilder
+        |> Scale.init "my-element" 1.5
+        |> ... -- continue with animation
+
+This is equivalent to calling `initXYZ 1.5 1.5 1.5`.
+
+-}
+init : String -> Float -> AnimBuilder -> AnimBuilder
+init elementId value animBuilder =
+    animBuilder
+        |> SB.for elementId
+        |> from value
+        |> to value
+        |> SB.build
+
+
+{-| Set initial X, Y, and Z scale without animation.
+
+    animBuilder
+        |> Scale.initXYZ "my-element" 1.5 1.2 1.0
+        |> ... -- continue with animation
+
+-}
+initXYZ : String -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXYZ elementId x y z animBuilder =
+    animBuilder
+        |> SB.for elementId
+        |> fromXYZ x y z
+        |> SB.toXYZ x y z
+        |> SB.build
+
+
+{-| Set initial X and Y scale without animation.
+
+    animBuilder
+        |> Scale.initXY "my-element" 1.5 1.2
+        |> ... -- continue with animation
+
+-}
+initXY : String -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXY elementId x y animBuilder =
+    animBuilder
+        |> SB.for elementId
+        |> fromXY x y
+        |> SB.toXY x y
+        |> SB.build
+
+
+{-| Set initial X and Z scale without animation.
+
+    animBuilder
+        |> Scale.initXZ "my-element" 1.5 1.0
+        |> ... -- continue with animation
+
+-}
+initXZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXZ elementId x z animBuilder =
+    animBuilder
+        |> SB.for elementId
+        |> fromXZ x z
+        |> SB.toXZ x z
+        |> SB.build
+
+
+{-| Set initial X scale without animation.
+
+    animBuilder
+        |> Scale.initX "my-element" 1.5
+        |> ... -- continue with animation
+
+-}
+initX : String -> Float -> AnimBuilder -> AnimBuilder
+initX elementId x animBuilder =
+    animBuilder
+        |> SB.for elementId
+        |> fromX x
+        |> SB.toX x
+        |> SB.build
+
+
+{-| Set initial Y and Z scale without animation.
+
+    animBuilder
+        |> Scale.initYZ "my-element" 1.2 1.0
+        |> ... -- continue with animation
+
+-}
+initYZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
+initYZ elementId y z animBuilder =
+    animBuilder
+        |> SB.for elementId
+        |> fromYZ y z
+        |> SB.toYZ y z
+        |> SB.build
+
+
+{-| Set initial Y scale without animation.
+
+    animBuilder
+        |> Scale.initY "my-element" 1.2
+        |> ... -- continue with animation
+
+-}
+initY : String -> Float -> AnimBuilder -> AnimBuilder
+initY elementId y animBuilder =
+    animBuilder
+        |> SB.for elementId
+        |> fromY y
+        |> SB.toY y
+        |> SB.build
+
+
+{-| Set initial Z scale without animation.
+
+    animBuilder
+        |> Scale.initZ "my-element" 1.0
+        |> ... -- continue with animation
+
+-}
+initZ : String -> Float -> AnimBuilder -> AnimBuilder
+initZ elementId z animBuilder =
+    animBuilder
+        |> SB.for elementId
+        |> fromZ z
+        |> SB.toZ z
+        |> SB.build
 
 
 {-| Complete the scale animation configuration and return an [AnimBuilder](Anim.AnimBuilder)

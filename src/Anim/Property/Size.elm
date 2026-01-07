@@ -1,5 +1,5 @@
 module Anim.Property.Size exposing
-    ( Builder, for, build
+    ( Builder, for, init, initWH, initW, initH, build
     , from, fromHW, fromH, fromW
     , to, toHW, toH, toW
     , delay, duration, speed
@@ -22,7 +22,7 @@ Use these functions to configure size animations in the builder chain:
 
 # Build
 
-@docs Builder, for, build
+@docs Builder, for, init, initWH, initW, initH, build
 
 
 # Configure
@@ -76,6 +76,74 @@ type alias Builder =
 for : String -> AnimBuilder -> Builder
 for =
     SB.for
+
+
+{-| Set initial size value without animation.
+
+Use this to initialize property values in the builder pipeline:
+
+    animBuilder
+        |> Size.init "my-element" 100
+        |> ... -- continue with animation
+
+This is equivalent to calling `initWH 100 100`.
+
+-}
+init : String -> Float -> AnimBuilder -> AnimBuilder
+init elementId value animBuilder =
+    animBuilder
+        |> SB.for elementId
+        |> from value
+        |> to value
+        |> SB.build
+
+
+{-| Set initial width and height without animation.
+
+    animBuilder
+        |> Size.initWH "my-element" 200 100
+        |> ... -- continue with animation
+
+-}
+initWH : String -> Float -> Float -> AnimBuilder -> AnimBuilder
+initWH elementId w h animBuilder =
+    animBuilder
+        |> SB.for elementId
+        |> fromHW w h
+        |> SB.toHW w h
+        |> SB.build
+
+
+{-| Set initial width without animation.
+
+    animBuilder
+        |> Size.initW "my-element" 200
+        |> ... -- continue with animation
+
+-}
+initW : String -> Float -> AnimBuilder -> AnimBuilder
+initW elementId w animBuilder =
+    animBuilder
+        |> SB.for elementId
+        |> fromW w
+        |> SB.toW w
+        |> SB.build
+
+
+{-| Set initial height without animation.
+
+    animBuilder
+        |> Size.initH "my-element" 150
+        |> ... -- continue with animation
+
+-}
+initH : String -> Float -> AnimBuilder -> AnimBuilder
+initH elementId h animBuilder =
+    animBuilder
+        |> SB.for elementId
+        |> fromH h
+        |> SB.toH h
+        |> SB.build
 
 
 {-| Complete the size animation configuration and return an [AnimBuilder](Anim.AnimBuilder)

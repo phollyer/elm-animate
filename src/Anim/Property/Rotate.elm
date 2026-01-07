@@ -1,5 +1,5 @@
 module Anim.Property.Rotate exposing
-    ( Builder, for, build
+    ( Builder, for, init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ, build
     , from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
     , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
     , delay, duration, speed
@@ -30,7 +30,7 @@ For 3D rotations, you just need to set a value for the 'Z' axis and a perspectiv
 
 # Build
 
-@docs Builder, for, build
+@docs Builder, for, init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ, build
 
 
 # Configure
@@ -97,6 +97,138 @@ type alias Builder =
 for : String -> AnimBuilder -> Builder
 for =
     RB.for
+
+
+{-| Set initial rotation value without animation.
+
+Use this to initialize property values in the builder pipeline:
+
+    animBuilder
+        |> Rotate.init "my-element" 45
+        |> ... -- continue with animation
+
+This is equivalent to calling `initXYZ 45 45 45`.
+
+-}
+init : String -> Float -> AnimBuilder -> AnimBuilder
+init elementId value animBuilder =
+    animBuilder
+        |> RB.for elementId
+        |> from value
+        |> to value
+        |> RB.build
+
+
+{-| Set initial X, Y, and Z rotation without animation.
+
+    animBuilder
+        |> Rotate.initXYZ "my-element" 45 30 60
+        |> ... -- continue with animation
+
+-}
+initXYZ : String -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXYZ elementId x y z animBuilder =
+    animBuilder
+        |> RB.for elementId
+        |> fromXYZ x y z
+        |> RB.toXYZ x y z
+        |> RB.build
+
+
+{-| Set initial X and Y rotation without animation.
+
+    animBuilder
+        |> Rotate.initXY "my-element" 45 30
+        |> ... -- continue with animation
+
+-}
+initXY : String -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXY elementId x y animBuilder =
+    animBuilder
+        |> RB.for elementId
+        |> fromXY x y
+        |> RB.toXY x y
+        |> RB.build
+
+
+{-| Set initial X and Z rotation without animation.
+
+    animBuilder
+        |> Rotate.initXZ "my-element" 45 60
+        |> ... -- continue with animation
+
+-}
+initXZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXZ elementId x z animBuilder =
+    animBuilder
+        |> RB.for elementId
+        |> fromXZ x z
+        |> RB.toXZ x z
+        |> RB.build
+
+
+{-| Set initial X rotation without animation.
+
+    animBuilder
+        |> Rotate.initX "my-element" 45
+        |> ... -- continue with animation
+
+-}
+initX : String -> Float -> AnimBuilder -> AnimBuilder
+initX elementId x animBuilder =
+    animBuilder
+        |> RB.for elementId
+        |> fromX x
+        |> RB.toX x
+        |> RB.build
+
+
+{-| Set initial Y and Z rotation without animation.
+
+    animBuilder
+        |> Rotate.initYZ "my-element" 30 60
+        |> ... -- continue with animation
+
+-}
+initYZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
+initYZ elementId y z animBuilder =
+    animBuilder
+        |> RB.for elementId
+        |> fromYZ y z
+        |> RB.toYZ y z
+        |> RB.build
+
+
+{-| Set initial Y rotation without animation.
+
+    animBuilder
+        |> Rotate.initY "my-element" 30
+        |> ... -- continue with animation
+
+-}
+initY : String -> Float -> AnimBuilder -> AnimBuilder
+initY elementId y animBuilder =
+    animBuilder
+        |> RB.for elementId
+        |> fromY y
+        |> RB.toY y
+        |> RB.build
+
+
+{-| Set initial Z rotation without animation.
+
+    animBuilder
+        |> Rotate.initZ "my-element" 60
+        |> ... -- continue with animation
+
+-}
+initZ : String -> Float -> AnimBuilder -> AnimBuilder
+initZ elementId z animBuilder =
+    animBuilder
+        |> RB.for elementId
+        |> fromZ z
+        |> RB.toZ z
+        |> RB.build
 
 
 {-| Complete the rotation animation configuration and return an [AnimBuilder](Anim.AnimBuilder)
