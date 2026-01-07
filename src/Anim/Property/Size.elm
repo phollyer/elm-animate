@@ -1,5 +1,6 @@
 module Anim.Property.Size exposing
-    ( Builder, for, init, initWH, initW, initH, build
+    ( init, initWH, initW, initH
+    , Builder, for, build
     , from, fromHW, fromH, fromW
     , to, toHW, toH, toW
     , delay, duration, speed
@@ -20,9 +21,23 @@ Use these functions to configure size animations in the builder chain:
         |> ... -- continue with animation
 
 
+# Initialize
+
+Use these functions in your model's init function to set initial property values without animation.
+They work in the builder pipeline before you start configuring animations:
+
+    CSS.init
+        |> CSS.builder
+        |> Size.init "element-id" 100
+        |> Opacity.init "element-id" 1.0
+        |> ... -- continue setting initial values
+
+@docs init, initWH, initW, initH
+
+
 # Build
 
-@docs Builder, for, init, initWH, initW, initH, build
+@docs Builder, for, build
 
 
 # Configure
@@ -82,9 +97,11 @@ for =
 
 Use this to initialize property values in the builder pipeline:
 
-    animBuilder
-        |> Size.init "my-element" 100
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Size.init "element-id" 100
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 This is equivalent to calling `initWH 100 100`.
 
@@ -100,9 +117,11 @@ init elementId value animBuilder =
 
 {-| Set initial width and height without animation.
 
-    animBuilder
-        |> Size.initWH "my-element" 200 100
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Size.initWH "element-id" 200 100
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initWH : String -> Float -> Float -> AnimBuilder -> AnimBuilder
@@ -116,9 +135,11 @@ initWH elementId w h animBuilder =
 
 {-| Set initial width without animation.
 
-    animBuilder
-        |> Size.initW "my-element" 200
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Size.initW "element-id" 200
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initW : String -> Float -> AnimBuilder -> AnimBuilder
@@ -132,9 +153,11 @@ initW elementId w animBuilder =
 
 {-| Set initial height without animation.
 
-    animBuilder
-        |> Size.initH "my-element" 150
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Size.initH "element-id" 150
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initH : String -> Float -> AnimBuilder -> AnimBuilder

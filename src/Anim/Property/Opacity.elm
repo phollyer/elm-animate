@@ -1,5 +1,6 @@
 module Anim.Property.Opacity exposing
-    ( Builder, for, init, build
+    ( init
+    , Builder, for, build
     , from
     , to
     , delay, duration, speed
@@ -18,9 +19,23 @@ Use these functions to configure opacity animations in the builder chain:
         |> ... -- continue with animation
 
 
+# Initialize
+
+Use these functions in your model's init function to set initial property values without animation.
+They work in the builder pipeline before you start configuring animations:
+
+    CSS.init
+        |> CSS.builder
+        |> Opacity.init "element-id" 0.5
+        |> Position.init "element-id" 100
+        |> ... -- continue setting initial values
+
+@docs init
+
+
 # Build
 
-@docs Builder, for, init, build
+@docs Builder, for, build
 
 
 # Configure
@@ -84,9 +99,11 @@ for =
 
 Use this to initialize property values in the builder pipeline:
 
-    animBuilder
-        |> Opacity.init "my-element" 0.5
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Opacity.init "element-id" 0.5
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 init : String -> Float -> AnimBuilder -> AnimBuilder

@@ -1,5 +1,6 @@
 module Anim.Property.Scale exposing
-    ( Builder, for, init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ, build
+    ( init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
+    , Builder, for, build
     , from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
     , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
     , delay, duration, speed
@@ -32,9 +33,23 @@ For 3D scaling, you just need to set a non-zero value for the 'Z' axis and a per
         |> Scale.build
 
 
+# Initialize
+
+Use these functions in your model's init function to set initial property values without animation.
+They work in the builder pipeline before you start configuring animations:
+
+    CSS.init
+        |> CSS.builder
+        |> Scale.init "element-id" 1.5
+        |> Rotate.init "element-id" 45
+        |> ... -- continue setting initial values
+
+@docs init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
+
+
 # Build
 
-@docs Builder, for, init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ, build
+@docs Builder, for, build
 
 
 # Configure
@@ -106,9 +121,11 @@ for =
 
 Use this to initialize property values in the builder pipeline:
 
-    animBuilder
-        |> Scale.init "my-element" 1.5
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Scale.init "element-id" 1.5
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 This is equivalent to calling `initXYZ 1.5 1.5 1.5`.
 
@@ -124,9 +141,11 @@ init elementId value animBuilder =
 
 {-| Set initial X, Y, and Z scale without animation.
 
-    animBuilder
-        |> Scale.initXYZ "my-element" 1.5 1.2 1.0
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Scale.initXYZ "element-id" 1.5 1.2 1.0
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initXYZ : String -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder
@@ -140,9 +159,11 @@ initXYZ elementId x y z animBuilder =
 
 {-| Set initial X and Y scale without animation.
 
-    animBuilder
-        |> Scale.initXY "my-element" 1.5 1.2
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Scale.initXY "element-id" 1.5 1.2
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initXY : String -> Float -> Float -> AnimBuilder -> AnimBuilder
@@ -156,9 +177,11 @@ initXY elementId x y animBuilder =
 
 {-| Set initial X and Z scale without animation.
 
-    animBuilder
-        |> Scale.initXZ "my-element" 1.5 1.0
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Scale.initXZ "element-id" 1.5 1.0
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initXZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
@@ -172,9 +195,11 @@ initXZ elementId x z animBuilder =
 
 {-| Set initial X scale without animation.
 
-    animBuilder
-        |> Scale.initX "my-element" 1.5
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Scale.initX "element-id" 1.5
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initX : String -> Float -> AnimBuilder -> AnimBuilder
@@ -188,9 +213,11 @@ initX elementId x animBuilder =
 
 {-| Set initial Y and Z scale without animation.
 
-    animBuilder
-        |> Scale.initYZ "my-element" 1.2 1.0
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Scale.initYZ "element-id" 1.2 1.0
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initYZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
@@ -204,9 +231,11 @@ initYZ elementId y z animBuilder =
 
 {-| Set initial Y scale without animation.
 
-    animBuilder
-        |> Scale.initY "my-element" 1.2
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Scale.initY "element-id" 1.2
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initY : String -> Float -> AnimBuilder -> AnimBuilder
@@ -220,9 +249,11 @@ initY elementId y animBuilder =
 
 {-| Set initial Z scale without animation.
 
-    animBuilder
-        |> Scale.initZ "my-element" 1.0
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Scale.initZ "element-id" 1.0
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initZ : String -> Float -> AnimBuilder -> AnimBuilder

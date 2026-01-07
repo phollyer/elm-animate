@@ -1,5 +1,6 @@
 module Anim.Property.Rotate exposing
-    ( Builder, for, init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ, build
+    ( init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
+    , Builder, for, build
     , from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
     , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
     , delay, duration, speed
@@ -28,9 +29,23 @@ For 3D rotations, you just need to set a value for the 'Z' axis and a perspectiv
         |> Rotate.build
 
 
+# Initialize
+
+Use these functions in your model's init function to set initial property values without animation.
+They work in the builder pipeline before you start configuring animations:
+
+    CSS.init
+        |> CSS.builder
+        |> Rotate.init "element-id" 45
+        |> Position.init "element-id" 100
+        |> ... -- continue setting initial values
+
+@docs init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
+
+
 # Build
 
-@docs Builder, for, init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ, build
+@docs Builder, for, build
 
 
 # Configure
@@ -103,9 +118,11 @@ for =
 
 Use this to initialize property values in the builder pipeline:
 
-    animBuilder
-        |> Rotate.init "my-element" 45
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Rotate.init "element-id" 45
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 This is equivalent to calling `initXYZ 45 45 45`.
 
@@ -121,9 +138,11 @@ init elementId value animBuilder =
 
 {-| Set initial X, Y, and Z rotation without animation.
 
-    animBuilder
-        |> Rotate.initXYZ "my-element" 45 30 60
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Rotate.initXYZ "element-id" 45 30 60
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initXYZ : String -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder
@@ -137,9 +156,11 @@ initXYZ elementId x y z animBuilder =
 
 {-| Set initial X and Y rotation without animation.
 
-    animBuilder
-        |> Rotate.initXY "my-element" 45 30
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Rotate.initXY "element-id" 45 30
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initXY : String -> Float -> Float -> AnimBuilder -> AnimBuilder
@@ -153,9 +174,11 @@ initXY elementId x y animBuilder =
 
 {-| Set initial X and Z rotation without animation.
 
-    animBuilder
-        |> Rotate.initXZ "my-element" 45 60
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Rotate.initXZ "element-id" 45 60
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initXZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
@@ -169,9 +192,11 @@ initXZ elementId x z animBuilder =
 
 {-| Set initial X rotation without animation.
 
-    animBuilder
-        |> Rotate.initX "my-element" 45
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Rotate.initX "element-id" 45
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initX : String -> Float -> AnimBuilder -> AnimBuilder
@@ -185,9 +210,11 @@ initX elementId x animBuilder =
 
 {-| Set initial Y and Z rotation without animation.
 
-    animBuilder
-        |> Rotate.initYZ "my-element" 30 60
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Rotate.initYZ "element-id" 30 60
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initYZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
@@ -201,9 +228,11 @@ initYZ elementId y z animBuilder =
 
 {-| Set initial Y rotation without animation.
 
-    animBuilder
-        |> Rotate.initY "my-element" 30
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Rotate.initY "element-id" 30
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initY : String -> Float -> AnimBuilder -> AnimBuilder
@@ -217,9 +246,11 @@ initY elementId y animBuilder =
 
 {-| Set initial Z rotation without animation.
 
-    animBuilder
-        |> Rotate.initZ "my-element" 60
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Rotate.initZ "element-id" 60
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initZ : String -> Float -> AnimBuilder -> AnimBuilder

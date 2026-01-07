@@ -1,5 +1,6 @@
 module Anim.Property.Position exposing
-    ( Builder, for, init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ, build
+    ( init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
+    , Builder, for, build
     , from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
     , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
     , delay, duration, speed
@@ -32,9 +33,23 @@ For 3D positioning, you just need to set a non-zero value for the 'Z' axis and a
         |> Position.build
 
 
+# Initialize
+
+Use these functions in your model's init function to set initial property values without animation.
+They work in the builder pipeline before you start configuring animations:
+
+    CSS.init
+        |> CSS.builder
+        |> Position.init "element-id" 100
+        |> Scale.init "element-id" 1.0
+        |> ... -- continue setting initial values
+
+@docs init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
+
+
 # Build
 
-@docs Builder, for, init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ, build
+@docs Builder, for, build
 
 
 # Configure
@@ -103,9 +118,11 @@ for =
 
 Use this to initialize property values in the builder pipeline:
 
-    animBuilder
-        |> Position.init "my-element" 100
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Position.init "element-id" 100
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 This is equivalent to calling `initXYZ 100 100 100`.
 
@@ -121,9 +138,11 @@ init elementId value animBuilder =
 
 {-| Set initial X, Y, and Z position without animation.
 
-    animBuilder
-        |> Position.initXYZ "my-element" 100 20 50
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Position.initXYZ "element-id" 100 20 50
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initXYZ : String -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder
@@ -137,9 +156,11 @@ initXYZ elementId x y z animBuilder =
 
 {-| Set initial X and Y position without animation.
 
-    animBuilder
-        |> Position.initXY "my-element" 100 20
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Position.initXY "element-id" 100 20
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initXY : String -> Float -> Float -> AnimBuilder -> AnimBuilder
@@ -153,9 +174,11 @@ initXY elementId x y animBuilder =
 
 {-| Set initial X and Z position without animation.
 
-    animBuilder
-        |> Position.initXZ "my-element" 100 50
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Position.initXZ "element-id" 100 50
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initXZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
@@ -169,9 +192,11 @@ initXZ elementId x z animBuilder =
 
 {-| Set initial X position without animation.
 
-    animBuilder
-        |> Position.initX "my-element" 100
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Position.initX "element-id" 100
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initX : String -> Float -> AnimBuilder -> AnimBuilder
@@ -185,9 +210,11 @@ initX elementId x animBuilder =
 
 {-| Set initial Y and Z position without animation.
 
-    animBuilder
-        |> Position.initYZ "my-element" 20 50
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Position.initYZ "element-id" 20 50
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initYZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
@@ -201,9 +228,11 @@ initYZ elementId y z animBuilder =
 
 {-| Set initial Y position without animation.
 
-    animBuilder
-        |> Position.initY "my-element" 20
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Position.initY "element-id" 20
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initY : String -> Float -> AnimBuilder -> AnimBuilder
@@ -217,9 +246,11 @@ initY elementId y animBuilder =
 
 {-| Set initial Z position without animation.
 
-    animBuilder
-        |> Position.initZ "my-element" 50
-        |> ... -- continue with animation
+    Engine.init
+        |> Engine.builder
+        |> Position.initZ "element-id" 50
+        |> ... -- continue setting initial values
+        |> Engine.animate
 
 -}
 initZ : String -> Float -> AnimBuilder -> AnimBuilder
