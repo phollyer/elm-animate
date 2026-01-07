@@ -68,7 +68,7 @@ Uses the same fluent builder API as the animation engines. This makes it easy to
 ```elm
 
 import Anim.Action.Scroll as ScrollAction
-import Anim.Engine.Scroll as Scroll
+import Anim.Engine.Scroll as Scroll exposing (ScrollError(..), ScrollResult)
 
 -- Reusable scroll animation
 
@@ -90,7 +90,7 @@ doScroll =
 
 -- Composable Tasks with errors
 
-doScroll : Task Error ()
+doScroll : Task ScrollError ScrollResult
 doScroll =
     Scroll.init
         |> scrollToElement "my-element" "my-element-container"
@@ -104,6 +104,7 @@ doScroll model =
         |> scrollToElement "my-element" "me-element-container" 
         |> Scroll.animate ScrollMsg
 ```
+---
 
 ### 4. [Anim.Engine.Scroll](Anim-Engine-Scroll)
 

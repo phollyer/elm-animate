@@ -62,7 +62,8 @@ For CSS transform animations, you just need to apply the generated HTML attribut
 
 ## Keyframe Animations
 
-For Keyframe animations, you also need to add the generated keyframes to a node in your DOM.
+For Keyframe animations, you need to add the generated keyframes to a node in your DOM, and
+apply the generated HTML attributes to your elements.
 
 @docs keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
 
@@ -100,20 +101,18 @@ to give a sense of depth. Without perspective, 3D animations will have no visual
 CSS animations and transitions can trigger events when they start, end, or are cancelled. You have two options for handling
 these events in your application:
 
-1.  **Manual Event Handling:** Manually add event handlers to your elements using the provided event handler functions. This is the recommended approach for
+1.  **Manual Event Handling:** Manually add event handlers to your elements using the provided event handler functions. Use these for
     fire-and-forget animations where you don't track state in your model.
 
 2.  **Automatic Event Handling**: Generate [Event](#Event) messages that you can process in your update function.
-    This is the recommended approach when tracking animation state in your model.
-
-You should only use one of these approaches at a time. Mixing both for the same animation can lead to unexpected behavior as they don't play well together.
+    Use this approach when tracking animation state in your model.
 
 
 ## Manual Event Handling
 
 **Note**: Manual event handling is for fire-and-forget animations where you don't track state in your model.
 
-Animation events are different from transition events, so both types of events can be handled using the following functions.
+Keyframe Animation events are different from transition events, so both types of events can be handled using the following functions.
 
 
 ### Keyframe Animation Events
@@ -121,7 +120,7 @@ Animation events are different from transition events, so both types of events c
 @docs onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
 
 
-### Transform Animation Events
+### Transition Animation Events
 
 @docs onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
 
@@ -171,7 +170,7 @@ CSS animations, whether using transforms or keyframes, do not provide direct mid
 _This is a limitation of CSS itself._
 However, this engine tracks the start and end values of animated properties, allowing you to query these values as needed.
 
-If you need accurate mid-flight values, consider using the [Anim.Engine.Sub](Anim.EngineSub) or [Anim.Engine.WAAPI](Anim.Engine.WAAPI) engines instead,
+If you need accurate mid-flight values, consider using the [Sub](Anim.EngineSub) or [WAAPI](Anim.Engine.WAAPI) Engines instead,
 which provide real-time access to animated property values.
 
 
@@ -298,11 +297,10 @@ This is an alternative to [animate](#animate) that allows you to specify the ord
 in which properties should be animated.
 
     -- Custom transform order: Scale → Rotate → Position
-    newState =
-        state
-            |> CSS.builder
-            |> -- ... property configurations ...
-            |> CSS.animateOrder [ Scale, Rotate, Position ]
+    model.animations -- Or `CSS.init`
+        |> CSS.builder
+        |> -- ... property configurations ...
+        |> CSS.animateOrder [ Scale, Rotate, Position ]
 
 -}
 animateOrder : List TransformOrder -> AnimBuilder -> AnimState
@@ -348,17 +346,15 @@ init =
 Use this to start building new animations.
 
     -- Create a new animation based on current state
-    newBuilder =
-        model.animations
-            |> CSS.builder
-            |> ... -- continue building the animation
+    model.animations
+        |> CSS.builder
+        |> ... -- continue building the animation
 
 
     -- Create a new fire-and-forget animation
-    newBuilder =
-        CSS.init
-            |> CSS.builder
-            |> ... -- continue building the animation
+    CSS.init
+        |> CSS.builder
+        |> ... -- continue building the animation
 
 -}
 builder : AnimState -> AnimBuilder
@@ -552,7 +548,17 @@ Call this function from your update function.
     update msg model =
         case msg of
             CSSEvent event ->
-                { model | animations = CSS.handleEvent event model.animations }
+                let
+                    newModel =
+                        { model | animations = CSS.handleEvent event model.animations }
+                in
+                case event of
+                    CSS.KeyframeAnimationEnded elementId ->
+                        -- Do something when animation ends
+                        ( newModel, Cmd.none )
+
+                    _ ->
+                        ( newModel, Cmd.none )
 
     div
         (CSS.htmlAttributesWithEvents "element" CSSEvent model.animations)
@@ -983,7 +989,7 @@ Smaller values create more dramatic 3D effects, while larger values create subtl
         |> Css.perspective "container-id" 1000
         |> ... -- continue building the animation
 
-You can override this global setting for specific properties using property-specific perspective functions.
+You can override this global setting for specific properties using property-specific `perspective` functions.
 
 -}
 perspective : String -> Float -> AnimBuilder -> AnimBuilder
@@ -997,14 +1003,15 @@ This function generates the necessary CSS perspective attributes for container e
 to properly display 3D animations. Apply these attributes to the parent containers
 of animated elements.
 
-    animBuilder
+    model.animations
+        |> CSS.builder
         |> CSS.perspective "main-container" 1000
         |> ...
 
     div
-        (CSS.perspectiveStyles "main-container" animationState)
+        (CSS.perspectiveStyles "main-container" model.animations)
         [ div
-            (CSS.htmlAttributes "animated-element" animationState)
+            (CSS.htmlAttributes "animated-element" model.animations)
             [ text "3D animated content" ]
         ]
 
@@ -1054,7 +1061,7 @@ perspectiveWith perspectiveValue =
     import Html exposing (div, text)
 
     div
-        (CSS.htmlAttributes "my-element" animationState)
+        (CSS.htmlAttributes "my-element" model.animations)
         [ text "Animating element" ]
 
 For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/Element#htmlAttribute).
@@ -1067,7 +1074,7 @@ For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-la
 
     el
         (List.map htmlAttribute <|
-            CSS.htmlAttributes "my-element" animationState)
+            CSS.htmlAttributes "my-element" model.animations)
         (text "Animating element")
 
 -}
