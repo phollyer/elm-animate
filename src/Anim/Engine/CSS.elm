@@ -335,9 +335,7 @@ Or, when you want fire-and-forget animations.
     import Anim.Engine.CSS as CSS
 
     CSS.init
-        |> CSS.builder
         |> ... -- continue building the animation
-        |> CSS.animate
 
 -}
 init : AnimState
@@ -356,7 +354,7 @@ Use this to start building new animations.
             |> ... -- continue building the animation
 
 
-    -- Create a new animation with no state tracking
+    -- Create a new fire-and-forget animation
     newBuilder =
         CSS.init
             |> CSS.builder
@@ -922,11 +920,10 @@ getCurrentSize elementId animState =
 
 {-| Set the global duration in milliseconds (overrides any previous speed setting).
 
-    Css.init
+    model.animations
         |> CSS.builder
         |> Css.duration 1000
-        |> ... -- Property animations
-        |> Css.animate
+        |> ... -- continue building the animation
 
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -939,11 +936,10 @@ duration =
 Exactly what "units" means depends on the properties being animated. For position properties, this is pixels per second.
 Refer to the relevant property documentation for specific details for each property.
 
-    Css.init
+    model.animations
         |> CSS.builder
         |> Css.speed 100
-        |> ... -- Property animations
-        |> Css.animate
+        |> ... -- continue building the animation
 
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
@@ -953,11 +949,10 @@ speed =
 
 {-| Set the global easing function.
 
-    Css.init
+    model.animations
         |> CSS.builder
         |> Css.easing EaseInOutQuad
-        |> ... -- Property animations
-        |> Css.animate
+        |> ... -- continue building the animation
 
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
@@ -967,11 +962,10 @@ easing =
 
 {-| Set the global delay in milliseconds.
 
-    Css.init
+    model.animations
         |> CSS.builder
         |> Css.delay 500
-        |> ... -- Property animations
-        |> Css.animate
+        |> ... -- continue building the animation
 
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
@@ -984,11 +978,10 @@ delay =
 The perspective value determines the distance between the viewer and the `z = 0` plane.
 Smaller values create more dramatic 3D effects, while larger values create subtler effects.
 
-    Css.init
+    model.animations
         |> CSS.builder
         |> Css.perspective "container-id" 1000
-        |> ... -- Property animations
-        |> Css.animate
+        |> ... -- continue building the animation
 
 You can override this global setting for specific properties using property-specific perspective functions.
 

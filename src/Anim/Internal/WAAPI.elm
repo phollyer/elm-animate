@@ -36,7 +36,6 @@ module Anim.Internal.WAAPI exposing
     , isElementComplete
     , isElementRunning
     , perspective
-    , perspectiveStyles
     , perspectiveWith
     , speed
     , update
@@ -132,21 +131,6 @@ delay =
 perspective : String -> Float -> AnimBuilder -> AnimBuilder
 perspective =
     Builder.perspective
-
-
-perspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
-perspectiveStyles targetContainerId (AnimState state) =
-    case Builder.getPerspectiveStylesCache state.builder of
-        Just cache ->
-            case Dict.get targetContainerId cache of
-                Just styles ->
-                    List.map (\{ attribute, value } -> Html.Attributes.style attribute value) styles
-
-                Nothing ->
-                    []
-
-        Nothing ->
-            []
 
 
 perspectiveWith : Float -> List (Html.Attribute msg)
