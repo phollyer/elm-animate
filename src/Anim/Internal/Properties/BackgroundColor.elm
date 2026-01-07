@@ -170,42 +170,61 @@ interpolate start end t =
             Hsla { h = h, s = s, l = l, a = a }
 
         _ ->
-            -- Convert start color to match end color type and interpolate
-            case end of
-                Hex _ ->
-                    let
-                        startAsHex =
-                            Hex (toHex start)
-                    in
-                    interpolate startAsHex end t
+            -- Normalize both colors to alpha-enabled formats
+            -- Preserve start alpha when end color has no explicit alpha (RGB/Hex/HSL)
+            -- Use end alpha when explicitly specified (RGBA/HSLA)
+            let
+                startAlpha =
+                    case start of
+                        Rgba rgba ->
+                            rgba.a
 
-                Rgb _ ->
-                    let
-                        startAsRgb =
-                            Rgb (toRgb start)
-                    in
-                    interpolate startAsRgb end t
+                        Hsla hsla ->
+                            hsla.a
 
-                Rgba _ ->
+                        _ ->
+                            1.0
+            in
+            case ( start, end ) of
+                -- If end is HSL (no alpha), normalize both to HSLA preserving start alpha
+                ( _, Hsl _ ) ->
                     let
-                        startAsRgba =
-                            Rgba (toRgba start)
-                    in
-                    interpolate startAsRgba end t
+                        startHsla =
+                            toHsla start
 
-                Hsl _ ->
-                    let
-                        startAsHsl =
-                            Hsl (toHsl start)
+                        endHsla =
+                            toHsla end
                     in
-                    interpolate startAsHsl end t
+                    interpolate (Hsla startHsla) (Hsla { endHsla | a = startAlpha }) t
 
-                Hsla _ ->
+                -- If end is HSLA (explicit alpha), use it
+                ( _, Hsla _ ) ->
+                    interpolate (Hsla (toHsla start)) end t
+
+                -- If end is RGB/Hex (no alpha), normalize to RGBA preserving start alpha
+                ( _, Rgb _ ) ->
                     let
-                        startAsHsla =
-                            Hsla (toHsla start)
+                        startRgba =
+                            toRgba start
+
+                        endRgba =
+                            toRgba end
                     in
-                    interpolate startAsHsla end t
+                    interpolate (Rgba startRgba) (Rgba { endRgba | a = startAlpha }) t
+
+                ( _, Hex _ ) ->
+                    let
+                        startRgba =
+                            toRgba start
+
+                        endRgba =
+                            toRgba end
+                    in
+                    interpolate (Rgba startRgba) (Rgba { endRgba | a = startAlpha }) t
+
+                -- If end is RGBA (explicit alpha), use it
+                ( _, Rgba _ ) ->
+                    interpolate (Rgba (toRgba start)) end t
 
 
 

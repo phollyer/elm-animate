@@ -28,7 +28,7 @@ Use these functions to configure background color animations in the builder chai
 
 ## Start Color
 
-The first time a background color animation is configured, if no starting color is set, it will default to: `#000000` (black).
+The first time a background color animation is configured, if no starting color is set, it will default to `transparent white (rgba 255 255 255 0)`.
 On subsequent animations, it will start from the last known background color.
 
 The last known background color is tracked in your Engine's model, so you only need to set this when you want to override that behavior, or, if you choose not to track state in your model.

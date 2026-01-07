@@ -453,7 +453,7 @@ getStartWithDefault default maybeRange =
 getStartBackgroundColor : String -> AnimState -> Maybe Color
 getStartBackgroundColor elementId animState =
     getBackgroundColorRange elementId animState
-        |> getStartWithDefault (BackgroundColor.rgb255 0 0 0)
+        |> getStartWithDefault (BackgroundColor.rgba255 255 255 255 0)
 
 
 getEndBackgroundColor : String -> AnimState -> Maybe Color

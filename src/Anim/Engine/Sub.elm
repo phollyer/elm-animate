@@ -443,7 +443,7 @@ isComplete =
 
 Returns `Nothing` if the element has no background color animation.
 
-Returns `black (rgb 0 0 0)` if no explicit start value was set, which is the default when no start value is set.
+Returns `transparent white (rgba 255 255 255 0)` if no explicit start value was set, which is the default when no start value is set.
 
 -}
 getStartBackgroundColor : String -> AnimState -> Maybe Color
@@ -453,7 +453,7 @@ getStartBackgroundColor elementId animState =
             (\{ start } ->
                 case start of
                     Nothing ->
-                        BackgroundColor.rgb255 0 0 0
+                        BackgroundColor.rgba255 255 255 255 0
 
                     Just startColor ->
                         startColor
