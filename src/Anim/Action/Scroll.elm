@@ -20,8 +20,7 @@ Use these functions to configure scroll animations in the builder chain:
 
     Scroll.init
         |> Scroll.builder
-        |> Scroll.speed 500
-        |> ScrollAction.for "document"
+        |> ScrollAction.forDocument
         |> ScrollAction.toElement "section-1"
         |> ScrollAction.onYAxisWithOffset 60
         |> ScrollAction.build
@@ -31,12 +30,11 @@ You can chain multiple scroll targets with different containers:
 
     Scroll.init
         |> Scroll.builder
-        |> Scroll.easing EaseInOut
         |> ScrollAction.for "container-1"
         |> ScrollAction.toElement "target-1"
         |> ScrollAction.speed 800
         |> ScrollAction.build
-        |> ScrollAction.for "document"
+        |> ScrollAction.forDocument
         |> ScrollAction.toTop
         |> ScrollAction.duration 1000
         |> ScrollAction.easing BounceOut
@@ -151,8 +149,8 @@ forDocument =
 Type-safe alternative to `for "container-id"`.
 
     animBuilder
-        |> Scroll.forContainer "my-scrollable-container"
-        |> Scroll.toElement "target"
+        |> Scroll.forContainer "container-id"
+        |> Scroll.toElement "target-id"
         |> Scroll.build
 
 -}
@@ -165,7 +163,7 @@ forContainer =
 
     animBuilder
         |> Scroll.forContainer "container"
-        |> Scroll.toElement "target"
+        |> Scroll.toElement "target-id"
         |> Scroll.speed 500
         |> Scroll.build  -- Returns AnimBuilder
         |> ... -- Continue with more animations or execute
@@ -183,7 +181,7 @@ build =
 {-| Scroll to a specific element by ID.
 
     animBuilder
-        |> Scroll.for "document"
+        |> Scroll.forDocument
         |> Scroll.toElement "section-header"
         |> Scroll.build
 
@@ -196,7 +194,7 @@ toElement =
 {-| Scroll to specific X and Y coordinates.
 
     animBuilder
-        |> Scroll.for "container"
+        |> Scroll.forContainer "element-id"
         |> Scroll.toXY 100 200
         |> Scroll.build
 
@@ -209,7 +207,7 @@ toXY =
 {-| Scroll to specific X coordinate only.
 
     animBuilder
-        |> Scroll.for "document"
+        |> Scroll.forDocument
         |> Scroll.toX 100
         |> Scroll.build
 
@@ -222,7 +220,7 @@ toX =
 {-| Scroll to specific Y coordinate only.
 
     animBuilder
-        |> Scroll.for "document"
+        |> Scroll.forDocument
         |> Scroll.toY 200
         |> Scroll.build
 
@@ -235,7 +233,7 @@ toY =
 {-| Scroll to the top of the container.
 
     animBuilder
-        |> Scroll.for "document"
+        |> Scroll.forDocument
         |> Scroll.toTop
         |> Scroll.build
 
@@ -248,7 +246,7 @@ toTop =
 {-| Scroll to the bottom of the container.
 
     animBuilder
-        |> Scroll.for "container"
+        |> Scroll.forContainer "element-id"
         |> Scroll.toBottom
         |> Scroll.build
 
@@ -261,7 +259,7 @@ toBottom =
 {-| Scroll to the center of the container.
 
     animBuilder
-        |> Scroll.for "document"
+        |> Scroll.forContainer "element-id"
         |> Scroll.toCenter
         |> Scroll.build
 
@@ -274,7 +272,7 @@ toCenter =
 {-| Scroll to the left edge of the container.
 
     animBuilder
-        |> Scroll.for "document"
+        |> Scroll.forContainer "element-id"
         |> Scroll.toLeft
         |> Scroll.build
 
@@ -287,7 +285,7 @@ toLeft =
 {-| Scroll to the right edge of the container.
 
     animBuilder
-        |> Scroll.for "document"
+        |> Scroll.forContainer "element-id"
         |> Scroll.toRight
         |> Scroll.build
 
@@ -300,7 +298,7 @@ toRight =
 {-| Scroll to the top-left corner of the container.
 
     animBuilder
-        |> Scroll.for "document"
+        |> Scroll.forContainer "element-id"
         |> Scroll.toTopLeft
         |> Scroll.build
 
@@ -313,7 +311,7 @@ toTopLeft =
 {-| Scroll to the top-right corner of the container.
 
     animBuilder
-        |> Scroll.for "document"
+        |> Scroll.forContainer "element-id"
         |> Scroll.toTopRight
         |> Scroll.build
 
@@ -326,7 +324,7 @@ toTopRight =
 {-| Scroll to the bottom-left corner of the container.
 
     animBuilder
-        |> Scroll.for "document"
+        |> Scroll.forContainer "element-id"
         |> Scroll.toBottomLeft
         |> Scroll.build
 
@@ -339,7 +337,7 @@ toBottomLeft =
 {-| Scroll to the bottom-right corner of the container.
 
     animBuilder
-        |> Scroll.for "document"
+        |> Scroll.forContainer "element-id"
         |> Scroll.toBottomRight
         |> Scroll.build
 
@@ -351,10 +349,10 @@ toBottomRight =
 
 {-| Scroll to percentage of container size.
 
+    -- Scroll to 50% X and 80% Y of the container size.
     animBuilder
-        |> Scroll.for "document"
+        |> Scroll.forContainer "element-id"
         |> Scroll.toPercentage 0.5 0.8
-        -- 50% width, 80% height
         |> Scroll.build
 
 -}
@@ -370,7 +368,7 @@ toPercentage =
 {-| Scroll on both X and Y axes (default).
 
     animBuilder
-        |> Scroll.for "document"
+        |> Scroll.forContainer "element-id"
         |> Scroll.onBothAxes
         |> Scroll.toElement "section-1"
         |> Scroll.build
@@ -384,7 +382,7 @@ onBothAxes =
 {-| Scroll on X axis only.
 
     animBuilder
-        |> Scroll.for "container"
+        |> Scroll.forContainer "element-id"
         |> Scroll.onXAxis
         |> Scroll.toX 500
         |> Scroll.build
@@ -398,7 +396,7 @@ onXAxis =
 {-| Scroll on Y axis only.
 
     animBuilder
-        |> Scroll.for "document"
+        |> Scroll.forDocument
         |> Scroll.onYAxis
         |> Scroll.toElement "section-1"
         |> Scroll.build
@@ -411,8 +409,9 @@ onYAxis =
 
 {-| Scroll on both axes with offsets.
 
+    -- Scroll to element with 20px X offset and 60px Y offset.
     animBuilder
-        |> Scroll.for "document"
+        |> Scroll.forContainer "element-id"
         |> Scroll.onBothAxesWithOffset 20 60
         |> Scroll.toElement "section-1"
         |> Scroll.build
@@ -426,7 +425,7 @@ onBothAxesWithOffset =
 {-| Scroll on X axis with offset.
 
     animBuilder
-        |> Scroll.for "container"
+        |> Scroll.forContainer "element-id"
         |> Scroll.onXAxisWithOffset 60
         |> Scroll.toElement "section-1"
         |> Scroll.build
@@ -440,7 +439,7 @@ onXAxisWithOffset =
 {-| Scroll on Y axis with offset.
 
     animBuilder
-        |> Scroll.for "document"
+        |> Scroll.forDocument
         |> Scroll.onYAxisWithOffset 60
         |> Scroll.toElement "section-1"
         |> Scroll.build
@@ -458,7 +457,7 @@ onYAxisWithOffset =
 {-| Set the delay before this scroll animation starts.
 
     animBuilder
-        |> Scroll.for "document"
+        |> Scroll.forDocument
         |> Scroll.toTop
         |> Scroll.delay 500
         |> Scroll.build
@@ -472,7 +471,7 @@ delay =
 {-| Set the duration (ms) for this scroll animation.
 
     animBuilder
-        |> Scroll.for "container"
+        |> Scroll.forDocument
         |> Scroll.toElement "target"
         |> Scroll.duration 1000
         |> Scroll.build
@@ -486,7 +485,7 @@ duration =
 {-| Set the speed (pixels per second) for this scroll animation.
 
     animBuilder
-        |> Scroll.for "document"
+        |> Scroll.forDocument
         |> Scroll.toTop
         |> Scroll.speed 500
         |> Scroll.build
@@ -504,7 +503,7 @@ speed =
 {-| Set the easing function for this scroll animation.
 
     animBuilder
-        |> Scroll.for "document"
+        |> Scroll.forDocument
         |> Scroll.toElement "section-1"
         |> Scroll.easing EaseInOutQuad
         |> Scroll.build
