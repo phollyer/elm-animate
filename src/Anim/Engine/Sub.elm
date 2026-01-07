@@ -134,7 +134,7 @@ import Html.Attributes
 
 {-| Animation builder type.
 
-This is used internally to configure animations before executing them.
+This is used internally to configure animations.
 
 -}
 type alias AnimBuilder =
@@ -180,17 +180,14 @@ init =
     InternalSub.init
 
 
-{-| Turn the AnimState into an AnimBuilder.
+{-| Turn the [AnimState](#AnimState) into an [AnimBuilder](#AnimBuilder).
 
-Use this to start new animations based.
+Use this to start building new animations.
 
     newBuilder =
         model.animations
             |> Sub.builder
-            |> Position.for "element"
-            |> Position.to { x = 100, y = 200 }
-            |> Position.build
-            |> Sub.animate
+            |> ... -- Continue building the animation
 
 -}
 builder : AnimState -> AnimBuilder
@@ -204,10 +201,7 @@ builder =
         newAnimations =
             model.animations
                 |> Sub.builder
-                |> Position.for "element"
-                |> Position.toXY 100 200
-                |> Position.duration 1000
-                |> Position.build
+                |> .. -- Build your animations here
                 |> Sub.animate
     in
     { model | animations = newAnimations }
@@ -220,12 +214,10 @@ animate =
 
 {-| Set global duration in milliseconds (overrides any previous speed setting).
 
-    Sub.init
+    model.animations
+        |> Sub.builder
         |> Sub.duration 1000
-        |> Position.for "element"
-        |> Position.toXY 100 200
-        |> Position.build
-        |> Sub.animate
+        |> ... -- Continue building the animation
 
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -235,12 +227,10 @@ duration =
 
 {-| Set global speed in units per second (overrides any previous duration setting).
 
-    Sub.init
+    model.animations
+        |> Sub.builder
         |> Sub.speed 100
-        |> Position.for "element"
-        |> Position.toXY 100 200
-        |> Position.build
-        |> Sub.animate
+        |> ... -- Continue building the animation
 
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
@@ -250,12 +240,10 @@ speed =
 
 {-| Set global easing function.
 
-    Sub.init
+    model.animations
+        |> Sub.builder
         |> Sub.easing EaseInOutQuad
-        |> Position.for "element"
-        |> Position.toXY 100 200
-        |> Position.build
-        |> Sub.animate
+        |> ... -- Continue building the animation
 
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
@@ -265,12 +253,10 @@ easing =
 
 {-| Set global delay in milliseconds.
 
-    Sub.init
+    model.animations
+        |> Sub.builder
         |> Sub.delay 500
-        |> Position.for "element"
-        |> Position.toXY 100 200
-        |> Position.build
-        |> Sub.animate
+        |> ... -- Continue building the animation
 
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
@@ -284,12 +270,10 @@ The perspective value determines the distance between the viewer and the `z = 0`
 A smaller value creates a more pronounced 3D effect, while a larger value creates
 a more subtle effect.
 
-    Sub.init
+    model.animations
+        |> Sub.builder
         |> Sub.perspective "container-id" 1000
-        |> Position.for "element"
-        |> Position.toXYZ 100 200 50
-        |> Position.build
-        |> Sub.animate
+        |> ... -- Continue building the animation
 
 You can override this global setting for specific properties using property-specific perspective functions.
 
@@ -304,21 +288,19 @@ perspective =
 This function generates the necessary CSS perspective attributes for container elements
 that will contain 3D-transformed children. Specify which container you want attributes for.
 
-    -- Set perspective with a label
-    animBuilder
+    -- Set perspective
+    model.animations
+        |> Sub.builder
         |> Sub.perspective "main-container" 1000
-        |> ...
+        |> ... -- Continue building the animation
 
-    -- Apply it using the same label
+    -- Apply the perspective styles
     div
         (Sub.perspectiveStyles "main-container" animState)
         [ div
-            [ id "animated-element" ]  -- Only the animated elements need id
+            (Sub.htmlAttributes "animated-element" animState)
             [ text "3D animated content" ]
         ]
-
-This looks up perspective settings for the specified container from both global settings
-and property-level overrides, with property-level taking precedence.
 
 -}
 perspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
@@ -353,7 +335,7 @@ Think zoom level for 3D transforms!!
 
     div
         (Sub.perspectiveWith model.zoomLevel)
-        [ -- Animated content
+        [ --- Animated content
         ]
 
 -}
@@ -409,13 +391,16 @@ Your animations will not run without this subscription.
 
     import Anim.Engine.Sub as Sub
 
+    type Msg
+        = SubAnimationMsg Sub.AnimationMsg
+        | ...
+
     subscriptions : Model -> Sub AnimationMsg
     subscriptions model =
-        Sub.subscriptions model.animations
-            |> Sub.map SubAnimationMsg
+        Sub.subscriptions SubAnimationMsg model.animations
 
 -}
-subscriptions : AnimState -> Sub AnimationMsg
+subscriptions : (AnimationMsg -> msg) -> AnimState -> Sub msg
 subscriptions =
     InternalSub.subscriptions
 
@@ -760,11 +745,7 @@ getCurrentSize elementId animState =
 ### HTML Example
 
     div
-        ([ Html.Attributes.id "my-element"
-         , ...
-         ]
-            ++ CSS.htmlAttributes "my-element" animationState
-        )
+        (CSS.htmlAttributes "my-element" animationState)
         [ text "Animating element" ]
 
 
@@ -773,11 +754,8 @@ getCurrentSize elementId animState =
 For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/Element#htmlAttribute):
 
     el
-        ([ htmlAttribute (Html.Attributes.id "my-element")
-         , ...
-         ]
-            ++ List.map htmlAttribute <|
-                CSS.htmlAttributes "my-element" animationState
+        (List.map htmlAttribute <|
+            CSS.htmlAttributes "my-element" animationState
         )
         (text "Animating element")
 

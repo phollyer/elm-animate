@@ -194,10 +194,11 @@ update msg (AnimState state) =
 -- SUBSCRIPTIONS
 
 
-subscriptions : AnimState -> Sub AnimationMsg
-subscriptions (AnimState state) =
+subscriptions : (AnimationMsg -> msg) -> AnimState -> Sub msg
+subscriptions toMsg (AnimState state) =
     if state.isRunning then
         Browser.Events.onAnimationFrameDelta AnimationFrame
+            |> Sub.map toMsg
 
     else
         Sub.none
