@@ -166,7 +166,7 @@ These settings will be used for all property animations unless overridden on a p
 
 # Querying Animated Properties
 
-CSS animations, whether using transforms or keyframes, do not provide direct mid-flight access to the current values of properties.
+**When tracking state in your model**: CSS animations, whether using transforms or keyframes, do not provide direct mid-flight access to the current values of properties.
 _This is a limitation of CSS itself._
 However, this engine tracks the start and end values of animated properties, allowing you to query these values as needed.
 
@@ -616,13 +616,9 @@ getCurrent elementId maybeStart end default animState =
 
 {-| Get the start position of an element being animated.
 
-Returns the start position if the animation has not started yet, or is running.
-
-Returns the end position if the animation has completed.
-
 Returns `Nothing` if the element has no position animation.
 
-See also: [Start Positions](Anim.Properties.Position#configure) documentation.
+Returns `{ x = 0, y = 0, z = 0 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
 getStartPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
@@ -672,9 +668,9 @@ getCurrentPosition elementId animState =
 
 {-| Get the start scale of an element being animated.
 
-Returns `1.0` if no explicit start value was set, which is the default when no start value is set.
-
 Returns `Nothing` if the element has no scale animation.
+
+Returns `1.0` if no explicit start value was set, which is the default when no start value is set.
 
 -}
 getStartScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
@@ -877,7 +873,7 @@ getCurrentOpacity elementId animState =
 
 Returns `Nothing` if the element has no size animation.
 
-Returns `(0, 0)` if no explicit start value was set, which is the default when no start value is set.
+Returns `{ width = 0, height = 0 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
 getStartSize : String -> AnimState -> Maybe { width : Float, height : Float }

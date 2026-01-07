@@ -86,6 +86,10 @@ These settings will be used for all animations unless overridden on a per-animat
 
 # Querying Animated Properties
 
+Subscription-based animations provide direct mid-flight access to the current values of animated properties through frame-by-frame updates.
+This engine tracks the start, end, and current values of all animated properties, allowing you to query them in real-time
+during animation playback.
+
 
 ## Background Color
 
@@ -540,7 +544,7 @@ getCurrentOpacity elementId animState =
 
 Returns `Nothing` if the element has no position animation.
 
-Returns `(0, 0, 0)` if no explicit start value was set, which is the default when no start value is set.
+Returns `{x = 0, y = 0, z = 0}` if no explicit start value was set, which is the default when no start value is set.
 
 -}
 getStartPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
@@ -571,13 +575,13 @@ getEndPosition elementId animState =
 
 {-| Get the current position of an element based on its animation state.
 
+Returns `Nothing` if the element has no position animation.
+
 Returns the start position if the animation has not started yet.
 
 Returns the current interpolated position if the animation is running.
 
 Returns the end position if the animation has completed.
-
-Returns `Nothing` if the element has no position animation.
 
 -}
 getCurrentPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
@@ -637,9 +641,9 @@ getCurrentRotate elementId animState =
 
 {-| Get the start scale of an element being animated.
 
-Returns `1.0` if no explicit start value was set, which is the default when no start value is set.
-
 Returns `Nothing` if the element has no scale animation.
+
+Returns `1.0` if no explicit start value was set, which is the default when no start value is set.
 
 -}
 getStartScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
@@ -688,7 +692,7 @@ getCurrentScale elementId animState =
 
 Returns `Nothing` if the element has no size animation.
 
-Returns `(0, 0)` if no explicit start value was set, which is the default when no start value is set.
+Returns `{width = 0, height = 0}` if no explicit start value was set, which is the default when no start value is set.
 
 -}
 getStartSize : String -> AnimState -> Maybe { width : Float, height : Float }

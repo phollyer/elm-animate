@@ -103,6 +103,10 @@ These settings will be used for all animations unless overridden on a per-animat
 
 # Querying Animated Properties
 
+**When tracking state in your model**: WAAPI animations provide direct mid-flight access to the current values of animated properties through the Web Animations API.
+This engine tracks the start, end, and current values of all animated properties, allowing you to query them in real-time
+during animation playback.
+
 
 ## Background Color
 
@@ -490,7 +494,11 @@ getEndBackgroundColor =
 
 Returns `Nothing` if the element has no background color animation.
 
-This returns the current color if the Background Color is being animated.
+Returns the start color if the animation has not started yet.
+
+Returns the current interpolated color if the animation is running.
+
+Returns the end color if the animation has completed.
 
 -}
 getCurrentBackgroundColor : String -> AnimState -> Maybe Color
@@ -530,7 +538,11 @@ getEndOpacity elementId animState =
 
 Returns `Nothing` if the element has no opacity animation.
 
-This returns the actual current animated opacity tracked via ports during the animation.
+Returns the start opacity if the animation has not started yet.
+
+Returns the current interpolated opacity if the animation is running.
+
+Returns the end opacity if the animation has completed.
 
 -}
 getCurrentOpacity : String -> AnimState -> Maybe Float
@@ -547,7 +559,7 @@ getCurrentOpacity elementId animState =
 
 Returns `Nothing` if the element has no position animation.
 
-Returns `(0, 0, 0)` if no explicit start value was set, which is the default when no start value is set.
+Returns `{x = 0, y = 0, z = 0}` if no explicit start value was set, which is the default when no start value is set.
 
 -}
 getStartPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
@@ -571,7 +583,11 @@ getEndPosition elementId animState =
 
 Returns `Nothing` if the element has no position animation.
 
-This returns the actual current animated position tracked via ports during the animation.
+Returns the start position if the animation has not started yet.
+
+Returns the current interpolated position if the animation is running.
+
+Returns the end position if the animation has completed.
 
 -}
 getCurrentPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
@@ -612,7 +628,11 @@ getEndRotate elementId animState =
 
 Returns `Nothing` if the element has no rotate animation.
 
-This returns the actual current animated rotation tracked via ports during the animation.
+Returns the start rotation if the animation has not started yet.
+
+Returns the current interpolated rotation if the animation is running.
+
+Returns the end rotation if the animation has completed.
 
 -}
 getCurrentRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
@@ -627,9 +647,9 @@ getCurrentRotate elementId animState =
 
 {-| Get the start scale of an element being animated.
 
-Returns `1.0` if no explicit start value was set, which is the default when no start value is set.
-
 Returns `Nothing` if the element has no scale animation.
+
+Returns `1.0` if no explicit start value was set, which is the default when no start value is set.
 
 -}
 getStartScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
@@ -653,7 +673,11 @@ getEndScale elementId animState =
 
 Returns `Nothing` if the element has no scale animation.
 
-This returns the actual current animated scale tracked via ports during the animation.
+Returns the start scale if the animation has not started yet.
+
+Returns the current interpolated scale if the animation is running.
+
+Returns the end scale if the animation has completed.
 
 -}
 getCurrentScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
@@ -670,7 +694,7 @@ getCurrentScale elementId animState =
 
 Returns `Nothing` if the element has no size animation.
 
-Returns `(0, 0)` if no explicit start value was set, which is the default when no start value is set.
+Returns `{ width = 0, height = 0 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
 getStartSize : String -> AnimState -> Maybe { width : Float, height : Float }
@@ -694,7 +718,11 @@ getEndSize elementId animState =
 
 Returns `Nothing` if the element has no size animation.
 
-This returns the actual current animated size tracked via ports during the animation.
+Returns the start size if the animation has not started yet.
+
+Returns the current interpolated size if the animation is running.
+
+Returns the end size if the animation has completed.
 
 -}
 getCurrentSize : String -> AnimState -> Maybe { width : Float, height : Float }
