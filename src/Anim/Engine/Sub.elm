@@ -279,7 +279,7 @@ a more subtle effect.
         |> Sub.perspective "container-id" 1000
         |> ... -- Continue building the animation
 
-You can override this global setting for specific properties using property-specific perspective functions.
+You can override this global setting for specific properties using property-specific `perspective` functions.
 
 -}
 perspective : String -> Float -> AnimBuilder -> AnimBuilder

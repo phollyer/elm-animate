@@ -165,8 +165,7 @@ This state keeps track of animations and their configurations.
 
     { model | animations : WAAPI.AnimState }
 
-If you only need to create fire-and-forget animations without tracking state,
-you don't need to add this type to your model.
+**Note:** You do not need this for fire-and-forget animations.
 
 -}
 type alias AnimState =
@@ -192,7 +191,7 @@ init =
 
 {-| Animation builder type.
 
-This is used internally to configure animations before executing them.
+This is used internally to configure animations.
 
 -}
 type alias AnimBuilder =
@@ -293,10 +292,7 @@ The JavaScript will automatically apply perspective CSS to this container.
         |> -- continue building the animation
         |> WAAPI.animate
 
-You can override this global setting for specific properties using property-specific perspective functions.
-
-**For dynamic perspective control** (e.g., zoom in/out), use [perspectiveWith](#perspectiveWith)
-instead of relying on this automatic behavior.
+You can override this global setting for specific properties using property-specific `perspective` functions.
 
 -}
 perspective : String -> Float -> AnimBuilder -> AnimBuilder
