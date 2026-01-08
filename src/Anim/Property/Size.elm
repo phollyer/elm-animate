@@ -23,15 +23,6 @@ Use these functions to configure size animations in the builder chain:
 
 # Initialize
 
-Use these functions in your model's init function to set initial property values without animation.
-They work in the builder pipeline before you start configuring animations:
-
-    CSS.init
-        |> CSS.builder
-        |> Size.init "element-id" 100
-        |> Opacity.init "element-id" 1.0
-        |> ... -- continue setting initial values
-
 @docs init, initWH, initW, initH
 
 
@@ -93,9 +84,12 @@ for =
     SB.for
 
 
-{-| Set initial size value without animation.
+{-| Set the initial size.
 
-Use this to initialize property values in the builder pipeline:
+Use this to initialize the size in your `init` function.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Size as Size
 
     Engine.init
         |> Engine.builder
@@ -115,7 +109,10 @@ init elementId value animBuilder =
         |> SB.build
 
 
-{-| Set initial width and height without animation.
+{-| Set the initial width and height.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Size as Size
 
     Engine.init
         |> Engine.builder
@@ -133,7 +130,10 @@ initWH elementId w h animBuilder =
         |> SB.build
 
 
-{-| Set initial width without animation.
+{-| Set the initial width.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Size as Size
 
     Engine.init
         |> Engine.builder
@@ -151,7 +151,10 @@ initW elementId w animBuilder =
         |> SB.build
 
 
-{-| Set initial height without animation.
+{-| Set the initial height.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Size as Size
 
     Engine.init
         |> Engine.builder

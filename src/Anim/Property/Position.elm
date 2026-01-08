@@ -35,15 +35,6 @@ For 3D positioning, you just need to set a non-zero value for the 'Z' axis and a
 
 # Initialize
 
-Use these functions in your model's init function to set initial property values without animation.
-They work in the builder pipeline before you start configuring animations:
-
-    CSS.init
-        |> CSS.builder
-        |> Position.init "element-id" 100
-        |> Scale.init "element-id" 1.0
-        |> ... -- continue setting initial values
-
 @docs init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
 
 
@@ -114,9 +105,12 @@ for =
     PB.for
 
 
-{-| Set initial position value without animation.
+{-| Set the initial position.
 
-Use this to initialize property values in the builder pipeline:
+Use this to initialize the position in your `init` function.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Position as Position
 
     Engine.init
         |> Engine.builder
@@ -136,7 +130,10 @@ init elementId value animBuilder =
         |> PB.build
 
 
-{-| Set initial X, Y, and Z position without animation.
+{-| Set the initial X, Y, and Z position.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Position as Position
 
     Engine.init
         |> Engine.builder
@@ -154,7 +151,10 @@ initXYZ elementId x y z animBuilder =
         |> PB.build
 
 
-{-| Set initial X and Y position without animation.
+{-| Set the initial X and Y position.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Position as Position
 
     Engine.init
         |> Engine.builder
@@ -172,7 +172,10 @@ initXY elementId x y animBuilder =
         |> PB.build
 
 
-{-| Set initial X and Z position without animation.
+{-| Set the initial X and Z position.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Position as Position
 
     Engine.init
         |> Engine.builder
@@ -190,7 +193,10 @@ initXZ elementId x z animBuilder =
         |> PB.build
 
 
-{-| Set initial X position without animation.
+{-| Set the initial X position.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Position as Position
 
     Engine.init
         |> Engine.builder
@@ -208,7 +214,10 @@ initX elementId x animBuilder =
         |> PB.build
 
 
-{-| Set initial Y and Z position without animation.
+{-| Set the initial Y and Z position.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Position as Position
 
     Engine.init
         |> Engine.builder
@@ -226,7 +235,10 @@ initYZ elementId y z animBuilder =
         |> PB.build
 
 
-{-| Set initial Y position without animation.
+{-| Set the initial Y position.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Position as Position
 
     Engine.init
         |> Engine.builder
@@ -244,7 +256,10 @@ initY elementId y animBuilder =
         |> PB.build
 
 
-{-| Set initial Z position without animation.
+{-| Set the initial Z position.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Position as Position
 
     Engine.init
         |> Engine.builder

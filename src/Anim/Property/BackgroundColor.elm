@@ -21,18 +21,6 @@ Use these functions to configure background color animations in the builder chai
 
 # Initialize
 
-Before an animation runs, it is often useful to set an initial value.
-
-    import Anim.Engine.* as Engine
-    import Anim.Property.BackgroundColor as BackgroundColor
-
-    init : Model
-    Engine.init
-        |> Engine.builder
-        |> BackgroundColor.init "element-id" (Hex "#ff0000")
-        |> ... -- continue setting initial values
-        |> Engine.animate
-
 @docs init
 
 
@@ -117,9 +105,12 @@ for elementId =
     CB.for elementId
 
 
-{-| Set initial background color value without animation.
+{-| Set the initial background color.
 
-Use this to initialize property values in the builder pipeline:
+Use this to initialize the background color in your `init` function.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.BackgroundColor as BackgroundColor exposing (Color(..))
 
     Engine.init
         |> Engine.builder

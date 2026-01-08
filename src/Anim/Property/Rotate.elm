@@ -31,15 +31,6 @@ For 3D rotations, you just need to set a value for the 'Z' axis and a perspectiv
 
 # Initialize
 
-Use these functions in your model's init function to set initial property values without animation.
-They work in the builder pipeline before you start configuring animations:
-
-    CSS.init
-        |> CSS.builder
-        |> Rotate.init "element-id" 45
-        |> Position.init "element-id" 100
-        |> ... -- continue setting initial values
-
 @docs init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
 
 
@@ -114,9 +105,12 @@ for =
     RB.for
 
 
-{-| Set initial rotation value without animation.
+{-| Set the initial rotation.
 
-Use this to initialize property values in the builder pipeline:
+Use this to initialize the rotation in your `init` function.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Rotate as Rotate
 
     Engine.init
         |> Engine.builder
@@ -136,7 +130,10 @@ init elementId value animBuilder =
         |> RB.build
 
 
-{-| Set initial X, Y, and Z rotation without animation.
+{-| Set the initial X, Y, and Z rotation.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Rotate as Rotate
 
     Engine.init
         |> Engine.builder
@@ -154,7 +151,10 @@ initXYZ elementId x y z animBuilder =
         |> RB.build
 
 
-{-| Set initial X and Y rotation without animation.
+{-| Set the initial X and Y rotation.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Rotate as Rotate
 
     Engine.init
         |> Engine.builder
@@ -172,7 +172,10 @@ initXY elementId x y animBuilder =
         |> RB.build
 
 
-{-| Set initial X and Z rotation without animation.
+{-| Set the initial X and Z rotation.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Rotate as Rotate
 
     Engine.init
         |> Engine.builder
@@ -190,7 +193,10 @@ initXZ elementId x z animBuilder =
         |> RB.build
 
 
-{-| Set initial X rotation without animation.
+{-| Set the initial X rotation.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Rotate as Rotate
 
     Engine.init
         |> Engine.builder
@@ -208,7 +214,10 @@ initX elementId x animBuilder =
         |> RB.build
 
 
-{-| Set initial Y and Z rotation without animation.
+{-| Set the initial Y and Z rotation.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Rotate as Rotate
 
     Engine.init
         |> Engine.builder
@@ -226,7 +235,10 @@ initYZ elementId y z animBuilder =
         |> RB.build
 
 
-{-| Set initial Y rotation without animation.
+{-| Set the initial Y rotation.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Rotate as Rotate
 
     Engine.init
         |> Engine.builder
@@ -244,7 +256,10 @@ initY elementId y animBuilder =
         |> RB.build
 
 
-{-| Set initial Z rotation without animation.
+{-| Set the initial Z rotation.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Rotate as Rotate
 
     Engine.init
         |> Engine.builder

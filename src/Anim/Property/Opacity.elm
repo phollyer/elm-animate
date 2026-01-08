@@ -21,15 +21,6 @@ Use these functions to configure opacity animations in the builder chain:
 
 # Initialize
 
-Use these functions in your model's init function to set initial property values without animation.
-They work in the builder pipeline before you start configuring animations:
-
-    CSS.init
-        |> CSS.builder
-        |> Opacity.init "element-id" 0.5
-        |> Position.init "element-id" 100
-        |> ... -- continue setting initial values
-
 @docs init
 
 
@@ -95,9 +86,12 @@ for =
     OB.for
 
 
-{-| Set initial opacity value without animation.
+{-| Set the initial opacity.
 
-Use this to initialize property values in the builder pipeline:
+Use this to initialize the opacity in your `init` function.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Opacity as Opacity
 
     Engine.init
         |> Engine.builder

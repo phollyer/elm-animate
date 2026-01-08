@@ -35,15 +35,6 @@ For 3D scaling, you just need to set a non-zero value for the 'Z' axis and a per
 
 # Initialize
 
-Use these functions in your model's init function to set initial property values without animation.
-They work in the builder pipeline before you start configuring animations:
-
-    CSS.init
-        |> CSS.builder
-        |> Scale.init "element-id" 1.5
-        |> Rotate.init "element-id" 45
-        |> ... -- continue setting initial values
-
 @docs init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
 
 
@@ -117,9 +108,12 @@ for =
     SB.for
 
 
-{-| Set initial scale value without animation.
+{-| Set the initial scale.
 
-Use this to initialize property values in the builder pipeline:
+Use this to initialize the scale in your `init` function.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Scale as Scale
 
     Engine.init
         |> Engine.builder
@@ -139,7 +133,10 @@ init elementId value animBuilder =
         |> SB.build
 
 
-{-| Set initial X, Y, and Z scale without animation.
+{-| Set the initial X, Y, and Z scale.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Scale as Scale
 
     Engine.init
         |> Engine.builder
@@ -157,7 +154,10 @@ initXYZ elementId x y z animBuilder =
         |> SB.build
 
 
-{-| Set initial X and Y scale without animation.
+{-| Set the initial X and Y scale.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Scale as Scale
 
     Engine.init
         |> Engine.builder
@@ -175,7 +175,10 @@ initXY elementId x y animBuilder =
         |> SB.build
 
 
-{-| Set initial X and Z scale without animation.
+{-| Set the initial X and Z scale.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Scale as Scale
 
     Engine.init
         |> Engine.builder
@@ -193,7 +196,10 @@ initXZ elementId x z animBuilder =
         |> SB.build
 
 
-{-| Set initial X scale without animation.
+{-| Set the initial X scale.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Scale as Scale
 
     Engine.init
         |> Engine.builder
@@ -211,7 +217,10 @@ initX elementId x animBuilder =
         |> SB.build
 
 
-{-| Set initial Y and Z scale without animation.
+{-| Set the initial Y and Z scale.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Scale as Scale
 
     Engine.init
         |> Engine.builder
@@ -229,7 +238,10 @@ initYZ elementId y z animBuilder =
         |> SB.build
 
 
-{-| Set initial Y scale without animation.
+{-| Set the initial Y scale.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Scale as Scale
 
     Engine.init
         |> Engine.builder
@@ -247,7 +259,10 @@ initY elementId y animBuilder =
         |> SB.build
 
 
-{-| Set initial Z scale without animation.
+{-| Set the initial Z scale.
+
+    import Anim.Engine.* as Engine
+    import Anim.Property.Scale as Scale
 
     Engine.init
         |> Engine.builder
