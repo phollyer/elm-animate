@@ -6,7 +6,7 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 - **Multiple Engines:** Choose the best engine for your use case.
 - **Unified Fluent API:** Consistent builder pattern for all engines.
-- **GPU-Accelerated:** All animation engines offload work to the GPU for smoother animations and better battery efficiency.
+- **Hardware-Accelerated:** GPU-accelerated transforms (position, rotation, scale) and opacity for smoother animations and better battery efficiency.
 - **Full 3D Support:** Transform elements in 3D space with XYZ positioning, multi-axis rotation, and configurable perspective for depth.
 - **Composable, type-safe, and easy to integrate.**
 
