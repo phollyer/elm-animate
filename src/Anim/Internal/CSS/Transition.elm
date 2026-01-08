@@ -7,6 +7,7 @@ import Anim.Internal.Builder as Builder
 import Anim.Internal.CSS.Transform as TH
 import Anim.Internal.Easing as Easing
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
+import Anim.Internal.Properties.Color as TextColor
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
@@ -119,6 +120,18 @@ calculatePropertyDistance property =
                             BackgroundColor.rgb255 0 0 0
             in
             BackgroundColor.distance start config.end
+
+        Builder.FontColorConfig config ->
+            let
+                start =
+                    case config.start of
+                        Just s ->
+                            s
+
+                        Nothing ->
+                            TextColor.rgb255 0 0 0
+            in
+            TextColor.distance start config.end
 
         Builder.OpacityConfig config ->
             let

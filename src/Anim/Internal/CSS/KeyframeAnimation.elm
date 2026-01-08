@@ -7,6 +7,7 @@ module Anim.Internal.CSS.KeyframeAnimation exposing
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Easing as Easing
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
+import Anim.Internal.Properties.Color as TextColor
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
@@ -59,6 +60,9 @@ generate elementId properties =
                                 Builder.ProcessedBackgroundColorConfig cfg ->
                                     cfg.duration
 
+                                Builder.ProcessedFontColorConfig cfg ->
+                                    cfg.duration
+
                                 Builder.ProcessedOpacityConfig cfg ->
                                     cfg.duration
 
@@ -84,6 +88,9 @@ generate elementId properties =
                                     cfg.delay
 
                                 Builder.ProcessedBackgroundColorConfig cfg ->
+                                    cfg.delay
+
+                                Builder.ProcessedFontColorConfig cfg ->
                                     cfg.delay
 
                                 Builder.ProcessedOpacityConfig cfg ->
@@ -521,6 +528,9 @@ generate elementId properties =
 
                                         Builder.ProcessedBackgroundColorConfig cfg ->
                                             "background-color" ++ String.fromInt cfg.duration ++ BackgroundColor.toString cfg.end
+
+                                        Builder.ProcessedFontColorConfig cfg ->
+                                            "color" ++ String.fromInt cfg.duration ++ TextColor.toString cfg.end
 
                                         Builder.ProcessedOpacityConfig cfg ->
                                             "opacity" ++ String.fromInt cfg.duration ++ Opacity.toString cfg.end

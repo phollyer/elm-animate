@@ -1,9 +1,10 @@
 module TestColorScale exposing (suite)
 
+import Anim.Color as Color
+import Anim.Easing as Easing
 import Anim.Engine.CSS as CSS
 import Anim.Property.BackgroundColor as BackgroundColor
 import Anim.Property.Scale as Scale
-import Anim.Easing as Easing
 import Expect
 import Test exposing (..)
 
@@ -20,8 +21,8 @@ suite =
                             |> CSS.duration 900
                             |> CSS.easing Easing.QuartInOut
                             |> BackgroundColor.for "box"
-                            |> BackgroundColor.from (BackgroundColor.Rgb { r = 59, g = 130, b = 246 })
-                            |> BackgroundColor.to (BackgroundColor.Rgb { r = 255, g = 100, b = 150 })
+                            |> BackgroundColor.from (Color.rgb 59 130 246)
+                            |> BackgroundColor.to (Color.rgb 255 100 150)
                             |> BackgroundColor.duration 900
                             |> BackgroundColor.build
                             |> Scale.for "box"

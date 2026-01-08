@@ -36,6 +36,7 @@ import Anim.Internal.Builder as Builder
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Easing as Easing
 import Anim.Internal.Properties.BackgroundColor as Color exposing (Color)
+import Anim.Internal.Properties.Color as TextColor
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
@@ -61,6 +62,7 @@ type Animation
     | RotateAnimation Rotate
     | ScaleAnimation Scale
     | BackgroundColorAnimation Color
+    | FontColorAnimation TextColor.Color
     | OpacityAnimation Opacity
     | SizeAnimation Size
 
@@ -127,6 +129,7 @@ animate builder_ =
             , rotate = Maybe.withDefault { x = 0, y = 0, z = 0 } currentValues.rotate
             , scale = Maybe.withDefault { x = 1.0, y = 1.0, z = 1.0 } currentValues.scale
             , color = Maybe.withDefault (Color.rgba255 255 255 255 1.0) currentValues.color
+            , fontColor = Maybe.withDefault (TextColor.rgba255 0 0 0 1.0) currentValues.fontColor
             , opacity = Maybe.withDefault 1.0 currentValues.opacity
             , size = Maybe.withDefault { width = 0, height = 0 } currentValues.size
             }
@@ -303,6 +306,19 @@ getCurrentPropertyValue propertyState =
             Builder.ProcessedBackgroundColorConfig
                 { start = Just color
                 , end = color
+                , duration = 0
+                , speed = 0
+                , distance = 0
+                , timing = Duration 0
+                , easing = Linear
+                , delay = 0
+                , perspective = Nothing
+                }
+
+        FontColorAnimation fontColor ->
+            Builder.ProcessedFontColorConfig
+                { start = Just fontColor
+                , end = fontColor
                 , duration = 0
                 , speed = 0
                 , distance = 0
@@ -795,6 +811,23 @@ createBackgroundColorSteps start target frames easingFunction =
     List.map BackgroundColorAnimation steps
 
 
+createFontColorSteps : TextColor.Color -> TextColor.Color -> Int -> (Float -> Float) -> List Animation
+createFontColorSteps start target frames easingFunction =
+    let
+        progressValues =
+            case AnimationCore.animationStepsWithFrames frames easingFunction 0.0 1.0 of
+                [] ->
+                    List.repeat frames 1.0
+
+                vals ->
+                    vals
+
+        steps =
+            List.map (TextColor.interpolate start target) progressValues
+    in
+    List.map FontColorAnimation steps
+
+
 createOpacitySteps : Opacity.Opacity -> Opacity.Opacity -> Int -> (Float -> Float) -> List Animation
 createOpacitySteps start target frames easingFunction =
     let
@@ -937,6 +970,7 @@ type alias PropertyValues =
     , rotate : Maybe { x : Float, y : Float, z : Float }
     , scale : Maybe { x : Float, y : Float, z : Float }
     , color : Maybe Color
+    , fontColor : Maybe TextColor.Color
     , opacity : Maybe Float
     , size : Maybe { width : Float, height : Float }
     }
@@ -948,6 +982,7 @@ propertyValuesEmpty =
     , rotate = Nothing
     , scale = Nothing
     , color = Nothing
+    , fontColor = Nothing
     , opacity = Nothing
     , size = Nothing
     }
@@ -958,6 +993,7 @@ type alias UnwrappedPropertyValues =
     , rotate : { x : Float, y : Float, z : Float }
     , scale : { x : Float, y : Float, z : Float }
     , color : Color
+    , fontColor : TextColor.Color
     , opacity : Float
     , size : { width : Float, height : Float }
     }
@@ -978,6 +1014,13 @@ extractFromProperty property acc =
         Builder.ProcessedBackgroundColorConfig config ->
             if config.duration == 0 then
                 { acc | color = Just config.end }
+
+            else
+                acc
+
+        Builder.ProcessedFontColorConfig config ->
+            if config.duration == 0 then
+                { acc | fontColor = Just config.end }
 
             else
                 acc
@@ -1139,6 +1182,22 @@ createPropertyAnimState startValues property =
                     config.easing
                     createBackgroundColorSteps
                     BackgroundColorAnimation
+
+        Builder.ProcessedFontColorConfig config ->
+            let
+                actualStart =
+                    Maybe.withDefault startValues.fontColor config.start
+            in
+            Just <|
+                buildPropertyAnimation
+                    "fontColor"
+                    actualStart
+                    config.end
+                    config.duration
+                    config.delay
+                    config.easing
+                    createFontColorSteps
+                    FontColorAnimation
 
         Builder.ProcessedOpacityConfig config ->
             let

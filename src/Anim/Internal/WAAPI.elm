@@ -45,6 +45,7 @@ import Anim.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Easing as Easing
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Color)
+import Anim.Internal.Properties.Color as TextColor
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
@@ -74,6 +75,7 @@ type alias ElementEndStates =
     , rotate : Maybe Rotate
     , scale : Maybe Scale
     , backgroundColor : Maybe Color
+    , fontColor : Maybe TextColor.Color
     , opacity : Maybe Opacity
     , size : Maybe Size
     }
@@ -218,6 +220,7 @@ extractElementEndStates elementConfig =
             , rotate = Nothing
             , scale = Nothing
             , backgroundColor = Nothing
+            , fontColor = Nothing
             , opacity = Nothing
             , size = Nothing
             }
@@ -236,6 +239,9 @@ extractElementEndStates elementConfig =
 
                 Builder.ProcessedBackgroundColorConfig config ->
                     { state | backgroundColor = Just config.end }
+
+                Builder.ProcessedFontColorConfig config ->
+                    { state | fontColor = Just config.end }
 
                 Builder.ProcessedOpacityConfig config ->
                     { state | opacity = Just config.end }
@@ -326,6 +332,18 @@ injectCurrentStateIntoProperty currentStates propertyConfig =
                                 currentStates.backgroundColor
                 }
 
+        Builder.FontColorConfig config ->
+            Builder.FontColorConfig
+                { config
+                    | start =
+                        case config.start of
+                            Just _ ->
+                                config.start
+
+                            Nothing ->
+                                currentStates.fontColor
+                }
+
         Builder.SizeConfig config ->
             Builder.SizeConfig
                 { config
@@ -373,6 +391,7 @@ updateElementAnimation animUpdate elementAnimation =
             , scale = Just (Scale.fromTriple ( animUpdate.scaleX, animUpdate.scaleY, animUpdate.scaleZ ))
             , opacity = Just (Opacity.fromFloat animUpdate.opacity)
             , backgroundColor = BackgroundColor.fromRgbString animUpdate.backgroundColor
+            , fontColor = TextColor.fromRgbString animUpdate.color
             , size = Just (Size.fromTuple ( animUpdate.width, animUpdate.height ))
             }
     }
@@ -667,6 +686,7 @@ type alias AnimationUpdate =
     , scaleY : Float
     , scaleZ : Float
     , backgroundColor : String
+    , color : String
     , width : Float
     , height : Float
     , isAnimating : Bool
@@ -688,6 +708,7 @@ animationUpdateDecoder =
         |> andMap (Decode.field "scaleY" Decode.float)
         |> andMap (Decode.field "scaleZ" Decode.float)
         |> andMap (Decode.field "backgroundColor" Decode.string)
+        |> andMap (Decode.field "color" Decode.string)
         |> andMap (Decode.field "width" Decode.float)
         |> andMap (Decode.field "height" Decode.float)
         |> andMap (Decode.field "isAnimating" Decode.bool)
@@ -859,6 +880,25 @@ encodeProcessedPropertyConfig property =
                 baseFields =
                     [ ( "type", Encode.string "backgroundColor" )
                     , ( "color", Encode.string (BackgroundColor.toString config.end) )
+                    , ( "startColor", Encode.string startColor )
+                    , ( "duration", Encode.int config.duration )
+                    ]
+
+                easingFields =
+                    encodeEasingWithKeyframes config.easing
+            in
+            Encode.object (baseFields ++ easingFields)
+
+        Builder.ProcessedFontColorConfig config ->
+            let
+                startColor =
+                    config.start
+                        |> Maybe.map TextColor.toString
+                        |> Maybe.withDefault "rgba(0, 0, 0, 1)"
+
+                baseFields =
+                    [ ( "type", Encode.string "color" )
+                    , ( "color", Encode.string (TextColor.toString config.end) )
                     , ( "startColor", Encode.string startColor )
                     , ( "duration", Encode.int config.duration )
                     ]

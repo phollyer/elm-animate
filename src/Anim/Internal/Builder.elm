@@ -44,7 +44,8 @@ module Anim.Internal.Builder exposing
     )
 
 import Anim.Easing exposing (Easing(..))
-import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Color)
+import Anim.Internal.Properties.BackgroundColor as BackgroundColor
+import Anim.Internal.Properties.Color as TextColor exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
@@ -53,6 +54,10 @@ import Anim.Internal.Properties.ScrollTarget exposing (ScrollTarget)
 import Anim.Internal.Properties.Size as Size exposing (Size)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
+
+
+type alias BackgroundColor =
+    BackgroundColor.Color
 
 
 
@@ -88,7 +93,8 @@ type PropertyConfig
     = PositionConfig (AnimationConfig Position)
     | RotateConfig (AnimationConfig Rotate)
     | ScaleConfig (AnimationConfig Scale)
-    | BackgroundColorConfig (AnimationConfig Color)
+    | BackgroundColorConfig (AnimationConfig BackgroundColor)
+    | FontColorConfig (AnimationConfig Color)
     | OpacityConfig (AnimationConfig Opacity)
     | SizeConfig (AnimationConfig Size)
 
@@ -97,7 +103,8 @@ type ProcessedPropertyConfig
     = ProcessedPositionConfig (ProcessedAnimationConfig Position)
     | ProcessedRotateConfig (ProcessedAnimationConfig Rotate)
     | ProcessedScaleConfig (ProcessedAnimationConfig Scale)
-    | ProcessedBackgroundColorConfig (ProcessedAnimationConfig Color)
+    | ProcessedBackgroundColorConfig (ProcessedAnimationConfig BackgroundColor)
+    | ProcessedFontColorConfig (ProcessedAnimationConfig Color)
     | ProcessedOpacityConfig (ProcessedAnimationConfig Opacity)
     | ProcessedSizeConfig (ProcessedAnimationConfig Size)
 
@@ -354,6 +361,9 @@ markPropertyDirty property =
         BackgroundColorConfig config ->
             BackgroundColorConfig { config | isDirty = True }
 
+        FontColorConfig config ->
+            FontColorConfig { config | isDirty = True }
+
         OpacityConfig config ->
             OpacityConfig { config | isDirty = True }
 
@@ -554,6 +564,28 @@ processProperty globalData property =
                         , durationFn = BackgroundColor.duration
                         , speedFn = BackgroundColor.speed
                         , wrapper = ProcessedBackgroundColorConfig
+                        }
+
+        FontColorConfig config ->
+            if config.isDirty then
+                Just <|
+                    createDirtyConfig
+                        { end = config.end
+                        , propPerspective = Nothing
+                        , globalPerspective = Nothing
+                        , wrapper = ProcessedFontColorConfig
+                        }
+
+            else
+                Just <|
+                    processStandardAnimation
+                        { config = config
+                        , globalData = globalData
+                        , defaultStart = TextColor.rgb255 0 0 0
+                        , distanceFn = TextColor.distance
+                        , durationFn = TextColor.duration
+                        , speedFn = TextColor.speed
+                        , wrapper = ProcessedFontColorConfig
                         }
 
         OpacityConfig config ->

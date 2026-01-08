@@ -1,6 +1,6 @@
 module Anim.Property.BackgroundColor exposing
     ( init
-    , Color(..), Builder, for, build
+    , Builder, for, build
     , from
     , to
     , delay, duration, speed
@@ -11,9 +11,11 @@ module Anim.Property.BackgroundColor exposing
 
 Use these functions to configure background color animations in the builder chain:
 
+    import Anim.Color exposing (Color(..))
+
     animBuilder
         |> BackgroundColor.for "my-element"
-        |> BackgroundColor.to (Hex "#ff0000")
+        |> BackgroundColor.to (hex "#ff0000")
         |> ... -- other color configuration steps
         |> BackgroundColor.build
         |> ... -- continue with animation
@@ -26,7 +28,7 @@ Use these functions to configure background color animations in the builder chai
 
 # Build
 
-@docs Color, Builder, for, build
+@docs Builder, for, build
 
 
 # Configure
@@ -58,33 +60,12 @@ The last known background color is tracked in your Engine's model, so you only n
 
 -}
 
+import Anim.Color exposing (Color(..))
 import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.BackgroundColor as CB
 import Anim.Internal.Properties.BackgroundColor as BC
 import Color
-
-
-
--- COLOR CONFIGURATION
-
-
-{-| Color values in different formats.
-
-  - Use `Hex` for hex color strings like "#ff0000"
-  - Use `Rgb` or `Rgba` for RGB values
-  - Use `Hsl` or `Hsla` for HSL values
-  - Use `ElmColor` to integrate with the [avh4/elm-color](https://package.elm-lang.org/packages/avh4/elm-color/latest/) package,
-    which provides named colors (`Color.red`, `Color.blue`, etc.) and color manipulation functions
-
--}
-type Color
-    = Hex String
-    | Rgb { r : Int, g : Int, b : Int }
-    | Rgba { r : Int, g : Int, b : Int, a : Float }
-    | Hsl { h : Float, s : Float, l : Float }
-    | Hsla { h : Float, s : Float, l : Float, a : Float }
-    | ElmColor Color.Color
 
 
 {-| Type alias for the internal `ColorBuilder`.
@@ -131,11 +112,13 @@ init elementId color animBuilder =
 {-| Complete the color animation configuration and return an [AnimBuilder](Anim#AnimBuilder)
 so you can continue building the overall animation.
 
-    animBuilder
-        |> BackgroundColor.for "my-element"
-        |> ... -- Color configuration steps
-        |> BackgroundColor.build
-        |> ... -- continue with animation
+    animBuilderColor exposing (hex)
+    import Anim.Engine.* as Engine
+    import Anim.Property.BackgroundColor as BackgroundColor
+
+    Engine.init
+        |> Engine.builder
+        |> BackgroundColor.init "element-id" (h
 
 -}
 build : Builder -> AnimBuilder
@@ -248,6 +231,10 @@ easing =
 delay : Int -> Builder -> Builder
 delay =
     CB.delay
+
+
+
+-- INTERNAL CONVERSION
 
 
 toInternal : Color -> BC.Color
