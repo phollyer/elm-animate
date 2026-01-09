@@ -377,36 +377,6 @@ fromRGB r g b =
     Rgb { r = r, g = g, b = b }
 
 
-fromRgbString : String -> Maybe Color
-fromRgbString str =
-    -- Simple parser for "rgb(r, g, b)" format
-    let
-        prefix =
-            "rgb("
-
-        suffix =
-            ")"
-
-        content =
-            String.dropLeft (String.length prefix) (String.dropRight (String.length suffix) str)
-
-        parts =
-            String.split "," content |> List.map String.trim
-    in
-    case parts of
-        [ rStr, gStr, bStr ] ->
-            case ( String.toInt rStr, String.toInt gStr, String.toInt bStr ) of
-                ( Just r, Just g, Just b ) ->
-                    Just <|
-                        Rgb { r = r, g = g, b = b }
-
-                _ ->
-                    Nothing
-
-        _ ->
-            Nothing
-
-
 toRgb : Color -> { r : Int, g : Int, b : Int }
 toRgb color =
     case color of
@@ -823,23 +793,6 @@ encode color =
 {- Transforms -}
 
 
-{-| Calculate distance between two Color values using RGB Euclidean distance.
-
-This follows a simplified approach to color distance calculation:
-
-  - distance = sqrt((r2-r1)² + (g2-g1)² + (b2-b1)²)
-
-While industry standard Delta E (CIE94/2000) would be more perceptually accurate,
-RGB Euclidean distance provides a reasonable approximation for animation timing
-and is much simpler to calculate.
-
-Note: All color types are converted to RGB before distance calculation.
-
-Example:
-distance (rgb255 255 0 0) (rgb255 0 255 0)
--- Returns: sqrt(255² + 255² + 0²) ≈ 360.6
-
--}
 distance : Color -> Color -> Float
 distance color1 color2 =
     let
@@ -932,8 +885,6 @@ toHexComponent value =
 {- UTILITY FUNCTIONS -}
 
 
-{-| Set the alpha value of a color, converting to RGBA/HSLA if needed
--}
 setAlpha : Float -> Color -> Color
 setAlpha alpha color =
     case color of
@@ -951,8 +902,6 @@ setAlpha alpha color =
             Rgba { rgba_ | a = clamp 0 1 alpha }
 
 
-{-| Get the alpha value of a color, defaulting to 1.0 for opaque colors
--}
 getAlpha : Color -> Float
 getAlpha color =
     case color of
@@ -969,8 +918,6 @@ getAlpha color =
             1.0
 
 
-{-| Increase the lightness of a color by the given amount (0.0-1.0)
--}
 brighten : Float -> Color -> Color
 brighten amount color =
     let
@@ -996,15 +943,11 @@ brighten amount color =
                 Hsl { hsl_ | l = newLightness }
 
 
-{-| Decrease the lightness of a color by the given amount (0.0-1.0)
--}
 darken : Float -> Color -> Color
 darken amount color =
     brighten -amount color
 
 
-{-| Increase the saturation of a color by the given amount (0.0-1.0)
--}
 saturate : Float -> Color -> Color
 saturate amount color =
     let
@@ -1030,15 +973,11 @@ saturate amount color =
                 Hsl { hsl_ | s = newSaturation }
 
 
-{-| Decrease the saturation of a color by the given amount (0.0-1.0)
--}
 desaturate : Float -> Color -> Color
 desaturate amount color =
     saturate -amount color
 
 
-{-| Check if a color is considered light based on its luminance
--}
 isLight : Color -> Bool
 isLight color =
     let
@@ -1073,15 +1012,11 @@ isLight color =
     luminance > 0.5
 
 
-{-| Check if a color is considered dark based on its luminance
--}
 isDark : Color -> Bool
 isDark color =
     not (isLight color)
 
 
-{-| Check if two colors are equal
--}
 isEqual : Color -> Color -> Bool
 isEqual color1 color2 =
     let
@@ -1091,18 +1026,12 @@ isEqual color1 color2 =
         rgba2 =
             toRgba color2
     in
-    rgba1.r
-        == rgba2.r
-        && rgba1.g
-        == rgba2.g
-        && rgba1.b
-        == rgba2.b
-        && rgba1.a
-        == rgba2.a
+    (rgba1.r == rgba2.r)
+        && (rgba1.g == rgba2.g)
+        && (rgba1.b == rgba2.b)
+        && (rgba1.a == rgba2.a)
 
 
-{-| Parse a color from various string formats (hex, rgb(), hsl(), etc.)
--}
 fromString : String -> Maybe Color
 fromString str =
     let
@@ -1113,7 +1042,7 @@ fromString str =
         Just (fromHex trimmed)
 
     else if String.startsWith "rgb(" trimmed then
-        fromRgbString trimmed
+        parseRgbString trimmed
 
     else if String.startsWith "rgba(" trimmed then
         parseRgbaString trimmed
@@ -1135,6 +1064,36 @@ fromString str =
         Nothing
 
 
+parseRgbString : String -> Maybe Color
+parseRgbString str =
+    -- Simple parser for "rgb(r, g, b)" format
+    let
+        prefix =
+            "rgb("
+
+        suffix =
+            ")"
+
+        content =
+            String.dropLeft (String.length prefix) (String.dropRight (String.length suffix) str)
+
+        parts =
+            String.split "," content |> List.map String.trim
+    in
+    case parts of
+        [ rStr, gStr, bStr ] ->
+            case ( String.toInt rStr, String.toInt gStr, String.toInt bStr ) of
+                ( Just r, Just g, Just b ) ->
+                    Just <|
+                        Rgb { r = r, g = g, b = b }
+
+                _ ->
+                    Nothing
+
+        _ ->
+            Nothing
+
+
 parseRgbaString : String -> Maybe Color
 parseRgbaString str =
     -- Parse "rgba(r, g, b, a)" format
@@ -1148,26 +1107,24 @@ parseRgbaString str =
     in
     case parts of
         [ rStr, gStr, bStr, aStr ] ->
-            case String.toInt rStr of
-                Just r ->
-                    case String.toInt gStr of
-                        Just g ->
-                            case String.toInt bStr of
-                                Just b ->
-                                    case String.toFloat aStr of
-                                        Just a ->
-                                            Just (fromRGBA r g b a)
+            let
+                r =
+                    String.toInt rStr
 
-                                        Nothing ->
-                                            Nothing
+                g =
+                    String.toInt gStr
 
-                                Nothing ->
-                                    Nothing
+                b =
+                    String.toInt bStr
 
-                        Nothing ->
-                            Nothing
+                a =
+                    String.toFloat aStr
+            in
+            case ( ( r, g, b ), a ) of
+                ( ( Just rVal, Just gVal, Just bVal ), Just aVal ) ->
+                    Just (fromRGBA rVal gVal bVal aVal)
 
-                Nothing ->
+                _ ->
                     Nothing
 
         _ ->
@@ -1187,9 +1144,20 @@ parseHslString str =
     in
     case parts of
         [ hStr, sStr, lStr ] ->
-            case ( String.toFloat hStr, String.toFloat sStr, String.toFloat lStr ) of
-                ( Just h, Just s, Just l ) ->
-                    Just (fromHSL h s l)
+            let
+                h =
+                    String.toFloat hStr
+
+                s =
+                    String.toFloat sStr
+
+                l =
+                    String.toFloat lStr
+            in
+            case ( h, s, l ) of
+                ( Just hVal, Just sVal, Just lVal ) ->
+                    Just <|
+                        fromHSL hVal sVal lVal
 
                 _ ->
                     Nothing
@@ -1219,26 +1187,25 @@ parseHslaString str =
     in
     case cleanedParts of
         [ hStr, sStr, lStr, aStr ] ->
-            case String.toFloat hStr of
-                Just h ->
-                    case String.toFloat sStr of
-                        Just s ->
-                            case String.toFloat lStr of
-                                Just l ->
-                                    case String.toFloat aStr of
-                                        Just a ->
-                                            Just (fromHSLA h s l a)
+            let
+                h =
+                    String.toFloat hStr
 
-                                        Nothing ->
-                                            Nothing
+                s =
+                    String.toFloat sStr
 
-                                Nothing ->
-                                    Nothing
+                l =
+                    String.toFloat lStr
 
-                        Nothing ->
-                            Nothing
+                a =
+                    String.toFloat aStr
+            in
+            case ( ( h, s, l ), a ) of
+                ( ( Just hVal, Just sVal, Just lVal ), Just aVal ) ->
+                    Just <|
+                        fromHSLA hVal sVal lVal aVal
 
-                Nothing ->
+                _ ->
                     Nothing
 
         _ ->

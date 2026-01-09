@@ -16,8 +16,8 @@ module Anim.Internal.Properties.FontColor exposing
     , toString
     )
 
-import Anim.Color as Color exposing (Color)
-import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
+import Anim.Internal.Properties.Color as Color exposing (Color)
+import Anim.Internal.Timing.TimeSpec exposing (TimeSpec)
 
 
 
@@ -31,22 +31,22 @@ hex =
 
 hsl : Float -> Float -> Float -> Color
 hsl =
-    Color.fromHsl
+    Color.fromHSL
 
 
 hsla : Float -> Float -> Float -> Float -> Color
 hsla =
-    Color.fromHsla
+    Color.fromHSLA
 
 
 rgb : Int -> Int -> Int -> Color
 rgb =
-    Color.fromRgb
+    Color.fromRGB
 
 
 rgba : Int -> Int -> Int -> Float -> Color
 rgba =
-    Color.fromRgba
+    Color.fromRGBA
 
 
 
@@ -111,24 +111,10 @@ distance =
 
 
 speed : Float -> Float -> TimeSpec -> Float
-speed distance_ duration_ timeSpec =
-    case timeSpec of
-        TimeSpec.Duration ms ->
-            if ms <= 0 then
-                distance_ * duration_ * 1000
-
-            else
-                distance_ / (Basics.toFloat ms / 1000)
-
-        TimeSpec.Speed unitsPerSecond ->
-            unitsPerSecond
+speed =
+    Color.speed
 
 
 duration : Float -> TimeSpec -> Float
-duration distance_ timeSpec =
-    case timeSpec of
-        TimeSpec.Duration ms ->
-            Basics.toFloat ms
-
-        TimeSpec.Speed unitsPerSecond ->
-            distance_ / unitsPerSecond * 1000
+duration =
+    Color.duration
