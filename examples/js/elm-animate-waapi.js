@@ -645,9 +645,9 @@ window.ElmAnimateWAAPI = (function () {
                 if (updatePort) {
                     updatePort.send({
                         elementId: elementId,
-                        x: transformState.x,
-                        y: transformState.y,
-                        z: transformState.z,
+                        positionX: transformState.x,
+                        positionY: transformState.y,
+                        positionZ: transformState.z,
                         opacity: parseFloat(computedStyle.opacity),
                         rotationX: transformState.rotationX,
                         rotationY: transformState.rotationY,
@@ -656,6 +656,7 @@ window.ElmAnimateWAAPI = (function () {
                         scaleY: transformState.scaleY,
                         scaleZ: transformState.scaleZ,
                         backgroundColor: computedStyle.backgroundColor,
+                        color: computedStyle.color,
                         width: parseFloat(computedStyle.width),
                         height: parseFloat(computedStyle.height),
                         isAnimating: true

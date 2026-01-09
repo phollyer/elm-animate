@@ -67,9 +67,9 @@ export interface PropertyAnimation {
 
 export interface AnimationUpdate {
     elementId: string;
-    x: number;
-    y: number;
-    z: number;  // 3D position support
+    positionX: number;
+    positionY: number;
+    positionZ: number;  // 3D position support
     opacity: number;
     rotationX: number;  // 3D rotation X-axis
     rotationY: number;  // 3D rotation Y-axis

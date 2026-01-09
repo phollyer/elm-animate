@@ -386,7 +386,7 @@ updateElementAnimation : AnimationUpdate -> ElementAnimation -> ElementAnimation
 updateElementAnimation animUpdate elementAnimation =
     { elementAnimation
         | currentStates =
-            { position = Just (Position.fromTriple ( animUpdate.x, animUpdate.y, animUpdate.z ))
+            { position = Just (Position.fromTriple ( animUpdate.positionX, animUpdate.positionY, animUpdate.positionZ ))
             , rotate = Just (Rotate.fromTriple ( animUpdate.rotationX, animUpdate.rotationY, animUpdate.rotationZ ))
             , scale = Just (Scale.fromTriple ( animUpdate.scaleX, animUpdate.scaleY, animUpdate.scaleZ ))
             , opacity = Just (Opacity.fromFloat animUpdate.opacity)
@@ -675,9 +675,9 @@ getSizeRange elementId animState =
 
 type alias AnimationUpdate =
     { elementId : String
-    , x : Float
-    , y : Float
-    , z : Float
+    , positionX : Float
+    , positionY : Float
+    , positionZ : Float
     , opacity : Float
     , rotationX : Float
     , rotationY : Float
@@ -697,9 +697,9 @@ animationUpdateDecoder : Decoder AnimationUpdate
 animationUpdateDecoder =
     Decode.succeed AnimationUpdate
         |> andMap (Decode.field "elementId" Decode.string)
-        |> andMap (Decode.field "x" Decode.float)
-        |> andMap (Decode.field "y" Decode.float)
-        |> andMap (Decode.field "z" Decode.float)
+        |> andMap (Decode.field "positionX" Decode.float)
+        |> andMap (Decode.field "positionY" Decode.float)
+        |> andMap (Decode.field "positionZ" Decode.float)
         |> andMap (Decode.field "opacity" Decode.float)
         |> andMap (Decode.field "rotationX" Decode.float)
         |> andMap (Decode.field "rotationY" Decode.float)
