@@ -442,14 +442,13 @@ getPropertyRange :
     -> (Builder.ProcessedPropertyConfig -> Maybe { start : Maybe a, end : a })
     -> Maybe { start : Maybe a, end : a }
 getPropertyRange elementId (AnimState state) extractor =
-    let
-        processedData =
-            Builder.processAnimationData state.builder
-    in
-    Dict.get elementId processedData.elements
+    state.builder
+        |> Builder.processAnimationData
+        |> .elements
+        |> Dict.get elementId
         |> Maybe.andThen
-            (\elementConfig ->
-                elementConfig.properties
+            (\{ properties } ->
+                properties
                     |> List.filterMap extractor
                     |> List.head
             )
@@ -506,7 +505,7 @@ getBackgroundColorRange elementId animState =
 getStartOpacity : String -> AnimState -> Maybe Opacity
 getStartOpacity elementId animState =
     getOpacityRange elementId animState
-        |> getStartWithDefault (Opacity.fromFloat 1.0)
+        |> getStartWithDefault Opacity.default
 
 
 getEndOpacity : String -> AnimState -> Maybe Opacity
@@ -540,7 +539,7 @@ getOpacityRange elementId animState =
 getStartPosition : String -> AnimState -> Maybe Position
 getStartPosition elementId animState =
     getPositionRange elementId animState
-        |> getStartWithDefault (Position.fromTriple ( 0, 0, 0 ))
+        |> getStartWithDefault Position.default
 
 
 getEndPosition : String -> AnimState -> Maybe Position
@@ -574,7 +573,7 @@ getPositionRange elementId animState =
 getStartRotate : String -> AnimState -> Maybe Rotate
 getStartRotate elementId animState =
     getRotateRange elementId animState
-        |> getStartWithDefault (Rotate.fromTriple ( 0, 0, 0 ))
+        |> getStartWithDefault Rotate.default
 
 
 getEndRotate : String -> AnimState -> Maybe Rotate
@@ -608,7 +607,7 @@ getRotateRange elementId animState =
 getStartScale : String -> AnimState -> Maybe Scale
 getStartScale elementId animState =
     getScaleRange elementId animState
-        |> getStartWithDefault (Scale.fromTriple ( 1, 1, 1 ))
+        |> getStartWithDefault Scale.default
 
 
 getEndScale : String -> AnimState -> Maybe Scale
@@ -642,7 +641,7 @@ getScaleRange elementId animState =
 getStartSize : String -> AnimState -> Maybe Size
 getStartSize elementId animState =
     getSizeRange elementId animState
-        |> getStartWithDefault (Size.fromTuple ( 0, 0 ))
+        |> getStartWithDefault Size.default
 
 
 getEndSize : String -> AnimState -> Maybe Size
