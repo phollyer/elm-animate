@@ -457,7 +457,7 @@ getStartBackgroundColor elementId animState =
             (\{ start } ->
                 case start of
                     Nothing ->
-                        Color.rgba 255 255 255 0
+                        Color.fromRgba 255 255 255 0
 
                     Just startColor ->
                         startColor

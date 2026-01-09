@@ -26,27 +26,27 @@ import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
 
 hex : String -> Color
 hex =
-    Color.hex
+    Color.fromHex
 
 
 hsl : Float -> Float -> Float -> Color
 hsl =
-    Color.hsl
+    Color.fromHsl
 
 
 hsla : Float -> Float -> Float -> Float -> Color
 hsla =
-    Color.hsla
+    Color.fromHsla
 
 
 rgb : Int -> Int -> Int -> Color
 rgb =
-    Color.rgb
+    Color.fromRgb
 
 
 rgba : Int -> Int -> Int -> Float -> Color
 rgba =
-    Color.rgba
+    Color.fromRgba
 
 
 

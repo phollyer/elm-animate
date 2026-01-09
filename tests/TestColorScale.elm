@@ -21,8 +21,8 @@ suite =
                             |> CSS.duration 900
                             |> CSS.easing Easing.QuartInOut
                             |> BackgroundColor.for "box"
-                            |> BackgroundColor.from (Color.rgb 59 130 246)
-                            |> BackgroundColor.to (Color.rgb 255 100 150)
+                            |> BackgroundColor.from (Color.fromRgb 59 130 246)
+                            |> BackgroundColor.to (Color.fromRgb 255 100 150)
                             |> BackgroundColor.duration 900
                             |> BackgroundColor.build
                             |> Scale.for "box"

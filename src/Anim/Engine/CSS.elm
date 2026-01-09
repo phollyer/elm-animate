@@ -785,7 +785,7 @@ getStartBackgroundColor elementId animState =
                         startColor
 
                     Nothing ->
-                        Color.rgba 255 255 255 0
+                        Color.fromRgba 255 255 255 0
             )
 
 
@@ -814,7 +814,7 @@ getCurrentBackgroundColor elementId animState =
     InternalCSS.getBackgroundColorRange elementId animState
         |> Maybe.andThen
             (\{ start, end } ->
-                getCurrent elementId start end (Color.rgba 255 255 255 0) animState
+                getCurrent elementId start end (Color.fromRgba 255 255 255 0) animState
             )
 
 
