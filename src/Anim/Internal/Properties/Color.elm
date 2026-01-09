@@ -16,6 +16,8 @@ module Anim.Internal.Properties.Color exposing
     , hexToElmColor
     , hexToHsl
     , hexToHsla
+    , hexToRgb
+    , hexToRgba
     , interpolate
     , speed
     , toCssString
