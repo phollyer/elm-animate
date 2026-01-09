@@ -10,10 +10,11 @@ module Anim.Internal.Builders.BackgroundColor exposing
     , to
     )
 
+import Anim.Color as Color exposing (Color(..))
 import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Property as PropertyBuilder
-import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Color(..))
+import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
@@ -51,7 +52,7 @@ type alias ColorConfig =
 defaultConfig : ColorConfig
 defaultConfig =
     PropertyBuilder.defaultConfig <|
-        BackgroundColor.rgb255 0 0 0
+        Color.rgb 0 0 0
 
 
 from : Color -> ColorBuilder -> ColorBuilder
@@ -78,11 +79,11 @@ to color (ColorBuilder config builder) =
     let
         startPos =
             case config.start of
-                Just opacity_ ->
-                    opacity_
+                Just color_ ->
+                    color_
 
                 Nothing ->
-                    BackgroundColor.rgb255 0 0 0
+                    Color.rgba 255 255 255 0
 
         -- Preserve alpha from start color only if:
         -- 1. New color has no explicit alpha (RGB/Hex/HSL), AND

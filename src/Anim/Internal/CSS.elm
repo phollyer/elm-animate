@@ -45,6 +45,7 @@ module Anim.Internal.CSS exposing
     , speed
     )
 
+import Anim.Color exposing (Color(..))
 import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.CSS.KeyframeAnimation as KeyframeAnimation exposing (KeyframeAnimation)
@@ -507,7 +508,7 @@ getRotateRange elementId (AnimState state) =
 {-| Get both start and end background colors for an element's animation.
 Returns Nothing if the element has no background color animation.
 -}
-getBackgroundColorRange : String -> AnimState -> Maybe { start : Maybe BackgroundColor.Color, end : BackgroundColor.Color }
+getBackgroundColorRange : String -> AnimState -> Maybe { start : Maybe Color, end : Color }
 getBackgroundColorRange elementId (AnimState state) =
     let
         processedData =

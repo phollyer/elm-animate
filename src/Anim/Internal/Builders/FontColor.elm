@@ -10,10 +10,10 @@ module Anim.Internal.Builders.FontColor exposing
     , to
     )
 
+import Anim.Color as Color exposing (Color(..))
 import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Property as PropertyBuilder
-import Anim.Internal.Properties.Color as Color exposing (Color(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
@@ -51,7 +51,7 @@ type alias ColorConfig =
 defaultConfig : ColorConfig
 defaultConfig =
     PropertyBuilder.defaultConfig <|
-        Color.rgb255 0 0 0
+        Color.rgb 0 0 0
 
 
 from : Color -> ColorBuilder -> ColorBuilder
@@ -82,7 +82,7 @@ to color (ColorBuilder config builder) =
                     opacity_
 
                 Nothing ->
-                    Color.rgb255 0 0 0
+                    Color.rgb 0 0 0
 
         -- Preserve alpha from start color only if:
         -- 1. New color has no explicit alpha (RGB/Hex/HSL), AND
@@ -151,7 +151,8 @@ applyAlphaFromStart newColor startColor =
         Hex hex ->
             let
                 rgb =
-                    Color.hexToRgb hex
+                    Color.toRgb <|
+                        Hex hex
             in
             Rgba { r = rgb.r, g = rgb.g, b = rgb.b, a = startAlpha }
 

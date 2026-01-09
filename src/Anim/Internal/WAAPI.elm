@@ -41,11 +41,11 @@ module Anim.Internal.WAAPI exposing
     , update
     )
 
+import Anim.Color as Color exposing (Color(..))
 import Anim.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Easing as Easing
-import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Color)
-import Anim.Internal.Properties.Color as TextColor
+import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
@@ -75,7 +75,7 @@ type alias ElementEndStates =
     , rotate : Maybe Rotate
     , scale : Maybe Scale
     , backgroundColor : Maybe Color
-    , fontColor : Maybe TextColor.Color
+    , fontColor : Maybe Color
     , opacity : Maybe Opacity
     , size : Maybe Size
     }
@@ -390,8 +390,8 @@ updateElementAnimation animUpdate elementAnimation =
             , rotate = Just (Rotate.fromTriple ( animUpdate.rotationX, animUpdate.rotationY, animUpdate.rotationZ ))
             , scale = Just (Scale.fromTriple ( animUpdate.scaleX, animUpdate.scaleY, animUpdate.scaleZ ))
             , opacity = Just (Opacity.fromFloat animUpdate.opacity)
-            , backgroundColor = BackgroundColor.fromRgbString animUpdate.backgroundColor
-            , fontColor = TextColor.fromRgbString animUpdate.color
+            , backgroundColor = Color.fromRgbString animUpdate.backgroundColor
+            , fontColor = Color.fromRgbString animUpdate.color
             , size = Just (Size.fromTuple ( animUpdate.width, animUpdate.height ))
             }
     }
@@ -472,7 +472,7 @@ getStartWithDefault default maybeRange =
 getStartBackgroundColor : String -> AnimState -> Maybe Color
 getStartBackgroundColor elementId animState =
     getBackgroundColorRange elementId animState
-        |> getStartWithDefault (BackgroundColor.rgba255 255 255 255 0)
+        |> getStartWithDefault (Color.rgba 255 255 255 0)
 
 
 getEndBackgroundColor : String -> AnimState -> Maybe Color
@@ -893,12 +893,12 @@ encodeProcessedPropertyConfig property =
             let
                 startColor =
                     config.start
-                        |> Maybe.map TextColor.toString
+                        |> Maybe.map Color.toCssString
                         |> Maybe.withDefault "rgba(0, 0, 0, 1)"
 
                 baseFields =
                     [ ( "type", Encode.string "color" )
-                    , ( "color", Encode.string (TextColor.toString config.end) )
+                    , ( "color", Encode.string (Color.toCssString config.end) )
                     , ( "startColor", Encode.string startColor )
                     , ( "duration", Encode.int config.duration )
                     ]

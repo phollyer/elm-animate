@@ -205,9 +205,9 @@ which provide real-time access to animated property values.
 
 -}
 
+import Anim.Color as Color exposing (Color)
 import Anim.Easing exposing (Easing)
 import Anim.Internal.CSS as InternalCSS exposing (ElementState(..), Event(..))
-import Anim.Internal.Properties.BackgroundColor as BackgroundColor exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
@@ -781,11 +781,11 @@ getStartBackgroundColor elementId animState =
         |> Maybe.map
             (\{ start } ->
                 case start of
-                    Nothing ->
-                        BackgroundColor.rgba255 255 255 255 0
-
                     Just startColor ->
                         startColor
+
+                    Nothing ->
+                        Color.rgba 255 255 255 0
             )
 
 
@@ -814,7 +814,7 @@ getCurrentBackgroundColor elementId animState =
     InternalCSS.getBackgroundColorRange elementId animState
         |> Maybe.andThen
             (\{ start, end } ->
-                getCurrent elementId start end (BackgroundColor.rgba255 255 255 255 0) animState
+                getCurrent elementId start end (Color.rgba 255 255 255 0) animState
             )
 
 

@@ -1,50 +1,9 @@
-module Anim.Internal.Properties.Color exposing
-    ( Color(..)
-    , HSL
-    , HSLA
-    , Hex
-    , RGB
-    , RGBA
-    , distance
-    , duration
-    , elmColor
-    , encode
-    , floatMod
-    , fromRgbString
-    , hex
-    , hexStringToInt
-    , hexToRgb
-    , hexToRgba
-    , hsl
-    , hslPercent
-    , hslToRgb
-    , hsla
-    , hslaPercent
-    , hslaToRgba
-    , interpolate
-    , rgb255
-    , rgbToHsl
-    , rgba255
-    , rgbaToHsla
-    , speed
-    , toString
-    )
+module Anim.Internal.Properties.Color exposing (distance, speed)
 
+import Anim.Color exposing (Color(..))
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
 import Color
 import Json.Encode as Encode
-
-
-type Color
-    = Hex Hex
-    | Rgb RGB
-    | Rgba RGBA
-    | Hsl HSL
-    | Hsla HSLA
-
-
-type alias Hex =
-    String
 
 
 type alias HSL =
@@ -63,11 +22,6 @@ type alias RGBA =
     { r : Int, g : Int, b : Int, a : Float }
 
 
-hex : String -> Color
-hex str =
-    Hex str
-
-
 rgb255 : Int -> Int -> Int -> Color
 rgb255 r g b =
     Rgb { r = r, g = g, b = b }
@@ -78,38 +32,14 @@ rgba255 r g b a =
     Rgba { r = r, g = g, b = b, a = a }
 
 
-hsl : Float -> Float -> Float -> Color
-hsl h s l =
-    Hsl { h = h, s = s, l = l }
-
-
 hslPercent : Float -> Float -> Float -> Color
 hslPercent h s l =
     Hsl { h = h, s = s, l = l }
 
 
-hsla : Float -> Float -> Float -> Float -> Color
-hsla h s l a =
-    Hsla { h = h, s = s, l = l, a = a }
-
-
 hslaPercent : Float -> Float -> Float -> Float -> Color
 hslaPercent h s l a =
     Hsla { h = h, s = s, l = l, a = a }
-
-
-elmColor : Color.Color -> Color
-elmColor color =
-    let
-        rgba =
-            Color.toRgba color
-    in
-    Rgba
-        { r = round (rgba.red * 255)
-        , g = round (rgba.green * 255)
-        , b = round (rgba.blue * 255)
-        , a = rgba.alpha
-        }
 
 
 
@@ -210,6 +140,13 @@ interpolate start end t =
                         Hsla hslaValue ->
                             hslaValue.a
 
+                        ElmColor elmColor_ ->
+                            let
+                                rgba =
+                                    Color.toRgba elmColor_
+                            in
+                            rgba.alpha
+
                         _ ->
                             1.0
             in
@@ -253,6 +190,17 @@ interpolate start end t =
                 -- If end is RGBA (explicit alpha), use it
                 ( _, Rgba _ ) ->
                     interpolate (Rgba (toRgba start)) end t
+
+                -- If end is ElmColor, convert to RGBA and preserve alpha
+                ( _, ElmColor _ ) ->
+                    let
+                        startRgba =
+                            toRgba start
+
+                        endRgba =
+                            toRgba end
+                    in
+                    interpolate (Rgba startRgba) (Rgba endRgba) t
 
 
 
@@ -302,6 +250,19 @@ encode color =
                 , ( "a", Encode.float hslaValue.a )
                 ]
 
+        ElmColor elmColor_ ->
+            let
+                rgba =
+                    Color.toRgba elmColor_
+            in
+            Encode.object
+                [ ( "type", Encode.string "rgba" )
+                , ( "r", Encode.int (round (rgba.red * 255)) )
+                , ( "g", Encode.int (round (rgba.green * 255)) )
+                , ( "b", Encode.int (round (rgba.blue * 255)) )
+                , ( "a", Encode.float rgba.alpha )
+                ]
+
 
 
 {- Transforms -}
@@ -324,6 +285,13 @@ toString color =
 
         Hsla hslaValue ->
             "hsla(" ++ String.fromFloat hslaValue.h ++ ", " ++ String.fromFloat hslaValue.s ++ "%, " ++ String.fromFloat hslaValue.l ++ "%, " ++ String.fromFloat hslaValue.a ++ ")"
+
+        ElmColor elmColor_ ->
+            let
+                rgba =
+                    Color.toRgba elmColor_
+            in
+            "rgba(" ++ String.fromInt (round (rgba.red * 255)) ++ ", " ++ String.fromInt (round (rgba.green * 255)) ++ ", " ++ String.fromInt (round (rgba.blue * 255)) ++ ", " ++ String.fromFloat rgba.alpha ++ ")"
 
 
 fromRgbString : String -> Maybe Color
@@ -688,6 +656,13 @@ toRgb color =
         Hsla hslaValue ->
             hslToRgb { h = hslaValue.h, s = hslaValue.s, l = hslaValue.l }
 
+        ElmColor elmColor_ ->
+            let
+                rgba =
+                    Color.toRgba elmColor_
+            in
+            { r = round (rgba.red * 255), g = round (rgba.green * 255), b = round (rgba.blue * 255) }
+
 
 {-| Convert any Color to Hex.
 -}
@@ -832,6 +807,13 @@ toRgba color =
 
         Hsla hslaValue ->
             hslaToRgba hslaValue
+
+        ElmColor elmColor_ ->
+            let
+                rgba =
+                    Color.toRgba elmColor_
+            in
+            { r = round (rgba.red * 255), g = round (rgba.green * 255), b = round (rgba.blue * 255), a = rgba.alpha }
 
         _ ->
             let

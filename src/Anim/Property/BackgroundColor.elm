@@ -64,8 +64,6 @@ import Anim.Color exposing (Color(..))
 import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.BackgroundColor as CB
-import Anim.Internal.Properties.BackgroundColor as BC
-import Color
 
 
 {-| Type alias for the internal `ColorBuilder`.
@@ -104,8 +102,8 @@ init : String -> Color -> AnimBuilder -> AnimBuilder
 init elementId color animBuilder =
     animBuilder
         |> CB.for elementId
-        |> CB.from (toInternal color)
-        |> CB.to (toInternal color)
+        |> CB.from color
+        |> CB.to color
         |> CB.build
 
 
@@ -145,7 +143,7 @@ build =
 -}
 from : Color -> Builder -> Builder
 from color =
-    CB.from (toInternal color)
+    CB.from color
 
 
 {-| Set the target color for the current element.
@@ -168,7 +166,7 @@ from color =
 -}
 to : Color -> Builder -> Builder
 to color =
-    CB.to (toInternal color)
+    CB.to color
 
 
 {-| Set the animation speed.
@@ -231,38 +229,3 @@ easing =
 delay : Int -> Builder -> Builder
 delay =
     CB.delay
-
-
-
--- INTERNAL CONVERSION
-
-
-toInternal : Color -> BC.Color
-toInternal color =
-    case color of
-        Hex hexString ->
-            BC.Hex hexString
-
-        Rgb rgb ->
-            BC.Rgb rgb
-
-        Rgba rgba ->
-            BC.Rgba rgba
-
-        Hsl hsl ->
-            BC.Hsl hsl
-
-        Hsla hsla ->
-            BC.Hsla hsla
-
-        ElmColor elmColor ->
-            let
-                rgba =
-                    Color.toRgba elmColor
-            in
-            BC.Rgba
-                { r = round (rgba.red * 255)
-                , g = round (rgba.green * 255)
-                , b = round (rgba.blue * 255)
-                , a = rgba.alpha
-                }

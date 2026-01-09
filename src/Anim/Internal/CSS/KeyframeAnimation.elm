@@ -4,15 +4,16 @@ module Anim.Internal.CSS.KeyframeAnimation exposing
     , toAttributeString
     )
 
+import Anim.Color as Color exposing (Color(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Easing as Easing
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
-import Anim.Internal.Properties.Color as TextColor
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
+import Char
 import Dict
 
 
@@ -363,13 +364,13 @@ generate elementId properties =
                                                                         c
 
                                                                     Nothing ->
-                                                                        BackgroundColor.rgb255 59 130 246
+                                                                        Color.rgba 255 255 255 0
 
                                                             endColor =
                                                                 cfg.end
 
                                                             interpolatedColor =
-                                                                BackgroundColor.interpolate startColor endColor propProgress
+                                                                Color.interpolate startColor endColor propProgress
                                                         in
                                                         Just
                                                             [ ( "background-color", BackgroundColor.toString interpolatedColor ) ]
@@ -530,7 +531,7 @@ generate elementId properties =
                                             "background-color" ++ String.fromInt cfg.duration ++ BackgroundColor.toString cfg.end
 
                                         Builder.ProcessedFontColorConfig cfg ->
-                                            "color" ++ String.fromInt cfg.duration ++ TextColor.toString cfg.end
+                                            "color" ++ String.fromInt cfg.duration ++ Color.toCssString cfg.end
 
                                         Builder.ProcessedOpacityConfig cfg ->
                                             "opacity" ++ String.fromInt cfg.duration ++ Opacity.toString cfg.end

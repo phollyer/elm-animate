@@ -1,6 +1,6 @@
 module TestAlphaPreservation exposing (suite)
 
-import Anim.Internal.Properties.BackgroundColor as BackgroundColor
+import Anim.Color as Color
 import Expect
 import Test exposing (..)
 
@@ -12,16 +12,16 @@ suite =
             \_ ->
                 let
                     start =
-                        BackgroundColor.rgba255 255 0 0 0.5
+                        Color.rgba 255 0 0 0.5
 
                     end =
-                        BackgroundColor.rgb255 0 0 255
+                        Color.rgb 0 0 255
 
                     result =
-                        BackgroundColor.interpolate start end 0.5
+                        Color.interpolate start end 0.5
                 in
                 case result of
-                    BackgroundColor.Rgba rgba ->
+                    Color.Rgba rgba ->
                         Expect.all
                             [ \_ -> rgba.r |> Expect.equal 128
                             , \_ -> rgba.g |> Expect.equal 0
@@ -36,16 +36,16 @@ suite =
             \_ ->
                 let
                     start =
-                        BackgroundColor.rgba255 255 0 0 0.3
+                        Color.rgba 255 0 0 0.3
 
                     end =
-                        BackgroundColor.hex "#0000FF"
+                        Color.hex "#0000FF"
 
                     result =
-                        BackgroundColor.interpolate start end 0.5
+                        Color.interpolate start end 0.5
                 in
                 case result of
-                    BackgroundColor.Rgba rgba ->
+                    Color.Rgba rgba ->
                         Expect.all
                             [ \_ -> rgba.r |> Expect.equal 128
                             , \_ -> rgba.g |> Expect.equal 0
@@ -60,16 +60,16 @@ suite =
             \_ ->
                 let
                     start =
-                        BackgroundColor.rgba255 255 0 0 0.5
+                        Color.rgba 255 0 0 0.5
 
                     end =
-                        BackgroundColor.rgba255 0 0 255 1.0
+                        Color.rgba 0 0 255 1.0
 
                     result =
-                        BackgroundColor.interpolate start end 0.5
+                        Color.interpolate start end 0.5
                 in
                 case result of
-                    BackgroundColor.Rgba rgba ->
+                    Color.Rgba rgba ->
                         Expect.all
                             [ \_ -> rgba.r |> Expect.equal 128
                             , \_ -> rgba.g |> Expect.equal 0
@@ -84,16 +84,16 @@ suite =
             \_ ->
                 let
                     start =
-                        BackgroundColor.hslaPercent 0 100 50 0.7
+                        Color.hsla 0 100 50 0.7
 
                     end =
-                        BackgroundColor.hslPercent 240 100 50
+                        Color.hsl 240 100 50
 
                     result =
-                        BackgroundColor.interpolate start end 0.5
+                        Color.interpolate start end 0.5
                 in
                 case result of
-                    BackgroundColor.Hsla hsla ->
+                    Color.Hsla hsla ->
                         Expect.all
                             [ \_ -> hsla.h |> Expect.within (Expect.Absolute 1) 120
                             , \_ -> hsla.s |> Expect.within (Expect.Absolute 0.1) 100
@@ -108,16 +108,16 @@ suite =
             \_ ->
                 let
                     start =
-                        BackgroundColor.rgb255 255 0 0
+                        Color.rgb 255 0 0
 
                     end =
-                        BackgroundColor.rgb255 0 0 255
+                        Color.rgb 0 0 255
 
                     result =
-                        BackgroundColor.interpolate start end 0.5
+                        Color.interpolate start end 0.5
                 in
                 case result of
-                    BackgroundColor.Rgb rgb ->
+                    Color.Rgb rgb ->
                         Expect.all
                             [ \_ -> rgb.r |> Expect.equal 128
                             , \_ -> rgb.g |> Expect.equal 0

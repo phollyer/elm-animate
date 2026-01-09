@@ -3,6 +3,7 @@ module Anim.Internal.CSS.Transition exposing
     , generate
     )
 
+import Anim.Color as Color exposing (Color(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.CSS.Transform as TH
 import Anim.Internal.Easing as Easing
@@ -117,7 +118,7 @@ calculatePropertyDistance property =
                             s
 
                         Nothing ->
-                            BackgroundColor.rgb255 0 0 0
+                            Color.rgba 0 0 0 0
             in
             BackgroundColor.distance start config.end
 
@@ -129,7 +130,7 @@ calculatePropertyDistance property =
                             s
 
                         Nothing ->
-                            TextColor.rgb255 0 0 0
+                            Color.rgb 0 0 0
             in
             TextColor.distance start config.end
 

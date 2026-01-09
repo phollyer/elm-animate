@@ -30,13 +30,12 @@ module Anim.Internal.Sub exposing
     , update
     )
 
+import Anim.Color as Color exposing (Color(..))
 import Anim.Easing exposing (Easing(..))
 import Anim.Internal.AnimationCore as AnimationCore
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Easing as Easing
-import Anim.Internal.Properties.BackgroundColor as Color exposing (Color)
-import Anim.Internal.Properties.Color as TextColor
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
@@ -62,7 +61,7 @@ type Animation
     | RotateAnimation Rotate
     | ScaleAnimation Scale
     | BackgroundColorAnimation Color
-    | FontColorAnimation TextColor.Color
+    | FontColorAnimation Color
     | OpacityAnimation Opacity
     | SizeAnimation Size
 
@@ -128,8 +127,8 @@ animate builder_ =
             { position = Maybe.withDefault { x = 0, y = 0, z = 0 } currentValues.position
             , rotate = Maybe.withDefault { x = 0, y = 0, z = 0 } currentValues.rotate
             , scale = Maybe.withDefault { x = 1.0, y = 1.0, z = 1.0 } currentValues.scale
-            , color = Maybe.withDefault (Color.rgba255 255 255 255 1.0) currentValues.color
-            , fontColor = Maybe.withDefault (TextColor.rgba255 0 0 0 1.0) currentValues.fontColor
+            , color = Maybe.withDefault (Color.rgba 255 255 255 1.0) currentValues.color -- TODO: Rename the color field to backgroundColor
+            , fontColor = Maybe.withDefault (Color.rgba 0 0 0 1.0) currentValues.fontColor
             , opacity = Maybe.withDefault 1.0 currentValues.opacity
             , size = Maybe.withDefault { width = 0, height = 0 } currentValues.size
             }
@@ -811,7 +810,7 @@ createBackgroundColorSteps start target frames easingFunction =
     List.map BackgroundColorAnimation steps
 
 
-createFontColorSteps : TextColor.Color -> TextColor.Color -> Int -> (Float -> Float) -> List Animation
+createFontColorSteps : Color -> Color -> Int -> (Float -> Float) -> List Animation
 createFontColorSteps start target frames easingFunction =
     let
         progressValues =
@@ -823,7 +822,7 @@ createFontColorSteps start target frames easingFunction =
                     vals
 
         steps =
-            List.map (TextColor.interpolate start target) progressValues
+            List.map (Color.interpolate start target) progressValues
     in
     List.map FontColorAnimation steps
 
@@ -970,7 +969,7 @@ type alias PropertyValues =
     , rotate : Maybe { x : Float, y : Float, z : Float }
     , scale : Maybe { x : Float, y : Float, z : Float }
     , color : Maybe Color
-    , fontColor : Maybe TextColor.Color
+    , fontColor : Maybe Color
     , opacity : Maybe Float
     , size : Maybe { width : Float, height : Float }
     }
@@ -993,7 +992,7 @@ type alias UnwrappedPropertyValues =
     , rotate : { x : Float, y : Float, z : Float }
     , scale : { x : Float, y : Float, z : Float }
     , color : Color
-    , fontColor : TextColor.Color
+    , fontColor : Color
     , opacity : Float
     , size : { width : Float, height : Float }
     }
@@ -1332,7 +1331,7 @@ getNonTransformStyleAttribute propertyState =
     in
     case currentValue of
         BackgroundColorAnimation colorValue ->
-            Just (Html.Attributes.style "background-color" (Color.toString colorValue))
+            Just (Html.Attributes.style "background-color" (Color.toCssString colorValue))
 
         OpacityAnimation opacity ->
             Just (Html.Attributes.style "opacity" (String.fromFloat (Opacity.toFloat opacity)))

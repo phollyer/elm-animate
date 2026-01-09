@@ -64,8 +64,6 @@ import Anim.Color exposing (Color(..))
 import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.FontColor as CB
-import Anim.Internal.Properties.Color as C
-import Color
 
 
 {-| Type alias for the internal `ColorBuilder`.
@@ -105,8 +103,8 @@ init : String -> Color -> AnimBuilder -> AnimBuilder
 init elementId color animBuilder =
     animBuilder
         |> CB.for elementId
-        |> CB.from (toInternal color)
-        |> CB.to (toInternal color)
+        |> CB.from color
+        |> CB.to color
         |> CB.build
 
 
@@ -139,8 +137,8 @@ build =
 
 -}
 from : Color -> Builder -> Builder
-from color =
-    CB.from (toInternal color)
+from =
+    CB.from
 
 
 {-| Set the ending color for the current element.
@@ -155,8 +153,8 @@ from color =
 
 -}
 to : Color -> Builder -> Builder
-to color =
-    CB.to (toInternal color)
+to =
+    CB.to
 
 
 
@@ -234,29 +232,3 @@ See [Anim.Easing](Anim-Easing) for available easing functions.
 easing : Easing -> Builder -> Builder
 easing =
     CB.easing
-
-
-
--- INTERNAL CONVERSION
-
-
-toInternal : Color -> C.Color
-toInternal color =
-    case color of
-        Hex hex ->
-            C.hex hex
-
-        Rgb rgb ->
-            C.rgb255 rgb.r rgb.g rgb.b
-
-        Rgba rgba ->
-            C.rgba255 rgba.r rgba.g rgba.b rgba.a
-
-        Hsl hsl ->
-            C.hsl hsl.h hsl.s hsl.l
-
-        Hsla hsla ->
-            C.hsla hsla.h hsla.s hsla.l hsla.a
-
-        ElmColor elmColor ->
-            C.elmColor elmColor

@@ -43,9 +43,10 @@ module Anim.Internal.Builder exposing
     , updateElementConfig
     )
 
+import Anim.Color exposing (Color)
 import Anim.Easing exposing (Easing(..))
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
-import Anim.Internal.Properties.Color as TextColor exposing (Color)
+import Anim.Internal.Properties.FontColor as FontColor
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
@@ -54,10 +55,6 @@ import Anim.Internal.Properties.ScrollTarget exposing (ScrollTarget)
 import Anim.Internal.Properties.Size as Size exposing (Size)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
-
-
-type alias BackgroundColor =
-    BackgroundColor.Color
 
 
 
@@ -93,7 +90,7 @@ type PropertyConfig
     = PositionConfig (AnimationConfig Position)
     | RotateConfig (AnimationConfig Rotate)
     | ScaleConfig (AnimationConfig Scale)
-    | BackgroundColorConfig (AnimationConfig BackgroundColor)
+    | BackgroundColorConfig (AnimationConfig Color)
     | FontColorConfig (AnimationConfig Color)
     | OpacityConfig (AnimationConfig Opacity)
     | SizeConfig (AnimationConfig Size)
@@ -103,7 +100,7 @@ type ProcessedPropertyConfig
     = ProcessedPositionConfig (ProcessedAnimationConfig Position)
     | ProcessedRotateConfig (ProcessedAnimationConfig Rotate)
     | ProcessedScaleConfig (ProcessedAnimationConfig Scale)
-    | ProcessedBackgroundColorConfig (ProcessedAnimationConfig BackgroundColor)
+    | ProcessedBackgroundColorConfig (ProcessedAnimationConfig Color)
     | ProcessedFontColorConfig (ProcessedAnimationConfig Color)
     | ProcessedOpacityConfig (ProcessedAnimationConfig Opacity)
     | ProcessedSizeConfig (ProcessedAnimationConfig Size)
@@ -559,7 +556,7 @@ processProperty globalData property =
                     processStandardAnimation
                         { config = config
                         , globalData = globalData
-                        , defaultStart = BackgroundColor.rgb255 0 0 0
+                        , defaultStart = BackgroundColor.rgb 0 0 0
                         , distanceFn = BackgroundColor.distance
                         , durationFn = BackgroundColor.duration
                         , speedFn = BackgroundColor.speed
@@ -581,10 +578,10 @@ processProperty globalData property =
                     processStandardAnimation
                         { config = config
                         , globalData = globalData
-                        , defaultStart = TextColor.rgb255 0 0 0
-                        , distanceFn = TextColor.distance
-                        , durationFn = TextColor.duration
-                        , speedFn = TextColor.speed
+                        , defaultStart = FontColor.rgb 0 0 0
+                        , distanceFn = FontColor.distance
+                        , durationFn = FontColor.duration
+                        , speedFn = FontColor.speed
                         , wrapper = ProcessedFontColorConfig
                         }
 

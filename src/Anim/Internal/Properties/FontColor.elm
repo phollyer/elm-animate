@@ -1,4 +1,4 @@
-module Anim.Internal.Properties.BackgroundColor exposing
+module Anim.Internal.Properties.FontColor exposing
     ( distance
     , duration
     , hex
@@ -30,23 +30,23 @@ hex =
 
 
 hsl : Float -> Float -> Float -> Color
-hsl h s l =
-    Color.hsl h s l
+hsl =
+    Color.hsl
 
 
 hsla : Float -> Float -> Float -> Float -> Color
-hsla h s l a =
-    Color.hsla h s l a
+hsla =
+    Color.hsla
 
 
 rgb : Int -> Int -> Int -> Color
-rgb r g b =
-    Color.rgb r g b
+rgb =
+    Color.rgb
 
 
 rgba : Int -> Int -> Int -> Float -> Color
-rgba r g b a =
-    Color.rgba r g b a
+rgba =
+    Color.rgba
 
 
 
@@ -106,24 +106,8 @@ distance (rgb255 255 0 0) (rgb255 0 255 0)
 
 -}
 distance : Color -> Color -> Float
-distance color1 color2 =
-    let
-        rgb1 =
-            toRgb color1
-
-        rgb2 =
-            toRgb color2
-
-        dr =
-            toFloat (rgb2.r - rgb1.r)
-
-        dg =
-            toFloat (rgb2.g - rgb1.g)
-
-        db =
-            toFloat (rgb2.b - rgb1.b)
-    in
-    sqrt (dr * dr + dg * dg + db * db)
+distance =
+    Color.distance
 
 
 speed : Float -> Float -> TimeSpec -> Float

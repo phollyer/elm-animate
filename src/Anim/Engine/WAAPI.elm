@@ -139,8 +139,8 @@ during animation playback.
 
 -}
 
+import Anim.Color exposing (Color)
 import Anim.Easing exposing (Easing)
-import Anim.Internal.Properties.BackgroundColor exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
