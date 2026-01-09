@@ -70,6 +70,12 @@ type alias ElementId =
     String
 
 
+type AnimationStatus
+    = NotStarted
+    | Running
+    | Complete
+
+
 type alias ElementEndStates =
     { position : Maybe Position
     , rotate : Maybe Rotate
@@ -85,6 +91,7 @@ type alias ElementAnimation =
     { commands : Encode.Value
     , endStates : ElementEndStates
     , currentStates : ElementEndStates
+    , status : AnimationStatus
     }
 
 
@@ -193,6 +200,7 @@ animate (AnimState state) builder_ =
                         { commands = encode processedData
                         , endStates = endStates
                         , currentStates = currentStates
+                        , status = NotStarted
                         }
                     )
 
@@ -370,11 +378,20 @@ update jsonValue (AnimState state) =
                     Dict.update animationUpdate.elementId
                         (Maybe.map (updateElementAnimation animationUpdate))
                         state.elementAnimations
+
+                -- Remove completed animations to prevent memory leaks
+                cleanedAnimations =
+                    Dict.filter (\_ elementAnim -> elementAnim.status /= Complete) updatedAnimations
+
+                -- Update global isRunning based on remaining animations
+                hasRunningAnimations =
+                    Dict.values cleanedAnimations
+                        |> List.any (\elementAnim -> elementAnim.status == Running)
             in
             AnimState
                 { state
-                    | elementAnimations = updatedAnimations
-                    , isRunning = not (Dict.isEmpty updatedAnimations)
+                    | elementAnimations = cleanedAnimations
+                    , isRunning = hasRunningAnimations
                 }
 
         Err _ ->
@@ -384,8 +401,8 @@ update jsonValue (AnimState state) =
 
 updateElementAnimation : AnimationUpdate -> ElementAnimation -> ElementAnimation
 updateElementAnimation animUpdate elementAnimation =
-    { elementAnimation
-        | currentStates =
+    let
+        newCurrentStates =
             { position = Just (Position.fromTriple ( animUpdate.positionX, animUpdate.positionY, animUpdate.positionZ ))
             , rotate = Just (Rotate.fromTriple ( animUpdate.rotationX, animUpdate.rotationY, animUpdate.rotationZ ))
             , scale = Just (Scale.fromTriple ( animUpdate.scaleX, animUpdate.scaleY, animUpdate.scaleZ ))
@@ -394,6 +411,20 @@ updateElementAnimation animUpdate elementAnimation =
             , fontColor = Color.fromString animUpdate.color
             , size = Just (Size.fromTuple ( animUpdate.width, animUpdate.height ))
             }
+
+        newStatus =
+            if animUpdate.isAnimating then
+                Running
+
+            else if newCurrentStates == elementAnimation.endStates then
+                Complete
+
+            else
+                Running
+    in
+    { elementAnimation
+        | currentStates = newCurrentStates
+        , status = newStatus
     }
 
 
@@ -417,16 +448,21 @@ anyRunning (AnimState state) =
 
 isElementComplete : String -> AnimState -> Maybe Bool
 isElementComplete elementId (AnimState state) =
-    if Dict.member elementId state.elementAnimations then
-        Just (not state.isRunning)
-
-    else
-        Nothing
+    Dict.get elementId state.elementAnimations
+        |> Maybe.map
+            (\elementAnimation ->
+                elementAnimation.status == Complete
+            )
 
 
 isElementRunning : String -> AnimState -> Bool
 isElementRunning elementId (AnimState state) =
-    Dict.member elementId state.elementAnimations && state.isRunning
+    case Dict.get elementId state.elementAnimations of
+        Nothing ->
+            False
+
+        Just elementAnimation ->
+            elementAnimation.status == Running
 
 
 
