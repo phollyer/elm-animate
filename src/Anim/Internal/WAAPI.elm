@@ -765,9 +765,9 @@ encodeProcessedPropertyConfig property =
 
                 baseFields =
                     [ ( "type", Encode.string "position" )
-                    , ( "x", Encode.float endX )
-                    , ( "y", Encode.float endY )
-                    , ( "z", Encode.float endZ )
+                    , ( "endX", Encode.float endX )
+                    , ( "endY", Encode.float endY )
+                    , ( "endZ", Encode.float endZ )
                     , ( "startX", Encode.float startX )
                     , ( "startY", Encode.float startY )
                     , ( "startZ", Encode.float startZ )
@@ -792,9 +792,9 @@ encodeProcessedPropertyConfig property =
 
                 baseFields =
                     [ ( "type", Encode.string "scale" )
-                    , ( "x", Encode.float endX )
-                    , ( "y", Encode.float endY )
-                    , ( "z", Encode.float endZ )
+                    , ( "endX", Encode.float endX )
+                    , ( "endY", Encode.float endY )
+                    , ( "endZ", Encode.float endZ )
                     , ( "startX", Encode.float startX )
                     , ( "startY", Encode.float startY )
                     , ( "startZ", Encode.float startZ )
@@ -819,9 +819,9 @@ encodeProcessedPropertyConfig property =
 
                 baseFields =
                     [ ( "type", Encode.string "rotate" )
-                    , ( "x", Encode.float endX )
-                    , ( "y", Encode.float endY )
-                    , ( "z", Encode.float endZ )
+                    , ( "endX", Encode.float endX )
+                    , ( "endY", Encode.float endY )
+                    , ( "endZ", Encode.float endZ )
                     , ( "startX", Encode.float startX )
                     , ( "startY", Encode.float startY )
                     , ( "startZ", Encode.float startZ )

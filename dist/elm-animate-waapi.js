@@ -312,54 +312,54 @@ window.ElmAnimateWAAPI = (function () {
                 case 'position':
                     if (isStatic) {
                         // Static: use end value for both start and end
-                        startTranslateX = property.x !== undefined ? property.x : startTranslateX;
-                        startTranslateY = property.y !== undefined ? property.y : startTranslateY;
-                        startTranslateZ = property.z !== undefined ? property.z : startTranslateZ;
-                        endTranslateX = property.x !== undefined ? property.x : endTranslateX;
-                        endTranslateY = property.y !== undefined ? property.y : endTranslateY;
-                        endTranslateZ = property.z !== undefined ? property.z : endTranslateZ;
+                        startTranslateX = property.endX !== undefined ? property.endX : startTranslateX;
+                        startTranslateY = property.endY !== undefined ? property.endY : startTranslateY;
+                        startTranslateZ = property.endZ !== undefined ? property.endZ : startTranslateZ;
+                        endTranslateX = property.endX !== undefined ? property.endX : endTranslateX;
+                        endTranslateY = property.endY !== undefined ? property.endY : endTranslateY;
+                        endTranslateZ = property.endZ !== undefined ? property.endZ : endTranslateZ;
                     } else {
                         // Animating: use start and end values
                         startTranslateX = property.startX !== undefined ? property.startX : startTranslateX;
                         startTranslateY = property.startY !== undefined ? property.startY : startTranslateY;
                         startTranslateZ = property.startZ !== undefined ? property.startZ : startTranslateZ;
-                        endTranslateX = property.x !== undefined ? property.x : endTranslateX;
-                        endTranslateY = property.y !== undefined ? property.y : endTranslateY;
-                        endTranslateZ = property.z !== undefined ? property.z : endTranslateZ;
+                        endTranslateX = property.endX !== undefined ? property.endX : endTranslateX;
+                        endTranslateY = property.endY !== undefined ? property.endY : endTranslateY;
+                        endTranslateZ = property.endZ !== undefined ? property.endZ : endTranslateZ;
                     }
                     break;
                 case 'scale':
                     if (isStatic) {
-                        startScaleX = property.x !== undefined ? property.x : startScaleX;
-                        startScaleY = property.y !== undefined ? property.y : startScaleY;
-                        startScaleZ = property.z !== undefined ? property.z : startScaleZ;
-                        endScaleX = property.x !== undefined ? property.x : endScaleX;
-                        endScaleY = property.y !== undefined ? property.y : endScaleY;
-                        endScaleZ = property.z !== undefined ? property.z : endScaleZ;
+                        startScaleX = property.endX !== undefined ? property.endX : startScaleX;
+                        startScaleY = property.endY !== undefined ? property.endY : startScaleY;
+                        startScaleZ = property.endZ !== undefined ? property.endZ : startScaleZ;
+                        endScaleX = property.endX !== undefined ? property.endX : endScaleX;
+                        endScaleY = property.endY !== undefined ? property.endY : endScaleY;
+                        endScaleZ = property.endZ !== undefined ? property.endZ : endScaleZ;
                     } else {
                         startScaleX = property.startX !== undefined ? property.startX : startScaleX;
                         startScaleY = property.startY !== undefined ? property.startY : startScaleY;
                         startScaleZ = property.startZ !== undefined ? property.startZ : startScaleZ;
-                        endScaleX = property.x !== undefined ? property.x : endScaleX;
-                        endScaleY = property.y !== undefined ? property.y : endScaleY;
-                        endScaleZ = property.z !== undefined ? property.z : endScaleZ;
+                        endScaleX = property.endX !== undefined ? property.endX : endScaleX;
+                        endScaleY = property.endY !== undefined ? property.endY : endScaleY;
+                        endScaleZ = property.endZ !== undefined ? property.endZ : endScaleZ;
                     }
                     break;
                 case 'rotate':
                     if (isStatic) {
-                        startRotationX = property.x !== undefined ? property.x : startRotationX;
-                        startRotationY = property.y !== undefined ? property.y : startRotationY;
-                        startRotationZ = property.z !== undefined ? property.z : startRotationZ;
-                        endRotationX = property.x !== undefined ? property.x : endRotationX;
-                        endRotationY = property.y !== undefined ? property.y : endRotationY;
-                        endRotationZ = property.z !== undefined ? property.z : endRotationZ;
+                        startRotationX = property.endX !== undefined ? property.endX : startRotationX;
+                        startRotationY = property.endY !== undefined ? property.endY : startRotationY;
+                        startRotationZ = property.endZ !== undefined ? property.endZ : startRotationZ;
+                        endRotationX = property.endX !== undefined ? property.endX : endRotationX;
+                        endRotationY = property.endY !== undefined ? property.endY : endRotationY;
+                        endRotationZ = property.endZ !== undefined ? property.endZ : endRotationZ;
                     } else {
                         startRotationX = property.startX !== undefined ? property.startX : startRotationX;
                         startRotationY = property.startY !== undefined ? property.startY : startRotationY;
                         startRotationZ = property.startZ !== undefined ? property.startZ : startRotationZ;
-                        endRotationX = property.x !== undefined ? property.x : endRotationX;
-                        endRotationY = property.y !== undefined ? property.y : endRotationY;
-                        endRotationZ = property.z !== undefined ? property.z : endRotationZ;
+                        endRotationX = property.endX !== undefined ? property.endX : endRotationX;
+                        endRotationY = property.endY !== undefined ? property.endY : endRotationY;
+                        endRotationZ = property.endZ !== undefined ? property.endZ : endRotationZ;
                     }
                     break;
             }

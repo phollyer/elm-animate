@@ -40,14 +40,14 @@ export interface ElementConfig {
 export interface PropertyAnimation {
     type: 'position' | 'scale' | 'rotate' | 'opacity' | 'backgroundColor' | 'color' | 'size';
     // Position properties
-    x?: number;
-    y?: number;
-    z?: number;
+    endX?: number;
+    endY?: number;
+    endZ?: number;
     startX?: number;
     startY?: number;
     startZ?: number;
-    // Scale properties
-    // Rotation properties (x, y, z)
+    // Scale properties (using same endX/endY/endZ and startX/startY/startZ)
+    // Rotation properties (using same endX/endY/endZ and startX/startY/startZ)
     // Size properties
     endWidth?: number;
     endHeight?: number;
