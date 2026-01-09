@@ -6,12 +6,12 @@ module Anim.Color exposing
     , fromElmColor, toElmColor
     , fromString
     , toCssString
-    , distance
     , setAlpha, getAlpha
     , brighten, darken, saturate, desaturate
     , isLight, isDark
     , isEqual
     , transparent, black, white, red, green, blue
+    , distance
     , encode
     )
 
@@ -113,14 +113,16 @@ toCssString =
 -- HEX COLORS
 
 
-{-| Create a color from a hex string.
+{-| Create a color from a hex string. Returns `Nothing` if the hex string is invalid.
 
-    hex "#ff0000" -- Red
+    fromHex "#ff0000" -- Just Red
 
-    hex "#f00" -- Red (shorthand)
+    fromHex "#f00" -- Just Red (shorthand)
+
+    fromHex "invalid" -- Nothing
 
 -}
-fromHex : String -> Color
+fromHex : String -> Maybe Color
 fromHex =
     CP.fromHex
 
@@ -277,15 +279,20 @@ distance =
 {-| Parse a color from various string formats.
 
 Supports:
-- Hex: "#ff0000", "#f00", "ff0000", "f00"
-- RGB: "rgb(255, 0, 0)"
-- RGBA: "rgba(255, 0, 0, 0.5)"
-- HSL: "hsl(0, 100%, 50%)"
-- HSLA: "hsla(0, 100%, 50%, 0.5)"
 
-    fromString "#ff0000"  -- Just red
-    fromString "rgb(255, 0, 0)"  -- Just red
-    fromString "invalid"  -- Nothing
+  - Hex: "#ff0000", "#f00", "ff0000", "f00"
+
+  - RGB: "rgb(255, 0, 0)"
+
+  - RGBA: "rgba(255, 0, 0, 0.5)"
+
+  - HSL: "hsl(0, 100%, 50%)"
+
+  - HSLA: "hsla(0, 100%, 50%, 0.5)"
+
+    fromString "#ff0000" -- Just red
+    fromString "rgb(255, 0, 0)" -- Just red
+    fromString "invalid" -- Nothing
 
 -}
 fromString : String -> Maybe Color
@@ -299,8 +306,9 @@ fromString =
 
 {-| Set the alpha (transparency) value of a color.
 
-    setAlpha 0.5 (fromRgb 255 0 0)  -- Semi-transparent red
-    setAlpha 0.0 (fromHex "#ff0000")  -- Fully transparent red
+    setAlpha 0.5 (fromRgb 255 0 0) -- Semi-transparent red
+
+    Maybe.map (setAlpha 0.0) (fromHex "#ff0000") -- Maybe (fully transparent red)
 
 -}
 setAlpha : Float -> Color -> Color
@@ -310,8 +318,9 @@ setAlpha =
 
 {-| Get the alpha value of a color. Returns 1.0 for opaque colors.
 
-    getAlpha (fromRgba 255 0 0 0.5)  -- 0.5
-    getAlpha (fromRgb 255 0 0)  -- 1.0
+    getAlpha (fromRgba 255 0 0 0.5) -- 0.5
+
+    getAlpha (fromRgb 255 0 0) -- 1.0
 
 -}
 getAlpha : Color -> Float
@@ -325,7 +334,7 @@ getAlpha =
 
 {-| Increase the lightness of a color.
 
-    brighten 0.2 (fromHex "#808080")  -- Lighter gray
+    Maybe.map (brighten 0.2) (fromHex "#808080") -- Maybe (lighter gray)
 
 -}
 brighten : Float -> Color -> Color
@@ -335,7 +344,7 @@ brighten =
 
 {-| Decrease the lightness of a color.
 
-    darken 0.2 (fromHex "#808080")  -- Darker gray
+    Maybe.map (darken 0.2) (fromHex "#808080") -- Maybe (darker gray)
 
 -}
 darken : Float -> Color -> Color
@@ -345,7 +354,7 @@ darken =
 
 {-| Increase the saturation of a color.
 
-    saturate 0.2 (fromHsl 0 50 50)  -- More saturated red
+    saturate 0.2 (fromHsl 0 50 50) -- More saturated red
 
 -}
 saturate : Float -> Color -> Color
@@ -355,7 +364,7 @@ saturate =
 
 {-| Decrease the saturation of a color.
 
-    desaturate 0.2 (fromHsl 0 100 50)  -- Less saturated red
+    desaturate 0.2 (fromHsl 0 100 50) -- Less saturated red
 
 -}
 desaturate : Float -> Color -> Color
@@ -369,8 +378,9 @@ desaturate =
 
 {-| Check if a color is considered light based on its luminance.
 
-    isLight white  -- True
-    isLight black  -- False
+    isLight white -- True
+
+    isLight black -- False
 
 -}
 isLight : Color -> Bool
@@ -380,8 +390,9 @@ isLight =
 
 {-| Check if a color is considered dark based on its luminance.
 
-    isDark black  -- True
-    isDark white  -- False
+    isDark black -- True
+
+    isDark white -- False
 
 -}
 isDark : Color -> Bool
@@ -395,7 +406,7 @@ isDark =
 
 {-| Check if two colors are equal.
 
-    isEqual red (fromRgb 255 0 0)  -- True
+    isEqual red (fromRgb 255 0 0) -- True
 
 -}
 isEqual : Color -> Color -> Bool

@@ -39,7 +39,7 @@ suite =
                         Color.fromRGBA 255 0 0 0.3
 
                     end =
-                        Color.fromHex "#0000FF"
+                        Color.fromHex "#0000FF" |> Maybe.withDefault Color.blue
 
                     result =
                         Color.interpolate start end 0.5

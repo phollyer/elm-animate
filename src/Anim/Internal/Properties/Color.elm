@@ -143,9 +143,30 @@ elmColorToHex =
 {- Hex Utilities -}
 
 
-fromHex : String -> Color
-fromHex =
-    Hex
+fromHex : String -> Maybe Color
+fromHex str =
+    let
+        cleanHex =
+            String.trim str
+                |> (\s ->
+                        if String.startsWith "#" s then
+                            String.dropLeft 1 s
+
+                        else
+                            s
+                   )
+
+        isValidLength =
+            List.member (String.length cleanHex) [ 3, 6, 8 ]
+
+        isValidChars =
+            String.all Char.isHexDigit cleanHex
+    in
+    if isValidLength && isValidChars then
+        Just (Hex ("#" ++ cleanHex))
+
+    else
+        Nothing
 
 
 toHex : Color -> String
@@ -1039,7 +1060,7 @@ fromString str =
             String.trim str
     in
     if String.startsWith "#" trimmed then
-        Just (fromHex trimmed)
+        fromHex trimmed
 
     else if String.startsWith "rgb(" trimmed then
         parseRgbString trimmed
@@ -1054,14 +1075,8 @@ fromString str =
         parseHslaString trimmed
 
     else
-    -- Try parsing as hex without # prefix
-    if
-        String.all (\c -> Char.isHexDigit c) trimmed && (String.length trimmed == 3 || String.length trimmed == 6)
-    then
-        Just (fromHex ("#" ++ trimmed))
-
-    else
-        Nothing
+        -- Try parsing as hex without # prefix
+        fromHex trimmed
 
 
 parseRgbString : String -> Maybe Color

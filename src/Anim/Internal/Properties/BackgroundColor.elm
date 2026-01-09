@@ -25,8 +25,8 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec)
 
 
 hex : String -> Color
-hex =
-    Color.fromHex
+hex hexStr =
+    Color.fromHex hexStr |> Maybe.withDefault Color.black
 
 
 hsl : Float -> Float -> Float -> Color
