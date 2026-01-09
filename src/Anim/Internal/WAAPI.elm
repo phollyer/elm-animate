@@ -839,10 +839,17 @@ encodeProcessedPropertyConfig property =
                 ( width, height ) =
                     Size.toTuple config.end
 
+                ( startWidth, startHeight ) =
+                    config.start
+                        |> Maybe.map Size.toTuple
+                        |> Maybe.withDefault ( 0, 0 )
+
                 baseFields =
                     [ ( "type", Encode.string "size" )
-                    , ( "width", Encode.float width )
-                    , ( "height", Encode.float height )
+                    , ( "endWidth", Encode.float width )
+                    , ( "endHeight", Encode.float height )
+                    , ( "startWidth", Encode.float startWidth )
+                    , ( "startHeight", Encode.float startHeight )
                     , ( "duration", Encode.int config.duration )
                     ]
 
@@ -860,7 +867,7 @@ encodeProcessedPropertyConfig property =
 
                 baseFields =
                     [ ( "type", Encode.string "opacity" )
-                    , ( "value", Encode.float (Opacity.toFloat config.end) )
+                    , ( "endValue", Encode.float (Opacity.toFloat config.end) )
                     , ( "startValue", Encode.float startValue )
                     , ( "duration", Encode.int config.duration )
                     ]
@@ -879,7 +886,7 @@ encodeProcessedPropertyConfig property =
 
                 baseFields =
                     [ ( "type", Encode.string "backgroundColor" )
-                    , ( "color", Encode.string (Color.toCssString config.end) )
+                    , ( "endColor", Encode.string (Color.toCssString config.end) )
                     , ( "startColor", Encode.string startColor )
                     , ( "duration", Encode.int config.duration )
                     ]
@@ -898,7 +905,7 @@ encodeProcessedPropertyConfig property =
 
                 baseFields =
                     [ ( "type", Encode.string "color" )
-                    , ( "color", Encode.string (Color.toCssString config.end) )
+                    , ( "endColor", Encode.string (Color.toCssString config.end) )
                     , ( "startColor", Encode.string startColor )
                     , ( "duration", Encode.int config.duration )
                     ]

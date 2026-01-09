@@ -414,7 +414,7 @@ window.ElmAnimateWAAPI = (function () {
             case 'opacity':
                 {
                     const startValue = property.startValue !== undefined ? property.startValue : 1;
-                    const endValue = property.value;
+                    const endValue = property.endValue;
 
                     if (easingKeyframes) {
                         // Complex easing: generate keyframes with easing applied
@@ -436,7 +436,7 @@ window.ElmAnimateWAAPI = (function () {
             case 'backgroundColor':
                 {
                     const startColor = property.startColor || 'transparent';
-                    const endColor = property.color;
+                    const endColor = property.endColor;
 
                     if (easingKeyframes) {
                         // Complex easing: generate keyframes with easing applied
@@ -455,6 +455,28 @@ window.ElmAnimateWAAPI = (function () {
                 }
                 break;
 
+            case 'color':
+                {
+                    const startColor = property.startColor || 'rgba(0, 0, 0, 1)';
+                    const endColor = property.endColor;
+
+                    if (easingKeyframes) {
+                        // Complex easing: generate keyframes with easing applied
+                        keyframes = easingKeyframes.map(progress => ({
+                            color: interpolateColor(startColor, endColor, progress)
+                        }));
+                        animationEasing = 'linear';
+                    } else {
+                        // Simple easing: use 2 keyframes
+                        keyframes = [
+                            { color: startColor },
+                            { color: endColor }
+                        ];
+                        animationEasing = easingFunctions[easing] || easing;
+                    }
+                }
+                break;
+
             case 'size':
                 keyframes = [
                     {
@@ -462,8 +484,8 @@ window.ElmAnimateWAAPI = (function () {
                         height: window.getComputedStyle(element).height
                     },
                     {
-                        width: `${property.width}px`,
-                        height: `${property.height}px`
+                        width: `${property.endWidth}px`,
+                        height: `${property.endHeight}px`
                     }
                 ];
                 animationEasing = easingFunctions[easing] || easing;

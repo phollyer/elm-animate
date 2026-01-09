@@ -38,7 +38,7 @@ export interface ElementConfig {
 }
 
 export interface PropertyAnimation {
-    type: 'position' | 'scale' | 'rotate' | 'opacity' | 'backgroundColor' | 'size';
+    type: 'position' | 'scale' | 'rotate' | 'opacity' | 'backgroundColor' | 'color' | 'size';
     // Position properties
     x?: number;
     y?: number;
@@ -49,12 +49,14 @@ export interface PropertyAnimation {
     // Scale properties
     // Rotation properties (x, y, z)
     // Size properties
-    width?: number;
-    height?: number;
+    endWidth?: number;
+    endHeight?: number;
+    startWidth?: number;
+    startHeight?: number;
     // Opacity/color properties
-    value?: number;
+    endValue?: number;
     startValue?: number;
-    color?: string;
+    endColor?: string;
     startColor?: string;
     // Animation settings
     duration: number;
@@ -76,6 +78,9 @@ export interface AnimationUpdate {
     scaleY: number;
     scaleZ: number;     // 3D scale support
     backgroundColor: string;
+    color: string;      // Font color updates from animations
+    width: number;      // Size width updates from animations
+    height: number;     // Size height updates from animations
     isAnimating: boolean;
 }
 
