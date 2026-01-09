@@ -954,21 +954,44 @@ encodeProcessedPropertyConfig property =
             Encode.object (baseFields ++ easingFields)
 
 
-easingToJsString : Easing -> String
-easingToJsString =
-    Easing.toWebAnimations
-
-
 {-| Encode easing with keyframes for complex easings (Bounce, Elastic).
 For complex easings, returns list with easing="linear" and keyframes array.
 For simple easings, returns list with just easing string.
 -}
 encodeEasingWithKeyframes : Easing -> List ( String, Encode.Value )
 encodeEasingWithKeyframes easingValue =
-    if Easing.isComplexEasing easingValue then
+    if isComplexEasing easingValue then
         [ ( "easing", Encode.string "linear" )
         , ( "easingKeyframes", Encode.list Encode.float (Easing.generateKeyframes easingValue) )
         ]
 
     else
-        [ ( "easing", Encode.string (easingToJsString easingValue) ) ]
+        [ ( "easing", Encode.string (Easing.toWebAnimations easingValue) ) ]
+
+
+{-| Check if an easing type requires keyframe pre-computation for accuracy.
+Bounce and Elastic easings cannot be represented accurately with a single cubic-bezier curve.
+-}
+isComplexEasing : Easing -> Bool
+isComplexEasing easing_ =
+    case easing_ of
+        ElasticIn ->
+            True
+
+        ElasticOut ->
+            True
+
+        ElasticInOut ->
+            True
+
+        BounceIn ->
+            True
+
+        BounceOut ->
+            True
+
+        BounceInOut ->
+            True
+
+        _ ->
+            False

@@ -1,7 +1,5 @@
 module Anim.Internal.Easing exposing
-    ( encode
-    , generateKeyframes
-    , isComplexEasing
+    ( generateKeyframes
     , toCSS
     , toFunction
     , toWebAnimations
@@ -9,7 +7,6 @@ module Anim.Internal.Easing exposing
 
 import Anim.Easing exposing (Easing(..))
 import Ease as E
-import Json.Encode as Encode
 
 
 toCSS : Maybe Easing -> String
@@ -174,7 +171,6 @@ toWebAnimations easing =
         EaseInOut ->
             "ease-in-out"
 
-        -- Web Animations API supports more complex easing strings
         SineIn ->
             "cubic-bezier(0.12, 0, 0.39, 0)"
 
@@ -247,25 +243,23 @@ toWebAnimations easing =
         BackInOut ->
             "cubic-bezier(0.68, -0.6, 0.32, 1.6)"
 
-        -- Web Animations API could potentially support these with keyframes
-        -- For now, using cubic-bezier approximations that provide similar visual character
         ElasticIn ->
-            "cubic-bezier(0.55, 0.055, 0.675, 0.19)"
+            "linear"
 
         ElasticOut ->
-            "cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+            "linear"
 
         ElasticInOut ->
-            "cubic-bezier(0.445, 0.05, 0.55, 0.95)"
+            "linear"
 
         BounceIn ->
-            "cubic-bezier(0.6, 0.04, 0.98, 0.335)"
+            "linear"
 
         BounceOut ->
-            "cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+            "linear"
 
         BounceInOut ->
-            "cubic-bezier(0.68, -0.55, 0.265, 1.55)"
+            "linear"
 
         Custom value ->
             value
@@ -387,34 +381,6 @@ toFunction easing =
             E.inOutQuad
 
 
-{-| Check if an easing type requires keyframe pre-computation for accuracy.
-Bounce and Elastic easings cannot be represented accurately with a single cubic-bezier curve.
--}
-isComplexEasing : Easing -> Bool
-isComplexEasing easing =
-    case easing of
-        ElasticIn ->
-            True
-
-        ElasticOut ->
-            True
-
-        ElasticInOut ->
-            True
-
-        BounceIn ->
-            True
-
-        BounceOut ->
-            True
-
-        BounceInOut ->
-            True
-
-        _ ->
-            False
-
-
 {-| Generate keyframe progress values for complex easings.
 Returns a list of 30 progress values (0.0 to 1.0) with the easing function applied.
 This allows WAAPI to use accurate easing through linear interpolation between keyframes.
@@ -438,13 +404,3 @@ generateKeyframes easing =
                 |> List.map (\i -> easingFunction (linearProgress i))
     in
     keyframeValues
-
-
-encode : Easing -> Encode.Value
-encode easing =
-    Encode.object
-        [ ( "easing"
-          , Encode.string <|
-                toWebAnimations easing
-          )
-        ]
