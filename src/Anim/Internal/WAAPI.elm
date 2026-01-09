@@ -123,8 +123,8 @@ duration =
 
 
 speed : Float -> AnimBuilder -> AnimBuilder
-speed value =
-    Builder.speed value
+speed =
+    Builder.speed
 
 
 easing : Easing -> AnimBuilder -> AnimBuilder
@@ -438,7 +438,10 @@ allComplete (AnimState state) =
         Nothing
 
     else
-        Just (not state.isRunning)
+        -- Check if all animations have Complete status
+        Dict.values state.elementAnimations
+            |> List.all (\elementAnim -> elementAnim.status == Complete)
+            |> Just
 
 
 anyRunning : AnimState -> Bool
