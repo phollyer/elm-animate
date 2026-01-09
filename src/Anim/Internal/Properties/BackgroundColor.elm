@@ -16,7 +16,7 @@ module Anim.Internal.Properties.BackgroundColor exposing
     , toString
     )
 
-import Anim.Color as Color exposing (Color)
+import Anim.Internal.Properties.Color as Color exposing (Color)
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
 
 
@@ -31,22 +31,22 @@ hex =
 
 hsl : Float -> Float -> Float -> Color
 hsl h s l =
-    Color.fromHsl h s l
+    Color.fromHSL h s l
 
 
 hsla : Float -> Float -> Float -> Float -> Color
 hsla h s l a =
-    Color.fromHsla h s l a
+    Color.fromHSLA h s l a
 
 
 rgb : Int -> Int -> Int -> Color
 rgb r g b =
-    Color.fromRgb r g b
+    Color.fromRGB r g b
 
 
 rgba : Int -> Int -> Int -> Float -> Color
 rgba r g b a =
-    Color.fromRgba r g b a
+    Color.fromRGBA r g b a
 
 
 
@@ -58,14 +58,14 @@ toString =
     Color.toCssString
 
 
-hexToRgb : String -> { r : Int, g : Int, b : Int }
+hexToRgb : String -> Maybe { r : Int, g : Int, b : Int }
 hexToRgb =
-    Color.hexStringToRgb
+    Color.fromString >> Maybe.map Color.toRgb
 
 
-hexToRgba : String -> { r : Int, g : Int, b : Int, a : Float }
+hexToRgba : String -> Maybe { r : Int, g : Int, b : Int, a : Float }
 hexToRgba =
-    Color.hexStringToRgba
+    Color.fromString >> Maybe.map Color.toRgba
 
 
 toRgb : Color -> { r : Int, g : Int, b : Int }

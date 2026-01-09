@@ -390,8 +390,8 @@ updateElementAnimation animUpdate elementAnimation =
             , rotate = Just (Rotate.fromTriple ( animUpdate.rotationX, animUpdate.rotationY, animUpdate.rotationZ ))
             , scale = Just (Scale.fromTriple ( animUpdate.scaleX, animUpdate.scaleY, animUpdate.scaleZ ))
             , opacity = Just (Opacity.fromFloat animUpdate.opacity)
-            , backgroundColor = Color.fromRgbString animUpdate.backgroundColor
-            , fontColor = Color.fromRgbString animUpdate.color
+            , backgroundColor = Color.fromString animUpdate.backgroundColor
+            , fontColor = Color.fromString animUpdate.color
             , size = Just (Size.fromTuple ( animUpdate.width, animUpdate.height ))
             }
     }

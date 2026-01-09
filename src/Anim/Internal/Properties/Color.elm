@@ -1,6 +1,12 @@
 module Anim.Internal.Properties.Color exposing
     ( Color(..)
     , applyAlphaFromStart
+    , black
+    , blue
+    , brighten
+    , darken
+    , desaturate
+      -- Color queries
     , distance
     , duration
     , elmColorToHex
@@ -11,14 +17,24 @@ module Anim.Internal.Properties.Color exposing
     , fromHex
     , fromRGB
     , fromRGBA
-    , fromRgbString
+    , fromString
+      -- Common colors
+    , getAlpha
+      -- Color manipulation
+    , green
     , hasExplicitAlpha
     , hexToElmColor
     , hexToHsl
     , hexToHsla
-    , hexToRgb
-    , hexToRgba
     , interpolate
+    , isDark
+      -- Color comparison
+    , isEqual
+      -- String parsing
+    , isLight
+    , red
+    , saturate
+    , setAlpha
     , speed
     , toCssString
     , toElmColor
@@ -27,6 +43,9 @@ module Anim.Internal.Properties.Color exposing
     , toHsla
     , toRgb
     , toRgba
+      -- Alpha utilities
+    , transparent
+    , white
     )
 
 {- Color Utility Module
@@ -907,6 +926,355 @@ toHexComponent value =
             clampedValue |> modBy 16
     in
     toHexDigit high ++ toHexDigit low
+
+
+
+{- UTILITY FUNCTIONS -}
+
+
+{-| Set the alpha value of a color, converting to RGBA/HSLA if needed
+-}
+setAlpha : Float -> Color -> Color
+setAlpha alpha color =
+    case color of
+        Rgba rgba_ ->
+            Rgba { rgba_ | a = clamp 0 1 alpha }
+
+        Hsla hsla_ ->
+            Hsla { hsla_ | a = clamp 0 1 alpha }
+
+        _ ->
+            let
+                rgba_ =
+                    toRgba color
+            in
+            Rgba { rgba_ | a = clamp 0 1 alpha }
+
+
+{-| Get the alpha value of a color, defaulting to 1.0 for opaque colors
+-}
+getAlpha : Color -> Float
+getAlpha color =
+    case color of
+        Rgba rgba_ ->
+            rgba_.a
+
+        Hsla hsla_ ->
+            hsla_.a
+
+        ElmColor elmColor_ ->
+            (Color.toRgba elmColor_).alpha
+
+        _ ->
+            1.0
+
+
+{-| Increase the lightness of a color by the given amount (0.0-1.0)
+-}
+brighten : Float -> Color -> Color
+brighten amount color =
+    let
+        hsl_ =
+            toHsl color
+
+        newLightness =
+            clamp 0 100 (hsl_.l + amount * 100)
+    in
+    case color of
+        Hsla hsla_ ->
+            Hsla { hsla_ | l = newLightness }
+
+        _ ->
+            if hasExplicitAlpha color then
+                let
+                    hsla_ =
+                        toHsla color
+                in
+                Hsla { hsla_ | l = newLightness }
+
+            else
+                Hsl { hsl_ | l = newLightness }
+
+
+{-| Decrease the lightness of a color by the given amount (0.0-1.0)
+-}
+darken : Float -> Color -> Color
+darken amount color =
+    brighten -amount color
+
+
+{-| Increase the saturation of a color by the given amount (0.0-1.0)
+-}
+saturate : Float -> Color -> Color
+saturate amount color =
+    let
+        hsl_ =
+            toHsl color
+
+        newSaturation =
+            clamp 0 100 (hsl_.s + amount * 100)
+    in
+    case color of
+        Hsla hsla_ ->
+            Hsla { hsla_ | s = newSaturation }
+
+        _ ->
+            if hasExplicitAlpha color then
+                let
+                    hsla_ =
+                        toHsla color
+                in
+                Hsla { hsla_ | s = newSaturation }
+
+            else
+                Hsl { hsl_ | s = newSaturation }
+
+
+{-| Decrease the saturation of a color by the given amount (0.0-1.0)
+-}
+desaturate : Float -> Color -> Color
+desaturate amount color =
+    saturate -amount color
+
+
+{-| Check if a color is considered light based on its luminance
+-}
+isLight : Color -> Bool
+isLight color =
+    let
+        rgb_ =
+            toRgb color
+
+        -- Calculate relative luminance using the formula for sRGB
+        luminance =
+            let
+                toLinear component =
+                    let
+                        sRGB =
+                            toFloat component / 255
+                    in
+                    if sRGB <= 0.03928 then
+                        sRGB / 12.92
+
+                    else
+                        ((sRGB + 0.055) / 1.055) ^ 2.4
+
+                r =
+                    toLinear rgb_.r
+
+                g =
+                    toLinear rgb_.g
+
+                b =
+                    toLinear rgb_.b
+            in
+            0.2126 * r + 0.7152 * g + 0.0722 * b
+    in
+    luminance > 0.5
+
+
+{-| Check if a color is considered dark based on its luminance
+-}
+isDark : Color -> Bool
+isDark color =
+    not (isLight color)
+
+
+{-| Check if two colors are equal
+-}
+isEqual : Color -> Color -> Bool
+isEqual color1 color2 =
+    let
+        rgba1 =
+            toRgba color1
+
+        rgba2 =
+            toRgba color2
+    in
+    rgba1.r
+        == rgba2.r
+        && rgba1.g
+        == rgba2.g
+        && rgba1.b
+        == rgba2.b
+        && rgba1.a
+        == rgba2.a
+
+
+{-| Parse a color from various string formats (hex, rgb(), hsl(), etc.)
+-}
+fromString : String -> Maybe Color
+fromString str =
+    let
+        trimmed =
+            String.trim str
+    in
+    if String.startsWith "#" trimmed then
+        Just (fromHex trimmed)
+
+    else if String.startsWith "rgb(" trimmed then
+        fromRgbString trimmed
+
+    else if String.startsWith "rgba(" trimmed then
+        parseRgbaString trimmed
+
+    else if String.startsWith "hsl(" trimmed then
+        parseHslString trimmed
+
+    else if String.startsWith "hsla(" trimmed then
+        parseHslaString trimmed
+
+    else
+    -- Try parsing as hex without # prefix
+    if
+        String.all (\c -> Char.isHexDigit c) trimmed && (String.length trimmed == 3 || String.length trimmed == 6)
+    then
+        Just (fromHex ("#" ++ trimmed))
+
+    else
+        Nothing
+
+
+parseRgbaString : String -> Maybe Color
+parseRgbaString str =
+    -- Parse "rgba(r, g, b, a)" format
+    let
+        content =
+            String.dropLeft 5 (String.dropRight 1 str)
+
+        -- Remove "rgba(" and ")"
+        parts =
+            String.split "," content |> List.map String.trim
+    in
+    case parts of
+        [ rStr, gStr, bStr, aStr ] ->
+            case String.toInt rStr of
+                Just r ->
+                    case String.toInt gStr of
+                        Just g ->
+                            case String.toInt bStr of
+                                Just b ->
+                                    case String.toFloat aStr of
+                                        Just a ->
+                                            Just (fromRGBA r g b a)
+
+                                        Nothing ->
+                                            Nothing
+
+                                Nothing ->
+                                    Nothing
+
+                        Nothing ->
+                            Nothing
+
+                Nothing ->
+                    Nothing
+
+        _ ->
+            Nothing
+
+
+parseHslString : String -> Maybe Color
+parseHslString str =
+    -- Parse "hsl(h, s%, l%)" format
+    let
+        content =
+            String.dropLeft 4 (String.dropRight 1 str)
+
+        -- Remove "hsl(" and ")"
+        parts =
+            String.split "," content |> List.map (String.trim >> String.replace "%" "")
+    in
+    case parts of
+        [ hStr, sStr, lStr ] ->
+            case ( String.toFloat hStr, String.toFloat sStr, String.toFloat lStr ) of
+                ( Just h, Just s, Just l ) ->
+                    Just (fromHSL h s l)
+
+                _ ->
+                    Nothing
+
+        _ ->
+            Nothing
+
+
+parseHslaString : String -> Maybe Color
+parseHslaString str =
+    -- Parse "hsla(h, s%, l%, a)" format
+    let
+        content =
+            String.dropLeft 5 (String.dropRight 1 str)
+
+        -- Remove "hsla(" and ")"
+        parts =
+            String.split "," content |> List.map String.trim
+
+        cleanedParts =
+            case parts of
+                [ hStr, sStr, lStr, aStr ] ->
+                    [ hStr, String.replace "%" "" sStr, String.replace "%" "" lStr, aStr ]
+
+                _ ->
+                    []
+    in
+    case cleanedParts of
+        [ hStr, sStr, lStr, aStr ] ->
+            case String.toFloat hStr of
+                Just h ->
+                    case String.toFloat sStr of
+                        Just s ->
+                            case String.toFloat lStr of
+                                Just l ->
+                                    case String.toFloat aStr of
+                                        Just a ->
+                                            Just (fromHSLA h s l a)
+
+                                        Nothing ->
+                                            Nothing
+
+                                Nothing ->
+                                    Nothing
+
+                        Nothing ->
+                            Nothing
+
+                Nothing ->
+                    Nothing
+
+        _ ->
+            Nothing
+
+
+{-| Common predefined colors
+-}
+transparent : Color
+transparent =
+    Rgba { r = 0, g = 0, b = 0, a = 0 }
+
+
+black : Color
+black =
+    Rgb { r = 0, g = 0, b = 0 }
+
+
+white : Color
+white =
+    Rgb { r = 255, g = 255, b = 255 }
+
+
+red : Color
+red =
+    Rgb { r = 255, g = 0, b = 0 }
+
+
+green : Color
+green =
+    Rgb { r = 0, g = 255, b = 0 }
+
+
+blue : Color
+blue =
+    Rgb { r = 0, g = 0, b = 255 }
 
 
 hexToInt : String -> Maybe Int

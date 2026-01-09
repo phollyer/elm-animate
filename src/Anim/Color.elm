@@ -1,11 +1,17 @@
 module Anim.Color exposing
     ( Color
-    , fromHex, toHex, hexStringToRgb, hexStringToRgba
-    , fromRgb, fromRgba, fromRgbString, toRgb, toRgba
+    , fromHex, toHex
+    , fromRgb, fromRgba, toRgb, toRgba
     , fromHsl, fromHsla, toHsl, toHsla
     , fromElmColor, toElmColor
+    , fromString
     , toCssString
     , distance
+    , setAlpha, getAlpha
+    , brighten, darken, saturate, desaturate
+    , isLight, isDark
+    , isEqual
+    , transparent, black, white, red, green, blue
     , encode
     )
 
@@ -19,12 +25,12 @@ module Anim.Color exposing
 
 # Hex Colors
 
-@docs fromHex, toHex, hexStringToRgb, hexStringToRgba
+@docs fromHex, toHex
 
 
 # RGB Colors
 
-@docs fromRgb, fromRgba, fromRgbString, toRgb, toRgba
+@docs fromRgb, fromRgba, toRgb, toRgba
 
 
 # HSL Colors
@@ -39,9 +45,39 @@ Use colors from the [avh4/elm-color](https://package.elm-lang.org/packages/avh4/
 @docs fromElmColor, toElmColor
 
 
+# Color Parsing
+
+@docs fromString
+
+
 # Color Transformations
 
 @docs toCssString
+
+
+# Alpha Utilities
+
+@docs setAlpha, getAlpha
+
+
+# Color Manipulation
+
+@docs brighten, darken, saturate, desaturate
+
+
+# Color Queries
+
+@docs isLight, isDark
+
+
+# Color Comparison
+
+@docs isEqual
+
+
+# Common Colors
+
+@docs transparent, black, white, red, green, blue
 
 
 # Color Distance
@@ -111,16 +147,6 @@ fromRgb =
 fromRgba : Int -> Int -> Int -> Float -> Color
 fromRgba =
     CP.fromRGBA
-
-
-{-| Create a Color from an "rgb(r, g, b)" formatted string.
-
-    fromRgbString "rgb(255, 0, 0)" -- Red
-
--}
-fromRgbString : String -> Maybe Color
-fromRgbString =
-    CP.fromRgbString
 
 
 
@@ -226,20 +252,6 @@ toElmColor =
     CP.toElmColor
 
 
-{-| Convert a hex string to an RGB color record.
--}
-hexStringToRgb : String -> { r : Int, g : Int, b : Int }
-hexStringToRgb =
-    CP.hexToRgb
-
-
-{-| Convert a hex string to an RGBA color record.
--}
-hexStringToRgba : String -> { r : Int, g : Int, b : Int, a : Float }
-hexStringToRgba =
-    CP.hexToRgba
-
-
 {-| Calculate distance between two Color values using RGB Euclidean distance.
 
 This follows a simplified approach to color distance calculation:
@@ -260,6 +272,181 @@ distance (rgb255 255 0 0) (rgb255 0 255 0)
 distance : Color -> Color -> Float
 distance =
     CP.distance
+
+
+{-| Parse a color from various string formats.
+
+Supports:
+- Hex: "#ff0000", "#f00", "ff0000", "f00"
+- RGB: "rgb(255, 0, 0)"
+- RGBA: "rgba(255, 0, 0, 0.5)"
+- HSL: "hsl(0, 100%, 50%)"
+- HSLA: "hsla(0, 100%, 50%, 0.5)"
+
+    fromString "#ff0000"  -- Just red
+    fromString "rgb(255, 0, 0)"  -- Just red
+    fromString "invalid"  -- Nothing
+
+-}
+fromString : String -> Maybe Color
+fromString =
+    CP.fromString
+
+
+
+-- ALPHA UTILITIES
+
+
+{-| Set the alpha (transparency) value of a color.
+
+    setAlpha 0.5 (fromRgb 255 0 0)  -- Semi-transparent red
+    setAlpha 0.0 (fromHex "#ff0000")  -- Fully transparent red
+
+-}
+setAlpha : Float -> Color -> Color
+setAlpha =
+    CP.setAlpha
+
+
+{-| Get the alpha value of a color. Returns 1.0 for opaque colors.
+
+    getAlpha (fromRgba 255 0 0 0.5)  -- 0.5
+    getAlpha (fromRgb 255 0 0)  -- 1.0
+
+-}
+getAlpha : Color -> Float
+getAlpha =
+    CP.getAlpha
+
+
+
+-- COLOR MANIPULATION
+
+
+{-| Increase the lightness of a color.
+
+    brighten 0.2 (fromHex "#808080")  -- Lighter gray
+
+-}
+brighten : Float -> Color -> Color
+brighten =
+    CP.brighten
+
+
+{-| Decrease the lightness of a color.
+
+    darken 0.2 (fromHex "#808080")  -- Darker gray
+
+-}
+darken : Float -> Color -> Color
+darken =
+    CP.darken
+
+
+{-| Increase the saturation of a color.
+
+    saturate 0.2 (fromHsl 0 50 50)  -- More saturated red
+
+-}
+saturate : Float -> Color -> Color
+saturate =
+    CP.saturate
+
+
+{-| Decrease the saturation of a color.
+
+    desaturate 0.2 (fromHsl 0 100 50)  -- Less saturated red
+
+-}
+desaturate : Float -> Color -> Color
+desaturate =
+    CP.desaturate
+
+
+
+-- COLOR QUERIES
+
+
+{-| Check if a color is considered light based on its luminance.
+
+    isLight white  -- True
+    isLight black  -- False
+
+-}
+isLight : Color -> Bool
+isLight =
+    CP.isLight
+
+
+{-| Check if a color is considered dark based on its luminance.
+
+    isDark black  -- True
+    isDark white  -- False
+
+-}
+isDark : Color -> Bool
+isDark =
+    CP.isDark
+
+
+
+-- COLOR COMPARISON
+
+
+{-| Check if two colors are equal.
+
+    isEqual red (fromRgb 255 0 0)  -- True
+
+-}
+isEqual : Color -> Color -> Bool
+isEqual =
+    CP.isEqual
+
+
+
+-- COMMON COLORS
+
+
+{-| Fully transparent color.
+-}
+transparent : Color
+transparent =
+    CP.transparent
+
+
+{-| Black color.
+-}
+black : Color
+black =
+    CP.black
+
+
+{-| White color.
+-}
+white : Color
+white =
+    CP.white
+
+
+{-| Red color.
+-}
+red : Color
+red =
+    CP.red
+
+
+{-| Green color.
+-}
+green : Color
+green =
+    CP.green
+
+
+{-| Blue color.
+-}
+blue : Color
+blue =
+    CP.blue
 
 
 {-| Encode Color to JSON for serialization.

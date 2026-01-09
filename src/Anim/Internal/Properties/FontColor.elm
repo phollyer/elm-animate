@@ -58,14 +58,14 @@ toString =
     Color.toCssString
 
 
-hexToRgb : String -> { r : Int, g : Int, b : Int }
+hexToRgb : String -> Maybe { r : Int, g : Int, b : Int }
 hexToRgb =
-    Color.hexStringToRgb
+    Color.fromString >> Maybe.map Color.toRgb
 
 
-hexToRgba : String -> { r : Int, g : Int, b : Int, a : Float }
+hexToRgba : String -> Maybe { r : Int, g : Int, b : Int, a : Float }
 hexToRgba =
-    Color.hexStringToRgba
+    Color.fromString >> Maybe.map Color.toRgba
 
 
 toRgb : Color -> { r : Int, g : Int, b : Int }
