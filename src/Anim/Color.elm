@@ -305,9 +305,11 @@ setAlpha =
 
 {-| Get the alpha value of a color. Returns 1.0 for opaque colors.
 
-    getAlpha (fromRgba { r = 255, g = 0, b = 0, a = 0.5 }) -- 0.5
+    getAlpha <|
+        fromRgba { r = 255, g = 0, b = 0, a = 0.5 } -- 0.5
 
-    getAlpha (fromRgb { r = 255, g = 0, b = 0 }) -- 1.0
+    getAlpha <|
+        fromRgb { r = 255, g = 0, b = 0 } -- 1.0
 
 -}
 getAlpha : Color -> Float
@@ -321,7 +323,8 @@ getAlpha =
 
 {-| Increase the lightness of a color.
 
-    Maybe.map (brighten 0.2) (fromHex "#808080") -- Maybe (lighter gray)
+    brighten 0.2 <|
+        fromRgb { r = 100, g = 100, b = 100 } -- Lighter gray
 
 -}
 brighten : Float -> Color -> Color
@@ -331,7 +334,8 @@ brighten =
 
 {-| Decrease the lightness of a color.
 
-    Maybe.map (darken 0.2) (fromHex "#808080") -- Maybe (darker gray)
+    darken 0.2 <|
+        fromRgb { r = 100, g = 100, b = 100 } -- Darker gray
 
 -}
 darken : Float -> Color -> Color
@@ -341,7 +345,8 @@ darken =
 
 {-| Increase the saturation of a color.
 
-    saturate 0.2 (fromHsl 0 50 50) -- More saturated red
+    saturate 0.2 <|
+        fromHsl {h = 0, s = 50, l = 50} -- More saturated red
 
 -}
 saturate : Float -> Color -> Color
@@ -351,7 +356,8 @@ saturate =
 
 {-| Decrease the saturation of a color.
 
-    desaturate 0.2 (fromHsl 0 100 50) -- Less saturated red
+    desaturate 0.2 <|
+        fromHsl {h = 0, s = 50, l = 50} -- Less saturated red
 
 -}
 desaturate : Float -> Color -> Color
