@@ -6,7 +6,6 @@ module Anim.Internal.Properties.Color exposing
     , brighten
     , darken
     , desaturate
-      -- Color queries
     , distance
     , duration
     , elmColorToHex
@@ -18,9 +17,7 @@ module Anim.Internal.Properties.Color exposing
     , fromRGB
     , fromRGBA
     , fromString
-      -- Common colors
     , getAlpha
-      -- Color manipulation
     , green
     , hasExplicitAlpha
     , hexToElmColor
@@ -28,9 +25,7 @@ module Anim.Internal.Properties.Color exposing
     , hexToHsla
     , interpolate
     , isDark
-      -- Color comparison
     , isEqual
-      -- String parsing
     , isLight
     , red
     , saturate
@@ -43,7 +38,6 @@ module Anim.Internal.Properties.Color exposing
     , toHsla
     , toRgb
     , toRgba
-      -- Alpha utilities
     , transparent
     , white
     )
