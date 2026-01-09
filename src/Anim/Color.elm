@@ -5,17 +5,17 @@ module Anim.Color exposing
     , fromHsl, fromHsla, toHsl, toHsla
     , fromElmColor, toElmColor
     , fromString
-    , toCssString
     , setAlpha, getAlpha
     , brighten, darken, saturate, desaturate
     , isLight, isDark
     , isEqual
-    , transparent, black, white, red, green, blue
     , distance
-    , encode
+    , transparent, black, white, red, green, blue
     )
 
-{-| Shared color type for all color-based animation properties.
+{-| Color manipulation and conversion utilities for the shared Color type.
+
+Use these functions to create, transform, and analyze colors in various formats, then use them in animations.
 
 
 # Color Type
@@ -45,68 +45,47 @@ Use colors from the [avh4/elm-color](https://package.elm-lang.org/packages/avh4/
 @docs fromElmColor, toElmColor
 
 
-# Color Parsing
+# Parsing
 
 @docs fromString
 
 
-# Color Transformations
-
-@docs toCssString
-
-
-# Alpha Utilities
+# Alpha
 
 @docs setAlpha, getAlpha
 
 
-# Color Manipulation
+# Manipulation
 
 @docs brighten, darken, saturate, desaturate
-
-
-# Color Queries
 
 @docs isLight, isDark
 
 
-# Color Comparison
+# Comparison
 
 @docs isEqual
+
+
+# Distance
+
+@docs distance
 
 
 # Common Colors
 
 @docs transparent, black, white, red, green, blue
 
-
-# Color Distance
-
-@docs distance
-
-
-# Encoding
-
-@docs encode
-
 -}
 
 import Anim.Internal.Properties.Color as CP exposing (Color(..))
 import Color
-import Json.Encode as Encode
 
 
 {-| Type alias for Color values used in animations.
 -}
 type alias Color =
     CP.Color
-
-
-{-| Convert a Color to its CSS string representation.
--}
-toCssString : Color -> String
-toCssString =
-    CP.toCssString
 
 
 
@@ -131,7 +110,7 @@ fromHex =
 -- RGB COLORS
 
 
-{-| Create an RGB color.
+{-| Create a Color from RGB components.
 
     fromRgb { r = 255, g = 0, b = 0 } -- Red
 
@@ -141,7 +120,7 @@ fromRgb =
     CP.fromRGB
 
 
-{-| Create an RGBA color with alpha transparency.
+{-| Create an Color from RGBA components.
 
     fromRgba { r = 255, g = 0, b = 0, a = 0.5 } -- Semi-transparent red
 
@@ -155,7 +134,7 @@ fromRgba =
 -- HSL COLORS
 
 
-{-| Create an HSL color.
+{-| Create a Color from HSL components.
 
   - `h` (hue): 0-360 degrees
   - `s` (saturation): 0-100 percent
@@ -171,7 +150,7 @@ fromHsl =
     CP.fromHSL
 
 
-{-| Create an HSLA color with alpha transparency.
+{-| Create a Color from HSLA components.
 
   - `h` (hue): 0-360 degrees
   - `s` (saturation): 0-100 percent
@@ -219,35 +198,35 @@ toHex =
     CP.toHex
 
 
-{-| Convert to an RGB color record.
+{-| Convert a Color to an RGB color record.
 -}
 toRgb : Color -> { r : Int, g : Int, b : Int }
 toRgb =
     CP.toRgb
 
 
-{-| Convert to an RGBA color record.
+{-| Convert a Color to an RGBA color record.
 -}
 toRgba : Color -> { r : Int, g : Int, b : Int, a : Float }
 toRgba =
     CP.toRgba
 
 
-{-| Convert to an HSL color record.
+{-| Convert a Color to an HSL color record.
 -}
 toHsl : Color -> { h : Float, s : Float, l : Float }
 toHsl =
     CP.toHsl
 
 
-{-| Convert to an HSLA color record.
+{-| Convert a Color to an HSLA color record.
 -}
 toHsla : Color -> { h : Float, s : Float, l : Float, a : Float }
 toHsla =
     CP.toHsla
 
 
-{-| Convert to an [elm-color](https://package.elm-lang.org/packages/avh4/elm-color/latest/) [Color](https://package.elm-lang.org/packages/avh4/elm-color/latest/Color) value.
+{-| Convert a Color to an [elm-color](https://package.elm-lang.org/packages/avh4/elm-color/latest/) [Color](https://package.elm-lang.org/packages/avh4/elm-color/latest/Color) value.
 -}
 toElmColor : Color -> Color.Color
 toElmColor =
@@ -267,8 +246,12 @@ and is much simpler to calculate.
 Note: All color types are converted to RGB before distance calculation.
 
 Example:
-distance (rgb255 255 0 0) (rgb255 0 255 0)
--- Returns: sqrt(255² + 255² + 0²) ≈ 360.6
+
+    color1 = fromRgb { r = 255, g = 0, b = 0 } -- Red
+    color2 = fromRgb { r = 0, g = 255, b = 0 } -- Green
+
+    distance color1 color2
+    -- Returns: sqrt((0-255)² + (255-0)² + (0-0)²) = sqrt(65025 + 65025 + 0) = sqrt(130050) ≈ 360.6
 
 -}
 distance : Color -> Color -> Float
@@ -290,9 +273,13 @@ Supports:
 
   - HSLA: "hsla(0, 100%, 50%, 0.5)"
 
-    fromString "#ff0000" -- Just red
-    fromString "rgb(255, 0, 0)" -- Just red
-    fromString "invalid" -- Nothing
+```elm
+fromString "#ff0000" -- Just red
+
+fromString "rgb(255, 0, 0)" -- Just red
+
+fromString "invalid" -- Nothing
+```
 
 -}
 fromString : String -> Maybe Color
@@ -306,9 +293,9 @@ fromString =
 
 {-| Set the alpha (transparency) value of a color.
 
-    setAlpha 0.5 (fromRgb 255 0 0) -- Semi-transparent red
-
-    Maybe.map (setAlpha 0.0) (fromHex "#ff0000") -- Maybe (fully transparent red)
+    -- Semi-transparent red
+    setAlpha 0.5 <|
+        fromRgb { r = 255, g = 0, b = 0 }
 
 -}
 setAlpha : Float -> Color -> Color
@@ -318,9 +305,9 @@ setAlpha =
 
 {-| Get the alpha value of a color. Returns 1.0 for opaque colors.
 
-    getAlpha (fromRgba 255 0 0 0.5) -- 0.5
+    getAlpha (fromRgba { r = 255, g = 0, b = 0, a = 0.5 }) -- 0.5
 
-    getAlpha (fromRgb 255 0 0) -- 1.0
+    getAlpha (fromRgb { r = 255, g = 0, b = 0 }) -- 1.0
 
 -}
 getAlpha : Color -> Float
@@ -418,50 +405,38 @@ isEqual =
 -- COMMON COLORS
 
 
-{-| Fully transparent color.
+{-| Fully transparent white.
 -}
 transparent : Color
 transparent =
     CP.transparent
 
 
-{-| Black color.
--}
+{-| -}
 black : Color
 black =
     CP.black
 
 
-{-| White color.
--}
+{-| -}
 white : Color
 white =
     CP.white
 
 
-{-| Red color.
--}
+{-| -}
 red : Color
 red =
     CP.red
 
 
-{-| Green color.
--}
+{-| -}
 green : Color
 green =
     CP.green
 
 
-{-| Blue color.
--}
+{-| -}
 blue : Color
 blue =
     CP.blue
-
-
-{-| Encode Color to JSON for serialization.
--}
-encode : Color -> Encode.Value
-encode =
-    CP.encode
