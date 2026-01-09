@@ -1,6 +1,6 @@
 module TestAlphaPreservation exposing (suite)
 
-import Anim.Color as Color
+import Anim.Internal.Properties.Color as Color
 import Expect
 import Test exposing (..)
 
@@ -12,10 +12,10 @@ suite =
             \_ ->
                 let
                     start =
-                        Color.rgba 255 0 0 0.5
+                        Color.fromRGBA 255 0 0 0.5
 
                     end =
-                        Color.rgb 0 0 255
+                        Color.fromRGB 0 0 255
 
                     result =
                         Color.interpolate start end 0.5
@@ -36,10 +36,10 @@ suite =
             \_ ->
                 let
                     start =
-                        Color.rgba 255 0 0 0.3
+                        Color.fromRGBA 255 0 0 0.3
 
                     end =
-                        Color.hex "#0000FF"
+                        Color.fromHex "#0000FF"
 
                     result =
                         Color.interpolate start end 0.5
@@ -60,10 +60,10 @@ suite =
             \_ ->
                 let
                     start =
-                        Color.rgba 255 0 0 0.5
+                        Color.fromRGBA 255 0 0 0.5
 
                     end =
-                        Color.rgba 0 0 255 1.0
+                        Color.fromRGBA 0 0 255 1.0
 
                     result =
                         Color.interpolate start end 0.5
@@ -84,10 +84,10 @@ suite =
             \_ ->
                 let
                     start =
-                        Color.hsla 0 100 50 0.7
+                        Color.fromHSLA 0 100 50 0.7
 
                     end =
-                        Color.hsl 240 100 50
+                        Color.fromHSL 240 100 50
 
                     result =
                         Color.interpolate start end 0.5
@@ -108,10 +108,10 @@ suite =
             \_ ->
                 let
                     start =
-                        Color.rgb 255 0 0
+                        Color.fromRGB 255 0 0
 
                     end =
-                        Color.rgb 0 0 255
+                        Color.fromRGB 0 0 255
 
                     result =
                         Color.interpolate start end 0.5

@@ -1,5 +1,5 @@
 module Anim.Color exposing
-    ( Color(..)
+    ( Color
     , rgb, rgba
     , hsl, hsla
     , hex, hexStringToRgb, hexStringToRgba
@@ -50,50 +50,22 @@ This module provides a unified color API that can be used with:
 
 -}
 
+import Anim.Internal.Properties.Color as CP exposing (Color(..))
 import Color
 import Json.Encode as Encode
 
 
-{-| Color values in different formats.
-
-  - Use `Hex` for hex color strings like "#ff0000"
-  - Use `Rgb` or `Rgba` for RGB values
-  - Use `Hsl` or `Hsla` for HSL values
-  - Use `ElmColor` to integrate with the [avh4/elm-color](https://package.elm-lang.org/packages/avh4/elm-color/latest/) package,
-    which provides named colors (`Color.red`, `Color.blue`, etc.) and color manipulation functions
-
+{-| Type alias for Color values used in animations.
 -}
-type Color
-    = Hex String
-    | Rgb { r : Int, g : Int, b : Int }
-    | Rgba { r : Int, g : Int, b : Int, a : Float }
-    | Hsl { h : Float, s : Float, l : Float }
-    | Hsla { h : Float, s : Float, l : Float, a : Float }
-    | ElmColor Color.Color
+type alias Color =
+    CP.Color
 
 
 {-| Convert a Color to its CSS string representation.
 -}
 toCssString : Color -> String
-toCssString color =
-    case color of
-        Hex hexString ->
-            hexString
-
-        Rgb rgb_ ->
-            "rgb(" ++ String.fromInt rgb_.r ++ ", " ++ String.fromInt rgb_.g ++ ", " ++ String.fromInt rgb_.b ++ ")"
-
-        Rgba rgba_ ->
-            "rgba(" ++ String.fromInt rgba_.r ++ ", " ++ String.fromInt rgba_.g ++ ", " ++ String.fromInt rgba_.b ++ ", " ++ String.fromFloat rgba_.a ++ ")"
-
-        Hsl hsl_ ->
-            "hsl(" ++ String.fromFloat hsl_.h ++ ", " ++ String.fromFloat hsl_.s ++ "%, " ++ String.fromFloat hsl_.l ++ "%)"
-
-        Hsla hsla_ ->
-            "hsla(" ++ String.fromFloat hsla_.h ++ ", " ++ String.fromFloat hsla_.s ++ "%, " ++ String.fromFloat hsla_.l ++ "%, " ++ String.fromFloat hsla_.a ++ ")"
-
-        ElmColor elmColor_ ->
-            Color.toCssString elmColor_
+toCssString =
+    CP.toCssString
 
 
 
@@ -109,7 +81,7 @@ toCssString color =
 -}
 hex : String -> Color
 hex =
-    Hex
+    CP.fromHex
 
 
 
@@ -122,8 +94,8 @@ hex =
 
 -}
 rgb : Int -> Int -> Int -> Color
-rgb r g b =
-    Rgb { r = r, g = g, b = b }
+rgb =
+    CP.fromRGB
 
 
 {-| Create an RGBA color with alpha transparency.
@@ -132,8 +104,8 @@ rgb r g b =
 
 -}
 rgba : Int -> Int -> Int -> Float -> Color
-rgba r g b a =
-    Rgba { r = r, g = g, b = b, a = a }
+rgba =
+    CP.fromRGBA
 
 
 {-| Create a Color from an "rgb(r, g, b)" formatted string.
@@ -142,33 +114,8 @@ rgba r g b a =
 
 -}
 fromRgbString : String -> Maybe Color
-fromRgbString str =
-    -- Simple parser for "rgb(r, g, b)" format
-    let
-        prefix =
-            "rgb("
-
-        suffix =
-            ")"
-
-        content =
-            String.dropLeft (String.length prefix) (String.dropRight (String.length suffix) str)
-
-        parts =
-            String.split "," content |> List.map String.trim
-    in
-    case parts of
-        [ rStr, gStr, bStr ] ->
-            case ( String.toInt rStr, String.toInt gStr, String.toInt bStr ) of
-                ( Just r, Just g, Just b ) ->
-                    Just <|
-                        Rgb { r = r, g = g, b = b }
-
-                _ ->
-                    Nothing
-
-        _ ->
-            Nothing
+fromRgbString =
+    CP.fromRgbString
 
 
 
@@ -187,8 +134,8 @@ hsl 0 100 50 -- Red
 
 -}
 hsl : Float -> Float -> Float -> Color
-hsl h s l =
-    Hsl { h = h, s = s, l = l }
+hsl =
+    CP.fromHSL
 
 
 {-| Create an HSLA color with alpha transparency.
@@ -204,8 +151,8 @@ hsla 0 100 50 0.5 -- Semi-transparent red
 
 -}
 hsla : Float -> Float -> Float -> Float -> Color
-hsla h s l a =
-    Hsla { h = h, s = s, l = l, a = a }
+hsla =
+    CP.fromHSLA
 
 
 
@@ -223,8 +170,8 @@ This allows you to use the color manipulation functions from elm-color.
 
 -}
 elmColor : Color.Color -> Color
-elmColor color =
-    ElmColor color
+elmColor =
+    CP.fromElmColor
 
 
 
@@ -236,36 +183,9 @@ elmColor color =
 
 {-| Convert to a hex string Color.
 -}
-toHex : Color -> Color
-toHex color =
-    Hex <|
-        case color of
-            Hex hexStr ->
-                hexStr
-
-            Rgb rgb_ ->
-                rgbToHexString rgb_
-
-            Rgba rgba_ ->
-                rgbaToHexString rgba_
-
-            Hsl hsl_ ->
-                hslToHexString hsl_
-
-            Hsla hsla_ ->
-                hslaToHexString hsla_
-
-            ElmColor elmColor_ ->
-                elmColor_
-                    |> Color.toRgba
-                    |> (\{ red, green, blue, alpha } ->
-                            { r = round (red * 255)
-                            , g = round (green * 255)
-                            , b = round (blue * 255)
-                            , a = alpha
-                            }
-                       )
-                    |> rgbaToHexString
+toHex : Color -> String
+toHex =
+    CP.toHex
 
 
 {-| Convert to an RGB color record.
@@ -464,16 +384,6 @@ toElmColor color =
                 elmColor_
 
 
-hslToHexString : { a | h : Float, s : Float, l : Float } -> String
-hslToHexString =
-    hslToRgb >> rgbToHexString
-
-
-hslaToHexString : { h : Float, s : Float, l : Float, a : Float } -> String
-hslaToHexString =
-    hslaToRgba >> rgbaToHexString
-
-
 floatMod : Float -> Float -> Float
 floatMod a b =
     a - (toFloat (floor (a / b)) * b)
@@ -546,11 +456,6 @@ hslaToRgba hsla_ =
     { r = rgb_.r, g = rgb_.g, b = rgb_.b, a = hsla_.a }
 
 
-rgbToHexString : { r : Int, g : Int, b : Int } -> String
-rgbToHexString { r, g, b } =
-    "#" ++ toHexComponent r ++ toHexComponent g ++ toHexComponent b
-
-
 rgbToHsl : { r : Int, g : Int, b : Int } -> { h : Float, s : Float, l : Float }
 rgbToHsl rgb_ =
     let
@@ -606,11 +511,6 @@ rgbToHsl rgb_ =
     }
 
 
-rgbaToHexString : { r : Int, g : Int, b : Int, a : Float } -> String
-rgbaToHexString { r, g, b, a } =
-    "#" ++ toHexComponent r ++ toHexComponent g ++ toHexComponent b ++ toHexComponent (round (a * 255))
-
-
 rgbaToHsla : { r : Int, g : Int, b : Int, a : Float } -> { h : Float, s : Float, l : Float, a : Float }
 rgbaToHsla rgba_ =
     let
@@ -618,22 +518,6 @@ rgbaToHsla rgba_ =
             rgbToHsl { r = rgba_.r, g = rgba_.g, b = rgba_.b }
     in
     { h = hsl_.h, s = hsl_.s, l = hsl_.l, a = rgba_.a }
-
-
-toHexComponent : Int -> String
-toHexComponent value =
-    let
-        hexStr =
-            value
-                |> String.fromInt
-                |> String.toUpper
-                |> String.padLeft 2 '0'
-    in
-    if String.length hexStr > 2 then
-        String.slice (String.length hexStr - 2) (String.length hexStr) hexStr
-
-    else
-        hexStr
 
 
 hexStringToInt : String -> Maybe Int

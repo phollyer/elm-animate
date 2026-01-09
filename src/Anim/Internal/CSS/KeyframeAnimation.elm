@@ -4,10 +4,10 @@ module Anim.Internal.CSS.KeyframeAnimation exposing
     , toAttributeString
     )
 
-import Anim.Color as Color exposing (Color(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Easing as Easing
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
+import Anim.Internal.Properties.Color as Color exposing (Color(..))
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
@@ -364,7 +364,7 @@ generate elementId properties =
                                                                         c
 
                                                                     Nothing ->
-                                                                        Color.rgba 255 255 255 0
+                                                                        Color.fromRGBA 255 255 255 0
 
                                                             endColor =
                                                                 cfg.end

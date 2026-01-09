@@ -41,11 +41,11 @@ module Anim.Internal.WAAPI exposing
     , update
     )
 
-import Anim.Color as Color exposing (Color(..))
 import Anim.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Easing as Easing
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
+import Anim.Internal.Properties.Color as Color exposing (Color(..))
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
@@ -472,7 +472,7 @@ getStartWithDefault default maybeRange =
 getStartBackgroundColor : String -> AnimState -> Maybe Color
 getStartBackgroundColor elementId animState =
     getBackgroundColorRange elementId animState
-        |> getStartWithDefault (Color.rgba 255 255 255 0)
+        |> getStartWithDefault (Color.fromRGBA 255 255 255 0)
 
 
 getEndBackgroundColor : String -> AnimState -> Maybe Color

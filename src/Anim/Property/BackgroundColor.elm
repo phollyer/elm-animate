@@ -60,10 +60,10 @@ The last known background color is tracked in your Engine's model, so you only n
 
 -}
 
-import Anim.Color exposing (Color(..))
 import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.BackgroundColor as CB
+import Anim.Internal.Properties.Color exposing (Color(..))
 
 
 {-| Type alias for the internal `ColorBuilder`.

@@ -30,12 +30,12 @@ module Anim.Internal.Sub exposing
     , update
     )
 
-import Anim.Color as Color exposing (Color(..))
 import Anim.Easing exposing (Easing(..))
 import Anim.Internal.AnimationCore as AnimationCore
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Easing as Easing
+import Anim.Internal.Properties.Color as Color exposing (Color(..))
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
@@ -127,8 +127,8 @@ animate builder_ =
             { position = Maybe.withDefault { x = 0, y = 0, z = 0 } currentValues.position
             , rotate = Maybe.withDefault { x = 0, y = 0, z = 0 } currentValues.rotate
             , scale = Maybe.withDefault { x = 1.0, y = 1.0, z = 1.0 } currentValues.scale
-            , color = Maybe.withDefault (Color.rgba 255 255 255 1.0) currentValues.color -- TODO: Rename the color field to backgroundColor
-            , fontColor = Maybe.withDefault (Color.rgba 0 0 0 1.0) currentValues.fontColor
+            , color = Maybe.withDefault (Color.fromRGBA 255 255 255 1.0) currentValues.color -- TODO: Rename the color field to backgroundColor
+            , fontColor = Maybe.withDefault (Color.fromRGBA 0 0 0 1.0) currentValues.fontColor
             , opacity = Maybe.withDefault 1.0 currentValues.opacity
             , size = Maybe.withDefault { width = 0, height = 0 } currentValues.size
             }

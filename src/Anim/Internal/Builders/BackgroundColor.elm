@@ -10,11 +10,11 @@ module Anim.Internal.Builders.BackgroundColor exposing
     , to
     )
 
-import Anim.Color as Color exposing (Color(..))
 import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
+import Anim.Internal.Properties.Color as Color exposing (Color)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
@@ -52,7 +52,7 @@ type alias ColorConfig =
 defaultConfig : ColorConfig
 defaultConfig =
     PropertyBuilder.defaultConfig <|
-        Color.rgb 0 0 0
+        Color.fromRGB 0 0 0
 
 
 from : Color -> ColorBuilder -> ColorBuilder
@@ -62,10 +62,10 @@ from color (ColorBuilder config builder) =
         -- 1. New color has no explicit alpha (RGB/Hex/HSL), AND
         -- 2. Previous animation's end has explicit alpha (RGBA/HSLA)
         colorWithPreservedAlpha =
-            case ( hasExplicitAlpha color, hasExplicitAlpha config.end ) of
+            case ( Color.hasExplicitAlpha color, Color.hasExplicitAlpha config.end ) of
                 ( False, True ) ->
                     -- New color has no alpha, previous end has alpha -> preserve it
-                    applyAlphaFromStart color config.end
+                    Color.applyAlphaFromStart color config.end
 
                 _ ->
                     -- Otherwise, use the color as-is
@@ -83,16 +83,16 @@ to color (ColorBuilder config builder) =
                     color_
 
                 Nothing ->
-                    Color.rgba 255 255 255 0
+                    Color.fromRGBA 255 255 255 0
 
         -- Preserve alpha from start color only if:
         -- 1. New color has no explicit alpha (RGB/Hex/HSL), AND
         -- 2. Start color has explicit alpha (RGBA/HSLA)
         colorWithPreservedAlpha =
-            case ( hasExplicitAlpha color, hasExplicitAlpha startPos ) of
+            case ( Color.hasExplicitAlpha color, Color.hasExplicitAlpha startPos ) of
                 ( False, True ) ->
                     -- New color has no alpha, start has alpha -> preserve it
-                    applyAlphaFromStart color startPos
+                    Color.applyAlphaFromStart color startPos
 
                 _ ->
                     -- Otherwise, use the color as-is
@@ -107,21 +107,6 @@ to color (ColorBuilder config builder) =
         builder
 
 
-{-| Check if a color has explicit alpha (RGBA/HSLA).
--}
-hasExplicitAlpha : Color -> Bool
-hasExplicitAlpha color =
-    case color of
-        Rgba _ ->
-            True
-
-        Hsla _ ->
-            True
-
-        _ ->
-            False
-
-
 {-| Apply alpha from start color to new color.
 Only call this when you know both conditions are true:
 
@@ -129,41 +114,6 @@ Only call this when you know both conditions are true:
   - Start color has explicit alpha
 
 -}
-applyAlphaFromStart : Color -> Color -> Color
-applyAlphaFromStart newColor startColor =
-    let
-        -- Extract alpha from start color
-        startAlpha =
-            case startColor of
-                Rgba rgba ->
-                    rgba.a
-
-                Hsla hsla ->
-                    hsla.a
-
-                _ ->
-                    -- Should never happen if caller checks hasExplicitAlpha first
-                    1.0
-    in
-    case newColor of
-        Rgb rgb ->
-            Rgba { r = rgb.r, g = rgb.g, b = rgb.b, a = startAlpha }
-
-        Hex hex ->
-            let
-                rgb =
-                    BackgroundColor.hexToRgb hex
-            in
-            Rgba { r = rgb.r, g = rgb.g, b = rgb.b, a = startAlpha }
-
-        Hsl hsl ->
-            Hsla { h = hsl.h, s = hsl.s, l = hsl.l, a = startAlpha }
-
-        -- Should never happen if caller checks hasExplicitAlpha first
-        _ ->
-            newColor
-
-
 speed : Float -> ColorBuilder -> ColorBuilder
 speed spd (ColorBuilder config builder) =
     let

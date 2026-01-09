@@ -45,13 +45,13 @@ module Anim.Internal.CSS exposing
     , speed
     )
 
-import Anim.Color exposing (Color(..))
 import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.CSS.KeyframeAnimation as KeyframeAnimation exposing (KeyframeAnimation)
 import Anim.Internal.CSS.Transform as Transforms
 import Anim.Internal.CSS.Transition as Transitions
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
+import Anim.Internal.Properties.Color exposing (Color(..))
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate

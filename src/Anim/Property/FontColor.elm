@@ -60,10 +60,10 @@ The last known text color is tracked in your Engine's model, so you only need to
 
 -}
 
-import Anim.Color exposing (Color(..))
 import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.FontColor as CB
+import Anim.Internal.Properties.Color exposing (Color(..))
 
 
 {-| Type alias for the internal `ColorBuilder`.

@@ -16,7 +16,7 @@ module Anim.Internal.Properties.BackgroundColor exposing
     , toString
     )
 
-import Anim.Color as Color exposing (Color(..))
+import Anim.Color as Color exposing (Color)
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
 
 
