@@ -1,5 +1,6 @@
 module Anim.Internal.Properties.Scale exposing
     ( Scale(..)
+    , default
     , distance
     , duration
     , encode
@@ -29,6 +30,11 @@ import Json.Encode as Encode
 
 type Scale
     = Scale { x : Float, y : Float, z : Float }
+
+
+default : Scale
+default =
+    Scale { x = 1.0, y = 1.0, z = 1.0 }
 
 
 toString : Scale -> String

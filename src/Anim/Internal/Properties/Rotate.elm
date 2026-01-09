@@ -1,6 +1,7 @@
 module Anim.Internal.Properties.Rotate exposing
     ( Rotate
     , add
+    , default
     , distance
     , duration
     , encode
@@ -31,6 +32,11 @@ import Json.Encode as Encode
 
 type Rotate
     = Rotate { x : Float, y : Float, z : Float }
+
+
+default : Rotate
+default =
+    Rotate { x = 0, y = 0, z = 0 }
 
 
 toFloat : Rotate -> Float

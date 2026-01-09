@@ -51,8 +51,7 @@ type alias ColorConfig =
 
 defaultConfig : ColorConfig
 defaultConfig =
-    PropertyBuilder.defaultConfig <|
-        Color.fromRGB 0 0 0
+    PropertyBuilder.defaultConfig BackgroundColor.default
 
 
 from : Color -> ColorBuilder -> ColorBuilder
@@ -83,7 +82,7 @@ to color (ColorBuilder config builder) =
                     color_
 
                 Nothing ->
-                    Color.fromRGBA 255 255 255 0
+                    BackgroundColor.default
 
         -- Preserve alpha from start color only if:
         -- 1. New color has no explicit alpha (RGB/Hex/HSL), AND
@@ -101,7 +100,7 @@ to color (ColorBuilder config builder) =
     ColorBuilder
         { config
             | end = colorWithPreservedAlpha
-            , distance = BackgroundColor.distance startPos colorWithPreservedAlpha
+            , distance = Color.distance startPos colorWithPreservedAlpha
             , start = Just startPos
         }
         builder

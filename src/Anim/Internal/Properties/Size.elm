@@ -1,6 +1,7 @@
 module Anim.Internal.Properties.Size exposing
     ( Size
     , add
+    , default
     , distance
     , duration
     , encode
@@ -28,6 +29,11 @@ import Json.Encode as Encode
 
 type Size
     = Size { w : Float, h : Float }
+
+
+default : Size
+default =
+    Size { w = 0, h = 0 }
 
 
 w : Size -> Float

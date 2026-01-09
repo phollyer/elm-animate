@@ -277,8 +277,8 @@ hexAlpha hex_ =
 {- HSL Utilities -}
 
 
-fromHSL : Float -> Float -> Float -> Color
-fromHSL h s l =
+fromHSL : { h : Float, s : Float, l : Float } -> Color
+fromHSL { h, s, l } =
     Hsl { h = h, s = s, l = l }
 
 
@@ -353,8 +353,8 @@ hslToRgb hslValue =
 {- HSLA Utilities -}
 
 
-fromHSLA : Float -> Float -> Float -> Float -> Color
-fromHSLA h s l a =
+fromHSLA : { h : Float, s : Float, l : Float, a : Float } -> Color
+fromHSLA { h, s, l, a } =
     Hsla { h = h, s = s, l = l, a = a }
 
 
@@ -393,8 +393,8 @@ hslaToRgba hslaValue =
 {- RGB Utilities -}
 
 
-fromRGB : Int -> Int -> Int -> Color
-fromRGB r g b =
+fromRGB : { r : Int, g : Int, b : Int } -> Color
+fromRGB { r, g, b } =
     Rgb { r = r, g = g, b = b }
 
 
@@ -490,8 +490,8 @@ rgbToHsl rgb_ =
 {- RGBA Utilities -}
 
 
-fromRGBA : Int -> Int -> Int -> Float -> Color
-fromRGBA r g b a =
+fromRGBA : { r : Int, g : Int, b : Int, a : Float } -> Color
+fromRGBA { r, g, b, a } =
     Rgba { r = r, g = g, b = b, a = a }
 
 
@@ -1137,7 +1137,7 @@ parseRgbaString str =
             in
             case ( ( r, g, b ), a ) of
                 ( ( Just rVal, Just gVal, Just bVal ), Just aVal ) ->
-                    Just (fromRGBA rVal gVal bVal aVal)
+                    Just (fromRGBA { r = rVal, g = gVal, b = bVal, a = aVal })
 
                 _ ->
                     Nothing
@@ -1172,7 +1172,7 @@ parseHslString str =
             case ( h, s, l ) of
                 ( Just hVal, Just sVal, Just lVal ) ->
                     Just <|
-                        fromHSL hVal sVal lVal
+                        fromHSL { h = hVal, s = sVal, l = lVal }
 
                 _ ->
                     Nothing
@@ -1218,7 +1218,7 @@ parseHslaString str =
             case ( ( h, s, l ), a ) of
                 ( ( Just hVal, Just sVal, Just lVal ), Just aVal ) ->
                     Just <|
-                        fromHSLA hVal sVal lVal aVal
+                        fromHSLA { h = hVal, s = sVal, l = lVal, a = aVal }
 
                 _ ->
                     Nothing

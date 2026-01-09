@@ -205,9 +205,10 @@ which provide real-time access to animated property values.
 
 -}
 
-import Anim.Color as Color exposing (Color)
+import Anim.Color exposing (Color)
 import Anim.Easing exposing (Easing)
 import Anim.Internal.CSS as InternalCSS exposing (ElementState(..), Event(..))
+import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
@@ -593,25 +594,29 @@ handleEvent event animState =
             InternalCSS.handleEvent (InternalCSS.TransitionCancelled elementId) animState
 
 
-getCurrent : String -> Maybe a -> a -> a -> AnimState -> Maybe a
-getCurrent elementId maybeStart end default animState =
-    case InternalCSS.getState elementId animState of
-        Just Running ->
-            -- Animation is running, element is moving toward end value
-            Just end
+getCurrent : String -> a -> AnimState -> { start : Maybe a, end : a } -> Maybe a
+getCurrent elementId default animState range =
+    InternalCSS.getState elementId animState
+        |> Maybe.map
+            (\state ->
+                case state of
+                    NotStarted ->
+                        -- Animation not started, use start value or default
+                        case range.start of
+                            Nothing ->
+                                default
 
-        Just Complete ->
-            -- Animation has completed, element is at end value
-            Just end
+                            Just startValue ->
+                                startValue
 
-        _ ->
-            -- Animation not started, use start value or default
-            case maybeStart of
-                Nothing ->
-                    Just default
+                    Running ->
+                        -- Animation is running, element is moving toward end value
+                        range.end
 
-                Just startValue ->
-                    Just startValue
+                    Complete ->
+                        -- Animation has completed, element is at end value
+                        range.end
+            )
 
 
 {-| Get the start position of an element being animated.
@@ -660,9 +665,7 @@ getCurrentPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Fl
 getCurrentPosition elementId animState =
     InternalCSS.getPositionRange elementId animState
         |> Maybe.andThen
-            (\{ start, end } ->
-                getCurrent elementId start end (Position.fromTriple ( 0, 0, 0 )) animState
-            )
+            (getCurrent elementId Position.default animState)
         |> Maybe.map Position.toRecord
 
 
@@ -711,9 +714,7 @@ getCurrentScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float
 getCurrentScale elementId animState =
     InternalCSS.getScaleRange elementId animState
         |> Maybe.andThen
-            (\{ start, end } ->
-                getCurrent elementId start end (Scale.fromUniform 1.0) animState
-            )
+            (getCurrent elementId (Scale.fromUniform 1.0) animState)
         |> Maybe.map Scale.toRecord
 
 
@@ -762,9 +763,7 @@ getCurrentRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Floa
 getCurrentRotate elementId animState =
     InternalCSS.getRotateRange elementId animState
         |> Maybe.andThen
-            (\{ start, end } ->
-                getCurrent elementId start end (Rotate.fromFloat 0.0) animState
-            )
+            (getCurrent elementId Rotate.default animState)
         |> Maybe.map Rotate.toRecord
 
 
@@ -785,7 +784,7 @@ getStartBackgroundColor elementId animState =
                         startColor
 
                     Nothing ->
-                        Color.fromRgba 255 255 255 0
+                        BackgroundColor.default
             )
 
 
@@ -813,9 +812,7 @@ getCurrentBackgroundColor : String -> AnimState -> Maybe Color
 getCurrentBackgroundColor elementId animState =
     InternalCSS.getBackgroundColorRange elementId animState
         |> Maybe.andThen
-            (\{ start, end } ->
-                getCurrent elementId start end (Color.fromRgba 255 255 255 0) animState
-            )
+            (getCurrent elementId BackgroundColor.default animState)
 
 
 {-| Get the start opacity of an element being animated.
@@ -863,10 +860,8 @@ getCurrentOpacity : String -> AnimState -> Maybe Float
 getCurrentOpacity elementId animState =
     InternalCSS.getOpacityRange elementId animState
         |> Maybe.andThen
-            (\{ start, end } ->
-                getCurrent elementId start end (Opacity.fromFloat 1.0) animState
-                    |> Maybe.map Opacity.toFloat
-            )
+            (getCurrent elementId Opacity.default animState)
+        |> Maybe.map Opacity.toFloat
 
 
 {-| Get the start size of an element being animated.
@@ -914,9 +909,7 @@ getCurrentSize : String -> AnimState -> Maybe { width : Float, height : Float }
 getCurrentSize elementId animState =
     InternalCSS.getSizeRange elementId animState
         |> Maybe.andThen
-            (\{ start, end } ->
-                getCurrent elementId start end (Size.fromTuple ( 0, 0 )) animState
-            )
+            (getCurrent elementId Size.default animState)
         |> Maybe.map Size.toRecord
 
 

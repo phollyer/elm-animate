@@ -472,7 +472,7 @@ getStartWithDefault default maybeRange =
 getStartBackgroundColor : String -> AnimState -> Maybe Color
 getStartBackgroundColor elementId animState =
     getBackgroundColorRange elementId animState
-        |> getStartWithDefault (Color.fromRGBA 255 255 255 0)
+        |> getStartWithDefault BackgroundColor.default
 
 
 getEndBackgroundColor : String -> AnimState -> Maybe Color
@@ -874,12 +874,12 @@ encodeProcessedPropertyConfig property =
             let
                 startColor =
                     config.start
-                        |> Maybe.map BackgroundColor.toString
-                        |> Maybe.withDefault "rgba(255, 255, 255, 1)"
+                        |> Maybe.map Color.toCssString
+                        |> Maybe.withDefault (Color.toCssString BackgroundColor.default)
 
                 baseFields =
                     [ ( "type", Encode.string "backgroundColor" )
-                    , ( "color", Encode.string (BackgroundColor.toString config.end) )
+                    , ( "color", Encode.string (Color.toCssString config.end) )
                     , ( "startColor", Encode.string startColor )
                     , ( "duration", Encode.int config.duration )
                     ]

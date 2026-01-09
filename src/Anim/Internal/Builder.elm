@@ -45,8 +45,7 @@ module Anim.Internal.Builder exposing
 
 import Anim.Color exposing (Color)
 import Anim.Easing exposing (Easing(..))
-import Anim.Internal.Properties.BackgroundColor as BackgroundColor
-import Anim.Internal.Properties.FontColor as FontColor
+import Anim.Internal.Properties.Color as Color
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
@@ -556,10 +555,10 @@ processProperty globalData property =
                     processStandardAnimation
                         { config = config
                         , globalData = globalData
-                        , defaultStart = BackgroundColor.rgb 0 0 0
-                        , distanceFn = BackgroundColor.distance
-                        , durationFn = BackgroundColor.duration
-                        , speedFn = BackgroundColor.speed
+                        , defaultStart = Color.fromRGB { r = 0, g = 0, b = 0 }
+                        , distanceFn = Color.distance
+                        , durationFn = Color.duration
+                        , speedFn = Color.speed
                         , wrapper = ProcessedBackgroundColorConfig
                         }
 
@@ -578,10 +577,10 @@ processProperty globalData property =
                     processStandardAnimation
                         { config = config
                         , globalData = globalData
-                        , defaultStart = FontColor.rgb 0 0 0
-                        , distanceFn = FontColor.distance
-                        , durationFn = FontColor.duration
-                        , speedFn = FontColor.speed
+                        , defaultStart = Color.fromRGB { r = 0, g = 0, b = 0 }
+                        , distanceFn = Color.distance
+                        , durationFn = Color.duration
+                        , speedFn = Color.speed
                         , wrapper = ProcessedFontColorConfig
                         }
 

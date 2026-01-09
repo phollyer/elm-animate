@@ -364,7 +364,7 @@ generate elementId properties =
                                                                         c
 
                                                                     Nothing ->
-                                                                        Color.fromRGBA 255 255 255 0
+                                                                        BackgroundColor.default
 
                                                             endColor =
                                                                 cfg.end
@@ -373,7 +373,7 @@ generate elementId properties =
                                                                 Color.interpolate startColor endColor propProgress
                                                         in
                                                         Just
-                                                            [ ( "background-color", BackgroundColor.toString interpolatedColor ) ]
+                                                            [ ( "background-color", Color.toCssString interpolatedColor ) ]
 
                                                     Builder.ProcessedOpacityConfig cfg ->
                                                         let
@@ -528,7 +528,7 @@ generate elementId properties =
                                             "rot" ++ String.fromInt cfg.duration ++ Rotate.toCssString cfg.end
 
                                         Builder.ProcessedBackgroundColorConfig cfg ->
-                                            "background-color" ++ String.fromInt cfg.duration ++ BackgroundColor.toString cfg.end
+                                            "background-color" ++ String.fromInt cfg.duration ++ Color.toCssString cfg.end
 
                                         Builder.ProcessedFontColorConfig cfg ->
                                             "color" ++ String.fromInt cfg.duration ++ Color.toCssString cfg.end

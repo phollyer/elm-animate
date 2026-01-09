@@ -12,10 +12,10 @@ suite =
             \_ ->
                 let
                     start =
-                        Color.fromRGBA 255 0 0 0.5
+                        Color.fromRGBA { r = 255, g = 0, b = 0, a = 0.5 }
 
                     end =
-                        Color.fromRGB 0 0 255
+                        Color.fromRGB { r = 0, g = 0, b = 255 }
 
                     result =
                         Color.interpolate start end 0.5
@@ -36,7 +36,7 @@ suite =
             \_ ->
                 let
                     start =
-                        Color.fromRGBA 255 0 0 0.3
+                        Color.fromRGBA { r = 255, g = 0, b = 0, a = 0.3 }
 
                     end =
                         Color.fromHex "#0000FF" |> Maybe.withDefault Color.blue
@@ -60,10 +60,10 @@ suite =
             \_ ->
                 let
                     start =
-                        Color.fromRGBA 255 0 0 0.5
+                        Color.fromRGBA { r = 255, g = 0, b = 0, a = 0.5 }
 
                     end =
-                        Color.fromRGBA 0 0 255 1.0
+                        Color.fromRGBA { r = 0, g = 0, b = 255, a = 1.0 }
 
                     result =
                         Color.interpolate start end 0.5
@@ -84,10 +84,10 @@ suite =
             \_ ->
                 let
                     start =
-                        Color.fromHSLA 0 100 50 0.7
+                        Color.fromHSLA { h = 0, s = 100, l = 50, a = 0.7 }
 
                     end =
-                        Color.fromHSL 240 100 50
+                        Color.fromHSL { h = 240, s = 100, l = 50 }
 
                     result =
                         Color.interpolate start end 0.5
@@ -108,10 +108,10 @@ suite =
             \_ ->
                 let
                     start =
-                        Color.fromRGB 255 0 0
+                        Color.fromRGB { r = 255, g = 0, b = 0 }
 
                     end =
-                        Color.fromRGB 0 0 255
+                        Color.fromRGB { r = 0, g = 0, b = 255 }
 
                     result =
                         Color.interpolate start end 0.5

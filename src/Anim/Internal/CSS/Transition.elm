@@ -118,9 +118,9 @@ calculatePropertyDistance property =
                             s
 
                         Nothing ->
-                            Color.fromRGBA 0 0 0 0
+                            BackgroundColor.default
             in
-            BackgroundColor.distance start config.end
+            Color.distance start config.end
 
         Builder.FontColorConfig config ->
             let
@@ -130,9 +130,9 @@ calculatePropertyDistance property =
                             s
 
                         Nothing ->
-                            Color.fromRGB 0 0 0
+                            FontColor.default
             in
-            FontColor.distance start config.end
+            Color.distance start config.end
 
         Builder.OpacityConfig config ->
             let

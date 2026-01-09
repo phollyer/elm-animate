@@ -35,7 +35,9 @@ import Anim.Internal.AnimationCore as AnimationCore
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Easing as Easing
+import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Color as Color exposing (Color(..))
+import Anim.Internal.Properties.FontColor as FontColor
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
@@ -124,13 +126,13 @@ animate builder_ =
             extractCurrentValuesFromBuilder builderWithCache
 
         startValues =
-            { position = Maybe.withDefault { x = 0, y = 0, z = 0 } currentValues.position
-            , rotate = Maybe.withDefault { x = 0, y = 0, z = 0 } currentValues.rotate
-            , scale = Maybe.withDefault { x = 1.0, y = 1.0, z = 1.0 } currentValues.scale
-            , color = Maybe.withDefault (Color.fromRGBA 255 255 255 1.0) currentValues.color -- TODO: Rename the color field to backgroundColor
-            , fontColor = Maybe.withDefault (Color.fromRGBA 0 0 0 1.0) currentValues.fontColor
+            { position = Maybe.withDefault (Position.default |> Position.toRecord) currentValues.position
+            , rotate = Maybe.withDefault (Rotate.default |> Rotate.toRecord) currentValues.rotate
+            , scale = Maybe.withDefault (Scale.default |> Scale.toRecord) currentValues.scale
+            , backgroundColor = Maybe.withDefault BackgroundColor.default currentValues.color
+            , fontColor = Maybe.withDefault FontColor.default currentValues.fontColor
             , opacity = Maybe.withDefault 1.0 currentValues.opacity
-            , size = Maybe.withDefault { width = 0, height = 0 } currentValues.size
+            , size = Maybe.withDefault (Size.default |> Size.toRecord) currentValues.size
             }
 
         elementStates =
@@ -991,7 +993,7 @@ type alias UnwrappedPropertyValues =
     { position : { x : Float, y : Float, z : Float }
     , rotate : { x : Float, y : Float, z : Float }
     , scale : { x : Float, y : Float, z : Float }
-    , color : Color
+    , backgroundColor : Color
     , fontColor : Color
     , opacity : Float
     , size : { width : Float, height : Float }
@@ -1169,7 +1171,7 @@ createPropertyAnimState startValues property =
         Builder.ProcessedBackgroundColorConfig config ->
             let
                 actualStart =
-                    Maybe.withDefault startValues.color config.start
+                    Maybe.withDefault startValues.backgroundColor config.start
             in
             Just <|
                 buildPropertyAnimation

@@ -133,20 +133,20 @@ fromHex =
 
 {-| Create an RGB color.
 
-    rgb 255 0 0 -- Red
+    fromRgb { r = 255, g = 0, b = 0 } -- Red
 
 -}
-fromRgb : Int -> Int -> Int -> Color
+fromRgb : { r : Int, g : Int, b : Int } -> Color
 fromRgb =
     CP.fromRGB
 
 
 {-| Create an RGBA color with alpha transparency.
 
-    rgba 255 0 0 0.5 -- Semi-transparent red
+    fromRgba { r = 255, g = 0, b = 0, a = 0.5 } -- Semi-transparent red
 
 -}
-fromRgba : Int -> Int -> Int -> Float -> Color
+fromRgba : { r : Int, g : Int, b : Int, a : Float } -> Color
 fromRgba =
     CP.fromRGBA
 
@@ -162,11 +162,11 @@ fromRgba =
   - `l` (lightness): 0-100 percent
 
 ```
-hsl 0 100 50 -- Red
+fromHsl { h = 0, s = 100, l = 50 } -- Red
 ```
 
 -}
-fromHsl : Float -> Float -> Float -> Color
+fromHsl : { h : Float, s : Float, l : Float } -> Color
 fromHsl =
     CP.fromHSL
 
@@ -179,11 +179,11 @@ fromHsl =
   - `a` (alpha): 0-1
 
 ```
-hsla 0 100 50 0.5 -- Semi-transparent red
+fromHsla { h = 0, s = 100, l = 50, a = 0.5 } -- Semi-transparent red
 ```
 
 -}
-fromHsla : Float -> Float -> Float -> Float -> Color
+fromHsla : { h : Float, s : Float, l : Float, a : Float } -> Color
 fromHsla =
     CP.fromHSLA
 

@@ -1,5 +1,6 @@
 module Anim.Internal.Properties.Opacity exposing
     ( Opacity
+    , default
     , distance
     , duration
     , encode
@@ -21,6 +22,11 @@ import Json.Encode as Encode
 
 type Opacity
     = Opacity Float
+
+
+default : Opacity
+default =
+    Opacity 1
 
 
 toString : Opacity -> String
