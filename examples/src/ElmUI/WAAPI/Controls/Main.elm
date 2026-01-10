@@ -92,62 +92,12 @@ type Msg
     | Resume
     | Reset
     | Restart
-    | WaapiEventReceived (Result String ( WAAPI.EventType, String, Encode.Value ))
+    | WaapiEventReceived (Result String WAAPI.EventType)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        WaapiEventReceived result ->
-            case result of
-                Ok ( WAAPI.PropertyUpdate, _, _ ) ->
-                    -- Handle property updates from JavaScript if needed
-                    ( model, Cmd.none )
-
-                Ok ( WAAPI.AnimationUpdate, _, payload ) ->
-                    -- Handle animation lifecycle updates
-                    case Json.Decode.decodeValue (Json.Decode.field "status" Json.Decode.string) payload of
-                        Ok "started" ->
-                            ( { model | isAnimating = True, isPaused = False }
-                            , Cmd.none
-                            )
-
-                        Ok "paused" ->
-                            ( { model | isPaused = True }
-                            , Cmd.none
-                            )
-
-                        Ok "resumed" ->
-                            ( { model | isPaused = False }
-                            , Cmd.none
-                            )
-
-                        Ok "completed" ->
-                            ( { model | isAnimating = False, isPaused = False }
-                            , Cmd.none
-                            )
-
-                        Ok "canceled" ->
-                            ( { model | isAnimating = False, isPaused = False }
-                            , Cmd.none
-                            )
-
-                        Ok "restarted" ->
-                            ( { model | isAnimating = True, isPaused = False }
-                            , Cmd.none
-                            )
-
-                        _ ->
-                            ( model, Cmd.none )
-
-                Err error ->
-                    -- Log error but don't crash
-                    let
-                        _ =
-                            Debug.log "WAAPI Event Decode Error" error
-                    in
-                    ( model, Cmd.none )
-
         Animate ->
             let
                 ( newAnimState, animationData ) =
@@ -200,16 +150,62 @@ update msg model =
             , WAAPI.sendCommand waapiCommand (WAAPI.restartAnimation elementId animationData)
             )
 
+        WaapiEventReceived result ->
+            case result of
+                Ok (WAAPI.PropertyUpdate propertyData) ->
+                    handlePropertyUpdate propertyData model
+
+                Ok (WAAPI.AnimationUpdate animationStatus) ->
+                    handleAnimationUpdate animationStatus model
+
+                Err error ->
+                    -- Log error but don't crash
+                    let
+                        _ =
+                            Debug.log "WAAPI Event Decode Error" error
+                    in
+                    ( model, Cmd.none )
+
+
+handlePropertyUpdate : WAAPI.PropertyData -> Model -> ( Model, Cmd Msg )
+handlePropertyUpdate propertyData model =
+    -- For this example, we don't need to update the model on property updates
+    ( model, Cmd.none )
+
+
+handleAnimationUpdate : WAAPI.AnimationStatus -> Model -> ( Model, Cmd Msg )
+handleAnimationUpdate status model =
+    case status of
+        WAAPI.Started ->
+            ( { model | isAnimating = True, isPaused = False }, Cmd.none )
+
+        WAAPI.Restarted ->
+            ( { model | isAnimating = True, isPaused = False }, Cmd.none )
+
+        WAAPI.Canceled ->
+            ( { model | isAnimating = False, isPaused = False }, Cmd.none )
+
+        WAAPI.Completed ->
+            ( { model | isAnimating = False, isPaused = False }, Cmd.none )
+
+        WAAPI.Paused ->
+            ( { model | isPaused = True }, Cmd.none )
+
+        WAAPI.Resumed ->
+            ( { model | isPaused = False }, Cmd.none )
+
 
 
 -- PORTS
 
 
-{-| Outgoing port for sending animation commands to JavaScript -}
+{-| Outgoing port for sending animation commands to JavaScript
+-}
 port waapiCommand : Encode.Value -> Cmd msg
 
 
-{-| Incoming port for receiving events from JavaScript -}
+{-| Incoming port for receiving events from JavaScript
+-}
 port waapiEvent : (Encode.Value -> msg) -> Sub msg
 
 

@@ -17,6 +17,7 @@ module Anim.Engine.WAAPI exposing
     , getStartRotate, getEndRotate, getCurrentRotate
     , getStartScale, getEndScale, getCurrentScale
     , getStartSize, getEndSize, getCurrentSize
+    , AnimationStatus(..), PropertyData
     )
 
 {-| Ports-based animation system utilising the Web Animations API with optional state tracking.
@@ -849,14 +850,47 @@ type CommandType
     | RestartCommand
 
 
+{-| Animation status for lifecycle events.
+-}
+type AnimationStatus
+    = Started
+    | Paused
+    | Resumed
+    | Completed
+    | Canceled
+    | Restarted
+
+
+{-| Property data received from JavaScript during animations.
+-}
+type alias PropertyData =
+    { elementId : String
+    , positionX : Float
+    , positionY : Float
+    , positionZ : Float
+    , opacity : Float
+    , rotationX : Float
+    , rotationY : Float
+    , rotationZ : Float
+    , scaleX : Float
+    , scaleY : Float
+    , scaleZ : Float
+    , backgroundColor : String
+    , color : String
+    , width : Float
+    , height : Float
+    , isAnimating : Bool
+    }
+
+
 {-| Event types for WAAPI port communication.
 
 These are used internally by the handleEvent function.
 
 -}
 type EventType
-    = PropertyUpdate
-    | AnimationUpdate
+    = PropertyUpdate PropertyData
+    | AnimationUpdate AnimationStatus
 
 
 {-| Send a command through your waapiCommand port.
@@ -976,14 +1010,14 @@ And handle the result in your update:
 **Note:** This requires the JavaScript companion library to be properly initialized.
 
 -}
-handleEvent : (Result String ( EventType, String, Encode.Value ) -> msg) -> Encode.Value -> msg
+handleEvent : (Result String EventType -> msg) -> Encode.Value -> msg
 handleEvent toMsg eventValue =
     toMsg (decodeEvent eventValue)
 
 
 {-| Internal function to decode WAAPI events from JavaScript.
 -}
-decodeEvent : Encode.Value -> Result String ( EventType, String, Encode.Value )
+decodeEvent : Encode.Value -> Result String EventType
 decodeEvent value =
     case
         Decode.decodeValue
@@ -997,35 +1031,127 @@ decodeEvent value =
         Ok ( eventTypeString, targetElementId, payload ) ->
             case eventTypeString of
                 "propertyUpdate" ->
-                    Ok ( PropertyUpdate, targetElementId, payload )
+                    case decodePropertyData payload of
+                        Ok propertyData ->
+                            Ok (PropertyUpdate propertyData)
+
+                        Err error ->
+                            Err ("Property decode error: " ++ error)
 
                 "animationUpdate" ->
-                    Ok ( AnimationUpdate, targetElementId, payload )
+                    case decodeAnimationStatus payload of
+                        Ok status ->
+                            Ok (AnimationUpdate status)
+
+                        Err error ->
+                            Err ("Animation status decode error: " ++ error)
 
                 -- Legacy support for individual animation events
                 "animationStarted" ->
-                    Ok ( AnimationUpdate, targetElementId, Encode.object [ ( "status", Encode.string "started" ) ] )
+                    Ok (AnimationUpdate Started)
 
                 "animationPaused" ->
-                    Ok ( AnimationUpdate, targetElementId, Encode.object [ ( "status", Encode.string "paused" ) ] )
+                    Ok (AnimationUpdate Paused)
 
                 "animationResumed" ->
-                    Ok ( AnimationUpdate, targetElementId, Encode.object [ ( "status", Encode.string "resumed" ) ] )
+                    Ok (AnimationUpdate Resumed)
 
                 "animationComplete" ->
-                    Ok ( AnimationUpdate, targetElementId, Encode.object [ ( "status", Encode.string "completed" ) ] )
+                    Ok (AnimationUpdate Completed)
 
                 "animationCanceled" ->
-                    Ok ( AnimationUpdate, targetElementId, Encode.object [ ( "status", Encode.string "canceled" ) ] )
+                    Ok (AnimationUpdate Canceled)
 
                 "animationRestarted" ->
-                    Ok ( AnimationUpdate, targetElementId, Encode.object [ ( "status", Encode.string "restarted" ) ] )
+                    Ok (AnimationUpdate Restarted)
 
                 _ ->
                     Err ("Unknown event type: " ++ eventTypeString)
 
         Err error ->
             Err (Decode.errorToString error)
+
+
+{-| Decode animation status from JavaScript payload.
+-}
+decodeAnimationStatus : Encode.Value -> Result String AnimationStatus
+decodeAnimationStatus payload =
+    case Decode.decodeValue (Decode.field "status" Decode.string) payload of
+        Ok "started" ->
+            Ok Started
+
+        Ok "paused" ->
+            Ok Paused
+
+        Ok "resumed" ->
+            Ok Resumed
+
+        Ok "completed" ->
+            Ok Completed
+
+        Ok "canceled" ->
+            Ok Canceled
+
+        Ok "restarted" ->
+            Ok Restarted
+
+        Ok unknown ->
+            Err ("Unknown animation status: " ++ unknown)
+
+        Err error ->
+            Err (Decode.errorToString error)
+
+
+{-| Decode property data from JavaScript payload.
+-}
+decodePropertyData : Encode.Value -> Result String PropertyData
+decodePropertyData payload =
+    Decode.decodeValue
+        (Decode.succeed PropertyData
+            |> andMap (Decode.field "elementId" Decode.string)
+            |> andMap
+                (Decode.oneOf
+                    [ Decode.field "positionX" Decode.float
+                    , Decode.field "x" Decode.float
+                    , Decode.succeed 0.0
+                    ]
+                )
+            |> andMap
+                (Decode.oneOf
+                    [ Decode.field "positionY" Decode.float
+                    , Decode.field "y" Decode.float
+                    , Decode.succeed 0.0
+                    ]
+                )
+            |> andMap
+                (Decode.oneOf
+                    [ Decode.field "positionZ" Decode.float
+                    , Decode.field "z" Decode.float
+                    , Decode.succeed 0.0
+                    ]
+                )
+            |> andMap (Decode.oneOf [ Decode.field "opacity" Decode.float, Decode.succeed 1.0 ])
+            |> andMap (Decode.oneOf [ Decode.field "rotationX" Decode.float, Decode.succeed 0.0 ])
+            |> andMap (Decode.oneOf [ Decode.field "rotationY" Decode.float, Decode.succeed 0.0 ])
+            |> andMap (Decode.oneOf [ Decode.field "rotationZ" Decode.float, Decode.succeed 0.0 ])
+            |> andMap (Decode.oneOf [ Decode.field "scaleX" Decode.float, Decode.succeed 1.0 ])
+            |> andMap (Decode.oneOf [ Decode.field "scaleY" Decode.float, Decode.succeed 1.0 ])
+            |> andMap (Decode.oneOf [ Decode.field "scaleZ" Decode.float, Decode.succeed 1.0 ])
+            |> andMap (Decode.oneOf [ Decode.field "backgroundColor" Decode.string, Decode.succeed "transparent" ])
+            |> andMap (Decode.oneOf [ Decode.field "color" Decode.string, Decode.succeed "black" ])
+            |> andMap (Decode.oneOf [ Decode.field "width" Decode.float, Decode.succeed 0.0 ])
+            |> andMap (Decode.oneOf [ Decode.field "height" Decode.float, Decode.succeed 0.0 ])
+            |> andMap (Decode.oneOf [ Decode.field "isAnimating" Decode.bool, Decode.succeed True ])
+        )
+        payload
+        |> Result.mapError Decode.errorToString
+
+
+{-| Helper function for applying decoders in sequence.
+-}
+andMap : Decode.Decoder a -> Decode.Decoder (a -> b) -> Decode.Decoder b
+andMap =
+    Decode.map2 (|>)
 
 
 {-| Create a stop animation command.

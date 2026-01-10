@@ -651,6 +651,7 @@ window.ElmAnimateWAAPI = (function () {
 
                 if (updatePort) {
                     const propertyData = {
+                        elementId: elementId,
                         positionX: transformState.x,
                         positionY: transformState.y,
                         positionZ: transformState.z,
@@ -691,9 +692,10 @@ window.ElmAnimateWAAPI = (function () {
                 const computedStyle = window.getComputedStyle(element);
 
                 const finalPropertyData = {
-                    x: finalState.x,
-                    y: finalState.y,
-                    z: finalState.z,
+                    elementId: elementId,
+                    positionX: finalState.x,
+                    positionY: finalState.y,
+                    positionZ: finalState.z,
                     opacity: parseFloat(computedStyle.opacity),
                     rotationX: finalState.rotationX,
                     rotationY: finalState.rotationY,
@@ -702,6 +704,7 @@ window.ElmAnimateWAAPI = (function () {
                     scaleY: finalState.scaleY,
                     scaleZ: finalState.scaleZ,
                     backgroundColor: computedStyle.backgroundColor,
+                    color: computedStyle.color,
                     width: parseFloat(computedStyle.width),
                     height: parseFloat(computedStyle.height),
                     isAnimating: false
@@ -718,9 +721,10 @@ window.ElmAnimateWAAPI = (function () {
                 const computedStyle = window.getComputedStyle(element);
 
                 const currentPropertyData = {
-                    x: currentState.x,
-                    y: currentState.y,
-                    z: currentState.z,
+                    elementId: elementId,
+                    positionX: currentState.x,
+                    positionY: currentState.y,
+                    positionZ: currentState.z,
                     opacity: parseFloat(computedStyle.opacity),
                     rotationX: currentState.rotationX,
                     rotationY: currentState.rotationY,
@@ -729,6 +733,9 @@ window.ElmAnimateWAAPI = (function () {
                     scaleY: currentState.scaleY,
                     scaleZ: currentState.scaleZ,
                     backgroundColor: computedStyle.backgroundColor,
+                    color: computedStyle.color,
+                    width: parseFloat(computedStyle.width),
+                    height: parseFloat(computedStyle.height),
                     isAnimating: false
                 };
                 sendEventToElm('propertyUpdate', elementId, currentPropertyData);
