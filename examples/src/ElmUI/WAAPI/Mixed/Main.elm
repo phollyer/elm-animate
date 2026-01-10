@@ -109,6 +109,12 @@ initAnim duration animState =
                 |> WAAPI.builder
                 |> WAAPI.duration duration
                 |> WAAPI.easing Easing.EaseOut
+                |> Color.init "mixed-box" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
+                |> Position.initXY "mixed-box" 0 0
+                |> Scale.initXYZ "mixed-box" 1.0 1.0 1.0
+                |> Size.initWH "mixed-box" 80 80
+                |> Rotate.initXYZ "mixed-box" 0 0 0
+                |> Opacity.init "mixed-box" 1.0
                 |> Position.for "mixed-box"
                 |> Position.toXY 0 0
                 |> Position.build

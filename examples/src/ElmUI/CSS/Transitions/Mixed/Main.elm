@@ -81,7 +81,25 @@ type AnimationType
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = CSS.init
+    ( { animations =
+            CSS.init
+                |> CSS.builder
+                |> Color.init "box-1" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
+                |> Color.init "box-2" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
+                |> Color.init "box-3" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
+                |> Position.initXY "box-1" 0 0
+                |> Position.initXY "box-2" 0 0
+                |> Position.initXY "box-3" 0 0
+                |> Scale.initXY "box-1" 1 1
+                |> Scale.initXY "box-2" 1 1
+                |> Scale.initXY "box-3" 1 1
+                |> Rotate.init "box-1" 0
+                |> Rotate.init "box-2" 0
+                |> Rotate.init "box-3" 0
+                |> Opacity.init "box-1" 1
+                |> Opacity.init "box-2" 1
+                |> Opacity.init "box-3" 1
+                |> CSS.animate
       , isAnimating = False
       , activeAnimation = Nothing
       }

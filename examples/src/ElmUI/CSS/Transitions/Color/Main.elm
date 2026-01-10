@@ -58,7 +58,12 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = CSS.init }
+    ( { animations =
+            CSS.init
+                |> CSS.builder
+                |> Color.init "animated-box" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
+                |> CSS.animate
+      }
     , Cmd.none
     )
 

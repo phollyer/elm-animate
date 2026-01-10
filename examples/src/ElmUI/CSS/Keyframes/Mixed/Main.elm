@@ -85,6 +85,10 @@ init _ =
     ( { animations =
             CSS.init
                 |> CSS.builder
+                |> Color.init elementId (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
+                |> Position.initXY elementId 0 0
+                |> Rotate.init elementId 0
+                |> Scale.initXY elementId 1 1
                 |> Color.for elementId
                 |> Color.to (Anim.Color.fromRgb { r = 59, g = 130, b = 246 })
                 |> Color.build
