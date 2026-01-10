@@ -2,6 +2,8 @@ module Anim.Internal.CSS.Transform exposing
     ( combineStyles
     , consolidateTiming
     , generate
+    , generateFromProcessed
+    , generateFromProcessedWithOrder
     , generateWithOrder
     , isTransformProperty
     )
@@ -9,6 +11,9 @@ module Anim.Internal.CSS.Transform exposing
 import Anim.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Easing as Easing
+import Anim.Internal.Properties.Position as Position
+import Anim.Internal.Properties.Rotate as Rotate
+import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Timing.TimeSpec as TimeSpec
 
 
@@ -110,6 +115,67 @@ isTransformProperty property =
 
         _ ->
             False
+
+
+{-| Generate the CSS transform string from processed properties.
+-}
+generateFromProcessed : List Builder.ProcessedPropertyConfig -> String
+generateFromProcessed properties =
+    let
+        transformParts =
+            extractTransformsFromProcessed properties
+    in
+    String.trim (transformParts.position ++ " " ++ transformParts.rotate ++ " " ++ transformParts.scale)
+
+
+{-| Generate transform from processed properties with custom ordering.
+-}
+generateFromProcessedWithOrder : List String -> List Builder.ProcessedPropertyConfig -> String
+generateFromProcessedWithOrder order properties =
+    let
+        transformParts =
+            extractTransformsFromProcessed properties
+
+        -- Build transform string in the specified order
+        orderedTransforms =
+            List.filterMap (getTransformByName transformParts) order
+    in
+    String.trim (String.join " " orderedTransforms)
+
+
+{-| Extract transform parts from processed properties.
+-}
+extractTransformsFromProcessed : List Builder.ProcessedPropertyConfig -> Builder.TransformParts
+extractTransformsFromProcessed properties =
+    List.foldl collectProcessedTransform emptyTransformParts properties
+
+
+emptyTransformParts : Builder.TransformParts
+emptyTransformParts =
+    { position = ""
+    , rotate = ""
+    , scale = ""
+    }
+
+
+collectProcessedTransform : Builder.ProcessedPropertyConfig -> Builder.TransformParts -> Builder.TransformParts
+collectProcessedTransform property acc =
+    case property of
+        Builder.ProcessedPositionConfig config ->
+            { acc | position = "translate3d(" ++ Position.toCssString config.end ++ ")" }
+
+        Builder.ProcessedRotateConfig config ->
+            { acc | rotate = Rotate.to3DCssString config.end }
+
+        Builder.ProcessedScaleConfig config ->
+            let
+                ( x, y ) =
+                    Scale.toTuple config.end
+            in
+            { acc | scale = "scale(" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")" }
+
+        _ ->
+            acc
 
 
 {-| Consolidate timing for transform properties into a single transition string.

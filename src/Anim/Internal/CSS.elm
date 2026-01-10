@@ -636,8 +636,14 @@ animationStyleAttribute elementId animationState =
 
 htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
 htmlAttributes elementId animationResult =
-    getElementStyles elementId animationResult
-        |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
+    let
+        styles =
+            getElementStyles elementId animationResult
+
+        attrs =
+            List.map (\( prop, value ) -> Html.Attributes.style prop value) styles
+    in
+    attrs
 
 
 keyframesStyleNode : AnimState -> Html msg
@@ -718,21 +724,29 @@ transformOrderToString order =
 generateElementAnimation : Maybe (List TransformOrder) -> String -> Builder.ElementConfig -> ElementAnimation
 generateElementAnimation maybeOrder elementId elementConfig =
     let
-        _ =
-            Debug.log ("🎨 generateElementAnimation for " ++ elementId ++ " with properties") elementConfig.properties
+        -- Process properties first (like keyframes do) for consistency
+        processed =
+            Builder.processElement
+                { globalTiming = Nothing
+                , globalEasing = Nothing
+                , globalDelay = Nothing
+                , globalPerspective = Nothing
+                , currentElementId = Nothing
+                , elements = Dict.empty
+                , scrollTargets = []
+                , scrollContainer = "document"
+                , perspectiveStylesCache = Nothing
+                }
+                elementConfig
+
+        processedProps =
+            processed.properties
 
         transforms =
             case maybeOrder of
                 Nothing ->
                     -- Use default ordering: Position -> Rotate -> Scale
-                    let
-                        result =
-                            Transforms.generate elementConfig.properties
-
-                        _ =
-                            Debug.log ("🎨 Generated transforms for " ++ elementId) result
-                    in
-                    result
+                    Transforms.generateFromProcessed processedProps
 
                 Just order ->
                     -- Use custom ordering
@@ -740,41 +754,34 @@ generateElementAnimation maybeOrder elementId elementConfig =
                         orderStrings =
                             List.map transformOrderToString order
                     in
-                    Transforms.generateWithOrder orderStrings elementConfig.properties
+                    Transforms.generateFromProcessedWithOrder orderStrings processedProps
 
         transitions =
-            let
-                result =
-                    Transitions.generate elementConfig.properties
-
-                _ =
-                    Debug.log ("🎨 Generated transitions for " ++ elementId) result
-            in
-            result
+            Transitions.generateFromProcessed processedProps
 
         colorStyles =
             List.filterMap
                 (\prop ->
                     case prop of
-                        Builder.BackgroundColorConfig config ->
+                        Builder.ProcessedBackgroundColorConfig config ->
                             Just ( "background-color", Color.toCssString config.end )
 
                         _ ->
                             Nothing
                 )
-                elementConfig.properties
+                processedProps
 
         opacityStyles =
             List.filterMap
                 (\prop ->
                     case prop of
-                        Builder.OpacityConfig config ->
+                        Builder.ProcessedOpacityConfig config ->
                             Just ( "opacity", Opacity.toString config.end )
 
                         _ ->
                             Nothing
                 )
-                elementConfig.properties
+                processedProps
 
         allStyles =
             [ ( "transform", transforms )
@@ -783,9 +790,6 @@ generateElementAnimation maybeOrder elementId elementConfig =
                 ++ colorStyles
                 ++ opacityStyles
                 |> List.filter (\( _, value ) -> not (String.isEmpty value))
-
-        _ =
-            Debug.log ("🎨 Final styles for " ++ elementId) allStyles
     in
     { styles = allStyles
     , animationLayers = KeyframeAnimation.generate elementId elementConfig.properties
@@ -852,64 +856,40 @@ resumeAnimation elementId (AnimState state) =
     AnimState { state | elementAnimations = updatedAnimations }
 
 
-{-| Stop an animation by jumping to its end state with a 0ms transition.
+{-| Stop an animation by jumping to its end state with transition: none.
 -}
 stopAnimation : String -> AnimState -> AnimState
 stopAnimation elementId animState =
     let
-        _ =
-            Debug.log "🛑 STOP called for elementId" elementId
-
-        posRange =
-            getPositionRange elementId animState
-
-        _ =
-            Debug.log "🛑 Position range" posRange
-
-        -- Helper to always use the end value
-        getEndValue : Maybe a -> a -> a
-        getEndValue _ endValue =
-            endValue
-
-        -- Start with a fresh builder with 1ms duration for the element
+        -- Start with a fresh builder with 0ms duration for the element
         baseBuilder =
             animState
                 |> builder
                 |> Builder.duration 0
                 |> easing Anim.Easing.Linear
-                |> Builder.for elementId
 
         -- Build new animation with all current values using Property.add
         withAllProperties =
             baseBuilder
                 |> addPropertyIfExists
-                    posRange
+                    (getPositionRange elementId animState)
                     (\range ->
                         let
                             endPos =
                                 range.end
-
-                            _ =
-                                Debug.log "🛑 Creating Position config with end" endPos
-
-                            config =
-                                Builder.PositionConfig
-                                    { start = Just endPos
-                                    , end = endPos
-                                    , duration = 0
-                                    , speed = 0
-                                    , distance = 0
-                                    , timing = Just (Duration 0)
-                                    , easing = Just Anim.Easing.Linear
-                                    , delay = Nothing
-                                    , perspective = Nothing
-                                    , isDirty = True
-                                    }
-
-                            _ =
-                                Debug.log "🛑 Position config created" config
                         in
-                        config
+                        Builder.PositionConfig
+                            { start = Just endPos
+                            , end = endPos
+                            , duration = 0
+                            , speed = 0
+                            , distance = 0
+                            , timing = Just (Duration 0)
+                            , easing = Just Anim.Easing.Linear
+                            , delay = Nothing
+                            , perspective = Nothing
+                            , isDirty = True
+                            }
                     )
                 |> addPropertyIfExists
                     (getScaleRange elementId animState)
@@ -1021,17 +1001,8 @@ stopAnimation elementId animState =
 
                 Nothing ->
                     builder_
-
-        _ =
-            Debug.log "🛑 About to call animate with builder" withAllProperties
-
-        result =
-            animate withAllProperties
-
-        _ =
-            Debug.log "🛑 Animate returned, checking styles" (getElementStyles elementId result)
     in
-    result
+    animate withAllProperties
 
 
 {-| Reset an animation by jumping to its start state with a 0ms transition.

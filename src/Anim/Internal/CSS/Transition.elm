@@ -1,11 +1,13 @@
 module Anim.Internal.CSS.Transition exposing
     ( calculatePropertyDistance
     , generate
+    , generateFromProcessed
     )
 
+import Anim.Easing as Easing
 import Anim.Internal.Builder as Builder
 import Anim.Internal.CSS.Transform as TH
-import Anim.Internal.Easing as Easing
+import Anim.Internal.Easing as InternalEasing
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Color as Color exposing (Color(..))
 import Anim.Internal.Properties.FontColor as FontColor
@@ -54,7 +56,7 @@ transitionFromNonTransformProperty property =
                     distance =
                         calculatePropertyDistance (Builder.BackgroundColorConfig config)
                 in
-                Just ("background-color " ++ TimeSpec.toCssString distance config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
+                Just ("background-color " ++ TimeSpec.toCssString distance config.timing ++ " " ++ InternalEasing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
         Builder.OpacityConfig config ->
             if config.isDirty then
@@ -65,7 +67,7 @@ transitionFromNonTransformProperty property =
                     distance =
                         calculatePropertyDistance (Builder.OpacityConfig config)
                 in
-                Just ("opacity " ++ TimeSpec.toCssString distance config.timing ++ " " ++ Easing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
+                Just ("opacity " ++ TimeSpec.toCssString distance config.timing ++ " " ++ InternalEasing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
         _ ->
             Nothing
@@ -157,3 +159,169 @@ calculatePropertyDistance property =
                             Size.fromTuple ( 0, 0 )
             in
             Size.distance start config.end
+
+
+{-| Generate transitions from processed properties. This is the new unified approach
+that treats all properties consistently, whether dirty or clean.
+-}
+generateFromProcessed : List Builder.ProcessedPropertyConfig -> String
+generateFromProcessed properties =
+    let
+        -- Check if all durations are 0ms (stop/reset case)
+        allDurationsZero =
+            properties
+                |> List.all
+                    (\prop ->
+                        case prop of
+                            Builder.ProcessedPositionConfig config ->
+                                config.duration == 0
+
+                            Builder.ProcessedRotateConfig config ->
+                                config.duration == 0
+
+                            Builder.ProcessedScaleConfig config ->
+                                config.duration == 0
+
+                            Builder.ProcessedBackgroundColorConfig config ->
+                                config.duration == 0
+
+                            Builder.ProcessedOpacityConfig config ->
+                                config.duration == 0
+
+                            _ ->
+                                True
+                    )
+    in
+    if allDurationsZero then
+        -- Use "none" to cancel running transitions when stopping
+        "none"
+
+    else
+        let
+            -- Separate transform and non-transform properties
+            ( transformProps, nonTransformProps ) =
+                List.partition isProcessedTransformProperty properties
+
+            -- Generate non-transform transitions
+            nonTransformTransitions =
+                List.filterMap transitionFromProcessedNonTransform nonTransformProps
+
+            -- Generate single consolidated transform transition
+            transformTransition =
+                case consolidateProcessedTiming transformProps of
+                    Just transition ->
+                        [ transition ]
+
+                    Nothing ->
+                        []
+
+            allTransitions =
+                transformTransition ++ nonTransformTransitions
+        in
+        String.join ", " allTransitions
+
+
+isProcessedTransformProperty : Builder.ProcessedPropertyConfig -> Bool
+isProcessedTransformProperty property =
+    case property of
+        Builder.ProcessedPositionConfig _ ->
+            True
+
+        Builder.ProcessedRotateConfig _ ->
+            True
+
+        Builder.ProcessedScaleConfig _ ->
+            True
+
+        _ ->
+            False
+
+
+transitionFromProcessedNonTransform : Builder.ProcessedPropertyConfig -> Maybe String
+transitionFromProcessedNonTransform property =
+    case property of
+        Builder.ProcessedBackgroundColorConfig config ->
+            Just ("background-color " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+
+        Builder.ProcessedOpacityConfig config ->
+            Just ("opacity " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+
+        _ ->
+            Nothing
+
+
+consolidateProcessedTiming : List Builder.ProcessedPropertyConfig -> Maybe String
+consolidateProcessedTiming transformProps =
+    case transformProps of
+        [] ->
+            Nothing
+
+        _ ->
+            let
+                longestDuration =
+                    transformProps
+                        |> List.map extractProcessedDuration
+                        |> List.maximum
+                        |> Maybe.withDefault 0
+
+                latestEasing =
+                    transformProps
+                        |> List.map extractProcessedEasing
+                        |> List.head
+                        |> Maybe.withDefault Easing.EaseInOut
+
+                earliestDelay =
+                    transformProps
+                        |> List.map extractProcessedDelay
+                        |> List.minimum
+                        |> Maybe.withDefault 0
+            in
+            Just ("transform " ++ String.fromInt longestDuration ++ "ms " ++ InternalEasing.toCSS (Just latestEasing) ++ " " ++ String.fromInt earliestDelay ++ "ms")
+
+
+extractProcessedDuration : Builder.ProcessedPropertyConfig -> Int
+extractProcessedDuration property =
+    case property of
+        Builder.ProcessedPositionConfig config ->
+            config.duration
+
+        Builder.ProcessedRotateConfig config ->
+            config.duration
+
+        Builder.ProcessedScaleConfig config ->
+            config.duration
+
+        _ ->
+            0
+
+
+extractProcessedEasing : Builder.ProcessedPropertyConfig -> Easing.Easing
+extractProcessedEasing property =
+    case property of
+        Builder.ProcessedPositionConfig config ->
+            config.easing
+
+        Builder.ProcessedRotateConfig config ->
+            config.easing
+
+        Builder.ProcessedScaleConfig config ->
+            config.easing
+
+        _ ->
+            Easing.EaseInOut
+
+
+extractProcessedDelay : Builder.ProcessedPropertyConfig -> Int
+extractProcessedDelay property =
+    case property of
+        Builder.ProcessedPositionConfig config ->
+            config.delay
+
+        Builder.ProcessedRotateConfig config ->
+            config.delay
+
+        Builder.ProcessedScaleConfig config ->
+            config.delay
+
+        _ ->
+            0
