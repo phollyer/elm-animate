@@ -52,7 +52,7 @@ scrollToElement targetId =
         |> ScrollAction.forDocument
         |> ScrollAction.toElement targetId
         |> ScrollAction.build
-        |> Scroll.toCmd NoOp
+        |> Scroll.toCmd (\_ -> NoOp)
 
 
 scrollToY : Float -> Cmd Msg
@@ -63,7 +63,7 @@ scrollToY yPos =
         |> ScrollAction.forDocument
         |> ScrollAction.toY yPos
         |> ScrollAction.build
-        |> Scroll.toCmd NoOp
+        |> Scroll.toCmd (\_ -> NoOp)
 
 
 

@@ -51,7 +51,7 @@ scrollToElement targetId =
         |> ScrollAction.forContainer "scroll-container"
         |> ScrollAction.toElement targetId
         |> ScrollAction.build
-        |> Scroll.toCmd NoOp
+        |> Scroll.toCmd (\_ -> NoOp)
 
 
 

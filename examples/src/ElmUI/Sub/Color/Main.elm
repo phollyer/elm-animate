@@ -15,9 +15,10 @@ FEATURES:
 
 -}
 
+import Anim.Color
 import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.Sub as Sub
-import Anim.Property.BackgroundColor as ColorBuilder exposing (Color(..))
+import Anim.Property.BackgroundColor as ColorBuilder
 import Browser exposing (Document)
 import Common.Animations.BackgroundColor as Animations
 import Common.Colors as Colors
@@ -161,7 +162,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.map AnimationMsg (Sub.subscriptions model.animations)
+    Sub.subscriptions AnimationMsg model.animations
 
 
 

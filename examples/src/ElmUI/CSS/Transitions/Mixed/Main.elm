@@ -24,6 +24,7 @@ BENEFITS:
 
 -}
 
+import Anim.Color
 import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.CSS as CSS
 import Anim.Property.BackgroundColor as Color
@@ -197,7 +198,7 @@ update msg model =
                         |> CSS.easing QuartInOut
                         -- Color
                         |> Color.for "mixed-box"
-                        |> Color.to (Color.Rgb { r = 255, g = 100, b = 150 })
+                        |> Color.to (Anim.Color.fromRgb { r = 255, g = 100, b = 150 })
                         |> Color.build
                         -- Scale
                         |> Scale.for "mixed-box"
@@ -245,7 +246,7 @@ update msg model =
                         |> Opacity.build
                         -- Color
                         |> Color.for "mixed-box"
-                        |> Color.to (Color.Rgb { r = 100, g = 255, b = 200 })
+                        |> Color.to (Anim.Color.fromRgb { r = 100, g = 255, b = 200 })
                         |> Color.easing QuintInOut
                         |> Color.duration 1100
                         |> Color.delay 400
@@ -283,7 +284,7 @@ update msg model =
                         |> Rotate.build
                         -- Color
                         |> Color.for "mixed-box"
-                        |> Color.to (Color.Rgb { r = 59, g = 130, b = 246 })
+                        |> Color.to (Anim.Color.fromRgb { r = 59, g = 130, b = 246 })
                         |> Color.build
                         |> CSS.animate
                 , isAnimating = True

@@ -22,9 +22,10 @@ USAGE:
 
 -}
 
+import Anim.Color
 import Anim.Easing as Easing
 import Anim.Engine.CSS as CSS
-import Anim.Property.BackgroundColor as Color exposing (Color(..))
+import Anim.Property.BackgroundColor as Color
 import Browser exposing (Document)
 import Common.Animations.BackgroundColor as Animations
 import Common.Colors as Colors
@@ -71,8 +72,8 @@ init _ =
                 |> CSS.speed 100
                 |> CSS.easing Easing.BounceOut
                 |> Color.for elementId
-                |> Color.from (Color.Rgb { r = 255, g = 255, b = 255 })
-                |> Color.to (Color.Rgb { r = 149, g = 165, b = 166 })
+                |> Color.from (Anim.Color.fromRgb { r = 255, g = 255, b = 255 })
+                |> Color.to (Anim.Color.fromRgb { r = 149, g = 165, b = 166 })
                 |> Color.build
                 |> CSS.animate
       }

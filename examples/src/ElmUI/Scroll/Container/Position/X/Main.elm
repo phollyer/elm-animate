@@ -49,7 +49,7 @@ scrollToElement targetId =
         |> ScrollAction.forContainer "horizontal-scroll-container"
         |> ScrollAction.toElement targetId
         |> ScrollAction.build
-        |> Scroll.toCmd NoOp
+        |> Scroll.toCmd (\_ -> NoOp)
 
 
 scrollToX : Float -> Cmd Msg
@@ -61,7 +61,7 @@ scrollToX xPos =
         |> ScrollAction.toX xPos
         |> ScrollAction.onXAxisWithOffset 20
         |> ScrollAction.build
-        |> Scroll.toCmd NoOp
+        |> Scroll.toCmd (\_ -> NoOp)
 
 
 

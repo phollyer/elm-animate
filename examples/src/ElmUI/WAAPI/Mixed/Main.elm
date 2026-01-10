@@ -15,6 +15,7 @@ FEATURES:
 
 -}
 
+import Anim.Color
 import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.BackgroundColor as Color
@@ -125,7 +126,7 @@ initAnim duration animState =
                 |> Opacity.to 1.0
                 |> Opacity.build
                 |> Color.for "mixed-box"
-                |> Color.to (Color.Hex "#3498db")
+                |> Color.to (Maybe.withDefault Anim.Color.blue (Anim.Color.fromHex "#3498db"))
                 |> Color.build
                 |> WAAPI.animate animState
     in
@@ -194,7 +195,7 @@ update msg model =
                         |> Scale.toXY 0.8 0.8
                         |> Scale.build
                         |> Color.for elementId
-                        |> Color.to (Color.Hex "#e74c3c")
+                        |> Color.to (Maybe.withDefault Anim.Color.red (Anim.Color.fromHex "#e74c3c"))
                         |> Color.build
 
                 ( newAnimState, encodedValue ) =
@@ -209,7 +210,7 @@ update msg model =
                         |> WAAPI.duration 1000
                         |> WAAPI.easing Easing.EaseInOut
                         |> Color.for elementId
-                        |> Color.to (Color.Hsl { h = 142, s = 71, l = 45 })
+                        |> Color.to (Anim.Color.fromHsl { h = 142 / 360, s = 0.71, l = 0.45 })
                         |> Color.build
                         |> Size.for elementId
                         |> Size.toHW 60 150
@@ -245,7 +246,7 @@ update msg model =
                         |> Opacity.to 0.7
                         |> Opacity.build
                         |> Color.for elementId
-                        |> Color.to (Color.Hex "#9b59b6")
+                        |> Color.to (Anim.Color.fromRgb { r = 155, g = 89, b = 182 })
                         |> Color.build
 
                 ( newAnimState, encodedValue ) =

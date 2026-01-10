@@ -236,8 +236,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.map AnimationMsg <|
-        Sub.subscriptions model.animations
+    Sub.subscriptions AnimationMsg model.animations
 
 
 

@@ -15,9 +15,10 @@ FEATURES:
 
 -}
 
+import Anim.Color
 import Anim.Easing as Easing
 import Anim.Engine.CSS as CSS
-import Anim.Property.BackgroundColor as Color exposing (Color(..))
+import Anim.Property.BackgroundColor as Color
 import Browser exposing (Document)
 import Common.Animations.BackgroundColor as Animations
 import Common.Colors as Colors

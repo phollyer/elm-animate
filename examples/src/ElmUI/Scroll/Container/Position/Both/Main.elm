@@ -52,7 +52,7 @@ scrollToElement targetId =
         |> ScrollAction.toElement targetId
         |> ScrollAction.onBothAxesWithOffset 20 20
         |> ScrollAction.build
-        |> Scroll.toCmd NoOp
+        |> Scroll.toCmd (\_ -> NoOp)
 
 
 

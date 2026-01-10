@@ -15,6 +15,7 @@ FEATURES:
 
 -}
 
+import Anim.Color
 import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.Sub as Sub
 import Anim.Property.BackgroundColor as Color
@@ -85,7 +86,7 @@ init _ =
                 |> Opacity.duration 0
                 |> Opacity.build
                 |> Color.for "mixed-box"
-                |> Color.to (Color.fromHsl { h = 207, s = 90, l = 54 })
+                |> Color.to (Anim.Color.fromHsl { h = 207 / 360, s = 0.9, l = 0.54 })
                 |> Color.duration 0
                 |> Color.build
                 |> Sub.animate
@@ -174,7 +175,7 @@ update msg model =
                         |> Scale.easing Easing.EaseInOut
                         |> Scale.build
                         |> Color.for elementId
-                        |> Color.to (Color.Hsl { h = 351, s = 83, l = 61 })
+                        |> Color.to (Anim.Color.fromHsl { h = 351 / 360, s = 0.83, l = 0.61 })
                         |> Color.speed 300.0
                         |> Color.easing Easing.EaseOut
                         |> Color.build
@@ -189,7 +190,7 @@ update msg model =
                     model.animations
                         |> Sub.builder
                         |> Color.for elementId
-                        |> Color.to (Color.Hsl { h = 142, s = 71, l = 45 })
+                        |> Color.to (Anim.Color.fromHsl { h = 142 / 360, s = 0.71, l = 0.45 })
                         |> Color.speed 300.0
                         |> Color.easing Easing.EaseInOut
                         |> Color.build
@@ -239,7 +240,7 @@ update msg model =
                         |> Opacity.easing Easing.EaseOut
                         |> Opacity.build
                         |> Color.for elementId
-                        |> Color.to (Color.Hsl { h = 351, s = 83, l = 61 })
+                        |> Color.to (Anim.Color.fromHsl { h = 351 / 360, s = 0.83, l = 0.61 })
                         |> Color.speed 300.0
                         |> Color.easing Easing.EaseOut
                         |> Color.build
@@ -279,7 +280,7 @@ update msg model =
                         |> Opacity.easing Easing.EaseInOut
                         |> Opacity.build
                         |> Color.for "mixed-box"
-                        |> Color.to (Color.Hsl { h = 207, s = 90, l = 54 })
+                        |> Color.to (Anim.Color.fromHsl { h = 207 / 360, s = 0.9, l = 0.54 })
                         |> Color.speed 300.0
                         |> Color.easing Easing.EaseOut
                         |> Color.build
@@ -300,8 +301,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.map AnimationMsg <|
-        Sub.subscriptions model.animations
+    Sub.subscriptions AnimationMsg model.animations
 
 
 

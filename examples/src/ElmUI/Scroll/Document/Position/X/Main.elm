@@ -59,7 +59,7 @@ scrollToElement targetId =
         |> ScrollAction.toElement targetId
         |> ScrollAction.onXAxisWithOffset 20
         |> ScrollAction.build
-        |> Scroll.toCmd NoOp
+        |> Scroll.toCmd (\_ -> NoOp)
 
 
 scrollToX : Float -> Cmd Msg
@@ -71,7 +71,7 @@ scrollToX xPos =
         |> ScrollAction.toX xPos
         |> ScrollAction.onXAxisWithOffset 20
         |> ScrollAction.build
-        |> Scroll.toCmd NoOp
+        |> Scroll.toCmd (\_ -> NoOp)
 
 
 
