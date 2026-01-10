@@ -43,7 +43,7 @@ import Json.Encode as Encode
 port animateElement : Encode.Value -> Cmd msg
 
 
-port stopElement : Encode.Value -> Cmd msg
+port stopElementAnimation : Encode.Value -> Cmd msg
 
 
 port positionUpdates : (Encode.Value -> msg) -> Sub msg
@@ -189,7 +189,7 @@ update msg model =
 
         StopAnimation ->
             ( { model | isAnimating = False }
-            , stopElement (Encode.string "box")
+            , stopElementAnimation (Encode.string "box")
             )
 
         AnimationComplete _ ->

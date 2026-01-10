@@ -47,10 +47,16 @@ import Time
 port animateElement : Encode.Value -> Cmd msg
 
 
-port stopElement : Encode.Value -> Cmd msg
+port stopElementAnimation : Encode.Value -> Cmd msg
 
 
 port animationComplete : (String -> msg) -> Sub msg
+
+
+port animationStart : (String -> msg) -> Sub msg
+
+
+port animationCancel : (String -> msg) -> Sub msg
 
 
 
@@ -126,6 +132,8 @@ type Msg
     | StopAnimation
     | ClearEventLog
     | AnimationComplete String
+    | AnimationStartEvent String
+    | AnimationCancelEvent String
     | Tick Time.Posix
 
 
@@ -142,15 +150,13 @@ update msg model =
 
                 ( newAnimations, cmd ) =
                     WAAPI.animate model.animations builder
-
-                updatedModel =
-                    { model
-                        | animations = newAnimations
-                        , isAnimating = True
-                    }
-                        |> addEventToLog AnimationStart "Animation started"
             in
-            ( updatedModel, animateElement cmd )
+            ( { model
+                | animations = newAnimations
+                , isAnimating = True
+              }
+            , animateElement cmd
+            )
 
         MoveToCenter ->
             let
@@ -162,29 +168,25 @@ update msg model =
 
                 ( newAnimations, cmd ) =
                     WAAPI.animate model.animations builder
-
-                updatedModel =
-                    { model
-                        | animations = newAnimations
-                        , isAnimating = True
-                    }
-                        |> addEventToLog AnimationStart "Animation started"
             in
-            ( updatedModel, animateElement cmd )
+            ( { model
+                | animations = newAnimations
+                , isAnimating = True
+              }
+            , animateElement cmd
+            )
 
         StopAnimation ->
             let
                 ( newAnimations, cmd ) =
                     WAAPI.stop elementId model.animations
-
-                updatedModel =
-                    { model
-                        | animations = newAnimations
-                        , isAnimating = False
-                    }
-                        |> addEventToLog AnimationCancel "Animation was cancelled"
             in
-            ( updatedModel, stopElement cmd )
+            ( { model
+                | animations = newAnimations
+                , isAnimating = False
+              }
+            , stopElementAnimation cmd
+            )
 
         ClearEventLog ->
             ( { model | eventLog = [], eventCounter = 0 }
@@ -195,6 +197,28 @@ update msg model =
             if finishedElementId == elementId then
                 ( model
                     |> addEventToLog AnimationEnd "Animation completed"
+                    |> (\m -> { m | isAnimating = False })
+                , Cmd.none
+                )
+
+            else
+                ( model, Cmd.none )
+
+        AnimationStartEvent startedElementId ->
+            if startedElementId == elementId then
+                ( model
+                    |> addEventToLog AnimationStart "Animation started"
+                    |> (\m -> { m | isAnimating = True })
+                , Cmd.none
+                )
+
+            else
+                ( model, Cmd.none )
+
+        AnimationCancelEvent cancelledElementId ->
+            if cancelledElementId == elementId then
+                ( model
+                    |> addEventToLog AnimationCancel "Animation was cancelled"
                     |> (\m -> { m | isAnimating = False })
                 , Cmd.none
                 )
@@ -237,6 +261,8 @@ subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.batch
         [ animationComplete AnimationComplete
+        , animationStart AnimationStartEvent
+        , animationCancel AnimationCancelEvent
         , Time.every 100 Tick
         ]
 
@@ -255,7 +281,7 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ UI.backButtonWithPath "../../../index.html"
+    [ UI.backButtonWithPath "../../index.html"
     , UI.pageHeader "ElmUI & WAAPI Engine Events Example"
     , -- Description
       el

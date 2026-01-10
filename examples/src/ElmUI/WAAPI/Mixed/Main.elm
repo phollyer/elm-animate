@@ -44,7 +44,7 @@ import Json.Encode as Encode
 port animateElement : Encode.Value -> Cmd msg
 
 
-port stopElement : String -> Cmd msg
+port stopElementAnimation : String -> Cmd msg
 
 
 port animationUpdates : (Encode.Value -> msg) -> Sub msg

@@ -15,17 +15,17 @@
             min-height: 100vh;
         }
     </style>
-    <script src="../../../../js/elm-animate-waapi.js"></script>
 </head>
 
 <body>
+    <script src="../../../../js/elm-animate-waapi.js"></script>
     <script src="index.js"></script>
     <script>
         var app = Elm.ElmUI.WAAPI.Events.Main.init({});
 
         // Wire up WAAPI ports
         if (window.ElmAnimateWAAPI) {
-            window.ElmAnimateWAAPI.connect(app.ports);
+            window.ElmAnimateWAAPI.init(app.ports);
         }
     </script>
 </body>
