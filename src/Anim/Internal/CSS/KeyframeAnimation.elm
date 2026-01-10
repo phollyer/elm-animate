@@ -146,7 +146,7 @@ generate elementId properties =
                                     in
                                     Easing.toFunction easing linearProgress
 
-                                -- Collect transform components using canonical ordering pattern
+                                -- Collect transform components (order will be enforced during assembly)
                                 transformParts =
                                     processedProps
                                         |> List.foldl
@@ -310,43 +310,52 @@ generate elementId properties =
             contentForHash =
                 elementId
                     ++ String.fromInt maxDuration
+                    ++ String.fromInt maxDelay
                     ++ (processedProps
                             |> List.map
                                 (\p ->
                                     case p of
                                         Builder.ProcessedPositionConfig cfg ->
-                                            "pos" ++ String.fromInt cfg.duration ++ Position.toCssString cfg.end
+                                            "pos-" ++ String.fromInt cfg.duration ++ "-" ++ String.fromInt cfg.delay ++ "-" ++ Position.toCssString cfg.end ++ "-" ++ (cfg.start |> Maybe.map Position.toCssString |> Maybe.withDefault "none")
 
                                         Builder.ProcessedScaleConfig cfg ->
-                                            "scale" ++ String.fromInt cfg.duration ++ Scale.toCssString cfg.end
+                                            "scale-" ++ String.fromInt cfg.duration ++ "-" ++ String.fromInt cfg.delay ++ "-" ++ Scale.toCssString cfg.end ++ "-" ++ (cfg.start |> Maybe.map Scale.toCssString |> Maybe.withDefault "none")
 
                                         Builder.ProcessedRotateConfig cfg ->
-                                            "rot" ++ String.fromInt cfg.duration ++ Rotate.toCssString cfg.end
+                                            "rot-" ++ String.fromInt cfg.duration ++ "-" ++ String.fromInt cfg.delay ++ "-" ++ Rotate.toCssString cfg.end ++ "-" ++ (cfg.start |> Maybe.map Rotate.toCssString |> Maybe.withDefault "none")
 
                                         Builder.ProcessedBackgroundColorConfig cfg ->
-                                            "background-color" ++ String.fromInt cfg.duration ++ Color.toCssString cfg.end
+                                            "bg-" ++ String.fromInt cfg.duration ++ "-" ++ String.fromInt cfg.delay ++ "-" ++ Color.toCssString cfg.end ++ "-" ++ (cfg.start |> Maybe.map Color.toCssString |> Maybe.withDefault "none")
 
                                         Builder.ProcessedFontColorConfig cfg ->
-                                            "color" ++ String.fromInt cfg.duration ++ Color.toCssString cfg.end
+                                            "color-" ++ String.fromInt cfg.duration ++ "-" ++ String.fromInt cfg.delay ++ "-" ++ Color.toCssString cfg.end ++ "-" ++ (cfg.start |> Maybe.map Color.toCssString |> Maybe.withDefault "none")
 
                                         Builder.ProcessedOpacityConfig cfg ->
-                                            "opacity" ++ String.fromInt cfg.duration ++ Opacity.toString cfg.end
+                                            "opacity-" ++ String.fromInt cfg.duration ++ "-" ++ String.fromInt cfg.delay ++ "-" ++ Opacity.toString cfg.end ++ "-" ++ (cfg.start |> Maybe.map Opacity.toString |> Maybe.withDefault "none")
 
                                         Builder.ProcessedSizeConfig cfg ->
-                                            "size" ++ String.fromInt cfg.duration ++ Size.toString cfg.end
+                                            "size-" ++ String.fromInt cfg.duration ++ "-" ++ String.fromInt cfg.delay ++ "-" ++ Size.toString cfg.end ++ "-" ++ (cfg.start |> Maybe.map Size.toString |> Maybe.withDefault "none")
                                 )
-                            |> String.join ""
+                            |> String.join "-"
                        )
 
-            simpleHash =
+            -- Better hash function to reduce collisions
+            betterHash =
                 contentForHash
                     |> String.toList
-                    |> List.map Char.toCode
-                    |> List.sum
-                    |> modBy 999999
+                    |> List.foldl
+                        (\char acc ->
+                            let
+                                code =
+                                    Char.toCode char
+                            in
+                            -- Polynomial rolling hash with prime multiplier
+                            (acc * 31 + code) |> modBy 1000000007
+                        )
+                        0
 
             animationName =
-                elementId ++ "-anim-" ++ String.fromInt simpleHash
+                elementId ++ "-anim-" ++ String.fromInt betterHash
 
             keyframesString =
                 buildKeyframesString animationName keyframeSteps
