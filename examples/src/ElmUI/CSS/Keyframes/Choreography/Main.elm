@@ -28,6 +28,7 @@ import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.CSS as CSS
 import Anim.Property.Position as Position
 import Browser exposing (Document)
+import Common.Animations.Choreography as Choreography
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, alignLeft, centerX, centerY, column, el, fill, height, htmlAttribute, layout, maximum, padding, paddingXY, paragraph, px, rgb255, row, spacing, text, width)
@@ -96,24 +97,7 @@ update msg model =
                         |> CSS.builder
                         |> CSS.duration 800
                         |> CSS.easing Easing.QuadInOut
-                        |> Position.for "elementA"
-                        |> Position.toXY 80 60
-                        |> Position.build
-                        |> Position.for "elementB"
-                        |> Position.toXY 320 80
-                        |> Position.build
-                        |> Position.for "elementC"
-                        |> Position.toXY 40 300
-                        |> Position.build
-                        |> Position.for "elementD"
-                        |> Position.toXY 380 260
-                        |> Position.build
-                        |> Position.for "elementE"
-                        |> Position.toXY 60 120
-                        |> Position.build
-                        |> Position.for "elementF"
-                        |> Position.toXY 350 320
-                        |> Position.build
+                        |> Choreography.scatterFormation
                         |> CSS.animate
               }
             , Cmd.none
@@ -126,64 +110,20 @@ update msg model =
                         |> CSS.builder
                         |> CSS.duration 600
                         |> CSS.easing Easing.QuadInOut
-                        |> Position.for "elementA"
-                        |> Position.toXY 0 0
-                        |> Position.build
-                        |> Position.for "elementB"
-                        |> Position.toXY 0 0
-                        |> Position.build
-                        |> Position.for "elementC"
-                        |> Position.toXY 0 0
-                        |> Position.build
-                        |> Position.for "elementD"
-                        |> Position.toXY 0 0
-                        |> Position.build
-                        |> Position.for "elementE"
-                        |> Position.toXY 0 0
-                        |> Position.build
-                        |> Position.for "elementF"
-                        |> Position.toXY 0 0
-                        |> Position.build
+                        |> Choreography.resetToOrigin
                         |> CSS.animate
               }
             , Cmd.none
             )
 
         CircleFormation ->
-            let
-                centerX =
-                    225
-
-                centerY =
-                    180
-
-                radius =
-                    90
-            in
             ( { model
                 | animations =
                     model.animations
                         |> CSS.builder
                         |> CSS.duration 1000
                         |> CSS.easing BackInOut
-                        |> Position.for "elementA"
-                        |> Position.toXY (toFloat (centerX + round radius)) (toFloat centerY)
-                        |> Position.build
-                        |> Position.for "elementB"
-                        |> Position.toXY (toFloat (centerX + round (radius * 0.5))) (toFloat (centerY + round (radius * 0.866)))
-                        |> Position.build
-                        |> Position.for "elementC"
-                        |> Position.toXY (toFloat (centerX - round (radius * 0.5))) (toFloat (centerY + round (radius * 0.866)))
-                        |> Position.build
-                        |> Position.for "elementD"
-                        |> Position.toXY (toFloat (centerX - round radius)) (toFloat centerY)
-                        |> Position.build
-                        |> Position.for "elementE"
-                        |> Position.toXY (toFloat (centerX - round (radius * 0.5))) (toFloat (centerY - round (radius * 0.866)))
-                        |> Position.build
-                        |> Position.for "elementF"
-                        |> Position.toXY (toFloat (centerX + round (radius * 0.5))) (toFloat (centerY - round (radius * 0.866)))
-                        |> Position.build
+                        |> Choreography.circleFormation
                         |> CSS.animate
               }
             , Cmd.none

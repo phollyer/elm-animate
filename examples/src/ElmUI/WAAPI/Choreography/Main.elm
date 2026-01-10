@@ -30,6 +30,7 @@ import Anim.Easing as Easing
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Position as Position
 import Browser exposing (Document)
+import Common.Animations.Choreography as Choreography
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, alignLeft, centerX, centerY, column, el, fill, height, htmlAttribute, layout, maximum, padding, paddingXY, paragraph, px, rgb255, row, spacing, text, width)
@@ -99,206 +100,44 @@ update msg model =
     case msg of
         ScatterElements ->
             let
-                -- Animate each element to scattered positions
-                ( state1, cmd1 ) =
-                    let
-                        builder =
-                            WAAPI.builder model.animState
-                                |> WAAPI.duration 1000
-                                |> WAAPI.easing Easing.EaseInOut
-                                |> Position.for "elementA"
-                                |> Position.toXY 70 250
-                                |> Position.build
-
-                        ( newState, encodedValue ) =
-                            WAAPI.animate model.animState builder
-                    in
-                    ( newState, animateElement encodedValue )
-
-                ( state2, cmd2 ) =
-                    let
-                        builder =
-                            WAAPI.builder state1
-                                |> WAAPI.duration 1000
-                                |> WAAPI.easing Easing.EaseInOut
-                                |> Position.for "elementB"
-                                |> Position.toXY 220 280
-                                |> Position.build
-
-                        ( newState, encodedValue ) =
-                            WAAPI.animate state1 builder
-                    in
-                    ( newState, animateElement encodedValue )
-
-                ( state3, cmd3 ) =
-                    let
-                        builder =
-                            WAAPI.builder state2
-                                |> WAAPI.duration 1000
-                                |> WAAPI.easing Easing.EaseInOut
-                                |> Position.for "elementC"
-                                |> Position.toXY 370 260
-                                |> Position.build
-
-                        ( newState, encodedValue ) =
-                            WAAPI.animate state2 builder
-                    in
-                    ( newState, animateElement encodedValue )
-
-                ( state4, cmd4 ) =
-                    let
-                        builder =
-                            WAAPI.builder state3
-                                |> WAAPI.duration 1000
-                                |> WAAPI.easing Easing.EaseInOut
-                                |> Position.for "elementD"
-                                |> Position.toXY 50 50
-                                |> Position.build
-
-                        ( newState, encodedValue ) =
-                            WAAPI.animate state3 builder
-                    in
-                    ( newState, animateElement encodedValue )
-
-                ( state5, cmd5 ) =
-                    let
-                        builder =
-                            WAAPI.builder state4
-                                |> WAAPI.duration 1000
-                                |> WAAPI.easing Easing.EaseInOut
-                                |> Position.for "elementE"
-                                |> Position.toXY 200 80
-                                |> Position.build
-
-                        ( newState, encodedValue ) =
-                            WAAPI.animate state4 builder
-                    in
-                    ( newState, animateElement encodedValue )
-
-                ( finalState, cmd6 ) =
-                    let
-                        builder =
-                            WAAPI.builder state5
-                                |> WAAPI.duration 1000
-                                |> WAAPI.easing Easing.EaseInOut
-                                |> Position.for "elementF"
-                                |> Position.toXY 350 60
-                                |> Position.build
-
-                        ( newState, encodedValue ) =
-                            WAAPI.animate state5 builder
-                    in
-                    ( newState, animateElement encodedValue )
+                ( newAnimState, encodedValue ) =
+                    model.animState
+                        |> WAAPI.builder
+                        |> WAAPI.duration 1000
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Choreography.scatterFormation
+                        |> WAAPI.animate model.animState
             in
-            ( { model | animState = finalState }
-            , Cmd.batch [ cmd1, cmd2, cmd3, cmd4, cmd5, cmd6 ]
+            ( { model | animState = newAnimState }
+            , animateElement encodedValue
             )
 
         CircleFormation ->
             let
-                -- Circle formation: elements arranged in a circle
-                centerX_ =
-                    200
-
-                centerY_ =
-                    175
-
-                radius =
-                    120
-
-                angleStep =
-                    2 * pi / 6
-
-                createCircleAnimation index elementId state =
-                    let
-                        angle =
-                            toFloat index * angleStep
-
-                        x =
-                            centerX_ + radius * cos angle
-
-                        y =
-                            centerY_ + radius * sin angle
-
-                        builder =
-                            WAAPI.builder state
-                                |> WAAPI.duration 1000
-                                |> WAAPI.easing Easing.EaseInOut
-                                |> Position.for elementId
-                                |> Position.toXY x y
-                                |> Position.build
-
-                        ( newState, encodedValue ) =
-                            WAAPI.animate state builder
-                    in
-                    ( newState, animateElement encodedValue )
-
-                ( state1, cmd1 ) =
-                    createCircleAnimation 0 "elementA" model.animState
-
-                ( state2, cmd2 ) =
-                    createCircleAnimation 1 "elementB" state1
-
-                ( state3, cmd3 ) =
-                    createCircleAnimation 2 "elementC" state2
-
-                ( state4, cmd4 ) =
-                    createCircleAnimation 3 "elementD" state3
-
-                ( state5, cmd5 ) =
-                    createCircleAnimation 4 "elementE" state4
-
-                ( finalState, cmd6 ) =
-                    createCircleAnimation 5 "elementF" state5
+                ( newAnimState, encodedValue ) =
+                    model.animState
+                        |> WAAPI.builder
+                        |> WAAPI.duration 1000
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Choreography.circleFormation
+                        |> WAAPI.animate model.animState
             in
-            ( { model | animState = finalState }
-            , Cmd.batch [ cmd1, cmd2, cmd3, cmd4, cmd5, cmd6 ]
+            ( { model | animState = newAnimState }
+            , animateElement encodedValue
             )
 
         ResetPositions ->
             let
-                -- Grid formation: elements in 2x3 grid
-                createGridAnimation row col elementId state =
-                    let
-                        x =
-                            toFloat (50 + col * 150)
-
-                        y =
-                            toFloat (50 + row * 150)
-
-                        builder =
-                            WAAPI.builder state
-                                |> WAAPI.duration 1000
-                                |> WAAPI.easing Easing.EaseInOut
-                                |> Position.for elementId
-                                |> Position.toXY x y
-                                |> Position.build
-
-                        ( newState, encodedValue ) =
-                            WAAPI.animate state builder
-                    in
-                    ( newState, animateElement encodedValue )
-
-                ( state1, cmd1 ) =
-                    createGridAnimation 0 0 "elementA" model.animState
-
-                ( state2, cmd2 ) =
-                    createGridAnimation 0 1 "elementB" state1
-
-                ( state3, cmd3 ) =
-                    createGridAnimation 0 2 "elementC" state2
-
-                ( state4, cmd4 ) =
-                    createGridAnimation 1 0 "elementD" state3
-
-                ( state5, cmd5 ) =
-                    createGridAnimation 1 1 "elementE" state4
-
-                ( finalState, cmd6 ) =
-                    createGridAnimation 1 2 "elementF" state5
+                ( newAnimState, encodedValue ) =
+                    model.animState
+                        |> WAAPI.builder
+                        |> WAAPI.duration 600
+                        |> WAAPI.easing Easing.EaseInOut
+                        |> Choreography.resetToOrigin
+                        |> WAAPI.animate model.animState
             in
-            ( { model | animState = finalState }
-            , Cmd.batch [ cmd1, cmd2, cmd3, cmd4, cmd5, cmd6 ]
+            ( { model | animState = newAnimState }
+            , animateElement encodedValue
             )
 
 

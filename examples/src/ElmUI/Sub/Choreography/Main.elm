@@ -30,6 +30,7 @@ import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.Sub as Sub
 import Anim.Property.Position as Position
 import Browser exposing (Document)
+import Common.Animations.Choreography as Choreography
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, alignLeft, centerX, centerY, column, el, fill, height, htmlAttribute, layout, maximum, padding, paddingXY, paragraph, px, rgb255, row, spacing, text, width)
@@ -95,36 +96,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Position.for "elementA"
-                        |> Position.toXY 80 60
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
-                        |> Position.build
-                        |> Position.for "elementB"
-                        |> Position.toXY 320 80
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
-                        |> Position.build
-                        |> Position.for "elementC"
-                        |> Position.toXY 40 300
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
-                        |> Position.build
-                        |> Position.for "elementD"
-                        |> Position.toXY 380 260
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
-                        |> Position.build
-                        |> Position.for "elementE"
-                        |> Position.toXY 60 120
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
-                        |> Position.build
-                        |> Position.for "elementF"
-                        |> Position.toXY 350 320
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
-                        |> Position.build
+                        |> Choreography.scatterFormation
                         |> Sub.animate
               }
             , Cmd.none
@@ -135,86 +107,18 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Position.for "elementA"
-                        |> Position.toXY 0 0
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
-                        |> Position.build
-                        |> Position.for "elementB"
-                        |> Position.toXY 0 0
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
-                        |> Position.build
-                        |> Position.for "elementC"
-                        |> Position.toXY 0 0
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
-                        |> Position.build
-                        |> Position.for "elementD"
-                        |> Position.toXY 0 0
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
-                        |> Position.build
-                        |> Position.for "elementE"
-                        |> Position.toXY 0 0
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
-                        |> Position.build
-                        |> Position.for "elementF"
-                        |> Position.toXY 0 0
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
-                        |> Position.build
+                        |> Choreography.resetToOrigin
                         |> Sub.animate
               }
             , Cmd.none
             )
 
         CircleFormation ->
-            let
-                centerX =
-                    225
-
-                centerY =
-                    180
-
-                radius =
-                    90
-            in
             ( { model
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Position.for "elementA"
-                        |> Position.toXY (centerX + radius) (toFloat centerY)
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
-                        |> Position.build
-                        |> Position.for "elementB"
-                        |> Position.toXY (centerX + radius * 0.5) (toFloat centerY + radius * 0.866)
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
-                        |> Position.build
-                        |> Position.for "elementC"
-                        |> Position.toXY (centerX - radius * 0.5) (toFloat centerY + radius * 0.866)
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
-                        |> Position.build
-                        |> Position.for "elementD"
-                        |> Position.toXY (centerX - radius) (toFloat centerY)
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
-                        |> Position.build
-                        |> Position.for "elementE"
-                        |> Position.toXY (centerX - radius * 0.5) (toFloat centerY - radius * 0.866)
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
-                        |> Position.build
-                        |> Position.for "elementF"
-                        |> Position.toXY (centerX + radius * 0.5) (toFloat centerY - radius * 0.866)
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
-                        |> Position.build
+                        |> Choreography.circleFormation
                         |> Sub.animate
               }
             , Cmd.none
