@@ -1367,11 +1367,21 @@ stopElement elementId (AnimState state) =
             AnimState state
 
         Just elementAnim ->
-            -- Set each property's elapsedMs to totalDurationMs to jump to end
+            -- Set each property's elapsedMs to totalDurationMs and currentStepIndex to last frame
             let
                 updatedProperties =
                     List.map
-                        (\prop -> { prop | elapsedMs = prop.totalDurationMs, isComplete = True })
+                        (\prop ->
+                            let
+                                lastFrameIndex =
+                                    max 0 (List.length prop.animationSteps - 1)
+                            in
+                            { prop
+                                | elapsedMs = prop.totalDurationMs
+                                , currentStepIndex = lastFrameIndex
+                                , isComplete = True
+                            }
+                        )
                         elementAnim.properties
 
                 updatedAnim =

@@ -44,7 +44,7 @@ Control running animations with stop, reset, restart, pause, and resume function
   - **reset**: Instantly jumps back to the animation's start state.
   - **restart**: Restarts the animation from the beginning.
   - **pause**: Pauses all running animations by stopping subscription updates.
-    Animation state is preserved.
+    Animation state is preserved at current position.
   - **resume**: Resumes paused animations by restarting subscription updates.
 
 @docs stop, reset, restart, pause, resume
