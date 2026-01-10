@@ -142,9 +142,15 @@ update msg model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animState = WAAPI.init
-      }
-    , Cmd.none
+    let
+        ( initialAnimState, initCmd ) =
+            WAAPI.init
+                |> WAAPI.builder
+                |> Rotate.initXYZ "box" 0 0 0
+                |> WAAPI.animate WAAPI.init
+    in
+    ( { animState = initialAnimState }
+    , animateElement initCmd
     )
 
 

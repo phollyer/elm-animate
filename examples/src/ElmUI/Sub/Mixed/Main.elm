@@ -25,6 +25,7 @@ import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
 import Anim.Property.Size as Size
 import Browser exposing (Document)
+import Common.Animations.Mixed as Mixed
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
@@ -65,30 +66,12 @@ init _ =
     ( { animations =
             Sub.init
                 |> Sub.builder
-                |> Position.for "mixed-box"
-                |> Position.toXY 0 0
-                |> Position.duration 0
-                |> Position.build
-                |> Scale.for "mixed-box"
-                |> Scale.toXY 1.0 1.0
-                |> Scale.duration 0
-                |> Scale.build
-                |> Size.for "mixed-box"
-                |> Size.toHW 80 80
-                |> Size.duration 0
-                |> Size.build
-                |> Rotate.for "mixed-box"
-                |> Rotate.toZ 0
-                |> Rotate.duration 0
-                |> Rotate.build
-                |> Opacity.for "mixed-box"
-                |> Opacity.to 1.0
-                |> Opacity.duration 0
-                |> Opacity.build
-                |> Color.for "mixed-box"
-                |> Color.to (Anim.Color.fromHsl { h = 207 / 360, s = 0.9, l = 0.54 })
-                |> Color.duration 0
-                |> Color.build
+                |> Position.initXY "mixed-box" 0 0
+                |> Scale.initXY "mixed-box" 1.0 1.0
+                |> Size.initWH "mixed-box" 80 80
+                |> Rotate.initZ "mixed-box" 0
+                |> Opacity.init "mixed-box" 1.0
+                |> Color.init "mixed-box" (Anim.Color.fromHsl { h = 207 / 360, s = 0.9, l = 0.54 })
                 |> Sub.animate
       }
     , Cmd.none
@@ -117,23 +100,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Position.for elementId
-                        |> Position.toXY 200 100
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseIn
-                        |> Position.build
-                        |> Rotate.for elementId
-                        |> Rotate.delay 500
-                        |> Rotate.toZ 90
-                        |> Rotate.speed 120.0
-                        |> Rotate.easing Easing.BounceOut
-                        |> Rotate.build
-                        |> Scale.for elementId
-                        |> Scale.delay 2000
-                        |> Scale.toXY 1.5 1.9
-                        |> Scale.speed 2.0
-                        |> Scale.easing Easing.BounceOut
-                        |> Scale.build
+                        |> Mixed.moveScaleRotate elementId
                         |> Sub.animate
               }
             , Cmd.none
@@ -144,16 +111,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Opacity.for elementId
-                        |> Opacity.to 0.3
-                        |> Opacity.speed 2.0
-                        |> Opacity.easing Easing.EaseOut
-                        |> Opacity.build
-                        |> Position.for elementId
-                        |> Position.toXY 250 80
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseOut
-                        |> Position.build
+                        |> Mixed.fadeMove elementId
                         |> Sub.animate
               }
             , Cmd.none
@@ -164,21 +122,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Rotate.for elementId
-                        |> Rotate.toZ 180
-                        |> Rotate.speed 180.0
-                        |> Rotate.easing Easing.EaseInOut
-                        |> Rotate.build
-                        |> Scale.for elementId
-                        |> Scale.toXY 0.8 0.8
-                        |> Scale.speed 1.5
-                        |> Scale.easing Easing.EaseInOut
-                        |> Scale.build
-                        |> Color.for elementId
-                        |> Color.to (Anim.Color.fromHsl { h = 351 / 360, s = 0.83, l = 0.61 })
-                        |> Color.speed 300.0
-                        |> Color.easing Easing.EaseOut
-                        |> Color.build
+                        |> Mixed.spinScaleColor elementId
                         |> Sub.animate
               }
             , Cmd.none
@@ -189,21 +133,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Color.for elementId
-                        |> Color.to (Anim.Color.fromHsl { h = 142 / 360, s = 0.71, l = 0.45 })
-                        |> Color.speed 300.0
-                        |> Color.easing Easing.EaseInOut
-                        |> Color.build
-                        |> Size.for elementId
-                        |> Size.toHW 100 100
-                        |> Size.duration 2000
-                        |> Size.easing Easing.EaseOut
-                        |> Size.build
-                        |> Opacity.for elementId
-                        |> Opacity.to 0.8
-                        |> Opacity.speed 1.5
-                        |> Opacity.easing Easing.EaseOut
-                        |> Opacity.build
+                        |> Mixed.colorSizeOpacity elementId
                         |> Sub.animate
               }
             , Cmd.none
@@ -214,36 +144,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Position.for elementId
-                        |> Position.toXY 200 200
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseInOut
-                        |> Position.build
-                        |> Scale.for elementId
-                        |> Scale.toXY 1.3 1.3
-                        |> Scale.speed 1.5
-                        |> Scale.easing Easing.EaseOut
-                        |> Scale.build
-                        |> Size.for elementId
-                        |> Size.toHW 120 120
-                        |> Size.duration 2000
-                        |> Size.easing Easing.EaseInOut
-                        |> Size.build
-                        |> Rotate.for elementId
-                        |> Rotate.toZ 270
-                        |> Rotate.speed 180.0
-                        |> Rotate.easing Easing.EaseInOut
-                        |> Rotate.build
-                        |> Opacity.for elementId
-                        |> Opacity.to 0.7
-                        |> Opacity.speed 1.0
-                        |> Opacity.easing Easing.EaseOut
-                        |> Opacity.build
-                        |> Color.for elementId
-                        |> Color.to (Anim.Color.fromHsl { h = 351 / 360, s = 0.83, l = 0.61 })
-                        |> Color.speed 300.0
-                        |> Color.easing Easing.EaseOut
-                        |> Color.build
+                        |> Mixed.allProperties elementId
                         |> Sub.animate
               }
             , Cmd.none
@@ -254,36 +155,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Position.for "mixed-box"
-                        |> Position.toXY 0 0
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.BounceOut
-                        |> Position.build
-                        |> Scale.for "mixed-box"
-                        |> Scale.toXY 1.0 1.0
-                        |> Scale.speed 1.5
-                        |> Scale.easing Easing.EaseInOut
-                        |> Scale.build
-                        |> Size.for "mixed-box"
-                        |> Size.toHW 80 80
-                        |> Size.speed 2000
-                        |> Size.easing Easing.EaseInOut
-                        |> Size.build
-                        |> Rotate.for "mixed-box"
-                        |> Rotate.toZ 0
-                        |> Rotate.speed 180.0
-                        |> Rotate.easing Easing.EaseInOut
-                        |> Rotate.build
-                        |> Opacity.for "mixed-box"
-                        |> Opacity.to 1.0
-                        |> Opacity.speed 1.5
-                        |> Opacity.easing Easing.EaseInOut
-                        |> Opacity.build
-                        |> Color.for "mixed-box"
-                        |> Color.to (Anim.Color.fromHsl { h = 207 / 360, s = 0.9, l = 0.54 })
-                        |> Color.speed 300.0
-                        |> Color.easing Easing.EaseOut
-                        |> Color.build
+                        |> Mixed.resetAll "mixed-box"
                         |> Sub.animate
               }
             , Cmd.none

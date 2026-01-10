@@ -28,6 +28,7 @@ import Anim.Engine.CSS as CSS
 import Anim.Property.Position as Position
 import Anim.Property.Rotate as Rotate
 import Browser exposing (Document)
+import Common.Animations.Cube as Cube
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, padding, px, spacing, text, width)
@@ -77,7 +78,12 @@ type Msg
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animState = CSS.init
+    ( { animState =
+            CSS.init
+                |> CSS.builder
+                |> Position.initZ "cube" 0
+                |> Rotate.initXYZ "cube" 0 0 0
+                |> CSS.animate
       , perspectiveValue = 1000
       , zPosition = 0
       , rotateX = 0
@@ -103,14 +109,7 @@ update msg model =
                 newAnimState =
                     model.animState
                         |> CSS.builder
-                        |> Position.for "cube"
-                        |> Position.duration 0
-                        |> Position.toZ value
-                        |> Position.build
-                        |> Rotate.for "cube"
-                        |> Rotate.duration 0
-                        |> Rotate.toXYZ model.rotateX model.rotateY model.rotateZ
-                        |> Rotate.build
+                        |> Cube.setCubeTransform "cube" value model.rotateX model.rotateY model.rotateZ
                         |> CSS.animate
             in
             ( { model | animState = newAnimState, zPosition = value }, Cmd.none )
@@ -120,14 +119,7 @@ update msg model =
                 newAnimState =
                     model.animState
                         |> CSS.builder
-                        |> Position.for "cube"
-                        |> Position.duration 0
-                        |> Position.toZ model.zPosition
-                        |> Position.build
-                        |> Rotate.for "cube"
-                        |> Rotate.duration 0
-                        |> Rotate.toXYZ value model.rotateY model.rotateZ
-                        |> Rotate.build
+                        |> Cube.setCubeTransform "cube" model.zPosition value model.rotateY model.rotateZ
                         |> CSS.animate
             in
             ( { model | animState = newAnimState, rotateX = value }, Cmd.none )
@@ -137,14 +129,7 @@ update msg model =
                 newAnimState =
                     model.animState
                         |> CSS.builder
-                        |> Position.for "cube"
-                        |> Position.duration 0
-                        |> Position.toZ model.zPosition
-                        |> Position.build
-                        |> Rotate.for "cube"
-                        |> Rotate.duration 0
-                        |> Rotate.toXYZ model.rotateX value model.rotateZ
-                        |> Rotate.build
+                        |> Cube.setCubeTransform "cube" model.zPosition model.rotateX value model.rotateZ
                         |> CSS.animate
             in
             ( { model | animState = newAnimState, rotateY = value }, Cmd.none )
@@ -154,14 +139,7 @@ update msg model =
                 newAnimState =
                     model.animState
                         |> CSS.builder
-                        |> Position.for "cube"
-                        |> Position.duration 0
-                        |> Position.toZ model.zPosition
-                        |> Position.build
-                        |> Rotate.for "cube"
-                        |> Rotate.duration 0
-                        |> Rotate.toXYZ model.rotateX model.rotateY value
-                        |> Rotate.build
+                        |> Cube.setCubeTransform "cube" model.zPosition model.rotateX model.rotateY value
                         |> CSS.animate
             in
             ( { model | animState = newAnimState, rotateZ = value }, Cmd.none )

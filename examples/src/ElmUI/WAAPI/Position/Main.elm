@@ -82,10 +82,17 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animationState = WAAPI.init
+    let
+        ( initialAnimState, initCmd ) =
+            WAAPI.init
+                |> WAAPI.builder
+                |> Position.initXY "box" 0 0
+                |> WAAPI.animate WAAPI.init
+    in
+    ( { animationState = initialAnimState
       , isAnimating = False
       }
-    , Cmd.none
+    , animateElement initCmd
     )
 
 

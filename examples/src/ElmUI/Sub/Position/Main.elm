@@ -68,9 +68,7 @@ init _ =
     ( { animations =
             Sub.init
                 |> Sub.builder
-                |> Position.for "box"
-                |> Position.toXY 0 0
-                |> Position.build
+                |> Position.initXY "box" 0 0
                 |> Sub.animate
       }
     , Cmd.none

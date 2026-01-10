@@ -70,11 +70,6 @@ init _ =
             CSS.init
                 |> CSS.builder
                 |> Color.init elementId (Anim.Color.fromRgba { r = 149, g = 165, b = 166, a = 1 })
-                |> CSS.speed 100
-                |> CSS.easing Easing.BounceOut
-                |> Color.for elementId
-                |> Color.to (Anim.Color.fromRgb { r = 149, g = 165, b = 166 })
-                |> Color.build
                 |> CSS.animate
       }
     , Cmd.none

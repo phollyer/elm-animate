@@ -65,8 +65,15 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animState = WAAPI.init }
-    , Cmd.none
+    let
+        ( initialAnimState, initCmd ) =
+            WAAPI.init
+                |> WAAPI.builder
+                |> Opacity.init "box" 1.0
+                |> WAAPI.animate WAAPI.init
+    in
+    ( { animState = initialAnimState }
+    , animateElement initCmd
     )
 
 

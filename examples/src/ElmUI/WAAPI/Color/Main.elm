@@ -15,6 +15,7 @@ FEATURES:
 
 -}
 
+import Anim.Color
 import Anim.Easing as Easing
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.BackgroundColor as Color
@@ -67,9 +68,15 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animState = WAAPI.init
-      }
-    , Cmd.none
+    let
+        ( initialAnimState, initCmd ) =
+            WAAPI.init
+                |> WAAPI.builder
+                |> Color.init "box" (Anim.Color.fromRgba { r = 149, g = 165, b = 166, a = 1 })
+                |> WAAPI.animate WAAPI.init
+    in
+    ( { animState = initialAnimState }
+    , animateElement initCmd
     )
 
 

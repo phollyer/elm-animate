@@ -25,6 +25,7 @@ import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
 import Anim.Property.Size as Size
 import Browser exposing (Document)
+import Common.Animations.Mixed as Mixed
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)

@@ -17,6 +17,7 @@ FEATURES:
 
 import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.Sub as Sub
+import Anim.Property.Scale as Scale
 import Browser exposing (Document)
 import Browser.Events
 import Common.Animations.Scale as Animations
@@ -57,7 +58,12 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Sub.init }
+    ( { animations =
+            Sub.init
+                |> Sub.builder
+                |> Scale.initXY "box" 1.0 1.0
+                |> Sub.animate
+      }
     , Cmd.none
     )
 
