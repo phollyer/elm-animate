@@ -62,7 +62,6 @@ type alias Model =
     , isAnimating : Bool
     , eventLog : List EventLogEntry
     , eventCounter : Int
-    , currentTime : Int
     }
 
 
@@ -95,7 +94,6 @@ init _ =
       , isAnimating = False
       , eventLog = []
       , eventCounter = 0
-      , currentTime = 0
       }
     , Cmd.none
     )
@@ -119,7 +117,6 @@ type Msg
     | OnAnimationEnd
     | OnAnimationIteration
     | OnAnimationCancel
-    | Tick Time.Posix
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -190,11 +187,6 @@ update msg model =
             , Cmd.none
             )
 
-        Tick time ->
-            ( { model | currentTime = Time.posixToMillis time }
-            , Cmd.none
-            )
-
 
 addEventToLog : EventType -> String -> Model -> Model
 addEventToLog eventType description model =
@@ -202,7 +194,7 @@ addEventToLog eventType description model =
         newEntry =
             { id = model.eventCounter
             , eventType = eventType
-            , timestamp = model.currentTime
+            , timestamp = 0 -- Not displayed, so not needed
             , description = description
             }
 
@@ -223,7 +215,7 @@ addEventToLog eventType description model =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Time.every 100 Tick
+    Sub.none
 
 
 
