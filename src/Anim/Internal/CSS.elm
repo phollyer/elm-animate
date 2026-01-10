@@ -43,6 +43,8 @@ module Anim.Internal.CSS exposing
     , pauseAnimation
     , perspective
     , perspectiveStyles
+    , resetAnimation
+    , restartAnimation
     , resumeAnimation
     , speed
     , stopAnimation
@@ -54,9 +56,10 @@ import Anim.Internal.Builders.Property as Property
 import Anim.Internal.CSS.KeyframeAnimation as KeyframeAnimation exposing (KeyframeAnimation)
 import Anim.Internal.CSS.Transform as Transforms
 import Anim.Internal.CSS.Transition as Transitions
+import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Color as Color exposing (Color(..))
 import Anim.Internal.Properties.Opacity as Opacity
-import Anim.Internal.Properties.Position exposing (Position)
+import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
@@ -715,11 +718,21 @@ transformOrderToString order =
 generateElementAnimation : Maybe (List TransformOrder) -> String -> Builder.ElementConfig -> ElementAnimation
 generateElementAnimation maybeOrder elementId elementConfig =
     let
+        _ =
+            Debug.log ("🎨 generateElementAnimation for " ++ elementId ++ " with properties") elementConfig.properties
+
         transforms =
             case maybeOrder of
                 Nothing ->
                     -- Use default ordering: Position -> Rotate -> Scale
-                    Transforms.generate elementConfig.properties
+                    let
+                        result =
+                            Transforms.generate elementConfig.properties
+
+                        _ =
+                            Debug.log ("🎨 Generated transforms for " ++ elementId) result
+                    in
+                    result
 
                 Just order ->
                     -- Use custom ordering
@@ -730,7 +743,14 @@ generateElementAnimation maybeOrder elementId elementConfig =
                     Transforms.generateWithOrder orderStrings elementConfig.properties
 
         transitions =
-            Transitions.generate elementConfig.properties
+            let
+                result =
+                    Transitions.generate elementConfig.properties
+
+                _ =
+                    Debug.log ("🎨 Generated transitions for " ++ elementId) result
+            in
+            result
 
         colorStyles =
             List.filterMap
@@ -763,6 +783,9 @@ generateElementAnimation maybeOrder elementId elementConfig =
                 ++ colorStyles
                 ++ opacityStyles
                 |> List.filter (\( _, value ) -> not (String.isEmpty value))
+
+        _ =
+            Debug.log ("🎨 Final styles for " ++ elementId) allStyles
     in
     { styles = allStyles
     , animationLayers = KeyframeAnimation.generate elementId elementConfig.properties
@@ -829,34 +852,30 @@ resumeAnimation elementId (AnimState state) =
     AnimState { state | elementAnimations = updatedAnimations }
 
 
-{-| Stop an animation by creating a 1ms transition to the current position.
-This effectively cancels any running animation and triggers appropriate CSS events.
+{-| Stop an animation by jumping to its end state with a 0ms transition.
 -}
 stopAnimation : String -> AnimState -> AnimState
 stopAnimation elementId animState =
     let
-        -- Get current state for this element
-        currentState =
-            getState elementId animState
-                |> Maybe.withDefault NotStarted
+        _ =
+            Debug.log "🛑 STOP called for elementId" elementId
 
-        -- Helper to get current value based on state
-        getCurrentOr : Maybe a -> a -> a
-        getCurrentOr maybeStart endValue =
-            case currentState of
-                NotStarted ->
-                    -- Use start if available, else default
-                    Maybe.withDefault endValue maybeStart
+        posRange =
+            getPositionRange elementId animState
 
-                _ ->
-                    -- Running or Complete: use end value
-                    endValue
+        _ =
+            Debug.log "🛑 Position range" posRange
+
+        -- Helper to always use the end value
+        getEndValue : Maybe a -> a -> a
+        getEndValue _ endValue =
+            endValue
 
         -- Start with a fresh builder with 1ms duration for the element
         baseBuilder =
             animState
                 |> builder
-                |> Builder.duration 1
+                |> Builder.duration 0
                 |> easing Anim.Easing.Linear
                 |> Builder.for elementId
 
@@ -864,39 +883,48 @@ stopAnimation elementId animState =
         withAllProperties =
             baseBuilder
                 |> addPropertyIfExists
-                    (getPositionRange elementId animState)
+                    posRange
                     (\range ->
                         let
-                            currentPos =
-                                getCurrentOr range.start range.end
+                            endPos =
+                                range.end
+
+                            _ =
+                                Debug.log "🛑 Creating Position config with end" endPos
+
+                            config =
+                                Builder.PositionConfig
+                                    { start = Just endPos
+                                    , end = endPos
+                                    , duration = 0
+                                    , speed = 0
+                                    , distance = 0
+                                    , timing = Just (Duration 0)
+                                    , easing = Just Anim.Easing.Linear
+                                    , delay = Nothing
+                                    , perspective = Nothing
+                                    , isDirty = True
+                                    }
+
+                            _ =
+                                Debug.log "🛑 Position config created" config
                         in
-                        Builder.PositionConfig
-                            { start = Just currentPos
-                            , end = currentPos
-                            , duration = 1
-                            , speed = 0
-                            , distance = 0
-                            , timing = Just (Duration 1)
-                            , easing = Just Anim.Easing.Linear
-                            , delay = Nothing
-                            , perspective = Nothing
-                            , isDirty = True
-                            }
+                        config
                     )
                 |> addPropertyIfExists
                     (getScaleRange elementId animState)
                     (\range ->
                         let
-                            currentScale =
-                                getCurrentOr range.start range.end
+                            endScale =
+                                range.end
                         in
                         Builder.ScaleConfig
-                            { start = Just currentScale
-                            , end = currentScale
-                            , duration = 1
+                            { start = Just endScale
+                            , end = endScale
+                            , duration = 0
                             , speed = 0
                             , distance = 0
-                            , timing = Just (Duration 1)
+                            , timing = Just (Duration 0)
                             , easing = Just Anim.Easing.Linear
                             , delay = Nothing
                             , perspective = Nothing
@@ -907,16 +935,16 @@ stopAnimation elementId animState =
                     (getRotateRange elementId animState)
                     (\range ->
                         let
-                            currentRotate =
-                                getCurrentOr range.start range.end
+                            endRotate =
+                                range.end
                         in
                         Builder.RotateConfig
-                            { start = Just currentRotate
-                            , end = currentRotate
-                            , duration = 1
+                            { start = Just endRotate
+                            , end = endRotate
+                            , duration = 0
                             , speed = 0
                             , distance = 0
-                            , timing = Just (Duration 1)
+                            , timing = Just (Duration 0)
                             , easing = Just Anim.Easing.Linear
                             , delay = Nothing
                             , perspective = Nothing
@@ -927,16 +955,16 @@ stopAnimation elementId animState =
                     (getOpacityRange elementId animState)
                     (\range ->
                         let
-                            currentOpacity =
-                                getCurrentOr range.start range.end
+                            endOpacity =
+                                range.end
                         in
                         Builder.OpacityConfig
-                            { start = Just currentOpacity
-                            , end = currentOpacity
-                            , duration = 1
+                            { start = Just endOpacity
+                            , end = endOpacity
+                            , duration = 0
                             , speed = 0
                             , distance = 0
-                            , timing = Just (Duration 1)
+                            , timing = Just (Duration 0)
                             , easing = Just Anim.Easing.Linear
                             , delay = Nothing
                             , perspective = Nothing
@@ -947,16 +975,16 @@ stopAnimation elementId animState =
                     (getBackgroundColorRange elementId animState)
                     (\range ->
                         let
-                            currentColor =
-                                getCurrentOr range.start range.end
+                            endColor =
+                                range.end
                         in
                         Builder.BackgroundColorConfig
-                            { start = Just currentColor
-                            , end = currentColor
-                            , duration = 1
+                            { start = Just endColor
+                            , end = endColor
+                            , duration = 0
                             , speed = 0
                             , distance = 0
-                            , timing = Just (Duration 1)
+                            , timing = Just (Duration 0)
                             , easing = Just Anim.Easing.Linear
                             , delay = Nothing
                             , perspective = Nothing
@@ -967,16 +995,180 @@ stopAnimation elementId animState =
                     (getSizeRange elementId animState)
                     (\range ->
                         let
-                            currentSize =
-                                getCurrentOr range.start range.end
+                            endSize =
+                                range.end
                         in
                         Builder.SizeConfig
-                            { start = Just currentSize
-                            , end = currentSize
-                            , duration = 1
+                            { start = Just endSize
+                            , end = endSize
+                            , duration = 0
                             , speed = 0
                             , distance = 0
-                            , timing = Just (Duration 1)
+                            , timing = Just (Duration 0)
+                            , easing = Just Anim.Easing.Linear
+                            , delay = Nothing
+                            , perspective = Nothing
+                            , isDirty = True
+                            }
+                    )
+
+        -- Helper function to add a property if it exists
+        addPropertyIfExists : Maybe a -> (a -> Builder.PropertyConfig) -> Builder.AnimBuilder -> Builder.AnimBuilder
+        addPropertyIfExists maybeRange toConfig builder_ =
+            case maybeRange of
+                Just range ->
+                    Property.add (toConfig range) builder_
+
+                Nothing ->
+                    builder_
+
+        _ =
+            Debug.log "🛑 About to call animate with builder" withAllProperties
+
+        result =
+            animate withAllProperties
+
+        _ =
+            Debug.log "🛑 Animate returned, checking styles" (getElementStyles elementId result)
+    in
+    result
+
+
+{-| Reset an animation by jumping to its start state with a 0ms transition.
+-}
+resetAnimation : String -> AnimState -> AnimState
+resetAnimation elementId animState =
+    let
+        -- Helper to always use the start value (or default if not provided)
+        getStartValue : Maybe a -> a -> a
+        getStartValue maybeStart defaultValue =
+            Maybe.withDefault defaultValue maybeStart
+
+        -- Start with a fresh builder with 0ms duration for the element
+        baseBuilder =
+            animState
+                |> builder
+                |> Builder.duration 0
+                |> easing Anim.Easing.Linear
+                |> Builder.for elementId
+
+        -- Build new animation with all start values using Property.add
+        withAllProperties =
+            baseBuilder
+                |> addPropertyIfExists
+                    (getPositionRange elementId animState)
+                    (\range ->
+                        let
+                            startPos =
+                                getStartValue range.start Position.default
+                        in
+                        Builder.PositionConfig
+                            { start = Just startPos
+                            , end = startPos
+                            , duration = 0
+                            , speed = 0
+                            , distance = 0
+                            , timing = Just (Duration 0)
+                            , easing = Just Anim.Easing.Linear
+                            , delay = Nothing
+                            , perspective = Nothing
+                            , isDirty = True
+                            }
+                    )
+                |> addPropertyIfExists
+                    (getScaleRange elementId animState)
+                    (\range ->
+                        let
+                            startScale =
+                                getStartValue range.start (Scale.fromUniform 1.0)
+                        in
+                        Builder.ScaleConfig
+                            { start = Just startScale
+                            , end = startScale
+                            , duration = 0
+                            , speed = 0
+                            , distance = 0
+                            , timing = Just (Duration 0)
+                            , easing = Just Anim.Easing.Linear
+                            , delay = Nothing
+                            , perspective = Nothing
+                            , isDirty = True
+                            }
+                    )
+                |> addPropertyIfExists
+                    (getRotateRange elementId animState)
+                    (\range ->
+                        let
+                            startRotate =
+                                getStartValue range.start Rotate.default
+                        in
+                        Builder.RotateConfig
+                            { start = Just startRotate
+                            , end = startRotate
+                            , duration = 0
+                            , speed = 0
+                            , distance = 0
+                            , timing = Just (Duration 0)
+                            , easing = Just Anim.Easing.Linear
+                            , delay = Nothing
+                            , perspective = Nothing
+                            , isDirty = True
+                            }
+                    )
+                |> addPropertyIfExists
+                    (getOpacityRange elementId animState)
+                    (\range ->
+                        let
+                            startOpacity =
+                                getStartValue range.start Opacity.default
+                        in
+                        Builder.OpacityConfig
+                            { start = Just startOpacity
+                            , end = startOpacity
+                            , duration = 0
+                            , speed = 0
+                            , distance = 0
+                            , timing = Just (Duration 0)
+                            , easing = Just Anim.Easing.Linear
+                            , delay = Nothing
+                            , perspective = Nothing
+                            , isDirty = True
+                            }
+                    )
+                |> addPropertyIfExists
+                    (getBackgroundColorRange elementId animState)
+                    (\range ->
+                        let
+                            startColor =
+                                getStartValue range.start BackgroundColor.default
+                        in
+                        Builder.BackgroundColorConfig
+                            { start = Just startColor
+                            , end = startColor
+                            , duration = 0
+                            , speed = 0
+                            , distance = 0
+                            , timing = Just (Duration 0)
+                            , easing = Just Anim.Easing.Linear
+                            , delay = Nothing
+                            , perspective = Nothing
+                            , isDirty = True
+                            }
+                    )
+                |> addPropertyIfExists
+                    (getSizeRange elementId animState)
+                    (\range ->
+                        let
+                            startSize =
+                                getStartValue range.start Size.default
+                        in
+                        Builder.SizeConfig
+                            { start = Just startSize
+                            , end = startSize
+                            , duration = 0
+                            , speed = 0
+                            , distance = 0
+                            , timing = Just (Duration 0)
                             , easing = Just Anim.Easing.Linear
                             , delay = Nothing
                             , perspective = Nothing
@@ -995,3 +1187,23 @@ stopAnimation elementId animState =
                     builder_
     in
     animate withAllProperties
+
+
+{-| Restart an animation from the beginning.
+-}
+restartAnimation : String -> AnimState -> AnimState
+restartAnimation elementId animState =
+    case getElementAnimation elementId animState of
+        Nothing ->
+            animState
+
+        Just animation ->
+            -- Mark the element as NotStarted to re-trigger the animation
+            let
+                (AnimState state) =
+                    animState
+
+                updatedElements =
+                    Dict.insert elementId NotStarted state.elementStates
+            in
+            AnimState { state | elementStates = updatedElements }

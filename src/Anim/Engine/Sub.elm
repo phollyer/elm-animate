@@ -1,7 +1,7 @@
 module Anim.Engine.Sub exposing
     ( AnimState, init, AnimBuilder, builder
     , animate
-    , stop, pause, resume
+    , stop, reset, restart, pause, resume
     , AnimationMsg, update, subscriptions
     , htmlAttributes
     , perspective
@@ -36,18 +36,18 @@ subscriptions for smooth, controlled animations.
 
 # Animation Control
 
-Control running animations with stop, pause, and resume functionality.
+Control running animations with stop, reset, restart, pause, and resume functionality.
 
 **Subscription Animation Behavior:**
 
-  - **stop**: Immediately stops all animations by clearing the animation state.
-    Animation elements remain at their current interpolated positions.
-  - **pause**: Pauses all running animations by stopping the subscription updates.
-    Animation state is preserved and can be resumed.
+  - **stop**: Instantly jumps to the animation's end state.
+  - **reset**: Instantly jumps back to the animation's start state.
+  - **restart**: Restarts the animation from the beginning.
+  - **pause**: Pauses all running animations by stopping subscription updates.
+    Animation state is preserved.
   - **resume**: Resumes paused animations by restarting subscription updates.
-    Animations continue from where they were paused.
 
-@docs stop, pause, resume
+@docs stop, reset, restart, pause, resume
 
 
 # Update
@@ -785,10 +785,7 @@ htmlAttributes =
 -- ANIMATION CONTROL
 
 
-{-| Stop all running animations immediately.
-
-Animation elements remain at their current interpolated positions.
-This effectively clears the animation queue and stops all subscription updates.
+{-| Stop an animation by instantly jumping to its end state.
 
     stoppedAnimations =
         Sub.stop "my-element" model.animations
@@ -799,10 +796,31 @@ stop elementId animState =
     InternalSub.stopElement elementId animState
 
 
+{-| Reset an animation by instantly jumping back to its start state.
+
+    resetAnimations =
+        Sub.reset "my-element" model.animations
+
+-}
+reset : String -> AnimState -> AnimState
+reset elementId animState =
+    InternalSub.resetElement elementId animState
+
+
+{-| Restart an animation from the beginning.
+
+    restartedAnimations =
+        Sub.restart "my-element" model.animations
+
+-}
+restart : String -> AnimState -> AnimState
+restart elementId animState =
+    InternalSub.restartElement elementId animState
+
+
 {-| Pause all running animations.
 
 Animation state is preserved and can be resumed later.
-This stops subscription updates while maintaining current animation progress.
 
     pausedAnimations =
         Sub.pause "my-element" model.animations
@@ -816,7 +834,6 @@ pause elementId animState =
 {-| Resume paused animations.
 
 Animations continue from where they were paused.
-This restarts subscription updates for the specified element.
 
     resumedAnimations =
         Sub.resume "my-element" model.animations

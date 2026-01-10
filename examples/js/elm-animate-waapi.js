@@ -730,19 +730,55 @@ window.ElmAnimateWAAPI = (function () {
     /**
      * Stop animation for specific element
      */
+    /**
+     * Stop animation by jumping to end state
+     */
     function stopAnimation(elementId) {
         const animations = activeAnimations.get(elementId);
         if (animations) {
             if (Array.isArray(animations)) {
                 animations.forEach(animation => {
-                    // Just cancel without committing - let the next animation
-                    // read from getComputedStyle which includes animation state
-                    animation.cancel();
+                    animation.finish(); // Jump to end state
+                });
+            } else {
+                animations.finish();
+            }
+            activeAnimations.delete(elementId);
+        }
+    }
+
+    /**
+     * Reset animation by jumping to start state
+     */
+    function resetAnimation(elementId) {
+        const animations = activeAnimations.get(elementId);
+        if (animations) {
+            if (Array.isArray(animations)) {
+                animations.forEach(animation => {
+                    animation.cancel(); // Cancel to jump to start
                 });
             } else {
                 animations.cancel();
             }
             activeAnimations.delete(elementId);
+        }
+    }
+
+    /**
+     * Restart animation from beginning
+     */
+    function restartAnimation(elementId) {
+        const animations = activeAnimations.get(elementId);
+        if (animations) {
+            if (Array.isArray(animations)) {
+                animations.forEach(animation => {
+                    animation.cancel(); // Cancel first
+                    animation.play();   // Then replay
+                });
+            } else {
+                animations.cancel();
+                animations.play();
+            }
         }
     }
 
@@ -793,9 +829,13 @@ window.ElmAnimateWAAPI = (function () {
         // Subscribe to animation commands from Elm
         if (ports.animateElement && ports.animateElement.subscribe) {
             ports.animateElement.subscribe(function (animationData) {
-                // Check if this is a control command (stop/pause/resume)
+                // Check if this is a control command (stop/reset/restart/pause/resume)
                 if (animationData.type === 'stop') {
                     stopAnimation(animationData.elementId);
+                } else if (animationData.type === 'reset') {
+                    resetAnimation(animationData.elementId);
+                } else if (animationData.type === 'restart') {
+                    restartAnimation(animationData.elementId);
                 } else if (animationData.type === 'pause') {
                     pauseAnimation(animationData.elementId);
                 } else if (animationData.type === 'resume') {
@@ -830,6 +870,8 @@ window.ElmAnimateWAAPI = (function () {
         // Expose utilities for advanced usage
         getCurrentTransform: getCurrentTransform,
         stopAnimation: stopAnimation,
+        resetAnimation: resetAnimation,
+        restartAnimation: restartAnimation,
         pauseAnimation: pauseAnimation,
         resumeAnimation: resumeAnimation,
         activeAnimations: activeAnimations,

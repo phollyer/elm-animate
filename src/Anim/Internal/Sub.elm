@@ -26,6 +26,8 @@ module Anim.Internal.Sub exposing
     , isAnimationRunning
     , isComplete
     , pauseElement
+    , resetElement
+    , restartElement
     , resumeElement
     , speed
     , stopElement
@@ -1356,14 +1358,96 @@ getLastStep steps =
 -- ANIMATION CONTROL
 
 
-{-| Stop animation for a specific element by removing it from element animations
+{-| Stop animation by jumping to its end state.
 -}
 stopElement : String -> AnimState -> AnimState
 stopElement elementId (AnimState state) =
-    AnimState { state | elementAnimations = Dict.remove elementId state.elementAnimations }
+    case Dict.get elementId state.elementAnimations of
+        Nothing ->
+            AnimState state
+
+        Just elementAnim ->
+            -- Set each property's elapsedMs to totalDurationMs to jump to end
+            let
+                updatedProperties =
+                    List.map
+                        (\prop -> { prop | elapsedMs = prop.totalDurationMs, isComplete = True })
+                        elementAnim.properties
+
+                updatedAnim =
+                    { elementAnim | properties = updatedProperties, isComplete = True }
+
+                updatedDict =
+                    Dict.insert elementId updatedAnim state.elementAnimations
+            in
+            AnimState { state | elementAnimations = updatedDict }
 
 
-{-| Pause animation for a specific element by setting its isPaused flag
+{-| Reset animation by jumping to its start state.
+-}
+resetElement : String -> AnimState -> AnimState
+resetElement elementId (AnimState state) =
+    case Dict.get elementId state.elementAnimations of
+        Nothing ->
+            AnimState state
+
+        Just elementAnim ->
+            -- Set each property's elapsedMs to 0 and reset to first step
+            let
+                updatedProperties =
+                    List.map
+                        (\prop ->
+                            { prop
+                                | elapsedMs = 0
+                                , currentStepIndex = 0
+                                , currentDelayFrame = 0
+                                , isComplete = False
+                            }
+                        )
+                        elementAnim.properties
+
+                updatedAnim =
+                    { elementAnim | properties = updatedProperties, isComplete = False }
+
+                updatedDict =
+                    Dict.insert elementId updatedAnim state.elementAnimations
+            in
+            AnimState { state | elementAnimations = updatedDict }
+
+
+{-| Restart animation from the beginning.
+-}
+restartElement : String -> AnimState -> AnimState
+restartElement elementId (AnimState state) =
+    case Dict.get elementId state.elementAnimations of
+        Nothing ->
+            AnimState state
+
+        Just elementAnim ->
+            -- Set each property's elapsedMs to 0 and reset to first step
+            let
+                updatedProperties =
+                    List.map
+                        (\prop ->
+                            { prop
+                                | elapsedMs = 0
+                                , currentStepIndex = 0
+                                , currentDelayFrame = 0
+                                , isComplete = False
+                            }
+                        )
+                        elementAnim.properties
+
+                updatedAnim =
+                    { elementAnim | properties = updatedProperties, isComplete = False }
+
+                updatedDict =
+                    Dict.insert elementId updatedAnim state.elementAnimations
+            in
+            AnimState { state | elementAnimations = updatedDict }
+
+
+{-| Pause animation for a specific element by setting global isRunning flag.
 -}
 pauseElement : String -> AnimState -> AnimState
 pauseElement elementId (AnimState state) =
@@ -1372,7 +1456,7 @@ pauseElement elementId (AnimState state) =
     AnimState { state | isRunning = False }
 
 
-{-| Resume animation for a specific element by clearing its isPaused flag
+{-| Resume animation for a specific element by setting global isRunning flag.
 -}
 resumeElement : String -> AnimState -> AnimState
 resumeElement elementId (AnimState state) =

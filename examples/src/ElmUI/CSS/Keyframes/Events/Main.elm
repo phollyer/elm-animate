@@ -278,7 +278,7 @@ viewContent model =
       UI.wrappedButtonRow
         [ ( UI.Primary, MoveToCorner, "Move to Corner" )
         , ( UI.Success, MoveToCenter, "Move to Center" )
-        , ( UI.Purple, StopAnimation, "Return to Origin" )
+        , ( UI.Purple, StopAnimation, "Stop Animation" )
         ]
     , -- Animation area with moving box
       el

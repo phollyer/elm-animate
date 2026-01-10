@@ -3,8 +3,8 @@ module Anim.Engine.CSS exposing
     , keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
     , animationStyleAttribute, animationStyleAttributeWithEvents
     , AnimState, init, AnimBuilder, builder
-    , animate, TransformOrder(..), animateOrder
-    , stop, pause, resume
+    , animate, TransformOrder, animateOrder
+    , stop, reset, restart, pause, resume
     , perspective
     , perspectiveStyles, perspectiveWith
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
@@ -83,18 +83,21 @@ apply the generated HTML attributes to your elements.
 
 # Animation Control
 
-Control running animations with stop, pause, and resume functionality.
+Control running animations with stop, reset, restart, pause, and resume functionality.
 
 **CSS Animation Behavior:**
 
-  - **stop**: Immediately stops the animation by creating a 1ms transition to the current position.
-    This effectively cancels the running animation and triggers `transitionend`/`animationend` events.
-  - **pause**: Uses CSS `animation-play-state: paused` to pause keyframe animations in place.
-    Note: This only works with keyframe animations, not CSS transitions.
-  - **resume**: Uses CSS `animation-play-state: running` to resume paused keyframe animations.
-    Note: This only works with keyframe animations, not CSS transitions.
+  - **stop**: Instantly jumps to the animation's end state by creating a 1ms transition.
+    Triggers `transitionend`/`animationend` events.
+  - **reset**: Instantly jumps back to the animation's start state by creating a 1ms transition.
+    Triggers `transitionend`/`animationend` events.
+  - **restart**: Restarts the animation from the beginning by re-running the full animation.
+  - **pause**: Uses CSS `animation-play-state: paused` to freeze keyframe animations mid-flight.
+    Note: Only works with keyframe animations, not CSS transitions.
+  - **resume**: Uses CSS `animation-play-state: running` to continue paused keyframe animations.
+    Note: Only works with keyframe animations, not CSS transitions.
 
-@docs stop, pause, resume
+@docs stop, reset, restart, pause, resume
 
 
 # 3D Animations
@@ -1210,18 +1213,41 @@ onAnimationCancel =
 -- ANIMATION CONTROL
 
 
-{-| Stop a running animation by immediately transitioning to the current position.
+{-| Stop a running animation by instantly jumping to its end state.
 
-This creates a 1ms transition to the element's current position, effectively
-cancelling any running animation and triggering appropriate CSS events.
+This creates a 1ms CSS transition to the end position, effectively completing
+the animation immediately.
 
-    stoppedAnimations =
-        CSS.stop "my-element" model.animations
+    CSS.stop "my-element" model.animations
 
 -}
 stop : String -> AnimState -> AnimState
 stop elementId animState =
     InternalCSS.stopAnimation elementId animState
+
+
+{-| Reset an animation by instantly jumping back to its start state.
+
+This creates a 1ms CSS transition to the start position.
+
+    CSS.reset "my-element" model.animations
+
+-}
+reset : String -> AnimState -> AnimState
+reset elementId animState =
+    InternalCSS.resetAnimation elementId animState
+
+
+{-| Restart an animation from the beginning.
+
+This re-runs the full animation from start to end.
+
+    CSS.restart "my-element" model.animations
+
+-}
+restart : String -> AnimState -> AnimState
+restart elementId animState =
+    InternalCSS.restartAnimation elementId animState
 
 
 {-| Pause a running keyframe animation using CSS animation-play-state.

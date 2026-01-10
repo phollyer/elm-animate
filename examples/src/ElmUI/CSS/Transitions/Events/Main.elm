@@ -108,6 +108,11 @@ anim animations =
         |> Position.for "event-box"
 
 
+elementId : String
+elementId =
+    "event-box"
+
+
 type Msg
     = MoveToCorner
     | MoveToCenter
@@ -154,14 +159,8 @@ update msg model =
 
         StopAnimation ->
             ( { model
-                | animations =
-                    model.animations
-                        |> anim
-                        |> Position.toXY 0 0
-                        |> Position.easing ElasticInOut
-                        |> Position.build
-                        |> CSS.animate
-                , isAnimating = True
+                | animations = CSS.stop elementId model.animations
+                , isAnimating = False
               }
             , Cmd.none
             )
@@ -172,25 +171,25 @@ update msg model =
             )
 
         OnTransitionStart ->
-            ( addEventToLog TransitionStart "Animation started" model
+            ( addEventToLog TransitionStart "Animations started" model
             , Cmd.none
             )
 
         OnTransitionEnd ->
             ( model
-                |> addEventToLog TransitionEnd "Animation completed"
+                |> addEventToLog TransitionEnd "Animations completed"
                 |> (\m -> { m | isAnimating = False })
             , Cmd.none
             )
 
         OnTransitionRun ->
-            ( addEventToLog TransitionRun "Animation is running" model
+            ( addEventToLog TransitionRun "Animations are running" model
             , Cmd.none
             )
 
         OnTransitionCancel ->
             ( model
-                |> addEventToLog TransitionCancel "Animation was cancelled"
+                |> addEventToLog TransitionCancel "Animations were cancelled"
                 |> (\m -> { m | isAnimating = False })
             , Cmd.none
             )
@@ -282,7 +281,7 @@ viewContent model =
       UI.wrappedButtonRow
         [ ( UI.Primary, MoveToCorner, "Move to Corner" )
         , ( UI.Success, MoveToCenter, "Move to Center" )
-        , ( UI.Purple, StopAnimation, "Return to Origin" )
+        , ( UI.Purple, StopAnimation, "Stop Animation" )
         ]
     , -- Animation area with moving box
       el

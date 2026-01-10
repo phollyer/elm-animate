@@ -8,13 +8,13 @@ module Anim.Engine.WAAPI exposing
     , easing
     , delay
     , anyRunning, isRunning, allComplete, isComplete
+    , stop, reset, restart, pause, resume
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
     , getStartOpacity, getEndOpacity, getCurrentOpacity
     , getStartPosition, getEndPosition, getCurrentPosition
     , getStartRotate, getEndRotate, getCurrentRotate
     , getStartScale, getEndScale, getCurrentScale
     , getStartSize, getEndSize, getCurrentSize
-    , pause, resume, stop
     )
 
 {-| Ports-based animation system utilising the Web Animations API with optional state tracking.
@@ -100,6 +100,11 @@ These settings will be used for all animations unless overridden on a per-animat
 # Querying Animation State
 
 @docs anyRunning, isRunning, allComplete, isComplete
+
+
+# Control Running Animations
+
+@docs stop, reset, restart, pause, resume
 
 
 # Querying Animated Properties
@@ -383,18 +388,9 @@ fireAndForget =
 -- Animation Control
 
 
-{-| Control running animations with stop, pause, and resume functionality.
+{-| Stop an animation by instantly jumping to its end state.
 
-**Web Animations API Behavior:**
-
-  - **stop**: Cancels the Web Animation immediately. Elements remain at their current animated positions.
-    This calls the native `Animation.cancel()` method in the browser.
-  - **pause**: Pauses the Web Animation using the native `Animation.pause()` method.
-    Animation timeline stops but state is preserved.
-  - **resume**: Resumes paused animations using the native `Animation.play()` method.
-    Animation continues from where it was paused.
-
-All control functions return encoded commands to send to JavaScript via ports.
+Sends a command to JavaScript to call the native `Animation.finish()` method.
 
 -}
 stop : String -> AnimState -> ( AnimState, Encode.Value )
@@ -409,6 +405,42 @@ stop elementId animState =
     ( animState, command )
 
 
+{-| Reset an animation by instantly jumping back to its start state.
+
+Sends a command to JavaScript to cancel and reset the animation.
+
+-}
+reset : String -> AnimState -> ( AnimState, Encode.Value )
+reset elementId animState =
+    let
+        command =
+            Encode.object
+                [ ( "type", Encode.string "reset" )
+                , ( "elementId", Encode.string elementId )
+                ]
+    in
+    ( animState, command )
+
+
+{-| Restart an animation from the beginning.
+
+Sends a command to JavaScript to cancel and replay the animation.
+
+-}
+restart : String -> AnimState -> ( AnimState, Encode.Value )
+restart elementId animState =
+    let
+        command =
+            Encode.object
+                [ ( "type", Encode.string "restart" )
+                , ( "elementId", Encode.string elementId )
+                ]
+    in
+    ( animState, command )
+
+
+{-| Pause a running animation for a specific element.
+-}
 pause : String -> AnimState -> ( AnimState, Encode.Value )
 pause elementId animState =
     let
@@ -421,6 +453,8 @@ pause elementId animState =
     ( animState, command )
 
 
+{-| Resume a paused animation for a specific element.
+-}
 resume : String -> AnimState -> ( AnimState, Encode.Value )
 resume elementId animState =
     let

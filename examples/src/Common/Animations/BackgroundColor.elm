@@ -23,7 +23,7 @@ changeToBlue elementId builder =
     builder
         |> ColorBuilder.for elementId
         |> ColorBuilder.to Color.blue
-        |> ColorBuilder.duration 1000
+        |> ColorBuilder.duration 0
         |> ColorBuilder.easing Easing.EaseInOut
         |> ColorBuilder.build
 
@@ -35,7 +35,7 @@ changeToGreen elementId builder =
     builder
         |> ColorBuilder.for elementId
         |> ColorBuilder.to Color.green
-        |> ColorBuilder.duration 1000
+        |> ColorBuilder.duration 0
         |> ColorBuilder.easing Easing.EaseInOut
         |> ColorBuilder.build
 
@@ -47,7 +47,7 @@ changeToOrange elementId builder =
     builder
         |> ColorBuilder.for elementId
         |> ColorBuilder.to (Color.fromRgb { r = 243, g = 156, b = 18 })
-        |> ColorBuilder.duration 1000
+        |> ColorBuilder.duration 0
         |> ColorBuilder.easing Easing.EaseInOut
         |> ColorBuilder.build
 
@@ -59,7 +59,7 @@ changeToRed elementId builder =
     builder
         |> ColorBuilder.for elementId
         |> ColorBuilder.to Color.red
-        |> ColorBuilder.duration 1000
+        |> ColorBuilder.duration 0
         |> ColorBuilder.easing Easing.EaseInOut
         |> ColorBuilder.build
 
@@ -71,7 +71,7 @@ changeToPurple elementId builder =
     builder
         |> ColorBuilder.for elementId
         |> ColorBuilder.to (Color.fromRgb { r = 155, g = 89, b = 182 })
-        |> ColorBuilder.duration 1000
+        |> ColorBuilder.duration 0
         |> ColorBuilder.easing Easing.EaseInOut
         |> ColorBuilder.build
 
@@ -83,6 +83,6 @@ resetColor elementId builder =
     builder
         |> ColorBuilder.for elementId
         |> ColorBuilder.to (Color.fromRgb { r = 149, g = 165, b = 166 })
-        |> ColorBuilder.duration 1000
+        |> ColorBuilder.duration 0
         |> ColorBuilder.easing Easing.EaseInOut
         |> ColorBuilder.build
