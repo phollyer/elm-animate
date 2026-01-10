@@ -4,6 +4,7 @@ module Anim.Internal.CSS.KeyframeAnimation exposing
     , toAttributeString
     )
 
+import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Easing as Easing
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
@@ -122,6 +123,29 @@ generate elementId properties =
                                 totalTime =
                                     globalProgress * toFloat totalAnimationTime
 
+                                -- Helper function to calculate progress for any property
+                                calculateProgress : Int -> Int -> Easing -> Float
+                                calculateProgress delay duration easing =
+                                    let
+                                        linearProgress =
+                                            if totalTime < toFloat delay then
+                                                -- Still in delay phase, no progress
+                                                0
+
+                                            else if duration == 0 then
+                                                -- Instant animation after delay
+                                                1.0
+
+                                            else
+                                                -- Animation phase: (totalTime - delay) / duration
+                                                let
+                                                    animationTime =
+                                                        totalTime - toFloat delay
+                                                in
+                                                clamp 0 1 (animationTime / toFloat duration)
+                                    in
+                                    Easing.toFunction easing linearProgress
+
                                 -- Collect transform components using canonical ordering pattern
                                 transformParts =
                                     processedProps
@@ -130,36 +154,8 @@ generate elementId properties =
                                                 case p of
                                                     Builder.ProcessedPositionConfig cfg ->
                                                         let
-                                                            dur =
-                                                                cfg.duration
-
-                                                            delay =
-                                                                cfg.delay
-
-                                                            -- Calculate progress considering individual delay
-                                                            linearProgress =
-                                                                if totalTime < toFloat delay then
-                                                                    -- Still in delay phase, no progress
-                                                                    0
-
-                                                                else if dur == 0 then
-                                                                    -- Instant animation after delay
-                                                                    1.0
-
-                                                                else
-                                                                    -- Animation phase: (totalTime - delay) / duration
-                                                                    let
-                                                                        animationTime =
-                                                                            totalTime - toFloat delay
-                                                                    in
-                                                                    clamp 0 1 (animationTime / toFloat dur)
-
-                                                            -- Apply easing to the linear progress
-                                                            easingFunction =
-                                                                Easing.toFunction cfg.easing
-
-                                                            propProgress =
-                                                                easingFunction linearProgress
+                                                            progress =
+                                                                calculateProgress cfg.delay cfg.duration cfg.easing
 
                                                             startPos =
                                                                 case cfg.start of
@@ -167,48 +163,17 @@ generate elementId properties =
                                                                         s
 
                                                                     Nothing ->
-                                                                        Position.fromTuple ( 0.0, 0.0 )
-
-                                                            endPos =
-                                                                cfg.end
+                                                                        Position.default
 
                                                             interpolatedPos =
-                                                                Position.interpolate propProgress startPos endPos
+                                                                Position.interpolate progress startPos cfg.end
                                                         in
                                                         { acc | position = "translate3d(" ++ Position.toCssString interpolatedPos ++ ")" }
 
                                                     Builder.ProcessedRotateConfig cfg ->
                                                         let
-                                                            dur =
-                                                                cfg.duration
-
-                                                            delay =
-                                                                cfg.delay
-
-                                                            -- Calculate progress considering individual delay
-                                                            linearProgress =
-                                                                if totalTime < toFloat delay then
-                                                                    -- Still in delay phase, no progress
-                                                                    0
-
-                                                                else if dur == 0 then
-                                                                    -- Instant animation after delay
-                                                                    1.0
-
-                                                                else
-                                                                    -- Animation phase: (totalTime - delay) / duration
-                                                                    let
-                                                                        animationTime =
-                                                                            totalTime - toFloat delay
-                                                                    in
-                                                                    clamp 0 1 (animationTime / toFloat dur)
-
-                                                            -- Apply easing to the linear progress
-                                                            easingFunction =
-                                                                Easing.toFunction cfg.easing
-
-                                                            propProgress =
-                                                                easingFunction linearProgress
+                                                            progress =
+                                                                calculateProgress cfg.delay cfg.duration cfg.easing
 
                                                             startRot =
                                                                 case cfg.start of
@@ -216,63 +181,17 @@ generate elementId properties =
                                                                         s
 
                                                                     Nothing ->
-                                                                        Rotate.fromTriple ( 0.0, 0.0, 0.0 )
-
-                                                            endRot =
-                                                                cfg.end
-
-                                                            ( startX, startY, startZ ) =
-                                                                Rotate.toTriple startRot
-
-                                                            ( endX, endY, endZ ) =
-                                                                Rotate.toTriple endRot
-
-                                                            interpolatedX =
-                                                                startX + (endX - startX) * propProgress
-
-                                                            interpolatedY =
-                                                                startY + (endY - startY) * propProgress
-
-                                                            interpolatedZ =
-                                                                startZ + (endZ - startZ) * propProgress
+                                                                        Rotate.default
 
                                                             interpolatedRot =
-                                                                Rotate.fromTriple ( interpolatedX, interpolatedY, interpolatedZ )
+                                                                Rotate.interpolate progress startRot cfg.end
                                                         in
                                                         { acc | rotate = Rotate.to3DCssString interpolatedRot }
 
                                                     Builder.ProcessedScaleConfig cfg ->
                                                         let
-                                                            dur =
-                                                                cfg.duration
-
-                                                            delay =
-                                                                cfg.delay
-
-                                                            -- Calculate progress considering individual delay
-                                                            linearProgress =
-                                                                if totalTime < toFloat delay then
-                                                                    -- Still in delay phase, no progress
-                                                                    0
-
-                                                                else if dur == 0 then
-                                                                    -- Instant animation after delay
-                                                                    1.0
-
-                                                                else
-                                                                    -- Animation phase: (totalTime - delay) / duration
-                                                                    let
-                                                                        animationTime =
-                                                                            totalTime - toFloat delay
-                                                                    in
-                                                                    clamp 0 1 (animationTime / toFloat dur)
-
-                                                            -- Apply easing to the linear progress
-                                                            easingFunction =
-                                                                Easing.toFunction cfg.easing
-
-                                                            propProgress =
-                                                                easingFunction linearProgress
+                                                            progress =
+                                                                calculateProgress cfg.delay cfg.duration cfg.easing
 
                                                             startScale =
                                                                 case cfg.start of
@@ -280,25 +199,10 @@ generate elementId properties =
                                                                         s
 
                                                                     Nothing ->
-                                                                        Scale.fromTuple ( 1.0, 1.0 )
-
-                                                            endScale =
-                                                                cfg.end
-
-                                                            ( startX, startY ) =
-                                                                Scale.toTuple startScale
-
-                                                            ( endX, endY ) =
-                                                                Scale.toTuple endScale
-
-                                                            interpolatedX =
-                                                                startX + (endX - startX) * propProgress
-
-                                                            interpolatedY =
-                                                                startY + (endY - startY) * propProgress
+                                                                        Scale.default
 
                                                             interpolatedScale =
-                                                                Scale.fromTuple ( interpolatedX, interpolatedY )
+                                                                Scale.interpolate progress startScale cfg.end
                                                         in
                                                         { acc | scale = "scale(" ++ Scale.toCssString interpolatedScale ++ ")" }
 
@@ -327,36 +231,8 @@ generate elementId properties =
                                                 case p of
                                                     Builder.ProcessedBackgroundColorConfig cfg ->
                                                         let
-                                                            dur =
-                                                                cfg.duration
-
-                                                            delay =
-                                                                cfg.delay
-
-                                                            -- Calculate progress considering individual delay
-                                                            linearProgress =
-                                                                if totalTime < toFloat delay then
-                                                                    -- Still in delay phase, no progress
-                                                                    0
-
-                                                                else if dur == 0 then
-                                                                    -- Instant animation after delay
-                                                                    1.0
-
-                                                                else
-                                                                    -- Animation phase: (totalTime - delay) / duration
-                                                                    let
-                                                                        animationTime =
-                                                                            totalTime - toFloat delay
-                                                                    in
-                                                                    clamp 0 1 (animationTime / toFloat dur)
-
-                                                            -- Apply easing to the linear progress
-                                                            easingFunction =
-                                                                Easing.toFunction cfg.easing
-
-                                                            propProgress =
-                                                                easingFunction linearProgress
+                                                            progress =
+                                                                calculateProgress cfg.delay cfg.duration cfg.easing
 
                                                             startColor =
                                                                 case cfg.start of
@@ -366,47 +242,16 @@ generate elementId properties =
                                                                     Nothing ->
                                                                         BackgroundColor.default
 
-                                                            endColor =
-                                                                cfg.end
-
                                                             interpolatedColor =
-                                                                Color.interpolate startColor endColor propProgress
+                                                                Color.interpolate startColor cfg.end progress
                                                         in
                                                         Just
                                                             [ ( "background-color", Color.toCssString interpolatedColor ) ]
 
                                                     Builder.ProcessedOpacityConfig cfg ->
                                                         let
-                                                            dur =
-                                                                cfg.duration
-
-                                                            delay =
-                                                                cfg.delay
-
-                                                            -- Calculate progress considering individual delay
-                                                            linearProgress =
-                                                                if totalTime < toFloat delay then
-                                                                    -- Still in delay phase, no progress
-                                                                    0
-
-                                                                else if dur == 0 then
-                                                                    -- Instant animation after delay
-                                                                    1.0
-
-                                                                else
-                                                                    -- Animation phase: (totalTime - delay) / duration
-                                                                    let
-                                                                        animationTime =
-                                                                            totalTime - toFloat delay
-                                                                    in
-                                                                    clamp 0 1 (animationTime / toFloat dur)
-
-                                                            -- Apply easing to the linear progress
-                                                            easingFunction =
-                                                                Easing.toFunction cfg.easing
-
-                                                            propProgress =
-                                                                easingFunction linearProgress
+                                                            progress =
+                                                                calculateProgress cfg.delay cfg.duration cfg.easing
 
                                                             startOpacity =
                                                                 case cfg.start of
@@ -414,58 +259,18 @@ generate elementId properties =
                                                                         s
 
                                                                     Nothing ->
-                                                                        Opacity.fromFloat 1.0
-
-                                                            endOpacity =
-                                                                cfg.end
-
-                                                            startValue =
-                                                                Opacity.toFloat startOpacity
-
-                                                            endValue =
-                                                                Opacity.toFloat endOpacity
-
-                                                            interpolatedValue =
-                                                                startValue + (endValue - startValue) * propProgress
+                                                                        Opacity.default
 
                                                             interpolatedOpacity =
-                                                                Opacity.fromFloat interpolatedValue
+                                                                Opacity.interpolate progress startOpacity cfg.end
                                                         in
                                                         Just
                                                             [ ( "opacity", Opacity.toString interpolatedOpacity ) ]
 
                                                     Builder.ProcessedSizeConfig cfg ->
                                                         let
-                                                            dur =
-                                                                cfg.duration
-
-                                                            delay =
-                                                                cfg.delay
-
-                                                            -- Calculate progress considering individual delay
-                                                            linearProgress =
-                                                                if totalTime < toFloat delay then
-                                                                    -- Still in delay phase, no progress
-                                                                    0
-
-                                                                else if dur == 0 then
-                                                                    -- Instant animation after delay
-                                                                    1.0
-
-                                                                else
-                                                                    -- Animation phase: (totalTime - delay) / duration
-                                                                    let
-                                                                        animationTime =
-                                                                            totalTime - toFloat delay
-                                                                    in
-                                                                    clamp 0 1 (animationTime / toFloat dur)
-
-                                                            -- Apply easing to the linear progress
-                                                            easingFunction =
-                                                                Easing.toFunction cfg.easing
-
-                                                            propProgress =
-                                                                easingFunction linearProgress
+                                                            progress =
+                                                                calculateProgress cfg.delay cfg.duration cfg.easing
 
                                                             startSize =
                                                                 case cfg.start of
@@ -473,22 +278,13 @@ generate elementId properties =
                                                                         s
 
                                                                     Nothing ->
-                                                                        Size.fromTuple ( 100.0, 100.0 )
+                                                                        Size.default
 
-                                                            endSize =
-                                                                cfg.end
+                                                            interpolated =
+                                                                Size.interpolate progress startSize cfg.end
 
-                                                            ( startW, startH ) =
-                                                                Size.toTuple startSize
-
-                                                            ( endW, endH ) =
-                                                                Size.toTuple endSize
-
-                                                            interpolatedW =
-                                                                startW + (endW - startW) * propProgress
-
-                                                            interpolatedH =
-                                                                startH + (endH - startH) * propProgress
+                                                            ( interpolatedW, interpolatedH ) =
+                                                                Size.toTuple interpolated
                                                         in
                                                         Just
                                                             [ ( "width", String.fromFloat interpolatedW ++ "px" )

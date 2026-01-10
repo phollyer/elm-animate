@@ -22,6 +22,7 @@ module Anim.Internal.Properties.Position exposing
     , z
     )
 
+import Anim.Internal.Builders.Coordinate3D as Coordinate3D
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
 import Json.Encode as Encode
 
@@ -37,6 +38,19 @@ type Position
 default : Position
 default =
     Position { x = 0, y = 0, z = 0 }
+
+
+{-| Support interface for generic 3D coordinate operations
+-}
+support : Coordinate3D.Coordinate3DSupport Position
+support =
+    { zero = default
+    , fromRecord = Position
+    , toRecord = \(Position coords) -> coords
+    , add = \(Position a) (Position b) -> Position { x = a.x + b.x, y = a.y + b.y, z = a.z + b.z }
+    , subtract = \(Position a) (Position b) -> Position { x = a.x - b.x, y = a.y - b.y, z = a.z - b.z }
+    , scale = \factor (Position coords) -> Position { x = coords.x * factor, y = coords.y * factor, z = coords.z * factor }
+    }
 
 
 x : Position -> Float
@@ -55,53 +69,58 @@ z (Position coords) =
 
 
 fromTuple : ( Float, Float ) -> Position
-fromTuple ( xCoord, yCoord ) =
-    Position { x = xCoord, y = yCoord, z = 0 }
+fromTuple =
+    Coordinate3D.fromTuple support
 
 
 fromTriple : ( Float, Float, Float ) -> Position
-fromTriple ( xCoord, yCoord, zCoord ) =
-    Position { x = xCoord, y = yCoord, z = zCoord }
+fromTriple =
+    Coordinate3D.fromTriple support
 
 
 toTuple : Position -> ( Float, Float )
-toTuple (Position coords) =
-    ( coords.x, coords.y )
+toTuple =
+    Coordinate3D.toTuple support
 
 
 toTriple : Position -> ( Float, Float, Float )
-toTriple (Position coords) =
-    ( coords.x, coords.y, coords.z )
+toTriple =
+    Coordinate3D.toTriple support
 
 
 add : Position -> Position -> Position
-add (Position a) (Position b) =
-    Position { x = a.x + b.x, y = a.y + b.y, z = a.z + b.z }
+add =
+    Coordinate3D.add support
 
 
 subtract : Position -> Position -> Position
-subtract (Position a) (Position b) =
-    Position { x = a.x - b.x, y = a.y - b.y, z = a.z - b.z }
+subtract =
+    Coordinate3D.subtract support
 
 
 scale : Float -> Position -> Position
-scale factor (Position coords) =
-    Position { x = coords.x * factor, y = coords.y * factor, z = coords.z * factor }
+scale =
+    Coordinate3D.scale support
 
 
 distance : Position -> Position -> Float
-distance (Position a) (Position b) =
-    let
-        dx =
-            abs (a.x - b.x)
+distance =
+    Coordinate3D.distance support
 
-        dy =
-            abs (a.y - b.y)
 
-        dz =
-            abs (a.z - b.z)
-    in
-    max dx (max dy dz)
+interpolate : Float -> Position -> Position -> Position
+interpolate =
+    Coordinate3D.interpolate support
+
+
+fromRecord : { x : Float, y : Float, z : Float } -> Position
+fromRecord =
+    Coordinate3D.fromRecord support
+
+
+toRecord : Position -> { x : Float, y : Float, z : Float }
+toRecord =
+    Coordinate3D.toRecord support
 
 
 speed : Float -> Float -> TimeSpec -> Float
@@ -128,15 +147,6 @@ duration distance_ timeSpec =
             distance_ / unitsPerSecond * 1000
 
 
-interpolate : Float -> Position -> Position -> Position
-interpolate t (Position start) (Position endPos) =
-    Position
-        { x = start.x + (endPos.x - start.x) * t
-        , y = start.y + (endPos.y - start.y) * t
-        , z = start.z + (endPos.z - start.z) * t
-        }
-
-
 toString : Position -> String
 toString (Position coords) =
     "Position(x: " ++ String.fromFloat coords.x ++ ", y: " ++ String.fromFloat coords.y ++ ", z: " ++ String.fromFloat coords.z ++ ")"
@@ -145,16 +155,6 @@ toString (Position coords) =
 toCssString : Position -> String
 toCssString (Position coords) =
     String.fromFloat coords.x ++ "px, " ++ String.fromFloat coords.y ++ "px, " ++ String.fromFloat coords.z ++ "px"
-
-
-fromRecord : { x : Float, y : Float, z : Float } -> Position
-fromRecord record =
-    Position record
-
-
-toRecord : Position -> { x : Float, y : Float, z : Float }
-toRecord (Position coords) =
-    { x = coords.x, y = coords.y, z = coords.z }
 
 
 encode : Position -> Encode.Value

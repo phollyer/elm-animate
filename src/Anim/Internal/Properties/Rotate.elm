@@ -9,6 +9,7 @@ module Anim.Internal.Properties.Rotate exposing
     , fromFloat
     , fromRecord
     , fromTriple
+    , interpolate
     , isZero
     , map
     , rotateX
@@ -26,6 +27,7 @@ module Anim.Internal.Properties.Rotate exposing
     , zero
     )
 
+import Anim.Internal.Builders.Coordinate3D as Coordinate3D
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
 import Json.Encode as Encode
 
@@ -37,6 +39,19 @@ type Rotate
 default : Rotate
 default =
     Rotate { x = 0, y = 0, z = 0 }
+
+
+{-| Support interface for generic 3D coordinate operations
+-}
+support : Coordinate3D.Coordinate3DSupport Rotate
+support =
+    { zero = default
+    , fromRecord = Rotate
+    , toRecord = \(Rotate angles) -> angles
+    , add = \(Rotate a) (Rotate b) -> Rotate { x = a.x + b.x, y = a.y + b.y, z = a.z + b.z }
+    , subtract = \(Rotate a) (Rotate b) -> Rotate { x = a.x - b.x, y = a.y - b.y, z = a.z - b.z }
+    , scale = \factor (Rotate angles) -> Rotate { x = angles.x * factor, y = angles.y * factor, z = angles.z * factor }
+    }
 
 
 toFloat : Rotate -> Float
@@ -104,23 +119,23 @@ fromFloat angle =
 
 
 fromRecord : { x : Float, y : Float, z : Float } -> Rotate
-fromRecord record =
-    Rotate record
+fromRecord =
+    Coordinate3D.fromRecord support
 
 
 toRecord : Rotate -> { x : Float, y : Float, z : Float }
-toRecord (Rotate record) =
-    record
+toRecord =
+    Coordinate3D.toRecord support
 
 
 fromTriple : ( Float, Float, Float ) -> Rotate
-fromTriple ( x, y, z ) =
-    Rotate { x = x, y = y, z = z }
+fromTriple =
+    Coordinate3D.fromTriple support
 
 
 toTriple : Rotate -> ( Float, Float, Float )
-toTriple (Rotate angles) =
-    ( angles.x, angles.y, angles.z )
+toTriple =
+    Coordinate3D.toTriple support
 
 
 map : (Float -> Float) -> Rotate -> Rotate
@@ -144,28 +159,23 @@ zero =
 
 
 add : Rotate -> Rotate -> Rotate
-add (Rotate angles1) (Rotate angles2) =
-    Rotate { x = angles1.x + angles2.x, y = angles1.y + angles2.y, z = angles1.z + angles2.z }
+add =
+    Coordinate3D.add support
 
 
 subtract : Rotate -> Rotate -> Rotate
-subtract (Rotate angles1) (Rotate angles2) =
-    Rotate { x = angles1.x - angles2.x, y = angles1.y - angles2.y, z = angles1.z - angles2.z }
+subtract =
+    Coordinate3D.subtract support
+
+
+interpolate : Float -> Rotate -> Rotate -> Rotate
+interpolate =
+    Coordinate3D.interpolate support
 
 
 distance : Rotate -> Rotate -> Float
-distance (Rotate start) (Rotate end) =
-    let
-        dx =
-            abs (end.x - start.x)
-
-        dy =
-            abs (end.y - start.y)
-
-        dz =
-            abs (end.z - start.z)
-    in
-    max dx (max dy dz)
+distance =
+    Coordinate3D.distance support
 
 
 speed : Float -> Float -> TimeSpec -> Float
@@ -197,8 +207,8 @@ duration distance_ timeSpec =
 
 
 scale : Float -> Rotate -> Rotate
-scale factor (Rotate angles) =
-    Rotate { x = angles.x * factor, y = angles.y * factor, z = angles.z * factor }
+scale =
+    Coordinate3D.scale support
 
 
 encode : Rotate -> Encode.Value

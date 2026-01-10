@@ -85,7 +85,7 @@ init _ =
                 |> Opacity.duration 0
                 |> Opacity.build
                 |> Color.for "mixed-box"
-                |> Color.to (Color.Hsl { h = 207, s = 90, l = 54 })
+                |> Color.to (Color.fromHsl { h = 207, s = 90, l = 54 })
                 |> Color.duration 0
                 |> Color.build
                 |> Sub.animate

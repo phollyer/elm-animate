@@ -1,5 +1,6 @@
 module Anim.Internal.Properties.Scale exposing
     ( Scale(..)
+    , add
     , default
     , distance
     , duration
@@ -12,9 +13,11 @@ module Anim.Internal.Properties.Scale exposing
     , getX
     , getY
     , getZ
+    , interpolate
     , isUniform
     , map
     , speed
+    , subtract
     , to3DCssString
     , toCssString
     , toRecord
@@ -24,6 +27,7 @@ module Anim.Internal.Properties.Scale exposing
     , toUniform
     )
 
+import Anim.Internal.Builders.Coordinate3D as Coordinate3D
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
 import Json.Encode as Encode
 
@@ -35,6 +39,21 @@ type Scale
 default : Scale
 default =
     Scale { x = 1.0, y = 1.0, z = 1.0 }
+
+
+{-| Support interface for generic 3D coordinate operations
+-}
+support : Coordinate3D.Coordinate3DSupport Scale
+support =
+    { zero = default -- For Scale, "zero" is actually (1,1,1)
+    , fromRecord = Scale
+    , toRecord = \(Scale coords) -> coords
+
+    -- Scale uses additive operations: 1.0 + 0.2 = 1.2 (120% scale)
+    , add = \(Scale a) (Scale b) -> Scale { x = a.x + b.x, y = a.y + b.y, z = a.z + b.z }
+    , subtract = \(Scale a) (Scale b) -> Scale { x = a.x - b.x, y = a.y - b.y, z = a.z - b.z }
+    , scale = \factor (Scale coords) -> Scale { x = coords.x * factor, y = coords.y * factor, z = coords.z * factor }
+    }
 
 
 toString : Scale -> String
@@ -89,33 +108,34 @@ to3DCssString (Scale { x, y, z }) =
 
 
 toTuple : Scale -> ( Float, Float )
-toTuple (Scale { x, y }) =
-    ( x, y )
+toTuple =
+    Coordinate3D.toTuple support
 
 
 fromTuple : ( Float, Float ) -> Scale
 fromTuple ( x, y ) =
+    -- Scale uses 1.0 as default Z instead of 0
     Scale { x = x, y = y, z = 1.0 }
 
 
 toTriple : Scale -> ( Float, Float, Float )
-toTriple (Scale { x, y, z }) =
-    ( x, y, z )
+toTriple =
+    Coordinate3D.toTriple support
 
 
 fromTriple : ( Float, Float, Float ) -> Scale
-fromTriple ( x, y, z ) =
-    Scale { x = x, y = y, z = z }
+fromTriple =
+    Coordinate3D.fromTriple support
 
 
 toRecord : Scale -> { x : Float, y : Float, z : Float }
-toRecord (Scale record) =
-    record
+toRecord =
+    Coordinate3D.toRecord support
 
 
 fromRecord : { x : Float, y : Float, z : Float } -> Scale
-fromRecord record =
-    Scale record
+fromRecord =
+    Coordinate3D.fromRecord support
 
 
 fromUniform : Float -> Scale
@@ -171,6 +191,21 @@ getZ (Scale { z }) =
     z
 
 
+add : Scale -> Scale -> Scale
+add =
+    Coordinate3D.add support
+
+
+subtract : Scale -> Scale -> Scale
+subtract =
+    Coordinate3D.subtract support
+
+
+interpolate : Float -> Scale -> Scale -> Scale
+interpolate =
+    Coordinate3D.interpolate support
+
+
 
 {- Calculate distance between two Scale values using max-axis distance.
 
@@ -188,18 +223,8 @@ getZ (Scale { z }) =
 
 
 distance : Scale -> Scale -> Float
-distance (Scale scale1) (Scale scale2) =
-    let
-        dx =
-            abs (scale2.x - scale1.x)
-
-        dy =
-            abs (scale2.y - scale1.y)
-
-        dz =
-            abs (scale2.z - scale1.z)
-    in
-    max dx (max dy dz)
+distance =
+    Coordinate3D.distance support
 
 
 {-| Calculate animation speed from distance, duration, and time specification.

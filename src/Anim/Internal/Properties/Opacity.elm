@@ -6,6 +6,7 @@ module Anim.Internal.Properties.Opacity exposing
     , encode
     , equal
     , fromFloat
+    , interpolate
     , isFullyOpaque
     , isFullyTransparent
     , map
@@ -72,6 +73,11 @@ zero =
 distance : Opacity -> Opacity -> Float
 distance (Opacity o1) (Opacity o2) =
     abs (o2 - o1)
+
+
+interpolate : Float -> Opacity -> Opacity -> Opacity
+interpolate t (Opacity start) (Opacity end) =
+    Opacity (start + (end - start) * t)
 
 
 speed : Float -> Float -> TimeSpec -> Float
