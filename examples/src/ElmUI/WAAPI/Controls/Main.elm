@@ -26,6 +26,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
+import Json.Decode
 import Json.Encode as Encode
 import Time
 
@@ -71,7 +72,7 @@ init _ =
       , isAnimating = False
       , isPaused = False
       }
-    , animateElement initCmd
+    , WAAPI.sendCommand waapiCommand initCmd
     )
 
 
@@ -91,21 +92,61 @@ type Msg
     | Resume
     | Reset
     | Restart
-    | AnimationComplete String
-    | PositionUpdateReceived Encode.Value
+    | WaapiEventReceived (Result String ( WAAPI.EventType, String, Encode.Value ))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        AnimationComplete _ ->
-            ( { model | isAnimating = False, isPaused = False }
-            , Cmd.none
-            )
+        WaapiEventReceived result ->
+            case result of
+                Ok ( WAAPI.PropertyUpdate, _, _ ) ->
+                    -- Handle property updates from JavaScript if needed
+                    ( model, Cmd.none )
 
-        PositionUpdateReceived _ ->
-            -- Handle position updates from JavaScript if needed
-            ( model, Cmd.none )
+                Ok ( WAAPI.AnimationUpdate, _, payload ) ->
+                    -- Handle animation lifecycle updates
+                    case Json.Decode.decodeValue (Json.Decode.field "status" Json.Decode.string) payload of
+                        Ok "started" ->
+                            ( { model | isAnimating = True, isPaused = False }
+                            , Cmd.none
+                            )
+
+                        Ok "paused" ->
+                            ( { model | isPaused = True }
+                            , Cmd.none
+                            )
+
+                        Ok "resumed" ->
+                            ( { model | isPaused = False }
+                            , Cmd.none
+                            )
+
+                        Ok "completed" ->
+                            ( { model | isAnimating = False, isPaused = False }
+                            , Cmd.none
+                            )
+
+                        Ok "canceled" ->
+                            ( { model | isAnimating = False, isPaused = False }
+                            , Cmd.none
+                            )
+
+                        Ok "restarted" ->
+                            ( { model | isAnimating = True, isPaused = False }
+                            , Cmd.none
+                            )
+
+                        _ ->
+                            ( model, Cmd.none )
+
+                Err error ->
+                    -- Log error but don't crash
+                    let
+                        _ =
+                            Debug.log "WAAPI Event Decode Error" error
+                    in
+                    ( model, Cmd.none )
 
         Animate ->
             let
@@ -120,30 +161,27 @@ update msg model =
                 , isAnimating = True
                 , isPaused = False
               }
-            , animateElement animationData
+            , WAAPI.sendCommand waapiCommand animationData
             )
 
         Stop ->
             ( { model | isAnimating = False, isPaused = False }
-            , stopElementAnimation (Encode.string elementId)
+            , WAAPI.sendCommand waapiCommand (WAAPI.stopAnimation elementId)
             )
 
         Pause ->
             ( { model | isPaused = True }
-            , Cmd.none
-              -- WAAPI pause requires JavaScript implementation
+            , WAAPI.sendCommand waapiCommand (WAAPI.pauseAnimation elementId)
             )
 
         Resume ->
             ( { model | isPaused = False }
-            , Cmd.none
-              -- WAAPI resume requires JavaScript implementation
+            , WAAPI.sendCommand waapiCommand (WAAPI.resumeAnimation elementId)
             )
 
         Reset ->
             ( { model | isAnimating = False, isPaused = False }
-            , Cmd.none
-              -- WAAPI reset requires JavaScript implementation
+            , WAAPI.sendCommand waapiCommand (WAAPI.resetAnimation elementId)
             )
 
         Restart ->
@@ -159,7 +197,7 @@ update msg model =
                 , isAnimating = True
                 , isPaused = False
               }
-            , animateElement animationData
+            , WAAPI.sendCommand waapiCommand (WAAPI.restartAnimation elementId animationData)
             )
 
 
@@ -167,16 +205,12 @@ update msg model =
 -- PORTS
 
 
-port animateElement : Encode.Value -> Cmd msg
+{-| Outgoing port for sending animation commands to JavaScript -}
+port waapiCommand : Encode.Value -> Cmd msg
 
 
-port stopElementAnimation : Encode.Value -> Cmd msg
-
-
-port positionUpdates : (Encode.Value -> msg) -> Sub msg
-
-
-port animationComplete : (String -> msg) -> Sub msg
+{-| Incoming port for receiving events from JavaScript -}
+port waapiEvent : (Encode.Value -> msg) -> Sub msg
 
 
 
@@ -185,10 +219,7 @@ port animationComplete : (String -> msg) -> Sub msg
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.batch
-        [ positionUpdates PositionUpdateReceived
-        , animationComplete AnimationComplete
-        ]
+    waapiEvent (WAAPI.handleEvent WaapiEventReceived)
 
 
 

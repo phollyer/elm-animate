@@ -153,7 +153,7 @@ window.ElmAnimateWAAPI = (function () {
             setupAnimationEvents(elementId, element, animations[0]); // Use first animation for events
 
             // Send AnimationStart event to Elm
-            sendEventToElm('animationStart', elementId);
+            sendEventToElm('animationUpdate', elementId, { status: 'started' });
         } else {
             console.log('⚠️ DEBUG: No animations created for:', elementId);
         }
@@ -634,9 +634,9 @@ window.ElmAnimateWAAPI = (function () {
         // Find the update port
         if (typeof window.app !== 'undefined' &&
             window.app.ports &&
-            window.app.ports.positionUpdates &&
-            typeof window.app.ports.positionUpdates.send === 'function') {
-            updatePort = window.app.ports.positionUpdates;
+            window.app.ports.waapiEvent &&
+            typeof window.app.ports.waapiEvent.send === 'function') {
+            updatePort = window.app.ports.waapiEvent;
         }
 
         // Send updates during animation
@@ -650,8 +650,7 @@ window.ElmAnimateWAAPI = (function () {
                 const computedStyle = window.getComputedStyle(element);
 
                 if (updatePort) {
-                    updatePort.send({
-                        elementId: elementId,
+                    const propertyData = {
                         positionX: transformState.x,
                         positionY: transformState.y,
                         positionZ: transformState.z,
@@ -667,7 +666,8 @@ window.ElmAnimateWAAPI = (function () {
                         width: parseFloat(computedStyle.width),
                         height: parseFloat(computedStyle.height),
                         isAnimating: true
-                    });
+                    };
+                    sendEventToElm('propertyUpdate', elementId, propertyData);
                 }
                 lastTime = now;
             }
@@ -684,15 +684,13 @@ window.ElmAnimateWAAPI = (function () {
         animation.addEventListener('finish', () => {
             activeAnimations.delete(elementId);
 
-            // Send AnimationComplete event to Elm
-            sendEventToElm('animationComplete', elementId);
+            sendEventToElm('animationUpdate', elementId, { status: 'completed' });
 
             if (updatePort) {
                 const finalState = getCurrentTransform(element);
                 const computedStyle = window.getComputedStyle(element);
 
-                updatePort.send({
-                    elementId: elementId,
+                const finalPropertyData = {
                     x: finalState.x,
                     y: finalState.y,
                     z: finalState.z,
@@ -707,7 +705,8 @@ window.ElmAnimateWAAPI = (function () {
                     width: parseFloat(computedStyle.width),
                     height: parseFloat(computedStyle.height),
                     isAnimating: false
-                });
+                };
+                sendEventToElm('propertyUpdate', elementId, finalPropertyData);
             }
         });
 
@@ -718,8 +717,7 @@ window.ElmAnimateWAAPI = (function () {
                 const currentState = getCurrentTransform(element);
                 const computedStyle = window.getComputedStyle(element);
 
-                updatePort.send({
-                    elementId: elementId,
+                const currentPropertyData = {
                     x: currentState.x,
                     y: currentState.y,
                     z: currentState.z,
@@ -732,7 +730,8 @@ window.ElmAnimateWAAPI = (function () {
                     scaleZ: currentState.scaleZ,
                     backgroundColor: computedStyle.backgroundColor,
                     isAnimating: false
-                });
+                };
+                sendEventToElm('propertyUpdate', elementId, currentPropertyData);
             }
         });
     }
@@ -741,19 +740,20 @@ window.ElmAnimateWAAPI = (function () {
      * Stop animation for specific element
      */
     /**
-     * Send event to Elm via single animationEvent port
+     * Send event to Elm via consolidated waapiEvent port
      */
-    function sendEventToElm(eventType, elementId) {
+    function sendEventToElm(eventType, elementId, payload) {
         console.log('📤 DEBUG: Sending', eventType, 'event for:', elementId);
-        if (window.app && window.app.ports && window.app.ports.animationEvent) {
+        if (window.app && window.app.ports && window.app.ports.waapiEvent) {
             const eventData = {
-                eventType: eventType,
-                elementId: elementId
+                type: eventType,
+                elementId: elementId,
+                payload: payload || null
             };
-            window.app.ports.animationEvent.send(eventData);
-            console.log('✅ DEBUG:', eventType, 'event sent successfully via animationEvent port');
+            window.app.ports.waapiEvent.send(eventData);
+            console.log('✅ DEBUG:', eventType, 'event sent successfully via waapiEvent port');
         } else {
-            console.warn('❌ DEBUG: animationEvent port not found or not available');
+            console.warn('❌ DEBUG: waapiEvent port not found or not available');
         }
     }
 
@@ -775,7 +775,7 @@ window.ElmAnimateWAAPI = (function () {
             activeAnimations.delete(elementId);
 
             // Send AnimationCancel event to Elm
-            sendEventToElm('animationCancel', elementId);
+            sendEventToElm('animationUpdate', elementId, { status: 'canceled' });
         } else {
             console.log('⚠️ DEBUG: No animations found for elementId:', elementId);
         }
@@ -813,6 +813,7 @@ window.ElmAnimateWAAPI = (function () {
                 animations.cancel();
                 animations.play();
             }
+            sendEventToElm('animationUpdate', elementId, { status: 'restarted' });
         }
     }
 
@@ -829,6 +830,7 @@ window.ElmAnimateWAAPI = (function () {
             } else {
                 animations.pause();
             }
+            sendEventToElm('animationUpdate', elementId, { status: 'paused' });
         }
     }
 
@@ -845,6 +847,7 @@ window.ElmAnimateWAAPI = (function () {
             } else {
                 animations.play();
             }
+            sendEventToElm('animationUpdate', elementId, { status: 'resumed' });
         }
     }
 
@@ -860,66 +863,67 @@ window.ElmAnimateWAAPI = (function () {
         // Store reference for updates
         window.app = { ports: ports };
 
-        // Subscribe to animation commands from Elm
-        if (ports.animateElement && ports.animateElement.subscribe) {
-            console.log('✅ DEBUG: animateElement port found, subscribing...');
-            ports.animateElement.subscribe(function (animationData) {
-                console.log('🚀 DEBUG: animateElement received data:', animationData);
+        // Subscribe to consolidated command port from Elm
+        if (ports.waapiCommand && ports.waapiCommand.subscribe) {
+            console.log('✅ DEBUG: waapiCommand port found, subscribing...');
+            ports.waapiCommand.subscribe(function (commandData) {
+                console.log('🚀 DEBUG: waapiCommand received data:', commandData);
                 try {
-                    // Check if this is a control command (stop/reset/restart/pause/resume)
-                    if (animationData.type === 'stop') {
-                        console.log('🛑 DEBUG: Processing stop command for:', animationData.elementId);
-                        stopAnimation(animationData.elementId);
-                    } else if (animationData.type === 'reset') {
-                        console.log('🔄 DEBUG: Processing reset command for:', animationData.elementId);
-                        resetAnimation(animationData.elementId);
-                    } else if (animationData.type === 'restart') {
-                        console.log('▶️ DEBUG: Processing restart command for:', animationData.elementId);
-                        restartAnimation(animationData.elementId);
-                    } else if (animationData.type === 'pause') {
-                        console.log('⏸️ DEBUG: Processing pause command for:', animationData.elementId);
-                        pauseAnimation(animationData.elementId);
-                    } else if (animationData.type === 'resume') {
-                        console.log('▶️ DEBUG: Processing resume command for:', animationData.elementId);
-                        resumeAnimation(animationData.elementId);
-                    } else {
-                        console.log('🎬 DEBUG: Processing regular animation command');
-                        // Regular animation command
-                        processAnimationData(animationData);
+                    const commandType = commandData.type;
+                    const elementId = commandData.elementId;
+                    const payload = commandData.payload;
+
+                    console.log('📋 DEBUG: Processing command type:', commandType, 'for element:', elementId);
+
+                    switch (commandType) {
+                        case 'animate':
+                            console.log('🎬 DEBUG: Processing animate command');
+                            processAnimationData(payload);
+                            break;
+
+                        case 'stop':
+                            console.log('🛑 DEBUG: Processing stop command for:', elementId);
+                            stopAnimation(elementId);
+                            break;
+
+                        case 'pause':
+                            console.log('⏸️ DEBUG: Processing pause command for:', elementId);
+                            pauseAnimation(elementId);
+                            break;
+
+                        case 'resume':
+                            console.log('▶️ DEBUG: Processing resume command for:', elementId);
+                            resumeAnimation(elementId);
+                            break;
+
+                        case 'reset':
+                            console.log('🔄 DEBUG: Processing reset command for:', elementId);
+                            resetAnimation(elementId);
+                            break;
+
+                        case 'restart':
+                            console.log('🔄▶️ DEBUG: Processing restart command for:', elementId);
+                            // For restart, the payload contains the new animation data
+                            if (payload) {
+                                resetAnimation(elementId);
+                                processAnimationData(payload);
+                            } else {
+                                console.warn('❌ DEBUG: Restart command missing payload');
+                            }
+                            break;
+
+                        default:
+                            console.warn('❌ DEBUG: Unknown command type:', commandType);
                     }
                 } catch (error) {
-                    console.error('❌ DEBUG: Error processing animation:', error);
+                    console.error('❌ DEBUG: Error processing WAAPI command:', error);
                 }
             });
         } else {
-            console.warn('ElmAnimateWAAPI: animateElement port not found or not subscribeable');
+            console.warn('ElmAnimateWAAPI: waapiCommand port not found or not subscribeable');
         }
 
-        // Subscribe to stop commands from Elm
-        console.log('🔍 DEBUG: Checking for stopElementAnimation port...', ports.stopElementAnimation);
-        if (ports.stopElementAnimation && ports.stopElementAnimation.subscribe) {
-            console.log('✅ DEBUG: stopElementAnimation port found, subscribing...');
-            ports.stopElementAnimation.subscribe(function (commandData) {
-                console.log('🛑 DEBUG: stopElementAnimation received for elementId:', commandData);
-                // Handle both string elementId and command object formats
-                let elementId;
-                if (typeof commandData === 'string') {
-                    elementId = commandData;
-                } else if (commandData && commandData.elementId) {
-                    elementId = commandData.elementId;
-                } else {
-                    console.error('❌ DEBUG: Invalid stop command data:', commandData);
-                    return;
-                }
-                console.log('🎯 DEBUG: Extracted elementId:', elementId);
-                stopAnimation(elementId);
-            });
-        } else {
-            console.warn('❌ DEBUG: stopElementAnimation port not found or not subscribeable');
-            console.log('🔍 DEBUG: Available ports:', Object.keys(ports));
-        }
-
-        console.log('ElmAnimateWAAPI initialized successfully with full property support');
+        console.log('ElmAnimateWAAPI initialized successfully with consolidated ports');
     }
 
     /**

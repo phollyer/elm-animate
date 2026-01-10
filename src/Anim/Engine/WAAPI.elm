@@ -9,6 +9,8 @@ module Anim.Engine.WAAPI exposing
     , delay
     , anyRunning, isRunning, allComplete, isComplete
     , stop, reset, restart, pause, resume
+    , sendCommand, handleEvent, CommandType(..), EventType(..)
+    , stopAnimation, pauseAnimation, resumeAnimation, resetAnimation, restartAnimation
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
     , getStartOpacity, getEndOpacity, getCurrentOpacity
     , getStartPosition, getEndPosition, getCurrentPosition
@@ -105,6 +107,19 @@ These settings will be used for all animations unless overridden on a per-animat
 # Control Running Animations
 
 @docs stop, reset, restart, pause, resume
+
+
+# Port Integration
+
+These helper functions handle the encoding/decoding for port communication with the JavaScript companion library.
+You define the ports in your application and pass them to these functions.
+
+@docs sendCommand, handleEvent, CommandType, EventType
+
+
+## Command Helpers
+
+@docs stopAnimation, pauseAnimation, resumeAnimation, resetAnimation, restartAnimation
 
 
 # Querying Animated Properties
@@ -814,3 +829,266 @@ getCurrentSize : String -> AnimState -> Maybe { width : Float, height : Float }
 getCurrentSize elementId animState =
     InternalWAAPI.getCurrentSize elementId animState
         |> Maybe.map Size.toRecord
+
+
+
+-- PORT INTEGRATION
+
+
+{-| Command types for WAAPI port communication.
+
+These are used internally by the sendCommand function.
+
+-}
+type CommandType
+    = AnimateCommand
+    | StopCommand
+    | PauseCommand
+    | ResumeCommand
+    | ResetCommand
+    | RestartCommand
+
+
+{-| Event types for WAAPI port communication.
+
+These are used internally by the handleEvent function.
+
+-}
+type EventType
+    = PropertyUpdate
+    | AnimationUpdate
+
+
+{-| Send a command through your waapiCommand port.
+
+This function handles the encoding internally. You define the port in your application:
+
+    port waapiCommand : Encode.Value -> Cmd msg
+
+Then use it like:
+
+    -- Start an animation
+    WAAPI.sendCommand waapiCommand
+        (WAAPI.builder model.animState
+            |> Position.moveToXY "my-element" 100 200
+            |> WAAPI.animate model.animState
+        )
+
+    -- Stop an animation
+    WAAPI.sendCommand waapiCommand (WAAPI.stopAnimation "my-element")
+
+**Note:** This requires the JavaScript companion library to be properly initialized.
+
+-}
+sendCommand : (Encode.Value -> Cmd msg) -> Encode.Value -> Cmd msg
+sendCommand portCmd commandData =
+    portCmd commandData
+
+
+{-| Internal function to encode WAAPI commands for JavaScript.
+-}
+encodeCommand : CommandType -> String -> Encode.Value -> Encode.Value
+encodeCommand commandType elementId payload =
+    Encode.object
+        [ ( "type", encodeCommandType commandType )
+        , ( "elementId", Encode.string elementId )
+        , ( "payload", payload )
+        ]
+
+
+{-| Internal function to encode command types.
+-}
+encodeCommandType : CommandType -> Encode.Value
+encodeCommandType commandType =
+    case commandType of
+        AnimateCommand ->
+            Encode.string "animate"
+
+        StopCommand ->
+            Encode.string "stop"
+
+        PauseCommand ->
+            Encode.string "pause"
+
+        ResumeCommand ->
+            Encode.string "resume"
+
+        ResetCommand ->
+            Encode.string "reset"
+
+        RestartCommand ->
+            Encode.string "restart"
+
+
+{-| Handle events from your waapiEvent port.
+
+This function handles the decoding internally. You define the port in your application:
+
+    port waapiEvent : (Encode.Value -> msg) -> Sub msg
+
+Then use it in your subscriptions:
+
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        waapiEvent (WAAPI.handleEvent WaapiEventReceived)
+
+And handle the result in your update:
+
+    update msg model =
+        case msg of
+            WaapiEventReceived result ->
+                case result of
+                    Ok ( PropertyUpdate, elementId, payload ) ->
+                        -- Handle property update (position, opacity, scale, etc.)
+                        -- Payload contains all current property values
+                        ( model, Cmd.none )
+
+                    Ok ( AnimationUpdate, elementId, payload ) ->
+                        -- Handle animation lifecycle update
+                        -- Decode the status from payload to determine the specific event
+                        case Decode.decodeValue (Decode.field "status" Decode.string) payload of
+                            Ok "started" ->
+                                ( { model | isAnimating = True, isPaused = False }, Cmd.none )
+
+                            Ok "paused" ->
+                                ( { model | isPaused = True }, Cmd.none )
+
+                            Ok "resumed" ->
+                                ( { model | isPaused = False }, Cmd.none )
+
+                            Ok "completed" ->
+                                ( { model | isAnimating = False, isPaused = False }, Cmd.none )
+
+                            Ok "canceled" ->
+                                ( { model | isAnimating = False, isPaused = False }, Cmd.none )
+
+                            Ok "restarted" ->
+                                ( { model | isAnimating = True, isPaused = False }, Cmd.none )
+
+                            _ ->
+                                -- Unknown animation status, but don't crash
+                                ( model, Cmd.none )
+
+                    Err errorMsg ->
+                        -- Handle decode error
+                        ( model, Cmd.none )
+
+**Note:** This requires the JavaScript companion library to be properly initialized.
+
+-}
+handleEvent : (Result String ( EventType, String, Encode.Value ) -> msg) -> Encode.Value -> msg
+handleEvent toMsg eventValue =
+    toMsg (decodeEvent eventValue)
+
+
+{-| Internal function to decode WAAPI events from JavaScript.
+-}
+decodeEvent : Encode.Value -> Result String ( EventType, String, Encode.Value )
+decodeEvent value =
+    case
+        Decode.decodeValue
+            (Decode.map3 (\eventType targetElementId payload -> ( eventType, targetElementId, payload ))
+                (Decode.field "type" Decode.string)
+                (Decode.field "elementId" Decode.string)
+                (Decode.field "payload" Decode.value)
+            )
+            value
+    of
+        Ok ( eventTypeString, targetElementId, payload ) ->
+            case eventTypeString of
+                "propertyUpdate" ->
+                    Ok ( PropertyUpdate, targetElementId, payload )
+
+                "animationUpdate" ->
+                    Ok ( AnimationUpdate, targetElementId, payload )
+
+                -- Legacy support for individual animation events
+                "animationStarted" ->
+                    Ok ( AnimationUpdate, targetElementId, Encode.object [ ( "status", Encode.string "started" ) ] )
+
+                "animationPaused" ->
+                    Ok ( AnimationUpdate, targetElementId, Encode.object [ ( "status", Encode.string "paused" ) ] )
+
+                "animationResumed" ->
+                    Ok ( AnimationUpdate, targetElementId, Encode.object [ ( "status", Encode.string "resumed" ) ] )
+
+                "animationComplete" ->
+                    Ok ( AnimationUpdate, targetElementId, Encode.object [ ( "status", Encode.string "completed" ) ] )
+
+                "animationCanceled" ->
+                    Ok ( AnimationUpdate, targetElementId, Encode.object [ ( "status", Encode.string "canceled" ) ] )
+
+                "animationRestarted" ->
+                    Ok ( AnimationUpdate, targetElementId, Encode.object [ ( "status", Encode.string "restarted" ) ] )
+
+                _ ->
+                    Err ("Unknown event type: " ++ eventTypeString)
+
+        Err error ->
+            Err (Decode.errorToString error)
+
+
+{-| Create a stop animation command.
+
+Use with sendCommand:
+
+    WAAPI.sendCommand waapiCommand (WAAPI.stopAnimation "my-element")
+
+-}
+stopAnimation : String -> Encode.Value
+stopAnimation elementId =
+    encodeCommand StopCommand elementId Encode.null
+
+
+{-| Create a pause animation command.
+
+Use with sendCommand:
+
+    WAAPI.sendCommand waapiCommand (WAAPI.pauseAnimation "my-element")
+
+-}
+pauseAnimation : String -> Encode.Value
+pauseAnimation elementId =
+    encodeCommand PauseCommand elementId Encode.null
+
+
+{-| Create a resume animation command.
+
+Use with sendCommand:
+
+    WAAPI.sendCommand waapiCommand (WAAPI.resumeAnimation "my-element")
+
+-}
+resumeAnimation : String -> Encode.Value
+resumeAnimation elementId =
+    encodeCommand ResumeCommand elementId Encode.null
+
+
+{-| Create a reset animation command.
+
+Use with sendCommand:
+
+    WAAPI.sendCommand waapiCommand (WAAPI.resetAnimation "my-element")
+
+-}
+resetAnimation : String -> Encode.Value
+resetAnimation elementId =
+    encodeCommand ResetCommand elementId Encode.null
+
+
+{-| Create a restart animation command.
+
+Use with sendCommand along with new animation data:
+
+    let
+        ( newAnimState, animationData ) =
+            WAAPI.builder model.animState
+                |> Position.moveUp "my-element"
+                |> WAAPI.animate model.animState
+    in
+    WAAPI.sendCommand waapiCommand (WAAPI.restartAnimation "my-element" animationData)
+
+-}
+restartAnimation : String -> Encode.Value -> Encode.Value
+restartAnimation elementId animationData =
+    encodeCommand RestartCommand elementId animationData
