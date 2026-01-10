@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Anim.Engine.WAAPI Events Example</title>
+    <link rel="stylesheet" href="../../../../css/base.css">
+    <link rel="stylesheet" href="../../../../css/ui-components.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+    </style>
+    <script src="../../../../js/elm-animate-waapi.js"></script>
+</head>
+
+<body>
+    <script src="index.js"></script>
+    <script>
+        var app = Elm.ElmUI.WAAPI.Events.Main.init({});
+
+        // Wire up WAAPI ports
+        if (window.ElmAnimateWAAPI) {
+            window.ElmAnimateWAAPI.connect(app.ports);
+        }
+    </script>
+</body>
+
+</html>
