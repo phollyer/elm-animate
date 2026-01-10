@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAAPI Engine Controls Example - Elm Animate</title>
+    <link rel="stylesheet" href="../../../../css/base.css">
+    <link rel="stylesheet" href="../../../../css/ui-components.css">
+</head>
+
+<body>
+    <div id="elm-app"></div>
+    <script src="index.js"></script>
+    <script src="../../../js/elm-animate-waapi.js"></script>
+    <script>
+        const app = Elm.ElmUI.WAAPI.Controls.Main.init({
+            node: document.getElementById('elm-app')
+        });
+
+        // Initialize WAAPI JavaScript integration
+        if (window.ElmAnimateWAAPI && app.ports) {
+            window.ElmAnimateWAAPI.init(app.ports);
+        }
+    </script>
+</body>
+
+</html>

@@ -59,6 +59,7 @@ build_example "src/ElmUI/CSS/Transitions/Scale/Main.elm" "src/ElmUI/CSS/Transiti
 build_example "src/ElmUI/CSS/Transitions/Rotate/Main.elm" "src/ElmUI/CSS/Transitions/Rotate/index.js" "ElmUI.CSS.Transitions.Rotate.Main"
 build_example "src/ElmUI/CSS/Transitions/Color/Main.elm" "src/ElmUI/CSS/Transitions/Color/index.js" "ElmUI.CSS.Transitions.Color.Main"
 build_example "src/ElmUI/CSS/Transitions/Events/Main.elm" "src/ElmUI/CSS/Transitions/Events/index.js" "ElmUI.CSS.Transitions.Events.Main"
+build_example "src/ElmUI/CSS/Transitions/Controls/Main.elm" "src/ElmUI/CSS/Transitions/Controls/index.js" "ElmUI.CSS.Transitions.Controls.Main"
 build_example "src/ElmUI/CSS/Transitions/Mixed/Main.elm" "src/ElmUI/CSS/Transitions/Mixed/index.js" "ElmUI.CSS.Transitions.Mixed.Main"
 build_example "src/ElmUI/CSS/Transitions/Choreography/Main.elm" "src/ElmUI/CSS/Transitions/Choreography/index.js" "ElmUI.CSS.Transitions.Choreography.Main"
 
@@ -71,6 +72,7 @@ build_example "src/ElmUI/CSS/Keyframes/Rotate/Main.elm" "src/ElmUI/CSS/Keyframes
 build_example "src/ElmUI/CSS/Keyframes/Cube/Main.elm" "src/ElmUI/CSS/Keyframes/Cube/index.js" "ElmUI.CSS.Keyframes.Cube.Main"
 build_example "src/ElmUI/CSS/Keyframes/Color/Main.elm" "src/ElmUI/CSS/Keyframes/Color/index.js" "ElmUI.CSS.Keyframes.Color.Main"
 build_example "src/ElmUI/CSS/Keyframes/Events/Main.elm" "src/ElmUI/CSS/Keyframes/Events/index.js" "ElmUI.CSS.Keyframes.Events.Main"
+build_example "src/ElmUI/CSS/Keyframes/Controls/Main.elm" "src/ElmUI/CSS/Keyframes/Controls/index.js" "ElmUI.CSS.Keyframes.Controls.Main"
 build_example "src/ElmUI/CSS/Keyframes/Mixed/Main.elm" "src/ElmUI/CSS/Keyframes/Mixed/index.js" "ElmUI.CSS.Keyframes.Mixed.Main"
 build_example "src/ElmUI/CSS/Keyframes/Choreography/Main.elm" "src/ElmUI/CSS/Keyframes/Choreography/index.js" "ElmUI.CSS.Keyframes.Choreography.Main"
 
@@ -83,6 +85,7 @@ build_example "src/ElmUI/Sub/Scale/Main.elm" "src/ElmUI/Sub/Scale/index.js" "Elm
 build_example "src/ElmUI/Sub/Rotation/Main.elm" "src/ElmUI/Sub/Rotation/index.js" "ElmUI.Sub.Rotation.Main"
 build_example "src/ElmUI/Sub/Color/Main.elm" "src/ElmUI/Sub/Color/index.js" "ElmUI.Sub.Color.Main"
 build_example "src/ElmUI/Sub/Events/Main.elm" "src/ElmUI/Sub/Events/index.js" "ElmUI.Sub.Events.Main"
+build_example "src/ElmUI/Sub/Controls/Main.elm" "src/ElmUI/Sub/Controls/index.js" "ElmUI.Sub.Controls.Main"
 build_example "src/ElmUI/Sub/Mixed/Main.elm" "src/ElmUI/Sub/Mixed/index.js" "ElmUI.Sub.Mixed.Main"
 build_example "src/ElmUI/Sub/Choreography/Main.elm" "src/ElmUI/Sub/Choreography/index.js" "ElmUI.Sub.Choreography.Main"
 build_example "src/ElmUI/Sub/Size/Main.elm" "src/ElmUI/Sub/Size/index.js" "ElmUI.Sub.Size.Main"
@@ -96,6 +99,7 @@ build_example "src/ElmUI/WAAPI/Scale/Main.elm" "src/ElmUI/WAAPI/Scale/index.js" 
 build_example "src/ElmUI/WAAPI/Rotate/Main.elm" "src/ElmUI/WAAPI/Rotate/index.js" "ElmUI.WAAPI.Rotate.Main"
 build_example "src/ElmUI/WAAPI/Color/Main.elm" "src/ElmUI/WAAPI/Color/index.js" "ElmUI.WAAPI.Color.Main"
 build_example "src/ElmUI/WAAPI/Events/Main.elm" "src/ElmUI/WAAPI/Events/index.js" "ElmUI.WAAPI.Events.Main"
+build_example "src/ElmUI/WAAPI/Controls/Main.elm" "src/ElmUI/WAAPI/Controls/index.js" "ElmUI.WAAPI.Controls.Main"
 build_example "src/ElmUI/WAAPI/Mixed/Main.elm" "src/ElmUI/WAAPI/Mixed/index.js" "ElmUI.WAAPI.Mixed.Main"
 build_example "src/ElmUI/WAAPI/Choreography/Main.elm" "src/ElmUI/WAAPI/Choreography/index.js" "ElmUI.WAAPI.Choreography.Main"
 
@@ -123,6 +127,7 @@ if [ ${#FAILED_BUILDS[@]} -eq 0 ]; then
     echo "   - Rotation (angular animations)"
     echo "   - Color (background transitions)"
     echo "   - Events (transition lifecycle)"
+    echo "   - Controls (animation lifecycle controls)"
     echo "   - Mixed (multi-property coordination)"
     echo "   - Choreography (6-element formations)"
 else
