@@ -14,6 +14,7 @@ module Anim.Engine.WAAPI exposing
     , getStartRotate, getEndRotate, getCurrentRotate
     , getStartScale, getEndScale, getCurrentScale
     , getStartSize, getEndSize, getCurrentSize
+    , pause, resume, stop
     )
 
 {-| Ports-based animation system utilising the Web Animations API with optional state tracking.
@@ -376,6 +377,60 @@ For state management and continuity, use `animate` instead.
 fireAndForget : (Encode.Value -> Cmd msg) -> AnimBuilder -> Cmd msg
 fireAndForget =
     InternalWAAPI.animateStateless
+
+
+
+-- Animation Control
+
+
+{-| Control running animations with stop, pause, and resume functionality.
+
+**Web Animations API Behavior:**
+
+  - **stop**: Cancels the Web Animation immediately. Elements remain at their current animated positions.
+    This calls the native `Animation.cancel()` method in the browser.
+  - **pause**: Pauses the Web Animation using the native `Animation.pause()` method.
+    Animation timeline stops but state is preserved.
+  - **resume**: Resumes paused animations using the native `Animation.play()` method.
+    Animation continues from where it was paused.
+
+All control functions return encoded commands to send to JavaScript via ports.
+
+-}
+stop : String -> AnimState -> ( AnimState, Encode.Value )
+stop elementId animState =
+    let
+        command =
+            Encode.object
+                [ ( "type", Encode.string "stop" )
+                , ( "elementId", Encode.string elementId )
+                ]
+    in
+    ( animState, command )
+
+
+pause : String -> AnimState -> ( AnimState, Encode.Value )
+pause elementId animState =
+    let
+        command =
+            Encode.object
+                [ ( "type", Encode.string "pause" )
+                , ( "elementId", Encode.string elementId )
+                ]
+    in
+    ( animState, command )
+
+
+resume : String -> AnimState -> ( AnimState, Encode.Value )
+resume elementId animState =
+    let
+        command =
+            Encode.object
+                [ ( "type", Encode.string "resume" )
+                , ( "elementId", Encode.string elementId )
+                ]
+    in
+    ( animState, command )
 
 
 

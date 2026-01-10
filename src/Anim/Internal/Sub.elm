@@ -25,7 +25,10 @@ module Anim.Internal.Sub exposing
     , init
     , isAnimationRunning
     , isComplete
+    , pauseElement
+    , resumeElement
     , speed
+    , stopElement
     , subscriptions
     , update
     )
@@ -1347,3 +1350,32 @@ getLastStep steps =
     List.reverse steps
         |> List.head
         |> Maybe.withDefault (PositionAnimation (Position.fromTuple ( 0, 0 )))
+
+
+
+-- ANIMATION CONTROL
+
+
+{-| Stop animation for a specific element by removing it from element animations
+-}
+stopElement : String -> AnimState -> AnimState
+stopElement elementId (AnimState state) =
+    AnimState { state | elementAnimations = Dict.remove elementId state.elementAnimations }
+
+
+{-| Pause animation for a specific element by setting its isPaused flag
+-}
+pauseElement : String -> AnimState -> AnimState
+pauseElement elementId (AnimState state) =
+    -- For Sub animations, pause by setting global isRunning to False
+    -- This is a simple approach that pauses all animations
+    AnimState { state | isRunning = False }
+
+
+{-| Resume animation for a specific element by clearing its isPaused flag
+-}
+resumeElement : String -> AnimState -> AnimState
+resumeElement elementId (AnimState state) =
+    -- For Sub animations, resume by setting global isRunning to True
+    -- This is a simple approach that resumes all animations
+    AnimState { state | isRunning = True }

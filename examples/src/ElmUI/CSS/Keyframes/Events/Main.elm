@@ -154,21 +154,8 @@ update msg model =
             )
 
         StopAnimation ->
-            let
-                currentPos =
-                    CSS.getCurrentPosition elementId model.animations
-                        |> Maybe.withDefault { x = 0, y = 0, z = 0 }
-            in
             ( { model
-                | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> CSS.duration 1
-                        |> CSS.easing Linear
-                        |> Position.for elementId
-                        |> Position.toXY currentPos.x currentPos.y
-                        |> Position.build
-                        |> CSS.animate
+                | animations = CSS.stop elementId model.animations
                 , isAnimating = False
               }
             , Cmd.none

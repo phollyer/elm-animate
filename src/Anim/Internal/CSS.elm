@@ -40,8 +40,10 @@ module Anim.Internal.CSS exposing
     , onTransitionEnd
     , onTransitionRun
     , onTransitionStart
+    , pauseAnimation
     , perspective
     , perspectiveStyles
+    , resumeAnimation
     , speed
     )
 
@@ -769,3 +771,56 @@ getElementStyles elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.map .styles
         |> Maybe.withDefault []
+
+
+
+-- ANIMATION CONTROL
+
+
+{-| Pause a keyframe animation by setting animation-play-state to paused.
+Note: This only works with keyframe animations, not CSS transitions.
+-}
+pauseAnimation : String -> AnimState -> AnimState
+pauseAnimation elementId (AnimState state) =
+    let
+        updatedAnimations =
+            Dict.update elementId
+                (\maybeElement ->
+                    case maybeElement of
+                        Just element ->
+                            Just { element | styles = element.styles ++ [ ( "animation-play-state", "paused" ) ] }
+
+                        Nothing ->
+                            Nothing
+                )
+                state.elementAnimations
+    in
+    AnimState { state | elementAnimations = updatedAnimations }
+
+
+{-| Resume a paused keyframe animation by setting animation-play-state to running.
+Note: This only works with keyframe animations, not CSS transitions.
+-}
+resumeAnimation : String -> AnimState -> AnimState
+resumeAnimation elementId (AnimState state) =
+    let
+        updatedAnimations =
+            Dict.update elementId
+                (\maybeElement ->
+                    case maybeElement of
+                        Just element ->
+                            let
+                                filteredStyles =
+                                    List.filter (\( key, _ ) -> key /= "animation-play-state") element.styles
+
+                                newStyles =
+                                    filteredStyles ++ [ ( "animation-play-state", "running" ) ]
+                            in
+                            Just { element | styles = newStyles }
+
+                        Nothing ->
+                            Nothing
+                )
+                state.elementAnimations
+    in
+    AnimState { state | elementAnimations = updatedAnimations }

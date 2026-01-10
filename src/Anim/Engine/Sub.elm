@@ -1,6 +1,7 @@
 module Anim.Engine.Sub exposing
     ( AnimState, init, AnimBuilder, builder
     , animate
+    , stop, pause, resume
     , AnimationMsg, update, subscriptions
     , htmlAttributes
     , perspective
@@ -31,6 +32,22 @@ subscriptions for smooth, controlled animations.
 # Execute
 
 @docs animate
+
+
+# Animation Control
+
+Control running animations with stop, pause, and resume functionality.
+
+**Subscription Animation Behavior:**
+
+  - **stop**: Immediately stops all animations by clearing the animation state.
+    Animation elements remain at their current interpolated positions.
+  - **pause**: Pauses all running animations by stopping the subscription updates.
+    Animation state is preserved and can be resumed.
+  - **resume**: Resumes paused animations by restarting subscription updates.
+    Animations continue from where they were paused.
+
+@docs stop, pause, resume
 
 
 # Update
@@ -762,3 +779,49 @@ For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-la
 htmlAttributes : ElementId -> AnimState -> List (Html.Attribute msg)
 htmlAttributes =
     InternalSub.htmlAttributes
+
+
+
+-- ANIMATION CONTROL
+
+
+{-| Stop all running animations immediately.
+
+Animation elements remain at their current interpolated positions.
+This effectively clears the animation queue and stops all subscription updates.
+
+    stoppedAnimations =
+        Sub.stop "my-element" model.animations
+
+-}
+stop : String -> AnimState -> AnimState
+stop elementId animState =
+    InternalSub.stopElement elementId animState
+
+
+{-| Pause all running animations.
+
+Animation state is preserved and can be resumed later.
+This stops subscription updates while maintaining current animation progress.
+
+    pausedAnimations =
+        Sub.pause "my-element" model.animations
+
+-}
+pause : String -> AnimState -> AnimState
+pause elementId animState =
+    InternalSub.pauseElement elementId animState
+
+
+{-| Resume paused animations.
+
+Animations continue from where they were paused.
+This restarts subscription updates for the specified element.
+
+    resumedAnimations =
+        Sub.resume "my-element" model.animations
+
+-}
+resume : String -> AnimState -> AnimState
+resume elementId animState =
+    InternalSub.resumeElement elementId animState

@@ -747,6 +747,38 @@ window.ElmAnimateWAAPI = (function () {
     }
 
     /**
+     * Pause animation for specific element
+     */
+    function pauseAnimation(elementId) {
+        const animations = activeAnimations.get(elementId);
+        if (animations) {
+            if (Array.isArray(animations)) {
+                animations.forEach(animation => {
+                    animation.pause();
+                });
+            } else {
+                animations.pause();
+            }
+        }
+    }
+
+    /**
+     * Resume animation for specific element
+     */
+    function resumeAnimation(elementId) {
+        const animations = activeAnimations.get(elementId);
+        if (animations) {
+            if (Array.isArray(animations)) {
+                animations.forEach(animation => {
+                    animation.play();
+                });
+            } else {
+                animations.play();
+            }
+        }
+    }
+
+    /**
      * Initialize the WAAPI system with Elm ports
      */
     function init(ports) {
@@ -761,7 +793,17 @@ window.ElmAnimateWAAPI = (function () {
         // Subscribe to animation commands from Elm
         if (ports.animateElement && ports.animateElement.subscribe) {
             ports.animateElement.subscribe(function (animationData) {
-                processAnimationData(animationData);
+                // Check if this is a control command (stop/pause/resume)
+                if (animationData.type === 'stop') {
+                    stopAnimation(animationData.elementId);
+                } else if (animationData.type === 'pause') {
+                    pauseAnimation(animationData.elementId);
+                } else if (animationData.type === 'resume') {
+                    resumeAnimation(animationData.elementId);
+                } else {
+                    // Regular animation command
+                    processAnimationData(animationData);
+                }
             });
         } else {
             console.warn('ElmAnimateWAAPI: animateElement port not found or not subscribeable');
@@ -788,6 +830,8 @@ window.ElmAnimateWAAPI = (function () {
         // Expose utilities for advanced usage
         getCurrentTransform: getCurrentTransform,
         stopAnimation: stopAnimation,
+        pauseAnimation: pauseAnimation,
+        resumeAnimation: resumeAnimation,
         activeAnimations: activeAnimations,
 
         // Allow custom easing functions
