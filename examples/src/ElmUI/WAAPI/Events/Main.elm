@@ -50,13 +50,13 @@ port animateElement : Encode.Value -> Cmd msg
 port stopElementAnimation : Encode.Value -> Cmd msg
 
 
-port animationComplete : (String -> msg) -> Sub msg
+port animationEvent : (AnimationEventData -> msg) -> Sub msg
 
 
-port animationStart : (String -> msg) -> Sub msg
-
-
-port animationCancel : (String -> msg) -> Sub msg
+type alias AnimationEventData =
+    { eventType : String
+    , elementId : String
+    }
 
 
 
@@ -82,7 +82,6 @@ type alias Model =
     , isAnimating : Bool
     , eventLog : List EventLogEntry
     , eventCounter : Int
-    , currentTime : Int
     }
 
 
@@ -111,7 +110,6 @@ init _ =
       , isAnimating = False
       , eventLog = []
       , eventCounter = 0
-      , currentTime = 0
       }
     , Cmd.none
     )
@@ -131,10 +129,7 @@ type Msg
     | MoveToCenter
     | StopAnimation
     | ClearEventLog
-    | AnimationComplete String
-    | AnimationStartEvent String
-    | AnimationCancelEvent String
-    | Tick Time.Posix
+    | AnimationEvent AnimationEventData
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -193,43 +188,35 @@ update msg model =
             , Cmd.none
             )
 
-        AnimationComplete finishedElementId ->
-            if finishedElementId == elementId then
-                ( model
-                    |> addEventToLog AnimationEnd "Animation completed"
-                    |> (\m -> { m | isAnimating = False })
-                , Cmd.none
-                )
+        AnimationEvent eventData ->
+            if eventData.elementId == elementId then
+                case eventData.eventType of
+                    "animationStart" ->
+                        ( model
+                            |> addEventToLog AnimationStart "Animation started"
+                            |> (\m -> { m | isAnimating = True })
+                        , Cmd.none
+                        )
+
+                    "animationComplete" ->
+                        ( model
+                            |> addEventToLog AnimationEnd "Animation completed"
+                            |> (\m -> { m | isAnimating = False })
+                        , Cmd.none
+                        )
+
+                    "animationCancel" ->
+                        ( model
+                            |> addEventToLog AnimationCancel "Animation was cancelled"
+                            |> (\m -> { m | isAnimating = False })
+                        , Cmd.none
+                        )
+
+                    _ ->
+                        ( model, Cmd.none )
 
             else
                 ( model, Cmd.none )
-
-        AnimationStartEvent startedElementId ->
-            if startedElementId == elementId then
-                ( model
-                    |> addEventToLog AnimationStart "Animation started"
-                    |> (\m -> { m | isAnimating = True })
-                , Cmd.none
-                )
-
-            else
-                ( model, Cmd.none )
-
-        AnimationCancelEvent cancelledElementId ->
-            if cancelledElementId == elementId then
-                ( model
-                    |> addEventToLog AnimationCancel "Animation was cancelled"
-                    |> (\m -> { m | isAnimating = False })
-                , Cmd.none
-                )
-
-            else
-                ( model, Cmd.none )
-
-        Tick time ->
-            ( { model | currentTime = Time.posixToMillis time }
-            , Cmd.none
-            )
 
 
 addEventToLog : EventType -> String -> Model -> Model
@@ -238,7 +225,7 @@ addEventToLog eventType description model =
         newEntry =
             { id = model.eventCounter
             , eventType = eventType
-            , timestamp = model.currentTime
+            , timestamp = 0 -- Not displayed, so not needed
             , description = description
             }
 
@@ -259,12 +246,7 @@ addEventToLog eventType description model =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.batch
-        [ animationComplete AnimationComplete
-        , animationStart AnimationStartEvent
-        , animationCancel AnimationCancelEvent
-        , Time.every 100 Tick
-        ]
+    animationEvent AnimationEvent
 
 
 

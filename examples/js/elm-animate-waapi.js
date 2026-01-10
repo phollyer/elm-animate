@@ -741,20 +741,19 @@ window.ElmAnimateWAAPI = (function () {
      * Stop animation for specific element
      */
     /**
-     * Send event to Elm via appropriate port
+     * Send event to Elm via single animationEvent port
      */
     function sendEventToElm(eventType, elementId) {
         console.log('📤 DEBUG: Sending', eventType, 'event for:', elementId);
-        if (window.app && window.app.ports) {
-            const port = window.app.ports[eventType];
-            if (port && typeof port.send === 'function') {
-                port.send(elementId);
-                console.log('✅ DEBUG:', eventType, 'event sent successfully');
-            } else {
-                console.warn('❌ DEBUG:', eventType, 'port not found or not callable');
-            }
+        if (window.app && window.app.ports && window.app.ports.animationEvent) {
+            const eventData = {
+                eventType: eventType,
+                elementId: elementId
+            };
+            window.app.ports.animationEvent.send(eventData);
+            console.log('✅ DEBUG:', eventType, 'event sent successfully via animationEvent port');
         } else {
-            console.warn('❌ DEBUG: No app ports available for', eventType);
+            console.warn('❌ DEBUG: animationEvent port not found or not available');
         }
     }
 
