@@ -27,6 +27,7 @@ import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.CSS as CSS
 import Anim.Property.Position as Position
 import Browser exposing (Document)
+import Common.Animations.Position as PositionAnim
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, centerY, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
@@ -99,15 +100,6 @@ init _ =
 -- UPDATE
 
 
-anim : CSS.AnimState -> Position.Builder
-anim animations =
-    animations
-        |> CSS.builder
-        |> CSS.duration 1000
-        |> CSS.easing Linear
-        |> Position.for "event-box"
-
-
 elementId : String
 elementId =
     "event-box"
@@ -132,10 +124,10 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Position.toXY 450 300
-                        |> Position.easing Easing.QuadInOut
-                        |> Position.build
+                        |> CSS.builder
+                        |> CSS.duration 1000
+                        |> CSS.easing Linear
+                        |> PositionAnim.moveToXY elementId 450 300
                         |> CSS.animate
                 , isAnimating = True
               }
@@ -146,11 +138,10 @@ update msg model =
             ( { model
                 | animations =
                     model.animations
-                        |> anim
-                        |> Position.toXY 225 150
-                        |> Position.easing Easing.SineInOut
-                        |> Position.duration 800
-                        |> Position.build
+                        |> CSS.builder
+                        |> CSS.duration 800
+                        |> CSS.easing Linear
+                        |> PositionAnim.moveToXY elementId 225 150
                         |> CSS.animate
                 , isAnimating = True
               }
