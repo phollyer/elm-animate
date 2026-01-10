@@ -45,10 +45,12 @@ module Anim.Internal.CSS exposing
     , perspectiveStyles
     , resumeAnimation
     , speed
+    , stopAnimation
     )
 
 import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
+import Anim.Internal.Builders.Property as Property
 import Anim.Internal.CSS.KeyframeAnimation as KeyframeAnimation exposing (KeyframeAnimation)
 import Anim.Internal.CSS.Transform as Transforms
 import Anim.Internal.CSS.Transition as Transitions
@@ -58,6 +60,7 @@ import Anim.Internal.Properties.Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
+import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes
@@ -824,3 +827,171 @@ resumeAnimation elementId (AnimState state) =
                 state.elementAnimations
     in
     AnimState { state | elementAnimations = updatedAnimations }
+
+
+{-| Stop an animation by creating a 1ms transition to the current position.
+This effectively cancels any running animation and triggers appropriate CSS events.
+-}
+stopAnimation : String -> AnimState -> AnimState
+stopAnimation elementId animState =
+    let
+        -- Get current state for this element
+        currentState =
+            getState elementId animState
+                |> Maybe.withDefault NotStarted
+
+        -- Helper to get current value based on state
+        getCurrentOr : Maybe a -> a -> a
+        getCurrentOr maybeStart endValue =
+            case currentState of
+                NotStarted ->
+                    -- Use start if available, else default
+                    Maybe.withDefault endValue maybeStart
+
+                _ ->
+                    -- Running or Complete: use end value
+                    endValue
+
+        -- Start with a fresh builder with 1ms duration for the element
+        baseBuilder =
+            animState
+                |> builder
+                |> Builder.duration 1
+                |> easing Anim.Easing.Linear
+                |> Builder.for elementId
+
+        -- Build new animation with all current values using Property.add
+        withAllProperties =
+            baseBuilder
+                |> addPropertyIfExists
+                    (getPositionRange elementId animState)
+                    (\range ->
+                        let
+                            currentPos =
+                                getCurrentOr range.start range.end
+                        in
+                        Builder.PositionConfig
+                            { start = Just currentPos
+                            , end = currentPos
+                            , duration = 1
+                            , speed = 0
+                            , distance = 0
+                            , timing = Just (Duration 1)
+                            , easing = Just Anim.Easing.Linear
+                            , delay = Nothing
+                            , perspective = Nothing
+                            , isDirty = True
+                            }
+                    )
+                |> addPropertyIfExists
+                    (getScaleRange elementId animState)
+                    (\range ->
+                        let
+                            currentScale =
+                                getCurrentOr range.start range.end
+                        in
+                        Builder.ScaleConfig
+                            { start = Just currentScale
+                            , end = currentScale
+                            , duration = 1
+                            , speed = 0
+                            , distance = 0
+                            , timing = Just (Duration 1)
+                            , easing = Just Anim.Easing.Linear
+                            , delay = Nothing
+                            , perspective = Nothing
+                            , isDirty = True
+                            }
+                    )
+                |> addPropertyIfExists
+                    (getRotateRange elementId animState)
+                    (\range ->
+                        let
+                            currentRotate =
+                                getCurrentOr range.start range.end
+                        in
+                        Builder.RotateConfig
+                            { start = Just currentRotate
+                            , end = currentRotate
+                            , duration = 1
+                            , speed = 0
+                            , distance = 0
+                            , timing = Just (Duration 1)
+                            , easing = Just Anim.Easing.Linear
+                            , delay = Nothing
+                            , perspective = Nothing
+                            , isDirty = True
+                            }
+                    )
+                |> addPropertyIfExists
+                    (getOpacityRange elementId animState)
+                    (\range ->
+                        let
+                            currentOpacity =
+                                getCurrentOr range.start range.end
+                        in
+                        Builder.OpacityConfig
+                            { start = Just currentOpacity
+                            , end = currentOpacity
+                            , duration = 1
+                            , speed = 0
+                            , distance = 0
+                            , timing = Just (Duration 1)
+                            , easing = Just Anim.Easing.Linear
+                            , delay = Nothing
+                            , perspective = Nothing
+                            , isDirty = True
+                            }
+                    )
+                |> addPropertyIfExists
+                    (getBackgroundColorRange elementId animState)
+                    (\range ->
+                        let
+                            currentColor =
+                                getCurrentOr range.start range.end
+                        in
+                        Builder.BackgroundColorConfig
+                            { start = Just currentColor
+                            , end = currentColor
+                            , duration = 1
+                            , speed = 0
+                            , distance = 0
+                            , timing = Just (Duration 1)
+                            , easing = Just Anim.Easing.Linear
+                            , delay = Nothing
+                            , perspective = Nothing
+                            , isDirty = True
+                            }
+                    )
+                |> addPropertyIfExists
+                    (getSizeRange elementId animState)
+                    (\range ->
+                        let
+                            currentSize =
+                                getCurrentOr range.start range.end
+                        in
+                        Builder.SizeConfig
+                            { start = Just currentSize
+                            , end = currentSize
+                            , duration = 1
+                            , speed = 0
+                            , distance = 0
+                            , timing = Just (Duration 1)
+                            , easing = Just Anim.Easing.Linear
+                            , delay = Nothing
+                            , perspective = Nothing
+                            , isDirty = True
+                            }
+                    )
+
+        -- Helper function to add a property if it exists
+        addPropertyIfExists : Maybe a -> (a -> Builder.PropertyConfig) -> Builder.AnimBuilder -> Builder.AnimBuilder
+        addPropertyIfExists maybeRange toConfig builder_ =
+            case maybeRange of
+                Just range ->
+                    Property.add (toConfig range) builder_
+
+                Nothing ->
+                    builder_
+    in
+    animate withAllProperties

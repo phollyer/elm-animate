@@ -1221,10 +1221,7 @@ cancelling any running animation and triggering appropriate CSS events.
 -}
 stop : String -> AnimState -> AnimState
 stop elementId animState =
-    -- For now, just return the unchanged state since the complex builder approach is tricky
-    -- The user's Events example shows this works as intended
-    -- TODO: Implement proper internal stop logic
-    animState
+    InternalCSS.stopAnimation elementId animState
 
 
 {-| Pause a running keyframe animation using CSS animation-play-state.
