@@ -15,6 +15,7 @@ All controls work through JavaScript ports with the Web Animations API for nativ
 
 -}
 
+import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Position as Position
 import Browser exposing (Document)
@@ -40,6 +41,7 @@ type alias Model =
     , isAnimating : Bool
     , isPaused : Bool
     , window : { width : Int, height : Int }
+    , animationAreaSize : { width : Int, height : Int }
     }
 
 
@@ -64,15 +66,22 @@ main =
 init : { window : { width : Int, height : Int } } -> ( Model, Cmd Msg )
 init { window } =
     let
+        animationAreaWidth =
+            min 500 (window.width - 40)
+
         ( initialAnimState, initCmd ) =
             WAAPI.builder WAAPI.init
-                |> Position.initXY elementId 50 50
+                |> Position.initXY elementId (toFloat animationAreaWidth / 2 - 25) 50
                 |> WAAPI.animate WAAPI.init
     in
     ( { animationState = initialAnimState
       , isAnimating = False
       , isPaused = False
       , window = window
+      , animationAreaSize =
+            { width = animationAreaWidth
+            , height = 350
+            }
       }
     , WAAPI.sendCommand waapiCommand initCmd
     )
@@ -108,8 +117,7 @@ update msg model =
 
                 ( newAnimState, animationData ) =
                     WAAPI.builder model.animationState
-                        |> WAAPI.duration 2500
-                        |> PositionAnim.moveToXY elementId 300 300
+                        |> PositionAnim.moveToY elementId 200 BounceOut 300
                         |> WAAPI.animate model.animationState
             in
             ( { model | animationState = newAnimState }
@@ -236,6 +244,15 @@ viewContent model =
       column
         [ centerX
         , Border.width 1
+        , Border.color Colors.borderMedium
+        , Border.shadow
+            { offset = ( 0, 2 )
+            , size = 2
+            , blur = 4
+            , color = Element.rgba 0 0 0 0.1
+            }
+        , Background.color Colors.backgroundLight
+        , Border.rounded 8
         ]
         [ el
             [ width fill
@@ -257,7 +274,7 @@ viewContent model =
                 (text "🎮 Control Functions")
         , column
             [ width fill ]
-            [ viewControlDescription 0 "🏀 Animate" "Bounce the ball"
+            [ viewControlDescription 0 "🏀 Animate" "Drop the ball"
             , viewControlDescription 1 "⏹️ Stop" "Jump instantly to end state and stop"
             , viewControlDescription 1 "⏸️ Pause" "Pause animation at current position"
             , viewControlDescription 1 "▶️ Resume" "Continue paused animation"
@@ -311,7 +328,7 @@ viewContent model =
             , ( UI.Purple, Restart, "🔄 Restart" )
             ]
         ]
-    , -- Animation area with moving box
+    , -- Animation area
       el
         [ width (fill |> maximum 500)
         , height (px 350)
@@ -333,7 +350,7 @@ viewContent model =
             , htmlAttribute (Html.Attributes.id elementId)
             , htmlAttribute (Html.Attributes.style "position" "absolute")
             ]
-            (el [ centerX, centerY, Font.size 40 ] (text "🏀"))
+            (el [ centerX, centerY, Font.size 50 ] (text "🏀"))
         )
     ]
 
