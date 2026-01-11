@@ -54,7 +54,7 @@
 }
 
 /* Button group container */
-.ui-button-group {
+.ui-wrapped-row {
     display: flex;
     gap: 12px;
     flex-wrap: wrap;
@@ -70,7 +70,7 @@
         font-size: 13px;
     }
 
-    .ui-button-group {
+    .ui-wrapped-row {
         gap: 8px;
         margin: 12px 0;
     }
@@ -85,7 +85,7 @@
         min-height: 44px;
     }
 
-    .ui-button-group {
+    .ui-wrapped-row {
         gap: 6px;
         margin: 10px 0;
     }

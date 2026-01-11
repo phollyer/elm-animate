@@ -496,6 +496,6 @@ wrappedButtonRow buttons =
     Element.el [ centerX ] <|
         Element.html
             (Html.div
-                [ Html.Attributes.class "ui-button-group" ]
+                [ Html.Attributes.class "ui-wrapped-row" ]
                 htmlButtons
             )

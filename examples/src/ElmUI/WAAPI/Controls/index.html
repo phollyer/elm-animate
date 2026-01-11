@@ -11,11 +11,16 @@
 
 <body>
     <div id="elm-app"></div>
+    <script src="../../../../js/elm-animate-waapi.js"></script>
     <script src="index.js"></script>
-    <script src="../../../js/elm-animate-waapi.js"></script>
     <script>
         const app = Elm.ElmUI.WAAPI.Controls.Main.init({
-            node: document.getElementById('elm-app')
+            node: document.getElementById('elm-app'), flags: {
+                window: {
+                    width: window.innerWidth,
+                    height: window.innerHeight
+                }
+            }
         });
 
         // Initialize WAAPI JavaScript integration

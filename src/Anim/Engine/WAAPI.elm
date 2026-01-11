@@ -374,8 +374,12 @@ Returns the updated animation state and the encoded animation data to send to Ja
 
 -}
 animate : AnimState -> AnimBuilder -> ( AnimState, Encode.Value )
-animate =
-    InternalWAAPI.animate
+animate animState animBuilder =
+    let
+        ( newAnimState, animationData ) =
+            InternalWAAPI.animate animState animBuilder
+    in
+    ( newAnimState, encodeCommand AnimateCommand "" animationData )
 
 
 {-| Execute a fire-and-forget animation without state tracking.
@@ -1204,17 +1208,13 @@ resetAnimation elementId =
 
 {-| Create a restart animation command.
 
-Use with sendCommand along with new animation data:
+Restarts the last animation that was played on the element.
 
-    let
-        ( newAnimState, animationData ) =
-            WAAPI.builder model.animState
-                |> Position.moveUp "my-element"
-                |> WAAPI.animate model.animState
-    in
-    WAAPI.sendCommand waapiCommand (WAAPI.restartAnimation "my-element" animationData)
+Use with sendCommand:
+
+    WAAPI.sendCommand waapiCommand (WAAPI.restartAnimation "my-element")
 
 -}
-restartAnimation : String -> Encode.Value -> Encode.Value
-restartAnimation elementId animationData =
-    encodeCommand RestartCommand elementId animationData
+restartAnimation : String -> Encode.Value
+restartAnimation elementId =
+    encodeCommand RestartCommand elementId Encode.null

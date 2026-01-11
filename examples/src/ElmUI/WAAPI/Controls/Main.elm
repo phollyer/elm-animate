@@ -21,7 +21,7 @@ import Browser exposing (Document)
 import Common.Animations.Position as PositionAnim
 import Common.Colors as Colors
 import Common.UI as UI
-import Element exposing (Element, centerX, centerY, column, el, fill, height, htmlAttribute, maximum, padding, px, spacing, text, width)
+import Element exposing (Element, centerX, centerY, column, el, fill, height, html, htmlAttribute, maximum, padding, paragraph, px, row, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -39,6 +39,7 @@ type alias Model =
     { animationState : WAAPI.AnimState
     , isAnimating : Bool
     , isPaused : Bool
+    , window : { width : Int, height : Int }
     }
 
 
@@ -46,7 +47,7 @@ type alias Model =
 -- MAIN
 
 
-main : Program () Model Msg
+main : Program { window : { width : Int, height : Int } } Model Msg
 main =
     Browser.document
         { init = init
@@ -60,8 +61,8 @@ main =
 -- INIT
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
+init : { window : { width : Int, height : Int } } -> ( Model, Cmd Msg )
+init { window } =
     let
         ( initialAnimState, initCmd ) =
             WAAPI.builder WAAPI.init
@@ -71,6 +72,7 @@ init _ =
     ( { animationState = initialAnimState
       , isAnimating = False
       , isPaused = False
+      , window = window
       }
     , WAAPI.sendCommand waapiCommand initCmd
     )
@@ -100,54 +102,43 @@ update msg model =
     case msg of
         Animate ->
             let
+                currentPosition =
+                    WAAPI.getCurrentPosition elementId model.animationState
+                        |> Debug.log "Current Position"
+
                 ( newAnimState, animationData ) =
                     WAAPI.builder model.animationState
                         |> WAAPI.duration 2500
                         |> PositionAnim.moveToXY elementId 300 300
                         |> WAAPI.animate model.animationState
             in
-            ( { model
-                | animationState = newAnimState
-                , isAnimating = True
-                , isPaused = False
-              }
+            ( { model | animationState = newAnimState }
             , WAAPI.sendCommand waapiCommand animationData
             )
 
         Stop ->
-            ( { model | isAnimating = False, isPaused = False }
+            ( model
             , WAAPI.sendCommand waapiCommand (WAAPI.stopAnimation elementId)
             )
 
         Pause ->
-            ( { model | isPaused = True }
+            ( model
             , WAAPI.sendCommand waapiCommand (WAAPI.pauseAnimation elementId)
             )
 
         Resume ->
-            ( { model | isPaused = False }
+            ( model
             , WAAPI.sendCommand waapiCommand (WAAPI.resumeAnimation elementId)
             )
 
         Reset ->
-            ( { model | isAnimating = False, isPaused = False }
+            ( model
             , WAAPI.sendCommand waapiCommand (WAAPI.resetAnimation elementId)
             )
 
         Restart ->
-            let
-                ( newAnimState, animationData ) =
-                    WAAPI.builder model.animationState
-                        |> WAAPI.duration 2500
-                        |> PositionAnim.moveUp elementId
-                        |> WAAPI.animate model.animationState
-            in
-            ( { model
-                | animationState = newAnimState
-                , isAnimating = True
-                , isPaused = False
-              }
-            , WAAPI.sendCommand waapiCommand (WAAPI.restartAnimation elementId animationData)
+            ( model
+            , WAAPI.sendCommand waapiCommand (WAAPI.restartAnimation elementId)
             )
 
         WaapiEventReceived result ->
@@ -232,15 +223,15 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ UI.backButtonWithPath "../../../index.html"
+    [ UI.backButton
     , UI.pageHeader "ElmUI & WAAPI Engine Controls"
-    , -- Description
-      el
-        [ Font.size 16
+    , paragraph
+        [ width fill
+        , Font.size 16
         , Font.color Colors.textMedium
-        , centerX
+        , Font.center
         ]
-        (text "Demonstrating all Web Animations API controls with JavaScript port integration")
+        [ text "Demonstrating all Web Animations API controls with JavaScript port integration" ]
     , -- Current status display
       column
         [ spacing 8, centerX ]
@@ -306,12 +297,10 @@ viewContent model =
         (el
             [ width (px 50)
             , height (px 50)
-            , Background.color Colors.success
-            , Border.rounded 25
             , htmlAttribute (Html.Attributes.id elementId)
             , htmlAttribute (Html.Attributes.style "position" "absolute")
             ]
-            (el [ centerX, centerY, Font.size 20 ] (text "🏀"))
+            (el [ centerX, centerY, Font.size 40 ] (text "🏀"))
         )
     , -- Controls explanation
       column
