@@ -13,7 +13,7 @@ module Common.UI exposing
     , pageHeader
     , techInfo
     , techParagraph
-    , wrappedButtonRow
+    , wrappedButtonRow, htmlButton
     )
 
 import Browser exposing (Document)
@@ -458,25 +458,10 @@ getCardColor cardNum =
 
 -- HTML-BASED BUTTON GROUPS
 
-
-{-| Create a button group using pure CSS classes
-All styling is handled by the ui-components.css file
-
-ElmUI's built-in `wrappedRow` is tricky to style responsively, so using HTML here is simpler.
-These will wrap correctly so that all buttons are centered horizontally, wrapped or not.
-
--}
-wrappedButtonRow : List ( ButtonStyle, msg, String ) -> Element msg
-wrappedButtonRow buttons =
+htmlButton : ( ButtonStyle, msg, String ) -> Html.Html msg
+htmlButton ( style, onPress, label ) =
     let
-        createHtmlButton ( style, onPress, label ) =
-            Html.button
-                [ Html.Events.onClick onPress
-                , Html.Attributes.class ("ui-action-button " ++ getButtonStyleClass style)
-                ]
-                [ Html.text label ]
-
-        getButtonStyleClass style =
+        getButtonStyleClass  =
             case style of
                 Primary ->
                     "primary"
@@ -490,8 +475,26 @@ wrappedButtonRow buttons =
                 Warning ->
                     "warning"
 
+    in
+    Html.button
+        [ Html.Events.onClick onPress
+        , Html.Attributes.class ("ui-action-button " ++ getButtonStyleClass )
+        ]
+        [ Html.text label ]
+
+{-| Create a button group using pure CSS classes
+All styling is handled by the ui-components.css file
+
+ElmUI's built-in `wrappedRow` is tricky to style responsively, so using HTML here is simpler.
+These will wrap correctly so that all buttons are centered horizontally, wrapped or not.
+
+-}
+wrappedButtonRow : List ( ButtonStyle, msg, String ) -> Element msg
+wrappedButtonRow buttons =
+    let
+
         htmlButtons =
-            List.map createHtmlButton buttons
+            List.map htmlButton buttons
     in
     Element.el [ centerX ] <|
         Element.html

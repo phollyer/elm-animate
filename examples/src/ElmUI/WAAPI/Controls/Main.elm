@@ -263,19 +263,22 @@ viewContent model =
             )
         ]
     , -- Control buttons
-      column
+      row
         [ spacing 12, centerX ]
-        [ UI.wrappedButtonRow
-            [ ( UI.Primary, Animate, "🏀 Animate Up" )
-            , ( UI.Warning, Stop, "⏹️ Stop" )
+        [ column
+            [ spacing 12 ]
+            [ button ( UI.Primary, Animate, "🏀 Animate" )
+            , button ( UI.Warning, Stop, "⏹️ Stop" )
             ]
-        , UI.wrappedButtonRow
-            [ ( UI.Success, Pause, "⏸️ Pause" )
-            , ( UI.Success, Resume, "▶️ Resume" )
+        , column
+            [ spacing 12 ]
+            [ button ( UI.Success, Pause, "⏸️ Pause" )
+            , button ( UI.Success, Resume, "▶️ Resume" )
             ]
-        , UI.wrappedButtonRow
-            [ ( UI.Purple, Reset, "⏮️ Reset" )
-            , ( UI.Purple, Restart, "🔄 Restart" )
+        , column
+            [ spacing 12 ]
+            [ button ( UI.Purple, Reset, "⏮️ Reset" )
+            , button ( UI.Purple, Restart, "🔄 Restart" )
             ]
         ]
     , -- Animation area with moving box
@@ -326,7 +329,7 @@ viewContent model =
 
 viewControlDescription : String -> String -> Element Msg
 viewControlDescription control description =
-    Element.row
+    row
         [ spacing 8, width fill ]
         [ el
             [ Font.size 14, Font.medium, Font.color Colors.primary, width (px 120) ]
@@ -335,3 +338,15 @@ viewControlDescription control description =
             [ Font.size 14, Font.color Colors.textMedium ]
             (text description)
         ]
+
+
+buttons : List ( UI.ButtonStyle, Msg, String ) -> Element Msg
+buttons =
+    column [ spacing 12 ] << List.map button
+
+
+button : ( UI.ButtonStyle, msg, String ) -> Element msg
+button =
+    el [ centerX ]
+        << html
+        << UI.htmlButton
