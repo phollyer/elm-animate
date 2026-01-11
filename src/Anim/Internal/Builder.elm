@@ -240,7 +240,7 @@ getTimespec (AnimBuilder data) =
 -}
 getTimeSpec : AnimBuilder -> TimeSpec
 getTimeSpec (AnimBuilder data) =
-    data.globalTiming |> Maybe.withDefault (Duration 400)
+    data.globalTiming |> Maybe.withDefault (Duration 0)
 
 
 getEasing : AnimBuilder -> Maybe Easing
@@ -450,7 +450,7 @@ processStandardAnimation { config, globalData, defaultStart, distanceFn, duratio
             distanceFn start config.end
 
         resolvedTiming =
-            resolveTimingWithDefault config.timing globalData.globalTiming (Duration 1000)
+            resolveTimingWithDefault config.timing globalData.globalTiming (Duration 0)
 
         duration_ =
             durationFn distance_ resolvedTiming
