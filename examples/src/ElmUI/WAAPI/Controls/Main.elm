@@ -140,13 +140,21 @@ update msg model =
             )
 
         Reset ->
-            ( model
-            , WAAPI.sendCommand waapiCommand (WAAPI.resetAnimation elementId)
+            let
+                ( newAnimState, resetCmd ) =
+                    WAAPI.resetAnimation elementId model.animationState
+            in
+            ( { model | animationState = newAnimState }
+            , WAAPI.sendCommand waapiCommand resetCmd
             )
 
         Restart ->
-            ( model
-            , WAAPI.sendCommand waapiCommand (WAAPI.restartAnimation elementId)
+            let
+                ( newAnimState, restartCmd ) =
+                    WAAPI.restartAnimation elementId model.animationState
+            in
+            ( { model | animationState = newAnimState }
+            , WAAPI.sendCommand waapiCommand restartCmd
             )
 
         WaapiEventReceived result ->

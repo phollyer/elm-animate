@@ -1194,27 +1194,41 @@ resumeAnimation elementId =
     encodeCommand ResumeCommand elementId Encode.null
 
 
-{-| Create a reset animation command.
+{-| Reset an element to its initial animation state.
 
-Use with sendCommand:
+Creates a 0ms duration animation that instantly moves the element back to its start position/properties.
 
-    WAAPI.sendCommand waapiCommand (WAAPI.resetAnimation "my-element")
+Returns updated animation state and command to send via ports:
 
--}
-resetAnimation : String -> Encode.Value
-resetAnimation elementId =
-    encodeCommand ResetCommand elementId Encode.null
-
-
-{-| Create a restart animation command.
-
-Restarts the last animation that was played on the element.
-
-Use with sendCommand:
-
-    WAAPI.sendCommand waapiCommand (WAAPI.restartAnimation "my-element")
+    let
+        ( newAnimState, resetCmd ) =
+            WAAPI.resetAnimation "my-element" model.animations
+    in
+    ( { model | animations = newAnimState }
+    , WAAPI.sendCommand waapiCommand resetCmd
+    )
 
 -}
-restartAnimation : String -> Encode.Value
-restartAnimation elementId =
-    encodeCommand RestartCommand elementId Encode.null
+resetAnimation : String -> AnimState -> ( AnimState, Encode.Value )
+resetAnimation elementId animState =
+    InternalWAAPI.resetElement elementId animState
+
+
+{-| Restart the last animation for an element.
+
+Replays the stored animation commands for the element from the beginning.
+
+Returns updated animation state and command to send via ports:
+
+    let
+        ( newAnimState, restartCmd ) =
+            WAAPI.restartAnimation "my-element" model.animations
+    in
+    ( { model | animations = newAnimState }
+    , WAAPI.sendCommand waapiCommand restartCmd
+    )
+
+-}
+restartAnimation : String -> AnimState -> ( AnimState, Encode.Value )
+restartAnimation elementId animState =
+    InternalWAAPI.restartElement elementId animState

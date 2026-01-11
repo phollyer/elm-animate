@@ -802,6 +802,8 @@ window.ElmAnimateWAAPI = (function () {
                 animations.cancel();
             }
             activeAnimations.delete(elementId);
+            // Send event to notify Elm that animation was reset
+            sendEventToElm('animationUpdate', elementId, { status: 'canceled' });
         }
     }
 
@@ -821,6 +823,10 @@ window.ElmAnimateWAAPI = (function () {
                 animations.play();
             }
             sendEventToElm('animationUpdate', elementId, { status: 'restarted' });
+        } else {
+            // No active animation to restart - just send a completed event
+            console.log('⚠️ DEBUG: No active animation to restart for:', elementId);
+            sendEventToElm('animationUpdate', elementId, { status: 'completed' });
         }
     }
 
@@ -876,51 +882,63 @@ window.ElmAnimateWAAPI = (function () {
             ports.waapiCommand.subscribe(function (commandData) {
                 console.log('🚀 DEBUG: waapiCommand received data:', commandData);
                 try {
-                    const commandType = commandData.type;
-                    const elementId = commandData.elementId;
-                    const payload = commandData.payload;
+                    // Check if this is animation data structure (from animate, reset, restart)
+                    if (commandData.elements) {
+                        console.log('🎬 DEBUG: Processing animation data structure');
+                        processAnimationData(commandData);
+                    }
+                    // Legacy command structure (if still used elsewhere)
+                    else if (commandData.type) {
+                        const commandType = commandData.type;
+                        const elementId = commandData.elementId;
+                        const payload = commandData.payload;
 
-                    console.log('📋 DEBUG: Processing command type:', commandType, 'for element:', elementId);
+                        console.log('📋 DEBUG: Processing command type:', commandType, 'for element:', elementId);
 
-                    switch (commandType) {
-                        case 'animate':
-                            console.log('🎬 DEBUG: Processing animate command');
-                            processAnimationData(payload);
-                            break;
-
-                        case 'stop':
-                            console.log('🛑 DEBUG: Processing stop command for:', elementId);
-                            stopAnimation(elementId);
-                            break;
-
-                        case 'pause':
-                            console.log('⏸️ DEBUG: Processing pause command for:', elementId);
-                            pauseAnimation(elementId);
-                            break;
-
-                        case 'resume':
-                            console.log('▶️ DEBUG: Processing resume command for:', elementId);
-                            resumeAnimation(elementId);
-                            break;
-
-                        case 'reset':
-                            console.log('🔄 DEBUG: Processing reset command for:', elementId);
-                            resetAnimation(elementId);
-                            break;
-
-                        case 'restart':
-                            console.log('🔄▶️ DEBUG: Processing restart command for:', elementId);
-                            // For restart, the payload contains the new animation data
-                            if (payload) {
-                                resetAnimation(elementId);
+                        switch (commandType) {
+                            case 'animate':
+                                console.log('🎬 DEBUG: Processing animate command');
                                 processAnimationData(payload);
-                            } else {
-                                console.warn('❌ DEBUG: Restart command missing payload');
-                            }
-                            break;
+                                break;
 
-                        default:
-                            console.warn('❌ DEBUG: Unknown command type:', commandType);
+                            case 'stop':
+                                console.log('🛑 DEBUG: Processing stop command for:', elementId);
+                                stopAnimation(elementId);
+                                break;
+
+                            case 'pause':
+                                console.log('⏸️ DEBUG: Processing pause command for:', elementId);
+                                pauseAnimation(elementId);
+                                break;
+
+                            case 'resume':
+                                console.log('▶️ DEBUG: Processing resume command for:', elementId);
+                                resumeAnimation(elementId);
+                                break;
+
+                            case 'reset':
+                                console.log('🔄 DEBUG: Processing reset command for:', elementId);
+                                resetAnimation(elementId);
+                                break;
+
+                            case 'restart':
+                                console.log('🔄▶️ DEBUG: Processing restart command for:', elementId);
+                                // For restart, the payload contains the new animation data
+                                if (payload) {
+                                    resetAnimation(elementId);
+                                    processAnimationData(payload);
+                                } else {
+                                    console.warn('❌ DEBUG: Restart command missing payload');
+                                }
+                                break;
+
+                            default:
+                                console.warn('❌ DEBUG: Unknown command type:', commandType);
+                        }
+                    }
+                    // Handle empty objects or other unexpected formats
+                    else {
+                        console.warn('❌ DEBUG: Received data with no elements or type field:', commandData);
                     }
                 } catch (error) {
                     console.error('❌ DEBUG: Error processing WAAPI command:', error);

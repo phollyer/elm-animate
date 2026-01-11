@@ -37,12 +37,20 @@ module Anim.Internal.WAAPI exposing
     , isElementRunning
     , perspective
     , perspectiveWith
+    , resetElement
+    , restartElement
     , speed
     , update
     )
 
 import Anim.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
+import Anim.Internal.Builders.BackgroundColor as BackgroundColor
+import Anim.Internal.Builders.Opacity as Opacity
+import Anim.Internal.Builders.Position as Position
+import Anim.Internal.Builders.Rotate as Rotate
+import Anim.Internal.Builders.Scale as Scale
+import Anim.Internal.Builders.Size as Size
 import Anim.Internal.Easing as Easing
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Color as Color exposing (Color(..))
@@ -89,6 +97,7 @@ type alias ElementEndStates =
 
 type alias ElementAnimation =
     { commands : Encode.Value
+    , startStates : ElementEndStates -- Store start states for reset functionality
     , endStates : ElementEndStates
     , currentStates : ElementEndStates
     , status : AnimationStatus
@@ -188,6 +197,9 @@ animate (AnimState state) builder_ =
                 |> Dict.map
                     (\elementId elementConfig ->
                         let
+                            startStates =
+                                extractElementStartStates elementConfig
+
                             endStates =
                                 extractElementEndStates elementConfig
 
@@ -198,6 +210,7 @@ animate (AnimState state) builder_ =
                                     |> Maybe.withDefault endStates
                         in
                         { commands = encode processedData
+                        , startStates = startStates
                         , endStates = endStates
                         , currentStates = currentStates
                         , status = NotStarted
@@ -258,6 +271,46 @@ extractElementEndStates elementConfig =
                     { state | size = Just config.end }
     in
     List.foldl extractPropertyEndState emptyElementEndStates elementConfig.properties
+
+
+extractElementStartStates : Builder.ProcessedElementConfig -> ElementEndStates
+extractElementStartStates elementConfig =
+    let
+        emptyElementStartStates =
+            { position = Nothing
+            , rotate = Nothing
+            , scale = Nothing
+            , backgroundColor = Nothing
+            , fontColor = Nothing
+            , opacity = Nothing
+            , size = Nothing
+            }
+
+        extractPropertyStartState : Builder.ProcessedPropertyConfig -> ElementEndStates -> ElementEndStates
+        extractPropertyStartState property state =
+            case property of
+                Builder.ProcessedPositionConfig config ->
+                    { state | position = config.start }
+
+                Builder.ProcessedRotateConfig config ->
+                    { state | rotate = config.start }
+
+                Builder.ProcessedScaleConfig config ->
+                    { state | scale = config.start }
+
+                Builder.ProcessedBackgroundColorConfig config ->
+                    { state | backgroundColor = config.start }
+
+                Builder.ProcessedFontColorConfig config ->
+                    { state | fontColor = config.start }
+
+                Builder.ProcessedOpacityConfig config ->
+                    { state | opacity = config.start }
+
+                Builder.ProcessedSizeConfig config ->
+                    { state | size = config.start }
+    in
+    List.foldl extractPropertyStartState emptyElementStartStates elementConfig.properties
 
 
 injectCurrentStatesForElement : ElementId -> ElementAnimation -> AnimBuilder -> AnimBuilder
@@ -995,3 +1048,170 @@ isComplexEasing easing_ =
 
         _ ->
             False
+
+
+{-| Reset an element to its initial animation state by resetting internal state and creating a 0ms animation to start positions.
+-}
+resetElement : String -> AnimState -> ( AnimState, Encode.Value )
+resetElement elementId (AnimState state) =
+    case Dict.get elementId state.elementAnimations of
+        Nothing ->
+            -- No animation data to reset, return unchanged state and empty command
+            ( AnimState state, Encode.object [] )
+
+        Just elementAnimation ->
+            -- Reset internal state: mark as NotStarted and update currentStates to startStates
+            let
+                resetElementAnimation =
+                    { elementAnimation
+                        | status = NotStarted
+                        , currentStates = elementAnimation.startStates
+                    }
+
+                updatedElementAnimations =
+                    Dict.insert elementId resetElementAnimation state.elementAnimations
+
+                updatedAnimState =
+                    AnimState
+                        { state
+                            | elementAnimations = updatedElementAnimations
+                            , isRunning =
+                                Dict.values updatedElementAnimations
+                                    |> List.any (\anim -> anim.status == Running)
+                        }
+
+                -- Create 0ms animation to visually jump to start positions
+                resetBuilder =
+                    Builder.init
+                        |> Builder.duration 0
+                        |> Builder.easing Linear
+                        |> Builder.for elementId
+                        |> addResetProperties elementId elementAnimation.endStates elementAnimation.startStates
+
+                ( _, resetCommands ) =
+                    animate updatedAnimState resetBuilder
+            in
+            ( updatedAnimState, resetCommands )
+
+
+{-| Restart the last animation by resetting internal state and replaying the original animation commands.
+-}
+restartElement : String -> AnimState -> ( AnimState, Encode.Value )
+restartElement elementId (AnimState state) =
+    case Dict.get elementId state.elementAnimations of
+        Nothing ->
+            -- No animation data to restart, return unchanged state and empty command
+            ( AnimState state, Encode.object [] )
+
+        Just elementAnimation ->
+            -- Reset internal state: mark as NotStarted and update currentStates to startStates
+            let
+                resetElementAnimation =
+                    { elementAnimation
+                        | status = NotStarted
+                        , currentStates = elementAnimation.startStates
+                    }
+
+                updatedElementAnimations =
+                    Dict.insert elementId resetElementAnimation state.elementAnimations
+
+                updatedAnimState =
+                    AnimState
+                        { state
+                            | elementAnimations = updatedElementAnimations
+                            , isRunning = True -- Animation will start running
+                        }
+            in
+            -- Replay the original animation commands (browser treats this as new animation)
+            ( updatedAnimState, elementAnimation.commands )
+
+
+{-| Helper to add reset properties to a builder for all animated properties.
+-}
+addResetProperties : String -> ElementEndStates -> ElementEndStates -> AnimBuilder -> AnimBuilder
+addResetProperties elementId endStates startStates builderState =
+    let
+        -- Use the actual stored start states to reset each property that was animated
+        builderWithPosition =
+            case ( endStates.position, startStates.position ) of
+                ( Just _, Just startPosition ) ->
+                    let
+                        ( x, y, z ) =
+                            Position.toTriple startPosition
+                    in
+                    builderState
+                        |> Position.for elementId
+                        |> Position.toXYZ x y z
+                        |> Position.build
+
+                _ ->
+                    builderState
+
+        builderWithOpacity =
+            case ( endStates.opacity, startStates.opacity ) of
+                ( Just _, Just startOpacity ) ->
+                    builderWithPosition
+                        |> Opacity.for elementId
+                        |> Opacity.to startOpacity
+                        |> Opacity.build
+
+                _ ->
+                    builderWithPosition
+
+        builderWithScale =
+            case ( endStates.scale, startStates.scale ) of
+                ( Just _, Just startScale ) ->
+                    let
+                        ( x, y, z ) =
+                            Scale.toTriple startScale
+                    in
+                    builderWithOpacity
+                        |> Scale.for elementId
+                        |> Scale.toXYZ x y z
+                        |> Scale.build
+
+                _ ->
+                    builderWithOpacity
+
+        builderWithRotate =
+            case ( endStates.rotate, startStates.rotate ) of
+                ( Just _, Just startRotate ) ->
+                    let
+                        ( x, y, z ) =
+                            Rotate.toTriple startRotate
+                    in
+                    builderWithScale
+                        |> Rotate.for elementId
+                        |> Rotate.toXYZ x y z
+                        |> Rotate.build
+
+                _ ->
+                    builderWithScale
+
+        builderWithBackgroundColor =
+            case ( endStates.backgroundColor, startStates.backgroundColor ) of
+                ( Just _, Just startColor ) ->
+                    builderWithRotate
+                        |> BackgroundColor.for elementId
+                        |> BackgroundColor.to startColor
+                        |> BackgroundColor.build
+
+                _ ->
+                    builderWithRotate
+
+        builderWithSize =
+            case ( endStates.size, startStates.size ) of
+                ( Just _, Just startSize ) ->
+                    let
+                        ( width, height ) =
+                            Size.toTuple startSize
+                    in
+                    builderWithBackgroundColor
+                        |> Size.for elementId
+                        |> Size.toHW height width
+                        |> Size.build
+
+                _ ->
+                    builderWithBackgroundColor
+    in
+    builderWithSize
