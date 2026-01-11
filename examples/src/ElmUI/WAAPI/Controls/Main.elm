@@ -21,7 +21,7 @@ import Browser exposing (Document)
 import Common.Animations.Position as PositionAnim
 import Common.Colors as Colors
 import Common.UI as UI
-import Element exposing (Element, centerX, centerY, column, el, fill, height, html, htmlAttribute, maximum, padding, paragraph, px, row, spacing, text, width)
+import Element exposing (Element, centerX, centerY, column, el, fill, height, html, htmlAttribute, maximum, padding, paddingEach, paragraph, px, row, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -232,6 +232,39 @@ viewContent model =
         , Font.center
         ]
         [ text "Demonstrating all Web Animations API controls with JavaScript port integration" ]
+    , -- Controls explanation
+      column
+        [ centerX
+        , Border.width 1
+        ]
+        [ el
+            [ width fill
+            , Border.widthEach
+                { top = 0
+                , right = 0
+                , bottom = 1
+                , left = 0
+                }
+            ]
+          <|
+            el
+                [ Font.size 18
+                , padding 8
+                , centerX
+                , Font.medium
+                , Font.color Colors.textDark
+                ]
+                (text "🎮 Control Functions")
+        , column
+            [ width fill ]
+            [ viewControlDescription 0 "🏀 Animate" "Bounce the ball"
+            , viewControlDescription 1 "⏹️ Stop" "Jump instantly to end state and stop"
+            , viewControlDescription 1 "⏸️ Pause" "Pause animation at current position"
+            , viewControlDescription 1 "▶️ Resume" "Continue paused animation"
+            , viewControlDescription 1 "⏮️ Reset" "Jump instantly to start state and stop"
+            , viewControlDescription 1 "🔄 Restart" "Reset to start, then begin animation again"
+            ]
+        ]
     , -- Current status display
       column
         [ spacing 8, centerX ]
@@ -265,20 +298,17 @@ viewContent model =
     , -- Control buttons
       row
         [ spacing 12, centerX ]
-        [ column
-            [ spacing 12 ]
-            [ button ( UI.Primary, Animate, "🏀 Animate" )
-            , button ( UI.Warning, Stop, "⏹️ Stop" )
+        [ buttons
+            [ ( UI.Primary, Animate, "🏀 Animate" )
+            , ( UI.Warning, Stop, "⏹️ Stop" )
             ]
-        , column
-            [ spacing 12 ]
-            [ button ( UI.Success, Pause, "⏸️ Pause" )
-            , button ( UI.Success, Resume, "▶️ Resume" )
+        , buttons
+            [ ( UI.Success, Pause, "⏸️ Pause" )
+            , ( UI.Success, Resume, "▶️ Resume" )
             ]
-        , column
-            [ spacing 12 ]
-            [ button ( UI.Purple, Reset, "⏮️ Reset" )
-            , button ( UI.Purple, Restart, "🔄 Restart" )
+        , buttons
+            [ ( UI.Purple, Reset, "⏮️ Reset" )
+            , ( UI.Purple, Restart, "🔄 Restart" )
             ]
         ]
     , -- Animation area with moving box
@@ -305,37 +335,32 @@ viewContent model =
             ]
             (el [ centerX, centerY, Font.size 40 ] (text "🏀"))
         )
-    , -- Controls explanation
-      column
-        [ spacing 8, width (fill |> maximum 600), centerX ]
-        [ el
-            [ Font.size 18, centerX, Font.medium, Font.color Colors.textDark ]
-            (text "🎮 Control Functions")
-        , column
-            [ spacing 4, width fill ]
-            [ viewControlDescription "🏀 Animate Up" "Start smooth upward movement animation"
-            , viewControlDescription "⏹️ Stop" "Jump instantly to end state and stop"
-            , viewControlDescription "⏸️ Pause" "Pause animation at current position"
-            , viewControlDescription "▶️ Resume" "Continue paused animation"
-            , viewControlDescription "⏮️ Reset" "Jump instantly to start state and stop"
-            , viewControlDescription "🔄 Restart" "Reset to start, then begin animation again"
-            ]
-        , el
-            [ Font.size 12, Font.color Colors.textLight, centerX ]
-            (text "💡 WAAPI uses native browser animation performance")
-        ]
     ]
 
 
-viewControlDescription : String -> String -> Element Msg
-viewControlDescription control description =
+viewControlDescription : Int -> String -> String -> Element Msg
+viewControlDescription borderWidth control description =
     row
-        [ spacing 8, width fill ]
+        [ width fill
+        , Border.widthEach
+            { top = borderWidth
+            , right = 0
+            , bottom = 0
+            , left = 0
+            }
+        , padding 4
+        ]
         [ el
-            [ Font.size 14, Font.medium, Font.color Colors.primary, width (px 120) ]
+            [ Font.size 14
+            , Font.medium
+            , Font.color Colors.primary
+            , width (px 80)
+            ]
             (text control)
         , el
-            [ Font.size 14, Font.color Colors.textMedium ]
+            [ Font.size 14
+            , Font.color Colors.textMedium
+            ]
             (text description)
         ]
 
