@@ -113,7 +113,7 @@ update msg model =
             let
                 currentPosition =
                     WAAPI.getCurrentPosition elementId model.animationState
-                        |> Debug.log "Current Position"
+                        |> Debug.log "==> Animate: Current Position"
 
                 ( newAnimState, animationData ) =
                     WAAPI.builder model.animationState
@@ -143,7 +143,7 @@ update msg model =
             let
                 currentPosition =
                     WAAPI.getCurrentPosition elementId model.animationState
-                        |> Debug.log "Reset: Current Position before reset"
+                        |> Debug.log "==> Reset: Current Position before reset"
 
                 ( newAnimState, resetCmd ) =
                     WAAPI.resetAnimation elementId model.animationState
@@ -180,8 +180,11 @@ update msg model =
 
 handlePropertyUpdate : WAAPI.PropertyData -> Model -> ( Model, Cmd Msg )
 handlePropertyUpdate propertyData model =
-    -- For this example, we don't need to update the model on property updates
-    ( model, Cmd.none )
+    let
+        updatedAnimState =
+            WAAPI.update (WAAPI.encodePropertyData propertyData) model.animationState
+    in
+    ( { model | animationState = updatedAnimState }, Cmd.none )
 
 
 handleAnimationUpdate : WAAPI.AnimationStatus -> Model -> ( Model, Cmd Msg )
@@ -243,8 +246,32 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
+    let
+        currentPosition =
+            WAAPI.getCurrentPosition elementId model.animationState
+                |> Debug.log "Current Position"
+    in
     [ UI.backButton
     , UI.pageHeader "ElmUI & WAAPI Engine Controls"
+    , paragraph
+        [ width fill
+        , Font.size 14
+        , Font.color Colors.textMedium
+        , Font.center
+        ]
+        [ text <|
+            case currentPosition of
+                Just { x, y, z } ->
+                    "Current Position: x="
+                        ++ String.fromFloat x
+                        ++ ", y="
+                        ++ String.fromFloat y
+                        ++ ", z="
+                        ++ String.fromFloat z
+
+                Nothing ->
+                    "Current Position: Unknown"
+        ]
     , paragraph
         [ width fill
         , Font.size 16

@@ -17,7 +17,7 @@ module Anim.Engine.WAAPI exposing
     , getStartRotate, getEndRotate, getCurrentRotate
     , getStartScale, getEndScale, getCurrentScale
     , getStartSize, getEndSize, getCurrentSize
-    , AnimationStatus(..), PropertyData
+    , AnimationStatus(..), PropertyData, encodePropertyData
     )
 
 {-| Ports-based animation system utilising the Web Animations API with optional state tracking.
@@ -1130,6 +1130,30 @@ decodePropertyData payload =
         )
         payload
         |> Result.mapError Decode.errorToString
+
+
+{-| Encode PropertyData back to JSON for internal use with update function.
+-}
+encodePropertyData : PropertyData -> Encode.Value
+encodePropertyData data =
+    Encode.object
+        [ ( "elementId", Encode.string data.elementId )
+        , ( "positionX", Encode.float data.positionX )
+        , ( "positionY", Encode.float data.positionY )
+        , ( "positionZ", Encode.float data.positionZ )
+        , ( "opacity", Encode.float data.opacity )
+        , ( "rotationX", Encode.float data.rotationX )
+        , ( "rotationY", Encode.float data.rotationY )
+        , ( "rotationZ", Encode.float data.rotationZ )
+        , ( "scaleX", Encode.float data.scaleX )
+        , ( "scaleY", Encode.float data.scaleY )
+        , ( "scaleZ", Encode.float data.scaleZ )
+        , ( "backgroundColor", Encode.string data.backgroundColor )
+        , ( "color", Encode.string data.color )
+        , ( "width", Encode.float data.width )
+        , ( "height", Encode.float data.height )
+        , ( "isAnimating", Encode.bool data.isAnimating )
+        ]
 
 
 {-| Helper function for applying decoders in sequence.

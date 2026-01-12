@@ -1134,20 +1134,15 @@ addResetProperties elementId endStates startStates builderState =
         -- Use the actual stored start states to reset each property that was animated
         builderWithPosition =
             case ( endStates.position, startStates.position ) of
-                ( Just endPosition, Just startPosition ) ->
+                ( Just _, Just startPosition ) ->
                     let
                         ( startX, startY, startZ ) =
                             Position.toTriple startPosition
-
-                        ( endX, endY, endZ ) =
-                            Position.toTriple endPosition
                     in
                     builderState
                         |> Position.for elementId
-                        |> Position.fromXYZ endX endY endZ
-                        -- Set explicit start to current (end) position
                         |> Position.toXYZ startX startY startZ
-                        -- Set target to start position
+                        -- Only set target, let system inject current position as start
                         |> Position.build
 
                 _ ->
@@ -1155,13 +1150,10 @@ addResetProperties elementId endStates startStates builderState =
 
         builderWithOpacity =
             case ( endStates.opacity, startStates.opacity ) of
-                ( Just endOpacity, Just startOpacity ) ->
+                ( Just _, Just startOpacity ) ->
                     builderWithPosition
                         |> Opacity.for elementId
-                        |> Opacity.from endOpacity
-                        -- Set explicit start to current (end) opacity
                         |> Opacity.to startOpacity
-                        -- Set target to start opacity
                         |> Opacity.build
 
                 _ ->
@@ -1169,20 +1161,14 @@ addResetProperties elementId endStates startStates builderState =
 
         builderWithScale =
             case ( endStates.scale, startStates.scale ) of
-                ( Just endScale, Just startScale ) ->
+                ( Just _, Just startScale ) ->
                     let
                         ( startX, startY, startZ ) =
                             Scale.toTriple startScale
-
-                        ( endX, endY, endZ ) =
-                            Scale.toTriple endScale
                     in
                     builderWithOpacity
                         |> Scale.for elementId
-                        |> Scale.fromXYZ endX endY endZ
-                        -- Set explicit start to current (end) scale
                         |> Scale.toXYZ startX startY startZ
-                        -- Set target to start scale
                         |> Scale.build
 
                 _ ->
@@ -1190,20 +1176,14 @@ addResetProperties elementId endStates startStates builderState =
 
         builderWithRotate =
             case ( endStates.rotate, startStates.rotate ) of
-                ( Just endRotate, Just startRotate ) ->
+                ( Just _, Just startRotate ) ->
                     let
                         ( startX, startY, startZ ) =
                             Rotate.toTriple startRotate
-
-                        ( endX, endY, endZ ) =
-                            Rotate.toTriple endRotate
                     in
                     builderWithScale
                         |> Rotate.for elementId
-                        |> Rotate.fromXYZ endX endY endZ
-                        -- Set explicit start to current (end) rotation
                         |> Rotate.toXYZ startX startY startZ
-                        -- Set target to start rotation
                         |> Rotate.build
 
                 _ ->
@@ -1211,13 +1191,10 @@ addResetProperties elementId endStates startStates builderState =
 
         builderWithBackgroundColor =
             case ( endStates.backgroundColor, startStates.backgroundColor ) of
-                ( Just endColor, Just startColor ) ->
+                ( Just _, Just startColor ) ->
                     builderWithRotate
                         |> BackgroundColor.for elementId
-                        |> BackgroundColor.from endColor
-                        -- Set explicit start to current (end) color
                         |> BackgroundColor.to startColor
-                        -- Set target to start color
                         |> BackgroundColor.build
 
                 _ ->
@@ -1225,20 +1202,14 @@ addResetProperties elementId endStates startStates builderState =
 
         builderWithSize =
             case ( endStates.size, startStates.size ) of
-                ( Just endSize, Just startSize ) ->
+                ( Just _, Just startSize ) ->
                     let
                         ( startWidth, startHeight ) =
                             Size.toTuple startSize
-
-                        ( endWidth, endHeight ) =
-                            Size.toTuple endSize
                     in
                     builderWithBackgroundColor
                         |> Size.for elementId
-                        |> Size.fromHW endHeight endWidth
-                        -- Set explicit start to current (end) size
                         |> Size.toHW startHeight startWidth
-                        -- Set target to start size
                         |> Size.build
 
                 _ ->
