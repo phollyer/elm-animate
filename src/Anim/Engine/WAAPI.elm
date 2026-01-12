@@ -1032,7 +1032,7 @@ decodeEvent value =
             )
             value
     of
-        Ok ( eventTypeString, targetElementId, payload ) ->
+        Ok ( eventTypeString, _, payload ) ->
             case eventTypeString of
                 "propertyUpdate" ->
                     case decodePropertyData payload of
@@ -1049,25 +1049,6 @@ decodeEvent value =
 
                         Err error ->
                             Err ("Animation status decode error: " ++ error)
-
-                -- Legacy support for individual animation events
-                "animationStarted" ->
-                    Ok (AnimationUpdate Started)
-
-                "animationPaused" ->
-                    Ok (AnimationUpdate Paused)
-
-                "animationResumed" ->
-                    Ok (AnimationUpdate Resumed)
-
-                "animationComplete" ->
-                    Ok (AnimationUpdate Completed)
-
-                "animationCanceled" ->
-                    Ok (AnimationUpdate Canceled)
-
-                "animationRestarted" ->
-                    Ok (AnimationUpdate Restarted)
 
                 _ ->
                     Err ("Unknown event type: " ++ eventTypeString)

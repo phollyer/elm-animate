@@ -63,7 +63,7 @@ import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
-import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
+import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
 import Html exposing (Html)
 import Html.Attributes
@@ -815,13 +815,12 @@ pauseAnimation elementId (AnimState state) =
     let
         updatedAnimations =
             Dict.update elementId
-                (\maybeElement ->
-                    case maybeElement of
-                        Just element ->
-                            Just { element | styles = element.styles ++ [ ( "animation-play-state", "paused" ) ] }
-
-                        Nothing ->
-                            Nothing
+                (Maybe.map
+                    (\element ->
+                        { element
+                            | styles = element.styles ++ [ ( "animation-play-state", "paused" ) ]
+                        }
+                    )
                 )
                 state.elementAnimations
     in
@@ -836,20 +835,17 @@ resumeAnimation elementId (AnimState state) =
     let
         updatedAnimations =
             Dict.update elementId
-                (\maybeElement ->
-                    case maybeElement of
-                        Just element ->
-                            let
-                                filteredStyles =
-                                    List.filter (\( key, _ ) -> key /= "animation-play-state") element.styles
+                (Maybe.map
+                    (\element ->
+                        let
+                            filteredStyles =
+                                List.filter (\( key, _ ) -> key /= "animation-play-state") element.styles
 
-                                newStyles =
-                                    filteredStyles ++ [ ( "animation-play-state", "running" ) ]
-                            in
-                            Just { element | styles = newStyles }
-
-                        Nothing ->
-                            Nothing
+                            newStyles =
+                                filteredStyles ++ [ ( "animation-play-state", "running" ) ]
+                        in
+                        { element | styles = newStyles }
+                    )
                 )
                 state.elementAnimations
     in
@@ -1163,17 +1159,14 @@ resetAnimation elementId animState =
 {-| Restart an animation from the beginning.
 -}
 restartAnimation : String -> AnimState -> AnimState
-restartAnimation elementId animState =
+restartAnimation elementId ((AnimState state) as animState) =
     case getElementAnimation elementId animState of
         Nothing ->
             animState
 
-        Just animation ->
+        Just _ ->
             -- Mark the element as NotStarted to re-trigger the animation
             let
-                (AnimState state) =
-                    animState
-
                 updatedElements =
                     Dict.insert elementId NotStarted state.elementStates
             in

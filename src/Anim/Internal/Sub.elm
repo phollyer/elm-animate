@@ -88,6 +88,7 @@ type alias PropertyAnimation =
 type alias ElementAnimation =
     { properties : List PropertyAnimation
     , isComplete : Bool
+    , isPaused : Bool
     }
 
 
@@ -1079,6 +1080,7 @@ createElementAnimState startValues _ elementConfig =
     in
     { properties = properties
     , isComplete = False
+    , isPaused = False
     }
 
 
@@ -1244,17 +1246,21 @@ createPropertyAnimState startValues property =
 
 updateElementAnimation : Float -> String -> ElementAnimation -> ElementAnimation
 updateElementAnimation deltaMs _ elementState =
-    let
-        updatedProperties =
-            List.map (updatePropertyAnimation deltaMs) elementState.properties
+    if elementState.isPaused then
+        elementState
 
-        allPropertiesComplete =
-            List.all .isComplete updatedProperties
-    in
-    { elementState
-        | properties = updatedProperties
-        , isComplete = allPropertiesComplete
-    }
+    else
+        let
+            updatedProperties =
+                List.map (updatePropertyAnimation deltaMs) elementState.properties
+
+            allPropertiesComplete =
+                List.all .isComplete updatedProperties
+        in
+        { elementState
+            | properties = updatedProperties
+            , isComplete = allPropertiesComplete
+        }
 
 
 updatePropertyAnimation : Float -> PropertyAnimation -> PropertyAnimation
@@ -1385,7 +1391,7 @@ stopElement elementId (AnimState state) =
                         elementAnim.properties
 
                 updatedAnim =
-                    { elementAnim | properties = updatedProperties, isComplete = True }
+                    { elementAnim | properties = updatedProperties, isComplete = True, isPaused = False }
 
                 updatedDict =
                     Dict.insert elementId updatedAnim state.elementAnimations
@@ -1417,7 +1423,7 @@ resetElement elementId (AnimState state) =
                         elementAnim.properties
 
                 updatedAnim =
-                    { elementAnim | properties = updatedProperties, isComplete = False }
+                    { elementAnim | properties = updatedProperties, isComplete = False, isPaused = False }
 
                 updatedDict =
                     Dict.insert elementId updatedAnim state.elementAnimations
@@ -1449,7 +1455,7 @@ restartElement elementId (AnimState state) =
                         elementAnim.properties
 
                 updatedAnim =
-                    { elementAnim | properties = updatedProperties, isComplete = False }
+                    { elementAnim | properties = updatedProperties, isComplete = False, isPaused = False }
 
                 updatedDict =
                     Dict.insert elementId updatedAnim state.elementAnimations
@@ -1457,19 +1463,27 @@ restartElement elementId (AnimState state) =
             AnimState { state | elementAnimations = updatedDict }
 
 
-{-| Pause animation for a specific element by setting global isRunning flag.
+{-| Pause animation for a specific element.
 -}
 pauseElement : String -> AnimState -> AnimState
 pauseElement elementId (AnimState state) =
-    -- For Sub animations, pause by setting global isRunning to False
-    -- This is a simple approach that pauses all animations
-    AnimState { state | isRunning = False }
+    let
+        updatedAnimations =
+            Dict.update elementId
+                (Maybe.map (\elementAnim -> { elementAnim | isPaused = True }))
+                state.elementAnimations
+    in
+    AnimState { state | elementAnimations = updatedAnimations }
 
 
-{-| Resume animation for a specific element by setting global isRunning flag.
+{-| Resume animation for a specific element.
 -}
 resumeElement : String -> AnimState -> AnimState
 resumeElement elementId (AnimState state) =
-    -- For Sub animations, resume by setting global isRunning to True
-    -- This is a simple approach that resumes all animations
-    AnimState { state | isRunning = True }
+    let
+        updatedAnimations =
+            Dict.update elementId
+                (Maybe.map (\elementAnim -> { elementAnim | isPaused = False }))
+                state.elementAnimations
+    in
+    AnimState { state | elementAnimations = updatedAnimations }
