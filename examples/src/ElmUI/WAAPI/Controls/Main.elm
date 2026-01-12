@@ -103,7 +103,7 @@ type Msg
     | Resume
     | Reset
     | Restart
-    | WaapiEventReceived (Result String WAAPI.EventType)
+    | WaapiEventReceived WAAPI.AnimState WAAPI.EventType
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -161,30 +161,17 @@ update msg model =
             , WAAPI.sendCommand waapiCommand restartCmd
             )
 
-        WaapiEventReceived result ->
-            case result of
-                Ok (WAAPI.PropertyUpdate propertyData) ->
-                    handlePropertyUpdate propertyData model
+        WaapiEventReceived newAnimState eventType ->
+            case eventType of
+                WAAPI.PropertyUpdate _ ->
+                    -- Property data automatically applied to newAnimState
+                    ( { model | animationState = newAnimState }, Cmd.none )
 
-                Ok (WAAPI.AnimationUpdate animationStatus) ->
-                    handleAnimationUpdate animationStatus model
-
-                Err error ->
-                    -- Log error but don't crash
-                    let
-                        _ =
-                            Debug.log "WAAPI Event Decode Error" error
-                    in
-                    ( model, Cmd.none )
-
-
-handlePropertyUpdate : WAAPI.PropertyData -> Model -> ( Model, Cmd Msg )
-handlePropertyUpdate propertyData model =
-    let
-        updatedAnimState =
-            WAAPI.update (WAAPI.encodePropertyData propertyData) model.animationState
-    in
-    ( { model | animationState = updatedAnimState }, Cmd.none )
+                WAAPI.AnimationUpdate animationStatus ->
+                    -- Animation status with automatically updated AnimState
+                    -- This is only required to update isAnimating / isPaused flags in the model
+                    -- If you don't need to react to animation status changes, you can ignore this event
+                    handleAnimationUpdate animationStatus { model | animationState = newAnimState }
 
 
 handleAnimationUpdate : WAAPI.AnimationStatus -> Model -> ( Model, Cmd Msg )
@@ -228,8 +215,8 @@ port waapiEvent : (Encode.Value -> msg) -> Sub msg
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    waapiEvent (WAAPI.handleEvent WaapiEventReceived)
+subscriptions model =
+    waapiEvent (WAAPI.handleEventWithState WaapiEventReceived model.animationState)
 
 
 

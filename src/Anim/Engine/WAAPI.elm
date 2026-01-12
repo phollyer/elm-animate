@@ -9,7 +9,7 @@ module Anim.Engine.WAAPI exposing
     , delay
     , anyRunning, isRunning, allComplete, isComplete
     , stop, reset, restart, pause, resume
-    , sendCommand, handleEvent, CommandType(..), EventType(..)
+    , sendCommand, handleEvent, handleEventWithState, CommandType(..), EventType(..)
     , stopAnimation, pauseAnimation, resumeAnimation, resetAnimation, restartAnimation
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
     , getStartOpacity, getEndOpacity, getCurrentOpacity
@@ -115,7 +115,7 @@ These settings will be used for all animations unless overridden on a per-animat
 These helper functions handle the encoding/decoding for port communication with the JavaScript companion library.
 You define the ports in your application and pass them to these functions.
 
-@docs sendCommand, handleEvent, CommandType, EventType
+@docs sendCommand, handleEvent, handleEventWithState, CommandType, EventType
 
 
 ## Command Helpers
@@ -1017,6 +1017,66 @@ And handle the result in your update:
 handleEvent : (Result String EventType -> msg) -> Encode.Value -> msg
 handleEvent toMsg eventValue =
     toMsg (decodeEvent eventValue)
+
+
+{-| Handle WAAPI events with automatic AnimState management.
+
+This is the recommended way to handle WAAPI events. It automatically:
+
+  - Applies PropertyUpdate data to update element positions during animation
+  - Handles AnimationUpdate status changes
+  - Returns both the updated AnimState and the event for your application logic
+
+Usage:
+
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        waapiEvent (WAAPI.handleEventWithState WaapiEventReceived model.animationState)
+
+    type Msg
+        = WaapiEventReceived AnimState EventType
+        | ...
+
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            WaapiEventReceived newAnimState eventType ->
+                case eventType of
+                    WAAPI.PropertyUpdate _ ->
+                        -- Position automatically updated in newAnimState
+                        ( { model | animationState = newAnimState }, Cmd.none )
+
+                    WAAPI.AnimationUpdate WAAPI.Completed ->
+                        ( { model
+                          | animationState = newAnimState
+                          , isAnimating = False
+                          }, Cmd.none )
+
+                    _ ->
+                        ( { model | animationState = newAnimState }, Cmd.none )
+
+-}
+handleEventWithState : (AnimState -> EventType -> msg) -> AnimState -> Encode.Value -> msg
+handleEventWithState toMsg currentAnimState eventValue =
+    case decodeEvent eventValue of
+        Ok eventType ->
+            let
+                updatedAnimState =
+                    case eventType of
+                        PropertyUpdate propertyData ->
+                            -- Automatically apply property updates
+                            update (encodePropertyData propertyData) currentAnimState
+
+                        AnimationUpdate _ ->
+                            -- Animation status changes don't modify AnimState
+                            currentAnimState
+            in
+            toMsg updatedAnimState eventType
+
+        Err _ ->
+            -- On decode errors, return unchanged state with a dummy event
+            -- Real applications might want to handle this differently
+            toMsg currentAnimState (AnimationUpdate Canceled)
 
 
 {-| Internal function to decode WAAPI events from JavaScript.
