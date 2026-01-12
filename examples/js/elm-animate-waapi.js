@@ -106,7 +106,6 @@ window.ElmAnimateWAAPI = (function () {
      * Process animation for a single element with all its properties
      */
     function processElementAnimation(elementId, elementConfig) {
-        console.log('🎬 DEBUG: processElementAnimation called for:', elementId);
         const element = document.getElementById(elementId);
         if (!element) {
             console.warn(`ElmAnimateWAAPI: Element with id "${elementId}" not found`);
@@ -148,14 +147,14 @@ window.ElmAnimateWAAPI = (function () {
 
         // Store and set up animations
         if (animations.length > 0) {
-            console.log('📦 DEBUG: Storing animations for:', elementId, 'count:', animations.length);
             activeAnimations.set(elementId, animations);
             setupAnimationEvents(elementId, element, animations[0]); // Use first animation for events
 
             // Send AnimationStart event to Elm
             sendEventToElm('animationUpdate', elementId, { status: 'started' });
         } else {
-            console.log('⚠️ DEBUG: No animations created for:', elementId);
+            // Clear any existing animations for this element
+            activeAnimations.delete(elementId);
         }
     }
 
@@ -750,7 +749,6 @@ window.ElmAnimateWAAPI = (function () {
      * Send event to Elm via consolidated waapiEvent port
      */
     function sendEventToElm(eventType, elementId, payload) {
-        console.log('📤 DEBUG: Sending', eventType, 'event for:', elementId);
         if (window.app && window.app.ports && window.app.ports.waapiEvent) {
             const eventData = {
                 type: eventType,
@@ -758,7 +756,6 @@ window.ElmAnimateWAAPI = (function () {
                 payload: payload || null
             };
             window.app.ports.waapiEvent.send(eventData);
-            console.log('✅ DEBUG:', eventType, 'event sent successfully via waapiEvent port');
         } else {
             console.warn('❌ DEBUG: waapiEvent port not found or not available');
         }
@@ -768,10 +765,8 @@ window.ElmAnimateWAAPI = (function () {
      * Stop animation by jumping to end state
      */
     function stopAnimation(elementId) {
-        console.log('🛑 DEBUG: stopAnimation called for elementId:', elementId);
         const animations = activeAnimations.get(elementId);
         if (animations) {
-            console.log('🎯 DEBUG: Finishing animations and sending cancel event');
             if (Array.isArray(animations)) {
                 animations.forEach(animation => {
                     animation.finish(); // Jump to end state
@@ -783,8 +778,6 @@ window.ElmAnimateWAAPI = (function () {
 
             // Send AnimationCancel event to Elm
             sendEventToElm('animationUpdate', elementId, { status: 'canceled' });
-        } else {
-            console.log('⚠️ DEBUG: No animations found for elementId:', elementId);
         }
     }
 
@@ -825,7 +818,6 @@ window.ElmAnimateWAAPI = (function () {
             sendEventToElm('animationUpdate', elementId, { status: 'restarted' });
         } else {
             // No active animation to restart - just send a completed event
-            console.log('⚠️ DEBUG: No active animation to restart for:', elementId);
             sendEventToElm('animationUpdate', elementId, { status: 'completed' });
         }
     }
@@ -878,13 +870,10 @@ window.ElmAnimateWAAPI = (function () {
 
         // Subscribe to consolidated command port from Elm
         if (ports.waapiCommand && ports.waapiCommand.subscribe) {
-            console.log('✅ DEBUG: waapiCommand port found, subscribing...');
             ports.waapiCommand.subscribe(function (commandData) {
-                console.log('🚀 DEBUG: waapiCommand received data:', commandData);
                 try {
                     // Check if this is animation data structure (from animate, reset, restart)
                     if (commandData.elements) {
-                        console.log('🎬 DEBUG: Processing animation data structure');
                         processAnimationData(commandData);
                     }
                     // Legacy command structure (if still used elsewhere)
@@ -893,36 +882,29 @@ window.ElmAnimateWAAPI = (function () {
                         const elementId = commandData.elementId;
                         const payload = commandData.payload;
 
-                        console.log('📋 DEBUG: Processing command type:', commandType, 'for element:', elementId);
 
                         switch (commandType) {
                             case 'animate':
-                                console.log('🎬 DEBUG: Processing animate command');
                                 processAnimationData(payload);
                                 break;
 
                             case 'stop':
-                                console.log('🛑 DEBUG: Processing stop command for:', elementId);
-                                stopAnimation(elementId);
+
                                 break;
 
                             case 'pause':
-                                console.log('⏸️ DEBUG: Processing pause command for:', elementId);
-                                pauseAnimation(elementId);
+
                                 break;
 
                             case 'resume':
-                                console.log('▶️ DEBUG: Processing resume command for:', elementId);
-                                resumeAnimation(elementId);
+
                                 break;
 
                             case 'reset':
-                                console.log('🔄 DEBUG: Processing reset command for:', elementId);
-                                resetAnimation(elementId);
+
                                 break;
 
                             case 'restart':
-                                console.log('🔄▶️ DEBUG: Processing restart command for:', elementId);
                                 // For restart, the payload contains the new animation data
                                 if (payload) {
                                     resetAnimation(elementId);
