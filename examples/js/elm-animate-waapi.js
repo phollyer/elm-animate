@@ -871,59 +871,35 @@ window.ElmAnimateWAAPI = (function () {
         // Subscribe to consolidated command port from Elm
         if (ports.waapiCommand && ports.waapiCommand.subscribe) {
             ports.waapiCommand.subscribe(function (commandData) {
+                console.log('🔍 WAAPI Command Received:', JSON.stringify(commandData, null, 2));
                 try {
                     // Check if this is animation data structure (from animate, reset, restart)
                     if (commandData.elements) {
                         processAnimationData(commandData);
                     }
-                    // Legacy command structure (if still used elsewhere)
-                    else if (commandData.type) {
+                    // Handle simple control commands
+                    else if (commandData.type && commandData.elementId) {
                         const commandType = commandData.type;
                         const elementId = commandData.elementId;
-                        const payload = commandData.payload;
-
 
                         switch (commandType) {
-                            case 'animate':
-                                processAnimationData(payload);
-                                break;
-
                             case 'stop':
-
+                                stopAnimation(elementId);
                                 break;
-
                             case 'pause':
-
+                                pauseAnimation(elementId);
                                 break;
-
                             case 'resume':
-
+                                resumeAnimation(elementId);
                                 break;
-
-                            case 'reset':
-
-                                break;
-
-                            case 'restart':
-                                // For restart, the payload contains the new animation data
-                                if (payload) {
-                                    resetAnimation(elementId);
-                                    processAnimationData(payload);
-                                } else {
-                                    console.warn('❌ DEBUG: Restart command missing payload');
-                                }
-                                break;
-
                             default:
-                                console.warn('❌ DEBUG: Unknown command type:', commandType);
+                                console.warn('ElmAnimateWAAPI: Unknown control command type:', commandType);
                         }
-                    }
-                    // Handle empty objects or other unexpected formats
-                    else {
-                        console.warn('❌ DEBUG: Received data with no elements or type field:', commandData);
+                    } else {
+                        console.warn('ElmAnimateWAAPI: Unknown command structure:', commandData);
                     }
                 } catch (error) {
-                    console.error('❌ DEBUG: Error processing WAAPI command:', error);
+                    console.error('ElmAnimateWAAPI: Error processing WAAPI command:', error);
                 }
             });
         } else {

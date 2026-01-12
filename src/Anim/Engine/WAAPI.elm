@@ -379,7 +379,7 @@ animate animState animBuilder =
         ( newAnimState, animationData ) =
             InternalWAAPI.animate animState animBuilder
     in
-    ( newAnimState, encodeCommand AnimateCommand "" animationData )
+    ( newAnimState, animationData )
 
 
 {-| Execute a fire-and-forget animation without state tracking.

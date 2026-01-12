@@ -141,6 +141,10 @@ update msg model =
 
         Reset ->
             let
+                currentPosition =
+                    WAAPI.getCurrentPosition elementId model.animationState
+                        |> Debug.log "Reset: Current Position before reset"
+
                 ( newAnimState, resetCmd ) =
                     WAAPI.resetAnimation elementId model.animationState
             in
