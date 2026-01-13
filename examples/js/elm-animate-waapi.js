@@ -908,8 +908,6 @@ window.ElmAnimateWAAPI = (function () {
                 payload: payload || null
             };
             window.app.ports.waapiEvent.send(eventData);
-        } else {
-            console.warn('❌ DEBUG: waapiEvent port not found or not available');
         }
     }
 

@@ -1388,7 +1388,7 @@ emptyCommand =
 -}
 resetElement : String -> AnimState -> ( AnimState, Encode.Value )
 resetElement elementId (AnimState state) =
-    case Builder.getCurrentAnimation elementId state.builder |> Debug.log "Reset Animation" of
+    case Builder.getCurrentAnimation elementId state.builder of
         Nothing ->
             -- No animation in history to reset
             ( AnimState state, emptyCommand )
