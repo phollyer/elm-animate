@@ -84,10 +84,8 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         ( initialAnimState, initCmd ) =
-            WAAPI.init
-                |> WAAPI.builder
-                |> Position.initXY "box" 0 0
-                |> WAAPI.animate WAAPI.init
+            WAAPI.animate WAAPI.init <|
+                Position.initXY "box" 0 0
     in
     ( { animationState = initialAnimState
       , isAnimating = False
@@ -109,7 +107,7 @@ type Msg
     | ResetPosition
     | StopAnimation
     | AnimationComplete String
-    | PositionUpdateReceived Encode.Value
+    | WaapiEventReceived eventncode.Value
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -117,16 +115,9 @@ update msg model =
     case msg of
         MoveToXY x y ->
             let
-                builder =
-                    WAAPI.builder model.animationState
-                        |> Position.for "box"
-                        |> Position.toXY x y
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.BounceInOut
-                        |> Position.build
-
                 ( newAnimState, animationData ) =
-                    WAAPI.animate model.animationState builder
+                    WAAPI.animate model.animationState <|
+                        Animations.moveToXY "box" x y
             in
             ( { model | animationState = newAnimState, isAnimating = True }
             , animateElement animationData
@@ -135,9 +126,8 @@ update msg model =
         MoveLeft ->
             let
                 ( newAnimState, animationData ) =
-                    WAAPI.builder model.animationState
-                        |> Animations.moveLeft "box"
-                        |> WAAPI.animate model.animationState
+                    WAAPI.animate model.animationState <|
+                        Animations.moveLeft "box"
             in
             ( { model | animationState = newAnimState, isAnimating = True }
             , animateElement animationData
@@ -146,9 +136,8 @@ update msg model =
         MoveRight ->
             let
                 ( newAnimState, animationData ) =
-                    WAAPI.builder model.animationState
-                        |> Animations.moveRight "box"
-                        |> WAAPI.animate model.animationState
+                    WAAPI.animate model.animationState <|
+                        Animations.moveRight "box"
             in
             ( { model | animationState = newAnimState, isAnimating = True }
             , animateElement animationData
@@ -157,9 +146,8 @@ update msg model =
         MoveUp ->
             let
                 ( newAnimState, animationData ) =
-                    WAAPI.builder model.animationState
-                        |> Animations.moveUp "box"
-                        |> WAAPI.animate model.animationState
+                    WAAPI.animate model.animationState <|
+                        Animations.moveUp "box"
             in
             ( { model | animationState = newAnimState, isAnimating = True }
             , animateElement animationData
@@ -168,9 +156,8 @@ update msg model =
         MoveDown ->
             let
                 ( newAnimState, animationData ) =
-                    WAAPI.builder model.animationState
-                        |> Animations.moveDown "box"
-                        |> WAAPI.animate model.animationState
+                    WAAPI.animate model.animationState <|
+                        Animations.moveDown "box"
             in
             ( { model | animationState = newAnimState, isAnimating = True }
             , animateElement animationData
@@ -179,9 +166,8 @@ update msg model =
         ResetPosition ->
             let
                 ( newAnimState, animationData ) =
-                    WAAPI.builder model.animationState
-                        |> Animations.returnToOrigin "box"
-                        |> WAAPI.animate model.animationState
+                    WAAPI.animate model.animationState <|
+                        Animations.returnToOrigin "box"
             in
             ( { model | animationState = newAnimState, isAnimating = True }
             , animateElement animationData
@@ -197,9 +183,24 @@ update msg model =
             , Cmd.none
             )
 
-        PositionUpdateReceived _ ->
-            -- Handle position updates from JavaScript if needed
-            ( model, Cmd.none )
+        WaapiEventReceived newAnimState eventType ->
+            let
+                newModel =
+                    { model | animationState = newAnimState }
+            in
+            case eventType of
+                WAAPI.PropertyUpdate _ ->
+                    -- Property data automatically applied to newAnimState
+                    -- If you don't need to react to property updates, you can ignore this event
+                    ( newModel, Cmd.none )
+
+                WAAPI.AnimationUpdate animationStatus ->
+                    -- Animation status with automatically updated AnimState
+                    -- This is only required to update isAnimating / isPaused flags in the model
+                    -- If you don't need to react to animation status changes, you can ignore this event
+                    handleAnimationUpdate animationStatus newModel
+
+
 
 
 
@@ -209,8 +210,7 @@ update msg model =
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.batch
-        [ positionUpdates PositionUpdateReceived
-        , animationComplete AnimationComplete
+        [ positionUpdates WaapiEventReceived event       , animationComplete AnimationComplete
         ]
 
 

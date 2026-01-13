@@ -1,9 +1,9 @@
 module Common.Animations.Scale exposing
-    ( scaleUp
-    , scaleDown
+    ( scaleDown
     , scaleReset
-    , scaleWide
     , scaleTall
+    , scaleUp
+    , scaleWide
     )
 
 {-| Common Scale animations that work across all animation engines.

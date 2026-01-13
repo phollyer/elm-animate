@@ -15,7 +15,12 @@
     <script src="index.js"></script>
     <script>
         var app = Elm.ElmUI.WAAPI.Choreography.Main.init({
-            node: document.getElementById('elm')
+            node: document.getElementById('elm'), flags: {
+                window: {
+                    width: window.innerWidth,
+                    height: window.innerHeight
+                }
+            }
         });
 
         // Initialize ElmAnimateWAAPI with the Elm app's ports

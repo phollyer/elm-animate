@@ -69,10 +69,8 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         ( initialAnimState, initCmd ) =
-            WAAPI.init
-                |> WAAPI.builder
-                |> Scale.initXY "box" 1.0 1.0
-                |> WAAPI.animate WAAPI.init
+            WAAPI.animate WAAPI.init <|
+                \b -> b |> Scale.initXY "box" 1.0 1.0
     in
     ( { animState = initialAnimState }
     , animateElement initCmd
@@ -98,45 +96,35 @@ update msg model =
         ScaleUp ->
             let
                 ( newAnimState, encodedValue ) =
-                    WAAPI.builder model.animState
-                        |> Animations.scaleUp "box"
-                        |> WAAPI.animate model.animState
+                    WAAPI.animate model.animState (Animations.scaleUp "box")
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ScaleDown ->
             let
                 ( newAnimState, encodedValue ) =
-                    WAAPI.builder model.animState
-                        |> Animations.scaleDown "box"
-                        |> WAAPI.animate model.animState
+                    WAAPI.animate model.animState (Animations.scaleDown "box")
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ScaleReset ->
             let
                 ( newAnimState, encodedValue ) =
-                    WAAPI.builder model.animState
-                        |> Animations.scaleReset "box"
-                        |> WAAPI.animate model.animState
+                    WAAPI.animate model.animState (Animations.scaleReset "box")
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ScaleWide ->
             let
                 ( newAnimState, encodedValue ) =
-                    WAAPI.builder model.animState
-                        |> Animations.scaleWide "box"
-                        |> WAAPI.animate model.animState
+                    WAAPI.animate model.animState (Animations.scaleWide "box")
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ScaleTall ->
             let
                 ( newAnimState, encodedValue ) =
-                    WAAPI.builder model.animState
-                        |> Animations.scaleTall "box"
-                        |> WAAPI.animate model.animState
+                    WAAPI.animate model.animState (Animations.scaleTall "box")
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 

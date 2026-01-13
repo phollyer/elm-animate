@@ -1,7 +1,6 @@
-module Common.Animations.AnimationControls exposing
-    ( animate  , init    )
+module Common.Animations.AnimationControls exposing (animate, init)
 
-{-| Common Animation Control functions that work across all animation engines. 
+{-| Common Animation Control functions that work across all animation engines.
 These functions take an AnimBuilder and return an AnimBuilder, making them
 portable across CSS Transitions, CSS Keyframes, Sub, and WAAPI engines.
 
@@ -10,17 +9,18 @@ animation logic works identically across all engines!
 
 -}
 
-
+import Anim.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Property.Position as Position
-import Anim.Easing exposing (Easing(..))
 
 
-{-| Initialize the starting position -}
+{-| Initialize the starting position
+-}
 init : String -> Float -> Float -> Builder.AnimBuilder -> Builder.AnimBuilder
-init  =
-    Position.initXY 
-    
+init =
+    Position.initXY
+
+
 {-| Animate the element to a specific position (X=300, Y=150)
 -}
 animate : String -> Builder.AnimBuilder -> Builder.AnimBuilder

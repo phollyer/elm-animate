@@ -1,9 +1,9 @@
 module Common.Animations.Opacity exposing
     ( fadeIn
     , fadeOut
-    , fadeToggle
     , fadeToHalf
     , fadeToQuarter
+    , fadeToggle
     )
 
 {-| Common Opacity animations that work across all animation engines.

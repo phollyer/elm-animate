@@ -1,10 +1,10 @@
 module Common.Animations.Mixed exposing
-    ( moveScaleRotate
-    , fadeMove  
-    , spinScaleColor
+    ( allProperties
     , colorSizeOpacity
-    , allProperties
+    , fadeMove
+    , moveScaleRotate
     , resetAll
+    , spinScaleColor
     )
 
 {-| Common Mixed property animations that work across all animation engines.
@@ -14,17 +14,19 @@ across CSS Transitions, CSS Keyframes, Sub, and WAAPI engines. Each animation
 demonstrates different combinations of properties working together.
 
 FEATURES:
-- ✅ Multi-property coordination 
-- ✅ Consistent timing and effects across engines
-- ✅ Complex animation choreography
-- ✅ Real-world usage patterns
+
+  - ✅ Multi-property coordination
+  - ✅ Consistent timing and effects across engines
+  - ✅ Complex animation choreography
+  - ✅ Real-world usage patterns
 
 ANIMATIONS:
-- **moveScaleRotate**: Position + Scale + Rotation with delayed start
-- **fadeMove**: Opacity + Position with synchronized timing  
-- **spinScaleColor**: Rotation + Scale + Background color
-- **colorSizeOpacity**: Background color + Size + Opacity
-- **allProperties**: All animation properties in one coordinated sequence
+
+  - **moveScaleRotate**: Position + Scale + Rotation with delayed start
+  - **fadeMove**: Opacity + Position with synchronized timing
+  - **spinScaleColor**: Rotation + Scale + Background color
+  - **colorSizeOpacity**: Background color + Size + Opacity
+  - **allProperties**: All animation properties in one coordinated sequence
 
 -}
 
@@ -108,7 +110,7 @@ spinScaleColor elementId builder =
 {-| Color + Size + Opacity coordination
 Background color, element size, and opacity changing together
 -}
-colorSizeOpacity : String -> Builder.AnimBuilder -> Builder.AnimBuilder  
+colorSizeOpacity : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 colorSizeOpacity elementId builder =
     builder
         |> Color.for elementId

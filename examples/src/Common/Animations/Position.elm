@@ -1,9 +1,10 @@
 module Common.Animations.Position exposing
-    ( moveToXY
+    ( moveDown
     , moveLeft
     , moveRight
-    , moveUp, moveToY
-    , moveDown
+    , moveToXY
+    , moveToY
+    , moveUp
     , returnToOrigin
     )
 
@@ -20,7 +21,6 @@ animation logic works identically across all engines!
 import Anim.Easing as Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Property.Position as Position
-
 
 
 {-| Move to a specific X,Y position with smooth easing
@@ -43,7 +43,8 @@ moveToY elementId speed easing y builder =
         |> Position.speed speed
         |> Position.easing easing
         |> Position.build
-        
+
+
 moveLeft : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 moveLeft elementId builder =
     builder

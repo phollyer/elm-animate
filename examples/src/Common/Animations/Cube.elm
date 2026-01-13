@@ -1,6 +1,4 @@
-module Common.Animations.Cube exposing
-    ( setCubeTransform
-    )
+module Common.Animations.Cube exposing (setCubeTransform)
 
 {-| Common 3D Cube animations that work across all animation engines.
 
@@ -8,12 +6,14 @@ This function provides the common pattern for updating a 3D cube's position and 
 simultaneously, which is needed for proper 3D cube manipulation with immediate updates.
 
 FEATURES:
-- ✅ Combined Position Z and Rotation XYZ updates
-- ✅ Instant application (duration 0) for real-time cube manipulation
-- ✅ Consistent element targeting
+
+  - ✅ Combined Position Z and Rotation XYZ updates
+  - ✅ Instant application (duration 0) for real-time cube manipulation
+  - ✅ Consistent element targeting
 
 USAGE:
-- **setCubeTransform**: Updates both position Z and rotation XYZ values instantly
+
+  - **setCubeTransform**: Updates both position Z and rotation XYZ values instantly
 
 -}
 

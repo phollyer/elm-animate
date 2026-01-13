@@ -1,6 +1,6 @@
 port module ElmUI.WAAPI.Choreography.Main exposing (main)
 
-{-| Anim.Engine.CSS Choreography Example using ElmUI - Coordinated multi-element animations
+{-| Choreography Example using ElmUI - Coordinated multi-element animations
 
 This demonstrates choreographed animations with multiple elements moving together in formations.
 Shows how to create complex patterns like scatter, circle formations, and synchronized group movements.
@@ -23,8 +23,6 @@ USAGE EXAMPLES:
   - Interactive storytelling with character movement
 
 -}
-
--- Common UI imports
 
 import Anim.Easing as Easing
 import Anim.Engine.WAAPI as WAAPI
@@ -55,7 +53,7 @@ port animateElement : Encode.Value -> Cmd msg
 -- MAIN
 
 
-main : Program () Model Msg
+main : Program { window : { width : Int, height : Int } } Model Msg
 main =
     Browser.document
         { init = init
@@ -71,6 +69,7 @@ main =
 
 type alias Model =
     { animState : WAAPI.AnimState
+    , window : { width : Int, height : Int }
     }
 
 
@@ -78,21 +77,15 @@ type alias Model =
 -- INIT
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
+init : { window : { width : Int, height : Int } } -> ( Model, Cmd Msg )
+init { window } =
     let
         ( initialAnimState, initCmd ) =
-            WAAPI.init
-                |> WAAPI.builder
-                |> Position.initXY "elementA" 0 0
-                |> Position.initXY "elementB" 0 0
-                |> Position.initXY "elementC" 0 0
-                |> Position.initXY "elementD" 0 0
-                |> Position.initXY "elementE" 0 0
-                |> Position.initXY "elementF" 0 0
-                |> WAAPI.animate WAAPI.init
+            WAAPI.animate WAAPI.init Choreography.init
     in
-    ( { animState = initialAnimState }
+    ( { animState = initialAnimState
+      , window = window
+      }
     , animateElement initCmd
     )
 
@@ -113,12 +106,10 @@ update msg model =
         ScatterElements ->
             let
                 ( newAnimState, encodedValue ) =
-                    model.animState
-                        |> WAAPI.builder
-                        |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Choreography.scatterFormation
-                        |> WAAPI.animate model.animState
+                    WAAPI.animate model.animState <|
+                        WAAPI.duration 1000
+                            >> WAAPI.easing Easing.EaseInOut
+                            >> Choreography.scatterFormation
             in
             ( { model | animState = newAnimState }
             , animateElement encodedValue
@@ -127,12 +118,10 @@ update msg model =
         CircleFormation ->
             let
                 ( newAnimState, encodedValue ) =
-                    model.animState
-                        |> WAAPI.builder
-                        |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Choreography.circleFormation
-                        |> WAAPI.animate model.animState
+                    WAAPI.animate model.animState <|
+                        WAAPI.duration 1000
+                            >> WAAPI.easing Easing.EaseInOut
+                            >> Choreography.circleFormation
             in
             ( { model | animState = newAnimState }
             , animateElement encodedValue
@@ -141,12 +130,10 @@ update msg model =
         ResetPositions ->
             let
                 ( newAnimState, encodedValue ) =
-                    model.animState
-                        |> WAAPI.builder
-                        |> WAAPI.duration 600
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Choreography.resetToOrigin
-                        |> WAAPI.animate model.animState
+                    WAAPI.animate model.animState <|
+                        WAAPI.duration 600
+                            >> WAAPI.easing Easing.EaseInOut
+                            >> Choreography.resetToOrigin
             in
             ( { model | animState = newAnimState }
             , animateElement encodedValue

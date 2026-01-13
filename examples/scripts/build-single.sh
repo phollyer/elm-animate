@@ -44,6 +44,31 @@ INPUT_PATH="$1"
 # Change to examples directory (parent of scripts)
 cd "$(dirname "$0")/.."
 
+# Track formatting results
+FORMATTED_FILES=()
+FAILED_FORMAT=()
+
+# Format all files before building
+echo "🎨 Formatting all files..."
+
+while IFS= read -r -d '' file; do
+    if elm-format --yes "$file" > /dev/null 2>&1; then
+        FORMATTED_FILES+=("$file")
+    else
+        FAILED_FORMAT+=("$file")
+    fi
+done < <(find src/ElmUI -name "*.elm" -type f -print0 2>/dev/null)
+
+while IFS= read -r -d '' file; do
+    if elm-format --yes "$file" > /dev/null 2>&1; then
+        FORMATTED_FILES+=("$file")
+    else
+        FAILED_FORMAT+=("$file")
+    fi
+done < <(find src/Common -name "*.elm" -type f -print0 2>/dev/null)
+
+echo ""
+
 # Normalize the input path (remove leading/trailing slashes, src/ prefix)
 INPUT_PATH=$(echo "$INPUT_PATH" | sed 's|^src/||' | sed 's|^/||' | sed 's|/$||')
 
@@ -87,15 +112,18 @@ build_single() {
         echo "✅ Build successful!"
         echo "📤 Output: $output_file"
         echo ""
-        
-        # Format the source file
-        echo "🎨 Formatting source file..."
-        if elm-format --yes "$src_file" > /dev/null 2>&1; then
-            echo "✅ File formatted successfully"
+        echo "📊 Format Summary:"
+        echo "✅ Successfully formatted: ${#FORMATTED_FILES[@]} files"
+        if [ ${#FAILED_FORMAT[@]} -gt 0 ]; then
+            echo "⚠️  Failed to format: ${#FAILED_FORMAT[@]} files"
+            for failed_file in "${FAILED_FORMAT[@]}"; do
+                # Strip src/ prefix for consistency
+                display_path="${failed_file#src/}"
+                echo "   - $display_path"
+            done
         else
-            echo "⚠️  Warning: elm-format failed (file still compiled successfully)"
+            echo "❌ Failed to format: 0 files"
         fi
-        
         echo ""
         echo "🎉 Single file build complete!"
         echo ""

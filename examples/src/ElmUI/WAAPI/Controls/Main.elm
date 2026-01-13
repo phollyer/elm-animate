@@ -69,9 +69,12 @@ init { window } =
         animationAreaWidth =
             min 500 (window.width - 40)
 
+        xPos =
+            toFloat animationAreaWidth / 2 - 25
+
         ( initialAnimState, initCmd ) =
             WAAPI.animate WAAPI.init <|
-                ControlsAnim.init elementId (toFloat animationAreaWidth / 2 - 25) 50
+                ControlsAnim.init elementId xPos 50
     in
     ( { animationState = initialAnimState
       , isAnimating = False
@@ -158,16 +161,21 @@ update msg model =
             )
 
         WaapiEventReceived newAnimState eventType ->
+            let
+                newModel =
+                    { model | animationState = newAnimState }
+            in
             case eventType of
                 WAAPI.PropertyUpdate _ ->
                     -- Property data automatically applied to newAnimState
-                    ( { model | animationState = newAnimState }, Cmd.none )
+                    -- If you don't need to react to property updates, you can ignore this event
+                    ( newModel, Cmd.none )
 
                 WAAPI.AnimationUpdate animationStatus ->
                     -- Animation status with automatically updated AnimState
                     -- This is only required to update isAnimating / isPaused flags in the model
                     -- If you don't need to react to animation status changes, you can ignore this event
-                    handleAnimationUpdate animationStatus { model | animationState = newAnimState }
+                    handleAnimationUpdate animationStatus newModel
 
 
 handleAnimationUpdate : WAAPI.AnimationStatus -> Model -> ( Model, Cmd Msg )

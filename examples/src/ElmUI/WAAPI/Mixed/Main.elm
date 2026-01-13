@@ -106,36 +106,36 @@ initAnim : Int -> WAAPI.AnimState -> ( WAAPI.AnimState, Cmd msg )
 initAnim duration animState =
     let
         ( newAnimState, encodedValue ) =
-            animState
-                |> WAAPI.builder
-                |> WAAPI.duration duration
-                |> WAAPI.easing Easing.EaseOut
-                |> Color.init "mixed-box" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
-                |> Position.initXY "mixed-box" 0 0
-                |> Scale.initXYZ "mixed-box" 1.0 1.0 1.0
-                |> Size.initWH "mixed-box" 80 80
-                |> Rotate.initXYZ "mixed-box" 0 0 0
-                |> Opacity.init "mixed-box" 1.0
-                |> Position.for "mixed-box"
-                |> Position.toXY 0 0
-                |> Position.build
-                |> Scale.for "mixed-box"
-                |> Scale.toXYZ 1.0 1.0 1.0
-                |> Scale.build
-                |> Size.for "mixed-box"
-                |> Size.toHW 80 80
-                |> Size.build
-                |> Rotate.for "mixed-box"
-                |> Rotate.perspective "animation-container" 1000
-                |> Rotate.toXYZ 0 0 0
-                |> Rotate.build
-                |> Opacity.for "mixed-box"
-                |> Opacity.to 1.0
-                |> Opacity.build
-                |> Color.for "mixed-box"
-                |> Color.to (Maybe.withDefault Anim.Color.blue (Anim.Color.fromHex "#3498db"))
-                |> Color.build
-                |> WAAPI.animate animState
+            WAAPI.animate animState <|
+                \b ->
+                    b
+                        |> WAAPI.duration duration
+                        |> WAAPI.easing Easing.EaseOut
+                        |> Color.init "mixed-box" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
+                        |> Position.initXY "mixed-box" 0 0
+                        |> Scale.initXYZ "mixed-box" 1.0 1.0 1.0
+                        |> Size.initWH "mixed-box" 80 80
+                        |> Rotate.initXYZ "mixed-box" 0 0 0
+                        |> Opacity.init "mixed-box" 1.0
+                        |> Position.for "mixed-box"
+                        |> Position.toXY 0 0
+                        |> Position.build
+                        |> Scale.for "mixed-box"
+                        |> Scale.toXYZ 1.0 1.0 1.0
+                        |> Scale.build
+                        |> Size.for "mixed-box"
+                        |> Size.toHW 80 80
+                        |> Size.build
+                        |> Rotate.for "mixed-box"
+                        |> Rotate.perspective "animation-container" 1000
+                        |> Rotate.toXYZ 0 0 0
+                        |> Rotate.build
+                        |> Opacity.for "mixed-box"
+                        |> Opacity.to 1.0
+                        |> Opacity.build
+                        |> Color.for "mixed-box"
+                        |> Color.to (Maybe.withDefault Anim.Color.blue (Anim.Color.fromHex "#3498db"))
+                        |> Color.build
     in
     ( newAnimState, animateElement encodedValue )
 
@@ -152,112 +152,107 @@ update msg model =
 
         MoveScaleRotate elementId ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Position.for elementId
-                        |> Position.toXY 200 100
-                        |> Position.build
-                        |> Scale.for elementId
-                        |> Scale.toXY 1.5 1.9
-                        |> Scale.build
-                        |> Rotate.for elementId
-                        |> Rotate.toZ 90
-                        |> Rotate.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.animate model.animState <|
+                        \b ->
+                            b
+                                |> WAAPI.duration 1000
+                                |> WAAPI.easing Easing.EaseInOut
+                                |> Position.for elementId
+                                |> Position.toXY 200 100
+                                |> Position.build
+                                |> Scale.for elementId
+                                |> Scale.toXY 1.5 1.9
+                                |> Scale.build
+                                |> Rotate.for elementId
+                                |> Rotate.toZ 90
+                                |> Rotate.build
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         FadeMove elementId ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Opacity.for elementId
-                        |> Opacity.to 0.3
-                        |> Opacity.build
-                        |> Position.for elementId
-                        |> Position.toXY 250 80
-                        |> Position.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.animate model.animState <|
+                        \b ->
+                            b
+                                |> WAAPI.duration 1000
+                                |> WAAPI.easing Easing.EaseInOut
+                                |> Opacity.for elementId
+                                |> Opacity.to 0.3
+                                |> Opacity.build
+                                |> Position.for elementId
+                                |> Position.toXY 250 80
+                                |> Position.build
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         SpinScaleColor elementId ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Rotate.for elementId
-                        |> Rotate.toZ 180
-                        |> Rotate.build
-                        |> Scale.for elementId
-                        |> Scale.toXY 0.8 0.8
-                        |> Scale.build
-                        |> Color.for elementId
-                        |> Color.to (Maybe.withDefault Anim.Color.red (Anim.Color.fromHex "#e74c3c"))
-                        |> Color.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.animate model.animState <|
+                        \b ->
+                            b
+                                |> WAAPI.duration 1000
+                                |> WAAPI.easing Easing.EaseInOut
+                                |> Rotate.for elementId
+                                |> Rotate.toZ 180
+                                |> Rotate.build
+                                |> Scale.for elementId
+                                |> Scale.toXY 0.8 0.8
+                                |> Scale.build
+                                |> Color.for elementId
+                                |> Color.to (Maybe.withDefault Anim.Color.red (Anim.Color.fromHex "#e74c3c"))
+                                |> Color.build
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ColorSizeOpacity elementId ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Color.for elementId
-                        |> Color.to (Anim.Color.fromHsl { h = 142 / 360, s = 0.71, l = 0.45 })
-                        |> Color.build
-                        |> Size.for elementId
-                        |> Size.toHW 60 150
-                        |> Size.build
-                        |> Opacity.for elementId
-                        |> Opacity.to 0.8
-                        |> Opacity.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.animate model.animState <|
+                        \b ->
+                            b
+                                |> WAAPI.duration 1000
+                                |> WAAPI.easing Easing.EaseInOut
+                                |> Color.for elementId
+                                |> Color.to (Anim.Color.fromHsl { h = 142 / 360, s = 0.71, l = 0.45 })
+                                |> Color.build
+                                |> Size.for elementId
+                                |> Size.toHW 60 150
+                                |> Size.build
+                                |> Opacity.for elementId
+                                |> Opacity.to 0.8
+                                |> Opacity.build
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         AllProperties elementId ->
             let
-                builder =
-                    WAAPI.builder model.animState
-                        |> WAAPI.duration 1000
-                        |> WAAPI.easing Easing.EaseInOut
-                        |> Position.for elementId
-                        |> Position.toXY 200 200
-                        |> Position.build
-                        |> Scale.for elementId
-                        |> Scale.toXY 1.3 1.3
-                        |> Scale.build
-                        |> Size.for elementId
-                        |> Size.toHW 150 60
-                        |> Size.build
-                        |> Rotate.for elementId
-                        |> Rotate.toZ 270
-                        |> Rotate.build
-                        |> Opacity.for elementId
-                        |> Opacity.to 0.7
-                        |> Opacity.build
-                        |> Color.for elementId
-                        |> Color.to (Anim.Color.fromRgb { r = 155, g = 89, b = 182 })
-                        |> Color.build
-
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState builder
+                    WAAPI.animate model.animState <|
+                        \b ->
+                            b
+                                |> WAAPI.duration 1000
+                                |> WAAPI.easing Easing.EaseInOut
+                                |> Position.for elementId
+                                |> Position.toXY 200 200
+                                |> Position.build
+                                |> Scale.for elementId
+                                |> Scale.toXY 1.3 1.3
+                                |> Scale.build
+                                |> Size.for elementId
+                                |> Size.toHW 150 60
+                                |> Size.build
+                                |> Rotate.for elementId
+                                |> Rotate.toZ 270
+                                |> Rotate.build
+                                |> Opacity.for elementId
+                                |> Opacity.to 0.7
+                                |> Opacity.build
+                                |> Color.for elementId
+                                |> Color.to (Anim.Color.fromRgb { r = 155, g = 89, b = 182 })
+                                |> Color.build
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 

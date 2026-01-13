@@ -137,14 +137,13 @@ update msg model =
     case msg of
         MoveToCorner ->
             let
-                builder =
-                    WAAPI.builder model.animations
-                        |> WAAPI.duration 1000
-                        |> WAAPI.easing Linear
-                        |> PositionAnim.moveToXY elementId 450 300
-
                 ( newAnimations, cmd ) =
-                    WAAPI.animate model.animations builder
+                    WAAPI.animate model.animations <|
+                        \b ->
+                            b
+                                |> WAAPI.duration 1000
+                                |> WAAPI.easing Linear
+                                |> PositionAnim.moveToXY elementId 450 300
             in
             ( { model
                 | animations = newAnimations
@@ -155,14 +154,13 @@ update msg model =
 
         MoveToCenter ->
             let
-                builder =
-                    WAAPI.builder model.animations
-                        |> WAAPI.duration 800
-                        |> WAAPI.easing Linear
-                        |> PositionAnim.moveToXY elementId 225 150
-
                 ( newAnimations, cmd ) =
-                    WAAPI.animate model.animations builder
+                    WAAPI.animate model.animations <|
+                        \b ->
+                            b
+                                |> WAAPI.duration 800
+                                |> WAAPI.easing Linear
+                                |> PositionAnim.moveToXY elementId 225 150
             in
             ( { model
                 | animations = newAnimations

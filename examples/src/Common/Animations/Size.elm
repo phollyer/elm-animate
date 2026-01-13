@@ -1,9 +1,9 @@
 module Common.Animations.Size exposing
-    ( sizeReset
-    , sizeWide
-    , sizeTall
+    ( sizeLarge
+    , sizeReset
     , sizeSquare
-    , sizeLarge
+    , sizeTall
+    , sizeWide
     )
 
 {-| Common Size animations that work across all animation engines.

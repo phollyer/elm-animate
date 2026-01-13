@@ -10,10 +10,11 @@ module Common.UI exposing
     , createDocument
     , getCardColor
     , highlight
+    , htmlButton
     , pageHeader
     , techInfo
     , techParagraph
-    , wrappedButtonRow, htmlButton
+    , wrappedButtonRow
     )
 
 import Browser exposing (Document)
@@ -458,10 +459,11 @@ getCardColor cardNum =
 
 -- HTML-BASED BUTTON GROUPS
 
+
 htmlButton : ( ButtonStyle, msg, String ) -> Html.Html msg
 htmlButton ( style, onPress, label ) =
     let
-        getButtonStyleClass  =
+        getButtonStyleClass =
             case style of
                 Primary ->
                     "primary"
@@ -474,13 +476,13 @@ htmlButton ( style, onPress, label ) =
 
                 Warning ->
                     "warning"
-
     in
     Html.button
         [ Html.Events.onClick onPress
-        , Html.Attributes.class ("ui-action-button " ++ getButtonStyleClass )
+        , Html.Attributes.class ("ui-action-button " ++ getButtonStyleClass)
         ]
         [ Html.text label ]
+
 
 {-| Create a button group using pure CSS classes
 All styling is handled by the ui-components.css file
@@ -492,7 +494,6 @@ These will wrap correctly so that all buttons are centered horizontally, wrapped
 wrappedButtonRow : List ( ButtonStyle, msg, String ) -> Element msg
 wrappedButtonRow buttons =
     let
-
         htmlButtons =
             List.map htmlButton buttons
     in

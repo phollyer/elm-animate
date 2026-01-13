@@ -1,10 +1,10 @@
 module Common.Animations.Rotate exposing
-    ( rotate45
-    , rotate90
+    ( resetRotate
     , rotate180
+    , rotate45
+    , rotate90
     , rotateLeft
     , rotateRight
-    , resetRotate
     )
 
 {-| Common Rotation animations that work across all animation engines.

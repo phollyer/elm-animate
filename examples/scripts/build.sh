@@ -11,6 +11,34 @@ echo "🚀 Building Elm Animate Examples..."
 # Change to examples directory (parent of scripts)
 cd "$(dirname "$0")/.."
 
+# Track build and format results
+FAILED_BUILDS=()
+SUCCESSFUL_BUILDS=()
+FORMATTED_FILES=()
+FAILED_FORMAT=()
+
+# Format all files before building
+echo "🎨 Formatting all files..."
+echo ""
+
+while IFS= read -r -d '' file; do
+    if elm-format --yes "$file" > /dev/null 2>&1; then
+        FORMATTED_FILES+=("$file")
+    else
+        FAILED_FORMAT+=("$file")
+    fi
+done < <(find src/ElmUI -name "*.elm" -type f -print0 2>/dev/null)
+
+while IFS= read -r -d '' file; do
+    if elm-format --yes "$file" > /dev/null 2>&1; then
+        FORMATTED_FILES+=("$file")
+    else
+        FAILED_FORMAT+=("$file")
+    fi
+done < <(find src/Common -name "*.elm" -type f -print0 2>/dev/null)
+
+echo "🔨 Starting compilation..."
+
 # Track build results
 FAILED_BUILDS=()
 SUCCESSFUL_BUILDS=()
@@ -21,11 +49,13 @@ build_example() {
     local output_file=$2
     local display_name=${3:-$src_file}
     
+    # Convert display name from dots to slashes to match file path format
+    display_name="${display_name//.//}.elm"
+    
     echo "Building $display_name..."
     if elm make "$src_file" --output="$output_file" > /dev/null 2>&1; then
         echo "✅ $display_name → $output_file"
         SUCCESSFUL_BUILDS+=("$display_name")
-        elm-format --yes "$src_file" > /dev/null
     else
         echo "❌ $display_name FAILED"
         echo "   Error details:"
@@ -108,8 +138,12 @@ echo ""
 echo "📊 Build Summary:"
 echo "✅ Successful builds: ${#SUCCESSFUL_BUILDS[@]}"
 echo "❌ Failed builds: ${#FAILED_BUILDS[@]}"
+echo ""
+echo "📊 Format Summary:"
+echo "✅ Successfully formatted: ${#FORMATTED_FILES[@]} files"
+echo "❌ Failed to format: ${#FAILED_FORMAT[@]} files"
 
-if [ ${#FAILED_BUILDS[@]} -eq 0 ]; then
+if [ ${#FAILED_BUILDS[@]} -eq 0 ] && [ ${#FAILED_FORMAT[@]} -eq 0 ]; then
     echo ""
     echo "🎉 All examples built successfully!"
     echo "🌐 Open index.html to view the examples dashboard"
@@ -132,10 +166,23 @@ if [ ${#FAILED_BUILDS[@]} -eq 0 ]; then
     echo "   - Choreography (6-element formations)"
 else
     echo ""
-    echo "🚨 Some examples failed to build:"
-    for failed_build in "${FAILED_BUILDS[@]}"; do
-        echo "   - $failed_build"
-    done
+    if [ ${#FAILED_BUILDS[@]} -gt 0 ]; then
+        echo "🚨 Some examples failed to build:"
+        for failed_build in "${FAILED_BUILDS[@]}"; do
+            echo "   - $failed_build"
+        done
+    fi
+    
+    if [ ${#FAILED_FORMAT[@]} -gt 0 ]; then
+        echo ""
+        echo "⚠️  Some files failed to format:"
+        for failed_file in "${FAILED_FORMAT[@]}"; do
+            # Strip src/ prefix for consistency with build output
+            display_path="${failed_file#src/}"
+            echo "   - $display_path"
+        done
+    fi
+    
     echo ""
     echo "💡 See error details above for each failed build."
     echo "🔧 Fix the errors and run the build script again."
