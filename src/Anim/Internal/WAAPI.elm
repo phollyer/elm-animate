@@ -46,7 +46,6 @@ module Anim.Internal.WAAPI exposing
 import Anim.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builders.BackgroundColor as BackgroundColor
-import Anim.Internal.Builders.FontColor as FontColor
 import Anim.Internal.Builders.Opacity as Opacity
 import Anim.Internal.Builders.Position as Position
 import Anim.Internal.Builders.Rotate as Rotate
@@ -393,111 +392,6 @@ extractElementStartStates elementConfig =
                     { state | size = config.start }
     in
     List.foldl extractPropertyStartState emptyElementEndStates elementConfig.properties
-
-
-injectCurrentStatesForElement : ElementId -> ElementAnimation -> AnimBuilder -> AnimBuilder
-injectCurrentStatesForElement elementId elementAnim baseBuilder =
-    case Builder.getElementConfig elementId baseBuilder of
-        Just elementConfig ->
-            let
-                updatedProperties =
-                    List.map (injectCurrentStateIntoProperty elementAnim.currentStates) elementConfig.properties
-
-                updatedElementConfig =
-                    { elementConfig | properties = updatedProperties }
-            in
-            Builder.updateElementConfig elementId updatedElementConfig baseBuilder
-
-        Nothing ->
-            baseBuilder
-
-
-injectCurrentStateIntoProperty : ElementEndStates -> Builder.PropertyConfig -> Builder.PropertyConfig
-injectCurrentStateIntoProperty currentStates propertyConfig =
-    case propertyConfig of
-        Builder.PositionConfig config ->
-            Builder.PositionConfig
-                { config
-                    | start =
-                        case config.start of
-                            Just _ ->
-                                config.start
-
-                            Nothing ->
-                                currentStates.position
-                }
-
-        Builder.RotateConfig config ->
-            Builder.RotateConfig
-                { config
-                    | start =
-                        case config.start of
-                            Just _ ->
-                                config.start
-
-                            Nothing ->
-                                currentStates.rotate
-                }
-
-        Builder.ScaleConfig config ->
-            Builder.ScaleConfig
-                { config
-                    | start =
-                        case config.start of
-                            Just _ ->
-                                config.start
-
-                            Nothing ->
-                                currentStates.scale
-                }
-
-        Builder.OpacityConfig config ->
-            Builder.OpacityConfig
-                { config
-                    | start =
-                        case config.start of
-                            Just _ ->
-                                config.start
-
-                            Nothing ->
-                                currentStates.opacity
-                }
-
-        Builder.BackgroundColorConfig config ->
-            Builder.BackgroundColorConfig
-                { config
-                    | start =
-                        case config.start of
-                            Just _ ->
-                                config.start
-
-                            Nothing ->
-                                currentStates.backgroundColor
-                }
-
-        Builder.FontColorConfig config ->
-            Builder.FontColorConfig
-                { config
-                    | start =
-                        case config.start of
-                            Just _ ->
-                                config.start
-
-                            Nothing ->
-                                currentStates.fontColor
-                }
-
-        Builder.SizeConfig config ->
-            Builder.SizeConfig
-                { config
-                    | start =
-                        case config.start of
-                            Just _ ->
-                                config.start
-
-                            Nothing ->
-                                currentStates.size
-                }
 
 
 
