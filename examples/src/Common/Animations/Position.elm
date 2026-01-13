@@ -43,8 +43,7 @@ moveToY elementId speed easing y builder =
         |> Position.speed speed
         |> Position.easing easing
         |> Position.build
-{-| Move to the left edge (X=0) with bounce effect
--}
+        
 moveLeft : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 moveLeft elementId builder =
     builder

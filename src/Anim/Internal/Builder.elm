@@ -1,13 +1,19 @@
 module Anim.Internal.Builder exposing
     ( AnimBuilder
     , AnimationConfig
+    , AnimationHistory
+    , AnimationHistoryEntry
+    , AnimationId
     , ElementConfig
     , ProcessedAnimationData
     , ProcessedElementConfig
     , ProcessedPropertyConfig(..)
     , PropertyConfig(..)
     , TransformParts
+    , addAnimationToHistory
     , addScrollTarget
+    , clearAnimationHistory
+      -- Animation Control Functions
     , clearCurrentElement
     , computeAndCachePerspectiveStyles
     , computePerspectiveStyles
@@ -18,6 +24,9 @@ module Anim.Internal.Builder exposing
     , extractTransformsFromProcessed
     , extractTransformsFromProperty
     , for
+    , getAllAnimationHistory
+    , getAnimationById
+    , getCurrentAnimation
     , getCurrentElementConfig
     , getDelay
     , getDelayWithDefault
@@ -27,20 +36,29 @@ module Anim.Internal.Builder exposing
     , getPerspective
     , getPerspectiveStylesCache
     , getPerspectiveWithDefault
+    , getPreviousAnimation
     , getScrollContainer
     , getScrollTargets
     , getTimeSpec
     , getTimespec
     , init
     , mapScrollTargets
+    , markAnimationAsExecuted
     , markDirty
     , perspective
     , processAnimationData
+    , processAnimationDataWithHistory
+      -- NEW: Process and store in history
     , processElement
+    , restartAnimationById
+    , restartCurrentAnimation
+    , restartPreviousAnimation
     , setScrollContainer
     , speed
+    , updateAnimationStatus
     , updateCurrentElement
     , updateElementConfig
+      -- Animation History Management
     )
 
 import Anim.Color exposing (Color)
@@ -78,6 +96,58 @@ type alias BuilderData =
     , scrollTargets : List ScrollTarget
     , scrollContainer : String
     , perspectiveStylesCache : Maybe (Dict String (List { attribute : String, value : String }))
+    , animationHistories : Dict ElementId AnimationHistory -- NEW: Animation history per element
+    , nextAnimationId : AnimationId -- NEW: Unique ID generator
+    }
+
+
+{-| Animation history for a single element.
+
+  - current: The most recent animation (if any)
+  - history: Previous animations (most recent first)
+  - metadata: Additional tracking information
+
+-}
+type alias AnimationHistory =
+    { current : Maybe AnimationHistoryEntry
+    , history : List AnimationHistoryEntry -- Most recent first (head = previous)
+    , metadata : ElementHistoryMetadata
+    }
+
+
+{-| Individual animation entry in the history.
+-}
+type alias AnimationHistoryEntry =
+    { id : AnimationId
+    , processedData : ProcessedAnimationData
+    , timestamp : Int -- Using Int for simplicity (could be Time.Posix)
+    , status : AnimationHistoryStatus
+    , label : Maybe String -- Optional user-provided label
+    }
+
+
+{-| Unique identifier for animations.
+-}
+type alias AnimationId =
+    Int
+
+
+{-| Status of animations in history.
+-}
+type AnimationHistoryStatus
+    = Pending -- Animation created but not yet executed
+    | Running -- Animation currently executing
+    | Completed -- Animation finished successfully
+    | Cancelled -- Animation was stopped/cancelled
+    | Failed -- Animation failed to execute
+
+
+{-| Metadata for element animation history.
+-}
+type alias ElementHistoryMetadata =
+    { totalAnimations : Int
+    , lastExecutedId : Maybe AnimationId
+    , createdAt : Int
     }
 
 
@@ -161,6 +231,8 @@ init =
         , scrollTargets = []
         , scrollContainer = "document"
         , perspectiveStylesCache = Nothing
+        , animationHistories = Dict.empty -- NEW: Initialize empty animation histories
+        , nextAnimationId = 1 -- NEW: Start animation IDs from 1
         }
 
 
@@ -388,6 +460,37 @@ setScrollContainer containerId (AnimBuilder data) =
 --
 --
 -- Process animation data to resolve timing and easing values
+
+
+{-| Process animation data and automatically add to history for all animated elements.
+This is the new preferred way to process animations as it maintains proper history tracking.
+Returns (updatedBuilder, processedData, animationIds) where animationIds maps elementId to AnimationId.
+-}
+processAnimationDataWithHistory : Maybe String -> AnimBuilder -> ( AnimBuilder, ProcessedAnimationData, Dict ElementId AnimationId )
+processAnimationDataWithHistory maybeLabel builder =
+    let
+        -- First process the animation data normally
+        processedData =
+            processAnimationData builder
+
+        -- Get all element IDs that have animations
+        animatedElementIds =
+            Dict.keys processedData.elements
+
+        -- Add each element's animation to history
+        ( updatedBuilder, animationIds ) =
+            List.foldl
+                (\elementId ( currentBuilder, idDict ) ->
+                    let
+                        ( newBuilder, animId ) =
+                            addAnimationToHistory elementId processedData maybeLabel currentBuilder
+                    in
+                    ( newBuilder, Dict.insert elementId animId idDict )
+                )
+                ( builder, Dict.empty )
+                animatedElementIds
+    in
+    ( updatedBuilder, processedData, animationIds )
 
 
 processAnimationData : AnimBuilder -> ProcessedAnimationData
@@ -878,3 +981,234 @@ computeAndCachePerspectiveStyles ((AnimBuilder data) as builder) =
                     computePerspectiveStyles processedData
             in
             AnimBuilder { data | perspectiveStylesCache = Just cache }
+
+
+
+-- ANIMATION HISTORY MANAGEMENT
+
+
+{-| Add a new animation to the element's history.
+This function creates a new history entry and updates the element's animation timeline.
+The previous current animation (if any) is moved to the history list.
+-}
+addAnimationToHistory : ElementId -> ProcessedAnimationData -> Maybe String -> AnimBuilder -> ( AnimBuilder, AnimationId )
+addAnimationToHistory elementId processedData maybeLabel (AnimBuilder data) =
+    let
+        newAnimationId =
+            data.nextAnimationId
+
+        currentTimestamp =
+            0
+
+        -- TODO: Could integrate with Time.now in the future
+        -- Create the new animation entry
+        newEntry =
+            { id = newAnimationId
+            , processedData = processedData
+            , timestamp = currentTimestamp
+            , status = Pending
+            , label = maybeLabel
+            }
+
+        -- Get existing history for this element or create new one
+        existingHistory =
+            Dict.get elementId data.animationHistories
+                |> Maybe.withDefault (createEmptyHistory currentTimestamp)
+
+        -- Update history: move current to history list, set new as current
+        updatedHistory =
+            case existingHistory.current of
+                Nothing ->
+                    -- No previous animation, just set as current
+                    { existingHistory
+                        | current = Just newEntry
+                        , metadata =
+                            { totalAnimations = existingHistory.metadata.totalAnimations + 1
+                            , lastExecutedId = existingHistory.metadata.lastExecutedId
+                            , createdAt = existingHistory.metadata.createdAt
+                            }
+                    }
+
+                Just previousCurrent ->
+                    -- Move current to history, set new as current
+                    { existingHistory
+                        | current = Just newEntry
+                        , history = previousCurrent :: existingHistory.history
+                        , metadata =
+                            { totalAnimations = existingHistory.metadata.totalAnimations + 1
+                            , lastExecutedId = existingHistory.metadata.lastExecutedId
+                            , createdAt = existingHistory.metadata.createdAt
+                            }
+                    }
+
+        -- Update the builder with new history and incremented ID counter
+        updatedData =
+            { data
+                | animationHistories = Dict.insert elementId updatedHistory data.animationHistories
+                , nextAnimationId = data.nextAnimationId + 1
+            }
+    in
+    ( AnimBuilder updatedData, newAnimationId )
+
+
+{-| Get the current (most recent) animation for an element.
+-}
+getCurrentAnimation : ElementId -> AnimBuilder -> Maybe AnimationHistoryEntry
+getCurrentAnimation elementId (AnimBuilder data) =
+    Dict.get elementId data.animationHistories
+        |> Maybe.andThen .current
+
+
+{-| Get the previous animation for an element.
+-}
+getPreviousAnimation : ElementId -> AnimBuilder -> Maybe AnimationHistoryEntry
+getPreviousAnimation elementId (AnimBuilder data) =
+    Dict.get elementId data.animationHistories
+        |> Maybe.andThen (.history >> List.head)
+
+
+{-| Get a specific animation by its ID for an element.
+-}
+getAnimationById : ElementId -> AnimationId -> AnimBuilder -> Maybe AnimationHistoryEntry
+getAnimationById elementId animId (AnimBuilder data) =
+    case Dict.get elementId data.animationHistories of
+        Nothing ->
+            Nothing
+
+        Just history ->
+            -- Check current animation first
+            case history.current of
+                Just current ->
+                    if current.id == animId then
+                        Just current
+
+                    else
+                        -- Search through history
+                        List.filter (.id >> (==) animId) history.history
+                            |> List.head
+
+                Nothing ->
+                    -- Only search history
+                    List.filter (.id >> (==) animId) history.history
+                        |> List.head
+
+
+{-| Get the complete animation history for an element.
+Returns (current, history) tuple where history is most recent first.
+-}
+getAllAnimationHistory : ElementId -> AnimBuilder -> Maybe ( Maybe AnimationHistoryEntry, List AnimationHistoryEntry )
+getAllAnimationHistory elementId (AnimBuilder data) =
+    Dict.get elementId data.animationHistories
+        |> Maybe.map (\history -> ( history.current, history.history ))
+
+
+{-| Clear animation history for an element.
+-}
+clearAnimationHistory : ElementId -> AnimBuilder -> AnimBuilder
+clearAnimationHistory elementId (AnimBuilder data) =
+    AnimBuilder { data | animationHistories = Dict.remove elementId data.animationHistories }
+
+
+{-| Create an empty animation history for an element.
+-}
+createEmptyHistory : Int -> AnimationHistory
+createEmptyHistory timestamp =
+    { current = Nothing
+    , history = []
+    , metadata =
+        { totalAnimations = 0
+        , lastExecutedId = Nothing
+        , createdAt = timestamp
+        }
+    }
+
+
+
+-- ANIMATION CONTROL FUNCTIONS
+
+
+{-| Restart the current animation for an element.
+Returns the ProcessedAnimationData for the current animation, or Nothing if no current animation exists.
+-}
+restartCurrentAnimation : ElementId -> AnimBuilder -> Maybe ProcessedAnimationData
+restartCurrentAnimation elementId builder =
+    getCurrentAnimation elementId builder
+        |> Maybe.map .processedData
+
+
+{-| Restart the previous animation for an element.
+Returns the ProcessedAnimationData for the previous animation, or Nothing if no previous animation exists.
+-}
+restartPreviousAnimation : ElementId -> AnimBuilder -> Maybe ProcessedAnimationData
+restartPreviousAnimation elementId builder =
+    getPreviousAnimation elementId builder
+        |> Maybe.map .processedData
+
+
+{-| Restart a specific animation by ID.
+Returns the ProcessedAnimationData for the specified animation, or Nothing if the animation doesn't exist.
+-}
+restartAnimationById : ElementId -> AnimationId -> AnimBuilder -> Maybe ProcessedAnimationData
+restartAnimationById elementId animId builder =
+    getAnimationById elementId animId builder
+        |> Maybe.map .processedData
+
+
+{-| Mark an animation as executed and update the metadata.
+This should be called by engines when they actually start executing an animation.
+-}
+markAnimationAsExecuted : ElementId -> AnimationId -> AnimBuilder -> AnimBuilder
+markAnimationAsExecuted elementId animId (AnimBuilder data) =
+    let
+        updatedHistories =
+            Dict.update elementId
+                (\maybeHistory ->
+                    case maybeHistory of
+                        Nothing ->
+                            Nothing
+
+                        Just history ->
+                            Just
+                                { history
+                                    | metadata =
+                                        { totalAnimations = history.metadata.totalAnimations
+                                        , lastExecutedId = Just animId
+                                        , createdAt = history.metadata.createdAt
+                                        }
+                                }
+                )
+                data.animationHistories
+    in
+    AnimBuilder { data | animationHistories = updatedHistories }
+
+
+{-| Update the status of a specific animation.
+This should be called by engines to update animation status (Running, Completed, etc.).
+-}
+updateAnimationStatus : ElementId -> AnimationId -> AnimationHistoryStatus -> AnimBuilder -> AnimBuilder
+updateAnimationStatus elementId animId newStatus (AnimBuilder data) =
+    let
+        updateEntry entry =
+            if entry.id == animId then
+                { entry | status = newStatus }
+
+            else
+                entry
+
+        updatedHistories =
+            Dict.update elementId
+                (\maybeHistory ->
+                    case maybeHistory of
+                        Nothing ->
+                            Nothing
+
+                        Just history ->
+                            Just
+                                { history
+                                    | current = Maybe.map updateEntry history.current
+                                    , history = List.map updateEntry history.history
+                                }
+                )
+                data.animationHistories
+    in
+    AnimBuilder { data | animationHistories = updatedHistories }

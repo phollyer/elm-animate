@@ -46,6 +46,7 @@ module Anim.Internal.WAAPI exposing
 import Anim.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builders.BackgroundColor as BackgroundColor
+import Anim.Internal.Builders.FontColor as FontColor
 import Anim.Internal.Builders.Opacity as Opacity
 import Anim.Internal.Builders.Position as Position
 import Anim.Internal.Builders.Rotate as Rotate
@@ -95,12 +96,27 @@ type alias ElementEndStates =
     }
 
 
-type alias ElementAnimation =
-    { commands : Encode.Value
-    , startStates : ElementEndStates -- Store start states for reset functionality
-    , endStates : ElementEndStates
-    , currentStates : ElementEndStates
+emptyElementEndStates : ElementEndStates
+emptyElementEndStates =
+    { position = Nothing
+    , rotate = Nothing
+    , scale = Nothing
+    , backgroundColor = Nothing
+    , fontColor = Nothing
+    , opacity = Nothing
+    , size = Nothing
+    }
+
+
+type alias PropertyAnimation =
+    { version : Int
     , status : AnimationStatus
+    }
+
+
+type alias ElementAnimation =
+    { currentStates : ElementEndStates -- Updated by JavaScript during playback
+    , properties : Dict String PropertyAnimation -- Tracks version and status per property type ("position", "opacity", etc.)
     }
 
 
@@ -184,68 +200,140 @@ animate (AnimState state) builder_ =
         builderWithCache =
             Builder.computeAndCachePerspectiveStyles builder_
 
-        -- Inject current animated states into builder before processing
-        builderWithCurrentStates =
-            Dict.foldl injectCurrentStatesForElement builderWithCache state.elementAnimations
-
+        -- Temporarily disable current state injection to test if end states are correct
+        -- builderWithCurrentStates =
+        --     Dict.foldl injectCurrentStatesForElement builderWithCache state.elementAnimations
         processedData =
-            Builder.processAnimationData builderWithCurrentStates
+            Builder.processAnimationData builderWithCache
 
-        -- Create element animations from processed data
+        -- Create element animations from processed data with property-level versioning
         newElementAnimations =
             processedData.elements
                 |> Dict.map
                     (\elementId elementConfig ->
                         let
-                            startStates =
-                                extractElementStartStates elementConfig
-
-                            endStates =
-                                extractElementEndStates elementConfig
-
-                            -- Use current states from existing animation if available, otherwise use end states
-                            currentStates =
+                            -- Get existing element animation to preserve states and versions for non-animated properties
+                            existingAnimation =
                                 Dict.get elementId state.elementAnimations
+
+                            -- Use current states from existing animation if available, otherwise empty
+                            currentStates =
+                                existingAnimation
                                     |> Maybe.map .currentStates
-                                    |> Maybe.withDefault endStates
+                                    |> Maybe.withDefault emptyElementEndStates
+
+                            -- Get existing property versions
+                            existingPropertyVersions =
+                                existingAnimation
+                                    |> Maybe.map .properties
+                                    |> Maybe.withDefault Dict.empty
+
+                            -- Create new property versions for properties in this animation
+                            newPropertyVersions =
+                                elementConfig.properties
+                                    |> List.map
+                                        (\property ->
+                                            let
+                                                propType =
+                                                    propertyTypeString property
+
+                                                newVersion =
+                                                    Dict.get propType existingPropertyVersions
+                                                        |> Maybe.map .version
+                                                        |> Maybe.map ((+) 1)
+                                                        |> Maybe.withDefault 1
+                                            in
+                                            ( propType
+                                            , { version = newVersion
+                                              , status = NotStarted
+                                              }
+                                            )
+                                        )
+                                    |> Dict.fromList
+
+                            -- Merge new property versions with existing ones (new ones take precedence)
+                            mergedPropertyVersions =
+                                Dict.union newPropertyVersions existingPropertyVersions
                         in
-                        { commands = encode processedData
-                        , startStates = startStates
-                        , endStates = endStates
-                        , currentStates = currentStates
-                        , status = NotStarted
+                        { currentStates = currentStates
+                        , properties = mergedPropertyVersions
                         }
                     )
 
-        -- Merge with existing animations (new animations replace old ones for same elements)
+        -- Merge with existing animations, preserving non-animated property tracking
         updatedElementAnimations =
-            Dict.union newElementAnimations state.elementAnimations
+            Dict.foldl
+                (\elementId newAnim acc ->
+                    case Dict.get elementId acc of
+                        Nothing ->
+                            -- New element, just insert
+                            Dict.insert elementId newAnim acc
+
+                        Just existingAnim ->
+                            -- Existing element, merge property versions
+                            let
+                                mergedProperties =
+                                    Dict.union newAnim.properties existingAnim.properties
+                            in
+                            Dict.insert elementId
+                                { currentStates = newAnim.currentStates
+                                , properties = mergedProperties
+                                }
+                                acc
+                )
+                state.elementAnimations
+                newElementAnimations
+
+        -- Save each element's animation to history before clearing
+        builderWithHistory =
+            Dict.foldl
+                (\elementId _ accBuilder ->
+                    Builder.addAnimationToHistory elementId processedData Nothing accBuilder
+                        |> Tuple.first
+                )
+                builderWithCache
+                processedData.elements
     in
     ( AnimState
         { elementAnimations = updatedElementAnimations
         , isRunning = not (Dict.isEmpty newElementAnimations)
         , builder =
-            builderWithCurrentStates
+            builderWithHistory
                 |> Builder.markDirty
                 |> Builder.clearCurrentElement
         }
-    , encode processedData
+    , encodeWithVersions updatedElementAnimations processedData
     )
+
+
+propertyTypeString : Builder.ProcessedPropertyConfig -> String
+propertyTypeString property =
+    case property of
+        Builder.ProcessedPositionConfig _ ->
+            "position"
+
+        Builder.ProcessedRotateConfig _ ->
+            "rotate"
+
+        Builder.ProcessedScaleConfig _ ->
+            "scale"
+
+        Builder.ProcessedBackgroundColorConfig _ ->
+            "backgroundColor"
+
+        Builder.ProcessedFontColorConfig _ ->
+            "fontColor"
+
+        Builder.ProcessedOpacityConfig _ ->
+            "opacity"
+
+        Builder.ProcessedSizeConfig _ ->
+            "size"
 
 
 extractElementEndStates : Builder.ProcessedElementConfig -> ElementEndStates
 extractElementEndStates elementConfig =
     let
-        emptyElementEndStates =
-            { position = Nothing
-            , rotate = Nothing
-            , scale = Nothing
-            , backgroundColor = Nothing
-            , fontColor = Nothing
-            , opacity = Nothing
-            , size = Nothing
-            }
-
         extractPropertyEndState : Builder.ProcessedPropertyConfig -> ElementEndStates -> ElementEndStates
         extractPropertyEndState property state =
             case property of
@@ -276,16 +364,6 @@ extractElementEndStates elementConfig =
 extractElementStartStates : Builder.ProcessedElementConfig -> ElementEndStates
 extractElementStartStates elementConfig =
     let
-        emptyElementStartStates =
-            { position = Nothing
-            , rotate = Nothing
-            , scale = Nothing
-            , backgroundColor = Nothing
-            , fontColor = Nothing
-            , opacity = Nothing
-            , size = Nothing
-            }
-
         extractPropertyStartState : Builder.ProcessedPropertyConfig -> ElementEndStates -> ElementEndStates
         extractPropertyStartState property state =
             case property of
@@ -310,7 +388,7 @@ extractElementStartStates elementConfig =
                 Builder.ProcessedSizeConfig config ->
                     { state | size = config.start }
     in
-    List.foldl extractPropertyStartState emptyElementStartStates elementConfig.properties
+    List.foldl extractPropertyStartState emptyElementEndStates elementConfig.properties
 
 
 injectCurrentStatesForElement : ElementId -> ElementAnimation -> AnimBuilder -> AnimBuilder
@@ -433,13 +511,23 @@ update jsonValue (AnimState state) =
                         state.elementAnimations
 
                 -- Remove completed animations to prevent memory leaks
+                -- Element is fully complete when all properties are complete
                 cleanedAnimations =
-                    Dict.filter (\_ elementAnim -> elementAnim.status /= Complete) updatedAnimations
+                    Dict.filter
+                        (\_ elementAnim ->
+                            Dict.values elementAnim.properties
+                                |> List.any (\prop -> prop.status /= Complete)
+                        )
+                        updatedAnimations
 
                 -- Update global isRunning based on remaining animations
                 hasRunningAnimations =
                     Dict.values cleanedAnimations
-                        |> List.any (\elementAnim -> elementAnim.status == Running)
+                        |> List.any
+                            (\elementAnim ->
+                                Dict.values elementAnim.properties
+                                    |> List.any (\prop -> prop.status == Running)
+                            )
             in
             AnimState
                 { state
@@ -469,15 +557,33 @@ updateElementAnimation animUpdate elementAnimation =
             if animUpdate.isAnimating then
                 Running
 
-            else if newCurrentStates == elementAnimation.endStates then
+            else
                 Complete
 
-            else
-                Running
+        -- Only update properties where the version matches the current tracked version
+        -- This prevents stale JavaScript updates from overwriting newer animations
+        updatedProperties =
+            elementAnimation.properties
+                |> Dict.map
+                    (\propType propAnim ->
+                        case Dict.get propType animUpdate.propertyVersions of
+                            Nothing ->
+                                -- Property not in update, keep existing
+                                propAnim
+
+                            Just updateVersion ->
+                                -- Check if version matches
+                                if updateVersion == propAnim.version then
+                                    { propAnim | status = newStatus }
+
+                                else
+                                    -- Version mismatch, ignore this update for this property
+                                    propAnim
+                    )
     in
     { elementAnimation
         | currentStates = newCurrentStates
-        , status = newStatus
+        , properties = updatedProperties
     }
 
 
@@ -491,9 +597,13 @@ allComplete (AnimState state) =
         Nothing
 
     else
-        -- Check if all animations have Complete status
+        -- Check if all properties in all elements have Complete status
         Dict.values state.elementAnimations
-            |> List.all (\elementAnim -> elementAnim.status == Complete)
+            |> List.all
+                (\elementAnim ->
+                    Dict.values elementAnim.properties
+                        |> List.all (\prop -> prop.status == Complete)
+                )
             |> Just
 
 
@@ -507,7 +617,8 @@ isElementComplete elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.map
             (\elementAnimation ->
-                elementAnimation.status == Complete
+                Dict.values elementAnimation.properties
+                    |> List.all (\prop -> prop.status == Complete)
             )
 
 
@@ -518,7 +629,8 @@ isElementRunning elementId (AnimState state) =
             False
 
         Just elementAnimation ->
-            elementAnimation.status == Running
+            Dict.values elementAnimation.properties
+                |> List.any (\prop -> prop.status == Running)
 
 
 
@@ -781,6 +893,7 @@ type alias AnimationUpdate =
     , width : Float
     , height : Float
     , isAnimating : Bool
+    , propertyVersions : Dict String Int -- Maps property type to version number
     }
 
 
@@ -803,6 +916,7 @@ animationUpdateDecoder =
         |> andMap (Decode.field "width" Decode.float)
         |> andMap (Decode.field "height" Decode.float)
         |> andMap (Decode.field "isAnimating" Decode.bool)
+        |> andMap (Decode.field "propertyVersions" (Decode.dict Decode.int))
 
 
 andMap : Decoder a -> Decoder (a -> b) -> Decoder b
@@ -812,6 +926,25 @@ andMap =
 
 
 -- Encoders
+
+
+encodeWithVersions : Dict ElementId ElementAnimation -> Builder.ProcessedAnimationData -> Encode.Value
+encodeWithVersions elementAnimations data =
+    let
+        elementsWithVersions =
+            data.elements
+                |> Dict.toList
+                |> List.map
+                    (\( elementId, config ) ->
+                        ( elementId
+                        , encodeProcessedElementConfigWithVersions elementAnimations elementId config
+                        )
+                    )
+    in
+    Encode.object
+        [ ( "elements", Encode.object elementsWithVersions )
+        , ( "globalPerspective", encodeMaybePerspective data.globalPerspective )
+        ]
 
 
 encode : Builder.ProcessedAnimationData -> Encode.Value
@@ -835,10 +968,207 @@ encodeMaybePerspective maybePerspective =
                 ]
 
 
+encodeProcessedElementConfigWithVersions : Dict ElementId ElementAnimation -> String -> Builder.ProcessedElementConfig -> Encode.Value
+encodeProcessedElementConfigWithVersions elementAnimations elementId config =
+    let
+        elementProps =
+            Dict.get elementId elementAnimations
+                |> Maybe.map .properties
+                |> Maybe.withDefault Dict.empty
+    in
+    Encode.object
+        [ ( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties ) ]
+
+
 encodeProcessedElementConfig : Builder.ProcessedElementConfig -> Encode.Value
 encodeProcessedElementConfig config =
     Encode.object
         [ ( "properties", Encode.list encodeProcessedPropertyConfig config.properties ) ]
+
+
+encodeProcessedPropertyConfigWithVersion : Dict String PropertyAnimation -> Builder.ProcessedPropertyConfig -> Encode.Value
+encodeProcessedPropertyConfigWithVersion propertyVersions property =
+    let
+        propType =
+            propertyTypeString property
+
+        version =
+            Dict.get propType propertyVersions
+                |> Maybe.map .version
+                |> Maybe.withDefault 1
+
+        versionField =
+            ( "version", Encode.int version )
+    in
+    case property of
+        Builder.ProcessedPositionConfig config ->
+            let
+                ( endX, endY, endZ ) =
+                    Position.toTriple config.end
+
+                ( startX, startY, startZ ) =
+                    config.start
+                        |> Maybe.map Position.toTriple
+                        |> Maybe.withDefault ( 0, 0, 0 )
+
+                baseFields =
+                    [ ( "type", Encode.string "position" )
+                    , versionField
+                    , ( "endX", Encode.float endX )
+                    , ( "endY", Encode.float endY )
+                    , ( "endZ", Encode.float endZ )
+                    , ( "startX", Encode.float startX )
+                    , ( "startY", Encode.float startY )
+                    , ( "startZ", Encode.float startZ )
+                    , ( "duration", Encode.int config.duration )
+                    , ( "perspective", encodeMaybePerspective config.perspective )
+                    ]
+
+                easingFields =
+                    encodeEasingWithKeyframes config.easing
+            in
+            Encode.object (baseFields ++ easingFields)
+
+        Builder.ProcessedScaleConfig config ->
+            let
+                ( endX, endY, endZ ) =
+                    Scale.toTriple config.end
+
+                ( startX, startY, startZ ) =
+                    config.start
+                        |> Maybe.map Scale.toTriple
+                        |> Maybe.withDefault ( 1, 1, 1 )
+
+                baseFields =
+                    [ ( "type", Encode.string "scale" )
+                    , versionField
+                    , ( "endX", Encode.float endX )
+                    , ( "endY", Encode.float endY )
+                    , ( "endZ", Encode.float endZ )
+                    , ( "startX", Encode.float startX )
+                    , ( "startY", Encode.float startY )
+                    , ( "startZ", Encode.float startZ )
+                    , ( "duration", Encode.int config.duration )
+                    , ( "perspective", encodeMaybePerspective config.perspective )
+                    ]
+
+                easingFields =
+                    encodeEasingWithKeyframes config.easing
+            in
+            Encode.object (baseFields ++ easingFields)
+
+        Builder.ProcessedRotateConfig config ->
+            let
+                ( endX, endY, endZ ) =
+                    Rotate.toTriple config.end
+
+                ( startX, startY, startZ ) =
+                    config.start
+                        |> Maybe.map Rotate.toTriple
+                        |> Maybe.withDefault ( 0, 0, 0 )
+
+                baseFields =
+                    [ ( "type", Encode.string "rotate" )
+                    , versionField
+                    , ( "endX", Encode.float endX )
+                    , ( "endY", Encode.float endY )
+                    , ( "endZ", Encode.float endZ )
+                    , ( "startX", Encode.float startX )
+                    , ( "startY", Encode.float startY )
+                    , ( "startZ", Encode.float startZ )
+                    , ( "duration", Encode.int config.duration )
+                    , ( "perspective", encodeMaybePerspective config.perspective )
+                    ]
+
+                easingFields =
+                    encodeEasingWithKeyframes config.easing
+            in
+            Encode.object (baseFields ++ easingFields)
+
+        Builder.ProcessedSizeConfig config ->
+            let
+                ( width, height ) =
+                    Size.toTuple config.end
+
+                ( startWidth, startHeight ) =
+                    config.start
+                        |> Maybe.map Size.toTuple
+                        |> Maybe.withDefault ( 0, 0 )
+
+                baseFields =
+                    [ ( "type", Encode.string "size" )
+                    , versionField
+                    , ( "endWidth", Encode.float width )
+                    , ( "endHeight", Encode.float height )
+                    , ( "startWidth", Encode.float startWidth )
+                    , ( "startHeight", Encode.float startHeight )
+                    , ( "duration", Encode.int config.duration )
+                    ]
+
+                easingFields =
+                    encodeEasingWithKeyframes config.easing
+            in
+            Encode.object (baseFields ++ easingFields)
+
+        Builder.ProcessedOpacityConfig config ->
+            let
+                startValue =
+                    config.start
+                        |> Maybe.map Opacity.toFloat
+                        |> Maybe.withDefault 1.0
+
+                baseFields =
+                    [ ( "type", Encode.string "opacity" )
+                    , versionField
+                    , ( "endValue", Encode.float (Opacity.toFloat config.end) )
+                    , ( "startValue", Encode.float startValue )
+                    , ( "duration", Encode.int config.duration )
+                    ]
+
+                easingFields =
+                    encodeEasingWithKeyframes config.easing
+            in
+            Encode.object (baseFields ++ easingFields)
+
+        Builder.ProcessedBackgroundColorConfig config ->
+            let
+                startColor =
+                    config.start
+                        |> Maybe.map Color.toCssString
+                        |> Maybe.withDefault (Color.toCssString BackgroundColor.default)
+
+                baseFields =
+                    [ ( "type", Encode.string "backgroundColor" )
+                    , versionField
+                    , ( "endColor", Encode.string (Color.toCssString config.end) )
+                    , ( "startColor", Encode.string startColor )
+                    , ( "duration", Encode.int config.duration )
+                    ]
+
+                easingFields =
+                    encodeEasingWithKeyframes config.easing
+            in
+            Encode.object (baseFields ++ easingFields)
+
+        Builder.ProcessedFontColorConfig config ->
+            let
+                startColor =
+                    config.start
+                        |> Maybe.map Color.toCssString
+                        |> Maybe.withDefault "rgba(0, 0, 0, 1)"
+
+                baseFields =
+                    [ ( "type", Encode.string "color" )
+                    , versionField
+                    , ( "endColor", Encode.string (Color.toCssString config.end) )
+                    , ( "startColor", Encode.string startColor )
+                    , ( "duration", Encode.int config.duration )
+                    ]
+
+                easingFields =
+                    encodeEasingWithKeyframes config.easing
+            in
+            Encode.object (baseFields ++ easingFields)
 
 
 encodeProcessedPropertyConfig : Builder.ProcessedPropertyConfig -> Encode.Value
@@ -1050,35 +1380,47 @@ isComplexEasing easing_ =
             False
 
 
+{-| Empty command structure that JavaScript can safely ignore.
+-}
+emptyCommand : Encode.Value
+emptyCommand =
+    Encode.object
+        [ ( "elements", Encode.object [] )
+        , ( "globalPerspective", Encode.null )
+        ]
+
+
 {-| Reset an element to its initial animation state by resetting internal state and creating a 0ms animation to start positions.
 -}
 resetElement : String -> AnimState -> ( AnimState, Encode.Value )
 resetElement elementId (AnimState state) =
-    case Dict.get elementId state.elementAnimations of
+    case Builder.getCurrentAnimation elementId state.builder |> Debug.log "Reset Animation" of
         Nothing ->
-            -- No animation data to reset, return unchanged state and empty command
-            ( AnimState state, Encode.object [] )
+            -- No animation in history to reset
+            ( AnimState state, emptyCommand )
 
-        Just elementAnimation ->
-            -- Reset internal state: mark as NotStarted and update currentStates to startStates
+        Just historyEntry ->
             let
-                resetElementAnimation =
-                    { elementAnimation
-                        | status = NotStarted
-                        , currentStates = elementAnimation.startStates
-                    }
+                -- Extract start and end states from the animation history
+                startStates =
+                    historyEntry.processedData.elements
+                        |> Dict.get elementId
+                        |> Maybe.map extractElementStartStates
+                        |> Maybe.withDefault emptyElementEndStates
 
-                updatedElementAnimations =
-                    Dict.insert elementId resetElementAnimation state.elementAnimations
+                endStates =
+                    historyEntry.processedData.elements
+                        |> Dict.get elementId
+                        |> Maybe.map extractElementEndStates
+                        |> Maybe.withDefault emptyElementEndStates
 
-                updatedAnimState =
-                    AnimState
-                        { state
-                            | elementAnimations = updatedElementAnimations
-                            , isRunning =
-                                Dict.values updatedElementAnimations
-                                    |> List.any (\anim -> anim.status == Running)
-                        }
+                -- Get properties that were in the original animation
+                animatedPropertyTypes =
+                    historyEntry.processedData.elements
+                        |> Dict.get elementId
+                        |> Maybe.map .properties
+                        |> Maybe.withDefault []
+                        |> List.map propertyTypeString
 
                 -- Create 0ms animation to visually jump to start positions
                 resetBuilder =
@@ -1086,44 +1428,173 @@ resetElement elementId (AnimState state) =
                         |> Builder.duration 0
                         |> Builder.easing Linear
                         |> Builder.for elementId
-                        |> addResetProperties elementId elementAnimation.endStates elementAnimation.startStates
+                        |> addResetProperties elementId endStates startStates
 
-                ( finalAnimState, resetCommands ) =
-                    animate updatedAnimState resetBuilder
+                builderWithCache =
+                    Builder.computeAndCachePerspectiveStyles resetBuilder
+
+                processedData =
+                    Builder.processAnimationData builderWithCache
+
+                resetCommands =
+                    encode processedData
             in
-            ( finalAnimState, resetCommands )
+            case Dict.get elementId state.elementAnimations of
+                Nothing ->
+                    -- No tracking entry, create one with property versions
+                    let
+                        newProperties =
+                            animatedPropertyTypes
+                                |> List.map (\propType -> ( propType, { version = 1, status = NotStarted } ))
+                                |> Dict.fromList
+
+                        newElementAnimation =
+                            { currentStates = startStates
+                            , properties = newProperties
+                            }
+
+                        updatedElementAnimations =
+                            Dict.insert elementId newElementAnimation state.elementAnimations
+
+                        updatedAnimState =
+                            AnimState
+                                { state
+                                    | elementAnimations = updatedElementAnimations
+                                    , isRunning = False
+                                }
+                    in
+                    ( updatedAnimState, resetCommands )
+
+                Just elementAnimation ->
+                    -- Existing tracking entry, increment versions for reset properties
+                    let
+                        updatedProperties =
+                            elementAnimation.properties
+                                |> Dict.map
+                                    (\propType propAnim ->
+                                        if List.member propType animatedPropertyTypes then
+                                            { propAnim
+                                                | version = propAnim.version + 1
+                                                , status = NotStarted
+                                            }
+
+                                        else
+                                            propAnim
+                                    )
+
+                        resetElementAnimation =
+                            { elementAnimation
+                                | currentStates = startStates
+                                , properties = updatedProperties
+                            }
+
+                        updatedElementAnimations =
+                            Dict.insert elementId resetElementAnimation state.elementAnimations
+
+                        updatedAnimState =
+                            AnimState
+                                { state
+                                    | elementAnimations = updatedElementAnimations
+                                    , isRunning =
+                                        Dict.values updatedElementAnimations
+                                            |> List.any
+                                                (\anim ->
+                                                    Dict.values anim.properties
+                                                        |> List.any (\prop -> prop.status == Running)
+                                                )
+                                }
+                    in
+                    ( updatedAnimState, resetCommands )
 
 
-{-| Restart the last animation by resetting internal state and replaying the original animation commands.
+{-| Restart the last animation by retrieving it from Builder history and replaying it.
 -}
 restartElement : String -> AnimState -> ( AnimState, Encode.Value )
 restartElement elementId (AnimState state) =
-    case Dict.get elementId state.elementAnimations of
+    case Builder.restartCurrentAnimation elementId state.builder of
         Nothing ->
-            -- No animation data to restart, return unchanged state and empty command
-            ( AnimState state, Encode.object [] )
+            -- No animation in history to restart
+            ( AnimState state, emptyCommand )
 
-        Just elementAnimation ->
-            -- Reset internal state: mark as NotStarted and update currentStates to startStates
+        Just processedData ->
+            -- Get properties that are being restarted
             let
-                resetElementAnimation =
-                    { elementAnimation
-                        | status = NotStarted
-                        , currentStates = elementAnimation.startStates
-                    }
+                restartedPropertyTypes =
+                    processedData.elements
+                        |> Dict.get elementId
+                        |> Maybe.map .properties
+                        |> Maybe.withDefault []
+                        |> List.map propertyTypeString
 
-                updatedElementAnimations =
-                    Dict.insert elementId resetElementAnimation state.elementAnimations
-
-                updatedAnimState =
-                    AnimState
-                        { state
-                            | elementAnimations = updatedElementAnimations
-                            , isRunning = True -- Animation will start running
-                        }
+                startStates =
+                    processedData.elements
+                        |> Dict.get elementId
+                        |> Maybe.map extractElementStartStates
+                        |> Maybe.withDefault emptyElementEndStates
             in
-            -- Replay the original animation commands (browser treats this as new animation)
-            ( updatedAnimState, elementAnimation.commands )
+            case Dict.get elementId state.elementAnimations of
+                Nothing ->
+                    -- No tracking entry exists, create one with property versions
+                    let
+                        newProperties =
+                            restartedPropertyTypes
+                                |> List.map (\propType -> ( propType, { version = 1, status = NotStarted } ))
+                                |> Dict.fromList
+
+                        newElementAnimation =
+                            { currentStates = startStates
+                            , properties = newProperties
+                            }
+
+                        updatedElementAnimations =
+                            Dict.insert elementId newElementAnimation state.elementAnimations
+
+                        updatedAnimState =
+                            AnimState
+                                { state
+                                    | elementAnimations = updatedElementAnimations
+                                    , isRunning = True
+                                }
+                    in
+                    ( updatedAnimState, encode processedData )
+
+                Just elementAnimation ->
+                    -- Update existing entry, incrementing versions for restarted properties
+                    let
+                        updatedProperties =
+                            restartedPropertyTypes
+                                |> List.foldl
+                                    (\propType acc ->
+                                        let
+                                            newVersion =
+                                                Dict.get propType elementAnimation.properties
+                                                    |> Maybe.map .version
+                                                    |> Maybe.map ((+) 1)
+                                                    |> Maybe.withDefault 1
+                                        in
+                                        Dict.insert propType
+                                            { version = newVersion, status = NotStarted }
+                                            acc
+                                    )
+                                    elementAnimation.properties
+
+                        resetElementAnimation =
+                            { elementAnimation
+                                | currentStates = startStates
+                                , properties = updatedProperties
+                            }
+
+                        updatedElementAnimations =
+                            Dict.insert elementId resetElementAnimation state.elementAnimations
+
+                        updatedAnimState =
+                            AnimState
+                                { state
+                                    | elementAnimations = updatedElementAnimations
+                                    , isRunning = True
+                                }
+                    in
+                    ( updatedAnimState, encode processedData )
 
 
 {-| Helper to add reset properties to a builder for all animated properties.

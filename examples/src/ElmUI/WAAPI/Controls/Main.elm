@@ -19,7 +19,7 @@ import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Position as Position
 import Browser exposing (Document)
-import Common.Animations.Position as PositionAnim
+import Common.Animations.AnimationControls as ControlsAnim
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, centerY, column, el, fill, height, html, htmlAttribute, maximum, padding, paddingEach, paragraph, px, row, spacing, text, width)
@@ -71,7 +71,7 @@ init { window } =
 
         ( initialAnimState, initCmd ) =
             WAAPI.builder WAAPI.init
-                |> Position.initXY elementId (toFloat animationAreaWidth / 2 - 25) 50
+                |> ControlsAnim.init elementId (toFloat animationAreaWidth / 2 - 25) 50
                 |> WAAPI.animate WAAPI.init
     in
     ( { animationState = initialAnimState
@@ -113,11 +113,10 @@ update msg model =
             let
                 currentPosition =
                     WAAPI.getCurrentPosition elementId model.animationState
-                        |> Debug.log "==> Animate: Current Position"
 
                 ( newAnimState, animationData ) =
                     WAAPI.builder model.animationState
-                        |> PositionAnim.moveToY elementId 200 BounceOut 300
+                        |> ControlsAnim.animate elementId
                         |> WAAPI.animate model.animationState
             in
             ( { model | animationState = newAnimState }
@@ -143,7 +142,6 @@ update msg model =
             let
                 currentPosition =
                     WAAPI.getCurrentPosition elementId model.animationState
-                        |> Debug.log "==> Reset: Current Position before reset"
 
                 ( newAnimState, resetCmd ) =
                     WAAPI.resetAnimation elementId model.animationState
@@ -236,7 +234,6 @@ viewContent model =
     let
         currentPosition =
             WAAPI.getCurrentPosition elementId model.animationState
-                |> Debug.log "Current Position"
     in
     [ UI.backButton
     , UI.pageHeader "ElmUI & WAAPI Engine Controls"

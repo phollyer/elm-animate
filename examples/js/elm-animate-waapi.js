@@ -17,6 +17,7 @@ window.ElmAnimateWAAPI = (function () {
     'use strict';
 
     // Track active animations for cleanup and management
+    // Structure: Map<elementId, Map<propertyType, { animation, version }>>
     const activeAnimations = new Map();
 
     // Default easing functions mapping for Web Animations API
@@ -104,6 +105,7 @@ window.ElmAnimateWAAPI = (function () {
 
     /**
      * Process animation for a single element with all its properties
+     * Now supports property-level animation tracking with version control
      */
     function processElementAnimation(elementId, elementConfig) {
         const element = document.getElementById(elementId);
@@ -112,48 +114,49 @@ window.ElmAnimateWAAPI = (function () {
             return;
         }
 
-        // Stop any existing animation for this element
-        stopAnimation(elementId);
-
-        // Group properties that can be animated together (transforms)
-        const transforms = [];
-        const separateAnimations = [];
-
-        elementConfig.properties.forEach(property => {
-            if (property.type === 'position' || property.type === 'scale' || property.type === 'rotate') {
-                transforms.push(property);
-            } else {
-                separateAnimations.push(property);
-            }
-        });
-
-        const animations = [];
-
-        // Create combined transform animation if we have transform properties
-        if (transforms.length > 0) {
-            const transformAnimation = createTransformAnimation(element, transforms);
-            if (transformAnimation) {
-                animations.push(transformAnimation);
-            }
+        // Get or create element animation tracking map
+        if (!activeAnimations.has(elementId)) {
+            activeAnimations.set(elementId, new Map());
         }
+        const elementAnims = activeAnimations.get(elementId);
 
-        // Create separate animations for non-transform properties
-        separateAnimations.forEach(property => {
-            const animation = createPropertyAnimation(element, property);
+        // Process each property independently
+        elementConfig.properties.forEach(property => {
+            const propType = property.type;
+            const newVersion = property.version || 1;
+
+            // Check if there's an existing animation for this property
+            if (elementAnims.has(propType)) {
+                const existing = elementAnims.get(propType);
+
+                // Cancel the old animation for this specific property
+                existing.animation.cancel();
+
+                console.log(`ElmAnimateWAAPI: Cancelled ${propType} animation v${existing.version} for "${elementId}"`);
+            }
+
+            // Create new animation for this property
+            let animation;
+            if (propType === 'position' || propType === 'scale' || propType === 'rotate') {
+                // For transform properties, create individual transform animation
+                animation = createTransformPropertyAnimation(element, property);
+            } else {
+                animation = createPropertyAnimation(element, property);
+            }
+
             if (animation) {
-                animations.push(animation);
+                elementAnims.set(propType, {
+                    animation: animation,
+                    version: newVersion
+                });
+
+                setupAnimationEvents(elementId, propType, element, animation, newVersion);
+                console.log(`ElmAnimateWAAPI: Started ${propType} animation v${newVersion} for "${elementId}"`);
             }
         });
 
-        // Store and set up animations
-        if (animations.length > 0) {
-            activeAnimations.set(elementId, animations);
-            setupAnimationEvents(elementId, element, animations[0]); // Use first animation for events
-
-            // Send AnimationStart event to Elm
-            sendEventToElm('animationUpdate', elementId, { status: 'started' });
-        } else {
-            // Clear any existing animations for this element
+        // Clean up element entry if no animations remain
+        if (elementAnims.size === 0) {
             activeAnimations.delete(elementId);
         }
     }
@@ -406,6 +409,98 @@ window.ElmAnimateWAAPI = (function () {
     }
 
     /**
+     * Create animation for a single transform property (position, scale, or rotate)
+     * Used for property-level tracking where each transform property is animated independently
+     */
+    function createTransformPropertyAnimation(element, property) {
+        const duration = property.duration;
+        const easing = property.easing;
+        const easingKeyframes = property.easingKeyframes;
+
+        // Get current transform state to preserve other transform properties
+        const currentTransform = getCurrentTransform(element);
+
+        // Build start and end transforms based on property type
+        let startTransform, endTransform;
+
+        switch (property.type) {
+            case 'position':
+                const startX = property.startX !== undefined ? property.startX : currentTransform.x;
+                const startY = property.startY !== undefined ? property.startY : currentTransform.y;
+                const startZ = property.startZ !== undefined ? property.startZ : currentTransform.z;
+                const endX = property.endX !== undefined ? property.endX : currentTransform.x;
+                const endY = property.endY !== undefined ? property.endY : currentTransform.y;
+                const endZ = property.endZ !== undefined ? property.endZ : currentTransform.z;
+
+                startTransform = buildTransformString(startX, startY, startZ,
+                    currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
+                    currentTransform.rotationX, currentTransform.rotationY, currentTransform.rotationZ);
+                endTransform = buildTransformString(endX, endY, endZ,
+                    currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
+                    currentTransform.rotationX, currentTransform.rotationY, currentTransform.rotationZ);
+                break;
+
+            case 'scale':
+                const startScaleX = property.startX !== undefined ? property.startX : currentTransform.scaleX;
+                const startScaleY = property.startY !== undefined ? property.startY : currentTransform.scaleY;
+                const startScaleZ = property.startZ !== undefined ? property.startZ : currentTransform.scaleZ;
+                const endScaleX = property.endX !== undefined ? property.endX : currentTransform.scaleX;
+                const endScaleY = property.endY !== undefined ? property.endY : currentTransform.scaleY;
+                const endScaleZ = property.endZ !== undefined ? property.endZ : currentTransform.scaleZ;
+
+                startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
+                    startScaleX, startScaleY, startScaleZ,
+                    currentTransform.rotationX, currentTransform.rotationY, currentTransform.rotationZ);
+                endTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
+                    endScaleX, endScaleY, endScaleZ,
+                    currentTransform.rotationX, currentTransform.rotationY, currentTransform.rotationZ);
+                break;
+
+            case 'rotate':
+                const startRotX = property.startX !== undefined ? property.startX : currentTransform.rotationX;
+                const startRotY = property.startY !== undefined ? property.startY : currentTransform.rotationY;
+                const startRotZ = property.startZ !== undefined ? property.startZ : currentTransform.rotationZ;
+                const endRotX = property.endX !== undefined ? property.endX : currentTransform.rotationX;
+                const endRotY = property.endY !== undefined ? property.endY : currentTransform.rotationY;
+                const endRotZ = property.endZ !== undefined ? property.endZ : currentTransform.rotationZ;
+
+                startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
+                    currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
+                    startRotX, startRotY, startRotZ);
+                endTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
+                    currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
+                    endRotX, endRotY, endRotZ);
+                break;
+
+            default:
+                console.warn(`ElmAnimateWAAPI: Unknown transform property type "${property.type}"`);
+                return null;
+        }
+
+        let keyframes;
+        let animationEasing;
+
+        if (easingKeyframes) {
+            // Complex easing: generate keyframes with linear interpolation
+            keyframes = generateKeyframesWithEasing(startTransform, endTransform, easingKeyframes, 'transform');
+            animationEasing = 'linear';
+        } else {
+            // Simple easing: use 2 keyframes with easing curve
+            keyframes = [
+                { transform: startTransform },
+                { transform: endTransform }
+            ];
+            animationEasing = easingFunctions[easing] || easing;
+        }
+
+        return element.animate(keyframes, {
+            duration: duration,
+            easing: animationEasing,
+            fill: 'forwards'
+        });
+    }
+
+    /**
      * Create animation for non-transform properties
      */
     function createPropertyAnimation(element, property) {
@@ -625,9 +720,9 @@ window.ElmAnimateWAAPI = (function () {
     }
 
     /**
-     * Set up animation event listeners and property updates
+     * Set up animation event listeners and property updates with version tracking
      */
-    function setupAnimationEvents(elementId, element, animation) {
+    function setupAnimationEvents(elementId, propertyType, element, animation, version) {
         let updatePort = null;
 
         // Find the update port
@@ -649,6 +744,15 @@ window.ElmAnimateWAAPI = (function () {
                 const computedStyle = window.getComputedStyle(element);
 
                 if (updatePort) {
+                    // Collect property versions from all active animations for this element
+                    const propertyVersions = {};
+                    const elementAnims = activeAnimations.get(elementId);
+                    if (elementAnims) {
+                        elementAnims.forEach((animData, propType) => {
+                            propertyVersions[propType] = animData.version;
+                        });
+                    }
+
                     const propertyData = {
                         elementId: elementId,
                         positionX: transformState.x,
@@ -665,7 +769,8 @@ window.ElmAnimateWAAPI = (function () {
                         color: computedStyle.color,
                         width: parseFloat(computedStyle.width),
                         height: parseFloat(computedStyle.height),
-                        isAnimating: true
+                        isAnimating: true,
+                        propertyVersions: propertyVersions
                     };
                     sendEventToElm('propertyUpdate', elementId, propertyData);
                 }
@@ -682,13 +787,31 @@ window.ElmAnimateWAAPI = (function () {
 
         // Handle animation completion
         animation.addEventListener('finish', () => {
-            activeAnimations.delete(elementId);
+            // Only remove THIS property's animation
+            const elementAnims = activeAnimations.get(elementId);
+            if (elementAnims) {
+                elementAnims.delete(propertyType);
 
-            sendEventToElm('animationUpdate', elementId, { status: 'completed' });
+                // If no more properties animating, clean up element entry
+                if (elementAnims.size === 0) {
+                    activeAnimations.delete(elementId);
+                }
+            }
 
             if (updatePort) {
                 const finalState = getCurrentTransform(element);
                 const computedStyle = window.getComputedStyle(element);
+
+                // Collect remaining property versions
+                const propertyVersions = {};
+                const remainingAnims = activeAnimations.get(elementId);
+                if (remainingAnims) {
+                    remainingAnims.forEach((animData, propType) => {
+                        propertyVersions[propType] = animData.version;
+                    });
+                }
+                // Include the completed property with its version one last time
+                propertyVersions[propertyType] = version;
 
                 const finalPropertyData = {
                     elementId: elementId,
@@ -706,18 +829,39 @@ window.ElmAnimateWAAPI = (function () {
                     color: computedStyle.color,
                     width: parseFloat(computedStyle.width),
                     height: parseFloat(computedStyle.height),
-                    isAnimating: false
+                    isAnimating: false,
+                    propertyVersions: propertyVersions
                 };
                 sendEventToElm('propertyUpdate', elementId, finalPropertyData);
             }
         });
 
         animation.addEventListener('cancel', () => {
-            activeAnimations.delete(elementId);
+            // Only remove THIS property's animation
+            const elementAnims = activeAnimations.get(elementId);
+            if (elementAnims) {
+                elementAnims.delete(propertyType);
+
+                // If no more properties animating, clean up element entry
+                if (elementAnims.size === 0) {
+                    activeAnimations.delete(elementId);
+                }
+            }
 
             if (updatePort) {
                 const currentState = getCurrentTransform(element);
                 const computedStyle = window.getComputedStyle(element);
+
+                // Collect remaining property versions
+                const propertyVersions = {};
+                const remainingAnims = activeAnimations.get(elementId);
+                if (remainingAnims) {
+                    remainingAnims.forEach((animData, propType) => {
+                        propertyVersions[propType] = animData.version;
+                    });
+                }
+                // Include the cancelled property with its version one last time
+                propertyVersions[propertyType] = version;
 
                 const currentPropertyData = {
                     elementId: elementId,
@@ -735,16 +879,13 @@ window.ElmAnimateWAAPI = (function () {
                     color: computedStyle.color,
                     width: parseFloat(computedStyle.width),
                     height: parseFloat(computedStyle.height),
-                    isAnimating: false
+                    isAnimating: false,
+                    propertyVersions: propertyVersions
                 };
                 sendEventToElm('propertyUpdate', elementId, currentPropertyData);
             }
         });
     }
-
-    /**
-     * Stop animation for specific element
-     */
     /**
      * Send event to Elm via consolidated waapiEvent port
      */
@@ -765,38 +906,25 @@ window.ElmAnimateWAAPI = (function () {
      * Stop animation by jumping to end state
      */
     function stopAnimation(elementId) {
-        const animations = activeAnimations.get(elementId);
-        if (animations) {
-            if (Array.isArray(animations)) {
-                animations.forEach(animation => {
-                    animation.finish(); // Jump to end state
-                });
-            } else {
-                animations.finish();
-            }
+        const elementAnims = activeAnimations.get(elementId);
+        if (elementAnims) {
+            elementAnims.forEach((animData, propertyType) => {
+                animData.animation.finish(); // Jump to end state
+            });
             activeAnimations.delete(elementId);
-
-            // Send AnimationCancel event to Elm
-            sendEventToElm('animationUpdate', elementId, { status: 'canceled' });
         }
     }
 
     /**
-     * Reset animation by jumping to start state
+     * Reset animation by jumping to start state  
      */
     function resetAnimation(elementId) {
-        const animations = activeAnimations.get(elementId);
-        if (animations) {
-            if (Array.isArray(animations)) {
-                animations.forEach(animation => {
-                    animation.cancel(); // Cancel to jump to start
-                });
-            } else {
-                animations.cancel();
-            }
+        const elementAnims = activeAnimations.get(elementId);
+        if (elementAnims) {
+            elementAnims.forEach((animData, propertyType) => {
+                animData.animation.cancel(); // Cancel to jump to start
+            });
             activeAnimations.delete(elementId);
-            // Send event to notify Elm that animation was reset
-            sendEventToElm('animationUpdate', elementId, { status: 'canceled' });
         }
     }
 
@@ -804,21 +932,12 @@ window.ElmAnimateWAAPI = (function () {
      * Restart animation from beginning
      */
     function restartAnimation(elementId) {
-        const animations = activeAnimations.get(elementId);
-        if (animations) {
-            if (Array.isArray(animations)) {
-                animations.forEach(animation => {
-                    animation.cancel(); // Cancel first
-                    animation.play();   // Then replay
-                });
-            } else {
-                animations.cancel();
-                animations.play();
-            }
-            sendEventToElm('animationUpdate', elementId, { status: 'restarted' });
-        } else {
-            // No active animation to restart - just send a completed event
-            sendEventToElm('animationUpdate', elementId, { status: 'completed' });
+        const elementAnims = activeAnimations.get(elementId);
+        if (elementAnims) {
+            elementAnims.forEach((animData, propertyType) => {
+                animData.animation.cancel(); // Cancel first
+                animData.animation.play();   // Then replay
+            });
         }
     }
 
@@ -826,16 +945,11 @@ window.ElmAnimateWAAPI = (function () {
      * Pause animation for specific element
      */
     function pauseAnimation(elementId) {
-        const animations = activeAnimations.get(elementId);
-        if (animations) {
-            if (Array.isArray(animations)) {
-                animations.forEach(animation => {
-                    animation.pause();
-                });
-            } else {
-                animations.pause();
-            }
-            sendEventToElm('animationUpdate', elementId, { status: 'paused' });
+        const elementAnims = activeAnimations.get(elementId);
+        if (elementAnims) {
+            elementAnims.forEach((animData, propertyType) => {
+                animData.animation.pause();
+            });
         }
     }
 
@@ -843,16 +957,11 @@ window.ElmAnimateWAAPI = (function () {
      * Resume animation for specific element
      */
     function resumeAnimation(elementId) {
-        const animations = activeAnimations.get(elementId);
-        if (animations) {
-            if (Array.isArray(animations)) {
-                animations.forEach(animation => {
-                    animation.play();
-                });
-            } else {
-                animations.play();
-            }
-            sendEventToElm('animationUpdate', elementId, { status: 'resumed' });
+        const elementAnims = activeAnimations.get(elementId);
+        if (elementAnims) {
+            elementAnims.forEach((animData, propertyType) => {
+                animData.animation.play();
+            });
         }
     }
 
