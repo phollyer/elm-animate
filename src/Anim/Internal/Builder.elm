@@ -55,7 +55,6 @@ module Anim.Internal.Builder exposing
     , restartPreviousAnimation
     , setScrollContainer
     , speed
-    , updateAnimationStatus
     , updateCurrentElement
     , updateElementConfig
       -- Animation History Management
@@ -121,7 +120,6 @@ type alias AnimationHistoryEntry =
     { id : AnimationId
     , processedData : ProcessedAnimationData
     , timestamp : Int -- Using Int for simplicity (could be Time.Posix)
-    , status : AnimationHistoryStatus
     , label : Maybe String -- Optional user-provided label
     }
 
@@ -130,16 +128,6 @@ type alias AnimationHistoryEntry =
 -}
 type alias AnimationId =
     Int
-
-
-{-| Status of animations in history.
--}
-type AnimationHistoryStatus
-    = Pending -- Animation created but not yet executed
-    | Running -- Animation currently executing
-    | Completed -- Animation finished successfully
-    | Cancelled -- Animation was stopped/cancelled
-    | Failed -- Animation failed to execute
 
 
 {-| Metadata for element animation history.
@@ -1006,7 +994,6 @@ addAnimationToHistory elementId processedData maybeLabel (AnimBuilder data) =
             { id = newAnimationId
             , processedData = processedData
             , timestamp = currentTimestamp
-            , status = Pending
             , label = maybeLabel
             }
 
@@ -1071,26 +1058,25 @@ getPreviousAnimation elementId (AnimBuilder data) =
 -}
 getAnimationById : ElementId -> AnimationId -> AnimBuilder -> Maybe AnimationHistoryEntry
 getAnimationById elementId animId (AnimBuilder data) =
-    case Dict.get elementId data.animationHistories of
-        Nothing ->
-            Nothing
+    Dict.get elementId data.animationHistories
+        |> Maybe.andThen
+            (\history ->
+                -- Check current animation first
+                case history.current of
+                    Just current ->
+                        if current.id == animId then
+                            Just current
 
-        Just history ->
-            -- Check current animation first
-            case history.current of
-                Just current ->
-                    if current.id == animId then
-                        Just current
+                        else
+                            -- Search through history
+                            List.filter (.id >> (==) animId) history.history
+                                |> List.head
 
-                    else
-                        -- Search through history
+                    Nothing ->
+                        -- Only search history
                         List.filter (.id >> (==) animId) history.history
                             |> List.head
-
-                Nothing ->
-                    -- Only search history
-                    List.filter (.id >> (==) animId) history.history
-                        |> List.head
+            )
 
 
 {-| Get the complete animation history for an element.
@@ -1162,52 +1148,16 @@ markAnimationAsExecuted elementId animId (AnimBuilder data) =
     let
         updatedHistories =
             Dict.update elementId
-                (\maybeHistory ->
-                    case maybeHistory of
-                        Nothing ->
-                            Nothing
-
-                        Just history ->
-                            Just
-                                { history
-                                    | metadata =
-                                        { totalAnimations = history.metadata.totalAnimations
-                                        , lastExecutedId = Just animId
-                                        , createdAt = history.metadata.createdAt
-                                        }
+                (Maybe.map
+                    (\history ->
+                        { history
+                            | metadata =
+                                { totalAnimations = history.metadata.totalAnimations
+                                , lastExecutedId = Just animId
+                                , createdAt = history.metadata.createdAt
                                 }
-                )
-                data.animationHistories
-    in
-    AnimBuilder { data | animationHistories = updatedHistories }
-
-
-{-| Update the status of a specific animation.
-This should be called by engines to update animation status (Running, Completed, etc.).
--}
-updateAnimationStatus : ElementId -> AnimationId -> AnimationHistoryStatus -> AnimBuilder -> AnimBuilder
-updateAnimationStatus elementId animId newStatus (AnimBuilder data) =
-    let
-        updateEntry entry =
-            if entry.id == animId then
-                { entry | status = newStatus }
-
-            else
-                entry
-
-        updatedHistories =
-            Dict.update elementId
-                (\maybeHistory ->
-                    case maybeHistory of
-                        Nothing ->
-                            Nothing
-
-                        Just history ->
-                            Just
-                                { history
-                                    | current = Maybe.map updateEntry history.current
-                                    , history = List.map updateEntry history.history
-                                }
+                        }
+                    )
                 )
                 data.animationHistories
     in
