@@ -787,14 +787,18 @@ window.ElmAnimateWAAPI = (function () {
 
         // Handle animation completion
         animation.addEventListener('finish', () => {
-            // Only remove THIS property's animation
+            // Only remove THIS property's animation if version matches
+            // (prevents removing newer animation if finish event fires late)
             const elementAnims = activeAnimations.get(elementId);
             if (elementAnims) {
-                elementAnims.delete(propertyType);
+                const current = elementAnims.get(propertyType);
+                if (current && current.version === version) {
+                    elementAnims.delete(propertyType);
 
-                // If no more properties animating, clean up element entry
-                if (elementAnims.size === 0) {
-                    activeAnimations.delete(elementId);
+                    // If no more properties animating, clean up element entry
+                    if (elementAnims.size === 0) {
+                        activeAnimations.delete(elementId);
+                    }
                 }
             }
 
@@ -837,14 +841,18 @@ window.ElmAnimateWAAPI = (function () {
         });
 
         animation.addEventListener('cancel', () => {
-            // Only remove THIS property's animation
+            // Only remove THIS property's animation if version matches
+            // (prevents removing newer animation if cancel event fires late)
             const elementAnims = activeAnimations.get(elementId);
             if (elementAnims) {
-                elementAnims.delete(propertyType);
+                const current = elementAnims.get(propertyType);
+                if (current && current.version === version) {
+                    elementAnims.delete(propertyType);
 
-                // If no more properties animating, clean up element entry
-                if (elementAnims.size === 0) {
-                    activeAnimations.delete(elementId);
+                    // If no more properties animating, clean up element entry
+                    if (elementAnims.size === 0) {
+                        activeAnimations.delete(elementId);
+                    }
                 }
             }
 

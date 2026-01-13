@@ -1439,9 +1439,6 @@ resetElement elementId (AnimState state) =
 
                 processedData =
                     Builder.processAnimationData builderWithCache
-
-                resetCommands =
-                    encode processedData
             in
             case Dict.get elementId state.elementAnimations of
                 Nothing ->
@@ -1467,7 +1464,7 @@ resetElement elementId (AnimState state) =
                                     , isRunning = False
                                 }
                     in
-                    ( updatedAnimState, resetCommands )
+                    ( updatedAnimState, encodeWithVersions updatedElementAnimations processedData )
 
                 Just elementAnimation ->
                     -- Existing tracking entry, increment versions for reset properties
@@ -1508,7 +1505,7 @@ resetElement elementId (AnimState state) =
                                                 )
                                 }
                     in
-                    ( updatedAnimState, resetCommands )
+                    ( updatedAnimState, encodeWithVersions updatedElementAnimations processedData )
 
 
 {-| Restart the last animation by retrieving it from Builder history and replaying it.
@@ -1560,7 +1557,7 @@ restartElement elementId (AnimState state) =
                                     , isRunning = True
                                 }
                     in
-                    ( updatedAnimState, encode processedData )
+                    ( updatedAnimState, encodeWithVersions updatedElementAnimations processedData )
 
                 Just elementAnimation ->
                     -- Update existing entry, incrementing versions for restarted properties
@@ -1598,7 +1595,7 @@ restartElement elementId (AnimState state) =
                                     , isRunning = True
                                 }
                     in
-                    ( updatedAnimState, encode processedData )
+                    ( updatedAnimState, encodeWithVersions updatedElementAnimations processedData )
 
 
 {-| Helper to add reset properties to a builder for all animated properties.
