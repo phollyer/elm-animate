@@ -70,9 +70,8 @@ init { window } =
             min 500 (window.width - 40)
 
         ( initialAnimState, initCmd ) =
-            WAAPI.builder WAAPI.init
-                |> ControlsAnim.init elementId (toFloat animationAreaWidth / 2 - 25) 50
-                |> WAAPI.animate WAAPI.init
+            WAAPI.animate WAAPI.init <|
+                ControlsAnim.init elementId (toFloat animationAreaWidth / 2 - 25) 50
     in
     ( { animationState = initialAnimState
       , isAnimating = False
@@ -115,9 +114,8 @@ update msg model =
                     WAAPI.getCurrentPosition elementId model.animationState
 
                 ( newAnimState, animationData ) =
-                    WAAPI.builder model.animationState
-                        |> ControlsAnim.animate elementId
-                        |> WAAPI.animate model.animationState
+                    WAAPI.animate model.animationState <|
+                        ControlsAnim.animate elementId
             in
             ( { model | animationState = newAnimState }
             , WAAPI.sendCommand waapiCommand animationData

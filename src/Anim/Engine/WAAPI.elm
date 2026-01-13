@@ -363,21 +363,22 @@ Returns the updated animation state and the encoded animation data to send to Ja
 
     let
         ( newAnimState, animationData ) =
-            model.animations
-                |> WAAPI.builder
-                |> -- configure animation
-                |> WAAPI.animate model.animations
+            WAAPI.animate model.animations
+                (\builder ->
+                    builder
+                        |> -- configure animation
+                )
     in
     ( { model | animations = newAnimState }
     , sendAnimationCmd animationData
     )
 
 -}
-animate : AnimState -> AnimBuilder -> ( AnimState, Encode.Value )
-animate animState animBuilder =
+animate : AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Encode.Value )
+animate animState buildAnimation =
     let
         ( newAnimState, animationData ) =
-            InternalWAAPI.animate animState animBuilder
+            InternalWAAPI.animate animState buildAnimation
     in
     ( newAnimState, animationData )
 

@@ -194,11 +194,15 @@ animateStateless portFunction animBuilder =
     portFunction encodedData
 
 
-animate : AnimState -> AnimBuilder -> ( AnimState, Encode.Value )
-animate (AnimState state) builder_ =
+animate : AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Encode.Value )
+animate (AnimState state) buildAnimation =
     let
+        -- Extract builder from state, apply user configuration via callback
+        configuredBuilder =
+            buildAnimation state.builder
+
         builderWithCache =
-            Builder.computeAndCachePerspectiveStyles builder_
+            Builder.computeAndCachePerspectiveStyles configuredBuilder
 
         -- Temporarily disable current state injection to test if end states are correct
         -- builderWithCurrentStates =
