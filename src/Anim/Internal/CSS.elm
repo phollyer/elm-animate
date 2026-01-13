@@ -736,6 +736,8 @@ generateElementAnimation maybeOrder elementId elementConfig =
                 , scrollTargets = []
                 , scrollContainer = "document"
                 , perspectiveStylesCache = Nothing
+                , animationHistories = Dict.empty
+                , nextAnimationId = 0
                 }
                 elementConfig
 
