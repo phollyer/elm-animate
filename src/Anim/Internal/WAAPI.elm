@@ -514,19 +514,9 @@ update jsonValue (AnimState state) =
                         (Maybe.map (updateElementAnimation animationUpdate))
                         state.elementAnimations
 
-                -- Remove completed animations to prevent memory leaks
-                -- Element is fully complete when all properties are complete
-                cleanedAnimations =
-                    Dict.filter
-                        (\_ elementAnim ->
-                            Dict.values elementAnim.properties
-                                |> List.any (\prop -> prop.status /= Complete)
-                        )
-                        updatedAnimations
-
-                -- Update global isRunning based on remaining animations
+                -- Update global isRunning based on animation status
                 hasRunningAnimations =
-                    Dict.values cleanedAnimations
+                    Dict.values updatedAnimations
                         |> List.any
                             (\elementAnim ->
                                 Dict.values elementAnim.properties
@@ -535,7 +525,7 @@ update jsonValue (AnimState state) =
             in
             AnimState
                 { state
-                    | elementAnimations = cleanedAnimations
+                    | elementAnimations = updatedAnimations
                     , isRunning = hasRunningAnimations
                 }
 

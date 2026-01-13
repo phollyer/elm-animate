@@ -131,8 +131,6 @@ window.ElmAnimateWAAPI = (function () {
 
                 // Cancel the old animation for this specific property
                 existing.animation.cancel();
-
-                console.log(`ElmAnimateWAAPI: Cancelled ${propType} animation v${existing.version} for "${elementId}"`);
             }
 
             // Create new animation for this property
@@ -151,7 +149,6 @@ window.ElmAnimateWAAPI = (function () {
                 });
 
                 setupAnimationEvents(elementId, propType, element, animation, newVersion);
-                console.log(`ElmAnimateWAAPI: Started ${propType} animation v${newVersion} for "${elementId}"`);
             }
         });
 
@@ -988,7 +985,6 @@ window.ElmAnimateWAAPI = (function () {
         // Subscribe to consolidated command port from Elm
         if (ports.waapiCommand && ports.waapiCommand.subscribe) {
             ports.waapiCommand.subscribe(function (commandData) {
-                console.log('🔍 WAAPI Command Received:', JSON.stringify(commandData, null, 2));
                 try {
                     // Check if this is animation data structure (from animate, reset, restart)
                     if (commandData.elements) {
@@ -1022,8 +1018,6 @@ window.ElmAnimateWAAPI = (function () {
         } else {
             console.warn('ElmAnimateWAAPI: waapiCommand port not found or not subscribeable');
         }
-
-        console.log('ElmAnimateWAAPI initialized successfully with consolidated ports');
     }
 
     /**

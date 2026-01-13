@@ -170,6 +170,7 @@ import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
 import Anim.Internal.WAAPI as InternalWAAPI
 import Browser exposing (UrlRequest(..))
+import Dict exposing (Dict)
 import Html
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -885,6 +886,7 @@ type alias PropertyData =
     , width : Float
     , height : Float
     , isAnimating : Bool
+    , propertyVersions : Dict String Int
     }
 
 
@@ -1188,6 +1190,7 @@ decodePropertyData payload =
             |> andMap (Decode.oneOf [ Decode.field "width" Decode.float, Decode.succeed 0.0 ])
             |> andMap (Decode.oneOf [ Decode.field "height" Decode.float, Decode.succeed 0.0 ])
             |> andMap (Decode.oneOf [ Decode.field "isAnimating" Decode.bool, Decode.succeed True ])
+            |> andMap (Decode.oneOf [ Decode.field "propertyVersions" (Decode.dict Decode.int), Decode.succeed Dict.empty ])
         )
         payload
         |> Result.mapError Decode.errorToString
@@ -1214,6 +1217,7 @@ encodePropertyData data =
         , ( "width", Encode.float data.width )
         , ( "height", Encode.float data.height )
         , ( "isAnimating", Encode.bool data.isAnimating )
+        , ( "propertyVersions", Encode.dict identity Encode.int data.propertyVersions )
         ]
 
 

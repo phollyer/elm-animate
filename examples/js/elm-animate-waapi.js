@@ -131,8 +131,6 @@ window.ElmAnimateWAAPI = (function () {
 
                 // Cancel the old animation for this specific property
                 existing.animation.cancel();
-
-                console.log(`ElmAnimateWAAPI: Cancelled ${propType} animation v${existing.version} for "${elementId}"`);
             }
 
             // Create new animation for this property
@@ -145,13 +143,12 @@ window.ElmAnimateWAAPI = (function () {
             }
 
             if (animation) {
+                const updateFn = setupAnimationEvents(elementId, propType, element, animation, newVersion);
                 elementAnims.set(propType, {
                     animation: animation,
-                    version: newVersion
+                    version: newVersion,
+                    updateFn: updateFn
                 });
-
-                setupAnimationEvents(elementId, propType, element, animation, newVersion);
-                console.log(`ElmAnimateWAAPI: Started ${propType} animation v${newVersion} for "${elementId}"`);
             }
         });
 
@@ -736,6 +733,7 @@ window.ElmAnimateWAAPI = (function () {
         // Send updates during animation
         let lastTime = 0;
         const updateInterval = 16; // ~60fps
+        let rafId = null;
 
         function sendAnimationUpdate() {
             const now = performance.now();
@@ -778,12 +776,17 @@ window.ElmAnimateWAAPI = (function () {
             }
 
             if (animation.playState === 'running') {
-                requestAnimationFrame(sendAnimationUpdate);
+                rafId = requestAnimationFrame(sendAnimationUpdate);
+            } else {
+                rafId = null;
             }
         }
 
         // Start sending updates
-        requestAnimationFrame(sendAnimationUpdate);
+        rafId = requestAnimationFrame(sendAnimationUpdate);
+
+        // Return the update function so it can be restarted on resume
+        return sendAnimationUpdate;
 
         // Handle animation completion
         animation.addEventListener('finish', () => {
@@ -969,6 +972,10 @@ window.ElmAnimateWAAPI = (function () {
         if (elementAnims) {
             elementAnims.forEach((animData, propertyType) => {
                 animData.animation.play();
+                // Restart the RAF update loop
+                if (animData.updateFn) {
+                    animData.updateFn();
+                }
             });
         }
     }
@@ -988,7 +995,6 @@ window.ElmAnimateWAAPI = (function () {
         // Subscribe to consolidated command port from Elm
         if (ports.waapiCommand && ports.waapiCommand.subscribe) {
             ports.waapiCommand.subscribe(function (commandData) {
-                console.log('🔍 WAAPI Command Received:', JSON.stringify(commandData, null, 2));
                 try {
                     // Check if this is animation data structure (from animate, reset, restart)
                     if (commandData.elements) {
@@ -1022,8 +1028,6 @@ window.ElmAnimateWAAPI = (function () {
         } else {
             console.warn('ElmAnimateWAAPI: waapiCommand port not found or not subscribeable');
         }
-
-        console.log('ElmAnimateWAAPI initialized successfully with consolidated ports');
     }
 
     /**
