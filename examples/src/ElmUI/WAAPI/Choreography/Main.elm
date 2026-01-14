@@ -81,12 +81,12 @@ init : { window : { width : Int, height : Int } } -> ( Model, Cmd Msg )
 init { window } =
     let
         ( initialAnimState, initCmd ) =
-            WAAPI.animate WAAPI.init Choreography.init
+            WAAPI.animate animateElement WAAPI.init Choreography.init
     in
     ( { animState = initialAnimState
       , window = window
       }
-    , animateElement initCmd
+    , initCmd
     )
 
 
@@ -105,38 +105,38 @@ update msg model =
     case msg of
         ScatterElements ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState <|
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState <|
                         WAAPI.duration 1000
                             >> WAAPI.easing Easing.EaseInOut
                             >> Choreography.scatterFormation
             in
             ( { model | animState = newAnimState }
-            , animateElement encodedValue
+            , animCmd
             )
 
         CircleFormation ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState <|
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState <|
                         WAAPI.duration 1000
                             >> WAAPI.easing Easing.EaseInOut
                             >> Choreography.circleFormation
             in
             ( { model | animState = newAnimState }
-            , animateElement encodedValue
+            , animCmd
             )
 
         ResetPositions ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState <|
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState <|
                         WAAPI.duration 600
                             >> WAAPI.easing Easing.EaseInOut
                             >> Choreography.resetToOrigin
             in
             ( { model | animState = newAnimState }
-            , animateElement encodedValue
+            , animCmd
             )
 
 

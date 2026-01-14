@@ -69,11 +69,11 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         ( initialAnimState, initCmd ) =
-            WAAPI.animate WAAPI.init <|
+            WAAPI.animate animateElement WAAPI.init <|
                 \b -> b |> Scale.initXY "box" 1.0 1.0
     in
     ( { animState = initialAnimState }
-    , animateElement initCmd
+    , initCmd
     )
 
 
@@ -95,38 +95,38 @@ update msg model =
     case msg of
         ScaleUp ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState (Animations.scaleUp "box")
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState (Animations.scaleUp "box")
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         ScaleDown ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState (Animations.scaleDown "box")
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState (Animations.scaleDown "box")
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         ScaleReset ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState (Animations.scaleReset "box")
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState (Animations.scaleReset "box")
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         ScaleWide ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState (Animations.scaleWide "box")
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState (Animations.scaleWide "box")
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         ScaleTall ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState (Animations.scaleTall "box")
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState (Animations.scaleTall "box")
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         NoOp ->
             ( model, Cmd.none )

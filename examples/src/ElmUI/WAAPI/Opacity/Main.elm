@@ -67,13 +67,13 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         ( initialAnimState, initCmd ) =
-            WAAPI.animate WAAPI.init <|
+            WAAPI.animate animateElement WAAPI.init <|
                 \b ->
                     b
                         |> Opacity.init "box" 1.0
     in
     ( { animState = initialAnimState }
-    , animateElement initCmd
+    , initCmd
     )
 
 
@@ -88,27 +88,27 @@ update msg model =
     case msg of
         FadeIn ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState <|
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState <|
                         Animations.fadeIn "box"
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         FadeOut ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState <|
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState <|
                         Animations.fadeOut "box"
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         ResetOpacity ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState <|
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState <|
                         Animations.fadeToHalf "box"
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
 
 

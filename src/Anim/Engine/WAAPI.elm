@@ -9,7 +9,7 @@ module Anim.Engine.WAAPI exposing
     , delay
     , anyRunning, isRunning, allComplete, isComplete
     , stop, reset, restart, pause, resume
-    , sendCommand, handleEvent, handleEventWithState, CommandType(..), EventType(..)
+    , handleEvent, handleEventWithState, CommandType(..), EventType(..), AnimationStatus(..), PropertyData
     , stopAnimation, pauseAnimation, resumeAnimation, resetAnimation, restartAnimation
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
     , getStartOpacity, getEndOpacity, getCurrentOpacity
@@ -17,7 +17,6 @@ module Anim.Engine.WAAPI exposing
     , getStartRotate, getEndRotate, getCurrentRotate
     , getStartScale, getEndScale, getCurrentScale
     , getStartSize, getEndSize, getCurrentSize
-    , AnimationStatus(..), PropertyData
     )
 
 {-| Ports-based animation system utilising the Web Animations API with optional state tracking.
@@ -115,7 +114,7 @@ These settings will be used for all animations unless overridden on a per-animat
 These helper functions handle the encoding/decoding for port communication with the JavaScript companion library.
 You define the ports in your application and pass them to these functions.
 
-@docs sendCommand, handleEvent, handleEventWithState, CommandType, EventType
+@docs handleEvent, handleEventWithState, CommandType, EventType, AnimationStatus, PropertyData
 
 
 ## Command Helpers
@@ -358,30 +357,28 @@ perspectiveWith =
 
 {-| Configure an animation to use the JavaScript Web Animations API via ports.
 
-Returns the updated animation state and the encoded animation data to send to JavaScript.
+Returns the updated animation state and command.
 
-    port sendAnimationCmd : Encode.Value -> Cmd msg
+    port waapiCommand : Encode.Value -> Cmd msg
 
     let
-        ( newAnimState, animationData ) =
-            WAAPI.animate model.animations
+        ( newAnimState, animCmd ) =
+            WAAPI.animate waapiCommand model.animations
                 (\builder ->
                     builder
                         |> -- configure animation
                 )
     in
-    ( { model | animations = newAnimState }
-    , sendAnimationCmd animationData
-    )
+    ( { model | animations = newAnimState }, animCmd )
 
 -}
-animate : AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Encode.Value )
-animate animState buildAnimation =
+animate : (Encode.Value -> Cmd msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
+animate portCmd animState buildAnimation =
     let
         ( newAnimState, animationData ) =
             InternalWAAPI.animate animState buildAnimation
     in
-    ( newAnimState, animationData )
+    ( newAnimState, portCmd animationData )
 
 
 {-| Execute a fire-and-forget animation without state tracking.
@@ -414,79 +411,74 @@ fireAndForget =
 
 Sends a command to JavaScript to call the native `Animation.finish()` method.
 
+    port waapiCommand : Encode.Value -> Cmd msg
+
+    WAAPI.stop "my-element" waapiCommand
+
 -}
-stop : String -> AnimState -> ( AnimState, Encode.Value )
-stop elementId animState =
-    let
-        command =
-            Encode.object
-                [ ( "type", Encode.string "stop" )
-                , ( "elementId", Encode.string elementId )
-                ]
-    in
-    ( animState, command )
+stop : String -> (Encode.Value -> Cmd msg) -> Cmd msg
+stop =
+    stopAnimation
 
 
 {-| Reset an animation by instantly jumping back to its start state.
 
 Sends a command to JavaScript to cancel and reset the animation.
 
--}
-reset : String -> AnimState -> ( AnimState, Encode.Value )
-reset elementId animState =
+    port waapiCommand : Encode.Value -> Cmd msg
+
     let
-        command =
-            Encode.object
-                [ ( "type", Encode.string "reset" )
-                , ( "elementId", Encode.string elementId )
-                ]
+        ( newAnimState, resetCmd ) =
+            WAAPI.reset "my-element" waapiCommand model.animations
     in
-    ( animState, command )
+    ( { model | animations = newAnimState }, resetCmd )
+
+-}
+reset : String -> (Encode.Value -> Cmd msg) -> AnimState -> ( AnimState, Cmd msg )
+reset =
+    resetAnimation
 
 
 {-| Restart an animation from the beginning.
 
 Sends a command to JavaScript to cancel and replay the animation.
 
--}
-restart : String -> AnimState -> ( AnimState, Encode.Value )
-restart elementId animState =
+    port waapiCommand : Encode.Value -> Cmd msg
+
     let
-        command =
-            Encode.object
-                [ ( "type", Encode.string "restart" )
-                , ( "elementId", Encode.string elementId )
-                ]
+        ( newAnimState, restartCmd ) =
+            WAAPI.restart "my-element" waapiCommand model.animations
     in
-    ( animState, command )
+    ( { model | animations = newAnimState }, restartCmd )
+
+-}
+restart : String -> (Encode.Value -> Cmd msg) -> AnimState -> ( AnimState, Cmd msg )
+restart =
+    restartAnimation
 
 
 {-| Pause a running animation for a specific element.
+
+    port waapiCommand : Encode.Value -> Cmd msg
+
+    WAAPI.pause "my-element" waapiCommand
+
 -}
-pause : String -> AnimState -> ( AnimState, Encode.Value )
-pause elementId animState =
-    let
-        command =
-            Encode.object
-                [ ( "type", Encode.string "pause" )
-                , ( "elementId", Encode.string elementId )
-                ]
-    in
-    ( animState, command )
+pause : String -> (Encode.Value -> Cmd msg) -> Cmd msg
+pause =
+    pauseAnimation
 
 
 {-| Resume a paused animation for a specific element.
+
+    port waapiCommand : Encode.Value -> Cmd msg
+
+    WAAPI.resume "my-element" waapiCommand
+
 -}
-resume : String -> AnimState -> ( AnimState, Encode.Value )
-resume elementId animState =
-    let
-        command =
-            Encode.object
-                [ ( "type", Encode.string "resume" )
-                , ( "elementId", Encode.string elementId )
-                ]
-    in
-    ( animState, command )
+resume : String -> (Encode.Value -> Cmd msg) -> Cmd msg
+resume =
+    resumeAnimation
 
 
 
@@ -900,32 +892,6 @@ type EventType
     | AnimationUpdate AnimationStatus
 
 
-{-| Send a command through your waapiCommand port.
-
-This function handles the encoding internally. You define the port in your application:
-
-    port waapiCommand : Encode.Value -> Cmd msg
-
-Then use it like:
-
-    -- Start an animation
-    WAAPI.sendCommand waapiCommand
-        (WAAPI.builder model.animState
-            |> Position.moveToXY "my-element" 100 200
-            |> WAAPI.animate model.animState
-        )
-
-    -- Stop an animation
-    WAAPI.sendCommand waapiCommand (WAAPI.stopAnimation "my-element")
-
-**Note:** This requires the JavaScript companion library to be properly initialized.
-
--}
-sendCommand : (Encode.Value -> Cmd msg) -> Encode.Value -> Cmd msg
-sendCommand portCmd commandData =
-    portCmd commandData
-
-
 {-| Internal function to encode WAAPI commands for JavaScript.
 -}
 encodeCommand : CommandType -> String -> Encode.Value -> Encode.Value
@@ -1228,77 +1194,77 @@ andMap =
     Decode.map2 (|>)
 
 
-{-| Create a stop animation command.
+{-| Stop an animation by instantly jumping to its end state.
 
-Use with sendCommand:
+Sends a command to JavaScript to call the native `Animation.finish()` method.
 
-    WAAPI.sendCommand waapiCommand (WAAPI.stopAnimation "my-element")
-
--}
-stopAnimation : String -> Encode.Value
-stopAnimation elementId =
-    encodeCommand StopCommand elementId Encode.null
-
-
-{-| Create a pause animation command.
-
-Use with sendCommand:
-
-    WAAPI.sendCommand waapiCommand (WAAPI.pauseAnimation "my-element")
+    WAAPI.stopAnimation "my-element" waapiCommand
 
 -}
-pauseAnimation : String -> Encode.Value
-pauseAnimation elementId =
-    encodeCommand PauseCommand elementId Encode.null
+stopAnimation : String -> (Encode.Value -> Cmd msg) -> Cmd msg
+stopAnimation elementId portCmd =
+    portCmd (encodeCommand StopCommand elementId Encode.null)
 
 
-{-| Create a resume animation command.
+{-| Pause a running animation for a specific element.
 
-Use with sendCommand:
-
-    WAAPI.sendCommand waapiCommand (WAAPI.resumeAnimation "my-element")
+    WAAPI.pauseAnimation "my-element" waapiCommand
 
 -}
-resumeAnimation : String -> Encode.Value
-resumeAnimation elementId =
-    encodeCommand ResumeCommand elementId Encode.null
+pauseAnimation : String -> (Encode.Value -> Cmd msg) -> Cmd msg
+pauseAnimation elementId portCmd =
+    portCmd (encodeCommand PauseCommand elementId Encode.null)
+
+
+{-| Resume a paused animation for a specific element.
+
+    WAAPI.resumeAnimation "my-element" waapiCommand
+
+-}
+resumeAnimation : String -> (Encode.Value -> Cmd msg) -> Cmd msg
+resumeAnimation elementId portCmd =
+    portCmd (encodeCommand ResumeCommand elementId Encode.null)
 
 
 {-| Reset an element to its initial animation state.
 
 Creates a 0ms duration animation that instantly moves the element back to its start position/properties.
 
-Returns updated animation state and command to send via ports:
+Returns updated animation state and command:
 
     let
         ( newAnimState, resetCmd ) =
-            WAAPI.resetAnimation "my-element" model.animations
+            WAAPI.resetAnimation "my-element" waapiCommand model.animations
     in
-    ( { model | animations = newAnimState }
-    , WAAPI.sendCommand waapiCommand resetCmd
-    )
+    ( { model | animations = newAnimState }, resetCmd )
 
 -}
-resetAnimation : String -> AnimState -> ( AnimState, Encode.Value )
-resetAnimation elementId animState =
-    InternalWAAPI.resetElement elementId animState
+resetAnimation : String -> (Encode.Value -> Cmd msg) -> AnimState -> ( AnimState, Cmd msg )
+resetAnimation elementId portCmd animState =
+    let
+        ( newAnimState, resetData ) =
+            InternalWAAPI.resetElement elementId animState
+    in
+    ( newAnimState, portCmd resetData )
 
 
 {-| Restart the last animation for an element.
 
 Replays the stored animation commands for the element from the beginning.
 
-Returns updated animation state and command to send via ports:
+Returns updated animation state and command:
 
     let
         ( newAnimState, restartCmd ) =
-            WAAPI.restartAnimation "my-element" model.animations
+            WAAPI.restartAnimation "my-element" waapiCommand model.animations
     in
-    ( { model | animations = newAnimState }
-    , WAAPI.sendCommand waapiCommand restartCmd
-    )
+    ( { model | animations = newAnimState }, restartCmd )
 
 -}
-restartAnimation : String -> AnimState -> ( AnimState, Encode.Value )
-restartAnimation elementId animState =
-    InternalWAAPI.restartElement elementId animState
+restartAnimation : String -> (Encode.Value -> Cmd msg) -> AnimState -> ( AnimState, Cmd msg )
+restartAnimation elementId portCmd animState =
+    let
+        ( newAnimState, restartData ) =
+            InternalWAAPI.restartElement elementId animState
+    in
+    ( newAnimState, portCmd restartData )

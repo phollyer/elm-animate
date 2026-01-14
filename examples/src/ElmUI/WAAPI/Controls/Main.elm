@@ -28,6 +28,20 @@ import Time
 
 
 
+-- PORTS
+
+
+{-| Outgoing port for sending animation commands to JavaScript
+-}
+port waapiCommand : Encode.Value -> Cmd msg
+
+
+{-| Incoming port for receiving events from JavaScript
+-}
+port waapiEvent : (Encode.Value -> msg) -> Sub msg
+
+
+
 -- MODEL
 
 
@@ -65,7 +79,7 @@ init { window } =
             min 500 (window.width - 40)
 
         ( initialAnimState, initCmd ) =
-            WAAPI.animate WAAPI.init <|
+            WAAPI.animate waapiCommand WAAPI.init <|
                 ControlsAnim.init animationAreaWidth
     in
     ( { animationState = initialAnimState
@@ -77,7 +91,7 @@ init { window } =
             , height = 350
             }
       }
-    , WAAPI.sendCommand waapiCommand initCmd
+    , initCmd
     )
 
 
@@ -100,47 +114,11 @@ update msg model =
     case msg of
         Animate ->
             let
-                ( newAnimState, animationData ) =
-                    WAAPI.animate model.animationState ControlsAnim.animate
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate waapiCommand model.animationState ControlsAnim.animate
             in
             ( { model | animationState = newAnimState }
-            , WAAPI.sendCommand waapiCommand animationData
-            )
-
-        Stop ->
-            ( model
-            , WAAPI.sendCommand waapiCommand (WAAPI.stopAnimation elementId)
-            )
-
-        Pause ->
-            ( model
-            , WAAPI.sendCommand waapiCommand (WAAPI.pauseAnimation elementId)
-            )
-
-        Resume ->
-            ( model
-            , WAAPI.sendCommand waapiCommand (WAAPI.resumeAnimation elementId)
-            )
-
-        Reset ->
-            let
-                currentPosition =
-                    WAAPI.getCurrentPosition elementId model.animationState
-
-                ( newAnimState, resetCmd ) =
-                    WAAPI.resetAnimation elementId model.animationState
-            in
-            ( { model | animationState = newAnimState }
-            , WAAPI.sendCommand waapiCommand resetCmd
-            )
-
-        Restart ->
-            let
-                ( newAnimState, restartCmd ) =
-                    WAAPI.restartAnimation elementId model.animationState
-            in
-            ( { model | animationState = newAnimState }
-            , WAAPI.sendCommand waapiCommand restartCmd
+            , animCmd
             )
 
         WaapiEventReceived newAnimState eventType ->
@@ -159,6 +137,39 @@ update msg model =
                     -- This is only required to update isAnimating / isPaused flags in the model
                     -- If you don't need to react to animation status changes, you can ignore this event
                     handleAnimationUpdate animationStatus newModel
+
+        Stop ->
+            ( model
+            , WAAPI.stopAnimation elementId waapiCommand
+            )
+
+        Pause ->
+            ( model
+            , WAAPI.pauseAnimation elementId waapiCommand
+            )
+
+        Resume ->
+            ( model
+            , WAAPI.resumeAnimation elementId waapiCommand
+            )
+
+        Reset ->
+            let
+                ( newAnimState, resetCmd ) =
+                    WAAPI.resetAnimation elementId waapiCommand model.animationState
+            in
+            ( { model | animationState = newAnimState }
+            , resetCmd
+            )
+
+        Restart ->
+            let
+                ( newAnimState, restartCmd ) =
+                    WAAPI.restartAnimation elementId waapiCommand model.animationState
+            in
+            ( { model | animationState = newAnimState }
+            , restartCmd
+            )
 
 
 handleAnimationUpdate : WAAPI.AnimationStatus -> Model -> ( Model, Cmd Msg )
@@ -181,20 +192,6 @@ handleAnimationUpdate status model =
 
         WAAPI.Resumed ->
             ( { model | isPaused = False }, Cmd.none )
-
-
-
--- PORTS
-
-
-{-| Outgoing port for sending animation commands to JavaScript
--}
-port waapiCommand : Encode.Value -> Cmd msg
-
-
-{-| Incoming port for receiving events from JavaScript
--}
-port waapiEvent : (Encode.Value -> msg) -> Sub msg
 
 
 

@@ -94,15 +94,15 @@ init _ =
 initAnim : Int -> WAAPI.AnimState -> ( WAAPI.AnimState, Cmd msg )
 initAnim duration animState =
     let
-        ( newAnimState, encodedValue ) =
-            WAAPI.animate animState <|
+        ( newAnimState, animCmd ) =
+            WAAPI.animate animateElement animState <|
                 \builder ->
                     builder
                         |> WAAPI.duration duration
                         |> WAAPI.easing Easing.EaseOut
                         |> Mixed.init
     in
-    ( newAnimState, animateElement encodedValue )
+    ( newAnimState, animCmd )
 
 
 
@@ -128,45 +128,45 @@ update msg model =
 
         MoveScaleRotate ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState Mixed.moveScaleRotate
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState Mixed.moveScaleRotate
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         FadeMove ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState Mixed.fadeMove
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState Mixed.fadeMove
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         SpinScaleColor ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState Mixed.spinScaleColor
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState Mixed.spinScaleColor
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         ColorSizeOpacity ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState Mixed.colorSizeOpacity
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState Mixed.colorSizeOpacity
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         AllProperties ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState Mixed.allProperties
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState Mixed.allProperties
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         ResetAll ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState Mixed.resetAll
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState Mixed.resetAll
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         NoOp ->
             ( model, Cmd.none )

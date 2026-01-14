@@ -70,11 +70,11 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         ( initialAnimState, initCmd ) =
-            WAAPI.animate WAAPI.init <|
+            WAAPI.animate animateElement WAAPI.init <|
                 \b -> b |> Color.init "box" (Anim.Color.fromRgba { r = 149, g = 165, b = 166, a = 1 })
     in
     ( { animState = initialAnimState }
-    , animateElement initCmd
+    , initCmd
     )
 
 
@@ -97,45 +97,45 @@ update msg model =
     case msg of
         ChangeToBlue ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState (Animations.changeToBlue "box")
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState (Animations.changeToBlue "box")
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         ChangeToGreen ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState (Animations.changeToGreen "box")
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState (Animations.changeToGreen "box")
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         ChangeToOrange ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState (Animations.changeToOrange "box")
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState (Animations.changeToOrange "box")
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         ChangeToRed ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState (Animations.changeToRed "box")
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState (Animations.changeToRed "box")
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         ChangeToPurple ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState (Animations.changeToPurple "box")
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState (Animations.changeToPurple "box")
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         ResetColor ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState (Animations.resetColor "box")
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState (Animations.resetColor "box")
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         NoOp ->
             ( model, Cmd.none )

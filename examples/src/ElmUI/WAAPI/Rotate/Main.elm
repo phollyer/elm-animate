@@ -80,45 +80,45 @@ update msg model =
     case msg of
         Rotate45 ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState (Animations.rotate45 "box")
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState (Animations.rotate45 "box")
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         Rotate90 ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState (Animations.rotate90 "box")
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState (Animations.rotate90 "box")
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         Rotate180 ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState (Animations.rotate180 "box")
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState (Animations.rotate180 "box")
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         RotateLeft ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState (Animations.rotateLeft "box")
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState (Animations.rotateLeft "box")
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         RotateRight ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState (Animations.rotateRight "box")
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState (Animations.rotateRight "box")
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         ResetRotation ->
             let
-                ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState (Animations.resetRotate "box")
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animState (Animations.resetRotate "box")
             in
-            ( { model | animState = newAnimState }, animateElement encodedValue )
+            ( { model | animState = newAnimState }, animCmd )
 
         NoOp ->
             ( model, Cmd.none )
@@ -132,11 +132,11 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         ( initialAnimState, initCmd ) =
-            WAAPI.animate WAAPI.init <|
+            WAAPI.animate animateElement WAAPI.init <|
                 \b -> b |> Rotate.initXYZ "box" 0 0 0
     in
     ( { animState = initialAnimState }
-    , animateElement initCmd
+    , initCmd
     )
 
 

@@ -84,13 +84,13 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         ( initialAnimState, initCmd ) =
-            WAAPI.animate WAAPI.init <|
+            WAAPI.animate animateElement WAAPI.init <|
                 Position.initXY "box" 0 0
     in
     ( { animationState = initialAnimState
       , isAnimating = False
       }
-    , animateElement initCmd
+    , initCmd
     )
 
 
@@ -107,7 +107,7 @@ type Msg
     | ResetPosition
     | StopAnimation
     | AnimationComplete String
-    | WaapiEventReceived eventncode.Value
+    | WaapiEventReceived Encode.Value
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -115,62 +115,62 @@ update msg model =
     case msg of
         MoveToXY x y ->
             let
-                ( newAnimState, animationData ) =
-                    WAAPI.animate model.animationState <|
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animationState <|
                         Animations.moveToXY "box" x y
             in
             ( { model | animationState = newAnimState, isAnimating = True }
-            , animateElement animationData
+            , animCmd
             )
 
         MoveLeft ->
             let
-                ( newAnimState, animationData ) =
-                    WAAPI.animate model.animationState <|
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animationState <|
                         Animations.moveLeft "box"
             in
             ( { model | animationState = newAnimState, isAnimating = True }
-            , animateElement animationData
+            , animCmd
             )
 
         MoveRight ->
             let
-                ( newAnimState, animationData ) =
-                    WAAPI.animate model.animationState <|
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animationState <|
                         Animations.moveRight "box"
             in
             ( { model | animationState = newAnimState, isAnimating = True }
-            , animateElement animationData
+            , animCmd
             )
 
         MoveUp ->
             let
-                ( newAnimState, animationData ) =
-                    WAAPI.animate model.animationState <|
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animationState <|
                         Animations.moveUp "box"
             in
             ( { model | animationState = newAnimState, isAnimating = True }
-            , animateElement animationData
+            , animCmd
             )
 
         MoveDown ->
             let
-                ( newAnimState, animationData ) =
-                    WAAPI.animate model.animationState <|
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animationState <|
                         Animations.moveDown "box"
             in
             ( { model | animationState = newAnimState, isAnimating = True }
-            , animateElement animationData
+            , animCmd
             )
 
         ResetPosition ->
             let
-                ( newAnimState, animationData ) =
-                    WAAPI.animate model.animationState <|
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate animateElement model.animationState <|
                         Animations.returnToOrigin "box"
             in
             ( { model | animationState = newAnimState, isAnimating = True }
-            , animateElement animationData
+            , animCmd
             )
 
         StopAnimation ->
@@ -202,15 +202,14 @@ update msg model =
 
 
 
-
-
 -- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.batch
-        [ positionUpdates WaapiEventReceived event       , animationComplete AnimationComplete
+        [ positionUpdates WaapiEventReceived event
+        , animationComplete AnimationComplete
         ]
 
 

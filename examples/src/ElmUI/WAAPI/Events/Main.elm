@@ -137,8 +137,8 @@ update msg model =
     case msg of
         MoveToCorner ->
             let
-                ( newAnimations, cmd ) =
-                    WAAPI.animate model.animations <|
+                ( newAnimations, animCmd ) =
+                    WAAPI.animate animateElement model.animations <|
                         \b ->
                             b
                                 |> WAAPI.duration 1000
@@ -149,13 +149,13 @@ update msg model =
                 | animations = newAnimations
                 , isAnimating = True
               }
-            , animateElement cmd
+            , animCmd
             )
 
         MoveToCenter ->
             let
-                ( newAnimations, cmd ) =
-                    WAAPI.animate model.animations <|
+                ( newAnimations, animCmd ) =
+                    WAAPI.animate animateElement model.animations <|
                         \b ->
                             b
                                 |> WAAPI.duration 800
@@ -164,21 +164,21 @@ update msg model =
             in
             ( { model
                 | animations = newAnimations
-                , isAnimating = True
+                , isAnimating = False
               }
-            , animateElement cmd
+            , animCmd
             )
 
         StopAnimation ->
             let
-                ( newAnimations, cmd ) =
-                    WAAPI.stop elementId model.animations
+                ( newAnimations, animCmd ) =
+                    WAAPI.stop elementId model.animations stopElementAnimation
             in
             ( { model
                 | animations = newAnimations
                 , isAnimating = False
               }
-            , stopElementAnimation cmd
+            , animCmd
             )
 
         ClearEventLog ->
