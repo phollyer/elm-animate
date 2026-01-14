@@ -1,25 +1,21 @@
 port module ElmUI.WAAPI.Controls.Main exposing (main)
 
-{-| Anim.Engine.WAAPI Controls Example using ElmUI - Demonstrating Web Animations API controls
+{-| Anim.Engine.WAAPI Controls Example using ElmUI - Demonstrating Animation controls
 
 This example showcases all animation control functions available in the Anim.Engine.WAAPI module:
 
   - animate: Start Web Animations API-based animations
   - stop: Jump to end state and stop
-  - pause: Pause all animations
+  - pause: Pause animations
   - resume: Resume paused animations
   - reset: Jump to start state and stop
-  - restart: Reset to start then restart animation
-
-All controls work through JavaScript ports with the Web Animations API for native browser performance.
+  - restart: Reset to start then play animation
 
 -}
 
-import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.WAAPI as WAAPI
-import Anim.Property.Position as Position
 import Browser exposing (Document)
-import Common.Animations.AnimationControls as ControlsAnim
+import Common.Animations.AnimationControls as ControlsAnim exposing (elementId)
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, centerY, column, el, fill, height, html, htmlAttribute, maximum, padding, paddingEach, paragraph, px, row, spacing, text, width)
@@ -27,7 +23,6 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
-import Json.Decode
 import Json.Encode as Encode
 import Time
 
@@ -69,12 +64,9 @@ init { window } =
         animationAreaWidth =
             min 500 (window.width - 40)
 
-        xPos =
-            toFloat animationAreaWidth / 2 - 25
-
         ( initialAnimState, initCmd ) =
             WAAPI.animate WAAPI.init <|
-                ControlsAnim.init elementId xPos 50
+                ControlsAnim.init animationAreaWidth
     in
     ( { animationState = initialAnimState
       , isAnimating = False
@@ -93,11 +85,6 @@ init { window } =
 -- UPDATE
 
 
-elementId : String
-elementId =
-    "waapi-controls-box"
-
-
 type Msg
     = Animate
     | Stop
@@ -113,12 +100,8 @@ update msg model =
     case msg of
         Animate ->
             let
-                currentPosition =
-                    WAAPI.getCurrentPosition elementId model.animationState
-
                 ( newAnimState, animationData ) =
-                    WAAPI.animate model.animationState <|
-                        ControlsAnim.animate elementId
+                    WAAPI.animate model.animationState ControlsAnim.animate
             in
             ( { model | animationState = newAnimState }
             , WAAPI.sendCommand waapiCommand animationData

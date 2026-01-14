@@ -1,4 +1,8 @@
-module Common.Animations.AnimationControls exposing (animate, init)
+module Common.Animations.AnimationControls exposing
+    ( animate
+    , elementId
+    , init
+    )
 
 {-| Common Animation Control functions that work across all animation engines.
 These functions take an AnimBuilder and return an AnimBuilder, making them
@@ -10,21 +14,29 @@ animation logic works identically across all engines!
 -}
 
 import Anim.Easing exposing (Easing(..))
-import Anim.Internal.Builder as Builder
+import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Property.Position as Position
 
 
-init : String -> Float -> Float -> Builder.AnimBuilder -> Builder.AnimBuilder
-init =
-    Position.initXY
+elementId : String
+elementId =
+    "bouncing-ball"
 
 
-animate : String -> Builder.AnimBuilder -> Builder.AnimBuilder
-animate elementId builder =
-    builder
-        |> Position.for elementId
-        |> Position.fromY 50
-        |> Position.toY 300
-        |> Position.speed 200
-        |> Position.easing BounceOut
-        |> Position.build
+init : Int -> AnimBuilder -> AnimBuilder
+init animationAreaWidth =
+    let
+        xPos =
+            toFloat animationAreaWidth / 2 - 25
+    in
+    Position.initXY elementId xPos 50
+
+
+animate : AnimBuilder -> AnimBuilder
+animate =
+    Position.for elementId
+        >> Position.fromY 50
+        >> Position.toY 300
+        >> Position.speed 200
+        >> Position.easing BounceOut
+        >> Position.build

@@ -76,17 +76,6 @@ type alias Model =
     }
 
 
-type Msg
-    = MoveScaleRotate String
-    | FadeMove String
-    | SpinScaleColor String
-    | ColorSizeOpacity String
-    | AllProperties String
-    | ResetAll
-    | ReceiveAnimationUpdate Encode.Value
-    | NoOp
-
-
 
 -- INIT
 
@@ -120,124 +109,64 @@ initAnim duration animState =
 -- UPDATE
 
 
+type Msg
+    = MoveScaleRotate
+    | FadeMove
+    | SpinScaleColor
+    | ColorSizeOpacity
+    | AllProperties
+    | ResetAll
+    | ReceiveAnimationUpdate Encode.Value
+    | NoOp
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ReceiveAnimationUpdate jsonValue ->
             ( { model | animState = WAAPI.update jsonValue model.animState }, Cmd.none )
 
-        MoveScaleRotate elementId ->
+        MoveScaleRotate ->
             let
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState <|
-                        \b ->
-                            b
-                                |> WAAPI.duration 1000
-                                |> WAAPI.easing Easing.EaseInOut
-                                |> Position.for elementId
-                                |> Position.toXY 200 100
-                                |> Position.build
-                                |> Scale.for elementId
-                                |> Scale.toXY 1.5 1.9
-                                |> Scale.build
-                                |> Rotate.for elementId
-                                |> Rotate.toZ 90
-                                |> Rotate.build
+                    WAAPI.animate model.animState Mixed.moveScaleRotate
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
-        FadeMove elementId ->
+        FadeMove ->
             let
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState <|
-                        \b ->
-                            b
-                                |> WAAPI.duration 1000
-                                |> WAAPI.easing Easing.EaseInOut
-                                |> Opacity.for elementId
-                                |> Opacity.to 0.3
-                                |> Opacity.build
-                                |> Position.for elementId
-                                |> Position.toXY 250 80
-                                |> Position.build
+                    WAAPI.animate model.animState Mixed.fadeMove
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
-        SpinScaleColor elementId ->
+        SpinScaleColor ->
             let
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState <|
-                        \b ->
-                            b
-                                |> WAAPI.duration 1000
-                                |> WAAPI.easing Easing.EaseInOut
-                                |> Rotate.for elementId
-                                |> Rotate.toZ 180
-                                |> Rotate.build
-                                |> Scale.for elementId
-                                |> Scale.toXY 0.8 0.8
-                                |> Scale.build
-                                |> Color.for elementId
-                                |> Color.to (Maybe.withDefault Anim.Color.red (Anim.Color.fromHex "#e74c3c"))
-                                |> Color.build
+                    WAAPI.animate model.animState Mixed.spinScaleColor
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
-        ColorSizeOpacity elementId ->
+        ColorSizeOpacity ->
             let
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState <|
-                        \b ->
-                            b
-                                |> WAAPI.duration 1000
-                                |> WAAPI.easing Easing.EaseInOut
-                                |> Color.for elementId
-                                |> Color.to (Anim.Color.fromHsl { h = 142 / 360, s = 0.71, l = 0.45 })
-                                |> Color.build
-                                |> Size.for elementId
-                                |> Size.toHW 60 150
-                                |> Size.build
-                                |> Opacity.for elementId
-                                |> Opacity.to 0.8
-                                |> Opacity.build
+                    WAAPI.animate model.animState Mixed.colorSizeOpacity
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
-        AllProperties elementId ->
+        AllProperties ->
             let
                 ( newAnimState, encodedValue ) =
-                    WAAPI.animate model.animState <|
-                        \b ->
-                            b
-                                |> WAAPI.duration 1000
-                                |> WAAPI.easing Easing.EaseInOut
-                                |> Position.for elementId
-                                |> Position.toXY 200 200
-                                |> Position.build
-                                |> Scale.for elementId
-                                |> Scale.toXY 1.3 1.3
-                                |> Scale.build
-                                |> Size.for elementId
-                                |> Size.toHW 150 60
-                                |> Size.build
-                                |> Rotate.for elementId
-                                |> Rotate.toZ 270
-                                |> Rotate.build
-                                |> Opacity.for elementId
-                                |> Opacity.to 0.7
-                                |> Opacity.build
-                                |> Color.for elementId
-                                |> Color.to (Anim.Color.fromRgb { r = 155, g = 89, b = 182 })
-                                |> Color.build
+                    WAAPI.animate model.animState Mixed.allProperties
             in
             ( { model | animState = newAnimState }, animateElement encodedValue )
 
         ResetAll ->
             let
-                ( newAnimState, animCmd ) =
-                    initAnim 800 model.animState
+                ( newAnimState, encodedValue ) =
+                    WAAPI.animate model.animState Mixed.resetAll
             in
-            ( { model | animState = newAnimState }, animCmd )
+            ( { model | animState = newAnimState }, animateElement encodedValue )
 
         NoOp ->
             ( model, Cmd.none )
@@ -277,11 +206,11 @@ viewContent model =
         (text "Combining multiple CSS properties in single animations for complex transformations")
     , -- Mixed property animation controls
       UI.wrappedButtonRow
-        [ ( UI.Primary, MoveScaleRotate elementId, "Move + Scale + Rotate" )
-        , ( UI.Success, FadeMove elementId, "Fade + Move" )
-        , ( UI.Warning, SpinScaleColor elementId, "Spin + Scale + Color" )
-        , ( UI.Purple, ColorSizeOpacity elementId, "Color + Size + Opacity" )
-        , ( UI.Primary, AllProperties elementId, "ALL Properties!" )
+        [ ( UI.Primary, MoveScaleRotate, "Move + Scale + Rotate" )
+        , ( UI.Success, FadeMove, "Fade + Move" )
+        , ( UI.Warning, SpinScaleColor, "Spin + Scale + Color" )
+        , ( UI.Purple, ColorSizeOpacity, "Color + Size + Opacity" )
+        , ( UI.Primary, AllProperties, "ALL Properties!" )
         , ( UI.Success, ResetAll, "Reset" )
         ]
     , -- Animation area
