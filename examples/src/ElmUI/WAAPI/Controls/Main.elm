@@ -106,7 +106,7 @@ type Msg
     | Resume
     | Reset
     | Restart
-    | WaapiEventReceived WAAPI.AnimState WAAPI.EventType
+    | WaapiEventReceived WAAPI.EventType WAAPI.AnimState
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -121,7 +121,7 @@ update msg model =
             , animCmd
             )
 
-        WaapiEventReceived newAnimState eventType ->
+        WaapiEventReceived eventType newAnimState ->
             let
                 newModel =
                     { model | animationState = newAnimState }
