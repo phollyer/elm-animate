@@ -203,9 +203,6 @@ animate (AnimState state) buildAnimation =
         builderWithCache =
             Builder.computeAndCachePerspectiveStyles configuredBuilder
 
-        -- Temporarily disable current state injection to test if end states are correct
-        -- builderWithCurrentStates =
-        --     Dict.foldl injectCurrentStatesForElement builderWithCache state.elementAnimations
         processedData =
             Builder.processAnimationData builderWithCache
 

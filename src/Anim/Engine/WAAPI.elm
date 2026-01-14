@@ -1,22 +1,20 @@
 module Anim.Engine.WAAPI exposing
     ( AnimState, init, AnimBuilder, builder
     , animate, fireAndForget
-    , perspective
-    , perspectiveWith
+    , PropertyData, AnimationStatus(..), EventType(..), decode
+    , stop, reset, restart, pause, resume
     , duration, speed
     , easing
     , delay
+    , perspective
+    , perspectiveWith
     , anyRunning, isRunning, allComplete, isComplete
-    , stop, reset, restart, pause, resume
-    , CommandType(..), EventType(..), AnimationStatus(..), PropertyData
-    , stopAnimation, pauseAnimation, resumeAnimation, resetAnimation, restartAnimation
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
     , getStartOpacity, getEndOpacity, getCurrentOpacity
     , getStartPosition, getEndPosition, getCurrentPosition
     , getStartRotate, getEndRotate, getCurrentRotate
     , getStartScale, getEndScale, getCurrentScale
     , getStartSize, getEndSize, getCurrentSize
-    , update
     )
 
 {-| Ports-based animation system utilising the Web Animations API with optional state tracking.
@@ -51,25 +49,27 @@ Then import and initialize it in your JavaScript code:
 @docs animate, fireAndForget
 
 
-# 3D Animations
+# Updates
 
-For 3D animations you need to set a perspective to give a sense of depth. Without perspective,
-3D animations will have no visual effect, and will appear flat.
+The JavaScript companion library sends real-time property updates back to Elm during animations.
+
+Updates are throttled to approximately 60 FPS (~16ms intervals) regardless of display refresh rate.
+This balances real-time feedback with performance, preventing message flooding on high-refresh-rate
+displays (120Hz, 144Hz, etc.) while maintaining smooth visual feedback.
+
+@docs PropertyData, AnimationStatus, EventType, decode
 
 
-## Perspective
+# Control Running Animations
 
-@docs perspective
-
-
-## HTML
-
-@docs perspectiveWith
+@docs stop, reset, restart, pause, resume
 
 
 # Global Settings
 
 These settings will be used for all animations unless overridden on a per-animation basis.
+So if you want all your animations to have the same duration, easing, etc., you can set them here
+rather than repeating them for each property animation.
 
 
 ## Timing
@@ -87,31 +87,25 @@ These settings will be used for all animations unless overridden on a per-animat
 @docs delay
 
 
+# 3D Animations
+
+For 3D animations you need to set a perspective to give a sense of depth. Without perspective,
+3D animations will have no visual effect, and will appear flat.
+
+
+## Perspective
+
+@docs perspective
+
+
+## HTML
+
+@docs perspectiveWith
+
+
 # Querying Animation State
 
 @docs anyRunning, isRunning, allComplete, isComplete
-
-
-# Control Running Animations
-
-@docs stop, reset, restart, pause, resume
-
-
-# Port Integration
-
-The JavaScript companion library sends real-time property updates back to Elm during animations,
-enabling mid-flight access to animated values via the [Query](#querying-animation-state) functions.
-
-Updates are throttled to approximately 60 FPS (~16ms intervals) regardless of display refresh rate.
-This balances real-time feedback with performance, preventing message flooding on high-refresh-rate
-displays (120Hz, 144Hz, etc.) while maintaining smooth visual feedback.
-
-@docs handleEventWithState, CommandType, EventType, AnimationStatus, PropertyData
-
-
-## Command Helpers
-
-@docs stopAnimation, pauseAnimation, resumeAnimation, resetAnimation, restartAnimation
 
 
 # Querying Animated Properties
@@ -347,19 +341,19 @@ perspectiveWith =
 -- Execute
 
 
-{-| Configure an animation to use the JavaScript Web Animations API via ports.
+{-| Configure an animation.
 
-Returns the updated animation state and command.
+Returns the updated animation state and command that talks to the JavaScript Web Animations API via ports.
 
     port waapiCommand : Encode.Value -> Cmd msg
 
     let
         ( newAnimState, animCmd ) =
-            WAAPI.animate waapiCommand model.animations
-                (\builder ->
+            WAAPI.animate waapiCommand model.animations <|
+                \builder ->
                     builder
                         |> -- configure animation
-                )
+
     in
     ( { model | animations = newAnimState }, animCmd )
 
@@ -378,14 +372,14 @@ animate portCmd animState buildAnimation =
 Use this when you don't need to track animation state or query animated values.
 The animation runs entirely in the browser via the Web Animations API.
 
-    port sendAnimationCmd : Encode.Value -> Cmd msg
+    port waapiCommand : Encode.Value -> Cmd msg
 
     myAnimationCmd : Cmd msg
     myAnimationCmd =
         WAAPI.init
             |> WAAPI.builder
             |> -- configure animation
-            |> WAAPI.fireAndForget sendAnimationCmd
+            |> WAAPI.fireAndForget waapiCommand
 
 For state management and continuity, use `animate` instead.
 
@@ -409,8 +403,8 @@ Sends a command to JavaScript to call the native `Animation.finish()` method.
 
 -}
 stop : String -> (Encode.Value -> Cmd msg) -> Cmd msg
-stop =
-    stopAnimation
+stop elementId portCmd =
+    portCmd (encodeCommand StopCommand elementId Encode.null)
 
 
 {-| Reset an animation by instantly jumping back to its start state.
@@ -427,8 +421,12 @@ Sends a command to JavaScript to cancel and reset the animation.
 
 -}
 reset : String -> (Encode.Value -> Cmd msg) -> AnimState -> ( AnimState, Cmd msg )
-reset =
-    resetAnimation
+reset elementId portCmd animState =
+    let
+        ( newAnimState, resetData ) =
+            InternalWAAPI.resetElement elementId animState
+    in
+    ( newAnimState, portCmd resetData )
 
 
 {-| Restart an animation from the beginning.
@@ -445,8 +443,12 @@ Sends a command to JavaScript to cancel and replay the animation.
 
 -}
 restart : String -> (Encode.Value -> Cmd msg) -> AnimState -> ( AnimState, Cmd msg )
-restart =
-    restartAnimation
+restart elementId portCmd animState =
+    let
+        ( newAnimState, restartData ) =
+            InternalWAAPI.restartElement elementId animState
+    in
+    ( newAnimState, portCmd restartData )
 
 
 {-| Pause a running animation for a specific element.
@@ -457,8 +459,8 @@ restart =
 
 -}
 pause : String -> (Encode.Value -> Cmd msg) -> Cmd msg
-pause =
-    pauseAnimation
+pause elementId portCmd =
+    portCmd (encodeCommand PauseCommand elementId Encode.null)
 
 
 {-| Resume a paused animation for a specific element.
@@ -469,18 +471,8 @@ pause =
 
 -}
 resume : String -> (Encode.Value -> Cmd msg) -> Cmd msg
-resume =
-    resumeAnimation
-
-
-
--- Update
--- Internal: Update animation state from property data
-
-
-update : Decode.Value -> AnimState -> AnimState
-update =
-    InternalWAAPI.update
+resume elementId portCmd =
+    portCmd (encodeCommand ResumeCommand elementId Encode.null)
 
 
 
@@ -843,10 +835,7 @@ type alias PropertyData =
     }
 
 
-{-| Event types for WAAPI port communication.
-
-These are used internally by the handleEvent function.
-
+{-| Event types defining the incoming events from JavaScript.
 -}
 type EventType
     = PropertyUpdate PropertyData
@@ -888,45 +877,46 @@ encodeCommandType commandType =
             Encode.string "restart"
 
 
-{-| Handle WAAPI events with automatic AnimState management.
+{-| Decode WAAPI events and update animation state.
 
-It automatically:
+This function handles JSON decoding and automatically applies property updates to your animation state.
+It returns a message with both the event type and updated state.
 
-  - Applies PropertyUpdate data to update element positions during animation
-  - Handles AnimationUpdate status changes
-  - Returns both the updated AnimState and the event for your application logic
+**Note:** For fire-and-forget animations, you don't need this - animations run entirely in JavaScript.
 
-Usage:
+    port incomingWaapiEvent : (Encode.Value -> msg) -> Sub msg
+
+    type Msg
+        = GotWaapiUpdate WAAPI.EventType WAAPI.AnimState
+        | ...
 
     subscriptions : Model -> Sub Msg
     subscriptions model =
-        waapiEvent (WAAPI.update WaapiEventReceived model.animationState)
-
-    type Msg
-        = WaapiEventReceived WAAPI.EventType WAAPI.AnimState
-        | ...
+        incomingWaapiEvent <|
+            WAAPI.decode GotWaapiUpdate model.animationState
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
         case msg of
-            WaapiEventReceived eventType newAnimState ->
+            GotWaapiUpdate eventType newAnimState ->
                 let
                     newModel =
                         { model | animationState = newAnimState }
                 in
                 case eventType of
                     WAAPI.PropertyUpdate _ ->
-                        -- Position automatically updated in newAnimState
-                        ( newModel, Cmd.none )
+                        -- Handle property updates if needed
+                        (newModel, Cmd.none )
 
-                    WAAPI.AnimationUpdate WAAPI.Completed ->
-                        ( { newModel | isAnimating = False }, Cmd.none )
+                    WAAPI.AnimationUpdate _ ->
+                        -- Handle animation status changes if needed
+                        ( newModel, Cmd.none )
 
             ...
 
 -}
-update : (EventType -> AnimState -> msg) -> AnimState -> Encode.Value -> msg
-update toMsg currentAnimState eventValue =
+decode : (EventType -> AnimState -> msg) -> AnimState -> Encode.Value -> msg
+decode toMsg currentAnimState eventValue =
     case decodeEvent eventValue of
         Ok eventType ->
             let
@@ -934,7 +924,7 @@ update toMsg currentAnimState eventValue =
                     case eventType of
                         PropertyUpdate propertyData ->
                             -- Automatically apply property updates
-                            update (encodePropertyData propertyData) currentAnimState
+                            InternalWAAPI.update (encodePropertyData propertyData) currentAnimState
 
                         AnimationUpdate _ ->
                             -- Animation status changes don't modify AnimState
@@ -943,8 +933,7 @@ update toMsg currentAnimState eventValue =
             toMsg eventType updatedAnimState
 
         Err _ ->
-            -- On decode errors, return unchanged state with a dummy event
-            -- Real applications might want to handle this differently
+            -- On decode errors, return unchanged state
             toMsg (AnimationUpdate Canceled) currentAnimState
 
 
@@ -1092,79 +1081,3 @@ encodePropertyData data =
 andMap : Decode.Decoder a -> Decode.Decoder (a -> b) -> Decode.Decoder b
 andMap =
     Decode.map2 (|>)
-
-
-{-| Stop an animation by instantly jumping to its end state.
-
-Sends a command to JavaScript to call the native `Animation.finish()` method.
-
-    WAAPI.stopAnimation "my-element" waapiCommand
-
--}
-stopAnimation : String -> (Encode.Value -> Cmd msg) -> Cmd msg
-stopAnimation elementId portCmd =
-    portCmd (encodeCommand StopCommand elementId Encode.null)
-
-
-{-| Pause a running animation for a specific element.
-
-    WAAPI.pauseAnimation "my-element" waapiCommand
-
--}
-pauseAnimation : String -> (Encode.Value -> Cmd msg) -> Cmd msg
-pauseAnimation elementId portCmd =
-    portCmd (encodeCommand PauseCommand elementId Encode.null)
-
-
-{-| Resume a paused animation for a specific element.
-
-    WAAPI.resumeAnimation "my-element" waapiCommand
-
--}
-resumeAnimation : String -> (Encode.Value -> Cmd msg) -> Cmd msg
-resumeAnimation elementId portCmd =
-    portCmd (encodeCommand ResumeCommand elementId Encode.null)
-
-
-{-| Reset an element to its initial animation state.
-
-Creates a 0ms duration animation that instantly moves the element back to its start position/properties.
-
-Returns updated animation state and command:
-
-    let
-        ( newAnimState, resetCmd ) =
-            WAAPI.resetAnimation "my-element" waapiCommand model.animations
-    in
-    ( { model | animations = newAnimState }, resetCmd )
-
--}
-resetAnimation : String -> (Encode.Value -> Cmd msg) -> AnimState -> ( AnimState, Cmd msg )
-resetAnimation elementId portCmd animState =
-    let
-        ( newAnimState, resetData ) =
-            InternalWAAPI.resetElement elementId animState
-    in
-    ( newAnimState, portCmd resetData )
-
-
-{-| Restart the last animation for an element.
-
-Replays the stored animation commands for the element from the beginning.
-
-Returns updated animation state and command:
-
-    let
-        ( newAnimState, restartCmd ) =
-            WAAPI.restartAnimation "my-element" waapiCommand model.animations
-    in
-    ( { model | animations = newAnimState }, restartCmd )
-
--}
-restartAnimation : String -> (Encode.Value -> Cmd msg) -> AnimState -> ( AnimState, Cmd msg )
-restartAnimation elementId portCmd animState =
-    let
-        ( newAnimState, restartData ) =
-            InternalWAAPI.restartElement elementId animState
-    in
-    ( newAnimState, portCmd restartData )
