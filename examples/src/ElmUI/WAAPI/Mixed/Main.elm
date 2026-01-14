@@ -25,7 +25,7 @@ import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
 import Anim.Property.Size as Size
 import Browser exposing (Document)
-import Common.Animations.Mixed as Mixed
+import Common.Animations.Mixed as Mixed exposing (elementId)
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
@@ -107,35 +107,11 @@ initAnim duration animState =
     let
         ( newAnimState, encodedValue ) =
             WAAPI.animate animState <|
-                \b ->
-                    b
+                \builder ->
+                    builder
                         |> WAAPI.duration duration
                         |> WAAPI.easing Easing.EaseOut
-                        |> Color.init "mixed-box" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
-                        |> Position.initXY "mixed-box" 0 0
-                        |> Scale.initXYZ "mixed-box" 1.0 1.0 1.0
-                        |> Size.initWH "mixed-box" 80 80
-                        |> Rotate.initXYZ "mixed-box" 0 0 0
-                        |> Opacity.init "mixed-box" 1.0
-                        |> Position.for "mixed-box"
-                        |> Position.toXY 0 0
-                        |> Position.build
-                        |> Scale.for "mixed-box"
-                        |> Scale.toXYZ 1.0 1.0 1.0
-                        |> Scale.build
-                        |> Size.for "mixed-box"
-                        |> Size.toHW 80 80
-                        |> Size.build
-                        |> Rotate.for "mixed-box"
-                        |> Rotate.perspective "animation-container" 1000
-                        |> Rotate.toXYZ 0 0 0
-                        |> Rotate.build
-                        |> Opacity.for "mixed-box"
-                        |> Opacity.to 1.0
-                        |> Opacity.build
-                        |> Color.for "mixed-box"
-                        |> Color.to (Maybe.withDefault Anim.Color.blue (Anim.Color.fromHex "#3498db"))
-                        |> Color.build
+                        |> Mixed.init
     in
     ( newAnimState, animateElement encodedValue )
 
@@ -301,11 +277,11 @@ viewContent model =
         (text "Combining multiple CSS properties in single animations for complex transformations")
     , -- Mixed property animation controls
       UI.wrappedButtonRow
-        [ ( UI.Primary, MoveScaleRotate "mixed-box", "Move + Scale + Rotate" )
-        , ( UI.Success, FadeMove "mixed-box", "Fade + Move" )
-        , ( UI.Warning, SpinScaleColor "mixed-box", "Spin + Scale + Color" )
-        , ( UI.Purple, ColorSizeOpacity "mixed-box", "Color + Size + Opacity" )
-        , ( UI.Primary, AllProperties "mixed-box", "ALL Properties!" )
+        [ ( UI.Primary, MoveScaleRotate elementId, "Move + Scale + Rotate" )
+        , ( UI.Success, FadeMove elementId, "Fade + Move" )
+        , ( UI.Warning, SpinScaleColor elementId, "Spin + Scale + Color" )
+        , ( UI.Purple, ColorSizeOpacity elementId, "Color + Size + Opacity" )
+        , ( UI.Primary, AllProperties elementId, "ALL Properties!" )
         , ( UI.Success, ResetAll, "Reset" )
         ]
     , -- Animation area
@@ -338,7 +314,7 @@ mixedAnimationBox model =
         [ width (px 80)
         , height (px 80)
         , Border.rounded 12
-        , htmlAttribute (Html.Attributes.id "mixed-box")
+        , htmlAttribute (Html.Attributes.id elementId)
         , htmlAttribute (Html.Attributes.style "position" "absolute")
         , htmlAttribute (Html.Attributes.style "background-color" "#3498db") -- Default blue
         , htmlAttribute (Html.Attributes.style "transform-origin" "center")

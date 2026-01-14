@@ -1,6 +1,7 @@
 module Common.Animations.Mixed exposing
     ( allProperties
     , colorSizeOpacity
+    , elementId
     , fadeMove
     , moveScaleRotate
     , resetAll
@@ -31,8 +32,8 @@ ANIMATIONS:
 -}
 
 import Anim.Color
-import Anim.Easing as Easing
-import Anim.Internal.Builder as Builder
+import Anim.Easing as Easing exposing (Easing(..))
+import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Property.BackgroundColor as Color
 import Anim.Property.Opacity as Opacity
 import Anim.Property.Position as Position
@@ -41,22 +42,69 @@ import Anim.Property.Scale as Scale
 import Anim.Property.Size as Size
 
 
+elementId : String
+elementId =
+    "mixed-box"
+
+
+positionAnimation : Float -> Easing -> ( Float, Float ) -> AnimBuilder -> AnimBuilder
+positionAnimation speed easing ( x, y ) builder =
+    builder
+        |> Position.for elementId
+        |> Position.toXY x y
+        |> Position.speed speed
+        |> Position.easing easing
+        |> Position.build
+
+
+init : AnimBuilder -> AnimBuilder
+init builder =
+    builder
+        |> Color.init elementId (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
+        |> Position.initXY elementId 0 0
+        |> Scale.initXYZ elementId 1.0 1.0 1.0
+        |> Size.initWH elementId 80 80
+        |> Rotate.initXYZ elementId 0 0 0
+        |> Opacity.init elementId 1.0
+        |> Position.for elementId
+        |> Position.toXY 0 0
+        |> Position.build
+        |> Scale.for elementId
+        |> Scale.toXYZ 1.0 1.0 1.0
+        |> Scale.build
+        |> Size.for elementId
+        |> Size.toHW 80 80
+        |> Size.build
+        |> Rotate.for elementId
+        |> Rotate.perspective "animation-container" 1000
+        |> Rotate.toXYZ 0 0 0
+        |> Rotate.build
+        |> Opacity.for elementId
+        |> Opacity.to 1.0
+        |> Opacity.build
+        |> Color.for elementId
+        |> Color.to (Maybe.withDefault Anim.Color.blue (Anim.Color.fromHex "#3498db"))
+        |> Color.build
+
+
+rotateAnimation : Float -> Easing -> Float -> AnimBuilder -> Rotate.Builder
+rotateAnimation speed easing angle builder =
+    builder
+        |> Rotate.for elementId
+        |> Rotate.toZ angle
+        |> Rotate.speed speed
+        |> Rotate.easing easing
+
+
 {-| Move + Scale + Rotate with delayed animation starts
 Position moves first, then rotation, then scale with bouncy effects
 -}
-moveScaleRotate : String -> Builder.AnimBuilder -> Builder.AnimBuilder
-moveScaleRotate elementId builder =
+moveScaleRotate : Builder.AnimBuilder -> Builder.AnimBuilder
+moveScaleRotate builder =
     builder
-        |> Position.for elementId
-        |> Position.toXY 200 100
-        |> Position.speed 200.0
-        |> Position.easing Easing.EaseIn
-        |> Position.build
-        |> Rotate.for elementId
+        |> positionAnimation 200.0 EaseIn ( 200, 100 )
+        |> rotateAnimation 120.0 BounceOut 90
         |> Rotate.delay 500
-        |> Rotate.toZ 90
-        |> Rotate.speed 120.0
-        |> Rotate.easing Easing.BounceOut
         |> Rotate.build
         |> Scale.for elementId
         |> Scale.delay 2000
@@ -69,8 +117,8 @@ moveScaleRotate elementId builder =
 {-| Fade + Move with synchronized timing
 Opacity and position change together smoothly
 -}
-fadeMove : String -> Builder.AnimBuilder -> Builder.AnimBuilder
-fadeMove elementId builder =
+fadeMove : Builder.AnimBuilder -> Builder.AnimBuilder
+fadeMove builder =
     builder
         |> Opacity.for elementId
         |> Opacity.to 0.3
@@ -87,8 +135,8 @@ fadeMove elementId builder =
 {-| Spin + Scale + Color change with coordinated timing
 Rotation, scaling, and color morph working together
 -}
-spinScaleColor : String -> Builder.AnimBuilder -> Builder.AnimBuilder
-spinScaleColor elementId builder =
+spinScaleColor : Builder.AnimBuilder -> Builder.AnimBuilder
+spinScaleColor builder =
     builder
         |> Rotate.for elementId
         |> Rotate.toZ 180
@@ -110,8 +158,8 @@ spinScaleColor elementId builder =
 {-| Color + Size + Opacity coordination
 Background color, element size, and opacity changing together
 -}
-colorSizeOpacity : String -> Builder.AnimBuilder -> Builder.AnimBuilder
-colorSizeOpacity elementId builder =
+colorSizeOpacity : Builder.AnimBuilder -> Builder.AnimBuilder
+colorSizeOpacity builder =
     builder
         |> Color.for elementId
         |> Color.to (Anim.Color.fromHsl { h = 280 / 360, s = 0.7, l = 0.5 })
@@ -133,8 +181,8 @@ colorSizeOpacity elementId builder =
 {-| All properties animation - kitchen sink!
 Position, Scale, Size, Rotation, Opacity, and Color all animating
 -}
-allProperties : String -> Builder.AnimBuilder -> Builder.AnimBuilder
-allProperties elementId builder =
+allProperties : Builder.AnimBuilder -> Builder.AnimBuilder
+allProperties builder =
     builder
         |> Position.for elementId
         |> Position.toXY 200 200
@@ -171,8 +219,8 @@ allProperties elementId builder =
 {-| Reset all properties to initial state
 Returns all animated properties to their starting values
 -}
-resetAll : String -> Builder.AnimBuilder -> Builder.AnimBuilder
-resetAll elementId builder =
+resetAll : Builder.AnimBuilder -> Builder.AnimBuilder
+resetAll builder =
     builder
         |> Position.for elementId
         |> Position.toXY 0 0
