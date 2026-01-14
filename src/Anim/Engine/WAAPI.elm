@@ -8,7 +8,7 @@ module Anim.Engine.WAAPI exposing
     , delay
     , anyRunning, isRunning, allComplete, isComplete
     , stop, reset, restart, pause, resume
-    , handleEventWithState, CommandType(..), EventType(..), AnimationStatus(..), PropertyData
+    , CommandType(..), EventType(..), AnimationStatus(..), PropertyData
     , stopAnimation, pauseAnimation, resumeAnimation, resetAnimation, restartAnimation
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
     , getStartOpacity, getEndOpacity, getCurrentOpacity
@@ -16,6 +16,7 @@ module Anim.Engine.WAAPI exposing
     , getStartRotate, getEndRotate, getCurrentRotate
     , getStartScale, getEndScale, getCurrentScale
     , getStartSize, getEndSize, getCurrentSize
+    , update
     )
 
 {-| Ports-based animation system utilising the Web Animations API with optional state tracking.
@@ -899,7 +900,7 @@ Usage:
 
     subscriptions : Model -> Sub Msg
     subscriptions model =
-        waapiEvent (WAAPI.handleEventWithState WaapiEventReceived model.animationState)
+        waapiEvent (WAAPI.update WaapiEventReceived model.animationState)
 
     type Msg
         = WaapiEventReceived WAAPI.EventType WAAPI.AnimState
@@ -924,8 +925,8 @@ Usage:
             ...
 
 -}
-handleEventWithState : (EventType -> AnimState -> msg) -> AnimState -> Encode.Value -> msg
-handleEventWithState toMsg currentAnimState eventValue =
+update : (EventType -> AnimState -> msg) -> AnimState -> Encode.Value -> msg
+update toMsg currentAnimState eventValue =
     case decodeEvent eventValue of
         Ok eventType ->
             let

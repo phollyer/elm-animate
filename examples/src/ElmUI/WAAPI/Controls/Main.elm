@@ -200,7 +200,7 @@ handleAnimationUpdate status model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    waapiEvent (WAAPI.handleEventWithState WaapiEventReceived model.animationState)
+    waapiEvent (WAAPI.update WaapiEventReceived model.animationState)
 
 
 
