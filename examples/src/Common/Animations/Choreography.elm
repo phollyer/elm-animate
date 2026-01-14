@@ -112,8 +112,8 @@ buildAnimation elementsList builder =
 init : AnimBuilder -> AnimBuilder
 init builder =
     List.foldl
-        (\( elementId, ( x, y ) ) acc ->
-            Position.initXY elementId x y acc
+        (\( elementId, ( x, y ) ) builder_ ->
+            Position.initXY elementId x y builder_
         )
         builder
         (elements initialCoords)

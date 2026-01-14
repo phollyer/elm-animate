@@ -14,15 +14,11 @@ import Anim.Internal.Builder as Builder
 import Anim.Property.Position as Position
 
 
-{-| Initialize the starting position
--}
 init : String -> Float -> Float -> Builder.AnimBuilder -> Builder.AnimBuilder
 init =
     Position.initXY
 
 
-{-| Animate the element to a specific position (X=300, Y=150)
--}
 animate : String -> Builder.AnimBuilder -> Builder.AnimBuilder
 animate elementId builder =
     builder

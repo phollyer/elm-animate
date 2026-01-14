@@ -17,7 +17,7 @@ module Anim.Engine.WAAPI exposing
     , getStartRotate, getEndRotate, getCurrentRotate
     , getStartScale, getEndScale, getCurrentScale
     , getStartSize, getEndSize, getCurrentSize
-    , AnimationStatus(..), PropertyData, encodePropertyData
+    , AnimationStatus(..), PropertyData
     )
 
 {-| Ports-based animation system utilising the Web Animations API with optional state tracking.
