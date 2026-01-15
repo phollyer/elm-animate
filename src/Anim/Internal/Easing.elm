@@ -582,17 +582,62 @@ generateKeyframes easing =
     case easing of
         -- Custom bounce easings get special treatment to ensure they hit 1.0 at bounce boundaries
         BounceOutCustom strength ->
-            generateBounceKeyframes strength 3 0.8 0.5
+            let
+                clampedStrength =
+                    clamp 0.1 1.0 strength
+
+                -- More strength = more bounces and higher amplitude
+                bounces =
+                    2 + round (clampedStrength * 2)
+
+                amplitude =
+                    0.3 + (clampedStrength * 0.5)
+
+                decay =
+                    0.5 + (clampedStrength * 0.3)
+
+                keyframes =
+                    generateBounceKeyframes bounces amplitude decay
+
+                _ =
+                    Debug.log ("BounceOutCustom " ++ String.fromFloat strength ++ " -> bounces=" ++ String.fromInt bounces ++ " amp=" ++ String.fromFloat amplitude ++ " decay=" ++ String.fromFloat decay) keyframes
+            in
+            keyframes
 
         BounceInCustom strength ->
-            generateBounceKeyframes strength 3 0.8 0.5
+            let
+                clampedStrength =
+                    clamp 0.1 1.0 strength
+
+                bounces =
+                    2 + round (clampedStrength * 2)
+
+                amplitude =
+                    0.3 + (clampedStrength * 0.5)
+
+                decay =
+                    0.5 + (clampedStrength * 0.3)
+            in
+            generateBounceKeyframes bounces amplitude decay
                 |> List.reverse
                 |> List.map (\v -> 1.0 - v)
 
         BounceInOutCustom strength ->
             let
+                clampedStrength =
+                    clamp 0.1 1.0 strength
+
+                bounces =
+                    1 + round (clampedStrength * 1)
+
+                amplitude =
+                    0.3 + (clampedStrength * 0.5)
+
+                decay =
+                    0.5 + (clampedStrength * 0.3)
+
                 half =
-                    generateBounceKeyframes strength 2 0.8 0.5
+                    generateBounceKeyframes bounces amplitude decay
                         |> List.take 15
 
                 secondHalf =
@@ -602,17 +647,17 @@ generateKeyframes easing =
             half ++ secondHalf
 
         BounceOutAdvanced params ->
-            generateBounceKeyframes 1.0 params.bounces params.amplitude params.decay
+            generateBounceKeyframes params.bounces params.amplitude params.decay
 
         BounceInAdvanced params ->
-            generateBounceKeyframes 1.0 params.bounces params.amplitude params.decay
+            generateBounceKeyframes params.bounces params.amplitude params.decay
                 |> List.reverse
                 |> List.map (\v -> 1.0 - v)
 
         BounceInOutAdvanced params ->
             let
                 half =
-                    generateBounceKeyframes 1.0 params.bounces params.amplitude params.decay
+                    generateBounceKeyframes params.bounces params.amplitude params.decay
                         |> List.take 15
 
                 secondHalf =
@@ -649,8 +694,8 @@ generateKeyframes easing =
 This ensures the element visibly reaches the endpoint between bounces.
 The number of keyframes varies to ensure clean bounce boundaries.
 -}
-generateBounceKeyframes : Float -> Int -> Float -> Float -> List Float
-generateBounceKeyframes strength bounces amplitude decay =
+generateBounceKeyframes : Int -> Float -> Float -> List Float
+generateBounceKeyframes bounces amplitude decay =
     let
         -- Clamp parameters
         clampedBounces =
@@ -697,26 +742,52 @@ generateBounceKeyframes strength bounces amplitude decay =
                                 clampedAmplitude * (clampedDecay ^ toFloat bounceIndex)
 
                             -- Generate frames for this bounce
-                            -- Start at 1.0, use sine wave for smooth dip, end at 1.0
+                            -- Quadratic easing for more speed variation: very fast at endpoints, slow at peak
                             bounceFrames =
                                 List.range 0 framesPerBounce
                                     |> List.map
                                         (\frameIndex ->
-                                            if frameIndex == 0 || frameIndex == framesPerBounce then
-                                                -- Explicitly 1.0 at start and end of bounce
+                                            if frameIndex == 0 && bounceIndex > 0 then
+                                                -- Explicitly 1.0 at start of bounce (except first bounce, approach already ends at 1.0)
                                                 1.0
 
+                                            else if frameIndex == 0 && bounceIndex == 0 then
+                                                -- Skip starting 1.0 for first bounce to avoid duplicate with approach phase
+                                                -999.0
+
+                                            else if frameIndex == framesPerBounce && bounceIndex == clampedBounces - 1 then
+                                                -- Only add ending 1.0 for the LAST bounce
+                                                1.0
+
+                                            else if frameIndex == framesPerBounce then
+                                                -- Skip the ending frame for non-final bounces to avoid duplicates
+                                                -- The next bounce will provide the 1.0 at its start
+                                                -999.0
+
                                             else
-                                                -- Sine wave for smooth bounce motion
+                                                -- Use quadratic easing for more pronounced speed variation
+                                                -- Element speeds up dramatically near endpoints
                                                 let
                                                     localT =
                                                         toFloat frameIndex / toFloat framesPerBounce
 
+                                                    -- Map to range -1 to 1 (centered at 0)
+                                                    centered =
+                                                        (localT - 0.5) * 2
+
+                                                    -- Quadratic curve: 1 - t^2
+                                                    -- At t=0: value=1 (max displacement)
+                                                    -- At t=±1: value=0 (at endpoint, no displacement)
+                                                    -- This creates faster motion near endpoints
+                                                    easedProgress =
+                                                        1.0 - (centered * centered)
+
                                                     displacement =
-                                                        currentAmplitude * sin (localT * pi)
+                                                        currentAmplitude * easedProgress
                                                 in
                                                 1.0 - displacement
                                         )
+                                    |> List.filter (\v -> v /= -999.0)
                         in
                         bounceFrames
                     )
