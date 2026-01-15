@@ -140,23 +140,28 @@ update msg model =
 
         Stop ->
             ( model
-            , WAAPI.stopAnimation elementId waapiCommand
+            , WAAPI.stop elementId waapiCommand
             )
 
         Pause ->
             ( model
-            , WAAPI.pauseAnimation elementId waapiCommand
+            , WAAPI.pause elementId waapiCommand
             )
 
         Resume ->
-            ( model
-            , WAAPI.resumeAnimation elementId waapiCommand
-            )
+            -- Only resume if animation is actually paused
+            if model.isPaused then
+                ( model
+                , WAAPI.resume elementId waapiCommand
+                )
+
+            else
+                ( model, Cmd.none )
 
         Reset ->
             let
                 ( newAnimState, resetCmd ) =
-                    WAAPI.resetAnimation elementId waapiCommand model.animationState
+                    WAAPI.reset elementId waapiCommand model.animationState
             in
             ( { model | animationState = newAnimState }
             , resetCmd
@@ -165,7 +170,7 @@ update msg model =
         Restart ->
             let
                 ( newAnimState, restartCmd ) =
-                    WAAPI.restartAnimation elementId waapiCommand model.animationState
+                    WAAPI.restart elementId waapiCommand model.animationState
             in
             ( { model | animationState = newAnimState }
             , restartCmd
@@ -188,10 +193,10 @@ handleAnimationUpdate status model =
             ( { model | isAnimating = False, isPaused = False }, Cmd.none )
 
         WAAPI.Paused ->
-            ( { model | isPaused = True }, Cmd.none )
+            ( { model | isPaused = True, isAnimating = True }, Cmd.none )
 
         WAAPI.Resumed ->
-            ( { model | isPaused = False }, Cmd.none )
+            ( { model | isPaused = False, isAnimating = True }, Cmd.none )
 
 
 
@@ -201,7 +206,7 @@ handleAnimationUpdate status model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     waapiEvent <|
-        WAAPI.update WaapiEventReceived model.animationState
+        WAAPI.decode WaapiEventReceived model.animationState
 
 
 
