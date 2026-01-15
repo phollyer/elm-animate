@@ -74,14 +74,14 @@ moveToPosition2 =
 
 moveLeft : Builder.AnimBuilder -> Builder.AnimBuilder
 moveLeft =
-    moveToX 0 BounceOut
+    moveToX 0 (BounceOutCustom 0.9)
 
 
 {-| Move to the right edge (X=450) with bounce effect
 -}
 moveRight : Builder.AnimBuilder -> Builder.AnimBuilder
 moveRight =
-    moveToX 450 BounceOut
+    moveToX 450 (BounceOutCustom 0.5)
 
 
 {-| Move to the top edge (Y=0) with ease out
