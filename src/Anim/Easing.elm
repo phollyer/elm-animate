@@ -17,6 +17,12 @@ accurate easing curves for keyframe animations.
 
 
 {-| Easing functions for animations.
+
+Custom Bounce Easings:
+
+  - `BounceOutCustom strength`: Simple bounce with strength 0.0-1.0 (0.2 = soft, 0.8 = hard)
+  - `BounceOutAdvanced { bounces, amplitude, decay }`: Full control over bounce behavior
+
 -}
 type Easing
     = Bezier Float Float Float Float
@@ -27,6 +33,12 @@ type Easing
     | BounceIn
     | BounceOut
     | BounceInOut
+    | BounceInCustom Float
+    | BounceOutCustom Float
+    | BounceInOutCustom Float
+    | BounceInAdvanced { bounces : Int, amplitude : Float, decay : Float }
+    | BounceOutAdvanced { bounces : Int, amplitude : Float, decay : Float }
+    | BounceInOutAdvanced { bounces : Int, amplitude : Float, decay : Float }
     | CircIn
     | CircOut
     | CircInOut

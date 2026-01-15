@@ -1261,6 +1261,24 @@ isComplexEasing easing_ =
         BounceInOut ->
             True
 
+        BounceInCustom _ ->
+            True
+
+        BounceOutCustom _ ->
+            True
+
+        BounceInOutCustom _ ->
+            True
+
+        BounceInAdvanced _ ->
+            True
+
+        BounceOutAdvanced _ ->
+            True
+
+        BounceInOutAdvanced _ ->
+            True
+
         _ ->
             False
 

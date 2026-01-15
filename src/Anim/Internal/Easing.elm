@@ -138,6 +138,24 @@ easingToCSS easing =
         BounceInOut ->
             "cubic-bezier(0.445, 0.050, 0.550, 0.950)"
 
+        BounceInCustom _ ->
+            "linear"
+
+        BounceOutCustom _ ->
+            "linear"
+
+        BounceInOutCustom _ ->
+            "linear"
+
+        BounceInAdvanced _ ->
+            "linear"
+
+        BounceOutAdvanced _ ->
+            "linear"
+
+        BounceInOutAdvanced _ ->
+            "linear"
+
         Custom value ->
             value
 
@@ -261,6 +279,24 @@ toWebAnimations easing =
         BounceInOut ->
             "linear"
 
+        BounceInCustom _ ->
+            "linear"
+
+        BounceOutCustom _ ->
+            "linear"
+
+        BounceInOutCustom _ ->
+            "linear"
+
+        BounceInAdvanced _ ->
+            "linear"
+
+        BounceOutAdvanced _ ->
+            "linear"
+
+        BounceInOutAdvanced _ ->
+            "linear"
+
         Custom value ->
             value
 
@@ -376,9 +412,161 @@ toFunction easing =
         BounceInOut ->
             E.inOutBounce
 
+        BounceInCustom strength ->
+            customBounceIn strength
+
+        BounceOutCustom strength ->
+            customBounceOut strength
+
+        BounceInOutCustom strength ->
+            customBounceInOut strength
+
+        BounceInAdvanced params ->
+            advancedBounceIn params
+
+        BounceOutAdvanced params ->
+            advancedBounceOut params
+
+        BounceInOutAdvanced params ->
+            advancedBounceInOut params
+
         Custom _ ->
             -- TODO: Handle custom easing functions properly
             E.inOutQuad
+
+
+{-| Custom bounce easing with simple strength parameter (0.0-1.0).
+Strength controls bounce intensity: 0.2 = soft, 0.5 = medium, 0.8 = hard.
+-}
+customBounceOut : Float -> Float -> Float
+customBounceOut strength t =
+    let
+        -- Convert strength to bounce parameters
+        -- Clamp strength between 0.1 and 1.0
+        clampedStrength =
+            clamp 0.1 1.0 strength
+
+        -- More strength = more bounces and higher amplitude
+        bounces =
+            2 + round (clampedStrength * 2)
+
+        amplitude =
+            0.3 + (clampedStrength * 0.5)
+
+        decay =
+            0.5 + (clampedStrength * 0.3)
+    in
+    advancedBounceOutHelper bounces amplitude decay t
+
+
+customBounceIn : Float -> Float -> Float
+customBounceIn strength t =
+    1.0 - customBounceOut strength (1.0 - t)
+
+
+customBounceInOut : Float -> Float -> Float
+customBounceInOut strength t =
+    if t < 0.5 then
+        customBounceIn strength (t * 2) * 0.5
+
+    else
+        0.5 + customBounceOut strength ((t - 0.5) * 2) * 0.5
+
+
+{-| Advanced bounce easing with full parameter control.
+-}
+advancedBounceOut : { bounces : Int, amplitude : Float, decay : Float } -> Float -> Float
+advancedBounceOut params t =
+    advancedBounceOutHelper params.bounces params.amplitude params.decay t
+
+
+advancedBounceIn : { bounces : Int, amplitude : Float, decay : Float } -> Float -> Float
+advancedBounceIn params t =
+    1.0 - advancedBounceOut params (1.0 - t)
+
+
+advancedBounceInOut : { bounces : Int, amplitude : Float, decay : Float } -> Float -> Float
+advancedBounceInOut params t =
+    if t < 0.5 then
+        advancedBounceIn params (t * 2) * 0.5
+
+    else
+        0.5 + advancedBounceOut params ((t - 0.5) * 2) * 0.5
+
+
+{-| Helper function to calculate bounce with given parameters.
+The element reaches the endpoint (1.0) before each bounce, then bounces back.
+-}
+advancedBounceOutHelper : Int -> Float -> Float -> Float -> Float
+advancedBounceOutHelper bounceCount amplitude decay t =
+    let
+        -- Ensure at least 1 bounce
+        clampedBounces =
+            max 1 bounceCount
+
+        -- Clamp amplitude and decay to reasonable ranges
+        clampedAmplitude =
+            clamp 0.1 1.0 amplitude
+
+        clampedDecay =
+            clamp 0.1 0.9 decay
+
+        -- Quick approach phase
+        approachPhase =
+            0.15
+    in
+    if t <= approachPhase then
+        -- Initial approach to endpoint using easeOut curve
+        let
+            normalizedT =
+                t / approachPhase
+
+            -- CubicOut easing for smooth approach that reaches 1.0
+            progress =
+                let
+                    p =
+                        1.0 - normalizedT
+                in
+                1.0 - (p * p * p)
+        in
+        progress
+
+    else
+        -- Bouncing phase: ALWAYS at 1.0 at bounce boundaries
+        let
+            -- Time within bounce phase (0.0 to 1.0)
+            bounceT =
+                (t - approachPhase) / (1.0 - approachPhase)
+
+            -- Calculate which bounce we're in
+            bounceProgress =
+                bounceT * toFloat clampedBounces
+
+            currentBounce =
+                floor bounceProgress
+
+            -- Progress within current bounce (0.0 to 1.0)
+            -- At 0.0 and 1.0, we should be at rest (displacement = 0)
+            localT =
+                bounceProgress - toFloat currentBounce
+
+            -- Amplitude for this bounce (decreases exponentially)
+            currentAmplitude =
+                if currentBounce < clampedBounces then
+                    clampedAmplitude * (clampedDecay ^ toFloat currentBounce)
+
+                else
+                    0.0
+
+            -- Use sine wave for smooth bounce that starts and ends at 0
+            -- sin(0) = 0, sin(π) = 0
+            -- This ensures we're EXACTLY at 1.0 at the start and end of each bounce
+            bounceDisplacement =
+                currentAmplitude * sin (localT * pi)
+        in
+        -- Always 1.0 minus the downward displacement
+        -- At localT = 0 or 1, displacement = 0, so result = 1.0
+        1.0 - bounceDisplacement
 
 
 {-| Generate keyframe progress values for complex easings.
@@ -390,17 +578,147 @@ generateKeyframes easing =
     let
         keyframeCount =
             30
-
-        easingFunction =
-            toFunction easing
-
-        -- Generate linear progress values from 0.0 to 1.0
-        linearProgress i =
-            toFloat i / toFloat (keyframeCount - 1)
-
-        -- Apply easing function to each linear progress value
-        keyframeValues =
-            List.range 0 (keyframeCount - 1)
-                |> List.map (\i -> easingFunction (linearProgress i))
     in
-    keyframeValues
+    case easing of
+        -- Custom bounce easings get special treatment to ensure they hit 1.0 at bounce boundaries
+        BounceOutCustom strength ->
+            generateBounceKeyframes strength 3 0.8 0.5
+
+        BounceInCustom strength ->
+            generateBounceKeyframes strength 3 0.8 0.5
+                |> List.reverse
+                |> List.map (\v -> 1.0 - v)
+
+        BounceInOutCustom strength ->
+            let
+                half =
+                    generateBounceKeyframes strength 2 0.8 0.5
+                        |> List.take 15
+
+                secondHalf =
+                    List.reverse half
+                        |> List.map (\v -> 1.0 - v)
+            in
+            half ++ secondHalf
+
+        BounceOutAdvanced params ->
+            generateBounceKeyframes 1.0 params.bounces params.amplitude params.decay
+
+        BounceInAdvanced params ->
+            generateBounceKeyframes 1.0 params.bounces params.amplitude params.decay
+                |> List.reverse
+                |> List.map (\v -> 1.0 - v)
+
+        BounceInOutAdvanced params ->
+            let
+                half =
+                    generateBounceKeyframes 1.0 params.bounces params.amplitude params.decay
+                        |> List.take 15
+
+                secondHalf =
+                    List.reverse half
+                        |> List.map (\v -> 1.0 - v)
+            in
+            half ++ secondHalf
+
+        _ ->
+            -- Standard approach: sample the easing function
+            let
+                easingFunction =
+                    toFunction easing
+
+                linearProgress i =
+                    toFloat i / toFloat (keyframeCount - 1)
+
+                keyframeValues =
+                    List.range 0 (keyframeCount - 1)
+                        |> List.map (\i -> easingFunction (linearProgress i))
+
+                _ =
+                    case easing of
+                        BounceOut ->
+                            Debug.log "BounceOut keyframes" keyframeValues
+
+                        _ ->
+                            keyframeValues
+            in
+            keyframeValues
+
+
+{-| Generate keyframes for bounce effect with explicit 1.0 values at bounce boundaries.
+This ensures the element visibly reaches the endpoint between bounces.
+The number of keyframes varies to ensure clean bounce boundaries.
+-}
+generateBounceKeyframes : Float -> Int -> Float -> Float -> List Float
+generateBounceKeyframes strength bounces amplitude decay =
+    let
+        -- Clamp parameters
+        clampedBounces =
+            max 1 bounces
+
+        clampedAmplitude =
+            clamp 0.1 1.0 amplitude
+
+        clampedDecay =
+            clamp 0.1 0.9 decay
+
+        -- Phase 1: Approach (first 5 keyframes)
+        approachFrames =
+            5
+
+        -- Phase 2: Each bounce gets 8 keyframes for smooth motion
+        -- This ensures we have enough resolution and clean boundaries
+        framesPerBounce =
+            8
+
+        -- Generate approach keyframes using cubic-out
+        approach =
+            List.range 0 (approachFrames - 1)
+                |> List.map
+                    (\i ->
+                        let
+                            t =
+                                toFloat i / toFloat (approachFrames - 1)
+
+                            p =
+                                1.0 - t
+                        in
+                        1.0 - (p * p * p)
+                    )
+
+        -- Generate bounce keyframes
+        -- Each bounce cycle: starts at 1.0, dips down, ends at 1.0
+        bounces_ =
+            List.range 0 (clampedBounces - 1)
+                |> List.concatMap
+                    (\bounceIndex ->
+                        let
+                            currentAmplitude =
+                                clampedAmplitude * (clampedDecay ^ toFloat bounceIndex)
+
+                            -- Generate frames for this bounce
+                            -- Start at 1.0, use sine wave for smooth dip, end at 1.0
+                            bounceFrames =
+                                List.range 0 framesPerBounce
+                                    |> List.map
+                                        (\frameIndex ->
+                                            if frameIndex == 0 || frameIndex == framesPerBounce then
+                                                -- Explicitly 1.0 at start and end of bounce
+                                                1.0
+
+                                            else
+                                                -- Sine wave for smooth bounce motion
+                                                let
+                                                    localT =
+                                                        toFloat frameIndex / toFloat framesPerBounce
+
+                                                    displacement =
+                                                        currentAmplitude * sin (localT * pi)
+                                                in
+                                                1.0 - displacement
+                                        )
+                        in
+                        bounceFrames
+                    )
+    in
+    approach ++ bounces_
