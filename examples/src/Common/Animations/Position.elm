@@ -1,9 +1,11 @@
 module Common.Animations.Position exposing
-    ( moveDown
+    ( elementId
+    , init
+    , moveDown
     , moveLeft
     , moveRight
-    , moveToXY
-    , moveToY
+    , moveToPosition1
+    , moveToPosition2
     , moveUp
     , returnToOrigin
     )
@@ -18,86 +20,86 @@ animation logic works identically across all engines!
 
 -}
 
-import Anim.Easing as Easing exposing (Easing)
+import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Property.Position as Position
 
 
-{-| Move to a specific X,Y position with smooth easing
--}
-moveToXY : String -> Float -> Float -> Builder.AnimBuilder -> Builder.AnimBuilder
-moveToXY elementId x y builder =
-    builder
-        |> Position.for elementId
-        |> Position.toXY x y
-        |> Position.speed 200.0
-        |> Position.easing (Easing.Bezier 0.3 0 0.7 0)
-        |> Position.build
+elementId : String
+elementId =
+    "box"
 
 
-moveToY : String -> Float -> Easing -> Float -> Builder.AnimBuilder -> Builder.AnimBuilder
-moveToY elementId speed easing y builder =
-    builder
-        |> Position.for elementId
-        |> Position.toY y
-        |> Position.speed speed
-        |> Position.easing easing
-        |> Position.build
+init : Builder.AnimBuilder -> Builder.AnimBuilder
+init =
+    Position.initXY elementId 0 0
 
 
-moveLeft : String -> Builder.AnimBuilder -> Builder.AnimBuilder
-moveLeft elementId builder =
-    builder
-        |> Position.for elementId
-        |> Position.toX 0
-        |> Position.duration 1000
-        |> Position.easing Easing.BounceOut
-        |> Position.build
+moveToXY : Float -> Float -> Easing -> Builder.AnimBuilder -> Builder.AnimBuilder
+moveToXY x y easing =
+    Position.for elementId
+        >> Position.toXY x y
+        >> Position.speed 100
+        >> Position.easing easing
+        >> Position.build
+
+
+moveToX : Float -> Easing -> Builder.AnimBuilder -> Builder.AnimBuilder
+moveToX x easing =
+    Position.for elementId
+        >> Position.toX x
+        >> Position.speed 100
+        >> Position.easing easing
+        >> Position.build
+
+
+moveToY : Float -> Easing -> Builder.AnimBuilder -> Builder.AnimBuilder
+moveToY y easing =
+    Position.for elementId
+        >> Position.toY y
+        >> Position.speed 100
+        >> Position.easing easing
+        >> Position.build
+
+
+moveToPosition1 : Builder.AnimBuilder -> Builder.AnimBuilder
+moveToPosition1 =
+    moveToXY 100 100 ElasticOut
+
+
+moveToPosition2 : Builder.AnimBuilder -> Builder.AnimBuilder
+moveToPosition2 =
+    moveToXY 300 200 ElasticOut
+
+
+moveLeft : Builder.AnimBuilder -> Builder.AnimBuilder
+moveLeft =
+    moveToX 0 BounceOut
 
 
 {-| Move to the right edge (X=450) with bounce effect
 -}
-moveRight : String -> Builder.AnimBuilder -> Builder.AnimBuilder
-moveRight elementId builder =
-    builder
-        |> Position.for elementId
-        |> Position.toX 450
-        |> Position.duration 1000
-        |> Position.easing Easing.BounceIn
-        |> Position.build
+moveRight : Builder.AnimBuilder -> Builder.AnimBuilder
+moveRight =
+    moveToX 450 BounceOut
 
 
 {-| Move to the top edge (Y=0) with ease out
 -}
-moveUp : String -> Builder.AnimBuilder -> Builder.AnimBuilder
-moveUp elementId builder =
-    builder
-        |> Position.for elementId
-        |> Position.toY 0
-        |> Position.duration 800
-        |> Position.easing Easing.EaseOut
-        |> Position.build
+moveUp : Builder.AnimBuilder -> Builder.AnimBuilder
+moveUp =
+    moveToY 0 ElasticIn
 
 
 {-| Move to the bottom edge (Y=300) with ease in
 -}
-moveDown : String -> Builder.AnimBuilder -> Builder.AnimBuilder
-moveDown elementId builder =
-    builder
-        |> Position.for elementId
-        |> Position.toY 300
-        |> Position.duration 800
-        |> Position.easing Easing.EaseIn
-        |> Position.build
+moveDown : Builder.AnimBuilder -> Builder.AnimBuilder
+moveDown =
+    moveToY 350 ElasticOut
 
 
 {-| Return to origin (0, 0) with smooth easing
 -}
-returnToOrigin : String -> Builder.AnimBuilder -> Builder.AnimBuilder
-returnToOrigin elementId builder =
-    builder
-        |> Position.for elementId
-        |> Position.toXY 0 0
-        |> Position.duration 600
-        |> Position.easing Easing.EaseInOut
-        |> Position.build
+returnToOrigin : Builder.AnimBuilder -> Builder.AnimBuilder
+returnToOrigin =
+    moveToXY 0 0 BounceInOut
