@@ -716,7 +716,8 @@ generateBounceKeyframes bounces amplitude decay =
         framesPerBounce =
             8
 
-        -- Generate approach keyframes using cubic-out
+        -- Generate approach keyframes using cubic-in for acceleration
+        -- Starts slow, speeds up dramatically towards endpoint
         approach =
             List.range 0 (approachFrames - 1)
                 |> List.map
@@ -725,10 +726,11 @@ generateBounceKeyframes bounces amplitude decay =
                             t =
                                 toFloat i / toFloat (approachFrames - 1)
 
-                            p =
-                                1.0 - t
+                            -- CubicIn: starts slow, accelerates
+                            progress =
+                                t * t * t
                         in
-                        1.0 - (p * p * p)
+                        progress
                     )
 
         -- Generate bounce keyframes
