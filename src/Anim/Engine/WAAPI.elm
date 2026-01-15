@@ -830,7 +830,6 @@ Each animated property is wrapped in `Maybe` to distinguish between:
 type alias PropertyData =
     { elementId : String
     , isAnimating : Bool
-    , propertyVersions : Dict String Int
     , backgroundColor : Maybe String
     , color : Maybe String -- Font color
     , opacity : Maybe Float
@@ -1033,7 +1032,6 @@ decodePropertyData payload =
         (Decode.succeed PropertyData
             |> andMap (Decode.field "elementId" Decode.string)
             |> andMap (Decode.oneOf [ Decode.field "isAnimating" Decode.bool, Decode.succeed True ])
-            |> andMap (Decode.oneOf [ Decode.field "propertyVersions" (Decode.dict Decode.int), Decode.succeed Dict.empty ])
             |> andMap (Decode.maybe (Decode.field "backgroundColor" Decode.string))
             -- Font color
             |> andMap (Decode.maybe (Decode.field "color" Decode.string))
@@ -1093,7 +1091,6 @@ encodePropertyData data =
     Encode.object
         ([ ( "elementId", Encode.string data.elementId )
          , ( "isAnimating", Encode.bool data.isAnimating )
-         , ( "propertyVersions", Encode.dict identity Encode.int data.propertyVersions )
          ]
             ++ optionalFields
         )
