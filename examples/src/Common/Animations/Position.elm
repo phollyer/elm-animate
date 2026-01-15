@@ -57,7 +57,7 @@ moveToY : Float -> Easing -> Builder.AnimBuilder -> Builder.AnimBuilder
 moveToY y easing =
     Position.for elementId
         >> Position.toY y
-        >> Position.speed 100
+        >> Position.speed 50
         >> Position.easing easing
         >> Position.build
 
@@ -88,14 +88,14 @@ moveRight =
 -}
 moveUp : Builder.AnimBuilder -> Builder.AnimBuilder
 moveUp =
-    moveToY 0 (BounceInCustom 0.5)
+    moveToY 0 (BounceInCustom 0.1)
 
 
 {-| Move to the bottom edge (Y=300) with ease in
 -}
 moveDown : Builder.AnimBuilder -> Builder.AnimBuilder
 moveDown =
-    moveToY 350 (BounceOutCustom 0.5)
+    moveToY 350 (BounceOutCustom 0.1)
 
 
 {-| Return to origin (0, 0) with smooth easing

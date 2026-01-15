@@ -735,63 +735,86 @@ generateBounceKeyframes bounces amplitude decay =
 
         -- Generate bounce keyframes
         -- Each bounce cycle: starts at 1.0, dips down, ends at 1.0
-        bounces_ =
+        -- Physics-based: higher bounces get more time (proportional to sqrt of height)
+        -- Calculate amplitude for each bounce first
+        bounceAmplitudes =
             List.range 0 (clampedBounces - 1)
-                |> List.concatMap
-                    (\bounceIndex ->
+                |> List.map (\i -> clampedAmplitude * (clampedDecay ^ toFloat i))
+
+        -- Ensure last bounce is at least a minimum size
+        minLastBounce =
+            0.15
+
+        adjustedAmplitudes =
+            case List.reverse bounceAmplitudes of
+                [] ->
+                    []
+
+                lastAmp :: rest ->
+                    if lastAmp < minLastBounce then
                         let
-                            currentAmplitude =
-                                clampedAmplitude * (clampedDecay ^ toFloat bounceIndex)
-
-                            -- Generate frames for this bounce
-                            -- Quadratic easing for more speed variation: very fast at endpoints, slow at peak
-                            bounceFrames =
-                                List.range 0 framesPerBounce
-                                    |> List.map
-                                        (\frameIndex ->
-                                            if frameIndex == 0 && bounceIndex > 0 then
-                                                -- Explicitly 1.0 at start of bounce (except first bounce, approach already ends at 1.0)
-                                                1.0
-
-                                            else if frameIndex == 0 && bounceIndex == 0 then
-                                                -- Skip starting 1.0 for first bounce to avoid duplicate with approach phase
-                                                -999.0
-
-                                            else if frameIndex == framesPerBounce && bounceIndex == clampedBounces - 1 then
-                                                -- Only add ending 1.0 for the LAST bounce
-                                                1.0
-
-                                            else if frameIndex == framesPerBounce then
-                                                -- Skip the ending frame for non-final bounces to avoid duplicates
-                                                -- The next bounce will provide the 1.0 at its start
-                                                -999.0
-
-                                            else
-                                                -- Use quadratic easing for more pronounced speed variation
-                                                -- Element speeds up dramatically near endpoints
-                                                let
-                                                    localT =
-                                                        toFloat frameIndex / toFloat framesPerBounce
-
-                                                    -- Map to range -1 to 1 (centered at 0)
-                                                    centered =
-                                                        (localT - 0.5) * 2
-
-                                                    -- Quadratic curve: 1 - t^2
-                                                    -- At t=0: value=1 (max displacement)
-                                                    -- At t=±1: value=0 (at endpoint, no displacement)
-                                                    -- This creates faster motion near endpoints
-                                                    easedProgress =
-                                                        1.0 - (centered * centered)
-
-                                                    displacement =
-                                                        currentAmplitude * easedProgress
-                                                in
-                                                1.0 - displacement
-                                        )
-                                    |> List.filter (\v -> v /= -999.0)
+                            scale =
+                                minLastBounce / lastAmp
                         in
-                        bounceFrames
-                    )
+                        List.map (\a -> a * scale) bounceAmplitudes
+
+                    else
+                        bounceAmplitudes
+
+        -- Time for each bounce proportional to sqrt(amplitude) - like gravity
+        totalBounceTime =
+            List.map sqrt adjustedAmplitudes |> List.sum
+
+        totalBounceFrames =
+            30
+
+        bounces_ =
+            List.indexedMap
+                (\bounceIndex bounceAmplitude ->
+                    let
+                        bounceTime =
+                            sqrt bounceAmplitude
+
+                        framesForThisBounce =
+                            max 6 (round (bounceTime / totalBounceTime * toFloat totalBounceFrames))
+
+                        bounceFrames =
+                            List.range 0 framesForThisBounce
+                                |> List.map
+                                    (\frameIndex ->
+                                        if frameIndex == 0 && bounceIndex > 0 then
+                                            1.0
+
+                                        else if frameIndex == 0 && bounceIndex == 0 then
+                                            -999.0
+
+                                        else if frameIndex == framesForThisBounce && bounceIndex == clampedBounces - 1 then
+                                            1.0
+
+                                        else if frameIndex == framesForThisBounce then
+                                            -999.0
+
+                                        else
+                                            let
+                                                localT =
+                                                    toFloat frameIndex / toFloat framesForThisBounce
+
+                                                centered =
+                                                    (localT - 0.5) * 2
+
+                                                easedProgress =
+                                                    1.0 - (centered * centered)
+
+                                                displacement =
+                                                    bounceAmplitude * easedProgress
+                                            in
+                                            1.0 - displacement
+                                    )
+                                |> List.filter (\v -> v /= -999.0)
+                    in
+                    bounceFrames
+                )
+                adjustedAmplitudes
+                |> List.concat
     in
     approach ++ bounces_
