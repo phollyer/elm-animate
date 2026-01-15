@@ -45,10 +45,15 @@ port waapiEvent : (Encode.Value -> msg) -> Sub msg
 -- MODEL
 
 
+type AnimationStatus
+    = Idle
+    | Running
+    | Paused
+
+
 type alias Model =
     { animationState : WAAPI.AnimState
-    , isAnimating : Bool
-    , isPaused : Bool
+    , status : AnimationStatus
     , window : { width : Int, height : Int }
     , animationAreaSize : { width : Int, height : Int }
     }
@@ -83,8 +88,7 @@ init { window } =
                 ControlsAnim.init animationAreaWidth
     in
     ( { animationState = initialAnimState
-      , isAnimating = False
-      , isPaused = False
+      , status = Idle
       , window = window
       , animationAreaSize =
             { width = animationAreaWidth
@@ -150,13 +154,14 @@ update msg model =
 
         Resume ->
             -- Only resume if animation is actually paused
-            if model.isPaused then
-                ( model
-                , WAAPI.resume elementId waapiCommand
-                )
+            case model.status of
+                Paused ->
+                    ( model
+                    , WAAPI.resume elementId waapiCommand
+                    )
 
-            else
-                ( model, Cmd.none )
+                _ ->
+                    ( model, Cmd.none )
 
         Reset ->
             let
@@ -181,22 +186,22 @@ handleAnimationUpdate : WAAPI.AnimationStatus -> Model -> ( Model, Cmd Msg )
 handleAnimationUpdate status model =
     case status of
         WAAPI.Started ->
-            ( { model | isAnimating = True, isPaused = False }, Cmd.none )
+            ( { model | status = Running }, Cmd.none )
 
         WAAPI.Restarted ->
-            ( { model | isAnimating = True, isPaused = False }, Cmd.none )
+            ( { model | status = Running }, Cmd.none )
 
         WAAPI.Canceled ->
-            ( { model | isAnimating = False, isPaused = False }, Cmd.none )
+            ( { model | status = Idle }, Cmd.none )
 
         WAAPI.Completed ->
-            ( { model | isAnimating = False, isPaused = False }, Cmd.none )
+            ( { model | status = Idle }, Cmd.none )
 
         WAAPI.Paused ->
-            ( { model | isPaused = True, isAnimating = True }, Cmd.none )
+            ( { model | status = Paused }, Cmd.none )
 
         WAAPI.Resumed ->
-            ( { model | isPaused = False, isAnimating = True }, Cmd.none )
+            ( { model | status = Running }, Cmd.none )
 
 
 
@@ -303,27 +308,29 @@ viewContent model =
         [ el
             [ Font.size 14
             , Font.color
-                (if model.isPaused then
-                    Colors.warning
+                (case model.status of
+                    Paused ->
+                        Colors.warning
 
-                 else if model.isAnimating then
-                    Colors.primary
+                    Running ->
+                        Colors.primary
 
-                 else
-                    Colors.success
+                    Idle ->
+                        Colors.success
                 )
             , centerX
             , Font.medium
             ]
             (text
-                (if model.isPaused then
-                    "⏸️ Paused"
+                (case model.status of
+                    Paused ->
+                        "⏸️ Paused"
 
-                 else if model.isAnimating then
-                    "🎬 Animating..."
+                    Running ->
+                        "🎬 Animating..."
 
-                 else
-                    "✅ Idle"
+                    Idle ->
+                        "✅ Idle"
                 )
             )
         ]

@@ -122,6 +122,7 @@ window.ElmAnimateWAAPI = (function () {
 
         // Process each property independently
         elementConfig.properties.forEach(property => {
+            console.log(`ElmAnimateWAAPI: Processing property for element "${elementId}"`, property);
             const propType = property.type;
             const newVersion = property.version || 1;
 
@@ -753,20 +754,28 @@ window.ElmAnimateWAAPI = (function () {
 
                     const propertyData = {
                         elementId: elementId,
-                        positionX: transformState.x,
-                        positionY: transformState.y,
-                        positionZ: transformState.z,
+                        position: {
+                            x: transformState.x,
+                            y: transformState.y,
+                            z: transformState.z
+                        },
                         opacity: parseFloat(computedStyle.opacity),
-                        rotationX: transformState.rotationX,
-                        rotationY: transformState.rotationY,
-                        rotationZ: transformState.rotationZ,
-                        scaleX: transformState.scaleX,
-                        scaleY: transformState.scaleY,
-                        scaleZ: transformState.scaleZ,
+                        rotation: {
+                            x: transformState.rotationX,
+                            y: transformState.rotationY,
+                            z: transformState.rotationZ
+                        },
+                        scale: {
+                            x: transformState.scaleX,
+                            y: transformState.scaleY,
+                            z: transformState.scaleZ
+                        },
                         backgroundColor: computedStyle.backgroundColor,
                         color: computedStyle.color,
-                        width: parseFloat(computedStyle.width),
-                        height: parseFloat(computedStyle.height),
+                        size: {
+                            width: parseFloat(computedStyle.width),
+                            height: parseFloat(computedStyle.height)
+                        },
                         isAnimating: true,
                         propertyVersions: propertyVersions
                     };
@@ -822,20 +831,28 @@ window.ElmAnimateWAAPI = (function () {
 
                 const finalPropertyData = {
                     elementId: elementId,
-                    positionX: finalState.x,
-                    positionY: finalState.y,
-                    positionZ: finalState.z,
+                    position: {
+                        x: finalState.x,
+                        y: finalState.y,
+                        z: finalState.z
+                    },
                     opacity: parseFloat(computedStyle.opacity),
-                    rotationX: finalState.rotationX,
-                    rotationY: finalState.rotationY,
-                    rotationZ: finalState.rotationZ,
-                    scaleX: finalState.scaleX,
-                    scaleY: finalState.scaleY,
-                    scaleZ: finalState.scaleZ,
+                    rotation: {
+                        x: finalState.rotationX,
+                        y: finalState.rotationY,
+                        z: finalState.rotationZ
+                    },
+                    scale: {
+                        x: finalState.scaleX,
+                        y: finalState.scaleY,
+                        z: finalState.scaleZ
+                    },
                     backgroundColor: computedStyle.backgroundColor,
                     color: computedStyle.color,
-                    width: parseFloat(computedStyle.width),
-                    height: parseFloat(computedStyle.height),
+                    size: {
+                        width: parseFloat(computedStyle.width),
+                        height: parseFloat(computedStyle.height)
+                    },
                     isAnimating: false,
                     propertyVersions: propertyVersions
                 };
@@ -876,20 +893,28 @@ window.ElmAnimateWAAPI = (function () {
 
                 const currentPropertyData = {
                     elementId: elementId,
-                    positionX: currentState.x,
-                    positionY: currentState.y,
-                    positionZ: currentState.z,
+                    position: {
+                        x: currentState.x,
+                        y: currentState.y,
+                        z: currentState.z
+                    },
                     opacity: parseFloat(computedStyle.opacity),
-                    rotationX: currentState.rotationX,
-                    rotationY: currentState.rotationY,
-                    rotationZ: currentState.rotationZ,
-                    scaleX: currentState.scaleX,
-                    scaleY: currentState.scaleY,
-                    scaleZ: currentState.scaleZ,
+                    rotation: {
+                        x: currentState.rotationX,
+                        y: currentState.rotationY,
+                        z: currentState.rotationZ
+                    },
+                    scale: {
+                        x: currentState.scaleX,
+                        y: currentState.scaleY,
+                        z: currentState.scaleZ
+                    },
                     backgroundColor: computedStyle.backgroundColor,
                     color: computedStyle.color,
-                    width: parseFloat(computedStyle.width),
-                    height: parseFloat(computedStyle.height),
+                    size: {
+                        width: parseFloat(computedStyle.width),
+                        height: parseFloat(computedStyle.height)
+                    },
                     isAnimating: false,
                     propertyVersions: propertyVersions
                 };

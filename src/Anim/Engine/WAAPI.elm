@@ -1,7 +1,7 @@
 module Anim.Engine.WAAPI exposing
     ( AnimState, init, AnimBuilder, builder
     , animate, fireAndForget
-    , PropertyData, AnimationStatus(..), EventType(..), decode
+    , XYZ, PropertyData, AnimationStatus(..), EventType(..), decode
     , stop, reset, restart, pause, resume
     , duration, speed
     , easing
@@ -57,7 +57,7 @@ Updates are throttled to approximately 60 FPS (~16ms intervals) regardless of di
 This balances real-time feedback with performance, preventing message flooding on high-refresh-rate
 displays (120Hz, 144Hz, etc.) while maintaining smooth visual feedback.
 
-@docs PropertyData, AnimationStatus, EventType, decode
+@docs XYZ, PropertyData, AnimationStatus, EventType, decode
 
 
 # Control Running Animations
@@ -152,6 +152,7 @@ import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
+import Anim.Internal.Properties.ScrollTarget exposing (Axis(..))
 import Anim.Internal.Properties.Size as Size
 import Anim.Internal.WAAPI as InternalWAAPI
 import Browser exposing (UrlRequest(..))
@@ -812,26 +813,31 @@ type AnimationStatus
     | Restarted
 
 
+{-| 3D coordinate type.
+-}
+type alias XYZ =
+    { x : Float, y : Float, z : Float }
+
+
 {-| Property data received from JavaScript during animations.
+
+Each animated property is wrapped in `Maybe` to distinguish between:
+
+  - `Nothing`: Property is not being animated
+  - `Just value`: Property is being animated with current value
+
 -}
 type alias PropertyData =
     { elementId : String
-    , positionX : Float
-    , positionY : Float
-    , positionZ : Float
-    , opacity : Float
-    , rotationX : Float
-    , rotationY : Float
-    , rotationZ : Float
-    , scaleX : Float
-    , scaleY : Float
-    , scaleZ : Float
-    , backgroundColor : String
-    , color : String
-    , width : Float
-    , height : Float
     , isAnimating : Bool
     , propertyVersions : Dict String Int
+    , backgroundColor : Maybe String
+    , color : Maybe String -- Font color
+    , opacity : Maybe Float
+    , position : Maybe XYZ
+    , rotation : Maybe XYZ
+    , scale : Maybe XYZ
+    , size : Maybe { width : Float, height : Float }
     }
 
 
@@ -1005,78 +1011,99 @@ decodeAnimationStatus payload =
             Err (Decode.errorToString error)
 
 
+xyzDecoder : Decode.Decoder XYZ
+xyzDecoder =
+    Decode.map3 (\x y z -> { x = x, y = y, z = z })
+        (Decode.field "x" Decode.float)
+        (Decode.field "y" Decode.float)
+        (Decode.field "z" Decode.float)
+
+
 {-| Decode property data from JavaScript payload.
 -}
 decodePropertyData : Encode.Value -> Result String PropertyData
 decodePropertyData payload =
+    let
+        sizeDecoder =
+            Decode.map2 (\w h -> { width = w, height = h })
+                (Decode.field "width" Decode.float)
+                (Decode.field "height" Decode.float)
+    in
     Decode.decodeValue
         (Decode.succeed PropertyData
             |> andMap (Decode.field "elementId" Decode.string)
-            |> andMap
-                (Decode.oneOf
-                    [ Decode.field "positionX" Decode.float
-                    , Decode.field "x" Decode.float
-                    , Decode.succeed 0.0
-                    ]
-                )
-            |> andMap
-                (Decode.oneOf
-                    [ Decode.field "positionY" Decode.float
-                    , Decode.field "y" Decode.float
-                    , Decode.succeed 0.0
-                    ]
-                )
-            |> andMap
-                (Decode.oneOf
-                    [ Decode.field "positionZ" Decode.float
-                    , Decode.field "z" Decode.float
-                    , Decode.succeed 0.0
-                    ]
-                )
-            |> andMap (Decode.oneOf [ Decode.field "opacity" Decode.float, Decode.succeed 1.0 ])
-            |> andMap (Decode.oneOf [ Decode.field "rotationX" Decode.float, Decode.succeed 0.0 ])
-            |> andMap (Decode.oneOf [ Decode.field "rotationY" Decode.float, Decode.succeed 0.0 ])
-            |> andMap (Decode.oneOf [ Decode.field "rotationZ" Decode.float, Decode.succeed 0.0 ])
-            |> andMap (Decode.oneOf [ Decode.field "scaleX" Decode.float, Decode.succeed 1.0 ])
-            |> andMap (Decode.oneOf [ Decode.field "scaleY" Decode.float, Decode.succeed 1.0 ])
-            |> andMap (Decode.oneOf [ Decode.field "scaleZ" Decode.float, Decode.succeed 1.0 ])
-            |> andMap (Decode.oneOf [ Decode.field "backgroundColor" Decode.string, Decode.succeed "transparent" ])
-            |> andMap (Decode.oneOf [ Decode.field "color" Decode.string, Decode.succeed "black" ])
-            |> andMap (Decode.oneOf [ Decode.field "width" Decode.float, Decode.succeed 0.0 ])
-            |> andMap (Decode.oneOf [ Decode.field "height" Decode.float, Decode.succeed 0.0 ])
             |> andMap (Decode.oneOf [ Decode.field "isAnimating" Decode.bool, Decode.succeed True ])
             |> andMap (Decode.oneOf [ Decode.field "propertyVersions" (Decode.dict Decode.int), Decode.succeed Dict.empty ])
+            |> andMap (Decode.maybe (Decode.field "backgroundColor" Decode.string))
+            -- Font color
+            |> andMap (Decode.maybe (Decode.field "color" Decode.string))
+            |> andMap (Decode.maybe (Decode.field "opacity" Decode.float))
+            |> andMap (Decode.maybe (Decode.field "position" xyzDecoder))
+            |> andMap (Decode.maybe (Decode.field "rotation" xyzDecoder))
+            |> andMap (Decode.maybe (Decode.field "scale" xyzDecoder))
+            |> andMap (Decode.maybe (Decode.field "size" sizeDecoder))
         )
         payload
         |> Result.mapError Decode.errorToString
 
 
-{-| Encode PropertyData back to JSON for internal use with update function.
--}
-encodePropertyData : PropertyData -> Encode.Value
-encodePropertyData data =
+encodeXYZ : XYZ -> Encode.Value
+encodeXYZ { x, y, z } =
     Encode.object
-        [ ( "elementId", Encode.string data.elementId )
-        , ( "positionX", Encode.float data.positionX )
-        , ( "positionY", Encode.float data.positionY )
-        , ( "positionZ", Encode.float data.positionZ )
-        , ( "opacity", Encode.float data.opacity )
-        , ( "rotationX", Encode.float data.rotationX )
-        , ( "rotationY", Encode.float data.rotationY )
-        , ( "rotationZ", Encode.float data.rotationZ )
-        , ( "scaleX", Encode.float data.scaleX )
-        , ( "scaleY", Encode.float data.scaleY )
-        , ( "scaleZ", Encode.float data.scaleZ )
-        , ( "backgroundColor", Encode.string data.backgroundColor )
-        , ( "color", Encode.string data.color )
-        , ( "width", Encode.float data.width )
-        , ( "height", Encode.float data.height )
-        , ( "isAnimating", Encode.bool data.isAnimating )
-        , ( "propertyVersions", Encode.dict identity Encode.int data.propertyVersions )
+        [ ( "x", Encode.float x )
+        , ( "y", Encode.float y )
+        , ( "z", Encode.float z )
         ]
 
 
+{-| Encode PropertyData back to JSON for internal use with decode function.
+-}
+encodePropertyData : PropertyData -> Encode.Value
+encodePropertyData data =
+    let
+        encodePosition pos =
+            [ ( "position", encodeXYZ pos ) ]
+
+        encodeRotation rot =
+            [ ( "rotation", encodeXYZ rot ) ]
+
+        encodeScale scl =
+            [ ( "scale", encodeXYZ scl ) ]
+
+        encodeSize sz =
+            [ ( "size"
+              , Encode.object
+                    [ ( "width", Encode.float sz.width )
+                    , ( "height", Encode.float sz.height )
+                    ]
+              )
+            ]
+
+        optionalFields =
+            List.concat
+                [ Maybe.map (\c -> [ ( "backgroundColor", Encode.string c ) ]) data.backgroundColor |> Maybe.withDefault []
+                , Maybe.map (\c -> [ ( "color", Encode.string c ) ]) data.color |> Maybe.withDefault []
+                , Maybe.map (\o -> [ ( "opacity", Encode.float o ) ]) data.opacity |> Maybe.withDefault []
+                , Maybe.map encodePosition data.position |> Maybe.withDefault []
+                , Maybe.map encodeRotation data.rotation |> Maybe.withDefault []
+                , Maybe.map encodeScale data.scale |> Maybe.withDefault []
+                , Maybe.map encodeSize data.size |> Maybe.withDefault []
+                ]
+    in
+    Encode.object
+        ([ ( "elementId", Encode.string data.elementId )
+         , ( "isAnimating", Encode.bool data.isAnimating )
+         , ( "propertyVersions", Encode.dict identity Encode.int data.propertyVersions )
+         ]
+            ++ optionalFields
+        )
+
+
 {-| Helper function for applying decoders in sequence.
+
+Simpler than adding [Json.Decode.Extra](https://package.elm-lang.org/packages/elm/json/latest/Json-Decode-Extra)
+as a dependency just to get [andMap](https://package.elm-lang.org/packages/elm/json/latest/Json-Decode-Extra#andMap).
+
 -}
 andMap : Decode.Decoder a -> Decode.Decoder (a -> b) -> Decode.Decoder b
 andMap =
