@@ -467,10 +467,12 @@ customBounceIn strength t =
 customBounceInOut : Float -> Float -> Float
 customBounceInOut strength t =
     if t < 0.5 then
+        -- First half: BounceIn scaled to 0-0.5
         customBounceIn strength (t * 2) * 0.5
 
     else
-        0.5 + customBounceOut strength ((t - 0.5) * 2) * 0.5
+        -- Second half: BounceOut scaled to 0.5-1.0
+        0.5 + (customBounceOut strength ((t - 0.5) * 2) * 0.5)
 
 
 {-| Advanced bounce easing with full parameter control.
@@ -488,10 +490,12 @@ advancedBounceIn params t =
 advancedBounceInOut : { bounces : Int, amplitude : Float, decay : Float } -> Float -> Float
 advancedBounceInOut params t =
     if t < 0.5 then
+        -- First half: BounceIn scaled to 0-0.5
         advancedBounceIn params (t * 2) * 0.5
 
     else
-        0.5 + advancedBounceOut params ((t - 0.5) * 2) * 0.5
+        -- Second half: BounceOut scaled to 0.5-1.0
+        0.5 + (advancedBounceOut params ((t - 0.5) * 2) * 0.5)
 
 
 {-| Helper function to calculate bounce with given parameters.
@@ -675,15 +679,63 @@ generateKeyframes easing =
                     in
                     max 1 (calculateBounceCount firstBounceAmplitude 0)
 
-                half =
+                -- Generate full BounceIn keyframes
+                bounceInKeyframes =
                     generateBounceKeyframes bounces firstBounceAmplitude coefficientOfRestitution
-                        |> List.take 15
-
-                secondHalf =
-                    List.reverse half
+                        |> List.reverse
                         |> List.map (\v -> 1.0 - v)
+
+                _ =
+                    Debug.log "BounceInOutCustom bounceInKeyframes (full)" bounceInKeyframes
+
+                -- Generate full BounceOut keyframes
+                bounceOutKeyframes =
+                    generateBounceKeyframes bounces firstBounceAmplitude coefficientOfRestitution
+
+                _ =
+                    Debug.log "BounceInOutCustom bounceOutKeyframes (full)" bounceOutKeyframes
+
+                -- Get the last value from BounceIn to start transition
+                startTransition =
+                    List.reverse bounceInKeyframes |> List.head |> Maybe.withDefault 0
+
+                -- Get the first value from BounceOut to end transition (should be 0)
+                endTransition =
+                    List.head bounceOutKeyframes |> Maybe.withDefault 0
+
+                -- Create smooth transition keyframes from end of BounceIn to start of BounceOut
+                transitionKeyframes =
+                    List.range 1 4
+                        |> List.map
+                            (\i ->
+                                let
+                                    localT =
+                                        toFloat i / 5.0
+
+                                    -- Use ease-in-out for smooth transition
+                                    smoothT =
+                                        if localT < 0.5 then
+                                            2 * localT * localT
+
+                                        else
+                                            1 - ((-2 * localT + 2) ^ 2) / 2
+                                in
+                                startTransition + (smoothT * (endTransition - startTransition))
+                            )
+
+                _ =
+                    Debug.log "BounceInOutCustom transitionKeyframes" transitionKeyframes
+
+                allKeyframes =
+                    bounceInKeyframes ++ transitionKeyframes ++ bounceOutKeyframes
+
+                _ =
+                    Debug.log "BounceInOutCustom FINAL allKeyframes (count)" (List.length allKeyframes)
+
+                _ =
+                    Debug.log "BounceInOutCustom FINAL allKeyframes" allKeyframes
             in
-            half ++ secondHalf
+            allKeyframes
 
         BounceOutAdvanced params ->
             generateBounceKeyframes params.bounces params.amplitude params.decay
@@ -695,15 +747,44 @@ generateKeyframes easing =
 
         BounceInOutAdvanced params ->
             let
-                half =
+                -- Generate full BounceIn keyframes
+                bounceInKeyframes =
                     generateBounceKeyframes params.bounces params.amplitude params.decay
-                        |> List.take 15
-
-                secondHalf =
-                    List.reverse half
+                        |> List.reverse
                         |> List.map (\v -> 1.0 - v)
+
+                -- Generate full BounceOut keyframes
+                bounceOutKeyframes =
+                    generateBounceKeyframes params.bounces params.amplitude params.decay
+
+                -- Get the last value from BounceIn to start transition
+                startTransition =
+                    List.reverse bounceInKeyframes |> List.head |> Maybe.withDefault 0
+
+                -- Get the first value from BounceOut to end transition
+                endTransition =
+                    List.head bounceOutKeyframes |> Maybe.withDefault 0
+
+                -- Create smooth transition keyframes
+                transitionKeyframes =
+                    List.range 1 4
+                        |> List.map
+                            (\i ->
+                                let
+                                    localT =
+                                        toFloat i / 5.0
+
+                                    smoothT =
+                                        if localT < 0.5 then
+                                            2 * localT * localT
+
+                                        else
+                                            1 - ((-2 * localT + 2) ^ 2) / 2
+                                in
+                                startTransition + (smoothT * (endTransition - startTransition))
+                            )
             in
-            half ++ secondHalf
+            bounceInKeyframes ++ transitionKeyframes ++ bounceOutKeyframes
 
         _ ->
             -- Standard approach: sample the easing function

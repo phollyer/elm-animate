@@ -84,11 +84,11 @@ moveRight =
     moveToX 450 ElasticOut
 
 
-{-| Move to the top edge (Y=0) with ease out
+{-| Move to the top edge (Y=0) with BounceInOut effect
 -}
 moveUp : Builder.AnimBuilder -> Builder.AnimBuilder
 moveUp =
-    moveToY 0 (BounceInCustom 0.9)
+    moveToY 0 (BounceInOutCustom 0.9)
 
 
 {-| Move to the bottom edge (Y=300) with ease in
