@@ -830,8 +830,8 @@ Each animated property is wrapped in `Maybe` to distinguish between:
 type alias PropertyData =
     { elementId : String
     , isAnimating : Bool
-    , backgroundColor : Maybe String
-    , color : Maybe String -- Font color
+    , backgroundColor : Maybe Color
+    , color : Maybe Color -- Font color
     , opacity : Maybe Float
     , position : Maybe XYZ
     , rotation : Maybe XYZ
@@ -1032,9 +1032,9 @@ decodePropertyData payload =
         (Decode.succeed PropertyData
             |> andMap (Decode.field "elementId" Decode.string)
             |> andMap (Decode.oneOf [ Decode.field "isAnimating" Decode.bool, Decode.succeed True ])
-            |> andMap (Decode.maybe (Decode.field "backgroundColor" Decode.string))
+            |> andMap (Decode.maybe (Decode.field "backgroundColor" colorDecoder))
             -- Font color
-            |> andMap (Decode.maybe (Decode.field "color" Decode.string))
+            |> andMap (Decode.maybe (Decode.field "color" colorDecoder))
             |> andMap (Decode.maybe (Decode.field "opacity" Decode.float))
             |> andMap (Decode.maybe (Decode.field "position" xyzDecoder))
             |> andMap (Decode.maybe (Decode.field "rotation" xyzDecoder))
@@ -1043,6 +1043,37 @@ decodePropertyData payload =
         )
         payload
         |> Result.mapError Decode.errorToString
+
+
+colorDecoder : Decode.Decoder Color
+colorDecoder =
+    Decode.string
+        |> Decode.andThen
+            (\str ->
+                case Anim.Color.fromString str of
+                    Just color ->
+                        Decode.succeed color
+
+                    Nothing ->
+                        Decode.fail ("Invalid color string: " ++ str)
+            )
+
+
+colorToCssString : Color -> String
+colorToCssString color =
+    let
+        rgba =
+            Anim.Color.toRgba color
+    in
+    "rgba("
+        ++ String.fromInt rgba.r
+        ++ ", "
+        ++ String.fromInt rgba.g
+        ++ ", "
+        ++ String.fromInt rgba.b
+        ++ ", "
+        ++ String.fromFloat rgba.a
+        ++ ")"
 
 
 encodeXYZ : XYZ -> Encode.Value
@@ -1079,8 +1110,8 @@ encodePropertyData data =
 
         optionalFields =
             List.concat
-                [ Maybe.map (\c -> [ ( "backgroundColor", Encode.string c ) ]) data.backgroundColor |> Maybe.withDefault []
-                , Maybe.map (\c -> [ ( "color", Encode.string c ) ]) data.color |> Maybe.withDefault []
+                [ Maybe.map (\c -> [ ( "backgroundColor", Encode.string (colorToCssString c) ) ]) data.backgroundColor |> Maybe.withDefault []
+                , Maybe.map (\c -> [ ( "color", Encode.string (colorToCssString c) ) ]) data.color |> Maybe.withDefault []
                 , Maybe.map (\o -> [ ( "opacity", Encode.float o ) ]) data.opacity |> Maybe.withDefault []
                 , Maybe.map encodePosition data.position |> Maybe.withDefault []
                 , Maybe.map encodeRotation data.rotation |> Maybe.withDefault []
