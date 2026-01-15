@@ -586,21 +586,38 @@ generateKeyframes easing =
                 clampedStrength =
                     clamp 0.1 1.0 strength
 
-                -- More strength = more bounces and higher amplitude
+                -- Physics-based: strength represents impact velocity
+                -- First bounce height proportional to kinetic energy (v²)
+                firstBounceAmplitude =
+                    0.15 + (clampedStrength * clampedStrength * 0.75)
+
+                -- Coefficient of restitution: how much energy retained per bounce
+                -- Lower values = faster decay, higher values = more bounces
+                -- Wider range (0.525-0.75) gives 1-6 bounce spread
+                coefficientOfRestitution =
+                    0.5 + (clampedStrength * 0.25)
+
+                -- Calculate number of visible bounces based on when amplitude < 0.02
+                -- Each bounce: height = previous * cor²
                 bounces =
-                    2 + round (clampedStrength * 2)
+                    let
+                        minVisibleHeight =
+                            0.02
 
-                amplitude =
-                    0.3 + (clampedStrength * 0.5)
+                        calculateBounceCount current count =
+                            if current < minVisibleHeight || count >= 6 then
+                                count
 
-                decay =
-                    0.5 + (clampedStrength * 0.3)
+                            else
+                                calculateBounceCount (current * coefficientOfRestitution * coefficientOfRestitution) (count + 1)
+                    in
+                    max 1 (calculateBounceCount firstBounceAmplitude 0)
 
                 keyframes =
-                    generateBounceKeyframes bounces amplitude decay
+                    generateBounceKeyframes bounces firstBounceAmplitude coefficientOfRestitution
 
                 _ =
-                    Debug.log ("BounceOutCustom " ++ String.fromFloat strength ++ " -> bounces=" ++ String.fromInt bounces ++ " amp=" ++ String.fromFloat amplitude ++ " decay=" ++ String.fromFloat decay) keyframes
+                    Debug.log ("BounceOutCustom " ++ String.fromFloat strength ++ " -> bounces=" ++ String.fromInt bounces ++ " firstAmp=" ++ String.fromFloat firstBounceAmplitude ++ " CoR=" ++ String.fromFloat coefficientOfRestitution) keyframes
             in
             keyframes
 
@@ -609,16 +626,27 @@ generateKeyframes easing =
                 clampedStrength =
                     clamp 0.1 1.0 strength
 
+                firstBounceAmplitude =
+                    0.15 + (clampedStrength * clampedStrength * 0.75)
+
+                coefficientOfRestitution =
+                    0.5 + (clampedStrength * 0.25)
+
                 bounces =
-                    2 + round (clampedStrength * 2)
+                    let
+                        minVisibleHeight =
+                            0.02
 
-                amplitude =
-                    0.3 + (clampedStrength * 0.5)
+                        calculateBounceCount current count =
+                            if current < minVisibleHeight || count >= 6 then
+                                count
 
-                decay =
-                    0.5 + (clampedStrength * 0.3)
+                            else
+                                calculateBounceCount (current * coefficientOfRestitution * coefficientOfRestitution) (count + 1)
+                    in
+                    max 1 (calculateBounceCount firstBounceAmplitude 0)
             in
-            generateBounceKeyframes bounces amplitude decay
+            generateBounceKeyframes bounces firstBounceAmplitude coefficientOfRestitution
                 |> List.reverse
                 |> List.map (\v -> 1.0 - v)
 
@@ -627,17 +655,28 @@ generateKeyframes easing =
                 clampedStrength =
                     clamp 0.1 1.0 strength
 
+                firstBounceAmplitude =
+                    0.15 + (clampedStrength * clampedStrength * 0.75)
+
+                coefficientOfRestitution =
+                    0.5 + (clampedStrength * 0.25)
+
                 bounces =
-                    1 + round (clampedStrength * 1)
+                    let
+                        minVisibleHeight =
+                            0.02
 
-                amplitude =
-                    0.3 + (clampedStrength * 0.5)
+                        calculateBounceCount current count =
+                            if current < minVisibleHeight || count >= 3 then
+                                count
 
-                decay =
-                    0.5 + (clampedStrength * 0.3)
+                            else
+                                calculateBounceCount (current * coefficientOfRestitution * coefficientOfRestitution) (count + 1)
+                    in
+                    max 1 (calculateBounceCount firstBounceAmplitude 0)
 
                 half =
-                    generateBounceKeyframes bounces amplitude decay
+                    generateBounceKeyframes bounces firstBounceAmplitude coefficientOfRestitution
                         |> List.take 15
 
                 secondHalf =
@@ -690,34 +729,43 @@ generateKeyframes easing =
             keyframeValues
 
 
-{-| Generate keyframes for bounce effect with explicit 1.0 values at bounce boundaries.
-This ensures the element visibly reaches the endpoint between bounces.
-The number of keyframes varies to ensure clean bounce boundaries.
+{-| Generate keyframes for bounce effect with physics-based calculations.
+Uses coefficient of restitution to calculate natural bounce heights through energy loss.
+
+Parameters:
+
+  - bounces: Number of bounces
+  - firstAmplitude: Height of first bounce (0.1-1.0)
+  - coefficientOfRestitution: Energy retention per bounce (0.5-0.7)
+      - Each bounce amplitude = previous amplitude \* CoR²
+      - CoR² because energy is lost on both downward and upward motion
+
 -}
 generateBounceKeyframes : Int -> Float -> Float -> List Float
-generateBounceKeyframes bounces amplitude decay =
+generateBounceKeyframes bounces firstAmplitude coefficientOfRestitution =
     let
         -- Clamp parameters
         clampedBounces =
             max 1 bounces
 
         clampedAmplitude =
-            clamp 0.1 1.0 amplitude
+            clamp 0.1 1.0 firstAmplitude
 
-        clampedDecay =
-            clamp 0.1 0.9 decay
+        clampedCoR =
+            clamp 0.5 0.7 coefficientOfRestitution
 
-        -- Phase 1: Approach (first 5 keyframes)
+        -- Phase 1: Approach - inverse correlation with bounce strength
+        -- Lower bounces = smaller/slower, need more approach time for balance
+        -- Higher bounces = bigger/faster, can use shorter approach
+        -- Approach gets 25-45% for weak bounces, 15-25% for strong bounces
+        approachRatio =
+            0.45 - (clampedAmplitude * 0.2)
+
         approachFrames =
-            5
-
-        -- Phase 2: Each bounce gets 8 keyframes for smooth motion
-        -- This ensures we have enough resolution and clean boundaries
-        framesPerBounce =
-            8
+            max 3 (round (approachRatio * 30))
 
         -- Generate approach keyframes using cubic-in for acceleration
-        -- Starts slow, speeds up dramatically towards endpoint
+        -- Starts slow, speeds up dramatically towards endpoint (like gravity)
         approach =
             List.range 0 (approachFrames - 1)
                 |> List.map
@@ -733,37 +781,24 @@ generateBounceKeyframes bounces amplitude decay =
                         progress
                     )
 
-        -- Generate bounce keyframes
-        -- Each bounce cycle: starts at 1.0, dips down, ends at 1.0
-        -- Physics-based: higher bounces get more time (proportional to sqrt of height)
-        -- Calculate amplitude for each bounce first
+        -- Physics: Calculate bounce amplitudes using coefficient of restitution
+        -- Each bounce: amplitude_n = amplitude_0 * CoR^(2n)
+        -- CoR² because energy loss occurs on impact (downward) and rebound (upward)
         bounceAmplitudes =
             List.range 0 (clampedBounces - 1)
-                |> List.map (\i -> clampedAmplitude * (clampedDecay ^ toFloat i))
-
-        -- Ensure last bounce is at least a minimum size
-        minLastBounce =
-            0.15
-
-        adjustedAmplitudes =
-            case List.reverse bounceAmplitudes of
-                [] ->
-                    []
-
-                lastAmp :: rest ->
-                    if lastAmp < minLastBounce then
+                |> List.map
+                    (\i ->
                         let
-                            scale =
-                                minLastBounce / lastAmp
+                            energyLossFactor =
+                                clampedCoR ^ (2 * toFloat i)
                         in
-                        List.map (\a -> a * scale) bounceAmplitudes
+                        clampedAmplitude * energyLossFactor
+                    )
 
-                    else
-                        bounceAmplitudes
-
-        -- Time for each bounce proportional to sqrt(amplitude) - like gravity
+        -- Physics: Time for each bounce proportional to sqrt(height)
+        -- From gravitational physics: t ∝ √h
         totalBounceTime =
-            List.map sqrt adjustedAmplitudes |> List.sum
+            List.map sqrt bounceAmplitudes |> List.sum
 
         totalBounceFrames =
             30
@@ -783,15 +818,19 @@ generateBounceKeyframes bounces amplitude decay =
                                 |> List.map
                                     (\frameIndex ->
                                         if frameIndex == 0 && bounceIndex > 0 then
+                                            -- Start of non-first bounce: explicit 1.0
                                             1.0
 
                                         else if frameIndex == 0 && bounceIndex == 0 then
+                                            -- Start of first bounce: skip (no boundary yet)
                                             -999.0
 
                                         else if frameIndex == framesForThisBounce && bounceIndex == clampedBounces - 1 then
+                                            -- End of last bounce: explicit 1.0
                                             1.0
 
                                         else if frameIndex == framesForThisBounce then
+                                            -- End of non-last bounce: skip (next bounce starts with 1.0)
                                             -999.0
 
                                         else
@@ -799,6 +838,7 @@ generateBounceKeyframes bounces amplitude decay =
                                                 localT =
                                                     toFloat frameIndex / toFloat framesForThisBounce
 
+                                                -- Quadratic curve: slow at endpoints, fast in middle
                                                 centered =
                                                     (localT - 0.5) * 2
 
@@ -814,7 +854,7 @@ generateBounceKeyframes bounces amplitude decay =
                     in
                     bounceFrames
                 )
-                adjustedAmplitudes
+                bounceAmplitudes
                 |> List.concat
     in
     approach ++ bounces_
