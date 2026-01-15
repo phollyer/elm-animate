@@ -979,6 +979,8 @@ window.ElmAnimateWAAPI = (function () {
             elementAnims.forEach((animData, propertyType) => {
                 animData.animation.pause();
             });
+            // Send paused status to Elm
+            sendEventToElm('animationUpdate', elementId, { status: 'paused' });
         }
     }
 
@@ -990,7 +992,13 @@ window.ElmAnimateWAAPI = (function () {
         if (elementAnims) {
             elementAnims.forEach((animData, propertyType) => {
                 animData.animation.play();
+                // Restart the RAF update loop
+                if (animData.updateFn) {
+                    animData.updateFn();
+                }
             });
+            // Send resumed status to Elm
+            sendEventToElm('animationUpdate', elementId, { status: 'resumed' });
         }
     }
 

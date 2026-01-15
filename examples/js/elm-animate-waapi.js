@@ -984,6 +984,8 @@ window.ElmAnimateWAAPI = (function () {
             elementAnims.forEach((animData, propertyType) => {
                 animData.animation.pause();
             });
+            // Send paused status to Elm
+            sendEventToElm('animationUpdate', elementId, { status: 'paused' });
         }
     }
 
@@ -1000,6 +1002,8 @@ window.ElmAnimateWAAPI = (function () {
                     animData.updateFn();
                 }
             });
+            // Send resumed status to Elm
+            sendEventToElm('animationUpdate', elementId, { status: 'resumed' });
         }
     }
 
