@@ -152,11 +152,8 @@ import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
-import Anim.Internal.Properties.ScrollTarget exposing (Axis(..))
 import Anim.Internal.Properties.Size as Size
 import Anim.Internal.WAAPI as InternalWAAPI
-import Browser exposing (UrlRequest(..))
-import Dict exposing (Dict)
 import Html
 import Json.Decode as Decode
 import Json.Encode as Encode
