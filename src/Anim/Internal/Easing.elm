@@ -845,13 +845,14 @@ generateKeyframes easing =
                         distance =
                             abs (endValue - startValue)
 
-                        -- Calculate frame count based on velocity (more frames = slower)
+                        -- Calculate frame count based on velocity (fewer frames = faster)
+                        -- Reduced frame count range to match bounce speed better
                         frameCount =
                             if avgVelocity > 0 then
-                                round (distance / avgVelocity) |> clamp 10 30
+                                round (distance / (avgVelocity * 2.0)) |> clamp 5 15
 
                             else
-                                20
+                                10
                     in
                     -- Create linear interpolation
                     List.range 0 (frameCount - 1)
