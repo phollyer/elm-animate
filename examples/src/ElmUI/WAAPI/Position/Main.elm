@@ -103,76 +103,43 @@ type Msg
     | WaapiEventReceived WAAPI.EventType WAAPI.AnimState
 
 
+animate : (WAAPI.AnimBuilder -> WAAPI.AnimBuilder) -> Model -> ( Model, Cmd Msg )
+animate builder model =
+    let
+        ( newAnimState, builderCmd ) =
+            WAAPI.animate waapiCommand model.animationState builder
+    in
+    ( { model
+        | animationState = newAnimState
+        , isAnimating = True
+      }
+    , builderCmd
+    )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         MoveToPosition1 ->
-            let
-                ( newAnimState, animCmd ) =
-                    WAAPI.animate waapiCommand model.animationState Animations.moveToPosition1
-            in
-            ( { model | animationState = newAnimState, isAnimating = True }
-            , animCmd
-            )
+            animate Animations.moveToPosition1 model
 
         MoveToPosition2 ->
-            let
-                ( newAnimState, animCmd ) =
-                    WAAPI.animate waapiCommand model.animationState Animations.moveToPosition2
-            in
-            ( { model | animationState = newAnimState, isAnimating = True }
-            , animCmd
-            )
+            animate Animations.moveToPosition2 model
 
         MoveLeft ->
-            let
-                ( newAnimState, animCmd ) =
-                    WAAPI.animate waapiCommand model.animationState <|
-                        Animations.moveLeft
-            in
-            ( { model | animationState = newAnimState, isAnimating = True }
-            , animCmd
-            )
+            animate Animations.moveLeft model
 
         MoveRight ->
-            let
-                ( newAnimState, animCmd ) =
-                    WAAPI.animate waapiCommand model.animationState <|
-                        Animations.moveRight
-            in
-            ( { model | animationState = newAnimState, isAnimating = True }
-            , animCmd
-            )
+            animate Animations.moveRight model
 
         MoveUp ->
-            let
-                ( newAnimState, animCmd ) =
-                    WAAPI.animate waapiCommand model.animationState <|
-                        Animations.moveUp
-            in
-            ( { model | animationState = newAnimState, isAnimating = True }
-            , animCmd
-            )
+            animate Animations.moveUp model
 
         MoveDown ->
-            let
-                ( newAnimState, animCmd ) =
-                    WAAPI.animate waapiCommand model.animationState <|
-                        Animations.moveDown
-            in
-            ( { model | animationState = newAnimState, isAnimating = True }
-            , animCmd
-            )
+            animate Animations.moveDown model
 
         ResetPosition ->
-            let
-                ( newAnimState, animCmd ) =
-                    WAAPI.animate waapiCommand model.animationState <|
-                        Animations.returnToOrigin
-            in
-            ( { model | animationState = newAnimState, isAnimating = True }
-            , animCmd
-            )
+            animate Animations.returnToOrigin model
 
         StopAnimation ->
             ( { model | isAnimating = False }
