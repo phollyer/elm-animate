@@ -590,19 +590,12 @@ generateKeyframes easing =
                 clampedStrength =
                     clamp 0.1 1.0 strength
 
-                -- Physics-based: strength represents impact velocity
-                -- First bounce height proportional to kinetic energy (v²)
                 firstBounceAmplitude =
                     0.15 + (clampedStrength * clampedStrength * 0.75)
 
-                -- Coefficient of restitution: how much energy retained per bounce
-                -- Lower values = faster decay, higher values = more bounces
-                -- Wider range (0.525-0.75) gives 1-6 bounce spread
                 coefficientOfRestitution =
                     0.5 + (clampedStrength * 0.25)
 
-                -- Calculate number of visible bounces based on when amplitude < 0.02
-                -- Each bounce: height = previous * cor²
                 bounces =
                     let
                         minVisibleHeight =
@@ -617,31 +610,12 @@ generateKeyframes easing =
                     in
                     max 1 (calculateBounceCount firstBounceAmplitude 0)
 
-                -- Generate 30 keyframes for A->B transition using QuartIn easing
-                -- This gives the characteristic "start slow, speed up" curve
-                transitionKeyframes =
-                    List.range 0 29
-                        |> List.map
-                            (\i ->
-                                let
-                                    t =
-                                        toFloat i / 29.0
-
-                                    -- QuartIn: f(t) = t^4
-                                    easedT =
-                                        t * t * t * t
-                                in
-                                easedT
-                            )
-
-                -- Generate bounce-at-end keyframes
-                -- Only take frames AFTER the first peak (1.0) - these are the actual bounces
-                bounceKeyframes =
+                -- Helper: Create bounce-out keyframes (bounces at end, around 1.0)
+                createBounceOutKeyframes bounceCnt amp cor =
                     let
                         allBounceFrames =
-                            generateBounceKeyframes bounces firstBounceAmplitude coefficientOfRestitution
+                            generateBounceKeyframes bounceCnt amp cor
 
-                        -- Find the first frame that reaches 1.0 (or very close)
                         firstPeakIndex =
                             allBounceFrames
                                 |> List.indexedMap Tuple.pair
@@ -650,13 +624,30 @@ generateKeyframes easing =
                                 |> Maybe.map Tuple.first
                                 |> Maybe.withDefault 10
                     in
-                    -- Drop frames up to and including the first peak, keep only the bouncing part
                     List.drop (firstPeakIndex + 1) allBounceFrames
 
+                -- Helper: Create QuartIn transition (0->1, start slow, accelerate)
+                createBounceOutTransition =
+                    List.range 0 29
+                        |> List.map
+                            (\i ->
+                                let
+                                    t =
+                                        toFloat i / 29.0
+
+                                    easedT =
+                                        t * t * t * t
+                                in
+                                easedT
+                            )
+
+                bounceKeyframes =
+                    createBounceOutKeyframes bounces firstBounceAmplitude coefficientOfRestitution
+
                 _ =
-                    Debug.log ("BounceOutCustom " ++ String.fromFloat strength ++ " -> bounces=" ++ String.fromInt bounces ++ " firstAmp=" ++ String.fromFloat firstBounceAmplitude ++ " CoR=" ++ String.fromFloat coefficientOfRestitution) (transitionKeyframes ++ bounceKeyframes)
+                    Debug.log ("BounceOutCustom " ++ String.fromFloat strength) (createBounceOutTransition ++ bounceKeyframes)
             in
-            transitionKeyframes ++ bounceKeyframes
+            createBounceOutTransition ++ bounceKeyframes
 
         BounceInCustom strength ->
             let
@@ -683,14 +674,12 @@ generateKeyframes easing =
                     in
                     max 1 (calculateBounceCount firstBounceAmplitude 0)
 
-                -- Generate bounce-at-start keyframes
-                -- Take frames AFTER the first peak (the bouncing part), reverse and invert
-                bounceKeyframes =
+                -- Helper: Create bounce-in keyframes (bounces at start, around 0)
+                createBounceInKeyframes bounceCnt amp cor =
                     let
                         allBounceFrames =
-                            generateBounceKeyframes bounces firstBounceAmplitude coefficientOfRestitution
+                            generateBounceKeyframes bounceCnt amp cor
 
-                        -- Find the first frame that reaches 1.0 (or very close)
                         firstPeakIndex =
                             allBounceFrames
                                 |> List.indexedMap Tuple.pair
@@ -699,7 +688,6 @@ generateKeyframes easing =
                                 |> Maybe.map Tuple.first
                                 |> Maybe.withDefault 10
 
-                        -- Take frames after the peak (the bouncing part), reverse, then invert
                         bouncesOnly =
                             allBounceFrames
                                 |> List.drop (firstPeakIndex + 1)
@@ -708,12 +696,8 @@ generateKeyframes easing =
                     in
                     bouncesOnly
 
-                _ =
-                    Debug.log "BounceInCustom bounceKeyframes" bounceKeyframes
-
-                -- Generate 30 keyframes for A->B transition using QuartOut easing
-                -- This gives "fast start, slow down" to connect smoothly after bounces
-                transitionKeyframes =
+                -- Helper: Create QuartOut transition (0->1, start fast, decelerate)
+                createBounceInTransition =
                     List.range 0 29
                         |> List.map
                             (\i ->
@@ -721,25 +705,29 @@ generateKeyframes easing =
                                     t =
                                         toFloat i / 29.0
 
-                                    -- QuartOut: f(t) = 1 - (1-t)^4
+                                    invT =
+                                        1.0 - t
+
                                     easedT =
-                                        let
-                                            invT =
-                                                1.0 - t
-                                        in
                                         1.0 - (invT * invT * invT * invT)
                                 in
                                 easedT
                             )
 
-                _ =
-                    Debug.log "BounceInCustom transitionKeyframes" transitionKeyframes
+                bounceKeyframes =
+                    createBounceInKeyframes bounces firstBounceAmplitude coefficientOfRestitution
 
                 _ =
-                    Debug.log "BounceInCustom bounces then transition" ( List.length bounceKeyframes, List.length transitionKeyframes )
+                    Debug.log "BounceInCustom bounceKeyframes" bounceKeyframes
+
+                _ =
+                    Debug.log "BounceInCustom transitionKeyframes" createBounceInTransition
+
+                _ =
+                    Debug.log "BounceInCustom bounces then transition" ( List.length bounceKeyframes, List.length createBounceInTransition )
 
                 allKeyframes =
-                    bounceKeyframes ++ transitionKeyframes
+                    bounceKeyframes ++ createBounceInTransition
 
                 _ =
                     Debug.log "BounceInCustom FINAL" allKeyframes
@@ -763,7 +751,7 @@ generateKeyframes easing =
                             0.02
 
                         calculateBounceCount current count =
-                            if current < minVisibleHeight || count >= 3 then
+                            if current < minVisibleHeight || count >= 6 then
                                 count
 
                             else
@@ -771,12 +759,11 @@ generateKeyframes easing =
                     in
                     max 1 (calculateBounceCount firstBounceAmplitude 0)
 
-                -- Generate bounce-at-start keyframes (same as BounceInCustom)
-                -- Keep all bounce frames
-                bounceInKeyframes =
+                -- Helper: Create bounce-in keyframes (bounces at start, around 0)
+                createBounceInKeyframes bounceCnt amp cor =
                     let
                         allBounceFrames =
-                            generateBounceKeyframes bounces firstBounceAmplitude coefficientOfRestitution
+                            generateBounceKeyframes bounceCnt amp cor
 
                         firstPeakIndex =
                             allBounceFrames
@@ -785,34 +772,20 @@ generateKeyframes easing =
                                 |> List.head
                                 |> Maybe.map Tuple.first
                                 |> Maybe.withDefault 10
+
+                        bouncesOnly =
+                            allBounceFrames
+                                |> List.drop (firstPeakIndex + 1)
+                                |> List.reverse
+                                |> List.map (\v -> 1.0 - v)
                     in
-                    allBounceFrames
-                        |> List.drop (firstPeakIndex + 1)
-                        |> List.reverse
-                        |> List.map (\v -> 1.0 - v)
+                    bouncesOnly
 
-                -- Generate 30 keyframes for A->B transition with QuartIn
-                -- Skip first 8 frames to avoid starting too close to 0
-                transitionKeyframes =
-                    List.range 9 29
-                        |> List.map
-                            (\i ->
-                                let
-                                    t =
-                                        toFloat i / 29.0
-
-                                    -- QuartIn: f(t) = t^4 (start slow, accelerate)
-                                    easedT =
-                                        t * t * t * t
-                                in
-                                easedT
-                            )
-
-                -- Generate bounce-at-end keyframes (same as BounceOutCustom)
-                bounceOutKeyframes =
+                -- Helper: Create bounce-out keyframes (bounces at end, around 1.0)
+                createBounceOutKeyframes bounceCnt amp cor =
                     let
                         allBounceFrames =
-                            generateBounceKeyframes bounces firstBounceAmplitude coefficientOfRestitution
+                            generateBounceKeyframes bounceCnt amp cor
 
                         firstPeakIndex =
                             allBounceFrames
@@ -824,11 +797,32 @@ generateKeyframes easing =
                     in
                     List.drop (firstPeakIndex + 1) allBounceFrames
 
+                -- Helper: Create QuartIn transition (0->1, start slow, accelerate)
+                createBounceInOutTransition =
+                    List.range 0 29
+                        |> List.map
+                            (\i ->
+                                let
+                                    t =
+                                        toFloat i / 29.0
+
+                                    easedT =
+                                        t * t * t * t
+                                in
+                                easedT
+                            )
+
+                bounceInKeyframes =
+                    createBounceInKeyframes bounces firstBounceAmplitude coefficientOfRestitution
+
+                bounceOutKeyframes =
+                    createBounceOutKeyframes bounces firstBounceAmplitude coefficientOfRestitution
+
                 _ =
-                    Debug.log "BounceInOutCustom FINAL allKeyframes (count)" (List.length bounceInKeyframes + List.length transitionKeyframes + List.length bounceOutKeyframes)
+                    Debug.log "BounceInOutCustom FINAL allKeyframes (count)" (List.length bounceInKeyframes + List.length createBounceInOutTransition + List.length bounceOutKeyframes)
 
                 allKeyframes =
-                    bounceInKeyframes ++ transitionKeyframes ++ bounceOutKeyframes
+                    bounceInKeyframes ++ createBounceInOutTransition ++ bounceOutKeyframes
 
                 _ =
                     Debug.log "BounceInOutCustom FINAL allKeyframes" allKeyframes
