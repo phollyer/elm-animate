@@ -931,9 +931,6 @@ generateKeyframes easing durationMs =
 
                 bounceKeyframes =
                     createBounceOutKeyframes bounces firstBounceAmplitude coefficientOfRestitution
-
-                _ =
-                    Debug.log ("BounceOutCustom " ++ String.fromFloat strength) (createBounceOutTransition ++ bounceKeyframes)
             in
             createBounceOutTransition ++ bounceKeyframes
 
@@ -1005,20 +1002,8 @@ generateKeyframes easing durationMs =
                 bounceKeyframes =
                     createBounceInKeyframes bounces firstBounceAmplitude coefficientOfRestitution
 
-                _ =
-                    Debug.log "BounceInCustom bounceKeyframes" bounceKeyframes
-
-                _ =
-                    Debug.log "BounceInCustom transitionKeyframes" createBounceInTransition
-
-                _ =
-                    Debug.log "BounceInCustom bounces then transition" ( List.length bounceKeyframes, List.length createBounceInTransition )
-
                 allKeyframes =
                     bounceKeyframes ++ createBounceInTransition
-
-                _ =
-                    Debug.log "BounceInCustom FINAL" allKeyframes
             in
             allKeyframes
 
@@ -1162,14 +1147,8 @@ generateKeyframes easing durationMs =
                 transitionKeyframes =
                     createBounceInOutTransition bounceInKeyframes bounceOutKeyframes
 
-                _ =
-                    Debug.log "BounceInOutCustom FINAL allKeyframes (count)" (List.length bounceInKeyframes + List.length transitionKeyframes + List.length bounceOutKeyframes)
-
                 allKeyframes =
                     bounceInKeyframes ++ transitionKeyframes ++ bounceOutKeyframes
-
-                _ =
-                    Debug.log "BounceInOutCustom FINAL allKeyframes" allKeyframes
             in
             allKeyframes
 
@@ -1196,17 +1175,13 @@ generateKeyframes easing durationMs =
 
                 transitionKeyframes =
                     createBounceOutTransition
-                        |> Debug.log ("BounceOutAdvanced transition (bounces=" ++ String.fromInt params.bounces ++ ", amp=" ++ String.fromFloat params.amplitude ++ ", scaled=" ++ String.fromFloat scaledAmplitude ++ ", decay=" ++ String.fromFloat params.decay ++ ", velocity=" ++ String.fromFloat velocityFactor ++ ")")
 
                 -- Generate ONLY the bounce oscillations (no approach)
                 bounceKeyframes =
                     generateBounceOscillations params.bounces scaledAmplitude params.decay
-                        |> Debug.log "BounceOutAdvanced bounceOscillations"
 
                 allKeyframes =
-                    transitionKeyframes
-                        ++ bounceKeyframes
-                        |> Debug.log "BounceOutAdvanced FINAL"
+                    transitionKeyframes ++ bounceKeyframes
             in
             allKeyframes
 
@@ -1221,7 +1196,6 @@ generateKeyframes easing durationMs =
                     generateBounceOscillations params.bounces scaledAmplitude params.decay
                         |> List.map (\v -> 1.0 - v)
                         |> List.reverse
-                        |> Debug.log ("BounceInAdvanced oscillations (bounces=" ++ String.fromInt params.bounces ++ ", amp=" ++ String.fromFloat params.amplitude ++ ", scaled=" ++ String.fromFloat scaledAmplitude ++ ", decay=" ++ String.fromFloat params.decay ++ ", velocity=" ++ String.fromFloat velocityFactor ++ ")")
 
                 -- Helper: Create QuartOut transition (0->1, start fast, decelerate)
                 createBounceInTransition =
@@ -1243,12 +1217,9 @@ generateKeyframes easing durationMs =
 
                 transitionKeyframes =
                     createBounceInTransition
-                        |> Debug.log "BounceInAdvanced transition"
 
                 allKeyframes =
-                    bounceKeyframes
-                        ++ transitionKeyframes
-                        |> Debug.log "BounceInAdvanced FINAL"
+                    bounceKeyframes ++ transitionKeyframes
             in
             allKeyframes
 
@@ -1330,21 +1301,17 @@ generateKeyframes easing durationMs =
 
                 bounceInKeyframes =
                     createBounceInKeyframes params.bounces scaledAmplitude params.decay
-                        |> Debug.log "BounceInOutAdvanced bounceIn"
 
                 bounceOutKeyframes =
                     createBounceOutKeyframes params.bounces scaledAmplitude params.decay
-                        |> Debug.log "BounceInOutAdvanced bounceOut"
 
                 transitionKeyframes =
                     createBounceInOutTransition bounceInKeyframes bounceOutKeyframes
-                        |> Debug.log "BounceInOutAdvanced transition"
 
                 allKeyframes =
                     bounceInKeyframes
                         ++ transitionKeyframes
                         ++ bounceOutKeyframes
-                        |> Debug.log ("BounceInOutAdvanced FINAL (bounces=" ++ String.fromInt params.bounces ++ ", amp=" ++ String.fromFloat params.amplitude ++ ", scaled=" ++ String.fromFloat scaledAmplitude ++ ", velocity=" ++ String.fromFloat velocityFactor ++ ")")
             in
             allKeyframes
 
@@ -1456,14 +1423,6 @@ generateKeyframes easing durationMs =
                 keyframeValues =
                     List.range 0 (keyframeCount - 1)
                         |> List.map (\i -> easingFunction (linearProgress i))
-
-                _ =
-                    case easing of
-                        BounceOut ->
-                            Debug.log "BounceOut keyframes" keyframeValues
-
-                        _ ->
-                            keyframeValues
             in
             keyframeValues
 

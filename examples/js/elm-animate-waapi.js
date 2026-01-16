@@ -122,7 +122,6 @@ window.ElmAnimateWAAPI = (function () {
 
         // Process each property independently
         elementConfig.properties.forEach(property => {
-            console.log(`ElmAnimateWAAPI: Processing property for element "${elementId}"`, property);
             const propType = property.type;
             const newVersion = property.version || 1;
 
