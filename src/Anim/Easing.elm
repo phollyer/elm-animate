@@ -25,20 +25,36 @@ These use the easing functions from [elm-community/ease](https://package.elm-lan
 
 These take a `Float` parameter to adjust the behavior.
 
-  - `BackInCustom strength`, `BackOutCustom strength`, `BackInOutCustom strength`: Adjust overshoot amount (0.1-3.0)
-  - `BounceInCustom strength`, `BounceOutCustom strength`, `BounceInOutCustom strength`: Adjust bounce intensity (0.1-1.0)
-  - `ElasticInCustom strength`, `ElasticOutCustom strength`, `ElasticInOutCustom strength`: Adjust oscillation intensity (0.1-1.0)
+  - `Back*Custom strength`: Adjust overshoot amount (0.1-3.0)
+  - `Bounce*Custom strength`: Adjust bounce intensity (0.1-1.0)
+  - `Elastic*Custom strength`: Adjust oscillation intensity (0.1-1.0)
 
 
 ## Advanced Easings:
 
 These take a record with multiple parameters for full control.
 
-  - `BackInAdvanced { overshoot }`, `BackOutAdvanced { overshoot }`, `BackInOutAdvanced { overshoot }`: Full control over overshoot behavior
-
-  - `BounceInAdvanced { bounces, amplitude, decay }`, `BounceOutAdvanced { bounces, amplitude, decay }`, `BounceInOutAdvanced { bounces, amplitude, decay }`: Full control over bounce behavior
-
-  - `ElasticInAdvanced { frequency, amplitude, decay }`, `ElasticOutAdvanced { frequency, amplitude, decay }`, `ElasticInOutAdvanced { frequency, amplitude, decay }`: Full control over elastic behavior
+  - `Back*Advanced { overshoot }`: Full control over overshoot behavior
+  - `Bounce*Advanced { bounces, amplitude, decay }`:
+      - `bounces`: Number of bounces (1-10)
+          - Higher values = more bounces
+          - Lower values = fewer bounces
+      - `amplitude`: Initial bounce height (0.0-1.0)
+          - Lower values = smaller bounces
+          - Higher values = larger bounces
+      - `decay`: Rate of bounce height reduction (0.0-1.0)
+          - Lower values = slower decay (bounces stay larger longer)
+          - Higher values = faster decay (bounces shrink quicker)
+  - `Elastic*Advanced { frequency, amplitude, decay }`:
+      - `frequency`: Number of oscillations (1.0-10.0)
+          - Higher values = more oscillations
+          - Lower values = fewer oscillations
+      - `amplitude`: Initial oscillation height (0.0-1.0)
+          - Lower values = smaller oscillations
+          - Higher values = larger oscillations
+      - `decay`: Rate of oscillation height reduction (0.0-1.0)
+          - Lower values = slower decay (oscillations stay larger longer)
+          - Higher values = faster decay (oscillations shrink quicker)
 
 @docs Easing
 

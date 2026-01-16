@@ -373,8 +373,12 @@ toWebAnimations easing =
             value
 
 
-toFunction : Easing -> (Float -> Float)
-toFunction easing =
+toFunction : Float -> Easing -> (Float -> Float)
+toFunction durationMs easing =
+    let
+        velocityFactor =
+            1000.0 / durationMs
+    in
     case easing of
         CubicBezier p1x p1y p2x p2y ->
             E.bezier p1x p1y p2x p2y
@@ -494,22 +498,22 @@ toFunction easing =
             E.inOutElastic
 
         ElasticInCustom strength ->
-            customElasticIn strength
+            customElasticIn velocityFactor strength
 
         ElasticOutCustom strength ->
-            customElasticOut strength
+            customElasticOut velocityFactor strength
 
         ElasticInOutCustom strength ->
-            customElasticInOut strength
+            customElasticInOut velocityFactor strength
 
         ElasticInAdvanced params ->
-            advancedElasticIn params
+            advancedElasticIn velocityFactor params
 
         ElasticOutAdvanced params ->
-            advancedElasticOut params
+            advancedElasticOut velocityFactor params
 
         ElasticInOutAdvanced params ->
-            advancedElasticInOut params
+            advancedElasticInOut velocityFactor params
 
         BounceIn ->
             E.inBounce
@@ -521,22 +525,22 @@ toFunction easing =
             E.inOutBounce
 
         BounceInCustom strength ->
-            customBounceIn strength
+            customBounceIn velocityFactor strength
 
         BounceOutCustom strength ->
-            customBounceOut strength
+            customBounceOut velocityFactor strength
 
         BounceInOutCustom strength ->
-            customBounceInOut strength
+            customBounceInOut velocityFactor strength
 
         BounceInAdvanced params ->
-            advancedBounceIn params
+            advancedBounceIn velocityFactor params
 
         BounceOutAdvanced params ->
-            advancedBounceOut params
+            advancedBounceOut velocityFactor params
 
         BounceInOutAdvanced params ->
-            advancedBounceInOut params
+            advancedBounceInOut velocityFactor params
 
         Custom _ ->
             -- TODO: Handle custom easing functions properly
@@ -546,8 +550,8 @@ toFunction easing =
 {-| Custom bounce easing with simple strength parameter (0.0-1.0).
 Strength controls bounce intensity: 0.2 = soft, 0.5 = medium, 0.8 = hard.
 -}
-customBounceOut : Float -> Float -> Float
-customBounceOut strength t =
+customBounceOut : Float -> Float -> Float -> Float
+customBounceOut velocityFactor strength t =
     let
         -- Convert strength to bounce parameters
         -- Clamp strength between 0.1 and 1.0
@@ -559,7 +563,7 @@ customBounceOut strength t =
             2 + round (clampedStrength * 2)
 
         amplitude =
-            0.3 + (clampedStrength * 0.5)
+            (0.3 + (clampedStrength * 0.5)) * velocityFactor
 
         decay =
             0.5 + (clampedStrength * 0.3)
@@ -567,43 +571,43 @@ customBounceOut strength t =
     advancedBounceOutHelper bounces amplitude decay t
 
 
-customBounceIn : Float -> Float -> Float
-customBounceIn strength t =
-    1.0 - customBounceOut strength (1.0 - t)
+customBounceIn : Float -> Float -> Float -> Float
+customBounceIn velocityFactor strength t =
+    1.0 - customBounceOut velocityFactor strength (1.0 - t)
 
 
-customBounceInOut : Float -> Float -> Float
-customBounceInOut strength t =
+customBounceInOut : Float -> Float -> Float -> Float
+customBounceInOut velocityFactor strength t =
     if t < 0.5 then
         -- First half: BounceIn scaled to 0-0.5
-        customBounceIn strength (t * 2) * 0.5
+        customBounceIn velocityFactor strength (t * 2) * 0.5
 
     else
         -- Second half: BounceOut scaled to 0.5-1.0
-        0.5 + (customBounceOut strength ((t - 0.5) * 2) * 0.5)
+        0.5 + (customBounceOut velocityFactor strength ((t - 0.5) * 2) * 0.5)
 
 
 {-| Advanced bounce easing with full parameter control.
 -}
-advancedBounceOut : { bounces : Int, amplitude : Float, decay : Float } -> Float -> Float
-advancedBounceOut params t =
-    advancedBounceOutHelper params.bounces params.amplitude params.decay t
+advancedBounceOut : Float -> { bounces : Int, amplitude : Float, decay : Float } -> Float -> Float
+advancedBounceOut velocityFactor params t =
+    advancedBounceOutHelper params.bounces (params.amplitude * velocityFactor) params.decay t
 
 
-advancedBounceIn : { bounces : Int, amplitude : Float, decay : Float } -> Float -> Float
-advancedBounceIn params t =
-    1.0 - advancedBounceOut params (1.0 - t)
+advancedBounceIn : Float -> { bounces : Int, amplitude : Float, decay : Float } -> Float -> Float
+advancedBounceIn velocityFactor params t =
+    1.0 - advancedBounceOut velocityFactor params (1.0 - t)
 
 
-advancedBounceInOut : { bounces : Int, amplitude : Float, decay : Float } -> Float -> Float
-advancedBounceInOut params t =
+advancedBounceInOut : Float -> { bounces : Int, amplitude : Float, decay : Float } -> Float -> Float
+advancedBounceInOut velocityFactor params t =
     if t < 0.5 then
         -- First half: BounceIn scaled to 0-0.5
-        advancedBounceIn params (t * 2) * 0.5
+        advancedBounceIn velocityFactor params (t * 2) * 0.5
 
     else
         -- Second half: BounceOut scaled to 0.5-1.0
-        0.5 + (advancedBounceOut params ((t - 0.5) * 2) * 0.5)
+        0.5 + (advancedBounceOut velocityFactor params ((t - 0.5) * 2) * 0.5)
 
 
 {-| Helper function to calculate bounce with given parameters.
@@ -688,8 +692,8 @@ advancedBounceOutHelper bounceCount amplitude decay t =
 {-| Custom elastic easing with simple strength parameter (0.1-1.0).
 Strength controls oscillation intensity.
 -}
-customElasticOut : Float -> Float -> Float
-customElasticOut strength t =
+customElasticOut : Float -> Float -> Float -> Float
+customElasticOut velocityFactor strength t =
     let
         clampedStrength =
             clamp 0.1 1.0 strength
@@ -699,7 +703,7 @@ customElasticOut strength t =
             2 + (clampedStrength * 3)
 
         amplitude =
-            0.5 + (clampedStrength * 0.5)
+            (0.5 + (clampedStrength * 0.5)) * velocityFactor
 
         decay =
             6 + (clampedStrength * 2)
@@ -707,39 +711,39 @@ customElasticOut strength t =
     advancedElasticOutHelper frequency amplitude decay t
 
 
-customElasticIn : Float -> Float -> Float
-customElasticIn strength t =
-    1.0 - customElasticOut strength (1.0 - t)
+customElasticIn : Float -> Float -> Float -> Float
+customElasticIn velocityFactor strength t =
+    1.0 - customElasticOut velocityFactor strength (1.0 - t)
 
 
-customElasticInOut : Float -> Float -> Float
-customElasticInOut strength t =
+customElasticInOut : Float -> Float -> Float -> Float
+customElasticInOut velocityFactor strength t =
     if t < 0.5 then
-        customElasticIn strength (t * 2) * 0.5
+        customElasticIn velocityFactor strength (t * 2) * 0.5
 
     else
-        0.5 + (customElasticOut strength ((t - 0.5) * 2) * 0.5)
+        0.5 + (customElasticOut velocityFactor strength ((t - 0.5) * 2) * 0.5)
 
 
 {-| Advanced elastic easing with full parameter control.
 -}
-advancedElasticOut : { frequency : Float, amplitude : Float, decay : Float } -> Float -> Float
-advancedElasticOut params t =
-    advancedElasticOutHelper params.frequency params.amplitude params.decay t
+advancedElasticOut : Float -> { frequency : Float, amplitude : Float, decay : Float } -> Float -> Float
+advancedElasticOut velocityFactor params t =
+    advancedElasticOutHelper params.frequency (params.amplitude * velocityFactor) params.decay t
 
 
-advancedElasticIn : { frequency : Float, amplitude : Float, decay : Float } -> Float -> Float
-advancedElasticIn params t =
-    1.0 - advancedElasticOut params (1.0 - t)
+advancedElasticIn : Float -> { frequency : Float, amplitude : Float, decay : Float } -> Float -> Float
+advancedElasticIn velocityFactor params t =
+    1.0 - advancedElasticOut velocityFactor params (1.0 - t)
 
 
-advancedElasticInOut : { frequency : Float, amplitude : Float, decay : Float } -> Float -> Float
-advancedElasticInOut params t =
+advancedElasticInOut : Float -> { frequency : Float, amplitude : Float, decay : Float } -> Float -> Float
+advancedElasticInOut velocityFactor params t =
     if t < 0.5 then
-        advancedElasticIn params (t * 2) * 0.5
+        advancedElasticIn velocityFactor params (t * 2) * 0.5
 
     else
-        0.5 + (advancedElasticOut params ((t - 0.5) * 2) * 0.5)
+        0.5 + (advancedElasticOut velocityFactor params ((t - 0.5) * 2) * 0.5)
 
 
 {-| Helper function for elastic easing with exponential decay and oscillation.
@@ -854,11 +858,18 @@ advancedBackOutHelper overshoot t =
 Returns a list of 30 progress values (0.0 to 1.0) with the easing function applied.
 This allows WAAPI to use accurate easing through linear interpolation between keyframes.
 -}
-generateKeyframes : Easing -> List Float
-generateKeyframes easing =
+generateKeyframes : Easing -> Float -> List Float
+generateKeyframes easing durationMs =
     let
         keyframeCount =
             30
+
+        -- Calculate velocity factor for physics-based easings
+        -- Baseline: 1 second (1000ms) = normal velocity
+        -- Faster (500ms) = 2x velocity factor = bigger bounces/oscillations
+        -- Slower (2000ms) = 0.5x velocity factor = smaller bounces/oscillations
+        velocityFactor =
+            1000.0 / durationMs
     in
     case easing of
         -- Custom bounce easings get special treatment to ensure they hit 1.0 at bounce boundaries
@@ -868,7 +879,7 @@ generateKeyframes easing =
                     clamp 0.1 1.0 strength
 
                 firstBounceAmplitude =
-                    0.15 + (clampedStrength * clampedStrength * 0.75)
+                    (0.15 + (clampedStrength * clampedStrength * 0.75)) * velocityFactor
 
                 coefficientOfRestitution =
                     0.5 + (clampedStrength * 0.25)
@@ -932,7 +943,7 @@ generateKeyframes easing =
                     clamp 0.1 1.0 strength
 
                 firstBounceAmplitude =
-                    0.15 + (clampedStrength * clampedStrength * 0.75)
+                    (0.15 + (clampedStrength * clampedStrength * 0.75)) * velocityFactor
 
                 coefficientOfRestitution =
                     0.5 + (clampedStrength * 0.25)
@@ -1017,7 +1028,7 @@ generateKeyframes easing =
                     clamp 0.1 1.0 strength
 
                 firstBounceAmplitude =
-                    0.15 + (clampedStrength * clampedStrength * 0.75)
+                    (0.15 + (clampedStrength * clampedStrength * 0.75)) * velocityFactor
 
                 coefficientOfRestitution =
                     0.5 + (clampedStrength * 0.25)
@@ -1168,51 +1179,73 @@ generateKeyframes easing =
                 transitionKeyframes =
                     List.range 0 29
                         |> List.map (\i -> toFloat i / 29.0)
+                        |> Debug.log ("BounceOutAdvanced transition (bounces=" ++ String.fromInt params.bounces ++ ", amp=" ++ String.fromFloat params.amplitude ++ ", decay=" ++ String.fromFloat params.decay ++ ")")
 
-                -- Generate bounce-at-end keyframes
+                -- Generate ONLY the bounce oscillations (no approach)
                 bounceKeyframes =
-                    generateBounceKeyframes params.bounces params.amplitude params.decay
+                    generateBounceOscillations params.bounces params.amplitude params.decay
+                        |> Debug.log "BounceOutAdvanced bounceOscillations"
+
+                allKeyframes =
+                    transitionKeyframes
+                        ++ bounceKeyframes
+                        |> Debug.log "BounceOutAdvanced FINAL"
             in
-            transitionKeyframes ++ bounceKeyframes
+            allKeyframes
 
         BounceInAdvanced params ->
             let
-                -- Generate bounce-at-start keyframes
+                -- Generate small bounces at start that settle to 0
                 bounceKeyframes =
-                    generateBounceKeyframes params.bounces params.amplitude params.decay
-                        |> List.reverse
+                    generateBounceOscillations params.bounces params.amplitude params.decay
                         |> List.map (\v -> 1.0 - v)
+                        |> List.reverse
+                        |> Debug.log ("BounceInAdvanced oscillations (bounces=" ++ String.fromInt params.bounces ++ ", amp=" ++ String.fromFloat params.amplitude ++ ", decay=" ++ String.fromFloat params.decay ++ ")")
 
-                -- Generate 30 keyframes for A->B transition (0->1 linear)
+                -- Generate 30 keyframes for 0->1 transition
                 transitionKeyframes =
                     List.range 0 29
                         |> List.map (\i -> toFloat i / 29.0)
+                        |> Debug.log "BounceInAdvanced transition"
+
+                allKeyframes =
+                    bounceKeyframes
+                        ++ transitionKeyframes
+                        |> Debug.log "BounceInAdvanced FINAL"
             in
-            bounceKeyframes ++ transitionKeyframes
+            allKeyframes
 
         BounceInOutAdvanced params ->
             let
-                -- Generate bounce-at-start keyframes
+                -- Generate small bounces at start that settle to 0
+                -- Start with tiny oscillations around 0, damping quickly
                 bounceInKeyframes =
-                    generateBounceKeyframes params.bounces params.amplitude params.decay
-                        |> List.reverse
-                        |> List.map (\v -> 1.0 - v)
+                    generateSmallStartBounces params.bounces params.amplitude params.decay
+                        |> Debug.log "BounceInOutAdvanced bounceIn"
 
                 -- Generate 30 keyframes for A->B transition (0->1 linear)
                 transitionKeyframes =
                     List.range 0 29
                         |> List.map (\i -> toFloat i / 29.0)
+                        |> Debug.log "BounceInOutAdvanced transition"
 
-                -- Generate bounce-at-end keyframes
+                -- Generate bounce-at-end keyframes (settle to 1.0)
                 bounceOutKeyframes =
                     generateBounceKeyframes params.bounces params.amplitude params.decay
+                        |> Debug.log "BounceInOutAdvanced bounceOut"
+
+                allKeyframes =
+                    bounceInKeyframes
+                        ++ transitionKeyframes
+                        ++ bounceOutKeyframes
+                        |> Debug.log ("BounceInOutAdvanced FINAL (bounces=" ++ String.fromInt params.bounces ++ ", amp=" ++ String.fromFloat params.amplitude ++ ", decay=" ++ String.fromFloat params.decay ++ ")")
             in
-            bounceInKeyframes ++ transitionKeyframes ++ bounceOutKeyframes
+            allKeyframes
 
         ElasticOutCustom strength ->
             let
                 easingFunction =
-                    customElasticOut strength
+                    customElasticOut velocityFactor strength
             in
             List.range 0 (keyframeCount - 1)
                 |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
@@ -1220,7 +1253,7 @@ generateKeyframes easing =
         ElasticInCustom strength ->
             let
                 easingFunction =
-                    customElasticIn strength
+                    customElasticIn velocityFactor strength
             in
             List.range 0 (keyframeCount - 1)
                 |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
@@ -1228,7 +1261,7 @@ generateKeyframes easing =
         ElasticInOutCustom strength ->
             let
                 easingFunction =
-                    customElasticInOut strength
+                    customElasticInOut velocityFactor strength
             in
             List.range 0 (keyframeCount - 1)
                 |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
@@ -1236,7 +1269,7 @@ generateKeyframes easing =
         ElasticOutAdvanced params ->
             let
                 easingFunction =
-                    advancedElasticOut params
+                    advancedElasticOut velocityFactor params
             in
             List.range 0 (keyframeCount - 1)
                 |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
@@ -1244,7 +1277,7 @@ generateKeyframes easing =
         ElasticInAdvanced params ->
             let
                 easingFunction =
-                    advancedElasticIn params
+                    advancedElasticIn velocityFactor params
             in
             List.range 0 (keyframeCount - 1)
                 |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
@@ -1252,7 +1285,7 @@ generateKeyframes easing =
         ElasticInOutAdvanced params ->
             let
                 easingFunction =
-                    advancedElasticInOut params
+                    advancedElasticInOut velocityFactor params
             in
             List.range 0 (keyframeCount - 1)
                 |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
@@ -1309,7 +1342,7 @@ generateKeyframes easing =
             -- Standard approach: sample the easing function
             let
                 easingFunction =
-                    toFunction easing
+                    toFunction durationMs easing
 
                 linearProgress i =
                     toFloat i / toFloat (keyframeCount - 1)
@@ -1458,3 +1491,235 @@ generateBounceKeyframes bounces firstAmplitude coefficientOfRestitution =
                 |> List.concat
     in
     approach ++ bounces_
+
+
+{-| Generate ONLY the bounce oscillations around 1.0, without the approach phase.
+Used for BounceOut/BounceIn Advanced where we already have a separate transition.
+-}
+generateBounceOscillations : Int -> Float -> Float -> List Float
+generateBounceOscillations bounces firstAmplitude coefficientOfRestitution =
+    let
+        -- Clamp parameters
+        clampedBounces =
+            max 1 bounces
+
+        clampedAmplitude =
+            clamp 0.1 1.0 firstAmplitude
+
+        clampedCoR =
+            clamp 0.5 0.7 coefficientOfRestitution
+
+        -- Physics: Calculate bounce amplitudes using coefficient of restitution
+        bounceAmplitudes =
+            List.range 0 (clampedBounces - 1)
+                |> List.map
+                    (\i ->
+                        let
+                            energyLossFactor =
+                                clampedCoR ^ (2 * toFloat i)
+                        in
+                        clampedAmplitude * energyLossFactor
+                    )
+
+        -- Time for each bounce proportional to sqrt(height)
+        totalBounceTime =
+            List.map sqrt bounceAmplitudes |> List.sum
+
+        totalBounceFrames =
+            52
+
+        bounces_ =
+            List.indexedMap
+                (\bounceIndex bounceAmplitude ->
+                    let
+                        bounceTime =
+                            sqrt bounceAmplitude
+
+                        framesForThisBounce =
+                            max 6 (round (bounceTime / totalBounceTime * toFloat totalBounceFrames))
+
+                        bounceFrames =
+                            List.range 0 framesForThisBounce
+                                |> List.map
+                                    (\frameIndex ->
+                                        if frameIndex == 0 && bounceIndex > 0 then
+                                            -- Start of non-first bounce: explicit 1.0
+                                            1.0
+
+                                        else if frameIndex == 0 && bounceIndex == 0 then
+                                            -- Start of first bounce: skip (no boundary yet)
+                                            -999.0
+
+                                        else if frameIndex == framesForThisBounce && bounceIndex == clampedBounces - 1 then
+                                            -- End of last bounce: explicit 1.0
+                                            1.0
+
+                                        else if frameIndex == framesForThisBounce then
+                                            -- End of non-last bounce: skip (next bounce starts with 1.0)
+                                            -999.0
+
+                                        else
+                                            let
+                                                localT =
+                                                    toFloat frameIndex / toFloat framesForThisBounce
+
+                                                -- Quadratic curve: slow at endpoints, fast in middle
+                                                centered =
+                                                    (localT - 0.5) * 2
+
+                                                easedProgress =
+                                                    1.0 - (centered * centered)
+
+                                                displacement =
+                                                    bounceAmplitude * easedProgress
+                                            in
+                                            1.0 - displacement
+                                    )
+                                |> List.filter (\v -> v /= -999.0)
+                    in
+                    bounceFrames
+                )
+                bounceAmplitudes
+                |> List.concat
+    in
+    bounces_
+
+
+{-| Generate small bounces at the start that settle quickly to 0
+Used for bounce-in effects where we want to start with tiny oscillations
+-}
+generateSmallStartBounces : Int -> Float -> Float -> List Float
+generateSmallStartBounces bounces amplitude decay =
+    let
+        clampedBounces =
+            max 1 bounces
+
+        -- Scale down the amplitude significantly for start bounces (10% of specified)
+        startAmplitude =
+            amplitude * 0.1
+
+        clampedDecay =
+            clamp 0.5 0.95 decay
+
+        -- Generate decaying oscillations around 0
+        totalFrames =
+            52
+
+        bounceList =
+            List.range 0 (totalFrames - 1)
+                |> List.map
+                    (\i ->
+                        let
+                            t =
+                                toFloat i / toFloat (totalFrames - 1)
+
+                            -- Exponential decay envelope
+                            envelope =
+                                e ^ (-5.0 * t)
+
+                            -- Oscillation frequency increases with bounce count
+                            frequency =
+                                toFloat clampedBounces * 2.0 * pi
+
+                            -- Sine wave for oscillation
+                            oscillation =
+                                sin (frequency * t)
+
+                            -- Combine: small amplitude * decay * oscillation
+                            value =
+                                startAmplitude * envelope * oscillation
+                        in
+                        -- Clamp to ensure we stay near 0
+                        clamp 0 0.05 value
+                    )
+    in
+    bounceList
+
+
+{-| Generate proper start bounces for BounceIn effects.
+Creates small bounces that settle to 0, then smooth transition to start moving.
+Similar structure to generateBounceKeyframes but reversed logic - starts with tiny bounces settling to 0.
+-}
+generateStartBounces : Int -> Float -> Float -> List Float
+generateStartBounces bounces amplitude decay =
+    let
+        clampedBounces =
+            max 1 bounces
+
+        clampedAmplitude =
+            clamp 0.1 1.0 amplitude
+
+        clampedDecay =
+            clamp 0.5 0.7 decay
+
+        totalFrames =
+            52
+
+        -- Calculate bounce amplitudes (same physics as end bounces)
+        bounceAmplitudes =
+            List.range 0 (clampedBounces - 1)
+                |> List.map
+                    (\i ->
+                        let
+                            energyLossFactor =
+                                clampedDecay ^ (2 * toFloat i)
+                        in
+                        clampedAmplitude * energyLossFactor
+                    )
+                |> List.reverse
+
+        -- Time for each bounce proportional to sqrt(height)
+        totalBounceTime =
+            List.map sqrt bounceAmplitudes |> List.sum
+
+        bounces_ =
+            List.indexedMap
+                (\bounceIndex bounceAmplitude ->
+                    let
+                        bounceTime =
+                            sqrt bounceAmplitude
+
+                        framesForThisBounce =
+                            max 6 (round (bounceTime / totalBounceTime * toFloat totalFrames))
+
+                        bounceFrames =
+                            List.range 0 framesForThisBounce
+                                |> List.map
+                                    (\frameIndex ->
+                                        if frameIndex == 0 && bounceIndex > 0 then
+                                            0.0
+
+                                        else if frameIndex == 0 && bounceIndex == 0 then
+                                            -999.0
+
+                                        else if frameIndex == framesForThisBounce && bounceIndex == clampedBounces - 1 then
+                                            0.0
+
+                                        else if frameIndex == framesForThisBounce then
+                                            -999.0
+
+                                        else
+                                            let
+                                                localT =
+                                                    toFloat frameIndex / toFloat framesForThisBounce
+
+                                                -- Quadratic curve
+                                                centered =
+                                                    (localT - 0.5) * 2
+
+                                                easedProgress =
+                                                    1.0 - (centered * centered)
+
+                                                displacement =
+                                                    bounceAmplitude * easedProgress
+                                            in
+                                            displacement
+                                    )
+                                |> List.filter (\v -> v /= -999.0)
+                    in
+                    bounceFrames
+                )
+                bounceAmplitudes
+                |> List.concat
+    in
+    bounces_

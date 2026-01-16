@@ -431,12 +431,6 @@ update jsonValue (AnimState state) =
     case Decode.decodeValue animationUpdateDecoder jsonValue of
         Ok animationUpdate ->
             let
-                _ =
-                    Debug.log "==> decoded update for element" animationUpdate.elementId
-
-                _ =
-                    Debug.log "==> position from JS" ( animationUpdate.positionX, animationUpdate.positionY, animationUpdate.positionZ )
-
                 updatedAnimations =
                     Dict.update animationUpdate.elementId
                         (Maybe.map (updateElementAnimation animationUpdate))
@@ -458,13 +452,6 @@ update jsonValue (AnimState state) =
                 }
 
         Err decodeError ->
-            let
-                _ =
-                    Debug.log "==> DECODER ERROR" (Decode.errorToString decodeError)
-
-                _ =
-                    Debug.log "==> Failed to decode JSON" jsonValue
-            in
             AnimState state
 
 
@@ -953,7 +940,7 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                     ]
 
                 easingFields =
-                    encodeEasingWithKeyframes config.easing
+                    encodeEasingWithKeyframes config.duration config.easing
             in
             Encode.object (baseFields ++ easingFields)
 
@@ -981,7 +968,7 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                     ]
 
                 easingFields =
-                    encodeEasingWithKeyframes config.easing
+                    encodeEasingWithKeyframes config.duration config.easing
             in
             Encode.object (baseFields ++ easingFields)
 
@@ -1009,7 +996,7 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                     ]
 
                 easingFields =
-                    encodeEasingWithKeyframes config.easing
+                    encodeEasingWithKeyframes config.duration config.easing
             in
             Encode.object (baseFields ++ easingFields)
 
@@ -1034,7 +1021,7 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                     ]
 
                 easingFields =
-                    encodeEasingWithKeyframes config.easing
+                    encodeEasingWithKeyframes config.duration config.easing
             in
             Encode.object (baseFields ++ easingFields)
 
@@ -1054,7 +1041,7 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                     ]
 
                 easingFields =
-                    encodeEasingWithKeyframes config.easing
+                    encodeEasingWithKeyframes config.duration config.easing
             in
             Encode.object (baseFields ++ easingFields)
 
@@ -1074,7 +1061,7 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                     ]
 
                 easingFields =
-                    encodeEasingWithKeyframes config.easing
+                    encodeEasingWithKeyframes config.duration config.easing
             in
             Encode.object (baseFields ++ easingFields)
 
@@ -1094,7 +1081,7 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                     ]
 
                 easingFields =
-                    encodeEasingWithKeyframes config.easing
+                    encodeEasingWithKeyframes config.duration config.easing
             in
             Encode.object (baseFields ++ easingFields)
 
@@ -1125,7 +1112,7 @@ encodeProcessedPropertyConfig property =
                     ]
 
                 easingFields =
-                    encodeEasingWithKeyframes config.easing
+                    encodeEasingWithKeyframes config.duration config.easing
             in
             Encode.object (baseFields ++ easingFields)
 
@@ -1152,7 +1139,7 @@ encodeProcessedPropertyConfig property =
                     ]
 
                 easingFields =
-                    encodeEasingWithKeyframes config.easing
+                    encodeEasingWithKeyframes config.duration config.easing
             in
             Encode.object (baseFields ++ easingFields)
 
@@ -1179,7 +1166,7 @@ encodeProcessedPropertyConfig property =
                     ]
 
                 easingFields =
-                    encodeEasingWithKeyframes config.easing
+                    encodeEasingWithKeyframes config.duration config.easing
             in
             Encode.object (baseFields ++ easingFields)
 
@@ -1203,7 +1190,7 @@ encodeProcessedPropertyConfig property =
                     ]
 
                 easingFields =
-                    encodeEasingWithKeyframes config.easing
+                    encodeEasingWithKeyframes config.duration config.easing
             in
             Encode.object (baseFields ++ easingFields)
 
@@ -1222,7 +1209,7 @@ encodeProcessedPropertyConfig property =
                     ]
 
                 easingFields =
-                    encodeEasingWithKeyframes config.easing
+                    encodeEasingWithKeyframes config.duration config.easing
             in
             Encode.object (baseFields ++ easingFields)
 
@@ -1241,7 +1228,7 @@ encodeProcessedPropertyConfig property =
                     ]
 
                 easingFields =
-                    encodeEasingWithKeyframes config.easing
+                    encodeEasingWithKeyframes config.duration config.easing
             in
             Encode.object (baseFields ++ easingFields)
 
@@ -1260,7 +1247,7 @@ encodeProcessedPropertyConfig property =
                     ]
 
                 easingFields =
-                    encodeEasingWithKeyframes config.easing
+                    encodeEasingWithKeyframes config.duration config.easing
             in
             Encode.object (baseFields ++ easingFields)
 
@@ -1269,11 +1256,11 @@ encodeProcessedPropertyConfig property =
 For complex easings, returns list with easing="linear" and keyframes array.
 For simple easings, returns list with just easing string.
 -}
-encodeEasingWithKeyframes : Easing -> List ( String, Encode.Value )
-encodeEasingWithKeyframes easingValue =
+encodeEasingWithKeyframes : Int -> Easing -> List ( String, Encode.Value )
+encodeEasingWithKeyframes durationMs easingValue =
     if isComplexEasing easingValue then
         [ ( "easing", Encode.string "linear" )
-        , ( "easingKeyframes", Encode.list Encode.float (Easing.generateKeyframes easingValue) )
+        , ( "easingKeyframes", Encode.list Encode.float (Easing.generateKeyframes easingValue (toFloat durationMs)) )
         ]
 
     else

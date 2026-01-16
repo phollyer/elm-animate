@@ -250,22 +250,12 @@ current animated positions rather than old animation end positions.
 injectCurrentStates : Dict ElementId { a | currentStates : ElementEndStates } -> AnimBuilder -> AnimBuilder
 injectCurrentStates elementAnimations (AnimBuilder data) =
     let
-        _ =
-            Debug.log "==> injectCurrentStates elementAnimations keys" (Dict.keys elementAnimations)
-
         baselines =
             elementAnimations
                 |> Dict.map
                     (\elementId animation ->
-                        let
-                            _ =
-                                Debug.log ("==> injecting baseline for " ++ elementId) animation.currentStates
-                        in
                         animation.currentStates
                     )
-
-        _ =
-            Debug.log "==> baselines keys" (Dict.keys baselines)
     in
     AnimBuilder { data | elementBaselines = baselines }
 
