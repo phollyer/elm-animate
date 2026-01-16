@@ -5,6 +5,7 @@ module Anim.Internal.Builder exposing
     , AnimationHistoryEntry
     , AnimationId
     , ElementConfig
+    , ElementEndStates
     , ProcessedAnimationData
     , ProcessedElementConfig
     , ProcessedPropertyConfig(..)
@@ -32,6 +33,7 @@ module Anim.Internal.Builder exposing
     , getDelayWithDefault
     , getEasing
     , getEasingWithDefault
+    , getElementBaseline
     , getElementConfig
     , getPerspective
     , getPerspectiveStylesCache
@@ -42,6 +44,7 @@ module Anim.Internal.Builder exposing
     , getTimeSpec
     , getTimespec
     , init
+    , injectCurrentStates
     , mapScrollTargets
     , markAnimationAsExecuted
     , markDirty
@@ -97,6 +100,7 @@ type alias BuilderData =
     , perspectiveStylesCache : Maybe (Dict String (List { attribute : String, value : String }))
     , animationHistories : Dict ElementId AnimationHistory -- NEW: Animation history per element
     , nextAnimationId : AnimationId -- NEW: Unique ID generator
+    , elementBaselines : Dict ElementId ElementEndStates -- NEW: Current animated states used as baselines
     }
 
 
@@ -203,6 +207,20 @@ type alias ProcessedAnimationConfig targetProperty =
     }
 
 
+{-| Current animated states for an element, used as baselines for new animations.
+Updated from JavaScript during animation playback.
+-}
+type alias ElementEndStates =
+    { position : Maybe Position
+    , rotate : Maybe Rotate
+    , scale : Maybe Scale
+    , backgroundColor : Maybe Color
+    , fontColor : Maybe Color
+    , opacity : Maybe Opacity
+    , size : Maybe Size
+    }
+
+
 
 -- BUILD
 
@@ -221,7 +239,35 @@ init =
         , perspectiveStylesCache = Nothing
         , animationHistories = Dict.empty -- NEW: Initialize empty animation histories
         , nextAnimationId = 1 -- NEW: Start animation IDs from 1
+        , elementBaselines = Dict.empty -- NEW: Initialize empty baselines
         }
+
+
+{-| Inject current animated states as baselines for the next animation.
+This prevents mid-flight animation jumps by ensuring property builders copy from
+current animated positions rather than old animation end positions.
+-}
+injectCurrentStates : Dict ElementId { a | currentStates : ElementEndStates } -> AnimBuilder -> AnimBuilder
+injectCurrentStates elementAnimations (AnimBuilder data) =
+    let
+        _ =
+            Debug.log "==> injectCurrentStates elementAnimations keys" (Dict.keys elementAnimations)
+
+        baselines =
+            elementAnimations
+                |> Dict.map
+                    (\elementId animation ->
+                        let
+                            _ =
+                                Debug.log ("==> injecting baseline for " ++ elementId) animation.currentStates
+                        in
+                        animation.currentStates
+                    )
+
+        _ =
+            Debug.log "==> baselines keys" (Dict.keys baselines)
+    in
+    AnimBuilder { data | elementBaselines = baselines }
 
 
 for : String -> AnimBuilder -> AnimBuilder
@@ -289,6 +335,13 @@ getCurrentElementConfig (AnimBuilder data) =
 getElementConfig : String -> AnimBuilder -> Maybe ElementConfig
 getElementConfig elementId (AnimBuilder data) =
     Dict.get elementId data.elements
+
+
+{-| Get baseline states for an element (current animated values from JavaScript).
+-}
+getElementBaseline : String -> AnimBuilder -> Maybe ElementEndStates
+getElementBaseline elementId (AnimBuilder data) =
+    Dict.get elementId data.elementBaselines
 
 
 getTimespec : AnimBuilder -> Maybe TimeSpec

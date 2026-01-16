@@ -196,9 +196,11 @@ animateStateless portFunction animBuilder =
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Encode.Value )
 animate (AnimState state) buildAnimation =
     let
-        -- Extract builder from state, apply user configuration via callback
+        -- Inject current animated states as baselines, then apply user configuration
         configuredBuilder =
-            buildAnimation state.builder
+            state.builder
+                |> Builder.injectCurrentStates state.elementAnimations
+                |> buildAnimation
 
         builderWithCache =
             Builder.computeAndCachePerspectiveStyles configuredBuilder
@@ -216,11 +218,40 @@ animate (AnimState state) buildAnimation =
                             existingAnimation =
                                 Dict.get elementId state.elementAnimations
 
-                            -- Use current states from existing animation if available, otherwise empty
+                            -- Extract END states from this animation to use as initial currentStates
+                            -- This ensures we have states available for baseline injection on the NEXT animation
+                            animationEndStates =
+                                extractElementEndStates elementConfig
+
+                            -- Start with existing current states, then update with this animation's end states
                             currentStates =
-                                existingAnimation
-                                    |> Maybe.map .currentStates
-                                    |> Maybe.withDefault emptyElementEndStates
+                                case existingAnimation of
+                                    Just existing ->
+                                        -- Merge: Prefer new animation's end states, keep existing for non-animated properties
+                                        let
+                                            base =
+                                                existing.currentStates
+
+                                            orElse new old =
+                                                case new of
+                                                    Just _ ->
+                                                        new
+
+                                                    Nothing ->
+                                                        old
+                                        in
+                                        { position = orElse animationEndStates.position base.position
+                                        , rotate = orElse animationEndStates.rotate base.rotate
+                                        , scale = orElse animationEndStates.scale base.scale
+                                        , backgroundColor = orElse animationEndStates.backgroundColor base.backgroundColor
+                                        , fontColor = orElse animationEndStates.fontColor base.fontColor
+                                        , opacity = orElse animationEndStates.opacity base.opacity
+                                        , size = orElse animationEndStates.size base.size
+                                        }
+
+                                    Nothing ->
+                                        -- First animation: use end states directly
+                                        animationEndStates
 
                             -- Get existing property versions
                             existingPropertyVersions =
@@ -400,6 +431,12 @@ update jsonValue (AnimState state) =
     case Decode.decodeValue animationUpdateDecoder jsonValue of
         Ok animationUpdate ->
             let
+                _ =
+                    Debug.log "==> decoded update for element" animationUpdate.elementId
+
+                _ =
+                    Debug.log "==> position from JS" ( animationUpdate.positionX, animationUpdate.positionY, animationUpdate.positionZ )
+
                 updatedAnimations =
                     Dict.update animationUpdate.elementId
                         (Maybe.map (updateElementAnimation animationUpdate))
@@ -420,8 +457,14 @@ update jsonValue (AnimState state) =
                     , isRunning = hasRunningAnimations
                 }
 
-        Err _ ->
-            -- Silently ignore decode errors since we control the data shape
+        Err decodeError ->
+            let
+                _ =
+                    Debug.log "==> DECODER ERROR" (Decode.errorToString decodeError)
+
+                _ =
+                    Debug.log "==> Failed to decode JSON" jsonValue
+            in
             AnimState state
 
 
