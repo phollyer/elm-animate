@@ -797,19 +797,71 @@ generateKeyframes easing =
                     in
                     List.drop (firstPeakIndex + 1) allBounceFrames
 
-                -- Helper: Create QuartIn transition (0->1, start slow, accelerate)
-                createBounceInOutTransition =
-                    List.range 0 29
+                -- Helper: Create linear transition matching bounce velocities
+                -- Transitions from near 0 to near 1 with velocity matching the bounces
+                createBounceInOutTransition bounceInFrames bounceOutFrames =
+                    let
+                        -- Start very close to 0 for smooth continuation
+                        startValue =
+                            0.0
+
+                        -- End very close to 1 (just before the bounce-out frames start)
+                        endValue =
+                            1.0
+
+                        -- Calculate velocity from last few bounce-in frames
+                        bounceInVelocity =
+                            let
+                                lastFrames =
+                                    List.reverse bounceInFrames |> List.take 5
+
+                                first =
+                                    List.head lastFrames |> Maybe.withDefault 0
+
+                                last =
+                                    List.reverse lastFrames |> List.head |> Maybe.withDefault 0
+                            in
+                            abs (first - last) / 4.0
+
+                        -- Calculate velocity from first few bounce-out frames
+                        bounceOutVelocity =
+                            let
+                                firstFrames =
+                                    List.take 5 bounceOutFrames
+
+                                first =
+                                    List.head firstFrames |> Maybe.withDefault 1
+
+                                last =
+                                    List.drop 4 firstFrames |> List.head |> Maybe.withDefault 1
+                            in
+                            abs (first - last) / 4.0
+
+                        -- Use average velocity to determine frame count
+                        avgVelocity =
+                            (bounceInVelocity + bounceOutVelocity) / 2.0
+
+                        -- Distance to travel
+                        distance =
+                            abs (endValue - startValue)
+
+                        -- Calculate frame count based on velocity (more frames = slower)
+                        frameCount =
+                            if avgVelocity > 0 then
+                                round (distance / avgVelocity) |> clamp 10 30
+
+                            else
+                                20
+                    in
+                    -- Create linear interpolation
+                    List.range 0 (frameCount - 1)
                         |> List.map
                             (\i ->
                                 let
                                     t =
-                                        toFloat i / 29.0
-
-                                    easedT =
-                                        t * t * t * t
+                                        toFloat i / toFloat (frameCount - 1)
                                 in
-                                easedT
+                                startValue + (t * (endValue - startValue))
                             )
 
                 bounceInKeyframes =
@@ -818,11 +870,14 @@ generateKeyframes easing =
                 bounceOutKeyframes =
                     createBounceOutKeyframes bounces firstBounceAmplitude coefficientOfRestitution
 
+                transitionKeyframes =
+                    createBounceInOutTransition bounceInKeyframes bounceOutKeyframes
+
                 _ =
-                    Debug.log "BounceInOutCustom FINAL allKeyframes (count)" (List.length bounceInKeyframes + List.length createBounceInOutTransition + List.length bounceOutKeyframes)
+                    Debug.log "BounceInOutCustom FINAL allKeyframes (count)" (List.length bounceInKeyframes + List.length transitionKeyframes + List.length bounceOutKeyframes)
 
                 allKeyframes =
-                    bounceInKeyframes ++ createBounceInOutTransition ++ bounceOutKeyframes
+                    bounceInKeyframes ++ transitionKeyframes ++ bounceOutKeyframes
 
                 _ =
                     Debug.log "BounceInOutCustom FINAL allKeyframes" allKeyframes

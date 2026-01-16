@@ -95,7 +95,7 @@ moveUp =
 -}
 moveDown : Builder.AnimBuilder -> Builder.AnimBuilder
 moveDown =
-    moveToY 350 (BounceInCustom 0.9)
+    moveToY 350 (BounceInOutCustom 0.9)
 
 
 {-| Return to origin (0, 0) with smooth easing
