@@ -252,6 +252,8 @@ toCmd toMsg animBuilder =
             getGlobalSettings animBuilder
 
         -- Create scroll config from global settings
+        -- Note: We use 1000ms (1 second) as baseline duration for easing function
+        -- The actual animation duration is determined later based on distance and speed/duration
         config =
             { timing =
                 case globalSettings.timeSpec of
@@ -260,7 +262,7 @@ toCmd toMsg animBuilder =
 
                     Duration d ->
                         ScrollCommon.Duration d
-            , easing = Easing.toFunction globalSettings.easing
+            , easing = Easing.toFunction 1000.0 globalSettings.easing
             , axis = ScrollCommon.Both
             }
 
@@ -640,8 +642,11 @@ updateScrollAnimation deltaMs animation =
             progress =
                 min 1.0 (newElapsedMs / animation.durationMs)
 
+            easingFunction =
+                Easing.toFunction animation.durationMs animation.config.easing
+
             easedProgress =
-                Easing.toFunction animation.config.easing progress
+                easingFunction progress
 
             newCurrentX =
                 case animation.config.axis of

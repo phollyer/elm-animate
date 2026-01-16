@@ -1107,7 +1107,7 @@ createPropertyAnimState startValues property =
                         durationToFrames duration_
 
                 easeFunction =
-                    Easing.toFunction easing_
+                    Easing.toFunction (toFloat duration_) easing_
 
                 steps =
                     if duration_ == 0 then

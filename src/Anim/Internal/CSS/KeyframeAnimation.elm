@@ -143,8 +143,11 @@ generate elementId properties =
                                                         totalTime - toFloat delay
                                                 in
                                                 clamp 0 1 (animationTime / toFloat duration)
+
+                                        easingFunction =
+                                            Easing.toFunction (toFloat duration) easing
                                     in
-                                    Easing.toFunction easing linearProgress
+                                    easingFunction linearProgress
 
                                 -- Collect transform components (order will be enforced during assembly)
                                 transformParts =

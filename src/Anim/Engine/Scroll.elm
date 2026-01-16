@@ -699,6 +699,8 @@ toTask animBuilder =
             InternalScroll.getGlobalSettings animBuilder
 
         -- Create scroll config from global settings
+        -- Note: We use 1000ms (1 second) as baseline duration for easing function
+        -- The actual animation duration is determined later based on distance and speed/duration
         config =
             { timing =
                 case globalSettings.timeSpec of
@@ -707,7 +709,7 @@ toTask animBuilder =
 
                     Duration d ->
                         ScrollCommon.Duration d
-            , easing = InternalEasing.toFunction globalSettings.easing
+            , easing = InternalEasing.toFunction 1000.0 globalSettings.easing
             , axis = ScrollCommon.Both
             }
 

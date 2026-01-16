@@ -79,7 +79,7 @@ type Timing
 -}
 type alias Config =
     { timing : Timing
-    , easing : Ease.Easing
+    , easing : Float -> Float
     , axis : Axis
     }
 
