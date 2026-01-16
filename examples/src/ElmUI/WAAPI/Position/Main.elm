@@ -180,13 +180,13 @@ subscriptions model =
 
 view : Model -> Document Msg
 view model =
-    UI.createDocument "Anim.Engine.WAAPI Position ElmUI Example" UI.Basic (viewContent model)
+    UI.createDocument "WAAPI Position Example with ElmUI" UI.Basic (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButton
-    , UI.pageHeader "ElmUI & Ports Position Example"
+    , UI.pageHeader "WAAPI Position Example with ElmUI"
     , -- Animation status display
       el
         [ Font.size 14

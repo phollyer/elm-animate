@@ -373,7 +373,7 @@ toFunction durationMs easing =
         velocityFactor =
             1000.0 / durationMs
     in
-    case easing of
+    case easing |> Debug.log "Easing" of
         CubicBezier p1x p1y p2x p2y ->
             E.bezier p1x p1y p2x p2y
 
@@ -763,7 +763,7 @@ advancedElasticOutHelper frequency amplitude decay t =
 
             -- Oscillation
             oscillation =
-                sin ((t * clampedFrequency - 0.25) * 2 * pi)
+                sin (t * clampedFrequency * 2 * pi)
         in
         1 - (envelope * oscillation)
 

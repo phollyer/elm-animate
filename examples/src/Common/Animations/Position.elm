@@ -64,12 +64,12 @@ moveToY y easing =
 
 moveToPosition1 : Builder.AnimBuilder -> Builder.AnimBuilder
 moveToPosition1 =
-    moveToXY 100 100 ElasticOut
+    moveToXY 100 100 (ElasticInCustom 0.9)
 
 
 moveToPosition2 : Builder.AnimBuilder -> Builder.AnimBuilder
 moveToPosition2 =
-    moveToXY 300 200 ElasticOut
+    moveToXY 300 200 (ElasticOutCustom 0.9)
 
 
 moveLeft : Builder.AnimBuilder -> Builder.AnimBuilder
@@ -95,11 +95,11 @@ moveUp =
 -}
 moveDown : Builder.AnimBuilder -> Builder.AnimBuilder
 moveDown =
-    moveToY 350 (BounceInOutAdvanced { bounces = 5, amplitude = 0.1, decay = 0.1 })
+    moveToY 350 (ElasticInOutCustom 0.9)
 
 
 {-| Return to origin (0, 0) with smooth easing
 -}
 returnToOrigin : Builder.AnimBuilder -> Builder.AnimBuilder
 returnToOrigin =
-    moveToXY 0 0 BounceInOut
+    moveToXY 0 0 (ElasticOutCustom 0.9)
