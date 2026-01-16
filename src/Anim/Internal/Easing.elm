@@ -22,7 +22,7 @@ toCSS maybeEasing =
 easingToCSS : Easing -> String
 easingToCSS easing =
     case easing of
-        Bezier p1x p1y p2x p2y ->
+        CubicBezier p1x p1y p2x p2y ->
             "cubic-bezier("
                 ++ String.fromFloat p1x
                 ++ ", "
@@ -163,7 +163,7 @@ easingToCSS easing =
 toWebAnimations : Easing -> String
 toWebAnimations easing =
     case easing of
-        Bezier p1x p1y p2x p2y ->
+        CubicBezier p1x p1y p2x p2y ->
             "cubic-bezier("
                 ++ String.fromFloat p1x
                 ++ ", "
@@ -304,7 +304,7 @@ toWebAnimations easing =
 toFunction : Easing -> (Float -> Float)
 toFunction easing =
     case easing of
-        Bezier p1x p1y p2x p2y ->
+        CubicBezier p1x p1y p2x p2y ->
             E.bezier p1x p1y p2x p2y
 
         Linear ->

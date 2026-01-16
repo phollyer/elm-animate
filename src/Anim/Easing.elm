@@ -46,9 +46,7 @@ These take a record with multiple parameters for full control.
 {-| Easing functions for animations.
 -}
 type Easing
-    = Bezier Float Float Float Float
-    | Linear
-    | BackIn
+    = BackIn
     | BackOut
     | BackInOut
     | BounceIn
@@ -63,20 +61,22 @@ type Easing
     | CircIn
     | CircOut
     | CircInOut
+    | CubicBezier Float Float Float Float
     | CubicIn
     | CubicOut
     | CubicInOut
     | Custom String
     | Ease
     | EaseIn
-    | EaseInOut
     | EaseOut
+    | EaseInOut
     | ElasticIn
     | ElasticOut
     | ElasticInOut
     | ExpoIn
     | ExpoOut
     | ExpoInOut
+    | Linear
     | QuadIn
     | QuadOut
     | QuadInOut
