@@ -9,13 +9,14 @@ accurate easing curves for keyframe animations.
 
 # Easing Type
 
-For complex easings like Bounce\* and Elastic\*, there are multiple options:
+For complex easings like Back\*, Bounce\* and Elastic\*, there are multiple options:
 
 
 ## Standard Easings:
 
 These use the easing functions from [elm-community/ease](https://package.elm-lang.org/packages/elm-community/easing-functions/latest/Ease).
 
+  - `BackIn`, `BackOut`, `BackInOut`: Predefined back easings
   - `BounceIn`, `BounceOut`, `BounceInOut`: Predefined bounce easings
   - `ElasticIn`, `ElasticOut`, `ElasticInOut`: Predefined elastic easings
 
@@ -24,13 +25,16 @@ These use the easing functions from [elm-community/ease](https://package.elm-lan
 
 These take a `Float` parameter to adjust the behavior.
 
-  - `BounceInCustom amplitude`, `BounceOutCustom amplitude`, `BounceInOutCustom amplitude`: Adjust bounce height
-  - `ElasticInCustom frequency`, `ElasticOutCustom frequency`, `ElasticInOutCustom frequency`: Adjust oscillation frequency
+  - `BackInCustom strength`, `BackOutCustom strength`, `BackInOutCustom strength`: Adjust overshoot amount (0.1-3.0)
+  - `BounceInCustom strength`, `BounceOutCustom strength`, `BounceInOutCustom strength`: Adjust bounce intensity (0.1-1.0)
+  - `ElasticInCustom strength`, `ElasticOutCustom strength`, `ElasticInOutCustom strength`: Adjust oscillation intensity (0.1-1.0)
 
 
 ## Advanced Easings:
 
 These take a record with multiple parameters for full control.
+
+  - `BackInAdvanced { overshoot }`, `BackOutAdvanced { overshoot }`, `BackInOutAdvanced { overshoot }`: Full control over overshoot behavior
 
   - `BounceInAdvanced { bounces, amplitude, decay }`, `BounceOutAdvanced { bounces, amplitude, decay }`, `BounceInOutAdvanced { bounces, amplitude, decay }`: Full control over bounce behavior
 
@@ -49,6 +53,12 @@ type Easing
     = BackIn
     | BackOut
     | BackInOut
+    | BackInCustom Float
+    | BackOutCustom Float
+    | BackInOutCustom Float
+    | BackInAdvanced { overshoot : Float }
+    | BackOutAdvanced { overshoot : Float }
+    | BackInOutAdvanced { overshoot : Float }
     | BounceIn
     | BounceOut
     | BounceInOut
@@ -73,6 +83,12 @@ type Easing
     | ElasticIn
     | ElasticOut
     | ElasticInOut
+    | ElasticInCustom Float
+    | ElasticOutCustom Float
+    | ElasticInOutCustom Float
+    | ElasticInAdvanced { frequency : Float, amplitude : Float, decay : Float }
+    | ElasticOutAdvanced { frequency : Float, amplitude : Float, decay : Float }
+    | ElasticInOutAdvanced { frequency : Float, amplitude : Float, decay : Float }
     | ExpoIn
     | ExpoOut
     | ExpoInOut

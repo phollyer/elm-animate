@@ -120,6 +120,24 @@ easingToCSS easing =
         BackInOut ->
             "cubic-bezier(0.68, -0.6, 0.32, 1.6)"
 
+        BackInCustom _ ->
+            "linear"
+
+        BackOutCustom _ ->
+            "linear"
+
+        BackInOutCustom _ ->
+            "linear"
+
+        BackInAdvanced _ ->
+            "linear"
+
+        BackOutAdvanced _ ->
+            "linear"
+
+        BackInOutAdvanced _ ->
+            "linear"
+
         ElasticIn ->
             "cubic-bezier(0.55, 0.055, 0.675, 0.19)"
 
@@ -128,6 +146,24 @@ easingToCSS easing =
 
         ElasticInOut ->
             "cubic-bezier(0.445, 0.05, 0.55, 0.95)"
+
+        ElasticInCustom _ ->
+            "linear"
+
+        ElasticOutCustom _ ->
+            "linear"
+
+        ElasticInOutCustom _ ->
+            "linear"
+
+        ElasticInAdvanced _ ->
+            "linear"
+
+        ElasticOutAdvanced _ ->
+            "linear"
+
+        ElasticInOutAdvanced _ ->
+            "linear"
 
         BounceIn ->
             "cubic-bezier(0.6, 0.04, 0.98, 0.335)"
@@ -261,6 +297,24 @@ toWebAnimations easing =
         BackInOut ->
             "cubic-bezier(0.68, -0.6, 0.32, 1.6)"
 
+        BackInCustom _ ->
+            "linear"
+
+        BackOutCustom _ ->
+            "linear"
+
+        BackInOutCustom _ ->
+            "linear"
+
+        BackInAdvanced _ ->
+            "linear"
+
+        BackOutAdvanced _ ->
+            "linear"
+
+        BackInOutAdvanced _ ->
+            "linear"
+
         ElasticIn ->
             "linear"
 
@@ -268,6 +322,24 @@ toWebAnimations easing =
             "linear"
 
         ElasticInOut ->
+            "linear"
+
+        ElasticInCustom _ ->
+            "linear"
+
+        ElasticOutCustom _ ->
+            "linear"
+
+        ElasticInOutCustom _ ->
+            "linear"
+
+        ElasticInAdvanced _ ->
+            "linear"
+
+        ElasticOutAdvanced _ ->
+            "linear"
+
+        ElasticInOutAdvanced _ ->
             "linear"
 
         BounceIn ->
@@ -394,6 +466,24 @@ toFunction easing =
         BackInOut ->
             E.inOutBack
 
+        BackInCustom strength ->
+            customBackIn strength
+
+        BackOutCustom strength ->
+            customBackOut strength
+
+        BackInOutCustom strength ->
+            customBackInOut strength
+
+        BackInAdvanced params ->
+            advancedBackIn params
+
+        BackOutAdvanced params ->
+            advancedBackOut params
+
+        BackInOutAdvanced params ->
+            advancedBackInOut params
+
         ElasticIn ->
             E.inElastic
 
@@ -402,6 +492,24 @@ toFunction easing =
 
         ElasticInOut ->
             E.inOutElastic
+
+        ElasticInCustom strength ->
+            customElasticIn strength
+
+        ElasticOutCustom strength ->
+            customElasticOut strength
+
+        ElasticInOutCustom strength ->
+            customElasticInOut strength
+
+        ElasticInAdvanced params ->
+            advancedElasticIn params
+
+        ElasticOutAdvanced params ->
+            advancedElasticOut params
+
+        ElasticInOutAdvanced params ->
+            advancedElasticInOut params
 
         BounceIn ->
             E.inBounce
@@ -571,6 +679,175 @@ advancedBounceOutHelper bounceCount amplitude decay t =
         -- Always 1.0 minus the downward displacement
         -- At localT = 0 or 1, displacement = 0, so result = 1.0
         1.0 - bounceDisplacement
+
+
+
+{- ELASTIC EASING IMPLEMENTATIONS -}
+
+
+{-| Custom elastic easing with simple strength parameter (0.1-1.0).
+Strength controls oscillation intensity.
+-}
+customElasticOut : Float -> Float -> Float
+customElasticOut strength t =
+    let
+        clampedStrength =
+            clamp 0.1 1.0 strength
+
+        -- More strength = more oscillations and higher amplitude
+        frequency =
+            2 + (clampedStrength * 3)
+
+        amplitude =
+            0.5 + (clampedStrength * 0.5)
+
+        decay =
+            6 + (clampedStrength * 2)
+    in
+    advancedElasticOutHelper frequency amplitude decay t
+
+
+customElasticIn : Float -> Float -> Float
+customElasticIn strength t =
+    1.0 - customElasticOut strength (1.0 - t)
+
+
+customElasticInOut : Float -> Float -> Float
+customElasticInOut strength t =
+    if t < 0.5 then
+        customElasticIn strength (t * 2) * 0.5
+
+    else
+        0.5 + (customElasticOut strength ((t - 0.5) * 2) * 0.5)
+
+
+{-| Advanced elastic easing with full parameter control.
+-}
+advancedElasticOut : { frequency : Float, amplitude : Float, decay : Float } -> Float -> Float
+advancedElasticOut params t =
+    advancedElasticOutHelper params.frequency params.amplitude params.decay t
+
+
+advancedElasticIn : { frequency : Float, amplitude : Float, decay : Float } -> Float -> Float
+advancedElasticIn params t =
+    1.0 - advancedElasticOut params (1.0 - t)
+
+
+advancedElasticInOut : { frequency : Float, amplitude : Float, decay : Float } -> Float -> Float
+advancedElasticInOut params t =
+    if t < 0.5 then
+        advancedElasticIn params (t * 2) * 0.5
+
+    else
+        0.5 + (advancedElasticOut params ((t - 0.5) * 2) * 0.5)
+
+
+{-| Helper function for elastic easing with exponential decay and oscillation.
+-}
+advancedElasticOutHelper : Float -> Float -> Float -> Float -> Float
+advancedElasticOutHelper frequency amplitude decay t =
+    if t == 0 then
+        0
+
+    else if t == 1 then
+        1
+
+    else
+        let
+            clampedFrequency =
+                clamp 1 5 frequency
+
+            clampedAmplitude =
+                clamp 0.1 2.0 amplitude
+
+            clampedDecay =
+                clamp 1 10 decay
+
+            -- Exponential decay
+            envelope =
+                clampedAmplitude * (2 ^ (-clampedDecay * t))
+
+            -- Oscillation
+            oscillation =
+                sin ((t * clampedFrequency - 0.25) * 2 * pi)
+        in
+        1 - (envelope * oscillation)
+
+
+
+{- BACK EASING IMPLEMENTATIONS -}
+
+
+{-| Custom back easing with simple strength parameter (0.1-3.0).
+Strength controls overshoot amount.
+-}
+customBackOut : Float -> Float -> Float
+customBackOut strength t =
+    let
+        clampedStrength =
+            clamp 0.1 3.0 strength
+
+        -- Map strength to overshoot amount (standard is 1.70158)
+        overshoot =
+            1.0 + (clampedStrength * 0.70158)
+    in
+    advancedBackOutHelper overshoot t
+
+
+customBackIn : Float -> Float -> Float
+customBackIn strength t =
+    1.0 - customBackOut strength (1.0 - t)
+
+
+customBackInOut : Float -> Float -> Float
+customBackInOut strength t =
+    if t < 0.5 then
+        customBackIn strength (t * 2) * 0.5
+
+    else
+        0.5 + (customBackOut strength ((t - 0.5) * 2) * 0.5)
+
+
+{-| Advanced back easing with full overshoot control.
+-}
+advancedBackOut : { overshoot : Float } -> Float -> Float
+advancedBackOut params t =
+    advancedBackOutHelper params.overshoot t
+
+
+advancedBackIn : { overshoot : Float } -> Float -> Float
+advancedBackIn params t =
+    1.0 - advancedBackOut params (1.0 - t)
+
+
+advancedBackInOut : { overshoot : Float } -> Float -> Float
+advancedBackInOut params t =
+    if t < 0.5 then
+        advancedBackIn params (t * 2) * 0.5
+
+    else
+        0.5 + (advancedBackOut params ((t - 0.5) * 2) * 0.5)
+
+
+{-| Helper function for back easing with configurable overshoot.
+-}
+advancedBackOutHelper : Float -> Float -> Float
+advancedBackOutHelper overshoot t =
+    let
+        clampedOvershoot =
+            clamp 0.5 3.0 overshoot
+
+        s =
+            clampedOvershoot
+
+        p =
+            t - 1
+    in
+    p * p * ((s + 1) * p + s) + 1
+
+
+
+{- KEYFRAME GENERATION -}
 
 
 {-| Generate keyframe progress values for complex easings.
@@ -931,6 +1208,102 @@ generateKeyframes easing =
                     generateBounceKeyframes params.bounces params.amplitude params.decay
             in
             bounceInKeyframes ++ transitionKeyframes ++ bounceOutKeyframes
+
+        ElasticOutCustom strength ->
+            let
+                easingFunction =
+                    customElasticOut strength
+            in
+            List.range 0 (keyframeCount - 1)
+                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
+
+        ElasticInCustom strength ->
+            let
+                easingFunction =
+                    customElasticIn strength
+            in
+            List.range 0 (keyframeCount - 1)
+                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
+
+        ElasticInOutCustom strength ->
+            let
+                easingFunction =
+                    customElasticInOut strength
+            in
+            List.range 0 (keyframeCount - 1)
+                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
+
+        ElasticOutAdvanced params ->
+            let
+                easingFunction =
+                    advancedElasticOut params
+            in
+            List.range 0 (keyframeCount - 1)
+                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
+
+        ElasticInAdvanced params ->
+            let
+                easingFunction =
+                    advancedElasticIn params
+            in
+            List.range 0 (keyframeCount - 1)
+                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
+
+        ElasticInOutAdvanced params ->
+            let
+                easingFunction =
+                    advancedElasticInOut params
+            in
+            List.range 0 (keyframeCount - 1)
+                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
+
+        BackOutCustom strength ->
+            let
+                easingFunction =
+                    customBackOut strength
+            in
+            List.range 0 (keyframeCount - 1)
+                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
+
+        BackInCustom strength ->
+            let
+                easingFunction =
+                    customBackIn strength
+            in
+            List.range 0 (keyframeCount - 1)
+                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
+
+        BackInOutCustom strength ->
+            let
+                easingFunction =
+                    customBackInOut strength
+            in
+            List.range 0 (keyframeCount - 1)
+                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
+
+        BackOutAdvanced params ->
+            let
+                easingFunction =
+                    advancedBackOut params
+            in
+            List.range 0 (keyframeCount - 1)
+                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
+
+        BackInAdvanced params ->
+            let
+                easingFunction =
+                    advancedBackIn params
+            in
+            List.range 0 (keyframeCount - 1)
+                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
+
+        BackInOutAdvanced params ->
+            let
+                easingFunction =
+                    advancedBackInOut params
+            in
+            List.range 0 (keyframeCount - 1)
+                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
 
         _ ->
             -- Standard approach: sample the easing function
