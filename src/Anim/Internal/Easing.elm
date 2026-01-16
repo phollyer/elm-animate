@@ -1175,15 +1175,19 @@ generateKeyframes easing durationMs =
 
         BounceOutAdvanced params ->
             let
+                -- Apply velocity scaling to amplitude
+                scaledAmplitude =
+                    params.amplitude * velocityFactor
+
                 -- Generate 30 keyframes for A->B transition (0->1 linear)
                 transitionKeyframes =
                     List.range 0 29
                         |> List.map (\i -> toFloat i / 29.0)
-                        |> Debug.log ("BounceOutAdvanced transition (bounces=" ++ String.fromInt params.bounces ++ ", amp=" ++ String.fromFloat params.amplitude ++ ", decay=" ++ String.fromFloat params.decay ++ ")")
+                        |> Debug.log ("BounceOutAdvanced transition (bounces=" ++ String.fromInt params.bounces ++ ", amp=" ++ String.fromFloat params.amplitude ++ ", scaled=" ++ String.fromFloat scaledAmplitude ++ ", decay=" ++ String.fromFloat params.decay ++ ", velocity=" ++ String.fromFloat velocityFactor ++ ")")
 
                 -- Generate ONLY the bounce oscillations (no approach)
                 bounceKeyframes =
-                    generateBounceOscillations params.bounces params.amplitude params.decay
+                    generateBounceOscillations params.bounces scaledAmplitude params.decay
                         |> Debug.log "BounceOutAdvanced bounceOscillations"
 
                 allKeyframes =
@@ -1195,12 +1199,16 @@ generateKeyframes easing durationMs =
 
         BounceInAdvanced params ->
             let
+                -- Apply velocity scaling to amplitude
+                scaledAmplitude =
+                    params.amplitude * velocityFactor
+
                 -- Generate small bounces at start that settle to 0
                 bounceKeyframes =
-                    generateBounceOscillations params.bounces params.amplitude params.decay
+                    generateBounceOscillations params.bounces scaledAmplitude params.decay
                         |> List.map (\v -> 1.0 - v)
                         |> List.reverse
-                        |> Debug.log ("BounceInAdvanced oscillations (bounces=" ++ String.fromInt params.bounces ++ ", amp=" ++ String.fromFloat params.amplitude ++ ", decay=" ++ String.fromFloat params.decay ++ ")")
+                        |> Debug.log ("BounceInAdvanced oscillations (bounces=" ++ String.fromInt params.bounces ++ ", amp=" ++ String.fromFloat params.amplitude ++ ", scaled=" ++ String.fromFloat scaledAmplitude ++ ", decay=" ++ String.fromFloat params.decay ++ ", velocity=" ++ String.fromFloat velocityFactor ++ ")")
 
                 -- Generate 30 keyframes for 0->1 transition
                 transitionKeyframes =
@@ -1217,28 +1225,97 @@ generateKeyframes easing durationMs =
 
         BounceInOutAdvanced params ->
             let
-                -- Generate small bounces at start that settle to 0
-                -- Start with tiny oscillations around 0, damping quickly
+                -- Apply velocity scaling to amplitude
+                scaledAmplitude =
+                    params.amplitude * velocityFactor
+
+                -- Helper: Create bounce-in keyframes (bounces at start, around 0)
+                createBounceInKeyframes bounceCnt amp dec =
+                    generateBounceOscillations bounceCnt amp dec
+                        |> List.map (\v -> 1.0 - v)
+                        |> List.reverse
+
+                -- Helper: Create bounce-out keyframes (bounces at end, around 1.0)
+                createBounceOutKeyframes bounceCnt amp dec =
+                    generateBounceOscillations bounceCnt amp dec
+
+                -- Helper: Create transition matching bounce velocities
+                createBounceInOutTransition bounceInFrames bounceOutFrames =
+                    let
+                        startValue =
+                            0.0
+
+                        endValue =
+                            1.0
+
+                        -- Calculate velocity from last few bounce-in frames
+                        bounceInVelocity =
+                            let
+                                lastFrames =
+                                    List.reverse bounceInFrames |> List.take 5
+
+                                first =
+                                    List.head lastFrames |> Maybe.withDefault 0
+
+                                last =
+                                    List.reverse lastFrames |> List.head |> Maybe.withDefault 0
+                            in
+                            abs (first - last) / 4.0
+
+                        -- Calculate velocity from first few bounce-out frames
+                        bounceOutVelocity =
+                            let
+                                firstFrames =
+                                    List.take 5 bounceOutFrames
+
+                                first =
+                                    List.head firstFrames |> Maybe.withDefault 1
+
+                                last =
+                                    List.drop 4 firstFrames |> List.head |> Maybe.withDefault 1
+                            in
+                            abs (first - last) / 4.0
+
+                        avgVelocity =
+                            (bounceInVelocity + bounceOutVelocity) / 2.0
+
+                        distance =
+                            abs (endValue - startValue)
+
+                        frameCount =
+                            if avgVelocity > 0 then
+                                round (distance / (avgVelocity * 2.0)) |> clamp 5 15
+
+                            else
+                                10
+                    in
+                    List.range 0 (frameCount - 1)
+                        |> List.map
+                            (\i ->
+                                let
+                                    t =
+                                        toFloat i / toFloat (frameCount - 1)
+                                in
+                                startValue + (t * (endValue - startValue))
+                            )
+
                 bounceInKeyframes =
-                    generateSmallStartBounces params.bounces params.amplitude params.decay
+                    createBounceInKeyframes params.bounces scaledAmplitude params.decay
                         |> Debug.log "BounceInOutAdvanced bounceIn"
 
-                -- Generate 30 keyframes for A->B transition (0->1 linear)
-                transitionKeyframes =
-                    List.range 0 29
-                        |> List.map (\i -> toFloat i / 29.0)
-                        |> Debug.log "BounceInOutAdvanced transition"
-
-                -- Generate bounce-at-end keyframes (settle to 1.0)
                 bounceOutKeyframes =
-                    generateBounceKeyframes params.bounces params.amplitude params.decay
+                    createBounceOutKeyframes params.bounces scaledAmplitude params.decay
                         |> Debug.log "BounceInOutAdvanced bounceOut"
+
+                transitionKeyframes =
+                    createBounceInOutTransition bounceInKeyframes bounceOutKeyframes
+                        |> Debug.log "BounceInOutAdvanced transition"
 
                 allKeyframes =
                     bounceInKeyframes
                         ++ transitionKeyframes
                         ++ bounceOutKeyframes
-                        |> Debug.log ("BounceInOutAdvanced FINAL (bounces=" ++ String.fromInt params.bounces ++ ", amp=" ++ String.fromFloat params.amplitude ++ ", decay=" ++ String.fromFloat params.decay ++ ")")
+                        |> Debug.log ("BounceInOutAdvanced FINAL (bounces=" ++ String.fromInt params.bounces ++ ", amp=" ++ String.fromFloat params.amplitude ++ ", scaled=" ++ String.fromFloat scaledAmplitude ++ ", velocity=" ++ String.fromFloat velocityFactor ++ ")")
             in
             allKeyframes
 
