@@ -1179,10 +1179,23 @@ generateKeyframes easing durationMs =
                 scaledAmplitude =
                     params.amplitude * velocityFactor
 
-                -- Generate 30 keyframes for A->B transition (0->1 linear)
-                transitionKeyframes =
+                -- Helper: Create QuartIn transition (0->1, start slow, accelerate)
+                createBounceOutTransition =
                     List.range 0 29
-                        |> List.map (\i -> toFloat i / 29.0)
+                        |> List.map
+                            (\i ->
+                                let
+                                    t =
+                                        toFloat i / 29.0
+
+                                    easedT =
+                                        t * t * t * t
+                                in
+                                easedT
+                            )
+
+                transitionKeyframes =
+                    createBounceOutTransition
                         |> Debug.log ("BounceOutAdvanced transition (bounces=" ++ String.fromInt params.bounces ++ ", amp=" ++ String.fromFloat params.amplitude ++ ", scaled=" ++ String.fromFloat scaledAmplitude ++ ", decay=" ++ String.fromFloat params.decay ++ ", velocity=" ++ String.fromFloat velocityFactor ++ ")")
 
                 -- Generate ONLY the bounce oscillations (no approach)
@@ -1210,10 +1223,26 @@ generateKeyframes easing durationMs =
                         |> List.reverse
                         |> Debug.log ("BounceInAdvanced oscillations (bounces=" ++ String.fromInt params.bounces ++ ", amp=" ++ String.fromFloat params.amplitude ++ ", scaled=" ++ String.fromFloat scaledAmplitude ++ ", decay=" ++ String.fromFloat params.decay ++ ", velocity=" ++ String.fromFloat velocityFactor ++ ")")
 
-                -- Generate 30 keyframes for 0->1 transition
-                transitionKeyframes =
+                -- Helper: Create QuartOut transition (0->1, start fast, decelerate)
+                createBounceInTransition =
                     List.range 0 29
-                        |> List.map (\i -> toFloat i / 29.0)
+                        |> List.map
+                            (\i ->
+                                let
+                                    t =
+                                        toFloat i / 29.0
+
+                                    invT =
+                                        1.0 - t
+
+                                    easedT =
+                                        1.0 - (invT * invT * invT * invT)
+                                in
+                                easedT
+                            )
+
+                transitionKeyframes =
+                    createBounceInTransition
                         |> Debug.log "BounceInAdvanced transition"
 
                 allKeyframes =
