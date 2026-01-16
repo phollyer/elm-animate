@@ -9,6 +9,33 @@ accurate easing curves for keyframe animations.
 
 # Easing Type
 
+For complex easings like Bounce\* and Elastic\*, there are multiple options:
+
+
+## Standard Easings:
+
+These use the easing functions from [elm-community/ease](https://package.elm-lang.org/packages/elm-community/easing-functions/latest/Ease).
+
+  - `BounceIn`, `BounceOut`, `BounceInOut`: Predefined bounce easings
+  - `ElasticIn`, `ElasticOut`, `ElasticInOut`: Predefined elastic easings
+
+
+## Custom Easings:
+
+These take a `Float` parameter to adjust the behavior.
+
+  - `BounceInCustom amplitude`, `BounceOutCustom amplitude`, `BounceInOutCustom amplitude`: Adjust bounce height
+  - `ElasticInCustom frequency`, `ElasticOutCustom frequency`, `ElasticInOutCustom frequency`: Adjust oscillation frequency
+
+
+## Advanced Easings:
+
+These take a record with multiple parameters for full control.
+
+  - `BounceInAdvanced { bounces, amplitude, decay }`, `BounceOutAdvanced { bounces, amplitude, decay }`, `BounceInOutAdvanced { bounces, amplitude, decay }`: Full control over bounce behavior
+
+  - `ElasticInAdvanced { frequency, amplitude, decay }`, `ElasticOutAdvanced { frequency, amplitude, decay }`, `ElasticInOutAdvanced { frequency, amplitude, decay }`: Full control over elastic behavior
+
 @docs Easing
 
 -}
@@ -17,12 +44,6 @@ accurate easing curves for keyframe animations.
 
 
 {-| Easing functions for animations.
-
-Custom Bounce Easings:
-
-  - `BounceOutCustom strength`: Simple bounce with strength 0.0-1.0 (0.2 = soft, 0.8 = hard)
-  - `BounceOutAdvanced { bounces, amplitude, decay }`: Full control over bounce behavior
-
 -}
 type Easing
     = Bezier Float Float Float Float
