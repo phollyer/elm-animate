@@ -33,8 +33,11 @@ for elementId builder =
                 _ ->
                     Nothing
 
+        extractBaseline endStates =
+            endStates.backgroundColor
+
         config =
-            PropertyBuilder.createFor extractExisting defaultConfig elementId builder
+            PropertyBuilder.createFor extractExisting extractBaseline defaultConfig elementId builder
     in
     ColorBuilder config <|
         Builder.for elementId builder

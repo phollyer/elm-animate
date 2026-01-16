@@ -47,8 +47,11 @@ for elementId builder =
                 _ ->
                     Nothing
 
+        extractBaseline endStates =
+            endStates.position |> Debug.log "==> endStates.position"
+
         config =
-            PropertyBuilder.createFor extractExisting defaultConfig elementId builder
+            PropertyBuilder.createFor extractExisting extractBaseline defaultConfig elementId builder
     in
     PositionBuilder config (Builder.for elementId builder)
 

@@ -46,9 +46,15 @@ defaultConfig defaultEnd =
     }
 
 
-createFor : (Builder.PropertyConfig -> Maybe (Config a)) -> Config a -> String -> AnimBuilder -> Config a
-createFor extractExisting defaultConfig_ elementId builder =
+createFor : (Builder.PropertyConfig -> Maybe (Config a)) -> (Builder.ElementEndStates -> Maybe a) -> Config a -> String -> AnimBuilder -> Config a
+createFor extractExisting extractBaseline defaultConfig_ elementId builder =
     let
+        -- First check if we have a baseline (current animated state) for this element
+        baselineValue =
+            builder
+                |> Builder.getElementBaseline elementId
+                |> Maybe.andThen extractBaseline
+
         existingConfig =
             builder
                 |> Builder.getElementConfig elementId
@@ -63,7 +69,23 @@ createFor extractExisting defaultConfig_ elementId builder =
         Just config ->
             applyGlobalDefaults builder
                 { config
-                    | start = Just config.end
+                    | start =
+                        -- Use baseline if available, otherwise fall back to config.end
+                        case baselineValue of
+                            Just baseline ->
+                                Just baseline
+
+                            Nothing ->
+                                Just config.end
+                    , end =
+                        -- CRITICAL: Also update end with baseline so property builders
+                        -- (like Position.toX) copy from current animated values, not stale end values
+                        case baselineValue of
+                            Just baseline ->
+                                baseline
+
+                            Nothing ->
+                                config.end
                     , easing = Nothing
                     , delay = Nothing
                     , perspective = Nothing
@@ -75,7 +97,13 @@ createFor extractExisting defaultConfig_ elementId builder =
                 }
 
         Nothing ->
-            applyGlobalDefaults builder defaultConfig_
+            -- New animation, check for baseline as starting point
+            case baselineValue of
+                Just baseline ->
+                    applyGlobalDefaults builder { defaultConfig_ | start = Just baseline, end = baseline }
+
+                Nothing ->
+                    applyGlobalDefaults builder defaultConfig_
 
 
 withSpeed :
