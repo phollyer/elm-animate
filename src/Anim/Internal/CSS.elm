@@ -738,6 +738,7 @@ generateElementAnimation maybeOrder elementId elementConfig =
                 , perspectiveStylesCache = Nothing
                 , animationHistories = Dict.empty
                 , nextAnimationId = 0
+                , elementBaselines = Dict.empty
                 }
                 elementConfig
 
