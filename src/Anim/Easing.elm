@@ -91,7 +91,6 @@ type Easing
     | CubicIn
     | CubicOut
     | CubicInOut
-    | Custom String
     | Ease
     | EaseIn
     | EaseOut

@@ -192,9 +192,6 @@ easingToCSS easing =
         BounceInOutAdvanced _ ->
             "linear"
 
-        Custom value ->
-            value
-
 
 toWebAnimations : Easing -> String
 toWebAnimations easing =
@@ -369,9 +366,6 @@ toWebAnimations easing =
         BounceInOutAdvanced _ ->
             "linear"
 
-        Custom value ->
-            value
-
 
 toFunction : Float -> Easing -> (Float -> Float)
 toFunction durationMs easing =
@@ -541,10 +535,6 @@ toFunction durationMs easing =
 
         BounceInOutAdvanced params ->
             advancedBounceInOut velocityFactor params
-
-        Custom _ ->
-            -- TODO: Handle custom easing functions properly
-            E.inOutQuad
 
 
 {-| Custom bounce easing with simple strength parameter (0.0-1.0).
