@@ -904,14 +904,18 @@ generateKeyframes easing durationMs =
                     in
                     List.drop (firstPeakIndex + 1) allBounceFrames
 
+                -- Velocity-aware transition frame count
+                transitionFrameCount =
+                    round (30.0 / velocityFactor) |> clamp 15 60
+
                 -- Helper: Create QuartIn transition (0->1, start slow, accelerate)
                 createBounceOutTransition =
-                    List.range 0 29
+                    List.range 0 (transitionFrameCount - 1)
                         |> List.map
                             (\i ->
                                 let
                                     t =
-                                        toFloat i / 29.0
+                                        toFloat i / toFloat (transitionFrameCount - 1)
 
                                     easedT =
                                         t * t * t * t
@@ -971,14 +975,18 @@ generateKeyframes easing durationMs =
                     in
                     bouncesOnly
 
+                -- Velocity-aware transition frame count
+                transitionFrameCount =
+                    round (30.0 / velocityFactor) |> clamp 15 60
+
                 -- Helper: Create QuartOut transition (0->1, start fast, decelerate)
                 createBounceInTransition =
-                    List.range 0 29
+                    List.range 0 (transitionFrameCount - 1)
                         |> List.map
                             (\i ->
                                 let
                                     t =
-                                        toFloat i / 29.0
+                                        toFloat i / toFloat (transitionFrameCount - 1)
 
                                     invT =
                                         1.0 - t
@@ -1148,14 +1156,18 @@ generateKeyframes easing durationMs =
                 scaledAmplitude =
                     params.amplitude * velocityFactor
 
+                -- Velocity-aware transition frame count
+                transitionFrameCount =
+                    round (30.0 / velocityFactor) |> clamp 15 60
+
                 -- Helper: Create QuartIn transition (0->1, start slow, accelerate)
                 createBounceOutTransition =
-                    List.range 0 29
+                    List.range 0 (transitionFrameCount - 1)
                         |> List.map
                             (\i ->
                                 let
                                     t =
-                                        toFloat i / 29.0
+                                        toFloat i / toFloat (transitionFrameCount - 1)
 
                                     easedT =
                                         t * t * t * t
@@ -1320,14 +1332,18 @@ generateKeyframes easing durationMs =
                 decay =
                     6 + (clampedStrength * 2)
 
+                -- Velocity-aware transition frame count
+                transitionFrameCount =
+                    round (30.0 / velocityFactor) |> clamp 15 60
+
                 -- Helper: Create QuartIn transition (0->1, start slow, accelerate)
                 createElasticOutTransition =
-                    List.range 0 29
+                    List.range 0 (transitionFrameCount - 1)
                         |> List.map
                             (\i ->
                                 let
                                     t =
-                                        toFloat i / 29.0
+                                        toFloat i / toFloat (transitionFrameCount - 1)
 
                                     easedT =
                                         t * t * t * t
@@ -1368,14 +1384,18 @@ generateKeyframes easing durationMs =
                         |> List.reverse
                         |> List.map (\v -> 1.0 - v)
 
+                -- Velocity-aware transition frame count
+                transitionFrameCount =
+                    round (30.0 / velocityFactor) |> clamp 15 60
+
                 -- Helper: Create QuartOut transition (0->1, fast then decelerate)
                 createElasticInTransition =
-                    List.range 0 29
+                    List.range 0 (transitionFrameCount - 1)
                         |> List.map
                             (\i ->
                                 let
                                     t =
-                                        toFloat i / 29.0
+                                        toFloat i / toFloat (transitionFrameCount - 1)
 
                                     invT =
                                         1.0 - t
@@ -1451,14 +1471,18 @@ generateKeyframes easing durationMs =
                 scaledAmplitude =
                     params.amplitude * velocityFactor
 
+                -- Velocity-aware transition frame count
+                transitionFrameCount =
+                    round (30.0 / velocityFactor) |> clamp 15 60
+
                 -- Helper: Create QuartIn transition (0->1, start slow, accelerate)
                 createElasticOutTransition =
-                    List.range 0 29
+                    List.range 0 (transitionFrameCount - 1)
                         |> List.map
                             (\i ->
                                 let
                                     t =
-                                        toFloat i / 29.0
+                                        toFloat i / toFloat (transitionFrameCount - 1)
 
                                     easedT =
                                         t * t * t * t
@@ -1490,14 +1514,18 @@ generateKeyframes easing durationMs =
                         |> List.reverse
                         |> List.map (\v -> 1.0 - v)
 
+                -- Velocity-aware transition frame count
+                transitionFrameCount =
+                    round (30.0 / velocityFactor) |> clamp 15 60
+
                 -- Helper: Create QuartOut transition (0->1, fast then decelerate)
                 createElasticInTransition =
-                    List.range 0 29
+                    List.range 0 (transitionFrameCount - 1)
                         |> List.map
                             (\i ->
                                 let
                                     t =
-                                        toFloat i / 29.0
+                                        toFloat i / toFloat (transitionFrameCount - 1)
 
                                     invT =
                                         1.0 - t
