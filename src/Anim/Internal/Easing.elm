@@ -1429,19 +1429,26 @@ generateKeyframes easing durationMs =
                 decay =
                     6 + (clampedStrength * 2)
 
-                -- Generate elastic oscillations
-                elasticOscillations =
+                -- In portion: Generate oscillations that settle at 0 from below, scaled to 0-0.5
+                elasticInKeyframes =
+                    generateElasticOscillationsToZero frequency amplitude decay
+                        |> List.map (\v -> v * 0.5)
+
+                _ =
+                    Debug.log "ElasticInOutCustom In"
+                        { inFirst5 = List.take 5 elasticInKeyframes
+                        , inLast5 = List.drop (List.length elasticInKeyframes - 5) elasticInKeyframes
+                        }
+
+                -- Out portion: Use ElasticOut algorithm (oscillations around 1.0)
+                elasticOutKeyframes =
                     generateElasticOscillations frequency amplitude decay
 
-                -- In portion: Use ElasticIn algorithm (reverse + invert) scaled to 0-0.5
-                elasticInKeyframes =
-                    elasticOscillations
-                        |> List.reverse
-                        |> List.map (\v -> (1.0 - v) * 0.5)
-
-                -- Out portion: Use ElasticOut algorithm (oscillations as-is, already around 1.0)
-                elasticOutKeyframes =
-                    elasticOscillations
+                _ =
+                    Debug.log "ElasticInOutCustom Out"
+                        { outFirst5 = List.take 5 elasticOutKeyframes
+                        , outLast5 = List.drop (List.length elasticOutKeyframes - 5) elasticOutKeyframes
+                        }
 
                 -- Create velocity-aware transition
                 transitionFrameCount =
@@ -1550,19 +1557,14 @@ generateKeyframes easing durationMs =
                 scaledAmplitude =
                     params.amplitude * velocityFactor
 
-                -- Generate elastic oscillations
-                elasticOscillations =
-                    generateElasticOscillations params.frequency scaledAmplitude params.decay
-
-                -- In portion: Use ElasticIn algorithm (reverse + invert) scaled to 0-0.5
+                -- In portion: Generate oscillations that settle at 0 from below, scaled to 0-0.5
                 elasticInKeyframes =
-                    elasticOscillations
-                        |> List.reverse
-                        |> List.map (\v -> (1.0 - v) * 0.5)
+                    generateElasticOscillationsToZero params.frequency scaledAmplitude params.decay
+                        |> List.map (\v -> v * 0.5)
 
-                -- Out portion: Use ElasticOut algorithm (oscillations as-is, already around 1.0)
+                -- Out portion: Use ElasticOut algorithm (oscillations around 1.0)
                 elasticOutKeyframes =
-                    elasticOscillations
+                    generateElasticOscillations params.frequency scaledAmplitude params.decay
 
                 -- Create velocity-aware transition
                 transitionFrameCount =
@@ -1888,9 +1890,33 @@ generateElasticOscillations frequency amplitude decay =
         clampedDecay =
             clamp 1 10 decay
 
-        -- Total frames for oscillations
+        -- Calculate number of visible oscillations based on decay
+        -- An oscillation is visible if its amplitude > 0.01 (1% of range)
+        minVisibleAmplitude =
+            0.01
+
+        -- Solve: amplitude * (2^(-decay * t)) > minVisibleAmplitude
+        -- t < log(minVisibleAmplitude / amplitude) / (-decay * log(2))
+        visibleDuration =
+            if clampedAmplitude > minVisibleAmplitude then
+                logBase 2 (minVisibleAmplitude / clampedAmplitude) / -clampedDecay
+
+            else
+                0.0
+
+        -- Number of oscillation cycles = frequency * duration
+        oscillationCount =
+            clampedFrequency * visibleDuration
+
+        -- Frames per oscillation cycle (minimum 8 for smooth sine wave)
+        framesPerCycle =
+            8
+
+        -- Total frames based on physics
         oscillationFrames =
-            52
+            round (oscillationCount * toFloat framesPerCycle)
+                |> max 30
+                |> min 100
 
         oscillations =
             List.range 0 oscillationFrames
@@ -1911,6 +1937,76 @@ generateElasticOscillations frequency amplitude decay =
 
                             value =
                                 1 - (envelope * oscillation)
+                        in
+                        value
+                    )
+    in
+    oscillations
+
+
+{-| Generate elastic oscillations that settle at 0.0 (for ElasticIn).
+These oscillate around 0 and end approaching from below (from negative peak).
+-}
+generateElasticOscillationsToZero : Float -> Float -> Float -> List Float
+generateElasticOscillationsToZero frequency amplitude decay =
+    let
+        clampedFrequency =
+            clamp 1 5 frequency
+
+        clampedAmplitude =
+            clamp 0.1 2.0 amplitude
+
+        clampedDecay =
+            clamp 1 10 decay
+
+        -- Calculate number of visible oscillations based on decay
+        -- An oscillation is visible if its amplitude > 0.01 (1% of range)
+        minVisibleAmplitude =
+            0.01
+
+        -- Solve: amplitude * (2^(-decay * t)) > minVisibleAmplitude
+        -- t < log(minVisibleAmplitude / amplitude) / (-decay * log(2))
+        visibleDuration =
+            if clampedAmplitude > minVisibleAmplitude then
+                logBase 2 (minVisibleAmplitude / clampedAmplitude) / -clampedDecay
+
+            else
+                0.0
+
+        -- Number of oscillation cycles = frequency * duration
+        oscillationCount =
+            clampedFrequency * visibleDuration
+
+        -- Frames per oscillation cycle (minimum 8 for smooth sine wave)
+        framesPerCycle =
+            8
+
+        -- Total frames based on physics
+        oscillationFrames =
+            round (oscillationCount * toFloat framesPerCycle)
+                |> max 30
+                |> min 100
+
+        oscillations =
+            List.range 0 oscillationFrames
+                |> List.map
+                    (\i ->
+                        let
+                            -- Start from 0 so oscillations begin immediately
+                            t =
+                                toFloat i / toFloat oscillationFrames
+
+                            -- Exponential decay
+                            envelope =
+                                clampedAmplitude * (2 ^ (-clampedDecay * t))
+
+                            -- Oscillation with phase shift to start from positive
+                            oscillation =
+                                sin (t * clampedFrequency * 2 * pi)
+
+                            -- Oscillate around 0, settling at 0
+                            value =
+                                envelope * oscillation
                         in
                         value
                     )
