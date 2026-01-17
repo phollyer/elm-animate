@@ -1433,20 +1433,15 @@ generateKeyframes easing durationMs =
                 transitionFrameCount =
                     round (30.0 / velocityFactor) |> clamp 15 60
 
-                -- Oscillations should respect the velocity of the transition
-                -- Scale frames per cycle to match transition pacing
-                velocityAwareFramesPerCycle =
-                    round (toFloat transitionFrameCount * 0.49) |> max 8
-
                 -- In portion: Use same oscillations as ElasticIn (reversed and inverted)
                 elasticInOscillations =
-                    generateElasticOscillationsWithFrames frequency amplitude decay velocityAwareFramesPerCycle
+                    generateElasticOscillations frequency amplitude decay
                         |> List.reverse
                         |> List.map (\v -> 1.0 - v)
 
                 -- Out portion: Use same oscillations as ElasticOut
                 elasticOutOscillations =
-                    generateElasticOscillationsWithFrames frequency amplitude decay velocityAwareFramesPerCycle
+                    generateElasticOscillations frequency amplitude decay
 
                 -- Calculate velocities at connection points
                 -- Last In oscillation: approach 0 from below (negative to 0)
@@ -1495,7 +1490,6 @@ generateKeyframes easing durationMs =
                     Debug.log "ElasticInOutCustom"
                         { inFrames = List.length elasticInOscillations
                         , transitionFrames = List.length transitionKeyframes
-                        , velocityAwareFramesPerCycle = velocityAwareFramesPerCycle
                         , outFrames = List.length elasticOutOscillations
                         , lastInVelocity = lastInVelocity
                         , firstOutVelocity = firstOutVelocity
@@ -1594,20 +1588,15 @@ generateKeyframes easing durationMs =
                 transitionFrameCount =
                     round (30.0 / velocityFactor) |> clamp 15 60
 
-                -- Oscillations should respect the velocity of the transition
-                -- Scale frames per cycle to match transition pacing
-                velocityAwareFramesPerCycle =
-                    round (toFloat transitionFrameCount * 0.49) |> max 8
-
                 -- In portion: Use same oscillations as ElasticIn (reversed and inverted)
                 elasticInOscillations =
-                    generateElasticOscillationsWithFrames params.frequency scaledAmplitude params.decay velocityAwareFramesPerCycle
+                    generateElasticOscillations params.frequency scaledAmplitude params.decay
                         |> List.reverse
                         |> List.map (\v -> 1.0 - v)
 
                 -- Out portion: Use same oscillations as ElasticOut
                 elasticOutOscillations =
-                    generateElasticOscillationsWithFrames params.frequency scaledAmplitude params.decay velocityAwareFramesPerCycle
+                    generateElasticOscillations params.frequency scaledAmplitude params.decay
 
                 -- Calculate velocities at connection points
                 -- Last In oscillation: approach 0 from below (negative to 0)
@@ -1657,7 +1646,6 @@ generateKeyframes easing durationMs =
                         { inFrames = List.length elasticInOscillations
                         , transitionFrames = List.length transitionKeyframes
                         , outFrames = List.length elasticOutOscillations
-                        , velocityAwareFramesPerCycle = velocityAwareFramesPerCycle
                         , lastInVelocity = lastInVelocity
                         , firstOutVelocity = firstOutVelocity
                         , lastInValues = List.drop (List.length elasticInOscillations - 3) elasticInOscillations
