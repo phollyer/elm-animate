@@ -1890,13 +1890,10 @@ generateElasticOscillations frequency amplitude decay =
         clampedDecay =
             clamp 1 10 decay
 
-        -- Calculate number of visible oscillations based on decay
-        -- An oscillation is visible if its amplitude > 0.01 (1% of range)
+        -- Calculate number of visible oscillation cycles based on decay
         minVisibleAmplitude =
             0.01
 
-        -- Solve: amplitude * (2^(-decay * t)) > minVisibleAmplitude
-        -- t < log(minVisibleAmplitude / amplitude) / (-decay * log(2))
         visibleDuration =
             if clampedAmplitude > minVisibleAmplitude then
                 logBase 2 (minVisibleAmplitude / clampedAmplitude) / -clampedDecay
@@ -1904,44 +1901,91 @@ generateElasticOscillations frequency amplitude decay =
             else
                 0.0
 
-        -- Number of oscillation cycles = frequency * duration
-        oscillationCount =
-            clampedFrequency * visibleDuration
+        -- Total oscillation cycles
+        totalCycles =
+            round (clampedFrequency * visibleDuration)
+                |> max 3
+                |> min 12
 
-        -- Frames per oscillation cycle (minimum 8 for smooth sine wave)
-        framesPerCycle =
-            8
-
-        -- Total frames based on physics
-        oscillationFrames =
-            round (oscillationCount * toFloat framesPerCycle)
-                |> max 30
-                |> min 100
-
-        oscillations =
-            List.range 0 oscillationFrames
+        -- Calculate amplitude for each oscillation cycle (exponentially decaying)
+        cycleAmplitudes =
+            List.range 0 (totalCycles - 1)
                 |> List.map
-                    (\i ->
+                    (\cycleIndex ->
                         let
-                            -- Start from 0 so oscillations begin immediately
-                            t =
-                                toFloat i / toFloat oscillationFrames
+                            -- Time at the start of this cycle
+                            cycleTime =
+                                toFloat cycleIndex / clampedFrequency
 
-                            -- Exponential decay
-                            envelope =
-                                clampedAmplitude * (2 ^ (-clampedDecay * t))
-
-                            -- Oscillation
-                            oscillation =
-                                sin (t * clampedFrequency * 2 * pi)
-
-                            value =
-                                1 - (envelope * oscillation)
+                            -- Envelope amplitude at this time
+                            cycleAmplitude =
+                                clampedAmplitude * (2 ^ (-clampedDecay * cycleTime))
                         in
-                        value
+                        cycleAmplitude
                     )
+
+        -- Allocate frames per cycle proportional to amplitude (like bounce uses sqrt(amplitude))
+        -- Larger oscillations get more frames for smoother motion
+        totalCycleTime =
+            List.sum cycleAmplitudes
+
+        -- More total frames for elastic than bounce for smoother sine waves
+        totalFrames =
+            80
+
+        -- Generate frames for each cycle
+        allFrames =
+            List.indexedMap
+                (\cycleIndex cycleAmplitude ->
+                    let
+                        -- Frames for this cycle based on its amplitude
+                        framesForCycle =
+                            max 8 (round (cycleAmplitude / totalCycleTime * toFloat totalFrames))
+
+                        cycleFrames =
+                            List.range 0 framesForCycle
+                                |> List.map
+                                    (\frameIndex ->
+                                        let
+                                            -- Local t within this cycle (0 to 1)
+                                            localT =
+                                                toFloat frameIndex / toFloat framesForCycle
+
+                                            -- Global time
+                                            globalTime =
+                                                (toFloat cycleIndex + localT) / clampedFrequency
+
+                                            -- Envelope at this time
+                                            envelope =
+                                                clampedAmplitude * (2 ^ (-clampedDecay * globalTime))
+
+                                            -- Sine wave for this cycle
+                                            -- Negative sine so it goes negative first (for proper ElasticIn direction)
+                                            oscillation =
+                                                -(sin (localT * 2 * pi))
+
+                                            value =
+                                                1 - (envelope * oscillation)
+                                        in
+                                        value
+                                    )
+                    in
+                    cycleFrames
+                )
+                cycleAmplitudes
+                |> List.concat
+
+        _ =
+            Debug.log "ElasticOscillations"
+                { totalCycles = totalCycles
+                , firstCycle = List.head cycleAmplitudes
+                , lastCycle = List.reverse cycleAmplitudes |> List.head
+                , first5Frames = List.take 5 allFrames
+                , last5Frames = List.drop (List.length allFrames - 5) allFrames
+                , totalFrames = List.length allFrames
+                }
     in
-    oscillations
+    allFrames
 
 
 {-| Generate elastic oscillations that settle at 0.0 (for ElasticIn).
@@ -1959,13 +2003,10 @@ generateElasticOscillationsToZero frequency amplitude decay =
         clampedDecay =
             clamp 1 10 decay
 
-        -- Calculate number of visible oscillations based on decay
-        -- An oscillation is visible if its amplitude > 0.01 (1% of range)
+        -- Calculate number of visible oscillation cycles based on decay
         minVisibleAmplitude =
             0.01
 
-        -- Solve: amplitude * (2^(-decay * t)) > minVisibleAmplitude
-        -- t < log(minVisibleAmplitude / amplitude) / (-decay * log(2))
         visibleDuration =
             if clampedAmplitude > minVisibleAmplitude then
                 logBase 2 (minVisibleAmplitude / clampedAmplitude) / -clampedDecay
@@ -1973,42 +2014,87 @@ generateElasticOscillationsToZero frequency amplitude decay =
             else
                 0.0
 
-        -- Number of oscillation cycles = frequency * duration
-        oscillationCount =
-            clampedFrequency * visibleDuration
+        -- Total oscillation cycles
+        totalCycles =
+            round (clampedFrequency * visibleDuration)
+                |> max 3
+                |> min 12
 
-        -- Frames per oscillation cycle (minimum 8 for smooth sine wave)
-        framesPerCycle =
-            8
-
-        -- Total frames based on physics
-        oscillationFrames =
-            round (oscillationCount * toFloat framesPerCycle)
-                |> max 30
-                |> min 100
-
-        oscillations =
-            List.range 0 oscillationFrames
+        -- Calculate amplitude for each oscillation cycle (exponentially decaying)
+        cycleAmplitudes =
+            List.range 0 (totalCycles - 1)
                 |> List.map
-                    (\i ->
+                    (\cycleIndex ->
                         let
-                            -- Start from 0 so oscillations begin immediately
-                            t =
-                                toFloat i / toFloat oscillationFrames
+                            -- Time at the start of this cycle
+                            cycleTime =
+                                toFloat cycleIndex / clampedFrequency
 
-                            -- Exponential decay
-                            envelope =
-                                clampedAmplitude * (2 ^ (-clampedDecay * t))
-
-                            -- Oscillation with phase shift to start from positive
-                            oscillation =
-                                sin (t * clampedFrequency * 2 * pi)
-
-                            -- Oscillate around 0, settling at 0
-                            value =
-                                envelope * oscillation
+                            -- Envelope amplitude at this time
+                            cycleAmplitude =
+                                clampedAmplitude * (2 ^ (-clampedDecay * cycleTime))
                         in
-                        value
+                        cycleAmplitude
                     )
+
+        -- Allocate frames per cycle proportional to amplitude (like bounce uses sqrt(amplitude))
+        -- Larger oscillations get more frames for smoother motion
+        totalCycleTime =
+            List.sum cycleAmplitudes
+
+        -- More total frames for elastic than bounce for smoother sine waves
+        totalFrames =
+            80
+
+        -- Generate frames for each cycle
+        allFrames =
+            List.indexedMap
+                (\cycleIndex cycleAmplitude ->
+                    let
+                        -- Frames for this cycle based on its amplitude
+                        framesForCycle =
+                            max 8 (round (cycleAmplitude / totalCycleTime * toFloat totalFrames))
+
+                        cycleFrames =
+                            List.range 0 framesForCycle
+                                |> List.map
+                                    (\frameIndex ->
+                                        let
+                                            -- Local t within this cycle (0 to 1)
+                                            localT =
+                                                toFloat frameIndex / toFloat framesForCycle
+
+                                            -- Global time
+                                            globalTime =
+                                                (toFloat cycleIndex + localT) / clampedFrequency
+
+                                            -- Envelope at this time
+                                            envelope =
+                                                clampedAmplitude * (2 ^ (-clampedDecay * globalTime))
+
+                                            -- Sine wave for this cycle (oscillate around 0)
+                                            oscillation =
+                                                sin (localT * 2 * pi)
+
+                                            value =
+                                                envelope * oscillation
+                                        in
+                                        value
+                                    )
+                    in
+                    cycleFrames
+                )
+                cycleAmplitudes
+                |> List.concat
+
+        _ =
+            Debug.log "ElasticToZero"
+                { totalCycles = totalCycles
+                , firstCycle = List.head cycleAmplitudes
+                , lastCycle = List.reverse cycleAmplitudes |> List.head
+                , first5Frames = List.take 5 allFrames
+                , last5Frames = List.drop (List.length allFrames - 5) allFrames
+                , totalFrames = List.length allFrames
+                }
     in
-    oscillations
+    allFrames

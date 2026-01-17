@@ -81,7 +81,7 @@ moveLeft =
 -}
 moveRight : Builder.AnimBuilder -> Builder.AnimBuilder
 moveRight =
-    moveToX 450 (ElasticInCustom 0.9)
+    moveToX 450 (ElasticInCustom 0.1)
 
 
 {-| Move to the top edge (Y=0) with BounceInOut effect
