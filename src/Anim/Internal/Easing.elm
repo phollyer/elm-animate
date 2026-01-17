@@ -1332,9 +1332,10 @@ generateKeyframes easing durationMs =
                 decay =
                     6 + (clampedStrength * 2)
 
-                -- Velocity-aware transition frame count
+                -- Transition should take the full duration
+                -- At 60fps: frames = durationMs / 16.67ms
                 transitionFrameCount =
-                    round (30.0 / velocityFactor) |> clamp 15 60
+                    round (durationMs / 16.67) |> max 10
 
                 -- Helper: Create QuartIn transition (0->1, start slow, accelerate)
                 createElasticOutTransition =
@@ -1384,9 +1385,10 @@ generateKeyframes easing durationMs =
                         |> List.reverse
                         |> List.map (\v -> 1.0 - v)
 
-                -- Velocity-aware transition frame count
+                -- Transition should take the full duration
+                -- At 60fps: frames = durationMs / 16.67ms
                 transitionFrameCount =
-                    round (30.0 / velocityFactor) |> clamp 15 60
+                    round (durationMs / 16.67) |> max 10
 
                 -- Helper: Create QuartOut transition (0->1, fast then decelerate)
                 createElasticInTransition =
@@ -1429,9 +1431,10 @@ generateKeyframes easing durationMs =
                 decay =
                     6 + (clampedStrength * 2)
 
-                -- Calculate transition frame count based on velocity (respects animation speed/duration)
+                -- Transition should take the full duration
+                -- At 60fps: frames = durationMs / 16.67ms
                 transitionFrameCount =
-                    round (30.0 / velocityFactor) |> clamp 15 60
+                    round (durationMs / 16.67) |> max 10
 
                 -- In portion: Use same oscillations as ElasticIn (reversed and inverted)
                 elasticInOscillations =
@@ -1548,9 +1551,10 @@ generateKeyframes easing durationMs =
                         |> List.reverse
                         |> List.map (\v -> 1.0 - v)
 
-                -- Velocity-aware transition frame count
+                -- Transition should take the full duration
+                -- At 60fps: frames = durationMs / 16.67ms
                 transitionFrameCount =
-                    round (30.0 / velocityFactor) |> clamp 15 60
+                    round (durationMs / 16.67) |> max 10
 
                 -- Helper: Create QuartOut transition (0->1, fast then decelerate)
                 createElasticInTransition =
@@ -1584,9 +1588,10 @@ generateKeyframes easing durationMs =
                 scaledAmplitude =
                     params.amplitude * velocityFactor
 
-                -- Calculate transition frame count based on velocity (respects animation speed/duration)
+                -- Transition should take the full duration
+                -- At 60fps: frames = durationMs / 16.67ms
                 transitionFrameCount =
-                    round (30.0 / velocityFactor) |> clamp 15 60
+                    round (durationMs / 16.67) |> max 10
 
                 -- In portion: Use same oscillations as ElasticIn (reversed and inverted)
                 elasticInOscillations =
