@@ -1307,51 +1307,256 @@ generateKeyframes easing durationMs =
 
         ElasticOutCustom strength ->
             let
-                easingFunction =
-                    customElasticOut velocityFactor strength
+                clampedStrength =
+                    clamp 0.1 1.0 strength
+
+                -- More strength = more oscillations and higher amplitude
+                frequency =
+                    2 + (clampedStrength * 3)
+
+                amplitude =
+                    (0.5 + (clampedStrength * 0.5)) * velocityFactor
+
+                decay =
+                    6 + (clampedStrength * 2)
+
+                -- Helper: Create QuartIn transition (0->1, start slow, accelerate)
+                createElasticOutTransition =
+                    List.range 0 29
+                        |> List.map
+                            (\i ->
+                                let
+                                    t =
+                                        toFloat i / 29.0
+
+                                    easedT =
+                                        t * t * t * t
+                                in
+                                easedT
+                            )
+
+                transitionKeyframes =
+                    createElasticOutTransition
+
+                -- Generate ONLY the elastic oscillations
+                oscillationKeyframes =
+                    generateElasticOscillations frequency amplitude decay
+
+                allKeyframes =
+                    transitionKeyframes ++ oscillationKeyframes
             in
-            List.range 0 (keyframeCount - 1)
-                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
+            allKeyframes
 
         ElasticInCustom strength ->
             let
-                easingFunction =
-                    customElasticIn velocityFactor strength
+                clampedStrength =
+                    clamp 0.1 1.0 strength
+
+                -- More strength = more oscillations and higher amplitude
+                frequency =
+                    2 + (clampedStrength * 3)
+
+                amplitude =
+                    (0.5 + (clampedStrength * 0.5)) * velocityFactor
+
+                decay =
+                    6 + (clampedStrength * 2)
+
+                -- Generate ONLY the elastic oscillations (reversed for In)
+                oscillationKeyframes =
+                    generateElasticOscillations frequency amplitude decay
+                        |> List.reverse
+                        |> List.map (\v -> 1.0 - v)
+
+                -- Helper: Create QuartOut transition (0->1, fast then decelerate)
+                createElasticInTransition =
+                    List.range 0 29
+                        |> List.map
+                            (\i ->
+                                let
+                                    t =
+                                        toFloat i / 29.0
+
+                                    invT =
+                                        1.0 - t
+
+                                    easedT =
+                                        1.0 - (invT * invT * invT * invT)
+                                in
+                                easedT
+                            )
+
+                transitionKeyframes =
+                    createElasticInTransition
+
+                allKeyframes =
+                    oscillationKeyframes ++ transitionKeyframes
             in
-            List.range 0 (keyframeCount - 1)
-                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
+            allKeyframes
 
         ElasticInOutCustom strength ->
             let
-                easingFunction =
-                    customElasticInOut velocityFactor strength
+                clampedStrength =
+                    clamp 0.1 1.0 strength
+
+                -- More strength = more oscillations and higher amplitude
+                frequency =
+                    2 + (clampedStrength * 3)
+
+                amplitude =
+                    (0.5 + (clampedStrength * 0.5)) * velocityFactor
+
+                decay =
+                    6 + (clampedStrength * 2)
+
+                -- Generate elastic oscillations
+                elasticOscillations =
+                    generateElasticOscillations frequency amplitude decay
+
+                -- In portion: Use ElasticIn algorithm (reverse + invert) scaled to 0-0.5
+                elasticInKeyframes =
+                    elasticOscillations
+                        |> List.reverse
+                        |> List.map (\v -> (1.0 - v) * 0.5)
+
+                -- Out portion: Use ElasticOut algorithm (oscillations as-is, already around 1.0)
+                elasticOutKeyframes =
+                    elasticOscillations
+
+                -- Create velocity-aware transition
+                transitionFrameCount =
+                    round (30.0 * velocityFactor) |> clamp 10 40
+
+                transitionKeyframes =
+                    List.range 0 (transitionFrameCount - 1)
+                        |> List.map
+                            (\i ->
+                                let
+                                    t =
+                                        toFloat i / toFloat (transitionFrameCount - 1)
+                                in
+                                0.5 - (0.5 * cos (t * pi))
+                            )
+
+                allKeyframes =
+                    elasticInKeyframes
+                        ++ transitionKeyframes
+                        ++ elasticOutKeyframes
             in
-            List.range 0 (keyframeCount - 1)
-                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
+            allKeyframes
 
         ElasticOutAdvanced params ->
             let
-                easingFunction =
-                    advancedElasticOut velocityFactor params
+                -- Apply velocity scaling to amplitude
+                scaledAmplitude =
+                    params.amplitude * velocityFactor
+
+                -- Helper: Create QuartIn transition (0->1, start slow, accelerate)
+                createElasticOutTransition =
+                    List.range 0 29
+                        |> List.map
+                            (\i ->
+                                let
+                                    t =
+                                        toFloat i / 29.0
+
+                                    easedT =
+                                        t * t * t * t
+                                in
+                                easedT
+                            )
+
+                transitionKeyframes =
+                    createElasticOutTransition
+
+                -- Generate ONLY the elastic oscillations
+                oscillationKeyframes =
+                    generateElasticOscillations params.frequency scaledAmplitude params.decay
+
+                allKeyframes =
+                    transitionKeyframes ++ oscillationKeyframes
             in
-            List.range 0 (keyframeCount - 1)
-                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
+            allKeyframes
 
         ElasticInAdvanced params ->
             let
-                easingFunction =
-                    advancedElasticIn velocityFactor params
+                -- Apply velocity scaling to amplitude
+                scaledAmplitude =
+                    params.amplitude * velocityFactor
+
+                -- Generate ONLY the elastic oscillations (reversed for In)
+                oscillationKeyframes =
+                    generateElasticOscillations params.frequency scaledAmplitude params.decay
+                        |> List.reverse
+                        |> List.map (\v -> 1.0 - v)
+
+                -- Helper: Create QuartOut transition (0->1, fast then decelerate)
+                createElasticInTransition =
+                    List.range 0 29
+                        |> List.map
+                            (\i ->
+                                let
+                                    t =
+                                        toFloat i / 29.0
+
+                                    invT =
+                                        1.0 - t
+
+                                    easedT =
+                                        1.0 - (invT * invT * invT * invT)
+                                in
+                                easedT
+                            )
+
+                transitionKeyframes =
+                    createElasticInTransition
+
+                allKeyframes =
+                    oscillationKeyframes ++ transitionKeyframes
             in
-            List.range 0 (keyframeCount - 1)
-                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
+            allKeyframes
 
         ElasticInOutAdvanced params ->
             let
-                easingFunction =
-                    advancedElasticInOut velocityFactor params
+                -- Apply velocity scaling to amplitude
+                scaledAmplitude =
+                    params.amplitude * velocityFactor
+
+                -- Generate elastic oscillations
+                elasticOscillations =
+                    generateElasticOscillations params.frequency scaledAmplitude params.decay
+
+                -- In portion: Use ElasticIn algorithm (reverse + invert) scaled to 0-0.5
+                elasticInKeyframes =
+                    elasticOscillations
+                        |> List.reverse
+                        |> List.map (\v -> (1.0 - v) * 0.5)
+
+                -- Out portion: Use ElasticOut algorithm (oscillations as-is, already around 1.0)
+                elasticOutKeyframes =
+                    elasticOscillations
+
+                -- Create velocity-aware transition
+                transitionFrameCount =
+                    round (30.0 * velocityFactor) |> clamp 10 40
+
+                transitionKeyframes =
+                    List.range 0 (transitionFrameCount - 1)
+                        |> List.map
+                            (\i ->
+                                let
+                                    t =
+                                        toFloat i / toFloat (transitionFrameCount - 1)
+                                in
+                                0.5 - (0.5 * cos (t * pi))
+                            )
+
+                allKeyframes =
+                    elasticInKeyframes
+                        ++ transitionKeyframes
+                        ++ elasticOutKeyframes
             in
-            List.range 0 (keyframeCount - 1)
-                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
+            allKeyframes
 
         BackOutCustom strength ->
             let
@@ -1638,3 +1843,48 @@ generateBounceOscillations bounces firstAmplitude coefficientOfRestitution =
                 |> List.concat
     in
     bounces_
+
+
+{-| Generate ONLY elastic oscillations (no transition phase) for use with separate transition keyframes.
+Returns keyframes that oscillate around 1.0 with exponential decay.
+-}
+generateElasticOscillations : Float -> Float -> Float -> List Float
+generateElasticOscillations frequency amplitude decay =
+    let
+        clampedFrequency =
+            clamp 1 5 frequency
+
+        clampedAmplitude =
+            clamp 0.1 2.0 amplitude
+
+        clampedDecay =
+            clamp 1 10 decay
+
+        -- Total frames for oscillations
+        oscillationFrames =
+            52
+
+        oscillations =
+            List.range 0 oscillationFrames
+                |> List.map
+                    (\i ->
+                        let
+                            -- Start from 0 so oscillations begin immediately
+                            t =
+                                toFloat i / toFloat oscillationFrames
+
+                            -- Exponential decay
+                            envelope =
+                                clampedAmplitude * (2 ^ (-clampedDecay * t))
+
+                            -- Oscillation
+                            oscillation =
+                                sin (t * clampedFrequency * 2 * pi)
+
+                            value =
+                                1 - (envelope * oscillation)
+                        in
+                        value
+                    )
+    in
+    oscillations
