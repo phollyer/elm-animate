@@ -1429,30 +1429,45 @@ generateKeyframes easing durationMs =
                 decay =
                     6 + (clampedStrength * 2)
 
-                -- In portion: Generate oscillations that settle at 0 from below, scaled to 0-0.5
-                elasticInKeyframes =
-                    generateElasticOscillationsToZero frequency amplitude decay
-                        |> List.map (\v -> v * 0.5)
+                -- In portion: Use same oscillations as ElasticIn (reversed and inverted)
+                elasticInOscillations =
+                    generateElasticOscillations frequency amplitude decay
+                        |> List.reverse
+                        |> List.map (\v -> 1.0 - v)
 
-                _ =
-                    Debug.log "ElasticInOutCustom In"
-                        { inFirst5 = List.take 5 elasticInKeyframes
-                        , inLast5 = List.drop (List.length elasticInKeyframes - 5) elasticInKeyframes
-                        }
-
-                -- Out portion: Use ElasticOut algorithm (oscillations around 1.0)
-                elasticOutKeyframes =
+                -- Out portion: Use same oscillations as ElasticOut
+                elasticOutOscillations =
                     generateElasticOscillations frequency amplitude decay
 
-                _ =
-                    Debug.log "ElasticInOutCustom Out"
-                        { outFirst5 = List.take 5 elasticOutKeyframes
-                        , outLast5 = List.drop (List.length elasticOutKeyframes - 5) elasticOutKeyframes
-                        }
+                -- Calculate velocities at connection points
+                -- Last In oscillation: approach 0 from below (negative to 0)
+                lastInFrames =
+                    List.drop (List.length elasticInOscillations - 2) elasticInOscillations
 
-                -- Create velocity-aware transition
+                lastInVelocity =
+                    case ( List.head lastInFrames, List.head (List.drop 1 lastInFrames) ) of
+                        ( Just v1, Just v2 ) ->
+                            v2 - v1
+
+                        _ ->
+                            0.02
+
+                -- First Out oscillation: leave 1 going negative initially
+                firstOutFrames =
+                    List.take 2 elasticOutOscillations
+
+                firstOutVelocity =
+                    case ( List.head firstOutFrames, List.head (List.drop 1 firstOutFrames) ) of
+                        ( Just v1, Just v2 ) ->
+                            v2 - v1
+
+                        _ ->
+                            -0.02
+
+                -- Transition needs to smoothly connect from velocity matching last In to first Out
+                -- Linear transition since velocities match
                 transitionFrameCount =
-                    round (30.0 * velocityFactor) |> clamp 10 40
+                    round (30.0 / velocityFactor) |> clamp 15 60
 
                 transitionKeyframes =
                     List.range 0 (transitionFrameCount - 1)
@@ -1462,13 +1477,24 @@ generateKeyframes easing durationMs =
                                     t =
                                         toFloat i / toFloat (transitionFrameCount - 1)
                                 in
-                                0.5 - (0.5 * cos (t * pi))
+                                t
                             )
 
                 allKeyframes =
-                    elasticInKeyframes
+                    elasticInOscillations
                         ++ transitionKeyframes
-                        ++ elasticOutKeyframes
+                        ++ elasticOutOscillations
+
+                _ =
+                    Debug.log "ElasticInOutCustom"
+                        { inFrames = List.length elasticInOscillations
+                        , transitionFrames = List.length transitionKeyframes
+                        , outFrames = List.length elasticOutOscillations
+                        , lastInVelocity = lastInVelocity
+                        , firstOutVelocity = firstOutVelocity
+                        , lastInValues = List.drop (List.length elasticInOscillations - 3) elasticInOscillations
+                        , firstOutValues = List.take 3 elasticOutOscillations
+                        }
             in
             allKeyframes
 
@@ -1557,18 +1583,45 @@ generateKeyframes easing durationMs =
                 scaledAmplitude =
                     params.amplitude * velocityFactor
 
-                -- In portion: Generate oscillations that settle at 0 from below, scaled to 0-0.5
-                elasticInKeyframes =
-                    generateElasticOscillationsToZero params.frequency scaledAmplitude params.decay
-                        |> List.map (\v -> v * 0.5)
+                -- In portion: Use same oscillations as ElasticIn (reversed and inverted)
+                elasticInOscillations =
+                    generateElasticOscillations params.frequency scaledAmplitude params.decay
+                        |> List.reverse
+                        |> List.map (\v -> 1.0 - v)
 
-                -- Out portion: Use ElasticOut algorithm (oscillations around 1.0)
-                elasticOutKeyframes =
+                -- Out portion: Use same oscillations as ElasticOut
+                elasticOutOscillations =
                     generateElasticOscillations params.frequency scaledAmplitude params.decay
 
-                -- Create velocity-aware transition
+                -- Calculate velocities at connection points
+                -- Last In oscillation: approach 0 from below (negative to 0)
+                lastInFrames =
+                    List.drop (List.length elasticInOscillations - 2) elasticInOscillations
+
+                lastInVelocity =
+                    case ( List.head lastInFrames, List.head (List.drop 1 lastInFrames) ) of
+                        ( Just v1, Just v2 ) ->
+                            v2 - v1
+
+                        _ ->
+                            0.02
+
+                -- First Out oscillation: leave 1 going negative initially
+                firstOutFrames =
+                    List.take 2 elasticOutOscillations
+
+                firstOutVelocity =
+                    case ( List.head firstOutFrames, List.head (List.drop 1 firstOutFrames) ) of
+                        ( Just v1, Just v2 ) ->
+                            v2 - v1
+
+                        _ ->
+                            -0.02
+
+                -- Transition needs to smoothly connect from velocity matching last In to first Out
+                -- Linear transition since velocities match
                 transitionFrameCount =
-                    round (30.0 * velocityFactor) |> clamp 10 40
+                    round (30.0 / velocityFactor) |> clamp 15 60
 
                 transitionKeyframes =
                     List.range 0 (transitionFrameCount - 1)
@@ -1578,13 +1631,24 @@ generateKeyframes easing durationMs =
                                     t =
                                         toFloat i / toFloat (transitionFrameCount - 1)
                                 in
-                                0.5 - (0.5 * cos (t * pi))
+                                t
                             )
 
                 allKeyframes =
-                    elasticInKeyframes
+                    elasticInOscillations
                         ++ transitionKeyframes
-                        ++ elasticOutKeyframes
+                        ++ elasticOutOscillations
+
+                _ =
+                    Debug.log "ElasticInOut"
+                        { inFrames = List.length elasticInOscillations
+                        , transitionFrames = List.length transitionKeyframes
+                        , outFrames = List.length elasticOutOscillations
+                        , lastInVelocity = lastInVelocity
+                        , firstOutVelocity = firstOutVelocity
+                        , lastInValues = List.drop (List.length elasticInOscillations - 3) elasticInOscillations
+                        , firstOutValues = List.take 3 elasticOutOscillations
+                        }
             in
             allKeyframes
 
