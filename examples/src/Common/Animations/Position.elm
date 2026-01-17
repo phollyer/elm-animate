@@ -48,7 +48,7 @@ moveToX : Float -> Easing -> Builder.AnimBuilder -> Builder.AnimBuilder
 moveToX x easing =
     Position.for elementId
         >> Position.toX x
-        >> Position.speed 200
+        >> Position.speed 300
         >> Position.easing easing
         >> Position.build
 
@@ -81,7 +81,7 @@ moveLeft =
 -}
 moveRight : Builder.AnimBuilder -> Builder.AnimBuilder
 moveRight =
-    moveToX 450 (ElasticInCustom 0.1)
+    moveToX 450 (ElasticInCustom 0.9)
 
 
 {-| Move to the top edge (Y=0) with BounceInOut effect

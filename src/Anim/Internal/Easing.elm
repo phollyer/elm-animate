@@ -1924,23 +1924,19 @@ generateElasticOscillations frequency amplitude decay =
                         cycleAmplitude
                     )
 
-        -- Allocate frames per cycle proportional to amplitude (like bounce uses sqrt(amplitude))
-        -- Larger oscillations get more frames for smoother motion
-        totalCycleTime =
-            List.sum cycleAmplitudes
-
-        -- More total frames for elastic than bounce for smoother sine waves
-        totalFrames =
-            80
+        -- Fixed frames per cycle for evenly spaced peaks and constant velocity
+        -- Only amplitude varies between cycles, not timing
+        framesPerCycle =
+            26
 
         -- Generate frames for each cycle
         allFrames =
             List.indexedMap
                 (\cycleIndex cycleAmplitude ->
                     let
-                        -- Frames for this cycle based on its amplitude
+                        -- Fixed frames per cycle for constant velocity
                         framesForCycle =
-                            max 8 (round (cycleAmplitude / totalCycleTime * toFloat totalFrames))
+                            framesPerCycle
 
                         cycleFrames =
                             List.range 0 framesForCycle
@@ -2037,23 +2033,19 @@ generateElasticOscillationsToZero frequency amplitude decay =
                         cycleAmplitude
                     )
 
-        -- Allocate frames per cycle proportional to amplitude (like bounce uses sqrt(amplitude))
-        -- Larger oscillations get more frames for smoother motion
-        totalCycleTime =
-            List.sum cycleAmplitudes
-
-        -- More total frames for elastic than bounce for smoother sine waves
-        totalFrames =
-            80
+        -- Fixed frames per cycle for evenly spaced peaks and constant velocity
+        -- Only amplitude varies between cycles, not timing
+        framesPerCycle =
+            26
 
         -- Generate frames for each cycle
         allFrames =
             List.indexedMap
                 (\cycleIndex cycleAmplitude ->
                     let
-                        -- Frames for this cycle based on its amplitude
+                        -- Fixed frames per cycle for constant velocity
                         framesForCycle =
-                            max 8 (round (cycleAmplitude / totalCycleTime * toFloat totalFrames))
+                            framesPerCycle
 
                         cycleFrames =
                             List.range 0 framesForCycle
