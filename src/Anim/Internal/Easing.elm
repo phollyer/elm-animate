@@ -1429,15 +1429,24 @@ generateKeyframes easing durationMs =
                 decay =
                     6 + (clampedStrength * 2)
 
+                -- Calculate transition frame count based on velocity (respects animation speed/duration)
+                transitionFrameCount =
+                    round (30.0 / velocityFactor) |> clamp 15 60
+
+                -- Oscillations should respect the velocity of the transition
+                -- Scale frames per cycle to match transition pacing
+                velocityAwareFramesPerCycle =
+                    round (toFloat transitionFrameCount * 0.49) |> max 8
+
                 -- In portion: Use same oscillations as ElasticIn (reversed and inverted)
                 elasticInOscillations =
-                    generateElasticOscillations frequency amplitude decay
+                    generateElasticOscillationsWithFrames frequency amplitude decay velocityAwareFramesPerCycle
                         |> List.reverse
                         |> List.map (\v -> 1.0 - v)
 
                 -- Out portion: Use same oscillations as ElasticOut
                 elasticOutOscillations =
-                    generateElasticOscillations frequency amplitude decay
+                    generateElasticOscillationsWithFrames frequency amplitude decay velocityAwareFramesPerCycle
 
                 -- Calculate velocities at connection points
                 -- Last In oscillation: approach 0 from below (negative to 0)
@@ -1466,9 +1475,6 @@ generateKeyframes easing durationMs =
 
                 -- Transition needs to smoothly connect from velocity matching last In to first Out
                 -- Linear transition since velocities match
-                transitionFrameCount =
-                    round (30.0 / velocityFactor) |> clamp 15 60
-
                 transitionKeyframes =
                     List.range 0 (transitionFrameCount - 1)
                         |> List.map
@@ -1489,6 +1495,7 @@ generateKeyframes easing durationMs =
                     Debug.log "ElasticInOutCustom"
                         { inFrames = List.length elasticInOscillations
                         , transitionFrames = List.length transitionKeyframes
+                        , velocityAwareFramesPerCycle = velocityAwareFramesPerCycle
                         , outFrames = List.length elasticOutOscillations
                         , lastInVelocity = lastInVelocity
                         , firstOutVelocity = firstOutVelocity
@@ -1583,15 +1590,24 @@ generateKeyframes easing durationMs =
                 scaledAmplitude =
                     params.amplitude * velocityFactor
 
+                -- Calculate transition frame count based on velocity (respects animation speed/duration)
+                transitionFrameCount =
+                    round (30.0 / velocityFactor) |> clamp 15 60
+
+                -- Oscillations should respect the velocity of the transition
+                -- Scale frames per cycle to match transition pacing
+                velocityAwareFramesPerCycle =
+                    round (toFloat transitionFrameCount * 0.49) |> max 8
+
                 -- In portion: Use same oscillations as ElasticIn (reversed and inverted)
                 elasticInOscillations =
-                    generateElasticOscillations params.frequency scaledAmplitude params.decay
+                    generateElasticOscillationsWithFrames params.frequency scaledAmplitude params.decay velocityAwareFramesPerCycle
                         |> List.reverse
                         |> List.map (\v -> 1.0 - v)
 
                 -- Out portion: Use same oscillations as ElasticOut
                 elasticOutOscillations =
-                    generateElasticOscillations params.frequency scaledAmplitude params.decay
+                    generateElasticOscillationsWithFrames params.frequency scaledAmplitude params.decay velocityAwareFramesPerCycle
 
                 -- Calculate velocities at connection points
                 -- Last In oscillation: approach 0 from below (negative to 0)
@@ -1620,9 +1636,6 @@ generateKeyframes easing durationMs =
 
                 -- Transition needs to smoothly connect from velocity matching last In to first Out
                 -- Linear transition since velocities match
-                transitionFrameCount =
-                    round (30.0 / velocityFactor) |> clamp 15 60
-
                 transitionKeyframes =
                     List.range 0 (transitionFrameCount - 1)
                         |> List.map
@@ -1644,6 +1657,7 @@ generateKeyframes easing durationMs =
                         { inFrames = List.length elasticInOscillations
                         , transitionFrames = List.length transitionKeyframes
                         , outFrames = List.length elasticOutOscillations
+                        , velocityAwareFramesPerCycle = velocityAwareFramesPerCycle
                         , lastInVelocity = lastInVelocity
                         , firstOutVelocity = firstOutVelocity
                         , lastInValues = List.drop (List.length elasticInOscillations - 3) elasticInOscillations
@@ -2044,6 +2058,96 @@ generateElasticOscillations frequency amplitude decay =
                 , last5Frames = List.drop (List.length allFrames - 5) allFrames
                 , totalFrames = List.length allFrames
                 }
+    in
+    allFrames
+
+
+{-| Generate elastic oscillations with custom frames per cycle for velocity-aware animations.
+This version allows InOut to match the oscillation velocity to the transition phase velocity.
+-}
+generateElasticOscillationsWithFrames : Float -> Float -> Float -> Int -> List Float
+generateElasticOscillationsWithFrames frequency amplitude decay framesPerCycle =
+    let
+        clampedFrequency =
+            clamp 1 5 frequency
+
+        clampedAmplitude =
+            clamp 0.1 2.0 amplitude
+
+        clampedDecay =
+            clamp 1 10 decay
+
+        -- Calculate number of visible oscillation cycles based on decay
+        minVisibleAmplitude =
+            0.01
+
+        visibleDuration =
+            if clampedAmplitude > minVisibleAmplitude then
+                logBase 2 (minVisibleAmplitude / clampedAmplitude) / -clampedDecay
+
+            else
+                0.0
+
+        -- Total oscillation cycles
+        totalCycles =
+            round (clampedFrequency * visibleDuration)
+                |> max 3
+                |> min 12
+
+        -- Calculate amplitude for each oscillation cycle (exponentially decaying)
+        cycleAmplitudes =
+            List.range 0 (totalCycles - 1)
+                |> List.map
+                    (\cycleIndex ->
+                        let
+                            -- Time at the start of this cycle
+                            cycleTime =
+                                toFloat cycleIndex / clampedFrequency
+
+                            -- Envelope amplitude at this time
+                            cycleAmplitude =
+                                clampedAmplitude * (2 ^ (-clampedDecay * cycleTime))
+                        in
+                        cycleAmplitude
+                    )
+
+        -- Generate frames for each cycle
+        allFrames =
+            List.indexedMap
+                (\cycleIndex cycleAmplitude ->
+                    let
+                        cycleFrames =
+                            List.range 0 framesPerCycle
+                                |> List.map
+                                    (\frameIndex ->
+                                        let
+                                            -- Local t within this cycle (0 to 1)
+                                            localT =
+                                                toFloat frameIndex / toFloat framesPerCycle
+
+                                            -- Global time
+                                            globalTime =
+                                                (toFloat cycleIndex + localT) / clampedFrequency
+
+                                            -- Envelope at this time
+                                            envelope =
+                                                clampedAmplitude * (2 ^ (-clampedDecay * globalTime))
+
+                                            -- Sine wave for this cycle
+                                            -- Negative sine so it goes negative first (for proper ElasticIn direction)
+                                            oscillation =
+                                                -(sin (localT * 2 * pi))
+
+                                            value =
+                                                1 - (envelope * oscillation)
+                                        in
+                                        value
+                                    )
+                    in
+                    cycleFrames
+                )
+                cycleAmplitudes
+                |> List.concat
     in
     allFrames
 
