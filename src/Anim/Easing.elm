@@ -1,58 +1,52 @@
 module Anim.Easing exposing (Easing(..))
 
-{-| Easing's for animations.
-
-**Note**: All engines produce accurate easing curves using the easing functions from [elm-community/ease](https://package.elm-lang.org/packages/elm-community/easing-functions/latest/Ease).
-Cubic Bezier approximations are used in the [CSS Engine](Anim-Engine-CSS#easing) for transform animations, which is a CSS limitation. However, the CSS Engine does produce
-accurate easing curves for keyframe animations.
+{-|
 
 
 # Easing Type
-
-For complex easings like Back\*, Bounce\* and Elastic\*, there are multiple options:
 
 
 ## Standard Easings:
 
 These use the easing functions from [elm-community/ease](https://package.elm-lang.org/packages/elm-community/easing-functions/latest/Ease).
 
-  - `BackIn`, `BackOut`, `BackInOut`: Predefined back easings
-  - `BounceIn`, `BounceOut`, `BounceInOut`: Predefined bounce easings
-  - `ElasticIn`, `ElasticOut`, `ElasticInOut`: Predefined elastic easings
+For complex easings like Back, Bounce, and Elastic, there are also Custom and Advanced versions available.
 
 
 ## Custom Easings:
 
-These take a `Float` parameter to adjust the behavior.
+If the standard complex easings don't fit your needs, you can use the custom versions.
+Each one takes a `Float` parameter to adjust the behavior.
 
-  - `Back*Custom strength`: Adjust overshoot amount (0.1-3.0)
-  - `Bounce*Custom strength`: Adjust bounce intensity (0.1-1.0)
-  - `Elastic*Custom strength`: Adjust oscillation intensity (0.1-1.0)
+  - `Back*Custom strength`: Adjust overshoot amount
+  - `Bounce*Custom strength`: Adjust bounce intensity
+  - `Elastic*Custom strength`: Adjust oscillation intensity
 
 
 ## Advanced Easings:
 
-These take a record with multiple parameters for full control.
+If the standard and custom complex easings are not sufficient, you can use the advanced versions.
+Each one takes a record with multiple parameters for more control.
 
   - `Back*Advanced { overshoot }`: Full control over overshoot behavior
   - `Bounce*Advanced { bounces, amplitude, decay }`:
-      - `bounces`: Number of bounces
+      - `bounces : Int`: Number of bounces
           - Higher values = more bounces
           - Lower values = fewer bounces
-      - `amplitude`: Initial bounce height
+      - `amplitude : Float`: Initial bounce height
           - Lower values = smaller bounces
           - Higher values = larger bounces
-      - `decay`: Rate of bounce height reduction
+      - `decay : Float`: Rate of bounce height reduction
           - Lower values = slower decay (bounces stay larger longer)
           - Higher values = faster decay (bounces shrink quicker)
-  - `Elastic*Advanced { frequency, amplitude, decay }`:
-      - `frequency`: Number of oscillations
+  - `Elastic*Advanced { elasticity, amplitude, decay }`:
+      - `elasticity : Float`: Affects the number of oscillations
           - Higher values = more oscillations
           - Lower values = fewer oscillations
-      - `amplitude`: Initial oscillation height
+      - `amplitude : Float`: Affects the oscillation height
           - Lower values = smaller oscillations
           - Higher values = larger oscillations
-      - `decay`: Rate of oscillation height reduction
+      - `decay : Float`: Affects the rate of oscillation height reduction
           - Lower values = slower decay (oscillations stay larger longer)
           - Higher values = faster decay (oscillations shrink quicker)
 
@@ -101,9 +95,9 @@ type Easing
     | ElasticInCustom Float
     | ElasticOutCustom Float
     | ElasticInOutCustom Float
-    | ElasticInAdvanced { frequency : Float, amplitude : Float, decay : Float }
-    | ElasticOutAdvanced { frequency : Float, amplitude : Float, decay : Float }
-    | ElasticInOutAdvanced { frequency : Float, amplitude : Float, decay : Float }
+    | ElasticInAdvanced { elasticity : Float, amplitude : Float, decay : Float }
+    | ElasticOutAdvanced { elasticity : Float, amplitude : Float, decay : Float }
+    | ElasticInOutAdvanced { elasticity : Float, amplitude : Float, decay : Float }
     | ExpoIn
     | ExpoOut
     | ExpoInOut

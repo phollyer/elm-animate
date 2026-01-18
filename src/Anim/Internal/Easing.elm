@@ -682,7 +682,7 @@ customElasticOut velocityFactor strength t =
             clamp 0.1 1.0 strength
 
         -- More strength = more oscillations and higher amplitude
-        frequency =
+        elasticity =
             2 + (clampedStrength * 3)
 
         amplitude =
@@ -691,7 +691,7 @@ customElasticOut velocityFactor strength t =
         decay =
             6 + (clampedStrength * 2)
     in
-    advancedElasticOutHelper frequency amplitude decay t
+    advancedElasticOutHelper elasticity amplitude decay t
 
 
 customElasticIn : Float -> Float -> Float -> Float
@@ -710,17 +710,17 @@ customElasticInOut velocityFactor strength t =
 
 {-| Advanced elastic easing with full parameter control.
 -}
-advancedElasticOut : Float -> { frequency : Float, amplitude : Float, decay : Float } -> Float -> Float
+advancedElasticOut : Float -> { elasticity : Float, amplitude : Float, decay : Float } -> Float -> Float
 advancedElasticOut velocityFactor params t =
-    advancedElasticOutHelper params.frequency (params.amplitude * velocityFactor) params.decay t
+    advancedElasticOutHelper params.elasticity (params.amplitude * velocityFactor) params.decay t
 
 
-advancedElasticIn : Float -> { frequency : Float, amplitude : Float, decay : Float } -> Float -> Float
+advancedElasticIn : Float -> { elasticity : Float, amplitude : Float, decay : Float } -> Float -> Float
 advancedElasticIn velocityFactor params t =
     1.0 - advancedElasticOut velocityFactor params (1.0 - t)
 
 
-advancedElasticInOut : Float -> { frequency : Float, amplitude : Float, decay : Float } -> Float -> Float
+advancedElasticInOut : Float -> { elasticity : Float, amplitude : Float, decay : Float } -> Float -> Float
 advancedElasticInOut velocityFactor params t =
     if t < 0.5 then
         advancedElasticIn velocityFactor params (t * 2) * 0.5
@@ -732,7 +732,7 @@ advancedElasticInOut velocityFactor params t =
 {-| Helper function for elastic easing with exponential decay and oscillation.
 -}
 advancedElasticOutHelper : Float -> Float -> Float -> Float -> Float
-advancedElasticOutHelper frequency amplitude decay t =
+advancedElasticOutHelper elasticity amplitude decay t =
     if t == 0 then
         0
 
@@ -747,7 +747,7 @@ advancedElasticOutHelper frequency amplitude decay t =
 
             -- Oscillation
             oscillation =
-                sin (t * frequency * 2 * pi)
+                sin (t * elasticity * 2 * pi)
         in
         1 - (envelope * oscillation)
 
@@ -1307,7 +1307,7 @@ generateKeyframes easing durationMs =
                     clamp 0.1 1.0 strength
 
                 -- More strength = more oscillations and higher amplitude
-                frequency =
+                elasticity =
                     2 + (clampedStrength * 3)
 
                 amplitude =
@@ -1341,7 +1341,7 @@ generateKeyframes easing durationMs =
 
                 -- Generate ONLY the elastic oscillations
                 oscillationKeyframes =
-                    generateElasticOscillations frequency amplitude decay
+                    generateElasticOscillations elasticity amplitude decay
 
                 allKeyframes =
                     transitionKeyframes ++ oscillationKeyframes
@@ -1354,7 +1354,7 @@ generateKeyframes easing durationMs =
                     clamp 0.1 1.0 strength
 
                 -- More strength = more oscillations and higher amplitude
-                frequency =
+                elasticity =
                     2 + (clampedStrength * 3)
 
                 amplitude =
@@ -1365,7 +1365,7 @@ generateKeyframes easing durationMs =
 
                 -- Generate ONLY the elastic oscillations (reversed for In)
                 oscillationKeyframes =
-                    generateElasticOscillations frequency amplitude decay
+                    generateElasticOscillations elasticity amplitude decay
                         |> List.reverse
                         |> List.map (\v -> 1.0 - v)
 
@@ -1406,7 +1406,7 @@ generateKeyframes easing durationMs =
                     clamp 0.1 1.0 strength
 
                 -- More strength = more oscillations and higher amplitude
-                frequency =
+                elasticity =
                     2 + (clampedStrength * 3)
 
                 amplitude =
@@ -1433,13 +1433,13 @@ generateKeyframes easing durationMs =
 
                 -- In portion: Use physics-based oscillations (reversed and inverted)
                 elasticInOscillations =
-                    generateElasticOscillationsWithFrames frequency amplitude decay framesPerCycle
+                    generateElasticOscillationsWithFrames elasticity amplitude decay framesPerCycle
                         |> List.reverse
                         |> List.map (\v -> 1.0 - v)
 
                 -- Out portion: Use duration-aware oscillations
                 elasticOutOscillations =
-                    generateElasticOscillationsWithFrames frequency amplitude decay framesPerCycle
+                    generateElasticOscillationsWithFrames elasticity amplitude decay framesPerCycle
 
                 -- Calculate velocities at connection points
                 -- Last In oscillation: approach 0 from below (negative to 0)
@@ -1527,7 +1527,7 @@ generateKeyframes easing durationMs =
 
                 -- Generate ONLY the elastic oscillations
                 oscillationKeyframes =
-                    generateElasticOscillations params.frequency scaledAmplitude params.decay
+                    generateElasticOscillations params.elasticity scaledAmplitude params.decay
 
                 allKeyframes =
                     transitionKeyframes ++ oscillationKeyframes
@@ -1542,7 +1542,7 @@ generateKeyframes easing durationMs =
 
                 -- Generate ONLY the elastic oscillations (reversed for In)
                 oscillationKeyframes =
-                    generateElasticOscillations params.frequency scaledAmplitude params.decay
+                    generateElasticOscillations params.elasticity scaledAmplitude params.decay
                         |> List.reverse
                         |> List.map (\v -> 1.0 - v)
 
@@ -1601,13 +1601,13 @@ generateKeyframes easing durationMs =
 
                 -- In portion: Use physics-based oscillations (reversed and inverted)
                 elasticInOscillations =
-                    generateElasticOscillationsWithFrames params.frequency scaledAmplitude params.decay framesPerCycle
+                    generateElasticOscillationsWithFrames params.elasticity scaledAmplitude params.decay framesPerCycle
                         |> List.reverse
                         |> List.map (\v -> 1.0 - v)
 
                 -- Out portion: Use duration-aware oscillations
                 elasticOutOscillations =
-                    generateElasticOscillationsWithFrames params.frequency scaledAmplitude params.decay framesPerCycle
+                    generateElasticOscillationsWithFrames params.elasticity scaledAmplitude params.decay framesPerCycle
 
                 -- Calculate velocities at connection points
                 -- Last In oscillation: approach 0 from below (negative to 0)
@@ -1944,7 +1944,7 @@ generateBounceOscillations bounces firstAmplitude coefficientOfRestitution =
 Returns keyframes that oscillate around 1.0 with exponential decay.
 -}
 generateElasticOscillations : Float -> Float -> Float -> List Float
-generateElasticOscillations frequency amplitude decay =
+generateElasticOscillations elasticity amplitude decay =
     let
         -- Calculate number of visible oscillation cycles based on decay
         -- Use strict 1% threshold to ensure oscillations finish close to zero
@@ -1960,7 +1960,7 @@ generateElasticOscillations frequency amplitude decay =
 
         -- Total oscillation cycles + 1 buffer cycle for smooth tail-off
         totalCycles =
-            (round (frequency * visibleDuration) + 1)
+            (round (elasticity * visibleDuration) + 1)
                 |> max 3
                 |> min 24
 
@@ -1972,7 +1972,7 @@ generateElasticOscillations frequency amplitude decay =
                         let
                             -- Time at the start of this cycle
                             cycleTime =
-                                toFloat cycleIndex / frequency
+                                toFloat cycleIndex / elasticity
 
                             -- Envelope amplitude at this time
                             cycleAmplitude =
@@ -2006,7 +2006,7 @@ generateElasticOscillations frequency amplitude decay =
 
                                             -- Global time
                                             globalTime =
-                                                (toFloat cycleIndex + localT) / frequency
+                                                (toFloat cycleIndex + localT) / elasticity
 
                                             -- Envelope at this time
                                             envelope =
@@ -2045,7 +2045,7 @@ generateElasticOscillations frequency amplitude decay =
 This version allows InOut to match the oscillation velocity to the transition phase velocity.
 -}
 generateElasticOscillationsWithFrames : Float -> Float -> Float -> Int -> List Float
-generateElasticOscillationsWithFrames frequency amplitude decay framesPerCycle =
+generateElasticOscillationsWithFrames elasticity amplitude decay framesPerCycle =
     let
         -- Calculate number of visible oscillation cycles based on decay
         -- Use strict 1% threshold to ensure oscillations finish close to zero
@@ -2061,7 +2061,7 @@ generateElasticOscillationsWithFrames frequency amplitude decay framesPerCycle =
 
         -- Total oscillation cycles + 1 buffer cycle for smooth tail-off
         totalCycles =
-            (round (frequency * visibleDuration) + 1)
+            (round (elasticity * visibleDuration) + 1)
                 |> max 3
                 |> min 24
 
@@ -2073,7 +2073,7 @@ generateElasticOscillationsWithFrames frequency amplitude decay framesPerCycle =
                         let
                             -- Time at the start of this cycle
                             cycleTime =
-                                toFloat cycleIndex / frequency
+                                toFloat cycleIndex / elasticity
 
                             -- Envelope amplitude at this time
                             cycleAmplitude =
@@ -2098,7 +2098,7 @@ generateElasticOscillationsWithFrames frequency amplitude decay framesPerCycle =
 
                                             -- Global time
                                             globalTime =
-                                                (toFloat cycleIndex + localT) / frequency
+                                                (toFloat cycleIndex + localT) / elasticity
 
                                             -- Envelope at this time
                                             envelope =
@@ -2127,11 +2127,8 @@ generateElasticOscillationsWithFrames frequency amplitude decay framesPerCycle =
 These oscillate around 0 and end approaching from below (from negative peak).
 -}
 generateElasticOscillationsToZero : Float -> Float -> Float -> List Float
-generateElasticOscillationsToZero frequency amplitude decay =
+generateElasticOscillationsToZero elasticity amplitude decay =
     let
-        clampedFrequency =
-            clamp 1 5 frequency
-
         clampedAmplitude =
             clamp 0.1 2.0 amplitude
 
@@ -2154,7 +2151,7 @@ generateElasticOscillationsToZero frequency amplitude decay =
 
         -- Total oscillation cycles
         totalCycles =
-            round (clampedFrequency * visibleDuration)
+            round (elasticity * visibleDuration)
                 |> max 3
                 |> min 24
 
@@ -2166,7 +2163,7 @@ generateElasticOscillationsToZero frequency amplitude decay =
                         let
                             -- Time at the start of this cycle
                             cycleTime =
-                                toFloat cycleIndex / clampedFrequency
+                                toFloat cycleIndex / elasticity
 
                             -- Envelope amplitude at this time
                             cycleAmplitude =
@@ -2200,7 +2197,7 @@ generateElasticOscillationsToZero frequency amplitude decay =
 
                                             -- Global time
                                             globalTime =
-                                                (toFloat cycleIndex + localT) / clampedFrequency
+                                                (toFloat cycleIndex + localT) / elasticity
 
                                             -- Envelope at this time
                                             envelope =
