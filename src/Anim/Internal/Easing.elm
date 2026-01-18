@@ -1984,11 +1984,9 @@ generateElasticOscillations frequency amplitude decay =
             clamp 0.1 20 decay
 
         -- Calculate number of visible oscillation cycles based on decay
-        -- Adaptive threshold: low decay (slow) = higher threshold, high decay (fast) = lower threshold
-        -- decay=20 → 0.5%, decay=10 → 1%, decay=1 → 10%, decay=0.1 → 10%
+        -- Use strict 1% threshold to ensure oscillations finish close to zero
         minVisibleAmplitude =
-            (0.01 * (10.0 / clampedDecay))
-                |> min 0.1
+            clampedAmplitude * 0.01
 
         visibleDuration =
             if clampedAmplitude > minVisibleAmplitude then
@@ -1997,9 +1995,9 @@ generateElasticOscillations frequency amplitude decay =
             else
                 0.0
 
-        -- Total oscillation cycles
+        -- Total oscillation cycles + 1 buffer cycle for smooth tail-off
         totalCycles =
-            round (clampedFrequency * visibleDuration)
+            (round (clampedFrequency * visibleDuration) + 1)
                 |> max 3
                 |> min 24
 
@@ -2095,27 +2093,21 @@ generateElasticOscillationsWithFrames frequency amplitude decay framesPerCycle =
         clampedDecay =
             clamp 0.1 20 decay
 
-        -- Scale decay to make it effective (same as in advancedElasticOutHelper)
-        scaledDecay =
-            clampedDecay * 25
-
         -- Calculate number of visible oscillation cycles based on decay
-        -- Adaptive threshold: low decay (slow) = higher threshold, high decay (fast) = lower threshold
-        -- decay=20 → 0.5%, decay=10 → 1%, decay=1 → 10%, decay=0.1 → 10%
+        -- Use strict 1% threshold to ensure oscillations finish close to zero
         minVisibleAmplitude =
-            (0.01 * (10.0 / clampedDecay))
-                |> min 0.1
+            clampedAmplitude * 0.01
 
         visibleDuration =
             if clampedAmplitude > minVisibleAmplitude then
-                logBase 2 (minVisibleAmplitude / clampedAmplitude) / -scaledDecay
+                logBase 2 (minVisibleAmplitude / clampedAmplitude) / -clampedDecay
 
             else
                 0.0
 
-        -- Total oscillation cycles
+        -- Total oscillation cycles + 1 buffer cycle for smooth tail-off
         totalCycles =
-            round (clampedFrequency * visibleDuration)
+            (round (clampedFrequency * visibleDuration) + 1)
                 |> max 3
                 |> min 24
 

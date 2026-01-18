@@ -95,11 +95,11 @@ moveUp =
 -}
 moveDown : Builder.AnimBuilder -> Builder.AnimBuilder
 moveDown =
-    moveToY 350 (ElasticOutAdvanced { frequency = 3, amplitude = 1, decay = 5 })
+    moveToY 350 (ElasticOutAdvanced { frequency = 3, amplitude = 1, decay = 0.7 })
 
 
 {-| Return to origin (0, 0) with smooth easing
 -}
 returnToOrigin : Builder.AnimBuilder -> Builder.AnimBuilder
 returnToOrigin =
-    moveToXY 0 0 (ElasticInOutCustom 0.9)
+    moveToXY 0 0 (ElasticInOutCustom 0.1)
