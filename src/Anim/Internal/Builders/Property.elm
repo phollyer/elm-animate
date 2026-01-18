@@ -265,8 +265,16 @@ adjustConfigEasing config =
         Just (BounceInCustom baseStrength) ->
             { config | easing = Just (BounceInCustom (calculateAdjustedStrength baseStrength config)) }
 
-        Just (BounceInOutCustom baseStrength) ->
-            { config | easing = Just (BounceInOutCustom (calculateAdjustedStrength baseStrength config)) }
+        Just (BounceInOutCustom ( baseStrengthIn, baseStrengthOut )) ->
+            { config
+                | easing =
+                    Just
+                        (BounceInOutCustom
+                            ( calculateAdjustedStrength baseStrengthIn config
+                            , calculateAdjustedStrength baseStrengthOut config
+                            )
+                        )
+            }
 
         _ ->
             config

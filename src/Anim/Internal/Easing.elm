@@ -470,8 +470,8 @@ toFunction durationMs easing =
         BackOutCustom strength ->
             customBackOut strength
 
-        BackInOutCustom strength ->
-            customBackInOut strength
+        BackInOutCustom strengthTuple ->
+            customBackInOut strengthTuple
 
         BackInAdvanced params ->
             advancedBackIn params
@@ -497,8 +497,8 @@ toFunction durationMs easing =
         ElasticOutCustom strength ->
             customElasticOut velocityFactor strength
 
-        ElasticInOutCustom strength ->
-            customElasticInOut velocityFactor strength
+        ElasticInOutCustom strengthTuple ->
+            customElasticInOut velocityFactor strengthTuple
 
         ElasticInAdvanced params ->
             advancedElasticIn velocityFactor params
@@ -524,8 +524,8 @@ toFunction durationMs easing =
         BounceOutCustom strength ->
             customBounceOut velocityFactor strength
 
-        BounceInOutCustom strength ->
-            customBounceInOut velocityFactor strength
+        BounceInOutCustom strengthTuple ->
+            customBounceInOut velocityFactor strengthTuple
 
         BounceInAdvanced params ->
             advancedBounceIn velocityFactor params
@@ -566,15 +566,15 @@ customBounceIn velocityFactor strength t =
     1.0 - customBounceOut velocityFactor strength (1.0 - t)
 
 
-customBounceInOut : Float -> Float -> Float -> Float
-customBounceInOut velocityFactor strength t =
+customBounceInOut : Float -> ( Float, Float ) -> Float -> Float
+customBounceInOut velocityFactor ( strengthIn, strengthOut ) t =
     if t < 0.5 then
         -- First half: BounceIn scaled to 0-0.5
-        customBounceIn velocityFactor strength (t * 2) * 0.5
+        customBounceIn velocityFactor strengthIn (t * 2) * 0.5
 
     else
         -- Second half: BounceOut scaled to 0.5-1.0
-        0.5 + (customBounceOut velocityFactor strength ((t - 0.5) * 2) * 0.5)
+        0.5 + (customBounceOut velocityFactor strengthOut ((t - 0.5) * 2) * 0.5)
 
 
 {-| Advanced bounce easing with full parameter control.
@@ -589,15 +589,15 @@ advancedBounceIn velocityFactor params t =
     1.0 - advancedBounceOut velocityFactor params (1.0 - t)
 
 
-advancedBounceInOut : Float -> { bounces : Int, amplitude : Float, decay : Float } -> Float -> Float
+advancedBounceInOut : Float -> { in_ : { bounces : Int, amplitude : Float, decay : Float }, out : { bounces : Int, amplitude : Float, decay : Float } } -> Float -> Float
 advancedBounceInOut velocityFactor params t =
     if t < 0.5 then
         -- First half: BounceIn scaled to 0-0.5
-        advancedBounceIn velocityFactor params (t * 2) * 0.5
+        advancedBounceIn velocityFactor params.in_ (t * 2) * 0.5
 
     else
         -- Second half: BounceOut scaled to 0.5-1.0
-        0.5 + (advancedBounceOut velocityFactor params ((t - 0.5) * 2) * 0.5)
+        0.5 + (advancedBounceOut velocityFactor params.out ((t - 0.5) * 2) * 0.5)
 
 
 {-| Helper function to calculate bounce with given parameters.
@@ -699,13 +699,13 @@ customElasticIn velocityFactor strength t =
     1.0 - customElasticOut velocityFactor strength (1.0 - t)
 
 
-customElasticInOut : Float -> Float -> Float -> Float
-customElasticInOut velocityFactor strength t =
+customElasticInOut : Float -> ( Float, Float ) -> Float -> Float
+customElasticInOut velocityFactor ( strengthIn, strengthOut ) t =
     if t < 0.5 then
-        customElasticIn velocityFactor strength (t * 2) * 0.5
+        customElasticIn velocityFactor strengthIn (t * 2) * 0.5
 
     else
-        0.5 + (customElasticOut velocityFactor strength ((t - 0.5) * 2) * 0.5)
+        0.5 + (customElasticOut velocityFactor strengthOut ((t - 0.5) * 2) * 0.5)
 
 
 {-| Advanced elastic easing with full parameter control.
@@ -720,13 +720,13 @@ advancedElasticIn velocityFactor params t =
     1.0 - advancedElasticOut velocityFactor params (1.0 - t)
 
 
-advancedElasticInOut : Float -> { elasticity : Float, amplitude : Float, decay : Float } -> Float -> Float
+advancedElasticInOut : Float -> { in_ : { elasticity : Float, amplitude : Float, decay : Float }, out : { elasticity : Float, amplitude : Float, decay : Float } } -> Float -> Float
 advancedElasticInOut velocityFactor params t =
     if t < 0.5 then
-        advancedElasticIn velocityFactor params (t * 2) * 0.5
+        advancedElasticIn velocityFactor params.in_ (t * 2) * 0.5
 
     else
-        0.5 + (advancedElasticOut velocityFactor params ((t - 0.5) * 2) * 0.5)
+        0.5 + (advancedElasticOut velocityFactor params.out ((t - 0.5) * 2) * 0.5)
 
 
 {-| Helper function for elastic easing with exponential decay and oscillation.
@@ -777,13 +777,13 @@ customBackIn strength t =
     1.0 - customBackOut strength (1.0 - t)
 
 
-customBackInOut : Float -> Float -> Float
-customBackInOut strength t =
+customBackInOut : ( Float, Float ) -> Float -> Float
+customBackInOut ( strengthIn, strengthOut ) t =
     if t < 0.5 then
-        customBackIn strength (t * 2) * 0.5
+        customBackIn strengthIn (t * 2) * 0.5
 
     else
-        0.5 + (customBackOut strength ((t - 0.5) * 2) * 0.5)
+        0.5 + (customBackOut strengthOut ((t - 0.5) * 2) * 0.5)
 
 
 {-| Advanced back easing with full overshoot control.
@@ -798,13 +798,13 @@ advancedBackIn params t =
     1.0 - advancedBackOut params (1.0 - t)
 
 
-advancedBackInOut : { overshoot : Float } -> Float -> Float
+advancedBackInOut : { in_ : { overshoot : Float }, out : { overshoot : Float } } -> Float -> Float
 advancedBackInOut params t =
     if t < 0.5 then
-        advancedBackIn params (t * 2) * 0.5
+        advancedBackIn params.in_ (t * 2) * 0.5
 
     else
-        0.5 + (advancedBackOut params ((t - 0.5) * 2) * 0.5)
+        0.5 + (advancedBackOut params.out ((t - 0.5) * 2) * 0.5)
 
 
 {-| Helper function for back easing with configurable overshoot.
@@ -989,18 +989,22 @@ generateKeyframes easing durationMs =
             in
             allKeyframes
 
-        BounceInOutCustom strength ->
+        BounceInOutCustom ( strengthIn, strengthOut ) ->
             let
-                clampedStrength =
-                    clamp 0.1 1.0 strength
+                clampedStrengthIn =
+                    clamp 0.1 1.0 strengthIn
 
-                firstBounceAmplitude =
-                    (0.15 + (clampedStrength * clampedStrength * 0.75)) * velocityFactor
+                clampedStrengthOut =
+                    clamp 0.1 1.0 strengthOut
 
-                coefficientOfRestitution =
-                    0.5 + (clampedStrength * 0.25)
+                -- In parameters
+                firstBounceAmplitudeIn =
+                    (0.15 + (clampedStrengthIn * clampedStrengthIn * 0.75)) * velocityFactor
 
-                bounces =
+                coefficientOfRestitutionIn =
+                    0.5 + (clampedStrengthIn * 0.25)
+
+                bouncesIn =
                     let
                         minVisibleHeight =
                             0.02
@@ -1010,9 +1014,30 @@ generateKeyframes easing durationMs =
                                 count
 
                             else
-                                calculateBounceCount (current * coefficientOfRestitution * coefficientOfRestitution) (count + 1)
+                                calculateBounceCount (current * coefficientOfRestitutionIn * coefficientOfRestitutionIn) (count + 1)
                     in
-                    max 1 (calculateBounceCount firstBounceAmplitude 0)
+                    max 1 (calculateBounceCount firstBounceAmplitudeIn 0)
+
+                -- Out parameters
+                firstBounceAmplitudeOut =
+                    (0.15 + (clampedStrengthOut * clampedStrengthOut * 0.75)) * velocityFactor
+
+                coefficientOfRestitutionOut =
+                    0.5 + (clampedStrengthOut * 0.25)
+
+                bouncesOut =
+                    let
+                        minVisibleHeight =
+                            0.02
+
+                        calculateBounceCount current count =
+                            if current < minVisibleHeight || count >= 6 then
+                                count
+
+                            else
+                                calculateBounceCount (current * coefficientOfRestitutionOut * coefficientOfRestitutionOut) (count + 1)
+                    in
+                    max 1 (calculateBounceCount firstBounceAmplitudeOut 0)
 
                 -- Helper: Create bounce-in keyframes (bounces at start, around 0)
                 createBounceInKeyframes bounceCnt amp cor =
@@ -1121,10 +1146,10 @@ generateKeyframes easing durationMs =
                             )
 
                 bounceInKeyframes =
-                    createBounceInKeyframes bounces firstBounceAmplitude coefficientOfRestitution
+                    createBounceInKeyframes bouncesIn firstBounceAmplitudeIn coefficientOfRestitutionIn
 
                 bounceOutKeyframes =
-                    createBounceOutKeyframes bounces firstBounceAmplitude coefficientOfRestitution
+                    createBounceOutKeyframes bouncesOut firstBounceAmplitudeOut coefficientOfRestitutionOut
 
                 transitionKeyframes =
                     createBounceInOutTransition bounceInKeyframes bounceOutKeyframes
@@ -1211,9 +1236,12 @@ generateKeyframes easing durationMs =
 
         BounceInOutAdvanced params ->
             let
-                -- Apply velocity scaling to amplitude
-                scaledAmplitude =
-                    params.amplitude * velocityFactor
+                -- Apply velocity scaling to amplitudes
+                scaledAmplitudeIn =
+                    params.in_.amplitude * velocityFactor
+
+                scaledAmplitudeOut =
+                    params.out.amplitude * velocityFactor
 
                 -- Helper: Create bounce-in keyframes (bounces at start, around 0)
                 createBounceInKeyframes bounceCnt amp dec =
@@ -1286,10 +1314,10 @@ generateKeyframes easing durationMs =
                             )
 
                 bounceInKeyframes =
-                    createBounceInKeyframes params.bounces scaledAmplitude params.decay
+                    createBounceInKeyframes params.in_.bounces scaledAmplitudeIn params.in_.decay
 
                 bounceOutKeyframes =
-                    createBounceOutKeyframes params.bounces scaledAmplitude params.decay
+                    createBounceOutKeyframes params.out.bounces scaledAmplitudeOut params.out.decay
 
                 transitionKeyframes =
                     createBounceInOutTransition bounceInKeyframes bounceOutKeyframes
@@ -1400,20 +1428,33 @@ generateKeyframes easing durationMs =
             in
             allKeyframes
 
-        ElasticInOutCustom strength ->
+        ElasticInOutCustom ( strengthIn, strengthOut ) ->
             let
-                clampedStrength =
-                    clamp 0.1 1.0 strength
+                clampedStrengthIn =
+                    clamp 0.1 1.0 strengthIn
 
-                -- More strength = more oscillations and higher amplitude
-                elasticity =
-                    2 + (clampedStrength * 3)
+                clampedStrengthOut =
+                    clamp 0.1 1.0 strengthOut
 
-                amplitude =
-                    (0.5 + (clampedStrength * 0.5)) * velocityFactor
+                -- In parameters
+                elasticityIn =
+                    2 + (clampedStrengthIn * 3)
 
-                decay =
-                    6 + (clampedStrength * 2)
+                amplitudeIn =
+                    (0.5 + (clampedStrengthIn * 0.5)) * velocityFactor
+
+                decayIn =
+                    6 + (clampedStrengthIn * 2)
+
+                -- Out parameters
+                elasticityOut =
+                    2 + (clampedStrengthOut * 3)
+
+                amplitudeOut =
+                    (0.5 + (clampedStrengthOut * 0.5)) * velocityFactor
+
+                decayOut =
+                    6 + (clampedStrengthOut * 2)
 
                 -- Transition should take the full duration
                 -- At 60fps: frames = durationMs / 16.67ms
@@ -1428,18 +1469,21 @@ generateKeyframes easing durationMs =
                 -- For a sine wave with amplitude A, one cycle travels ~4*A distance
                 -- To match velocity: 4*amplitude / framesPerCycle = transitionVelocity
                 -- So: framesPerCycle = 4*amplitude / transitionVelocity
-                framesPerCycle =
-                    round (4.0 * amplitude / transitionVelocity) |> max 8
+                framesPerCycleIn =
+                    round (4.0 * amplitudeIn / transitionVelocity) |> max 8
+
+                framesPerCycleOut =
+                    round (4.0 * amplitudeOut / transitionVelocity) |> max 8
 
                 -- In portion: Use physics-based oscillations (reversed and inverted)
                 elasticInOscillations =
-                    generateElasticOscillationsWithFrames elasticity amplitude decay framesPerCycle
+                    generateElasticOscillationsWithFrames elasticityIn amplitudeIn decayIn framesPerCycleIn
                         |> List.reverse
                         |> List.map (\v -> 1.0 - v)
 
                 -- Out portion: Use duration-aware oscillations
                 elasticOutOscillations =
-                    generateElasticOscillationsWithFrames elasticity amplitude decay framesPerCycle
+                    generateElasticOscillationsWithFrames elasticityOut amplitudeOut decayOut framesPerCycleOut
 
                 -- Calculate velocities at connection points
                 -- Last In oscillation: approach 0 from below (negative to 0)
@@ -1579,9 +1623,12 @@ generateKeyframes easing durationMs =
 
         ElasticInOutAdvanced params ->
             let
-                -- Apply velocity scaling to amplitude
-                scaledAmplitude =
-                    params.amplitude * velocityFactor
+                -- Apply velocity scaling to amplitudes
+                scaledAmplitudeIn =
+                    params.in_.amplitude * velocityFactor
+
+                scaledAmplitudeOut =
+                    params.out.amplitude * velocityFactor
 
                 -- Transition should take the full duration
                 -- At 60fps: frames = durationMs / 16.67ms
@@ -1596,18 +1643,21 @@ generateKeyframes easing durationMs =
                 -- For a sine wave with amplitude A, one cycle travels ~4*A distance
                 -- To match velocity: 4*amplitude / framesPerCycle = transitionVelocity
                 -- So: framesPerCycle = 4*amplitude / transitionVelocity
-                framesPerCycle =
-                    round (4.0 * scaledAmplitude / transitionVelocity) |> max 8
+                framesPerCycleIn =
+                    round (4.0 * scaledAmplitudeIn / transitionVelocity) |> max 8
+
+                framesPerCycleOut =
+                    round (4.0 * scaledAmplitudeOut / transitionVelocity) |> max 8
 
                 -- In portion: Use physics-based oscillations (reversed and inverted)
                 elasticInOscillations =
-                    generateElasticOscillationsWithFrames params.elasticity scaledAmplitude params.decay framesPerCycle
+                    generateElasticOscillationsWithFrames params.in_.elasticity scaledAmplitudeIn params.in_.decay framesPerCycleIn
                         |> List.reverse
                         |> List.map (\v -> 1.0 - v)
 
                 -- Out portion: Use duration-aware oscillations
                 elasticOutOscillations =
-                    generateElasticOscillationsWithFrames params.elasticity scaledAmplitude params.decay framesPerCycle
+                    generateElasticOscillationsWithFrames params.out.elasticity scaledAmplitudeOut params.out.decay framesPerCycleOut
 
                 -- Calculate velocities at connection points
                 -- Last In oscillation: approach 0 from below (negative to 0)
