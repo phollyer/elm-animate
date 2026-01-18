@@ -57,7 +57,7 @@ moveToY : Float -> Easing -> Builder.AnimBuilder -> Builder.AnimBuilder
 moveToY y easing =
     Position.for elementId
         >> Position.toY y
-        >> Position.speed 300
+        >> Position.speed 100
         >> Position.easing easing
         >> Position.build
 
@@ -74,32 +74,32 @@ moveToPosition2 =
 
 moveLeft : Builder.AnimBuilder -> Builder.AnimBuilder
 moveLeft =
-    moveToX 0 (ElasticOutCustom 0.9)
+    moveToX 0 (ElasticInOutAdvanced { frequency = 1, amplitude = 0.9, decay = 0.8 })
 
 
 {-| Move to the right edge (X=450) with bounce effect
 -}
 moveRight : Builder.AnimBuilder -> Builder.AnimBuilder
 moveRight =
-    moveToX 450 (ElasticInCustom 0.9)
+    moveToX 450 (ElasticInOutAdvanced { frequency = 1, amplitude = 0.9, decay = 0.8 })
 
 
 {-| Move to the top edge (Y=0) with BounceInOut effect
 -}
 moveUp : Builder.AnimBuilder -> Builder.AnimBuilder
 moveUp =
-    moveToY 0 (ElasticInOutCustom 0.9)
+    moveToY 0 (ElasticInAdvanced { frequency = 1, amplitude = 1, decay = 1 })
 
 
 {-| Move to the bottom edge (Y=300) with ease in
 -}
 moveDown : Builder.AnimBuilder -> Builder.AnimBuilder
 moveDown =
-    moveToY 350 (ElasticInOutCustom 0.1)
+    moveToY 350 (ElasticOutAdvanced { frequency = 2, amplitude = 1, decay = 0.1 })
 
 
 {-| Return to origin (0, 0) with smooth easing
 -}
 returnToOrigin : Builder.AnimBuilder -> Builder.AnimBuilder
 returnToOrigin =
-    moveToXY 0 0 (ElasticInCustom 0.9)
+    moveToXY 0 0 (ElasticInOutCustom 0.9)

@@ -1981,7 +1981,7 @@ generateElasticOscillations frequency amplitude decay =
             clamp 0.1 2.0 amplitude
 
         clampedDecay =
-            clamp 1 10 decay
+            clamp 0.1 20 decay
 
         -- Calculate number of visible oscillation cycles based on decay
         minVisibleAmplitude =
@@ -2090,7 +2090,7 @@ generateElasticOscillationsWithFrames frequency amplitude decay framesPerCycle =
             clamp 0.1 2.0 amplitude
 
         clampedDecay =
-            clamp 1 10 decay
+            clamp 0.1 20 decay
 
         -- Calculate number of visible oscillation cycles based on decay
         minVisibleAmplitude =
@@ -2180,7 +2180,7 @@ generateElasticOscillationsToZero frequency amplitude decay =
             clamp 0.1 2.0 amplitude
 
         clampedDecay =
-            clamp 1 10 decay
+            clamp 0.1 20 decay
 
         -- Calculate number of visible oscillation cycles based on decay
         minVisibleAmplitude =
