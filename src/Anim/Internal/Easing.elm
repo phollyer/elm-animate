@@ -607,15 +607,8 @@ advancedBounceOutHelper : Int -> Float -> Float -> Float -> Float
 advancedBounceOutHelper bounceCount amplitude decay t =
     let
         -- Ensure at least 1 bounce
-        clampedBounces =
+        bounces =
             max 1 bounceCount
-
-        -- Clamp amplitude and decay to reasonable ranges
-        clampedAmplitude =
-            clamp 0.1 1.0 amplitude
-
-        clampedDecay =
-            clamp 0.1 0.9 decay
 
         -- Quick approach phase
         approachPhase =
@@ -646,7 +639,7 @@ advancedBounceOutHelper bounceCount amplitude decay t =
 
             -- Calculate which bounce we're in
             bounceProgress =
-                bounceT * toFloat clampedBounces
+                bounceT * toFloat bounces
 
             currentBounce =
                 floor bounceProgress
@@ -658,8 +651,8 @@ advancedBounceOutHelper bounceCount amplitude decay t =
 
             -- Amplitude for this bounce (decreases exponentially)
             currentAmplitude =
-                if currentBounce < clampedBounces then
-                    clampedAmplitude * (clampedDecay ^ toFloat currentBounce)
+                if currentBounce < bounces then
+                    amplitude * (decay ^ toFloat currentBounce)
 
                 else
                     0.0
@@ -748,22 +741,13 @@ advancedElasticOutHelper frequency amplitude decay t =
 
     else
         let
-            clampedFrequency =
-                clamp 1 5 frequency
-
-            clampedAmplitude =
-                clamp 0.1 2.0 amplitude
-
-            clampedDecay =
-                clamp 0.1 10 decay
-
             -- Exponential decay
             envelope =
-                clampedAmplitude * (2 ^ (-clampedDecay * t))
+                amplitude * (2 ^ (-decay * t))
 
             -- Oscillation
             oscillation =
-                sin (t * clampedFrequency * 2 * pi)
+                sin (t * frequency * 2 * pi)
         in
         1 - (envelope * oscillation)
 
@@ -1760,22 +1744,16 @@ Parameters:
 generateBounceKeyframes : Int -> Float -> Float -> List Float
 generateBounceKeyframes bounces firstAmplitude coefficientOfRestitution =
     let
-        -- Clamp parameters
-        clampedBounces =
+        -- Ensure at least 1 bounce
+        validBounces =
             max 1 bounces
-
-        clampedAmplitude =
-            clamp 0.1 1.0 firstAmplitude
-
-        clampedCoR =
-            clamp 0.5 0.7 coefficientOfRestitution
 
         -- Phase 1: Approach - inverse correlation with bounce strength
         -- Lower bounces = smaller/slower, need more approach time for balance
         -- Higher bounces = bigger/faster, can use shorter approach
         -- Approach gets 25-45% for weak bounces, 15-25% for strong bounces
         approachRatio =
-            0.45 - (clampedAmplitude * 0.2)
+            0.45 - (firstAmplitude * 0.2)
 
         approachFrames =
             max 3 (round (approachRatio * 30))
@@ -1801,14 +1779,14 @@ generateBounceKeyframes bounces firstAmplitude coefficientOfRestitution =
         -- Each bounce: amplitude_n = amplitude_0 * CoR^(2n)
         -- CoR² because energy loss occurs on impact (downward) and rebound (upward)
         bounceAmplitudes =
-            List.range 0 (clampedBounces - 1)
+            List.range 0 (validBounces - 1)
                 |> List.map
                     (\i ->
                         let
                             energyLossFactor =
-                                clampedCoR ^ (2 * toFloat i)
+                                coefficientOfRestitution ^ (2 * toFloat i)
                         in
-                        clampedAmplitude * energyLossFactor
+                        firstAmplitude * energyLossFactor
                     )
 
         -- Physics: Time for each bounce proportional to sqrt(height)
@@ -1841,7 +1819,7 @@ generateBounceKeyframes bounces firstAmplitude coefficientOfRestitution =
                                             -- Start of first bounce: skip (no boundary yet)
                                             -999.0
 
-                                        else if frameIndex == framesForThisBounce && bounceIndex == clampedBounces - 1 then
+                                        else if frameIndex == framesForThisBounce && bounceIndex == validBounces - 1 then
                                             -- End of last bounce: explicit 1.0
                                             1.0
 
@@ -1882,26 +1860,20 @@ Used for BounceOut/BounceIn Advanced where we already have a separate transition
 generateBounceOscillations : Int -> Float -> Float -> List Float
 generateBounceOscillations bounces firstAmplitude coefficientOfRestitution =
     let
-        -- Clamp parameters
-        clampedBounces =
+        -- Ensure at least 1 bounce
+        validBounces =
             max 1 bounces
-
-        clampedAmplitude =
-            clamp 0.1 1.0 firstAmplitude
-
-        clampedCoR =
-            clamp 0.5 0.7 coefficientOfRestitution
 
         -- Physics: Calculate bounce amplitudes using coefficient of restitution
         bounceAmplitudes =
-            List.range 0 (clampedBounces - 1)
+            List.range 0 (validBounces - 1)
                 |> List.map
                     (\i ->
                         let
                             energyLossFactor =
-                                clampedCoR ^ (2 * toFloat i)
+                                coefficientOfRestitution ^ (2 * toFloat i)
                         in
-                        clampedAmplitude * energyLossFactor
+                        firstAmplitude * energyLossFactor
                     )
 
         -- Time for each bounce proportional to sqrt(height)
@@ -1933,7 +1905,7 @@ generateBounceOscillations bounces firstAmplitude coefficientOfRestitution =
                                             -- Start of first bounce: skip (no boundary yet)
                                             -999.0
 
-                                        else if frameIndex == framesForThisBounce && bounceIndex == clampedBounces - 1 then
+                                        else if frameIndex == framesForThisBounce && bounceIndex == validBounces - 1 then
                                             -- End of last bounce: explicit 1.0
                                             1.0
 
@@ -1974,30 +1946,21 @@ Returns keyframes that oscillate around 1.0 with exponential decay.
 generateElasticOscillations : Float -> Float -> Float -> List Float
 generateElasticOscillations frequency amplitude decay =
     let
-        clampedFrequency =
-            clamp 1 5 frequency
-
-        clampedAmplitude =
-            clamp 0.1 2.0 amplitude
-
-        clampedDecay =
-            clamp 0.1 20 decay
-
         -- Calculate number of visible oscillation cycles based on decay
         -- Use strict 1% threshold to ensure oscillations finish close to zero
         minVisibleAmplitude =
-            clampedAmplitude * 0.01
+            amplitude * 0.01
 
         visibleDuration =
-            if clampedAmplitude > minVisibleAmplitude then
-                logBase 2 (minVisibleAmplitude / clampedAmplitude) / -clampedDecay
+            if amplitude > minVisibleAmplitude then
+                logBase 2 (minVisibleAmplitude / amplitude) / -decay
 
             else
                 0.0
 
         -- Total oscillation cycles + 1 buffer cycle for smooth tail-off
         totalCycles =
-            (round (clampedFrequency * visibleDuration) + 1)
+            (round (frequency * visibleDuration) + 1)
                 |> max 3
                 |> min 24
 
@@ -2009,11 +1972,11 @@ generateElasticOscillations frequency amplitude decay =
                         let
                             -- Time at the start of this cycle
                             cycleTime =
-                                toFloat cycleIndex / clampedFrequency
+                                toFloat cycleIndex / frequency
 
                             -- Envelope amplitude at this time
                             cycleAmplitude =
-                                clampedAmplitude * (2 ^ (-clampedDecay * cycleTime))
+                                amplitude * (2 ^ (-decay * cycleTime))
                         in
                         cycleAmplitude
                     )
@@ -2043,11 +2006,11 @@ generateElasticOscillations frequency amplitude decay =
 
                                             -- Global time
                                             globalTime =
-                                                (toFloat cycleIndex + localT) / clampedFrequency
+                                                (toFloat cycleIndex + localT) / frequency
 
                                             -- Envelope at this time
                                             envelope =
-                                                clampedAmplitude * (2 ^ (-clampedDecay * globalTime))
+                                                amplitude * (2 ^ (-decay * globalTime))
 
                                             -- Sine wave for this cycle
                                             -- Negative sine so it goes negative first (for proper ElasticIn direction)
@@ -2084,30 +2047,21 @@ This version allows InOut to match the oscillation velocity to the transition ph
 generateElasticOscillationsWithFrames : Float -> Float -> Float -> Int -> List Float
 generateElasticOscillationsWithFrames frequency amplitude decay framesPerCycle =
     let
-        clampedFrequency =
-            clamp 1 5 frequency
-
-        clampedAmplitude =
-            clamp 0.1 2.0 amplitude
-
-        clampedDecay =
-            clamp 0.1 20 decay
-
         -- Calculate number of visible oscillation cycles based on decay
         -- Use strict 1% threshold to ensure oscillations finish close to zero
         minVisibleAmplitude =
-            clampedAmplitude * 0.01
+            amplitude * 0.01
 
         visibleDuration =
-            if clampedAmplitude > minVisibleAmplitude then
-                logBase 2 (minVisibleAmplitude / clampedAmplitude) / -clampedDecay
+            if amplitude > minVisibleAmplitude then
+                logBase 2 (minVisibleAmplitude / amplitude) / -decay
 
             else
                 0.0
 
         -- Total oscillation cycles + 1 buffer cycle for smooth tail-off
         totalCycles =
-            (round (clampedFrequency * visibleDuration) + 1)
+            (round (frequency * visibleDuration) + 1)
                 |> max 3
                 |> min 24
 
@@ -2119,11 +2073,11 @@ generateElasticOscillationsWithFrames frequency amplitude decay framesPerCycle =
                         let
                             -- Time at the start of this cycle
                             cycleTime =
-                                toFloat cycleIndex / clampedFrequency
+                                toFloat cycleIndex / frequency
 
                             -- Envelope amplitude at this time
                             cycleAmplitude =
-                                clampedAmplitude * (2 ^ (-clampedDecay * cycleTime))
+                                amplitude * (2 ^ (-decay * cycleTime))
                         in
                         cycleAmplitude
                     )
@@ -2144,11 +2098,11 @@ generateElasticOscillationsWithFrames frequency amplitude decay framesPerCycle =
 
                                             -- Global time
                                             globalTime =
-                                                (toFloat cycleIndex + localT) / clampedFrequency
+                                                (toFloat cycleIndex + localT) / frequency
 
                                             -- Envelope at this time
                                             envelope =
-                                                clampedAmplitude * (2 ^ (-clampedDecay * globalTime))
+                                                amplitude * (2 ^ (-decay * globalTime))
 
                                             -- Sine wave for this cycle
                                             -- Negative sine so it goes negative first (for proper ElasticIn direction)

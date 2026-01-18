@@ -36,23 +36,23 @@ These take a record with multiple parameters for full control.
 
   - `Back*Advanced { overshoot }`: Full control over overshoot behavior
   - `Bounce*Advanced { bounces, amplitude, decay }`:
-      - `bounces`: Number of bounces (1-10)
+      - `bounces`: Number of bounces
           - Higher values = more bounces
           - Lower values = fewer bounces
-      - `amplitude`: Initial bounce height (0.0-1.0)
+      - `amplitude`: Initial bounce height
           - Lower values = smaller bounces
           - Higher values = larger bounces
-      - `decay`: Rate of bounce height reduction (0.0-1.0)
+      - `decay`: Rate of bounce height reduction
           - Lower values = slower decay (bounces stay larger longer)
           - Higher values = faster decay (bounces shrink quicker)
   - `Elastic*Advanced { frequency, amplitude, decay }`:
-      - `frequency`: Number of oscillations (1.0-10.0)
+      - `frequency`: Number of oscillations
           - Higher values = more oscillations
           - Lower values = fewer oscillations
-      - `amplitude`: Initial oscillation height (0.0-1.0)
+      - `amplitude`: Initial oscillation height
           - Lower values = smaller oscillations
           - Higher values = larger oscillations
-      - `decay`: Rate of oscillation height reduction (0.0-1.0)
+      - `decay`: Rate of oscillation height reduction
           - Lower values = slower decay (oscillations stay larger longer)
           - Higher values = faster decay (oscillations shrink quicker)
 
