@@ -39,7 +39,10 @@ Each one takes a record with multiple parameters for more control.
       - `decay : Float`: Rate of bounce height reduction
           - Lower values = slower decay (bounces stay larger longer)
           - Higher values = faster decay (bounces shrink quicker)
-  - `Elastic*Advanced { elasticity, amplitude, decay }`:
+  - `Elastic*Advanced
+    { in_ : { elasticity, amplitude, decay }
+    , out : { elasticity, amplitude, decay }
+    }`:
       - `elasticity : Float`: Affects the number of oscillations
           - Higher values = more oscillations
           - Lower values = fewer oscillations
@@ -66,8 +69,6 @@ type Easing
     | BackInCustom Float
     | BackOutCustom Float
     | BackInOutCustom ( Float, Float )
-    | BackInAdvanced { overshoot : Float }
-    | BackOutAdvanced { overshoot : Float }
     | BackInOutAdvanced { in_ : { overshoot : Float }, out : { overshoot : Float } }
     | BounceIn
     | BounceOut

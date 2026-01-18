@@ -451,7 +451,9 @@ update jsonValue (AnimState state) =
                     , isRunning = hasRunningAnimations
                 }
 
-        Err decodeError ->
+        Err _ ->
+            -- Silently ignore decode errors
+            -- TODO: Consider logging, or making it available via a callback
             AnimState state
 
 

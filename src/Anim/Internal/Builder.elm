@@ -253,7 +253,7 @@ injectCurrentStates elementAnimations (AnimBuilder data) =
         baselines =
             elementAnimations
                 |> Dict.map
-                    (\elementId animation ->
+                    (\_ animation ->
                         animation.currentStates
                     )
     in

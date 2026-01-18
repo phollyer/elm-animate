@@ -129,12 +129,6 @@ easingToCSS easing =
         BackInOutCustom _ ->
             "linear"
 
-        BackInAdvanced _ ->
-            "linear"
-
-        BackOutAdvanced _ ->
-            "linear"
-
         BackInOutAdvanced _ ->
             "linear"
 
@@ -303,12 +297,6 @@ toWebAnimations easing =
         BackInOutCustom _ ->
             "linear"
 
-        BackInAdvanced _ ->
-            "linear"
-
-        BackOutAdvanced _ ->
-            "linear"
-
         BackInOutAdvanced _ ->
             "linear"
 
@@ -472,12 +460,6 @@ toFunction durationMs easing =
 
         BackInOutCustom strengthTuple ->
             customBackInOut strengthTuple
-
-        BackInAdvanced params ->
-            advancedBackIn params
-
-        BackOutAdvanced params ->
-            advancedBackOut params
 
         BackInOutAdvanced params ->
             advancedBackInOut params
@@ -1739,22 +1721,6 @@ generateKeyframes easing durationMs =
             List.range 0 (keyframeCount - 1)
                 |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
 
-        BackOutAdvanced params ->
-            let
-                easingFunction =
-                    advancedBackOut params
-            in
-            List.range 0 (keyframeCount - 1)
-                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
-
-        BackInAdvanced params ->
-            let
-                easingFunction =
-                    advancedBackIn params
-            in
-            List.range 0 (keyframeCount - 1)
-                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
-
         BackInOutAdvanced params ->
             let
                 easingFunction =
@@ -2014,23 +1980,6 @@ generateElasticOscillations elasticity amplitude decay =
                 |> max 3
                 |> min 24
 
-        -- Calculate amplitude for each oscillation cycle (exponentially decaying)
-        cycleAmplitudes =
-            List.range 0 (totalCycles - 1)
-                |> List.map
-                    (\cycleIndex ->
-                        let
-                            -- Time at the start of this cycle
-                            cycleTime =
-                                toFloat cycleIndex / elasticity
-
-                            -- Envelope amplitude at this time
-                            cycleAmplitude =
-                                amplitude * (2 ^ (-decay * cycleTime))
-                        in
-                        cycleAmplitude
-                    )
-
         -- Fixed frames per cycle for evenly spaced peaks and constant velocity
         -- Only amplitude varies between cycles, not timing
         framesPerCycle =
@@ -2039,7 +1988,7 @@ generateElasticOscillations elasticity amplitude decay =
         -- Generate frames for each cycle
         allFrames =
             List.indexedMap
-                (\cycleIndex cycleAmplitude ->
+                (\cycleIndex _ ->
                     let
                         -- Fixed frames per cycle for constant velocity
                         framesForCycle =
@@ -2075,14 +2024,12 @@ generateElasticOscillations elasticity amplitude decay =
                     in
                     cycleFrames
                 )
-                cycleAmplitudes
+                (List.range 0 (totalCycles - 1))
                 |> List.concat
 
         _ =
             Debug.log "ElasticOscillations"
                 { totalCycles = totalCycles
-                , firstCycle = List.head cycleAmplitudes
-                , lastCycle = List.reverse cycleAmplitudes |> List.head
                 , first5Frames = List.take 5 allFrames
                 , last5Frames = List.drop (List.length allFrames - 5) allFrames
                 , totalFrames = List.length allFrames
@@ -2115,27 +2062,10 @@ generateElasticOscillationsWithFrames elasticity amplitude decay framesPerCycle 
                 |> max 3
                 |> min 24
 
-        -- Calculate amplitude for each oscillation cycle (exponentially decaying)
-        cycleAmplitudes =
-            List.range 0 (totalCycles - 1)
-                |> List.map
-                    (\cycleIndex ->
-                        let
-                            -- Time at the start of this cycle
-                            cycleTime =
-                                toFloat cycleIndex / elasticity
-
-                            -- Envelope amplitude at this time
-                            cycleAmplitude =
-                                amplitude * (2 ^ (-decay * cycleTime))
-                        in
-                        cycleAmplitude
-                    )
-
         -- Generate frames for each cycle
         allFrames =
             List.indexedMap
-                (\cycleIndex cycleAmplitude ->
+                (\cycleIndex _ ->
                     let
                         cycleFrames =
                             List.range 0 framesPerCycle
@@ -2167,115 +2097,7 @@ generateElasticOscillationsWithFrames elasticity amplitude decay framesPerCycle 
                     in
                     cycleFrames
                 )
-                cycleAmplitudes
+                (List.range 0 (totalCycles - 1))
                 |> List.concat
-    in
-    allFrames
-
-
-{-| Generate elastic oscillations that settle at 0.0 (for ElasticIn).
-These oscillate around 0 and end approaching from below (from negative peak).
--}
-generateElasticOscillationsToZero : Float -> Float -> Float -> List Float
-generateElasticOscillationsToZero elasticity amplitude decay =
-    let
-        clampedAmplitude =
-            clamp 0.1 2.0 amplitude
-
-        clampedDecay =
-            clamp 0.1 20 decay
-
-        -- Calculate number of visible oscillation cycles based on decay
-        -- Adaptive threshold: low decay (slow) = higher threshold, high decay (fast) = lower threshold
-        -- decay=20 → 0.5%, decay=10 → 1%, decay=1 → 10%, decay=0.1 → 10%
-        minVisibleAmplitude =
-            (0.01 * (10.0 / clampedDecay))
-                |> min 0.1
-
-        visibleDuration =
-            if clampedAmplitude > minVisibleAmplitude then
-                logBase 2 (minVisibleAmplitude / clampedAmplitude) / -clampedDecay
-
-            else
-                0.0
-
-        -- Total oscillation cycles
-        totalCycles =
-            round (elasticity * visibleDuration)
-                |> max 3
-                |> min 24
-
-        -- Calculate amplitude for each oscillation cycle (exponentially decaying)
-        cycleAmplitudes =
-            List.range 0 (totalCycles - 1)
-                |> List.map
-                    (\cycleIndex ->
-                        let
-                            -- Time at the start of this cycle
-                            cycleTime =
-                                toFloat cycleIndex / elasticity
-
-                            -- Envelope amplitude at this time
-                            cycleAmplitude =
-                                clampedAmplitude * (2 ^ (-clampedDecay * cycleTime))
-                        in
-                        cycleAmplitude
-                    )
-
-        -- Fixed frames per cycle for evenly spaced peaks and constant velocity
-        -- Only amplitude varies between cycles, not timing
-        framesPerCycle =
-            52
-
-        -- Generate frames for each cycle
-        allFrames =
-            List.indexedMap
-                (\cycleIndex cycleAmplitude ->
-                    let
-                        -- Fixed frames per cycle for constant velocity
-                        framesForCycle =
-                            framesPerCycle
-
-                        cycleFrames =
-                            List.range 0 framesForCycle
-                                |> List.map
-                                    (\frameIndex ->
-                                        let
-                                            -- Local t within this cycle (0 to 1)
-                                            localT =
-                                                toFloat frameIndex / toFloat framesForCycle
-
-                                            -- Global time
-                                            globalTime =
-                                                (toFloat cycleIndex + localT) / elasticity
-
-                                            -- Envelope at this time
-                                            envelope =
-                                                clampedAmplitude * (2 ^ (-clampedDecay * globalTime))
-
-                                            -- Sine wave for this cycle (oscillate around 0)
-                                            oscillation =
-                                                sin (localT * 2 * pi)
-
-                                            value =
-                                                envelope * oscillation
-                                        in
-                                        value
-                                    )
-                    in
-                    cycleFrames
-                )
-                cycleAmplitudes
-                |> List.concat
-
-        _ =
-            Debug.log "ElasticToZero"
-                { totalCycles = totalCycles
-                , firstCycle = List.head cycleAmplitudes
-                , lastCycle = List.reverse cycleAmplitudes |> List.head
-                , first5Frames = List.take 5 allFrames
-                , last5Frames = List.drop (List.length allFrames - 5) allFrames
-                , totalFrames = List.length allFrames
-                }
     in
     allFrames
