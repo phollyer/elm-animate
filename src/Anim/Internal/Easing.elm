@@ -1436,11 +1436,18 @@ generateKeyframes easing durationMs =
                 transitionFrameCount =
                     round (durationMs / 16.67) |> max 10
 
-                -- Oscillations use fixed frames per cycle (same as In/Out)
-                framesPerCycle =
-                    26
+                -- Calculate transition velocity: distance / time
+                transitionVelocity =
+                    1.0 / toFloat transitionFrameCount
 
-                -- In portion: Use duration-aware oscillations (reversed and inverted)
+                -- Oscillations should match transition velocity
+                -- For a sine wave with amplitude A, one cycle travels ~4*A distance
+                -- To match velocity: 4*amplitude / framesPerCycle = transitionVelocity
+                -- So: framesPerCycle = 4*amplitude / transitionVelocity
+                framesPerCycle =
+                    round (4.0 * amplitude / transitionVelocity) |> max 8
+
+                -- In portion: Use physics-based oscillations (reversed and inverted)
                 elasticInOscillations =
                     generateElasticOscillationsWithFrames frequency amplitude decay framesPerCycle
                         |> List.reverse
@@ -1597,11 +1604,18 @@ generateKeyframes easing durationMs =
                 transitionFrameCount =
                     round (durationMs / 16.67) |> max 10
 
-                -- Oscillations use fixed frames per cycle (same as In/Out)
-                framesPerCycle =
-                    26
+                -- Calculate transition velocity: distance / time
+                transitionVelocity =
+                    1.0 / toFloat transitionFrameCount
 
-                -- In portion: Use duration-aware oscillations (reversed and inverted)
+                -- Oscillations should match transition velocity
+                -- For a sine wave with amplitude A, one cycle travels ~4*A distance
+                -- To match velocity: 4*amplitude / framesPerCycle = transitionVelocity
+                -- So: framesPerCycle = 4*amplitude / transitionVelocity
+                framesPerCycle =
+                    round (4.0 * scaledAmplitude / transitionVelocity) |> max 8
+
+                -- In portion: Use physics-based oscillations (reversed and inverted)
                 elasticInOscillations =
                     generateElasticOscillationsWithFrames params.frequency scaledAmplitude params.decay framesPerCycle
                         |> List.reverse
