@@ -57,7 +57,7 @@ moveToY : Float -> Easing -> Builder.AnimBuilder -> Builder.AnimBuilder
 moveToY y easing =
     Position.for elementId
         >> Position.toY y
-        >> Position.speed 200
+        >> Position.speed 300
         >> Position.easing easing
         >> Position.build
 

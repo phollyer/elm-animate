@@ -2020,7 +2020,7 @@ generateElasticOscillations frequency amplitude decay =
         -- Fixed frames per cycle for evenly spaced peaks and constant velocity
         -- Only amplitude varies between cycles, not timing
         framesPerCycle =
-            26
+            52
 
         -- Generate frames for each cycle
         allFrames =
@@ -2219,7 +2219,7 @@ generateElasticOscillationsToZero frequency amplitude decay =
         -- Fixed frames per cycle for evenly spaced peaks and constant velocity
         -- Only amplitude varies between cycles, not timing
         framesPerCycle =
-            26
+            52
 
         -- Generate frames for each cycle
         allFrames =
