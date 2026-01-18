@@ -69,7 +69,7 @@ moveToPosition1 =
 
 moveToPosition2 : Builder.AnimBuilder -> Builder.AnimBuilder
 moveToPosition2 =
-    moveToXY 300 200 (ElasticOutCustom 0.9)
+    moveToXY 300 200 (ElasticOutCustom 0.1)
 
 
 moveLeft : Builder.AnimBuilder -> Builder.AnimBuilder

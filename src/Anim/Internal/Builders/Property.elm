@@ -226,8 +226,8 @@ upsert propertyConfig builder =
             add adjustedConfig builder
 
 
-{-| Automatically adjust bounce easing strength based on animation velocity.
-This creates realistic physics where faster movements produce bigger bounces.
+{-| Automatically adjust bounce and elastic easing strength based on animation velocity.
+This creates realistic physics where faster movements produce bigger bounces and stronger oscillations.
 -}
 adjustBounceEasing : Builder.PropertyConfig -> Builder.PropertyConfig
 adjustBounceEasing propertyConfig =
@@ -254,7 +254,7 @@ adjustBounceEasing propertyConfig =
             Builder.FontColorConfig (adjustConfigEasing config)
 
 
-{-| Adjust easing in a config if it's a custom bounce easing.
+{-| Adjust easing in a config if it's a custom bounce or elastic easing.
 -}
 adjustConfigEasing : { config | distance : Float, speed : Float, duration : Int, easing : Maybe Easing } -> { config | distance : Float, speed : Float, duration : Int, easing : Maybe Easing }
 adjustConfigEasing config =
@@ -276,19 +276,39 @@ adjustConfigEasing config =
                         )
             }
 
+        Just (ElasticOutCustom baseStrength) ->
+            { config | easing = Just (ElasticOutCustom (calculateAdjustedStrength baseStrength config)) }
+
+        Just (ElasticInCustom baseStrength) ->
+            { config | easing = Just (ElasticInCustom (calculateAdjustedStrength baseStrength config)) }
+
+        Just (ElasticInOutCustom ( baseStrengthIn, baseStrengthOut )) ->
+            { config
+                | easing =
+                    Just
+                        (ElasticInOutCustom
+                            ( calculateAdjustedStrength baseStrengthIn config
+                            , calculateAdjustedStrength baseStrengthOut config
+                            )
+                        )
+            }
+
         _ ->
             config
 
 
-{-| Calculate adjusted bounce strength based on animation velocity.
-Higher velocity animations get stronger bounces for realistic physics.
+{-| Calculate adjusted strength based on animation velocity.
+Higher velocity animations get stronger effects for realistic physics.
+
+For bounces: Higher velocity → bigger bounces (kinetic energy conversion)
+For elastic: Higher velocity → stronger oscillations (spring compression)
 
 Formula:
 
   - Calculate velocity = distance / duration (units per second)
   - Normalize velocity to 0-1 range (typical range varies by property type)
   - Blend base strength with velocity influence
-  - Higher velocity → higher effective strength → bigger bounces
+  - Higher velocity → higher effective strength → bigger bounces/oscillations
 
 -}
 calculateAdjustedStrength : Float -> { config | distance : Float, speed : Float, duration : Int } -> Float
