@@ -57,7 +57,7 @@ moveToY : Float -> Easing -> Builder.AnimBuilder -> Builder.AnimBuilder
 moveToY y easing =
     Position.for elementId
         >> Position.toY y
-        >> Position.speed 100
+        >> Position.speed 200
         >> Position.easing easing
         >> Position.build
 
@@ -95,7 +95,7 @@ moveUp =
 -}
 moveDown : Builder.AnimBuilder -> Builder.AnimBuilder
 moveDown =
-    moveToY 350 (ElasticOutAdvanced { frequency = 2, amplitude = 1, decay = 0.1 })
+    moveToY 350 (ElasticOutAdvanced { frequency = 2, amplitude = 1, decay = 1 })
 
 
 {-| Return to origin (0, 0) with smooth easing

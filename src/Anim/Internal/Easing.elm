@@ -755,11 +755,17 @@ advancedElasticOutHelper frequency amplitude decay t =
                 clamp 0.1 2.0 amplitude
 
             clampedDecay =
-                clamp 1 10 decay
+                clamp 0.1 10 decay
 
-            -- Exponential decay
+            -- Exponential decay - scale decay to make it effective
+            -- Scale aggressively to reduce oscillation cycles
+            -- decay 0.1 -> 2^-5 = 3% at t=1 (few cycles)
+            -- decay 1.0 -> 2^-50 = ~0% at t=1 (instant settling)
+            scaledDecay =
+                clampedDecay * 50
+
             envelope =
-                clampedAmplitude * (2 ^ (-clampedDecay * t))
+                clampedAmplitude * (2 ^ (-scaledDecay * t))
 
             -- Oscillation
             oscillation =
@@ -1983,13 +1989,20 @@ generateElasticOscillations frequency amplitude decay =
         clampedDecay =
             clamp 0.1 20 decay
 
+        -- Scale decay to make it effective (same as in advancedElasticOutHelper)
+        scaledDecay =
+            clampedDecay * 50
+
         -- Calculate number of visible oscillation cycles based on decay
+        -- Adaptive threshold: low decay (slow) = higher threshold, high decay (fast) = lower threshold
+        -- decay=20 → 0.5%, decay=10 → 1%, decay=1 → 10%, decay=0.1 → 10%
         minVisibleAmplitude =
-            0.01
+            (0.01 * (10.0 / clampedDecay))
+                |> min 0.1
 
         visibleDuration =
             if clampedAmplitude > minVisibleAmplitude then
-                logBase 2 (minVisibleAmplitude / clampedAmplitude) / -clampedDecay
+                logBase 2 (minVisibleAmplitude / clampedAmplitude) / -scaledDecay
 
             else
                 0.0
@@ -1998,7 +2011,7 @@ generateElasticOscillations frequency amplitude decay =
         totalCycles =
             round (clampedFrequency * visibleDuration)
                 |> max 3
-                |> min 12
+                |> min 24
 
         -- Calculate amplitude for each oscillation cycle (exponentially decaying)
         cycleAmplitudes =
@@ -2012,7 +2025,7 @@ generateElasticOscillations frequency amplitude decay =
 
                             -- Envelope amplitude at this time
                             cycleAmplitude =
-                                clampedAmplitude * (2 ^ (-clampedDecay * cycleTime))
+                                clampedAmplitude * (2 ^ (-scaledDecay * cycleTime))
                         in
                         cycleAmplitude
                     )
@@ -2092,13 +2105,20 @@ generateElasticOscillationsWithFrames frequency amplitude decay framesPerCycle =
         clampedDecay =
             clamp 0.1 20 decay
 
+        -- Scale decay to make it effective (same as in advancedElasticOutHelper)
+        scaledDecay =
+            clampedDecay * 50
+
         -- Calculate number of visible oscillation cycles based on decay
+        -- Adaptive threshold: low decay (slow) = higher threshold, high decay (fast) = lower threshold
+        -- decay=20 → 0.5%, decay=10 → 1%, decay=1 → 10%, decay=0.1 → 10%
         minVisibleAmplitude =
-            0.01
+            (0.01 * (10.0 / clampedDecay))
+                |> min 0.1
 
         visibleDuration =
             if clampedAmplitude > minVisibleAmplitude then
-                logBase 2 (minVisibleAmplitude / clampedAmplitude) / -clampedDecay
+                logBase 2 (minVisibleAmplitude / clampedAmplitude) / -scaledDecay
 
             else
                 0.0
@@ -2107,7 +2127,7 @@ generateElasticOscillationsWithFrames frequency amplitude decay framesPerCycle =
         totalCycles =
             round (clampedFrequency * visibleDuration)
                 |> max 3
-                |> min 12
+                |> min 24
 
         -- Calculate amplitude for each oscillation cycle (exponentially decaying)
         cycleAmplitudes =
@@ -2121,7 +2141,7 @@ generateElasticOscillationsWithFrames frequency amplitude decay framesPerCycle =
 
                             -- Envelope amplitude at this time
                             cycleAmplitude =
-                                clampedAmplitude * (2 ^ (-clampedDecay * cycleTime))
+                                clampedAmplitude * (2 ^ (-scaledDecay * cycleTime))
                         in
                         cycleAmplitude
                     )
@@ -2146,7 +2166,7 @@ generateElasticOscillationsWithFrames frequency amplitude decay framesPerCycle =
 
                                             -- Envelope at this time
                                             envelope =
-                                                clampedAmplitude * (2 ^ (-clampedDecay * globalTime))
+                                                clampedAmplitude * (2 ^ (-scaledDecay * globalTime))
 
                                             -- Sine wave for this cycle
                                             -- Negative sine so it goes negative first (for proper ElasticIn direction)
@@ -2183,8 +2203,11 @@ generateElasticOscillationsToZero frequency amplitude decay =
             clamp 0.1 20 decay
 
         -- Calculate number of visible oscillation cycles based on decay
+        -- Adaptive threshold: low decay (slow) = higher threshold, high decay (fast) = lower threshold
+        -- decay=20 → 0.5%, decay=10 → 1%, decay=1 → 10%, decay=0.1 → 10%
         minVisibleAmplitude =
-            0.01
+            (0.01 * (10.0 / clampedDecay))
+                |> min 0.1
 
         visibleDuration =
             if clampedAmplitude > minVisibleAmplitude then
@@ -2197,7 +2220,7 @@ generateElasticOscillationsToZero frequency amplitude decay =
         totalCycles =
             round (clampedFrequency * visibleDuration)
                 |> max 3
-                |> min 12
+                |> min 24
 
         -- Calculate amplitude for each oscillation cycle (exponentially decaying)
         cycleAmplitudes =
