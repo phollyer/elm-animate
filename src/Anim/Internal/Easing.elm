@@ -1436,15 +1436,19 @@ generateKeyframes easing durationMs =
                 transitionFrameCount =
                     round (durationMs / 16.67) |> max 10
 
-                -- In portion: Use same oscillations as ElasticIn (reversed and inverted)
+                -- Oscillations use fixed frames per cycle (same as In/Out)
+                framesPerCycle =
+                    26
+
+                -- In portion: Use duration-aware oscillations (reversed and inverted)
                 elasticInOscillations =
-                    generateElasticOscillations frequency amplitude decay
+                    generateElasticOscillationsWithFrames frequency amplitude decay framesPerCycle
                         |> List.reverse
                         |> List.map (\v -> 1.0 - v)
 
-                -- Out portion: Use same oscillations as ElasticOut
+                -- Out portion: Use duration-aware oscillations
                 elasticOutOscillations =
-                    generateElasticOscillations frequency amplitude decay
+                    generateElasticOscillationsWithFrames frequency amplitude decay framesPerCycle
 
                 -- Calculate velocities at connection points
                 -- Last In oscillation: approach 0 from below (negative to 0)
@@ -1593,15 +1597,19 @@ generateKeyframes easing durationMs =
                 transitionFrameCount =
                     round (durationMs / 16.67) |> max 10
 
-                -- In portion: Use same oscillations as ElasticIn (reversed and inverted)
+                -- Oscillations use fixed frames per cycle (same as In/Out)
+                framesPerCycle =
+                    26
+
+                -- In portion: Use duration-aware oscillations (reversed and inverted)
                 elasticInOscillations =
-                    generateElasticOscillations params.frequency scaledAmplitude params.decay
+                    generateElasticOscillationsWithFrames params.frequency scaledAmplitude params.decay framesPerCycle
                         |> List.reverse
                         |> List.map (\v -> 1.0 - v)
 
-                -- Out portion: Use same oscillations as ElasticOut
+                -- Out portion: Use duration-aware oscillations
                 elasticOutOscillations =
-                    generateElasticOscillations params.frequency scaledAmplitude params.decay
+                    generateElasticOscillationsWithFrames params.frequency scaledAmplitude params.decay framesPerCycle
 
                 -- Calculate velocities at connection points
                 -- Last In oscillation: approach 0 from below (negative to 0)

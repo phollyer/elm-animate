@@ -48,7 +48,7 @@ moveToX : Float -> Easing -> Builder.AnimBuilder -> Builder.AnimBuilder
 moveToX x easing =
     Position.for elementId
         >> Position.toX x
-        >> Position.speed 300
+        >> Position.speed 100
         >> Position.easing easing
         >> Position.build
 
