@@ -129,9 +129,6 @@ easingToCSS easing =
         BackInOutCustom _ ->
             "linear"
 
-        BackInOutAdvanced _ ->
-            "linear"
-
         ElasticIn ->
             "cubic-bezier(0.55, 0.055, 0.675, 0.19)"
 
@@ -297,9 +294,6 @@ toWebAnimations easing =
         BackInOutCustom _ ->
             "linear"
 
-        BackInOutAdvanced _ ->
-            "linear"
-
         ElasticIn ->
             "linear"
 
@@ -460,9 +454,6 @@ toFunction durationMs easing =
 
         BackInOutCustom strengthTuple ->
             customBackInOut strengthTuple
-
-        BackInOutAdvanced params ->
-            advancedBackInOut params
 
         ElasticIn ->
             E.inElastic
@@ -750,8 +741,17 @@ customBackOut strength t =
         -- Map strength to overshoot amount (standard is 1.70158)
         overshoot =
             1.0 + (clampedStrength * 0.70158)
+
+        clampedOvershoot =
+            clamp 0.5 3.0 overshoot
+
+        s =
+            clampedOvershoot
+
+        p =
+            t - 1
     in
-    advancedBackOutHelper overshoot t
+    p * p * ((s + 1) * p + s) + 1
 
 
 customBackIn : Float -> Float -> Float
@@ -766,44 +766,6 @@ customBackInOut ( strengthIn, strengthOut ) t =
 
     else
         0.5 + (customBackOut strengthOut ((t - 0.5) * 2) * 0.5)
-
-
-{-| Advanced back easing with full overshoot control.
--}
-advancedBackOut : { overshoot : Float } -> Float -> Float
-advancedBackOut params t =
-    advancedBackOutHelper params.overshoot t
-
-
-advancedBackIn : { overshoot : Float } -> Float -> Float
-advancedBackIn params t =
-    1.0 - advancedBackOut params (1.0 - t)
-
-
-advancedBackInOut : { in_ : { overshoot : Float }, out : { overshoot : Float } } -> Float -> Float
-advancedBackInOut params t =
-    if t < 0.5 then
-        advancedBackIn params.in_ (t * 2) * 0.5
-
-    else
-        0.5 + (advancedBackOut params.out ((t - 0.5) * 2) * 0.5)
-
-
-{-| Helper function for back easing with configurable overshoot.
--}
-advancedBackOutHelper : Float -> Float -> Float
-advancedBackOutHelper overshoot t =
-    let
-        clampedOvershoot =
-            clamp 0.5 3.0 overshoot
-
-        s =
-            clampedOvershoot
-
-        p =
-            t - 1
-    in
-    p * p * ((s + 1) * p + s) + 1
 
 
 
@@ -1717,14 +1679,6 @@ generateKeyframes easing durationMs =
             let
                 easingFunction =
                     customBackInOut strength
-            in
-            List.range 0 (keyframeCount - 1)
-                |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))
-
-        BackInOutAdvanced params ->
-            let
-                easingFunction =
-                    advancedBackInOut params
             in
             List.range 0 (keyframeCount - 1)
                 |> List.map (\i -> easingFunction (toFloat i / toFloat (keyframeCount - 1)))

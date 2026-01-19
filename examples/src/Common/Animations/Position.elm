@@ -107,7 +107,7 @@ moveDown : Builder.AnimBuilder -> Builder.AnimBuilder
 moveDown =
     moveToY 350
         (ElasticInOutAdvanced
-            { in_ = { elasticity = 0.1, amplitude = 1.5, decay = 1 }
+            { in_ = { elasticity = 1, amplitude = 2, decay = 2 }
             , out = { elasticity = 0.3, amplitude = 1.5, decay = 0.7 }
             }
         )
@@ -117,4 +117,4 @@ moveDown =
 -}
 returnToOrigin : Builder.AnimBuilder -> Builder.AnimBuilder
 returnToOrigin =
-    moveToXY 0 0 (ElasticInOutCustom ( 0.1, 0.1 ))
+    moveToXY 0 0 (ElasticInOutCustom ( 0.1, 0.9 ))

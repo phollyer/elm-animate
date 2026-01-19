@@ -29,7 +29,10 @@ If the standard and custom complex easings are not sufficient, you can use the a
 Each one takes a record with multiple parameters for more control.
 
   - `Back*Advanced { overshoot }`: Full control over overshoot behavior
-  - `Bounce*Advanced { bounces, amplitude, decay }`:
+  - `Bounce*Advanced
+    { in_ : { bounces, amplitude, decay }
+    , out : { bounces, amplitude, decay }
+    }`:
       - `bounces : Int`: Number of bounces
           - Higher values = more bounces
           - Lower values = fewer bounces
@@ -69,7 +72,6 @@ type Easing
     | BackInCustom Float
     | BackOutCustom Float
     | BackInOutCustom ( Float, Float )
-    | BackInOutAdvanced { in_ : { overshoot : Float }, out : { overshoot : Float } }
     | BounceIn
     | BounceOut
     | BounceInOut
