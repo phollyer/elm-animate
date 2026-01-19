@@ -53,9 +53,9 @@ Control running animations with stop, reset, restart, pause, and resume function
   - **stop**: Instantly jumps to the animation's end state.
   - **reset**: Instantly jumps back to the animation's start state.
   - **restart**: Restarts the animation from the beginning.
-  - **pause**: Pauses all running animations by stopping subscription updates.
+  - **pause**: Pauses a specific element's animations by stopping subscription updates for that element.
     Animation state is preserved at current position.
-  - **resume**: Resumes paused animations by restarting subscription updates.
+  - **resume**: Resumes a specific element's paused animations by restarting subscription updates for that element.
 
 @docs stop, reset, restart, pause, resume
 
@@ -818,7 +818,7 @@ restart elementId animState =
     InternalSub.restartElement elementId animState
 
 
-{-| Pause all running animations.
+{-| Pause a specific element's running animations.
 
 Animation state is preserved and can be resumed later.
 
@@ -831,7 +831,7 @@ pause elementId animState =
     InternalSub.pauseElement elementId animState
 
 
-{-| Resume paused animations.
+{-| Resume a specific element's paused animations.
 
 Animations continue from where they were paused.
 
