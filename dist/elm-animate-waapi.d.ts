@@ -8,14 +8,11 @@
  */
 
 export interface ElmPorts {
-    animateElement?: {
-        subscribe: (callback: (data: AnimationData) => void) => void;
+    waapiCommand?: {
+        subscribe: (callback: (data: any) => void) => void;
     };
-    stopElementAnimation?: {
-        subscribe: (callback: (elementId: string) => void) => void;
-    };
-    positionUpdates?: {
-        send: (update: AnimationUpdate) => void;
+    waapiEvent?: {
+        send: (update: any) => void;
     };
 }
 
@@ -112,15 +109,39 @@ export interface ElmAnimateWAAPI {
     getCurrentTransform(element: Element): TransformState;
 
     /**
-     * Stop animation for a specific element
+     * Stop animation for a specific element by jumping to end state
      * @param elementId - The ID of the element to stop animating
      */
     stopAnimation(elementId: string): void;
 
     /**
+     * Reset animation for a specific element by jumping to start state
+     * @param elementId - The ID of the element to reset
+     */
+    resetAnimation(elementId: string): void;
+
+    /**
+     * Restart animation for a specific element from the beginning
+     * @param elementId - The ID of the element to restart
+     */
+    restartAnimation(elementId: string): void;
+
+    /**
+     * Pause animation for a specific element
+     * @param elementId - The ID of the element to pause
+     */
+    pauseAnimation(elementId: string): void;
+
+    /**
+     * Resume paused animation for a specific element
+     * @param elementId - The ID of the element to resume
+     */
+    resumeAnimation(elementId: string): void;
+
+    /**
      * Map of currently active animations
      */
-    activeAnimations: Map<string, Animation | Animation[]>;
+    activeAnimations: Map<string, Map<string, { animation: Animation; version: number; updateFn: () => void }>>;
 
     /**
      * Add a custom easing function
