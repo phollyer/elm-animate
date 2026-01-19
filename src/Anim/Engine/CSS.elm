@@ -1057,6 +1057,9 @@ Common values: 500-2000px.
         [ -- Animated content with 3D transforms
         ]
 
+**Elm-side styles take precedence**: When you use this function, the JavaScript will detect
+the existing inline style and skip auto-applying perspective, giving you full control.
+
 -}
 perspectiveWith : Float -> List (Html.Attribute msg)
 perspectiveWith perspectiveValue =

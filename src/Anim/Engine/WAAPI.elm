@@ -24,6 +24,9 @@ via Elm ports for maximum performance and browser compatibility.
 
 **Note:** This module requires the accompanying JavaScript library to handle the Web Animations API.
 
+
+## Required JavaScript Companion
+
 Install the `elm-animate-waapi` package from npm.
 
         npm install elm-animate-waapi
@@ -43,9 +46,13 @@ Then import and initialize it in your JavaScript code:
 
 **For fire-and-forget animations** (no state tracking):
 
+Only the outgoing command port is needed to send animation instructions to JavaScript.
+
         port waapiCommand : Json.Encode.Value -> Cmd msg
 
 **For stateful animations** (with state tracking and real-time updates):
+
+Both outgoing command and incoming event ports are needed.
 
         port waapiCommand : Json.Encode.Value -> Cmd msg
 
@@ -54,7 +61,7 @@ Then import and initialize it in your JavaScript code:
   - **`waapiCommand`**: Outgoing port to send animation commands to JavaScript (always required)
   - **`waapiEvent`**: Incoming port to receive animation updates from JavaScript (only needed for [animate](#animate), not for [fireAndForget](#fireAndForget))
 
-The JavaScript companion automatically connects to these ports when you call `ElmAnimateWAAPI.init(app.ports)`.
+The JavaScript companion automatically connects to these ports when you call `ElmAnimateWAAPI.init(app.ports)` in your JavaScript code.
 
 
 # Build
@@ -78,7 +85,19 @@ displays (120Hz, 144Hz, etc.) while maintaining smooth visual feedback.
 @docs XYZ, PropertyData, AnimationStatus, EventType, decode
 
 
-# Control Running Animations
+# Animation Control
+
+Control running animations with stop, reset, restart, pause, and resume functionality.
+
+**WAAPI Animation Behavior:**
+
+  - **stop**: Calls `Animation.finish()` to instantly jump to the animation's end state.
+  - **reset**: Calls `Animation.cancel()` to instantly jump back to the animation's start state.
+  - **restart**: Calls `Animation.cancel()` followed by `Animation.play()` to restart from the beginning.
+  - **pause**: Calls `Animation.pause()` to freeze the animation at its current progress.
+  - **resume**: Calls `Animation.play()` to continue a paused animation from where it was paused.
+
+All control methods work with Web Animations API animations and trigger the appropriate animation lifecycle events.
 
 @docs stop, reset, restart, pause, resume
 
