@@ -35,28 +35,28 @@ are calculated based on `strength` and velocity (from A -> B) and then either pr
 This provides a smoother and more natural effect than squashing all oscillations or bounces, along with the transition, into the animation duration.
 
 
-### Back
+### Back\*Custom
 
-`BackInCustom` & `BackOutCustom` easings take a single `strength : Float` parameter that adjusts the overshoot amount.
+`BackInCustom` & `BackOutCustom` both take a single `strength : Float` parameter that adjusts the overshoot amount.
 Higher values result in more overshoot, while lower values result in less overshoot.
 
-`BackInOutCustom` easing takes a tuple `(inStrength : Float, outStrength : Float)` to adjust overshoot for both phases independently.
+`BackInOutCustom` takes a tuple `(inStrength : Float, outStrength : Float)` to adjust overshoot for both phases independently.
 
 
-### Bounce
+### Bounce\*Custom
 
-`BounceInCustom` & `BounceOutCustom` easings take a single `strength : Float` parameter that adjusts the bounce intensity.
+`BounceInCustom` & `BounceOutCustom` both take a single `strength : Float` parameter that adjusts the bounce intensity.
 Higher values result in more intense bounces, while lower values result in gentler bounces.
 
-`BounceInOutCustom` easing takes a tuple `(inStrength : Float, outStrength : Float)` to adjust bounce intensity for both phases independently.
+`BounceInOutCustom` takes a tuple `(inStrength : Float, outStrength : Float)` to adjust bounce intensity for both phases independently.
 
 
-### Elastic
+### Elastic\*Custom
 
-`ElasticInCustom` & `ElasticOutCustom` easings take a single `strength : Float` parameter that adjusts the oscillation intensity.
+`ElasticInCustom` & `ElasticOutCustom` both take a single `strength : Float` parameter that adjusts the oscillation intensity.
 Higher values result in more intense oscillations, while lower values result in gentler oscillations.
 
-`ElasticInOutCustom` easing takes a tuple `(inStrength : Float, outStrength : Float)` to adjust oscillation intensity for both phases independently.
+`ElasticInOutCustom` takes a tuple `(inStrength : Float, outStrength : Float)` to adjust oscillation intensity for both phases independently.
 
 
 ## Advanced Easings
@@ -72,39 +72,39 @@ are calculated based on the provided parameters and velocity (from A -> B) and t
 This provides a smoother and more natural effect than squashing all oscillations or bounces, along with the transition, into the animation duration.
 
 
-### Bounce
+### Bounce\*Advanced
 
-`BounceInAdvanced` & `BounceOutAdvanced` easings take a record with three fields:
+`BounceInAdvanced` & `BounceOutAdvanced` both take a record with three fields:
 
   - `bounces : Int`: Number of bounces
-  - `amplitude : Float`: Bounce intensity (scales all bounce heights proportionally)
+  - `amplitude : Float`: Bounce intensity
       - Lower values = smaller bounces
       - Higher values = larger bounces
   - `decay : Float`: Rate of bounce height reduction
       - Lower values = slower decay (bounces stay larger longer)
       - Higher values = faster decay (bounces shrink quicker)
 
-`BounceInOutAdvanced` easing takes a record with two fields:
+`BounceInOutAdvanced` takes a record with two fields:
 
   - `in_ : { bounces, amplitude, decay }`: Parameters for the "in" phase
   - `out : { bounces, amplitude, decay }`: Parameters for the "out" phase
 
 
-### Elastic
+### Elastic\*Advanced
 
-`ElasticInAdvanced`, `ElasticOutAdvanced` easings take a record with three fields:
+`ElasticInAdvanced`, `ElasticOutAdvanced` both take a record with three fields:
 
   - `elasticity : Float`: Controls the springiness of the oscillation
       - Lower values = stiffer spring (less oscillation)
       - Higher values = more elastic spring (more oscillation)
-  - `amplitude : Float`: Oscillation intensity (scales all oscillation heights proportionally)
+  - `amplitude : Float`: Oscillation intensity
       - Lower values = smaller oscillations
       - Higher values = larger oscillations
   - `decay : Float`: Rate of oscillation height reduction
       - Lower values = slower decay (oscillations stay larger longer)
       - Higher values = faster decay (oscillations shrink quicker)
 
-`ElasticInOutAdvanced` easing takes a record with two fields:
+`ElasticInOutAdvanced` takes a record with two fields:
 
   - `in_ : { elasticity, amplitude, decay }`: Parameters for the "in" phase
   - `out : { elasticity, amplitude, decay }`: Parameters for the "out" phase
