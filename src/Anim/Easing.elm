@@ -1,60 +1,116 @@
 module Anim.Easing exposing (Easing(..))
 
-{-|
+{-| Easing functions for animations.
+
+
+## Standard Easings
+
+  - `BackIn`, `BackOut`, `BackInOut`
+  - `BounceIn`, `BounceOut`, `BounceInOut`
+  - `CircIn`, `CircOut`, `CircInOut`
+  - `CubicBezier x1 y1 x2 y2`
+  - `CubicIn`, `CubicOut`, `CubicInOut`
+  - `Ease`, `EaseIn`, `EaseOut`, `EaseInOut`
+  - `ElasticIn`, `ElasticOut`, `ElasticInOut`
+  - `ExpoIn`, `ExpoOut`, `ExpoInOut`
+  - `Linear`
+  - `QuadIn`, `QuadOut`, `QuadInOut`
+  - `QuartIn`, `QuartOut`, `QuartInOut`
+  - `QuintIn`, `QuintOut`, `QuintInOut`
+  - `SineIn`, `SineOut`, `SineInOut`
+
+These all use the easing functions from [elm-community/ease](https://package.elm-lang.org/packages/elm-community/easing-functions/latest/Ease).
+
+
+## Custom Easings
+
+  - `BackInCustom`, `BackOutCustom`, `BackInOutCustom`
+  - `BounceInCustom`, `BounceOutCustom`, `BounceInOutCustom`
+  - `ElasticInCustom`, `ElasticOutCustom`, `ElasticInOutCustom`
+
+These are variations of the standard complex easings that allow you to customize their behavior.
+
+**Note**: These easings are generated such that the transition time (from A -> B) matches the specified animation duration. Any oscillations or bounces
+are calculated based on `strength` and velocity (from A -> B) and then either prepended or appended to the transition phase as appropriate.
+This provides a smoother and more natural effect than squashing all oscillations or bounces, along with the transition, into the animation duration.
+
+
+### Back
+
+`BackInCustom` & `BackOutCustom` easings take a single `strength : Float` parameter that adjusts the overshoot amount.
+Higher values result in more overshoot, while lower values result in less overshoot.
+
+`BackInOutCustom` easing takes a tuple `(inStrength : Float, outStrength : Float)` to adjust overshoot for both phases independently.
+
+
+### Bounce
+
+`BounceInCustom` & `BounceOutCustom` easings take a single `strength : Float` parameter that adjusts the bounce intensity.
+Higher values result in more intense bounces, while lower values result in gentler bounces.
+
+`BounceInOutCustom` easing takes a tuple `(inStrength : Float, outStrength : Float)` to adjust bounce intensity for both phases independently.
+
+
+### Elastic
+
+`ElasticInCustom` & `ElasticOutCustom` easings take a single `strength : Float` parameter that adjusts the oscillation intensity.
+Higher values result in more intense oscillations, while lower values result in gentler oscillations.
+
+`ElasticInOutCustom` easing takes a tuple `(inStrength : Float, outStrength : Float)` to adjust oscillation intensity for both phases independently.
+
+
+## Advanced Easings
+
+  - `BounceInAdvanced`, `BounceOutAdvanced`, `BounceInOutAdvanced`
+  - `ElasticInAdvanced`, `ElasticOutAdvanced`, `ElasticInOutAdvanced`
+
+These are further variations of the standard complex easings that provide more granular control.
+Each one takes a record with multiple fields.
+
+**Note**: These easings are generated such that the transition time (from A -> B) matches the specified animation duration. Any oscillations or bounces
+are calculated based on the provided parameters and velocity (from A -> B) and then either prepended or appended to the transition phase as appropriate.
+This provides a smoother and more natural effect than squashing all oscillations or bounces, along with the transition, into the animation duration.
+
+
+### Bounce
+
+`BounceInAdvanced` & `BounceOutAdvanced` easings take a record with three fields:
+
+  - `bounces : Int`: Number of bounces
+  - `amplitude : Float`: Bounce intensity (scales all bounce heights proportionally)
+      - Lower values = smaller bounces
+      - Higher values = larger bounces
+  - `decay : Float`: Rate of bounce height reduction
+      - Lower values = slower decay (bounces stay larger longer)
+      - Higher values = faster decay (bounces shrink quicker)
+
+`BounceInOutAdvanced` easing takes a record with two fields:
+
+  - `in_ : { bounces, amplitude, decay }`: Parameters for the "in" phase
+  - `out : { bounces, amplitude, decay }`: Parameters for the "out" phase
+
+
+### Elastic
+
+`ElasticInAdvanced`, `ElasticOutAdvanced` easings take a record with three fields:
+
+  - `elasticity : Float`: Controls the springiness of the oscillation
+      - Lower values = stiffer spring (less oscillation)
+      - Higher values = more elastic spring (more oscillation)
+  - `amplitude : Float`: Oscillation intensity (scales all oscillation heights proportionally)
+      - Lower values = smaller oscillations
+      - Higher values = larger oscillations
+  - `decay : Float`: Rate of oscillation height reduction
+      - Lower values = slower decay (oscillations stay larger longer)
+      - Higher values = faster decay (oscillations shrink quicker)
+
+`ElasticInOutAdvanced` easing takes a record with two fields:
+
+  - `in_ : { elasticity, amplitude, decay }`: Parameters for the "in" phase
+  - `out : { elasticity, amplitude, decay }`: Parameters for the "out" phase
 
 
 # Easing Type
-
-
-## Standard Easings:
-
-These use the easing functions from [elm-community/ease](https://package.elm-lang.org/packages/elm-community/easing-functions/latest/Ease).
-
-For complex easings like Back, Bounce, and Elastic, there are also Custom and Advanced versions available.
-
-
-## Custom Easings:
-
-If the standard complex easings don't fit your needs, you can use the custom versions.
-Each one takes a `Float` parameter to adjust the behavior.
-
-  - `Back*Custom strength`: Adjust overshoot amount
-  - `Bounce*Custom strength`: Adjust bounce intensity
-  - `Elastic*Custom strength`: Adjust oscillation intensity
-
-
-## Advanced Easings:
-
-If the standard and custom complex easings are not sufficient, you can use the advanced versions.
-Each one takes a record with multiple parameters for more control.
-
-  - `Back*Advanced { overshoot }`: Full control over overshoot behavior
-  - `Bounce*Advanced
-    { in_ : { bounces, amplitude, decay }
-    , out : { bounces, amplitude, decay }
-    }`:
-      - `bounces : Int`: Number of bounces
-          - Higher values = more bounces
-          - Lower values = fewer bounces
-      - `amplitude : Float`: Initial bounce height
-          - Lower values = smaller bounces
-          - Higher values = larger bounces
-      - `decay : Float`: Rate of bounce height reduction
-          - Lower values = slower decay (bounces stay larger longer)
-          - Higher values = faster decay (bounces shrink quicker)
-  - `Elastic*Advanced
-    { in_ : { elasticity, amplitude, decay }
-    , out : { elasticity, amplitude, decay }
-    }`:
-      - `elasticity : Float`: Affects the number of oscillations
-          - Higher values = more oscillations
-          - Lower values = fewer oscillations
-      - `amplitude : Float`: Affects the oscillation height
-          - Lower values = smaller oscillations
-          - Higher values = larger oscillations
-      - `decay : Float`: Affects the rate of oscillation height reduction
-          - Lower values = slower decay (oscillations stay larger longer)
-          - Higher values = faster decay (oscillations shrink quicker)
 
 @docs Easing
 
