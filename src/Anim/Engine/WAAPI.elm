@@ -39,6 +39,24 @@ Then import and initialize it in your JavaScript code:
 ```
 
 
+## Required Ports
+
+**For fire-and-forget animations** (no state tracking):
+
+        port waapiCommand : Json.Encode.Value -> Cmd msg
+
+**For stateful animations** (with state tracking and real-time updates):
+
+        port waapiCommand : Json.Encode.Value -> Cmd msg
+
+        port waapiEvent : (Json.Encode.Value -> msg) -> Sub msg
+
+  - **`waapiCommand`**: Outgoing port to send animation commands to JavaScript (always required)
+  - **`waapiEvent`**: Incoming port to receive animation updates from JavaScript (only needed for [animate](#animate), not for [fireAndForget](#fireAndForget))
+
+The JavaScript companion automatically connects to these ports when you call `ElmAnimateWAAPI.init(app.ports)`.
+
+
 # Build
 
 @docs AnimState, init, AnimBuilder, builder
@@ -892,7 +910,7 @@ It returns a message with both the event type and updated state.
 
 **Note:** For fire-and-forget animations, you don't need this - animations run entirely in JavaScript.
 
-    port incomingWaapiEvent : (Encode.Value -> msg) -> Sub msg
+    port waapiEvent : (Encode.Value -> msg) -> Sub msg
 
     type Msg
         = GotWaapiUpdate WAAPI.EventType WAAPI.AnimState
@@ -900,7 +918,7 @@ It returns a message with both the event type and updated state.
 
     subscriptions : Model -> Sub Msg
     subscriptions model =
-        incomingWaapiEvent <|
+        waapiEvent <|
             WAAPI.decode GotWaapiUpdate model.animationState
 
     update : Msg -> Model -> ( Model, Cmd Msg )
