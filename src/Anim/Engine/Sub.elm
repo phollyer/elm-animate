@@ -342,22 +342,28 @@ perspectiveStyles containerId animState =
 
 {-| Manually generate HTML attributes with a given perspective value.
 
-Think zoom level for 3D transforms!!
+Perspective controls the viewer's distance from the 3D scene (not zoom/magnification).
+Lower values create more dramatic 3D effects, higher values create more subtle effects.
 
-    -- Zoom in/out by changing the perspective value
+Can be applied to any ancestor element of 3D-transformed children, not just direct parents.
+Set this on the root node for global effect, and override on specific containers as needed.
+
+Common values: 500-2000px.
+
+    -- Adjust 3D depth effect dynamically
 
     update msg model =
         case msg of
-            ZoomIn ->
-                { model | zoomLevel = model.zoomLevel - 100 }
+            IncreaseDepth ->
+                { model | viewerDistance = model.viewerDistance - 100 }
 
-            ZoomOut ->
-                { model | zoomLevel = model.zoomLevel + 100 }
+            DecreaseDepth ->
+                { model | viewerDistance = model.viewerDistance + 100 }
 
 
     div
-        (Sub.perspectiveWith model.zoomLevel)
-        [ --- Animated content
+        (Sub.perspectiveWith model.viewerDistance)
+        [ -- Animated content with 3D transforms
         ]
 
 -}
