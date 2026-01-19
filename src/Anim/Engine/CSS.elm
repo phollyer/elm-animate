@@ -466,13 +466,11 @@ Using this function is equivalent to manually writing something like:
 
 1.  You still need to include the keyframes in your DOM separately with
     [ keyframesStyleNode ](#keyframesStyleNode) or [ keyframesStyleNodeFor ](#keyframesStyleNodeFor).
-
 2.  The Easing function will always be "linear" for the CSS animation property. This is because the easing
     is baked into the keyframes themselves, so we need to transition between keyframe values linearly.
     This is the only way to achieve:
       - Accurate curves for advanced easing functions (like bounce, elastic, etc.)
       - Independent easing per property within the same animation
-
 3.  The Delay is also baked into the keyframes in order to enable different delays per property, so it will always be 0 in the CSS animation property.
 
 -}
@@ -674,11 +672,11 @@ getEndPosition elementId animState =
 
 {-| Get the current position of an element based on its animation state.
 
+Returns `Nothing` if the element has no position animation.
+
 Returns the start position if the animation has not started yet.
 
 Returns the end position if the animation is running or has completed.
-
-Returns `Nothing` if the element has no position animation.
 
 -}
 getCurrentPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
@@ -1250,9 +1248,9 @@ restart elementId animState =
     InternalCSS.restartAnimation elementId animState
 
 
-{-| Pause a running keyframe animation using CSS animation-play-state.
+{-| Pause a running keyframe animation using CSS `animation-play-state`.
 
-Note: This only works with keyframe animations, not CSS transitions.
+**Note**: This only works with keyframe animations, not CSS transitions.
 CSS transitions cannot be paused once started.
 
     pausedAnimations =
@@ -1264,9 +1262,9 @@ pause elementId animState =
     InternalCSS.pauseAnimation elementId animState
 
 
-{-| Resume a paused keyframe animation using CSS animation-play-state.
+{-| Resume a paused keyframe animation using CSS `animation-play-state`.
 
-Note: This only works with keyframe animations, not CSS transitions.
+**Note**: This only works with keyframe animations, not CSS transitions.
 
     resumedAnimations =
         CSS.resume "my-element" model.animations

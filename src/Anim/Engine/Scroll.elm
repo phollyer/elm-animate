@@ -7,7 +7,7 @@ module Anim.Engine.Scroll exposing
     , duration, speed
     , easing
     , delay
-    , anyAnimationsRunning, isAnimationRunning, getMaxDuration, getDuration
+    , anyRunning, isRunning, getMaxDuration, getDuration
     , getPosition, getPositionX, getPositionY
     )
 
@@ -122,7 +122,7 @@ These settings will be used for all scroll animations unless overridden on a per
 
 ## Animation State
 
-@docs anyAnimationsRunning, isAnimationRunning, getMaxDuration, getDuration
+@docs anyRunning, isRunning, getMaxDuration, getDuration
 
 
 ## Scroll Position
@@ -275,11 +275,12 @@ For the curious, here's how the different execution methods work after following
 
 1.  DOM queries retrieve current scroll position and target element position
 2.  Distance is calculated from current to target position
-3.  AnimState is updated with new animation data
-4.  Initial Cmd is returned (may trigger immediate first step)
-5.  [subscriptions](#subscriptions) listen for animation frame updates
-6.  Each frame: current position is updated and next scroll step is calculated
-7.  Animation continues until target is reached
+3.  Animation steps are pre-calculated based on distance, timing and easing
+4.  AnimState is updated with pre-calculated animation steps
+5.  Initial Cmd is returned (may trigger immediate first step)
+6.  [subscriptions](#subscriptions) listen for animation frame updates
+7.  Each frame: scrolls to the next pre-calculated position
+8.  Animation continues until all steps are complete
 
 **Multiple scroll targets:**
 
@@ -327,14 +328,14 @@ type alias AnimBuilder =
 
     { model | scrollAnimations : Scroll.AnimState }
 
-You don't need to include this in your model if you only use [Cmd](#cmd) or [Task](#task) based scrolling.
+**Note**: You don't need to include this in your model if you only use [Cmd](#cmd) or [Task](#task) based scrolling.
 
 -}
 type alias AnimState =
     InternalScroll.AnimState
 
 
-{-| Animation message type for scroll animations
+{-| Animation message type.
 -}
 type alias AnimationMsg =
     InternalScroll.AnimationMsg
@@ -561,16 +562,29 @@ update =
 
     view : Model -> Html Msg
     view model =
-        if Scroll.anyAnimationsRunning model.scrollAnimations then
+        if Scroll.anyRunning model.scrollAnimations then
             div [ class "scrolling-indicator" ] [ text "Scrolling..." ]
 
         else
             div [] []
 
 -}
-anyAnimationsRunning : AnimState -> Bool
-anyAnimationsRunning =
-    InternalScroll.isAnimationRunning
+anyRunning : AnimState -> Bool
+anyRunning =
+    InternalScroll.anyRunning
+
+
+{-| Check if a scroll animation for a specific container is currently running. Use "document" for document body.
+
+    if Scroll.isRunning "my-container" model.scrollAnimations then
+        ...
+    else
+        ...
+
+-}
+isRunning : String -> AnimState -> Bool
+isRunning =
+    InternalScroll.isRunning
 
 
 {-| Get the maximum duration of currently running scroll animations.
@@ -613,19 +627,6 @@ getPositionY =
 
 
 -- CONTAINER-SPECIFIC QUERIES
-
-
-{-| Check if a scroll animation for a specific container is currently running. Use "document" for document body.
-
-    if Scroll.isAnimationRunning "my-container" model.scrollAnimations then
-        ...
-    else
-        ...
-
--}
-isAnimationRunning : String -> AnimState -> Bool
-isAnimationRunning =
-    InternalScroll.isContainerAnimating
 
 
 {-| Get the duration of the scroll animation for a specific container.

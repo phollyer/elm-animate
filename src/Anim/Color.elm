@@ -120,7 +120,7 @@ fromRgb =
     CP.fromRGB
 
 
-{-| Create an Color from RGBA components.
+{-| Create a Color from RGBA components.
 
     fromRgba { r = 255, g = 0, b = 0, a = 0.5 } -- Semi-transparent red
 

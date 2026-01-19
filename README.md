@@ -6,7 +6,8 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 - **Multiple Engines:** Choose the best engine for your use case.
 - **Unified Fluent API:** Consistent builder pattern for all engines.
-- **Hardware-Accelerated:** GPU-accelerated transforms (position, rotation, scale) and opacity for smoother animations and better battery efficiency.
+- **Hardware-Accelerated:** GPU-accelerated transforms for smoother animations and better battery efficiency
+(position, rotation, scale, opacity).
 - **Full 3D Support:** Transform elements in 3D space with XYZ positioning, multi-axis rotation, and configurable perspective for depth.
 - **Composable, type-safe, and easy to integrate.**
 
@@ -30,6 +31,7 @@ positionAnimation builder =
         |> Position.easing BounceOut
         |> Position.build
 ```
+
 It can be used by all of the engines - without any changes to the animation itself. Switching
 between engines is simply a matter of changing a few implementation details, you never have to touch the animations themselves.
 
@@ -37,7 +39,7 @@ This makes it easy to start off with the CSS Engine for simple CSS transitions, 
 
 ---
 
-### 1. [Anim.Engine.CSS](Anim-Engine-CSS#design-decisions) 
+### 1. [Anim.Engine.CSS](Anim-Engine-CSS#design-decisions)
 
 - **Best for:** Simple, high-performance transitions.
 - **API:** Generates CSS for browser-native transitions.
@@ -48,19 +50,20 @@ in your view code.
 
 ---
 
-### 2. [Anim.Engine.Sub](Anim-Engine-Sub) 
+### 2. [Anim.Engine.Sub](Anim-Engine-Sub)
 
 - **Best for:** Full programmatic control, live values, mid-flight changes.
 - **API:** Frame-based updates, requires subscriptions.
 
 ---
 
-### 3. [Anim.Engine.WAAPI](Anim-Engine-WAAPI) 
+### 3. [Anim.Engine.WAAPI](Anim-Engine-WAAPI)
 
 - **Best for:** Complex, timeline-based, or native browser animations.
 - **API:** Uses Elm ports to communicate with a JavaScript companion.
 
 ---
+
 ## 🚦 Scroll Engine
 
 Uses the same fluent builder API as the animation engines. This makes it easy to start with fire-and-forget scrolls, and introduce more complexity as your requirements change.
@@ -104,6 +107,7 @@ doScroll model =
         |> scrollToElement "my-element" "me-element-container" 
         |> Scroll.animate ScrollMsg
 ```
+
 ---
 
 ### 4. [Anim.Engine.Scroll](Anim-Engine-Scroll)
@@ -120,11 +124,13 @@ doScroll model =
 ## 🚀 Quick Start
 
 Install the package:
+
 ```bash
 elm install phollyer/elm-animate
 ```
 
 For WAAPI support:
+
 ```bash
 npm install elm-animate-waapi
 ```
@@ -143,7 +149,7 @@ To view the examples, in the project root run:
 
 ---
 
-##  Roadmap
+## Roadmap
 
 In no particular order, and no particular time frame at the moment...
 

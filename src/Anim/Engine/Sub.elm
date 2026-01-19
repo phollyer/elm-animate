@@ -1,9 +1,9 @@
 module Anim.Engine.Sub exposing
     ( AnimState, init, AnimBuilder, builder
     , animate
-    , stop, reset, restart, pause, resume
     , AnimationMsg, update, subscriptions
     , htmlAttributes
+    , stop, reset, restart, pause, resume
     , perspective
     , perspectiveStyles, perspectiveWith
     , duration, speed
@@ -34,6 +34,16 @@ subscriptions for smooth, controlled animations.
 @docs animate
 
 
+# Update
+
+@docs AnimationMsg, update, subscriptions
+
+
+# View
+
+@docs htmlAttributes
+
+
 # Animation Control
 
 Control running animations with stop, reset, restart, pause, and resume functionality.
@@ -48,16 +58,6 @@ Control running animations with stop, reset, restart, pause, and resume function
   - **resume**: Resumes paused animations by restarting subscription updates.
 
 @docs stop, reset, restart, pause, resume
-
-
-# Update
-
-@docs AnimationMsg, update, subscriptions
-
-
-# View
-
-@docs htmlAttributes
 
 
 # 3D Animations

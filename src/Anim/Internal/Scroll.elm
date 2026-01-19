@@ -4,6 +4,7 @@ module Anim.Internal.Scroll exposing
     , AnimationMsg(..)
     , addScrollTarget
     , animate
+    , anyRunning
     , builder
     , delay
     , duration
@@ -18,8 +19,7 @@ module Anim.Internal.Scroll exposing
     , getScrollPositionY
     , getScrollTargets
     , init
-    , isAnimationRunning
-    , isContainerAnimating
+    , isRunning
     , setAxis
     , setContainer
     , setOffset
@@ -674,7 +674,7 @@ updateScrollAnimation deltaMs animation =
 
 subscriptions : (AnimationMsg -> msg) -> AnimState -> Sub msg
 subscriptions toMsg animationState =
-    if isAnimationRunning animationState then
+    if anyRunning animationState then
         Browser.Events.onAnimationFrameDelta (AnimationFrame >> toMsg)
 
     else
@@ -687,8 +687,8 @@ subscriptions toMsg animationState =
 
 {-| Check if any scroll animations are currently running.
 -}
-isAnimationRunning : AnimState -> Bool
-isAnimationRunning (AnimState animData) =
+anyRunning : AnimState -> Bool
+anyRunning (AnimState animData) =
     not (Dict.isEmpty animData.animations)
 
 
@@ -757,8 +757,8 @@ containerIdMatches id containerId =
 
 {-| Check if a specific container is currently animating.
 -}
-isContainerAnimating : String -> AnimState -> Bool
-isContainerAnimating containerId (AnimState animData) =
+isRunning : String -> AnimState -> Bool
+isRunning containerId (AnimState animData) =
     animData.animations
         |> Dict.values
         |> List.any (\anim -> containerIdMatches containerId anim.config.containerId)
