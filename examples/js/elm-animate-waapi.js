@@ -289,123 +289,6 @@ window.ElmAnimateWAAPI = (function () {
     }
 
     /**
-     * Create combined transform animation for position, scale, and rotate
-     * Uses start values provided by Elm (source of truth) instead of reading from DOM
-     */
-    function createTransformAnimation(element, transformProperties) {
-        let startTransform = '';
-        let endTransform = '';
-
-        // Initialize with identity values
-        let startTranslateX = 0, startTranslateY = 0, startTranslateZ = 0;
-        let endTranslateX = 0, endTranslateY = 0, endTranslateZ = 0;
-        let startScaleX = 1, startScaleY = 1, startScaleZ = 1;
-        let endScaleX = 1, endScaleY = 1, endScaleZ = 1;
-        let startRotationX = 0, startRotationY = 0, startRotationZ = 0;
-        let endRotationX = 0, endRotationY = 0, endRotationZ = 0;
-
-        // Get animation config - use maximum duration from all properties
-        const duration = Math.max(...transformProperties.map(p => p.duration));
-        const firstProperty = transformProperties[0];
-        const easing = firstProperty.easing;
-
-        // Apply property values from Elm (Elm is source of truth)
-        // For properties with duration=0, use the end value for both start and end (static preservation)
-        transformProperties.forEach(property => {
-            const isStatic = property.duration === 0;
-
-            switch (property.type) {
-                case 'position':
-                    if (isStatic) {
-                        // Static: use end value for both start and end
-                        startTranslateX = property.endX !== undefined ? property.endX : startTranslateX;
-                        startTranslateY = property.endY !== undefined ? property.endY : startTranslateY;
-                        startTranslateZ = property.endZ !== undefined ? property.endZ : startTranslateZ;
-                        endTranslateX = property.endX !== undefined ? property.endX : endTranslateX;
-                        endTranslateY = property.endY !== undefined ? property.endY : endTranslateY;
-                        endTranslateZ = property.endZ !== undefined ? property.endZ : endTranslateZ;
-                    } else {
-                        // Animating: use start and end values
-                        startTranslateX = property.startX !== undefined ? property.startX : startTranslateX;
-                        startTranslateY = property.startY !== undefined ? property.startY : startTranslateY;
-                        startTranslateZ = property.startZ !== undefined ? property.startZ : startTranslateZ;
-                        endTranslateX = property.endX !== undefined ? property.endX : endTranslateX;
-                        endTranslateY = property.endY !== undefined ? property.endY : endTranslateY;
-                        endTranslateZ = property.endZ !== undefined ? property.endZ : endTranslateZ;
-                    }
-                    break;
-                case 'scale':
-                    if (isStatic) {
-                        startScaleX = property.endX !== undefined ? property.endX : startScaleX;
-                        startScaleY = property.endY !== undefined ? property.endY : startScaleY;
-                        startScaleZ = property.endZ !== undefined ? property.endZ : startScaleZ;
-                        endScaleX = property.endX !== undefined ? property.endX : endScaleX;
-                        endScaleY = property.endY !== undefined ? property.endY : endScaleY;
-                        endScaleZ = property.endZ !== undefined ? property.endZ : endScaleZ;
-                    } else {
-                        startScaleX = property.startX !== undefined ? property.startX : startScaleX;
-                        startScaleY = property.startY !== undefined ? property.startY : startScaleY;
-                        startScaleZ = property.startZ !== undefined ? property.startZ : startScaleZ;
-                        endScaleX = property.endX !== undefined ? property.endX : endScaleX;
-                        endScaleY = property.endY !== undefined ? property.endY : endScaleY;
-                        endScaleZ = property.endZ !== undefined ? property.endZ : endScaleZ;
-                    }
-                    break;
-                case 'rotate':
-                    if (isStatic) {
-                        startRotationX = property.endX !== undefined ? property.endX : startRotationX;
-                        startRotationY = property.endY !== undefined ? property.endY : startRotationY;
-                        startRotationZ = property.endZ !== undefined ? property.endZ : startRotationZ;
-                        endRotationX = property.endX !== undefined ? property.endX : endRotationX;
-                        endRotationY = property.endY !== undefined ? property.endY : endRotationY;
-                        endRotationZ = property.endZ !== undefined ? property.endZ : endRotationZ;
-                    } else {
-                        startRotationX = property.startX !== undefined ? property.startX : startRotationX;
-                        startRotationY = property.startY !== undefined ? property.startY : startRotationY;
-                        startRotationZ = property.startZ !== undefined ? property.startZ : startRotationZ;
-                        endRotationX = property.endX !== undefined ? property.endX : endRotationX;
-                        endRotationY = property.endY !== undefined ? property.endY : endRotationY;
-                        endRotationZ = property.endZ !== undefined ? property.endZ : endRotationZ;
-                    }
-                    break;
-            }
-        });
-
-        // Build transform strings
-        startTransform = buildTransformString(startTranslateX, startTranslateY, startTranslateZ,
-            startScaleX, startScaleY, startScaleZ,
-            startRotationX, startRotationY, startRotationZ);
-        endTransform = buildTransformString(endTranslateX, endTranslateY, endTranslateZ,
-            endScaleX, endScaleY, endScaleZ,
-            endRotationX, endRotationY, endRotationZ);
-
-        // Check if any property has easingKeyframes (for complex easings like Bounce/Elastic)
-        const easingKeyframes = transformProperties.find(p => p.easingKeyframes)?.easingKeyframes;
-
-        let keyframes;
-        let animationEasing;
-
-        if (easingKeyframes) {
-            // Complex easing: generate 30 keyframes with linear interpolation
-            keyframes = generateKeyframesWithEasing(startTransform, endTransform, easingKeyframes, 'transform');
-            animationEasing = 'linear';
-        } else {
-            // Simple easing: use 2 keyframes with easing curve
-            keyframes = [
-                { transform: startTransform },
-                { transform: endTransform }
-            ];
-            animationEasing = easingFunctions[easing] || easing;
-        }
-
-        return element.animate(keyframes, {
-            duration: duration,
-            easing: animationEasing,
-            fill: 'forwards'
-        });
-    }
-
-    /**
      * Create animation for a single transform property (position, scale, or rotate)
      * Used for property-level tracking where each transform property is animated independently
      */
@@ -793,9 +676,6 @@ window.ElmAnimateWAAPI = (function () {
         // Start sending updates
         rafId = requestAnimationFrame(sendAnimationUpdate);
 
-        // Return the update function so it can be restarted on resume
-        return sendAnimationUpdate;
-
         // Handle animation completion
         animation.addEventListener('finish', () => {
             // Only remove THIS property's animation if version matches
@@ -920,7 +800,11 @@ window.ElmAnimateWAAPI = (function () {
                 sendEventToElm('propertyUpdate', elementId, currentPropertyData);
             }
         });
+
+        // Return the update function so it can be restarted on resume
+        return sendAnimationUpdate;
     }
+
     /**
      * Send event to Elm via consolidated waapiEvent port
      */
