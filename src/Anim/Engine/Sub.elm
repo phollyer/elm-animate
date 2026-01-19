@@ -568,7 +568,7 @@ getCurrentOpacity elementId animState =
 
 Returns `Nothing` if the element has no position animation.
 
-Returns `{x = 0, y = 0, z = 0}` if no explicit start value was set, which is the default when no start value is set.
+Returns `Just {x = 0, y = 0, z = 0}` if no explicit start value was set, which is the default when no start value is set.
 
 -}
 getStartPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
@@ -618,7 +618,7 @@ getCurrentPosition elementId animState =
 
 Returns `Nothing` if the element has no rotate animation.
 
-Returns `0.0 degrees` if no explicit start value was set, which is the default when no start value is set.
+Returns `Just { x = 0, y = 0, z = 0 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
 getStartRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
@@ -667,7 +667,7 @@ getCurrentRotate elementId animState =
 
 Returns `Nothing` if the element has no scale animation.
 
-Returns `1.0` if no explicit start value was set, which is the default when no start value is set.
+Returns `Just { x = 1, y = 1, z = 1 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
 getStartScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
@@ -716,7 +716,7 @@ getCurrentScale elementId animState =
 
 Returns `Nothing` if the element has no size animation.
 
-Returns `{width = 0, height = 0}` if no explicit start value was set, which is the default when no start value is set.
+Returns `Just { width = 0, height = 0 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
 getStartSize : String -> AnimState -> Maybe { width : Float, height : Float }
