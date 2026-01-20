@@ -1,4 +1,4 @@
-module Common.Animations.AnimationControls exposing
+module Common.Animations.Controls exposing
     ( animate
     , elementId
     , init
