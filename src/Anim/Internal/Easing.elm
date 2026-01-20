@@ -729,24 +729,15 @@ advancedElasticOutHelper elasticity amplitude decay t =
 {- BACK EASING IMPLEMENTATIONS -}
 
 
-{-| Custom back easing with simple strength parameter (0.1-3.0).
-Strength controls overshoot amount.
+{-| Custom back easing with strength parameter controlling overshoot amount.
+The strength parameter directly controls the overshoot (standard back easing uses 1.70158).
+Higher values create more dramatic overshoot effects.
 -}
 customBackOut : Float -> Float -> Float
 customBackOut strength t =
     let
-        clampedStrength =
-            clamp 0.1 3.0 strength
-
-        -- Map strength to overshoot amount (standard is 1.70158)
-        overshoot =
-            1.0 + (clampedStrength * 0.70158)
-
-        clampedOvershoot =
-            clamp 0.5 3.0 overshoot
-
         s =
-            clampedOvershoot
+            strength
 
         p =
             t - 1
