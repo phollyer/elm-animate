@@ -143,6 +143,8 @@ window.ElmAnimateWAAPI = (function () {
             }
 
             if (animation) {
+                // Mark this as our animation so we can identify it later
+                animation.__elmAnimate = true;
                 const updateFn = setupAnimationEvents(elementId, propType, element, animation, newVersion);
                 elementAnims.set(propType, {
                     animation: animation,
@@ -527,6 +529,9 @@ window.ElmAnimateWAAPI = (function () {
         const style = window.getComputedStyle(element);
         const transform = style.transform;
 
+        console.log('🔎 getCurrentTransform - computed style.transform:', transform);
+        console.log('🔎 getCurrentTransform - element.style.transform:', element.style.transform);
+
         if (transform === 'none' || !transform) {
             return {
                 transform: 'none',
@@ -678,6 +683,14 @@ window.ElmAnimateWAAPI = (function () {
 
         // Handle animation completion
         animation.addEventListener('finish', () => {
+            // CRITICAL: Commit the animated styles to inline styles
+            // This prevents the finished animation from overriding future inline style updates
+            try {
+                animation.commitStyles();
+            } catch (e) {
+                console.warn('ElmAnimateWAAPI: commitStyles failed:', e);
+            }
+
             // Only remove THIS property's animation if version matches
             // (prevents removing newer animation if finish event fires late)
             const elementAnims = activeAnimations.get(elementId);
@@ -891,6 +904,251 @@ window.ElmAnimateWAAPI = (function () {
     }
 
     /**
+     * Get current position from an animation's progress
+     */
+    function getCurrentPositionFromAnimation(animation, targetX, targetY, targetZ) {
+        try {
+            const effect = animation.effect;
+            const timing = effect.getComputedTiming();
+            const keyframes = effect.getKeyframes();
+
+            // Get progress (0 to 1)
+            const progress = timing.progress !== null ? timing.progress : 0;
+
+            // Find start position from first keyframe
+            const firstKeyframe = keyframes[0];
+            if (firstKeyframe && firstKeyframe.transform) {
+                const transformStr = firstKeyframe.transform;
+                const parsed = parseTransform(transformStr);
+
+                // Interpolate between start and target based on progress
+                const currentX = parsed.x + (targetX - parsed.x) * progress;
+                const currentY = parsed.y + (targetY - parsed.y) * progress;
+                const currentZ = parsed.z + (targetZ - parsed.z) * progress;
+
+                return { x: currentX, y: currentY, z: currentZ, progress, timing };
+            }
+        } catch (e) {
+            console.warn('⚠️ Could not get position from animation:', e);
+        }
+
+        // Fallback: use target position
+        return { x: targetX, y: targetY, z: targetZ, progress: 1, timing: null };
+    }
+
+    /**
+     * Parse transform string to extract position values
+     */
+    function parseTransform(transformStr) {
+        const translate3d = transformStr.match(/translate3d\(([^,]+),\s*([^,]+),\s*([^)]+)\)/);
+        if (translate3d) {
+            return {
+                x: parseFloat(translate3d[1]) || 0,
+                y: parseFloat(translate3d[2]) || 0,
+                z: parseFloat(translate3d[3]) || 0
+            };
+        }
+        return { x: 0, y: 0, z: 0 };
+    }
+
+    /**
+     * Update positions instantly without creating animation history
+     * Used for responsive layout adjustments (window resize, etc.)
+     * Now updates animations instead of cancelling them to preserve playback state
+     */
+    function updatePositions(updates) {
+        console.log('🔍 JS updatePositions called with:', updates);
+
+        updates.forEach(update => {
+            const element = document.getElementById(update.elementId);
+            if (!element) {
+                console.warn(`ElmAnimateWAAPI: Element with id "${update.elementId}" not found for position update`);
+                return;
+            }
+
+            console.log('📍 Current element style.transform:', element.style.transform);
+
+            // CRITICAL: Check if there's an active position animation
+            console.log('🔍 Checking activeAnimations for elementId:', update.elementId);
+            console.log('   activeAnimations.size:', activeAnimations.size);
+            console.log('   activeAnimations.has(elementId):', activeAnimations.has(update.elementId));
+            
+            const elementAnims = activeAnimations.get(update.elementId);
+            console.log('   elementAnims:', elementAnims);
+            console.log('   elementAnims?.size:', elementAnims?.size);
+            console.log('   elementAnims?.has("position"):', elementAnims?.has('position'));
+            
+            if (elementAnims && elementAnims.has('position')) {
+                const posAnimData = elementAnims.get('position');
+                const oldAnimation = posAnimData.animation;
+
+                console.log('🎬 Found active position animation - UPDATING instead of cancelling');
+                console.log('   Animation state:', oldAnimation.playState);
+
+                // Get current position and animation state
+                const current = getCurrentPositionFromAnimation(oldAnimation, update.x, update.y, update.z);
+                console.log('   Current animated position:', current);
+
+                // Store animation state
+                const wasPlaying = oldAnimation.playState === 'running';
+                const wasPaused = oldAnimation.playState === 'paused';
+                const currentTime = oldAnimation.currentTime || 0;
+                const playbackRate = oldAnimation.playbackRate || 1;
+
+                console.log('   Preserving state: playing=' + wasPlaying + ', paused=' + wasPaused + ', currentTime=' + currentTime);
+
+                // Get transform values to preserve
+                const currentTransform = getCurrentTransform(element);
+                const scaleX = update.scaleX !== undefined ? update.scaleX : currentTransform.scaleX;
+                const scaleY = update.scaleY !== undefined ? update.scaleY : currentTransform.scaleY;
+                const scaleZ = update.scaleZ !== undefined ? update.scaleZ : currentTransform.scaleZ;
+                const rotationX = update.rotationX !== undefined ? update.rotationX : currentTransform.rotationX;
+                const rotationY = update.rotationY !== undefined ? update.rotationY : currentTransform.rotationY;
+                const rotationZ = update.rotationZ !== undefined ? update.rotationZ : currentTransform.rotationZ;
+
+                // CRITICAL: Remove from tracking BEFORE cancelling to prevent cancel event from deleting it
+                console.log('   🗑️  Before delete: elementAnims.size =', elementAnims.size);
+                elementAnims.delete('position');
+                console.log('   🗑️  After delete: elementAnims.size =', elementAnims.size);
+                console.log('   🗑️  After delete: elementAnims is still in parent Map?', activeAnimations.get(update.elementId) === elementAnims);
+
+                // Cancel old animation (this will trigger cancel event, but we already removed it)
+                oldAnimation.cancel();
+                console.log('   ❌ Cancelled old animation');
+                console.log('   🗑️  After cancel: elementAnims.size =', elementAnims.size);
+                console.log('   🗑️  After cancel: elementAnims is still in parent Map?', activeAnimations.get(update.elementId) === elementAnims);
+
+                // Create new animation from current position to new target
+                const fromTransform = buildTransformString(
+                    current.x, current.y, current.z,
+                    scaleX, scaleY, scaleZ,
+                    rotationX, rotationY, rotationZ
+                );
+
+                const toTransform = buildTransformString(
+                    update.x, update.y, update.z,
+                    scaleX, scaleY, scaleZ,
+                    rotationX, rotationY, rotationZ
+                );
+
+                console.log('   Creating new animation:');
+                console.log('     From:', fromTransform);
+                console.log('     To:', toTransform);
+
+                // Create new animation with same settings as old one
+                const newAnimation = element.animate(
+                    [
+                        { transform: fromTransform },
+                        { transform: toTransform }
+                    ],
+                    {
+                        duration: oldAnimation.effect.getTiming().duration || 1000,
+                        easing: oldAnimation.effect.getTiming().easing || 'linear',
+                        fill: 'forwards'
+                    }
+                );
+
+                // Mark it as our animation
+                newAnimation.__elmAnimate = true;
+
+                // Set up events for the new animation
+                const updateFn = () => {
+                    setupAnimationEvents(update.elementId, 'position', element, newAnimation, posAnimData.version);
+                };
+
+                // Store the new animation (replacing the old one)
+                console.log('   💾 Before storing new animation:');
+                console.log('      elementAnims.size =', elementAnims.size);
+                console.log('      elementAnims reference still valid?', activeAnimations.get(update.elementId) === elementAnims);
+                console.log('      activeAnimations.has(elementId)?', activeAnimations.has(update.elementId));
+                
+                elementAnims.set('position', {
+                    animation: newAnimation,
+                    version: posAnimData.version,
+                    updateFn: updateFn
+                });
+                
+                console.log('   💾 After storing new animation:');
+                console.log('      elementAnims.size =', elementAnims.size);
+                console.log('      elementAnims.has("position")?', elementAnims.has('position'));
+                console.log('      activeAnimations.has(elementId)?', activeAnimations.has(update.elementId));
+                console.log('      activeAnimations.get(elementId) === elementAnims?', activeAnimations.get(update.elementId) === elementAnims);
+                console.log('      Can retrieve it? activeAnimations.get(elementId)?.has("position")?', activeAnimations.get(update.elementId)?.has('position'));
+
+                // Restore playback state
+                if (wasPaused) {
+                    newAnimation.pause();
+                    console.log('   ⏸️  Restored paused state');
+                } else if (wasPlaying) {
+                    newAnimation.play();
+                    updateFn(); // Start RAF updates
+                    console.log('   ▶️  Restored playing state');
+                }
+
+                // Try to restore currentTime (may not be exact due to new duration)
+                if (currentTime > 0) {
+                    try {
+                        newAnimation.currentTime = Math.min(currentTime, newAnimation.effect.getTiming().duration);
+                        console.log('   ⏱️  Restored currentTime:', newAnimation.currentTime);
+                    } catch (e) {
+                        console.warn('   ⚠️ Could not restore currentTime:', e);
+                    }
+                }
+
+                console.log('✅ Animation updated successfully');
+            } else {
+                // No active animation - just update position directly
+                console.log('📍 No active animation, updating position directly');
+
+                // Also cancel any lingering elm-animate POSITION animations that might still affect computed styles
+                const allAnimations = element.getAnimations();
+                allAnimations.forEach(anim => {
+                    // Only cancel if it's our animation AND it's affecting transform (position)
+                    if (anim.__elmAnimate && anim.effect && anim.effect.getKeyframes) {
+                        const keyframes = anim.effect.getKeyframes();
+                        const affectsTransform = keyframes.some(kf => kf.transform !== undefined);
+                        if (affectsTransform) {
+                            anim.cancel();
+                            console.log('🧹 Cleaned up lingering position animation');
+                        }
+                    }
+                });
+
+                // Use transform values from update if provided, otherwise use defaults
+                // DO NOT read from getComputedStyle as it may be polluted by cancelled animations
+                const scaleX = update.scaleX !== undefined ? update.scaleX : 1;
+                const scaleY = update.scaleY !== undefined ? update.scaleY : 1;
+                const scaleZ = update.scaleZ !== undefined ? update.scaleZ : 1;
+                const rotationX = update.rotationX !== undefined ? update.rotationX : 0;
+                const rotationY = update.rotationY !== undefined ? update.rotationY : 0;
+                const rotationZ = update.rotationZ !== undefined ? update.rotationZ : 0;
+
+                console.log('📊 Using transform values:', { scaleX, scaleY, scaleZ, rotationX, rotationY, rotationZ });
+
+                // Apply new position instantly via transform style
+                const newTransform = buildTransformString(
+                    update.x,
+                    update.y,
+                    update.z,
+                    scaleX,
+                    scaleY,
+                    scaleZ,
+                    rotationX,
+                    rotationY,
+                    rotationZ
+                );
+
+                console.log('✅ Setting new transform:', newTransform);
+                console.log('   New position: x=' + update.x + ', y=' + update.y + ', z=' + update.z);
+
+                element.style.transform = newTransform;
+
+                console.log('✔️ After setting, element.style.transform:', element.style.transform);
+            }
+        });
+    }
+
+    /**
      * Initialize the WAAPI system with Elm ports
      */
     function init(ports) {
@@ -906,14 +1164,24 @@ window.ElmAnimateWAAPI = (function () {
         if (ports.waapiCommand && ports.waapiCommand.subscribe) {
             ports.waapiCommand.subscribe(function (commandData) {
                 try {
+                    console.log('🎯 JS received WAAPI command:', commandData);
+
                     // Check if this is animation data structure (from animate, reset, restart)
                     if (commandData.elements) {
+                        console.log('   → Processing animation data');
                         processAnimationData(commandData);
+                    }
+                    // Handle position update command (from onResize)
+                    else if (commandData.type === 'updatePosition' && commandData.updates) {
+                        console.log('   → Processing position update');
+                        updatePositions(commandData.updates);
                     }
                     // Handle simple control commands
                     else if (commandData.type && commandData.elementId) {
                         const commandType = commandData.type;
                         const elementId = commandData.elementId;
+
+                        console.log('   → Processing control command:', commandType, 'for element:', elementId);
 
                         switch (commandType) {
                             case 'stop':

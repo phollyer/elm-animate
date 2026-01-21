@@ -33,6 +33,7 @@ module Anim.Internal.WAAPI exposing
     , getStartScale
     , getStartSize
     , init
+    , initProperties
     , isElementComplete
     , isElementRunning
     , perspective
@@ -41,6 +42,7 @@ module Anim.Internal.WAAPI exposing
     , restartElement
     , speed
     , update
+    , updatePositions
     )
 
 import Anim.Easing exposing (Easing(..))
@@ -337,6 +339,99 @@ animate (AnimState state) buildAnimation =
     )
 
 
+{-| Initialize properties without creating animation history.
+This sets AnimState and sends position updates to JS without WAAPI animations.
+-}
+initProperties : List (AnimBuilder -> AnimBuilder) -> ( AnimState, Encode.Value )
+initProperties propertyInitializers =
+    let
+        -- Start with init AnimState
+        (AnimState state) =
+            init
+
+        -- Apply all property initializers to the builder
+        configuredBuilder =
+            List.foldl (\initializer b -> initializer b)
+                state.builder
+                propertyInitializers
+
+        builderWithCache =
+            Builder.computeAndCachePerspectiveStyles configuredBuilder
+
+        processedData =
+            Builder.processAnimationData builderWithCache
+
+        -- Extract end states (which are same as start states for init)
+        elementAnimations =
+            processedData.elements
+                |> Dict.map
+                    (\_ elementConfig ->
+                        let
+                            endStates =
+                                extractElementEndStates elementConfig
+                        in
+                        { currentStates = endStates
+                        , properties = Dict.empty -- No property tracking for init
+                        }
+                    )
+
+        -- Create position updates for JS (without creating WAAPI animations)
+        positionUpdates =
+            processedData.elements
+                |> Dict.toList
+                |> List.filterMap
+                    (\( elementId, elementConfig ) ->
+                        elementConfig.properties
+                            |> List.filterMap
+                                (\property ->
+                                    case property of
+                                        Builder.ProcessedPositionConfig config ->
+                                            let
+                                                pos =
+                                                    Position.toRecord config.end
+                                            in
+                                            Just
+                                                { elementId = elementId
+                                                , x = pos.x
+                                                , y = pos.y
+                                                , z = pos.z
+                                                }
+
+                                        _ ->
+                                            Nothing
+                                )
+                            |> List.head
+                    )
+
+        updateData =
+            Encode.object
+                [ ( "type", Encode.string "updatePosition" )
+                , ( "updates"
+                  , Encode.list
+                        (\posUpdate ->
+                            Encode.object
+                                [ ( "elementId", Encode.string posUpdate.elementId )
+                                , ( "x", Encode.float posUpdate.x )
+                                , ( "y", Encode.float posUpdate.y )
+                                , ( "z", Encode.float posUpdate.z )
+                                ]
+                        )
+                        positionUpdates
+                  )
+                ]
+    in
+    ( AnimState
+        { elementAnimations = elementAnimations
+        , isRunning = False
+        , builder =
+            state.builder
+                |> Builder.markDirty
+                |> Builder.clearCurrentElement
+        }
+    , updateData
+    )
+
+
 propertyTypeString : Builder.ProcessedPropertyConfig -> String
 propertyTypeString property =
     case property of
@@ -502,6 +597,64 @@ updateElementAnimation animUpdate elementAnimation =
         | currentStates = newCurrentStates
         , properties = updatedProperties
     }
+
+
+{-| Update positions for multiple elements without creating animation history.
+Used for responsive layout adjustments during window/container resize.
+-}
+updatePositions :
+    List { elementId : String, x : Float, y : Float, z : Float }
+    -> AnimState
+    -> ( AnimState, Encode.Value )
+updatePositions updates (AnimState state) =
+    let
+        -- Update AnimState with new positions
+        updatedAnimations =
+            List.foldl
+                (\{ elementId, x, y, z } acc ->
+                    Dict.update elementId
+                        (Maybe.map
+                            (\elementAnim ->
+                                let
+                                    newPosition =
+                                        Position.fromTriple ( x, y, z )
+
+                                    newCurrentStates =
+                                        elementAnim.currentStates
+
+                                    updatedCurrentStates =
+                                        { newCurrentStates | position = Just newPosition }
+                                in
+                                { elementAnim | currentStates = updatedCurrentStates }
+                            )
+                        )
+                        acc
+                )
+                state.elementAnimations
+                updates
+
+        -- Encode command for JavaScript
+        encodedUpdates =
+            Encode.object
+                [ ( "type", Encode.string "updatePosition" )
+                , ( "updates"
+                  , Encode.list encodePositionUpdate updates
+                  )
+                ]
+    in
+    ( AnimState { state | elementAnimations = updatedAnimations }
+    , encodedUpdates
+    )
+
+
+encodePositionUpdate : { elementId : String, x : Float, y : Float, z : Float } -> Encode.Value
+encodePositionUpdate { elementId, x, y, z } =
+    Encode.object
+        [ ( "elementId", Encode.string elementId )
+        , ( "x", Encode.float x )
+        , ( "y", Encode.float y )
+        , ( "z", Encode.float z )
+        ]
 
 
 

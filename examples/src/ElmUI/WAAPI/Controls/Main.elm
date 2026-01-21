@@ -14,7 +14,6 @@ This example showcases all animation control functions available in the Anim.Eng
 -}
 
 import Anim.Engine.WAAPI as WAAPI
-import Anim.Property.Position as Position
 import Browser exposing (Document)
 import Browser.Events exposing (onResize)
 import Common.Animations.Controls as Controls exposing (elementId)
@@ -85,9 +84,13 @@ init { window } =
         animationAreaWidth =
             min 500 (window.width - 40)
 
+        -- Set initial position using builder with duration=0 (instant application)
         ( initialAnimState, initCmd ) =
-            WAAPI.animate waapiCommand WAAPI.init <|
-                Controls.init animationAreaWidth
+            WAAPI.initProperties waapiCommand <|
+                [ Controls.init animationAreaWidth
+
+                --, more properties if needed
+                ]
     in
     ( { animationState = initialAnimState
       , status = Idle
@@ -127,59 +130,33 @@ update msg model =
                 oldAnimationAreaWidth =
                     model.animationAreaSize.width
 
-                -- Calculate center position for old and new widths
-                oldCenter =
-                    toFloat oldAnimationAreaWidth / 2 - 25
-
-                newCenter =
-                    toFloat newAnimationAreaWidth / 2 - 25
-
-                -- Get current position, or use old center if no position is set
-                currentPos =
-                    WAAPI.getCurrentPosition elementId model.animationState
-                        |> Maybe.withDefault { x = oldCenter, y = 50, z = 0 }
-
-                -- Calculate offset from center (how far left/right of center)
-                offsetFromCenter =
-                    currentPos.x - oldCenter
-
-                -- Calculate new position: new center + same offset
-                scaledX =
-                    newCenter + offsetFromCenter
-
-                -- Run instant transition (0ms duration) to scaled position
-                ( newAnimState, scaleCmd ) =
-                    if oldAnimationAreaWidth /= newAnimationAreaWidth then
-                        WAAPI.animate waapiCommand model.animationState <|
-                            \builder ->
-                                builder
-                                    |> Position.for elementId
-                                    |> Position.fromXY scaledX currentPos.y
-                                    |> Position.toXY scaledX currentPos.y
-                                    |> Position.duration 0
-                                    |> Position.build
-
-                    else
-                        ( model.animationState, Cmd.none )
+                -- Use WAAPI.onResize to handle repositioning
+                ( newAnimState, resizeCmd ) =
+                    WAAPI.onResize
+                        [ { elementId = elementId
+                          , elementSize = { width = 50, height = 50 }
+                          , oldContainerSize =
+                                { width = oldAnimationAreaWidth
+                                , height = 350
+                                }
+                          , newContainerSize =
+                                { width = newAnimationAreaWidth
+                                , height = 350
+                                }
+                          }
+                        ]
+                        waapiCommand
+                        model.animationState
             in
             ( { model
                 | window = { width = newWidth, height = newHeight }
                 , animationAreaSize =
-                    { width = newAnimationAreaWidth
+                    { width = newAnimationAreaWidth |> Debug.log "New animation area width:"
                     , height = 350
                     }
                 , animationState = newAnimState
               }
-            , scaleCmd
-            )
-
-        Animate ->
-            let
-                ( newAnimState, animCmd ) =
-                    WAAPI.animate waapiCommand model.animationState Controls.animate
-            in
-            ( { model | animationState = newAnimState }
-            , animCmd
+            , resizeCmd
             )
 
         WaapiEventReceived eventType newAnimState ->
@@ -189,15 +166,24 @@ update msg model =
             in
             case eventType of
                 WAAPI.PropertyUpdate _ ->
-                    -- Property data automatically applied to newAnimState
+                    -- Property data has automatically been applied to newAnimState
                     -- If you don't need to react to property updates, you can ignore this event
                     ( newModel, Cmd.none )
 
                 WAAPI.AnimationUpdate animationStatus ->
                     -- Animation status with automatically updated AnimState
-                    -- This is only required to update isAnimating / isPaused flags in the model
+                    -- This is only required to update isAnimating / isPaused flags in the model for this example
                     -- If you don't need to react to animation status changes, you can ignore this event
                     handleAnimationUpdate animationStatus newModel
+
+        Animate ->
+            let
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate waapiCommand model.animationState Controls.animate
+            in
+            ( { model | animationState = newAnimState }
+            , animCmd
+            )
 
         Stop ->
             ( model
@@ -291,6 +277,17 @@ viewContent model =
     let
         currentPosition =
             WAAPI.getCurrentPosition elementId model.animationState
+
+        centerX_expected =
+            toFloat model.animationAreaSize.width / 2 - 25
+
+        positionText =
+            case currentPosition of
+                Just pos ->
+                    "x=" ++ String.fromFloat pos.x ++ ", y=" ++ String.fromFloat pos.y
+
+                Nothing ->
+                    "Not found!"
     in
     [ UI.backButton
     , UI.pageHeader "WAAPI Engine Controls"
@@ -373,12 +370,21 @@ viewContent model =
             , color = Element.rgba 0 0 0 0.1
             }
         , centerX
+        , inFront <|
+            el
+                [ width (px 1)
+                , height fill
+                , Border.width 1
+                , Border.color Colors.borderLight
+                , centerX
+                ]
+                none
         ]
         (el
             [ width (px 50)
             , height (px 50)
             , htmlAttribute (Html.Attributes.id elementId)
-            , htmlAttribute (Html.Attributes.style "position" "absolute")
+            , htmlAttribute (Html.Attributes.style "position" "relative")
             ]
             (el [ centerX, centerY, Font.size 50 ] (text "🏀"))
         )
@@ -422,3 +428,16 @@ button =
     UI.htmlButton
         >> html
         >> el [ centerX ]
+
+
+statusToString : AnimationStatus -> String
+statusToString status =
+    case status of
+        Idle ->
+            "Idle"
+
+        Running ->
+            "Running"
+
+        Paused ->
+            "Paused"

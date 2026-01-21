@@ -891,6 +891,38 @@ window.ElmAnimateWAAPI = (function () {
     }
 
     /**
+     * Update positions instantly without creating animation history
+     * Used for responsive layout adjustments (window resize, etc.)
+     */
+    function updatePositions(updates) {
+        updates.forEach(update => {
+            const element = document.getElementById(update.elementId);
+            if (!element) {
+                console.warn(`ElmAnimateWAAPI: Element with id "${update.elementId}" not found for position update`);
+                return;
+            }
+
+            // Get current transform state
+            const currentTransform = getCurrentTransform(element);
+            
+            // Apply new position instantly via transform style
+            const newTransform = buildTransformString(
+                update.x,
+                update.y,
+                update.z,
+                currentTransform.scaleX,
+                currentTransform.scaleY,
+                currentTransform.scaleZ,
+                currentTransform.rotationX,
+                currentTransform.rotationY,
+                currentTransform.rotationZ
+            );
+            
+            element.style.transform = newTransform;
+        });
+    }
+
+    /**
      * Initialize the WAAPI system with Elm ports
      */
     function init(ports) {
@@ -909,6 +941,10 @@ window.ElmAnimateWAAPI = (function () {
                     // Check if this is animation data structure (from animate, reset, restart)
                     if (commandData.elements) {
                         processAnimationData(commandData);
+                    }
+                    // Handle position update command (from onResize)
+                    else if (commandData.type === 'updatePosition' && commandData.updates) {
+                        updatePositions(commandData.updates);
                     }
                     // Handle simple control commands
                     else if (commandData.type && commandData.elementId) {

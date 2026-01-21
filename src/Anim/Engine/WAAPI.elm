@@ -3,6 +3,7 @@ module Anim.Engine.WAAPI exposing
     , animate, fireAndForget
     , XYZ, PropertyData, AnimationStatus(..), EventType(..), decode
     , stop, reset, restart, pause, resume
+    , onResize
     , duration, speed
     , easing
     , delay
@@ -15,6 +16,7 @@ module Anim.Engine.WAAPI exposing
     , getStartRotate, getEndRotate, getCurrentRotate
     , getStartScale, getEndScale, getCurrentScale
     , getStartSize, getEndSize, getCurrentSize
+    , initProperties
     )
 
 {-| Ports-based animation system utilising the Web Animations API with optional state tracking.
@@ -100,6 +102,13 @@ Control running animations with stop, reset, restart, pause, and resume function
 All control methods work with Web Animations API animations and trigger the appropriate animation lifecycle events.
 
 @docs stop, reset, restart, pause, resume
+
+
+# Responsive Layout
+
+Handle window and container resizes by repositioning elements proportionally without creating animation history.
+
+@docs onResize
 
 
 # Global Settings
@@ -408,6 +417,36 @@ animate portCmd animState buildAnimation =
     ( newAnimState, portCmd animationData )
 
 
+{-| Initialize properties without creating animations.
+
+Use this in your `init` function to set initial property values without animation history.
+This keeps AnimState and JavaScript in sync without polluting animation history.
+
+    port waapiCommand : Encode.Value -> Cmd msg
+
+    init : Model -> ( Model, Cmd Msg )
+    init model =
+        let
+            ( initialAnimState, initCmd ) =
+                WAAPI.initProperties waapiCommand
+                    [ Position.initXY "element-id" 100 50
+                    , Opacity.init "element-id" 1.0
+
+                    -- more properties if needed
+                    ]
+        in
+        ( { model | animations = initialAnimState }, initCmd )
+
+-}
+initProperties : (Encode.Value -> Cmd msg) -> List (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
+initProperties portCmd propertyInitializers =
+    let
+        ( newAnimState, initData ) =
+            InternalWAAPI.initProperties propertyInitializers
+    in
+    ( newAnimState, portCmd initData )
+
+
 {-| Execute a fire-and-forget animation without state tracking.
 
 Use this when you don't need to track animation state or query animated values.
@@ -514,6 +553,147 @@ pause elementId portCmd =
 resume : String -> (Encode.Value -> Cmd msg) -> Cmd msg
 resume elementId portCmd =
     portCmd (encodeCommand ResumeCommand elementId Encode.null)
+
+
+
+-- Responsive Layout
+
+
+{-| Handle window or container resize by repositioning elements proportionally.
+
+This function scales element positions when their container dimensions change, maintaining their
+relative positioning without creating animation history that would interfere with control functions
+like reset, restart, or pause/resume.
+
+**Use case:** Responsive layouts where container size changes (window resize, sidebar toggle, orientation change, breakpoint changes, etc.)
+
+**Example:**
+
+    OnResize newWidth newHeight ->
+        let
+            newContainerWidth =
+                min 500 (newWidth - 40)
+
+            ( newAnimState, resizeCmd ) =
+                WAAPI.onResize
+                    [ { elementId = "ball"
+                      , elementSize = { width = 50, height = 50 }
+                      , oldContainerSize =
+                            { width = model.containerSize.width
+                            , height = model.containerSize.height
+                            }
+                      , newContainerSize =
+                            { width = newContainerWidth
+                            , height = 350
+                            }
+                      }
+                    , { elementId = "other-element"
+                      , elementSize = { width = 100, height = 100 }
+                      , oldContainerSize = { width = 800, height = 600 }
+                      , newContainerSize = { width = newWidth, height = newHeight }
+                      }
+                    ]
+                    waapiCommand
+                    model.animationState
+        in
+        ( { model
+            | animationState = newAnimState
+            , containerSize = { width = newContainerWidth, height = 350 }
+          }
+        , resizeCmd
+        )
+
+**How it works:**
+
+1.  Gets current position of each element (or uses element center if no position set)
+2.  Calculates offset from container center
+3.  Applies same offset to new container center
+4.  Sends instant position update to JavaScript (no animation history)
+5.  Updates AnimState with new positions
+
+-}
+onResize :
+    List
+        { elementId : String
+        , elementSize : { width : Int, height : Int }
+        , oldContainerSize : { width : Int, height : Int }
+        , newContainerSize : { width : Int, height : Int }
+        }
+    -> (Encode.Value -> Cmd msg)
+    -> AnimState
+    -> ( AnimState, Cmd msg )
+onResize elements portCmd animState =
+    let
+        updates =
+            List.filterMap (calculateResizePosition animState) elements
+
+        ( newAnimState, updateData ) =
+            InternalWAAPI.updatePositions updates animState
+    in
+    ( newAnimState, portCmd updateData )
+
+
+{-| Calculate new position for an element after container resize.
+-}
+calculateResizePosition :
+    AnimState
+    ->
+        { elementId : String
+        , elementSize : { width : Int, height : Int }
+        , oldContainerSize : { width : Int, height : Int }
+        , newContainerSize : { width : Int, height : Int }
+        }
+    -> Maybe { elementId : String, x : Float, y : Float, z : Float }
+calculateResizePosition animState { elementId, elementSize, oldContainerSize, newContainerSize } =
+    let
+        -- Only reposition if dimensions actually changed
+        dimensionsChanged =
+            oldContainerSize.width /= newContainerSize.width || oldContainerSize.height /= newContainerSize.height
+    in
+    if not dimensionsChanged then
+        Nothing
+
+    else
+        let
+            -- Calculate center positions
+            oldCenterX =
+                toFloat oldContainerSize.width / 2 - (toFloat elementSize.width / 2)
+
+            oldCenterY =
+                toFloat oldContainerSize.height / 2 - (toFloat elementSize.height / 2)
+
+            newCenterX =
+                toFloat newContainerSize.width / 2 - (toFloat elementSize.width / 2)
+
+            newCenterY =
+                toFloat newContainerSize.height / 2 - (toFloat elementSize.height / 2)
+
+            -- Get current position or default to old center
+            currentPos =
+                InternalWAAPI.getCurrentPosition elementId animState
+                    |> Maybe.map Position.toRecord
+                    |> Maybe.withDefault { x = oldCenterX, y = oldCenterY, z = 0 }
+
+            -- Calculate offset from old center
+            offsetX =
+                currentPos.x - oldCenterX
+
+            offsetY =
+                currentPos.y - oldCenterY
+
+            -- Apply same offset to new center
+            newX =
+                newCenterX + offsetX
+
+            newY =
+                newCenterY + offsetY
+        in
+        Just
+            { elementId = elementId
+            , x = newX
+            , y = newY
+            , z = currentPos.z
+            }
 
 
 
