@@ -710,6 +710,19 @@ updatePositions updates (AnimState state) =
                 state.elementAnimations
                 updates
 
+        -- Update Builder animation history with new positions
+        updatedBuilder =
+            List.foldl
+                (\{ elementId, x, y, z } acc ->
+                    let
+                        newPosition =
+                            Position.fromTriple ( x, y, z )
+                    in
+                    Builder.updateAnimationHistoryPositions elementId newPosition acc
+                )
+                state.builder
+                updates
+
         -- Helper to check if an element has an active position animation
         hasActivePositionAnimation : String -> Bool
         hasActivePositionAnimation elementId =
@@ -801,7 +814,7 @@ updatePositions updates (AnimState state) =
                         ]
                     ]
     in
-    ( AnimState { state | elementAnimations = updatedAnimations }
+    ( AnimState { state | elementAnimations = updatedAnimations, builder = updatedBuilder }
     , encodedUpdates
     )
 
@@ -1834,6 +1847,7 @@ resetElement elementId (AnimState state) =
 
 
 {-| Restart the last animation by retrieving it from Builder history and replaying it.
+The history will have already been updated by onResize, so we can use it directly.
 -}
 restartElement : String -> AnimState -> ( AnimState, Encode.Value )
 restartElement elementId (AnimState state) =
@@ -1843,28 +1857,17 @@ restartElement elementId (AnimState state) =
             ( AnimState state, emptyCommand )
 
         Just processedData ->
-            -- CRITICAL: Update end positions with current states (updated by resize)
-            -- This ensures restart animates to the current container-relative position
+            -- Get properties that are being restarted
             let
-                updatedProcessedData =
-                    case Dict.get elementId state.elementAnimations of
-                        Just elementAnim ->
-                            -- Replace end states with current states (which include resize updates)
-                            updateProcessedDataEndStates elementId elementAnim.currentStates processedData
-
-                        Nothing ->
-                            processedData
-
-                -- Get properties that are being restarted
                 restartedPropertyTypes =
-                    updatedProcessedData.elements
+                    processedData.elements
                         |> Dict.get elementId
                         |> Maybe.map .properties
                         |> Maybe.withDefault []
                         |> List.map propertyTypeString
 
                 startStates =
-                    updatedProcessedData.elements
+                    processedData.elements
                         |> Dict.get elementId
                         |> Maybe.map extractElementStartStates
                         |> Maybe.withDefault emptyElementStates
@@ -1893,7 +1896,7 @@ restartElement elementId (AnimState state) =
                                     , isRunning = True
                                 }
                     in
-                    ( updatedAnimState, encodeWithVersions updatedElementAnimations updatedProcessedData )
+                    ( updatedAnimState, encodeWithVersions updatedElementAnimations processedData )
 
                 Just elementAnimation ->
                     -- Update existing entry, incrementing versions for restarted properties
@@ -1931,7 +1934,7 @@ restartElement elementId (AnimState state) =
                                     , isRunning = True
                                 }
                     in
-                    ( updatedAnimState, encodeWithVersions updatedElementAnimations updatedProcessedData )
+                    ( updatedAnimState, encodeWithVersions updatedElementAnimations processedData )
 
 
 {-| Helper to add reset properties to a builder for all animated properties.

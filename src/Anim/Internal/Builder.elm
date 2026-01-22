@@ -58,6 +58,7 @@ module Anim.Internal.Builder exposing
     , restartPreviousAnimation
     , setScrollContainer
     , speed
+    , updateAnimationHistoryPositions
     , updateCurrentElement
     , updateElementConfig
       -- Animation History Management
@@ -1205,3 +1206,92 @@ markAnimationAsExecuted elementId animId (AnimBuilder data) =
                 data.animationHistories
     in
     AnimBuilder { data | animationHistories = updatedHistories }
+
+
+{-| Update animation history positions for an element after container resize.
+Updates both start and end positions in the current animation's ProcessedAnimationData.
+-}
+updateAnimationHistoryPositions : ElementId -> Position -> AnimBuilder -> AnimBuilder
+updateAnimationHistoryPositions elementId newPosition (AnimBuilder data) =
+    let
+        updatedHistories =
+            Dict.update elementId
+                (Maybe.map
+                    (\history ->
+                        case history.current of
+                            Just currentAnim ->
+                                let
+                                    updatedProcessedData =
+                                        updateProcessedDataPosition elementId newPosition currentAnim.processedData
+
+                                    updatedCurrent =
+                                        { currentAnim | processedData = updatedProcessedData }
+                                in
+                                { history | current = Just updatedCurrent }
+
+                            Nothing ->
+                                history
+                    )
+                )
+                data.animationHistories
+    in
+    AnimBuilder { data | animationHistories = updatedHistories }
+
+
+{-| Helper to update position in ProcessedAnimationData
+-}
+updateProcessedDataPosition : ElementId -> Position -> ProcessedAnimationData -> ProcessedAnimationData
+updateProcessedDataPosition elementId newPosition processedData =
+    let
+        updatedElements =
+            Dict.update elementId
+                (Maybe.map
+                    (\elementConfig ->
+                        let
+                            updatedProperties =
+                                List.map (updatePropertyPosition newPosition) elementConfig.properties
+                        in
+                        { elementConfig | properties = updatedProperties }
+                    )
+                )
+                processedData.elements
+    in
+    { processedData | elements = updatedElements }
+
+
+{-| Helper to update position in a single property config.
+Only updates the X coordinate (horizontal centering), keeps Y and Z from original animation.
+-}
+updatePropertyPosition : Position -> ProcessedPropertyConfig -> ProcessedPropertyConfig
+updatePropertyPosition newPosition property =
+    case property of
+        ProcessedPositionConfig config ->
+            let
+                ( newX, _, _ ) =
+                    Position.toTriple newPosition
+
+                -- Update start X while keeping original Y and Z
+                updatedStart =
+                    case config.start of
+                        Just startPos ->
+                            let
+                                ( _, startY, startZ ) =
+                                    Position.toTriple startPos
+                            in
+                            Just (Position.fromTriple ( newX, startY, startZ ))
+
+                        Nothing ->
+                            Nothing
+
+                -- Update end X while keeping original Y and Z
+                ( _, endY, endZ ) =
+                    Position.toTriple config.end
+
+                updatedEnd =
+                    Position.fromTriple ( newX, endY, endZ )
+            in
+            ProcessedPositionConfig { config | start = updatedStart, end = updatedEnd }
+
+        _ ->
+            -- Keep other properties unchanged
+            property
