@@ -87,7 +87,7 @@ type AnimationStatus
     | Complete
 
 
-type alias ElementEndStates =
+type alias ElementStates =
     { position : Maybe Position
     , rotate : Maybe Rotate
     , scale : Maybe Scale
@@ -98,8 +98,8 @@ type alias ElementEndStates =
     }
 
 
-emptyElementEndStates : ElementEndStates
-emptyElementEndStates =
+emptyElementStates : ElementStates
+emptyElementStates =
     { position = Nothing
     , rotate = Nothing
     , scale = Nothing
@@ -117,7 +117,7 @@ type alias PropertyAnimation =
 
 
 type alias ElementAnimation =
-    { currentStates : ElementEndStates -- Updated by JavaScript during playback
+    { currentStates : ElementStates -- Updated by JavaScript during playback
     , properties : Dict String PropertyAnimation -- Tracks version and status per property type ("position", "opacity", etc.)
     }
 
@@ -439,10 +439,10 @@ propertyTypeString property =
             "size"
 
 
-extractElementEndStates : Builder.ProcessedElementConfig -> ElementEndStates
+extractElementEndStates : Builder.ProcessedElementConfig -> ElementStates
 extractElementEndStates elementConfig =
     let
-        extractPropertyEndState : Builder.ProcessedPropertyConfig -> ElementEndStates -> ElementEndStates
+        extractPropertyEndState : Builder.ProcessedPropertyConfig -> ElementStates -> ElementStates
         extractPropertyEndState property state =
             case property of
                 Builder.ProcessedPositionConfig config ->
@@ -466,13 +466,13 @@ extractElementEndStates elementConfig =
                 Builder.ProcessedSizeConfig config ->
                     { state | size = Just config.end }
     in
-    List.foldl extractPropertyEndState emptyElementEndStates elementConfig.properties
+    List.foldl extractPropertyEndState emptyElementStates elementConfig.properties
 
 
-extractElementStartStates : Builder.ProcessedElementConfig -> ElementEndStates
+extractElementStartStates : Builder.ProcessedElementConfig -> ElementStates
 extractElementStartStates elementConfig =
     let
-        extractPropertyStartState : Builder.ProcessedPropertyConfig -> ElementEndStates -> ElementEndStates
+        extractPropertyStartState : Builder.ProcessedPropertyConfig -> ElementStates -> ElementStates
         extractPropertyStartState property state =
             case property of
                 Builder.ProcessedPositionConfig config ->
@@ -496,7 +496,7 @@ extractElementStartStates elementConfig =
                 Builder.ProcessedSizeConfig config ->
                     { state | size = config.start }
     in
-    List.foldl extractPropertyStartState emptyElementEndStates elementConfig.properties
+    List.foldl extractPropertyStartState emptyElementStates elementConfig.properties
 
 
 
@@ -1735,13 +1735,13 @@ resetElement elementId (AnimState state) =
                     historyEntry.processedData.elements
                         |> Dict.get elementId
                         |> Maybe.map extractElementStartStates
-                        |> Maybe.withDefault emptyElementEndStates
+                        |> Maybe.withDefault emptyElementStates
 
                 endStates =
                     historyEntry.processedData.elements
                         |> Dict.get elementId
                         |> Maybe.map extractElementEndStates
-                        |> Maybe.withDefault emptyElementEndStates
+                        |> Maybe.withDefault emptyElementStates
 
                 -- Get properties that were in the original animation
                 animatedPropertyTypes =
@@ -1843,20 +1843,31 @@ restartElement elementId (AnimState state) =
             ( AnimState state, emptyCommand )
 
         Just processedData ->
-            -- Get properties that are being restarted
+            -- CRITICAL: Update end positions with current states (updated by resize)
+            -- This ensures restart animates to the current container-relative position
             let
+                updatedProcessedData =
+                    case Dict.get elementId state.elementAnimations of
+                        Just elementAnim ->
+                            -- Replace end states with current states (which include resize updates)
+                            updateProcessedDataEndStates elementId elementAnim.currentStates processedData
+
+                        Nothing ->
+                            processedData
+
+                -- Get properties that are being restarted
                 restartedPropertyTypes =
-                    processedData.elements
+                    updatedProcessedData.elements
                         |> Dict.get elementId
                         |> Maybe.map .properties
                         |> Maybe.withDefault []
                         |> List.map propertyTypeString
 
                 startStates =
-                    processedData.elements
+                    updatedProcessedData.elements
                         |> Dict.get elementId
                         |> Maybe.map extractElementStartStates
-                        |> Maybe.withDefault emptyElementEndStates
+                        |> Maybe.withDefault emptyElementStates
             in
             case Dict.get elementId state.elementAnimations of
                 Nothing ->
@@ -1882,7 +1893,7 @@ restartElement elementId (AnimState state) =
                                     , isRunning = True
                                 }
                     in
-                    ( updatedAnimState, encodeWithVersions updatedElementAnimations processedData )
+                    ( updatedAnimState, encodeWithVersions updatedElementAnimations updatedProcessedData )
 
                 Just elementAnimation ->
                     -- Update existing entry, incrementing versions for restarted properties
@@ -1920,12 +1931,12 @@ restartElement elementId (AnimState state) =
                                     , isRunning = True
                                 }
                     in
-                    ( updatedAnimState, encodeWithVersions updatedElementAnimations processedData )
+                    ( updatedAnimState, encodeWithVersions updatedElementAnimations updatedProcessedData )
 
 
 {-| Helper to add reset properties to a builder for all animated properties.
 -}
-addResetProperties : String -> ElementEndStates -> ElementEndStates -> AnimBuilder -> AnimBuilder
+addResetProperties : String -> ElementStates -> ElementStates -> AnimBuilder -> AnimBuilder
 addResetProperties elementId endStates startStates builderState =
     let
         -- Use the actual stored start states to reset each property that was animated
@@ -2013,3 +2024,86 @@ addResetProperties elementId endStates startStates builderState =
                     builderWithBackgroundColor
     in
     builderWithSize
+
+
+{-| Update processed animation data to use current states as end positions.
+This is critical for restart after resize - ensures animation targets reflect current container size.
+-}
+updateProcessedDataEndStates : String -> ElementStates -> Builder.ProcessedAnimationData -> Builder.ProcessedAnimationData
+updateProcessedDataEndStates elementId currentStates processedData =
+    let
+        updatedElements =
+            Dict.update elementId
+                (Maybe.map
+                    (\elementConfig ->
+                        let
+                            updatedProperties =
+                                List.map (updatePropertyState currentStates) elementConfig.properties
+                        in
+                        { elementConfig | properties = updatedProperties }
+                    )
+                )
+                processedData.elements
+    in
+    { processedData | elements = updatedElements }
+
+
+updatePropertyState : ElementStates -> Builder.ProcessedPropertyConfig -> Builder.ProcessedPropertyConfig
+updatePropertyState currentStates property =
+    case property of
+        Builder.ProcessedPositionConfig config ->
+            case currentStates.position of
+                Just currentPos ->
+                    -- After resize, both start and end should be current position
+                    Builder.ProcessedPositionConfig { config | start = Just currentPos, end = currentPos }
+
+                Nothing ->
+                    property
+
+        Builder.ProcessedRotateConfig config ->
+            case currentStates.rotate of
+                Just currentRot ->
+                    Builder.ProcessedRotateConfig { config | start = Just currentRot, end = currentRot }
+
+                Nothing ->
+                    property
+
+        Builder.ProcessedScaleConfig config ->
+            case currentStates.scale of
+                Just currentScale ->
+                    Builder.ProcessedScaleConfig { config | start = Just currentScale, end = currentScale }
+
+                Nothing ->
+                    property
+
+        Builder.ProcessedOpacityConfig config ->
+            case currentStates.opacity of
+                Just currentOpacity ->
+                    Builder.ProcessedOpacityConfig { config | start = Just currentOpacity, end = currentOpacity }
+
+                Nothing ->
+                    property
+
+        Builder.ProcessedBackgroundColorConfig config ->
+            case currentStates.backgroundColor of
+                Just currentColor ->
+                    Builder.ProcessedBackgroundColorConfig { config | start = Just currentColor, end = currentColor }
+
+                Nothing ->
+                    property
+
+        Builder.ProcessedFontColorConfig config ->
+            case currentStates.fontColor of
+                Just currentColor ->
+                    Builder.ProcessedFontColorConfig { config | start = Just currentColor, end = currentColor }
+
+                Nothing ->
+                    property
+
+        Builder.ProcessedSizeConfig config ->
+            case currentStates.size of
+                Just currentSize ->
+                    Builder.ProcessedSizeConfig { config | start = Just currentSize, end = currentSize }
+
+                Nothing ->
+                    property

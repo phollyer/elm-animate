@@ -681,12 +681,20 @@ window.ElmAnimateWAAPI = (function () {
 
         // Handle animation completion
         animation.addEventListener('finish', () => {
-            // CRITICAL: Commit the animated styles to inline styles
-            // This prevents the finished animation from overriding future inline style updates
+            console.log('Animation finished event for', elementId, propertyType, 'version', version);
+            // Stop update loop
+            if (rafId !== null) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+            // CRITICAL: Commit the animated styles to inline styles, then cancel
+            // MDN: After commitStyles(), you must cancel() to fully remove the animation
+            // Without cancel(), the finished animation can still affect the cascade
             try {
                 animation.commitStyles();
+                animation.cancel();
             } catch (e) {
-                console.warn('ElmAnimateWAAPI: commitStyles failed:', e);
+                console.warn('ElmAnimateWAAPI: commitStyles/cancel failed:', e);
             }
 
             // Only remove THIS property's animation if version matches
@@ -751,11 +759,14 @@ window.ElmAnimateWAAPI = (function () {
         });
 
         animation.addEventListener('cancel', () => {
+            console.log('Animation cancelled event for', elementId, propertyType, 'version', version);
             // Only remove THIS property's animation if version matches
             // (prevents removing newer animation if cancel event fires late)
             const elementAnims = activeAnimations.get(elementId);
             if (elementAnims) {
                 const current = elementAnims.get(propertyType);
+                console.log('Animation cancelled for', elementId, propertyType, 'version', version);
+                console.log('Current animation version is', current ? current.version : 'none');
                 if (current && current.version === version) {
                     elementAnims.delete(propertyType);
 
@@ -1108,11 +1119,22 @@ window.ElmAnimateWAAPI = (function () {
             // CRITICAL: Cancel all existing animations
             const animations = element.getAnimations();
             animations.forEach((anim) => {
+                console.log('   Cancelling animation:', anim);
                 anim.cancel();
             });
 
+            console.log('==> Animations', animations);
+
             // Clean up tracking for this element
             activeAnimations.delete(update.elementId);
+
+            // CRITICAL: Cancel all existing animations
+            const animations1 = element.getAnimations();
+            console.log('==> Animations after cleanup', animations1);
+            animations1.forEach((anim) => {
+                console.log('   Checking animation:', anim);
+            });
+
 
             const props = update.properties;
 
