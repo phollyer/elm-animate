@@ -355,7 +355,7 @@ toFunction durationMs easing =
         velocityFactor =
             1000.0 / durationMs
     in
-    case easing |> Debug.log "Easing" of
+    case easing of
         CubicBezier p1x p1y p2x p2y ->
             E.bezier p1x p1y p2x p2y
 

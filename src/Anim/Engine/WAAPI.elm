@@ -200,6 +200,7 @@ import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
 import Anim.Internal.WAAPI as InternalWAAPI
+import Browser exposing (UrlRequest(..))
 import Html
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -622,78 +623,8 @@ onResize :
     -> (Encode.Value -> Cmd msg)
     -> AnimState
     -> ( AnimState, Cmd msg )
-onResize elements portCmd animState =
-    let
-        updates =
-            List.filterMap (calculateResizePosition animState) elements
-
-        ( newAnimState, updateData ) =
-            InternalWAAPI.updatePositions updates animState
-    in
-    ( newAnimState, portCmd updateData )
-
-
-{-| Calculate new position for an element after container resize.
--}
-calculateResizePosition :
-    AnimState
-    ->
-        { elementId : String
-        , elementSize : { width : Int, height : Int }
-        , oldContainerSize : { width : Int, height : Int }
-        , newContainerSize : { width : Int, height : Int }
-        }
-    -> Maybe { elementId : String, x : Float, y : Float, z : Float }
-calculateResizePosition animState { elementId, elementSize, oldContainerSize, newContainerSize } =
-    let
-        -- Only reposition if dimensions actually changed
-        dimensionsChanged =
-            oldContainerSize.width /= newContainerSize.width || oldContainerSize.height /= newContainerSize.height
-    in
-    if not dimensionsChanged then
-        Nothing
-
-    else
-        let
-            -- Calculate center positions
-            oldCenterX =
-                toFloat oldContainerSize.width / 2 - (toFloat elementSize.width / 2)
-
-            oldCenterY =
-                toFloat oldContainerSize.height / 2 - (toFloat elementSize.height / 2)
-
-            newCenterX =
-                toFloat newContainerSize.width / 2 - (toFloat elementSize.width / 2)
-
-            newCenterY =
-                toFloat newContainerSize.height / 2 - (toFloat elementSize.height / 2)
-
-            -- Get current position or default to old center
-            currentPos =
-                InternalWAAPI.getCurrentPosition elementId animState
-                    |> Maybe.map Position.toRecord
-                    |> Maybe.withDefault { x = oldCenterX, y = oldCenterY, z = 0 }
-
-            -- Calculate offset from old center
-            offsetX =
-                currentPos.x - oldCenterX
-
-            offsetY =
-                currentPos.y - oldCenterY
-
-            -- Apply same offset to new center
-            newX =
-                newCenterX + offsetX
-
-            newY =
-                newCenterY + offsetY
-        in
-        Just
-            { elementId = elementId
-            , x = newX
-            , y = newY
-            , z = currentPos.z
-            }
+onResize =
+    InternalWAAPI.onResize
 
 
 
@@ -1072,7 +1003,7 @@ type EventType
 encodeCommand : CommandType -> String -> Encode.Value -> Encode.Value
 encodeCommand commandType elementId payload =
     Encode.object
-        [ ( "type", encodeCommandType commandType )
+        [ ( "type", encodeCommandType commandType |> Debug.log "Encoding command type" )
         , ( "elementId", Encode.string elementId )
         , ( "payload", payload )
         ]

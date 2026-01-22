@@ -36,6 +36,7 @@ module Anim.Internal.WAAPI exposing
     , initProperties
     , isElementComplete
     , isElementRunning
+    , onResize
     , perspective
     , perspectiveWith
     , resetElement
@@ -375,48 +376,29 @@ initProperties propertyInitializers =
                         }
                     )
 
-        -- Create position updates for JS (without creating WAAPI animations)
-        positionUpdates =
+        -- Create property updates for JS (without creating WAAPI animations)
+        -- ARCHITECTURE: Initialize ALL properties (transforms, opacity, colors, size)
+        -- This ensures inline styles, JS state, and Elm state all start synchronized
+        propertyUpdates =
             processedData.elements
                 |> Dict.toList
-                |> List.filterMap
+                |> List.map
                     (\( elementId, elementConfig ) ->
-                        elementConfig.properties
-                            |> List.filterMap
-                                (\property ->
-                                    case property of
-                                        Builder.ProcessedPositionConfig config ->
-                                            let
-                                                pos =
-                                                    Position.toRecord config.end
-                                            in
-                                            Just
-                                                { elementId = elementId
-                                                , x = pos.x
-                                                , y = pos.y
-                                                , z = pos.z
-                                                }
-
-                                        _ ->
-                                            Nothing
-                                )
-                            |> List.head
+                        ( elementId, encodeInitProperties elementConfig.properties )
                     )
 
         updateData =
             Encode.object
-                [ ( "type", Encode.string "updatePosition" )
+                [ ( "type", Encode.string "setProperties" )
                 , ( "updates"
                   , Encode.list
-                        (\posUpdate ->
+                        (\( elementId, propsObject ) ->
                             Encode.object
-                                [ ( "elementId", Encode.string posUpdate.elementId )
-                                , ( "x", Encode.float posUpdate.x )
-                                , ( "y", Encode.float posUpdate.y )
-                                , ( "z", Encode.float posUpdate.z )
+                                [ ( "elementId", Encode.string elementId )
+                                , ( "properties", propsObject )
                                 ]
                         )
-                        positionUpdates
+                        propertyUpdates
                   )
                 ]
     in
@@ -599,8 +581,103 @@ updateElementAnimation animUpdate elementAnimation =
     }
 
 
+onResize :
+    List
+        { elementId : String
+        , elementSize : { width : Int, height : Int }
+        , oldContainerSize : { width : Int, height : Int }
+        , newContainerSize : { width : Int, height : Int }
+        }
+    -> (Encode.Value -> Cmd msg)
+    -> AnimState
+    -> ( AnimState, Cmd msg )
+onResize elements portCmd animState =
+    let
+        updates =
+            List.filterMap (calculateResizePosition animState) elements
+    in
+    if List.isEmpty updates then
+        -- No updates needed - avoid sending null command
+        ( animState, Cmd.none )
+
+    else
+        let
+            ( newAnimState, updateData ) =
+                updatePositions updates animState
+        in
+        ( newAnimState, portCmd updateData )
+
+
+calculateResizePosition :
+    AnimState
+    ->
+        { elementId : String
+        , elementSize : { width : Int, height : Int }
+        , oldContainerSize : { width : Int, height : Int }
+        , newContainerSize : { width : Int, height : Int }
+        }
+    -> Maybe { elementId : String, x : Float, y : Float, z : Float }
+calculateResizePosition animState { elementId, elementSize, oldContainerSize, newContainerSize } =
+    let
+        -- Only reposition if dimensions actually changed
+        dimensionsChanged =
+            oldContainerSize.width /= newContainerSize.width || oldContainerSize.height /= newContainerSize.height
+    in
+    if not dimensionsChanged then
+        Nothing
+
+    else
+        let
+            -- Calculate center positions
+            oldCenterX =
+                toFloat oldContainerSize.width / 2 - (toFloat elementSize.width / 2)
+
+            oldCenterY =
+                toFloat oldContainerSize.height / 2 - (toFloat elementSize.height / 2)
+
+            newCenterX =
+                toFloat newContainerSize.width / 2 - (toFloat elementSize.width / 2)
+
+            newCenterY =
+                toFloat newContainerSize.height / 2 - (toFloat elementSize.height / 2)
+
+            -- Get current position or default to old center
+            currentPos =
+                getCurrentPosition elementId animState
+                    |> Maybe.map Position.toRecord
+                    |> Maybe.withDefault { x = oldCenterX, y = oldCenterY, z = 0 }
+
+            -- Calculate offset from old center
+            offsetX =
+                currentPos.x - oldCenterX
+
+            offsetY =
+                currentPos.y - oldCenterY
+
+            -- Apply same offset to new center
+            newX =
+                newCenterX + offsetX
+
+            newY =
+                newCenterY + offsetY
+        in
+        Just
+            { elementId = elementId
+            , x = newX
+            , y = newY
+            , z = currentPos.z
+            }
+
+
 {-| Update positions for multiple elements without creating animation history.
 Used for responsive layout adjustments during window/container resize.
+
+ARCHITECTURE: This function is smart - it checks if there's an active position animation
+and sends the appropriate command to JavaScript:
+
+  - If position is animating: "handleResize" (updates keyframes, preserves playback state)
+  - If not animating: "setPosition" (direct position update, no animation involved)
+
 -}
 updatePositions :
     List { elementId : String, x : Float, y : Float, z : Float }
@@ -633,28 +710,163 @@ updatePositions updates (AnimState state) =
                 state.elementAnimations
                 updates
 
-        -- Encode command for JavaScript
-        encodedUpdates =
+        -- Helper to check if an element has an active position animation
+        hasActivePositionAnimation : String -> Bool
+        hasActivePositionAnimation elementId =
+            Dict.get elementId state.elementAnimations
+                |> Maybe.andThen (\elem -> Dict.get "position" elem.properties)
+                |> Maybe.map (\prop -> prop.status == Running)
+                |> Maybe.withDefault False
+
+        -- Separate updates into two categories
+        ( animatedUpdates, directUpdates ) =
+            List.partition (\upd -> hasActivePositionAnimation upd.elementId) updates
+
+        -- Helper to encode position update with current scale/rotation from state
+        encodeWithTransform : { elementId : String, x : Float, y : Float, z : Float } -> Encode.Value
+        encodeWithTransform positionUpdate =
+            let
+                -- Get current scale and rotation from element's state
+                ( scaleVals, rotationVals ) =
+                    Dict.get positionUpdate.elementId updatedAnimations
+                        |> Maybe.map
+                            (\elementAnim ->
+                                let
+                                    scale =
+                                        elementAnim.currentStates.scale
+                                            |> Maybe.map Scale.toRecord
+                                            |> Maybe.withDefault { x = 1, y = 1, z = 1 }
+
+                                    rotation =
+                                        elementAnim.currentStates.rotate
+                                            |> Maybe.map Rotate.toRecord
+                                            |> Maybe.withDefault { x = 0, y = 0, z = 0 }
+                                in
+                                ( scale, rotation )
+                            )
+                        |> Maybe.withDefault
+                            ( { x = 1, y = 1, z = 1 }
+                            , { x = 0, y = 0, z = 0 }
+                            )
+            in
             Encode.object
-                [ ( "type", Encode.string "updatePosition" )
-                , ( "updates"
-                  , Encode.list encodePositionUpdate updates
+                [ ( "elementId", Encode.string positionUpdate.elementId )
+                , ( "properties"
+                  , Encode.object
+                        [ ( "x", Encode.float positionUpdate.x )
+                        , ( "y", Encode.float positionUpdate.y )
+                        , ( "z", Encode.float positionUpdate.z )
+
+                        -- ARCHITECTURE: Elm sends current scale/rotation from its state
+                        -- Either from active animations or defaults if not set
+                        , ( "scaleX", Encode.float scaleVals.x )
+                        , ( "scaleY", Encode.float scaleVals.y )
+                        , ( "scaleZ", Encode.float scaleVals.z )
+                        , ( "rotationX", Encode.float rotationVals.x )
+                        , ( "rotationY", Encode.float rotationVals.y )
+                        , ( "rotationZ", Encode.float rotationVals.z )
+                        ]
                   )
                 ]
+
+        -- Encode commands for JavaScript
+        encodedUpdates =
+            if List.isEmpty animatedUpdates && List.isEmpty directUpdates then
+                Encode.null
+
+            else if List.isEmpty animatedUpdates then
+                -- Only direct updates (no active animations)
+                Encode.object
+                    [ ( "type", Encode.string "setProperties" )
+                    , ( "updates", Encode.list encodeWithTransform directUpdates )
+                    ]
+
+            else if List.isEmpty directUpdates then
+                -- Only animated updates (all have active animations)
+                Encode.object
+                    [ ( "type", Encode.string "handleResize" )
+                    , ( "updates", Encode.list encodeWithTransform animatedUpdates )
+                    ]
+
+            else
+                -- Mixed: some animating, some not - send both commands
+                Encode.list identity
+                    [ Encode.object
+                        [ ( "type", Encode.string "handleResize" )
+                        , ( "updates", Encode.list encodeWithTransform animatedUpdates )
+                        ]
+                    , Encode.object
+                        [ ( "type", Encode.string "setProperties" )
+                        , ( "updates", Encode.list encodeWithTransform directUpdates )
+                        ]
+                    ]
     in
     ( AnimState { state | elementAnimations = updatedAnimations }
     , encodedUpdates
     )
 
 
-encodePositionUpdate : { elementId : String, x : Float, y : Float, z : Float } -> Encode.Value
-encodePositionUpdate { elementId, x, y, z } =
-    Encode.object
-        [ ( "elementId", Encode.string elementId )
-        , ( "x", Encode.float x )
-        , ( "y", Encode.float y )
-        , ( "z", Encode.float z )
-        ]
+encodeInitProperties : List Builder.ProcessedPropertyConfig -> Encode.Value
+encodeInitProperties properties =
+    let
+        -- Build an object with all property values
+        propertyFields =
+            properties
+                |> List.concatMap encodeProperty
+    in
+    Encode.object propertyFields
+
+
+encodeProperty : Builder.ProcessedPropertyConfig -> List ( String, Encode.Value )
+encodeProperty property =
+    case property of
+        Builder.ProcessedPositionConfig config ->
+            let
+                pos =
+                    Position.toRecord config.end
+            in
+            [ ( "x", Encode.float pos.x )
+            , ( "y", Encode.float pos.y )
+            , ( "z", Encode.float pos.z )
+            ]
+
+        Builder.ProcessedScaleConfig config ->
+            let
+                scale =
+                    Scale.toRecord config.end
+            in
+            [ ( "scaleX", Encode.float scale.x )
+            , ( "scaleY", Encode.float scale.y )
+            , ( "scaleZ", Encode.float scale.z )
+            ]
+
+        Builder.ProcessedRotateConfig config ->
+            let
+                rotate =
+                    Rotate.toRecord config.end
+            in
+            [ ( "rotationX", Encode.float rotate.x )
+            , ( "rotationY", Encode.float rotate.y )
+            , ( "rotationZ", Encode.float rotate.z )
+            ]
+
+        Builder.ProcessedOpacityConfig config ->
+            [ ( "opacity", Encode.float (Opacity.toFloat config.end) ) ]
+
+        Builder.ProcessedBackgroundColorConfig config ->
+            [ ( "backgroundColor", Encode.string (Color.toCssString config.end) ) ]
+
+        Builder.ProcessedFontColorConfig config ->
+            [ ( "color", Encode.string (Color.toCssString config.end) ) ]
+
+        Builder.ProcessedSizeConfig config ->
+            let
+                size =
+                    Size.toRecord config.end
+            in
+            [ ( "width", Encode.float size.width )
+            , ( "height", Encode.float size.height )
+            ]
 
 
 
@@ -1012,7 +1224,8 @@ encodeWithVersions elementAnimations data =
                     )
     in
     Encode.object
-        [ ( "elements", Encode.object elementsWithVersions )
+        [ ( "type", Encode.string "animate" )
+        , ( "elements", Encode.object elementsWithVersions )
         , ( "globalPerspective", encodeMaybePerspective data.globalPerspective )
         ]
 
@@ -1020,7 +1233,8 @@ encodeWithVersions elementAnimations data =
 encode : Builder.ProcessedAnimationData -> Encode.Value
 encode data =
     Encode.object
-        [ ( "elements", Encode.dict identity encodeProcessedElementConfig data.elements )
+        [ ( "type", Encode.string "animate" )
+        , ( "elements", Encode.dict identity encodeProcessedElementConfig data.elements )
         , ( "globalPerspective", encodeMaybePerspective data.globalPerspective )
         ]
 

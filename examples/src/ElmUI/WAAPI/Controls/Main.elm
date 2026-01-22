@@ -84,13 +84,9 @@ init { window } =
         animationAreaWidth =
             min 500 (window.width - 40)
 
-        -- Set initial position using builder with duration=0 (instant application)
         ( initialAnimState, initCmd ) =
             WAAPI.initProperties waapiCommand <|
-                [ Controls.init animationAreaWidth
-
-                --, more properties if needed
-                ]
+                [ Controls.init animationAreaWidth ]
     in
     ( { animationState = initialAnimState
       , status = Idle
@@ -140,7 +136,7 @@ update msg model =
                                 , height = 350
                                 }
                           , newContainerSize =
-                                { width = newAnimationAreaWidth
+                                { width = newAnimationAreaWidth |> Debug.log "New animation area width:"
                                 , height = 350
                                 }
                           }
@@ -151,7 +147,7 @@ update msg model =
             ( { model
                 | window = { width = newWidth, height = newHeight }
                 , animationAreaSize =
-                    { width = newAnimationAreaWidth |> Debug.log "New animation area width:"
+                    { width = newAnimationAreaWidth
                     , height = 350
                     }
                 , animationState = newAnimState
@@ -196,15 +192,9 @@ update msg model =
             )
 
         Resume ->
-            -- Only resume if animation is actually paused
-            case model.status of
-                Paused ->
-                    ( model
-                    , WAAPI.resume elementId waapiCommand
-                    )
-
-                _ ->
-                    ( model, Cmd.none )
+            ( model
+            , WAAPI.resume elementId waapiCommand
+            )
 
         Reset ->
             let
