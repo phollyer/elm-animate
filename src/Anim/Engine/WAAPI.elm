@@ -1,5 +1,5 @@
 module Anim.Engine.WAAPI exposing
-    ( AnimState, init, AnimBuilder, builder
+    ( AnimState, init, initProperties, AnimBuilder, builder
     , animate, fireAndForget
     , AnimationEvent(..), decode
     , stop, reset, restart, pause, resume
@@ -16,13 +16,12 @@ module Anim.Engine.WAAPI exposing
     , getStartRotate, getEndRotate, getCurrentRotate
     , getStartScale, getEndScale, getCurrentScale
     , getStartSize, getEndSize, getCurrentSize
-    , initProperties
     )
 
-{-| Ports-based animation system utilising the Web Animations API with optional state tracking.
+{-| Ports-based animation system with optional state tracking.
 
-This Engine converts [AnimBuilder](#AnimBuilder) configurations to JavaScript Web Animations API calls
-via Elm ports for maximum performance and browser compatibility.
+This Engine converts [AnimBuilder](#AnimBuilder) configurations to [JavaScript Web Animations API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API)
+calls via Elm [ports](https://guide.elm-lang.org/interop/ports) for maximum performance and browser compatibility.
 
 **Note:** This module requires the accompanying JavaScript library to handle the Web Animations API.
 
@@ -68,7 +67,7 @@ The JavaScript companion automatically connects to these ports when you call `El
 
 # Build
 
-@docs AnimState, init, AnimBuilder, builder
+@docs AnimState, init, initProperties, AnimBuilder, builder
 
 
 # Animation Execution
@@ -421,8 +420,7 @@ This keeps AnimState and JavaScript in sync without polluting animation history.
                 WAAPI.initProperties waapiCommand
                     [ Position.initXY "element-id" 100 50
                     , Opacity.init "element-id" 1.0
-
-                    -- more properties if needed
+                    ... -- more properties if needed
                     ]
         in
         ( { model | animations = initialAnimState }, initCmd )
