@@ -33,17 +33,17 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
 
-{- Rotation CONFIGURATION BUILDER -}
+{- Rotate CONFIGURATION BUILDER -}
 {- Usage:
 
    Anim.init
-      |> Rotation.for "my-element"
-      |> Rotation.from 0
-      |> Rotation.to 360
-      |> Rotation.duration 2000
-      |> Rotation.easing Easing.easeInOut
-      |> Rotation.delay (Delay.millis 500)
-      |> Rotation.build
+      |> Rotate.for "my-element"
+      |> Rotate.from 0
+      |> Rotate.to 360
+      |> Rotate.duration 2000
+      |> Rotate.easing Easing.easeInOut
+      |> Rotate.delay (Delay.millis 500)
+      |> Rotate.build
       |> Anim.animate
 -}
 
@@ -88,8 +88,8 @@ defaultConfig =
 
 
 from : Rotate -> RotateBuilder -> RotateBuilder
-from rotation (RotateBuilder config builder) =
-    RotateBuilder { config | start = Just rotation } builder
+from rotate (RotateBuilder config builder) =
+    RotateBuilder { config | start = Just rotate } builder
 
 
 fromXYZ : Float -> Float -> Float -> RotateBuilder -> RotateBuilder
@@ -185,9 +185,9 @@ fromZ z (RotateBuilder config builder) =
 
 
 to : Rotate -> RotateBuilder -> RotateBuilder
-to endRotation (RotateBuilder config builder) =
+to endRotate (RotateBuilder config builder) =
     let
-        startRotation =
+        startRotate =
             case config.start of
                 Just s ->
                     s
@@ -197,9 +197,9 @@ to endRotation (RotateBuilder config builder) =
     in
     RotateBuilder
         { config
-            | start = Just startRotation
-            , end = endRotation
-            , distance = Rotate.distance startRotation endRotation
+            | start = Just startRotate
+            , end = endRotate
+            , distance = Rotate.distance startRotate endRotate
         }
         builder
 

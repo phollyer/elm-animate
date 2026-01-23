@@ -9,6 +9,18 @@ Never guess a solution. Ensure that a theoretical solution is validated before i
 When refactoring or optimizing code, always ensure that the original functionality is preserved unless the user explicitly requests changes to behavior.
 
 
+## Creating Elm Files
+
+When creating new Elm files, always follow these guidelines:
+
+- I am using the Elm plugin for VSCode, which automatically adds module declarations to new files.
+  - Therefore, do not add module declarations manually to new Elm files.
+  - It is ok to update the exposing list later as needed, it should be left as `(..)` initially.
+
+- Always prefer function composition and point-free style where it improves readability.
+- Functions should be designed for composeability and reusability.
+- Follow Elm best practices for naming conventions, code organization, and documentation.
+- Ensure all public functions have clear type annotations and documentation comments.
 
 ## ⚠️ CRITICAL FILE PROTECTION RULES ⚠️
 

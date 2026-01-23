@@ -633,7 +633,7 @@ updateElementAnimation animUpdate elementAnimation =
     let
         newCurrentStates =
             { position = Just (Position.fromTriple ( animUpdate.positionX, animUpdate.positionY, animUpdate.positionZ ))
-            , rotate = Just (Rotate.fromTriple ( animUpdate.rotationX, animUpdate.rotationY, animUpdate.rotationZ ))
+            , rotate = Just (Rotate.fromTriple ( animUpdate.rotateX, animUpdate.rotateY, animUpdate.rotateZ ))
             , scale = Just (Scale.fromTriple ( animUpdate.scaleX, animUpdate.scaleY, animUpdate.scaleZ ))
             , opacity = Just (Opacity.fromFloat animUpdate.opacity)
             , backgroundColor = Color.fromString animUpdate.backgroundColor
@@ -844,8 +844,8 @@ updatePositions updates (AnimState state) =
         encodeAnimationUpdate : { elementId : String, startX : Float, startY : Float, startZ : Float, endX : Float, endY : Float, endZ : Float } -> Encode.Value
         encodeAnimationUpdate posUpdate =
             let
-                -- Get current scale and rotation from element's state
-                ( scaleVals, rotationVals ) =
+                -- Get current scale and rotate values from element's state
+                ( scaleVals, rotateVals ) =
                     Dict.get posUpdate.elementId updatedAnimations
                         |> Maybe.map
                             (\elementAnim ->
@@ -855,12 +855,12 @@ updatePositions updates (AnimState state) =
                                             |> Maybe.map Scale.toRecord
                                             |> Maybe.withDefault { x = 1, y = 1, z = 1 }
 
-                                    rotation =
+                                    rotate =
                                         elementAnim.currentStates.rotate
                                             |> Maybe.map Rotate.toRecord
                                             |> Maybe.withDefault { x = 0, y = 0, z = 0 }
                                 in
-                                ( scale, rotation )
+                                ( scale, rotate )
                             )
                         |> Maybe.withDefault
                             ( { x = 1, y = 1, z = 1 }
@@ -877,9 +877,9 @@ updatePositions updates (AnimState state) =
                         , ( "scaleX", Encode.float scaleVals.x )
                         , ( "scaleY", Encode.float scaleVals.y )
                         , ( "scaleZ", Encode.float scaleVals.z )
-                        , ( "rotationX", Encode.float rotationVals.x )
-                        , ( "rotationY", Encode.float rotationVals.y )
-                        , ( "rotationZ", Encode.float rotationVals.z )
+                        , ( "rotateX", Encode.float rotateVals.x )
+                        , ( "rotateY", Encode.float rotateVals.y )
+                        , ( "rotateZ", Encode.float rotateVals.z )
                         ]
                   )
                 , ( "endPosition"
@@ -890,9 +890,9 @@ updatePositions updates (AnimState state) =
                         , ( "scaleX", Encode.float scaleVals.x )
                         , ( "scaleY", Encode.float scaleVals.y )
                         , ( "scaleZ", Encode.float scaleVals.z )
-                        , ( "rotationX", Encode.float rotationVals.x )
-                        , ( "rotationY", Encode.float rotationVals.y )
-                        , ( "rotationZ", Encode.float rotationVals.z )
+                        , ( "rotateX", Encode.float rotateVals.x )
+                        , ( "rotateY", Encode.float rotateVals.y )
+                        , ( "rotateZ", Encode.float rotateVals.z )
                         ]
                   )
                 ]
@@ -901,7 +901,7 @@ updatePositions updates (AnimState state) =
         encodeDirectUpdate : { elementId : String, startX : Float, startY : Float, startZ : Float, endX : Float, endY : Float, endZ : Float } -> Encode.Value
         encodeDirectUpdate posUpdate =
             let
-                ( scaleVals, rotationVals ) =
+                ( scaleVals, rotateVals ) =
                     Dict.get posUpdate.elementId updatedAnimations
                         |> Maybe.map
                             (\elementAnim ->
@@ -911,12 +911,12 @@ updatePositions updates (AnimState state) =
                                             |> Maybe.map Scale.toRecord
                                             |> Maybe.withDefault { x = 1, y = 1, z = 1 }
 
-                                    rotation =
+                                    rotate =
                                         elementAnim.currentStates.rotate
                                             |> Maybe.map Rotate.toRecord
                                             |> Maybe.withDefault { x = 0, y = 0, z = 0 }
                                 in
-                                ( scale, rotation )
+                                ( scale, rotate )
                             )
                         |> Maybe.withDefault
                             ( { x = 1, y = 1, z = 1 }
@@ -933,9 +933,9 @@ updatePositions updates (AnimState state) =
                         , ( "scaleX", Encode.float scaleVals.x )
                         , ( "scaleY", Encode.float scaleVals.y )
                         , ( "scaleZ", Encode.float scaleVals.z )
-                        , ( "rotationX", Encode.float rotationVals.x )
-                        , ( "rotationY", Encode.float rotationVals.y )
-                        , ( "rotationZ", Encode.float rotationVals.z )
+                        , ( "rotateX", Encode.float rotateVals.x )
+                        , ( "rotateY", Encode.float rotateVals.y )
+                        , ( "rotateZ", Encode.float rotateVals.z )
                         ]
                   )
                 ]
@@ -1016,9 +1016,9 @@ encodeProperty property =
                 rotate =
                     Rotate.toRecord config.end
             in
-            [ ( "rotationX", Encode.float rotate.x )
-            , ( "rotationY", Encode.float rotate.y )
-            , ( "rotationZ", Encode.float rotate.z )
+            [ ( "rotateX", Encode.float rotate.x )
+            , ( "rotateY", Encode.float rotate.y )
+            , ( "rotateZ", Encode.float rotate.z )
             ]
 
         Builder.ProcessedOpacityConfig config ->
@@ -1368,9 +1368,9 @@ type alias AnimationUpdate =
     , positionY : Float
     , positionZ : Float
     , opacity : Float
-    , rotationX : Float
-    , rotationY : Float
-    , rotationZ : Float
+    , rotateX : Float
+    , rotateY : Float
+    , rotateZ : Float
     , scaleX : Float
     , scaleY : Float
     , scaleZ : Float
@@ -1391,9 +1391,9 @@ animationUpdateDecoder =
         |> andMap (Decode.at [ "position", "y" ] Decode.float)
         |> andMap (Decode.at [ "position", "z" ] Decode.float)
         |> andMap (Decode.field "opacity" Decode.float)
-        |> andMap (Decode.at [ "rotation", "x" ] Decode.float)
-        |> andMap (Decode.at [ "rotation", "y" ] Decode.float)
-        |> andMap (Decode.at [ "rotation", "z" ] Decode.float)
+        |> andMap (Decode.at [ "rotate", "x" ] Decode.float)
+        |> andMap (Decode.at [ "rotate", "y" ] Decode.float)
+        |> andMap (Decode.at [ "rotate", "z" ] Decode.float)
         |> andMap (Decode.at [ "scale", "x" ] Decode.float)
         |> andMap (Decode.at [ "scale", "y" ] Decode.float)
         |> andMap (Decode.at [ "scale", "z" ] Decode.float)

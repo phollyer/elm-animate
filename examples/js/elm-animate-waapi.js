@@ -318,10 +318,10 @@ window.ElmAnimateWAAPI = (function () {
 
                 startTransform = buildTransformString(startX, startY, startZ,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                    currentTransform.rotationX, currentTransform.rotationY, currentTransform.rotationZ);
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ);
                 endTransform = buildTransformString(endX, endY, endZ,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                    currentTransform.rotationX, currentTransform.rotationY, currentTransform.rotationZ);
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ);
                 break;
 
             case 'scale':
@@ -334,19 +334,19 @@ window.ElmAnimateWAAPI = (function () {
 
                 startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     startScaleX, startScaleY, startScaleZ,
-                    currentTransform.rotationX, currentTransform.rotationY, currentTransform.rotationZ);
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ);
                 endTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     endScaleX, endScaleY, endScaleZ,
-                    currentTransform.rotationX, currentTransform.rotationY, currentTransform.rotationZ);
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ);
                 break;
 
             case 'rotate':
-                const startRotX = property.startX !== undefined ? property.startX : currentTransform.rotationX;
-                const startRotY = property.startY !== undefined ? property.startY : currentTransform.rotationY;
-                const startRotZ = property.startZ !== undefined ? property.startZ : currentTransform.rotationZ;
-                const endRotX = property.endX !== undefined ? property.endX : currentTransform.rotationX;
-                const endRotY = property.endY !== undefined ? property.endY : currentTransform.rotationY;
-                const endRotZ = property.endZ !== undefined ? property.endZ : currentTransform.rotationZ;
+                const startRotX = property.startX !== undefined ? property.startX : currentTransform.rotateX;
+                const startRotY = property.startY !== undefined ? property.startY : currentTransform.rotateY;
+                const startRotZ = property.startZ !== undefined ? property.startZ : currentTransform.rotateZ;
+                const endRotX = property.endX !== undefined ? property.endX : currentTransform.rotateX;
+                const endRotY = property.endY !== undefined ? property.endY : currentTransform.rotateY;
+                const endRotZ = property.endZ !== undefined ? property.endZ : currentTransform.rotateZ;
 
                 startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
@@ -491,7 +491,7 @@ window.ElmAnimateWAAPI = (function () {
     /**
      * Build a complete transform string with 3D support
      */
-    function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotationX, rotationY, rotationZ) {
+    function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ) {
         const parts = [];
 
         // Position: use translate3d for hardware acceleration
@@ -500,14 +500,14 @@ window.ElmAnimateWAAPI = (function () {
         }
 
         // Rotation: apply in order X, Y, Z for consistent results
-        if (rotationX !== 0) {
-            parts.push(`rotateX(${rotationX}deg)`);
+        if (rotateX !== 0) {
+            parts.push(`rotateX(${rotateX}deg)`);
         }
-        if (rotationY !== 0) {
-            parts.push(`rotateY(${rotationY}deg)`);
+        if (rotateY !== 0) {
+            parts.push(`rotateY(${rotateY}deg)`);
         }
-        if (rotationZ !== 0) {
-            parts.push(`rotateZ(${rotationZ}deg)`);
+        if (rotateZ !== 0) {
+            parts.push(`rotateZ(${rotateZ}deg)`);
         }
 
         // Scale: use individual scale functions for better control
@@ -536,7 +536,7 @@ window.ElmAnimateWAAPI = (function () {
                 transform: 'none',
                 x: 0, y: 0, z: 0,
                 scaleX: 1, scaleY: 1, scaleZ: 1,
-                rotationX: 0, rotationY: 0, rotationZ: 0
+                rotateX: 0, rotateY: 0, rotateZ: 0
             };
         }
 
@@ -561,14 +561,14 @@ window.ElmAnimateWAAPI = (function () {
 
                 // For 3D rotations, we'll approximate with simple extraction
                 // This is complex for full 3D rotation extraction, so we'll provide basic support
-                let rotationX = 0, rotationY = 0, rotationZ = 0;
+                let rotateX = 0, rotateY = 0, rotateZ = 0;
 
                 // Simple Z rotation extraction (most common)
                 if (scaleX !== 0 && scaleY !== 0) {
-                    rotationZ = Math.atan2(values[1] / scaleX, values[0] / scaleX) * (180 / Math.PI);
+                    rotateZ = Math.atan2(values[1] / scaleX, values[0] / scaleX) * (180 / Math.PI);
                 }
 
-                return { transform, x: tx, y: ty, z: tz, scaleX, scaleY, scaleZ, rotationX, rotationY, rotationZ };
+                return { transform, x: tx, y: ty, z: tz, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ };
             }
         } else if (matrix2d) {
             // 2D matrix: matrix(a, b, c, d, tx, ty)
@@ -584,13 +584,13 @@ window.ElmAnimateWAAPI = (function () {
 
                 const scaleX = Math.sqrt(a * a + b * b);
                 const scaleY = Math.sqrt(c * c + d * d);
-                const rotationZ = Math.atan2(b, a) * (180 / Math.PI);
+                const rotateZ = Math.atan2(b, a) * (180 / Math.PI);
 
                 return {
                     transform,
                     x: tx, y: ty, z: 0,
                     scaleX, scaleY, scaleZ: 1,
-                    rotationX: 0, rotationY: 0, rotationZ
+                    rotateX: 0, rotateY: 0, rotateZ
                 };
             }
         }
@@ -599,7 +599,7 @@ window.ElmAnimateWAAPI = (function () {
             transform,
             x: 0, y: 0, z: 0,
             scaleX: 1, scaleY: 1, scaleZ: 1,
-            rotationX: 0, rotationY: 0, rotationZ: 0
+            rotateX: 0, rotateY: 0, rotateZ: 0
         };
     }
 
@@ -646,10 +646,10 @@ window.ElmAnimateWAAPI = (function () {
                             z: transformState.z
                         },
                         opacity: parseFloat(computedStyle.opacity),
-                        rotation: {
-                            x: transformState.rotationX,
-                            y: transformState.rotationY,
-                            z: transformState.rotationZ
+                        rotate: {
+                            x: transformState.rotateX,
+                            y: transformState.rotateY,
+                            z: transformState.rotateZ
                         },
                         scale: {
                             x: transformState.scaleX,
@@ -735,10 +735,10 @@ window.ElmAnimateWAAPI = (function () {
                         z: finalState.z
                     },
                     opacity: parseFloat(computedStyle.opacity),
-                    rotation: {
-                        x: finalState.rotationX,
-                        y: finalState.rotationY,
-                        z: finalState.rotationZ
+                    rotate: {
+                        x: finalState.rotateX,
+                        y: finalState.rotateY,
+                        z: finalState.rotateZ
                     },
                     scale: {
                         x: finalState.scaleX,
@@ -797,10 +797,10 @@ window.ElmAnimateWAAPI = (function () {
                         z: currentState.z
                     },
                     opacity: parseFloat(computedStyle.opacity),
-                    rotation: {
-                        x: currentState.rotationX,
-                        y: currentState.rotationY,
-                        z: currentState.rotationZ
+                    rotate: {
+                        x: currentState.rotateX,
+                        y: currentState.rotateY,
+                        z: currentState.rotateZ
                     },
                     scale: {
                         x: currentState.scaleX,
@@ -952,13 +952,13 @@ window.ElmAnimateWAAPI = (function () {
             const fromTransform = buildTransformString(
                 startPos.x, startPos.y, startPos.z,
                 startPos.scaleX, startPos.scaleY, startPos.scaleZ,
-                startPos.rotationX, startPos.rotationY, startPos.rotationZ
+                startPos.rotateX, startPos.rotateY, startPos.rotateZ
             );
 
             const toTransform = buildTransformString(
                 endPos.x, endPos.y, endPos.z,
                 endPos.scaleX, endPos.scaleY, endPos.scaleZ,
-                endPos.rotationX, endPos.rotationY, endPos.rotationZ
+                endPos.rotateX, endPos.rotateY, endPos.rotateZ
             );
 
             // Generate keyframes using cached easing (preserves bounce/elastic during resize)
@@ -1012,7 +1012,7 @@ window.ElmAnimateWAAPI = (function () {
             // Active animations have higher precedence, but we've cancelled all animations above
             if (props.x !== undefined || props.y !== undefined || props.z !== undefined ||
                 props.scaleX !== undefined || props.scaleY !== undefined || props.scaleZ !== undefined ||
-                props.rotationX !== undefined || props.rotationY !== undefined || props.rotationZ !== undefined) {
+                props.rotateX !== undefined || props.rotateY !== undefined || props.rotateZ !== undefined) {
 
                 const transform = buildTransformString(
                     props.x || 0,
@@ -1021,9 +1021,9 @@ window.ElmAnimateWAAPI = (function () {
                     props.scaleX !== undefined ? props.scaleX : 1,
                     props.scaleY !== undefined ? props.scaleY : 1,
                     props.scaleZ !== undefined ? props.scaleZ : 1,
-                    props.rotationX || 0,
-                    props.rotationY || 0,
-                    props.rotationZ || 0
+                    props.rotateX || 0,
+                    props.rotateY || 0,
+                    props.rotateZ || 0
                 );
 
                 // Direct inline style assignment - no animation needed
