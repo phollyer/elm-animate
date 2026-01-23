@@ -196,7 +196,6 @@ import Anim.Color exposing (Color)
 import Anim.Easing exposing (Easing)
 import Anim.Internal.WAAPI as Internal
 import Html
-import Json.Decode as Decode
 import Json.Encode as Encode
 
 
