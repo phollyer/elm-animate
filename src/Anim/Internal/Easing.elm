@@ -1420,31 +1420,6 @@ generateKeyframes easing durationMs =
                 elasticOutOscillations =
                     generateElasticOscillationsWithFrames elasticityOut amplitudeOut decayOut framesPerCycleOut
 
-                -- Calculate velocities at connection points
-                -- Last In oscillation: approach 0 from below (negative to 0)
-                lastInFrames =
-                    List.drop (List.length elasticInOscillations - 2) elasticInOscillations
-
-                lastInVelocity =
-                    case ( List.head lastInFrames, List.head (List.drop 1 lastInFrames) ) of
-                        ( Just v1, Just v2 ) ->
-                            v2 - v1
-
-                        _ ->
-                            0.02
-
-                -- First Out oscillation: leave 1 going negative initially
-                firstOutFrames =
-                    List.take 2 elasticOutOscillations
-
-                firstOutVelocity =
-                    case ( List.head firstOutFrames, List.head (List.drop 1 firstOutFrames) ) of
-                        ( Just v1, Just v2 ) ->
-                            v2 - v1
-
-                        _ ->
-                            -0.02
-
                 -- Transition needs to smoothly connect from velocity matching last In to first Out
                 -- Linear transition since velocities match
                 transitionKeyframes =
@@ -1582,31 +1557,6 @@ generateKeyframes easing durationMs =
                 -- Out portion: Use duration-aware oscillations
                 elasticOutOscillations =
                     generateElasticOscillationsWithFrames params.out.elasticity scaledAmplitudeOut params.out.decay framesPerCycleOut
-
-                -- Calculate velocities at connection points
-                -- Last In oscillation: approach 0 from below (negative to 0)
-                lastInFrames =
-                    List.drop (List.length elasticInOscillations - 2) elasticInOscillations
-
-                lastInVelocity =
-                    case ( List.head lastInFrames, List.head (List.drop 1 lastInFrames) ) of
-                        ( Just v1, Just v2 ) ->
-                            v2 - v1
-
-                        _ ->
-                            0.02
-
-                -- First Out oscillation: leave 1 going negative initially
-                firstOutFrames =
-                    List.take 2 elasticOutOscillations
-
-                firstOutVelocity =
-                    case ( List.head firstOutFrames, List.head (List.drop 1 firstOutFrames) ) of
-                        ( Just v1, Just v2 ) ->
-                            v2 - v1
-
-                        _ ->
-                            -0.02
 
                 -- Transition needs to smoothly connect from velocity matching last In to first Out
                 -- Linear transition since velocities match

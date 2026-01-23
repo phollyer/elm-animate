@@ -1118,7 +1118,7 @@ decodeEvent value =
                             Err ("Property decode error: " ++ error)
 
                 "animationUpdate" ->
-                    case decodeAnimationStatus elementId payload of
+                    case decodeAnimationStatus payload of
                         Ok status ->
                             Ok (AnimationUpdate status)
 
@@ -1134,8 +1134,8 @@ decodeEvent value =
 
 {-| Decode animation status from JavaScript payload.
 -}
-decodeAnimationStatus : String -> Encode.Value -> Result String AnimationStatus
-decodeAnimationStatus elementId payload =
+decodeAnimationStatus : Encode.Value -> Result String AnimationStatus
+decodeAnimationStatus payload =
     case Decode.decodeValue (Decode.field "status" Decode.string) payload of
         Ok "started" ->
             Ok Started
