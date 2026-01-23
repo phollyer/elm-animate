@@ -37,10 +37,10 @@ import Anim.Easing exposing (Easing(..))
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Property.BackgroundColor as Color
 import Anim.Property.Opacity as Opacity
-import Anim.Property.Position as Position
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
 import Anim.Property.Size as Size
+import Anim.Property.Translate as Translate
 
 
 elementId : String
@@ -64,12 +64,12 @@ opacityAnimation speed easing targetOpacity =
         >> Opacity.easing easing
 
 
-positionAnimation : Float -> Easing -> ( Float, Float ) -> AnimBuilder -> Position.Builder
+positionAnimation : Float -> Easing -> ( Float, Float ) -> AnimBuilder -> Translate.Builder
 positionAnimation speed easing ( x, y ) =
-    Position.for elementId
-        >> Position.toXY x y
-        >> Position.speed speed
-        >> Position.easing easing
+    Translate.for elementId
+        >> Translate.toXY x y
+        >> Translate.speed speed
+        >> Translate.easing easing
 
 
 rotateAnimation : Float -> Easing -> Float -> AnimBuilder -> Rotate.Builder
@@ -100,7 +100,7 @@ init : AnimBuilder -> AnimBuilder
 init =
     Color.init elementId (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
         >> Opacity.init elementId 1.0
-        >> Position.initXY elementId 0 0
+        >> Translate.initXY elementId 0 0
         >> Rotate.initXYZ elementId 0 0 0
         >> Scale.initXYZ elementId 1.0 1.0 1.0
         >> Size.initWH elementId 80 80
@@ -112,7 +112,7 @@ Position moves first, then rotation, then scale with bouncy effects
 moveScaleRotate : AnimBuilder -> AnimBuilder
 moveScaleRotate =
     positionAnimation 200.0 EaseIn ( 200, 100 )
-        >> Position.build
+        >> Translate.build
         >> rotateAnimation 120.0 BounceOut 90
         >> Rotate.delay 500
         >> Rotate.build
@@ -129,7 +129,7 @@ fadeMove =
     opacityAnimation 2.0 EaseOut 0.3
         >> Opacity.build
         >> positionAnimation 200.0 EaseOut ( 250, 80 )
-        >> Position.build
+        >> Translate.build
 
 
 {-| Spin + Scale + Color change with coordinated timing
@@ -168,7 +168,7 @@ allProperties =
         >> opacityAnimation 1.2 EaseOut 0.6
         >> Opacity.build
         >> positionAnimation 200.0 EaseInOut ( 200, 200 )
-        >> Position.build
+        >> Translate.build
         >> rotateAnimation 200.0 EaseInOut 360
         >> Rotate.build
         >> scaleAnimation 1.5 EaseOut ( 1.3, 1.3 )
@@ -187,7 +187,7 @@ resetAll =
         >> opacityAnimation 1.5 EaseInOut 1.0
         >> Opacity.build
         >> positionAnimation 200.0 BounceOut ( 0, 0 )
-        >> Position.build
+        >> Translate.build
         >> rotateAnimation 180.0 EaseInOut 0
         >> Rotate.build
         >> scaleAnimation 1.5 EaseInOut ( 1.0, 1.0 )

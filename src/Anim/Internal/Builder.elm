@@ -58,7 +58,7 @@ module Anim.Internal.Builder exposing
     , restartPreviousAnimation
     , setScrollContainer
     , speed
-    , updateAnimationHistoryPositions
+    , updateAnimationHistoryTranslates
     , updateCurrentElement
     , updateElementConfig
       -- Animation History Management
@@ -68,11 +68,11 @@ import Anim.Color exposing (Color)
 import Anim.Easing exposing (Easing(..))
 import Anim.Internal.Properties.Color as Color
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
-import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
 import Anim.Internal.Properties.ScrollTarget exposing (ScrollTarget)
 import Anim.Internal.Properties.Size as Size exposing (Size)
+import Anim.Internal.Properties.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
 
@@ -149,7 +149,7 @@ type alias ElementConfig =
 
 
 type PropertyConfig
-    = PositionConfig (AnimationConfig Position)
+    = TranslateConfig (AnimationConfig Translate)
     | RotateConfig (AnimationConfig Rotate)
     | ScaleConfig (AnimationConfig Scale)
     | BackgroundColorConfig (AnimationConfig Color)
@@ -159,7 +159,7 @@ type PropertyConfig
 
 
 type ProcessedPropertyConfig
-    = ProcessedPositionConfig (ProcessedAnimationConfig Position)
+    = ProcessedTranslateConfig (ProcessedAnimationConfig Translate)
     | ProcessedRotateConfig (ProcessedAnimationConfig Rotate)
     | ProcessedScaleConfig (ProcessedAnimationConfig Scale)
     | ProcessedBackgroundColorConfig (ProcessedAnimationConfig Color)
@@ -212,7 +212,7 @@ type alias ProcessedAnimationConfig targetProperty =
 Updated from JavaScript during animation playback.
 -}
 type alias ElementEndStates =
-    { position : Maybe Position
+    { translate : Maybe Translate
     , rotate : Maybe Rotate
     , scale : Maybe Scale
     , backgroundColor : Maybe Color
@@ -449,8 +449,8 @@ markDirty (AnimBuilder data) =
 markPropertyDirty : PropertyConfig -> PropertyConfig
 markPropertyDirty property =
     case property of
-        PositionConfig config ->
-            PositionConfig { config | isDirty = True }
+        TranslateConfig config ->
+            TranslateConfig { config | isDirty = True }
 
         RotateConfig config ->
             RotateConfig { config | isDirty = True }
@@ -609,14 +609,14 @@ processStandardAnimation { config, globalData, defaultStart, distanceFn, duratio
 processProperty : BuilderData -> PropertyConfig -> Maybe ProcessedPropertyConfig
 processProperty globalData property =
     case property of
-        PositionConfig config ->
+        TranslateConfig config ->
             if config.isDirty then
                 Just <|
                     createDirtyConfig
                         { end = config.end
                         , propPerspective = config.perspective
                         , globalPerspective = globalData.globalPerspective
-                        , wrapper = ProcessedPositionConfig
+                        , wrapper = ProcessedTranslateConfig
                         }
 
             else
@@ -624,11 +624,11 @@ processProperty globalData property =
                     processStandardAnimation
                         { config = config
                         , globalData = globalData
-                        , defaultStart = Position.fromTuple ( 0.0, 0.0 )
-                        , distanceFn = Position.distance
-                        , durationFn = Position.duration
-                        , speedFn = Position.speed
-                        , wrapper = ProcessedPositionConfig
+                        , defaultStart = Translate.fromTuple ( 0.0, 0.0 )
+                        , distanceFn = Translate.distance
+                        , durationFn = Translate.duration
+                        , speedFn = Translate.speed
+                        , wrapper = ProcessedTranslateConfig
                         }
 
         RotateConfig config ->
@@ -815,7 +815,7 @@ resolvePerspective local global =
 
 
 type alias TransformParts =
-    { position : String
+    { translate : String
     , rotate : String
     , scale : String
     }
@@ -837,7 +837,7 @@ extractTransformsFromProperty properties =
 
 emptyTransformParts : TransformParts
 emptyTransformParts =
-    { position = ""
+    { translate = ""
     , rotate = ""
     , scale = ""
     }
@@ -848,8 +848,8 @@ emptyTransformParts =
 collectProcessedTransform : ProcessedPropertyConfig -> TransformParts -> TransformParts
 collectProcessedTransform property acc =
     case property of
-        ProcessedPositionConfig config ->
-            { acc | position = "translate3d(" ++ Position.toCssString config.end ++ ")" }
+        ProcessedTranslateConfig config ->
+            { acc | translate = "translate3d(" ++ Translate.toCssString config.end ++ ")" }
 
         ProcessedRotateConfig config ->
             { acc | rotate = Rotate.to3DCssString config.end }
@@ -870,12 +870,12 @@ collectProcessedTransform property acc =
 collectPropertyTransform : PropertyConfig -> TransformParts -> TransformParts
 collectPropertyTransform property acc =
     case property of
-        PositionConfig config ->
+        TranslateConfig config ->
             if config.isDirty then
                 acc
 
             else
-                { acc | position = "translate3d(" ++ Position.toCssString config.end ++ ")" }
+                { acc | translate = "translate3d(" ++ Translate.toCssString config.end ++ ")" }
 
         RotateConfig config ->
             if config.isDirty then
@@ -907,7 +907,7 @@ collectPropertyTransform property acc =
 extractPerspectiveFromProperty : ProcessedPropertyConfig -> Maybe { containerId : String, value : Float }
 extractPerspectiveFromProperty property =
     case property of
-        ProcessedPositionConfig config ->
+        ProcessedTranslateConfig config ->
             config.perspective
 
         ProcessedRotateConfig config ->
@@ -1208,11 +1208,11 @@ markAnimationAsExecuted elementId animId (AnimBuilder data) =
     AnimBuilder { data | animationHistories = updatedHistories }
 
 
-{-| Update animation history positions for an element after container resize.
-Updates both start and end positions in the current animation's ProcessedAnimationData.
+{-| Update animation history translates for an element after container resize.
+Updates both start and end translates in the current animation's ProcessedAnimationData.
 -}
-updateAnimationHistoryPositions : ElementId -> Position -> AnimBuilder -> AnimBuilder
-updateAnimationHistoryPositions elementId newPosition (AnimBuilder data) =
+updateAnimationHistoryTranslates : ElementId -> Translate -> AnimBuilder -> AnimBuilder
+updateAnimationHistoryTranslates elementId newTranslate (AnimBuilder data) =
     let
         updatedHistories =
             Dict.update elementId
@@ -1222,7 +1222,7 @@ updateAnimationHistoryPositions elementId newPosition (AnimBuilder data) =
                             Just currentAnim ->
                                 let
                                     updatedProcessedData =
-                                        updateProcessedDataPosition elementId newPosition currentAnim.processedData
+                                        updateProcessedDataTranslate elementId newTranslate currentAnim.processedData
 
                                     updatedCurrent =
                                         { currentAnim | processedData = updatedProcessedData }
@@ -1238,10 +1238,10 @@ updateAnimationHistoryPositions elementId newPosition (AnimBuilder data) =
     AnimBuilder { data | animationHistories = updatedHistories }
 
 
-{-| Helper to update position in ProcessedAnimationData
+{-| Helper to update translate in ProcessedAnimationData
 -}
-updateProcessedDataPosition : ElementId -> Position -> ProcessedAnimationData -> ProcessedAnimationData
-updateProcessedDataPosition elementId newPosition processedData =
+updateProcessedDataTranslate : ElementId -> Translate -> ProcessedAnimationData -> ProcessedAnimationData
+updateProcessedDataTranslate elementId newTranslate processedData =
     let
         updatedElements =
             Dict.update elementId
@@ -1252,11 +1252,11 @@ updateProcessedDataPosition elementId newPosition processedData =
                                 List.map
                                     (\prop ->
                                         case prop of
-                                            ProcessedPositionConfig config ->
-                                                ProcessedPositionConfig
+                                            ProcessedTranslateConfig config ->
+                                                ProcessedTranslateConfig
                                                     { config
-                                                        | start = Just newPosition
-                                                        , end = newPosition
+                                                        | start = Just newTranslate
+                                                        , end = newTranslate
                                                     }
 
                                             _ ->

@@ -14,26 +14,27 @@ module Anim.Internal.WAAPI exposing
     , encodeCommand
     , getCurrentBackgroundColor
     , getCurrentOpacity
-    , getCurrentPosition
     , getCurrentRotate
     , getCurrentScale
     , getCurrentSize
+    , getCurrentTranslate
     , getEndBackgroundColor
     , getEndOpacity
-    , getEndPosition
     , getEndRotate
     , getEndScale
     , getEndSize
+    , getEndTranslate
     , getOpacityRange
     , getRotateRange
     , getScaleRange
     , getSizeRange
     , getStartBackgroundColor
     , getStartOpacity
-    , getStartPosition
     , getStartRotate
     , getStartScale
     , getStartSize
+    , getStartTranslate
+    , getTranslateRange
     , init
     , initProperties
     , isElementComplete
@@ -56,18 +57,18 @@ import Anim.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builders.BackgroundColor as BackgroundColor
 import Anim.Internal.Builders.Opacity as Opacity
-import Anim.Internal.Builders.Position as Position
 import Anim.Internal.Builders.Rotate as Rotate
 import Anim.Internal.Builders.Scale as Scale
 import Anim.Internal.Builders.Size as Size
+import Anim.Internal.Builders.Translate as Translate
 import Anim.Internal.Easing as Easing
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Color as Color exposing (Color(..))
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
-import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
 import Anim.Internal.Properties.Size as Size exposing (Size)
+import Anim.Internal.Properties.Translate as Translate exposing (Translate)
 import Dict exposing (Dict)
 import Html
 import Html.Attributes
@@ -95,7 +96,7 @@ type AnimationStatus
 
 
 type alias ElementStates =
-    { position : Maybe Position
+    { translate : Maybe Translate
     , rotate : Maybe Rotate
     , scale : Maybe Scale
     , backgroundColor : Maybe Color
@@ -107,7 +108,7 @@ type alias ElementStates =
 
 emptyElementStates : ElementStates
 emptyElementStates =
-    { position = Nothing
+    { translate = Nothing
     , rotate = Nothing
     , scale = Nothing
     , backgroundColor = Nothing
@@ -250,7 +251,7 @@ animate portFunction (AnimState state) buildAnimation =
                                                     Nothing ->
                                                         old
                                         in
-                                        { position = orElse animationEndStates.position base.position
+                                        { translate = orElse animationEndStates.translate base.translate
                                         , rotate = orElse animationEndStates.rotate base.rotate
                                         , scale = orElse animationEndStates.scale base.scale
                                         , backgroundColor = orElse animationEndStates.backgroundColor base.backgroundColor
@@ -423,8 +424,8 @@ initProperties portFunction propertyInitializers =
 propertyTypeString : Builder.ProcessedPropertyConfig -> String
 propertyTypeString property =
     case property of
-        Builder.ProcessedPositionConfig _ ->
-            "position"
+        Builder.ProcessedTranslateConfig _ ->
+            "translate"
 
         Builder.ProcessedRotateConfig _ ->
             "rotate"
@@ -451,8 +452,8 @@ extractElementEndStates elementConfig =
         extractPropertyEndState : Builder.ProcessedPropertyConfig -> ElementStates -> ElementStates
         extractPropertyEndState property state =
             case property of
-                Builder.ProcessedPositionConfig config ->
-                    { state | position = Just config.end }
+                Builder.ProcessedTranslateConfig config ->
+                    { state | translate = Just config.end }
 
                 Builder.ProcessedRotateConfig config ->
                     { state | rotate = Just config.end }
@@ -481,8 +482,8 @@ extractElementStartStates elementConfig =
         extractPropertyStartState : Builder.ProcessedPropertyConfig -> ElementStates -> ElementStates
         extractPropertyStartState property state =
             case property of
-                Builder.ProcessedPositionConfig config ->
-                    { state | position = config.start }
+                Builder.ProcessedTranslateConfig config ->
+                    { state | translate = config.start }
 
                 Builder.ProcessedRotateConfig config ->
                     { state | rotate = config.start }
@@ -632,7 +633,7 @@ updateElementAnimation : AnimationUpdate -> ElementAnimation -> ElementAnimation
 updateElementAnimation animUpdate elementAnimation =
     let
         newCurrentStates =
-            { position = Just (Position.fromTriple ( animUpdate.positionX, animUpdate.positionY, animUpdate.positionZ ))
+            { translate = Just (Translate.fromTriple ( animUpdate.translateX, animUpdate.translateY, animUpdate.translateZ ))
             , rotate = Just (Rotate.fromTriple ( animUpdate.rotateX, animUpdate.rotateY, animUpdate.rotateZ ))
             , scale = Just (Scale.fromTriple ( animUpdate.scaleX, animUpdate.scaleY, animUpdate.scaleZ ))
             , opacity = Just (Opacity.fromFloat animUpdate.opacity)
@@ -781,8 +782,8 @@ calculateResizePosition animState { elementId, elementSize, oldContainerSize, ne
                 , endZ = endPos.z
                 }
             )
-            (getStartPosition elementId animState)
-            (getEndPosition elementId animState)
+            (getStartTranslate elementId animState)
+            (getEndTranslate elementId animState)
 
 
 {-| Update positions for multiple elements without creating animation history.
@@ -809,14 +810,14 @@ updatePositions updates (AnimState state) =
                         (Maybe.map
                             (\elementAnim ->
                                 let
-                                    newPosition =
-                                        Position.fromTriple ( posUpdate.endX, posUpdate.endY, posUpdate.endZ )
+                                    newTranslate =
+                                        Translate.fromTriple ( posUpdate.endX, posUpdate.endY, posUpdate.endZ )
 
                                     newCurrentStates =
                                         elementAnim.currentStates
 
                                     updatedCurrentStates =
-                                        { newCurrentStates | position = Just newPosition }
+                                        { newCurrentStates | translate = Just newTranslate }
                                 in
                                 { elementAnim | currentStates = updatedCurrentStates }
                             )
@@ -828,17 +829,17 @@ updatePositions updates (AnimState state) =
 
         -- DON'T update Builder during resize - we need to preserve original animation data
         -- so subsequent resizes can scale from the correct start/end positions
-        -- Helper to check if an element has an active position animation (running or paused)
-        hasActivePositionAnimation : String -> Bool
-        hasActivePositionAnimation elementId =
+        -- Helper to check if an element has an active translate animation (running or paused)
+        hasActiveTranslateAnimation : String -> Bool
+        hasActiveTranslateAnimation elementId =
             Dict.get elementId state.elementAnimations
-                |> Maybe.andThen (\elem -> Dict.get "position" elem.properties)
+                |> Maybe.andThen (\elem -> Dict.get "translate" elem.properties)
                 |> Maybe.map (\prop -> prop.status == Running || prop.status == Paused)
                 |> Maybe.withDefault False
 
         -- Separate updates into two categories
         ( animatedUpdates, directUpdates ) =
-            List.partition (\upd -> hasActivePositionAnimation upd.elementId) updates
+            List.partition (\upd -> hasActiveTranslateAnimation upd.elementId) updates
 
         -- Helper to encode animation update with full keyframe data (start and end positions)
         encodeAnimationUpdate : { elementId : String, startX : Float, startY : Float, startZ : Float, endX : Float, endY : Float, endZ : Float } -> Encode.Value
@@ -991,10 +992,10 @@ encodeInitProperties properties =
 encodeProperty : Builder.ProcessedPropertyConfig -> List ( String, Encode.Value )
 encodeProperty property =
     case property of
-        Builder.ProcessedPositionConfig config ->
+        Builder.ProcessedTranslateConfig config ->
             let
                 pos =
-                    Position.toRecord config.end
+                    Translate.toRecord config.end
             in
             [ ( "x", Encode.float pos.x )
             , ( "y", Encode.float pos.y )
@@ -1198,36 +1199,36 @@ getOpacityRange elementId animState =
 
 
 
--- Position
+-- Translate
 
 
-getStartPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getStartPosition elementId animState =
-    getPositionRange elementId animState
-        |> getStartWithDefault Position.default
-        |> Maybe.map Position.toRecord
+getStartTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getStartTranslate elementId animState =
+    getTranslateRange elementId animState
+        |> getStartWithDefault Translate.default
+        |> Maybe.map Translate.toRecord
 
 
-getEndPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getEndPosition elementId animState =
-    getPositionRange elementId animState
+getEndTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getEndTranslate elementId animState =
+    getTranslateRange elementId animState
         |> Maybe.map .end
-        |> Maybe.map Position.toRecord
+        |> Maybe.map Translate.toRecord
 
 
-getCurrentPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getCurrentPosition elementId (AnimState state) =
+getCurrentTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getCurrentTranslate elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
-        |> Maybe.andThen (.currentStates >> .position)
-        |> Maybe.map Position.toRecord
+        |> Maybe.andThen (.currentStates >> .translate)
+        |> Maybe.map Translate.toRecord
 
 
-getPositionRange : String -> AnimState -> Maybe { start : Maybe Position, end : Position }
-getPositionRange elementId animState =
+getTranslateRange : String -> AnimState -> Maybe { start : Maybe Translate, end : Translate }
+getTranslateRange elementId animState =
     getPropertyRange elementId animState <|
         \prop ->
             case prop of
-                Builder.ProcessedPositionConfig config ->
+                Builder.ProcessedTranslateConfig config ->
                     Just { start = config.start, end = config.end }
 
                 _ ->
@@ -1364,9 +1365,9 @@ statusUpdateDecoder =
 
 type alias AnimationUpdate =
     { elementId : String
-    , positionX : Float
-    , positionY : Float
-    , positionZ : Float
+    , translateX : Float
+    , translateY : Float
+    , translateZ : Float
     , opacity : Float
     , rotateX : Float
     , rotateY : Float
@@ -1387,9 +1388,9 @@ animationUpdateDecoder : Decoder AnimationUpdate
 animationUpdateDecoder =
     Decode.succeed AnimationUpdate
         |> andMap (Decode.field "elementId" Decode.string)
-        |> andMap (Decode.at [ "position", "x" ] Decode.float)
-        |> andMap (Decode.at [ "position", "y" ] Decode.float)
-        |> andMap (Decode.at [ "position", "z" ] Decode.float)
+        |> andMap (Decode.at [ "translate", "x" ] Decode.float)
+        |> andMap (Decode.at [ "translate", "y" ] Decode.float)
+        |> andMap (Decode.at [ "translate", "z" ] Decode.float)
         |> andMap (Decode.field "opacity" Decode.float)
         |> andMap (Decode.at [ "rotate", "x" ] Decode.float)
         |> andMap (Decode.at [ "rotate", "y" ] Decode.float)
@@ -1499,17 +1500,17 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
             ( "version", Encode.int version )
     in
     case property of
-        Builder.ProcessedPositionConfig config ->
+        Builder.ProcessedTranslateConfig config ->
             let
                 ( endX, endY, endZ ) =
-                    Position.toTriple config.end
+                    Translate.toTriple config.end
 
                 ( startXField, startYField, startZField ) =
                     case config.start of
                         Just start ->
                             let
                                 ( sx, sy, sz ) =
-                                    Position.toTriple start
+                                    Translate.toTriple start
                             in
                             ( ( "startX", Encode.float sx )
                             , ( "startY", Encode.float sy )
@@ -1523,7 +1524,7 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                             )
 
                 baseFields =
-                    [ ( "type", Encode.string "position" )
+                    [ ( "type", Encode.string "translate" )
                     , versionField
                     , ( "endX", Encode.float endX )
                     , ( "endY", Encode.float endY )
@@ -1731,17 +1732,17 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
 encodeProcessedPropertyConfig : Builder.ProcessedPropertyConfig -> Encode.Value
 encodeProcessedPropertyConfig property =
     case property of
-        Builder.ProcessedPositionConfig config ->
+        Builder.ProcessedTranslateConfig config ->
             let
                 ( endX, endY, endZ ) =
-                    Position.toTriple config.end
+                    Translate.toTriple config.end
 
                 ( startXField, startYField, startZField ) =
                     case config.start of
                         Just start ->
                             let
                                 ( sx, sy, sz ) =
-                                    Position.toTriple start
+                                    Translate.toTriple start
                             in
                             ( ( "startX", Encode.float sx )
                             , ( "startY", Encode.float sy )
@@ -1755,7 +1756,7 @@ encodeProcessedPropertyConfig property =
                             )
 
                 baseFields =
-                    [ ( "type", Encode.string "position" )
+                    [ ( "type", Encode.string "translate" )
                     , ( "endX", Encode.float endX )
                     , ( "endY", Encode.float endY )
                     , ( "endZ", Encode.float endZ )
@@ -2280,18 +2281,18 @@ addResetProperties : String -> ElementStates -> ElementStates -> AnimBuilder -> 
 addResetProperties elementId endStates startStates builderState =
     let
         -- Use the actual stored start states to reset each property that was animated
-        builderWithPosition =
-            case ( endStates.position, startStates.position ) of
-                ( Just _, Just startPosition ) ->
+        builderWithTranslate =
+            case ( endStates.translate, startStates.translate ) of
+                ( Just _, Just startTranslate ) ->
                     let
                         ( startX, startY, startZ ) =
-                            Position.toTriple startPosition
+                            Translate.toTriple startTranslate
                     in
                     builderState
-                        |> Position.for elementId
-                        |> Position.toXYZ startX startY startZ
-                        -- Only set target, let system inject current position as start
-                        |> Position.build
+                        |> Translate.for elementId
+                        |> Translate.toXYZ startX startY startZ
+                        -- Only set target, let system inject current translate as start
+                        |> Translate.build
 
                 _ ->
                     builderState
@@ -2299,13 +2300,13 @@ addResetProperties elementId endStates startStates builderState =
         builderWithOpacity =
             case ( endStates.opacity, startStates.opacity ) of
                 ( Just _, Just startOpacity ) ->
-                    builderWithPosition
+                    builderWithTranslate
                         |> Opacity.for elementId
                         |> Opacity.to startOpacity
                         |> Opacity.build
 
                 _ ->
-                    builderWithPosition
+                    builderWithTranslate
 
         builderWithScale =
             case ( endStates.scale, startStates.scale ) of

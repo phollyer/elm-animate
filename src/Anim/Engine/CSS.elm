@@ -16,7 +16,7 @@ module Anim.Engine.CSS exposing
     , anyRunning, isRunning, allComplete, isComplete
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
     , getStartOpacity, getEndOpacity, getCurrentOpacity
-    , getStartPosition, getEndPosition, getCurrentPosition
+    , getStartTranslate, getEndTranslate, getCurrentTranslate
     , getStartRotate, getEndRotate, getCurrentRotate
     , getStartScale, getEndScale, getCurrentScale
     , getStartSize, getEndSize, getCurrentSize
@@ -204,9 +204,9 @@ which provide real-time access to animated property values.
 @docs getStartOpacity, getEndOpacity, getCurrentOpacity
 
 
-## Position
+## Translate
 
-@docs getStartPosition, getEndPosition, getCurrentPosition
+@docs getStartTranslate, getEndTranslate, getCurrentTranslate
 
 
 ## Rotate
@@ -230,10 +230,10 @@ import Anim.Easing exposing (Easing)
 import Anim.Internal.CSS as InternalCSS exposing (ElementState(..), Event(..))
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Opacity as Opacity
-import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
+import Anim.Internal.Properties.Translate as Translate
 import Browser exposing (UrlRequest(..))
 import Html
 import Html.Attributes
@@ -241,12 +241,12 @@ import Html.Attributes
 
 {-| Transform property ordering.
 
-The default (recommended) transform order is: Position → Rotate → Scale.
+The default (recommended) transform order is: Translate → Rotate → Scale.
 
 [animate](#animate) uses this transform order which should
 be suitable for most use cases:
 
-  - Position sets the base location
+  - Translate sets the base location
   - Rotation happens around that position
   - Scale happens last to avoid affecting rotation radius
 
@@ -255,7 +255,7 @@ as the order of transforms affects how they are applied.
 
 -}
 type TransformOrder
-    = Position
+    = Translate
     | Rotate
     | Scale
 
@@ -329,8 +329,8 @@ animateOrder order =
     let
         mapOrder transform =
             case transform of
-                Position ->
-                    InternalCSS.Position
+                Translate ->
+                    InternalCSS.Translate
 
                 Rotate ->
                     InternalCSS.Rotate
@@ -637,16 +637,16 @@ getCurrent elementId default animState range =
             )
 
 
-{-| Get the start position of an element being animated.
+{-| Get the start translate of an element being animated.
 
-Returns `Nothing` if the element has no position animation.
+Returns `Nothing` if the element has no translate animation.
 
 Returns `Just { x = 0, y = 0, z = 0 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getStartPosition elementId animState =
-    InternalCSS.getPositionRange elementId animState
+getStartTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getStartTranslate elementId animState =
+    InternalCSS.getTranslateRange elementId animState
         |> Maybe.map
             (\{ start } ->
                 case start of
@@ -654,37 +654,37 @@ getStartPosition elementId animState =
                         { x = 0, y = 0, z = 0 }
 
                     Just startPos ->
-                        Position.toRecord startPos
+                        Translate.toRecord startPos
             )
 
 
-{-| Get the end position of an element being animated.
+{-| Get the end translate of an element being animated.
 
-Returns `Nothing` if the element has no position animation.
+Returns `Nothing` if the element has no translate animation.
 
 -}
-getEndPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getEndPosition elementId animState =
-    InternalCSS.getPositionRange elementId animState
+getEndTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getEndTranslate elementId animState =
+    InternalCSS.getTranslateRange elementId animState
         |> Maybe.map .end
-        |> Maybe.map Position.toRecord
+        |> Maybe.map Translate.toRecord
 
 
-{-| Get the current position of an element based on its animation state.
+{-| Get the current translate of an element based on its animation state.
 
-Returns `Nothing` if the element has no position animation.
+Returns `Nothing` if the element has no translate animation.
 
-Returns the start position if the animation has not started yet.
+Returns the start translate if the animation has not started yet.
 
-Returns the end position if the animation is running or has completed.
+Returns the end translate if the animation is running or has completed.
 
 -}
-getCurrentPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getCurrentPosition elementId animState =
-    InternalCSS.getPositionRange elementId animState
+getCurrentTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getCurrentTranslate elementId animState =
+    InternalCSS.getTranslateRange elementId animState
         |> Maybe.andThen
-            (getCurrent elementId Position.default animState)
-        |> Maybe.map Position.toRecord
+            (getCurrent elementId Translate.default animState)
+        |> Maybe.map Translate.toRecord
 
 
 {-| Get the start scale of an element being animated.

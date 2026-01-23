@@ -26,7 +26,7 @@ USAGE EXAMPLES:
 
 import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.CSS as CSS
-import Anim.Property.Position as Position
+import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Choreography as Choreography
 import Common.Colors as Colors

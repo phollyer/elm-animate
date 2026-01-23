@@ -12,7 +12,7 @@ module Anim.Engine.Sub exposing
     , anyRunning, isRunning, allComplete, isComplete
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
     , getStartOpacity, getEndOpacity, getCurrentOpacity
-    , getStartPosition, getEndPosition, getCurrentPosition
+    , getStartTranslate, getEndTranslate, getCurrentTranslate
     , getStartRotate, getEndRotate, getCurrentRotate
     , getStartScale, getEndScale, getCurrentScale
     , getStartSize, getEndSize, getCurrentSize
@@ -118,9 +118,9 @@ during animation playback.
 @docs getStartOpacity, getEndOpacity, getCurrentOpacity
 
 
-## Position
+## Translate
 
-@docs getStartPosition, getEndPosition, getCurrentPosition
+@docs getStartTranslate, getEndTranslate, getCurrentTranslate
 
 
 ## Rotate
@@ -144,10 +144,10 @@ import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Opacity as Opacity
-import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
+import Anim.Internal.Properties.Translate as Translate
 import Anim.Internal.Sub as InternalSub
 import Dict
 import Html
@@ -567,16 +567,16 @@ getCurrentOpacity elementId animState =
         |> Maybe.map Opacity.toFloat
 
 
-{-| Get the start position of an element being animated.
+{-| Get the start translate of an element being animated.
 
-Returns `Nothing` if the element has no position animation.
+Returns `Nothing` if the element has no translate animation.
 
 Returns `Just {x = 0, y = 0, z = 0}` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getStartPosition elementId animState =
-    InternalSub.getPositionRange elementId animState
+getStartTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getStartTranslate elementId animState =
+    InternalSub.getTranslateRange elementId animState
         |> Maybe.map
             (\{ start } ->
                 case start of
@@ -584,37 +584,37 @@ getStartPosition elementId animState =
                         { x = 0, y = 0, z = 0 }
 
                     Just startPos ->
-                        Position.toRecord startPos
+                        Translate.toRecord startPos
             )
 
 
-{-| Get the end position of an element being animated.
+{-| Get the end translate of an element being animated.
 
-Returns `Nothing` if the element has no position animation.
+Returns `Nothing` if the element has no translate animation.
 
 -}
-getEndPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getEndPosition elementId animState =
-    InternalSub.getPositionRange elementId animState
+getEndTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getEndTranslate elementId animState =
+    InternalSub.getTranslateRange elementId animState
         |> Maybe.map .end
-        |> Maybe.map Position.toRecord
+        |> Maybe.map Translate.toRecord
 
 
-{-| Get the current position of an element based on its animation state.
+{-| Get the current translate of an element based on its animation state.
 
-Returns `Nothing` if the element has no position animation.
+Returns `Nothing` if the element has no translate animation.
 
-Returns the start position if the animation has not started yet.
+Returns the start translate if the animation has not started yet.
 
-Returns the current interpolated position if the animation is running.
+Returns the current interpolated translate if the animation is running.
 
-Returns the end position if the animation has completed.
+Returns the end translate if the animation has completed.
 
 -}
-getCurrentPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getCurrentPosition elementId animState =
-    InternalSub.getPosition elementId animState
-        |> Maybe.map Position.toRecord
+getCurrentTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getCurrentTranslate elementId animState =
+    InternalSub.getTranslate elementId animState
+        |> Maybe.map Translate.toRecord
 
 
 {-| Get the start rotation of an element being animated.

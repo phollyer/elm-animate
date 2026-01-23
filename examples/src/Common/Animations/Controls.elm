@@ -15,7 +15,7 @@ animation logic works identically across all engines!
 
 import Anim.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
-import Anim.Property.Position as Position
+import Anim.Property.Translate as Translate
 
 
 elementId : String
@@ -29,14 +29,14 @@ init animationAreaWidth =
         xPos =
             toFloat animationAreaWidth / 2 - 25
     in
-    Position.initXY elementId xPos 50
+    Translate.initXY elementId xPos 50
 
 
 animate : AnimBuilder -> AnimBuilder
 animate =
-    Position.for elementId
-        >> Position.fromY 50
-        >> Position.toY 300
-        >> Position.speed 200
-        >> Position.easing BounceOut
-        >> Position.build
+    Translate.for elementId
+        >> Translate.fromY 50
+        >> Translate.toY 300
+        >> Translate.speed 200
+        >> Translate.easing BounceOut
+        >> Translate.build

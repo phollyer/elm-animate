@@ -25,9 +25,9 @@ BENEFITS:
 
 import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.WAAPI as WAAPI
-import Anim.Property.Position as Position
+import Anim.Property.Translate as Translate
 import Browser exposing (Document)
-import Common.Animations.Position as PositionAnim
+import Common.Animations.Translate as PositionAnim
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, centerY, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)

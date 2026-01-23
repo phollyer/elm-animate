@@ -13,7 +13,7 @@
         "Anim.Attributes",
         "Anim.Color",
         "Anim.Easing",
-        "Anim.Property.Position",
+        "Anim.Property.Translate",
         "Anim.Property.Rotate",
         "Anim.Property.Scale",
         "Anim.Property.Opacity",

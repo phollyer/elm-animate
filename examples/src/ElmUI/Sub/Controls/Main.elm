@@ -16,9 +16,9 @@ All controls work with frame-rate independent subscription-based animations.
 -}
 
 import Anim.Engine.Sub as Sub
-import Anim.Property.Position as Position
+import Anim.Property.Translate as Translate
 import Browser exposing (Document)
-import Common.Animations.Position as PositionAnim
+import Common.Animations.Translate as PositionAnim
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, centerY, column, el, fill, height, htmlAttribute, maximum, padding, px, spacing, text, width)
@@ -64,7 +64,7 @@ init _ =
         initialAnimations =
             Sub.init
                 |> Sub.builder
-                |> Position.initXY elementId 50 50
+                |> Translate.initXY elementId 50 50
                 |> Sub.animate
     in
     ( { animations = initialAnimations

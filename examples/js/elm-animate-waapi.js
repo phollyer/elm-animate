@@ -135,7 +135,7 @@ window.ElmAnimateWAAPI = (function () {
 
             // Create new animation for this property
             let animation;
-            if (propType === 'position' || propType === 'scale' || propType === 'rotate') {
+            if (propType === 'translate' || propType === 'scale' || propType === 'rotate') {
                 // For transform properties, create individual transform animation
                 animation = createTransformPropertyAnimation(element, property);
             } else {
@@ -293,7 +293,7 @@ window.ElmAnimateWAAPI = (function () {
     }
 
     /**
-     * Create animation for a single transform property (position, scale, or rotate)
+     * Create animation for a single transform property (translate, scale, or rotate)
      * Used for property-level tracking where each transform property is animated independently
      */
     function createTransformPropertyAnimation(element, property) {
@@ -308,7 +308,7 @@ window.ElmAnimateWAAPI = (function () {
         let startTransform, endTransform;
 
         switch (property.type) {
-            case 'position':
+            case 'translate':
                 const startX = property.startX != null ? property.startX : currentTransform.x;
                 const startY = property.startY != null ? property.startY : currentTransform.y;
                 const startZ = property.startZ != null ? property.startZ : currentTransform.z;
@@ -513,7 +513,7 @@ window.ElmAnimateWAAPI = (function () {
     function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ) {
         const parts = [];
 
-        // Position: use translate3d for hardware acceleration
+        // Translate: use translate3d for hardware acceleration
         if (x !== 0 || y !== 0 || z !== 0) {
             parts.push(`translate3d(${x}px, ${y}px, ${z}px)`);
         }
@@ -659,7 +659,7 @@ window.ElmAnimateWAAPI = (function () {
 
                     const propertyData = {
                         elementId: elementId,
-                        position: {
+                        translate: {
                             x: transformState.x,
                             y: transformState.y,
                             z: transformState.z
@@ -748,7 +748,7 @@ window.ElmAnimateWAAPI = (function () {
 
                 const finalPropertyData = {
                     elementId: elementId,
-                    position: {
+                    translate: {
                         x: finalState.x,
                         y: finalState.y,
                         z: finalState.z
@@ -810,7 +810,7 @@ window.ElmAnimateWAAPI = (function () {
 
                 const currentPropertyData = {
                     elementId: elementId,
-                    position: {
+                    translate: {
                         x: currentState.x,
                         y: currentState.y,
                         z: currentState.z
@@ -938,7 +938,7 @@ window.ElmAnimateWAAPI = (function () {
 
 
     /**
-     * Update animation targets for elements with active position animations
+     * Update animation targets for elements with active translate animations
      * Called during resize when animations are running/paused
      * ARCHITECTURE: Uses setKeyframes() to update animation with fully scaled start and end positions
      * This preserves playState, currentTime, and event listeners automatically
@@ -953,14 +953,14 @@ window.ElmAnimateWAAPI = (function () {
             }
 
             const elementAnims = activeAnimations.get(update.elementId);
-            if (!elementAnims || !elementAnims.has('position')) {
-                console.warn(`No position animation found for ${update.elementId} - Elm state may be out of sync`);
+            if (!elementAnims || !elementAnims.has('translate')) {
+                console.warn(`No translate animation found for ${update.elementId} - Elm state may be out of sync`);
                 return;
             }
 
-            const posAnimData = elementAnims.get('position');
-            const animation = posAnimData.animation;
-            const cachedEasingKeyframes = posAnimData.easingKeyframes;
+            const translateAnimData = elementAnims.get('translate');
+            const animation = translateAnimData.animation;
+            const cachedEasingKeyframes = translateAnimData.easingKeyframes;
 
             // Extract scaled start and end positions from Elm
             const startPos = update.startPosition;

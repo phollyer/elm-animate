@@ -1,5 +1,5 @@
 module Anim.Attributes exposing
-    ( position, positionX, positionY, positionZ, positionXY, positionXZ, positionYZ, positionXYZ
+    ( translate, translateX, translateY, translateZ, translateXY, translateXZ, translateYZ, translateXYZ
     , rotate, rotateX, rotateY, rotateZ, rotateXY, rotateXZ, rotateYZ, rotateXYZ
     , scale, scaleX, scaleY, scaleZ, scaleXY, scaleXZ, scaleYZ, scaleXYZ
     , transform
@@ -19,9 +19,9 @@ Using these attribute helpers allows you to define the initial state of elements
 Whether you set start values in the animation builder or via these attributes is purely a matter of preference.
 
 
-# Position
+# Translate
 
-@docs position, positionX, positionY, positionZ, positionXY, positionXZ, positionYZ, positionXYZ
+@docs translate, translateX, translateY, translateZ, translateXY, translateXZ, translateYZ, translateXYZ
 
 
 # Rotate
@@ -47,16 +47,16 @@ import Html.Attributes exposing (style)
 
 
 
--- POSITION
+-- TRANSLATE
 
 
-{-| Set an element's position using CSS transform with a record.
+{-| Set an element's translation using CSS transform with a record.
 
-    div [ id "ball", position { x = 100, y = 50, z = 0 } ] [ text "🏀" ]
+    div [ id "ball", translate { x = 100, y = 50, z = 0 } ] [ text "🏀" ]
 
 -}
-position : { x : Float, y : Float, z : Float } -> Html.Attribute msg
-position { x, y, z } =
+translate : { x : Float, y : Float, z : Float } -> Html.Attribute msg
+translate { x, y, z } =
     style "transform"
         ("translate3d("
             ++ String.fromFloat x
@@ -68,76 +68,76 @@ position { x, y, z } =
         )
 
 
-{-| Set an element's X position.
+{-| Set an element's X translation.
 
-    div [ id "ball", positionX 100 ] [ text "🏀" ]
+    div [ id "ball", translateX 100 ] [ text "🏀" ]
 
 -}
-positionX : Float -> Html.Attribute msg
-positionX x =
+translateX : Float -> Html.Attribute msg
+translateX x =
     style "transform" ("translateX(" ++ String.fromFloat x ++ "px)")
 
 
-{-| Set an element's Y position.
+{-| Set an element's Y translation.
 
-    div [ id "ball", positionY 50 ] [ text "🏀" ]
+    div [ id "ball", translateY 50 ] [ text "🏀" ]
 
 -}
-positionY : Float -> Html.Attribute msg
-positionY y =
+translateY : Float -> Html.Attribute msg
+translateY y =
     style "transform" ("translateY(" ++ String.fromFloat y ++ "px)")
 
 
-{-| Set an element's Z position.
+{-| Set an element's Z translation.
 
-    div [ id "ball", positionZ 10 ] [ text "🏀" ]
+    div [ id "ball", translateZ 10 ] [ text "🏀" ]
 
 -}
-positionZ : Float -> Html.Attribute msg
-positionZ z =
+translateZ : Float -> Html.Attribute msg
+translateZ z =
     style "transform" ("translateZ(" ++ String.fromFloat z ++ "px)")
 
 
-{-| Set an element's X and Y position.
+{-| Set an element's X and Y translation.
 
-    div [ id "ball", positionXY 100 50 ] [ text "🏀" ]
+    div [ id "ball", translateXY 100 50 ] [ text "🏀" ]
 
 -}
-positionXY : Float -> Float -> Html.Attribute msg
-positionXY x y =
+translateXY : Float -> Float -> Html.Attribute msg
+translateXY x y =
     style "transform"
         ("translate(" ++ String.fromFloat x ++ "px, " ++ String.fromFloat y ++ "px)")
 
 
-{-| Set an element's X and Z position.
+{-| Set an element's X and Z translation.
 
-    div [ id "ball", positionXZ 100 10 ] [ text "🏀" ]
+    div [ id "ball", translateXZ 100 10 ] [ text "🏀" ]
 
 -}
-positionXZ : Float -> Float -> Html.Attribute msg
-positionXZ x z =
+translateXZ : Float -> Float -> Html.Attribute msg
+translateXZ x z =
     style "transform"
         ("translateX(" ++ String.fromFloat x ++ "px) translateZ(" ++ String.fromFloat z ++ "px)")
 
 
-{-| Set an element's Y and Z position.
+{-| Set an element's Y and Z translation.
 
-    div [ id "ball", positionYZ 50 10 ] [ text "🏀" ]
+    div [ id "ball", translateYZ 50 10 ] [ text "🏀" ]
 
 -}
-positionYZ : Float -> Float -> Html.Attribute msg
-positionYZ y z =
+translateYZ : Float -> Float -> Html.Attribute msg
+translateYZ y z =
     style "transform"
         ("translateY(" ++ String.fromFloat y ++ "px) translateZ(" ++ String.fromFloat z ++ "px)")
 
 
-{-| Set an element's X, Y, and Z position.
+{-| Set an element's X, Y, and Z translation.
 
-    div [ id "ball", positionXYZ 100 50 0 ] [ text "🏀" ]
+    div [ id "ball", translateXYZ 100 50 0 ] [ text "🏀" ]
 
 -}
-positionXYZ : Float -> Float -> Float -> Html.Attribute msg
-positionXYZ x y z =
+translateXYZ : Float -> Float -> Float -> Html.Attribute msg
+translateXYZ x y z =
     style "transform"
         ("translate3d("
             ++ String.fromFloat x
@@ -398,8 +398,8 @@ Transform order matters - this uses the standard order: translate → rotate →
 
 **Note:** For simpler cases, use the individual helpers:
 
-    -- Position only
-    div [ positionXY 100 50 ] []
+    -- Translate only
+    div [ translateXY 100 50 ] []
 
     -- Rotation only
     div [ rotateZ 45 ] []

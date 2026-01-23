@@ -13,14 +13,14 @@ module Anim.Internal.Sub exposing
     , getBackgroundColorRange
     , getOpacity
     , getOpacityRange
-    , getPosition
-    , getPositionRange
     , getRotate
     , getRotateRange
     , getScale
     , getScaleRange
     , getSize
     , getSizeRange
+    , getTranslate
+    , getTranslateRange
     , htmlAttributes
     , init
     , isAnimationRunning
@@ -44,10 +44,10 @@ import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Color as Color exposing (Color(..))
 import Anim.Internal.Properties.FontColor as FontColor
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
-import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
 import Anim.Internal.Properties.Size as Size exposing (Size)
+import Anim.Internal.Properties.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Events
 import Dict exposing (Dict)
@@ -64,7 +64,7 @@ type alias ElementId =
 
 
 type Animation
-    = PositionAnimation Position
+    = TranslateAnimation Translate
     | RotateAnimation Rotate
     | ScaleAnimation Scale
     | BackgroundColorAnimation Color
@@ -132,7 +132,7 @@ animate builder_ =
             extractCurrentValuesFromBuilder builderWithCache
 
         startValues =
-            { position = Maybe.withDefault (Position.default |> Position.toRecord) currentValues.position
+            { translate = Maybe.withDefault (Translate.default |> Translate.toRecord) currentValues.translate
             , rotate = Maybe.withDefault (Rotate.default |> Rotate.toRecord) currentValues.rotate
             , scale = Maybe.withDefault (Scale.default |> Scale.toRecord) currentValues.scale
             , backgroundColor = Maybe.withDefault BackgroundColor.default currentValues.color
@@ -234,10 +234,10 @@ htmlAttributes elementId (AnimState state) =
                 transformParts =
                     Builder.extractTransformsFromProcessed currentProperties
 
-                -- Build transform string in fixed order: position, rotate, scale
+                -- Build transform string in fixed order: translate, rotate, scale
                 transformString =
                     String.trim
-                        (transformParts.position
+                        (transformParts.translate
                             ++ " "
                             ++ transformParts.rotate
                             ++ " "
@@ -270,8 +270,8 @@ getCurrentPropertyValue propertyState =
             getCurrentValue propertyState
     in
     case currentValue of
-        PositionAnimation pos ->
-            Builder.ProcessedPositionConfig
+        TranslateAnimation pos ->
+            Builder.ProcessedTranslateConfig
                 { start = Just pos
                 , end = pos
                 , duration = 0
@@ -486,12 +486,12 @@ getOpacity =
         )
 
 
-getPosition : String -> AnimState -> Maybe Position
-getPosition =
-    getPropertyValue "position"
+getTranslate : String -> AnimState -> Maybe Translate
+getTranslate =
+    getPropertyValue "translate"
         (\anim ->
             case anim of
-                PositionAnimation pos ->
+                TranslateAnimation pos ->
                     Just pos
 
                 _ ->
@@ -499,12 +499,12 @@ getPosition =
         )
 
 
-getPositionRange : String -> AnimState -> Maybe { start : Maybe Position, end : Position }
-getPositionRange =
+getTranslateRange : String -> AnimState -> Maybe { start : Maybe Translate, end : Translate }
+getTranslateRange =
     getPropertyRange
         (\prop ->
             case prop of
-                Builder.ProcessedPositionConfig config ->
+                Builder.ProcessedTranslateConfig config ->
                     Just { start = config.start, end = config.end }
 
                 _ ->
@@ -627,7 +627,7 @@ setInitialValues : AnimState -> String -> ElementAnimation -> AnimBuilder -> Ani
 setInitialValues animationState elementId _ builderAcc =
     let
         funcList =
-            [ mapCurrentValue getPosition initPosition
+            [ mapCurrentValue getTranslate initTranslate
             , mapCurrentValue getSize initSize
             , mapCurrentValue getScale initScale
             , mapCurrentValue getRotate initRotate
@@ -697,13 +697,13 @@ initOpacity animBuilder maybeOpacity =
             animBuilder
 
 
-initPosition : AnimBuilder -> Maybe Position -> AnimBuilder
-initPosition animBuilder maybePos =
+initTranslate : AnimBuilder -> Maybe Translate -> AnimBuilder
+initTranslate animBuilder maybePos =
     case maybePos of
         Just pos ->
             let
-                positionConfig =
-                    Builder.PositionConfig
+                translateConfig =
+                    Builder.TranslateConfig
                         { start = Just pos
                         , end = pos
                         , duration = 0
@@ -716,7 +716,7 @@ initPosition animBuilder maybePos =
                         , isDirty = False
                         }
             in
-            PropertyBuilder.upsert positionConfig animBuilder
+            PropertyBuilder.upsert translateConfig animBuilder
 
         Nothing ->
             animBuilder
@@ -855,14 +855,14 @@ createOpacitySteps start target frames easingFunction =
     List.map (OpacityAnimation << Opacity.fromFloat) steps
 
 
-createPositionSteps : Position.Position -> Position.Position -> Int -> (Float -> Float) -> List Animation
-createPositionSteps startPos endPos frames easingFunction =
+createTranslateSteps : Translate.Translate -> Translate.Translate -> Int -> (Float -> Float) -> List Animation
+createTranslateSteps startPos endPos frames easingFunction =
     let
         ( startX, startY ) =
-            Position.toTuple startPos
+            Translate.toTuple startPos
 
         ( endX, endY ) =
-            Position.toTuple endPos
+            Translate.toTuple endPos
 
         stepsX =
             case AnimationCore.animationStepsWithFrames frames easingFunction startX endX of
@@ -883,7 +883,7 @@ createPositionSteps startPos endPos frames easingFunction =
         steps =
             List.map2 Tuple.pair stepsX stepsY
     in
-    List.map (PositionAnimation << Position.fromTuple) steps
+    List.map (TranslateAnimation << Translate.fromTuple) steps
 
 
 createRotateSteps : Rotate.Rotate -> Rotate.Rotate -> Int -> (Float -> Float) -> List Animation
@@ -973,7 +973,7 @@ createSizeSteps startSize endSize frames easingFunction =
 
 
 type alias PropertyValues =
-    { position : Maybe { x : Float, y : Float, z : Float }
+    { translate : Maybe { x : Float, y : Float, z : Float }
     , rotate : Maybe { x : Float, y : Float, z : Float }
     , scale : Maybe { x : Float, y : Float, z : Float }
     , color : Maybe Color
@@ -985,7 +985,7 @@ type alias PropertyValues =
 
 propertyValuesEmpty : PropertyValues
 propertyValuesEmpty =
-    { position = Nothing
+    { translate = Nothing
     , rotate = Nothing
     , scale = Nothing
     , color = Nothing
@@ -996,7 +996,7 @@ propertyValuesEmpty =
 
 
 type alias UnwrappedPropertyValues =
-    { position : { x : Float, y : Float, z : Float }
+    { translate : { x : Float, y : Float, z : Float }
     , rotate : { x : Float, y : Float, z : Float }
     , scale : { x : Float, y : Float, z : Float }
     , backgroundColor : Color
@@ -1039,9 +1039,9 @@ extractFromProperty property acc =
             else
                 acc
 
-        Builder.ProcessedPositionConfig config ->
+        Builder.ProcessedTranslateConfig config ->
             if config.duration == 0 then
-                { acc | position = Just <| Position.toRecord config.end }
+                { acc | translate = Just <| Translate.toRecord config.end }
 
             else
                 acc
@@ -1127,21 +1127,21 @@ createPropertyAnimState startValues property =
             }
     in
     case property of
-        Builder.ProcessedPositionConfig config ->
+        Builder.ProcessedTranslateConfig config ->
             let
                 actualStart =
-                    Maybe.withDefault (Position.fromRecord startValues.position) config.start
+                    Maybe.withDefault (Translate.fromRecord startValues.translate) config.start
             in
             Just <|
                 buildPropertyAnimation
-                    "position"
+                    "translate"
                     actualStart
                     config.end
                     config.duration
                     config.delay
                     config.easing
-                    createPositionSteps
-                    PositionAnimation
+                    createTranslateSteps
+                    TranslateAnimation
 
         Builder.ProcessedRotateConfig config ->
             let
@@ -1357,7 +1357,7 @@ getLastStep : List Animation -> Animation
 getLastStep steps =
     List.reverse steps
         |> List.head
-        |> Maybe.withDefault (PositionAnimation (Position.fromTuple ( 0, 0 )))
+        |> Maybe.withDefault (TranslateAnimation (Translate.fromTuple ( 0, 0 )))
 
 
 

@@ -28,7 +28,7 @@ FORMATIONS:
 
 import Anim.Easing as Easing
 import Anim.Internal.Builder exposing (AnimBuilder)
-import Anim.Property.Position as Position
+import Anim.Property.Translate as Translate
 
 
 initialCoords : List ( Float, Float )
@@ -99,9 +99,9 @@ buildAnimation elementsList builder =
     List.foldl
         (\( elementId, ( x, y ) ) builder_ ->
             builder_
-                |> Position.for elementId
-                |> Position.toXY x y
-                |> Position.build
+                |> Translate.for elementId
+                |> Translate.toXY x y
+                |> Translate.build
         )
         builder
         elementsList
@@ -113,7 +113,7 @@ init : AnimBuilder -> AnimBuilder
 init builder =
     List.foldl
         (\( elementId, ( x, y ) ) builder_ ->
-            Position.initXY elementId x y builder_
+            Translate.initXY elementId x y builder_
         )
         builder
         (elements initialCoords)

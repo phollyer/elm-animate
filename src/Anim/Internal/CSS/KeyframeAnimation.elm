@@ -10,10 +10,10 @@ import Anim.Internal.Easing as Easing
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Color as Color exposing (Color(..))
 import Anim.Internal.Properties.Opacity as Opacity
-import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
+import Anim.Internal.Properties.Translate as Translate
 import Char
 import Dict
 
@@ -50,7 +50,7 @@ generate elementId properties =
                     |> List.map
                         (\p ->
                             case p of
-                                Builder.ProcessedPositionConfig cfg ->
+                                Builder.ProcessedTranslateConfig cfg ->
                                     cfg.duration
 
                                 Builder.ProcessedScaleConfig cfg ->
@@ -80,7 +80,7 @@ generate elementId properties =
                     |> List.map
                         (\p ->
                             case p of
-                                Builder.ProcessedPositionConfig cfg ->
+                                Builder.ProcessedTranslateConfig cfg ->
                                     cfg.delay
 
                                 Builder.ProcessedScaleConfig cfg ->
@@ -155,7 +155,7 @@ generate elementId properties =
                                         |> List.foldl
                                             (\p acc ->
                                                 case p of
-                                                    Builder.ProcessedPositionConfig cfg ->
+                                                    Builder.ProcessedTranslateConfig cfg ->
                                                         let
                                                             progress =
                                                                 calculateProgress cfg.delay cfg.duration cfg.easing
@@ -166,12 +166,12 @@ generate elementId properties =
                                                                         s
 
                                                                     Nothing ->
-                                                                        Position.default
+                                                                        Translate.default
 
                                                             interpolatedPos =
-                                                                Position.interpolate progress startPos cfg.end
+                                                                Translate.interpolate progress startPos cfg.end
                                                         in
-                                                        { acc | position = "translate3d(" ++ Position.toCssString interpolatedPos ++ ")" }
+                                                        { acc | translate = "translate3d(" ++ Translate.toCssString interpolatedPos ++ ")" }
 
                                                     Builder.ProcessedRotateConfig cfg ->
                                                         let
@@ -212,11 +212,11 @@ generate elementId properties =
                                                     _ ->
                                                         acc
                                             )
-                                            { position = "", rotate = "", scale = "" }
+                                            { translate = "", rotate = "", scale = "" }
 
                                 -- Build transform string with canonical ordering: translate rotate scale
                                 transformComponents =
-                                    [ transformParts.position, transformParts.rotate, transformParts.scale ]
+                                    [ transformParts.translate, transformParts.rotate, transformParts.scale ]
                                         |> List.filter (\s -> s /= "")
 
                                 transformStyle =
@@ -318,8 +318,8 @@ generate elementId properties =
                             |> List.map
                                 (\p ->
                                     case p of
-                                        Builder.ProcessedPositionConfig cfg ->
-                                            "pos-" ++ String.fromInt cfg.duration ++ "-" ++ String.fromInt cfg.delay ++ "-" ++ Position.toCssString cfg.end ++ "-" ++ (cfg.start |> Maybe.map Position.toCssString |> Maybe.withDefault "none")
+                                        Builder.ProcessedTranslateConfig cfg ->
+                                            "pos-" ++ String.fromInt cfg.duration ++ "-" ++ String.fromInt cfg.delay ++ "-" ++ Translate.toCssString cfg.end ++ "-" ++ (cfg.start |> Maybe.map Translate.toCssString |> Maybe.withDefault "none")
 
                                         Builder.ProcessedScaleConfig cfg ->
                                             "scale-" ++ String.fromInt cfg.duration ++ "-" ++ String.fromInt cfg.delay ++ "-" ++ Scale.toCssString cfg.end ++ "-" ++ (cfg.start |> Maybe.map Scale.toCssString |> Maybe.withDefault "none")

@@ -29,9 +29,9 @@ import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.CSS as CSS
 import Anim.Property.BackgroundColor as Color
 import Anim.Property.Opacity as Opacity
-import Anim.Property.Position as Position
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
+import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -86,15 +86,15 @@ init _ =
             CSS.init
                 |> CSS.builder
                 |> Color.init elementId (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
-                |> Position.initXY elementId 0 0
+                |> Translate.initXY elementId 0 0
                 |> Rotate.init elementId 0
                 |> Scale.initXY elementId 1 1
                 |> Color.for elementId
                 |> Color.to (Anim.Color.fromRgb { r = 59, g = 130, b = 246 })
                 |> Color.build
-                |> Position.for elementId
-                |> Position.toXY 0 0
-                |> Position.build
+                |> Translate.for elementId
+                |> Translate.toXY 0 0
+                |> Translate.build
                 |> Rotate.for elementId
                 |> Rotate.toZ 0
                 |> Rotate.build
@@ -140,11 +140,11 @@ update msg model =
                         |> CSS.duration 800
                         |> CSS.easing QuadInOut
                         -- Position
-                        |> Position.for elementId
-                        |> Position.toXY 200 100
-                        |> Position.speed 50
-                        |> Position.easing SineInOut
-                        |> Position.build
+                        |> Translate.for elementId
+                        |> Translate.toXY 200 100
+                        |> Translate.speed 50
+                        |> Translate.easing SineInOut
+                        |> Translate.build
                         -- Rotate
                         |> Rotate.for elementId
                         |> Rotate.toZ 45
@@ -178,10 +178,10 @@ update msg model =
                         |> CSS.duration 800
                         |> CSS.easing CubicInOut
                         -- Position
-                        |> Position.for elementId
-                        |> Position.toXY 250 150
-                        |> Position.duration 800
-                        |> Position.build
+                        |> Translate.for elementId
+                        |> Translate.toXY 250 150
+                        |> Translate.duration 800
+                        |> Translate.build
                         -- Opacity
                         |> Opacity.for elementId
                         |> Opacity.to 0.3
@@ -254,11 +254,11 @@ update msg model =
                     model.animations
                         |> CSS.builder
                         -- Position
-                        |> Position.for elementId
-                        |> Position.toXY 150 200
-                        |> Position.easing ExpoInOut
-                        |> Position.duration 1200
-                        |> Position.build
+                        |> Translate.for elementId
+                        |> Translate.toXY 150 200
+                        |> Translate.easing ExpoInOut
+                        |> Translate.duration 1200
+                        |> Translate.build
                         -- Rotate
                         |> Rotate.for elementId
                         |> Rotate.toZ 135
@@ -303,9 +303,9 @@ update msg model =
                         |> CSS.duration 800
                         |> CSS.easing QuadInOut
                         -- Position
-                        |> Position.for elementId
-                        |> Position.toXY 0 0
-                        |> Position.build
+                        |> Translate.for elementId
+                        |> Translate.toXY 0 0
+                        |> Translate.build
                         -- Opacity
                         |> Opacity.for elementId
                         |> Opacity.to 1.0

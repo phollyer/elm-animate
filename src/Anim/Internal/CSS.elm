@@ -17,14 +17,14 @@ module Anim.Internal.CSS exposing
     , getElementAnimation
     , getElementKeyframes
     , getOpacityRange
-    , getPosition
-    , getPositionAnimationDuration
-    , getPositionRange
     , getRotateRange
     , getScaleRange
     , getSizeRange
-    , getStartPosition
+    , getStartTranslate
     , getState
+    , getTranslate
+    , getTranslateAnimationDuration
+    , getTranslateRange
     , handleEvent
     , htmlAttributes
     , init
@@ -59,10 +59,10 @@ import Anim.Internal.CSS.Transition as Transitions
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Color as Color exposing (Color(..))
 import Anim.Internal.Properties.Opacity as Opacity
-import Anim.Internal.Properties.Position as Position exposing (Position)
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
+import Anim.Internal.Properties.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
 import Html exposing (Html)
@@ -139,7 +139,7 @@ animate builder_ =
 
 
 type TransformOrder
-    = Position
+    = Translate
     | Rotate
     | Scale
 
@@ -380,8 +380,8 @@ getElementAnimation elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
 
 
-getPosition : String -> AnimState -> Maybe Position
-getPosition elementId (AnimState state) =
+getTranslate : String -> AnimState -> Maybe Translate
+getTranslate elementId (AnimState state) =
     let
         processedData =
             Builder.processAnimationData state.builder
@@ -393,7 +393,7 @@ getPosition elementId (AnimState state) =
                     |> List.filterMap
                         (\prop ->
                             case prop of
-                                Builder.ProcessedPositionConfig config ->
+                                Builder.ProcessedTranslateConfig config ->
                                     Just config.end
 
                                 _ ->
@@ -403,11 +403,11 @@ getPosition elementId (AnimState state) =
             )
 
 
-{-| Get the starting position for an element's animation.
-Returns Nothing if the element has no position animation or no explicit start position.
+{-| Get the starting translate for an element's animation.
+Returns Nothing if the element has no translate animation or no explicit start translate.
 -}
-getStartPosition : String -> AnimState -> Maybe Position
-getStartPosition elementId (AnimState state) =
+getStartTranslate : String -> AnimState -> Maybe Translate
+getStartTranslate elementId (AnimState state) =
     let
         processedData =
             Builder.processAnimationData state.builder
@@ -419,7 +419,7 @@ getStartPosition elementId (AnimState state) =
                     |> List.filterMap
                         (\prop ->
                             case prop of
-                                Builder.ProcessedPositionConfig config ->
+                                Builder.ProcessedTranslateConfig config ->
                                     config.start
 
                                 _ ->
@@ -434,11 +434,11 @@ getState elementId (AnimState state) =
     Dict.get elementId state.elementStates
 
 
-{-| Get both start and end positions for an element's animation.
-Returns Nothing if the element has no position animation.
+{-| Get both start and end translates for an element's animation.
+Returns Nothing if the element has no translate animation.
 -}
-getPositionRange : String -> AnimState -> Maybe { start : Maybe Position, end : Position }
-getPositionRange elementId (AnimState state) =
+getTranslateRange : String -> AnimState -> Maybe { start : Maybe Translate, end : Translate }
+getTranslateRange elementId (AnimState state) =
     let
         processedData =
             Builder.processAnimationData state.builder
@@ -450,7 +450,7 @@ getPositionRange elementId (AnimState state) =
                     |> List.filterMap
                         (\prop ->
                             case prop of
-                                Builder.ProcessedPositionConfig config ->
+                                Builder.ProcessedTranslateConfig config ->
                                     Just { start = config.start, end = config.end }
 
                                 _ ->
@@ -590,11 +590,11 @@ getSizeRange elementId (AnimState state) =
             )
 
 
-{-| Get the animation duration for a position animation in milliseconds.
-Returns Nothing if the element has no position animation.
+{-| Get the animation duration for a translate animation in milliseconds.
+Returns Nothing if the element has no translate animation.
 -}
-getPositionAnimationDuration : String -> AnimState -> Maybe Int
-getPositionAnimationDuration elementId (AnimState state) =
+getTranslateAnimationDuration : String -> AnimState -> Maybe Int
+getTranslateAnimationDuration elementId (AnimState state) =
     let
         processedData =
             Builder.processAnimationData state.builder
@@ -606,7 +606,7 @@ getPositionAnimationDuration elementId (AnimState state) =
                     |> List.filterMap
                         (\prop ->
                             case prop of
-                                Builder.ProcessedPositionConfig config ->
+                                Builder.ProcessedTranslateConfig config ->
                                     Just config.duration
 
                                 _ ->
@@ -707,8 +707,8 @@ getElementKeyframes elementId (AnimState state) =
 transformOrderToString : TransformOrder -> String
 transformOrderToString order =
     case order of
-        Position ->
-            "position"
+        Translate ->
+            "translate"
 
         Rotate ->
             "rotate"
@@ -871,13 +871,13 @@ stopAnimation elementId animState =
         withAllProperties =
             baseBuilder
                 |> addPropertyIfExists
-                    (getPositionRange elementId animState)
+                    (getTranslateRange elementId animState)
                     (\range ->
                         let
                             endPos =
                                 range.end
                         in
-                        Builder.PositionConfig
+                        Builder.TranslateConfig
                             { start = Just endPos
                             , end = endPos
                             , duration = 0
@@ -1026,13 +1026,13 @@ resetAnimation elementId animState =
         withAllProperties =
             baseBuilder
                 |> addPropertyIfExists
-                    (getPositionRange elementId animState)
+                    (getTranslateRange elementId animState)
                     (\range ->
                         let
                             startPos =
-                                getStartValue range.start Position.default
+                                getStartValue range.start Translate.default
                         in
-                        Builder.PositionConfig
+                        Builder.TranslateConfig
                             { start = Just startPos
                             , end = startPos
                             , duration = 0

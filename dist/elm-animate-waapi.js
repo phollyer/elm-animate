@@ -135,7 +135,7 @@ window.ElmAnimateWAAPI = (function () {
 
             // Create new animation for this property
             let animation;
-            if (propType === 'position' || propType === 'scale' || propType === 'rotate') {
+            if (propType === 'translate' || propType === 'scale' || propType === 'rotate') {
                 // For transform properties, create individual transform animation
                 animation = createTransformPropertyAnimation(element, property);
             } else {
@@ -289,7 +289,7 @@ window.ElmAnimateWAAPI = (function () {
     }
 
     /**
-     * Create animation for a single transform property (position, scale, or rotate)
+     * Create animation for a single transform property (translate, scale, or rotate)
      * Used for property-level tracking where each transform property is animated independently
      */
     function createTransformPropertyAnimation(element, property) {
@@ -304,7 +304,7 @@ window.ElmAnimateWAAPI = (function () {
         let startTransform, endTransform;
 
         switch (property.type) {
-            case 'position':
+            case 'translate':
                 const startX = property.startX !== undefined ? property.startX : currentTransform.x;
                 const startY = property.startY !== undefined ? property.startY : currentTransform.y;
                 const startZ = property.startZ !== undefined ? property.startZ : currentTransform.z;
@@ -490,7 +490,7 @@ window.ElmAnimateWAAPI = (function () {
     function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotationX, rotationY, rotationZ) {
         const parts = [];
 
-        // Position: use translate3d for hardware acceleration
+        // Translate: use translate3d for hardware acceleration
         if (x !== 0 || y !== 0 || z !== 0) {
             parts.push(`translate3d(${x}px, ${y}px, ${z}px)`);
         }
@@ -636,7 +636,7 @@ window.ElmAnimateWAAPI = (function () {
 
                     const propertyData = {
                         elementId: elementId,
-                        position: {
+                        translate: {
                             x: transformState.x,
                             y: transformState.y,
                             z: transformState.z
@@ -710,7 +710,7 @@ window.ElmAnimateWAAPI = (function () {
 
                 const finalPropertyData = {
                     elementId: elementId,
-                    position: {
+                    translate: {
                         x: finalState.x,
                         y: finalState.y,
                         z: finalState.z
@@ -772,7 +772,7 @@ window.ElmAnimateWAAPI = (function () {
 
                 const currentPropertyData = {
                     elementId: elementId,
-                    position: {
+                    translate: {
                         x: currentState.x,
                         y: currentState.y,
                         z: currentState.z
@@ -891,21 +891,21 @@ window.ElmAnimateWAAPI = (function () {
     }
 
     /**
-     * Update positions instantly without creating animation history
+     * Update translates instantly without creating animation history
      * Used for responsive layout adjustments (window resize, etc.)
      */
-    function updatePositions(updates) {
+    function updateTranslates(updates) {
         updates.forEach(update => {
             const element = document.getElementById(update.elementId);
             if (!element) {
-                console.warn(`ElmAnimateWAAPI: Element with id "${update.elementId}" not found for position update`);
+                console.warn(`ElmAnimateWAAPI: Element with id "${update.elementId}" not found for translate update`);
                 return;
             }
 
             // Get current transform state
             const currentTransform = getCurrentTransform(element);
-            
-            // Apply new position instantly via transform style
+
+            // Apply new translate instantly via transform style
             const newTransform = buildTransformString(
                 update.x,
                 update.y,
@@ -917,7 +917,7 @@ window.ElmAnimateWAAPI = (function () {
                 currentTransform.rotationY,
                 currentTransform.rotationZ
             );
-            
+
             element.style.transform = newTransform;
         });
     }
@@ -942,9 +942,9 @@ window.ElmAnimateWAAPI = (function () {
                     if (commandData.elements) {
                         processAnimationData(commandData);
                     }
-                    // Handle position update command (from onResize)
-                    else if (commandData.type === 'updatePosition' && commandData.updates) {
-                        updatePositions(commandData.updates);
+                    // Handle translate update command (from onResize)
+                    else if (commandData.type === 'updateTranslate' && commandData.updates) {
+                        updateTranslates(commandData.updates);
                     }
                     // Handle simple control commands
                     else if (commandData.type && commandData.elementId) {

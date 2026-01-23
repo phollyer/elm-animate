@@ -11,9 +11,9 @@ module Anim.Internal.CSS.Transform exposing
 import Anim.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Easing as Easing
-import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
+import Anim.Internal.Properties.Translate as Translate
 import Anim.Internal.Timing.TimeSpec as TimeSpec
 
 
@@ -25,11 +25,11 @@ generate properties =
         transformParts =
             Builder.extractTransformsFromProperty properties
     in
-    String.trim (transformParts.position ++ " " ++ transformParts.rotate ++ " " ++ transformParts.scale)
+    String.trim (transformParts.translate ++ " " ++ transformParts.rotate ++ " " ++ transformParts.scale)
 
 
 {-| Generate transform with custom property ordering.
-Position = "position", Rotate = "rotate", Scale = "scale"
+Translate = "translate", Rotate = "rotate", Scale = "scale"
 -}
 generateWithOrder : List String -> List Builder.PropertyConfig -> String
 generateWithOrder order properties =
@@ -49,12 +49,12 @@ generateWithOrder order properties =
 getTransformByName : Builder.TransformParts -> String -> Maybe String
 getTransformByName parts name =
     case name of
-        "position" ->
-            if String.isEmpty parts.position then
+        "translate" ->
+            if String.isEmpty parts.translate then
                 Nothing
 
             else
-                Just parts.position
+                Just parts.translate
 
         "rotate" ->
             if String.isEmpty parts.rotate then
@@ -104,7 +104,7 @@ combineStyles styles =
 isTransformProperty : Builder.PropertyConfig -> Bool
 isTransformProperty property =
     case property of
-        Builder.PositionConfig _ ->
+        Builder.TranslateConfig _ ->
             True
 
         Builder.RotateConfig _ ->
@@ -125,7 +125,7 @@ generateFromProcessed properties =
         transformParts =
             extractTransformsFromProcessed properties
     in
-    String.trim (transformParts.position ++ " " ++ transformParts.rotate ++ " " ++ transformParts.scale)
+    String.trim (transformParts.translate ++ " " ++ transformParts.rotate ++ " " ++ transformParts.scale)
 
 
 {-| Generate transform from processed properties with custom ordering.
@@ -152,7 +152,7 @@ extractTransformsFromProcessed properties =
 
 emptyTransformParts : Builder.TransformParts
 emptyTransformParts =
-    { position = ""
+    { translate = ""
     , rotate = ""
     , scale = ""
     }
@@ -161,8 +161,8 @@ emptyTransformParts =
 collectProcessedTransform : Builder.ProcessedPropertyConfig -> Builder.TransformParts -> Builder.TransformParts
 collectProcessedTransform property acc =
     case property of
-        Builder.ProcessedPositionConfig config ->
-            { acc | position = "translate3d(" ++ Position.toCssString config.end ++ ")" }
+        Builder.ProcessedTranslateConfig config ->
+            { acc | translate = "translate3d(" ++ Translate.toCssString config.end ++ ")" }
 
         Builder.ProcessedRotateConfig config ->
             { acc | rotate = Rotate.to3DCssString config.end }
@@ -229,7 +229,7 @@ findLongestDistance properties =
 extractDistance : Builder.PropertyConfig -> Maybe Float
 extractDistance property =
     case property of
-        Builder.PositionConfig config ->
+        Builder.TranslateConfig config ->
             Just config.distance
 
         Builder.RotateConfig config ->
@@ -320,7 +320,7 @@ chooseSmallerDelay a b =
 extractTiming : Builder.PropertyConfig -> Maybe TimeSpec.TimeSpec
 extractTiming property =
     case property of
-        Builder.PositionConfig config ->
+        Builder.TranslateConfig config ->
             config.timing
 
         Builder.RotateConfig config ->
@@ -336,7 +336,7 @@ extractTiming property =
 extractEasing : Builder.PropertyConfig -> Maybe Easing
 extractEasing property =
     case property of
-        Builder.PositionConfig config ->
+        Builder.TranslateConfig config ->
             config.easing
 
         Builder.RotateConfig config ->
@@ -352,7 +352,7 @@ extractEasing property =
 extractDelay : Builder.PropertyConfig -> Maybe Int
 extractDelay property =
     case property of
-        Builder.PositionConfig config ->
+        Builder.TranslateConfig config ->
             config.delay
 
         Builder.RotateConfig config ->

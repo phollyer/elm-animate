@@ -29,9 +29,9 @@ import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.CSS as CSS
 import Anim.Property.BackgroundColor as Color
 import Anim.Property.Opacity as Opacity
-import Anim.Property.Position as Position
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
+import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -87,9 +87,9 @@ init _ =
                 |> Color.init "box-1" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
                 |> Color.init "box-2" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
                 |> Color.init "box-3" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
-                |> Position.initXY "box-1" 0 0
-                |> Position.initXY "box-2" 0 0
-                |> Position.initXY "box-3" 0 0
+                |> Translate.initXY "box-1" 0 0
+                |> Translate.initXY "box-2" 0 0
+                |> Translate.initXY "box-3" 0 0
                 |> Scale.initXY "box-1" 1 1
                 |> Scale.initXY "box-2" 1 1
                 |> Scale.initXY "box-3" 1 1
@@ -133,10 +133,10 @@ update msg model =
                         |> CSS.duration 800
                         |> CSS.easing QuadInOut
                         -- Position
-                        |> Position.for "mixed-box"
-                        |> Position.toXY 200 100
-                        |> Position.easing SineInOut
-                        |> Position.build
+                        |> Translate.for "mixed-box"
+                        |> Translate.toXY 200 100
+                        |> Translate.easing SineInOut
+                        |> Translate.build
                         -- Scale
                         |> Scale.for "mixed-box"
                         |> Scale.toXY 1.5 1.2
@@ -170,9 +170,9 @@ update msg model =
                         |> Opacity.to 0.3
                         |> Opacity.build
                         -- Position
-                        |> Position.for "mixed-box"
-                        |> Position.toXY 250 150
-                        |> Position.build
+                        |> Translate.for "mixed-box"
+                        |> Translate.toXY 250 150
+                        |> Translate.build
                         |> CSS.animate
                 , isAnimating = True
                 , activeAnimation = Just FadeMove
@@ -236,11 +236,11 @@ update msg model =
                     model.animations
                         |> CSS.builder
                         -- Position
-                        |> Position.for "mixed-box"
-                        |> Position.toXY 150 200
-                        |> Position.easing ExpoInOut
-                        |> Position.duration 1200
-                        |> Position.build
+                        |> Translate.for "mixed-box"
+                        |> Translate.toXY 150 200
+                        |> Translate.easing ExpoInOut
+                        |> Translate.duration 1200
+                        |> Translate.build
                         -- Rotate
                         |> Rotate.for "mixed-box"
                         |> Rotate.toZ 135
@@ -285,9 +285,9 @@ update msg model =
                         |> CSS.duration 800
                         |> CSS.easing QuadInOut
                         -- Position
-                        |> Position.for "mixed-box"
-                        |> Position.toXY 0 0
-                        |> Position.build
+                        |> Translate.for "mixed-box"
+                        |> Translate.toXY 0 0
+                        |> Translate.build
                         -- Opacity
                         |> Opacity.for "mixed-box"
                         |> Opacity.to 1.0

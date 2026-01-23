@@ -26,7 +26,7 @@ USAGE EXAMPLES:
 
 import Anim.Easing as Easing
 import Anim.Engine.WAAPI as WAAPI
-import Anim.Property.Position as Position
+import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Choreography as Choreography
 import Common.Colors as Colors

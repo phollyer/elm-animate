@@ -20,10 +20,10 @@ import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.Sub as Sub
 import Anim.Property.BackgroundColor as Color
 import Anim.Property.Opacity as Opacity
-import Anim.Property.Position as Position
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
 import Anim.Property.Size as Size
+import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Mixed as Mixed
 import Common.Colors as Colors
@@ -66,7 +66,7 @@ init _ =
     ( { animations =
             Sub.init
                 |> Sub.builder
-                |> Position.initXY "mixed-box" 0 0
+                |> Translate.initXY "mixed-box" 0 0
                 |> Scale.initXY "mixed-box" 1.0 1.0
                 |> Size.initWH "mixed-box" 80 80
                 |> Rotate.initZ "mixed-box" 0

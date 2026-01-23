@@ -260,14 +260,14 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     let
-        currentPosition =
-            WAAPI.getCurrentPosition elementId model.animationState
+        currentTranslate =
+            WAAPI.getCurrentTranslate elementId model.animationState
 
         centerX_expected =
             toFloat model.animationAreaSize.width / 2 - 25
 
-        positionText =
-            case currentPosition of
+        translateText =
+            case currentTranslate of
                 Just pos ->
                     "x=" ++ String.fromFloat pos.x ++ ", y=" ++ String.fromFloat pos.y
 

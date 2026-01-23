@@ -24,9 +24,9 @@ USAGE:
 
 import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.CSS as CSS
-import Anim.Property.Position as Position
+import Anim.Property.Translate as Translate
 import Browser exposing (Document)
-import Common.Animations.Position as Animations
+import Common.Animations.Translate as Animations
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, none, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)

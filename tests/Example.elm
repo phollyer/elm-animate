@@ -1,10 +1,10 @@
 module Example exposing (..)
 
+import Anim.Easing as Easing
 import Anim.Engine.CSS as CSS
 import Anim.Internal.CSS as InternalCSS
 import Anim.Internal.CSS.KeyframeAnimation as KeyframeAnimation
-import Anim.Property.Position as Position
-import Anim.Easing as Easing
+import Anim.Property.Translate as Position
 import Expect
 import Test exposing (..)
 

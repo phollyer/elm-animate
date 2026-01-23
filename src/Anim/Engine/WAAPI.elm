@@ -12,7 +12,7 @@ module Anim.Engine.WAAPI exposing
     , anyRunning, isRunning, allComplete, isComplete
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
     , getStartOpacity, getEndOpacity, getCurrentOpacity
-    , getStartPosition, getEndPosition, getCurrentPosition
+    , getStartTranslate, getEndTranslate, getCurrentTranslate
     , getStartRotate, getEndRotate, getCurrentRotate
     , getStartScale, getEndScale, getCurrentScale
     , getStartSize, getEndSize, getCurrentSize
@@ -170,9 +170,9 @@ during animation playback.
 @docs getStartOpacity, getEndOpacity, getCurrentOpacity
 
 
-## Position
+## Translate
 
-@docs getStartPosition, getEndPosition, getCurrentPosition
+@docs getStartTranslate, getEndTranslate, getCurrentTranslate
 
 
 ## Rotate
@@ -418,7 +418,7 @@ This keeps AnimState and JavaScript in sync without polluting animation history.
         let
             ( initialAnimState, initCmd ) =
                 WAAPI.initProperties waapiCommand
-                    [ Position.initXY "element-id" 100 50
+                    [ Translate.initXY "element-id" 100 50
                     , Opacity.init "element-id" 1.0
                     ... -- more properties if needed
                     ]
@@ -725,45 +725,45 @@ getCurrentOpacity =
 
 
 
--- QUERY ANIMATED PROPERTIES: POSITION
+-- QUERY ANIMATED PROPERTIES: TRANSLATE
 
 
-{-| Get the start position of an element being animated.
+{-| Get the start translate of an element being animated.
 
-Returns `Nothing` if the element has no position animation.
+Returns `Nothing` if the element has no translate animation.
 
 Returns `Just {x = 0, y = 0, z = 0}` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getStartPosition =
-    Internal.getStartPosition
+getStartTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getStartTranslate =
+    Internal.getStartTranslate
 
 
-{-| Get the end position of an element being animated.
+{-| Get the end translate of an element being animated.
 
-Returns `Nothing` if the element has no position animation.
-
--}
-getEndPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getEndPosition =
-    Internal.getEndPosition
-
-
-{-| Get the current position of an element based on its animation state.
-
-Returns `Nothing` if the element has no position animation.
-
-Returns the start position if the animation has not started yet.
-
-Returns the current interpolated position if the animation is running.
-
-Returns the end position if the animation has completed.
+Returns `Nothing` if the element has no translate animation.
 
 -}
-getCurrentPosition : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getCurrentPosition =
-    Internal.getCurrentPosition
+getEndTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getEndTranslate =
+    Internal.getEndTranslate
+
+
+{-| Get the current translate of an element based on its animation state.
+
+Returns `Nothing` if the element has no translate animation.
+
+Returns the start translate if the animation has not started yet.
+
+Returns the current interpolated translate if the animation is running.
+
+Returns the end translate if the animation has completed.
+
+-}
+getCurrentTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getCurrentTranslate =
+    Internal.getCurrentTranslate
 
 
 

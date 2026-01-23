@@ -24,10 +24,10 @@ USAGE:
 
 import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.Sub as Sub
-import Anim.Property.Position as Position
+import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Browser.Events
-import Common.Animations.Position as Animations
+import Common.Animations.Translate as Animations
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, column, el, fill, height, htmlAttribute, maximum, padding, paddingXY, paragraph, px, rgb255, spacing, text, width)
@@ -68,7 +68,7 @@ init _ =
     ( { animations =
             Sub.init
                 |> Sub.builder
-                |> Position.initXY "box" 0 0
+                |> Translate.initXY "box" 0 0
                 |> Sub.animate
       }
     , Cmd.none
@@ -97,11 +97,11 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Position.for "box"
-                        |> Position.toXY x y
-                        |> Position.speed 200.0
-                        |> Position.easing Easing.EaseOut
-                        |> Position.build
+                        |> Translate.for "box"
+                        |> Translate.toXY x y
+                        |> Translate.speed 200.0
+                        |> Translate.easing Easing.EaseOut
+                        |> Translate.build
                         |> Sub.animate
               }
             , Cmd.none
@@ -112,7 +112,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Animations.moveLeft "box"
+                        |> Animations.moveLeft
                         |> Sub.animate
               }
             , Cmd.none
@@ -123,7 +123,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Animations.moveRight "box"
+                        |> Animations.moveRight
                         |> Sub.animate
               }
             , Cmd.none
@@ -134,7 +134,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Animations.moveUp "box"
+                        |> Animations.moveUp
                         |> Sub.animate
               }
             , Cmd.none
@@ -145,7 +145,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Animations.moveDown "box"
+                        |> Animations.moveDown
                         |> Sub.animate
               }
             , Cmd.none
@@ -156,7 +156,7 @@ update msg model =
                 | animations =
                     model.animations
                         |> Sub.builder
-                        |> Animations.returnToOrigin "box"
+                        |> Animations.returnToOrigin
                         |> Sub.animate
               }
             , Cmd.none
@@ -198,10 +198,10 @@ viewContent model =
         ]
         (let
             pos =
-                Sub.getCurrentPosition "box" model.animations
+                Sub.getCurrentTranslate "box" model.animations
                     |> Maybe.withDefault { x = 0, y = 0, z = 0 }
          in
-         text ("Position: (" ++ String.fromInt (round pos.x) ++ ", " ++ String.fromInt (round pos.y) ++ ")")
+         text ("Translate: (" ++ String.fromInt (round pos.x) ++ ", " ++ String.fromInt (round pos.y) ++ ")")
         )
     , -- Buttons for predefined moves
       UI.wrappedButtonRow

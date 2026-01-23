@@ -20,10 +20,10 @@ import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.BackgroundColor as Color
 import Anim.Property.Opacity as Opacity
-import Anim.Property.Position as Position
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
 import Anim.Property.Size as Size
+import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Mixed as Mixed exposing (elementId)
 import Common.Colors as Colors

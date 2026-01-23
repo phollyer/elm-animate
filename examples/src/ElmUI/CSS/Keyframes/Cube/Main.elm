@@ -25,8 +25,8 @@ The cube is built with 6 positioned faces, each transformed to form a cube:
 
 import Anim.Easing as Easing
 import Anim.Engine.CSS as CSS
-import Anim.Property.Position as Position
 import Anim.Property.Rotate as Rotate
+import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Cube as Cube
 import Common.Colors as Colors
@@ -81,7 +81,7 @@ init _ =
     ( { animState =
             CSS.init
                 |> CSS.builder
-                |> Position.initZ "cube" 0
+                |> Translate.initZ "cube" 0
                 |> Rotate.initXYZ "cube" 0 0 0
                 |> CSS.animate
       , perspectiveValue = 1000

@@ -18,8 +18,8 @@ USAGE:
 -}
 
 import Anim.Internal.Builder as Builder
-import Anim.Property.Position as Position
 import Anim.Property.Rotate as Rotate
+import Anim.Property.Translate as Translate
 
 
 {-| Set both the Z position and XYZ rotation for a 3D cube element
@@ -28,10 +28,10 @@ This is used for real-time cube manipulation with sliders or controls
 setCubeTransform : String -> Float -> Float -> Float -> Float -> Builder.AnimBuilder -> Builder.AnimBuilder
 setCubeTransform elementId zPos rotateX rotateY rotateZ builder =
     builder
-        |> Position.for elementId
-        |> Position.duration 0
-        |> Position.toZ zPos
-        |> Position.build
+        |> Translate.for elementId
+        |> Translate.duration 0
+        |> Translate.toZ zPos
+        |> Translate.build
         |> Rotate.for elementId
         |> Rotate.duration 0
         |> Rotate.toXYZ rotateX rotateY rotateZ

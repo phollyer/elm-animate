@@ -12,10 +12,10 @@ import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Color as Color exposing (Color(..))
 import Anim.Internal.Properties.FontColor as FontColor
 import Anim.Internal.Properties.Opacity as Opacity
-import Anim.Internal.Properties.Position as Position
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
+import Anim.Internal.Properties.Translate as Translate
 import Anim.Internal.Timing.Delay as Delay
 import Anim.Internal.Timing.TimeSpec as TimeSpec
 
@@ -76,7 +76,7 @@ transitionFromNonTransformProperty property =
 calculatePropertyDistance : Builder.PropertyConfig -> Float
 calculatePropertyDistance property =
     case property of
-        Builder.PositionConfig config ->
+        Builder.TranslateConfig config ->
             let
                 start =
                     case config.start of
@@ -84,9 +84,9 @@ calculatePropertyDistance property =
                             s
 
                         Nothing ->
-                            Position.fromTuple ( 0, 0 )
+                            Translate.fromTuple ( 0, 0 )
             in
-            Position.distance start config.end
+            Translate.distance start config.end
 
         Builder.RotateConfig config ->
             let
@@ -173,7 +173,7 @@ generateFromProcessed properties =
                 |> List.all
                     (\prop ->
                         case prop of
-                            Builder.ProcessedPositionConfig config ->
+                            Builder.ProcessedTranslateConfig config ->
                                 config.duration == 0
 
                             Builder.ProcessedRotateConfig config ->
@@ -224,7 +224,7 @@ generateFromProcessed properties =
 isProcessedTransformProperty : Builder.ProcessedPropertyConfig -> Bool
 isProcessedTransformProperty property =
     case property of
-        Builder.ProcessedPositionConfig _ ->
+        Builder.ProcessedTranslateConfig _ ->
             True
 
         Builder.ProcessedRotateConfig _ ->
@@ -282,7 +282,7 @@ consolidateProcessedTiming transformProps =
 extractProcessedDuration : Builder.ProcessedPropertyConfig -> Int
 extractProcessedDuration property =
     case property of
-        Builder.ProcessedPositionConfig config ->
+        Builder.ProcessedTranslateConfig config ->
             config.duration
 
         Builder.ProcessedRotateConfig config ->
@@ -298,7 +298,7 @@ extractProcessedDuration property =
 extractProcessedEasing : Builder.ProcessedPropertyConfig -> Easing.Easing
 extractProcessedEasing property =
     case property of
-        Builder.ProcessedPositionConfig config ->
+        Builder.ProcessedTranslateConfig config ->
             config.easing
 
         Builder.ProcessedRotateConfig config ->
@@ -314,7 +314,7 @@ extractProcessedEasing property =
 extractProcessedDelay : Builder.ProcessedPropertyConfig -> Int
 extractProcessedDelay property =
     case property of
-        Builder.ProcessedPositionConfig config ->
+        Builder.ProcessedTranslateConfig config ->
             config.delay
 
         Builder.ProcessedRotateConfig config ->

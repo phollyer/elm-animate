@@ -1,5 +1,5 @@
-module Anim.Internal.Properties.Position exposing
-    ( Position
+module Anim.Internal.Properties.Translate exposing
+    ( Translate
     , add
     , default
     , distance
@@ -28,97 +28,97 @@ import Json.Encode as Encode
 
 
 
-{- UTITLITY FUNCTIONS FOR THE PUBLIC Position TYPE, AND IT'S API -}
+{- UTITLITY FUNCTIONS FOR THE PUBLIC Translate TYPE, AND IT'S API -}
 
 
-type Position
-    = Position { x : Float, y : Float, z : Float }
+type Translate
+    = Translate { x : Float, y : Float, z : Float }
 
 
-default : Position
+default : Translate
 default =
-    Position { x = 0, y = 0, z = 0 }
+    Translate { x = 0, y = 0, z = 0 }
 
 
 {-| Support interface for generic 3D coordinate operations
 -}
-support : Coordinate3D.Coordinate3DSupport Position
+support : Coordinate3D.Coordinate3DSupport Translate
 support =
     { zero = default
-    , fromRecord = Position
-    , toRecord = \(Position coords) -> coords
-    , add = \(Position a) (Position b) -> Position { x = a.x + b.x, y = a.y + b.y, z = a.z + b.z }
-    , subtract = \(Position a) (Position b) -> Position { x = a.x - b.x, y = a.y - b.y, z = a.z - b.z }
-    , scale = \factor (Position coords) -> Position { x = coords.x * factor, y = coords.y * factor, z = coords.z * factor }
+    , fromRecord = Translate
+    , toRecord = \(Translate coords) -> coords
+    , add = \(Translate a) (Translate b) -> Translate { x = a.x + b.x, y = a.y + b.y, z = a.z + b.z }
+    , subtract = \(Translate a) (Translate b) -> Translate { x = a.x - b.x, y = a.y - b.y, z = a.z - b.z }
+    , scale = \factor (Translate coords) -> Translate { x = coords.x * factor, y = coords.y * factor, z = coords.z * factor }
     }
 
 
-x : Position -> Float
-x (Position coords) =
+x : Translate -> Float
+x (Translate coords) =
     coords.x
 
 
-y : Position -> Float
-y (Position coords) =
+y : Translate -> Float
+y (Translate coords) =
     coords.y
 
 
-z : Position -> Float
-z (Position coords) =
+z : Translate -> Float
+z (Translate coords) =
     coords.z
 
 
-fromTuple : ( Float, Float ) -> Position
+fromTuple : ( Float, Float ) -> Translate
 fromTuple =
     Coordinate3D.fromTuple support
 
 
-fromTriple : ( Float, Float, Float ) -> Position
+fromTriple : ( Float, Float, Float ) -> Translate
 fromTriple =
     Coordinate3D.fromTriple support
 
 
-toTuple : Position -> ( Float, Float )
+toTuple : Translate -> ( Float, Float )
 toTuple =
     Coordinate3D.toTuple support
 
 
-toTriple : Position -> ( Float, Float, Float )
+toTriple : Translate -> ( Float, Float, Float )
 toTriple =
     Coordinate3D.toTriple support
 
 
-add : Position -> Position -> Position
+add : Translate -> Translate -> Translate
 add =
     Coordinate3D.add support
 
 
-subtract : Position -> Position -> Position
+subtract : Translate -> Translate -> Translate
 subtract =
     Coordinate3D.subtract support
 
 
-scale : Float -> Position -> Position
+scale : Float -> Translate -> Translate
 scale =
     Coordinate3D.scale support
 
 
-distance : Position -> Position -> Float
+distance : Translate -> Translate -> Float
 distance =
     Coordinate3D.distance support
 
 
-interpolate : Float -> Position -> Position -> Position
+interpolate : Float -> Translate -> Translate -> Translate
 interpolate =
     Coordinate3D.interpolate support
 
 
-fromRecord : { x : Float, y : Float, z : Float } -> Position
+fromRecord : { x : Float, y : Float, z : Float } -> Translate
 fromRecord =
     Coordinate3D.fromRecord support
 
 
-toRecord : Position -> { x : Float, y : Float, z : Float }
+toRecord : Translate -> { x : Float, y : Float, z : Float }
 toRecord =
     Coordinate3D.toRecord support
 
@@ -147,18 +147,18 @@ duration distance_ timeSpec =
             distance_ / unitsPerSecond * 1000
 
 
-toString : Position -> String
-toString (Position coords) =
-    "Position(x: " ++ String.fromFloat coords.x ++ ", y: " ++ String.fromFloat coords.y ++ ", z: " ++ String.fromFloat coords.z ++ ")"
+toString : Translate -> String
+toString (Translate coords) =
+    "Translate(x: " ++ String.fromFloat coords.x ++ ", y: " ++ String.fromFloat coords.y ++ ", z: " ++ String.fromFloat coords.z ++ ")"
 
 
-toCssString : Position -> String
-toCssString (Position coords) =
+toCssString : Translate -> String
+toCssString (Translate coords) =
     String.fromFloat coords.x ++ "px, " ++ String.fromFloat coords.y ++ "px, " ++ String.fromFloat coords.z ++ "px"
 
 
-encode : Position -> Encode.Value
-encode (Position coords) =
+encode : Translate -> Encode.Value
+encode (Translate coords) =
     Encode.object
         [ ( "x", Encode.float coords.x )
         , ( "y", Encode.float coords.y )

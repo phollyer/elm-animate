@@ -232,8 +232,8 @@ This creates realistic physics where faster movements produce bigger bounces and
 adjustBounceEasing : Builder.PropertyConfig -> Builder.PropertyConfig
 adjustBounceEasing propertyConfig =
     case propertyConfig of
-        Builder.PositionConfig config ->
-            Builder.PositionConfig (adjustConfigEasing config)
+        Builder.TranslateConfig config ->
+            Builder.TranslateConfig (adjustConfigEasing config)
 
         Builder.ScaleConfig config ->
             Builder.ScaleConfig (adjustConfigEasing config)
@@ -365,7 +365,7 @@ find predicate builder =
 configsMatch : Builder.PropertyConfig -> Builder.PropertyConfig -> Bool
 configsMatch prop1 prop2 =
     case ( prop1, prop2 ) of
-        ( Builder.PositionConfig _, Builder.PositionConfig _ ) ->
+        ( Builder.TranslateConfig _, Builder.TranslateConfig _ ) ->
             True
 
         ( Builder.RotateConfig _, Builder.RotateConfig _ ) ->

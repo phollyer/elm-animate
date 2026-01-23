@@ -28,7 +28,7 @@ USAGE EXAMPLES:
 
 import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Engine.Sub as Sub
-import Anim.Property.Position as Position
+import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Choreography as Choreography
 import Common.Colors as Colors
@@ -159,23 +159,23 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     let
-        positionA =
-            Sub.getCurrentPosition "elementA" model.animations
+        translateA =
+            Sub.getCurrentTranslate "elementA" model.animations
 
-        positionB =
-            Sub.getCurrentPosition "elementB" model.animations
+        translateB =
+            Sub.getCurrentTranslate "elementB" model.animations
 
-        positionC =
-            Sub.getCurrentPosition "elementC" model.animations
+        translateC =
+            Sub.getCurrentTranslate "elementC" model.animations
 
-        positionD =
-            Sub.getCurrentPosition "elementD" model.animations
+        translateD =
+            Sub.getCurrentTranslate "elementD" model.animations
 
-        positionE =
-            Sub.getCurrentPosition "elementE" model.animations
+        translateE =
+            Sub.getCurrentTranslate "elementE" model.animations
 
-        positionF =
-            Sub.getCurrentPosition "elementF" model.animations
+        translateF =
+            Sub.getCurrentTranslate "elementF" model.animations
     in
     [ UI.backButton
     , UI.pageHeader "ElmUI & Subscription Choreography Example"

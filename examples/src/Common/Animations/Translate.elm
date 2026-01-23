@@ -1,4 +1,4 @@
-module Common.Animations.Position exposing
+module Common.Animations.Translate exposing
     ( elementId
     , init
     , moveDown
@@ -6,11 +6,12 @@ module Common.Animations.Position exposing
     , moveRight
     , moveToPosition1
     , moveToPosition2
+    , moveToXY
     , moveUp
     , returnToOrigin
     )
 
-{-| Common Position animations that work across all animation engines.
+{-| Common Translate animations that work across all animation engines.
 
 These functions take an AnimBuilder and return an AnimBuilder, making them
 portable across CSS Transitions, CSS Keyframes, Sub, and WAAPI engines.
@@ -22,7 +23,7 @@ animation logic works identically across all engines!
 
 import Anim.Easing as Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
-import Anim.Property.Position as Position
+import Anim.Property.Translate as Translate
 
 
 elementId : String
@@ -32,34 +33,34 @@ elementId =
 
 init : Builder.AnimBuilder -> Builder.AnimBuilder
 init =
-    Position.initXY elementId 0 0
+    Translate.initXY elementId 0 0
 
 
 moveToXY : Float -> Float -> Easing -> Builder.AnimBuilder -> Builder.AnimBuilder
 moveToXY x y easing =
-    Position.for elementId
-        >> Position.toXY x y
-        >> Position.speed 100
-        >> Position.easing easing
-        >> Position.build
+    Translate.for elementId
+        >> Translate.toXY x y
+        >> Translate.speed 100
+        >> Translate.easing easing
+        >> Translate.build
 
 
 moveToX : Float -> Easing -> Builder.AnimBuilder -> Builder.AnimBuilder
 moveToX x easing =
-    Position.for elementId
-        >> Position.toX x
-        >> Position.speed 100
-        >> Position.easing easing
-        >> Position.build
+    Translate.for elementId
+        >> Translate.toX x
+        >> Translate.speed 100
+        >> Translate.easing easing
+        >> Translate.build
 
 
 moveToY : Float -> Easing -> Builder.AnimBuilder -> Builder.AnimBuilder
 moveToY y easing =
-    Position.for elementId
-        >> Position.toY y
-        >> Position.speed 100
-        >> Position.easing easing
-        >> Position.build
+    Translate.for elementId
+        >> Translate.toY y
+        >> Translate.speed 100
+        >> Translate.easing easing
+        >> Translate.build
 
 
 moveToPosition1 : Builder.AnimBuilder -> Builder.AnimBuilder
