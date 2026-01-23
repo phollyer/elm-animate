@@ -111,7 +111,7 @@ type Msg
     | Resume
     | Reset
     | Restart
-    | WaapiEventReceived WAAPI.EventType WAAPI.AnimState
+    | WaapiEventReceived ( WAAPI.AnimState, Maybe WAAPI.AnimationEvent )
     | OnResize Int Int
 
 
@@ -155,22 +155,18 @@ update msg model =
             , resizeCmd
             )
 
-        WaapiEventReceived eventType newAnimState ->
+        WaapiEventReceived ( newAnimState, maybeEvent ) ->
             let
                 newModel =
                     { model | animationState = newAnimState }
             in
-            case eventType of
-                WAAPI.PropertyUpdate _ ->
-                    -- Property data has automatically been applied to newAnimState
-                    -- If you don't need to react to property updates, you can ignore this event
-                    ( newModel, Cmd.none )
+            case maybeEvent of
+                Just event ->
+                    -- Animation lifecycle event - update local status flags
+                    handleAnimationEvent event newModel
 
-                WAAPI.AnimationUpdate animationStatus ->
-                    -- Animation status with automatically updated AnimState
-                    -- This is only required to update isAnimating / isPaused flags in the model for this example
-                    -- If you don't need to react to animation status changes, you can ignore this event
-                    handleAnimationUpdate animationStatus newModel
+                Nothing ->
+                    ( newModel, Cmd.none )
 
         Animate ->
             let
@@ -215,9 +211,9 @@ update msg model =
             )
 
 
-handleAnimationUpdate : WAAPI.AnimationStatus -> Model -> ( Model, Cmd Msg )
-handleAnimationUpdate status model =
-    case status of
+handleAnimationEvent : WAAPI.AnimationEvent -> Model -> ( Model, Cmd Msg )
+handleAnimationEvent event model =
+    case event of
         WAAPI.Started ->
             ( { model | status = Running }, Cmd.none )
 
@@ -244,8 +240,7 @@ handleAnimationUpdate status model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ waapiEvent <|
-            WAAPI.decode WaapiEventReceived model.animationState
+        [ waapiEvent (WaapiEventReceived << WAAPI.decode model.animationState)
         , onResize OnResize
         ]
 

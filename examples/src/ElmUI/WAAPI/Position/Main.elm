@@ -100,7 +100,7 @@ type Msg
     | MoveDown
     | ResetPosition
     | StopAnimation
-    | WaapiEventReceived WAAPI.EventType WAAPI.AnimState
+    | WaapiEventReceived ( WAAPI.AnimState, Maybe WAAPI.AnimationEvent )
 
 
 animate : (WAAPI.AnimBuilder -> WAAPI.AnimBuilder) -> Model -> ( Model, Cmd Msg )
@@ -146,22 +146,17 @@ update msg model =
             , WAAPI.stop elementId waapiCommand
             )
 
-        WaapiEventReceived eventType newAnimState ->
+        WaapiEventReceived ( newAnimState, maybeEvent ) ->
             let
                 newModel =
                     { model | animationState = newAnimState }
             in
-            case eventType of
-                WAAPI.PropertyUpdate _ ->
+            case maybeEvent of
+                Just WAAPI.Completed ->
+                    ( { newModel | isAnimating = False }, Cmd.none )
+
+                _ ->
                     ( newModel, Cmd.none )
-
-                WAAPI.AnimationUpdate animationStatus ->
-                    case animationStatus of
-                        WAAPI.Completed ->
-                            ( { newModel | isAnimating = False }, Cmd.none )
-
-                        _ ->
-                            ( newModel, Cmd.none )
 
 
 
@@ -170,8 +165,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    waapiEvent <|
-        WAAPI.decode WaapiEventReceived model.animationState
+    waapiEvent (WaapiEventReceived << WAAPI.decode model.animationState)
 
 
 
