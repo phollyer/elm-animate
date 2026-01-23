@@ -149,7 +149,9 @@ window.ElmAnimateWAAPI = (function () {
                 elementAnims.set(propType, {
                     animation: animation,
                     version: newVersion,
-                    updateFn: updateFn
+                    updateFn: updateFn,
+                    // Cache easingKeyframes for resize - preserves bounce/elastic easing
+                    easingKeyframes: property.easingKeyframes || null
                 });
             }
         });
@@ -846,6 +848,8 @@ window.ElmAnimateWAAPI = (function () {
                 animData.animation.finish(); // Jump to end state
             });
             activeAnimations.delete(elementId);
+            // Send stopped event to Elm so it can update its state
+            sendEventToElm('animationUpdate', elementId, { status: 'stopped' });
         }
     }
 
@@ -859,6 +863,8 @@ window.ElmAnimateWAAPI = (function () {
                 animData.animation.cancel(); // Cancel to jump to start
             });
             activeAnimations.delete(elementId);
+            // Send reset event to Elm so it can update its state
+            sendEventToElm('animationUpdate', elementId, { status: 'reset' });
         }
     }
 
@@ -872,6 +878,8 @@ window.ElmAnimateWAAPI = (function () {
                 animData.animation.cancel(); // Cancel first
                 animData.animation.play();   // Then replay
             });
+            // Send restart event to Elm so it can update its state
+            sendEventToElm('animationUpdate', elementId, { status: 'restarted' });
         }
     }
 
@@ -909,53 +917,6 @@ window.ElmAnimateWAAPI = (function () {
         }
     }
 
-    /**
-     * Get current position from an animation's progress
-     */
-    function getCurrentPositionFromAnimation(animation, targetX, targetY, targetZ) {
-        try {
-            const effect = animation.effect;
-            const timing = effect.getComputedTiming();
-            const keyframes = effect.getKeyframes();
-
-            // Get progress (0 to 1)
-            const progress = timing.progress !== null ? timing.progress : 0;
-
-            // Find start position from first keyframe
-            const firstKeyframe = keyframes[0];
-            if (firstKeyframe && firstKeyframe.transform) {
-                const transformStr = firstKeyframe.transform;
-                const parsed = parseTransform(transformStr);
-
-                // Interpolate between start and target based on progress
-                const currentX = parsed.x + (targetX - parsed.x) * progress;
-                const currentY = parsed.y + (targetY - parsed.y) * progress;
-                const currentZ = parsed.z + (targetZ - parsed.z) * progress;
-
-                return { x: currentX, y: currentY, z: currentZ, progress, timing };
-            }
-        } catch (e) {
-            console.warn('⚠️ Could not get position from animation:', e);
-        }
-
-        // Fallback: use target position
-        return { x: targetX, y: targetY, z: targetZ, progress: 1, timing: null };
-    }
-
-    /**
-     * Parse transform string to extract position values
-     */
-    function parseTransform(transformStr) {
-        const translate3d = transformStr.match(/translate3d\(([^,]+),\s*([^,]+),\s*([^)]+)\)/);
-        if (translate3d) {
-            return {
-                x: parseFloat(translate3d[1]) || 0,
-                y: parseFloat(translate3d[2]) || 0,
-                z: parseFloat(translate3d[3]) || 0
-            };
-        }
-        return { x: 0, y: 0, z: 0 };
-    }
 
     /**
      * Update animation targets for elements with active position animations
@@ -980,6 +941,7 @@ window.ElmAnimateWAAPI = (function () {
 
             const posAnimData = elementAnims.get('position');
             const animation = posAnimData.animation;
+            const cachedEasingKeyframes = posAnimData.easingKeyframes;
 
             // Extract scaled start and end positions from Elm
             const startPos = update.startPosition;
@@ -999,12 +961,19 @@ window.ElmAnimateWAAPI = (function () {
                 endPos.rotationX, endPos.rotationY, endPos.rotationZ
             );
 
+            // Generate keyframes using cached easing (preserves bounce/elastic during resize)
+            // For complex easings, this regenerates all 30+ keyframes with new positions
+            // For simple easings, this creates 2 keyframes (browser handles easing via timing)
+            const keyframes = generateKeyframesWithEasing(
+                fromTransform,
+                toTransform,
+                cachedEasingKeyframes,
+                'transform'
+            );
+
             // Update keyframes in-place - animation continues seamlessly
             // playState, currentTime, and event listeners are preserved
-            animation.effect.setKeyframes([
-                { transform: fromTransform },
-                { transform: toTransform }
-            ]);
+            animation.effect.setKeyframes(keyframes);
         });
     }
 
