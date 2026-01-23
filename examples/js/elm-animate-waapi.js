@@ -309,12 +309,12 @@ window.ElmAnimateWAAPI = (function () {
 
         switch (property.type) {
             case 'position':
-                const startX = property.startX !== undefined ? property.startX : currentTransform.x;
-                const startY = property.startY !== undefined ? property.startY : currentTransform.y;
-                const startZ = property.startZ !== undefined ? property.startZ : currentTransform.z;
-                const endX = property.endX !== undefined ? property.endX : currentTransform.x;
-                const endY = property.endY !== undefined ? property.endY : currentTransform.y;
-                const endZ = property.endZ !== undefined ? property.endZ : currentTransform.z;
+                const startX = property.startX != null ? property.startX : currentTransform.x;
+                const startY = property.startY != null ? property.startY : currentTransform.y;
+                const startZ = property.startZ != null ? property.startZ : currentTransform.z;
+                const endX = property.endX != null ? property.endX : currentTransform.x;
+                const endY = property.endY != null ? property.endY : currentTransform.y;
+                const endZ = property.endZ != null ? property.endZ : currentTransform.z;
 
                 startTransform = buildTransformString(startX, startY, startZ,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
@@ -325,12 +325,12 @@ window.ElmAnimateWAAPI = (function () {
                 break;
 
             case 'scale':
-                const startScaleX = property.startX !== undefined ? property.startX : currentTransform.scaleX;
-                const startScaleY = property.startY !== undefined ? property.startY : currentTransform.scaleY;
-                const startScaleZ = property.startZ !== undefined ? property.startZ : currentTransform.scaleZ;
-                const endScaleX = property.endX !== undefined ? property.endX : currentTransform.scaleX;
-                const endScaleY = property.endY !== undefined ? property.endY : currentTransform.scaleY;
-                const endScaleZ = property.endZ !== undefined ? property.endZ : currentTransform.scaleZ;
+                const startScaleX = property.startX != null ? property.startX : currentTransform.scaleX;
+                const startScaleY = property.startY != null ? property.startY : currentTransform.scaleY;
+                const startScaleZ = property.startZ != null ? property.startZ : currentTransform.scaleZ;
+                const endScaleX = property.endX != null ? property.endX : currentTransform.scaleX;
+                const endScaleY = property.endY != null ? property.endY : currentTransform.scaleY;
+                const endScaleZ = property.endZ != null ? property.endZ : currentTransform.scaleZ;
 
                 startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     startScaleX, startScaleY, startScaleZ,
@@ -341,12 +341,12 @@ window.ElmAnimateWAAPI = (function () {
                 break;
 
             case 'rotate':
-                const startRotX = property.startX !== undefined ? property.startX : currentTransform.rotateX;
-                const startRotY = property.startY !== undefined ? property.startY : currentTransform.rotateY;
-                const startRotZ = property.startZ !== undefined ? property.startZ : currentTransform.rotateZ;
-                const endRotX = property.endX !== undefined ? property.endX : currentTransform.rotateX;
-                const endRotY = property.endY !== undefined ? property.endY : currentTransform.rotateY;
-                const endRotZ = property.endZ !== undefined ? property.endZ : currentTransform.rotateZ;
+                const startRotX = property.startX != null ? property.startX : currentTransform.rotateX;
+                const startRotY = property.startY != null ? property.startY : currentTransform.rotateY;
+                const startRotZ = property.startZ != null ? property.startZ : currentTransform.rotateZ;
+                const endRotX = property.endX != null ? property.endX : currentTransform.rotateX;
+                const endRotY = property.endY != null ? property.endY : currentTransform.rotateY;
+                const endRotZ = property.endZ != null ? property.endZ : currentTransform.rotateZ;
 
                 startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
@@ -398,7 +398,8 @@ window.ElmAnimateWAAPI = (function () {
         switch (property.type) {
             case 'opacity':
                 {
-                    const startValue = property.startValue !== undefined ? property.startValue : 1;
+                    const computedOpacity = parseFloat(window.getComputedStyle(element).opacity);
+                    const startValue = property.startValue != null ? property.startValue : computedOpacity;
                     const endValue = property.endValue;
 
                     if (easingKeyframes) {
@@ -420,7 +421,8 @@ window.ElmAnimateWAAPI = (function () {
 
             case 'backgroundColor':
                 {
-                    const startColor = property.startColor || 'transparent';
+                    const computedBgColor = window.getComputedStyle(element).backgroundColor;
+                    const startColor = property.startColor != null ? property.startColor : computedBgColor;
                     const endColor = property.endColor;
 
                     if (easingKeyframes) {
@@ -442,7 +444,8 @@ window.ElmAnimateWAAPI = (function () {
 
             case 'color':
                 {
-                    const startColor = property.startColor || 'rgba(0, 0, 0, 1)';
+                    const computedColor = window.getComputedStyle(element).color;
+                    const startColor = property.startColor != null ? property.startColor : computedColor;
                     const endColor = property.endColor;
 
                     if (easingKeyframes) {
@@ -463,17 +466,33 @@ window.ElmAnimateWAAPI = (function () {
                 break;
 
             case 'size':
-                keyframes = [
-                    {
-                        width: window.getComputedStyle(element).width,
-                        height: window.getComputedStyle(element).height
-                    },
-                    {
-                        width: `${property.endWidth}px`,
-                        height: `${property.endHeight}px`
+                {
+                    const computedStyle = window.getComputedStyle(element);
+                    const startWidth = property.startWidth != null ? property.startWidth : parseFloat(computedStyle.width);
+                    const startHeight = property.startHeight != null ? property.startHeight : parseFloat(computedStyle.height);
+
+                    if (easingKeyframes) {
+                        // Complex easing: generate keyframes with easing applied
+                        keyframes = easingKeyframes.map(progress => ({
+                            width: `${startWidth + (property.endWidth - startWidth) * progress}px`,
+                            height: `${startHeight + (property.endHeight - startHeight) * progress}px`
+                        }));
+                        animationEasing = 'linear';
+                    } else {
+                        // Simple easing: use 2 keyframes
+                        keyframes = [
+                            {
+                                width: `${startWidth}px`,
+                                height: `${startHeight}px`
+                            },
+                            {
+                                width: `${property.endWidth}px`,
+                                height: `${property.endHeight}px`
+                            }
+                        ];
+                        animationEasing = easingFunctions[easing] || easing;
                     }
-                ];
-                animationEasing = easingFunctions[easing] || easing;
+                }
                 break;
 
             default:
