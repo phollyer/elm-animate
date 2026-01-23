@@ -1462,17 +1462,6 @@ generateKeyframes easing durationMs =
                     elasticInOscillations
                         ++ transitionKeyframes
                         ++ elasticOutOscillations
-
-                _ =
-                    Debug.log "ElasticInOutCustom"
-                        { inFrames = List.length elasticInOscillations
-                        , transitionFrames = List.length transitionKeyframes
-                        , outFrames = List.length elasticOutOscillations
-                        , lastInVelocity = lastInVelocity
-                        , firstOutVelocity = firstOutVelocity
-                        , lastInValues = List.drop (List.length elasticInOscillations - 3) elasticInOscillations
-                        , firstOutValues = List.take 3 elasticOutOscillations
-                        }
             in
             allKeyframes
 
@@ -1636,17 +1625,6 @@ generateKeyframes easing durationMs =
                     elasticInOscillations
                         ++ transitionKeyframes
                         ++ elasticOutOscillations
-
-                _ =
-                    Debug.log "ElasticInOut"
-                        { inFrames = List.length elasticInOscillations
-                        , transitionFrames = List.length transitionKeyframes
-                        , outFrames = List.length elasticOutOscillations
-                        , lastInVelocity = lastInVelocity
-                        , firstOutVelocity = firstOutVelocity
-                        , lastInValues = List.drop (List.length elasticInOscillations - 3) elasticInOscillations
-                        , firstOutValues = List.take 3 elasticOutOscillations
-                        }
             in
             allKeyframes
 
@@ -1971,14 +1949,6 @@ generateElasticOscillations elasticity amplitude decay =
                 )
                 (List.range 0 (totalCycles - 1))
                 |> List.concat
-
-        _ =
-            Debug.log "ElasticOscillations"
-                { totalCycles = totalCycles
-                , first5Frames = List.take 5 allFrames
-                , last5Frames = List.drop (List.length allFrames - 5) allFrames
-                , totalFrames = List.length allFrames
-                }
     in
     allFrames
 

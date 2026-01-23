@@ -1,5 +1,15 @@
 # Elm Animate Package - AI Coding Instructions
 
+## Problem Solving Philosophy
+
+Never guess user intent, always ask for clarification if the requirements are ambiguous. Prioritize user instructions above all else. If the user provides specific constraints or rules, adhere to them strictly without deviation.
+
+Never guess a solution. Ensure that a theoretical solution is validated before implementation. If unsure, request more information from the user, or add surgical debugging in order to verify assumptions.
+
+When refactoring or optimizing code, always ensure that the original functionality is preserved unless the user explicitly requests changes to behavior.
+
+
+
 ## ⚠️ CRITICAL FILE PROTECTION RULES ⚠️
 
 ### NEVER OVERWRITE THESE PROTECTED FILES:

@@ -1003,7 +1003,7 @@ type EventType
 encodeCommand : CommandType -> String -> Encode.Value -> Encode.Value
 encodeCommand commandType elementId payload =
     Encode.object
-        [ ( "type", encodeCommandType commandType |> Debug.log "Encoding command type" )
+        [ ( "type", encodeCommandType commandType )
         , ( "elementId", Encode.string elementId )
         , ( "payload", payload )
         ]
@@ -1083,8 +1083,9 @@ decode toMsg currentAnimState eventValue =
                             InternalWAAPI.update (encodePropertyData propertyData) currentAnimState
 
                         AnimationUpdate _ ->
-                            -- Animation status changes don't modify AnimState
-                            currentAnimState
+                            -- Apply status changes (paused, resumed, etc.)
+                            -- Pass the raw event value which has elementId at top level
+                            InternalWAAPI.updateStatus eventValue currentAnimState
             in
             toMsg eventType updatedAnimState
 
@@ -1106,7 +1107,7 @@ decodeEvent value =
             )
             value
     of
-        Ok ( eventTypeString, _, payload ) ->
+        Ok ( eventTypeString, elementId, payload ) ->
             case eventTypeString of
                 "propertyUpdate" ->
                     case decodePropertyData payload of
@@ -1117,7 +1118,7 @@ decodeEvent value =
                             Err ("Property decode error: " ++ error)
 
                 "animationUpdate" ->
-                    case decodeAnimationStatus payload of
+                    case decodeAnimationStatus elementId payload of
                         Ok status ->
                             Ok (AnimationUpdate status)
 
@@ -1133,8 +1134,8 @@ decodeEvent value =
 
 {-| Decode animation status from JavaScript payload.
 -}
-decodeAnimationStatus : Encode.Value -> Result String AnimationStatus
-decodeAnimationStatus payload =
+decodeAnimationStatus : String -> Encode.Value -> Result String AnimationStatus
+decodeAnimationStatus elementId payload =
     case Decode.decodeValue (Decode.field "status" Decode.string) payload of
         Ok "started" ->
             Ok Started

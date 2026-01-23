@@ -90,7 +90,6 @@ window.ElmAnimateWAAPI = (function () {
      * Process animation data received from Elm
      */
     function processAnimationData(animationData) {
-        console.log('ElmAnimateWAAPI: Received animation data', animationData);
         if (animationData && animationData.elements) {
             // Apply perspective to containers first
             applyPerspective(animationData);
@@ -681,7 +680,6 @@ window.ElmAnimateWAAPI = (function () {
 
         // Handle animation completion
         animation.addEventListener('finish', () => {
-            console.log('Animation finished event for', elementId, propertyType, 'version', version);
             // Stop update loop
             if (rafId !== null) {
                 cancelAnimationFrame(rafId);
@@ -759,14 +757,11 @@ window.ElmAnimateWAAPI = (function () {
         });
 
         animation.addEventListener('cancel', () => {
-            console.log('Animation cancelled event for', elementId, propertyType, 'version', version);
             // Only remove THIS property's animation if version matches
             // (prevents removing newer animation if cancel event fires late)
             const elementAnims = activeAnimations.get(elementId);
             if (elementAnims) {
                 const current = elementAnims.get(propertyType);
-                console.log('Animation cancelled for', elementId, propertyType, 'version', version);
-                console.log('Current animation version is', current ? current.version : 'none');
                 if (current && current.version === version) {
                     elementAnims.delete(propertyType);
 
@@ -891,44 +886,8 @@ window.ElmAnimateWAAPI = (function () {
                 animData.animation.pause();
             });
 
-            // CRITICAL: Send current position to Elm so it knows where the animation was paused
-            const currentState = getCurrentTransform(element);
-            const computedStyle = window.getComputedStyle(element);
-
-            // Collect property versions
-            const propertyVersions = {};
-            elementAnims.forEach((animData, propType) => {
-                propertyVersions[propType] = animData.version;
-            });
-
-            const propertyData = {
-                elementId: elementId,
-                position: {
-                    x: currentState.x,
-                    y: currentState.y,
-                    z: currentState.z
-                },
-                opacity: parseFloat(computedStyle.opacity),
-                rotation: {
-                    x: currentState.rotationX,
-                    y: currentState.rotationY,
-                    z: currentState.rotationZ
-                },
-                scale: {
-                    x: currentState.scaleX,
-                    y: currentState.scaleY,
-                    z: currentState.scaleZ
-                },
-                backgroundColor: computedStyle.backgroundColor,
-                color: computedStyle.color,
-                size: {
-                    width: parseFloat(computedStyle.width),
-                    height: parseFloat(computedStyle.height)
-                },
-                isAnimating: false,  // Paused = not animating
-                propertyVersions: propertyVersions
-            };
-            sendEventToElm('propertyUpdate', elementId, propertyData);
+            // Send paused event to Elm so it can update its state
+            sendEventToElm('animationUpdate', elementId, { status: 'paused' });
         }
     }
 
@@ -1001,7 +960,9 @@ window.ElmAnimateWAAPI = (function () {
     /**
      * Update animation targets for elements with active position animations
      * Called during resize when animations are running/paused
-     * ARCHITECTURE: Elm has already determined these elements have active animations
+     * ARCHITECTURE: Uses setKeyframes() to update animation with fully scaled start and end positions
+     * This preserves playState, currentTime, and event listeners automatically
+     * The browser interpolates correctly at the current animation progress using the new keyframes
      */
     function handleResize(updates) {
         updates.forEach(update => {
@@ -1018,80 +979,32 @@ window.ElmAnimateWAAPI = (function () {
             }
 
             const posAnimData = elementAnims.get('position');
-            const oldAnimation = posAnimData.animation;
+            const animation = posAnimData.animation;
 
-            // Get current position from animation
-            const current = getCurrentPositionFromAnimation(oldAnimation, update.x, update.y, update.z);
+            // Extract scaled start and end positions from Elm
+            const startPos = update.startPosition;
+            const endPos = update.endPosition;
 
-            // Store animation state
-            const wasPlaying = oldAnimation.playState === 'running';
-            const wasPaused = oldAnimation.playState === 'paused';
-            const currentTime = oldAnimation.currentTime || 0;
-
-            // CRITICAL: Remove from tracking BEFORE cancelling
-            elementAnims.delete('position');
-
-            // Cancel old animation
-            oldAnimation.cancel();
-
-            // Create new animation from current position to new target
-            // ARCHITECTURE: Elm sends correct scale/rotation values from its state
+            // Build full animation keyframes from scaled start to scaled end
+            // The browser will interpolate correctly at preserved currentTime
             const fromTransform = buildTransformString(
-                current.x, current.y, current.z,
-                update.scaleX, update.scaleY, update.scaleZ,
-                update.rotationX, update.rotationY, update.rotationZ
+                startPos.x, startPos.y, startPos.z,
+                startPos.scaleX, startPos.scaleY, startPos.scaleZ,
+                startPos.rotationX, startPos.rotationY, startPos.rotationZ
             );
 
             const toTransform = buildTransformString(
-                update.x, update.y, update.z,
-                update.scaleX, update.scaleY, update.scaleZ,
-                update.rotationX, update.rotationY, update.rotationZ
+                endPos.x, endPos.y, endPos.z,
+                endPos.scaleX, endPos.scaleY, endPos.scaleZ,
+                endPos.rotationX, endPos.rotationY, endPos.rotationZ
             );
 
-            // Create new animation
-            const newAnimation = element.animate(
-                [
-                    { transform: fromTransform },
-                    { transform: toTransform }
-                ],
-                {
-                    duration: oldAnimation.effect.getTiming().duration || 1000,
-                    easing: oldAnimation.effect.getTiming().easing || 'linear',
-                    fill: 'forwards'
-                }
-            );
-
-            // Mark it
-            newAnimation.__elmAnimate = true;
-
-            // Set up events
-            const updateFn = () => {
-                setupAnimationEvents(update.elementId, 'position', element, newAnimation, posAnimData.version);
-            };
-
-            // Store the new animation
-            elementAnims.set('position', {
-                animation: newAnimation,
-                version: posAnimData.version,
-                updateFn: updateFn
-            });
-
-            // Restore playback state
-            if (wasPaused) {
-                newAnimation.pause();
-            } else if (wasPlaying) {
-                newAnimation.play();
-                updateFn();
-            }
-
-            // Try to restore currentTime
-            if (currentTime > 0) {
-                try {
-                    newAnimation.currentTime = Math.min(currentTime, newAnimation.effect.getTiming().duration);
-                } catch (e) {
-                    console.warn('   Could not restore currentTime:', e);
-                }
-            }
+            // Update keyframes in-place - animation continues seamlessly
+            // playState, currentTime, and event listeners are preserved
+            animation.effect.setKeyframes([
+                { transform: fromTransform },
+                { transform: toTransform }
+            ]);
         });
     }
 
@@ -1102,8 +1015,6 @@ window.ElmAnimateWAAPI = (function () {
      */
     function setProperties(updates) {
         updates.forEach(update => {
-            console.log('==> setProperties for', update.elementId);
-            console.log(update);
             const element = document.getElementById(update.elementId);
             if (!element) {
                 console.warn(`Element with id "${update.elementId}" not found`);
@@ -1119,22 +1030,11 @@ window.ElmAnimateWAAPI = (function () {
             // CRITICAL: Cancel all existing animations
             const animations = element.getAnimations();
             animations.forEach((anim) => {
-                console.log('   Cancelling animation:', anim);
                 anim.cancel();
             });
 
-            console.log('==> Animations', animations);
-
             // Clean up tracking for this element
             activeAnimations.delete(update.elementId);
-
-            // CRITICAL: Cancel all existing animations
-            const animations1 = element.getAnimations();
-            console.log('==> Animations after cleanup', animations1);
-            animations1.forEach((anim) => {
-                console.log('   Checking animation:', anim);
-            });
-
 
             const props = update.properties;
 
@@ -1200,17 +1100,18 @@ window.ElmAnimateWAAPI = (function () {
         if (ports.waapiCommand && ports.waapiCommand.subscribe) {
             ports.waapiCommand.subscribe(function (commandData) {
                 try {
-                    // ARCHITECTURE: Elm always sends explicit 'type' field
-                    // JS just switches on type - no guessing structure
-                    if (!commandData || !commandData.type) {
+                    if (!commandData) {
+                        console.warn('ElmAnimateWAAPI: No command data received');
+                        return;
+                    }
+
+                    if (!commandData.type) {
                         console.warn('ElmAnimateWAAPI: Command missing type field:', commandData);
                         return;
                     }
 
                     const commandType = commandData.type;
-
-                    console.log('==> commmandDate.type', commandType);
-
+                    console.log('ElmAnimateWAAPI: Received command:', commandType, commandData);
                     switch (commandType) {
                         case 'animate':
                             // Animation data with elements

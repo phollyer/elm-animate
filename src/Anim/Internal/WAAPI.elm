@@ -44,6 +44,7 @@ module Anim.Internal.WAAPI exposing
     , speed
     , update
     , updatePositions
+    , updateStatus
     )
 
 import Anim.Easing exposing (Easing(..))
@@ -84,6 +85,7 @@ type alias ElementId =
 type AnimationStatus
     = NotStarted
     | Running
+    | Paused
     | Complete
 
 
@@ -503,6 +505,63 @@ extractElementStartStates elementConfig =
 -- Update
 
 
+{-| Handle animation status updates from JavaScript (paused, resumed).
+-}
+updateStatus : Decode.Value -> AnimState -> AnimState
+updateStatus jsonValue (AnimState state) =
+    case Decode.decodeValue statusUpdateDecoder jsonValue of
+        Ok { elementId, status } ->
+            let
+                newStatus =
+                    case status of
+                        "paused" ->
+                            Just Paused
+
+                        "resumed" ->
+                            Just Running
+
+                        _ ->
+                            Nothing
+
+                updatedAnimations =
+                    case newStatus of
+                        Just newStat ->
+                            Dict.update elementId
+                                (Maybe.map
+                                    (\elementAnim ->
+                                        let
+                                            updatedProps =
+                                                Dict.map (\_ prop -> { prop | status = newStat }) elementAnim.properties
+                                        in
+                                        { elementAnim | properties = updatedProps }
+                                    )
+                                )
+                                state.elementAnimations
+
+                        Nothing ->
+                            state.elementAnimations
+
+                hasRunningAnimations =
+                    Dict.values updatedAnimations
+                        |> List.any
+                            (\elementAnim ->
+                                Dict.values elementAnim.properties
+                                    |> List.any (\prop -> prop.status == Running)
+                            )
+            in
+            AnimState
+                { state
+                    | elementAnimations = updatedAnimations
+                    , isRunning = hasRunningAnimations
+                }
+
+        Err _ ->
+            -- Fallback to old propertyUpdate decoder for backward compatibility
+            update jsonValue (AnimState state)
+
+
+{-| Handle full property updates from JavaScript (for backward compatibility).
+-}
 update : Decode.Value -> AnimState -> AnimState
 update jsonValue (AnimState state) =
     case Decode.decodeValue animationUpdateDecoder jsonValue of
@@ -616,57 +675,87 @@ calculateResizePosition :
         , oldContainerSize : { width : Int, height : Int }
         , newContainerSize : { width : Int, height : Int }
         }
-    -> Maybe { elementId : String, x : Float, y : Float, z : Float }
+    -> Maybe { elementId : String, startX : Float, startY : Float, startZ : Float, endX : Float, endY : Float, endZ : Float }
 calculateResizePosition animState { elementId, elementSize, oldContainerSize, newContainerSize } =
     let
         -- Only reposition if dimensions actually changed
-        dimensionsChanged =
-            oldContainerSize.width /= newContainerSize.width || oldContainerSize.height /= newContainerSize.height
+        widthChanged =
+            oldContainerSize.width /= newContainerSize.width
+
+        heightChanged =
+            oldContainerSize.height /= newContainerSize.height
     in
-    if not dimensionsChanged then
+    if not (widthChanged || heightChanged) then
         Nothing
 
     else
-        let
-            -- Calculate center positions
-            oldCenterX =
-                toFloat oldContainerSize.width / 2 - (toFloat elementSize.width / 2)
+        -- Get original animation start and end positions from Builder history
+        Maybe.map2
+            (\startPos endPos ->
+                let
+                    startRec =
+                        Position.toRecord startPos
+                            |> Debug.log ("Resize Start Position for " ++ elementId)
 
-            oldCenterY =
-                toFloat oldContainerSize.height / 2 - (toFloat elementSize.height / 2)
+                    endRec =
+                        Position.toRecord endPos
+                            |> Debug.log ("Resize End Position for " ++ elementId)
 
-            newCenterX =
-                toFloat newContainerSize.width / 2 - (toFloat elementSize.width / 2)
+                    -- Calculate scaling ratios
+                    ratioX =
+                        if oldContainerSize.width > 0 then
+                            toFloat newContainerSize.width / toFloat oldContainerSize.width
 
-            newCenterY =
-                toFloat newContainerSize.height / 2 - (toFloat elementSize.height / 2)
+                        else
+                            1
 
-            -- Get current position or default to old center
-            currentPos =
-                getCurrentPosition elementId animState
-                    |> Maybe.map Position.toRecord
-                    |> Maybe.withDefault { x = oldCenterX, y = oldCenterY, z = 0 }
+                    ratioY =
+                        if oldContainerSize.height > 0 then
+                            toFloat newContainerSize.height / toFloat oldContainerSize.height
 
-            -- Calculate offset from old center
-            offsetX =
-                currentPos.x - oldCenterX
+                        else
+                            1
 
-            offsetY =
-                currentPos.y - oldCenterY
+                    -- Scale both start and end positions (only for changed dimensions)
+                    scaledStartX =
+                        if widthChanged then
+                            startRec.x * ratioX - (toFloat elementSize.width / 2)
 
-            -- Apply same offset to new center
-            newX =
-                newCenterX + offsetX
+                        else
+                            startRec.x
 
-            newY =
-                newCenterY + offsetY
-        in
-        Just
-            { elementId = elementId
-            , x = newX
-            , y = newY
-            , z = currentPos.z
-            }
+                    scaledStartY =
+                        if heightChanged then
+                            startRec.y * ratioY
+
+                        else
+                            startRec.y
+
+                    scaledEndX =
+                        if widthChanged then
+                            endRec.x * ratioX - (toFloat elementSize.width / 2)
+
+                        else
+                            endRec.x
+
+                    scaledEndY =
+                        if heightChanged then
+                            endRec.y * ratioY
+
+                        else
+                            endRec.y
+                in
+                { elementId = elementId
+                , startX = scaledStartX
+                , startY = scaledStartY
+                , startZ = startRec.z
+                , endX = scaledEndX
+                , endY = scaledEndY
+                , endZ = endRec.z
+                }
+            )
+            (getStartPosition elementId animState)
+            (getEndPosition elementId animState)
 
 
 {-| Update positions for multiple elements without creating animation history.
@@ -680,21 +769,21 @@ and sends the appropriate command to JavaScript:
 
 -}
 updatePositions :
-    List { elementId : String, x : Float, y : Float, z : Float }
+    List { elementId : String, startX : Float, startY : Float, startZ : Float, endX : Float, endY : Float, endZ : Float }
     -> AnimState
     -> ( AnimState, Encode.Value )
 updatePositions updates (AnimState state) =
     let
-        -- Update AnimState with new positions
+        -- Update AnimState with new end positions
         updatedAnimations =
             List.foldl
-                (\{ elementId, x, y, z } acc ->
-                    Dict.update elementId
+                (\posUpdate acc ->
+                    Dict.update posUpdate.elementId
                         (Maybe.map
                             (\elementAnim ->
                                 let
                                     newPosition =
-                                        Position.fromTriple ( x, y, z )
+                                        Position.fromTriple ( posUpdate.endX, posUpdate.endY, posUpdate.endZ )
 
                                     newCurrentStates =
                                         elementAnim.currentStates
@@ -710,38 +799,27 @@ updatePositions updates (AnimState state) =
                 state.elementAnimations
                 updates
 
-        -- Update Builder animation history with new positions
-        updatedBuilder =
-            List.foldl
-                (\{ elementId, x, y, z } acc ->
-                    let
-                        newPosition =
-                            Position.fromTriple ( x, y, z )
-                    in
-                    Builder.updateAnimationHistoryPositions elementId newPosition acc
-                )
-                state.builder
-                updates
-
-        -- Helper to check if an element has an active position animation
+        -- DON'T update Builder during resize - we need to preserve original animation data
+        -- so subsequent resizes can scale from the correct start/end positions
+        -- Helper to check if an element has an active position animation (running or paused)
         hasActivePositionAnimation : String -> Bool
         hasActivePositionAnimation elementId =
             Dict.get elementId state.elementAnimations
                 |> Maybe.andThen (\elem -> Dict.get "position" elem.properties)
-                |> Maybe.map (\prop -> prop.status == Running)
+                |> Maybe.map (\prop -> prop.status == Running || prop.status == Paused)
                 |> Maybe.withDefault False
 
         -- Separate updates into two categories
         ( animatedUpdates, directUpdates ) =
             List.partition (\upd -> hasActivePositionAnimation upd.elementId) updates
 
-        -- Helper to encode position update with current scale/rotation from state
-        encodeWithTransform : { elementId : String, x : Float, y : Float, z : Float } -> Encode.Value
-        encodeWithTransform positionUpdate =
+        -- Helper to encode animation update with full keyframe data (start and end positions)
+        encodeAnimationUpdate : { elementId : String, startX : Float, startY : Float, startZ : Float, endX : Float, endY : Float, endZ : Float } -> Encode.Value
+        encodeAnimationUpdate posUpdate =
             let
                 -- Get current scale and rotation from element's state
                 ( scaleVals, rotationVals ) =
-                    Dict.get positionUpdate.elementId updatedAnimations
+                    Dict.get posUpdate.elementId updatedAnimations
                         |> Maybe.map
                             (\elementAnim ->
                                 let
@@ -763,15 +841,68 @@ updatePositions updates (AnimState state) =
                             )
             in
             Encode.object
-                [ ( "elementId", Encode.string positionUpdate.elementId )
+                [ ( "elementId", Encode.string posUpdate.elementId )
+                , ( "startPosition"
+                  , Encode.object
+                        [ ( "x", Encode.float posUpdate.startX )
+                        , ( "y", Encode.float posUpdate.startY )
+                        , ( "z", Encode.float posUpdate.startZ )
+                        , ( "scaleX", Encode.float scaleVals.x )
+                        , ( "scaleY", Encode.float scaleVals.y )
+                        , ( "scaleZ", Encode.float scaleVals.z )
+                        , ( "rotationX", Encode.float rotationVals.x )
+                        , ( "rotationY", Encode.float rotationVals.y )
+                        , ( "rotationZ", Encode.float rotationVals.z )
+                        ]
+                  )
+                , ( "endPosition"
+                  , Encode.object
+                        [ ( "x", Encode.float posUpdate.endX )
+                        , ( "y", Encode.float posUpdate.endY )
+                        , ( "z", Encode.float posUpdate.endZ )
+                        , ( "scaleX", Encode.float scaleVals.x )
+                        , ( "scaleY", Encode.float scaleVals.y )
+                        , ( "scaleZ", Encode.float scaleVals.z )
+                        , ( "rotationX", Encode.float rotationVals.x )
+                        , ( "rotationY", Encode.float rotationVals.y )
+                        , ( "rotationZ", Encode.float rotationVals.z )
+                        ]
+                  )
+                ]
+
+        -- Helper for direct property updates (no animation)
+        encodeDirectUpdate : { elementId : String, startX : Float, startY : Float, startZ : Float, endX : Float, endY : Float, endZ : Float } -> Encode.Value
+        encodeDirectUpdate posUpdate =
+            let
+                ( scaleVals, rotationVals ) =
+                    Dict.get posUpdate.elementId updatedAnimations
+                        |> Maybe.map
+                            (\elementAnim ->
+                                let
+                                    scale =
+                                        elementAnim.currentStates.scale
+                                            |> Maybe.map Scale.toRecord
+                                            |> Maybe.withDefault { x = 1, y = 1, z = 1 }
+
+                                    rotation =
+                                        elementAnim.currentStates.rotate
+                                            |> Maybe.map Rotate.toRecord
+                                            |> Maybe.withDefault { x = 0, y = 0, z = 0 }
+                                in
+                                ( scale, rotation )
+                            )
+                        |> Maybe.withDefault
+                            ( { x = 1, y = 1, z = 1 }
+                            , { x = 0, y = 0, z = 0 }
+                            )
+            in
+            Encode.object
+                [ ( "elementId", Encode.string posUpdate.elementId )
                 , ( "properties"
                   , Encode.object
-                        [ ( "x", Encode.float positionUpdate.x )
-                        , ( "y", Encode.float positionUpdate.y )
-                        , ( "z", Encode.float positionUpdate.z )
-
-                        -- ARCHITECTURE: Elm sends current scale/rotation from its state
-                        -- Either from active animations or defaults if not set
+                        [ ( "x", Encode.float posUpdate.endX )
+                        , ( "y", Encode.float posUpdate.endY )
+                        , ( "z", Encode.float posUpdate.endZ )
                         , ( "scaleX", Encode.float scaleVals.x )
                         , ( "scaleY", Encode.float scaleVals.y )
                         , ( "scaleZ", Encode.float scaleVals.z )
@@ -791,14 +922,14 @@ updatePositions updates (AnimState state) =
                 -- Only direct updates (no active animations)
                 Encode.object
                     [ ( "type", Encode.string "setProperties" )
-                    , ( "updates", Encode.list encodeWithTransform directUpdates )
+                    , ( "updates", Encode.list encodeDirectUpdate directUpdates )
                     ]
 
             else if List.isEmpty directUpdates then
                 -- Only animated updates (all have active animations)
                 Encode.object
                     [ ( "type", Encode.string "handleResize" )
-                    , ( "updates", Encode.list encodeWithTransform animatedUpdates )
+                    , ( "updates", Encode.list encodeAnimationUpdate animatedUpdates )
                     ]
 
             else
@@ -806,15 +937,15 @@ updatePositions updates (AnimState state) =
                 Encode.list identity
                     [ Encode.object
                         [ ( "type", Encode.string "handleResize" )
-                        , ( "updates", Encode.list encodeWithTransform animatedUpdates )
+                        , ( "updates", Encode.list encodeAnimationUpdate animatedUpdates )
                         ]
                     , Encode.object
                         [ ( "type", Encode.string "setProperties" )
-                        , ( "updates", Encode.list encodeWithTransform directUpdates )
+                        , ( "updates", Encode.list encodeDirectUpdate directUpdates )
                         ]
                     ]
     in
-    ( AnimState { state | elementAnimations = updatedAnimations, builder = updatedBuilder }
+    ( AnimState { state | elementAnimations = updatedAnimations }
     , encodedUpdates
     )
 
@@ -941,15 +1072,20 @@ getPropertyRange :
     -> (Builder.ProcessedPropertyConfig -> Maybe { start : Maybe a, end : a })
     -> Maybe { start : Maybe a, end : a }
 getPropertyRange elementId (AnimState state) extractor =
+    -- Query the animation HISTORY, not the current builder state
+    -- The builder gets cleared after animation starts, but history preserves the data
     state.builder
-        |> Builder.processAnimationData
-        |> .elements
-        |> Dict.get elementId
+        |> Builder.getCurrentAnimation elementId
         |> Maybe.andThen
-            (\{ properties } ->
-                properties
-                    |> List.filterMap extractor
-                    |> List.head
+            (\historyEntry ->
+                historyEntry.processedData.elements
+                    |> Dict.get elementId
+                    |> Maybe.andThen
+                        (\{ properties } ->
+                            properties
+                                |> List.filterMap extractor
+                                |> List.head
+                        )
             )
 
 
@@ -1169,6 +1305,19 @@ getSizeRange elementId animState =
 
 
 -- Decoders
+
+
+type alias StatusUpdate =
+    { elementId : String
+    , status : String
+    }
+
+
+statusUpdateDecoder : Decoder StatusUpdate
+statusUpdateDecoder =
+    Decode.succeed StatusUpdate
+        |> andMap (Decode.field "elementId" Decode.string)
+        |> andMap (Decode.at [ "payload", "status" ] Decode.string)
 
 
 type alias AnimationUpdate =

@@ -136,7 +136,7 @@ update msg model =
                                 , height = 350
                                 }
                           , newContainerSize =
-                                { width = newAnimationAreaWidth |> Debug.log "New animation area width:"
+                                { width = newAnimationAreaWidth
                                 , height = 350
                                 }
                           }
