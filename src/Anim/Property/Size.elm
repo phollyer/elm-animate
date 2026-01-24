@@ -74,8 +74,8 @@ import Anim.Internal.Properties.Size as S
 {-| The default size value used when no initial value is specified: `{ width = 0, height = 0 }`
 
 **Note**: For size animations, you typically want to set an explicit initial value
-since most elements don't start at zero dimensions. You can do this using the `init*` functions
-when setting up your Engine's initial state, or by using the `from*` functions in the animation builder chain.
+since most elements don't start at zero dimensions. You can do this using the [Initialize](#initialize) functions
+when setting up your Engine's initial state, or by using the [Configure](#configure) functions in the animation builder chain.
 
 -}
 default : { width : Float, height : Float }
