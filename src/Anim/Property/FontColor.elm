@@ -12,7 +12,7 @@ module Anim.Property.FontColor exposing
 
 Build animations that change the font color of elements.
 
-    import Anim.Color exposing (Color(..))
+    import Anim.Color exposing (hex)
 
     animBuilder
         |> FontColor.for "my-element"
@@ -161,22 +161,24 @@ from =
 
 {-| Set the target color for the current element.
 
+    import Anim.Color exposing (hex, rgb, elmColor)
+
     animBuilder
         |> FontColor.for "my-element"
-        |> FontColor.from (Rgb { r = 0, g = 0, b = 255 })
-        |> FontColor.to (Hex "#ff0000")
+        |> FontColor.from (rgb 0 0 255)
+        |> FontColor.to (hex "#ff0000")
         |> ...
 
     animBuilder
         |> FontColor.for "my-element"
-        |> FontColor.from (ElmColor Color.blue)
-        |> FontColor.to (Rgb { r = 255, g = 0, b = 0 })
+        |> FontColor.from (elmColor Color.blue)
+        |> FontColor.to (rgb 255 0 0)
         |> ...
 
     animBuilder
         |> FontColor.for "my-element"
-        |> FontColor.from (Hex "#0000ff")
-        |> FontColor.to (ElmColor Color.red)
+        |> FontColor.from (hex "#0000ff")
+        |> FontColor.to (elmColor Color.red)
         |> ...
 
 -}

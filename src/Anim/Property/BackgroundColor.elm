@@ -12,11 +12,11 @@ module Anim.Property.BackgroundColor exposing
 
 Build animations that change the background color of elements.
 
-    import Anim.Color exposing (Color(..))
+    import Anim.Color exposing (hex)
 
     animBuilder
         |> BackgroundColor.for "my-element"
-        |> BackgroundColor.to (Hex "#ff0000")
+        |> BackgroundColor.to (hex "#ff0000")
         |> ... -- other color configuration steps
         |> BackgroundColor.build
         |> ... -- continue with animation
@@ -107,12 +107,13 @@ for elementId =
 
 Use this to initialize the background color in your `init` function.
 
+    import Anim.Color exposing (hex)
     import Anim.Engine.* as Engine
-    import Anim.Property.BackgroundColor as BackgroundColor exposing (Color(..))
+    import Anim.Property.BackgroundColor as BackgroundColor
 
     Engine.init
         |> Engine.builder
-        |> BackgroundColor.init "element-id" (Hex "#ff0000")
+        |> BackgroundColor.init "element-id" (hex "#ff0000")
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -145,14 +146,16 @@ build =
 
 {-| Set the starting color for the current element.
 
+    import Anim.Color exposing (hex, elmColor)
+
     animBuilder
         |> BackgroundColor.for "my-element"
-        |> BackgroundColor.from (Hex "#ff0000")
+        |> BackgroundColor.from (hex "#ff0000")
         |> ...
 
     animBuilder
         |> BackgroundColor.for "my-element"
-        |> BackgroundColor.from (ElmColor Color.red)
+        |> BackgroundColor.from (elmColor Color.red)
         |> ...
 
 -}
@@ -163,22 +166,24 @@ from color =
 
 {-| Set the target color for the current element.
 
+    import Anim.Color exposing (hex, rgb, elmColor)
+
     animBuilder
         |> BackgroundColor.for "my-element"
-        |> BackgroundColor.from (Rgb { r = 0, g = 0, b = 255 })
-        |> BackgroundColor.to (Hex "#ff0000")
+        |> BackgroundColor.from (rgb 0 0 255)
+        |> BackgroundColor.to (hex "#ff0000")
         |> ...
 
     animBuilder
         |> BackgroundColor.for "my-element"
-        |> BackgroundColor.from (ElmColor Color.blue)
-        |> BackgroundColor.to (Rgb { r = 255, g = 0, b = 0 })
+        |> BackgroundColor.from (elmColor Color.blue)
+        |> BackgroundColor.to (rgb 255 0 0)
         |> ...
 
     animBuilder
         |> BackgroundColor.for "my-element"
-        |> BackgroundColor.from (Hex "#0000ff")
-        |> BackgroundColor.to (ElmColor Color.red)
+        |> BackgroundColor.from (hex "#0000ff")
+        |> BackgroundColor.to (elmColor Color.red)
         |> ...
 
 -}
