@@ -20,7 +20,9 @@ module Anim.Internal.Builders.Scroll exposing
     , toCenter
     , toElement
     , toLeft
-    , toPercentage
+    , toPercentageX
+    , toPercentageXY
+    , toPercentageY
     , toRight
     , toTop
     , toTopLeft
@@ -256,11 +258,31 @@ toBottomRight (ScrollBuilder config) =
     |> toPercentage 0.5 0.8
 
 -}
-toPercentage : Float -> Float -> ScrollBuilder -> ScrollBuilder
-toPercentage xPercent yPercent (ScrollBuilder config) =
+toPercentageXY : Float -> Float -> ScrollBuilder -> ScrollBuilder
+toPercentageXY xPercent yPercent (ScrollBuilder config) =
     ScrollBuilder
         { config
             | scrollTarget = config.scrollTarget |> ScrollTarget.toPercentage xPercent yPercent
+        }
+
+
+{-| Scroll to percentage of container width (X axis only).
+-}
+toPercentageX : Float -> ScrollBuilder -> ScrollBuilder
+toPercentageX xPercent (ScrollBuilder config) =
+    ScrollBuilder
+        { config
+            | scrollTarget = config.scrollTarget |> ScrollTarget.toPercentage xPercent 0
+        }
+
+
+{-| Scroll to percentage of container height (Y axis only).
+-}
+toPercentageY : Float -> ScrollBuilder -> ScrollBuilder
+toPercentageY yPercent (ScrollBuilder config) =
+    ScrollBuilder
+        { config
+            | scrollTarget = config.scrollTarget |> ScrollTarget.toPercentage 0 yPercent
         }
 
 

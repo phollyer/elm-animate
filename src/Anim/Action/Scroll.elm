@@ -4,7 +4,7 @@ module Anim.Action.Scroll exposing
     , toTop, toBottom, toCenter
     , toLeft, toRight
     , toTopLeft, toTopRight, toBottomLeft, toBottomRight
-    , toXY, toX, toY, toPercentage
+    , toXY, toX, toY, toPercentageXY, toPercentageX, toPercentageY
     , onBothAxes, onXAxis, onYAxis
     , onBothAxesWithOffset, onXAxisWithOffset, onYAxisWithOffset
     , delay, duration, speed
@@ -60,7 +60,7 @@ You can chain multiple scroll targets with different containers.
 
 ## Coordinate Targeting
 
-@docs toXY, toX, toY, toPercentage
+@docs toXY, toX, toY, toPercentageXY, toPercentageX, toPercentageY
 
 
 # Axis Selection
@@ -339,14 +339,44 @@ toBottomRight =
     -- Scroll to 50% X and 80% Y of the container size.
     animBuilder
         |> Scroll.forContainer "element-id"
-        |> Scroll.toPercentage 0.5 0.8
+        |> Scroll.toPercentageXY 0.5 0.8
         |> Scroll.duration 500
         |> Scroll.build
 
 -}
-toPercentage : Float -> Float -> Builder -> Builder
-toPercentage =
-    SB.toPercentage
+toPercentageXY : Float -> Float -> Builder -> Builder
+toPercentageXY =
+    SB.toPercentageXY
+
+
+{-| Scroll to percentage of container width (X axis only).
+
+    -- Scroll to 50% of the container width.
+    animBuilder
+        |> Scroll.forContainer "element-id"
+        |> Scroll.toPercentageX 0.5
+        |> Scroll.duration 500
+        |> Scroll.build
+
+-}
+toPercentageX : Float -> Builder -> Builder
+toPercentageX =
+    SB.toPercentageX
+
+
+{-| Scroll to percentage of container height (Y axis only).
+
+    -- Scroll to 80% of the container height.
+    animBuilder
+        |> Scroll.forContainer "element-id"
+        |> Scroll.toPercentageY 0.8
+        |> Scroll.duration 500
+        |> Scroll.build
+
+-}
+toPercentageY : Float -> Builder -> Builder
+toPercentageY =
+    SB.toPercentageY
 
 
 
