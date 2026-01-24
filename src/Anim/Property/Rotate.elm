@@ -11,7 +11,7 @@ module Anim.Property.Rotate exposing
 
 {-| Rotate animation functions with 3D support.
 
-Use these functions to configure rotate animations in the builder chain:
+Build animations that rotate elements around the X, Y, and Z axes.
 
     animBuilder
         |> Rotate.for "my-element"
@@ -20,14 +20,15 @@ Use these functions to configure rotate animations in the builder chain:
         |> Rotate.build
         |> ... -- continue with animation
 
-For 3D rotations, you just need to set a value for the 'Z' axis and a perspective (either globally on the Engine or per-property using [perspective](#perspective)):
+For 3D rotations, you need to set a perspective (either globally on the Engine or per-property using [perspective](#perspective)):
 
     animBuilder
         |> Rotate.for "my-element"
-        |> Rotate.fromXYZ 0 0 0
-        |> Rotate.toXYZ 45 90 180
-        |> Rotate.speed 90
+        |> Rotate.perspective "container-id" 800
+        |> Rotate.to 180
+        |> ... -- other rotate configuration steps
         |> Rotate.build
+        |> ... -- continue with animation
 
 
 # Default
@@ -74,9 +75,8 @@ when you want to override that behavior.
 
 ## Perspective
 
-For 3D rotation this is required to give a sense of depth. Without it, Z rotation will have no visual effect.
-
-You can set a global perspective for all 3D animations directly on the Engine you are using, or you can set it on a per-property basis using this function.
+For 3D rotation on the X and Y axes, perspective is required to give a sense of depth. Without it, X and Y rotations will appear flat (no depth effect).
+Z-axis rotation works without perspective as it's the standard 2D rotation axis.
 
 @docs perspective
 
@@ -88,9 +88,9 @@ import Anim.Internal.Builders.Rotate as RB
 import Anim.Internal.Properties.Rotate as R
 
 
-{-| The default rotation value used when no initial value is specified: `{ x = 0, y = 0, z = 0 }`
+{-| The default rotation value used when no initial value is specified:
 
-This represents no rotation applied (all angles in degrees).
+`{ x = 0, y = 0, z = 0 }` (no rotation).
 
 -}
 default : { x : Float, y : Float, z : Float }
@@ -104,7 +104,11 @@ type alias Builder =
     RB.RotateBuilder
 
 
-{-| Configure a rotation animation for the specified element.
+{-| Turn the `AnimBuilder` into a rotate animation `Builder` for the specified element.
+
+From here, you can continue configuring the rotate animation, then call [build](#build) to turn
+the `Builder` back into an `AnimBuilder` and then either continue configuring other property animations or
+animate it with the Engine.
 
     animBuilder
         |> Rotate.for "my-element"
@@ -288,14 +292,14 @@ initZ elementId z animBuilder =
         |> RB.build
 
 
-{-| Complete the rotation animation configuration and return an [AnimBuilder](Anim.AnimBuilder)
-so you can continue building the overall animation.
+{-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
+so you can continue with the animation.
 
     animBuilder
         |> Rotate.for "my-element"
         |> ... -- Rotate configuration steps
         |> Rotate.build
-        |> ...
+        |> ... -- continue with animation or execute
 
 -}
 build : Builder -> AnimBuilder
@@ -591,23 +595,20 @@ delay =
     RB.delay
 
 
-{-| Set the perspective for 3D rotation.
+{-| Set the perspective for a parent element.
 
-This allows you to override the global perspective setting for rotation animations
-on a per-container basis. The perspective value determines the distance between
-the viewer and the `z = 0` plane, affecting how 3D rotations appear.
+This allows you to override the global perspective set by an Engine.
 
     animBuilder
         |> Rotate.for "my-element"
-        |> Rotate.perspective "special-container" 800
+        |> Rotate.perspective "parent-container" 800
         |> Rotate.toXYZ 45 90 180
         |> ...
 
-The first parameter is the container ID, and the second is the perspective value in pixels.
-This will override any global perspective set by one of the Engines.
+The first parameter is the parent container ID, and the second is the perspective value in pixels.
 
-**Note**: You also need to set the perspective attributes on the container element in your HTML/CSS
-for the effect to be visible. You can do this with the `perspectiveStyles` function in each of the Engines.
+**Note**: The `perspective` function **registers** the parent container for perspective management.
+For more information about actually **applying** the perspective, see the `Perspective` section for your chosen Engine.
 
 -}
 perspective : String -> Float -> Builder -> Builder

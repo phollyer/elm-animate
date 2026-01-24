@@ -13,7 +13,7 @@ module Anim.Action.Scroll exposing
 
 {-| Scroll animation functions for document and container scrolling.
 
-Use these functions to configure scroll animations in the builder chain:
+Use these functions to build scroll animations in the builder chain:
 
     import Anim.Action.Scroll as ScrollAction
     import Anim.Engine.Scroll as Scroll

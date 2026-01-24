@@ -11,7 +11,7 @@ module Anim.Property.Scale exposing
 
 {-| Scale animation functions with 3D support.
 
-Use these functions to configure scale animations in the builder chain:
+Build animations that scale elements along the X, Y, and Z axes.
 
     animBuilder
         |> Scale.for "my-element"
@@ -78,9 +78,8 @@ when you want to override that behavior.
 
 ## Perspective
 
-For 3D scaling this is required to give a sense of depth. Without it, Z scaling will have no visual effect.
-
-You can set a global perspective for all 3D animations directly on the Engine you are using, or you can set it on a per-property basis using this function.
+For 3D scaling on the Z axis, perspective is required to give a sense of depth. Without it, Z axis scaling will appear flat (no depth effect).
+X & Y scaling work without perspective as they're the standard 2D scaling axes.
 
 @docs perspective
 
@@ -91,9 +90,9 @@ import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Scale as SB
 
 
-{-| The default scale value used when no initial value is specified: `{ x = 1, y = 1, z = 1 }`
+{-| The default scale value used when no initial value is specified:
 
-This represents the original size with no scaling applied.
+`{ x = 1, y = 1, z = 1 }` (no scaling).
 
 -}
 default : { x : Float, y : Float, z : Float }
@@ -107,13 +106,15 @@ type alias Builder =
     SB.ScaleBuilder
 
 
-{-| Configure a scale animation for the specified element.
+{-| Turn the `AnimBuilder` into a scale animation `Builder` for the specified element.
+
+From here, you can continue configuring the scale animation, then call [build](#build) to turn
+the `Builder` back into an `AnimBuilder` and then either continue configuring other property animations or
+animate it with the Engine.
 
     animBuilder
         |> Scale.for "my-element"
         |> ... -- continue with scale configuration
-        |> Scale.for "my-element"
-        |> ...
 
 -}
 for : String -> AnimBuilder -> Builder
@@ -293,14 +294,14 @@ initZ elementId z animBuilder =
         |> SB.build
 
 
-{-| Complete the scale animation configuration and return an [AnimBuilder](Anim.AnimBuilder)
-so you can continue building the overall animation.
+{-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
+so you can continue with the animation.
 
     animBuilder
         |> Scale.for "my-element"
         |> ... -- Scale configuration steps
         |> Scale.build
-        |> ...
+        |> ... -- continue with animation or execute
 
 -}
 build : Builder -> AnimBuilder
@@ -602,11 +603,9 @@ easing =
     SB.easing
 
 
-{-| Set the perspective for 3D scaling.
+{-| Set the perspective for a parent element.
 
-This allows you to override the global perspective setting for scale animations
-on a per-container basis. The perspective value determines the distance between
-the viewer and the `z = 0` plane, affecting how 3D scaling appears.
+This allows you to override the global perspective set by an Engine.
 
     animBuilder
         |> Scale.for "my-element"
@@ -614,11 +613,10 @@ the viewer and the `z = 0` plane, affecting how 3D scaling appears.
         |> Scale.toXYZ 1.5 1.5 1.2
         |> ...
 
-The first parameter is the container ID, and the second is the perspective value in pixels.
-This will override any global perspective set by one of the Engines.
+The first parameter is the parent container ID, and the second is the perspective value in pixels.
 
-**Note**: You also need to set the perspective attributes on the container element in your HTML/CSS
-for the effect to be visible. You can do this with the `perspectiveStyles` function in each of the Engines.
+**Note**: The `perspective` function **registers** the parent container for perspective management.
+For more information about actually **applying** the perspective, see the `Perspective` section for your chosen Engine.
 
 -}
 perspective : String -> Float -> Builder -> Builder

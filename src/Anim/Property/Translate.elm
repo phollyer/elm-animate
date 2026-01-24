@@ -11,7 +11,11 @@ module Anim.Property.Translate exposing
 
 {-| Translate animation functions with 3D support.
 
-Use these functions to configure translate (position) animations in the builder chain:
+Build animations that move the position of elements along the X, Y, and Z axes.
+
+So if we're moving an element's position, why `Translate` and not something like `Position` for the module name?
+In web development, "translate" refers to _moving an element's position_ along the X, Y, and Z axes.
+Whereas "position" often refers to the CSS `position` property which controls _how an element is positioned_ in the document flow (like `static`, `relative`, `absolute`, etc.).
 
     animBuilder
         |> Translate.for "my-element"
@@ -78,9 +82,8 @@ when you want to override that behavior.
 
 ## Perspective
 
-For 3D positioning this is required to give a sense of depth. Without it, Z positioning will have no visual effect.
-
-You can set a global perspective for all 3D animations directly on the Engine you are using, or you can set it on a per-property basis using this function.
+For 3D translation on the Z axis, perspective is required to give a sense of depth. Without it, Z translations will appear flat (no depth effect).
+X & Y translations work without perspective as they're the standard 2D translation axes.
 
 @docs perspective
 
@@ -92,9 +95,9 @@ import Anim.Internal.Builders.Translate as TB
 import Anim.Internal.Properties.Translate as T
 
 
-{-| The default translate value used when no initial value is specified: `{ x = 0, y = 0, z = 0 }`
+{-| The default translate value used when no initial value is specified:
 
-This represents the origin position with no translation applied.
+`{ x = 0, y = 0, z = 0 }` (no translation).
 
 -}
 default : { x : Float, y : Float, z : Float }
@@ -108,7 +111,11 @@ type alias Builder =
     TB.TranslateBuilder
 
 
-{-| Configure a translate animation for the specified element.
+{-| Turn the `AnimBuilder` into a translate animation `Builder` for the specified element.
+
+From here, you can continue configuring the translate animation, then call [build](#build) to turn
+the `Builder` back into an `AnimBuilder` and then either continue configuring other property animations or
+animate it with the Engine.
 
     animBuilder
         |> Translate.for "my-element"
@@ -292,14 +299,14 @@ initZ elementId z animBuilder =
         |> TB.build
 
 
-{-| Complete the translate animation configuration and return an [AnimBuilder](Anim.AnimBuilder)
-so you can continue building the overall animation.
+{-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
+so you can continue with the animation.
 
     animBuilder
         |> Translate.for "my-element"
         |> ... -- Translate configuration steps
         |> Translate.build
-        |> ... -- continue with animation
+        |> ... -- continue with animation or execute
 
 -}
 build : Builder -> AnimBuilder
@@ -606,11 +613,9 @@ delay =
     TB.delay
 
 
-{-| Set the perspective for 3D positioning on this specific property.
+{-| Set the perspective for a parent element.
 
-This allows you to override the global perspective setting for translate animations
-on a per-container basis. The perspective value determines the distance between
-the viewer and the `z = 0` plane, affecting how 3D positioning appears.
+This allows you to override the global perspective set by an Engine.
 
     animBuilder
         |> Translate.for "my-element"
@@ -618,11 +623,10 @@ the viewer and the `z = 0` plane, affecting how 3D positioning appears.
         |> Translate.toZ 200
         |> ...
 
-The first parameter is the container ID, and the second is the perspective value in pixels.
-This will override any global perspective set by one of the Engines.
+The first parameter is the parent container ID, and the second is the perspective value in pixels.
 
-**Note**: You also need to set the perspective attributes on the container element in your HTML/CSS
-for the effect to be visible. You can do this with the `perspectiveStyles` function in each of the Engines.
+**Note**: The `perspective` function **registers** the parent container for perspective management.
+For more information about actually **applying** the perspective, see the `Perspective` section for your chosen Engine.
 
 -}
 perspective : String -> Float -> Builder -> Builder

@@ -10,7 +10,7 @@ module Anim.Property.Opacity exposing
 
 {-| Opacity animation functions.
 
-Use these functions to configure opacity animations in the builder chain:
+Build animations that change the opacity of elements.
 
     animBuilder
         |> Opacity.for "my-element"
@@ -69,9 +69,9 @@ import Anim.Internal.Builders.Opacity as OB
 import Anim.Internal.Properties.Opacity as O
 
 
-{-| The default opacity value used when no initial value is specified: `1.0`
+{-| The default opacity value used when no initial value is specified:
 
-This represents fully opaque (completely visible).
+`1.0` (fully opaque).
 
 -}
 default : Float
@@ -85,7 +85,11 @@ type alias Builder =
     OB.OpacityBuilder
 
 
-{-| Configure an opacity animation for the specified element.
+{-| Turn the `AnimBuilder` into an opacity animation `Builder` for the specified element.
+
+From here, you can continue configuring the opacity animation, then call [build](#build) to turn
+the `Builder` back into an `AnimBuilder` and then either continue configuring other property animations or
+animate it with the Engine.
 
     animBuilder
         |> Opacity.for "my-element"
@@ -120,14 +124,14 @@ init elementId value animBuilder =
         |> OB.build
 
 
-{-| Complete the opacity animation configuration and return an [AnimBuilder](Anim.AnimBuilder)
-so you can continue building the overall animation.
+{-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
+so you can continue with the animation.
 
     animBuilder
         |> Opacity.for "my-element"
         |> ... -- Opacity configuration steps
         |> Opacity.build
-        |> ...
+        |> ... -- continue with animation or execute
 
 -}
 build : Builder -> AnimBuilder

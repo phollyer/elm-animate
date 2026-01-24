@@ -10,7 +10,7 @@ module Anim.Property.Size exposing
 
 {-| Size animation functions.
 
-Use these functions to configure size animations in the builder chain:
+Build animations that change the size (width and height) of elements.
 
     animBuilder
         |> Size.for "my-element"
@@ -71,11 +71,13 @@ import Anim.Internal.Builders.Size as SB
 import Anim.Internal.Properties.Size as S
 
 
-{-| The default size value used when no initial value is specified: `{ width = 0, height = 0 }`
+{-| The default size value used when no initial value is specified:
+
+`{ width = 0, height = 0 }` (no size).
 
 **Note**: For size animations, you typically want to set an explicit initial value
 since most elements don't start at zero dimensions. You can do this using the [Initialize](#initialize) functions
-when setting up your Engine's initial state, or by using the [Configure](#configure) functions in the animation builder chain.
+when setting up your Engine's initial state, or by using the [Configure](#configure) functions in the builder chain.
 
 -}
 default : { width : Float, height : Float }
@@ -89,7 +91,11 @@ type alias Builder =
     SB.SizeBuilder
 
 
-{-| Configure a size animation for the specified element.
+{-| Turn the `AnimBuilder` into a size animation `Builder` for the specified element.
+
+From here, you can continue configuring the size animation, then call [build](#build) to turn
+the `Builder` back into an `AnimBuilder` and then either continue configuring other property animations or
+animate it with the Engine.
 
     animBuilder
         |> Size.for "my-element"
@@ -189,14 +195,14 @@ initH elementId h animBuilder =
         |> SB.build
 
 
-{-| Complete the size animation configuration and return an [AnimBuilder](Anim.AnimBuilder)
-so you can continue building the overall animation.
+{-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
+so you can continue with the animation.
 
     animBuilder
         |> Size.for "my-element"
         |> ... -- Size configuration steps
         |> Size.build
-        |> ... -- continue with animation
+        |> ... -- continue with animation or execute
 
 -}
 build : Builder -> AnimBuilder

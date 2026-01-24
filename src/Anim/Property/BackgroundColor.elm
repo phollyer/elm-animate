@@ -10,7 +10,7 @@ module Anim.Property.BackgroundColor exposing
 
 {-| Background Color animation functions.
 
-Use these functions to configure background color animations in the builder chain:
+Build animations that change the background color of elements.
 
     import Anim.Color exposing (Color(..))
 
@@ -71,9 +71,9 @@ import Anim.Internal.Builders.BackgroundColor as CB
 import Anim.Internal.Properties.Color exposing (Color(..))
 
 
-{-| The default background color used when no initial value is specified: transparent white `rgba(255, 255, 255, 0)`
+{-| The default background color used when no initial value is specified:
 
-This represents a fully transparent background.
+`rgba(255, 255, 255, 0)` (fully transparent white).
 
 -}
 default : Color
@@ -87,7 +87,11 @@ type alias Builder =
     CB.ColorBuilder
 
 
-{-| Configure a background color animation for the specified element.
+{-| Turn the `AnimBuilder` into a background color animation `Builder` for the specified element.
+
+From here, you can continue configuring the background color animation, then call [build](#build) to turn
+the `Builder` back into an `AnimBuilder` and then either continue configuring other property animations or
+animate it with the Engine.
 
     animBuilder
         |> BackgroundColor.for "my-element"
@@ -122,16 +126,16 @@ init elementId color animBuilder =
         |> CB.build
 
 
-{-| Complete the color animation configuration and return an [AnimBuilder](Anim#AnimBuilder)
-so you can continue building the overall animation.
+{-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
+so you can continue with the animation.
 
-    animBuilderColor exposing (hex)
-    import Anim.Engine.* as Engine
     import Anim.Property.BackgroundColor as BackgroundColor
 
-    Engine.init
-        |> Engine.builder
-        |> BackgroundColor.init "element-id" (h
+    animBuilder
+        |> BackgroundColor.for "element-id"
+        |> ... -- BackgroundColor configuration steps
+        |> BackgroundColor.build
+        |> ... -- continue with animation or execute
 
 -}
 build : Builder -> AnimBuilder

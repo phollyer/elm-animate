@@ -10,7 +10,7 @@ module Anim.Property.FontColor exposing
 
 {-| Font/Text Color animation functions.
 
-Use these functions to configure text color animations in the builder chain:
+Build animations that change the font color of elements.
 
     import Anim.Color exposing (Color(..))
 
@@ -71,9 +71,9 @@ import Anim.Internal.Builders.FontColor as CB
 import Anim.Internal.Properties.Color exposing (Color(..))
 
 
-{-| The default font color used when no initial value is specified: black `rgb(0, 0, 0)`
+{-| The default font color used when no initial value is specified:
 
-This represents standard black text.
+`rgb(0, 0, 0)` (opaque black).
 
 -}
 default : Color
@@ -87,7 +87,11 @@ type alias Builder =
     CB.ColorBuilder
 
 
-{-| Configure a font color animation for the specified element.
+{-| Turn the `AnimBuilder` into a font color animation `Builder` for the specified element.
+
+From here, you can continue configuring the font color animation, then call [build](#build) to turn
+the `Builder` back into an `AnimBuilder` and then either continue configuring other property animations or
+animate it with the Engine.
 
     animBuilder
         |> FontColor.for "my-element"
@@ -123,13 +127,16 @@ init elementId color animBuilder =
         |> CB.build
 
 
-{-| Complete the color animation configuration and return an [AnimBuilder](Anim#AnimBuilder)
-so you can continue building the overall animation.
+{-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
+so you can continue with the animation.
 
-    animBuiFontColor.for "my-element"
+    import Anim.Property.FontColor as FontColor
+
+        animBuilder
+        |> FontColor.for "my-element"
         |> ... -- Color configuration steps
         |> FontColor.build
-        |> ... -- continue with animation
+        |> ... -- continue with animation or execute
 
 -}
 build : Builder -> AnimBuilder
