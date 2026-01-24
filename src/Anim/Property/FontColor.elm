@@ -1,5 +1,6 @@
 module Anim.Property.FontColor exposing
-    ( init
+    ( default
+    , init
     , Builder, for, build
     , from
     , to
@@ -21,6 +22,11 @@ Use these functions to configure text color animations in the builder chain:
         |> ... -- continue with animation
 
 
+# Default
+
+@docs default
+
+
 # Initialize
 
 @docs init
@@ -34,17 +40,16 @@ Use these functions to configure text color animations in the builder chain:
 # Configure
 
 
-## Start Color
+## Initial Value
 
-The first time a text color animation is configured, if no starting color is set, it will default to `black (rgb 0 0 0)`.
-On subsequent animations, it will start from the last known text color.
-
-The last known text color is tracked in your Engine's model, so you only need to set this when you want to override that behavior, or, if you choose not to track state in your model.
+The first time a FontColor animation is configured, if no initial value is set, the [default](#default) is used.
+On subsequent _stateful_ animations, it will start from the last known Color, so you only need to set this
+when you want to override that behavior.
 
 @docs from
 
 
-## End Color
+## Target Value
 
 @docs to
 
@@ -64,6 +69,13 @@ import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.FontColor as CB
 import Anim.Internal.Properties.Color exposing (Color(..))
+
+
+{-| The default font color used when no initial value is specified: black `rgb(0, 0, 0)`
+-}
+default : Color
+default =
+    Rgba { r = 0, g = 0, b = 0, a = 1 }
 
 
 {-| Type alias for the internal `ColorBuilder`.
@@ -141,14 +153,24 @@ from =
     CB.from
 
 
-{-| Set the ending color for the current element.
-
-    import Anim.Color exposing (hex)
+{-| Set the target color for the current element.
 
     animBuilder
         |> FontColor.for "my-element"
-        |> FontColor.to (hmy-element"
-        |> Color.to (Hex "#ff0000")
+        |> FontColor.from (Rgb { r = 0, g = 0, b = 255 })
+        |> FontColor.to (Hex "#ff0000")
+        |> ...
+
+    animBuilder
+        |> FontColor.for "my-element"
+        |> FontColor.from (ElmColor Color.blue)
+        |> FontColor.to (Rgb { r = 255, g = 0, b = 0 })
+        |> ...
+
+    animBuilder
+        |> FontColor.for "my-element"
+        |> FontColor.from (Hex "#0000ff")
+        |> FontColor.to (ElmColor Color.red)
         |> ...
 
 -}

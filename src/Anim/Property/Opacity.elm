@@ -1,5 +1,6 @@
 module Anim.Property.Opacity exposing
-    ( init
+    ( default
+    , init
     , Builder, for, build
     , from
     , to
@@ -19,6 +20,11 @@ Use these functions to configure opacity animations in the builder chain:
         |> ... -- continue with animation
 
 
+# Default
+
+@docs default
+
+
 # Initialize
 
 @docs init
@@ -32,17 +38,16 @@ Use these functions to configure opacity animations in the builder chain:
 # Configure
 
 
-## Start Opacity
+## Initial Value
 
-The first time an opacity animation is configured, if no starting opacity is set, it will default to: `1.0` (fully opaque).
-On subsequent animations, it will start from the last known opacity.
-
-The last known opacity is tracked in your Engine's model, so you only need to set this when you want to override that behavior, or, if you choose not to track state in your model.
+The first time an opacity animation is configured, if no initial value is set, the [default](#default) is used.
+On subsequent _stateful_ animations, it will start from the last known opacity, so you only need to set this
+when you want to override that behavior.
 
 @docs from
 
 
-## End Opacity
+## Target Value
 
 @docs to
 
@@ -62,6 +67,20 @@ import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Opacity as OB
 import Anim.Internal.Properties.Opacity as O
+
+
+
+-- DEFAULT
+
+
+{-| The default opacity value used when no initial value is specified: `1.0`
+
+This represents fully opaque (completely visible).
+
+-}
+default : Float
+default =
+    1.0
 
 
 

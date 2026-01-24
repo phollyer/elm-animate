@@ -26,7 +26,7 @@ calls via Elm [ports](https://guide.elm-lang.org/interop/ports) for maximum perf
 **Note:** This module requires the accompanying JavaScript library to handle the Web Animations API.
 
 
-## Required JavaScript Companion
+## JavaScript Companion
 
 Install the `elm-animate-waapi` package from npm.
 
@@ -43,7 +43,12 @@ Then import and initialize it in your JavaScript code:
 ```
 
 
-## Required Ports
+## Ports
+
+The JavaScript companion automatically connects to these ports when you call `ElmAnimateWAAPI.init(app.ports)` in your JavaScript code.
+
+  - **`waapiCommand`**: Outgoing port to send animation commands to JavaScript (always required)
+  - **`waapiEvent`**: Incoming port to receive animation updates from JavaScript (only required for stateful animations)
 
 **For fire-and-forget animations** (no state tracking):
 
@@ -58,11 +63,6 @@ Both outgoing command and incoming event ports are needed.
         port waapiCommand : Json.Encode.Value -> Cmd msg
 
         port waapiEvent : (Json.Encode.Value -> msg) -> Sub msg
-
-  - **`waapiCommand`**: Outgoing port to send animation commands to JavaScript (always required)
-  - **`waapiEvent`**: Incoming port to receive animation updates from JavaScript (only needed for [animate](#animate), not for [fireAndForget](#fireAndForget))
-
-The JavaScript companion automatically connects to these ports when you call `ElmAnimateWAAPI.init(app.ports)` in your JavaScript code.
 
 
 # Build
@@ -408,8 +408,19 @@ animate =
 
 {-| Initialize properties without creating animations.
 
-Use this in your `init` function to set initial property values without animation history.
-This keeps AnimState and JavaScript in sync without polluting animation history.
+All animations need a starting point to animate from. This function sets
+initial property values without creating animation history. They are also used by
+the accompanying JavaScript to set the initial state of the animated elements.
+
+**Note:** If you set the same property both here and via inline CSS styles in your
+view, the values set here will take precedence (JavaScript applies them after
+Elm renders the view). To avoid confusion, pick one approach:
+
+  - Use `initProperties` for initial state (no inline styles needed), or
+  - Use inline styles and ensure your `from` values in animations match them
+
+If you try to animate a property that has no initial value set, the engine
+will assume sensible start values (e.g., opacity 1.0, translate {0,0,0}, etc.).
 
     port waapiCommand : Encode.Value -> Cmd msg
 

@@ -1,5 +1,6 @@
 module Anim.Property.Translate exposing
-    ( init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
+    ( default
+    , init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
     , Builder, for, build
     , from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
     , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
@@ -33,6 +34,11 @@ For 3D positioning, you just need to set a non-zero value for the 'Z' axis and a
         |> Translate.build
 
 
+# Default
+
+@docs default
+
+
 # Initialize
 
 @docs init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
@@ -46,17 +52,16 @@ For 3D positioning, you just need to set a non-zero value for the 'Z' axis and a
 # Configure
 
 
-## Start Position
+## Initial Value
 
-The first time a translate animation is configured, if no starting position is set, it will default to: `{ x = 0, y = 0, z = 0 }`, i.e. the origin.
-On subsequent animations, it will start from the last known position.
-
-The last known position is tracked in your Engine's model, so you only need to set this when you want to override that behavior, or, if you choose not to track state in your model.
+The first time a translate animation is configured, if no initial value is set, the [default](#default) is used.
+On subsequent _stateful_ animations, it will start from the last known position, so you only need to set this
+when you want to override that behavior.
 
 @docs from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
 
 
-## End Position
+## Target Value
 
 @docs to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
 
@@ -85,6 +90,16 @@ import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Translate as TB
 import Anim.Internal.Properties.Translate as T
+
+
+{-| The default translate value used when no initial value is specified: `{ x = 0, y = 0, z = 0 }`
+
+This represents the origin position with no translation applied.
+
+-}
+default : { x : Float, y : Float, z : Float }
+default =
+    { x = 0, y = 0, z = 0 }
 
 
 {-| Type alias for the internal `TranslateBuilder`.

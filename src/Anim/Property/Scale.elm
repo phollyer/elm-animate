@@ -1,5 +1,6 @@
 module Anim.Property.Scale exposing
-    ( init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
+    ( default
+    , init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
     , Builder, for, build
     , from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
     , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
@@ -33,6 +34,11 @@ For 3D scaling, you just need to set a non-zero value for the 'Z' axis and a per
         |> Scale.build
 
 
+# Default
+
+@docs default
+
+
 # Initialize
 
 @docs init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
@@ -46,17 +52,16 @@ For 3D scaling, you just need to set a non-zero value for the 'Z' axis and a per
 # Configure
 
 
-## Start Scale
+## Initial Value
 
-The first time a scale animation is configured, if no starting scale is set, it will default to: `{x = 1.0, y = 1.0, z = 1.0}`
-i.e. no scaling. On subsequent animations, it will start from the last known scale.
-
-The last known scale is tracked in your Engine's model, so you only need to set this when you want to override that behavior, or, if you choose not to track state in your model.
+The first time a scale animation is configured, if no initial value is set, the [default](#default) is used.
+On subsequent _stateful_ animations, it will start from the last known scale, so you only need to set this
+when you want to override that behavior.
 
 @docs from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
 
 
-## End Scale
+## Target Value
 
 @docs to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
 
@@ -84,6 +89,20 @@ You can set a global perspective for all 3D animations directly on the Engine yo
 import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Scale as SB
+
+
+
+-- DEFAULT
+
+
+{-| The default scale value used when no initial value is specified: `{ x = 1, y = 1, z = 1 }`
+
+This represents the original size with no scaling applied.
+
+-}
+default : { x : Float, y : Float, z : Float }
+default =
+    { x = 1, y = 1, z = 1 }
 
 
 

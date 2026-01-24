@@ -1,5 +1,6 @@
 module Anim.Property.Rotate exposing
-    ( init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
+    ( default
+    , init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
     , Builder, for, build
     , from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
     , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
@@ -29,6 +30,11 @@ For 3D rotations, you just need to set a value for the 'Z' axis and a perspectiv
         |> Rotate.build
 
 
+# Default
+
+@docs default
+
+
 # Initialize
 
 @docs init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
@@ -42,17 +48,16 @@ For 3D rotations, you just need to set a value for the 'Z' axis and a perspectiv
 # Configure
 
 
-## Start Rotation
+## Initial Value
 
-The first time a rotation animation is configured, if no starting rotation is set, it will default to: `{ x = 0, y = 0, z = 0 }`, i.e. no rotation.
-On subsequent animations, it will start from the last known rotation.
-
-The last known rotation is tracked in your Engine's model, so you only need to set this when you want to override that behavior, or, if you choose not to track state in your model.
+The first time a rotate animation is configured, if no initial value is set, the [default](#default) is used.
+On subsequent _stateful_ animations, it will start from the last known rotation, so you only need to set this
+when you want to override that behavior.
 
 @docs from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
 
 
-## End Rotation
+## Target Value
 
 @docs to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
 
@@ -81,6 +86,20 @@ import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Rotate as RB
 import Anim.Internal.Properties.Rotate as R
+
+
+
+-- DEFAULT
+
+
+{-| The default rotation value used when no initial value is specified: `{ x = 0, y = 0, z = 0 }`
+
+This represents no rotation applied (all angles in degrees).
+
+-}
+default : { x : Float, y : Float, z : Float }
+default =
+    { x = 0, y = 0, z = 0 }
 
 
 

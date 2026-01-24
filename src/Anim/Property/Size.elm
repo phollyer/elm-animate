@@ -1,5 +1,6 @@
 module Anim.Property.Size exposing
-    ( init, initWH, initW, initH
+    ( default
+    , init, initWH, initW, initH
     , Builder, for, build
     , from, fromHW, fromH, fromW
     , to, toHW, toH, toW
@@ -21,6 +22,11 @@ Use these functions to configure size animations in the builder chain:
         |> ... -- continue with animation
 
 
+# Default
+
+@docs default
+
+
 # Initialize
 
 @docs init, initWH, initW, initH
@@ -34,17 +40,16 @@ Use these functions to configure size animations in the builder chain:
 # Configure
 
 
-## Start Size
+## Initial Value
 
-The first time a size animation is configured, if no starting size is set, it will default to: `{height = 0, width = 0}`. On subsequent animations,
-it will start from the last known size.
-
-The last known size is tracked in your Engine's model, so you only need to set this when you want to override that behavior, or, if you choose not to track state in your model.
+The first time a size animation is configured, if no initial value is set, the [default](#default) is used.
+On subsequent _stateful_ animations, it will start from the last known size, so you only need to set this
+when you want to override that behavior.
 
 @docs from, fromHW, fromH, fromW
 
 
-## End Size
+## Target Value
 
 @docs to, toHW, toH, toW
 
@@ -64,6 +69,18 @@ import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Size as SB
 import Anim.Internal.Properties.Size as S
+
+
+{-| The default size value used when no initial value is specified: `{ width = 0, height = 0 }`
+
+**Note**: For size animations, you typically want to set an explicit initial value
+since most elements don't start at zero dimensions. You can do this using the `init*` functions
+when setting up your Engine's initial state, or by using the `from*` functions in the animation builder chain.
+
+-}
+default : { width : Float, height : Float }
+default =
+    { width = 0, height = 0 }
 
 
 {-| Type alias for the internal `SizeBuilder`.
