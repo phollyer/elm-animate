@@ -309,12 +309,12 @@ window.ElmAnimateWAAPI = (function () {
 
         switch (property.type) {
             case 'translate':
-                const startX = property.startX != null ? property.startX : currentTransform.x;
-                const startY = property.startY != null ? property.startY : currentTransform.y;
-                const startZ = property.startZ != null ? property.startZ : currentTransform.z;
-                const endX = property.endX != null ? property.endX : currentTransform.x;
-                const endY = property.endY != null ? property.endY : currentTransform.y;
-                const endZ = property.endZ != null ? property.endZ : currentTransform.z;
+                const startX = property.startX ?? property.defaultX ?? currentTransform.x;
+                const startY = property.startY ?? property.defaultY ?? currentTransform.y;
+                const startZ = property.startZ ?? property.defaultZ ?? currentTransform.z;
+                const endX = property.endX ?? currentTransform.x;
+                const endY = property.endY ?? currentTransform.y;
+                const endZ = property.endZ ?? currentTransform.z;
 
                 startTransform = buildTransformString(startX, startY, startZ,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
@@ -325,12 +325,12 @@ window.ElmAnimateWAAPI = (function () {
                 break;
 
             case 'scale':
-                const startScaleX = property.startX != null ? property.startX : currentTransform.scaleX;
-                const startScaleY = property.startY != null ? property.startY : currentTransform.scaleY;
-                const startScaleZ = property.startZ != null ? property.startZ : currentTransform.scaleZ;
-                const endScaleX = property.endX != null ? property.endX : currentTransform.scaleX;
-                const endScaleY = property.endY != null ? property.endY : currentTransform.scaleY;
-                const endScaleZ = property.endZ != null ? property.endZ : currentTransform.scaleZ;
+                const startScaleX = property.startX ?? property.defaultX ?? currentTransform.scaleX;
+                const startScaleY = property.startY ?? property.defaultY ?? currentTransform.scaleY;
+                const startScaleZ = property.startZ ?? property.defaultZ ?? currentTransform.scaleZ;
+                const endScaleX = property.endX ?? currentTransform.scaleX;
+                const endScaleY = property.endY ?? currentTransform.scaleY;
+                const endScaleZ = property.endZ ?? currentTransform.scaleZ;
 
                 startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     startScaleX, startScaleY, startScaleZ,
@@ -341,12 +341,12 @@ window.ElmAnimateWAAPI = (function () {
                 break;
 
             case 'rotate':
-                const startRotX = property.startX != null ? property.startX : currentTransform.rotateX;
-                const startRotY = property.startY != null ? property.startY : currentTransform.rotateY;
-                const startRotZ = property.startZ != null ? property.startZ : currentTransform.rotateZ;
-                const endRotX = property.endX != null ? property.endX : currentTransform.rotateX;
-                const endRotY = property.endY != null ? property.endY : currentTransform.rotateY;
-                const endRotZ = property.endZ != null ? property.endZ : currentTransform.rotateZ;
+                const startRotX = property.startX ?? property.defaultX ?? currentTransform.rotateX;
+                const startRotY = property.startY ?? property.defaultY ?? currentTransform.rotateY;
+                const startRotZ = property.startZ ?? property.defaultZ ?? currentTransform.rotateZ;
+                const endRotX = property.endX ?? currentTransform.rotateX;
+                const endRotY = property.endY ?? currentTransform.rotateY;
+                const endRotZ = property.endZ ?? currentTransform.rotateZ;
 
                 startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
@@ -399,7 +399,7 @@ window.ElmAnimateWAAPI = (function () {
             case 'opacity':
                 {
                     const computedOpacity = parseFloat(window.getComputedStyle(element).opacity);
-                    const startValue = property.startValue != null ? property.startValue : computedOpacity;
+                    const startValue = property.startValue ?? property.defaultValue ?? computedOpacity;
                     const endValue = property.endValue;
 
                     if (easingKeyframes) {
@@ -422,7 +422,7 @@ window.ElmAnimateWAAPI = (function () {
             case 'backgroundColor':
                 {
                     const computedBgColor = window.getComputedStyle(element).backgroundColor;
-                    const startColor = property.startColor != null ? property.startColor : computedBgColor;
+                    const startColor = property.startColor ?? property.defaultColor ?? computedBgColor;
                     const endColor = property.endColor;
 
                     if (easingKeyframes) {
@@ -445,7 +445,7 @@ window.ElmAnimateWAAPI = (function () {
             case 'color':
                 {
                     const computedColor = window.getComputedStyle(element).color;
-                    const startColor = property.startColor != null ? property.startColor : computedColor;
+                    const startColor = property.startColor ?? property.defaultColor ?? computedColor;
                     const endColor = property.endColor;
 
                     if (easingKeyframes) {

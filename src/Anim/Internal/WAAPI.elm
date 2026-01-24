@@ -207,11 +207,17 @@ animateStateless portFunction animBuilder =
 animate : (Encode.Value -> Cmd msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
 animate portFunction (AnimState state) buildAnimation =
     let
+        _ =
+            Debug.log "Animating with current state:" state
+
         -- Inject current animated states as baselines, then apply user configuration
         configuredBuilder =
             state.builder
+                |> Debug.log "Builder before injecting current states:"
                 |> Builder.injectCurrentStates state.elementAnimations
+                |> Debug.log "Builder after injecting current states:"
                 |> buildAnimation
+                |> Debug.log "Builder after user configuration:"
 
         builderWithCache =
             Builder.computeAndCachePerspectiveStyles configuredBuilder
@@ -225,6 +231,9 @@ animate portFunction (AnimState state) buildAnimation =
                 |> Dict.map
                     (\elementId elementConfig ->
                         let
+                            _ =
+                                Debug.log "Processing element:" ( elementId, elementConfig )
+
                             -- Get existing element animation to preserve states and versions for non-animated properties
                             existingAnimation =
                                 Dict.get elementId state.elementAnimations
@@ -259,6 +268,7 @@ animate portFunction (AnimState state) buildAnimation =
                                         , opacity = orElse animationEndStates.opacity base.opacity
                                         , size = orElse animationEndStates.size base.size
                                         }
+                                            |> Debug.log "Merged current states"
 
                                     Nothing ->
                                         -- First animation: use end states directly
@@ -317,11 +327,12 @@ animate portFunction (AnimState state) buildAnimation =
                                 mergedProperties =
                                     Dict.union newAnim.properties existingAnim.properties
                             in
-                            Dict.insert elementId
-                                { currentStates = newAnim.currentStates
-                                , properties = mergedProperties
-                                }
-                                acc
+                            Debug.log "Merging element animation" <|
+                                Dict.insert elementId
+                                    { currentStates = newAnim.currentStates
+                                    , properties = mergedProperties
+                                    }
+                                    acc
                 )
                 state.elementAnimations
                 newElementAnimations
@@ -1474,6 +1485,7 @@ encodeProcessedElementConfigWithVersions elementAnimations elementId config =
             Dict.get elementId elementAnimations
                 |> Maybe.map .properties
                 |> Maybe.withDefault Dict.empty
+                |> Debug.log "Element Properties with Versions"
     in
     Encode.object
         [ ( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties ) ]
@@ -1499,47 +1511,46 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
         versionField =
             ( "version", Encode.int version )
     in
-    case property of
+    case property |> Debug.log "Processing property" of
         Builder.ProcessedTranslateConfig config ->
             let
                 ( endX, endY, endZ ) =
                     Translate.toTriple config.end
 
                 ( startXField, startYField, startZField ) =
-                    case config.start of
+                    case config.start |> Debug.log "Translate start" of
                         Just start ->
                             let
                                 ( sx, sy, sz ) =
                                     Translate.toTriple start
                             in
-                            ( ( "startX", Encode.float sx )
-                            , ( "startY", Encode.float sy )
-                            , ( "startZ", Encode.float sz )
+                            ( ( "startX", sx )
+                            , ( "startY", sy )
+                            , ( "startZ", sz )
                             )
+                                |> Debug.log "Start fields for translate"
 
                         Nothing ->
-                            ( ( "startX", Encode.null )
-                            , ( "startY", Encode.null )
-                            , ( "startZ", Encode.null )
+                            ( ( "defaultX", 0 )
+                            , ( "defaultY", 0 )
+                            , ( "defaultZ", 0 )
                             )
-
-                baseFields =
-                    [ ( "type", Encode.string "translate" )
-                    , versionField
-                    , ( "endX", Encode.float endX )
-                    , ( "endY", Encode.float endY )
-                    , ( "endZ", Encode.float endZ )
-                    , startXField
-                    , startYField
-                    , startZField
-                    , ( "duration", Encode.int config.duration )
-                    , ( "perspective", encodeMaybePerspective config.perspective )
-                    ]
-
-                easingFields =
-                    encodeEasingWithKeyframes config.duration config.easing
+                                |> Debug.log "Default fields for translate"
             in
-            Encode.object (baseFields ++ easingFields)
+            Encode.object
+                ([ ( "type", Encode.string "translate" )
+                 , versionField
+                 , startXField |> Tuple.mapSecond Encode.float
+                 , startYField |> Tuple.mapSecond Encode.float
+                 , startZField |> Tuple.mapSecond Encode.float
+                 , ( "endX", Encode.float endX )
+                 , ( "endY", Encode.float endY )
+                 , ( "endZ", Encode.float endZ )
+                 , ( "duration", Encode.int config.duration )
+                 , ( "perspective", encodeMaybePerspective config.perspective )
+                 ]
+                    ++ encodeEasingWithKeyframes config.duration config.easing
+                )
 
         Builder.ProcessedScaleConfig config ->
             let
@@ -1559,28 +1570,25 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                             )
 
                         Nothing ->
-                            ( ( "startX", Encode.null )
-                            , ( "startY", Encode.null )
-                            , ( "startZ", Encode.null )
+                            ( ( "defaultX", Encode.float 1 )
+                            , ( "defaultY", Encode.float 1 )
+                            , ( "defaultZ", Encode.float 1 )
                             )
-
-                baseFields =
-                    [ ( "type", Encode.string "scale" )
-                    , versionField
-                    , ( "endX", Encode.float endX )
-                    , ( "endY", Encode.float endY )
-                    , ( "endZ", Encode.float endZ )
-                    , startXField
-                    , startYField
-                    , startZField
-                    , ( "duration", Encode.int config.duration )
-                    , ( "perspective", encodeMaybePerspective config.perspective )
-                    ]
-
-                easingFields =
-                    encodeEasingWithKeyframes config.duration config.easing
             in
-            Encode.object (baseFields ++ easingFields)
+            Encode.object
+                ([ ( "type", Encode.string "scale" )
+                 , versionField
+                 , startXField
+                 , startYField
+                 , startZField
+                 , ( "endX", Encode.float endX )
+                 , ( "endY", Encode.float endY )
+                 , ( "endZ", Encode.float endZ )
+                 , ( "duration", Encode.int config.duration )
+                 , ( "perspective", encodeMaybePerspective config.perspective )
+                 ]
+                    ++ encodeEasingWithKeyframes config.duration config.easing
+                )
 
         Builder.ProcessedRotateConfig config ->
             let
@@ -1600,28 +1608,25 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                             )
 
                         Nothing ->
-                            ( ( "startX", Encode.null )
-                            , ( "startY", Encode.null )
-                            , ( "startZ", Encode.null )
+                            ( ( "defaultX", Encode.float 0 )
+                            , ( "defaultY", Encode.float 0 )
+                            , ( "defaultZ", Encode.float 0 )
                             )
-
-                baseFields =
-                    [ ( "type", Encode.string "rotate" )
-                    , versionField
-                    , ( "endX", Encode.float endX )
-                    , ( "endY", Encode.float endY )
-                    , ( "endZ", Encode.float endZ )
-                    , startXField
-                    , startYField
-                    , startZField
-                    , ( "duration", Encode.int config.duration )
-                    , ( "perspective", encodeMaybePerspective config.perspective )
-                    ]
-
-                easingFields =
-                    encodeEasingWithKeyframes config.duration config.easing
             in
-            Encode.object (baseFields ++ easingFields)
+            Encode.object
+                ([ ( "type", Encode.string "rotate" )
+                 , versionField
+                 , startXField
+                 , startYField
+                 , startZField
+                 , ( "endX", Encode.float endX )
+                 , ( "endY", Encode.float endY )
+                 , ( "endZ", Encode.float endZ )
+                 , ( "duration", Encode.int config.duration )
+                 , ( "perspective", encodeMaybePerspective config.perspective )
+                 ]
+                    ++ encodeEasingWithKeyframes config.duration config.easing
+                )
 
         Builder.ProcessedSizeConfig config ->
             let
@@ -1635,98 +1640,78 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                                 ( sw, sh ) =
                                     Size.toTuple start
                             in
-                            ( ( "startWidth", Encode.float sw )
-                            , ( "startHeight", Encode.float sh )
+                            ( Just ( "startWidth", Encode.float sw )
+                            , Just ( "startHeight", Encode.float sh )
                             )
 
                         Nothing ->
-                            ( ( "startWidth", Encode.null )
-                            , ( "startHeight", Encode.null )
-                            )
+                            ( Nothing, Nothing )
 
-                baseFields =
-                    [ ( "type", Encode.string "size" )
-                    , versionField
-                    , ( "endWidth", Encode.float width )
-                    , ( "endHeight", Encode.float height )
-                    , startWidthField
-                    , startHeightField
-                    , ( "duration", Encode.int config.duration )
-                    ]
-
-                easingFields =
-                    encodeEasingWithKeyframes config.duration config.easing
+                optionalFields =
+                    List.filterMap identity [ startWidthField, startHeightField ]
             in
-            Encode.object (baseFields ++ easingFields)
+            Encode.object
+                ([ ( "type", Encode.string "size" )
+                 , versionField
+                 , ( "endWidth", Encode.float width )
+                 , ( "endHeight", Encode.float height )
+                 , ( "duration", Encode.int config.duration )
+                 ]
+                    ++ optionalFields
+                    ++ encodeEasingWithKeyframes config.duration config.easing
+                )
 
         Builder.ProcessedOpacityConfig config ->
             let
-                startValueField =
+                startField =
                     case config.start of
                         Just start ->
                             ( "startValue", Encode.float (Opacity.toFloat start) )
 
                         Nothing ->
-                            ( "startValue", Encode.null )
-
-                baseFields =
-                    [ ( "type", Encode.string "opacity" )
-                    , versionField
-                    , ( "endValue", Encode.float (Opacity.toFloat config.end) )
-                    , startValueField
-                    , ( "duration", Encode.int config.duration )
-                    ]
-
-                easingFields =
-                    encodeEasingWithKeyframes config.duration config.easing
+                            ( "defaultValue", Encode.float 1.0 )
             in
-            Encode.object (baseFields ++ easingFields)
+            Encode.object
+                ([ ( "type", Encode.string "opacity" )
+                 , versionField
+                 , startField
+                 , ( "endValue", Encode.float (Opacity.toFloat config.end) )
+                 , ( "duration", Encode.int config.duration )
+                 ]
+                    ++ encodeEasingWithKeyframes config.duration config.easing
+                )
 
         Builder.ProcessedBackgroundColorConfig config ->
             let
                 startColorField =
-                    case config.start of
-                        Just start ->
-                            ( "startColor", Encode.string (Color.toCssString start) )
-
-                        Nothing ->
-                            ( "startColor", Encode.null )
-
-                baseFields =
-                    [ ( "type", Encode.string "backgroundColor" )
-                    , versionField
-                    , ( "endColor", Encode.string (Color.toCssString config.end) )
-                    , startColorField
-                    , ( "duration", Encode.int config.duration )
-                    ]
-
-                easingFields =
-                    encodeEasingWithKeyframes config.duration config.easing
+                    config.start
+                        |> Maybe.map (\start -> ( "startColor", Encode.string (Color.toCssString start) ))
             in
-            Encode.object (baseFields ++ easingFields)
+            Encode.object
+                ([ ( "type", Encode.string "backgroundColor" )
+                 , versionField
+                 , ( "endColor", Encode.string (Color.toCssString config.end) )
+                 , ( "duration", Encode.int config.duration )
+                 ]
+                    ++ Maybe.withDefault [] (Maybe.map List.singleton startColorField)
+                    ++ encodeEasingWithKeyframes config.duration config.easing
+                )
 
         Builder.ProcessedFontColorConfig config ->
             let
                 startColorField =
-                    case config.start of
-                        Just start ->
-                            ( "startColor", Encode.string (Color.toCssString start) )
-
-                        Nothing ->
-                            ( "startColor", Encode.null )
-
-                baseFields =
-                    [ ( "type", Encode.string "color" )
-                    , versionField
-                    , ( "endColor", Encode.string (Color.toCssString config.end) )
-                    , startColorField
-                    , ( "duration", Encode.int config.duration )
-                    ]
-
-                easingFields =
-                    encodeEasingWithKeyframes config.duration config.easing
+                    config.start
+                        |> Maybe.map (\start -> ( "startColor", Encode.string (Color.toCssString start) ))
             in
-            Encode.object (baseFields ++ easingFields)
+            Encode.object
+                ([ ( "type", Encode.string "color" )
+                 , versionField
+                 , ( "endColor", Encode.string (Color.toCssString config.end) )
+                 , ( "duration", Encode.int config.duration )
+                 ]
+                    ++ Maybe.withDefault [] (Maybe.map List.singleton startColorField)
+                    ++ encodeEasingWithKeyframes config.duration config.easing
+                )
 
 
 encodeProcessedPropertyConfig : Builder.ProcessedPropertyConfig -> Encode.Value
@@ -1748,29 +1733,28 @@ encodeProcessedPropertyConfig property =
                             , ( "startY", Encode.float sy )
                             , ( "startZ", Encode.float sz )
                             )
+                                |> Debug.log "Have start value for translate"
 
                         Nothing ->
-                            ( ( "startX", Encode.null )
-                            , ( "startY", Encode.null )
-                            , ( "startZ", Encode.null )
+                            ( ( "defaultX", Encode.float 0 )
+                            , ( "defaultY", Encode.float 0 )
+                            , ( "defaultZ", Encode.float 0 )
                             )
-
-                baseFields =
-                    [ ( "type", Encode.string "translate" )
-                    , ( "endX", Encode.float endX )
-                    , ( "endY", Encode.float endY )
-                    , ( "endZ", Encode.float endZ )
-                    , startXField
-                    , startYField
-                    , startZField
-                    , ( "duration", Encode.int config.duration )
-                    , ( "perspective", encodeMaybePerspective config.perspective )
-                    ]
-
-                easingFields =
-                    encodeEasingWithKeyframes config.duration config.easing
+                                |> Debug.log "No start value for translate"
             in
-            Encode.object (baseFields ++ easingFields)
+            Encode.object
+                ([ ( "type", Encode.string "translate" )
+                 , startXField
+                 , startYField
+                 , startZField
+                 , ( "endX", Encode.float endX )
+                 , ( "endY", Encode.float endY )
+                 , ( "endZ", Encode.float endZ )
+                 , ( "duration", Encode.int config.duration )
+                 , ( "perspective", encodeMaybePerspective config.perspective )
+                 ]
+                    ++ encodeEasingWithKeyframes config.duration config.easing
+                )
 
         Builder.ProcessedScaleConfig config ->
             let
@@ -1790,27 +1774,24 @@ encodeProcessedPropertyConfig property =
                             )
 
                         Nothing ->
-                            ( ( "startX", Encode.null )
-                            , ( "startY", Encode.null )
-                            , ( "startZ", Encode.null )
+                            ( ( "defaultX", Encode.float 1 )
+                            , ( "defaultY", Encode.float 1 )
+                            , ( "defaultZ", Encode.float 1 )
                             )
-
-                baseFields =
-                    [ ( "type", Encode.string "scale" )
-                    , ( "endX", Encode.float endX )
-                    , ( "endY", Encode.float endY )
-                    , ( "endZ", Encode.float endZ )
-                    , startXField
-                    , startYField
-                    , startZField
-                    , ( "duration", Encode.int config.duration )
-                    , ( "perspective", encodeMaybePerspective config.perspective )
-                    ]
-
-                easingFields =
-                    encodeEasingWithKeyframes config.duration config.easing
             in
-            Encode.object (baseFields ++ easingFields)
+            Encode.object
+                ([ ( "type", Encode.string "scale" )
+                 , startXField
+                 , startYField
+                 , startZField
+                 , ( "endX", Encode.float endX )
+                 , ( "endY", Encode.float endY )
+                 , ( "endZ", Encode.float endZ )
+                 , ( "duration", Encode.int config.duration )
+                 , ( "perspective", encodeMaybePerspective config.perspective )
+                 ]
+                    ++ encodeEasingWithKeyframes config.duration config.easing
+                )
 
         Builder.ProcessedRotateConfig config ->
             let
@@ -1830,27 +1811,24 @@ encodeProcessedPropertyConfig property =
                             )
 
                         Nothing ->
-                            ( ( "startX", Encode.null )
-                            , ( "startY", Encode.null )
-                            , ( "startZ", Encode.null )
+                            ( ( "defaultX", Encode.float 0 )
+                            , ( "defaultY", Encode.float 0 )
+                            , ( "defaultZ", Encode.float 0 )
                             )
-
-                baseFields =
-                    [ ( "type", Encode.string "rotate" )
-                    , ( "endX", Encode.float endX )
-                    , ( "endY", Encode.float endY )
-                    , ( "endZ", Encode.float endZ )
-                    , startXField
-                    , startYField
-                    , startZField
-                    , ( "duration", Encode.int config.duration )
-                    , ( "perspective", encodeMaybePerspective config.perspective )
-                    ]
-
-                easingFields =
-                    encodeEasingWithKeyframes config.duration config.easing
             in
-            Encode.object (baseFields ++ easingFields)
+            Encode.object
+                ([ ( "type", Encode.string "rotate" )
+                 , startXField
+                 , startYField
+                 , startZField
+                 , ( "endX", Encode.float endX )
+                 , ( "endY", Encode.float endY )
+                 , ( "endZ", Encode.float endZ )
+                 , ( "duration", Encode.int config.duration )
+                 , ( "perspective", encodeMaybePerspective config.perspective )
+                 ]
+                    ++ encodeEasingWithKeyframes config.duration config.easing
+                )
 
         Builder.ProcessedSizeConfig config ->
             let
@@ -1864,94 +1842,74 @@ encodeProcessedPropertyConfig property =
                                 ( sw, sh ) =
                                     Size.toTuple start
                             in
-                            ( ( "startWidth", Encode.float sw )
-                            , ( "startHeight", Encode.float sh )
+                            ( Just ( "startWidth", Encode.float sw )
+                            , Just ( "startHeight", Encode.float sh )
                             )
 
                         Nothing ->
-                            ( ( "startWidth", Encode.null )
-                            , ( "startHeight", Encode.null )
-                            )
+                            ( Nothing, Nothing )
 
-                baseFields =
-                    [ ( "type", Encode.string "size" )
-                    , ( "endWidth", Encode.float width )
-                    , ( "endHeight", Encode.float height )
-                    , startWidthField
-                    , startHeightField
-                    , ( "duration", Encode.int config.duration )
-                    ]
-
-                easingFields =
-                    encodeEasingWithKeyframes config.duration config.easing
+                optionalFields =
+                    List.filterMap identity [ startWidthField, startHeightField ]
             in
-            Encode.object (baseFields ++ easingFields)
+            Encode.object
+                ([ ( "type", Encode.string "size" )
+                 , ( "endWidth", Encode.float width )
+                 , ( "endHeight", Encode.float height )
+                 , ( "duration", Encode.int config.duration )
+                 ]
+                    ++ optionalFields
+                    ++ encodeEasingWithKeyframes config.duration config.easing
+                )
 
         Builder.ProcessedOpacityConfig config ->
             let
-                startValueField =
+                startField =
                     case config.start of
                         Just start ->
                             ( "startValue", Encode.float (Opacity.toFloat start) )
 
                         Nothing ->
-                            ( "startValue", Encode.null )
-
-                baseFields =
-                    [ ( "type", Encode.string "opacity" )
-                    , ( "endValue", Encode.float (Opacity.toFloat config.end) )
-                    , startValueField
-                    , ( "duration", Encode.int config.duration )
-                    ]
-
-                easingFields =
-                    encodeEasingWithKeyframes config.duration config.easing
+                            ( "defaultValue", Encode.float 1.0 )
             in
-            Encode.object (baseFields ++ easingFields)
+            Encode.object
+                ([ ( "type", Encode.string "opacity" )
+                 , startField
+                 , ( "endValue", Encode.float (Opacity.toFloat config.end) )
+                 , ( "duration", Encode.int config.duration )
+                 ]
+                    ++ encodeEasingWithKeyframes config.duration config.easing
+                )
 
         Builder.ProcessedBackgroundColorConfig config ->
             let
                 startColorField =
-                    case config.start of
-                        Just start ->
-                            ( "startColor", Encode.string (Color.toCssString start) )
-
-                        Nothing ->
-                            ( "startColor", Encode.null )
-
-                baseFields =
-                    [ ( "type", Encode.string "backgroundColor" )
-                    , ( "endColor", Encode.string (Color.toCssString config.end) )
-                    , startColorField
-                    , ( "duration", Encode.int config.duration )
-                    ]
-
-                easingFields =
-                    encodeEasingWithKeyframes config.duration config.easing
+                    config.start
+                        |> Maybe.map (\start -> ( "startColor", Encode.string (Color.toCssString start) ))
             in
-            Encode.object (baseFields ++ easingFields)
+            Encode.object
+                ([ ( "type", Encode.string "backgroundColor" )
+                 , ( "endColor", Encode.string (Color.toCssString config.end) )
+                 , ( "duration", Encode.int config.duration )
+                 ]
+                    ++ Maybe.withDefault [] (Maybe.map List.singleton startColorField)
+                    ++ encodeEasingWithKeyframes config.duration config.easing
+                )
 
         Builder.ProcessedFontColorConfig config ->
             let
                 startColorField =
-                    case config.start of
-                        Just start ->
-                            ( "startColor", Encode.string (Color.toCssString start) )
-
-                        Nothing ->
-                            ( "startColor", Encode.null )
-
-                baseFields =
-                    [ ( "type", Encode.string "color" )
-                    , ( "endColor", Encode.string (Color.toCssString config.end) )
-                    , startColorField
-                    , ( "duration", Encode.int config.duration )
-                    ]
-
-                easingFields =
-                    encodeEasingWithKeyframes config.duration config.easing
+                    config.start
+                        |> Maybe.map (\start -> ( "startColor", Encode.string (Color.toCssString start) ))
             in
-            Encode.object (baseFields ++ easingFields)
+            Encode.object
+                ([ ( "type", Encode.string "color" )
+                 , ( "endColor", Encode.string (Color.toCssString config.end) )
+                 , ( "duration", Encode.int config.duration )
+                 ]
+                    ++ Maybe.withDefault [] (Maybe.map List.singleton startColorField)
+                    ++ encodeEasingWithKeyframes config.duration config.easing
+                )
 
 
 {-| Encode easing with keyframes for complex easings (Bounce, Elastic).

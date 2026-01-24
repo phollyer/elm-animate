@@ -13,6 +13,7 @@ This example showcases all animation control functions available in the Anim.Eng
 
 -}
 
+import Anim.Attributes as AnimAttributes
 import Anim.Engine.WAAPI as WAAPI
 import Browser exposing (Document)
 import Browser.Events exposing (onResize)
@@ -88,7 +89,7 @@ init { window } =
             WAAPI.initProperties waapiCommand <|
                 [ Controls.init animationAreaWidth ]
     in
-    ( { animationState = initialAnimState
+    ( { animationState = WAAPI.init
       , status = Idle
       , window = window
       , animationAreaSize =
@@ -96,7 +97,7 @@ init { window } =
             , height = 350
             }
       }
-    , initCmd
+    , Cmd.none
     )
 
 
@@ -147,7 +148,7 @@ update msg model =
             ( { model
                 | window = { width = newWidth, height = newHeight }
                 , animationAreaSize =
-                    { width = newAnimationAreaWidth
+                    { width = newAnimationAreaWidth |> Debug.log "New animation area width"
                     , height = 350
                     }
                 , animationState = newAnimState
@@ -363,11 +364,19 @@ viewContent model =
                 , Border.color Colors.borderLight
                 , centerX
                 ]
-                none
+            <|
+                el
+                    [ centerX ]
+                    (text <|
+                        ((toFloat model.animationAreaSize.width / 2)
+                            |> String.fromFloat
+                        )
+                    )
         ]
         (el
             [ width (px 50)
             , height (px 50)
+            , htmlAttribute (AnimAttributes.translateXY ((toFloat model.animationAreaSize.width / 2) - 25) 50)
             , htmlAttribute (Html.Attributes.id elementId)
             , htmlAttribute (Html.Attributes.style "position" "relative")
             ]

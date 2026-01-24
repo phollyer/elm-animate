@@ -35,7 +35,6 @@ init animationAreaWidth =
 animate : AnimBuilder -> AnimBuilder
 animate =
     Translate.for elementId
-        >> Translate.fromY 50
         >> Translate.toY 300
         >> Translate.speed 200
         >> Translate.easing BounceOut
