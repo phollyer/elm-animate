@@ -1,5 +1,6 @@
 module Anim.Color exposing
     ( Color
+    , hex, rgb, rgba, hsl, hsla, elmColor
     , fromHex, toHex
     , fromRgb, fromRgba, toRgb, toRgba
     , fromHsl, fromHsla, toHsl, toHsla
@@ -23,29 +24,39 @@ Use these functions to create, transform, and analyze colors in various formats,
 @docs Color
 
 
-# Hex Colors
+# Color Constructors
+
+Use these functions to create colors.
+
+@docs hex, rgb, rgba, hsl, hsla, elmColor
+
+
+# Color Transformations
+
+
+## Hex Colors
 
 @docs fromHex, toHex
 
 
-# RGB Colors
+## RGB Colors
 
 @docs fromRgb, fromRgba, toRgb, toRgba
 
 
-# HSL Colors
+## HSL Colors
 
 @docs fromHsl, fromHsla, toHsl, toHsla
 
 
-# Elm Color Integration
+## Elm Color
 
 Use colors from the [avh4/elm-color](https://package.elm-lang.org/packages/avh4/elm-color/latest/) package.
 
 @docs fromElmColor, toElmColor
 
 
-# Parsing
+## Parsing
 
 @docs fromString
 
@@ -86,6 +97,87 @@ import Color
 -}
 type alias Color =
     CP.Color
+
+
+
+-- COLOR CONSTRUCTORS
+
+
+{-| Create a hex color from a string.
+
+    hex "#ff0000" -- Red
+
+    hex "#f00" -- Red (shorthand)
+
+    hex "ff0000" -- Red (without #)
+
+-}
+hex : String -> Maybe Color
+hex =
+    fromHex
+
+
+{-| Create an RGB color from individual components.
+
+    rgb 255 0 0 -- Red
+
+-}
+rgb : Int -> Int -> Int -> Color
+rgb r g b =
+    Rgb { r = r, g = g, b = b }
+
+
+{-| Create an RGBA color from individual components.
+
+    rgba 255 0 0 0.5 -- Semi-transparent red
+
+-}
+rgba : Int -> Int -> Int -> Float -> Color
+rgba r g b a =
+    Rgba { r = r, g = g, b = b, a = a }
+
+
+{-| Create an HSL color from individual components.
+
+  - `h` (hue): 0-360 degrees
+  - `s` (saturation): 0-100 percent
+  - `l` (lightness): 0-100 percent
+
+```
+hsl 0 100 50 -- Red
+```
+
+-}
+hsl : Float -> Float -> Float -> Color
+hsl h s l =
+    Hsl { h = h, s = s, l = l }
+
+
+{-| Create an HSLA color from individual components.
+
+  - `h` (hue): 0-360 degrees
+  - `s` (saturation): 0-100 percent
+  - `l` (lightness): 0-100 percent
+  - `a` (alpha): 0-1
+
+```
+hsla 0 100 50 0.5 -- Semi-transparent red
+```
+
+-}
+hsla : Float -> Float -> Float -> Float -> Color
+hsla h s l a =
+    Hsla { h = h, s = s, l = l, a = a }
+
+
+{-| Create a Color from an [elm-color](https://package.elm-lang.org/packages/avh4/elm-color/latest/) Color value.
+
+    elmColor Color.red
+
+-}
+elmColor : Color.Color -> Color
+elmColor =
+    ElmColor
 
 
 
