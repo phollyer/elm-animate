@@ -91,10 +91,6 @@ import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Scale as SB
 
 
-
--- DEFAULT
-
-
 {-| The default scale value used when no initial value is specified: `{ x = 1, y = 1, z = 1 }`
 
 This represents the original size with no scaling applied.
@@ -105,19 +101,17 @@ default =
     { x = 1, y = 1, z = 1 }
 
 
-
--- SCALE CONFIGURATION
-
-
 {-| Type alias for the internal `ScaleBuilder`.
 -}
 type alias Builder =
     SB.ScaleBuilder
 
 
-{-| Start configuring a scale animation for a specific element.
+{-| Configure a scale animation for the specified element.
 
     animBuilder
+        |> Scale.for "my-element"
+        |> ... -- continue with scale configuration
         |> Scale.for "my-element"
         |> ...
 

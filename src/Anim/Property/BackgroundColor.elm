@@ -16,7 +16,7 @@ Use these functions to configure background color animations in the builder chai
 
     animBuilder
         |> BackgroundColor.for "my-element"
-        |> BackgroundColor.to (hex "#ff0000")
+        |> BackgroundColor.to (Hex "#ff0000")
         |> ... -- other color configuration steps
         |> BackgroundColor.build
         |> ... -- continue with animation
@@ -87,11 +87,11 @@ type alias Builder =
     CB.ColorBuilder
 
 
-{-| Start configuring a color animation for a specific element.
+{-| Configure a background color animation for the specified element.
 
     animBuilder
         |> BackgroundColor.for "my-element"
-        |> ...
+        |> ... -- continue with background color configuration
 
 -}
 for : String -> AnimBuilder -> Builder

@@ -74,7 +74,7 @@ when you want to override that behavior.
 
 ## Perspective
 
-For 3D scaling this is required to give a sense of depth. Without it, Z scaling will have no visual effect.
+For 3D rotation this is required to give a sense of depth. Without it, Z rotation will have no visual effect.
 
 You can set a global perspective for all 3D animations directly on the Engine you are using, or you can set it on a per-property basis using this function.
 
@@ -88,10 +88,6 @@ import Anim.Internal.Builders.Rotate as RB
 import Anim.Internal.Properties.Rotate as R
 
 
-
--- DEFAULT
-
-
 {-| The default rotation value used when no initial value is specified: `{ x = 0, y = 0, z = 0 }`
 
 This represents no rotation applied (all angles in degrees).
@@ -102,21 +98,17 @@ default =
     { x = 0, y = 0, z = 0 }
 
 
-
--- ROTATE CONFIGURATION
-
-
 {-| Type alias for the internal `RotateBuilder`.
 -}
 type alias Builder =
     RB.RotateBuilder
 
 
-{-| Start configuring a rotation animation for a specific element.
+{-| Configure a rotation animation for the specified element.
 
     animBuilder
-        |> Rotation.for "my-element"
-        |> ...
+        |> Rotate.for "my-element"
+        |> ... -- continue with rotation configuration
 
 -}
 for : String -> AnimBuilder -> Builder

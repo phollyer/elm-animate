@@ -108,11 +108,11 @@ type alias Builder =
     TB.TranslateBuilder
 
 
-{-| Start configuring a translate animation for a specific element.
+{-| Configure a translate animation for the specified element.
 
     animBuilder
         |> Translate.for "my-element"
-        |> ...
+        |> ... -- continue with translate configuration
 
 -}
 for : String -> AnimBuilder -> Builder

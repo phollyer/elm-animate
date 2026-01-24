@@ -69,10 +69,6 @@ import Anim.Internal.Builders.Opacity as OB
 import Anim.Internal.Properties.Opacity as O
 
 
-
--- DEFAULT
-
-
 {-| The default opacity value used when no initial value is specified: `1.0`
 
 This represents fully opaque (completely visible).
@@ -83,21 +79,17 @@ default =
     1.0
 
 
-
--- OPACITY CONFIGURATION
-
-
 {-| Type alias for the internal `OpacityBuilder`.
 -}
 type alias Builder =
     OB.OpacityBuilder
 
 
-{-| Start configuring an opacity animation for a specific element.
+{-| Configure an opacity animation for the specified element.
 
     animBuilder
         |> Opacity.for "my-element"
-        |> ...
+        |> ... -- continue with opacity configuration
 
 -}
 for : String -> AnimBuilder -> Builder

@@ -72,6 +72,9 @@ import Anim.Internal.Properties.Color exposing (Color(..))
 
 
 {-| The default font color used when no initial value is specified: black `rgb(0, 0, 0)`
+
+This represents standard black text.
+
 -}
 default : Color
 default =
@@ -84,11 +87,11 @@ type alias Builder =
     CB.ColorBuilder
 
 
-{-| Start configuring a text color animation for a specific element.
+{-| Configure a font color animation for the specified element.
 
     animBuilder
         |> FontColor.for "my-element"
-        |> ...
+        |> ... -- continue with font color configuration
 
 -}
 for : String -> AnimBuilder -> Builder
