@@ -13,7 +13,6 @@ This example showcases all animation control functions available in the Anim.Eng
 
 -}
 
-import Anim.Attributes as AnimAttributes
 import Anim.Engine.WAAPI as WAAPI
 import Browser exposing (Document)
 import Browser.Events exposing (onResize)
@@ -89,7 +88,7 @@ init { window } =
             WAAPI.initProperties waapiCommand <|
                 [ Controls.init animationAreaWidth ]
     in
-    ( { animationState = WAAPI.init
+    ( { animationState = initialAnimState
       , status = Idle
       , window = window
       , animationAreaSize =
@@ -97,7 +96,7 @@ init { window } =
             , height = 350
             }
       }
-    , Cmd.none
+    , initCmd
     )
 
 
@@ -376,7 +375,7 @@ viewContent model =
         (el
             [ width (px 50)
             , height (px 50)
-            , htmlAttribute (AnimAttributes.translateXY ((toFloat model.animationAreaSize.width / 2) - 25) 50)
+            , htmlAttribute (Html.Attributes.style "transform" ("translateX(" ++ String.fromFloat ((toFloat model.animationAreaSize.width / 2) - 25) ++ "px) translateY(50px)"))
             , htmlAttribute (Html.Attributes.id elementId)
             , htmlAttribute (Html.Attributes.style "position" "relative")
             ]

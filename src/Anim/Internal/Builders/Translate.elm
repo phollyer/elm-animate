@@ -160,7 +160,7 @@ to value (TranslateBuilder config builder) =
                     s
 
                 Nothing ->
-                    Translate.fromTriple ( 0, 0, 0 )
+                    Translate.default
     in
     TranslateBuilder
         { config
@@ -172,9 +172,8 @@ to value (TranslateBuilder config builder) =
 
 
 toXYZ : Float -> Float -> Float -> TranslateBuilder -> TranslateBuilder
-toXYZ x y z (TranslateBuilder config builder) =
-    to (Translate.fromTriple ( x, y, z )) <|
-        TranslateBuilder config builder
+toXYZ x y z =
+    to (Translate.fromTriple ( x, y, z ))
 
 
 toXY : Float -> Float -> TranslateBuilder -> TranslateBuilder

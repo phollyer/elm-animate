@@ -1511,38 +1511,23 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
         versionField =
             ( "version", Encode.int version )
     in
-    case property |> Debug.log "Processing property" of
+    case property of
         Builder.ProcessedTranslateConfig config ->
             let
+                ( startX, startY, startZ ) =
+                    config.start
+                        |> Maybe.map Translate.toTriple
+                        |> Maybe.withDefault ( 0, 0, 0 )
+
                 ( endX, endY, endZ ) =
                     Translate.toTriple config.end
-
-                ( startXField, startYField, startZField ) =
-                    case config.start |> Debug.log "Translate start" of
-                        Just start ->
-                            let
-                                ( sx, sy, sz ) =
-                                    Translate.toTriple start
-                            in
-                            ( ( "startX", sx )
-                            , ( "startY", sy )
-                            , ( "startZ", sz )
-                            )
-                                |> Debug.log "Start fields for translate"
-
-                        Nothing ->
-                            ( ( "defaultX", 0 )
-                            , ( "defaultY", 0 )
-                            , ( "defaultZ", 0 )
-                            )
-                                |> Debug.log "Default fields for translate"
             in
             Encode.object
                 ([ ( "type", Encode.string "translate" )
                  , versionField
-                 , startXField |> Tuple.mapSecond Encode.float
-                 , startYField |> Tuple.mapSecond Encode.float
-                 , startZField |> Tuple.mapSecond Encode.float
+                 , ( "startX", Encode.float startX )
+                 , ( "startY", Encode.float startY )
+                 , ( "startZ", Encode.float startZ )
                  , ( "endX", Encode.float endX )
                  , ( "endY", Encode.float endY )
                  , ( "endZ", Encode.float endZ )
@@ -1554,33 +1539,20 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
 
         Builder.ProcessedScaleConfig config ->
             let
+                ( startX, startY, startZ ) =
+                    config.start
+                        |> Maybe.map Scale.toTriple
+                        |> Maybe.withDefault ( 1, 1, 1 )
+
                 ( endX, endY, endZ ) =
                     Scale.toTriple config.end
-
-                ( startXField, startYField, startZField ) =
-                    case config.start of
-                        Just start ->
-                            let
-                                ( sx, sy, sz ) =
-                                    Scale.toTriple start
-                            in
-                            ( ( "startX", Encode.float sx )
-                            , ( "startY", Encode.float sy )
-                            , ( "startZ", Encode.float sz )
-                            )
-
-                        Nothing ->
-                            ( ( "defaultX", Encode.float 1 )
-                            , ( "defaultY", Encode.float 1 )
-                            , ( "defaultZ", Encode.float 1 )
-                            )
             in
             Encode.object
                 ([ ( "type", Encode.string "scale" )
                  , versionField
-                 , startXField
-                 , startYField
-                 , startZField
+                 , ( "startX", Encode.float startX )
+                 , ( "startY", Encode.float startY )
+                 , ( "startZ", Encode.float startZ )
                  , ( "endX", Encode.float endX )
                  , ( "endY", Encode.float endY )
                  , ( "endZ", Encode.float endZ )
@@ -1592,33 +1564,20 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
 
         Builder.ProcessedRotateConfig config ->
             let
+                ( startX, startY, startZ ) =
+                    config.start
+                        |> Maybe.map Rotate.toTriple
+                        |> Maybe.withDefault ( 0, 0, 0 )
+
                 ( endX, endY, endZ ) =
                     Rotate.toTriple config.end
-
-                ( startXField, startYField, startZField ) =
-                    case config.start of
-                        Just start ->
-                            let
-                                ( sx, sy, sz ) =
-                                    Rotate.toTriple start
-                            in
-                            ( ( "startX", Encode.float sx )
-                            , ( "startY", Encode.float sy )
-                            , ( "startZ", Encode.float sz )
-                            )
-
-                        Nothing ->
-                            ( ( "defaultX", Encode.float 0 )
-                            , ( "defaultY", Encode.float 0 )
-                            , ( "defaultZ", Encode.float 0 )
-                            )
             in
             Encode.object
                 ([ ( "type", Encode.string "rotate" )
                  , versionField
-                 , startXField
-                 , startYField
-                 , startZField
+                 , ( "startX", Encode.float startX )
+                 , ( "startY", Encode.float startY )
+                 , ( "startZ", Encode.float startZ )
                  , ( "endX", Encode.float endX )
                  , ( "endY", Encode.float endY )
                  , ( "endZ", Encode.float endZ )
@@ -1630,51 +1589,37 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
 
         Builder.ProcessedSizeConfig config ->
             let
-                ( width, height ) =
+                ( startWidth, startHeight ) =
+                    config.start
+                        |> Maybe.map Size.toTuple
+                        |> Maybe.withDefault ( 0, 0 )
+
+                ( endWidth, endHeight ) =
                     Size.toTuple config.end
-
-                ( startWidthField, startHeightField ) =
-                    case config.start of
-                        Just start ->
-                            let
-                                ( sw, sh ) =
-                                    Size.toTuple start
-                            in
-                            ( Just ( "startWidth", Encode.float sw )
-                            , Just ( "startHeight", Encode.float sh )
-                            )
-
-                        Nothing ->
-                            ( Nothing, Nothing )
-
-                optionalFields =
-                    List.filterMap identity [ startWidthField, startHeightField ]
             in
             Encode.object
                 ([ ( "type", Encode.string "size" )
                  , versionField
-                 , ( "endWidth", Encode.float width )
-                 , ( "endHeight", Encode.float height )
+                 , ( "startWidth", Encode.float startWidth )
+                 , ( "startHeight", Encode.float startHeight )
+                 , ( "endWidth", Encode.float endWidth )
+                 , ( "endHeight", Encode.float endHeight )
                  , ( "duration", Encode.int config.duration )
                  ]
-                    ++ optionalFields
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
 
         Builder.ProcessedOpacityConfig config ->
             let
-                startField =
-                    case config.start of
-                        Just start ->
-                            ( "startValue", Encode.float (Opacity.toFloat start) )
-
-                        Nothing ->
-                            ( "defaultValue", Encode.float 1.0 )
+                startValue =
+                    config.start
+                        |> Maybe.map Opacity.toFloat
+                        |> Maybe.withDefault 1.0
             in
             Encode.object
                 ([ ( "type", Encode.string "opacity" )
                  , versionField
-                 , startField
+                 , ( "startValue", Encode.float startValue )
                  , ( "endValue", Encode.float (Opacity.toFloat config.end) )
                  , ( "duration", Encode.int config.duration )
                  ]
@@ -1685,7 +1630,8 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
             let
                 startColorField =
                     config.start
-                        |> Maybe.map (\start -> ( "startColor", Encode.string (Color.toCssString start) ))
+                        |> Maybe.map (\start -> [ ( "startColor", Encode.string (Color.toCssString start) ) ])
+                        |> Maybe.withDefault []
             in
             Encode.object
                 ([ ( "type", Encode.string "backgroundColor" )
@@ -1693,7 +1639,7 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                  , ( "endColor", Encode.string (Color.toCssString config.end) )
                  , ( "duration", Encode.int config.duration )
                  ]
-                    ++ Maybe.withDefault [] (Maybe.map List.singleton startColorField)
+                    ++ startColorField
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
 
@@ -1701,7 +1647,8 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
             let
                 startColorField =
                     config.start
-                        |> Maybe.map (\start -> ( "startColor", Encode.string (Color.toCssString start) ))
+                        |> Maybe.map (\start -> [ ( "startColor", Encode.string (Color.toCssString start) ) ])
+                        |> Maybe.withDefault []
             in
             Encode.object
                 ([ ( "type", Encode.string "color" )
@@ -1709,7 +1656,7 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                  , ( "endColor", Encode.string (Color.toCssString config.end) )
                  , ( "duration", Encode.int config.duration )
                  ]
-                    ++ Maybe.withDefault [] (Maybe.map List.singleton startColorField)
+                    ++ startColorField
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
 
@@ -1719,34 +1666,19 @@ encodeProcessedPropertyConfig property =
     case property of
         Builder.ProcessedTranslateConfig config ->
             let
+                ( startX, startY, startZ ) =
+                    config.start
+                        |> Maybe.map Translate.toTriple
+                        |> Maybe.withDefault ( 0, 0, 0 )
+
                 ( endX, endY, endZ ) =
                     Translate.toTriple config.end
-
-                ( startXField, startYField, startZField ) =
-                    case config.start of
-                        Just start ->
-                            let
-                                ( sx, sy, sz ) =
-                                    Translate.toTriple start
-                            in
-                            ( ( "startX", Encode.float sx )
-                            , ( "startY", Encode.float sy )
-                            , ( "startZ", Encode.float sz )
-                            )
-                                |> Debug.log "Have start value for translate"
-
-                        Nothing ->
-                            ( ( "defaultX", Encode.float 0 )
-                            , ( "defaultY", Encode.float 0 )
-                            , ( "defaultZ", Encode.float 0 )
-                            )
-                                |> Debug.log "No start value for translate"
             in
             Encode.object
                 ([ ( "type", Encode.string "translate" )
-                 , startXField
-                 , startYField
-                 , startZField
+                 , ( "startX", Encode.float startX )
+                 , ( "startY", Encode.float startY )
+                 , ( "startZ", Encode.float startZ )
                  , ( "endX", Encode.float endX )
                  , ( "endY", Encode.float endY )
                  , ( "endZ", Encode.float endZ )
@@ -1758,32 +1690,19 @@ encodeProcessedPropertyConfig property =
 
         Builder.ProcessedScaleConfig config ->
             let
+                ( startX, startY, startZ ) =
+                    config.start
+                        |> Maybe.map Scale.toTriple
+                        |> Maybe.withDefault ( 1, 1, 1 )
+
                 ( endX, endY, endZ ) =
                     Scale.toTriple config.end
-
-                ( startXField, startYField, startZField ) =
-                    case config.start of
-                        Just start ->
-                            let
-                                ( sx, sy, sz ) =
-                                    Scale.toTriple start
-                            in
-                            ( ( "startX", Encode.float sx )
-                            , ( "startY", Encode.float sy )
-                            , ( "startZ", Encode.float sz )
-                            )
-
-                        Nothing ->
-                            ( ( "defaultX", Encode.float 1 )
-                            , ( "defaultY", Encode.float 1 )
-                            , ( "defaultZ", Encode.float 1 )
-                            )
             in
             Encode.object
                 ([ ( "type", Encode.string "scale" )
-                 , startXField
-                 , startYField
-                 , startZField
+                 , ( "startX", Encode.float startX )
+                 , ( "startY", Encode.float startY )
+                 , ( "startZ", Encode.float startZ )
                  , ( "endX", Encode.float endX )
                  , ( "endY", Encode.float endY )
                  , ( "endZ", Encode.float endZ )
@@ -1795,32 +1714,19 @@ encodeProcessedPropertyConfig property =
 
         Builder.ProcessedRotateConfig config ->
             let
+                ( startX, startY, startZ ) =
+                    config.start
+                        |> Maybe.map Rotate.toTriple
+                        |> Maybe.withDefault ( 0, 0, 0 )
+
                 ( endX, endY, endZ ) =
                     Rotate.toTriple config.end
-
-                ( startXField, startYField, startZField ) =
-                    case config.start of
-                        Just start ->
-                            let
-                                ( sx, sy, sz ) =
-                                    Rotate.toTriple start
-                            in
-                            ( ( "startX", Encode.float sx )
-                            , ( "startY", Encode.float sy )
-                            , ( "startZ", Encode.float sz )
-                            )
-
-                        Nothing ->
-                            ( ( "defaultX", Encode.float 0 )
-                            , ( "defaultY", Encode.float 0 )
-                            , ( "defaultZ", Encode.float 0 )
-                            )
             in
             Encode.object
                 ([ ( "type", Encode.string "rotate" )
-                 , startXField
-                 , startYField
-                 , startZField
+                 , ( "startX", Encode.float startX )
+                 , ( "startY", Encode.float startY )
+                 , ( "startZ", Encode.float startZ )
                  , ( "endX", Encode.float endX )
                  , ( "endY", Encode.float endY )
                  , ( "endZ", Encode.float endZ )
@@ -1832,49 +1738,35 @@ encodeProcessedPropertyConfig property =
 
         Builder.ProcessedSizeConfig config ->
             let
-                ( width, height ) =
+                ( startWidth, startHeight ) =
+                    config.start
+                        |> Maybe.map Size.toTuple
+                        |> Maybe.withDefault ( 0, 0 )
+
+                ( endWidth, endHeight ) =
                     Size.toTuple config.end
-
-                ( startWidthField, startHeightField ) =
-                    case config.start of
-                        Just start ->
-                            let
-                                ( sw, sh ) =
-                                    Size.toTuple start
-                            in
-                            ( Just ( "startWidth", Encode.float sw )
-                            , Just ( "startHeight", Encode.float sh )
-                            )
-
-                        Nothing ->
-                            ( Nothing, Nothing )
-
-                optionalFields =
-                    List.filterMap identity [ startWidthField, startHeightField ]
             in
             Encode.object
                 ([ ( "type", Encode.string "size" )
-                 , ( "endWidth", Encode.float width )
-                 , ( "endHeight", Encode.float height )
+                 , ( "startWidth", Encode.float startWidth )
+                 , ( "startHeight", Encode.float startHeight )
+                 , ( "endWidth", Encode.float endWidth )
+                 , ( "endHeight", Encode.float endHeight )
                  , ( "duration", Encode.int config.duration )
                  ]
-                    ++ optionalFields
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
 
         Builder.ProcessedOpacityConfig config ->
             let
-                startField =
-                    case config.start of
-                        Just start ->
-                            ( "startValue", Encode.float (Opacity.toFloat start) )
-
-                        Nothing ->
-                            ( "defaultValue", Encode.float 1.0 )
+                startValue =
+                    config.start
+                        |> Maybe.map Opacity.toFloat
+                        |> Maybe.withDefault 1.0
             in
             Encode.object
                 ([ ( "type", Encode.string "opacity" )
-                 , startField
+                 , ( "startValue", Encode.float startValue )
                  , ( "endValue", Encode.float (Opacity.toFloat config.end) )
                  , ( "duration", Encode.int config.duration )
                  ]
@@ -1885,14 +1777,15 @@ encodeProcessedPropertyConfig property =
             let
                 startColorField =
                     config.start
-                        |> Maybe.map (\start -> ( "startColor", Encode.string (Color.toCssString start) ))
+                        |> Maybe.map (\start -> [ ( "startColor", Encode.string (Color.toCssString start) ) ])
+                        |> Maybe.withDefault []
             in
             Encode.object
                 ([ ( "type", Encode.string "backgroundColor" )
                  , ( "endColor", Encode.string (Color.toCssString config.end) )
                  , ( "duration", Encode.int config.duration )
                  ]
-                    ++ Maybe.withDefault [] (Maybe.map List.singleton startColorField)
+                    ++ startColorField
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
 
@@ -1900,14 +1793,15 @@ encodeProcessedPropertyConfig property =
             let
                 startColorField =
                     config.start
-                        |> Maybe.map (\start -> ( "startColor", Encode.string (Color.toCssString start) ))
+                        |> Maybe.map (\start -> [ ( "startColor", Encode.string (Color.toCssString start) ) ])
+                        |> Maybe.withDefault []
             in
             Encode.object
                 ([ ( "type", Encode.string "color" )
                  , ( "endColor", Encode.string (Color.toCssString config.end) )
                  , ( "duration", Encode.int config.duration )
                  ]
-                    ++ Maybe.withDefault [] (Maybe.map List.singleton startColorField)
+                    ++ startColorField
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
 
