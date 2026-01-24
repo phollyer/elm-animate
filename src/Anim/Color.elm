@@ -6,11 +6,7 @@ module Anim.Color exposing
     , fromHsl, fromHsla, toHsl, toHsla
     , fromElmColor, toElmColor
     , fromString
-    , setAlpha, getAlpha
-    , brighten, darken, saturate, desaturate
-    , isLight, isDark
-    , isEqual
-    , distance
+    , setAlpha, brighten, darken, saturate, desaturate
     , transparent, black, white, red, green, blue
     )
 
@@ -61,26 +57,9 @@ Use colors from the [avh4/elm-color](https://package.elm-lang.org/packages/avh4/
 @docs fromString
 
 
-# Alpha
-
-@docs setAlpha, getAlpha
-
-
 # Manipulation
 
-@docs brighten, darken, saturate, desaturate
-
-@docs isLight, isDark
-
-
-# Comparison
-
-@docs isEqual
-
-
-# Distance
-
-@docs distance
+@docs setAlpha, brighten, darken, saturate, desaturate
 
 
 # Common Colors
@@ -110,6 +89,8 @@ type alias Color =
     hex "#f00" -- Red (shorthand)
 
     hex "ff0000" -- Red (without #)
+
+Invalid hex strings will return `Nothing`.
 
 -}
 hex : String -> Maybe Color
@@ -184,13 +165,15 @@ elmColor =
 -- HEX COLORS
 
 
-{-| Create a color from a hex string. Returns `Nothing` if the hex string is invalid.
+{-| Create a color from a hex string.
 
     fromHex "#ff0000" -- Just Red
 
     fromHex "#f00" -- Just Red (shorthand)
 
     fromHex "invalid" -- Nothing
+
+Invalid hex strings will return `Nothing`.
 
 -}
 fromHex : String -> Maybe Color
@@ -268,7 +251,6 @@ fromHsla =
     import Color
 
     fromElmColor Color.red
-    fromElmColor Color.blue
 
 -}
 fromElmColor : Color.Color -> Color
@@ -325,32 +307,6 @@ toElmColor =
     CP.toElmColor
 
 
-{-| Calculate distance between two Color values using RGB Euclidean distance.
-
-This follows a simplified approach to color distance calculation:
-
-  - distance = sqrt((r2-r1)² + (g2-g1)² + (b2-b1)²)
-
-While industry standard Delta E (CIE94/2000) would be more perceptually accurate,
-RGB Euclidean distance provides a reasonable approximation for animation timing
-and is much simpler to calculate.
-
-Note: All color types are converted to RGB before distance calculation.
-
-Example:
-
-    color1 = fromRgb { r = 255, g = 0, b = 0 } -- Red
-    color2 = fromRgb { r = 0, g = 255, b = 0 } -- Green
-
-    distance color1 color2
-    -- Returns: sqrt((0-255)² + (255-0)² + (0-0)²) = sqrt(65025 + 65025 + 0) = sqrt(130050) ≈ 360.6
-
--}
-distance : Color -> Color -> Float
-distance =
-    CP.distance
-
-
 {-| Parse a color from various string formats.
 
 Supports:
@@ -393,20 +349,6 @@ fromString =
 setAlpha : Float -> Color -> Color
 setAlpha =
     CP.setAlpha
-
-
-{-| Get the alpha value of a color. Returns 1.0 for opaque colors.
-
-    getAlpha <|
-        fromRgba { r = 255, g = 0, b = 0, a = 0.5 } -- 0.5
-
-    getAlpha <|
-        fromRgb { r = 255, g = 0, b = 0 } -- 1.0
-
--}
-getAlpha : Color -> Float
-getAlpha =
-    CP.getAlpha
 
 
 
@@ -455,48 +397,6 @@ saturate =
 desaturate : Float -> Color -> Color
 desaturate =
     CP.desaturate
-
-
-
--- COLOR QUERIES
-
-
-{-| Check if a color is considered light based on its luminance.
-
-    isLight white -- True
-
-    isLight black -- False
-
--}
-isLight : Color -> Bool
-isLight =
-    CP.isLight
-
-
-{-| Check if a color is considered dark based on its luminance.
-
-    isDark black -- True
-
-    isDark white -- False
-
--}
-isDark : Color -> Bool
-isDark =
-    CP.isDark
-
-
-
--- COLOR COMPARISON
-
-
-{-| Check if two colors are equal.
-
-    isEqual red (fromRgb 255 0 0) -- True
-
--}
-isEqual : Color -> Color -> Bool
-isEqual =
-    CP.isEqual
 
 
 

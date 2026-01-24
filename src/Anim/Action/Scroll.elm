@@ -1,5 +1,5 @@
 module Anim.Action.Scroll exposing
-    ( Builder, for, forDocument, forContainer, build
+    ( Builder, forDocument, forContainer, build
     , toElement
     , toTop, toBottom, toCenter
     , toLeft, toRight
@@ -11,40 +11,36 @@ module Anim.Action.Scroll exposing
     , easing
     )
 
-{-| Scroll animation functions for document and container scrolling.
+{-| Scroll animation functions.
 
-Use these functions to build scroll animations in the builder chain:
+Build animations that scroll the document or container elements to specific elements or coordinates.
 
-    import Anim.Action.Scroll as ScrollAction
-    import Anim.Engine.Scroll as Scroll
+    animBuilder
+        |> Scroll.forDocument
+        |> Scroll.toElement "section-1"
+        |> Scroll.onYAxisWithOffset 60
+        |> Scroll.speed 500
+        |> Scroll.build
 
-    Scroll.init
-        |> Scroll.builder
-        |> ScrollAction.forDocument
-        |> ScrollAction.toElement "section-1"
-        |> ScrollAction.onYAxisWithOffset 60
-        |> ScrollAction.build
-        |> Scroll.animate ScrollMsg
+You can chain multiple scroll targets with different containers.
 
-You can chain multiple scroll targets with different containers:
+    animBuilder
+        |> Scroll.forContainer "container-1"
+        |> Scroll.toElement "target-1"
+        |> Scroll.speed 800
+        |> Scroll.build
+        |> Scroll.forDocument
+        |> Scroll.toTop
+        |> Scroll.duration 1000
+        |> Scroll.easing BounceOut
+        |> Scroll.build
 
-    Scroll.init
-        |> Scroll.builder
-        |> ScrollAction.for "container-1"
-        |> ScrollAction.toElement "target-1"
-        |> ScrollAction.speed 800
-        |> ScrollAction.build
-        |> ScrollAction.forDocument
-        |> ScrollAction.toTop
-        |> ScrollAction.duration 1000
-        |> ScrollAction.easing BounceOut
-        |> ScrollAction.build
-        |> Scroll.toCmd ScrollCompleted
+**Note**: `animBuilder` is provided by the [Scroll Engine](Anim-Engine-Scroll).
 
 
 # Build
 
-@docs Builder, for, forDocument, forContainer, build
+@docs Builder, forDocument, forContainer, build
 
 
 # Targeting
@@ -107,35 +103,12 @@ type alias Builder =
 -- BUILD
 
 
-{-| Start configuring a scroll animation for a specific container.
-
-Use "document" for document body scrolling:
-
-    animBuilder
-        |> Scroll.for "document"
-        |> Scroll.toTop
-        |> Scroll.build
-
-Or use an element ID for container scrolling:
-
-    animBuilder
-        |> Scroll.for "my-scrollable-container"
-        |> Scroll.toElement "target"
-        |> Scroll.build
-
--}
-for : String -> AnimBuilder -> Builder
-for =
-    SB.for
-
-
 {-| Start configuring a scroll animation for the document body.
-
-Type-safe alternative to `for "document"`.
 
     animBuilder
         |> Scroll.forDocument
         |> Scroll.toTop
+        |> Scroll.duration 500
         |> Scroll.build
 
 -}
@@ -146,11 +119,10 @@ forDocument =
 
 {-| Start configuring a scroll animation for a specific container element.
 
-Type-safe alternative to `for "container-id"`.
-
     animBuilder
         |> Scroll.forContainer "container-id"
-        |> Scroll.toElement "target-id"
+        |> Scroll.toBottom
+        |> Scroll.duration 500
         |> Scroll.build
 
 -}
@@ -159,14 +131,16 @@ forContainer =
     SB.forContainer
 
 
-{-| Complete the scroll configuration and return to AnimBuilder.
+{-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`.
 
     animBuilder
         |> Scroll.forContainer "container"
         |> Scroll.toElement "target-id"
         |> Scroll.speed 500
-        |> Scroll.build  -- Returns AnimBuilder
-        |> ... -- Continue with more animations or execute
+        |> Scroll.build
+
+From here, you can either animate it with the [Scroll Engine](Anim-Engine-Scroll), or
+continue configuring other scroll animations in the same `AnimBuilder` pipeline.
 
 -}
 build : Builder -> AnimBuilder
@@ -183,6 +157,7 @@ build =
     animBuilder
         |> Scroll.forDocument
         |> Scroll.toElement "section-header"
+        |> Scroll.speed 500
         |> Scroll.build
 
 -}
@@ -196,6 +171,7 @@ toElement =
     animBuilder
         |> Scroll.forContainer "element-id"
         |> Scroll.toXY 100 200
+        |> Scroll.duration 500
         |> Scroll.build
 
 -}
@@ -209,6 +185,7 @@ toXY =
     animBuilder
         |> Scroll.forDocument
         |> Scroll.toX 100
+        |> Scroll.duration 500
         |> Scroll.build
 
 -}
@@ -222,6 +199,7 @@ toX =
     animBuilder
         |> Scroll.forDocument
         |> Scroll.toY 200
+        |> Scroll.duration 500
         |> Scroll.build
 
 -}
@@ -235,6 +213,7 @@ toY =
     animBuilder
         |> Scroll.forDocument
         |> Scroll.toTop
+        |> Scroll.duration 500
         |> Scroll.build
 
 -}
@@ -248,6 +227,7 @@ toTop =
     animBuilder
         |> Scroll.forContainer "element-id"
         |> Scroll.toBottom
+        |> Scroll.duration 500
         |> Scroll.build
 
 -}
@@ -261,6 +241,7 @@ toBottom =
     animBuilder
         |> Scroll.forContainer "element-id"
         |> Scroll.toCenter
+        |> Scroll.duration 500
         |> Scroll.build
 
 -}
@@ -274,6 +255,7 @@ toCenter =
     animBuilder
         |> Scroll.forContainer "element-id"
         |> Scroll.toLeft
+        |> Scroll.duration 500
         |> Scroll.build
 
 -}
@@ -287,6 +269,7 @@ toLeft =
     animBuilder
         |> Scroll.forContainer "element-id"
         |> Scroll.toRight
+        |> Scroll.duration 500
         |> Scroll.build
 
 -}
@@ -300,6 +283,7 @@ toRight =
     animBuilder
         |> Scroll.forContainer "element-id"
         |> Scroll.toTopLeft
+        |> Scroll.duration 500
         |> Scroll.build
 
 -}
@@ -313,6 +297,7 @@ toTopLeft =
     animBuilder
         |> Scroll.forContainer "element-id"
         |> Scroll.toTopRight
+        |> Scroll.duration 500
         |> Scroll.build
 
 -}
@@ -326,6 +311,7 @@ toTopRight =
     animBuilder
         |> Scroll.forContainer "element-id"
         |> Scroll.toBottomLeft
+        |> Scroll.duration 500
         |> Scroll.build
 
 -}
@@ -339,6 +325,7 @@ toBottomLeft =
     animBuilder
         |> Scroll.forContainer "element-id"
         |> Scroll.toBottomRight
+        |> Scroll.duration 500
         |> Scroll.build
 
 -}
@@ -353,6 +340,7 @@ toBottomRight =
     animBuilder
         |> Scroll.forContainer "element-id"
         |> Scroll.toPercentage 0.5 0.8
+        |> Scroll.duration 500
         |> Scroll.build
 
 -}
@@ -371,6 +359,7 @@ toPercentage =
         |> Scroll.forContainer "element-id"
         |> Scroll.onBothAxes
         |> Scroll.toElement "section-1"
+        |> Scroll.speed 500
         |> Scroll.build
 
 -}
@@ -385,6 +374,7 @@ onBothAxes =
         |> Scroll.forContainer "element-id"
         |> Scroll.onXAxis
         |> Scroll.toX 500
+        |> Scroll.speed 500
         |> Scroll.build
 
 -}
@@ -399,6 +389,7 @@ onXAxis =
         |> Scroll.forDocument
         |> Scroll.onYAxis
         |> Scroll.toElement "section-1"
+        |> Scroll.speed 500
         |> Scroll.build
 
 -}
@@ -414,6 +405,7 @@ onYAxis =
         |> Scroll.forContainer "element-id"
         |> Scroll.onBothAxesWithOffset 20 60
         |> Scroll.toElement "section-1"
+        |> Scroll.speed 500
         |> Scroll.build
 
 -}
@@ -428,6 +420,7 @@ onBothAxesWithOffset =
         |> Scroll.forContainer "element-id"
         |> Scroll.onXAxisWithOffset 60
         |> Scroll.toElement "section-1"
+        |> Scroll.speed 500
         |> Scroll.build
 
 -}
@@ -442,6 +435,7 @@ onXAxisWithOffset =
         |> Scroll.forDocument
         |> Scroll.onYAxisWithOffset 60
         |> Scroll.toElement "section-1"
+        |> Scroll.speed 500
         |> Scroll.build
 
 -}
@@ -454,12 +448,13 @@ onYAxisWithOffset =
 -- TIMING
 
 
-{-| Set the delay before this scroll animation starts.
+{-| Set the delay (milliseconds) before this scroll animation starts.
 
     animBuilder
         |> Scroll.forDocument
         |> Scroll.toTop
         |> Scroll.delay 500
+        |> Scroll.duration 500
         |> Scroll.build
 
 -}
@@ -468,7 +463,7 @@ delay =
     SB.delay
 
 
-{-| Set the duration (ms) for this scroll animation.
+{-| Set the duration (milliseconds) for this scroll animation.
 
     animBuilder
         |> Scroll.forDocument
@@ -505,6 +500,7 @@ speed =
     animBuilder
         |> Scroll.forDocument
         |> Scroll.toElement "section-1"
+        |> Scroll.duration 500
         |> Scroll.easing EaseInOutQuad
         |> Scroll.build
 

@@ -35,12 +35,12 @@ over how the CSS is integrated into your application.
 
 ## Design Decisions
 
-**Choosing Between Transforms and Keyframes**
+**Choosing Between Transitions and Keyframes**
 
-The choice between transforms and keyframes is the main decision you need to make when using this engine,
+The choice between transitions and keyframes is the main decision you need to make when using this engine,
 creating animations with either approach is exactly the same using the [AnimBuilder](#AnimBuilder) API.
 
-**Use Transforms for:**
+**Use Transitions for:**
 
   - Basic A→B animations
   - Simple easing (ease, ease-in-out, cubic-bezier)
@@ -54,9 +54,9 @@ creating animations with either approach is exactly the same using the [AnimBuil
   - Better debugging visibility in DevTools
 
 
-## CSS Transform Animations
+## CSS Transition Animations
 
-For CSS transform animations, you just need to apply the generated HTML attributes to your elements.
+For CSS transition animations, you just need to apply the generated HTML attributes to your elements.
 
 @docs htmlAttributes, htmlAttributesWithEvents
 

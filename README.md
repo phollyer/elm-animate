@@ -7,7 +7,7 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 - **Multiple Engines:** Choose the best engine for your use case.
 - **Unified Fluent API:** Consistent builder pattern for all engines.
 - **Hardware-Accelerated:** GPU-accelerated transforms for smoother animations and better battery efficiency
-(position, rotation, scale, opacity).
+(translate, rotate, scale, opacity).
 - **Full 3D Support:** Transform elements in 3D space with XYZ positioning, multi-axis rotation, and configurable perspective for depth.
 - **Composable, type-safe, and easy to integrate.**
 
@@ -15,25 +15,69 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 ## 🚦 Animation Engines
 
-All animation engines use a unified builder API, so you can switch between them with minimal changes.
+All animation Engines use a unified builder API, so you can switch between them with minimal changes.
 
-Here's a 3D [Position](Anim.Properties.Position) animation that zooms in on the element.
+Here's a simple [BackgroundColor](Anim-Property-BackgroundColor) animation.
 
 ```elm
-positionAnimation : AnimBuilder -> AnimBuilder
-positionAnimation builder =
-    builder
-        |> Position.for "my-element"
-        |> Position.perspective "my-element-container" 900
-        |> Position.fromXYZ 100 200 0
-        |> Position.toZ 300
-        |> Position.speed 150
-        |> Position.easing BounceOut
-        |> Position.build
+backgroundColorAnimation : AnimBuilder -> AnimBuilder
+backgroundColorAnimation builder =
+    builder 
+        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.from (hex "#ff0000")
+        |> BackgroundColor.to (elmColor Color.blue)
+        |> BackgroundColor.duration 2000
+        |> BackgroundColor.build
 ```
 
-It can be used by all of the engines - without any changes to the animation itself. Switching
-between engines is simply a matter of changing a few implementation details, you never have to touch the animations themselves.
+And here's a more complex, GPU rendered, 3D [Translate](Anim-Property-Translate) animation that zooms in on the element.
+
+```elm
+zoomInAnimation : AnimBuilder -> AnimBuilder
+zoomInAnimation builder =
+    builder
+        |> Translate.for "my-element"
+        |> Translate.perspective "my-element-container" 900
+        |> Translate.fromXYZ 100 200 0
+        |> Translate.toZ 300
+        |> Translate.speed 150
+        |> Translate.easing BounceOut
+        |> Translate.build
+```
+
+Both can be used by all of the Engines - without any changes to the animations themselves. The quick-eyed out there will also have noticed that both animation functions share the same signature: `AnimBuilder -> AnimBuilder`. This means they can be chained together, and small single-purpose animations can be composed into larger, more complex ones.
+
+Here's both of the animations being consumed by the [CSS Engine](Anim-Engine-CSS).
+
+```elm
+CSS.init
+    |> CSS.builder
+    |> backgroundAnimation
+    |> zoomInAnimation
+    |> CSS.animate
+```
+
+And now by the [Sub Engine](Anim-Engine-Sub).
+
+```elm
+Sub.init
+    |> Sub.builder
+    |> backgroundAnimation
+    |> zoomInAnimation
+    |> Sub.animate
+```
+
+And finally by the [WAAPI Engine](Anim-Engine-WAAPI).
+
+```elm
+WAAPI.init
+    |> WAAPI.builder
+    |> backgroundAnimation
+    |> zoomInAnimation
+    |> WAAPI.animate
+```
+
+The re-usability of animations means switching between Engines is simply a matter of changing a few implementation details, you never have to touch the animations themselves.
 
 This makes it easy to start off with the CSS Engine for simple CSS transitions, and then migrate to the Sub or WAAPI Engines as your requirements change.
 
@@ -41,26 +85,22 @@ This makes it easy to start off with the CSS Engine for simple CSS transitions, 
 
 ### 1. [Anim.Engine.CSS](Anim-Engine-CSS#design-decisions)
 
-- **Best for:** Simple, high-performance transitions.
-- **API:** Generates CSS for browser-native transitions.
-
-The CSS Engine will create both CSS Transforms and Keyframe Animations. Choose the one you want
-in your view code.
-
+- **Best for:** Fire-and-forget animations, minimal setup.
+- **API:** Generates CSS (transitions or keyframes) for browser-native rendering.
 
 ---
 
 ### 2. [Anim.Engine.Sub](Anim-Engine-Sub)
 
-- **Best for:** Full programmatic control, live values, mid-flight changes.
-- **API:** Frame-based updates, requires subscriptions.
+- **Best for:** Full programmatic control, querying mid-flight values, dynamic interruptions.
+- **API:** Frame-based updates via subscriptions.
 
 ---
 
 ### 3. [Anim.Engine.WAAPI](Anim-Engine-WAAPI)
 
-- **Best for:** Complex, timeline-based, or native browser animations.
-- **API:** Uses Elm ports to communicate with a JavaScript companion.
+- **Best for:** Browser-native performance with programmatic control, mid-flight queries and dynamic interruptions.
+- **API:** Web Animations API via Elm ports and companion JS.
 
 ---
 
