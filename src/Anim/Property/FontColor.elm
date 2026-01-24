@@ -144,10 +144,6 @@ build =
     CB.build
 
 
-
--- COLOR CONFIGURATION
-
-
 {-| Set the starting color for the current element.
 
     import Anim.Color exposing (hex)
@@ -189,11 +185,7 @@ to =
     CB.to
 
 
-
--- TIMING CONFIGURATION
-
-
-{-| Set the delay (in milliseconds) before the animation starts.
+{-| Set the delay (milliseconds) before the animation starts.
 
     animBuilder
         |> FontColor.for "my-element"
@@ -206,7 +198,7 @@ delay =
     CB.delay
 
 
-{-| Set the duration (in milliseconds) of the animation.
+{-| Set the duration (milliseconds) of the animation.
 
     animBuilder
         |> FontColor.for "my-element"
@@ -219,16 +211,16 @@ duration =
     CB.duration
 
 
-{-| Set the animation speed based on RGB distance per second.
+{-| Set the animation speed.
 
-For color animations:
+The speed is calibrated so that `1.0` means the maximum possible color change
+(black to white) takes 1 second. Most color changes will be faster since they
+cover less distance in color space.
 
-  - Speed represents RGB distance units per second
-  - The maximum RGB distance (black to white) is approximately 441.67 units
-  - A speed of 1.0 would take ~442 seconds to go from black to white
-  - A speed of 441.67 would take 1 second to go from black to white
-
-For example, a speed of 200 means the color will change by 200 RGB distance units per second.
+**Note:** For color animations, `duration` is usually more intuitive than `speed`.
+Most folks would tend to think "this color change should take 300ms" rather than "this should
+change at a specific rate". Consider using `duration` unless you specifically need
+speed-based timing that adapts to color distance.
 
     animBuilder
         |> FontColor.for "my-element"
@@ -241,24 +233,16 @@ speed =
     CB.speed
 
 
-
--- EASING CONFIGURATION
-
-
 {-| Set the easing function for the animation.
 
 See [Anim.Easing](Anim-Easing) for available easing functions.
 
-    import Anim.Easing exposing (ease)
+    import Anim.Easing exposing (Easing(..))
 
     animBuilder
         |> FontColor.for "my-element"
-        |> FontAnim.Easing exposing (ease)
-
-    animBuilder
-        |> Color.for "my-element"
-        |> Color.easing ease.inOutQuad
-        |> ...
+        |> FontColor.easing EaseInOut
+        |> ... -- continue with animation
 
 -}
 easing : Easing -> Builder -> Builder

@@ -143,10 +143,6 @@ build =
     CB.build
 
 
-
--- COLOR CONFIGURATION
-
-
 {-| Set the starting color for the current element.
 
     animBuilder
@@ -204,7 +200,7 @@ speed-based timing that adapts to color distance.
 
     animBuilder
         |> BackgroundColor.for "my-element"
-        |> BackgroundColor.to (Hex "#ff0000")
+        |> BackgroundColor.to (hex "#ff0000")
         |> BackgroundColor.speed 1.0
         |> ...
 
