@@ -146,12 +146,18 @@ build =
 
 {-| Set the starting color for the current element.
 
-    import Anim.Color exposing (hex)
+    import Anim.Color exposing (hex, elmColor)
+    import Color
 
     animBuilder
         |> FontColor.for "my-element"
         |> FontColor.from (hex "#0000ff")
-        |> ...
+        |> ... -- continue with animation
+
+    animBuilder
+        |> FontColor.for "my-element"
+        |> FontColor.from (elmColor Color.blue)
+        |> ... -- continue with animation
 
 -}
 from : Color -> Builder -> Builder
@@ -162,24 +168,25 @@ from =
 {-| Set the target color for the current element.
 
     import Anim.Color exposing (hex, rgb, elmColor)
+    import Color
 
     animBuilder
         |> FontColor.for "my-element"
         |> FontColor.from (rgb 0 0 255)
         |> FontColor.to (hex "#ff0000")
-        |> ...
+        |> ... -- continue with animation
 
     animBuilder
         |> FontColor.for "my-element"
         |> FontColor.from (elmColor Color.blue)
         |> FontColor.to (rgb 255 0 0)
-        |> ...
+        |> ... -- continue with animation
 
     animBuilder
         |> FontColor.for "my-element"
         |> FontColor.from (hex "#0000ff")
         |> FontColor.to (elmColor Color.red)
-        |> ...
+        |> ... -- continue with animation
 
 -}
 to : Color -> Builder -> Builder
@@ -192,7 +199,7 @@ to =
     animBuilder
         |> FontColor.for "my-element"
         |> FontColor.delay 500
-        |> ...
+        |> ... -- continue with animation
 
 -}
 delay : Int -> Builder -> Builder
@@ -205,7 +212,7 @@ delay =
     animBuilder
         |> FontColor.for "my-element"
         |> FontColor.duration 1000
-        |> ...
+        |> ... -- continue with animation
 
 -}
 duration : Int -> Builder -> Builder
@@ -227,7 +234,7 @@ speed-based timing that adapts to color distance.
     animBuilder
         |> FontColor.for "my-element"
         |> FontColor.speed 300
-        |> ...
+        |> ... -- continue with animation
 
 -}
 speed : Float -> Builder -> Builder

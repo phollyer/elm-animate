@@ -147,16 +147,17 @@ build =
 {-| Set the starting color for the current element.
 
     import Anim.Color exposing (hex, elmColor)
+    import Color
 
     animBuilder
         |> BackgroundColor.for "my-element"
         |> BackgroundColor.from (hex "#ff0000")
-        |> ...
+        |> ... -- continue with animation
 
     animBuilder
         |> BackgroundColor.for "my-element"
         |> BackgroundColor.from (elmColor Color.red)
-        |> ...
+        |> ... -- continue with animation
 
 -}
 from : Color -> Builder -> Builder
@@ -167,24 +168,25 @@ from color =
 {-| Set the target color for the current element.
 
     import Anim.Color exposing (hex, rgb, elmColor)
+    import Color
 
     animBuilder
         |> BackgroundColor.for "my-element"
         |> BackgroundColor.from (rgb 0 0 255)
         |> BackgroundColor.to (hex "#ff0000")
-        |> ...
+        |> ... -- continue with animation
 
     animBuilder
         |> BackgroundColor.for "my-element"
         |> BackgroundColor.from (elmColor Color.blue)
         |> BackgroundColor.to (rgb 255 0 0)
-        |> ...
+        |> ... -- continue with animation
 
     animBuilder
         |> BackgroundColor.for "my-element"
         |> BackgroundColor.from (hex "#0000ff")
         |> BackgroundColor.to (elmColor Color.red)
-        |> ...
+        |> ... -- continue with animation
 
 -}
 to : Color -> Builder -> Builder
@@ -207,7 +209,7 @@ speed-based timing that adapts to color distance.
         |> BackgroundColor.for "my-element"
         |> BackgroundColor.to (hex "#ff0000")
         |> BackgroundColor.speed 1.0
-        |> ...
+        |> ... -- continue with animation
 
 -}
 speed : Float -> Builder -> Builder
@@ -220,7 +222,7 @@ speed =
     animBuilder
         |> BackgroundColor.for "my-element"
         |> BackgroundColor.duration 2000
-        |> ...
+        |> ... -- continue with animation
 
 -}
 duration : Int -> Builder -> Builder
@@ -233,7 +235,7 @@ duration =
     animBuilder
         |> BackgroundColor.for "my-element"
         |> BackgroundColor.easing EaseInOut
-        |> ...
+        |> ... -- continue with animation
 
 -}
 easing : Easing -> Builder -> Builder
@@ -246,7 +248,7 @@ easing =
     animBuilder
         |> BackgroundColor.for "my-element"
         |> BackgroundColor.delay 500
-        |> ...
+        |> ... -- continue with animation
 
 -}
 delay : Int -> Builder -> Builder
