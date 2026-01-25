@@ -744,6 +744,9 @@ toTask animBuilder =
                         ScrollTarget.Percentage x y ->
                             "percentage (" ++ String.fromFloat (x * 100) ++ "%, " ++ String.fromFloat (y * 100) ++ "%)"
 
+                        ScrollTarget.Delta dx dy ->
+                            "delta (" ++ String.fromFloat dx ++ ", " ++ String.fromFloat dy ++ ")"
+
                 scrollResult =
                     { containerId = containerId
                     , targetElementId = targetElementId
@@ -767,6 +770,12 @@ toTask animBuilder =
                         ( "document", ScrollTarget.Center ) ->
                             DocumentTask.scrollToCenterWithConfig config
 
+                        ( "document", ScrollTarget.Percentage px py ) ->
+                            DocumentTask.scrollToPercentageWithConfig px py config
+
+                        ( "document", ScrollTarget.Delta dx dy ) ->
+                            DocumentTask.scrollByWithConfig dx dy config
+
                         ( otherContainerId, ScrollTarget.Element elementId ) ->
                             ContainerTask.scrollWithConfig otherContainerId elementId config
 
@@ -782,8 +791,11 @@ toTask animBuilder =
                         ( otherContainerId, ScrollTarget.Center ) ->
                             ContainerTask.scrollToCenterWithConfig otherContainerId config
 
-                        _ ->
-                            Task.succeed []
+                        ( otherContainerId, ScrollTarget.Percentage px py ) ->
+                            ContainerTask.scrollToPercentageWithConfig otherContainerId px py config
+
+                        ( otherContainerId, ScrollTarget.Delta dx dy ) ->
+                            ContainerTask.scrollByWithConfig otherContainerId dx dy config
             in
             -- Convert Task Dom.Error (List ()) to Task ScrollError ScrollResult
             baseTask

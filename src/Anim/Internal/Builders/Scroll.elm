@@ -1,6 +1,9 @@
 module Anim.Internal.Builders.Scroll exposing
     ( ScrollBuilder
     , build
+    , byX
+    , byXY
+    , byY
     , delay
     , duration
     , easing
@@ -283,6 +286,36 @@ toPercentageY yPercent (ScrollBuilder config) =
     ScrollBuilder
         { config
             | scrollTarget = config.scrollTarget |> ScrollTarget.toPercentage 0 yPercent
+        }
+
+
+{-| Scroll by a relative amount on both X and Y axes.
+-}
+byXY : Float -> Float -> ScrollBuilder -> ScrollBuilder
+byXY dx dy (ScrollBuilder config) =
+    ScrollBuilder
+        { config
+            | scrollTarget = config.scrollTarget |> ScrollTarget.byXY dx dy
+        }
+
+
+{-| Scroll by a relative amount on X axis only.
+-}
+byX : Float -> ScrollBuilder -> ScrollBuilder
+byX dx (ScrollBuilder config) =
+    ScrollBuilder
+        { config
+            | scrollTarget = config.scrollTarget |> ScrollTarget.byX dx
+        }
+
+
+{-| Scroll by a relative amount on Y axis only.
+-}
+byY : Float -> ScrollBuilder -> ScrollBuilder
+byY dy (ScrollBuilder config) =
+    ScrollBuilder
+        { config
+            | scrollTarget = config.scrollTarget |> ScrollTarget.byY dy
         }
 
 

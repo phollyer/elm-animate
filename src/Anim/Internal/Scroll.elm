@@ -296,6 +296,9 @@ toCmd toMsg animBuilder =
                         ScrollTarget.Percentage x y ->
                             containerType ++ ":percentage:" ++ String.fromFloat (x * 100) ++ "," ++ String.fromFloat (y * 100)
 
+                        ScrollTarget.Delta dx dy ->
+                            containerType ++ ":delta:" ++ String.fromFloat dx ++ "," ++ String.fromFloat dy
+
                 completionMsg =
                     toMsg targetId
             in
@@ -315,6 +318,9 @@ toCmd toMsg animBuilder =
                 ( "document", ScrollTarget.Center ) ->
                     DocumentCmd.scrollToCenterWithConfig completionMsg config
 
+                ( "document", ScrollTarget.Delta dx dy ) ->
+                    DocumentCmd.scrollByWithConfig dx dy completionMsg config
+
                 ( containerId, ScrollTarget.Element elementId ) ->
                     ContainerCmd.scrollWithConfig containerId elementId completionMsg config
 
@@ -329,6 +335,9 @@ toCmd toMsg animBuilder =
 
                 ( containerId, ScrollTarget.Center ) ->
                     ContainerCmd.scrollToCenterWithConfig containerId completionMsg config
+
+                ( containerId, ScrollTarget.Delta dx dy ) ->
+                    ContainerCmd.scrollByWithConfig containerId dx dy completionMsg config
 
                 _ ->
                     Cmd.none

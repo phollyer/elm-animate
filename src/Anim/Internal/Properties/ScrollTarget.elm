@@ -2,6 +2,9 @@ module Anim.Internal.Properties.ScrollTarget exposing
     ( Axis(..)
     , ScrollTarget(..)
     , ScrollTargetType(..)
+    , byX
+    , byXY
+    , byY
     , for
     , getAxis
     , getContainerId
@@ -51,6 +54,7 @@ type ScrollTargetType
     | Bottom
     | Center
     | Percentage Float Float
+    | Delta Float Float
 
 
 {-| Axis configuration for scroll movement
@@ -179,6 +183,39 @@ toPercentage xPercent yPercent (ScrollTarget data) =
     ScrollTarget { data | target = Percentage xPercent yPercent }
 
 
+{-| Scroll by a relative amount (delta) on both axes.
+
+    scrollTarget
+        |> ScrollTarget.byXY 100 -50  -- scroll right 100px and up 50px
+
+-}
+byXY : Float -> Float -> ScrollTarget -> ScrollTarget
+byXY dx dy (ScrollTarget data) =
+    ScrollTarget { data | target = Delta dx dy, axis = Both }
+
+
+{-| Scroll by a relative amount (delta) on X axis only.
+
+    scrollTarget
+        |> ScrollTarget.byX 100  -- scroll right 100px
+
+-}
+byX : Float -> ScrollTarget -> ScrollTarget
+byX dx (ScrollTarget data) =
+    ScrollTarget { data | target = Delta dx 0, axis = X }
+
+
+{-| Scroll by a relative amount (delta) on Y axis only.
+
+    scrollTarget
+        |> ScrollTarget.byY -50  -- scroll up 50px
+
+-}
+byY : Float -> ScrollTarget -> ScrollTarget
+byY dy (ScrollTarget data) =
+    ScrollTarget { data | target = Delta 0 dy, axis = Y }
+
+
 
 -- GETTERS
 
@@ -215,6 +252,9 @@ getTargetX (ScrollTarget data) =
         Percentage x _ ->
             x
 
+        Delta dx _ ->
+            dx
+
 
 {-| Get the target Y coordinate (calculated based on target type).
 -}
@@ -241,6 +281,9 @@ getTargetY (ScrollTarget data) =
         -- Will be calculated based on container size
         Percentage _ y ->
             y
+
+        Delta _ dy ->
+            dy
 
 
 {-| Get the axis configuration.

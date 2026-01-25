@@ -5,6 +5,7 @@ module Anim.Action.Scroll exposing
     , toLeft, toRight
     , toTopLeft, toTopRight, toBottomLeft, toBottomRight
     , toXY, toX, toY, toPercentageXY, toPercentageX, toPercentageY
+    , byXY, byX, byY
     , onBothAxes, onXAxis, onYAxis
     , onBothAxesWithOffset, onXAxisWithOffset, onYAxisWithOffset
     , delay, duration, speed
@@ -61,6 +62,11 @@ You can chain multiple scroll targets with different containers.
 ## Coordinate Targeting
 
 @docs toXY, toX, toY, toPercentageXY, toPercentageX, toPercentageY
+
+
+## Relative Scrolling
+
+@docs byXY, byX, byY
 
 
 # Axis Selection
@@ -377,6 +383,64 @@ toPercentageX =
 toPercentageY : Float -> Builder -> Builder
 toPercentageY =
     SB.toPercentageY
+
+
+{-| Scroll by a relative amount on both X and Y axes.
+
+Positive values scroll right/down, negative values scroll left/up.
+
+    -- Scroll right 100px and down 200px
+    animBuilder
+        |> Scroll.forDocument
+        |> Scroll.byXY 100 200
+        |> Scroll.duration 500
+        |> Scroll.build
+
+    -- Scroll left 50px and up 100px
+    animBuilder
+        |> Scroll.forContainer "element-id"
+        |> Scroll.byXY -50 -100
+        |> Scroll.duration 500
+        |> Scroll.build
+
+-}
+byXY : Float -> Float -> Builder -> Builder
+byXY =
+    SB.byXY
+
+
+{-| Scroll by a relative amount on X axis only.
+
+Positive values scroll right, negative values scroll left.
+
+    -- Scroll right 100px
+    animBuilder
+        |> Scroll.forDocument
+        |> Scroll.byX 100
+        |> Scroll.duration 500
+        |> Scroll.build
+
+-}
+byX : Float -> Builder -> Builder
+byX =
+    SB.byX
+
+
+{-| Scroll by a relative amount on Y axis only.
+
+Positive values scroll down, negative values scroll up.
+
+    -- Scroll down 200px
+    animBuilder
+        |> Scroll.forDocument
+        |> Scroll.byY 200
+        |> Scroll.duration 500
+        |> Scroll.build
+
+-}
+byY : Float -> Builder -> Builder
+byY =
+    SB.byY
 
 
 
