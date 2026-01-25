@@ -4,12 +4,12 @@ module Anim.Engine.CSS exposing
     , animationStyleAttribute, animationStyleAttributeWithEvents
     , AnimState, init, AnimBuilder, builder
     , animate, TransformOrder, animateOrder
-    , stop, reset, restart, pause, resume
-    , perspective
-    , perspectiveStyles, perspectiveWith
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
     , Event(..), handleEvent
+    , stop, reset, restart, pause, resume
+    , perspective
+    , perspectiveStyles, perspectiveWith
     , duration, speed
     , easing
     , delay
@@ -26,7 +26,7 @@ module Anim.Engine.CSS exposing
 
 This Engine converts [AnimBuilder](#AnimBuilder) configurations to CSS animations which you can apply as either:
 
-1.  **CSS transform attributes**, or,
+1.  **CSS transitions**, or,
 2.  **Keyframe animations**
 
 You decide how to apply the generated CSS to your elements in your view - giving you full control
@@ -37,7 +37,7 @@ over how the CSS is integrated into your application.
 
 **Choosing Between Transitions and Keyframes**
 
-The choice between transitions and keyframes is the main decision you need to make when using this engine,
+The choice between transitions and keyframes is the main decision you need to make when using this Engine,
 creating animations with either approach is exactly the same using the [AnimBuilder](#AnimBuilder) API.
 
 **Use Transitions for:**
@@ -81,41 +81,6 @@ apply the generated HTML attributes to your elements.
 @docs animate, TransformOrder, animateOrder
 
 
-# Animation Control
-
-Control running animations with stop, reset, restart, pause, and resume functionality.
-
-**CSS Animation Behavior:**
-
-  - **stop**: Instantly jumps to the animation's end state by creating a 1ms transition.
-    Triggers `transitionend`/`animationend` events.
-  - **reset**: Instantly jumps back to the animation's start state by creating a 1ms transition.
-    Triggers `transitionend`/`animationend` events.
-  - **restart**: Restarts the animation from the beginning by re-running the full animation.
-  - **pause**: Uses CSS `animation-play-state: paused` to freeze keyframe animations mid-flight.
-    Note: Only works with keyframe animations, not CSS transitions.
-  - **resume**: Uses CSS `animation-play-state: running` to continue paused keyframe animations.
-    Note: Only works with keyframe animations, not CSS transitions.
-
-@docs stop, reset, restart, pause, resume
-
-
-# 3D Animations
-
-For 3D animations you need to set a perspective
-to give a sense of depth. Without perspective, 3D animations will have no visual effect, and will appear flat.
-
-
-## Perspective
-
-@docs perspective
-
-
-## HTML
-
-@docs perspectiveStyles, perspectiveWith
-
-
 # Event Handling
 
 CSS animations and transitions can trigger events when they start, end, or are cancelled. You have two options for handling
@@ -150,6 +115,41 @@ Keyframe Animation events are different from transition events, so both types of
 **Note**: Automatic event handling is for when you are tracking animation state in your model.
 
 @docs Event, handleEvent
+
+
+# Animation Control
+
+Control running animations with stop, reset, restart, pause, and resume functionality.
+
+**CSS Animation Behavior:**
+
+  - **stop**: Instantly jumps to the animation's end state by creating a 1ms transition.
+    Triggers `transitionend`/`animationend` events.
+  - **reset**: Instantly jumps back to the animation's start state by creating a 1ms transition.
+    Triggers `transitionend`/`animationend` events.
+  - **restart**: Restarts the animation from the beginning by re-running the full animation.
+  - **pause**: Uses CSS `animation-play-state: paused` to freeze keyframe animations mid-flight.
+    Note: Only works with keyframe animations, not CSS transitions.
+  - **resume**: Uses CSS `animation-play-state: running` to continue paused keyframe animations.
+    Note: Only works with keyframe animations, not CSS transitions.
+
+@docs stop, reset, restart, pause, resume
+
+
+# 3D Animations
+
+For 3D animations you need to set a perspective
+to give a sense of depth. Without perspective, 3D animations will have no visual effect, and will appear flat.
+
+
+## Perspective
+
+@docs perspective
+
+
+## HTML
+
+@docs perspectiveStyles, perspectiveWith
 
 
 # Global Settings
@@ -434,7 +434,7 @@ animationStyleAttributeWithEvents elementId toMsg animationState =
     InternalCSS.animationStyleAttribute elementId animationState :: eventHandlers
 
 
-{-| Generate the animation `<style>` attribute and apply it directly to the element you want to animate.
+{-| Generate the animation `style` attribute and apply it directly to the element you want to animate.
 
 This creates the `animation` CSS property value that tells the browser which keyframe animation to run on this element.
 
@@ -458,20 +458,12 @@ This creates the `animation` CSS property value that tells the browser which key
         [ htmlAttribute (CSS.animationStyleAttribute "my-element" animationState) ]
         (text "Animating element")
 
-Using this function is equivalent to manually writing something like:
+**Note**: You still need to include the keyframes in your DOM separately with
+[ keyframesStyleNode ](#keyframesStyleNode) or [ keyframesStyleNodeFor ](#keyframesStyleNodeFor).
 
-    Html.Attributes.style "animation" "animation-name 2000ms linear 0ms"
-
-**Note:**
-
-1.  You still need to include the keyframes in your DOM separately with
-    [ keyframesStyleNode ](#keyframesStyleNode) or [ keyframesStyleNodeFor ](#keyframesStyleNodeFor).
-2.  The Easing function will always be "linear" for the CSS animation property. This is because the easing
-    is baked into the keyframes themselves, so we need to transition between keyframe values linearly.
-    This is the only way to achieve:
-      - Accurate curves for advanced easing functions (like bounce, elastic, etc.)
-      - Independent easing per property within the same animation
-3.  The Delay is also baked into the keyframes in order to enable different delays per property, so it will always be 0 in the CSS animation property.
+**Why DevTools shows "linear"**: The easing is baked into the keyframe percentages,
+enabling accurate curves for advanced easing functions (bounce, elastic, etc.)
+and independent easing per property.
 
 -}
 animationStyleAttribute : String -> AnimState -> Html.Attribute msg
@@ -1156,7 +1148,7 @@ htmlAttributesWithEvents elementId msg animationState =
 -- CSS TRANSITION EVENT HANDLERS
 
 
-{-| Event handler for when a CSS transition starts.
+{-| Event handler for when a CSS transition starts animating (after any delay).
 -}
 onTransitionStart : msg -> Html.Attribute msg
 onTransitionStart =
@@ -1170,7 +1162,7 @@ onTransitionEnd =
     InternalCSS.onTransitionEnd
 
 
-{-| Event handler for when a CSS transition run begins (even if delayed).
+{-| Event handler for when a CSS transition is triggered (before any delay).
 -}
 onTransitionRun : msg -> Html.Attribute msg
 onTransitionRun =
