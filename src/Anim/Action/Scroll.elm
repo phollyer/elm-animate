@@ -6,10 +6,10 @@ module Anim.Action.Scroll exposing
     , toTopLeft, toTopRight, toBottomLeft, toBottomRight
     , toXY, toX, toY, toPercentageXY, toPercentageX, toPercentageY
     , byXY, byX, byY
-    , onBothAxes, onXAxis, onYAxis
-    , onBothAxesWithOffset, onXAxisWithOffset, onYAxisWithOffset
+    , withOffsetXY, withOffsetX, withOffsetY
     , delay, duration, speed
     , easing
+    , onBothAxes, onXAxis, onYAxis
     )
 
 {-| Scroll animation functions.
@@ -19,7 +19,7 @@ Build animations that scroll the document or container elements to specific elem
     animBuilder
         |> Scroll.forDocument
         |> Scroll.toElement "section-1"
-        |> Scroll.onYAxisWithOffset 60
+        |> Scroll.withOffsetY 60
         |> Scroll.speed 500
         |> Scroll.build
 
@@ -69,14 +69,9 @@ You can chain multiple scroll targets with different containers.
 @docs byXY, byX, byY
 
 
-# Axis Selection
+# Offsets
 
-@docs onBothAxes, onXAxis, onYAxis
-
-
-## With Offsets
-
-@docs onBothAxesWithOffset, onXAxisWithOffset, onYAxisWithOffset
+@docs withOffsetXY, withOffsetX, withOffsetY
 
 
 # Timing
@@ -91,6 +86,16 @@ These override their equivalent global settings.
 This overrides any global easing setting.
 
 @docs easing
+
+
+# Axis Selection
+
+Most containers only scroll on one axis (CSS `overflow-y: auto` or `overflow-x: auto`),
+so axis selection is rarely needed. However, for 2D scrollable containers like
+spreadsheets, maps, or canvas-style interfaces where both axes are scrollable,
+you can select one or both axes to scroll - should the need arise.
+
+@docs onBothAxes, onXAxis, onYAxis
 
 -}
 
@@ -492,50 +497,55 @@ onYAxis =
     SB.onYAxis
 
 
-{-| Scroll on both axes with offsets.
+{-| Set X and Y scroll offsets.
+
+Offsets are added to the target scroll position. Useful for accounting for
+fixed headers or other UI elements.
 
     -- Scroll to element with 20px X offset and 60px Y offset.
     animBuilder
-        |> Scroll.forContainer "element-id"
-        |> Scroll.onBothAxesWithOffset 20 60
+        |> Scroll.forDocument
         |> Scroll.toElement "section-1"
+        |> Scroll.withOffsetXY 20 60
         |> Scroll.speed 500
         |> Scroll.build
 
 -}
-onBothAxesWithOffset : Float -> Float -> Builder -> Builder
-onBothAxesWithOffset =
-    SB.onBothAxesWithOffset
+withOffsetXY : Float -> Float -> Builder -> Builder
+withOffsetXY =
+    SB.withOffsetXY
 
 
-{-| Scroll on X axis with offset.
-
-    animBuilder
-        |> Scroll.forContainer "element-id"
-        |> Scroll.onXAxisWithOffset 60
-        |> Scroll.toElement "section-1"
-        |> Scroll.speed 500
-        |> Scroll.build
-
--}
-onXAxisWithOffset : Float -> Builder -> Builder
-onXAxisWithOffset =
-    SB.onXAxisWithOffset
-
-
-{-| Scroll on Y axis with offset.
+{-| Set X scroll offset.
 
     animBuilder
         |> Scroll.forDocument
-        |> Scroll.onYAxisWithOffset 60
         |> Scroll.toElement "section-1"
+        |> Scroll.withOffsetX 20
         |> Scroll.speed 500
         |> Scroll.build
 
 -}
-onYAxisWithOffset : Float -> Builder -> Builder
-onYAxisWithOffset =
-    SB.onYAxisWithOffset
+withOffsetX : Float -> Builder -> Builder
+withOffsetX =
+    SB.withOffsetX
+
+
+{-| Set Y scroll offset.
+
+Commonly used to account for fixed headers.
+
+    animBuilder
+        |> Scroll.forDocument
+        |> Scroll.toElement "section-1"
+        |> Scroll.withOffsetY 60
+        |> Scroll.speed 500
+        |> Scroll.build
+
+-}
+withOffsetY : Float -> Builder -> Builder
+withOffsetY =
+    SB.withOffsetY
 
 
 

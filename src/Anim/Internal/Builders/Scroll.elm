@@ -11,11 +11,8 @@ module Anim.Internal.Builders.Scroll exposing
     , forContainer
     , forDocument
     , onBothAxes
-    , onBothAxesWithOffset
     , onXAxis
-    , onXAxisWithOffset
     , onYAxis
-    , onYAxisWithOffset
     , speed
     , toBottom
     , toBottomLeft
@@ -33,6 +30,9 @@ module Anim.Internal.Builders.Scroll exposing
     , toX
     , toXY
     , toY
+    , withOffsetX
+    , withOffsetXY
+    , withOffsetY
     )
 
 {-| Internal scroll builder implementation.
@@ -365,10 +365,10 @@ onYAxis (ScrollBuilder config) =
         }
 
 
-{-| Scroll on both axes with offsets.
+{-| Set X and Y scroll offsets.
 -}
-onBothAxesWithOffset : Float -> Float -> ScrollBuilder -> ScrollBuilder
-onBothAxesWithOffset offsetX offsetY (ScrollBuilder config) =
+withOffsetXY : Float -> Float -> ScrollBuilder -> ScrollBuilder
+withOffsetXY offsetX offsetY (ScrollBuilder config) =
     let
         (ScrollTarget.ScrollTarget targetData) =
             config.scrollTarget
@@ -377,17 +377,14 @@ onBothAxesWithOffset offsetX offsetY (ScrollBuilder config) =
         { config
             | scrollTarget =
                 ScrollTarget.ScrollTarget
-                    { targetData
-                        | axis = Both
-                        , offset = ( offsetX, offsetY )
-                    }
+                    { targetData | offset = ( offsetX, offsetY ) }
         }
 
 
-{-| Scroll on X axis with offset.
+{-| Set X scroll offset.
 -}
-onXAxisWithOffset : Float -> ScrollBuilder -> ScrollBuilder
-onXAxisWithOffset offset (ScrollBuilder config) =
+withOffsetX : Float -> ScrollBuilder -> ScrollBuilder
+withOffsetX offsetX (ScrollBuilder config) =
     let
         (ScrollTarget.ScrollTarget targetData) =
             config.scrollTarget
@@ -399,17 +396,14 @@ onXAxisWithOffset offset (ScrollBuilder config) =
         { config
             | scrollTarget =
                 ScrollTarget.ScrollTarget
-                    { targetData
-                        | axis = X
-                        , offset = ( offset, offsetY )
-                    }
+                    { targetData | offset = ( offsetX, offsetY ) }
         }
 
 
-{-| Scroll on Y axis with offset.
+{-| Set Y scroll offset.
 -}
-onYAxisWithOffset : Float -> ScrollBuilder -> ScrollBuilder
-onYAxisWithOffset offset (ScrollBuilder config) =
+withOffsetY : Float -> ScrollBuilder -> ScrollBuilder
+withOffsetY offsetY (ScrollBuilder config) =
     let
         (ScrollTarget.ScrollTarget targetData) =
             config.scrollTarget
@@ -421,10 +415,7 @@ onYAxisWithOffset offset (ScrollBuilder config) =
         { config
             | scrollTarget =
                 ScrollTarget.ScrollTarget
-                    { targetData
-                        | axis = Y
-                        , offset = ( offsetX, offset )
-                    }
+                    { targetData | offset = ( offsetX, offsetY ) }
         }
 
 
