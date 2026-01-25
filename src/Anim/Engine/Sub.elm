@@ -78,7 +78,7 @@ to give a sense of depth. Without perspective, 3D transformations will have no v
 
 # Global Settings
 
-These settings will be used for all animations unless overridden on a per-animation basis.
+These settings will be used for all animations unless overridden on a per-property basis.
 
 
 ## Timing

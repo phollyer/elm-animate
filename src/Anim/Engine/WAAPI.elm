@@ -112,9 +112,7 @@ Handle window and container resizes by repositioning elements proportionally wit
 
 # Global Settings
 
-These settings will be used for all animations unless overridden on a per-animation basis.
-So if you want all your animations to have the same duration, easing, etc., you can set them here
-rather than repeating them for each property animation.
+These settings will be used for all animations unless overridden on a per-property basis.
 
 
 ## Timing

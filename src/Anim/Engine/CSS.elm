@@ -3,7 +3,7 @@ module Anim.Engine.CSS exposing
     , keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
     , animationStyleAttribute, animationStyleAttributeWithEvents
     , AnimState, init, AnimBuilder, builder
-    , animate, TransformOrder, animateOrder
+    , animate, TransformOrder(..), animateOrder
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
     , Event(..), handleEvent
@@ -54,7 +54,7 @@ creating animations with either approach is exactly the same using the [AnimBuil
   - Better debugging visibility in DevTools
 
 
-## CSS Transition Animations
+## CSS Transitions
 
 For CSS transition animations, you just need to apply the generated HTML attributes to your elements.
 
@@ -123,14 +123,15 @@ Control running animations with stop, reset, restart, pause, and resume function
 
 **CSS Animation Behavior:**
 
-  - **stop**: Instantly jumps to the animation's end state by creating a 1ms transition.
+  - **stop**: Instantly jumps to the animation's end state.
     Triggers `transitionend`/`animationend` events.
-  - **reset**: Instantly jumps back to the animation's start state by creating a 1ms transition.
+  - **reset**: Instantly jumps back to the animation's start state.
     Triggers `transitionend`/`animationend` events.
-  - **restart**: Restarts the animation from the beginning by re-running the full animation.
-  - **pause**: Uses CSS `animation-play-state: paused` to freeze keyframe animations mid-flight.
+  - **restart**: Restarts the animation from the beginning.
+    Triggers `transitionrun`/`animationstart` events.
+  - **pause**: Pauses animations mid-flight.
     Note: Only works with keyframe animations, not CSS transitions.
-  - **resume**: Uses CSS `animation-play-state: running` to continue paused keyframe animations.
+  - **resume**: Resumes paused keyframe animations.
     Note: Only works with keyframe animations, not CSS transitions.
 
 @docs stop, reset, restart, pause, resume
@@ -154,7 +155,7 @@ to give a sense of depth. Without perspective, 3D animations will have no visual
 
 # Global Settings
 
-These settings will be used for all property animations unless overridden on a per-property basis.
+These settings will be used for all animations unless overridden on a per-property basis.
 
 
 ## Timing
@@ -458,12 +459,8 @@ This creates the `animation` CSS property value that tells the browser which key
         [ htmlAttribute (CSS.animationStyleAttribute "my-element" animationState) ]
         (text "Animating element")
 
-**Note**: You still need to include the keyframes in your DOM separately with
+**Remember**: You still need to include the keyframes in your DOM separately with
 [ keyframesStyleNode ](#keyframesStyleNode) or [ keyframesStyleNodeFor ](#keyframesStyleNodeFor).
-
-**Why DevTools shows "linear"**: The easing is baked into the keyframe percentages,
-enabling accurate curves for advanced easing functions (bounce, elastic, etc.)
-and independent easing per property.
 
 -}
 animationStyleAttribute : String -> AnimState -> Html.Attribute msg
