@@ -766,23 +766,9 @@ getCurrentSize elementId animState =
 
 {-| Get all the HTML attributes needed for the CSS animations on the target element.
 
-
-### HTML Example
-
     div
         (CSS.htmlAttributes "my-element" animationState)
         [ text "Animating element" ]
-
-
-### Elm UI Example
-
-For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/Element#htmlAttribute):
-
-    el
-        (List.map htmlAttribute <|
-            CSS.htmlAttributes "my-element" animationState
-        )
-        (text "Animating element")
 
 -}
 htmlAttributes : ElementId -> AnimState -> List (Html.Attribute msg)

@@ -26,7 +26,6 @@ module Anim.Internal.CSS exposing
     , getTranslateAnimationDuration
     , getTranslateRange
     , handleEvent
-    , htmlAttributes
     , init
     , isElementComplete
     , isElementRunning
@@ -48,6 +47,7 @@ module Anim.Internal.CSS exposing
     , resumeAnimation
     , speed
     , stopAnimation
+    , transitionAttributes
     )
 
 import Anim.Easing exposing (Easing)
@@ -279,23 +279,27 @@ handleEvent event (AnimState state) =
 
 
 onTransitionStart : msg -> Html.Attribute msg
-onTransitionStart msg =
-    Html.Events.on "transitionstart" (Json.Decode.succeed msg)
+onTransitionStart =
+    Html.Events.on "transitionstart"
+        << Json.Decode.succeed
 
 
 onTransitionEnd : msg -> Html.Attribute msg
-onTransitionEnd msg =
-    Html.Events.on "transitionend" (Json.Decode.succeed msg)
+onTransitionEnd =
+    Html.Events.on "transitionend"
+        << Json.Decode.succeed
 
 
 onTransitionRun : msg -> Html.Attribute msg
-onTransitionRun msg =
-    Html.Events.on "transitionrun" (Json.Decode.succeed msg)
+onTransitionRun =
+    Html.Events.on "transitionrun"
+        << Json.Decode.succeed
 
 
 onTransitionCancel : msg -> Html.Attribute msg
-onTransitionCancel msg =
-    Html.Events.on "transitioncancel" (Json.Decode.succeed msg)
+onTransitionCancel =
+    Html.Events.on "transitioncancel"
+        << Json.Decode.succeed
 
 
 
@@ -303,23 +307,27 @@ onTransitionCancel msg =
 
 
 onAnimationStart : msg -> Html.Attribute msg
-onAnimationStart msg =
-    Html.Events.on "animationstart" (Json.Decode.succeed msg)
+onAnimationStart =
+    Html.Events.on "animationstart"
+        << Json.Decode.succeed
 
 
 onAnimationEnd : msg -> Html.Attribute msg
-onAnimationEnd msg =
-    Html.Events.on "animationend" (Json.Decode.succeed msg)
+onAnimationEnd =
+    Html.Events.on "animationend"
+        << Json.Decode.succeed
 
 
 onAnimationIteration : msg -> Html.Attribute msg
-onAnimationIteration msg =
-    Html.Events.on "animationiteration" (Json.Decode.succeed msg)
+onAnimationIteration =
+    Html.Events.on "animationiteration"
+        << Json.Decode.succeed
 
 
 onAnimationCancel : msg -> Html.Attribute msg
-onAnimationCancel msg =
-    Html.Events.on "animationcancel" (Json.Decode.succeed msg)
+onAnimationCancel =
+    Html.Events.on "animationcancel"
+        << Json.Decode.succeed
 
 
 
@@ -634,8 +642,8 @@ animationStyleAttribute elementId animationState =
             Html.Attributes.style "animation" ""
 
 
-htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
-htmlAttributes elementId animationResult =
+transitionAttributes : String -> AnimState -> List (Html.Attribute msg)
+transitionAttributes elementId animationResult =
     let
         styles =
             getElementStyles elementId animationResult

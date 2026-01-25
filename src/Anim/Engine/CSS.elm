@@ -1,12 +1,13 @@
 module Anim.Engine.CSS exposing
-    ( htmlAttributes, htmlAttributesWithEvents
+    ( transitionAttributes
+    , keyframeAnimationAttribute
     , keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
-    , animationStyleAttribute, animationStyleAttributeWithEvents
     , AnimState, init, AnimBuilder, builder
     , animate, TransformOrder(..), animateOrder
-    , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
+    , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , Event(..), handleEvent
+    , transitionEvents, keyframeAnimationEvents
     , stop, reset, restart, pause, resume
     , perspective
     , perspectiveStyles, perspectiveWith
@@ -56,19 +57,21 @@ creating animations with either approach is exactly the same using the [AnimBuil
 
 ## CSS Transitions
 
-For CSS transition animations, you just need to apply the generated HTML attributes to your elements.
+For CSS transitions, you just need to apply the generated [transition](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transitions/Using)
+and [transform](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transforms/Using)
+attributes to your elements.
 
-@docs htmlAttributes, htmlAttributesWithEvents
+@docs transitionAttributes
 
 
 ## Keyframe Animations
 
-For Keyframe animations, you need to add the generated keyframes to a node in your DOM, and
-apply the generated HTML attributes to your elements.
+For Keyframe animations, you need to apply the generated CSS [animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation) property to your elements
+and also add the generated keyframes to a node in your DOM.
+
+@docs keyframeAnimationAttribute
 
 @docs keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
-
-@docs animationStyleAttribute, animationStyleAttributeWithEvents
 
 
 # Build
@@ -83,26 +86,17 @@ apply the generated HTML attributes to your elements.
 
 # Event Handling
 
-CSS animations and transitions can trigger events when they start, end, or are cancelled. You have two options for handling
-these events in your application:
+CSS transitions and keyframe animations can trigger events at various stages of their lifecycle.
+You have two options for handling these events in your application:
 
-1.  **Manual Event Handling:** Manually add event handlers to your elements using the provided event handler functions. Use these for
-    fire-and-forget animations where you don't track state in your model.
+1.  **Manual Event Handling:** Manually add event handlers to your elements using the provided event handler functions.
 
 2.  **Automatic Event Handling**: Generate [Event](#Event) messages that you can process in your update function.
-    Use this approach when tracking animation state in your model.
 
 
 ## Manual Event Handling
 
-**Note**: Manual event handling is for fire-and-forget animations where you don't track state in your model.
-
-Keyframe Animation events are different from transition events, so both types of events can be handled using the following functions.
-
-
-### Keyframe Animation Events
-
-@docs onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
+For fire-and-forget animations where you don't track state in your model.
 
 
 ### Transition Animation Events
@@ -110,11 +104,23 @@ Keyframe Animation events are different from transition events, so both types of
 @docs onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
 
 
+### Keyframe Animation Events
+
+@docs onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
+
+
 ## Automatic Event Handling
 
-**Note**: Automatic event handling is for when you are tracking animation state in your model.
+For when you are tracking animation state in your model.
 
 @docs Event, handleEvent
+
+
+### Wiring Up Events
+
+In order for your application to respond to animation events, you need to add the appropriate event handlers to your animated elements.
+
+@docs transitionEvents, keyframeAnimationEvents
 
 
 # Animation Control
@@ -384,87 +390,45 @@ builder =
     InternalCSS.builder
 
 
-{-| This is an alternative to [animationStyleAttribute](#animationStyleAttribute) that also adds
-event handlers for animation lifecycle [Event](#Event)s.
-
-
-### HTML Example
+{-| Opt-in to receive keyframe animation event messages for the target element.
 
     import Anim.Engine.CSS as CSS
     import Html exposing (div, text)
 
     type Msg
-        = AnimationEvent CSS.Event
+        = KeyframeEvent CSS.Event
 
     div
-        (CSS.animationStyleAttributeWithEvents "my-element" AnimationEvent animationState)
+        ( CSS.keyframeAnimationAttributes "my-element" animationState
+            ++ CSS.keyframeAnimationEvents "my-element" KeyframeEvent
+        )
         [ text "Animating element" ]
 
-For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/Element#htmlAttribute).
-
-
-### Elm UI Example
-
-    import Anim.Engine.CSS as CSS
-    import Element exposing (el, htmlAttribute, text)
-
-    type Msg
-        = AnimationEvent CSS.Event
-
-    el
-        (List.map htmlAttribute <|
-            CSS.animationStyleAttributeWithEvents "my-element" AnimationEvent animationState
-        )
-        (text "Animating element")
-
 -}
-animationStyleAttributeWithEvents : String -> (Event -> msg) -> AnimState -> List (Html.Attribute msg)
-animationStyleAttributeWithEvents elementId toMsg animationState =
-    let
-        eventHandlers =
-            [ onAnimationStart (KeyframeAnimationStarted elementId)
-                |> Html.Attributes.map toMsg
-            , onAnimationEnd (KeyframeAnimationEnded elementId)
-                |> Html.Attributes.map toMsg
-            , onAnimationCancel (KeyframeAnimationCancelled elementId)
-                |> Html.Attributes.map toMsg
-            , onAnimationIteration (KeyframeAnimationIteration elementId)
-                |> Html.Attributes.map toMsg
-            ]
-    in
-    InternalCSS.animationStyleAttribute elementId animationState :: eventHandlers
+keyframeAnimationEvents : String -> (Event -> msg) -> List (Html.Attribute msg)
+keyframeAnimationEvents elementId toMsg =
+    List.map (Html.Attributes.map toMsg) <|
+        [ onAnimationStart (KeyframeAnimationStarted elementId)
+        , onAnimationEnd (KeyframeAnimationEnded elementId)
+        , onAnimationCancel (KeyframeAnimationCancelled elementId)
+        , onAnimationIteration (KeyframeAnimationIteration elementId)
+        ]
 
 
 {-| Generate the animation `style` attribute and apply it directly to the element you want to animate.
 
 This creates the `animation` CSS property value that tells the browser which keyframe animation to run on this element.
 
-
-### HTML Example
-
     import Anim.Engine.CSS as CSS
     import Html exposing (div, text)
 
     div
-        [ CSS.animationStyleAttribute "my-element" animationState ]
+        [ CSS.keyframeAnimationAttribute "my-element" animationState ]
         [ text "Animating element" ]
 
-
-### Elm UI Example
-
-    import Anim.Engine.CSS as CSS
-    import Element exposing (el, htmlAttribute, text)
-
-    el
-        [ htmlAttribute (CSS.animationStyleAttribute "my-element" animationState) ]
-        (text "Animating element")
-
-**Remember**: You still need to include the keyframes in your DOM separately with
-[ keyframesStyleNode ](#keyframesStyleNode) or [ keyframesStyleNodeFor ](#keyframesStyleNodeFor).
-
 -}
-animationStyleAttribute : String -> AnimState -> Html.Attribute msg
-animationStyleAttribute =
+keyframeAnimationAttribute : String -> AnimState -> Html.Attribute msg
+keyframeAnimationAttribute =
     InternalCSS.animationStyleAttribute
 
 
@@ -567,10 +531,6 @@ Call this function from your update function.
 
                     _ ->
                         ( newModel, Cmd.none )
-
-    div
-        (CSS.htmlAttributesWithEvents "element" CSSEvent model.animations)
-        [ ... ]
 
 -}
 handleEvent : Event -> AnimState -> AnimState
@@ -1057,88 +1017,45 @@ perspectiveWith perspectiveValue =
     ]
 
 
-{-| Get all the HTML attributes needed for the CSS animations on the target element.
-
-
-### HTML Example
+{-| Get all the attributes needed for the CSS transition on the target element.
 
     import Anim.Engine.CSS as CSS
     import Html exposing (div, text)
 
     div
-        (CSS.htmlAttributes "my-element" model.animations)
+        (CSS.transitionAttributes "my-element" model.animations)
         [ text "Animating element" ]
-
-For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/Element#htmlAttribute).
-
-
-### Elm UI Example
-
-    import Anim.Engine.CSS as CSS
-    import Element exposing (el, htmlAttribute, text)
-
-    el
-        (List.map htmlAttribute <|
-            CSS.htmlAttributes "my-element" model.animations)
-        (text "Animating element")
 
 -}
-htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
-htmlAttributes =
-    InternalCSS.htmlAttributes
+transitionAttributes : String -> AnimState -> List (Html.Attribute msg)
+transitionAttributes =
+    InternalCSS.transitionAttributes
 
 
-{-| This is an alternative to [htmlAttributes](#htmlAttributes) that also adds
-event handlers for animation lifecycle [Event](#Event)s.
-
-
-### HTML Example
+{-| Opt-in to receive transition event messages for the target element.
 
     import Anim.Engine.CSS as CSS
     import Html exposing (div, text)
 
     type Msg
-        = AnimationEvent CSS.Event
+        = TransitionEvent CSS.Event
         | ...
 
     div
-        (CSS.htmlAttributesWithEvents "my-element" AnimationEvent animationState)
-        [ text "Animating element" ]
-
-For Elm UI, just wrap each attribute with [htmlAttribute](https://package.elm-lang.org/packages/mdgriffith/elm-ui/latest/Element#htmlAttribute).
-
-
-### Elm UI Example
-
-    import Anim.Engine.CSS as CSS
-    import Element exposing (el, htmlAttribute, text)
-
-    type Msg
-        = AnimationEvent CSS.Event
-        | ...
-
-    el
-        (List.map htmlAttribute <|
-            CSS.htmlAttributesWithEvents "my-element" AnimationEvent animationState
+        (CSS.transitionAttributes "my-element" animationState
+            ++ CSS.transitionEvents "my-element" TransitionEvent
         )
-        (text "Animating element")
+        [ text "Animating element" ]
 
 -}
-htmlAttributesWithEvents : String -> (Event -> msg) -> AnimState -> List (Html.Attribute msg)
-htmlAttributesWithEvents elementId msg animationState =
-    let
-        eventHandlers =
-            [ onTransitionStart (TransitionStarted elementId)
-                |> Html.Attributes.map msg
-            , onTransitionEnd (TransitionEnded elementId)
-                |> Html.Attributes.map msg
-            , onTransitionCancel (TransitionCancelled elementId)
-                |> Html.Attributes.map msg
-            , onTransitionRun (TransitionRun elementId)
-                |> Html.Attributes.map msg
-            ]
-    in
-    InternalCSS.htmlAttributes elementId animationState ++ eventHandlers
+transitionEvents : String -> (Event -> msg) -> List (Html.Attribute msg)
+transitionEvents elementId msg =
+    List.map (Html.Attributes.map msg) <|
+        [ onTransitionStart (TransitionStarted elementId)
+        , onTransitionEnd (TransitionEnded elementId)
+        , onTransitionCancel (TransitionCancelled elementId)
+        , onTransitionRun (TransitionRun elementId)
+        ]
 
 
 
