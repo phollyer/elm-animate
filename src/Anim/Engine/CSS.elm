@@ -4,24 +4,25 @@ module Anim.Engine.CSS exposing
     , keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
     , AnimState, init, AnimBuilder, builder
     , animate, TransformOrder(..), animateOrder
-    , Event(..), handleEvent
-    , transitionEvents
-    , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
-    , keyframeAnimationEvents
-    , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
-    , stop, reset, restart, pause, resume
-    , perspective
-    , perspectiveStyles, perspectiveWith
     , duration, speed
     , easing
     , delay
+    , stop, reset, restart, pause, resume
+    , TransitionEvent(..), handleTransitionEvent
+    , transitionEvents
+    , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
+    , KeyframeEvent(..), handleKeyframeEvent
+    , keyframeAnimationEvents
+    , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
+    , perspective
+    , perspectiveStyles, perspectiveWith
     , anyRunning, isRunning, allComplete, isComplete
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
     , getStartOpacity, getEndOpacity, getCurrentOpacity
-    , getStartTranslate, getEndTranslate, getCurrentTranslate
     , getStartRotate, getEndRotate, getCurrentRotate
     , getStartScale, getEndScale, getCurrentScale
     , getStartSize, getEndSize, getCurrentSize
+    , getStartTranslate, getEndTranslate, getCurrentTranslate
     )
 
 {-| CSS-based animation system with optional state tracking.
@@ -85,86 +86,6 @@ and also add the generated keyframes to a node in your DOM.
 @docs animate, TransformOrder, animateOrder
 
 
-# Event Handling
-
-CSS transitions and keyframe animations trigger events at various stages of their lifecycle.
-
-Use these events to keep your [AnimState](#AnimState) in sync or to trigger other actions in your application.
-
-@docs Event, handleEvent
-
-
-## Transition Events
-
-@docs transitionEvents
-
-The following event handlers allow you more granular control over which CSS transition events
-are received.
-
-They are great for **fire-and-forget** animations:
-
-    type Msg
-        = TransitionStarted
-
-    onTransitionStart TransitionStarted
-
-Not so good for animations tracked with [AnimState](#AnimState):
-
-    type Msg
-        = CSSEvent CSS.Event
-        | ...
-
-    onTransitionStart (CSSEvent (CSS.TransitionStarted elementId))
-
-@docs onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
-
-
-## Keyframe Animation Events
-
-@docs keyframeAnimationEvents
-
-The following event handlers allow you more granular control over which CSS keyframe animation events
-are received.
-
-@docs onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
-
-
-# Animation Control
-
-Control running animations with stop, reset, restart, pause, and resume functionality.
-
-**CSS Animation Behavior:**
-
-  - **stop**: Instantly jumps to the animation's end state.
-    Triggers `transitionend`/`animationend` events.
-  - **reset**: Instantly jumps back to the animation's start state.
-    Triggers `transitionend`/`animationend` events.
-  - **restart**: Restarts the animation from the beginning.
-    Triggers `transitionrun`/`animationstart` events.
-  - **pause**: Pauses animations mid-flight.
-    Note: Only works with keyframe animations, not CSS transitions.
-  - **resume**: Resumes paused keyframe animations.
-    Note: Only works with keyframe animations, not CSS transitions.
-
-@docs stop, reset, restart, pause, resume
-
-
-# 3D Animations
-
-For 3D animations you need to set a perspective
-to give a sense of depth. Without perspective, 3D animations will have no visual effect, and will appear flat.
-
-
-## Perspective
-
-@docs perspective
-
-
-## HTML
-
-@docs perspectiveStyles, perspectiveWith
-
-
 # Global Settings
 
 These settings will be used for all animations unless overridden on a per-property basis.
@@ -192,6 +113,72 @@ These settings will be used for all animations unless overridden on a per-proper
 @docs delay
 
 
+# Animation Control
+
+Control running animations with stop, reset, restart, pause, and resume functionality.
+
+**CSS Animation Behavior:**
+
+  - **stop**: Instantly jumps to the animation's end state.
+    Triggers `transitionend`/`animationend` events.
+  - **reset**: Instantly jumps back to the animation's start state.
+    Triggers `transitionend`/`animationend` events.
+  - **restart**: Restarts the animation from the beginning.
+    Triggers `transitionrun`/`animationstart` events.
+  - **pause**: Pauses animations mid-flight.
+    Note: Only works with keyframe animations, not CSS transitions.
+  - **resume**: Resumes paused keyframe animations.
+    Note: Only works with keyframe animations, not CSS transitions.
+
+@docs stop, reset, restart, pause, resume
+
+
+# Event Handling
+
+CSS transitions and keyframe animations trigger events at various stages of their lifecycle.
+
+Use these events to keep your [AnimState](#AnimState) in sync or to trigger other actions in your application.
+
+
+## Transition Events
+
+@docs TransitionEvent, handleTransitionEvent
+
+@docs transitionEvents
+
+The following event handlers allow you more granular control over which CSS transition events are received.
+
+@docs onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
+
+
+## Keyframe Animation Events
+
+@docs KeyframeEvent, handleKeyframeEvent
+
+@docs keyframeAnimationEvents
+
+The following event handlers allow you more granular control over which CSS keyframe animation events
+are received.
+
+@docs onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
+
+
+# 3D Animations
+
+For 3D animations you need to set a perspective
+to give a sense of depth. Without perspective, 3D animations will have no visual effect, and will appear flat.
+
+
+## Perspective
+
+@docs perspective
+
+
+## HTML
+
+@docs perspectiveStyles, perspectiveWith
+
+
 # Querying Animation State
 
 @docs anyRunning, isRunning, allComplete, isComplete
@@ -217,11 +204,6 @@ which provide real-time access to animated property values.
 @docs getStartOpacity, getEndOpacity, getCurrentOpacity
 
 
-## Translate
-
-@docs getStartTranslate, getEndTranslate, getCurrentTranslate
-
-
 ## Rotate
 
 @docs getStartRotate, getEndRotate, getCurrentRotate
@@ -235,6 +217,13 @@ which provide real-time access to animated property values.
 ## Size
 
 @docs getStartSize, getEndSize, getCurrentSize
+
+
+## Translate
+
+In CSS, `translate` refers to the 2D or 3D position of an element.
+
+@docs getStartTranslate, getEndTranslate, getCurrentTranslate
 
 -}
 
@@ -273,17 +262,22 @@ type TransformOrder
     | Scale
 
 
-{-| Animation lifecycle events.
+{-| CSS transition lifecycle events.
 -}
-type Event
-    = KeyframeAnimationStarted String
-    | KeyframeAnimationEnded String
-    | KeyframeAnimationCancelled String
-    | KeyframeAnimationIteration String
-    | TransitionStarted String
+type TransitionEvent
+    = TransitionStarted String
     | TransitionEnded String
     | TransitionCancelled String
     | TransitionRun String
+
+
+{-| CSS keyframe animation lifecycle events.
+-}
+type KeyframeEvent
+    = AnimationStarted String
+    | AnimationEnded String
+    | AnimationCancelled String
+    | AnimationIteration String
 
 
 {-| Optional State for managing animations.
@@ -404,22 +398,22 @@ This function generates all the necessary event handlers for CSS keyframe animat
     import Html exposing (div, text)
 
     type Msg
-        = KeyframeEvent CSS.Event
+        = KeyframeMsg CSS.KeyframeEvent
 
     div
-        ( CSS.keyframeAnimationAttributes "my-element" animationState
-            ++ CSS.keyframeAnimationEvents "my-element" KeyframeEvent
+        ( CSS.keyframesAttribute "my-element" animationState
+            ++ CSS.keyframeAnimationEvents "my-element" KeyframeMsg
         )
         [ text "Animating element" ]
 
 -}
-keyframeAnimationEvents : String -> (Event -> msg) -> List (Html.Attribute msg)
+keyframeAnimationEvents : String -> (KeyframeEvent -> msg) -> List (Html.Attribute msg)
 keyframeAnimationEvents elementId toMsg =
     List.map (Html.Attributes.map toMsg) <|
-        [ onAnimationStart (KeyframeAnimationStarted elementId)
-        , onAnimationEnd (KeyframeAnimationEnded elementId)
-        , onAnimationCancel (KeyframeAnimationCancelled elementId)
-        , onAnimationIteration (KeyframeAnimationIteration elementId)
+        [ onAnimationStart (AnimationStarted elementId)
+        , onAnimationEnd (AnimationEnded elementId)
+        , onAnimationCancel (AnimationCancelled elementId)
+        , onAnimationIteration (AnimationIteration elementId)
         ]
 
 
@@ -517,37 +511,22 @@ allComplete animState =
     InternalCSS.allComplete animState
 
 
-{-| Handle animation lifecycle events.
+{-| Handle CSS transition lifecycle events.
 
 Call this function from your update function to keep the animation state in sync.
 
     type Msg
-        = CSSEvent CSS.Event
-        | ...
+        = TransitionMsg CSS.TransitionEvent
 
     update msg model =
         case msg of
-            CSSEvent event ->
-                { model | animations = CSS.handleEvent event model.animations }
-
-            ... -- other messages
+            TransitionMsg event ->
+                { model | animations = CSS.handleTransitionEvent event model.animations }
 
 -}
-handleEvent : Event -> AnimState -> AnimState
-handleEvent event animState =
+handleTransitionEvent : TransitionEvent -> AnimState -> AnimState
+handleTransitionEvent event animState =
     case event of
-        KeyframeAnimationStarted elementId ->
-            InternalCSS.handleEvent (InternalCSS.AnimationStarted elementId) animState
-
-        KeyframeAnimationEnded elementId ->
-            InternalCSS.handleEvent (InternalCSS.AnimationEnded elementId) animState
-
-        KeyframeAnimationCancelled elementId ->
-            InternalCSS.handleEvent (InternalCSS.AnimationCancelled elementId) animState
-
-        KeyframeAnimationIteration elementId ->
-            InternalCSS.handleEvent (InternalCSS.AnimationIteration elementId) animState
-
         TransitionStarted elementId ->
             InternalCSS.handleEvent (InternalCSS.TransitionStarted elementId) animState
 
@@ -559,6 +538,35 @@ handleEvent event animState =
 
         TransitionCancelled elementId ->
             InternalCSS.handleEvent (InternalCSS.TransitionCancelled elementId) animState
+
+
+{-| Handle CSS keyframe animation lifecycle events.
+
+Call this function from your update function to keep the animation state in sync.
+
+    type Msg
+        = KeyframeMsg CSS.KeyframeEvent
+
+    update msg model =
+        case msg of
+            KeyframeMsg event ->
+                { model | animations = CSS.handleKeyframeEvent event model.animations }
+
+-}
+handleKeyframeEvent : KeyframeEvent -> AnimState -> AnimState
+handleKeyframeEvent event animState =
+    case event of
+        AnimationStarted elementId ->
+            InternalCSS.handleEvent (InternalCSS.AnimationStarted elementId) animState
+
+        AnimationEnded elementId ->
+            InternalCSS.handleEvent (InternalCSS.AnimationEnded elementId) animState
+
+        AnimationCancelled elementId ->
+            InternalCSS.handleEvent (InternalCSS.AnimationCancelled elementId) animState
+
+        AnimationIteration elementId ->
+            InternalCSS.handleEvent (InternalCSS.AnimationIteration elementId) animState
 
 
 getCurrent : String -> a -> AnimState -> { start : Maybe a, end : a } -> Maybe a
@@ -586,7 +594,7 @@ getCurrent elementId default animState range =
             )
 
 
-{-| Get the start translate of an element being animated.
+{-| Get the start translate value of an element being animated.
 
 Returns `Nothing` if the element has no translate animation.
 
@@ -607,7 +615,7 @@ getStartTranslate elementId animState =
             )
 
 
-{-| Get the end translate of an element being animated.
+{-| Get the end translate value of an element being animated.
 
 Returns `Nothing` if the element has no translate animation.
 
@@ -619,13 +627,13 @@ getEndTranslate elementId animState =
         |> Maybe.map Translate.toRecord
 
 
-{-| Get the current translate of an element based on its animation state.
+{-| Get the current translate value of an element based on its animation state.
 
 Returns `Nothing` if the element has no translate animation.
 
-Returns the start translate if the animation has not started yet.
+Returns the start translate value if the animation has not started yet.
 
-Returns the end translate if the animation is running or has completed.
+Returns the end translate value if the animation is running or has completed.
 
 -}
 getCurrentTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
@@ -935,7 +943,7 @@ delay =
     InternalCSS.delay
 
 
-{-| Set the global perspective value.
+{-| Set the global perspective value that all animations use.
 
 The perspective value determines the distance between the viewer and the `z = 0` plane.
 Smaller values create more dramatic 3D effects, while larger values create subtler effects.
@@ -957,7 +965,7 @@ perspective =
 
 This function generates the necessary CSS perspective attributes for container elements
 to properly display 3D animations. Apply these attributes to the parent containers
-of animated elements.
+of animated elements - any parent will do.
 
     model.animations
         |> CSS.builder
@@ -982,14 +990,6 @@ perspectiveStyles =
 
 {-| Manually generate HTML attributes with a given perspective value.
 
-Perspective controls the viewer's distance from the 3D scene (not zoom/magnification).
-Lower values create more dramatic 3D effects, higher values create more subtle effects.
-
-Can be applied to any ancestor element of 3D-transformed children, not just direct parents.
-Set this on the root node for global effect, and override on specific containers as needed.
-
-Common values: 500-2000px.
-
     -- Adjust 3D depth effect dynamically
 
     update msg model =
@@ -1005,9 +1005,6 @@ Common values: 500-2000px.
         (CSS.perspectiveWith model.viewerDistance)
         [ -- Animated content with 3D transforms
         ]
-
-**Elm-side styles take precedence**: When you use this function, the JavaScript will detect
-the existing inline style and skip auto-applying perspective, giving you full control.
 
 -}
 perspectiveWith : Float -> List (Html.Attribute msg)
@@ -1042,17 +1039,16 @@ This function generates all the necessary event handlers for CSS transitions.
     import Html exposing (div, text)
 
     type Msg
-        = TransitionEvent CSS.Event
-        | ...
+        = TransitionMsg CSS.TransitionEvent
 
     div
         (CSS.transitionAttributes "my-element" animationState
-            ++ CSS.transitionEvents "my-element" TransitionEvent
+            ++ CSS.transitionEvents "my-element" TransitionMsg
         )
         [ text "Animating element" ]
 
 -}
-transitionEvents : String -> (Event -> msg) -> List (Html.Attribute msg)
+transitionEvents : String -> (TransitionEvent -> msg) -> List (Html.Attribute msg)
 transitionEvents elementId msg =
     List.map (Html.Attributes.map msg) <|
         [ onTransitionStart (TransitionStarted elementId)
@@ -1132,9 +1128,6 @@ onAnimationCancel =
 
 {-| Stop a running animation by instantly jumping to its end state.
 
-This creates a 1ms CSS transition to the end position, effectively completing
-the animation immediately.
-
     CSS.stop "my-element" model.animations
 
 -}
@@ -1145,8 +1138,6 @@ stop elementId animState =
 
 {-| Reset an animation by instantly jumping back to its start state.
 
-This creates a 1ms CSS transition to the start position.
-
     CSS.reset "my-element" model.animations
 
 -}
@@ -1156,8 +1147,6 @@ reset elementId animState =
 
 
 {-| Restart an animation from the beginning.
-
-This re-runs the full animation from start to end.
 
     CSS.restart "my-element" model.animations
 
@@ -1170,7 +1159,7 @@ restart elementId animState =
 {-| Pause a running keyframe animation using CSS `animation-play-state`.
 
 **Note**: This only works with keyframe animations, not CSS transitions.
-CSS transitions cannot be paused once started.
+CSS transitions cannot be paused once started - this is a limitation of CSS itself.
 
     pausedAnimations =
         CSS.pause "my-element" model.animations

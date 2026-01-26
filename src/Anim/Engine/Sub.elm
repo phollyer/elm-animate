@@ -327,14 +327,11 @@ that will contain 3D-transformed children. Specify which container you want attr
 -}
 perspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
 perspectiveStyles containerId animState =
-    case Builder.getPerspectiveStylesCache (builder animState) of
-        Just cache ->
-            case Dict.get containerId cache of
-                Just styles ->
-                    List.map (\{ attribute, value } -> Html.Attributes.style attribute value) styles
-
-                Nothing ->
-                    []
+    case Dict.get containerId (Builder.getPerspectiveStylesCache (builder animState)) of
+        Just value ->
+            [ Html.Attributes.style "perspective" (String.fromFloat value ++ "px")
+            , Html.Attributes.style "transform-style" "preserve-3d"
+            ]
 
         Nothing ->
             []

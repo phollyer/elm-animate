@@ -98,10 +98,10 @@ type alias BuilderData =
     , elements : Dict ElementId ElementConfig
     , scrollTargets : List ScrollTarget
     , scrollContainer : String
-    , perspectiveStylesCache : Maybe (Dict String (List { attribute : String, value : String }))
-    , animationHistories : Dict ElementId AnimationHistory -- NEW: Animation history per element
-    , nextAnimationId : AnimationId -- NEW: Unique ID generator
-    , elementBaselines : Dict ElementId ElementEndStates -- NEW: Current animated states used as baselines
+    , perspectiveStylesCache : Dict String Float
+    , animationHistories : Dict ElementId AnimationHistory
+    , nextAnimationId : AnimationId
+    , elementBaselines : Dict ElementId ElementEndStates -- Current animated states used as baselines
     }
 
 
@@ -237,7 +237,7 @@ init =
         , elements = Dict.empty
         , scrollTargets = []
         , scrollContainer = "document"
-        , perspectiveStylesCache = Nothing
+        , perspectiveStylesCache = Dict.empty
         , animationHistories = Dict.empty -- NEW: Initialize empty animation histories
         , nextAnimationId = 1 -- NEW: Start animation IDs from 1
         , elementBaselines = Dict.empty -- NEW: Initialize empty baselines
@@ -397,9 +397,10 @@ getScrollContainer (AnimBuilder data) =
     data.scrollContainer
 
 
-{-| Get cached perspective styles from builder.
+{-| Get cached perspective values from builder.
+Returns containerId -> perspective value in pixels.
 -}
-getPerspectiveStylesCache : AnimBuilder -> Maybe (Dict String (List { attribute : String, value : String }))
+getPerspectiveStylesCache : AnimBuilder -> Dict String Float
 getPerspectiveStylesCache (AnimBuilder data) =
     data.perspectiveStylesCache
 
@@ -920,7 +921,7 @@ extractPerspectiveFromProperty property =
             Nothing
 
 
-computePerspectiveStyles : ProcessedAnimationData -> Dict String (List { attribute : String, value : String })
+computePerspectiveStyles : ProcessedAnimationData -> Dict String Float
 computePerspectiveStyles processedData =
     let
         -- Get all unique container IDs from properties
@@ -980,16 +981,7 @@ computePerspectiveStyles processedData =
                                                 Nothing
                                         )
                 in
-                Maybe.map
-                    (\value ->
-                        ( containerId
-                        , [ { attribute = "perspective", value = String.fromFloat value ++ "px" }
-                          , { attribute = "transform-style", value = "preserve-3d" }
-                          , { attribute = "data-perspective-source", value = "elm" }
-                          ]
-                        )
-                    )
-                    maybePerspectiveValue
+                Maybe.map (\value -> ( containerId, value )) maybePerspectiveValue
             )
         |> Dict.fromList
 
@@ -999,20 +991,18 @@ This should be called by each engine's animate function before creating AnimStat
 -}
 computeAndCachePerspectiveStyles : AnimBuilder -> AnimBuilder
 computeAndCachePerspectiveStyles ((AnimBuilder data) as builder) =
-    case data.perspectiveStylesCache of
-        Just _ ->
-            -- Already cached
-            builder
+    if not (Dict.isEmpty data.perspectiveStylesCache) then
+        builder
 
-        Nothing ->
-            let
-                processedData =
-                    processAnimationData builder
+    else
+        let
+            processedData =
+                processAnimationData builder
 
-                cache =
-                    computePerspectiveStyles processedData
-            in
-            AnimBuilder { data | perspectiveStylesCache = Just cache }
+            cache =
+                computePerspectiveStyles processedData
+        in
+        AnimBuilder { data | perspectiveStylesCache = cache }
 
 
 

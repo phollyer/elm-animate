@@ -197,14 +197,11 @@ perspective =
 
 perspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
 perspectiveStyles containerId (AnimState state) =
-    case Builder.getPerspectiveStylesCache state.builder of
-        Just cache ->
-            case Dict.get containerId cache of
-                Just styles ->
-                    List.map (\{ attribute, value } -> Html.Attributes.style attribute value) styles
-
-                Nothing ->
-                    []
+    case Dict.get containerId (Builder.getPerspectiveStylesCache state.builder) of
+        Just value ->
+            [ Html.Attributes.style "perspective" (String.fromFloat value ++ "px")
+            , Html.Attributes.style "transform-style" "preserve-3d"
+            ]
 
         Nothing ->
             []
@@ -743,7 +740,7 @@ generateElementAnimation maybeOrder elementId elementConfig =
                 , elements = Dict.empty
                 , scrollTargets = []
                 , scrollContainer = "document"
-                , perspectiveStylesCache = Nothing
+                , perspectiveStylesCache = Dict.empty
                 , animationHistories = Dict.empty
                 , nextAnimationId = 0
                 , elementBaselines = Dict.empty
