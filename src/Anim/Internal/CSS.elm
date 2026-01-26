@@ -7,7 +7,6 @@ module Anim.Internal.CSS exposing
     , allComplete
     , animate
     , animateWithOrder
-    , animationStyleAttribute
     , anyRunning
     , builder
     , delay
@@ -29,6 +28,7 @@ module Anim.Internal.CSS exposing
     , init
     , isElementComplete
     , isElementRunning
+    , keyframesAttribute
     , keyframesStyleNode
     , keyframesStyleNodeFor
     , onAnimationCancel
@@ -628,8 +628,8 @@ getTranslateAnimationDuration elementId (AnimState state) =
 -- View
 
 
-animationStyleAttribute : String -> AnimState -> Html.Attribute msg
-animationStyleAttribute elementId animationState =
+keyframesAttribute : String -> AnimState -> Html.Attribute msg
+keyframesAttribute elementId animationState =
     case getElementAnimation elementId animationState of
         Just elementAnimation ->
             let

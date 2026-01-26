@@ -1,13 +1,14 @@
 module Anim.Engine.CSS exposing
     ( transitionAttributes
-    , keyframeAnimationAttribute
+    , keyframesAttribute
     , keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
     , AnimState, init, AnimBuilder, builder
     , animate, TransformOrder(..), animateOrder
-    , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
-    , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , Event(..), handleEvent
-    , transitionEvents, keyframeAnimationEvents
+    , transitionEvents
+    , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
+    , keyframeAnimationEvents
+    , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , stop, reset, restart, pause, resume
     , perspective
     , perspectiveStyles, perspectiveWith
@@ -39,7 +40,7 @@ over how the CSS is integrated into your application.
 **Choosing Between Transitions and Keyframes**
 
 The choice between transitions and keyframes is the main decision you need to make when using this Engine,
-creating animations with either approach is exactly the same using the [AnimBuilder](#AnimBuilder) API.
+configuring animations with either approach is exactly the same using the [AnimBuilder](#AnimBuilder) API.
 
 **Use Transitions for:**
 
@@ -69,7 +70,7 @@ attributes to your elements.
 For Keyframe animations, you need to apply the generated CSS [animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation) property to your elements
 and also add the generated keyframes to a node in your DOM.
 
-@docs keyframeAnimationAttribute
+@docs keyframesAttribute
 
 @docs keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
 
@@ -86,41 +87,46 @@ and also add the generated keyframes to a node in your DOM.
 
 # Event Handling
 
-CSS transitions and keyframe animations can trigger events at various stages of their lifecycle.
-You have two options for handling these events in your application:
+CSS transitions and keyframe animations trigger events at various stages of their lifecycle.
 
-1.  **Manual Event Handling:** Manually add event handlers to your elements using the provided event handler functions.
-
-2.  **Automatic Event Handling**: Generate [Event](#Event) messages that you can process in your update function.
-
-
-## Manual Event Handling
-
-For fire-and-forget animations where you don't track state in your model.
-
-
-### Transition Animation Events
-
-@docs onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
-
-
-### Keyframe Animation Events
-
-@docs onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
-
-
-## Automatic Event Handling
-
-For when you are tracking animation state in your model.
+Use these events to keep your [AnimState](#AnimState) in sync or to trigger other actions in your application.
 
 @docs Event, handleEvent
 
 
-### Wiring Up Events
+## Transition Events
 
-In order for your application to respond to animation events, you need to add the appropriate event handlers to your animated elements.
+@docs transitionEvents
 
-@docs transitionEvents, keyframeAnimationEvents
+The following event handlers allow you more granular control over which CSS transition events
+are received.
+
+They are great for **fire-and-forget** animations:
+
+    type Msg
+        = TransitionStarted
+
+    onTransitionStart TransitionStarted
+
+Not so good for animations tracked with [AnimState](#AnimState):
+
+    type Msg
+        = CSSEvent CSS.Event
+        | ...
+
+    onTransitionStart (CSSEvent (CSS.TransitionStarted elementId))
+
+@docs onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
+
+
+## Keyframe Animation Events
+
+@docs keyframeAnimationEvents
+
+The following event handlers allow you more granular control over which CSS keyframe animation events
+are received.
+
+@docs onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
 
 
 # Animation Control
@@ -390,7 +396,9 @@ builder =
     InternalCSS.builder
 
 
-{-| Opt-in to receive keyframe animation event messages for the target element.
+{-| The simplest way to receive keyframe animation event messages for the target element.
+
+This function generates all the necessary event handlers for CSS keyframe animations.
 
     import Anim.Engine.CSS as CSS
     import Html exposing (div, text)
@@ -415,24 +423,24 @@ keyframeAnimationEvents elementId toMsg =
         ]
 
 
-{-| Generate the animation `style` attribute and apply it directly to the element you want to animate.
+{-| Get the CSS [animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation) property and apply it directly to the element you want to animate.
 
-This creates the `animation` CSS property value that tells the browser which keyframe animation to run on this element.
+This is is how you connect the generated keyframes to your element. Without this attribute the browser won't know which element to apply the keyframe animations to.
 
     import Anim.Engine.CSS as CSS
     import Html exposing (div, text)
 
     div
-        [ CSS.keyframeAnimationAttribute "my-element" animationState ]
+        [ CSS.keyframesAttribute "my-element" animationState ]
         [ text "Animating element" ]
 
 -}
-keyframeAnimationAttribute : String -> AnimState -> Html.Attribute msg
-keyframeAnimationAttribute =
-    InternalCSS.animationStyleAttribute
+keyframesAttribute : String -> AnimState -> Html.Attribute msg
+keyframesAttribute =
+    InternalCSS.keyframesAttribute
 
 
-{-| Generate a `<style>` node containing keyframes for all animated elements. You
+{-| Get a `<style>` node containing keyframes for all animated elements. You
 can add this node anywhere in your DOM, typically near the top.
 
     view model =
@@ -447,7 +455,7 @@ keyframesStyleNode =
     InternalCSS.keyframesStyleNode
 
 
-{-| Generate a `<style>` node containing keyframes for a specific element, giving you fine-grained control over which
+{-| Get a `<style>` node containing keyframes for a specific element, giving you fine-grained control over which
 keyframes are included in your DOM. You can add this node anywhere in your DOM, typically near the top.
 
     view model =
@@ -511,7 +519,7 @@ allComplete animState =
 
 {-| Handle animation lifecycle events.
 
-Call this function from your update function.
+Call this function from your update function to keep the animation state in sync.
 
     type Msg
         = CSSEvent CSS.Event
@@ -520,17 +528,9 @@ Call this function from your update function.
     update msg model =
         case msg of
             CSSEvent event ->
-                let
-                    newModel =
-                        { model | animations = CSS.handleEvent event model.animations }
-                in
-                case event of
-                    CSS.KeyframeAnimationEnded elementId ->
-                        -- Do something when animation ends
-                        ( newModel, Cmd.none )
+                { model | animations = CSS.handleEvent event model.animations }
 
-                    _ ->
-                        ( newModel, Cmd.none )
+            ... -- other messages
 
 -}
 handleEvent : Event -> AnimState -> AnimState
@@ -1017,13 +1017,15 @@ perspectiveWith perspectiveValue =
     ]
 
 
-{-| Get all the attributes needed for the CSS transition on the target element.
+{-| Get the animation [transition](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transitions/Using)
+and [transform](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transforms/Using) attributes
+and apply them directly to the target element.
 
     import Anim.Engine.CSS as CSS
     import Html exposing (div, text)
 
     div
-        (CSS.transitionAttributes "my-element" model.animations)
+        (CSS.transitionAttributes "my-element" animationState)
         [ text "Animating element" ]
 
 -}
@@ -1032,7 +1034,9 @@ transitionAttributes =
     InternalCSS.transitionAttributes
 
 
-{-| Opt-in to receive transition event messages for the target element.
+{-| The simplest way to receive transition event messages for the target element.
+
+This function generates all the necessary event handlers for CSS transitions.
 
     import Anim.Engine.CSS as CSS
     import Html exposing (div, text)

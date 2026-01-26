@@ -152,7 +152,7 @@ suite =
                         -- that applies the animation to the DOM element
                         -- Expected: style="animation: box-layer-0-animation 1000ms linear 0ms;"
                         styleAttribute =
-                            CSS.keyframeAnimationAttribute "box" animations
+                            CSS.keyframesAttribute "box" animations
 
                         -- We can't directly inspect Html.Attribute content in Elm tests,
                         -- but we can verify the function executes without errors
