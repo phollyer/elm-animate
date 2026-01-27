@@ -1,6 +1,6 @@
 module Anim.Engine.Scroll exposing
     ( toCmd
-    , ScrollError(..), ScrollResult, toTask
+    , ScrollError(..), ScrollOk, toTask
     , animate
     , AnimState, init, AnimBuilder, builder
     , AnimationMsg, update, subscriptions
@@ -73,7 +73,7 @@ The animation will run automatically without requiring subscriptions, and any er
 
 Use `Task` execution when you want to handle success or failure of the scroll animations, or compose them with other tasks.
 
-@docs ScrollError, ScrollResult, toTask
+@docs ScrollError, ScrollOk, toTask
 
 
 ## Stateful Animation
@@ -358,7 +358,7 @@ type ScrollError
         }
 
 
-{-| Result type for successful scroll [Task](http://package.elm-lang.org/packages/elm/core/latest/Task)s.
+{-| Value type for successful scroll [Task](http://package.elm-lang.org/packages/elm/core/latest/Task)s.
 
 Provides details about the completed scroll operation:
 
@@ -367,7 +367,7 @@ Provides details about the completed scroll operation:
   - `targetDescription`: Human-readable description of the scroll target
 
 -}
-type alias ScrollResult =
+type alias ScrollOk =
     { containerId : String
     , targetElementId : Maybe String
     , targetDescription : String
@@ -459,7 +459,7 @@ animate =
         |> Scroll.builder
         |> Scroll.duration 1000
         |> ... -- configure scroll animation
-        |> Scroll.animate
+        |> Scroll.toCmd ScrollCompleted
 
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -473,7 +473,7 @@ duration =
         |> Scroll.builder
         |> Scroll.speed 500
         |> ... -- configure scroll animation
-        |> Scroll.animate
+        |> Scroll.toCmd ScrollCompleted
 
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
@@ -487,7 +487,7 @@ speed =
         |> Scroll.builder
         |> Scroll.easing EaseInOutQuad
         |> ... -- configure scroll animation
-        |> Scroll.animate
+        |> Scroll.toCmd ScrollCompleted
 
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
@@ -501,7 +501,7 @@ easing =
         |> Scroll.builder
         |> Scroll.delay 500
         |> ... -- configure scroll animation
-        |> Scroll.animate
+        |> Scroll.toCmd ScrollCompleted
 
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
@@ -650,7 +650,7 @@ getDuration =
 
 {-| Execute scroll animations as a [Cmd](https://package.elm-lang.org/packages/elm/core/latest/Cmd).
 
-    ... -- Build your AnimBuilder
+    ... -- Build your Scroll animation
     |> Scroll.toCmd ScrollCompleted
 
     type Msg
@@ -676,21 +676,19 @@ toCmd =
     |> Task.attempt HandleScrollResult
 
     type Msg
-        = HandleScrollResult (Result Scroll.ScrollError Scroll.ScrollResult)
+        = HandleScrollResult (Result ScrollError ScrollOk)
         | ...
 
     update msg model =
         case msg of
-            HandleScrollResult (Ok result) ->
-                -- result contains: containerId, targetElementId, targetDescription
+            HandleScrollResult (Ok value) ->
                 ...
 
             HandleScrollResult (Err error) ->
-                -- error contains: containerId, targetElementId, domError
                 ...
 
 -}
-toTask : AnimBuilder -> Task ScrollError ScrollResult
+toTask : AnimBuilder -> Task ScrollError ScrollOk
 toTask animBuilder =
     let
         scrollTargets =
