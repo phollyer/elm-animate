@@ -36,65 +36,11 @@ window.ElmAnimateWAAPI = (function () {
     };
 
     /**
-     * Apply perspective to containers
-     */
-    function applyPerspective(animationData) {
-        const perspectiveContainers = new Set();
-
-        // Collect all perspective settings (global and property-level)
-        const perspectiveSettings = {};
-
-        // Global perspective
-        if (animationData.globalPerspective) {
-            const { containerId, value } = animationData.globalPerspective;
-            perspectiveSettings[containerId] = value;
-            perspectiveContainers.add(containerId);
-        }
-
-        // Property-level perspectives (override global)
-        if (animationData.elements) {
-            Object.values(animationData.elements).forEach(elementConfig => {
-                elementConfig.properties.forEach(property => {
-                    if (property.perspective) {
-                        const { containerId, value } = property.perspective;
-                        perspectiveSettings[containerId] = value;
-                        perspectiveContainers.add(containerId);
-                    }
-                });
-            });
-        }
-
-        // Apply perspective styles to containers
-        perspectiveContainers.forEach(containerId => {
-            const container = document.getElementById(containerId);
-            if (container) {
-                const perspectiveSource = container.getAttribute('data-perspective-source');
-
-                // Only apply if:
-                // - No perspective set yet, OR
-                // - Perspective was set by JS (can be updated)
-                // Never overwrite Elm-controlled perspective
-                if (perspectiveSource !== 'elm') {
-                    const perspectiveValue = perspectiveSettings[containerId];
-                    container.style.perspective = `${perspectiveValue}px`;
-                    container.style.transformStyle = 'preserve-3d';
-                    container.setAttribute('data-perspective-source', 'js');
-                }
-            } else {
-                console.warn(`ElmAnimateWAAPI: Container with id "${containerId}" not found for perspective`);
-            }
-        });
-    }
-
-    /**
      * Process animation data received from Elm
      */
     function processAnimationData(animationData) {
         if (animationData && animationData.elements) {
-            // Apply perspective to containers first
-            applyPerspective(animationData);
-
-            // Then process element animations
+            // Process element animations
             Object.entries(animationData.elements).forEach(([elementId, elementConfig]) => {
                 processElementAnimation(elementId, elementConfig);
             });
@@ -143,11 +89,15 @@ window.ElmAnimateWAAPI = (function () {
             }
 
             if (animation) {
+                // Mark this as our animation so we can identify it later
+                animation.__elmAnimate = true;
                 const updateFn = setupAnimationEvents(elementId, propType, element, animation, newVersion);
                 elementAnims.set(propType, {
                     animation: animation,
                     version: newVersion,
-                    updateFn: updateFn
+                    updateFn: updateFn,
+                    // Cache easingKeyframes for resize - preserves bounce/elastic easing
+                    easingKeyframes: property.easingKeyframes || null
                 });
             }
         });
@@ -314,10 +264,10 @@ window.ElmAnimateWAAPI = (function () {
 
                 startTransform = buildTransformString(startX, startY, startZ,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                    currentTransform.rotationX, currentTransform.rotationY, currentTransform.rotationZ);
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ);
                 endTransform = buildTransformString(endX, endY, endZ,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                    currentTransform.rotationX, currentTransform.rotationY, currentTransform.rotationZ);
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ);
                 break;
 
             case 'scale':
@@ -330,19 +280,19 @@ window.ElmAnimateWAAPI = (function () {
 
                 startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     startScaleX, startScaleY, startScaleZ,
-                    currentTransform.rotationX, currentTransform.rotationY, currentTransform.rotationZ);
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ);
                 endTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     endScaleX, endScaleY, endScaleZ,
-                    currentTransform.rotationX, currentTransform.rotationY, currentTransform.rotationZ);
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ);
                 break;
 
             case 'rotate':
-                const startRotX = property.startX ?? property.defaultX ?? currentTransform.rotationX;
-                const startRotY = property.startY ?? property.defaultY ?? currentTransform.rotationY;
-                const startRotZ = property.startZ ?? property.defaultZ ?? currentTransform.rotationZ;
-                const endRotX = property.endX ?? currentTransform.rotationX;
-                const endRotY = property.endY ?? currentTransform.rotationY;
-                const endRotZ = property.endZ ?? currentTransform.rotationZ;
+                const startRotX = property.startX ?? property.defaultX ?? currentTransform.rotateX;
+                const startRotY = property.startY ?? property.defaultY ?? currentTransform.rotateY;
+                const startRotZ = property.startZ ?? property.defaultZ ?? currentTransform.rotateZ;
+                const endRotX = property.endX ?? currentTransform.rotateX;
+                const endRotY = property.endY ?? currentTransform.rotateY;
+                const endRotZ = property.endZ ?? currentTransform.rotateZ;
 
                 startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
@@ -394,7 +344,8 @@ window.ElmAnimateWAAPI = (function () {
         switch (property.type) {
             case 'opacity':
                 {
-                    const startValue = property.startValue ?? property.defaultValue ?? 1;
+                    const computedOpacity = parseFloat(window.getComputedStyle(element).opacity);
+                    const startValue = property.startValue ?? property.defaultValue ?? computedOpacity;
                     const endValue = property.endValue;
 
                     if (easingKeyframes) {
@@ -416,7 +367,8 @@ window.ElmAnimateWAAPI = (function () {
 
             case 'backgroundColor':
                 {
-                    const startColor = property.startColor ?? property.defaultColor ?? 'transparent';
+                    const computedBgColor = window.getComputedStyle(element).backgroundColor;
+                    const startColor = property.startColor ?? property.defaultColor ?? computedBgColor;
                     const endColor = property.endColor;
 
                     if (easingKeyframes) {
@@ -438,7 +390,8 @@ window.ElmAnimateWAAPI = (function () {
 
             case 'color':
                 {
-                    const startColor = property.startColor ?? property.defaultColor ?? 'rgba(0, 0, 0, 1)';
+                    const computedColor = window.getComputedStyle(element).color;
+                    const startColor = property.startColor ?? property.defaultColor ?? computedColor;
                     const endColor = property.endColor;
 
                     if (easingKeyframes) {
@@ -459,17 +412,33 @@ window.ElmAnimateWAAPI = (function () {
                 break;
 
             case 'size':
-                keyframes = [
-                    {
-                        width: window.getComputedStyle(element).width,
-                        height: window.getComputedStyle(element).height
-                    },
-                    {
-                        width: `${property.endWidth}px`,
-                        height: `${property.endHeight}px`
+                {
+                    const computedStyle = window.getComputedStyle(element);
+                    const startWidth = property.startWidth != null ? property.startWidth : parseFloat(computedStyle.width);
+                    const startHeight = property.startHeight != null ? property.startHeight : parseFloat(computedStyle.height);
+
+                    if (easingKeyframes) {
+                        // Complex easing: generate keyframes with easing applied
+                        keyframes = easingKeyframes.map(progress => ({
+                            width: `${startWidth + (property.endWidth - startWidth) * progress}px`,
+                            height: `${startHeight + (property.endHeight - startHeight) * progress}px`
+                        }));
+                        animationEasing = 'linear';
+                    } else {
+                        // Simple easing: use 2 keyframes
+                        keyframes = [
+                            {
+                                width: `${startWidth}px`,
+                                height: `${startHeight}px`
+                            },
+                            {
+                                width: `${property.endWidth}px`,
+                                height: `${property.endHeight}px`
+                            }
+                        ];
+                        animationEasing = easingFunctions[easing] || easing;
                     }
-                ];
-                animationEasing = easingFunctions[easing] || easing;
+                }
                 break;
 
             default:
@@ -487,7 +456,7 @@ window.ElmAnimateWAAPI = (function () {
     /**
      * Build a complete transform string with 3D support
      */
-    function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotationX, rotationY, rotationZ) {
+    function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ) {
         const parts = [];
 
         // Translate: use translate3d for hardware acceleration
@@ -496,14 +465,14 @@ window.ElmAnimateWAAPI = (function () {
         }
 
         // Rotation: apply in order X, Y, Z for consistent results
-        if (rotationX !== 0) {
-            parts.push(`rotateX(${rotationX}deg)`);
+        if (rotateX !== 0) {
+            parts.push(`rotateX(${rotateX}deg)`);
         }
-        if (rotationY !== 0) {
-            parts.push(`rotateY(${rotationY}deg)`);
+        if (rotateY !== 0) {
+            parts.push(`rotateY(${rotateY}deg)`);
         }
-        if (rotationZ !== 0) {
-            parts.push(`rotateZ(${rotationZ}deg)`);
+        if (rotateZ !== 0) {
+            parts.push(`rotateZ(${rotateZ}deg)`);
         }
 
         // Scale: use individual scale functions for better control
@@ -532,7 +501,7 @@ window.ElmAnimateWAAPI = (function () {
                 transform: 'none',
                 x: 0, y: 0, z: 0,
                 scaleX: 1, scaleY: 1, scaleZ: 1,
-                rotationX: 0, rotationY: 0, rotationZ: 0
+                rotateX: 0, rotateY: 0, rotateZ: 0
             };
         }
 
@@ -557,14 +526,14 @@ window.ElmAnimateWAAPI = (function () {
 
                 // For 3D rotations, we'll approximate with simple extraction
                 // This is complex for full 3D rotation extraction, so we'll provide basic support
-                let rotationX = 0, rotationY = 0, rotationZ = 0;
+                let rotateX = 0, rotateY = 0, rotateZ = 0;
 
                 // Simple Z rotation extraction (most common)
                 if (scaleX !== 0 && scaleY !== 0) {
-                    rotationZ = Math.atan2(values[1] / scaleX, values[0] / scaleX) * (180 / Math.PI);
+                    rotateZ = Math.atan2(values[1] / scaleX, values[0] / scaleX) * (180 / Math.PI);
                 }
 
-                return { transform, x: tx, y: ty, z: tz, scaleX, scaleY, scaleZ, rotationX, rotationY, rotationZ };
+                return { transform, x: tx, y: ty, z: tz, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ };
             }
         } else if (matrix2d) {
             // 2D matrix: matrix(a, b, c, d, tx, ty)
@@ -580,13 +549,13 @@ window.ElmAnimateWAAPI = (function () {
 
                 const scaleX = Math.sqrt(a * a + b * b);
                 const scaleY = Math.sqrt(c * c + d * d);
-                const rotationZ = Math.atan2(b, a) * (180 / Math.PI);
+                const rotateZ = Math.atan2(b, a) * (180 / Math.PI);
 
                 return {
                     transform,
                     x: tx, y: ty, z: 0,
                     scaleX, scaleY, scaleZ: 1,
-                    rotationX: 0, rotationY: 0, rotationZ
+                    rotateX: 0, rotateY: 0, rotateZ
                 };
             }
         }
@@ -595,7 +564,7 @@ window.ElmAnimateWAAPI = (function () {
             transform,
             x: 0, y: 0, z: 0,
             scaleX: 1, scaleY: 1, scaleZ: 1,
-            rotationX: 0, rotationY: 0, rotationZ: 0
+            rotateX: 0, rotateY: 0, rotateZ: 0
         };
     }
 
@@ -642,10 +611,10 @@ window.ElmAnimateWAAPI = (function () {
                             z: transformState.z
                         },
                         opacity: parseFloat(computedStyle.opacity),
-                        rotation: {
-                            x: transformState.rotationX,
-                            y: transformState.rotationY,
-                            z: transformState.rotationZ
+                        rotate: {
+                            x: transformState.rotateX,
+                            y: transformState.rotateY,
+                            z: transformState.rotateZ
                         },
                         scale: {
                             x: transformState.scaleX,
@@ -678,6 +647,21 @@ window.ElmAnimateWAAPI = (function () {
 
         // Handle animation completion
         animation.addEventListener('finish', () => {
+            // Stop update loop
+            if (rafId !== null) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+            // CRITICAL: Commit the animated styles to inline styles, then cancel
+            // MDN: After commitStyles(), you must cancel() to fully remove the animation
+            // Without cancel(), the finished animation can still affect the cascade
+            try {
+                animation.commitStyles();
+                animation.cancel();
+            } catch (e) {
+                console.warn('ElmAnimateWAAPI: commitStyles/cancel failed:', e);
+            }
+
             // Only remove THIS property's animation if version matches
             // (prevents removing newer animation if finish event fires late)
             const elementAnims = activeAnimations.get(elementId);
@@ -716,10 +700,10 @@ window.ElmAnimateWAAPI = (function () {
                         z: finalState.z
                     },
                     opacity: parseFloat(computedStyle.opacity),
-                    rotation: {
-                        x: finalState.rotationX,
-                        y: finalState.rotationY,
-                        z: finalState.rotationZ
+                    rotate: {
+                        x: finalState.rotateX,
+                        y: finalState.rotateY,
+                        z: finalState.rotateZ
                     },
                     scale: {
                         x: finalState.scaleX,
@@ -778,10 +762,10 @@ window.ElmAnimateWAAPI = (function () {
                         z: currentState.z
                     },
                     opacity: parseFloat(computedStyle.opacity),
-                    rotation: {
-                        x: currentState.rotationX,
-                        y: currentState.rotationY,
-                        z: currentState.rotationZ
+                    rotate: {
+                        x: currentState.rotateX,
+                        y: currentState.rotateY,
+                        z: currentState.rotateZ
                     },
                     scale: {
                         x: currentState.scaleX,
@@ -829,6 +813,8 @@ window.ElmAnimateWAAPI = (function () {
                 animData.animation.finish(); // Jump to end state
             });
             activeAnimations.delete(elementId);
+            // Send stopped event to Elm so it can update its state
+            sendEventToElm('animationUpdate', elementId, { status: 'stopped' });
         }
     }
 
@@ -842,6 +828,8 @@ window.ElmAnimateWAAPI = (function () {
                 animData.animation.cancel(); // Cancel to jump to start
             });
             activeAnimations.delete(elementId);
+            // Send reset event to Elm so it can update its state
+            sendEventToElm('animationUpdate', elementId, { status: 'reset' });
         }
     }
 
@@ -855,6 +843,8 @@ window.ElmAnimateWAAPI = (function () {
                 animData.animation.cancel(); // Cancel first
                 animData.animation.play();   // Then replay
             });
+            // Send restart event to Elm so it can update its state
+            sendEventToElm('animationUpdate', elementId, { status: 'restarted' });
         }
     }
 
@@ -862,12 +852,14 @@ window.ElmAnimateWAAPI = (function () {
      * Pause animation for specific element
      */
     function pauseAnimation(elementId) {
+        const element = document.getElementById(elementId);
         const elementAnims = activeAnimations.get(elementId);
-        if (elementAnims) {
+        if (elementAnims && element) {
             elementAnims.forEach((animData, propertyType) => {
                 animData.animation.pause();
             });
-            // Send paused status to Elm
+
+            // Send paused event to Elm so it can update its state
             sendEventToElm('animationUpdate', elementId, { status: 'paused' });
         }
     }
@@ -890,35 +882,139 @@ window.ElmAnimateWAAPI = (function () {
         }
     }
 
+
     /**
-     * Update translates instantly without creating animation history
-     * Used for responsive layout adjustments (window resize, etc.)
+     * Update animation targets for elements with active translate animations
+     * Called during resize when animations are running/paused
+     * ARCHITECTURE: Uses setKeyframes() to update animation with fully scaled start and end positions
+     * This preserves playState, currentTime, and event listeners automatically
+     * The browser interpolates correctly at the current animation progress using the new keyframes
      */
-    function updateTranslates(updates) {
+    function handleResize(updates) {
         updates.forEach(update => {
             const element = document.getElementById(update.elementId);
             if (!element) {
-                console.warn(`ElmAnimateWAAPI: Element with id "${update.elementId}" not found for translate update`);
+                console.warn(`Element with id "${update.elementId}" not found`);
                 return;
             }
 
-            // Get current transform state
-            const currentTransform = getCurrentTransform(element);
+            const elementAnims = activeAnimations.get(update.elementId);
+            if (!elementAnims || !elementAnims.has('translate')) {
+                console.warn(`No translate animation found for ${update.elementId} - Elm state may be out of sync`);
+                return;
+            }
 
-            // Apply new translate instantly via transform style
-            const newTransform = buildTransformString(
-                update.x,
-                update.y,
-                update.z,
-                currentTransform.scaleX,
-                currentTransform.scaleY,
-                currentTransform.scaleZ,
-                currentTransform.rotationX,
-                currentTransform.rotationY,
-                currentTransform.rotationZ
+            const translateAnimData = elementAnims.get('translate');
+            const animation = translateAnimData.animation;
+            const cachedEasingKeyframes = translateAnimData.easingKeyframes;
+
+            // Extract scaled start and end positions from Elm
+            const startPos = update.startPosition;
+            const endPos = update.endPosition;
+
+            // Build full animation keyframes from scaled start to scaled end
+            // The browser will interpolate correctly at preserved currentTime
+            const fromTransform = buildTransformString(
+                startPos.x, startPos.y, startPos.z,
+                startPos.scaleX, startPos.scaleY, startPos.scaleZ,
+                startPos.rotateX, startPos.rotateY, startPos.rotateZ
             );
 
-            element.style.transform = newTransform;
+            const toTransform = buildTransformString(
+                endPos.x, endPos.y, endPos.z,
+                endPos.scaleX, endPos.scaleY, endPos.scaleZ,
+                endPos.rotateX, endPos.rotateY, endPos.rotateZ
+            );
+
+            // Generate keyframes using cached easing (preserves bounce/elastic during resize)
+            // For complex easings, this regenerates all 30+ keyframes with new positions
+            // For simple easings, this creates 2 keyframes (browser handles easing via timing)
+            const keyframes = generateKeyframesWithEasing(
+                fromTransform,
+                toTransform,
+                cachedEasingKeyframes,
+                'transform'
+            );
+
+            // Update keyframes in-place - animation continues seamlessly
+            // playState, currentTime, and event listeners are preserved
+            animation.effect.setKeyframes(keyframes);
+        });
+    }
+
+    /**
+     * Set all properties directly for elements (initialization)
+     * Called during initProperties to synchronize Elm, JS, and inline styles
+     * ARCHITECTURE: Elm sends all property values - no defaults in JS
+     */
+    function setProperties(updates) {
+        updates.forEach(update => {
+            const element = document.getElementById(update.elementId);
+            if (!element) {
+                console.warn(`Element with id "${update.elementId}" not found`);
+                return;
+            }
+
+            // Check if Elm mistakenly sent setProperties instead of handleResize
+            const tracked = activeAnimations.get(update.elementId);
+            if (tracked && tracked.size > 0) {
+                console.warn(`ElmAnimateWAAPI: setProperties called but element "${update.elementId}" has active animations. Should use handleResize instead.`);
+            }
+
+            // CRITICAL: Cancel all existing animations
+            const animations = element.getAnimations();
+            animations.forEach((anim) => {
+                anim.cancel();
+            });
+
+            // Clean up tracking for this element
+            activeAnimations.delete(update.elementId);
+
+            const props = update.properties;
+
+            // Transform properties - use direct inline style assignment
+            // No animations are active at this point, so inline styles work fine
+            // Active animations have higher precedence, but we've cancelled all animations above
+            if (props.x !== undefined || props.y !== undefined || props.z !== undefined ||
+                props.scaleX !== undefined || props.scaleY !== undefined || props.scaleZ !== undefined ||
+                props.rotateX !== undefined || props.rotateY !== undefined || props.rotateZ !== undefined) {
+
+                const transform = buildTransformString(
+                    props.x || 0,
+                    props.y || 0,
+                    props.z || 0,
+                    props.scaleX !== undefined ? props.scaleX : 1,
+                    props.scaleY !== undefined ? props.scaleY : 1,
+                    props.scaleZ !== undefined ? props.scaleZ : 1,
+                    props.rotateX || 0,
+                    props.rotateY || 0,
+                    props.rotateZ || 0
+                );
+
+                // Direct inline style assignment - no animation needed
+                element.style.transform = transform;
+            }
+
+            // Opacity
+            if (props.opacity !== undefined) {
+                element.style.opacity = props.opacity.toString();
+            }
+
+            // Background color
+            if (props.backgroundColor !== undefined) {
+                element.style.backgroundColor = props.backgroundColor;
+            }
+
+            // Font color
+            if (props.color !== undefined) {
+                element.style.color = props.color;
+            }
+
+            // Size
+            if (props.width !== undefined && props.height !== undefined) {
+                element.style.width = `${props.width}px`;
+                element.style.height = `${props.height}px`;
+            }
         });
     }
 
@@ -938,34 +1034,47 @@ window.ElmAnimateWAAPI = (function () {
         if (ports.waapiCommand && ports.waapiCommand.subscribe) {
             ports.waapiCommand.subscribe(function (commandData) {
                 try {
-                    // Check if this is animation data structure (from animate, reset, restart)
-                    if (commandData.elements) {
-                        processAnimationData(commandData);
+                    if (!commandData) {
+                        console.warn('ElmAnimateWAAPI: No command data received');
+                        return;
                     }
-                    // Handle translate update command (from onResize)
-                    else if (commandData.type === 'updateTranslate' && commandData.updates) {
-                        updateTranslates(commandData.updates);
-                    }
-                    // Handle simple control commands
-                    else if (commandData.type && commandData.elementId) {
-                        const commandType = commandData.type;
-                        const elementId = commandData.elementId;
 
-                        switch (commandType) {
-                            case 'stop':
-                                stopAnimation(elementId);
-                                break;
-                            case 'pause':
-                                pauseAnimation(elementId);
-                                break;
-                            case 'resume':
-                                resumeAnimation(elementId);
-                                break;
-                            default:
-                                console.warn('ElmAnimateWAAPI: Unknown control command type:', commandType);
-                        }
-                    } else {
-                        console.warn('ElmAnimateWAAPI: Unknown command structure:', commandData);
+                    if (!commandData.type) {
+                        console.warn('ElmAnimateWAAPI: Command missing type field:', commandData);
+                        return;
+                    }
+
+                    const commandType = commandData.type;
+                    console.log('ElmAnimateWAAPI: Received command:', commandType, commandData);
+                    switch (commandType) {
+                        case 'animate':
+                            // Animation data with elements
+                            processAnimationData(commandData);
+                            break;
+
+                        case 'handleResize':
+                            // Resize during active animation
+                            handleResize(commandData.updates);
+                            break;
+
+                        case 'setProperties':
+                            setProperties(commandData.updates);
+                            break;
+
+                        case 'stop':
+                            stopAnimation(commandData.elementId);
+                            break;
+
+                        case 'pause':
+                            pauseAnimation(commandData.elementId);
+                            break;
+
+                        case 'resume':
+                            resumeAnimation(commandData.elementId);
+                            break;
+
+                        default:
+                            console.warn('ElmAnimateWAAPI: Unknown command type:', commandType);
                     }
                 } catch (error) {
                     console.error('ElmAnimateWAAPI: Error processing WAAPI command:', error);

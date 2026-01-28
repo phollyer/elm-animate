@@ -2,15 +2,24 @@
   "name": "elm-animate-waapi",
   "version": "1.0.0",
   "description": "JavaScript companion for elm-animate WAAPI API - Web Animations integration",
+  "type": "module",
   "main": "dist/elm-animate-waapi.js",
+  "module": "dist/elm-animate-waapi.mjs",
+  "exports": {
+    ".": {
+      "import": "./dist/elm-animate-waapi.mjs",
+      "require": "./dist/elm-animate-waapi.js"
+    }
+  },
   "files": [
     "dist/elm-animate-waapi.js",
+    "dist/elm-animate-waapi.mjs",
     "dist/elm-animate-waapi.d.ts",
     "dist/LICENSE",
     "dist/README.md"
   ],
   "scripts": {
-    "build": "cp examples/js/elm-animate-waapi.js dist/",
+    "build": "cp examples/js/elm-animate-waapi.js dist/ && cp examples/js/elm-animate-waapi.mjs dist/",
     "prepare": "mkdir -p dist && npm run build"
   },
   "keywords": [
