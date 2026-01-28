@@ -596,6 +596,11 @@ like reset, restart, or pause/resume.
 4.  Sends instant position update to JavaScript (no animation history)
 5.  Updates AnimState with new positions
 
+**^^ This is all wrong, and needs to be fixed. ^^**
+
+Should not be using element center, should be using proportional position within container.
+Need option for user to select proportional vs fixed offset behavior.
+
 -}
 onResize :
     List

@@ -37,6 +37,14 @@ while IFS= read -r -d '' file; do
     fi
 done < <(find src/Common -name "*.elm" -type f -print0 2>/dev/null)
 
+while IFS= read -r -d '' file; do
+    if elm-format --yes "$file" > /dev/null 2>&1; then
+        FORMATTED_FILES+=("$file")
+    else
+        FAILED_FORMAT+=("$file")
+    fi
+done < <(find src/Docs -name "*.elm" -type f -print0 2>/dev/null)
+
 echo "🔨 Starting compilation..."
 
 # Track build results
@@ -132,6 +140,14 @@ build_example "src/ElmUI/WAAPI/Events/Main.elm" "src/ElmUI/WAAPI/Events/index.js
 build_example "src/ElmUI/WAAPI/Controls/Main.elm" "src/ElmUI/WAAPI/Controls/index.js" "ElmUI.WAAPI.Controls.Main"
 build_example "src/ElmUI/WAAPI/Mixed/Main.elm" "src/ElmUI/WAAPI/Mixed/index.js" "ElmUI.WAAPI.Mixed.Main"
 build_example "src/ElmUI/WAAPI/Choreography/Main.elm" "src/ElmUI/WAAPI/Choreography/index.js" "ElmUI.WAAPI.Choreography.Main"
+
+# Documentation examples (code used in GitHub Pages docs)
+echo ""
+echo "📚 Building Documentation examples..."
+
+# Getting Started
+echo "  📖 Getting Started examples..."
+build_example "src/Docs/GettingStarted/FirstAnimation/Main.elm" "src/Docs/GettingStarted/FirstAnimation/index.js" "Docs.GettingStarted.FirstAnimation.Main"
 
 # Report results
 echo ""

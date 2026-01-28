@@ -67,6 +67,14 @@ while IFS= read -r -d '' file; do
     fi
 done < <(find src/Common -name "*.elm" -type f -print0 2>/dev/null)
 
+while IFS= read -r -d '' file; do
+    if elm-format --yes "$file" > /dev/null 2>&1; then
+        FORMATTED_FILES+=("$file")
+    else
+        FAILED_FORMAT+=("$file")
+    fi
+done < <(find src/Docs -name "*.elm" -type f -print0 2>/dev/null)
+
 echo ""
 
 # Normalize the input path (remove leading/trailing slashes, src/ prefix)

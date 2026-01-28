@@ -17,5 +17,8 @@ npm-debug.log
 .DS_Store
 .vscode
 
+# Ignore MkDocs build output
+site/
+
 # Ignore generated JS outputs for ElmUI CSS examples
 examples/src/**/index.js

@@ -1,0 +1,81 @@
+site_name: Elm Animate
+site_description: A comprehensive Elm package for smooth, high-performance DOM animations and scrolling
+site_url: https://phollyer.github.io/elm-animate/
+repo_url: https://github.com/phollyer/elm-animate
+repo_name: phollyer/elm-animate
+
+theme:
+  name: material
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.snippets:
+      base_path: .
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Your First Animation: getting-started/first-animation.md
+  - Concepts:
+    - Animation Engines: concepts/engines.md
+    - Builder Pattern: concepts/builder-pattern.md
+    - Properties: concepts/properties.md
+    - 3D Animations: concepts/3d.md
+    - Easing Functions: concepts/easing.md
+  - Engines:
+    - CSS Engine: engines/css.md
+    - Sub Engine: engines/sub.md
+    - WAAPI Engine: engines/waapi.md
+    - Scroll Engine: engines/scroll.md
+  - API Reference: api-reference.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/phollyer/elm-animate
