@@ -8,7 +8,6 @@ module Anim.Internal.Builders.Property exposing
     , withDelay
     , withDuration
     , withEasing
-    , withPerspective
     , withSpeed
     )
 
@@ -22,7 +21,6 @@ type alias Config a =
     , end : a
     , easing : Maybe Easing
     , delay : Maybe Int
-    , perspective : Maybe { containerId : String, value : Float }
     , timing : Maybe TimeSpec
     , duration : Int
     , speed : Float
@@ -41,7 +39,6 @@ defaultConfig defaultEnd =
     , timing = Nothing
     , delay = Nothing
     , easing = Nothing
-    , perspective = Nothing
     , isDirty = False
     }
 
@@ -88,7 +85,6 @@ createFor extractExisting extractBaseline defaultConfig_ elementId builder =
                                 config.end
                     , easing = Nothing
                     , delay = Nothing
-                    , perspective = Nothing
                     , timing = Nothing
                     , duration = 0
                     , speed = 0
@@ -142,15 +138,6 @@ withDelay :
     -> { config | delay : Maybe Int }
 withDelay delay_ config =
     { config | delay = Just delay_ }
-
-
-withPerspective :
-    String
-    -> Float
-    -> { config | perspective : Maybe { containerId : String, value : Float } }
-    -> { config | perspective : Maybe { containerId : String, value : Float } }
-withPerspective containerId value config =
-    { config | perspective = Just { containerId = containerId, value = value } }
 
 
 applyGlobalDefaults :

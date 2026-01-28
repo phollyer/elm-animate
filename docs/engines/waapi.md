@@ -22,15 +22,15 @@ The WAAPI Engine uses the Web Animations API via Elm ports and a JavaScript comp
 
 === "npm"
 
-    ```bash
-    npm install elm-animate-waapi
-    ```
+```bash
+npm install elm-animate-waapi
+```
 
 === "yarn"
 
-    ```bash
-    yarn add elm-animate-waapi
-    ```
+```bash
+yarn add elm-animate-waapi
+```
 
 ### 2. Initialize in JavaScript
 
@@ -208,7 +208,7 @@ update msg model =
 
 ## Global Settings
 
-```elm
+``` elm
 ( animState, portValue ) =
     model.animState
         |> WAAPI.builder
@@ -218,12 +218,17 @@ update msg model =
         |> WAAPI.animate
 ```
 
+## 3D Transforms and Perspective
+
+The CSS Engine fully supports 3D animations. See [3D Animations](../concepts/3d.md) for how to define 3D transforms.
+
+
 ## API Reference
 
 ### Core Functions
 
 | Function | Type | Description |
-|----------|------|-------------|
+| ---------- | ------ | ------------- |
 | `init` | `AnimState` | Create initial animation state |
 | `builder` | `AnimState -> AnimBuilder` | Get builder for defining animations |
 | `animate` | `AnimBuilder -> ( AnimState, PortValue )` | Generate state and port value |
@@ -231,15 +236,15 @@ update msg model =
 ### Event Handlers
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `handleStart` | Update state when animation starts |
 | `handleEnd` | Update state when animation ends |
 | `handleCancel` | Update state when animation is cancelled |
 
-### Global Settings
+### Global Functions
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `duration` | Set default duration (ms) |
 | `speed` | Set default speed (px/sec) |
 | `easing` | Set default easing function |
@@ -249,7 +254,7 @@ update msg model =
 ### Port Types
 
 | Type | Description |
-|------|-------------|
+| ------ | ------------- |
 | `PortValue` | Value to send through animateElements port |
 | `AnimationEvent` | Event received from JavaScript |
 

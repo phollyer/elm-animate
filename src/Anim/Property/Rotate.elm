@@ -6,7 +6,6 @@ module Anim.Property.Rotate exposing
     , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
     , delay, duration, speed
     , easing
-    , perspective
     )
 
 {-| Rotate animation functions with 3D support.
@@ -20,15 +19,13 @@ Build animations that rotate elements around the X, Y, and Z axes.
         |> Rotate.build
         |> ... -- continue with animation
 
-For 3D rotations, you need to set a perspective (either globally on the Engine or per-property using [perspective](#perspective)):
+For 3D rotations, you need to set a perspective on the parent container using `Anim.View3D`:
 
-    animBuilder
-        |> Rotate.for "my-element"
-        |> Rotate.perspective "container-id" 800
-        |> Rotate.to 180
-        |> ... -- other rotate configuration steps
-        |> Rotate.build
-        |> ... -- continue with animation
+    import Anim.View3D as View3D
+
+    view model =
+        div [ id "container", View3D.perspective 1000 ]
+            [ animatedElement ]
 
 
 # Default
@@ -71,14 +68,6 @@ when you want to override that behavior.
 ## Easing
 
 @docs easing
-
-
-## Perspective
-
-For 3D rotation on the X and Y axes, perspective is required to give a sense of depth. Without it, X and Y rotations will appear flat (no depth effect).
-Z-axis rotation works without perspective as it's the standard 2D rotation axis.
-
-@docs perspective
 
 -}
 
@@ -593,24 +582,3 @@ easing =
 delay : Int -> Builder -> Builder
 delay =
     RB.delay
-
-
-{-| Set the perspective for a parent element.
-
-This allows you to override the global perspective set by an Engine.
-
-    animBuilder
-        |> Rotate.for "my-element"
-        |> Rotate.perspective "parent-container" 800
-        |> Rotate.toXYZ 45 90 180
-        |> ...
-
-The first parameter is the parent container ID, and the second is the perspective value in pixels.
-
-**Note**: The `perspective` function **registers** the parent container for perspective management.
-For more information about actually **applying** the perspective, see the `Perspective` section for your chosen Engine.
-
--}
-perspective : String -> Float -> Builder -> Builder
-perspective =
-    RB.perspective

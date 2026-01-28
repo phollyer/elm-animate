@@ -6,7 +6,6 @@ module Anim.Property.Scale exposing
     , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
     , delay, duration, speed
     , easing
-    , perspective
     )
 
 {-| Scale animation functions with 3D support.
@@ -22,16 +21,13 @@ Build animations that scale elements along the X, Y, and Z axes.
         |> Scale.build
         |> ... -- continue with animation
 
-For 3D scaling, you just need to set a non-zero value for the 'Z' axis and a perspective (either globally on the Engine or using the [perspective](#perspective) function for this property):
+For 3D scaling, set a non-zero value for the 'Z' axis and add perspective to the parent container using `Anim.View3D`:
 
-    -- 3D scale up effect
-    animBuilder
-        |> Scale.for "my-element"
-        |> Scale.perspective "container-id" 800
-        |> Scale.fromXYZ 0.8 0.8 0.8
-        |> Scale.toXYZ 1.5 1.5 1.5
-        |> Scale.speed 2.0
-        |> Scale.build
+    import Anim.View3D as View3D
+
+    view model =
+        div [ id "container", View3D.perspective 1000 ]
+            [ animatedElement ]
 
 
 # Default
@@ -74,14 +70,6 @@ when you want to override that behavior.
 ## Easing
 
 @docs easing
-
-
-## Perspective
-
-For 3D scaling on the Z axis, perspective is required to give a sense of depth. Without it, Z axis scaling will appear flat (no depth effect).
-X & Y scaling work without perspective as they're the standard 2D scaling axes.
-
-@docs perspective
 
 -}
 
@@ -601,24 +589,3 @@ speed =
 easing : Easing -> Builder -> Builder
 easing =
     SB.easing
-
-
-{-| Set the perspective for a parent element.
-
-This allows you to override the global perspective set by an Engine.
-
-    animBuilder
-        |> Scale.for "my-element"
-        |> Scale.perspective "special-container" 800
-        |> Scale.toXYZ 1.5 1.5 1.2
-        |> ...
-
-The first parameter is the parent container ID, and the second is the perspective value in pixels.
-
-**Note**: The `perspective` function **registers** the parent container for perspective management.
-For more information about actually **applying** the perspective, see the `Perspective` section for your chosen Engine.
-
--}
-perspective : String -> Float -> Builder -> Builder
-perspective =
-    SB.perspective

@@ -16,8 +16,6 @@ module Anim.Internal.Builder exposing
     , clearAnimationHistory
       -- Animation Control Functions
     , clearCurrentElement
-    , computeAndCachePerspectiveStyles
-    , computePerspectiveStyles
     , delay
     , duration
     , easing
@@ -35,9 +33,6 @@ module Anim.Internal.Builder exposing
     , getEasingWithDefault
     , getElementBaseline
     , getElementConfig
-    , getPerspective
-    , getPerspectiveStylesCache
-    , getPerspectiveWithDefault
     , getPreviousAnimation
     , getScrollContainer
     , getScrollTargets
@@ -48,7 +43,6 @@ module Anim.Internal.Builder exposing
     , mapScrollTargets
     , markAnimationAsExecuted
     , markDirty
-    , perspective
     , processAnimationData
     , processAnimationDataWithHistory
       -- NEW: Process and store in history
@@ -93,12 +87,10 @@ type alias BuilderData =
     { globalTiming : Maybe TimeSpec
     , globalEasing : Maybe Easing
     , globalDelay : Maybe Int
-    , globalPerspective : Maybe { containerId : String, value : Float }
     , currentElementId : Maybe ElementId
     , elements : Dict ElementId ElementConfig
     , scrollTargets : List ScrollTarget
     , scrollContainer : String
-    , perspectiveStylesCache : Dict String Float
     , animationHistories : Dict ElementId AnimationHistory
     , nextAnimationId : AnimationId
     , elementBaselines : Dict ElementId ElementEndStates -- Current animated states used as baselines
@@ -181,7 +173,6 @@ type alias AnimationConfig targetProperty =
     , timing : Maybe TimeSpec
     , easing : Maybe Easing
     , delay : Maybe Int
-    , perspective : Maybe { containerId : String, value : Float }
     , isDirty : Bool
     }
 
@@ -191,7 +182,6 @@ type alias ProcessedAnimationData =
     , globalTiming : Maybe TimeSpec
     , globalEasing : Maybe Easing
     , globalDelay : Maybe Int
-    , globalPerspective : Maybe { containerId : String, value : Float }
     }
 
 
@@ -204,7 +194,6 @@ type alias ProcessedAnimationConfig targetProperty =
     , timing : TimeSpec
     , easing : Easing
     , delay : Int
-    , perspective : Maybe { containerId : String, value : Float }
     }
 
 
@@ -232,12 +221,10 @@ init =
         { globalTiming = Nothing
         , globalEasing = Nothing
         , globalDelay = Nothing
-        , globalPerspective = Nothing
         , currentElementId = Nothing
         , elements = Dict.empty
         , scrollTargets = []
         , scrollContainer = "document"
-        , perspectiveStylesCache = Dict.empty
         , animationHistories = Dict.empty -- NEW: Initialize empty animation histories
         , nextAnimationId = 1 -- NEW: Start animation IDs from 1
         , elementBaselines = Dict.empty -- NEW: Initialize empty baselines
@@ -292,14 +279,6 @@ delay ms (AnimBuilder data) =
             | globalDelay =
                 Just <|
                     ms
-        }
-
-
-perspective : String -> Float -> AnimBuilder -> AnimBuilder
-perspective containerId value (AnimBuilder data) =
-    AnimBuilder
-        { data
-            | globalPerspective = Just { containerId = containerId, value = value }
         }
 
 
@@ -371,20 +350,6 @@ getDelayWithDefault (AnimBuilder data) =
     data.globalDelay |> Maybe.withDefault 0
 
 
-{-| Get global perspective setting.
--}
-getPerspective : AnimBuilder -> Maybe { containerId : String, value : Float }
-getPerspective (AnimBuilder data) =
-    data.globalPerspective
-
-
-{-| Get perspective with default fallback.
--}
-getPerspectiveWithDefault : AnimBuilder -> Maybe { containerId : String, value : Float }
-getPerspectiveWithDefault (AnimBuilder data) =
-    data.globalPerspective
-
-
 {-| Get scroll targets from the builder.
 -}
 getScrollTargets : AnimBuilder -> List ScrollTarget
@@ -395,14 +360,6 @@ getScrollTargets (AnimBuilder data) =
 getScrollContainer : AnimBuilder -> String
 getScrollContainer (AnimBuilder data) =
     data.scrollContainer
-
-
-{-| Get cached perspective values from builder.
-Returns containerId -> perspective value in pixels.
--}
-getPerspectiveStylesCache : AnimBuilder -> Dict String Float
-getPerspectiveStylesCache (AnimBuilder data) =
-    data.perspectiveStylesCache
 
 
 
@@ -536,7 +493,6 @@ processAnimationData (AnimBuilder data) =
     , globalTiming = data.globalTiming
     , globalEasing = data.globalEasing
     , globalDelay = data.globalDelay
-    , globalPerspective = data.globalPerspective
     }
 
 
@@ -548,12 +504,10 @@ processElement globalData elementConfig =
 
 createDirtyConfig :
     { end : a
-    , propPerspective : Maybe { containerId : String, value : Float }
-    , globalPerspective : Maybe { containerId : String, value : Float }
     , wrapper : ProcessedAnimationConfig a -> ProcessedPropertyConfig
     }
     -> ProcessedPropertyConfig
-createDirtyConfig { end, propPerspective, globalPerspective, wrapper } =
+createDirtyConfig { end, wrapper } =
     wrapper
         { start = Just end
         , end = end
@@ -563,7 +517,6 @@ createDirtyConfig { end, propPerspective, globalPerspective, wrapper } =
         , timing = Duration 0
         , easing = Linear
         , delay = 0
-        , perspective = resolvePerspective propPerspective globalPerspective
         }
 
 
@@ -603,7 +556,6 @@ processStandardAnimation { config, globalData, defaultStart, distanceFn, duratio
         , timing = resolvedTiming
         , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
         , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
-        , perspective = resolvePerspective config.perspective globalData.globalPerspective
         }
 
 
@@ -615,8 +567,6 @@ processProperty globalData property =
                 Just <|
                     createDirtyConfig
                         { end = config.end
-                        , propPerspective = config.perspective
-                        , globalPerspective = globalData.globalPerspective
                         , wrapper = ProcessedTranslateConfig
                         }
 
@@ -637,8 +587,6 @@ processProperty globalData property =
                 Just <|
                     createDirtyConfig
                         { end = config.end
-                        , propPerspective = config.perspective
-                        , globalPerspective = globalData.globalPerspective
                         , wrapper = ProcessedRotateConfig
                         }
 
@@ -659,8 +607,6 @@ processProperty globalData property =
                 Just <|
                     createDirtyConfig
                         { end = config.end
-                        , propPerspective = config.perspective
-                        , globalPerspective = globalData.globalPerspective
                         , wrapper = ProcessedScaleConfig
                         }
 
@@ -681,8 +627,6 @@ processProperty globalData property =
                 Just <|
                     createDirtyConfig
                         { end = config.end
-                        , propPerspective = Nothing
-                        , globalPerspective = Nothing
                         , wrapper = ProcessedBackgroundColorConfig
                         }
 
@@ -703,8 +647,6 @@ processProperty globalData property =
                 Just <|
                     createDirtyConfig
                         { end = config.end
-                        , propPerspective = Nothing
-                        , globalPerspective = Nothing
                         , wrapper = ProcessedFontColorConfig
                         }
 
@@ -725,8 +667,6 @@ processProperty globalData property =
                 Just <|
                     createDirtyConfig
                         { end = config.end
-                        , propPerspective = Nothing
-                        , globalPerspective = Nothing
                         , wrapper = ProcessedOpacityConfig
                         }
 
@@ -747,8 +687,6 @@ processProperty globalData property =
                 Just <|
                     createDirtyConfig
                         { end = config.end
-                        , propPerspective = Nothing
-                        , globalPerspective = Nothing
                         , wrapper = ProcessedSizeConfig
                         }
 
@@ -793,19 +731,6 @@ resolveEasingWithDefault =
 resolveDelayWithDefault : Maybe Int -> Maybe Int -> Int -> Int
 resolveDelayWithDefault =
     resolveMaybeWithDefault
-
-
-{-| Resolve perspective with Nothing as the ultimate fallback.
-Perspective is special because Nothing is a valid final value (no perspective).
--}
-resolvePerspective : Maybe a -> Maybe a -> Maybe a
-resolvePerspective local global =
-    case local of
-        Just value ->
-            Just value
-
-        Nothing ->
-            global
 
 
 
@@ -894,115 +819,6 @@ collectPropertyTransform property acc =
 
         _ ->
             acc
-
-
-
--- PERSPECTIVE STYLES
---
---
--- Pre-computed perspective styles for all containers
-
-
-{-| Extract perspective from a processed property config.
--}
-extractPerspectiveFromProperty : ProcessedPropertyConfig -> Maybe { containerId : String, value : Float }
-extractPerspectiveFromProperty property =
-    case property of
-        ProcessedTranslateConfig config ->
-            config.perspective
-
-        ProcessedRotateConfig config ->
-            config.perspective
-
-        ProcessedScaleConfig config ->
-            config.perspective
-
-        _ ->
-            Nothing
-
-
-computePerspectiveStyles : ProcessedAnimationData -> Dict String Float
-computePerspectiveStyles processedData =
-    let
-        -- Get all unique container IDs from properties
-        propertyContainerIds =
-            processedData.elements
-                |> Dict.values
-                |> List.concatMap .properties
-                |> List.filterMap extractPerspectiveFromProperty
-                |> List.map .containerId
-
-        -- Get global perspective container ID if present
-        maybeGlobalContainerId =
-            processedData.globalPerspective
-                |> Maybe.map .containerId
-
-        allContainerIds =
-            case maybeGlobalContainerId of
-                Just globalId ->
-                    if List.member globalId propertyContainerIds then
-                        propertyContainerIds
-
-                    else
-                        propertyContainerIds ++ [ globalId ]
-
-                Nothing ->
-                    propertyContainerIds
-    in
-    -- For each container ID, compute the perspective value and styles
-    allContainerIds
-        |> List.filterMap
-            (\containerId ->
-                let
-                    -- Check property-level perspective first
-                    propertyPerspective =
-                        processedData.elements
-                            |> Dict.values
-                            |> List.concatMap .properties
-                            |> List.filterMap extractPerspectiveFromProperty
-                            |> List.filter (\p -> p.containerId == containerId)
-                            |> List.head
-                            |> Maybe.map .value
-
-                    maybePerspectiveValue =
-                        case propertyPerspective of
-                            Just value ->
-                                Just value
-
-                            Nothing ->
-                                -- Fall back to global perspective
-                                processedData.globalPerspective
-                                    |> Maybe.andThen
-                                        (\p ->
-                                            if p.containerId == containerId then
-                                                Just p.value
-
-                                            else
-                                                Nothing
-                                        )
-                in
-                Maybe.map (\value -> ( containerId, value )) maybePerspectiveValue
-            )
-        |> Dict.fromList
-
-
-{-| Compute and cache perspective styles on the builder.
-This should be called by each engine's animate function before creating AnimState.
--}
-computeAndCachePerspectiveStyles : AnimBuilder -> AnimBuilder
-computeAndCachePerspectiveStyles ((AnimBuilder data) as builder) =
-    if not (Dict.isEmpty data.perspectiveStylesCache) then
-        builder
-
-    else
-        let
-            processedData =
-                processAnimationData builder
-
-            cache =
-                computePerspectiveStyles processedData
-        in
-        AnimBuilder { data | perspectiveStylesCache = cache }
 
 
 

@@ -7,8 +7,6 @@ module Anim.Engine.WAAPI exposing
     , duration, speed
     , easing
     , delay
-    , perspective
-    , perspectiveWith
     , anyRunning, isRunning, allComplete, isComplete
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
     , getStartOpacity, getEndOpacity, getCurrentOpacity
@@ -130,22 +128,6 @@ These settings will be used for all animations unless overridden on a per-proper
 @docs delay
 
 
-# 3D Animations
-
-For 3D animations you need to set a perspective to give a sense of depth. Without perspective,
-3D animations will have no visual effect, and will appear flat.
-
-
-## Perspective
-
-@docs perspective
-
-
-## HTML
-
-@docs perspectiveWith
-
-
 # Querying Animation State
 
 @docs anyRunning, isRunning, allComplete, isComplete
@@ -192,7 +174,6 @@ during animation playback.
 import Anim.Color exposing (Color)
 import Anim.Easing exposing (Easing)
 import Anim.Internal.WAAPI as Internal
-import Html
 import Json.Encode as Encode
 
 
@@ -311,71 +292,6 @@ easing =
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
     Internal.delay
-
-
-{-| Set the global perspective value for 3D transforms.
-
-The perspective value determines the distance between the viewer and the `z = 0` plane.
-A smaller value creates a more pronounced 3D effect, while a larger value creates
-a more subtle effect.
-
-**Important:** The `containerId` must match the `id` attribute of the DOM container element.
-The JavaScript will automatically apply perspective CSS to this container.
-
-    div
-        [ id "my-container" ]
-        [ div
-            [ id "animated-element" ]
-            [ text "3D content" ]
-        ]
-
-    model.animations
-        |> WAAPI.builder
-        |> WAAPI.perspective "my-container" 1000
-        |> -- continue building the animation
-        |> WAAPI.animate
-
-You can override this global setting for specific properties using property-specific `perspective` functions.
-
--}
-perspective : String -> Float -> AnimBuilder -> AnimBuilder
-perspective =
-    Internal.perspective
-
-
-{-| Manually generate HTML attributes with a given perspective value.
-
-Perspective controls the viewer's distance from the 3D scene (not zoom/magnification).
-Lower values create more dramatic 3D effects, higher values create more subtle effects.
-
-Can be applied to any ancestor element of 3D-transformed children, not just direct parents.
-Set this on the root node for global effect, and override on specific containers as needed.
-
-Common values: 500-2000px.
-
-    -- Adjust 3D depth effect dynamically
-
-    update msg model =
-        case msg of
-            IncreaseDepth ->
-                { model | viewerDistance = model.viewerDistance - 100 }
-
-            DecreaseDepth ->
-                { model | viewerDistance = model.viewerDistance + 100 }
-
-
-    div
-        (WAAPI.perspectiveWith model.viewerDistance)
-        [ -- Animated content with 3D transforms
-        ]
-
-**Elm-side styles take precedence**: When you use this function, the JavaScript will detect
-the existing inline style and skip auto-applying perspective, giving you full control.
-
--}
-perspectiveWith : Float -> List (Html.Attribute msg)
-perspectiveWith =
-    Internal.perspectiveWith
 
 
 

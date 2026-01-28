@@ -177,31 +177,14 @@ animState =
 
 ## 3D Transforms and Perspective
 
-```elm
-translate3D builder =
-    builder
-        |> Translate.for "card"
-        |> Translate.perspective "container" 1000
-        |> Translate.fromZ 0
-        |> Translate.toZ 200
-        |> Translate.build
-
-
-view model =
-    div
-        ([ id "container" ] ++ Sub.perspectiveStyles "container" model.animState)
-        [ div
-            ([ id "card" ] ++ Sub.styles "card" model.animState)
-            [ text "3D Card" ]
-        ]
-```
+The CSS Engine fully supports 3D animations. See [3D Animations](../concepts/3d.md) for how to define 3D transforms.
 
 ## API Reference
 
 ### Core Functions
 
 | Function | Type | Description |
-|----------|------|-------------|
+| ---------- | ------ | ------------- |
 | `init` | `AnimState` | Create initial animation state |
 | `builder` | `AnimState -> AnimBuilder` | Get builder for defining animations |
 | `animate` | `AnimBuilder -> AnimState` | Start the animation |
@@ -212,17 +195,17 @@ view model =
 ### Query Functions
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `isAnimating` | Check if any animation is running |
 | `getCurrentTranslate` | Get current translate position |
 | `getCurrentRotate` | Get current rotation |
 | `getCurrentScale` | Get current scale |
 | `getCurrentOpacity` | Get current opacity |
 
-### Global Settings
+### Global Functions
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `duration` | Set default duration (ms) |
 | `speed` | Set default speed (px/sec) |
 | `easing` | Set default easing function |

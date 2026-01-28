@@ -12,7 +12,6 @@ module Anim.Internal.Builders.Scale exposing
     , fromY
     , fromYZ
     , fromZ
-    , perspective
     , speed
     , toX
     , toXY
@@ -404,8 +403,3 @@ easing easing_ (ScaleBuilder config builder) =
 delay : Int -> ScaleBuilder -> ScaleBuilder
 delay delay_ (ScaleBuilder config builder) =
     ScaleBuilder (PropertyBuilder.withDelay delay_ config) builder
-
-
-perspective : String -> Float -> ScaleBuilder -> ScaleBuilder
-perspective containerId value (ScaleBuilder config builder) =
-    ScaleBuilder (PropertyBuilder.withPerspective containerId value config) builder

@@ -12,6 +12,7 @@
         "Anim.Action.Scroll",
         "Anim.Color",
         "Anim.Easing",
+        "Anim.View3D",
         "Anim.Property.Translate",
         "Anim.Property.Rotate",
         "Anim.Property.Scale",

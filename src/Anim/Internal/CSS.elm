@@ -40,8 +40,6 @@ module Anim.Internal.CSS exposing
     , onTransitionRun
     , onTransitionStart
     , pauseAnimation
-    , perspective
-    , perspectiveStyles
     , resetAnimation
     , restartAnimation
     , resumeAnimation
@@ -114,17 +112,14 @@ builder (AnimState state) =
 animate : AnimBuilder -> AnimState
 animate builder_ =
     let
-        builderWithCache =
-            Builder.computeAndCachePerspectiveStyles builder_
-
         elementIds =
-            builderWithCache
+            builder_
                 |> Builder.elements
                 |> Dict.keys
     in
     AnimState
         { elementAnimations =
-            builderWithCache
+            builder_
                 |> Builder.elements
                 |> Dict.map (generateElementAnimation Nothing)
         , elementStates =
@@ -132,7 +127,7 @@ animate builder_ =
                 |> List.map (\id -> ( id, NotStarted ))
                 |> Dict.fromList
         , builder =
-            builderWithCache
+            builder_
                 |> Builder.markDirty
                 |> Builder.clearCurrentElement
         }
@@ -149,24 +144,21 @@ type TransformOrder
 animateWithOrder : List TransformOrder -> AnimBuilder -> AnimState
 animateWithOrder order builder_ =
     let
-        builderWithCache =
-            Builder.computeAndCachePerspectiveStyles builder_
-
         elementIds =
-            builderWithCache
+            builder_
                 |> Builder.elements
                 |> Dict.keys
     in
     AnimState
         { elementAnimations =
-            builderWithCache
+            builder_
                 |> Builder.elements
                 |> Dict.map (generateElementAnimation (Just order))
         , elementStates =
             elementIds
                 |> List.map (\id -> ( id, NotStarted ))
                 |> Dict.fromList
-        , builder = Builder.markDirty builderWithCache
+        , builder = Builder.markDirty builder_
         }
 
 
@@ -188,23 +180,6 @@ easing =
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
     Builder.delay
-
-
-perspective : String -> Float -> AnimBuilder -> AnimBuilder
-perspective =
-    Builder.perspective
-
-
-perspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
-perspectiveStyles containerId (AnimState state) =
-    case Dict.get containerId (Builder.getPerspectiveStylesCache state.builder) of
-        Just value ->
-            [ Html.Attributes.style "perspective" (String.fromFloat value ++ "px")
-            , Html.Attributes.style "transform-style" "preserve-3d"
-            ]
-
-        Nothing ->
-            []
 
 
 {-| Individual element animation lifecycle state.
@@ -735,12 +710,10 @@ generateElementAnimation maybeOrder elementId elementConfig =
                 { globalTiming = Nothing
                 , globalEasing = Nothing
                 , globalDelay = Nothing
-                , globalPerspective = Nothing
                 , currentElementId = Nothing
                 , elements = Dict.empty
                 , scrollTargets = []
                 , scrollContainer = "document"
-                , perspectiveStylesCache = Dict.empty
                 , animationHistories = Dict.empty
                 , nextAnimationId = 0
                 , elementBaselines = Dict.empty
@@ -891,7 +864,6 @@ stopAnimation elementId animState =
                             , timing = Just (Duration 0)
                             , easing = Just Anim.Easing.Linear
                             , delay = Nothing
-                            , perspective = Nothing
                             , isDirty = True
                             }
                     )
@@ -911,7 +883,6 @@ stopAnimation elementId animState =
                             , timing = Just (Duration 0)
                             , easing = Just Anim.Easing.Linear
                             , delay = Nothing
-                            , perspective = Nothing
                             , isDirty = True
                             }
                     )
@@ -931,7 +902,6 @@ stopAnimation elementId animState =
                             , timing = Just (Duration 0)
                             , easing = Just Anim.Easing.Linear
                             , delay = Nothing
-                            , perspective = Nothing
                             , isDirty = True
                             }
                     )
@@ -951,7 +921,6 @@ stopAnimation elementId animState =
                             , timing = Just (Duration 0)
                             , easing = Just Anim.Easing.Linear
                             , delay = Nothing
-                            , perspective = Nothing
                             , isDirty = True
                             }
                     )
@@ -971,7 +940,6 @@ stopAnimation elementId animState =
                             , timing = Just (Duration 0)
                             , easing = Just Anim.Easing.Linear
                             , delay = Nothing
-                            , perspective = Nothing
                             , isDirty = True
                             }
                     )
@@ -991,7 +959,6 @@ stopAnimation elementId animState =
                             , timing = Just (Duration 0)
                             , easing = Just Anim.Easing.Linear
                             , delay = Nothing
-                            , perspective = Nothing
                             , isDirty = True
                             }
                     )
@@ -1046,7 +1013,6 @@ resetAnimation elementId animState =
                             , timing = Just (Duration 0)
                             , easing = Just Anim.Easing.Linear
                             , delay = Nothing
-                            , perspective = Nothing
                             , isDirty = True
                             }
                     )
@@ -1066,7 +1032,6 @@ resetAnimation elementId animState =
                             , timing = Just (Duration 0)
                             , easing = Just Anim.Easing.Linear
                             , delay = Nothing
-                            , perspective = Nothing
                             , isDirty = True
                             }
                     )
@@ -1086,7 +1051,6 @@ resetAnimation elementId animState =
                             , timing = Just (Duration 0)
                             , easing = Just Anim.Easing.Linear
                             , delay = Nothing
-                            , perspective = Nothing
                             , isDirty = True
                             }
                     )
@@ -1106,7 +1070,6 @@ resetAnimation elementId animState =
                             , timing = Just (Duration 0)
                             , easing = Just Anim.Easing.Linear
                             , delay = Nothing
-                            , perspective = Nothing
                             , isDirty = True
                             }
                     )
@@ -1126,7 +1089,6 @@ resetAnimation elementId animState =
                             , timing = Just (Duration 0)
                             , easing = Just Anim.Easing.Linear
                             , delay = Nothing
-                            , perspective = Nothing
                             , isDirty = True
                             }
                     )
@@ -1146,7 +1108,6 @@ resetAnimation elementId animState =
                             , timing = Just (Duration 0)
                             , easing = Just Anim.Easing.Linear
                             , delay = Nothing
-                            , perspective = Nothing
                             , isDirty = True
                             }
                     )

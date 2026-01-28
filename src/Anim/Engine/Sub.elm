@@ -4,8 +4,6 @@ module Anim.Engine.Sub exposing
     , AnimationMsg, update, subscriptions
     , htmlAttributes
     , stop, reset, restart, pause, resume
-    , perspective
-    , perspectiveStyles, perspectiveWith
     , duration, speed
     , easing
     , delay
@@ -58,22 +56,6 @@ Control running animations with stop, reset, restart, pause, and resume function
   - **resume**: Resumes a specific element's paused animations by restarting subscription updates for that element.
 
 @docs stop, reset, restart, pause, resume
-
-
-# 3D Animations
-
-When using 3D transforms with Position, Rotate, or Scale animations, you need to set a perspective
-to give a sense of depth. Without perspective, 3D transformations will have no visual effect, and will appear flat.
-
-
-## Perspective
-
-@docs perspective
-
-
-## HTML
-
-@docs perspectiveStyles, perspectiveWith
 
 
 # Global Settings
@@ -141,7 +123,6 @@ during animation playback.
 
 import Anim.Color exposing (Color)
 import Anim.Easing exposing (Easing)
-import Anim.Internal.Builder as Builder
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Rotate as Rotate
@@ -149,9 +130,7 @@ import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
 import Anim.Internal.Properties.Translate as Translate
 import Anim.Internal.Sub as InternalSub
-import Dict
 import Html
-import Html.Attributes
 
 
 {-| Animation builder type.
@@ -284,94 +263,6 @@ easing =
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
     InternalSub.delay
-
-
-{-| Set the global perspective value for 3D transforms.
-
-The perspective value determines the distance between the viewer and the `z = 0` plane.
-A smaller value creates a more pronounced 3D effect, while a larger value creates
-a more subtle effect.
-
-    model.animations
-        |> Sub.builder
-        |> Sub.perspective "container-id" 1000
-        |> ... -- Continue building the animation
-
-You can override this global setting for specific properties using property-specific `perspective` functions.
-
--}
-perspective : String -> Float -> AnimBuilder -> AnimBuilder
-perspective =
-    Builder.perspective
-
-
-{-| Generate HTML attributes for container elements that need perspective.
-
-This function generates the necessary CSS perspective attributes for container elements
-that will contain 3D-transformed children. Specify which container you want attributes for.
-
-    -- Set perspective
-    model.animations
-        |> Sub.builder
-        |> Sub.perspective "main-container" 1000
-        |> ... -- Continue building the animation
-
-    -- Apply the perspective styles
-    div
-        (Sub.perspectiveStyles "main-container" animState)
-        [ div
-            (Sub.htmlAttributes "animated-element" animState)
-            [ text "3D animated content" ]
-        ]
-
--}
-perspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
-perspectiveStyles containerId animState =
-    case Dict.get containerId (Builder.getPerspectiveStylesCache (builder animState)) of
-        Just value ->
-            [ Html.Attributes.style "perspective" (String.fromFloat value ++ "px")
-            , Html.Attributes.style "transform-style" "preserve-3d"
-            ]
-
-        Nothing ->
-            []
-
-
-{-| Manually generate HTML attributes with a given perspective value.
-
-Perspective controls the viewer's distance from the 3D scene (not zoom/magnification).
-Lower values create more dramatic 3D effects, higher values create more subtle effects.
-
-Can be applied to any ancestor element of 3D-transformed children, not just direct parents.
-Set this on the root node for global effect, and override on specific containers as needed.
-
-Common values: 500-2000px.
-
-    -- Adjust 3D depth effect dynamically
-
-    update msg model =
-        case msg of
-            IncreaseDepth ->
-                { model | viewerDistance = model.viewerDistance - 100 }
-
-            DecreaseDepth ->
-                { model | viewerDistance = model.viewerDistance + 100 }
-
-
-    div
-        (Sub.perspectiveWith model.viewerDistance)
-        [ -- Animated content with 3D transforms
-        ]
-
-**Elm-side styles take precedence**: When you use this function, the JavaScript will detect
-the existing inline style and skip auto-applying perspective, giving you full control.
-
--}
-perspectiveWith : Float -> List (Html.Attribute msg)
-perspectiveWith perspectiveValue =
-    [ Html.Attributes.style "perspective" (String.fromFloat perspectiveValue ++ "px")
-    , Html.Attributes.style "transform-style" "preserve-3d"
-    ]
 
 
 

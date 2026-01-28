@@ -13,7 +13,6 @@ module Anim.Internal.Builders.Rotate exposing
     , fromY
     , fromYZ
     , fromZ
-    , perspective
     , speed
     , to
     , toX
@@ -296,8 +295,3 @@ speed value (RotateBuilder config builder) =
 easing : Easing -> RotateBuilder -> RotateBuilder
 easing easing_ (RotateBuilder config builder) =
     RotateBuilder (PropertyBuilder.withEasing easing_ config) builder
-
-
-perspective : String -> Float -> RotateBuilder -> RotateBuilder
-perspective containerId value (RotateBuilder config builder) =
-    RotateBuilder (PropertyBuilder.withPerspective containerId value config) builder

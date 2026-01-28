@@ -6,7 +6,6 @@ module Anim.Property.Translate exposing
     , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
     , delay, duration, speed
     , easing
-    , perspective
     )
 
 {-| Translate animation functions with 3D support.
@@ -26,16 +25,13 @@ Whereas "position" often refers to the CSS `position` property which controls _h
         |> Translate.build
         |> ... -- continue with animation
 
-For 3D positioning, you just need to set a non-zero value for the 'Z' axis and a perspective (either globally on the Engine or using the [perspective](#perspective) function for this property):
+For 3D positioning, set a non-zero value for the 'Z' axis and add perspective to the parent container using `Anim.View3D`:
 
-    -- 3D zoom in effect
-    animBuilder
-        |> Translate.for "my-element"
-        |> Translate.perspective "container-id" 800
-        |> Translate.fromXYZ 100 20 50
-        |> Translate.toZ 200
-        |> Translate.speed 500
-        |> Translate.build
+    import Anim.View3D as View3D
+
+    view model =
+        div [ id "container", View3D.perspective 1000 ]
+            [ animatedElement ]
 
 
 # Default
@@ -78,14 +74,6 @@ when you want to override that behavior.
 ## Easing
 
 @docs easing
-
-
-## Perspective
-
-For 3D translation on the Z axis, perspective is required to give a sense of depth. Without it, Z translations will appear flat (no depth effect).
-X & Y translations work without perspective as they're the standard 2D translation axes.
-
-@docs perspective
 
 -}
 
@@ -611,24 +599,3 @@ easing =
 delay : Int -> Builder -> Builder
 delay =
     TB.delay
-
-
-{-| Set the perspective for a parent element.
-
-This allows you to override the global perspective set by an Engine.
-
-    animBuilder
-        |> Translate.for "my-element"
-        |> Translate.perspective "special-container" 800
-        |> Translate.toZ 200
-        |> ...
-
-The first parameter is the parent container ID, and the second is the perspective value in pixels.
-
-**Note**: The `perspective` function **registers** the parent container for perspective management.
-For more information about actually **applying** the perspective, see the `Perspective` section for your chosen Engine.
-
--}
-perspective : String -> Float -> Builder -> Builder
-perspective =
-    TB.perspective

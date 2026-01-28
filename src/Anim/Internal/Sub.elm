@@ -121,15 +121,12 @@ builder ((AnimState state) as animationState) =
 animate : AnimBuilder -> AnimState
 animate builder_ =
     let
-        builderWithCache =
-            Builder.computeAndCachePerspectiveStyles builder_
-
         processedData =
-            Builder.processAnimationData builderWithCache
+            Builder.processAnimationData builder_
 
         -- Extract current values from any existing animations in the builder
         currentValues =
-            extractCurrentValuesFromBuilder builderWithCache
+            extractCurrentValuesFromBuilder builder_
 
         startValues =
             { translate = Maybe.withDefault (Translate.default |> Translate.toRecord) currentValues.translate
@@ -148,7 +145,7 @@ animate builder_ =
         { elementAnimations = elementStates
         , isRunning = not (Dict.isEmpty elementStates)
         , builder =
-            builderWithCache
+            builder_
                 |> Builder.markDirty
                 |> Builder.clearCurrentElement
         }
@@ -280,7 +277,6 @@ getCurrentPropertyValue propertyState =
                 , timing = Duration 0
                 , easing = Linear
                 , delay = 0
-                , perspective = Nothing
                 }
 
         RotateAnimation rotate ->
@@ -293,7 +289,6 @@ getCurrentPropertyValue propertyState =
                 , timing = Duration 0
                 , easing = Linear
                 , delay = 0
-                , perspective = Nothing
                 }
 
         ScaleAnimation scale ->
@@ -306,7 +301,6 @@ getCurrentPropertyValue propertyState =
                 , timing = Duration 0
                 , easing = Linear
                 , delay = 0
-                , perspective = Nothing
                 }
 
         BackgroundColorAnimation color ->
@@ -319,7 +313,6 @@ getCurrentPropertyValue propertyState =
                 , timing = Duration 0
                 , easing = Linear
                 , delay = 0
-                , perspective = Nothing
                 }
 
         FontColorAnimation fontColor ->
@@ -332,7 +325,6 @@ getCurrentPropertyValue propertyState =
                 , timing = Duration 0
                 , easing = Linear
                 , delay = 0
-                , perspective = Nothing
                 }
 
         OpacityAnimation opacity ->
@@ -345,7 +337,6 @@ getCurrentPropertyValue propertyState =
                 , timing = Duration 0
                 , easing = Linear
                 , delay = 0
-                , perspective = Nothing
                 }
 
         SizeAnimation size ->
@@ -358,7 +349,6 @@ getCurrentPropertyValue propertyState =
                 , timing = Duration 0
                 , easing = Linear
                 , delay = 0
-                , perspective = Nothing
                 }
 
 
@@ -662,7 +652,6 @@ initBackgroundColor animBuilder maybeColor =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
-                        , perspective = Nothing
                         , isDirty = False
                         }
             in
@@ -687,7 +676,6 @@ initOpacity animBuilder maybeOpacity =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
-                        , perspective = Nothing
                         , isDirty = False
                         }
             in
@@ -712,7 +700,6 @@ initTranslate animBuilder maybePos =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
-                        , perspective = Nothing
                         , isDirty = False
                         }
             in
@@ -737,7 +724,6 @@ initRotate animBuilder maybeRotate =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
-                        , perspective = Nothing
                         , isDirty = False
                         }
             in
@@ -762,7 +748,6 @@ initScale animBuilder maybeScale =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
-                        , perspective = Nothing
                         , isDirty = False
                         }
             in
@@ -787,7 +772,6 @@ initSize animBuilder maybeSize =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
-                        , perspective = Nothing
                         , isDirty = False
                         }
             in

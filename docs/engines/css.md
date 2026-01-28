@@ -133,20 +133,6 @@ myAnimation builder =
 
 The CSS Engine fully supports 3D animations. See [3D Animations](../concepts/3d.md) for how to define 3D transforms.
 
-For CSS, apply perspective styles to your container element:
-
-```elm
-view model =
-    div
-        [ id "card-container"
-        , style "perspective" "1000px"
-        ]
-        [ div
-            ([ id "card" ] ++ CSS.transitionAttributes "card" model.animState)
-            [ text "3D Card" ]
-        ]
-```
-
 ## Event Handling
 
 The CSS Engine provides event handlers for animation lifecycle:

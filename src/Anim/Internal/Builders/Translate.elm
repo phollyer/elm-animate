@@ -13,7 +13,6 @@ module Anim.Internal.Builders.Translate exposing
     , fromY
     , fromYZ
     , fromZ
-    , perspective
     , speed
     , to
     , toX
@@ -263,8 +262,3 @@ speed value (TranslateBuilder config builder) =
 easing : Easing -> TranslateBuilder -> TranslateBuilder
 easing easing_ (TranslateBuilder config builder) =
     TranslateBuilder (PropertyBuilder.withEasing easing_ config) builder
-
-
-perspective : String -> Float -> TranslateBuilder -> TranslateBuilder
-perspective containerId value (TranslateBuilder config builder) =
-    TranslateBuilder (PropertyBuilder.withPerspective containerId value config) builder

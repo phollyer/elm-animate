@@ -14,8 +14,6 @@ module Anim.Engine.CSS exposing
     , KeyframeEvent(..), handleKeyframeEvent
     , keyframeAnimationEvents
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
-    , perspective
-    , perspectiveStyles, perspectiveWith
     , anyRunning, isRunning, allComplete, isComplete
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
     , getStartOpacity, getEndOpacity, getCurrentOpacity
@@ -161,22 +159,6 @@ The following event handlers allow you more granular control over which CSS keyf
 are received.
 
 @docs onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
-
-
-# 3D Animations
-
-For 3D animations you need to set a perspective
-to give a sense of depth. Without perspective, 3D animations will have no visual effect, and will appear flat.
-
-
-## Perspective
-
-@docs perspective
-
-
-## HTML
-
-@docs perspectiveStyles, perspectiveWith
 
 
 # Querying Animation State
@@ -941,77 +923,6 @@ easing =
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
     InternalCSS.delay
-
-
-{-| Set the global perspective value that all animations use.
-
-The perspective value determines the distance between the viewer and the `z = 0` plane.
-Smaller values create more dramatic 3D effects, while larger values create subtler effects.
-
-    model.animations
-        |> CSS.builder
-        |> Css.perspective "container-id" 1000
-        |> ... -- continue building the animation
-
-You can override this global setting for specific properties using property-specific `perspective` functions.
-
--}
-perspective : String -> Float -> AnimBuilder -> AnimBuilder
-perspective =
-    InternalCSS.perspective
-
-
-{-| Generate HTML attributes for container elements that need perspective.
-
-This function generates the necessary CSS perspective attributes for container elements
-to properly display 3D animations. Apply these attributes to the parent containers
-of animated elements - any parent will do.
-
-    model.animations
-        |> CSS.builder
-        |> CSS.perspective "main-container" 1000
-        |> ...
-
-    div
-        (CSS.perspectiveStyles "main-container" model.animations)
-        [ div
-            (CSS.htmlAttributes "animated-element" model.animations)
-            [ text "3D animated content" ]
-        ]
-
-This looks up perspective settings for the specified container from both global settings
-and property-level overrides, with property-level taking precedence.
-
--}
-perspectiveStyles : String -> AnimState -> List (Html.Attribute msg)
-perspectiveStyles =
-    InternalCSS.perspectiveStyles
-
-
-{-| Manually generate HTML attributes with a given perspective value.
-
-    -- Adjust 3D depth effect dynamically
-
-    update msg model =
-        case msg of
-            IncreaseDepth ->
-                { model | viewerDistance = model.viewerDistance - 100 }
-
-            DecreaseDepth ->
-                { model | viewerDistance = model.viewerDistance + 100 }
-
-
-    div
-        (CSS.perspectiveWith model.viewerDistance)
-        [ -- Animated content with 3D transforms
-        ]
-
--}
-perspectiveWith : Float -> List (Html.Attribute msg)
-perspectiveWith perspectiveValue =
-    [ Html.Attributes.style "perspective" (String.fromFloat perspectiveValue ++ "px")
-    , Html.Attributes.style "transform-style" "preserve-3d"
-    ]
 
 
 {-| Get the animation [transition](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transitions/Using)

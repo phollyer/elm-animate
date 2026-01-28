@@ -41,8 +41,6 @@ module Anim.Internal.WAAPI exposing
     , isElementRunning
     , onResize
     , pause
-    , perspective
-    , perspectiveWith
     , reset
     , restart
     , resume
@@ -70,8 +68,6 @@ import Anim.Internal.Properties.Scale as Scale exposing (Scale)
 import Anim.Internal.Properties.Size as Size exposing (Size)
 import Anim.Internal.Properties.Translate as Translate exposing (Translate)
 import Dict exposing (Dict)
-import Html
-import Html.Attributes
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 
@@ -172,19 +168,6 @@ delay =
     Builder.delay
 
 
-perspective : String -> Float -> AnimBuilder -> AnimBuilder
-perspective =
-    Builder.perspective
-
-
-perspectiveWith : Float -> List (Html.Attribute msg)
-perspectiveWith perspectiveValue =
-    [ Html.Attributes.style "perspective" (String.fromFloat perspectiveValue ++ "px")
-    , Html.Attributes.style "transform-style" "preserve-3d"
-    , Html.Attributes.attribute "data-perspective-source" "elm"
-    ]
-
-
 
 -- Execute Animation
 
@@ -192,11 +175,8 @@ perspectiveWith perspectiveValue =
 animateStateless : (Encode.Value -> Cmd msg) -> AnimBuilder -> Cmd msg
 animateStateless portFunction animBuilder =
     let
-        builderWithCache =
-            Builder.computeAndCachePerspectiveStyles animBuilder
-
         processedData =
-            Builder.processAnimationData builderWithCache
+            Builder.processAnimationData animBuilder
 
         encodedData =
             encode processedData
@@ -219,11 +199,8 @@ animate portFunction (AnimState state) buildAnimation =
                 |> buildAnimation
                 |> Debug.log "Builder after user configuration:"
 
-        builderWithCache =
-            Builder.computeAndCachePerspectiveStyles configuredBuilder
-
         processedData =
-            Builder.processAnimationData builderWithCache
+            Builder.processAnimationData configuredBuilder
 
         -- Create element animations from processed data with property-level versioning
         newElementAnimations =
@@ -344,7 +321,7 @@ animate portFunction (AnimState state) buildAnimation =
                     Builder.addAnimationToHistory elementId processedData Nothing accBuilder
                         |> Tuple.first
                 )
-                builderWithCache
+                configuredBuilder
                 processedData.elements
     in
     ( AnimState
@@ -376,11 +353,8 @@ initProperties portFunction propertyInitializers =
                 state.builder
                 propertyInitializers
 
-        builderWithCache =
-            Builder.computeAndCachePerspectiveStyles configuredBuilder
-
         processedData =
-            Builder.processAnimationData builderWithCache
+            Builder.processAnimationData configuredBuilder
 
         -- Extract end states (which are same as start states for init)
         elementAnimations =
@@ -1442,7 +1416,6 @@ encodeWithVersions elementAnimations data =
     Encode.object
         [ ( "type", Encode.string "animate" )
         , ( "elements", Encode.object elementsWithVersions )
-        , ( "globalPerspective", encodeMaybePerspective data.globalPerspective )
         ]
 
 
@@ -1451,7 +1424,6 @@ encode data =
     Encode.object
         [ ( "type", Encode.string "animate" )
         , ( "elements", Encode.dict identity encodeProcessedElementConfig data.elements )
-        , ( "globalPerspective", encodeMaybePerspective data.globalPerspective )
         ]
 
 
@@ -1463,19 +1435,6 @@ encodeCommand commandType elementId =
         [ ( "type", Encode.string commandType )
         , ( "elementId", Encode.string elementId )
         ]
-
-
-encodeMaybePerspective : Maybe { containerId : String, value : Float } -> Encode.Value
-encodeMaybePerspective maybePerspective =
-    case maybePerspective of
-        Nothing ->
-            Encode.null
-
-        Just perspectiveData ->
-            Encode.object
-                [ ( "containerId", Encode.string perspectiveData.containerId )
-                , ( "value", Encode.float perspectiveData.value )
-                ]
 
 
 encodeProcessedElementConfigWithVersions : Dict ElementId ElementAnimation -> String -> Builder.ProcessedElementConfig -> Encode.Value
@@ -1532,7 +1491,6 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                  , ( "endY", Encode.float endY )
                  , ( "endZ", Encode.float endZ )
                  , ( "duration", Encode.int config.duration )
-                 , ( "perspective", encodeMaybePerspective config.perspective )
                  ]
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
@@ -1557,7 +1515,6 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                  , ( "endY", Encode.float endY )
                  , ( "endZ", Encode.float endZ )
                  , ( "duration", Encode.int config.duration )
-                 , ( "perspective", encodeMaybePerspective config.perspective )
                  ]
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
@@ -1582,7 +1539,6 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                  , ( "endY", Encode.float endY )
                  , ( "endZ", Encode.float endZ )
                  , ( "duration", Encode.int config.duration )
-                 , ( "perspective", encodeMaybePerspective config.perspective )
                  ]
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
@@ -1683,7 +1639,6 @@ encodeProcessedPropertyConfig property =
                  , ( "endY", Encode.float endY )
                  , ( "endZ", Encode.float endZ )
                  , ( "duration", Encode.int config.duration )
-                 , ( "perspective", encodeMaybePerspective config.perspective )
                  ]
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
@@ -1707,7 +1662,6 @@ encodeProcessedPropertyConfig property =
                  , ( "endY", Encode.float endY )
                  , ( "endZ", Encode.float endZ )
                  , ( "duration", Encode.int config.duration )
-                 , ( "perspective", encodeMaybePerspective config.perspective )
                  ]
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
@@ -1731,7 +1685,6 @@ encodeProcessedPropertyConfig property =
                  , ( "endY", Encode.float endY )
                  , ( "endZ", Encode.float endZ )
                  , ( "duration", Encode.int config.duration )
-                 , ( "perspective", encodeMaybePerspective config.perspective )
                  ]
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
@@ -1945,11 +1898,8 @@ reset elementId portFunction (AnimState state) =
                         |> Builder.for elementId
                         |> addResetProperties elementId endStates startStates
 
-                builderWithCache =
-                    Builder.computeAndCachePerspectiveStyles resetBuilder
-
                 processedData =
-                    Builder.processAnimationData builderWithCache
+                    Builder.processAnimationData resetBuilder
             in
             case Dict.get elementId state.elementAnimations of
                 Nothing ->

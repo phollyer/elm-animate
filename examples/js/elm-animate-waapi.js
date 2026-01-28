@@ -36,65 +36,11 @@ window.ElmAnimateWAAPI = (function () {
     };
 
     /**
-     * Apply perspective to containers
-     */
-    function applyPerspective(animationData) {
-        const perspectiveContainers = new Set();
-
-        // Collect all perspective settings (global and property-level)
-        const perspectiveSettings = {};
-
-        // Global perspective
-        if (animationData.globalPerspective) {
-            const { containerId, value } = animationData.globalPerspective;
-            perspectiveSettings[containerId] = value;
-            perspectiveContainers.add(containerId);
-        }
-
-        // Property-level perspectives (override global)
-        if (animationData.elements) {
-            Object.values(animationData.elements).forEach(elementConfig => {
-                elementConfig.properties.forEach(property => {
-                    if (property.perspective) {
-                        const { containerId, value } = property.perspective;
-                        perspectiveSettings[containerId] = value;
-                        perspectiveContainers.add(containerId);
-                    }
-                });
-            });
-        }
-
-        // Apply perspective styles to containers
-        perspectiveContainers.forEach(containerId => {
-            const container = document.getElementById(containerId);
-            if (container) {
-                const perspectiveSource = container.getAttribute('data-perspective-source');
-
-                // Only apply if:
-                // - No perspective set yet, OR
-                // - Perspective was set by JS (can be updated)
-                // Never overwrite Elm-controlled perspective
-                if (perspectiveSource !== 'elm') {
-                    const perspectiveValue = perspectiveSettings[containerId];
-                    container.style.perspective = `${perspectiveValue}px`;
-                    container.style.transformStyle = 'preserve-3d';
-                    container.setAttribute('data-perspective-source', 'js');
-                }
-            } else {
-                console.warn(`ElmAnimateWAAPI: Container with id "${containerId}" not found for perspective`);
-            }
-        });
-    }
-
-    /**
      * Process animation data received from Elm
      */
     function processAnimationData(animationData) {
         if (animationData && animationData.elements) {
-            // Apply perspective to containers first
-            applyPerspective(animationData);
-
-            // Then process element animations
+            // Process element animations
             Object.entries(animationData.elements).forEach(([elementId, elementConfig]) => {
                 processElementAnimation(elementId, elementConfig);
             });
