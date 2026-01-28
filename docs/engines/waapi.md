@@ -22,16 +22,14 @@ The WAAPI Engine uses the Web Animations API via Elm ports and a JavaScript comp
 ### 1. Install the JavaScript package
 
 === "npm"
-
-```bash
-npm install elm-animate-waapi
-```
+    ```bash
+    npm install elm-animate-waapi
+    ```
 
 === "yarn"
-
-```bash
-yarn add elm-animate-waapi
-```
+    ```bash
+    yarn add elm-animate-waapi
+    ```
 
 ### 2. Initialize in JavaScript
 
@@ -363,7 +361,7 @@ The WAAPI Engine fully supports 3D animations. See [3D Animations](../concepts/3
 | `reset` | `String -> (Value -> Cmd msg) -> AnimState -> ( AnimState, Cmd msg )` | Return to start state |
 | `restart` | `String -> (Value -> Cmd msg) -> AnimState -> ( AnimState, Cmd msg )` | Replay from beginning |
 
-### Event Handling
+### Events
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
