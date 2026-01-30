@@ -4,6 +4,7 @@ module Anim.Property.Translate exposing
     , Builder, for, build
     , from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
     , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
+    , by, byXYZ, byXY, byXZ, byX, byYZ, byY, byZ
     , delay, duration, speed
     , easing
     )
@@ -61,9 +62,16 @@ when you want to override that behavior.
 @docs from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
 
 
-## Target Value
+## Target Value (Absolute)
 
 @docs to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
+
+
+## Target Value (Relative)
+
+Move by a specific amount relative to the start position.
+
+@docs by, byXYZ, byXY, byXZ, byX, byYZ, byY, byZ
 
 
 ## Timing
@@ -599,3 +607,128 @@ easing =
 delay : Int -> Builder -> Builder
 delay =
     TB.delay
+
+
+
+-- BY (relative movement)
+
+
+{-| Move uniformly by a specific amount on all axes.
+
+    animBuilder
+        |> Translate.for "my-element"
+        |> Translate.by 50
+        |> ...
+
+This is equivalent to calling `byXYZ 50 50 50`.
+
+-}
+by : Float -> Builder -> Builder
+by delta =
+    TB.byXYZ delta delta delta
+
+
+{-| Move by specific amounts on the X, Y, and Z axes.
+
+    animBuilder
+        |> Translate.for "my-element"
+        |> Translate.fromXY 100 100
+        |> Translate.byXYZ 50 -25 10
+        |> ...
+
+This would animate from `(100, 100, 0)` to `(150, 75, 10)`.
+
+-}
+byXYZ : Float -> Float -> Float -> Builder -> Builder
+byXYZ =
+    TB.byXYZ
+
+
+{-| Move by specific amounts on the X and Y axes.
+
+    animBuilder
+        |> Translate.for "my-element"
+        |> Translate.fromXY 100 100
+        |> Translate.byXY 50 -25
+        |> ...
+
+This would animate from `(100, 100)` to `(150, 75)`.
+
+-}
+byXY : Float -> Float -> Builder -> Builder
+byXY =
+    TB.byXY
+
+
+{-| Move by specific amounts on the X and Z axes.
+
+    animBuilder
+        |> Translate.for "my-element"
+        |> Translate.byXZ 50 10
+        |> ...
+
+-}
+byXZ : Float -> Float -> Builder -> Builder
+byXZ =
+    TB.byXZ
+
+
+{-| Move by a specific amount on the X axis.
+
+    animBuilder
+        |> Translate.for "my-element"
+        |> Translate.fromX 100
+        |> Translate.byX 50
+        |> ...
+
+This would animate from `100` to `150` on the X axis.
+
+-}
+byX : Float -> Builder -> Builder
+byX =
+    TB.byX
+
+
+{-| Move by specific amounts on the Y and Z axes.
+
+    animBuilder
+        |> Translate.for "my-element"
+        |> Translate.byYZ -25 10
+        |> ...
+
+-}
+byYZ : Float -> Float -> Builder -> Builder
+byYZ =
+    TB.byYZ
+
+
+{-| Move by a specific amount on the Y axis.
+
+    animBuilder
+        |> Translate.for "my-element"
+        |> Translate.fromY 100
+        |> Translate.byY -50
+        |> ...
+
+This would animate from `100` to `50` on the Y axis.
+
+-}
+byY : Float -> Builder -> Builder
+byY =
+    TB.byY
+
+
+{-| Move by a specific amount on the Z axis.
+
+    animBuilder
+        |> Translate.for "my-element"
+        |> Translate.fromZ 0
+        |> Translate.byZ 100
+        |> ...
+
+This would animate from `0` to `100` on the Z axis.
+
+-}
+byZ : Float -> Builder -> Builder
+byZ =
+    TB.byZ

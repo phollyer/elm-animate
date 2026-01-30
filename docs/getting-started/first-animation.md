@@ -10,6 +10,8 @@ We'll animate an element's opacity from 0 to 1 over 2500 milliseconds.
 --8<-- "examples/src/Docs/GettingStarted/FirstAnimation/Main.elm"
 ```
 
+[:material-play-circle: Run this example](../examples/Docs/GettingStarted/FirstAnimation/){ .md-button target="_blank" }
+
 !!! note "Why Process.sleep?"
     The example uses `Process.sleep 50` to delay triggering the animation until after the initial render. CSS **transitions** only animate *changes* to properties - if the element is created with the transition already applied, there's no change to animate. The brief delay ensures the element first renders at opacity 0, then the state change triggers the transition to opacity 1.
 

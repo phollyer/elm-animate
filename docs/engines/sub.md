@@ -21,6 +21,8 @@ The Sub Engine uses Elm subscriptions to update animation state on every frame. 
 --8<-- "examples/src/Docs/Engines/Sub/BasicUsage/Main.elm"
 ```
 
+[:material-play-circle: Run this example](../../examples/src/Docs/Engines/Sub/BasicUsage/index.html){ .md-button target="_blank" }
+
 
 ## Interrupting Animations
 
@@ -48,6 +50,23 @@ update msg model =
                         |> Sub.animate
             in
             ( { model | animState = newAnimState }, Cmd.none )
+
+
+move : Float -> Sub.AnimBuilder -> Sub.AnimBuilder
+move amount =
+    Translate.for "element-id"
+        >> Translate.byX amount
+        >> Translate.speed 50
+        >> Translate.build
+
+moveLeft : Sub.AnimBuilder -> Sub.AnimBuilder
+moveLeft =
+    move -100
+
+moveRight : Sub.AnimBuilder -> Aub.AnimBuilder
+moveRight =
+    move 100
+
 ```
 
 The new animation starts from the current position, not the original start position.

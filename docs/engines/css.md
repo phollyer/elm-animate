@@ -24,6 +24,8 @@ The CSS Engine generates native CSS transitions and keyframe animations. The bro
 --8<-- "examples/src/Docs/Engines/CSS/BasicUsage/Main.elm"
 ```
 
+[:material-play-circle: Run this example](../examples/Docs/Engines/CSS/BasicUsage/){ .md-button target="_blank" }
+
 !!! note "Why the delay?"
     CSS transitions only trigger when the browser detects a *change* between renders. `Process.sleep 50` is used to ensure the element renders in its initial state first, then the animation is applied 50ms later. This creates the *change* the browser needs. This is only relevant to CSS **transitions**, **keyframe animations** run as soon as the browser renders.
 

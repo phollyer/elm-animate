@@ -1,6 +1,14 @@
 module Anim.Internal.Builders.Translate exposing
     ( TranslateBuilder
     , build
+    , by
+    , byX
+    , byXY
+    , byXYZ
+    , byXZ
+    , byY
+    , byYZ
+    , byZ
     , delay
     , duration
     , easing
@@ -242,6 +250,67 @@ toZ z (TranslateBuilder config builder) =
     in
     toXYZ x y z <|
         TranslateBuilder config builder
+
+
+
+-- BY (relative movement)
+
+
+by : Translate -> TranslateBuilder -> TranslateBuilder
+by delta (TranslateBuilder config builder) =
+    let
+        startVal =
+            Maybe.withDefault Translate.default config.start
+
+        endVal =
+            Translate.fromTriple
+                ( Translate.x startVal + Translate.x delta
+                , Translate.y startVal + Translate.y delta
+                , Translate.z startVal + Translate.z delta
+                )
+    in
+    TranslateBuilder
+        { config
+            | start = Just startVal
+            , end = endVal
+            , distance = Translate.distance startVal endVal
+        }
+        builder
+
+
+byXYZ : Float -> Float -> Float -> TranslateBuilder -> TranslateBuilder
+byXYZ dx dy dz =
+    by (Translate.fromTriple ( dx, dy, dz ))
+
+
+byXY : Float -> Float -> TranslateBuilder -> TranslateBuilder
+byXY dx dy =
+    byXYZ dx dy 0
+
+
+byXZ : Float -> Float -> TranslateBuilder -> TranslateBuilder
+byXZ dx dz =
+    byXYZ dx 0 dz
+
+
+byX : Float -> TranslateBuilder -> TranslateBuilder
+byX dx =
+    byXYZ dx 0 0
+
+
+byYZ : Float -> Float -> TranslateBuilder -> TranslateBuilder
+byYZ dy dz =
+    byXYZ 0 dy dz
+
+
+byY : Float -> TranslateBuilder -> TranslateBuilder
+byY dy =
+    byXYZ 0 dy 0
+
+
+byZ : Float -> TranslateBuilder -> TranslateBuilder
+byZ dz =
+    byXYZ 0 0 dz
 
 
 delay : Int -> TranslateBuilder -> TranslateBuilder
