@@ -1,4 +1,4 @@
-module Docs.Engines.CSS.BasicUsage.Main exposing (main)
+module Engines.CSS.BasicUsage.Main exposing (main)
 
 import Anim.Engine.CSS as CSS
 import Anim.Property.Translate as Translate

@@ -1,4 +1,4 @@
-module Docs.Engines.Sub.BasicUsage.Main exposing (main)
+module Engines.Sub.BasicUsage.Main exposing (main)
 
 import Anim.Engine.Sub as Sub
 import Anim.Property.Translate as Translate

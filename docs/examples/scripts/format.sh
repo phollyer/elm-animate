@@ -42,13 +42,13 @@ format_files() {
 }
 
 echo ""
-echo "🎨 Formatting ElmUI examples..."
+echo "🎨 Formatting documentation examples..."
 
-# Format all ElmUI examples
-format_files "src/ElmUI" "ElmUI examples"
+# Format all Engines examples
+format_files "src/Engines" "Engines examples"
 
-# Format Common modules
-format_files "src/Common" "Common modules"
+# Format GettingStarted examples
+format_files "src/GettingStarted" "GettingStarted examples"
 
 # Always exit successfully so build can continue
 exit 0

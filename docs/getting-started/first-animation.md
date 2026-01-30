@@ -6,11 +6,13 @@ Let's create a simple fire-and-forget fade-in animation using the CSS Engine. Th
 
 We'll animate an element's opacity from 0 to 1 over 2500 milliseconds.
 
-```elm
---8<-- "examples/src/Docs/GettingStarted/FirstAnimation/Main.elm"
-```
+??? example "View Source Code"
 
-[:material-play-circle: Run this example](../examples/Docs/GettingStarted/FirstAnimation/){ .md-button target="_blank" }
+    ```elm
+    --8<-- "docs/examples/src/GettingStarted/FirstAnimation/Main.elm"
+    ```
+
+[:material-play-circle: Run this example](../examples/src/GettingStarted/FirstAnimation/index.html){ .md-button target="_blank" }
 
 !!! note "Why Process.sleep?"
     The example uses `Process.sleep 50` to delay triggering the animation until after the initial render. CSS **transitions** only animate *changes* to properties - if the element is created with the transition already applied, there's no change to animate. The brief delay ensures the element first renders at opacity 0, then the state change triggers the transition to opacity 1.
@@ -27,7 +29,7 @@ We'll animate an element's opacity from 0 to 1 over 2500 milliseconds.
 Animations are defined as functions that transform an `AnimBuilder`:
 
 ```elm
---8<-- "examples/src/Docs/GettingStarted/FirstAnimation/Main.elm:fadeIn"
+--8<-- "docs/examples/src/GettingStarted/FirstAnimation/Main.elm:fadeIn"
 ```
 
 ### 2. Create the AnimState
@@ -35,7 +37,7 @@ Animations are defined as functions that transform an `AnimBuilder`:
 Pass your animation through the engine's pipeline:
 
 ```elm
---8<-- "examples/src/Docs/GettingStarted/FirstAnimation/Main.elm:animState"
+--8<-- "docs/examples/src/GettingStarted/FirstAnimation/Main.elm:animState"
 ```
 
 ### 3. Apply Attributes
@@ -43,7 +45,7 @@ Pass your animation through the engine's pipeline:
 Use `CSS.transitionAttributes` to get the HTML attributes for your element's transition:
 
 ```elm
---8<-- "examples/src/Docs/GettingStarted/FirstAnimation/Main.elm:applyStyles"
+--8<-- "docs/examples/src/GettingStarted/FirstAnimation/Main.elm:applyStyles"
 ```
 
 ## Adding Easing

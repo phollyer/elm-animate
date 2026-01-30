@@ -39,6 +39,9 @@ theme:
 plugins:
   - search
 
+hooks:
+  - docs/hooks.py
+
 markdown_extensions:
   - admonition
   - attr_list
@@ -83,6 +86,7 @@ nav:
       - Background Color: properties/background-color.md
       - Font Color: properties/font-color.md
       - Size: properties/size.md
+  - Examples: examples/index.md
   - API Reference: api-reference.md
 
 extra:

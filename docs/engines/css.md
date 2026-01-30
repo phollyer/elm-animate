@@ -20,11 +20,13 @@ The CSS Engine generates native CSS transitions and keyframe animations. The bro
 
 ## Basic Usage
 
-```elm
---8<-- "examples/src/Docs/Engines/CSS/BasicUsage/Main.elm"
-```
+??? example "View Source Code"
 
-[:material-play-circle: Run this example](../examples/Docs/Engines/CSS/BasicUsage/){ .md-button target="_blank" }
+    ```elm
+    --8<-- "docs/examples/src/Engines/CSS/BasicUsage/Main.elm"
+    ```
+
+[:material-play-circle: Run this example](../examples/src/Engines/CSS/BasicUsage/index.html){ .md-button target="_blank" }
 
 !!! note "Why the delay?"
     CSS transitions only trigger when the browser detects a *change* between renders. `Process.sleep 50` is used to ensure the element renders in its initial state first, then the animation is applied 50ms later. This creates the *change* the browser needs. This is only relevant to CSS **transitions**, **keyframe animations** run as soon as the browser renders.
@@ -33,24 +35,26 @@ The CSS Engine generates native CSS transitions and keyframe animations. The bro
 
 In practice, most animations are triggered by user interactions, which naturally provide the state change:
 
-```elm
-type Msg
-    = AnimateBox
+??? example "View Source Code"
+
+    ```elm
+    type Msg
+        = AnimateBox
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        AnimateBox ->
-            let
-                newAnimState =
-                    CSS.init
-                        |> CSS.builder
-                        |> moveToNewPosition
-                        |> CSS.animate
-            in
-            ( { model | animState = newAnimState }, Cmd.none )
-```
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            AnimateBox ->
+                let
+                    newAnimState =
+                        CSS.init
+                            |> CSS.builder
+                            |> moveToNewPosition
+                            |> CSS.animate
+                in
+                ( { model | animState = newAnimState }, Cmd.none )
+    ```
 
 ## Event Handling
 
@@ -60,89 +64,101 @@ CSS animations generate events throughout their lifecycle. Use these events to c
 
 Create a `Msg` type variant for your CSS transition events.
 
-```elm
-type Msg
-    = GotTransitionEvent CSS.TransitionEvent
-    | ...
-```
+??? example "View Source Code"
+
+    ```elm
+    type Msg
+        = GotTransitionEvent CSS.TransitionEvent
+        | ...
+    ```
 
 Use `CSS.transitionEvents` in your view to generate events.
 
-```elm
-view model =
-    div
-        (CSS.transitionAttributes "box" model.animState
-            ++ CSS.transitionEvents "box" GotTransitionEvent
-        )
-        [...]
-```
+??? example "View Source Code"
+
+    ```elm
+    view model =
+        div
+            (CSS.transitionAttributes "box" model.animState
+                ++ CSS.transitionEvents "box" GotTransitionEvent
+            )
+            [...]
+    ```
 
 Use `CSS.handleTransitionEvent` in your `update` function. This will keep the internal state in sync with the animation lifecycle.
 
-```elm
-update msg model =
-    case msg of
-        GotTransitionEvent event ->
-            let
-                newModel =
-                    { model | animState = CSS.handleTransitionEvent event model.animState}
-            in
-            case event of
-                CSS.TransitionEnded "box" ->
-                    -- Animation complete
-                    (newModel, Cmd.none)
+??? example "View Source Code"
 
-                CSS.TransitionStarted "box" ->
-                    -- Animation started
-                    (newModel, Cmd.none)
+    ```elm
+    update msg model =
+        case msg of
+            GotTransitionEvent event ->
+                let
+                    newModel =
+                        { model | animState = CSS.handleTransitionEvent event model.animState}
+                in
+                case event of
+                    CSS.TransitionEnded "box" ->
+                        -- Animation complete
+                        (newModel, Cmd.none)
 
-                _ ->
-                    ( newModel, Cmd.none )
-```
+                    CSS.TransitionStarted "box" ->
+                        -- Animation started
+                        (newModel, Cmd.none)
+
+                    _ ->
+                        ( newModel, Cmd.none )
+    ```
 
 ### Keyframe Animation Events
 
 Create a `Msg` type variant for your Keyframe events.
 
-```elm
-type Msg
-    = GotKeyframeEvent CSS.KeyframeEvent
-    | ...
-```
+??? example "View Source Code"
+
+    ```elm
+    type Msg
+        = GotKeyframeEvent CSS.KeyframeEvent
+        | ...
+    ```
 
 Use `CSS.keyframeEvents` in your view to generate events.
 
-```elm
-view model =
-    div
-        (CSS.transitionAttributes "box" model.animState
-            ++ CSS.keyframeEvents "box" GotKeyframeEvent
-        )
-        [...]
-```
+??? example "View Source Code"
+
+    ```elm
+    view model =
+        div
+            (CSS.transitionAttributes "box" model.animState
+                ++ CSS.keyframeEvents "box" GotKeyframeEvent
+            )
+            [...]
+    ```
 
 Use `CSS.handleKeyframeEvent` in your `update` function. This will keep the internal state in sync with the animation lifecycle.
 
-```elm
-update msg model =
-    case msg of
-        GotKeyframeEvent event ->
-            let
-                newModel =
-                    { model | animState = CSS.handleKeyframeEvent event model.animState}
-            in
-            case event of
-                CSS.AnimationEnded "box" ->
-                    -- Animation complete
-                    (newModel, Cmd.none)
+??? example "View Source Code"
 
-                CSS.AnimationStarted "box" ->
-                    -- Animation started
-                    (newModel, Cmd.none)
+    ```elm
+    update msg model =
+        case msg of
+            GotKeyframeEvent event ->
+                let
+                    newModel =
+                        { model | animState = CSS.handleKeyframeEvent event model.animState}
+                in
+                case event of
+                    CSS.AnimationEnded "box" ->
+                        -- Animation complete
+                        (newModel, Cmd.none)
 
-                _ ->
-                    ( newModel, Cmd.none )
-```
+                    CSS.AnimationStarted "box" ->
+                        -- Animation started
+                        (newModel, Cmd.none)
+
+                    _ ->
+                        ( newModel, Cmd.none )
+    ```
 
 
 ## Global Settings
@@ -155,35 +171,50 @@ Set (optional) defaults for all properties:
 
 These settings will be used for all property animations in the pipeline.
 
-```elm
-animState =
-    CSS.init
-        |> CSS.builder
-        |> CSS.duration 500
-        |> CSS.easing QuintOut
-        |> CSS.delay 100
-        |> myAnimation
-        |> CSS.animate
-```
+??? example "View Source Code"
+
+    ```elm
+
+    animState =
+        CSS.init
+            |> CSS.builder
+            |> CSS.duration 500
+            |> CSS.easing QuintOut
+            |> CSS.delay 100
+            |> myAnimation
+            |> CSS.animate
+    ```
 
 Individual properties can override them:
 
-```elm
-myAnimation builder =
-    builder
-        |> Opacity.for "box"
-        |> Opacity.duration 1000  
-        |> Opacity.easing SineOut 
-        |> Opacity.delay 0
-        |> Opacity.build
-```
+??? example "View Source Code"
+
+    ```elm
+    myAnimation builder =
+        builder
+            |> Opacity.for "box"
+            |> Opacity.duration 1000  
+            |> Opacity.easing SineOut 
+            |> Opacity.delay 0
+            |> Opacity.build
+    ```
 
 
 ## 3D Transforms
 
 The CSS Engine fully supports 3D animations. See [3D Animations](../concepts/3d.md) for more information. 3D animations are Engine agnostic.
 
-## API Reference
+## API Quick Reference
+
+### Types
+
+| Type | Description |
+| ---- | ----------- |
+| `AnimState` | Tracks animations and their states |
+| `AnimBuilder` | Carries all the animations configurations |
+| `TransitionEvent` | Events received during a transitions lifecycle |
+| `KeyframeEvent` | Events received during a keyframe animations lifecycle |
+| `TransformOrder` | Custom transform ordering |
 
 ### Core Functions
 
@@ -193,31 +224,31 @@ The CSS Engine fully supports 3D animations. See [3D Animations](../concepts/3d.
 | `builder` | `AnimState -> AnimBuilder` | Get builder for defining animations |
 | `animate` | `AnimBuilder -> AnimState` | Generate final animation state |
 
+### Event Functions
+
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `handleTransitionEvent` | `TransitionEvent -> AnimState -> AnimState` | Update AnimState after a transition event |
+| `handleKeyframeEvent` | `KeyframeEvent -> AnimState -> AnimState` | Update AnimState after a keyframe event |
+
 ### View Functions
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
 | `transitionAttributes` | `String -> AnimState -> List (Html.Attribute msg)` | Get the HTML `transition` attributes for the element |
+| `transitionEvents` | `String -> (TransitionEvent -> msg) -> List (Attribute msg)` | Attach CSS transition event listeners |
 | `keyframesAttribute` | `String -> AnimState -> Html.Attribute msg` | Get the HTML `animation` attribute for the element |
+| `keyframeAnimationEvents` | `String -> (KeyframeEvent -> msg) -> List (Attribute msg)` | Attach keyframe animation event listeners |
 | `keyframesStyleNode` | `AnimState -> Html msg` | Get the Keyframes `node` for  all the animated elements |
 | `keyframesStyleNodeFor` | `String -> AnimState -> Html msg` | Get the Keyframes `node` for a specific element |
 
 ### Global Functions
 
-| Function | Description |
-| ---------- | ------------- |
-| `duration` | Set default duration (ms) |
-| `speed` | Set default speed (px/sec) |
-| `easing` | Set default easing function |
-| `delay` | Set default delay (ms) |
-
-### Event Functions
-
-| Function | Description |
-| ---------- | ------------- |
-| `transitionEvents` | Attach CSS transition event listeners |
-| `keyframeAnimationEvents` | Attach keyframe animation event listeners |
-| `handleTransitionEvent` | Update AnimState from transition event |
-| `handleKeyframeEvent` | Update AnimState from keyframe event |
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `duration` | `Int -> AnimBuilder -> AnimBuilder` | Set default duration (ms) |
+| `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set default speed (property units/sec) |
+| `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing function |
+| `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
 
 For complete API details, see the [elm-lang.org package documentation](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS).

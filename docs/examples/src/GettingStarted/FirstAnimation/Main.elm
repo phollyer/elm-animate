@@ -1,4 +1,4 @@
-module Docs.GettingStarted.FirstAnimation.Main exposing (main)
+module GettingStarted.FirstAnimation.Main exposing (main)
 
 import Anim.Engine.CSS as CSS
 import Anim.Property.Opacity as Opacity

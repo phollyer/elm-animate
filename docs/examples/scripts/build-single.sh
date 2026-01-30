@@ -3,8 +3,8 @@
 # Elm Animate Single File Build Script
 # This script compiles a single Elm example file to its corresponding JavaScript output
 #
-# Usage: ./scripts/build-single.sh ElmUI/CSS/Transitions/Position/Main.elm
-#        ./scripts/build-single.sh ElmUI/WAAPI/Controls/Main.elm
+# Usage: ./scripts/build-single.sh Engines/CSS/BasicUsage/Main.elm
+#        ./scripts/build-single.sh GettingStarted/FirstAnimation/Main.elm
 #
 # IMPORTANT: Always uses specific output paths ending in .js
 # NEVER uses --output=index.html as it would overwrite dashboard files!
@@ -18,22 +18,19 @@ if [ $# -eq 0 ]; then
     echo "Usage: $0 <elm-file-path>"
     echo ""
     echo "Examples:"
-    echo "  $0 ElmUI/CSS/Transitions/Position/Main.elm"
-    echo "  $0 ElmUI/CSS/Transitions/Position"
-    echo "  $0 ElmUI/WAAPI/Controls/"
-    echo "  $0 ElmUI/WAAPI/Controls/Main.elm"
-    echo "  $0 ElmUI/Sub/Position"
-    echo "  $0 ElmUI/Scroll/Document/Position/X"
+    echo "  $0 Engines/CSS/BasicUsage/Main.elm"
+    echo "  $0 Engines/CSS/BasicUsage"
+    echo "  $0 Engines/Sub/BasicUsage/"
+    echo "  $0 Engines/Sub/InterruptingAnimations/Main.elm"
+    echo "  $0 GettingStarted/FirstAnimation"
     echo ""
     echo "The path should be relative to the src/ directory and typically follows:"
-    echo "  ElmUI/{Engine}/{Category}/{Property}/Main.elm"
-    echo "  ElmUI/{Engine}/{Category}/{Property}/"
-    echo "  ElmUI/{Engine}/{Category}/{Property}"
+    echo "  Engines/{Engine}/{ExampleName}/Main.elm"
+    echo "  GettingStarted/{ExampleName}/Main.elm"
     echo ""
     echo "Where:"
     echo "  {Engine} = CSS, Sub, WAAPI, or Scroll"
-    echo "  {Category} = Transitions, Keyframes, Position, etc."
-    echo "  {Property} = Position, Opacity, Scale, etc."
+    echo "  {ExampleName} = BasicUsage, InterruptingAnimations, etc."
     echo ""
     echo "Note: If the path doesn't end with .elm, Main.elm will be automatically appended."
     exit 1
@@ -57,7 +54,7 @@ while IFS= read -r -d '' file; do
     else
         FAILED_FORMAT+=("$file")
     fi
-done < <(find src/ElmUI -name "*.elm" -type f -print0 2>/dev/null)
+done < <(find src/Engines -name "*.elm" -type f -print0 2>/dev/null)
 
 while IFS= read -r -d '' file; do
     if elm-format --yes "$file" > /dev/null 2>&1; then
@@ -65,15 +62,7 @@ while IFS= read -r -d '' file; do
     else
         FAILED_FORMAT+=("$file")
     fi
-done < <(find src/Common -name "*.elm" -type f -print0 2>/dev/null)
-
-while IFS= read -r -d '' file; do
-    if elm-format --yes "$file" > /dev/null 2>&1; then
-        FORMATTED_FILES+=("$file")
-    else
-        FAILED_FORMAT+=("$file")
-    fi
-done < <(find src/Docs -name "*.elm" -type f -print0 2>/dev/null)
+done < <(find src/GettingStarted -name "*.elm" -type f -print0 2>/dev/null)
 
 echo ""
 

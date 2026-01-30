@@ -1,7 +1,7 @@
 module Anim.Engine.Sub exposing
     ( AnimState, init, AnimBuilder, builder
     , animate
-    , AnimationMsg, update, subscriptions
+    , AnimMsg, update, subscriptions
     , htmlAttributes
     , stop, reset, restart, pause, resume
     , duration, speed
@@ -34,7 +34,7 @@ subscriptions for smooth, controlled animations.
 
 # Update
 
-@docs AnimationMsg, update, subscriptions
+@docs AnimMsg, update, subscriptions
 
 
 # View
@@ -274,12 +274,12 @@ delay =
     import Anim.Engine.Sub as Sub
 
     type Msg
-        = SubAnimationMsg Sub.AnimationMsg
+        = GotSubAnimMsg Sub.AnimMsg
         | ...
 
 -}
-type alias AnimationMsg =
-    InternalSub.AnimationMsg
+type alias AnimMsg =
+    InternalSub.AnimMsg
 
 
 {-| Update animation state.
@@ -289,13 +289,13 @@ type alias AnimationMsg =
     update : Msg -> Model -> Model
     update msg model =
         case msg of
-            SubAnimationMsg subMsg ->
-                { model | animations = Sub.update msg model.animations }
+            GotSubAnimMsg subMsg ->
+                { model | animations = Sub.update subMsg model.animations }
 
             ...
 
 -}
-update : AnimationMsg -> AnimState -> AnimState
+update : AnimMsg -> AnimState -> AnimState
 update =
     InternalSub.update
 
@@ -319,7 +319,7 @@ Your animations will not run without this subscription.
         Sub.subscriptions SubAnimationMsg model.animations
 
 -}
-subscriptions : (AnimationMsg -> msg) -> AnimState -> Sub msg
+subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg
 subscriptions =
     InternalSub.subscriptions
 

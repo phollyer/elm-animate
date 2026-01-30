@@ -1,7 +1,7 @@
 module Anim.Internal.Sub exposing
     ( AnimBuilder
+    , AnimMsg
     , AnimState
-    , AnimationMsg(..)
     , allComplete
     , animate
     , anyRunning
@@ -175,11 +175,15 @@ delay =
 -- UPDATE
 
 
-type AnimationMsg
-    = AnimationFrame Float -- delta time in milliseconds
+type AnimMsg
+    = AnimationFrame Float
 
 
-update : AnimationMsg -> AnimState -> AnimState
+
+-- delta time in milliseconds
+
+
+update : AnimMsg -> AnimState -> AnimState
 update msg (AnimState state) =
     case msg of
         AnimationFrame deltaMs ->
@@ -201,7 +205,7 @@ update msg (AnimState state) =
 -- SUBSCRIPTIONS
 
 
-subscriptions : (AnimationMsg -> msg) -> AnimState -> Sub msg
+subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg
 subscriptions toMsg (AnimState state) =
     if state.isRunning then
         Browser.Events.onAnimationFrameDelta AnimationFrame

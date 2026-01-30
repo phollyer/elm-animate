@@ -17,57 +17,26 @@ The Sub Engine uses Elm subscriptions to update animation state on every frame. 
 
 ## Basic Usage
 
-```elm
---8<-- "examples/src/Docs/Engines/Sub/BasicUsage/Main.elm"
-```
+??? example "View Source Code"
 
-[:material-play-circle: Run this example](../../examples/src/Docs/Engines/Sub/BasicUsage/index.html){ .md-button target="_blank" }
+    ```elm
+    --8<-- "docs/examples/src/Engines/Sub/BasicUsage/Main.elm"
+    ```
+
+[:material-play-circle: Run this example](../examples/src/Engines/Sub/BasicUsage/index.html){ .md-button target="_blank" }
 
 
 ## Interrupting Animations
 
 Start a new animation at any time — the Sub Engine handles smooth transitions:
 
-```elm
-update msg model =
-    case msg of
-        MoveLeft ->
-            let
-                newAnimState =
-                    model.animState
-                        |> Sub.builder
-                        |> moveLeft
-                        |> Sub.animate
-            in
-            ( { model | animState = newAnimState }, Cmd.none )
+??? example "View Source Code"
 
-        MoveRight ->
-            let
-                newAnimState =
-                    model.animState
-                        |> Sub.builder
-                        |> moveRight
-                        |> Sub.animate
-            in
-            ( { model | animState = newAnimState }, Cmd.none )
+    ```elm
+    --8<-- "docs/examples/src/Engines/Sub/InterruptingAnimations/Main.elm"
+    ```
 
-
-move : Float -> Sub.AnimBuilder -> Sub.AnimBuilder
-move amount =
-    Translate.for "element-id"
-        >> Translate.byX amount
-        >> Translate.speed 50
-        >> Translate.build
-
-moveLeft : Sub.AnimBuilder -> Sub.AnimBuilder
-moveLeft =
-    move -100
-
-moveRight : Sub.AnimBuilder -> Aub.AnimBuilder
-moveRight =
-    move 100
-
-```
+[:material-play-circle: Run this example](../examples/src/Engines/Sub/InterruptingAnimations/index.html){ .md-button target="_blank" }
 
 The new animation starts from the current position, not the original start position.
 
@@ -75,35 +44,39 @@ The new animation starts from the current position, not the original start posit
 
 Get the current animated value for an element:
 
-```elm
-view model =
-    let
-        maybePosition =
-            Sub.getCurrentTranslate "box" model.animState
-    in
-    div []
-        [ case maybePosition of
-            Just { x, y, z } ->
-                text ("Position: " ++ String.fromFloat x ++ ", " ++ String.fromFloat y)
+??? example "View Source Code"
 
-            Nothing ->
-                text "Not animating"
-        ]
-```
+    ```elm
+    view model =
+        let
+            maybePosition =
+                Sub.getCurrentTranslate "box" model.animState
+        in
+        div []
+            [ case maybePosition of
+                Just { x, y, z } ->
+                    text ("Position: " ++ String.fromFloat x ++ ", " ++ String.fromFloat y)
+
+                Nothing ->
+                    text "Not animating"
+            ]
+    ```
 
 ## Animation State
 
 Check if animations are running:
 
-```elm
-view model =
-    div []
-        [ if Sub.isAnimating model.animState then
-            text "Animating..."
-          else
-            text "Complete"
-        ]
-```
+??? example "View Source Code"
+
+    ```elm
+    view model =
+        div []
+            [ if Sub.isAnimating model.animState then
+                text "Animating..."
+            else
+                text "Complete"
+            ]
+    ```
 
 ## Global Settings
 
@@ -115,36 +88,47 @@ Set (optional) defaults for all properties:
 
 These settings will be used for all property animations.
 
+??? example "View Source Code"
 
-```elm
-animState =
-    model.animState
-        |> Sub.builder
-        |> Sub.duration 500
-        |> Sub.easing QuintOut
-        |> Sub.delay 100
-        |> myAnimation
-        |> Sub.animate
-```
+    ```elm
+    animState =
+        model.animState
+            |> Sub.builder
+            |> Sub.duration 500
+            |> Sub.easing QuintOut
+            |> Sub.delay 100
+            |> myAnimation
+            |> Sub.animate
+    ```
 
 Individual properties can override them:
 
-```elm
-myAnimation builder =
-    builder
-        |> Opacity.for "box"
-        |> Opacity.duration 1000  
-        |> Opacity.easing SineOut 
-        |> Opacity.delay 0
-        |> Opacity.build
-```
+??? example "View Source Code"
+
+    ```elm
+    myAnimation builder =
+        builder
+            |> Opacity.for "box"
+            |> Opacity.duration 1000  
+            |> Opacity.easing SineOut 
+            |> Opacity.delay 0
+            |> Opacity.build
+    ```
 
 
 ## 3D Transforms and Perspective
 
 The Sub Engine fully supports 3D animations. See [3D Animations](../concepts/3d.md) for how to define 3D transforms.
 
-## API Reference
+## API Quick Reference
+
+### Types
+
+| Type | Description |
+| ---- | ----------- |
+| `AnimState` | Tracks animations and their states |
+| `AnimBuilder` | Carries all the animations configurations |
+| `AnimMsg` | Mid-flight animation messages |
 
 ### Core Functions
 
@@ -153,28 +137,31 @@ The Sub Engine fully supports 3D animations. See [3D Animations](../concepts/3d.
 | `init` | `AnimState` | Create initial animation state |
 | `builder` | `AnimState -> AnimBuilder` | Get builder for defining animations |
 | `animate` | `AnimBuilder -> AnimState` | Start the animation |
-| `tick` | `Float -> AnimState -> AnimState` | Update state with frame delta |
-| `subscriptions` | `(Float -> msg) -> AnimState -> Sub msg` | Animation frame subscription |
-| `styles` | `String -> AnimState -> List (Html.Attribute msg)` | Get HTML attributes |
+| `update` | `AnimMsg -> AnimState -> AnimState` | Update the animation state |
+| `subscriptions` | `(AnimMsg -> msg) -> AnimState -> Sub msg` | Animation frame subscription |
+
+### View Functions
+
+| Function | Type | Description |
+| ---------- | ------ | ------------- |
+| `htmlAttributes` | `String -> AnimState -> List (Html.Attribute msg)` | Get HTML animation attributes |
 
 ### Query Functions
 
-| Function | Description |
-| ---------- | ------------- |
-| `isAnimating` | Check if any animation is running |
-| `getCurrentTranslate` | Get current translate position |
-| `getCurrentRotate` | Get current rotation |
-| `getCurrentScale` | Get current scale |
-| `getCurrentOpacity` | Get current opacity |
+| Function | Type | Description |
+| ---------- | ----- | ------------- |
+| `isAnimating` | `String -> AnimState -> Bool` | Check if any animation is running |
+| `getCurrentTranslate` | `String -> AnimState -> Maybe { x : Float, y : Float, z : Float  }` | Get current translate position |
+| `getStartRotate` | `String -> AnimState -> Maybe { x : Float, y : Float, z : Float  }` | Get the start rotation |
+| `getEndScale` | `String -> AnimState -> Maybe { x : Float, y : Float, z : Float  }` | Get the target end scale |
 
 ### Global Functions
 
-| Function | Description |
-| ---------- | ------------- |
-| `duration` | Set default duration (ms) |
-| `speed` | Set default speed (px/sec) |
-| `easing` | Set default easing function |
-| `delay` | Set default delay (ms) |
-| `perspective` | Set default 3D perspective |
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `duration` | `Int -> AnimBuilder -> AnimBuilder` | Set default duration (ms) |
+| `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set default speed (property units/sec) |
+| `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing function |
+| `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
 
 For complete API details, see the [elm-lang.org package documentation](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Sub).
