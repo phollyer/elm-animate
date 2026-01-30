@@ -1,6 +1,6 @@
 # Builder Pattern
 
-Elm Animate uses a fluent builder pattern for defining animations. This approach provides a consistent, composable API across all engines and properties.
+Elm Animate uses a fluent builder pattern for defining animations. This approach provides a consistent, composable API across all engines and properties that reads naturally and is easy to reason about — you can see at a glance what an animation does, which element it targets, and how it behaves.
 
 ## Basic Structure
 
@@ -89,8 +89,14 @@ CSS.init |> CSS.builder |> myAnimation |> CSS.animate
 -- Works with Sub
 Sub.init |> Sub.builder |> myAnimation |> Sub.animate
 
--- Works with WAAPI
-WAAPI.init |> WAAPI.builder |> myAnimation |> WAAPI.animate
+-- Works with WAAPI (slightly different API)
+-- Fire-and-forget animations
+WAAPI.init |> WAAPI.builder |> myAnimation |> WAAPI.fireAndForget
+
+-- State tracked animations
+port waapiCommand : Json.Encode.Value -> Cmd msg
+
+WAAPI.animate waapiCommand model.animations myAnimation
 ```
 
 ## Global Settings
@@ -100,7 +106,7 @@ Set defaults that apply to all properties:
 ```elm
 CSS.init
     |> CSS.builder
-    |> CSS.duration 500           -- Default duration
+    |> CSS.duration 500           -- Default duration 500ms
     |> CSS.easing QuintOut        -- Default easing
     |> myAnimation                -- Properties can override
     |> CSS.animate
@@ -112,7 +118,7 @@ Properties can override global settings:
 myAnimation builder =
     builder
         |> Opacity.for "box"
-        |> Opacity.duration 1000  -- Overrides global 500ms
+        |> Opacity.duration 1000  -- Overrides global default 500ms
         |> Opacity.build
 ```
 

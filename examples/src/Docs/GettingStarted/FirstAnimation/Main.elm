@@ -36,7 +36,10 @@ update msg model =
             ( { model | state = FadeIn }, Cmd.none )
 
 
+
 -- --8<-- [start:fadeIn]
+
+
 fadeInBuilder : CSS.AnimBuilder -> CSS.AnimBuilder
 fadeInBuilder builder =
     builder
@@ -45,18 +48,26 @@ fadeInBuilder builder =
         |> Opacity.to 1
         |> Opacity.duration 2500
         |> Opacity.build
--- --8<-- [end:fadeIn]
 
+
+
+-- --8<-- [end:fadeIn]
 -- --8<-- [start:animState]
+
+
 fadeInAnimation : CSS.AnimState
 fadeInAnimation =
     CSS.init
         |> CSS.builder
         |> fadeInBuilder
         |> CSS.animate
--- --8<-- [end:animState]
 
+
+
+-- --8<-- [end:animState]
 -- --8<-- [start:applyStyles]
+
+
 view : Model -> Html Msg
 view model =
     let
@@ -69,8 +80,7 @@ view model =
                     fadeInAnimation
     in
     div []
-        [ 
-          div
+        [ div
             ([ id "my-box"
              , style "opacity" "0"
              , style "width" "100px"
@@ -80,8 +90,10 @@ view model =
                 ++ CSS.transitionAttributes "my-box" fadeIn
             )
             [ text "Hello!" ]
-
         ]
+
+
+
 -- --8<-- [end:applyStyles]
 
 

@@ -237,6 +237,15 @@ be suitable for most use cases:
 Be aware that changing the transform order can lead to unexpected visual results,
 as the order of transforms affects how they are applied.
 
+**Tip!**
+
+  - Experiment with different orders to achieve specific visual effects.
+  - Understand how each transform affects the element in relation to others:
+      - Example: `[Rotate, Translate, Scale]` will:
+          - rotate the element around the origin before moving it,
+          - which changes the element's coordinate space,
+          - which changes the direction of travel.
+
 -}
 type TransformOrder
     = Translate
@@ -304,7 +313,7 @@ animate =
 {-| Apply animation configuration with custom transform ordering.
 
 This is an alternative to [animate](#animate) that allows you to specify the order
-in which properties should be animated.
+in which **transform** properties should be animated.
 
     -- Custom transform order: Scale → Rotate → Position
     model.animations -- Or `CSS.init`

@@ -1,154 +1,74 @@
 # Properties
 
-Elm Animate supports various CSS properties for animation (more are being added all the time).
-Each property module provides a consistent builder API.
+Elm Animate supports various CSS properties that can be animated. All properties share the same consistent builder API, making them easy to learn and compose.
 
-## GPU Accelerated Properties
+!!! note "Why one module per property?"
+    Rather than use a single `Property` phantom type that supports all properties, I chose individual property modules despite the increased maintenance load. This provides improved readability and better IDE autocompletion.
 
-These properties are GPU-accelerated for smooth performance.
+## Common API
 
-### Opacity
-
-Fade elements in and out.
-
-```elm
-import Anim.Property.Opacity as Opacity
-
-fadeAnimation builder =
-    builder
-        |> Opacity.for "box"
-        |> Opacity.from 0
-        |> Opacity.to 1
-        |> Opacity.build
-```
-
-### Rotate
-
-Rotate elements around axes.
-
-```elm
-import Anim.Property.Rotate as Rotate
-
-rotateAnimation builder =
-    builder
-        |> Rotate.for "box"
-        |> Rotate.from 0
-        |> Rotate.to 180
-        |> Rotate.build
-```
-
-### Scale
-
-Scale elements uniformly or per-axis.
-
-```elm
-import Anim.Property.Scale as Scale
-
-scaleAnimation builder =
-    builder
-        |> Scale.for "box"
-        |> Scale.from 1
-        |> Scale.to 1.5
-        |> Scale.build
-```
-
-### Translate
-
-Move elements in 2D or 3D space.
-
-```elm
-import Anim.Property.Translate as Translate
-
-translateAnimation builder =
-    builder
-        |> Translate.for "box"
-        |> Translate.fromXY 0 0
-        |> Translate.toXY 100 200
-        |> Translate.build
-```
-
-!!! tip "3D Animations"
-    Rotate, Scale, and Translate all support 3D transforms. See the [3D Animations](3d.md) page for details.
-
-
-## Non GPU Accelerated Properties
-
-These properties trigger browser repaints or reflows, which can impact performance. Use sparingly for complex animations.
-
-### Background Color
-
-Animate background colors.
-
-!!! warning "Not GPU accelerated"
-    Background color changes trigger browser repaints, which can impact performance for complex animations.
-
-```elm
-import Anim.Property.BackgroundColor as BackgroundColor
-import Anim.Color exposing (hex, rgb)
-
-colorAnimation builder =
-    builder
-        |> BackgroundColor.for "box"
-        |> BackgroundColor.from (hex "#ff0000")
-        |> BackgroundColor.to (rgb 0 0 255)
-        |> BackgroundColor.build
-```
-
-### Font Color
-
-Animate text colors.
-
-!!! warning "Not GPU accelerated"
-    Font color changes trigger browser repaints, which can impact performance for complex animations.
-
-```elm
-import Anim.Property.FontColor as FontColor
-
-textColorAnimation builder =
-    builder
-        |> FontColor.for "text"
-        |> FontColor.from (hex "#000000")
-        |> FontColor.to (hex "#ffffff")
-        |> FontColor.build
-```
-
-
-## Size Properties
-
-### Size
-
-Animate width and height.
-
-!!! warning "Triggers reflow and repaint"
-    Size changes cause the browser to recalculate layout for the entire page, which is the most expensive animation operation. Consider using `Scale` transforms instead for better performance.
-
-```elm
-import Anim.Property.Size as Size
-
-sizeAnimation builder =
-    builder
-        |> Size.for "box"
-        |> Size.fromWH 100 100
-        |> Size.toWH 200 150
-        |> Size.build
-```
-
-## Common Options
-
-All properties support these timing options:
+All properties follow the same builder pattern (Start with `for` -> Configure -> End with `build`):
 
 ```elm
 myAnimation builder =
     builder
-        |> Property.for "element-id"
-        |> Property.from startValue
-        |> Property.to endValue
-        |> Property.duration 500        -- Milliseconds
-        |> Property.speed 200           -- Pixels per second (alternative to duration)
-        |> Property.delay 100           -- Start delay in ms
+        |> Property.for "element-id"    -- Target element by ID
+        |> Property.from startValue     -- Starting value 
+        |> Property.to endValue         -- Ending value
+        |> Property.duration 500        -- Duration in milliseconds
         |> Property.easing QuintOut     -- Easing function
-        |> Property.build
+        |> Property.delay 100           -- Start delay in ms
+        |> Property.build               -- Finalize the property
 ```
 
-!!! warning "Duration vs Speed"
-    Use either `duration` or `speed`, not both. Speed calculates duration based on distance traveled.
+The `Configure` steps are all optional, some more so than others. After all, it wouldn't be much of an animation if there was no end state (`to`) to animate to.
+
+### Duration vs Speed
+
+You can specify timing with either `duration` (fixed time) or `speed` (distance-based):
+
+```elm
+-- Fixed 500ms regardless of distance
+|> Translate.duration 500
+
+-- 200 units per second (duration varies with distance)
+|> Translate.speed 200
+
+```
+
+!!! note "Units for speed"
+    The meaning of 'units' varies by property type. For `Translate` it's 'pixels'. Refer to each individual property for how speed is interpretted.
+
+!!! warning
+    Use either `duration` or `speed`, not both. If both are set, the last one wins.
+
+!!! warning
+    If no `duration` or `speed` is set, either globally on the engine, or locally on the property, then a duration of 0ms will be used, and the element will instantly jump to it's end state.
+
+
+## GPU Accelerated Properties
+
+These properties are composited on the GPU for smooth 60fps performance with minimal battery impact.
+
+| Property | Description | Module |
+|----------|-------------|--------|
+| [Opacity](../properties/opacity.md) | Fade elements in and out | `Anim.Property.Opacity` |
+| [Rotate](../properties/rotate.md) | Rotate elements around X, Y, Z axes | `Anim.Property.Rotate` |
+| [Scale](../properties/scale.md) | Scale elements on X, Y, Z axes | `Anim.Property.Scale` |
+| [Translate](../properties/translate.md) | Move elements on X, Y, Z axes | `Anim.Property.Translate` |
+
+!!! tip "3D Animations"
+    Rotate, Scale, and Translate all support 3D transforms. See the [3D Animations](3d.md) page for details.
+
+## Non GPU Accelerated Properties
+
+These properties trigger browser repaints and/or reflows. Use them when needed, but be mindful of performance with many simultaneous animations.
+
+!!! warning "Size animations"
+    Size changes trigger browser reflows. The scope depends on layout context — fixed-size containers can limit reflow to their subtree. Consider using `Scale` transforms when you don't need actual layout changes.
+
+| Property | Description | Module | Impact |
+|----------|-------------|--------|--------|
+| [Background Color](../properties/background-color.md) | Animate element backgrounds | `Anim.Property.BackgroundColor` | Repaint |
+| [Font Color](../properties/font-color.md) | Animate text colors | `Anim.Property.FontColor` | Repaint |
+| [Size](../properties/size.md) | Animate width and height | `Anim.Property.Size` | Reflow + Repaint |

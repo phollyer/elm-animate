@@ -6,17 +6,17 @@ Elm Animate provides multiple animation engines, each optimized for different us
 
 | Engine | Rendering | Control | Use Case |
 |--------|-----------|---------|----------|
-| [CSS](#css-engine) | Browser CSS | Fire-and-forget | Simple animations, best performance |
-| [Sub](#sub-engine) | Elm subscriptions | Full programmatic | Complex interactions, state queries |
-| [WAAPI](#waapi-engine) | Web Animations API | Programmatic | Native performance + control |
-| [Scroll](#scroll-engine) | Browser scroll | Configurable | Smooth scrolling |
+| [CSS](#css-engine) | Browser CSS | Fire-and-forget | Simple animations, Native performance |
+| [Sub](#sub-engine) | Elm subscriptions | Programmatic | Complex interactions, state queries |
+| [WAAPI](#waapi-engine) | Web Animations API | Fire-and-forget, Programmatic | Native performance, complex interactions, state queries |
+| [Scroll](#scroll-engine) | Browser scroll | Fire-and-forget, Programmatic | Document and container scrolling |
 
 ## CSS Engine
 
 The CSS Engine generates native CSS transitions or keyframe animations. The browser handles all the rendering, which means:
 
-- **Best performance** — Hardware-accelerated by the browser
-- **Battery efficient** — No JavaScript running during animation
+- **Native performance** — Hardware-accelerated by the browser
+- **Battery efficient** — No JavaScript running during animation playback
 - **Simple setup** — No subscriptions or ports needed
 
 ```elm
@@ -36,22 +36,34 @@ animState =
 - Hover effects
 - Any animation where you don't need to query mid-flight values
 
+!!! note "Hardware Acceleration"
+    Only **transform** properties (Translate, Rotate, Scale) and Opacity get GPU acceleration by the Browser. All other properties cause Browser repaints or reflows, and so cannot be lifted onto the GPU.
+
 [Learn more about CSS Engine →](../engines/css.md)
 
 ## Sub Engine
 
-The Sub Engine uses Elm subscriptions to update animation state on each frame. This gives you full control:
+The Sub Engine uses Elm subscriptions to update animation state on each frame. This gives you full control to:
 
 - **Query current values** — Know exactly where elements are mid-animation
-- **Dynamic interruptions** — Smoothly transition to new targets
-- **State tracking** — Know when animations start, run, and complete
+- **Perform Dynamic interruptions** — Smoothly transition to new targets mid-flight
 
 ```elm
 import Anim.Engine.Sub as Sub
 
+type Msg 
+    = AnimationMsg Sub.AnimationMsg
+    | ...
+
+animState =
+    Sub.init
+        |> Sub.builder
+        |> myAnimation
+        |> Sub.animate
+
 -- In your subscriptions
 subscriptions model =
-    Sub.subscriptions AnimFrame model.animState
+    Sub.subscriptions AnimationMsg model.animState
 ```
 
 **Best for:**
@@ -60,38 +72,51 @@ subscriptions model =
 - Animations that need to be interrupted and redirected
 - When you need to know current animated values
 
+!!! note "Performance Consideration"
+    The Sub engine updates CSS transition attributes on every animation frame. While this enables pure Elm state management and mid-flight queries, it means Elm's Virtual DOM diffs the view each frame. For a few animated elements, this is negligible. For complex views with many simultaneous animations, if performance should become an issue, consider using the [WAAPI Engine](#waapi-engine) where the browser handles interpolation natively.
+
 [Learn more about Sub Engine →](../engines/sub.md)
 
 ## WAAPI Engine
 
-The WAAPI Engine uses the Web Animations API via Elm ports. It combines browser-native performance with programmatic control:
+The WAAPI Engine combines all the good bits from the CSS and Sub Engines by using the Web Animations API via Elm ports. It combines browser-native performance with full programmatic control for:
 
-- **Native performance** — Browser handles rendering
-- **Programmatic control** — Pause, reverse, seek
-- **Mid-flight queries** — Get current values from JavaScript
+- **Native performance** — Hardware-accelerated by the browser
+- **Battery efficient** — No JavaScript running during animation playback
+- **Query current values** — Know exactly where elements are mid-animation
+- **Perform Dynamic interruptions** — Smoothly transition to new targets mid-flight
 
 ```elm
 import Anim.Engine.WAAPI as WAAPI
+import Json.Encode exposing (Value)
 
--- Requires JavaScript companion
-animState =
-    WAAPI.init
-        |> WAAPI.builder
-        |> myAnimation
-        |> WAAPI.animate
+port waapiCommand : Value -> Cmd msg
+port waapiEvent : (Value -> msg) -> Sub msg
+
+type Msg
+    = GotWaapiUpdate ( WAAPI.AnimState, Maybe WAAPI.AnimationEvent )
+    | ...
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    waapiEvent (GotWaapiUpdate << WAAPI.decode model.animationState)
+
+(animState, animCmd) =
+    WAAPI.animate waapiCommand model.animationState <|
+        \ builder -> myAnimation builder
+
 ```
 
 **Best for:**
 
 - Complex animations needing both performance and control
-- When you need pause/resume/reverse functionality
 - Animations with many simultaneous elements
 
 [Learn more about WAAPI Engine →](../engines/waapi.md)
 
 ## Scroll Engine
 
-The Scroll Engine provides smooth scrolling to elements or positions:
+The Scroll Engine provides smooth Document and container scrolling to elements or positions:
 
 - **Document or container scrolling**
 - **X, Y, or both axes**

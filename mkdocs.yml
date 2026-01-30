@@ -73,6 +73,16 @@ nav:
     - Sub Engine: engines/sub.md
     - WAAPI Engine: engines/waapi.md
     - Scroll Engine: engines/scroll.md
+  - Properties:
+    - GPU Accelerated:
+      - Opacity: properties/opacity.md
+      - Rotate: properties/rotate.md
+      - Scale: properties/scale.md
+      - Translate: properties/translate.md
+    - Non-GPU:
+      - Background Color: properties/background-color.md
+      - Font Color: properties/font-color.md
+      - Size: properties/size.md
   - API Reference: api-reference.md
 
 extra:

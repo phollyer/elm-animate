@@ -128,10 +128,10 @@ This is equivalent to calling `initXYZ 45 45 45`.
 init : String -> Float -> AnimBuilder -> AnimBuilder
 init elementId value animBuilder =
     animBuilder
-        |> RB.for elementId
+        |> for elementId
         |> from value
         |> to value
-        |> RB.build
+        |> build
 
 
 {-| Set the initial X, Y, and Z rotation.
@@ -149,10 +149,10 @@ init elementId value animBuilder =
 initXYZ : String -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder
 initXYZ elementId x y z animBuilder =
     animBuilder
-        |> RB.for elementId
+        |> for elementId
         |> fromXYZ x y z
-        |> RB.toXYZ x y z
-        |> RB.build
+        |> toXYZ x y z
+        |> build
 
 
 {-| Set the initial X and Y rotation.
@@ -170,10 +170,10 @@ initXYZ elementId x y z animBuilder =
 initXY : String -> Float -> Float -> AnimBuilder -> AnimBuilder
 initXY elementId x y animBuilder =
     animBuilder
-        |> RB.for elementId
+        |> for elementId
         |> fromXY x y
-        |> RB.toXY x y
-        |> RB.build
+        |> toXY x y
+        |> build
 
 
 {-| Set the initial X and Z rotation.
@@ -191,10 +191,10 @@ initXY elementId x y animBuilder =
 initXZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
 initXZ elementId x z animBuilder =
     animBuilder
-        |> RB.for elementId
+        |> for elementId
         |> fromXZ x z
-        |> RB.toXZ x z
-        |> RB.build
+        |> toXZ x z
+        |> build
 
 
 {-| Set the initial X rotation.
@@ -212,10 +212,10 @@ initXZ elementId x z animBuilder =
 initX : String -> Float -> AnimBuilder -> AnimBuilder
 initX elementId x animBuilder =
     animBuilder
-        |> RB.for elementId
+        |> for elementId
         |> fromX x
-        |> RB.toX x
-        |> RB.build
+        |> toX x
+        |> build
 
 
 {-| Set the initial Y and Z rotation.
@@ -233,10 +233,10 @@ initX elementId x animBuilder =
 initYZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
 initYZ elementId y z animBuilder =
     animBuilder
-        |> RB.for elementId
+        |> for elementId
         |> fromYZ y z
-        |> RB.toYZ y z
-        |> RB.build
+        |> toYZ y z
+        |> build
 
 
 {-| Set the initial Y rotation.
@@ -254,10 +254,10 @@ initYZ elementId y z animBuilder =
 initY : String -> Float -> AnimBuilder -> AnimBuilder
 initY elementId y animBuilder =
     animBuilder
-        |> RB.for elementId
+        |> for elementId
         |> fromY y
-        |> RB.toY y
-        |> RB.build
+        |> toY y
+        |> build
 
 
 {-| Set the initial Z rotation.
@@ -275,10 +275,10 @@ initY elementId y animBuilder =
 initZ : String -> Float -> AnimBuilder -> AnimBuilder
 initZ elementId z animBuilder =
     animBuilder
-        |> RB.for elementId
+        |> for elementId
         |> fromZ z
-        |> RB.toZ z
-        |> RB.build
+        |> toZ z
+        |> build
 
 
 {-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`

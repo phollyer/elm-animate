@@ -10,6 +10,14 @@ We'll animate an element's opacity from 0 to 1 over 2500 milliseconds.
 --8<-- "examples/src/Docs/GettingStarted/FirstAnimation/Main.elm"
 ```
 
+!!! note "Why Process.sleep?"
+    The example uses `Process.sleep 50` to delay triggering the animation until after the initial render. CSS **transitions** only animate *changes* to properties - if the element is created with the transition already applied, there's no change to animate. The brief delay ensures the element first renders at opacity 0, then the state change triggers the transition to opacity 1.
+
+    This pattern is only required for page entry animations that use CSS **transitions**. In reality, most animations will be triggered by user interaction or state changes.
+
+    To avoid this pattern, use CSS **keyframe animations** instead. They run as soon as the Browser renders the page.
+
+
 ## Breaking It Down
 
 ### 1. Define the Animation
@@ -30,7 +38,7 @@ Pass your animation through the engine's pipeline:
 
 ### 3. Apply Attributes
 
-Use `CSS.transitionAttributes` to get the HTML attributes for your element:
+Use `CSS.transitionAttributes` to get the HTML attributes for your element's transition:
 
 ```elm
 --8<-- "examples/src/Docs/GettingStarted/FirstAnimation/Main.elm:applyStyles"

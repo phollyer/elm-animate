@@ -4,13 +4,13 @@ The CSS Engine generates native CSS transitions and keyframe animations. The bro
 
 ## When to Use
 
-✅ **Best for:**
+✅ **For:**
 
 - Fire-and-forget animations
-- Page transitions and entrances
 - Hover effects and micro-interactions
+- Page transitions and entrances
 - When you don't need to query mid-flight values
-- Maximum performance and battery efficiency
+- Native performance and battery efficiency
 
 ❌ **Consider other engines when:**
 
@@ -21,65 +21,11 @@ The CSS Engine generates native CSS transitions and keyframe animations. The bro
 ## Basic Usage
 
 ```elm
-import Anim.Engine.CSS as CSS
-import Anim.Property.Translate as Translate
-import Process
-import Task
-
-
-type alias Model =
-    { animState : CSS.AnimState }
-
-
-type Msg
-    = TriggerAnimation
-
-
-init : ( Model, Cmd Msg )
-init =
-    ( { animState = CSS.init }
-    , Process.sleep 50 |> Task.perform (always TriggerAnimation)
-    )
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        TriggerAnimation ->
-            ( { model
-                | animState =
-                    model.animState
-                        |> CSS.builder
-                        |> slideIn
-                        |> CSS.animate
-              }
-            , Cmd.none
-            )
-
-
-slideIn : CSS.AnimBuilder -> CSS.AnimBuilder
-slideIn builder =
-    builder
-        |> Translate.for "box"
-        |> Translate.fromX -100
-        |> Translate.toX 0
-        |> Translate.duration 500
-        |> Translate.build
-
-
-view : Model -> Html Msg
-view model =
-    div
-        ([ id "box"
-         , style "transform" "translateX(-100px)"  -- Initial position
-         ]
-            ++ CSS.transitionAttributes "box" model.animState
-        )
-        [ text "Hello!" ]
+--8<-- "examples/src/Docs/Engines/CSS/BasicUsage/Main.elm"
 ```
 
 !!! note "Why the delay?"
-    CSS transitions only trigger when the browser detects a *change* between renders. We use `Process.sleep 50` to ensure the element renders in its initial state first, then apply the animation on the next frame.
+    CSS transitions only trigger when the browser detects a *change* between renders. `Process.sleep 50` is used to ensure the element renders in its initial state first, then the animation is applied 50ms later. This creates the *change* the browser needs. This is only relevant to CSS **transitions**, **keyframe animations** run as soon as the browser renders.
 
 ## User-Triggered Animations
 
@@ -104,9 +50,108 @@ update msg model =
             ( { model | animState = newAnimState }, Cmd.none )
 ```
 
+## Event Handling
+
+CSS animations generate events throughout their lifecycle. Use these events to chain animations, update state, or trigger follow-up actions.
+
+### Transition Events
+
+Create a `Msg` type variant for your CSS transition events.
+
+```elm
+type Msg
+    = GotTransitionEvent CSS.TransitionEvent
+    | ...
+```
+
+Use `CSS.transitionEvents` in your view to generate events.
+
+```elm
+view model =
+    div
+        (CSS.transitionAttributes "box" model.animState
+            ++ CSS.transitionEvents "box" GotTransitionEvent
+        )
+        [...]
+```
+
+Use `CSS.handleTransitionEvent` in your `update` function. This will keep the internal state in sync with the animation lifecycle.
+
+```elm
+update msg model =
+    case msg of
+        GotTransitionEvent event ->
+            let
+                newModel =
+                    { model | animState = CSS.handleTransitionEvent event model.animState}
+            in
+            case event of
+                CSS.TransitionEnded "box" ->
+                    -- Animation complete
+                    (newModel, Cmd.none)
+
+                CSS.TransitionStarted "box" ->
+                    -- Animation started
+                    (newModel, Cmd.none)
+
+                _ ->
+                    ( newModel, Cmd.none )
+```
+
+### Keyframe Animation Events
+
+Create a `Msg` type variant for your Keyframe events.
+
+```elm
+type Msg
+    = GotKeyframeEvent CSS.KeyframeEvent
+    | ...
+```
+
+Use `CSS.keyframeEvents` in your view to generate events.
+
+```elm
+view model =
+    div
+        (CSS.transitionAttributes "box" model.animState
+            ++ CSS.keyframeEvents "box" GotKeyframeEvent
+        )
+        [...]
+```
+
+Use `CSS.handleKeyframeEvent` in your `update` function. This will keep the internal state in sync with the animation lifecycle.
+
+```elm
+update msg model =
+    case msg of
+        GotKeyframeEvent event ->
+            let
+                newModel =
+                    { model | animState = CSS.handleKeyframeEvent event model.animState}
+            in
+            case event of
+                CSS.AnimationEnded "box" ->
+                    -- Animation complete
+                    (newModel, Cmd.none)
+
+                CSS.AnimationStarted "box" ->
+                    -- Animation started
+                    (newModel, Cmd.none)
+
+                _ ->
+                    ( newModel, Cmd.none )
+```
+
+
 ## Global Settings
 
-Set defaults for all properties:
+Set (optional) defaults for all properties:
+
+- Timing: use `speed` or `duration`
+- Easing
+- Delay
+
+These settings will be used for all property animations in the pipeline.
 
 ```elm
 animState =
@@ -119,87 +164,22 @@ animState =
         |> CSS.animate
 ```
 
-Individual properties can override these:
+Individual properties can override them:
 
 ```elm
 myAnimation builder =
     builder
         |> Opacity.for "box"
-        |> Opacity.duration 1000  -- Overrides global 500ms
+        |> Opacity.duration 1000  
+        |> Opacity.easing SineOut 
+        |> Opacity.delay 0
         |> Opacity.build
 ```
 
+
 ## 3D Transforms
 
-The CSS Engine fully supports 3D animations. See [3D Animations](../concepts/3d.md) for how to define 3D transforms.
-
-## Event Handling
-
-The CSS Engine provides event handlers for animation lifecycle:
-
-### Transition Events
-
-```elm
-view model =
-    div
-        ([ id "box" ]
-            ++ CSS.transitionAttributes "box" model.animState
-            ++ CSS.transitionEvents "box" TransitionEvent
-        )
-        []
-
-
-type Msg
-    = TransitionEvent CSS.TransitionEvent
-
-
-update msg model =
-    case msg of
-        TransitionEvent event ->
-            case event of
-                CSS.TransitionEnded propertyName ->
-                    -- Animation complete
-                    ...
-
-                CSS.TransitionStarted propertyName ->
-                    -- Animation started
-                    ...
-
-                _ ->
-                    ( model, Cmd.none )
-```
-
-### Keyframe Animation Events
-
-```elm
-view model =
-    div
-        ([ id "box" ]
-            ++ CSS.transitionAttributes "box" model.animState
-            ++ CSS.keyframeAnimationEvents "box" AnimationEvent
-        )
-        []
-
-
-type Msg
-    = AnimationEvent CSS.KeyframeEvent
-
-
-update msg model =
-    case msg of
-        AnimationEvent event ->
-            case event of
-                CSS.AnimationEnded animationName ->
-                    -- Keyframe animation complete
-                    ...
-
-                CSS.AnimationIteration animationName ->
-                    -- Animation loop iteration
-                    ...
-
-                _ ->
-                    ( model, Cmd.none )
-```
+The CSS Engine fully supports 3D animations. See [3D Animations](../concepts/3d.md) for more information. 3D animations are Engine agnostic.
 
 ## API Reference
 
@@ -210,7 +190,15 @@ update msg model =
 | `init` | `AnimState` | Create initial animation state |
 | `builder` | `AnimState -> AnimBuilder` | Get builder for defining animations |
 | `animate` | `AnimBuilder -> AnimState` | Generate final animation state |
-| `styles` | `String -> AnimState -> List (Html.Attribute msg)` | Get HTML attributes for element |
+
+### View Functions
+
+| Function | Type | Description |
+| ---------- | ------ | ------------- |
+| `transitionAttributes` | `String -> AnimState -> List (Html.Attribute msg)` | Get the HTML `transition` attributes for the element |
+| `keyframesAttribute` | `String -> AnimState -> Html.Attribute msg` | Get the HTML `animation` attribute for the element |
+| `keyframesStyleNode` | `AnimState -> Html msg` | Get the Keyframes `node` for  all the animated elements |
+| `keyframesStyleNodeFor` | `String -> AnimState -> Html msg` | Get the Keyframes `node` for a specific element |
 
 ### Global Functions
 

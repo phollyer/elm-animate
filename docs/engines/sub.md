@@ -4,97 +4,23 @@ The Sub Engine uses Elm subscriptions to update animation state on every frame. 
 
 ## When to Use
 
-✅ **Best for:**
+✅ **For:**
 
-- Animations that respond to user input
-- Needing to interrupt and redirect animations smoothly
+- Interrupting and redirecting animations mid-flight
 - Querying current animated values mid-flight
-- Complex state-dependent animations
 - Games and interactive visualizations
 
-❌ **Consider other engines when:**
+❌ **Consider other engines for:**
 
 - Simple fire-and-forget animations (use CSS)
-- You need browser-native performance with control (use WAAPI)
+- Browser-native performance with control (use WAAPI)
 
 ## Basic Usage
 
 ```elm
-import Anim.Engine.Sub as Sub
-import Anim.Property.Translate as Translate
-
-
-type alias Model =
-    { animState : Sub.AnimState }
-
-
-type Msg
-    = AnimFrame Float
-
-
-init : ( Model, Cmd Msg )
-init =
-    ( { animState = Sub.init }, Cmd.none )
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.subscriptions AnimFrame model.animState
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        AnimFrame delta ->
-            ( { model | animState = Sub.tick delta model.animState }
-            , Cmd.none
-            )
-
-
-view : Model -> Html Msg
-view model =
-    div
-        ([ id "box" ] ++ Sub.styles "box" model.animState)
-        [ text "Hello!" ]
+--8<-- "examples/src/Docs/Engines/Sub/BasicUsage/Main.elm"
 ```
 
-## Starting Animations
-
-Create animations and apply them to your state:
-
-```elm
-type Msg
-    = StartAnimation
-    | AnimFrame Float
-
-
-update msg model =
-    case msg of
-        StartAnimation ->
-            let
-                newAnimState =
-                    model.animState
-                        |> Sub.builder
-                        |> slideIn
-                        |> Sub.animate
-            in
-            ( { model | animState = newAnimState }, Cmd.none )
-
-        AnimFrame delta ->
-            ( { model | animState = Sub.tick delta model.animState }
-            , Cmd.none
-            )
-
-
-slideIn : Sub.AnimBuilder -> Sub.AnimBuilder
-slideIn builder =
-    builder
-        |> Translate.for "box"
-        |> Translate.fromX -100
-        |> Translate.toX 0
-        |> Translate.duration 500
-        |> Translate.build
-```
 
 ## Interrupting Animations
 
@@ -137,11 +63,8 @@ view model =
             Sub.getCurrentTranslate "box" model.animState
     in
     div []
-        [ div
-            ([ id "box" ] ++ Sub.styles "box" model.animState)
-            []
-        , case maybePosition of
-            Just ( x, y, z ) ->
+        [ case maybePosition of
+            Just { x, y, z } ->
                 text ("Position: " ++ String.fromFloat x ++ ", " ++ String.fromFloat y)
 
             Nothing ->
@@ -165,19 +88,42 @@ view model =
 
 ## Global Settings
 
+Set (optional) defaults for all properties:
+
+- Timing: use `speed` or `duration`
+- Easing
+- Delay
+
+These settings will be used for all property animations.
+
+
 ```elm
 animState =
     model.animState
         |> Sub.builder
         |> Sub.duration 500
         |> Sub.easing QuintOut
+        |> Sub.delay 100
         |> myAnimation
         |> Sub.animate
 ```
 
+Individual properties can override them:
+
+```elm
+myAnimation builder =
+    builder
+        |> Opacity.for "box"
+        |> Opacity.duration 1000  
+        |> Opacity.easing SineOut 
+        |> Opacity.delay 0
+        |> Opacity.build
+```
+
+
 ## 3D Transforms and Perspective
 
-The CSS Engine fully supports 3D animations. See [3D Animations](../concepts/3d.md) for how to define 3D transforms.
+The Sub Engine fully supports 3D animations. See [3D Animations](../concepts/3d.md) for how to define 3D transforms.
 
 ## API Reference
 

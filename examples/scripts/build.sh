@@ -148,6 +148,7 @@ echo "📚 Building Documentation examples..."
 # Getting Started
 echo "  📖 Getting Started examples..."
 build_example "src/Docs/GettingStarted/FirstAnimation/Main.elm" "src/Docs/GettingStarted/FirstAnimation/index.js" "Docs.GettingStarted.FirstAnimation.Main"
+build_example "src/Docs/GettingStarted/FirstAnimation/Main.elm" "src/Docs/Engines/CSS/BasicUsage/index.js" "Docs.Engines.CSS.BasicUsage.Main"
 
 # Report results
 echo ""

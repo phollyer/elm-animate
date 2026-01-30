@@ -38,9 +38,6 @@ const app = Elm.Main.init({
 ElmAnimateWaapi.init(app.ports);
 ```
 
-!!! note "WAAPI is optional"
-    The CSS and Sub engines work without any JavaScript. Only add the WAAPI package if you need its specific features.
-
 ## Next Steps
 
 Now that you have the package installed, let's create your first animation:
