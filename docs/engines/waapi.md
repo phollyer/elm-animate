@@ -179,7 +179,7 @@ Restart replays the animation from the beginning:
 
 ## Event Handling
 
-The WAAPI engine decodes events through a single subscription. The `decode` function returns the updated `AnimState` and an optional `AnimationEvent`:
+The WAAPI engine decodes events through a single subscription. The `decode` function returns the updated `AnimState` and an optional `AnimationEvent`. Each event carries the `elementId` of the animated element:
 
 ??? example "View Source Code"
 
@@ -197,28 +197,32 @@ The WAAPI engine decodes events through a single subscription. The `decode` func
         case msg of
             GotWaapiUpdate ( newAnimState, maybeEvent ) ->
                 case maybeEvent of
-                    Just WAAPI.Started ->
-                        -- Animation began playing
+                    Just (WAAPI.Started elementId) ->
+                        -- Animation began playing for elementId
                         ( { model | animState = newAnimState }, Cmd.none )
 
-                    Just WAAPI.Completed ->
-                        -- Animation finished naturally
+                    Just (WAAPI.Completed "box") ->
+                        -- The "box" element finished animating
                         ( { model | animState = newAnimState }, Cmd.none )
 
-                    Just WAAPI.Paused ->
-                        -- Animation was paused
+                    Just (WAAPI.Completed elementId) ->
+                        -- Some other element finished animating
                         ( { model | animState = newAnimState }, Cmd.none )
 
-                    Just WAAPI.Resumed ->
-                        -- Animation continued after pause
+                    Just (WAAPI.Paused elementId) ->
+                        -- Animation was paused for elementId
                         ( { model | animState = newAnimState }, Cmd.none )
 
-                    Just WAAPI.Canceled ->
-                        -- Animation was canceled (via reset)
+                    Just (WAAPI.Resumed elementId) ->
+                        -- Animation continued after pause for elementId
                         ( { model | animState = newAnimState }, Cmd.none )
 
-                    Just WAAPI.Restarted ->
-                        -- Animation was restarted
+                    Just (WAAPI.Canceled elementId) ->
+                        -- Animation was canceled (via reset) for elementId
+                        ( { model | animState = newAnimState }, Cmd.none )
+
+                    Just (WAAPI.Restarted elementId) ->
+                        -- Animation was restarted for elementId
                         ( { model | animState = newAnimState }, Cmd.none )
 
                     Nothing ->
@@ -335,7 +339,7 @@ The WAAPI Engine fully supports 3D animations. See [3D Animations](../concepts/3
 | ---- | ----------- |
 | `AnimState` | Tracks animations and their states |
 | `AnimBuilder` | Carries all the animations configurations |
-| `AnimationEvent` | Lifecycle events: `Started`, `Completed`, `Paused`, `Resumed`, `Canceled`, `Restarted` |
+| `AnimationEvent` | Lifecycle events with elementId: `Started String`, `Completed String`, `Paused String`, `Resumed String`, `Canceled String`, `Restarted String` |
 
 ### Core Functions
 

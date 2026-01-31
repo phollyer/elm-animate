@@ -552,12 +552,12 @@ updateStatus jsonValue (AnimState state) =
 
 {-| Decode a WAAPI event from JavaScript and update AnimState.
 Returns the updated state and optionally the animation event status string
-(e.g., "started", "completed", "paused") for lifecycle events.
+(e.g., "started", "completed", "paused") for lifecycle events, along with the elementId.
 
 Property updates return Nothing for the status since they're just state updates.
 
 -}
-decodeEvent : Decode.Value -> AnimState -> ( AnimState, Maybe String )
+decodeEvent : Decode.Value -> AnimState -> ( AnimState, Maybe ( String, String ) )
 decodeEvent jsonValue animState =
     case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue of
         Ok "propertyUpdate" ->
@@ -565,16 +565,21 @@ decodeEvent jsonValue animState =
             ( update jsonValue animState, Nothing )
 
         Ok "animationUpdate" ->
-            -- Animation lifecycle: apply to state, return status string
+            -- Animation lifecycle: apply to state, return status string and elementId
             let
                 updatedState =
                     updateStatus jsonValue animState
 
-                maybeStatus =
-                    Decode.decodeValue (Decode.at [ "payload", "status" ] Decode.string) jsonValue
+                maybeStatusAndId =
+                    Decode.decodeValue
+                        (Decode.map2 Tuple.pair
+                            (Decode.at [ "payload", "elementId" ] Decode.string)
+                            (Decode.at [ "payload", "status" ] Decode.string)
+                        )
+                        jsonValue
                         |> Result.toMaybe
             in
-            ( updatedState, maybeStatus )
+            ( updatedState, maybeStatusAndId )
 
         _ ->
             -- Unknown event type, return unchanged

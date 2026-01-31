@@ -829,23 +829,25 @@ getCurrentSize =
 {-| Animation lifecycle events from the Web Animations API.
 
 These events notify you when animations change state, allowing you to trigger
-side effects like starting the next animation in a sequence or updating UI.
+side effects like starting the next animation in a sequence or updating the UI.
 
-  - **Started**: Animation has begun playing
-  - **Completed**: Animation finished naturally
-  - **Paused**: Animation was paused
-  - **Resumed**: Animation continued after being paused
-  - **Canceled**: Animation was canceled (via reset)
-  - **Restarted**: Animation was restarted from the beginning
+Each event carries the `elementId` of the animated element:
+
+  - **Started elementId**: Animation has begun playing
+  - **Completed elementId**: Animation finished naturally
+  - **Paused elementId**: Animation was paused
+  - **Resumed elementId**: Animation continued after being paused
+  - **Canceled elementId**: Animation was canceled (via reset)
+  - **Restarted elementId**: Animation was restarted from the beginning
 
 -}
 type AnimationEvent
-    = Started
-    | Paused
-    | Resumed
-    | Completed
-    | Canceled
-    | Restarted
+    = Started String
+    | Paused String
+    | Resumed String
+    | Completed String
+    | Canceled String
+    | Restarted String
 
 
 
@@ -855,12 +857,12 @@ type AnimationEvent
 {-| Decode WAAPI events and update animation state.
 
 This function decodes incoming port messages and returns the updated `AnimState`
-along with an optional `AnimationEvent` for lifecycle changes.
+along with a `Maybe AnimationEvent` for lifecycle changes.
 
-Property updates (position, opacity, etc.) are automatically applied to `AnimState`.
-You can query current values using getter functions like `getCurrentPosition`.
+Property updates (translate, opacity, etc.) are automatically applied to `AnimState`.
+You can query current values using getter functions by [querying animated properties](#querying-animated-properties).
 
-**Note:** For fire-and-forget animations, you don't need this - animations run entirely in JavaScript.
+**Note:** For fire-and-forget animations, you don't need this - animations are handled entirely by the Web Animations API.
 
     port waapiEvent : (Encode.Value -> msg) -> Sub msg
 
@@ -877,9 +879,13 @@ You can query current values using getter functions like `getCurrentPosition`.
         case msg of
             GotWaapiUpdate ( newAnimState, maybeEvent ) ->
                 case maybeEvent of
-                    Just WAAPI.Completed ->
-                        -- Animation finished, trigger next action
+                    Just (WAAPI.Completed "box") ->
+                        -- The "box" element finished animating
                         ( { model | animationState = newAnimState }, startNextAnimation )
+
+                    Just (WAAPI.Completed elementId) ->
+                        -- Some other element finished
+                        ( { model | animationState = newAnimState }, Cmd.none )
 
                     _ ->
                         -- Just update state (property updates, other events)
@@ -891,32 +897,32 @@ You can query current values using getter functions like `getCurrentPosition`.
 decode : AnimState -> Encode.Value -> ( AnimState, Maybe AnimationEvent )
 decode currentAnimState eventValue =
     let
-        ( updatedState, maybeStatusString ) =
+        ( updatedState, maybeStatusAndId ) =
             Internal.decodeEvent eventValue currentAnimState
     in
-    ( updatedState, Maybe.andThen statusStringToEvent maybeStatusString )
+    ( updatedState, Maybe.andThen (\( elementId, status ) -> statusStringToEvent elementId status) maybeStatusAndId )
 
 
-statusStringToEvent : String -> Maybe AnimationEvent
-statusStringToEvent status =
+statusStringToEvent : String -> String -> Maybe AnimationEvent
+statusStringToEvent elementId status =
     case status of
         "started" ->
-            Just Started
+            Just (Started elementId)
 
         "paused" ->
-            Just Paused
+            Just (Paused elementId)
 
         "resumed" ->
-            Just Resumed
+            Just (Resumed elementId)
 
         "completed" ->
-            Just Completed
+            Just (Completed elementId)
 
         "canceled" ->
-            Just Canceled
+            Just (Canceled elementId)
 
         "restarted" ->
-            Just Restarted
+            Just (Restarted elementId)
 
         _ ->
             Nothing
