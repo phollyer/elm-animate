@@ -26,8 +26,8 @@ module Anim.Internal.CSS exposing
     , getTranslateRange
     , handleEvent
     , init
-    , isElementComplete
-    , isElementRunning
+    , isComplete
+    , isRunning
     , keyframesAttribute
     , keyframesStyleNode
     , keyframesStyleNodeFor
@@ -344,15 +344,15 @@ allComplete (AnimState state) =
 
 {-| Check if a specific element has any animations currently running.
 -}
-isElementRunning : String -> AnimState -> Bool
-isElementRunning elementId (AnimState state) =
+isRunning : String -> AnimState -> Bool
+isRunning elementId (AnimState state) =
     Dict.get elementId state.elementStates == Just Running
 
 
 {-| Check if a specific element's animations have completed.
 -}
-isElementComplete : String -> AnimState -> Maybe Bool
-isElementComplete elementId (AnimState state) =
+isComplete : String -> AnimState -> Maybe Bool
+isComplete elementId (AnimState state) =
     Dict.get elementId state.elementStates
         |> Maybe.map
             (\elementState ->

@@ -3,7 +3,7 @@ module Anim.Engine.CSS exposing
     , keyframesAttribute
     , keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
     , AnimState, init, AnimBuilder, builder
-    , animate, TransformOrder(..), animateOrder
+    , animate, fireAndForget, TransformOrder(..), animateOrder, fireAndForgetOrder
     , duration, speed
     , easing
     , delay
@@ -81,7 +81,7 @@ and also add the generated keyframes to a node in your DOM.
 
 # Execute
 
-@docs animate, TransformOrder, animateOrder
+@docs animate, fireAndForget, TransformOrder, animateOrder, fireAndForgetOrder
 
 
 # Global Settings
@@ -225,10 +225,9 @@ import Html.Attributes
 
 {-| Transform property ordering.
 
-The default (recommended) transform order is: Translate → Rotate → Scale.
+The **default** (recommended) transform order used by this engine is: Translate → Rotate → Scale.
 
-[animate](#animate) uses this transform order which should
-be suitable for most use cases:
+This should be suitable for most use cases:
 
   - Translate sets the base location
   - Rotation happens around that position
@@ -240,7 +239,7 @@ as the order of transforms affects how they are applied.
 **Tip!**
 
   - Experiment with different orders to achieve specific visual effects.
-  - Understand how each transform affects the element in relation to others:
+  - Understand how each transform affects the element:
       - Example: `[Rotate, Translate, Scale]` will:
           - rotate the element around the origin before moving it,
           - which changes the element's coordinate space,
@@ -295,16 +294,13 @@ type alias AnimBuilder =
     InternalCSS.AnimBuilder
 
 
-{-| Generate CSS animations from the builder, and return the
-updated [AnimState](#AnimState).
+{-| Create a state-tracked animation.
 
-    animationState =
-        CSS.animate model.animations <|
-            (fadeIn >> slideIn)
-
-    -- For fire-and-forget animations:
-    animationState =
-        CSS.animate CSS.init myAnimation
+    { model
+        | animState =
+            CSS.animate model.animState <|
+                (fadeIn >> slideIn)
+    }
 
 -}
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
@@ -312,17 +308,22 @@ animate =
     InternalCSS.animate
 
 
-{-| Apply animation configuration with custom transform ordering.
+{-| Apply the animation configuration with custom transform ordering.
 
 This is an alternative to [animate](#animate) that allows you to specify the order
 in which **transform** properties should be animated.
 
     -- Custom transform order: Scale → Rotate → Position
-    CSS.animateOrder [ Scale, Rotate, Position ] model.animations myAnimation
+    CSS.animateOrder [ Scale, Rotate, Position ] model.animState <|
+        (rotateLeft >> scaleUp >> moveRight)
+
+**Note**: The order of animations in the builder chain does not affect the transform order.
+
+    (rotateLeft >> scaleUp >> moveRight) == (moveRight >> rotateLeft >> scaleUp)
 
 -}
 animateOrder : List TransformOrder -> AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
-animateOrder order animState transform =
+animateOrder order =
     let
         mapOrder xform =
             case xform of
@@ -335,7 +336,46 @@ animateOrder order animState transform =
                 Scale ->
                     InternalCSS.Scale
     in
-    InternalCSS.animateWithOrder (List.map mapOrder order) animState transform
+    InternalCSS.animateWithOrder (List.map mapOrder order)
+
+
+{-| Create a fire-and-forget animation without state tracking.
+
+Use this for one-shot animations where you don't need to:
+
+  - Query animation state (running, complete, etc.)
+  - Track start/end values for later querying
+
+```
+fadeInAnimation : CSS.AnimState
+fadeInAnimation =
+    CSS.fireAndForget <|
+        (fadeIn >> slideIn)
+```
+
+-}
+fireAndForget : (AnimBuilder -> AnimBuilder) -> AnimState
+fireAndForget =
+    animate init
+
+
+{-| Create a fire-and-forget animation with custom transform ordering.
+
+This is an alternative to [fireAndForget](#fireAndForget) that allows you to specify the order
+in which **transform** properties should be animated.
+
+    -- Custom transform order: Scale → Rotate → Position
+    CSS.fireAndForgetOrder [ Scale, Rotate, Position ] <|
+        (rotateLeft >> scaleUp >> moveRight)
+
+**Note**: The order of animations in the builder chain does not affect the transform order.
+
+    (rotateLeft >> scaleUp >> moveRight) == (moveRight >> rotateLeft >> scaleUp)
+
+-}
+fireAndForgetOrder : List TransformOrder -> (AnimBuilder -> AnimBuilder) -> AnimState
+fireAndForgetOrder order =
+    animateOrder order init
 
 
 {-| Initialize empty animation state.
@@ -475,8 +515,8 @@ anyRunning =
 {-| Check if a specific element has any animations currently running.
 -}
 isRunning : String -> AnimState -> Bool
-isRunning elementId animState =
-    InternalCSS.isElementRunning elementId animState
+isRunning =
+    InternalCSS.isRunning
 
 
 {-| Check if a specific element's animations have completed.
@@ -485,8 +525,8 @@ Returns `Nothing` if there are no animations for the element.
 
 -}
 isComplete : String -> AnimState -> Maybe Bool
-isComplete elementId animState =
-    InternalCSS.isElementComplete elementId animState
+isComplete =
+    InternalCSS.isComplete
 
 
 {-| Check if all animations are complete.
@@ -495,8 +535,8 @@ Returns `Nothing` if there are no animations.
 
 -}
 allComplete : AnimState -> Maybe Bool
-allComplete animState =
-    InternalCSS.allComplete animState
+allComplete =
+    InternalCSS.allComplete
 
 
 {-| Handle CSS transition lifecycle events.
@@ -1049,8 +1089,8 @@ onAnimationCancel =
 
 -}
 stop : String -> AnimState -> AnimState
-stop elementId animState =
-    InternalCSS.stopAnimation elementId animState
+stop =
+    InternalCSS.stopAnimation
 
 
 {-| Reset an animation by instantly jumping back to its start state.
@@ -1059,8 +1099,8 @@ stop elementId animState =
 
 -}
 reset : String -> AnimState -> AnimState
-reset elementId animState =
-    InternalCSS.resetAnimation elementId animState
+reset =
+    InternalCSS.resetAnimation
 
 
 {-| Restart an animation from the beginning.
@@ -1069,8 +1109,8 @@ reset elementId animState =
 
 -}
 restart : String -> AnimState -> AnimState
-restart elementId animState =
-    InternalCSS.restartAnimation elementId animState
+restart =
+    InternalCSS.restartAnimation
 
 
 {-| Pause a running keyframe animation using CSS `animation-play-state`.
@@ -1083,8 +1123,8 @@ CSS transitions cannot be paused once started - this is a limitation of CSS itse
 
 -}
 pause : String -> AnimState -> AnimState
-pause elementId animState =
-    InternalCSS.pauseAnimation elementId animState
+pause =
+    InternalCSS.pauseAnimation
 
 
 {-| Resume a paused keyframe animation using CSS `animation-play-state`.
@@ -1096,5 +1136,5 @@ pause elementId animState =
 
 -}
 resume : String -> AnimState -> AnimState
-resume elementId animState =
-    InternalCSS.resumeAnimation elementId animState
+resume =
+    InternalCSS.resumeAnimation
