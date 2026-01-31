@@ -23,10 +23,7 @@ boxWidth =
 init : { width : Float } -> ( Model, Cmd Msg )
 init { width } =
     ( { animState =
-            Sub.init
-                |> Sub.builder
-                |> Translate.initX "moving-box" (width / 2 - boxWidth / 2)
-                |> Sub.animate
+            Sub.animate Sub.init (Translate.initX "moving-box" (width / 2 - boxWidth / 2))
       , width = width
       }
     , Cmd.none
@@ -69,14 +66,14 @@ moveRight width =
 
 
 moveTo : Float -> Sub.AnimState -> Sub.AnimState
-moveTo targetX =
-    Sub.builder
-        >> Translate.for "moving-box"
-        >> Translate.toX targetX
-        >> Translate.speed 200
-        >> Translate.easing BounceOut
-        >> Translate.build
-        >> Sub.animate
+moveTo targetX animState =
+    Sub.animate animState
+        (Translate.for "moving-box"
+            >> Translate.toX targetX
+            >> Translate.speed 200
+            >> Translate.easing BounceOut
+            >> Translate.build
+        )
 
 
 subscriptions : Model -> Sub.Sub Msg

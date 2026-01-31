@@ -66,10 +66,8 @@ type alias Model =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations =
-            Sub.init
-                |> Sub.builder
-                |> Translate.initXY "box" 0 0
-                |> Sub.animate
+            Sub.animate Sub.init
+                (Translate.initXY "box" 0 0)
       }
     , Cmd.none
     )
@@ -95,14 +93,13 @@ update msg model =
         MoveToXY x y ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Translate.for "box"
-                        |> Translate.toXY x y
-                        |> Translate.speed 200.0
-                        |> Translate.easing Easing.EaseOut
-                        |> Translate.build
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Translate.for "box"
+                            >> Translate.toXY x y
+                            >> Translate.speed 200.0
+                            >> Translate.easing Easing.EaseOut
+                            >> Translate.build
+                        )
               }
             , Cmd.none
             )
@@ -110,10 +107,8 @@ update msg model =
         MoveLeft ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.moveLeft
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        Animations.moveLeft
               }
             , Cmd.none
             )
@@ -121,10 +116,8 @@ update msg model =
         MoveRight ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.moveRight
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        Animations.moveRight
               }
             , Cmd.none
             )
@@ -132,10 +125,8 @@ update msg model =
         MoveUp ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.moveUp
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        Animations.moveUp
               }
             , Cmd.none
             )
@@ -143,10 +134,8 @@ update msg model =
         MoveDown ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.moveDown
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        Animations.moveDown
               }
             , Cmd.none
             )
@@ -154,10 +143,8 @@ update msg model =
         ResetPosition ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.returnToOrigin
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        Animations.returnToOrigin
               }
             , Cmd.none
             )

@@ -121,12 +121,11 @@ update msg model =
                     Sub.isRunning elementId model.animations
 
                 newAnimations =
-                    model.animations
-                        |> Sub.builder
-                        |> Sub.duration 1000
-                        |> Sub.easing Linear
-                        |> PositionAnim.moveToXY elementId 450 300
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Sub.duration 1000
+                            >> Sub.easing Linear
+                            >> PositionAnim.moveToXY elementId 450 300
+                        )
 
                 updatedModel =
                     { model
@@ -148,12 +147,11 @@ update msg model =
                     Sub.isRunning elementId model.animations
 
                 newAnimations =
-                    model.animations
-                        |> Sub.builder
-                        |> Sub.duration 800
-                        |> Sub.easing Linear
-                        |> PositionAnim.moveToXY elementId 225 150
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Sub.duration 800
+                            >> Sub.easing Linear
+                            >> PositionAnim.moveToXY elementId 225 150
+                        )
 
                 updatedModel =
                     { model

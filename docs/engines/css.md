@@ -48,10 +48,7 @@ In practice, most animations are triggered by user interactions, which naturally
             AnimateBox ->
                 let
                     newAnimState =
-                        CSS.init
-                            |> CSS.builder
-                            |> moveToNewPosition
-                            |> CSS.animate
+                        CSS.animate CSS.init moveToNewPosition
                 in
                 ( { model | animState = newAnimState }, Cmd.none )
     ```
@@ -176,13 +173,12 @@ These settings will be used for all property animations in the pipeline.
     ```elm
 
     animState =
-        CSS.init
-            |> CSS.builder
-            |> CSS.duration 500
-            |> CSS.easing QuintOut
-            |> CSS.delay 100
-            |> myAnimation
-            |> CSS.animate
+        CSS.animate CSS.init
+            (CSS.duration 500
+                >> CSS.easing QuintOut
+                >> CSS.delay 100
+                >> myAnimation
+            )
     ```
 
 Individual properties can override them:

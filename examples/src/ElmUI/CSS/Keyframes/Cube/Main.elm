@@ -79,11 +79,10 @@ type Msg
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animState =
-            CSS.init
-                |> CSS.builder
-                |> Translate.initZ "cube" 0
-                |> Rotate.initXYZ "cube" 0 0 0
-                |> CSS.animate
+            CSS.animate CSS.init
+                (Translate.initZ "cube" 0
+                    >> Rotate.initXYZ "cube" 0 0 0
+                )
       , perspectiveValue = 1000
       , zPosition = 0
       , rotateX = 0
@@ -107,40 +106,32 @@ update msg model =
         SetZPosition value ->
             let
                 newAnimState =
-                    model.animState
-                        |> CSS.builder
-                        |> Cube.setCubeTransform "cube" value model.rotateX model.rotateY model.rotateZ
-                        |> CSS.animate
+                    CSS.animate model.animState
+                        (Cube.setCubeTransform "cube" value model.rotateX model.rotateY model.rotateZ)
             in
             ( { model | animState = newAnimState, zPosition = value }, Cmd.none )
 
         SetRotateX value ->
             let
                 newAnimState =
-                    model.animState
-                        |> CSS.builder
-                        |> Cube.setCubeTransform "cube" model.zPosition value model.rotateY model.rotateZ
-                        |> CSS.animate
+                    CSS.animate model.animState
+                        (Cube.setCubeTransform "cube" model.zPosition value model.rotateY model.rotateZ)
             in
             ( { model | animState = newAnimState, rotateX = value }, Cmd.none )
 
         SetRotateY value ->
             let
                 newAnimState =
-                    model.animState
-                        |> CSS.builder
-                        |> Cube.setCubeTransform "cube" model.zPosition model.rotateX value model.rotateZ
-                        |> CSS.animate
+                    CSS.animate model.animState
+                        (Cube.setCubeTransform "cube" model.zPosition model.rotateX value model.rotateZ)
             in
             ( { model | animState = newAnimState, rotateY = value }, Cmd.none )
 
         SetRotateZ value ->
             let
                 newAnimState =
-                    model.animState
-                        |> CSS.builder
-                        |> Cube.setCubeTransform "cube" model.zPosition model.rotateX model.rotateY value
-                        |> CSS.animate
+                    CSS.animate model.animState
+                        (Cube.setCubeTransform "cube" model.zPosition model.rotateX model.rotateY value)
             in
             ( { model | animState = newAnimState, rotateZ = value }, Cmd.none )
 

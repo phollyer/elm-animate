@@ -64,15 +64,14 @@ type alias Model =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations =
-            Sub.init
-                |> Sub.builder
-                |> Translate.initXY "mixed-box" 0 0
-                |> Scale.initXY "mixed-box" 1.0 1.0
-                |> Size.initWH "mixed-box" 80 80
-                |> Rotate.initZ "mixed-box" 0
-                |> Opacity.init "mixed-box" 1.0
-                |> Color.init "mixed-box" (Anim.Color.fromHsl { h = 207 / 360, s = 0.9, l = 0.54 })
-                |> Sub.animate
+            Sub.animate Sub.init
+                (Translate.initXY "mixed-box" 0 0
+                    >> Scale.initXY "mixed-box" 1.0 1.0
+                    >> Size.initWH "mixed-box" 80 80
+                    >> Rotate.initZ "mixed-box" 0
+                    >> Opacity.init "mixed-box" 1.0
+                    >> Color.init "mixed-box" (Anim.Color.fromHsl { h = 207 / 360, s = 0.9, l = 0.54 })
+                )
       }
     , Cmd.none
     )
@@ -98,10 +97,7 @@ update msg model =
         MoveScaleRotate elementId ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Mixed.moveScaleRotate elementId
-                        |> Sub.animate
+                    Sub.animate model.animations (Mixed.moveScaleRotate elementId)
               }
             , Cmd.none
             )
@@ -109,10 +105,7 @@ update msg model =
         FadeMove elementId ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Mixed.fadeMove elementId
-                        |> Sub.animate
+                    Sub.animate model.animations (Mixed.fadeMove elementId)
               }
             , Cmd.none
             )
@@ -120,10 +113,7 @@ update msg model =
         SpinScaleColor elementId ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Mixed.spinScaleColor elementId
-                        |> Sub.animate
+                    Sub.animate model.animations (Mixed.spinScaleColor elementId)
               }
             , Cmd.none
             )
@@ -131,10 +121,7 @@ update msg model =
         ColorSizeOpacity elementId ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Mixed.colorSizeOpacity elementId
-                        |> Sub.animate
+                    Sub.animate model.animations (Mixed.colorSizeOpacity elementId)
               }
             , Cmd.none
             )
@@ -142,10 +129,7 @@ update msg model =
         AllProperties elementId ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Mixed.allProperties elementId
-                        |> Sub.animate
+                    Sub.animate model.animations (Mixed.allProperties elementId)
               }
             , Cmd.none
             )
@@ -153,10 +137,7 @@ update msg model =
         ResetAll ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Mixed.resetAll "mixed-box"
-                        |> Sub.animate
+                    Sub.animate model.animations (Mixed.resetAll "mixed-box")
               }
             , Cmd.none
             )

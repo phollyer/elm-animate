@@ -83,25 +83,24 @@ type AnimationType
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations =
-            CSS.init
-                |> CSS.builder
-                |> Color.init elementId (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
-                |> Translate.initXY elementId 0 0
-                |> Rotate.init elementId 0
-                |> Scale.initXY elementId 1 1
-                |> Color.for elementId
-                |> Color.to (Anim.Color.fromRgb { r = 59, g = 130, b = 246 })
-                |> Color.build
-                |> Translate.for elementId
-                |> Translate.toXY 0 0
-                |> Translate.build
-                |> Rotate.for elementId
-                |> Rotate.toZ 0
-                |> Rotate.build
-                |> Scale.for elementId
-                |> Scale.toXY 1 1
-                |> Scale.build
-                |> CSS.animate
+            CSS.animate CSS.init
+                (Color.init elementId (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
+                    >> Translate.initXY elementId 0 0
+                    >> Rotate.init elementId 0
+                    >> Scale.initXY elementId 1 1
+                    >> Color.for elementId
+                    >> Color.to (Anim.Color.fromRgb { r = 59, g = 130, b = 246 })
+                    >> Color.build
+                    >> Translate.for elementId
+                    >> Translate.toXY 0 0
+                    >> Translate.build
+                    >> Rotate.for elementId
+                    >> Rotate.toZ 0
+                    >> Rotate.build
+                    >> Scale.for elementId
+                    >> Scale.toXY 1 1
+                    >> Scale.build
+                )
       , isAnimating = False
       , activeAnimation = Nothing
       }
@@ -134,31 +133,30 @@ update msg model =
             -- Combine position + scale + rotate with different easing
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        -- Global Defaults
-                        |> CSS.duration 800
-                        |> CSS.easing QuadInOut
-                        -- Position
-                        |> Translate.for elementId
-                        |> Translate.toXY 200 100
-                        |> Translate.speed 50
-                        |> Translate.easing SineInOut
-                        |> Translate.build
-                        -- Rotate
-                        |> Rotate.for elementId
-                        |> Rotate.toZ 45
-                        |> Rotate.duration 800
-                        |> Rotate.easing ElasticOut
-                        |> Rotate.build
-                        -- Scale
-                        |> Scale.for elementId
-                        |> Scale.toXY 1.5 1.2
-                        |> Scale.duration 800
-                        |> Scale.easing BackInOut
-                        --|> Scale.duration 1000
-                        |> Scale.build
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (-- Global Defaults
+                         CSS.duration 800
+                            >> CSS.easing QuadInOut
+                            -- Position
+                            >> Translate.for elementId
+                            >> Translate.toXY 200 100
+                            >> Translate.speed 50
+                            >> Translate.easing SineInOut
+                            >> Translate.build
+                            -- Rotate
+                            >> Rotate.for elementId
+                            >> Rotate.toZ 45
+                            >> Rotate.duration 800
+                            >> Rotate.easing ElasticOut
+                            >> Rotate.build
+                            -- Scale
+                            >> Scale.for elementId
+                            >> Scale.toXY 1.5 1.2
+                            >> Scale.duration 800
+                            >> Scale.easing BackInOut
+                            --|> Scale.duration 1000
+                            >> Scale.build
+                        )
 
                 -- Test: To use custom transform order, replace above line with:
                 -- |> CSS.animateOrder [Scale, Rotate, Position]
@@ -172,22 +170,21 @@ update msg model =
             -- Combine opacity + position with synchronized timing
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        -- Global Defaults
-                        |> CSS.duration 800
-                        |> CSS.easing CubicInOut
-                        -- Position
-                        |> Translate.for elementId
-                        |> Translate.toXY 250 150
-                        |> Translate.duration 800
-                        |> Translate.build
-                        -- Opacity
-                        |> Opacity.for elementId
-                        |> Opacity.to 0.3
-                        |> Opacity.duration 800
-                        |> Opacity.build
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (-- Global Defaults
+                         CSS.duration 800
+                            >> CSS.easing CubicInOut
+                            -- Position
+                            >> Translate.for elementId
+                            >> Translate.toXY 250 150
+                            >> Translate.duration 800
+                            >> Translate.build
+                            -- Opacity
+                            >> Opacity.for elementId
+                            >> Opacity.to 0.3
+                            >> Opacity.duration 800
+                            >> Opacity.build
+                        )
                 , isAnimating = True
                 , activeAnimation = Just FadeMove
               }
@@ -198,23 +195,22 @@ update msg model =
             -- Rotate + scale with delayed start
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        -- Global Defaults
-                        |> CSS.duration 1000
-                        |> CSS.easing BounceOut
-                        -- Rotate
-                        |> Rotate.for elementId
-                        |> Rotate.toZ 180
-                        |> Rotate.duration 1000
-                        |> Rotate.build
-                        -- Scale
-                        |> Scale.for elementId
-                        |> Scale.toXY 0.8 0.8
-                        |> Scale.delay 200
-                        |> Scale.duration 1000
-                        |> Scale.build
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (-- Global Defaults
+                         CSS.duration 1000
+                            >> CSS.easing BounceOut
+                            -- Rotate
+                            >> Rotate.for elementId
+                            >> Rotate.toZ 180
+                            >> Rotate.duration 1000
+                            >> Rotate.build
+                            -- Scale
+                            >> Scale.for elementId
+                            >> Scale.toXY 0.8 0.8
+                            >> Scale.delay 200
+                            >> Scale.duration 1000
+                            >> Scale.build
+                        )
                 , isAnimating = True
                 , activeAnimation = Just SpinScale
               }
@@ -225,22 +221,21 @@ update msg model =
             -- Color + scale with smooth coordination
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        -- Global Defaults
-                        |> CSS.duration 900
-                        |> CSS.easing QuartInOut
-                        -- Color
-                        |> Color.for elementId
-                        |> Color.to (Anim.Color.fromRgb { r = 255, g = 100, b = 150 })
-                        |> Color.duration 900
-                        |> Color.build
-                        -- Scale
-                        |> Scale.for elementId
-                        |> Scale.toXY 1.3 1.3
-                        |> Scale.duration 900
-                        |> Scale.build
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (-- Global Defaults
+                         CSS.duration 900
+                            >> CSS.easing QuartInOut
+                            -- Color
+                            >> Color.for elementId
+                            >> Color.to (Anim.Color.fromRgb { r = 255, g = 100, b = 150 })
+                            >> Color.duration 900
+                            >> Color.build
+                            -- Scale
+                            >> Scale.for elementId
+                            >> Scale.toXY 1.3 1.3
+                            >> Scale.duration 900
+                            >> Scale.build
+                        )
                 , isAnimating = True
                 , activeAnimation = Just ColorMorph
               }
@@ -251,43 +246,42 @@ update msg model =
             -- All properties with staggered timing - API handles transform order automatically
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        -- Position
-                        |> Translate.for elementId
-                        |> Translate.toXY 150 200
-                        |> Translate.easing ExpoInOut
-                        |> Translate.duration 1200
-                        |> Translate.build
-                        -- Rotate
-                        |> Rotate.for elementId
-                        |> Rotate.toZ 135
-                        |> Rotate.easing ElasticInOut
-                        |> Rotate.duration 1400
-                        |> Rotate.delay 300
-                        |> Rotate.build
-                        -- Scale
-                        |> Scale.for elementId
-                        |> Scale.toXY 1.4 0.9
-                        |> Scale.easing CircInOut
-                        |> Scale.duration 1000
-                        |> Scale.delay 2000
-                        |> Scale.build
-                        -- Opacity
-                        |> Opacity.for elementId
-                        |> Opacity.to 0.7
-                        |> Opacity.easing Linear
-                        |> Opacity.duration 800
-                        |> Opacity.delay 100
-                        |> Opacity.build
-                        -- Color
-                        |> Color.for elementId
-                        |> Color.to (Anim.Color.fromRgb { r = 100, g = 255, b = 200 })
-                        |> Color.easing QuintInOut
-                        |> Color.duration 1100
-                        |> Color.delay 400
-                        |> Color.build
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (-- Position
+                         Translate.for elementId
+                            >> Translate.toXY 150 200
+                            >> Translate.easing ExpoInOut
+                            >> Translate.duration 1200
+                            >> Translate.build
+                            -- Rotate
+                            >> Rotate.for elementId
+                            >> Rotate.toZ 135
+                            >> Rotate.easing ElasticInOut
+                            >> Rotate.duration 1400
+                            >> Rotate.delay 300
+                            >> Rotate.build
+                            -- Scale
+                            >> Scale.for elementId
+                            >> Scale.toXY 1.4 0.9
+                            >> Scale.easing CircInOut
+                            >> Scale.duration 1000
+                            >> Scale.delay 2000
+                            >> Scale.build
+                            -- Opacity
+                            >> Opacity.for elementId
+                            >> Opacity.to 0.7
+                            >> Opacity.easing Linear
+                            >> Opacity.duration 800
+                            >> Opacity.delay 100
+                            >> Opacity.build
+                            -- Color
+                            >> Color.for elementId
+                            >> Color.to (Anim.Color.fromRgb { r = 100, g = 255, b = 200 })
+                            >> Color.easing QuintInOut
+                            >> Color.duration 1100
+                            >> Color.delay 400
+                            >> Color.build
+                        )
                 , isAnimating = True
                 , activeAnimation = Just FullTransform
               }
@@ -297,32 +291,31 @@ update msg model =
         ResetAll ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        -- Global Defaults
-                        |> CSS.duration 800
-                        |> CSS.easing QuadInOut
-                        -- Position
-                        |> Translate.for elementId
-                        |> Translate.toXY 0 0
-                        |> Translate.build
-                        -- Opacity
-                        |> Opacity.for elementId
-                        |> Opacity.to 1.0
-                        |> Opacity.build
-                        -- Scale
-                        |> Scale.for elementId
-                        |> Scale.toXY 1.0 1.0
-                        |> Scale.build
-                        -- Rotate
-                        |> Rotate.for elementId
-                        |> Rotate.toZ 0
-                        |> Rotate.build
-                        -- Color
-                        |> Color.for elementId
-                        |> Color.to (Anim.Color.fromRgb { r = 59, g = 130, b = 246 })
-                        |> Color.build
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (-- Global Defaults
+                         CSS.duration 800
+                            >> CSS.easing QuadInOut
+                            -- Position
+                            >> Translate.for elementId
+                            >> Translate.toXY 0 0
+                            >> Translate.build
+                            -- Opacity
+                            >> Opacity.for elementId
+                            >> Opacity.to 1.0
+                            >> Opacity.build
+                            -- Scale
+                            >> Scale.for elementId
+                            >> Scale.toXY 1.0 1.0
+                            >> Scale.build
+                            -- Rotate
+                            >> Rotate.for elementId
+                            >> Rotate.toZ 0
+                            >> Rotate.build
+                            -- Color
+                            >> Color.for elementId
+                            >> Color.to (Anim.Color.fromRgb { r = 59, g = 130, b = 246 })
+                            >> Color.build
+                        )
                 , isAnimating = True
                 , activeAnimation = Nothing
               }

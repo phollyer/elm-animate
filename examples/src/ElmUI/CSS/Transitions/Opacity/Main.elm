@@ -81,10 +81,8 @@ update msg model =
         FadeIn ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.fadeIn "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.fadeIn "box")
               }
             , Cmd.none
             )
@@ -92,10 +90,8 @@ update msg model =
         FadeOut ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.fadeOut "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.fadeOut "box")
               }
             , Cmd.none
             )
@@ -103,10 +99,8 @@ update msg model =
         FadeToHalf ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.fadeToHalf "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.fadeToHalf "box")
               }
             , Cmd.none
             )
@@ -114,10 +108,8 @@ update msg model =
         FadeToQuarter ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.fadeToQuarter "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.fadeToQuarter "box")
               }
             , Cmd.none
             )
@@ -125,10 +117,8 @@ update msg model =
         ShowFully ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.fadeIn "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.fadeIn "box")
               }
             , Cmd.none
             )

@@ -83,10 +83,8 @@ update msg model =
         Rotate45 ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.rotate45 "box"
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Animations.rotate45 "box")
               }
             , Cmd.none
             )
@@ -94,10 +92,8 @@ update msg model =
         Rotate90 ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.rotate90 "box"
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Animations.rotate90 "box")
               }
             , Cmd.none
             )
@@ -105,10 +101,8 @@ update msg model =
         Rotate180 ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.rotate180 "box"
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Animations.rotate180 "box")
               }
             , Cmd.none
             )
@@ -116,10 +110,8 @@ update msg model =
         RotateLeft ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.rotateLeft "box"
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Animations.rotateLeft "box")
               }
             , Cmd.none
             )
@@ -127,10 +119,8 @@ update msg model =
         RotateRight ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.rotateRight "box"
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Animations.rotateRight "box")
               }
             , Cmd.none
             )
@@ -138,10 +128,8 @@ update msg model =
         ResetRotation ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.resetRotate "box"
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Animations.resetRotate "box")
               }
             , Cmd.none
             )

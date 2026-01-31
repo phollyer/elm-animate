@@ -87,10 +87,8 @@ update msg model =
         Rotate45 ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.rotate45 elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.rotate45 elementId)
               }
             , Cmd.none
             )
@@ -98,10 +96,8 @@ update msg model =
         Rotate90 ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.rotate90 elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.rotate90 elementId)
               }
             , Cmd.none
             )
@@ -109,10 +105,8 @@ update msg model =
         Rotate180 ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.rotate180 elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.rotate180 elementId)
               }
             , Cmd.none
             )
@@ -120,10 +114,8 @@ update msg model =
         RotateLeft ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.rotateLeft elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.rotateLeft elementId)
               }
             , Cmd.none
             )
@@ -131,10 +123,8 @@ update msg model =
         RotateRight ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.rotateRight elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.rotateRight elementId)
               }
             , Cmd.none
             )
@@ -142,10 +132,8 @@ update msg model =
         ResetRotate ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.resetRotate elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.resetRotate elementId)
               }
             , Cmd.none
             )

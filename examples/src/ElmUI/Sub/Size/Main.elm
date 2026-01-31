@@ -58,10 +58,8 @@ type alias Model =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations =
-            Sub.init
-                |> Sub.builder
-                |> Animations.sizeReset "box"
-                |> Sub.animate
+            Sub.animate Sub.init
+                (Animations.sizeReset "box")
       }
     , Cmd.none
     )
@@ -86,10 +84,8 @@ update msg model =
         SizeLarge ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.sizeLarge "box"
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Animations.sizeLarge "box")
               }
             , Cmd.none
             )
@@ -97,10 +93,8 @@ update msg model =
         SizeSquare ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.sizeSquare "box"
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Animations.sizeSquare "box")
               }
             , Cmd.none
             )
@@ -108,10 +102,8 @@ update msg model =
         SizeReset ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.sizeReset "box"
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Animations.sizeReset "box")
               }
             , Cmd.none
             )
@@ -119,10 +111,8 @@ update msg model =
         SizeWide ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.sizeWide "box"
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Animations.sizeWide "box")
               }
             , Cmd.none
             )
@@ -130,10 +120,8 @@ update msg model =
         SizeTall ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.sizeTall "box"
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Animations.sizeTall "box")
               }
             , Cmd.none
             )

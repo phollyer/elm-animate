@@ -7184,6 +7184,10 @@ var $elm$json$Json$Decode$at = F2(
 		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
 	});
 var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
 var $elm$json$Json$Decode$string = _Json_decodeString;
 var $elm$core$Result$toMaybe = function (result) {
 	if (result.$ === 'Ok') {
@@ -8197,16 +8201,24 @@ var $author$project$Anim$Internal$WAAPI$decodeEvent = F2(
 							$elm$core$Maybe$Nothing);
 					case 'animationUpdate':
 						var updatedState = A2($author$project$Anim$Internal$WAAPI$updateStatus, jsonValue, animState);
-						var maybeStatus = $elm$core$Result$toMaybe(
+						var maybeStatusAndId = $elm$core$Result$toMaybe(
 							A2(
 								$elm$json$Json$Decode$decodeValue,
-								A2(
-									$elm$json$Json$Decode$at,
-									_List_fromArray(
-										['payload', 'status']),
-									$elm$json$Json$Decode$string),
+								A3(
+									$elm$json$Json$Decode$map2,
+									$elm$core$Tuple$pair,
+									A2(
+										$elm$json$Json$Decode$at,
+										_List_fromArray(
+											['payload', 'elementId']),
+										$elm$json$Json$Decode$string),
+									A2(
+										$elm$json$Json$Decode$at,
+										_List_fromArray(
+											['payload', 'status']),
+										$elm$json$Json$Decode$string)),
 								jsonValue));
-						return _Utils_Tuple2(updatedState, maybeStatus);
+						return _Utils_Tuple2(updatedState, maybeStatusAndId);
 					default:
 						break _v0$2;
 				}
@@ -8216,38 +8228,64 @@ var $author$project$Anim$Internal$WAAPI$decodeEvent = F2(
 		}
 		return _Utils_Tuple2(animState, $elm$core$Maybe$Nothing);
 	});
-var $author$project$Anim$Engine$WAAPI$Canceled = {$: 'Canceled'};
-var $author$project$Anim$Engine$WAAPI$Completed = {$: 'Completed'};
-var $author$project$Anim$Engine$WAAPI$Paused = {$: 'Paused'};
-var $author$project$Anim$Engine$WAAPI$Restarted = {$: 'Restarted'};
-var $author$project$Anim$Engine$WAAPI$Resumed = {$: 'Resumed'};
-var $author$project$Anim$Engine$WAAPI$Started = {$: 'Started'};
-var $author$project$Anim$Engine$WAAPI$statusStringToEvent = function (status) {
-	switch (status) {
-		case 'started':
-			return $elm$core$Maybe$Just($author$project$Anim$Engine$WAAPI$Started);
-		case 'paused':
-			return $elm$core$Maybe$Just($author$project$Anim$Engine$WAAPI$Paused);
-		case 'resumed':
-			return $elm$core$Maybe$Just($author$project$Anim$Engine$WAAPI$Resumed);
-		case 'completed':
-			return $elm$core$Maybe$Just($author$project$Anim$Engine$WAAPI$Completed);
-		case 'canceled':
-			return $elm$core$Maybe$Just($author$project$Anim$Engine$WAAPI$Canceled);
-		case 'restarted':
-			return $elm$core$Maybe$Just($author$project$Anim$Engine$WAAPI$Restarted);
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
+var $author$project$Anim$Engine$WAAPI$Canceled = function (a) {
+	return {$: 'Canceled', a: a};
 };
+var $author$project$Anim$Engine$WAAPI$Completed = function (a) {
+	return {$: 'Completed', a: a};
+};
+var $author$project$Anim$Engine$WAAPI$Paused = function (a) {
+	return {$: 'Paused', a: a};
+};
+var $author$project$Anim$Engine$WAAPI$Restarted = function (a) {
+	return {$: 'Restarted', a: a};
+};
+var $author$project$Anim$Engine$WAAPI$Resumed = function (a) {
+	return {$: 'Resumed', a: a};
+};
+var $author$project$Anim$Engine$WAAPI$Started = function (a) {
+	return {$: 'Started', a: a};
+};
+var $author$project$Anim$Engine$WAAPI$statusStringToEvent = F2(
+	function (elementId, status) {
+		switch (status) {
+			case 'started':
+				return $elm$core$Maybe$Just(
+					$author$project$Anim$Engine$WAAPI$Started(elementId));
+			case 'paused':
+				return $elm$core$Maybe$Just(
+					$author$project$Anim$Engine$WAAPI$Paused(elementId));
+			case 'resumed':
+				return $elm$core$Maybe$Just(
+					$author$project$Anim$Engine$WAAPI$Resumed(elementId));
+			case 'completed':
+				return $elm$core$Maybe$Just(
+					$author$project$Anim$Engine$WAAPI$Completed(elementId));
+			case 'canceled':
+				return $elm$core$Maybe$Just(
+					$author$project$Anim$Engine$WAAPI$Canceled(elementId));
+			case 'restarted':
+				return $elm$core$Maybe$Just(
+					$author$project$Anim$Engine$WAAPI$Restarted(elementId));
+			default:
+				return $elm$core$Maybe$Nothing;
+		}
+	});
 var $author$project$Anim$Engine$WAAPI$decode = F2(
 	function (currentAnimState, eventValue) {
 		var _v0 = A2($author$project$Anim$Internal$WAAPI$decodeEvent, eventValue, currentAnimState);
 		var updatedState = _v0.a;
-		var maybeStatusString = _v0.b;
+		var maybeStatusAndId = _v0.b;
 		return _Utils_Tuple2(
 			updatedState,
-			A2($elm$core$Maybe$andThen, $author$project$Anim$Engine$WAAPI$statusStringToEvent, maybeStatusString));
+			A2(
+				$elm$core$Maybe$andThen,
+				function (_v1) {
+					var elementId = _v1.a;
+					var status = _v1.b;
+					return A2($author$project$Anim$Engine$WAAPI$statusStringToEvent, elementId, status);
+				},
+				maybeStatusAndId));
 	});
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Engines$WAAPI$BasicUsage$Main$waapiEvent = _Platform_incomingPort('waapiEvent', $elm$json$Json$Decode$value);
@@ -8551,10 +8589,6 @@ var $author$project$Anim$Internal$Easing$generateElasticOscillationsWithFrames =
 					}),
 				A2($elm$core$List$range, 0, totalCycles - 1)));
 		return allFrames;
-	});
-var $elm$core$Tuple$pair = F2(
-	function (a, b) {
-		return _Utils_Tuple2(a, b);
 	});
 var $elm$core$List$takeReverse = F3(
 	function (n, list, kept) {
@@ -10415,8 +10449,8 @@ var $author$project$Engines$WAAPI$BasicUsage$Main$fadeIn = A2(
 			$author$project$Anim$Property$Opacity$build)));
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Engines$WAAPI$BasicUsage$Main$handleEvent = F2(
-	function (maybeEvent, newModel) {
-		return _Utils_Tuple2(newModel, $elm$core$Platform$Cmd$none);
+	function (maybeEvent, model) {
+		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 	});
 var $author$project$Anim$Property$Translate$build = $author$project$Anim$Internal$Builders$Translate$build;
 var $author$project$Anim$Internal$Builders$Translate$duration = F2(
@@ -10448,7 +10482,7 @@ var $author$project$Engines$WAAPI$BasicUsage$Main$update = F2(
 				$author$project$Anim$Engine$WAAPI$animate,
 				$author$project$Engines$WAAPI$BasicUsage$Main$waapiCommand,
 				model.animState,
-				A2($elm$core$Basics$composeR, $author$project$Engines$WAAPI$BasicUsage$Main$slideIn, $author$project$Engines$WAAPI$BasicUsage$Main$fadeIn));
+				A2($elm$core$Basics$composeR, $author$project$Engines$WAAPI$BasicUsage$Main$fadeIn, $author$project$Engines$WAAPI$BasicUsage$Main$slideIn));
 			var newAnimState = _v1.a;
 			var cmd = _v1.b;
 			return _Utils_Tuple2(

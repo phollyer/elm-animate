@@ -89,10 +89,8 @@ update msg model =
         MoveToPosition x y ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.moveToXY "box" x y
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.moveToXY "box" x y)
               }
             , Cmd.none
             )
@@ -100,10 +98,8 @@ update msg model =
         MoveLeft ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.moveLeft "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.moveLeft "box")
               }
             , Cmd.none
             )
@@ -111,10 +107,8 @@ update msg model =
         MoveRight ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.moveRight "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.moveRight "box")
               }
             , Cmd.none
             )
@@ -122,10 +116,8 @@ update msg model =
         MoveDown ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.moveDown "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.moveDown "box")
               }
             , Cmd.none
             )
@@ -133,10 +125,8 @@ update msg model =
         MoveUp ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.moveUp "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.moveUp "box")
               }
             , Cmd.none
             )
@@ -144,10 +134,8 @@ update msg model =
         ReturnToOrigin ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.returnToOrigin "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.returnToOrigin "box")
               }
             , Cmd.none
             )

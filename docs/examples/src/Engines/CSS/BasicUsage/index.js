@@ -5168,6 +5168,10 @@ var $author$project$Anim$Internal$CSS$AnimState = function (a) {
 	return {$: 'AnimState', a: a};
 };
 var $author$project$Anim$Internal$CSS$NotStarted = {$: 'NotStarted'};
+var $author$project$Anim$Internal$CSS$builder = function (_v0) {
+	var state = _v0.a;
+	return state.builder;
+};
 var $author$project$Anim$Internal$Builder$AnimBuilder = function (a) {
 	return {$: 'AnimBuilder', a: a};
 };
@@ -7780,32 +7784,30 @@ var $author$project$Anim$Internal$Builder$markDirty = function (_v0) {
 					data.elements)
 			}));
 };
-var $author$project$Anim$Internal$CSS$animate = function (builder_) {
-	var elementIds = $elm$core$Dict$keys(
-		$author$project$Anim$Internal$Builder$elements(builder_));
-	return $author$project$Anim$Internal$CSS$AnimState(
-		{
-			builder: $author$project$Anim$Internal$Builder$clearCurrentElement(
-				$author$project$Anim$Internal$Builder$markDirty(builder_)),
-			elementAnimations: A2(
-				$elm$core$Dict$map,
-				$author$project$Anim$Internal$CSS$generateElementAnimation($elm$core$Maybe$Nothing),
-				$author$project$Anim$Internal$Builder$elements(builder_)),
-			elementStates: $elm$core$Dict$fromList(
-				A2(
-					$elm$core$List$map,
-					function (id) {
-						return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$NotStarted);
-					},
-					elementIds))
-		});
-};
+var $author$project$Anim$Internal$CSS$animate = F2(
+	function (animState, transform) {
+		var builder_ = transform(
+			$author$project$Anim$Internal$CSS$builder(animState));
+		var elementIds = $elm$core$Dict$keys(
+			$author$project$Anim$Internal$Builder$elements(builder_));
+		return $author$project$Anim$Internal$CSS$AnimState(
+			{
+				builder: $author$project$Anim$Internal$Builder$clearCurrentElement(
+					$author$project$Anim$Internal$Builder$markDirty(builder_)),
+				elementAnimations: A2(
+					$elm$core$Dict$map,
+					$author$project$Anim$Internal$CSS$generateElementAnimation($elm$core$Maybe$Nothing),
+					$author$project$Anim$Internal$Builder$elements(builder_)),
+				elementStates: $elm$core$Dict$fromList(
+					A2(
+						$elm$core$List$map,
+						function (id) {
+							return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$NotStarted);
+						},
+						elementIds))
+			});
+	});
 var $author$project$Anim$Engine$CSS$animate = $author$project$Anim$Internal$CSS$animate;
-var $author$project$Anim$Internal$CSS$builder = function (_v0) {
-	var state = _v0.a;
-	return state.builder;
-};
-var $author$project$Anim$Engine$CSS$builder = $author$project$Anim$Internal$CSS$builder;
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
 	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil});
 var $author$project$Anim$Internal$CSS$init = $author$project$Anim$Internal$CSS$AnimState(
@@ -8391,12 +8393,10 @@ var $author$project$Anim$Property$Translate$initX = F3(
 					x,
 					A2($author$project$Anim$Internal$Builders$Translate$for, elementId, animBuilder))));
 	});
-var $author$project$Engines$CSS$BasicUsage$Main$initialState = $author$project$Anim$Engine$CSS$animate(
-	A3(
-		$author$project$Anim$Property$Translate$initX,
-		'hello-text',
-		-100,
-		$author$project$Anim$Engine$CSS$builder($author$project$Anim$Engine$CSS$init)));
+var $author$project$Engines$CSS$BasicUsage$Main$initialState = A2(
+	$author$project$Anim$Engine$CSS$animate,
+	$author$project$Anim$Engine$CSS$init,
+	A2($author$project$Anim$Property$Translate$initX, 'hello-text', -100));
 var $elm$core$Process$sleep = _Process_sleep;
 var $author$project$Engines$CSS$BasicUsage$Main$init = function (_v0) {
 	return _Utils_Tuple2(
@@ -8452,9 +8452,7 @@ var $author$project$Engines$CSS$BasicUsage$Main$update = F2(
 			_Utils_update(
 				model,
 				{
-					animState: $author$project$Anim$Engine$CSS$animate(
-						$author$project$Engines$CSS$BasicUsage$Main$slideIn(
-							$author$project$Anim$Engine$CSS$builder(model.animState)))
+					animState: A2($author$project$Anim$Engine$CSS$animate, model.animState, $author$project$Engines$CSS$BasicUsage$Main$slideIn)
 				}),
 			$elm$core$Platform$Cmd$none);
 	});

@@ -57,10 +57,7 @@ fadeInBuilder builder =
 
 fadeInAnimation : CSS.AnimState
 fadeInAnimation =
-    CSS.init
-        |> CSS.builder
-        |> fadeInBuilder
-        |> CSS.animate
+    CSS.animate CSS.init fadeInBuilder
 
 
 

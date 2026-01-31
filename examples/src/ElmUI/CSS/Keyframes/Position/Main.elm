@@ -96,10 +96,8 @@ update msg model =
         MoveToPosition x y ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.moveToXY elementId x y
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.moveToXY elementId x y)
               }
             , Cmd.none
             )
@@ -107,10 +105,8 @@ update msg model =
         MoveLeft ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.moveLeft elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.moveLeft elementId)
               }
             , Cmd.none
             )
@@ -118,10 +114,8 @@ update msg model =
         MoveRight ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.moveRight elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.moveRight elementId)
               }
             , Cmd.none
             )
@@ -129,10 +123,8 @@ update msg model =
         MoveDown ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.moveDown elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.moveDown elementId)
               }
             , Cmd.none
             )
@@ -140,10 +132,8 @@ update msg model =
         MoveUp ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.moveUp elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.moveUp elementId)
               }
             , Cmd.none
             )
@@ -151,10 +141,8 @@ update msg model =
         ReturnToOrigin ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.returnToOrigin elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.returnToOrigin elementId)
               }
             , Cmd.none
             )

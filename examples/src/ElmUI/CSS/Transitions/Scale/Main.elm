@@ -81,10 +81,8 @@ update msg model =
         ScaleUp ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.scaleUp "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.scaleUp "box")
               }
             , Cmd.none
             )
@@ -92,10 +90,8 @@ update msg model =
         ScaleDown ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.scaleDown "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.scaleDown "box")
               }
             , Cmd.none
             )
@@ -103,10 +99,8 @@ update msg model =
         ScaleWide ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.scaleWide "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.scaleWide "box")
               }
             , Cmd.none
             )
@@ -114,10 +108,8 @@ update msg model =
         ScaleTall ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.scaleTall "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.scaleTall "box")
               }
             , Cmd.none
             )
@@ -125,10 +117,8 @@ update msg model =
         ScaleReset ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.scaleReset "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.scaleReset "box")
               }
             , Cmd.none
             )

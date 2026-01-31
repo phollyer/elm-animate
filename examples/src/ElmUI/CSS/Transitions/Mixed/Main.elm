@@ -82,24 +82,23 @@ type AnimationType
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations =
-            CSS.init
-                |> CSS.builder
-                |> Color.init "box-1" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
-                |> Color.init "box-2" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
-                |> Color.init "box-3" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
-                |> Translate.initXY "box-1" 0 0
-                |> Translate.initXY "box-2" 0 0
-                |> Translate.initXY "box-3" 0 0
-                |> Scale.initXY "box-1" 1 1
-                |> Scale.initXY "box-2" 1 1
-                |> Scale.initXY "box-3" 1 1
-                |> Rotate.init "box-1" 0
-                |> Rotate.init "box-2" 0
-                |> Rotate.init "box-3" 0
-                |> Opacity.init "box-1" 1
-                |> Opacity.init "box-2" 1
-                |> Opacity.init "box-3" 1
-                |> CSS.animate
+            CSS.animate CSS.init
+                (Color.init "box-1" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
+                    >> Color.init "box-2" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
+                    >> Color.init "box-3" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
+                    >> Translate.initXY "box-1" 0 0
+                    >> Translate.initXY "box-2" 0 0
+                    >> Translate.initXY "box-3" 0 0
+                    >> Scale.initXY "box-1" 1 1
+                    >> Scale.initXY "box-2" 1 1
+                    >> Scale.initXY "box-3" 1 1
+                    >> Rotate.init "box-1" 0
+                    >> Rotate.init "box-2" 0
+                    >> Rotate.init "box-3" 0
+                    >> Opacity.init "box-1" 1
+                    >> Opacity.init "box-2" 1
+                    >> Opacity.init "box-3" 1
+                )
       , isAnimating = False
       , activeAnimation = Nothing
       }
@@ -127,29 +126,28 @@ update msg model =
             -- Combine position + scale + rotate with different easing
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        -- Global Defaults
-                        |> CSS.duration 800
-                        |> CSS.easing QuadInOut
-                        -- Position
-                        |> Translate.for "mixed-box"
-                        |> Translate.toXY 200 100
-                        |> Translate.easing SineInOut
-                        |> Translate.build
-                        -- Scale
-                        |> Scale.for "mixed-box"
-                        |> Scale.toXY 1.5 1.2
-                        |> Scale.easing BackInOut
-                        |> Scale.duration 1000
-                        |> Scale.build
-                        -- Rotate
-                        |> Rotate.for "mixed-box"
-                        |> Rotate.toZ 45
-                        |> Rotate.easing ElasticOut
-                        |> Rotate.duration 1200
-                        |> Rotate.build
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (-- Global Defaults
+                         CSS.duration 800
+                            >> CSS.easing QuadInOut
+                            -- Position
+                            >> Translate.for "mixed-box"
+                            >> Translate.toXY 200 100
+                            >> Translate.easing SineInOut
+                            >> Translate.build
+                            -- Scale
+                            >> Scale.for "mixed-box"
+                            >> Scale.toXY 1.5 1.2
+                            >> Scale.easing BackInOut
+                            >> Scale.duration 1000
+                            >> Scale.build
+                            -- Rotate
+                            >> Rotate.for "mixed-box"
+                            >> Rotate.toZ 45
+                            >> Rotate.easing ElasticOut
+                            >> Rotate.duration 1200
+                            >> Rotate.build
+                        )
                 , isAnimating = True
                 , activeAnimation = Just ComplexTransform
               }
@@ -160,20 +158,19 @@ update msg model =
             -- Combine opacity + position with synchronized timing
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        -- Global Defaults
-                        |> CSS.duration 800
-                        |> CSS.easing CubicInOut
-                        -- Opacity
-                        |> Opacity.for "mixed-box"
-                        |> Opacity.to 0.3
-                        |> Opacity.build
-                        -- Position
-                        |> Translate.for "mixed-box"
-                        |> Translate.toXY 250 150
-                        |> Translate.build
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (-- Global Defaults
+                         CSS.duration 800
+                            >> CSS.easing CubicInOut
+                            -- Opacity
+                            >> Opacity.for "mixed-box"
+                            >> Opacity.to 0.3
+                            >> Opacity.build
+                            -- Position
+                            >> Translate.for "mixed-box"
+                            >> Translate.toXY 250 150
+                            >> Translate.build
+                        )
                 , isAnimating = True
                 , activeAnimation = Just FadeMove
               }
@@ -184,21 +181,20 @@ update msg model =
             -- Rotate + scale with delayed start
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        -- Global Defaults
-                        |> CSS.duration 1000
-                        |> CSS.easing BounceOut
-                        -- Rotate
-                        |> Rotate.for "mixed-box"
-                        |> Rotate.toZ 180
-                        |> Rotate.build
-                        -- Scale
-                        |> Scale.for "mixed-box"
-                        |> Scale.toXY 0.8 0.8
-                        |> Scale.delay 200
-                        |> Scale.build
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (-- Global Defaults
+                         CSS.duration 1000
+                            >> CSS.easing BounceOut
+                            -- Rotate
+                            >> Rotate.for "mixed-box"
+                            >> Rotate.toZ 180
+                            >> Rotate.build
+                            -- Scale
+                            >> Scale.for "mixed-box"
+                            >> Scale.toXY 0.8 0.8
+                            >> Scale.delay 200
+                            >> Scale.build
+                        )
                 , isAnimating = True
                 , activeAnimation = Just SpinScale
               }
@@ -209,20 +205,19 @@ update msg model =
             -- Color + scale with smooth coordination
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        -- Global Defaults
-                        |> CSS.duration 900
-                        |> CSS.easing QuartInOut
-                        -- Color
-                        |> Color.for "mixed-box"
-                        |> Color.to (Anim.Color.fromRgb { r = 255, g = 100, b = 150 })
-                        |> Color.build
-                        -- Scale
-                        |> Scale.for "mixed-box"
-                        |> Scale.toXY 1.3 1.3
-                        |> Scale.build
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (-- Global Defaults
+                         CSS.duration 900
+                            >> CSS.easing QuartInOut
+                            -- Color
+                            >> Color.for "mixed-box"
+                            >> Color.to (Anim.Color.fromRgb { r = 255, g = 100, b = 150 })
+                            >> Color.build
+                            -- Scale
+                            >> Scale.for "mixed-box"
+                            >> Scale.toXY 1.3 1.3
+                            >> Scale.build
+                        )
                 , isAnimating = True
                 , activeAnimation = Just ColorMorph
               }
@@ -233,43 +228,42 @@ update msg model =
             -- All properties with staggered timing - API handles transform order automatically
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        -- Position
-                        |> Translate.for "mixed-box"
-                        |> Translate.toXY 150 200
-                        |> Translate.easing ExpoInOut
-                        |> Translate.duration 1200
-                        |> Translate.build
-                        -- Rotate
-                        |> Rotate.for "mixed-box"
-                        |> Rotate.toZ 135
-                        |> Rotate.easing ElasticInOut
-                        |> Rotate.duration 1400
-                        |> Rotate.delay 300
-                        |> Rotate.build
-                        -- Scale
-                        |> Scale.for "mixed-box"
-                        |> Scale.toXY 1.4 0.9
-                        |> Scale.easing CircInOut
-                        |> Scale.duration 1000
-                        |> Scale.delay 2000
-                        |> Scale.build
-                        -- Opacity
-                        |> Opacity.for "mixed-box"
-                        |> Opacity.to 0.7
-                        |> Opacity.easing Linear
-                        |> Opacity.duration 800
-                        |> Opacity.delay 100
-                        |> Opacity.build
-                        -- Color
-                        |> Color.for "mixed-box"
-                        |> Color.to (Anim.Color.fromRgb { r = 100, g = 255, b = 200 })
-                        |> Color.easing QuintInOut
-                        |> Color.duration 1100
-                        |> Color.delay 400
-                        |> Color.build
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (-- Position
+                         Translate.for "mixed-box"
+                            >> Translate.toXY 150 200
+                            >> Translate.easing ExpoInOut
+                            >> Translate.duration 1200
+                            >> Translate.build
+                            -- Rotate
+                            >> Rotate.for "mixed-box"
+                            >> Rotate.toZ 135
+                            >> Rotate.easing ElasticInOut
+                            >> Rotate.duration 1400
+                            >> Rotate.delay 300
+                            >> Rotate.build
+                            -- Scale
+                            >> Scale.for "mixed-box"
+                            >> Scale.toXY 1.4 0.9
+                            >> Scale.easing CircInOut
+                            >> Scale.duration 1000
+                            >> Scale.delay 2000
+                            >> Scale.build
+                            -- Opacity
+                            >> Opacity.for "mixed-box"
+                            >> Opacity.to 0.7
+                            >> Opacity.easing Linear
+                            >> Opacity.duration 800
+                            >> Opacity.delay 100
+                            >> Opacity.build
+                            -- Color
+                            >> Color.for "mixed-box"
+                            >> Color.to (Anim.Color.fromRgb { r = 100, g = 255, b = 200 })
+                            >> Color.easing QuintInOut
+                            >> Color.duration 1100
+                            >> Color.delay 400
+                            >> Color.build
+                        )
                 , isAnimating = True
                 , activeAnimation = Just FullTransform
               }
@@ -279,32 +273,31 @@ update msg model =
         ResetAll ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        -- Global Defaults
-                        |> CSS.duration 800
-                        |> CSS.easing QuadInOut
-                        -- Position
-                        |> Translate.for "mixed-box"
-                        |> Translate.toXY 0 0
-                        |> Translate.build
-                        -- Opacity
-                        |> Opacity.for "mixed-box"
-                        |> Opacity.to 1.0
-                        |> Opacity.build
-                        -- Scale
-                        |> Scale.for "mixed-box"
-                        |> Scale.toXY 1.0 1.0
-                        |> Scale.build
-                        -- Rotate
-                        |> Rotate.for "mixed-box"
-                        |> Rotate.toZ 0
-                        |> Rotate.build
-                        -- Color
-                        |> Color.for "mixed-box"
-                        |> Color.to (Anim.Color.fromRgb { r = 59, g = 130, b = 246 })
-                        |> Color.build
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (-- Global Defaults
+                         CSS.duration 800
+                            >> CSS.easing QuadInOut
+                            -- Position
+                            >> Translate.for "mixed-box"
+                            >> Translate.toXY 0 0
+                            >> Translate.build
+                            -- Opacity
+                            >> Opacity.for "mixed-box"
+                            >> Opacity.to 1.0
+                            >> Opacity.build
+                            -- Scale
+                            >> Scale.for "mixed-box"
+                            >> Scale.toXY 1.0 1.0
+                            >> Scale.build
+                            -- Rotate
+                            >> Rotate.for "mixed-box"
+                            >> Rotate.toZ 0
+                            >> Rotate.build
+                            -- Color
+                            >> Color.for "mixed-box"
+                            >> Color.to (Anim.Color.fromRgb { r = 59, g = 130, b = 246 })
+                            >> Color.build
+                        )
                 , isAnimating = True
                 , activeAnimation = Nothing
               }

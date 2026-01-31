@@ -94,10 +94,8 @@ update msg model =
         ScatterElements ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Choreography.scatterFormation
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        Choreography.scatterFormation
               }
             , Cmd.none
             )
@@ -105,10 +103,8 @@ update msg model =
         ResetPositions ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Choreography.resetToOrigin
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        Choreography.resetToOrigin
               }
             , Cmd.none
             )
@@ -116,10 +112,8 @@ update msg model =
         CircleFormation ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Choreography.circleFormation
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        Choreography.circleFormation
               }
             , Cmd.none
             )

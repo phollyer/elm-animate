@@ -118,9 +118,14 @@ builder ((AnimState state) as animationState) =
     Dict.foldl (setInitialValues animationState) state.builder state.elementAnimations
 
 
-animate : AnimBuilder -> AnimState
-animate builder_ =
+animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
+animate animState transform =
     let
+        builder_ =
+            animState
+                |> builder
+                |> transform
+
         processedData =
             Builder.processAnimationData builder_
 

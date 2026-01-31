@@ -60,10 +60,8 @@ type alias Model =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations =
-            Sub.init
-                |> Sub.builder
-                |> Animations.resetColor "box"
-                |> Sub.animate
+            Sub.animate Sub.init
+                (Animations.resetColor "box")
       }
     , Cmd.none
     )
@@ -89,10 +87,8 @@ update msg model =
         ChangeToBlue ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.changeToBlue "box"
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Animations.changeToBlue "box")
               }
             , Cmd.none
             )
@@ -100,10 +96,8 @@ update msg model =
         ChangeToGreen ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.changeToGreen "box"
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Animations.changeToGreen "box")
               }
             , Cmd.none
             )
@@ -111,10 +105,8 @@ update msg model =
         ChangeToOrange ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.changeToOrange "box"
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Animations.changeToOrange "box")
               }
             , Cmd.none
             )
@@ -122,10 +114,8 @@ update msg model =
         ChangeToRed ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.changeToRed "box"
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Animations.changeToRed "box")
               }
             , Cmd.none
             )
@@ -133,10 +123,8 @@ update msg model =
         ChangeToPurple ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.changeToPurple "box"
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Animations.changeToPurple "box")
               }
             , Cmd.none
             )
@@ -144,10 +132,8 @@ update msg model =
         ResetColor ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.resetColor "box"
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Animations.resetColor "box")
               }
             , Cmd.none
             )

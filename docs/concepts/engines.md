@@ -23,10 +23,7 @@ The CSS Engine generates native CSS transitions or keyframe animations. The brow
 import Anim.Engine.CSS as CSS
 
 animState =
-    CSS.init
-        |> CSS.builder
-        |> myAnimation
-        |> CSS.animate
+    CSS.animate CSS.init myAnimation
 ```
 
 **Best for:**
@@ -56,10 +53,7 @@ type Msg
     | ...
 
 animState =
-    Sub.init
-        |> Sub.builder
-        |> myAnimation
-        |> Sub.animate
+    Sub.animate Sub.init myAnimation
 
 -- In your subscriptions
 subscriptions model =
@@ -152,13 +146,13 @@ myAnimation builder =
         |> Translate.build
 
 -- Use with CSS
-CSS.init |> CSS.builder |> myAnimation |> CSS.animate
+CSS.animate CSS.init myAnimation
 
 -- Use with Sub
-Sub.init |> Sub.builder |> myAnimation |> Sub.animate
+Sub.animate Sub.init myAnimation
 
--- Use with WAAPI
-WAAPI.init |> WAAPI.builder |> myAnimation |> WAAPI.animate
+-- Use with WAAPI (returns tuple with Cmd)
+WAAPI.animate toJS WAAPI.init myAnimation
 ```
 
 This makes it easy to start simple with the CSS Engine and migrate to Sub or WAAPI as your requirements grow.

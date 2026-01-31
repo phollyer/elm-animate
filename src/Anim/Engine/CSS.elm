@@ -299,13 +299,15 @@ type alias AnimBuilder =
 updated [AnimState](#AnimState).
 
     animationState =
-        model.animations -- Or `CSS.init`
-            |> CSS.builder
-            |> ... -- continue building the animation
-            |> CSS.animate
+        CSS.animate model.animations <|
+            (fadeIn >> slideIn)
+
+    -- For fire-and-forget animations:
+    animationState =
+        CSS.animate CSS.init myAnimation
 
 -}
-animate : AnimBuilder -> AnimState
+animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
 animate =
     InternalCSS.animate
 
@@ -316,17 +318,14 @@ This is an alternative to [animate](#animate) that allows you to specify the ord
 in which **transform** properties should be animated.
 
     -- Custom transform order: Scale → Rotate → Position
-    model.animations -- Or `CSS.init`
-        |> CSS.builder
-        |> -- ... property configurations ...
-        |> CSS.animateOrder [ Scale, Rotate, Position ]
+    CSS.animateOrder [ Scale, Rotate, Position ] model.animations myAnimation
 
 -}
-animateOrder : List TransformOrder -> AnimBuilder -> AnimState
-animateOrder order =
+animateOrder : List TransformOrder -> AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
+animateOrder order animState transform =
     let
-        mapOrder transform =
-            case transform of
+        mapOrder xform =
+            case xform of
                 Translate ->
                     InternalCSS.Translate
 
@@ -336,9 +335,7 @@ animateOrder order =
                 Scale ->
                     InternalCSS.Scale
     in
-    order
-        |> List.map mapOrder
-        |> InternalCSS.animateWithOrder
+    InternalCSS.animateWithOrder (List.map mapOrder order) animState transform
 
 
 {-| Initialize empty animation state.

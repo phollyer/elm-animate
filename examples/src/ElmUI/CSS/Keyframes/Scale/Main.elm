@@ -86,10 +86,8 @@ update msg model =
         ScaleUp ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.scaleUp elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.scaleUp elementId)
               }
             , Cmd.none
             )
@@ -97,10 +95,8 @@ update msg model =
         ScaleDown ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.scaleDown elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.scaleDown elementId)
               }
             , Cmd.none
             )
@@ -108,10 +104,8 @@ update msg model =
         ScaleWide ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.scaleWide elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.scaleWide elementId)
               }
             , Cmd.none
             )
@@ -119,10 +113,8 @@ update msg model =
         ScaleTall ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.scaleTall elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.scaleTall elementId)
               }
             , Cmd.none
             )
@@ -130,10 +122,8 @@ update msg model =
         ScaleReset ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.scaleReset elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.scaleReset elementId)
               }
             , Cmd.none
             )

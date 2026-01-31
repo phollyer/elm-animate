@@ -86,10 +86,8 @@ update msg model =
         FadeIn ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.fadeIn elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.fadeIn elementId)
               }
             , Cmd.none
             )
@@ -97,10 +95,8 @@ update msg model =
         FadeOut ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.fadeOut elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.fadeOut elementId)
               }
             , Cmd.none
             )
@@ -108,10 +104,8 @@ update msg model =
         FadeToHalf ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.fadeToHalf elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.fadeToHalf elementId)
               }
             , Cmd.none
             )
@@ -119,10 +113,8 @@ update msg model =
         FadeToQuarter ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.fadeToQuarter elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.fadeToQuarter elementId)
               }
             , Cmd.none
             )
@@ -130,10 +122,8 @@ update msg model =
         ShowFully ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.fadeIn elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.fadeIn elementId)
               }
             , Cmd.none
             )

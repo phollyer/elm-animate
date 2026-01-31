@@ -67,10 +67,8 @@ type alias Model =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations =
-            CSS.init
-                |> CSS.builder
-                |> Color.init elementId (Anim.Color.fromRgba { r = 149, g = 165, b = 166, a = 1 })
-                |> CSS.animate
+            CSS.animate CSS.init
+                (Color.init elementId (Anim.Color.fromRgba { r = 149, g = 165, b = 166, a = 1 }))
       }
     , Cmd.none
     )
@@ -101,10 +99,8 @@ update msg model =
         ChangeToBlue ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.changeToBlue elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.changeToBlue elementId)
               }
             , Cmd.none
             )
@@ -112,10 +108,8 @@ update msg model =
         ChangeToGreen ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.changeToGreen elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.changeToGreen elementId)
               }
             , Cmd.none
             )
@@ -123,10 +117,8 @@ update msg model =
         ChangeToOrange ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.changeToOrange elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.changeToOrange elementId)
               }
             , Cmd.none
             )
@@ -134,10 +126,8 @@ update msg model =
         ChangeToRed ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.changeToRed elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.changeToRed elementId)
               }
             , Cmd.none
             )
@@ -145,10 +135,8 @@ update msg model =
         ChangeToPurple ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.changeToPurple elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.changeToPurple elementId)
               }
             , Cmd.none
             )
@@ -156,10 +144,8 @@ update msg model =
         ResetColor ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.resetColor elementId
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.resetColor elementId)
               }
             , Cmd.none
             )

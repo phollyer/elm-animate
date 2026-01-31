@@ -120,12 +120,11 @@ update msg model =
         MoveToCorner ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> CSS.duration 1000
-                        |> CSS.easing Linear
-                        |> PositionAnim.moveToXY elementId 450 300
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (CSS.duration 1000
+                            >> CSS.easing Linear
+                            >> PositionAnim.moveToXY elementId 450 300
+                        )
                 , isAnimating = True
               }
             , Cmd.none
@@ -134,12 +133,11 @@ update msg model =
         MoveToCenter ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> CSS.duration 800
-                        |> CSS.easing Linear
-                        |> PositionAnim.moveToXY elementId 225 150
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (CSS.duration 800
+                            >> CSS.easing Linear
+                            >> PositionAnim.moveToXY elementId 225 150
+                        )
                 , isAnimating = True
               }
             , Cmd.none

@@ -62,10 +62,8 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         initialAnimations =
-            Sub.init
-                |> Sub.builder
-                |> Translate.initXY elementId 50 50
-                |> Sub.animate
+            Sub.animate Sub.init
+                (Translate.initXY elementId 50 50)
     in
     ( { animations = initialAnimations
       , isAnimating = False
@@ -105,11 +103,10 @@ update msg model =
         Animate ->
             let
                 newAnimations =
-                    model.animations
-                        |> Sub.builder
-                        |> Sub.duration 2000
-                        |> PositionAnim.moveDown elementId
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Sub.duration 2000
+                            >> PositionAnim.moveDown elementId
+                        )
             in
             ( { model
                 | animations = newAnimations

@@ -5192,6 +5192,10 @@ var $author$project$Anim$Internal$CSS$AnimState = function (a) {
 	return {$: 'AnimState', a: a};
 };
 var $author$project$Anim$Internal$CSS$NotStarted = {$: 'NotStarted'};
+var $author$project$Anim$Internal$CSS$builder = function (_v0) {
+	var state = _v0.a;
+	return state.builder;
+};
 var $author$project$Anim$Internal$Builder$AnimBuilder = function (a) {
 	return {$: 'AnimBuilder', a: a};
 };
@@ -7804,32 +7808,30 @@ var $author$project$Anim$Internal$Builder$markDirty = function (_v0) {
 					data.elements)
 			}));
 };
-var $author$project$Anim$Internal$CSS$animate = function (builder_) {
-	var elementIds = $elm$core$Dict$keys(
-		$author$project$Anim$Internal$Builder$elements(builder_));
-	return $author$project$Anim$Internal$CSS$AnimState(
-		{
-			builder: $author$project$Anim$Internal$Builder$clearCurrentElement(
-				$author$project$Anim$Internal$Builder$markDirty(builder_)),
-			elementAnimations: A2(
-				$elm$core$Dict$map,
-				$author$project$Anim$Internal$CSS$generateElementAnimation($elm$core$Maybe$Nothing),
-				$author$project$Anim$Internal$Builder$elements(builder_)),
-			elementStates: $elm$core$Dict$fromList(
-				A2(
-					$elm$core$List$map,
-					function (id) {
-						return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$NotStarted);
-					},
-					elementIds))
-		});
-};
+var $author$project$Anim$Internal$CSS$animate = F2(
+	function (animState, transform) {
+		var builder_ = transform(
+			$author$project$Anim$Internal$CSS$builder(animState));
+		var elementIds = $elm$core$Dict$keys(
+			$author$project$Anim$Internal$Builder$elements(builder_));
+		return $author$project$Anim$Internal$CSS$AnimState(
+			{
+				builder: $author$project$Anim$Internal$Builder$clearCurrentElement(
+					$author$project$Anim$Internal$Builder$markDirty(builder_)),
+				elementAnimations: A2(
+					$elm$core$Dict$map,
+					$author$project$Anim$Internal$CSS$generateElementAnimation($elm$core$Maybe$Nothing),
+					$author$project$Anim$Internal$Builder$elements(builder_)),
+				elementStates: $elm$core$Dict$fromList(
+					A2(
+						$elm$core$List$map,
+						function (id) {
+							return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$NotStarted);
+						},
+						elementIds))
+			});
+	});
 var $author$project$Anim$Engine$CSS$animate = $author$project$Anim$Internal$CSS$animate;
-var $author$project$Anim$Internal$CSS$builder = function (_v0) {
-	var state = _v0.a;
-	return state.builder;
-};
-var $author$project$Anim$Engine$CSS$builder = $author$project$Anim$Internal$CSS$builder;
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
 		get:
@@ -8378,9 +8380,7 @@ var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$B
 var $author$project$Anim$Internal$CSS$init = $author$project$Anim$Internal$CSS$AnimState(
 	{builder: $author$project$Anim$Internal$Builder$init, elementAnimations: $elm$core$Dict$empty, elementStates: $elm$core$Dict$empty});
 var $author$project$Anim$Engine$CSS$init = $author$project$Anim$Internal$CSS$init;
-var $author$project$GettingStarted$FirstAnimation$Main$fadeInAnimation = $author$project$Anim$Engine$CSS$animate(
-	$author$project$GettingStarted$FirstAnimation$Main$fadeInBuilder(
-		$author$project$Anim$Engine$CSS$builder($author$project$Anim$Engine$CSS$init)));
+var $author$project$GettingStarted$FirstAnimation$Main$fadeInAnimation = A2($author$project$Anim$Engine$CSS$animate, $author$project$Anim$Engine$CSS$init, $author$project$GettingStarted$FirstAnimation$Main$fadeInBuilder);
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {

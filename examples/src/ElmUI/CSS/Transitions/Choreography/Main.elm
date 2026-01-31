@@ -98,12 +98,11 @@ update msg model =
             -- Create a multi-element animation using the choreography functions
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> CSS.duration 800
-                        |> CSS.easing Easing.QuadInOut
-                        |> Choreography.scatterFormation
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (CSS.duration 800
+                            >> CSS.easing Easing.QuadInOut
+                            >> Choreography.scatterFormation
+                        )
               }
             , Cmd.none
             )
@@ -111,12 +110,11 @@ update msg model =
         ResetPositions ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> CSS.duration 600
-                        |> CSS.easing Easing.QuadInOut
-                        |> Choreography.resetToOrigin
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (CSS.duration 600
+                            >> CSS.easing Easing.QuadInOut
+                            >> Choreography.resetToOrigin
+                        )
               }
             , Cmd.none
             )
@@ -124,12 +122,11 @@ update msg model =
         CircleFormation ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> CSS.duration 1000
-                        |> CSS.easing BackInOut
-                        |> Choreography.circleFormation
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (CSS.duration 1000
+                            >> CSS.easing BackInOut
+                            >> Choreography.circleFormation
+                        )
               }
             , Cmd.none
             )

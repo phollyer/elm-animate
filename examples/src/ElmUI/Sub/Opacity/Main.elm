@@ -82,10 +82,8 @@ update msg model =
         FadeIn ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.fadeIn "box"
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Animations.fadeIn "box")
                 , isVisible = True
               }
             , Cmd.none
@@ -94,10 +92,8 @@ update msg model =
         FadeOut ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.fadeOut "box"
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Animations.fadeOut "box")
                 , isVisible = False
               }
             , Cmd.none
@@ -118,10 +114,8 @@ update msg model =
             in
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.fadeToggle "box" currentOpacity
-                        |> Sub.animate
+                    Sub.animate model.animations
+                        (Animations.fadeToggle "box" currentOpacity)
                 , isVisible = newVisible
               }
             , Cmd.none

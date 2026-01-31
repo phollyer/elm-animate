@@ -30,10 +30,7 @@ slideIn builder =
 
 -- Use it with the CSS engine
 animState =
-    CSS.init
-        |> CSS.builder
-        |> slideIn
-        |> CSS.animate
+    CSS.animate CSS.init slideIn
 ```
 
 ## Animation Engines

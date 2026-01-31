@@ -13,10 +13,7 @@ type alias Model =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animState =
-            Sub.init
-                |> Sub.builder
-                |> slideIn
-                |> Sub.animate
+            Sub.animate Sub.init slideIn
       }
     , Cmd.none
     )

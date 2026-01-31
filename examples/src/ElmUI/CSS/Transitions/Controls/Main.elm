@@ -62,10 +62,8 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         initialAnimations =
-            CSS.init
-                |> CSS.builder
-                |> Translate.initXY elementId 50 50
-                |> CSS.animate
+            CSS.animate CSS.init
+                (Translate.initXY elementId 50 50)
     in
     ( { animations = initialAnimations
       , isAnimating = False
@@ -99,11 +97,10 @@ update msg model =
         Animate ->
             let
                 newAnimations =
-                    model.animations
-                        |> CSS.builder
-                        |> CSS.duration 2000
-                        |> PositionAnim.moveToXY elementId 400 250
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (CSS.duration 2000
+                            >> PositionAnim.moveToXY elementId 400 250
+                        )
             in
             ( { model
                 | animations = newAnimations

@@ -92,13 +92,12 @@ These settings will be used for all property animations.
 
     ```elm
     animState =
-        model.animState
-            |> Sub.builder
-            |> Sub.duration 500
-            |> Sub.easing QuintOut
-            |> Sub.delay 100
-            |> myAnimation
-            |> Sub.animate
+        Sub.animate model.animState
+            (Sub.duration 500
+                >> Sub.easing QuintOut
+                >> Sub.delay 100
+                >> myAnimation
+            )
     ```
 
 Individual properties can override them:

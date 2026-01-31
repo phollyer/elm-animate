@@ -59,10 +59,7 @@ type alias Model =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations =
-            Sub.init
-                |> Sub.builder
-                |> Scale.initXY "box" 1.0 1.0
-                |> Sub.animate
+            Sub.animate Sub.init (Scale.initXY "box" 1.0 1.0)
       }
     , Cmd.none
     )
@@ -87,10 +84,7 @@ update msg model =
         ScaleUp ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.scaleUp "box"
-                        |> Sub.animate
+                    Sub.animate model.animations (Animations.scaleUp "box")
               }
             , Cmd.none
             )
@@ -98,10 +92,7 @@ update msg model =
         ScaleDown ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.scaleDown "box"
-                        |> Sub.animate
+                    Sub.animate model.animations (Animations.scaleDown "box")
               }
             , Cmd.none
             )
@@ -109,10 +100,7 @@ update msg model =
         ScaleReset ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.scaleReset "box"
-                        |> Sub.animate
+                    Sub.animate model.animations (Animations.scaleReset "box")
               }
             , Cmd.none
             )
@@ -120,10 +108,7 @@ update msg model =
         ScaleWide ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.scaleWide "box"
-                        |> Sub.animate
+                    Sub.animate model.animations (Animations.scaleWide "box")
               }
             , Cmd.none
             )
@@ -131,10 +116,7 @@ update msg model =
         ScaleTall ->
             ( { model
                 | animations =
-                    model.animations
-                        |> Sub.builder
-                        |> Animations.scaleTall "box"
-                        |> Sub.animate
+                    Sub.animate model.animations (Animations.scaleTall "box")
               }
             , Cmd.none
             )

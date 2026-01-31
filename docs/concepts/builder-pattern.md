@@ -84,14 +84,14 @@ myAnimation builder =
         |> Translate.build
 
 -- Works with CSS
-CSS.init |> CSS.builder |> myAnimation |> CSS.animate
+CSS.animate CSS.init myAnimation
 
 -- Works with Sub
-Sub.init |> Sub.builder |> myAnimation |> Sub.animate
+Sub.animate Sub.init myAnimation
 
 -- Works with WAAPI (slightly different API)
 -- Fire-and-forget animations
-WAAPI.init |> WAAPI.builder |> myAnimation |> WAAPI.fireAndForget
+WAAPI.fireAndForget toJS myAnimation
 
 -- State tracked animations
 port waapiCommand : Json.Encode.Value -> Cmd msg
@@ -104,12 +104,11 @@ WAAPI.animate waapiCommand model.animations myAnimation
 Set defaults that apply to all properties:
 
 ```elm
-CSS.init
-    |> CSS.builder
-    |> CSS.duration 500           -- Default duration 500ms
-    |> CSS.easing QuintOut        -- Default easing
-    |> myAnimation                -- Properties can override
-    |> CSS.animate
+CSS.animate CSS.init
+    (CSS.duration 500           -- Default duration 500ms
+        >> CSS.easing QuintOut  -- Default easing
+        >> myAnimation          -- Properties can override
+    )
 ```
 
 Properties can override global settings:

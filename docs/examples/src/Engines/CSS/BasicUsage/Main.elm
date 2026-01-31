@@ -21,10 +21,7 @@ init _ =
 
 initialState : CSS.AnimState
 initialState =
-    CSS.init
-        |> CSS.builder
-        |> Translate.initX "hello-text" -100
-        |> CSS.animate
+    CSS.animate CSS.init (Translate.initX "hello-text" -100)
 
 
 slideIn : CSS.AnimBuilder -> CSS.AnimBuilder
@@ -47,10 +44,7 @@ update msg model =
         TriggerAnimation ->
             ( { model
                 | animState =
-                    model.animState
-                        |> CSS.builder
-                        |> slideIn
-                        |> CSS.animate
+                    CSS.animate model.animState slideIn
               }
             , Cmd.none
             )

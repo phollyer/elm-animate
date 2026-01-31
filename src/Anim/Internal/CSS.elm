@@ -109,9 +109,14 @@ builder (AnimState state) =
     state.builder
 
 
-animate : AnimBuilder -> AnimState
-animate builder_ =
+animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
+animate animState transform =
     let
+        builder_ =
+            animState
+                |> builder
+                |> transform
+
         elementIds =
             builder_
                 |> Builder.elements
@@ -141,9 +146,14 @@ type TransformOrder
 
 {-| Apply animation with custom transform ordering.
 -}
-animateWithOrder : List TransformOrder -> AnimBuilder -> AnimState
-animateWithOrder order builder_ =
+animateWithOrder : List TransformOrder -> AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
+animateWithOrder order animState transform =
     let
+        builder_ =
+            animState
+                |> builder
+                |> transform
+
         elementIds =
             builder_
                 |> Builder.elements
@@ -838,16 +848,23 @@ resumeAnimation elementId (AnimState state) =
 stopAnimation : String -> AnimState -> AnimState
 stopAnimation elementId animState =
     let
-        -- Start with a fresh builder with 0ms duration for the element
-        baseBuilder =
-            animState
-                |> builder
+        -- Helper function to add a property if it exists
+        addPropertyIfExists : Maybe a -> (a -> Builder.PropertyConfig) -> Builder.AnimBuilder -> Builder.AnimBuilder
+        addPropertyIfExists maybeRange toConfig builderState =
+            case maybeRange of
+                Just range ->
+                    Property.add (toConfig range) builderState
+
+                Nothing ->
+                    builderState
+
+        -- Build animation function with all end values
+        withAllProperties : AnimBuilder -> AnimBuilder
+        withAllProperties b =
+            b
                 |> Builder.duration 0
                 |> easing Anim.Easing.Linear
-
-        -- Build new animation with all current values using Property.add
-        withAllProperties =
-            baseBuilder
+                |> Builder.for elementId
                 |> addPropertyIfExists
                     (getTranslateRange elementId animState)
                     (\range ->
@@ -962,18 +979,8 @@ stopAnimation elementId animState =
                             , isDirty = True
                             }
                     )
-
-        -- Helper function to add a property if it exists
-        addPropertyIfExists : Maybe a -> (a -> Builder.PropertyConfig) -> Builder.AnimBuilder -> Builder.AnimBuilder
-        addPropertyIfExists maybeRange toConfig builder_ =
-            case maybeRange of
-                Just range ->
-                    Property.add (toConfig range) builder_
-
-                Nothing ->
-                    builder_
     in
-    animate withAllProperties
+    animate animState withAllProperties
 
 
 {-| Reset an animation by jumping to its start state with a 0ms transition.
@@ -986,17 +993,23 @@ resetAnimation elementId animState =
         getStartValue maybeStart defaultValue =
             Maybe.withDefault defaultValue maybeStart
 
-        -- Start with a fresh builder with 0ms duration for the element
-        baseBuilder =
-            animState
-                |> builder
+        -- Helper function to add a property if it exists
+        addPropertyIfExists : Maybe a -> (a -> Builder.PropertyConfig) -> Builder.AnimBuilder -> Builder.AnimBuilder
+        addPropertyIfExists maybeRange toConfig builderState =
+            case maybeRange of
+                Just range ->
+                    Property.add (toConfig range) builderState
+
+                Nothing ->
+                    builderState
+
+        -- Build animation function that resets all properties to their start values
+        withAllProperties : AnimBuilder -> AnimBuilder
+        withAllProperties b =
+            b
                 |> Builder.duration 0
                 |> easing Anim.Easing.Linear
                 |> Builder.for elementId
-
-        -- Build new animation with all start values using Property.add
-        withAllProperties =
-            baseBuilder
                 |> addPropertyIfExists
                     (getTranslateRange elementId animState)
                     (\range ->
@@ -1111,18 +1124,8 @@ resetAnimation elementId animState =
                             , isDirty = True
                             }
                     )
-
-        -- Helper function to add a property if it exists
-        addPropertyIfExists : Maybe a -> (a -> Builder.PropertyConfig) -> Builder.AnimBuilder -> Builder.AnimBuilder
-        addPropertyIfExists maybeRange toConfig builder_ =
-            case maybeRange of
-                Just range ->
-                    Property.add (toConfig range) builder_
-
-                Nothing ->
-                    builder_
     in
-    animate withAllProperties
+    animate animState withAllProperties
 
 
 {-| Restart an animation from the beginning.

@@ -59,10 +59,8 @@ type alias Model =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations =
-            CSS.init
-                |> CSS.builder
-                |> Color.init "animated-box" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
-                |> CSS.animate
+            CSS.animate CSS.init
+                (Color.init "animated-box" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 }))
       }
     , Cmd.none
     )
@@ -88,10 +86,8 @@ update msg model =
         ChangeToBlue ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.changeToBlue "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.changeToBlue "box")
               }
             , Cmd.none
             )
@@ -99,10 +95,8 @@ update msg model =
         ChangeToGreen ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.changeToGreen "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.changeToGreen "box")
               }
             , Cmd.none
             )
@@ -110,10 +104,8 @@ update msg model =
         ChangeToOrange ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.changeToOrange "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.changeToOrange "box")
               }
             , Cmd.none
             )
@@ -121,10 +113,8 @@ update msg model =
         ChangeToRed ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.changeToRed "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.changeToRed "box")
               }
             , Cmd.none
             )
@@ -132,10 +122,8 @@ update msg model =
         ChangeToPurple ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.changeToPurple "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.changeToPurple "box")
               }
             , Cmd.none
             )
@@ -143,10 +131,8 @@ update msg model =
         ResetColor ->
             ( { model
                 | animations =
-                    model.animations
-                        |> CSS.builder
-                        |> Animations.resetColor "box"
-                        |> CSS.animate
+                    CSS.animate model.animations
+                        (Animations.resetColor "box")
               }
             , Cmd.none
             )

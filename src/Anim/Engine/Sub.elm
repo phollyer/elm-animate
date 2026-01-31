@@ -200,25 +200,22 @@ builder =
 
     let
         newAnimations =
-            model.animations
-                |> Sub.builder
-                |> .. -- Build your animations here
-                |> Sub.animate
+            Sub.animate model.animations myAnimation
     in
     { model | animations = newAnimations }
 
 -}
-animate : AnimBuilder -> AnimState
+animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
 animate =
     InternalSub.animate
 
 
 {-| Set global duration in milliseconds (overrides any previous speed setting).
 
-    model.animations
-        |> Sub.builder
-        |> Sub.duration 1000
-        |> ... -- Continue building the animation
+    Sub.animate model.animations
+        (Sub.duration 1000
+            >> ... -- Continue building the animation
+        )
 
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
