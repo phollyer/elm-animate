@@ -6,10 +6,10 @@
  * hardware-accelerated animations supporting all animation properties.
  *
  * Usage:
- * import { init } from 'elm-animate-waapi';
+ * import ElmAnimateWAAPI from 'elm-animate-waapi';
  *
  * const app = Elm.Main.init({ node: document.getElementById('app') });
- * init(app.ports);
+ * ElmAnimateWAAPI.init(app.ports);
  */
 
 // Track active animations for cleanup and management
@@ -983,3 +983,10 @@ export function addEasingFunction(name, cssValue) {
 
 // Export the activeAnimations map for advanced usage
 export { activeAnimations };
+
+// Default export for simpler imports
+export default {
+    init,
+    addEasingFunction,
+    activeAnimations
+};

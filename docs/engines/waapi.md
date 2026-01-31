@@ -36,13 +36,13 @@ The WAAPI Engine uses the Web Animations API via Elm ports and a JavaScript comp
 ??? example "View Source Code"
 
     ```javascript
-    import { init } from 'elm-animate-waapi';
+    import ElmAnimateWAAPI from 'elm-animate-waapi';
 
     const app = Elm.Main.init({
         node: document.getElementById('app')
     });
 
-    init(app.ports);
+    ElmAnimateWAAPI.init(app.ports);
     ```
 
 Or using a script tag (legacy/no-bundler):
@@ -59,7 +59,7 @@ Or using a script tag (legacy/no-bundler):
 
 ### 3. Define ports in Elm
 
-The WAAPI engine uses just two ports - one for commands and one for events:
+The WAAPI engine uses just two ports - one for outgoing commands and one for incoming events:
 
 ??? example "View Source Code"
 
@@ -106,6 +106,60 @@ For any animations that don't need state tracking:
             |> Translate.build
             |> WAAPI.fireAndForget waapiCommand
     ```
+
+## Event Handling
+
+The WAAPI engine decodes events through a single subscription. The `decode` function returns the updated `AnimState` and a `Maybe AnimationEvent`. Each event carries the `elementId` of the animated element:
+
+??? example "View Source Code"
+
+    ```elm
+    type Msg
+        = GotWaapiUpdate ( WAAPI.AnimState, Maybe WAAPI.AnimationEvent )
+
+
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        waapiEvent (GotWaapiUpdate << WAAPI.decode model.animState)
+
+
+    update msg model =
+        case msg of
+            GotWaapiUpdate ( newAnimState, maybeEvent ) ->
+                case maybeEvent of
+                    Just (WAAPI.Started elementId) ->
+                        -- Animation began playing for elementId
+                        ( { model | animState = newAnimState }, Cmd.none )
+
+                    Just (WAAPI.Completed "box") ->
+                        -- The "box" element finished animating
+                        ( { model | animState = newAnimState }, Cmd.none )
+
+                    Just (WAAPI.Completed elementId) ->
+                        -- Some other element finished animating
+                        ( { model | animState = newAnimState }, Cmd.none )
+
+                    Just (WAAPI.Paused elementId) ->
+                        -- Animation was paused for elementId
+                        ( { model | animState = newAnimState }, Cmd.none )
+
+                    Just (WAAPI.Resumed elementId) ->
+                        -- Animation continued after pause for elementId
+                        ( { model | animState = newAnimState }, Cmd.none )
+
+                    Just (WAAPI.Canceled elementId) ->
+                        -- Animation was canceled (via reset) for elementId
+                        ( { model | animState = newAnimState }, Cmd.none )
+
+                    Just (WAAPI.Restarted elementId) ->
+                        -- Animation was restarted for elementId
+                        ( { model | animState = newAnimState }, Cmd.none )
+
+                    Nothing ->
+                        -- Property update (no lifecycle change)
+                        ( { model | animState = newAnimState }, Cmd.none )
+    ```
+
 
 ## Animation Control
 
@@ -175,59 +229,6 @@ Restart replays the animation from the beginning:
                         WAAPI.restart "box" waapiCommand model.animState
                 in
                 ( { model | animState = newAnimState }, cmd )
-    ```
-
-## Event Handling
-
-The WAAPI engine decodes events through a single subscription. The `decode` function returns the updated `AnimState` and an optional `AnimationEvent`. Each event carries the `elementId` of the animated element:
-
-??? example "View Source Code"
-
-    ```elm
-    type Msg
-        = GotWaapiUpdate ( WAAPI.AnimState, Maybe WAAPI.AnimationEvent )
-
-
-    subscriptions : Model -> Sub Msg
-    subscriptions model =
-        waapiEvent (GotWaapiUpdate << WAAPI.decode model.animState)
-
-
-    update msg model =
-        case msg of
-            GotWaapiUpdate ( newAnimState, maybeEvent ) ->
-                case maybeEvent of
-                    Just (WAAPI.Started elementId) ->
-                        -- Animation began playing for elementId
-                        ( { model | animState = newAnimState }, Cmd.none )
-
-                    Just (WAAPI.Completed "box") ->
-                        -- The "box" element finished animating
-                        ( { model | animState = newAnimState }, Cmd.none )
-
-                    Just (WAAPI.Completed elementId) ->
-                        -- Some other element finished animating
-                        ( { model | animState = newAnimState }, Cmd.none )
-
-                    Just (WAAPI.Paused elementId) ->
-                        -- Animation was paused for elementId
-                        ( { model | animState = newAnimState }, Cmd.none )
-
-                    Just (WAAPI.Resumed elementId) ->
-                        -- Animation continued after pause for elementId
-                        ( { model | animState = newAnimState }, Cmd.none )
-
-                    Just (WAAPI.Canceled elementId) ->
-                        -- Animation was canceled (via reset) for elementId
-                        ( { model | animState = newAnimState }, Cmd.none )
-
-                    Just (WAAPI.Restarted elementId) ->
-                        -- Animation was restarted for elementId
-                        ( { model | animState = newAnimState }, Cmd.none )
-
-                    Nothing ->
-                        -- Property update (no lifecycle change)
-                        ( { model | animState = newAnimState }, Cmd.none )
     ```
 
 ## Global Settings

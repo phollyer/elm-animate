@@ -862,7 +862,8 @@ along with a `Maybe AnimationEvent` for lifecycle changes.
 Property updates (translate, opacity, etc.) are automatically applied to `AnimState`.
 You can query current values using getter functions by [querying animated properties](#querying-animated-properties).
 
-**Note:** For fire-and-forget animations, you don't need this - animations are handled entirely by the Web Animations API.
+**Note:** You can receive lifecycle events (Started, Completed, etc.) for fire-and-forget
+animations too, but property queries won't work since fire-and-forget doesn't track state.
 
     port waapiEvent : (Encode.Value -> msg) -> Sub msg
 
