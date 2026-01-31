@@ -4,7 +4,7 @@ The WAAPI Engine uses the Web Animations API via Elm ports and a JavaScript comp
 
 ## When to Use
 
-✅ **Best for:**
+✅ **For:**
 
 - Complex animations needing both performance and control
 - Pause, resume, reset, and restart functionality
@@ -12,10 +12,10 @@ The WAAPI Engine uses the Web Animations API via Elm ports and a JavaScript comp
 - When you need browser-native rendering with JavaScript control
 - Animations requiring state tracking and querying
 
-❌ **Consider other engines when you want:**
+❌ **Consider other engines for:**
 
-- to avoid JavaScript dependencies (use CSS or Sub)
-- simple fire-and-forget animations (use CSS)
+- Avoiding JavaScript dependencies (use CSS or Sub)
+- Simple fire-and-forget animations (use CSS)
 
 ## Setup
 
@@ -33,313 +33,364 @@ The WAAPI Engine uses the Web Animations API via Elm ports and a JavaScript comp
 
 ### 2. Initialize in JavaScript
 
-```javascript
-import { init } from 'elm-animate-waapi';
+??? example "View Source Code"
 
-const app = Elm.Main.init({
-    node: document.getElementById('app')
-});
+    ```javascript
+    import { init } from 'elm-animate-waapi';
 
-init(app.ports);
-```
+    const app = Elm.Main.init({
+        node: document.getElementById('app')
+    });
+
+    init(app.ports);
+    ```
 
 Or using a script tag (legacy/no-bundler):
 
-```html
-<script src="node_modules/elm-animate-waapi/dist/elm-animate-waapi.js"></script>
-<script>
-    const app = Elm.Main.init({ node: document.getElementById('app') });
-    ElmAnimateWAAPI.init(app.ports);
-</script>
-```
+??? example "View Source Code"
+
+    ```html
+    <script src="node_modules/elm-animate-waapi/dist/elm-animate-waapi.js"></script>
+    <script>
+        const app = Elm.Main.init({ node: document.getElementById('app') });
+        ElmAnimateWAAPI.init(app.ports);
+    </script>
+    ```
 
 ### 3. Define ports in Elm
 
 The WAAPI engine uses just two ports - one for commands and one for events:
 
-```elm
-port module Main exposing (main)
+??? example "View Source Code"
 
-import Json.Encode
+    ```elm
+    port module Main exposing (main)
 
-
--- Outgoing port (Elm → JS): sends all animation commands
-port waapiCommand : Json.Encode.Value -> Cmd msg
+    import Json.Encode
 
 
--- Incoming port (JS → Elm): receives all animation events
-port waapiEvent : (Json.Encode.Value -> msg) -> Sub msg
-```
+    -- Outgoing port (Elm → JS): sends all animation commands
+    port waapiCommand : Json.Encode.Value -> Cmd msg
+
+
+    -- Incoming port (JS → Elm): receives all animation events
+    port waapiEvent : (Json.Encode.Value -> msg) -> Sub msg
+    ```
 
 ## Basic Usage
 
-```elm
-import Anim.Engine.WAAPI as WAAPI
-import Anim.Property.Translate as Translate
+??? example "View Source Code"
+
+    ```elm
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Property.Translate as Translate
 
 
-type alias Model =
-    { animState : WAAPI.AnimState }
+    type alias Model =
+        { animState : WAAPI.AnimState }
 
 
-type Msg
-    = StartAnimation
-    | GotWaapiUpdate ( WAAPI.AnimState, Maybe WAAPI.AnimationEvent )
+    type Msg
+        = StartAnimation
+        | GotWaapiUpdate ( WAAPI.AnimState, Maybe WAAPI.AnimationEvent )
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( { animState = WAAPI.init }, Cmd.none )
+    init : ( Model, Cmd Msg )
+    init =
+        ( { animState = WAAPI.init }, Cmd.none )
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        StartAnimation ->
-            let
-                ( newAnimState, cmd ) =
-                    WAAPI.animate waapiCommand model.animState <|
-                        \builder ->
-                            builder
-                                |> Translate.for "box"
-                                |> Translate.fromX -100
-                                |> Translate.toX 0
-                                |> Translate.duration 500
-                                |> Translate.build
-            in
-            ( { model | animState = newAnimState }, cmd )
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            StartAnimation ->
+                let
+                    ( newAnimState, cmd ) =
+                        WAAPI.animate waapiCommand model.animState <|
+                            \builder ->
+                                builder
+                                    |> Translate.for "box"
+                                    |> Translate.fromX -100
+                                    |> Translate.toX 0
+                                    |> Translate.duration 500
+                                    |> Translate.build
+                in
+                ( { model | animState = newAnimState }, cmd )
 
-        GotWaapiUpdate ( newAnimState, maybeEvent ) ->
-            case maybeEvent of
-                Just WAAPI.Completed ->
-                    -- Animation finished, trigger next action
-                    ( { model | animState = newAnimState }, Cmd.none )
+            GotWaapiUpdate ( newAnimState, maybeEvent ) ->
+                case maybeEvent of
+                    Just WAAPI.Completed ->
+                        -- Animation finished, trigger next action
+                        ( { model | animState = newAnimState }, Cmd.none )
 
-                _ ->
-                    -- Property updates or other events
-                    ( { model | animState = newAnimState }, Cmd.none )
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    waapiEvent (GotWaapiUpdate << WAAPI.decode model.animState)
+                    _ ->
+                        -- Property updates or other events
+                        ( { model | animState = newAnimState }, Cmd.none )
 
 
-view : Model -> Html Msg
-view model =
-    div
-        [ id "box"
-        , style "width" "100px"
-        , style "height" "100px"
-        , style "background" "blue"
-        ]
-        [ text "Hello!" ]
-```
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        waapiEvent (GotWaapiUpdate << WAAPI.decode model.animState)
+
+
+    view : Model -> Html Msg
+    view model =
+        div
+            [ id "box"
+            , style "width" "100px"
+            , style "height" "100px"
+            , style "background" "blue"
+            ]
+            [ text "Hello!" ]
+    ```
 
 ## Fire-and-Forget Animations
 
 For simple animations that don't need state tracking:
 
-```elm
-startSimpleAnimation : Cmd msg
-startSimpleAnimation =
-    WAAPI.init
-        |> WAAPI.builder
-        |> Translate.for "box"
-        |> Translate.toX 100
-        |> Translate.duration 500
-        |> Translate.build
-        |> WAAPI.fireAndForget waapiCommand
-```
+??? example "View Source Code"
+
+    ```elm
+    startSimpleAnimation : Cmd msg
+    startSimpleAnimation =
+        WAAPI.init
+            |> WAAPI.builder
+            |> Translate.for "box"
+            |> Translate.toX 100
+            |> Translate.duration 500
+            |> Translate.build
+            |> WAAPI.fireAndForget waapiCommand
+    ```
 
 ## Animation Control
 
-All control functions take the element ID and the port as arguments:
+All control functions take the element ID and the port as arguments.
 
 ### Pause and Resume
 
-```elm
-type Msg
-    = Pause
-    | Resume
+??? example "View Source Code"
+
+    ```elm
+    type Msg
+        = Pause
+        | Resume
 
 
-update msg model =
-    case msg of
-        Pause ->
-            ( model, WAAPI.pause "box" waapiCommand )
+    update msg model =
+        case msg of
+            Pause ->
+                ( model, WAAPI.pause "box" waapiCommand )
 
-        Resume ->
-            ( model, WAAPI.resume "box" waapiCommand )
-```
+            Resume ->
+                ( model, WAAPI.resume "box" waapiCommand )
+    ```
 
 ### Stop Animation
 
 Stop instantly jumps to the end state:
 
-```elm
-update msg model =
-    case msg of
-        Stop ->
-            ( model, WAAPI.stop "box" waapiCommand )
-```
+??? example "View Source Code"
+
+    ```elm
+    update msg model =
+        case msg of
+            Stop ->
+                ( model, WAAPI.stop "box" waapiCommand )
+    ```
 
 ### Reset Animation
 
 Reset cancels and returns to the start state, updating the `AnimState`:
 
-```elm
-update msg model =
-    case msg of
-        Reset ->
-            let
-                ( newAnimState, cmd ) =
-                    WAAPI.reset "box" waapiCommand model.animState
-            in
-            ( { model | animState = newAnimState }, cmd )
-```
+??? example "View Source Code"
+
+    ```elm
+    update msg model =
+        case msg of
+            Reset ->
+                let
+                    ( newAnimState, cmd ) =
+                        WAAPI.reset "box" waapiCommand model.animState
+                in
+                ( { model | animState = newAnimState }, cmd )
+    ```
 
 ### Restart Animation
 
 Restart replays the animation from the beginning:
 
-```elm
-update msg model =
-    case msg of
-        Restart ->
-            let
-                ( newAnimState, cmd ) =
-                    WAAPI.restart "box" waapiCommand model.animState
-            in
-            ( { model | animState = newAnimState }, cmd )
-```
+??? example "View Source Code"
+
+    ```elm
+    update msg model =
+        case msg of
+            Restart ->
+                let
+                    ( newAnimState, cmd ) =
+                        WAAPI.restart "box" waapiCommand model.animState
+                in
+                ( { model | animState = newAnimState }, cmd )
+    ```
 
 ## Event Handling
 
 The WAAPI engine decodes events through a single subscription. The `decode` function returns the updated `AnimState` and an optional `AnimationEvent`:
 
-```elm
-type Msg
-    = GotWaapiUpdate ( WAAPI.AnimState, Maybe WAAPI.AnimationEvent )
+??? example "View Source Code"
+
+    ```elm
+    type Msg
+        = GotWaapiUpdate ( WAAPI.AnimState, Maybe WAAPI.AnimationEvent )
 
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    waapiEvent (GotWaapiUpdate << WAAPI.decode model.animState)
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        waapiEvent (GotWaapiUpdate << WAAPI.decode model.animState)
 
 
-update msg model =
-    case msg of
-        GotWaapiUpdate ( newAnimState, maybeEvent ) ->
-            case maybeEvent of
-                Just WAAPI.Started ->
-                    -- Animation began playing
-                    ( { model | animState = newAnimState }, Cmd.none )
+    update msg model =
+        case msg of
+            GotWaapiUpdate ( newAnimState, maybeEvent ) ->
+                case maybeEvent of
+                    Just WAAPI.Started ->
+                        -- Animation began playing
+                        ( { model | animState = newAnimState }, Cmd.none )
 
-                Just WAAPI.Completed ->
-                    -- Animation finished naturally
-                    ( { model | animState = newAnimState }, Cmd.none )
+                    Just WAAPI.Completed ->
+                        -- Animation finished naturally
+                        ( { model | animState = newAnimState }, Cmd.none )
 
-                Just WAAPI.Paused ->
-                    -- Animation was paused
-                    ( { model | animState = newAnimState }, Cmd.none )
+                    Just WAAPI.Paused ->
+                        -- Animation was paused
+                        ( { model | animState = newAnimState }, Cmd.none )
 
-                Just WAAPI.Resumed ->
-                    -- Animation continued after pause
-                    ( { model | animState = newAnimState }, Cmd.none )
+                    Just WAAPI.Resumed ->
+                        -- Animation continued after pause
+                        ( { model | animState = newAnimState }, Cmd.none )
 
-                Just WAAPI.Canceled ->
-                    -- Animation was canceled (via reset)
-                    ( { model | animState = newAnimState }, Cmd.none )
+                    Just WAAPI.Canceled ->
+                        -- Animation was canceled (via reset)
+                        ( { model | animState = newAnimState }, Cmd.none )
 
-                Just WAAPI.Restarted ->
-                    -- Animation was restarted
-                    ( { model | animState = newAnimState }, Cmd.none )
+                    Just WAAPI.Restarted ->
+                        -- Animation was restarted
+                        ( { model | animState = newAnimState }, Cmd.none )
 
-                Nothing ->
-                    -- Property update (no lifecycle change)
-                    ( { model | animState = newAnimState }, Cmd.none )
-```
+                    Nothing ->
+                        -- Property update (no lifecycle change)
+                        ( { model | animState = newAnimState }, Cmd.none )
+    ```
 
 ## Global Settings
 
-Configure animation defaults using builder functions:
+Set (optional) defaults for all properties:
 
-```elm
-let
-    ( newAnimState, cmd ) =
-        WAAPI.animate waapiCommand model.animState <|
-            \builder ->
-                builder
-                    |> WAAPI.duration 500
-                    |> WAAPI.easing QuintOut
-                    |> WAAPI.delay 100
-                    |> myAnimation
-in
-( { model | animState = newAnimState }, cmd )
-```
+- Timing: use `speed` or `duration`
+- Easing
+- Delay
 
-## Querying Animation State
+These settings will be used for all property animations.
 
-The WAAPI engine provides functions to query animation status and current property values:
+??? example "View Source Code"
 
-### Status Queries
+    ```elm
+    let
+        ( newAnimState, cmd ) =
+            WAAPI.animate waapiCommand model.animState <|
+                \builder ->
+                    builder
+                        |> WAAPI.duration 500
+                        |> WAAPI.easing QuintOut
+                        |> WAAPI.delay 100
+                        |> myAnimation
+    in
+    ( { model | animState = newAnimState }, cmd )
+    ```
 
-```elm
--- Check if any animations are running
-WAAPI.anyRunning model.animState
+Individual properties can override them:
 
--- Check if a specific element is animating
-WAAPI.isRunning "box" model.animState
+??? example "View Source Code"
 
--- Check if all animations have completed (returns Maybe Bool)
-WAAPI.allComplete model.animState
+    ```elm
+    myAnimation builder =
+        builder
+            |> Opacity.for "box"
+            |> Opacity.duration 1000  
+            |> Opacity.easing SineOut 
+            |> Opacity.delay 0
+            |> Opacity.build
+    ```
 
--- Check if a specific element's animation completed
-WAAPI.isComplete "box" model.animState
-```
+## Querying Current Values
 
-### Property Queries
+Get the current animated value for an element:
 
-Get current, start, or end values for animated properties:
+??? example "View Source Code"
 
-```elm
--- Get current position during animation
-WAAPI.getCurrentTranslate "box" model.animState
--- Returns: Maybe { x : Float, y : Float, z : Float }
+    ```elm
+    view model =
+        let
+            maybePosition =
+                WAAPI.getCurrentTranslate "box" model.animState
+        in
+        div []
+            [ case maybePosition of
+                Just { x, y, z } ->
+                    text ("Position: " ++ String.fromFloat x ++ ", " ++ String.fromFloat y)
 
--- Get start/end opacity
-WAAPI.getStartOpacity "box" model.animState
-WAAPI.getEndOpacity "box" model.animState
+                Nothing ->
+                    text "Not animating"
+            ]
+    ```
 
--- Get current background color
-WAAPI.getCurrentBackgroundColor "box" model.animState
--- Returns: Maybe Color
-```
+## Animation State
+
+Check if animations are running:
+
+??? example "View Source Code"
+
+    ```elm
+    view model =
+        div []
+            [ if WAAPI.anyRunning model.animState then
+                text "Animating..."
+            else
+                text "Complete"
+            ]
+    ```
 
 ## Initializing Properties
 
 Set initial property values before animating:
 
-```elm
-init : ( Model, Cmd Msg )
-init =
-    let
-        ( initialAnimState, initCmd ) =
-            WAAPI.initProperties waapiCommand
-                [ Translate.initXY "element-id" 100 50
-                , Opacity.init "element-id" 1.0
-                ]
-    in
-    ( { animState = initialAnimState }, initCmd )
-```
+??? example "View Source Code"
 
-## 3D Transforms
+    ```elm
+    init : ( Model, Cmd Msg )
+    init =
+        let
+            ( initialAnimState, initCmd ) =
+                WAAPI.initProperties waapiCommand
+                    [ Translate.initXY "element-id" 100 50
+                    , Opacity.init "element-id" 1.0
+                    ]
+        in
+        ( { animState = initialAnimState }, initCmd )
+    ```
+
+## 3D Transforms and Perspective
 
 The WAAPI Engine fully supports 3D animations. See [3D Animations](../concepts/3d.md) for how to define 3D transforms.
 
+## API Quick Reference
 
-## API Reference
+### Types
+
+| Type | Description |
+| ---- | ----------- |
+| `AnimState` | Tracks animations and their states |
+| `AnimBuilder` | Carries all the animations configurations |
+| `AnimationEvent` | Lifecycle events: `Started`, `Completed`, `Paused`, `Resumed`, `Canceled`, `Restarted` |
 
 ### Core Functions
 
@@ -350,6 +401,13 @@ The WAAPI Engine fully supports 3D animations. See [3D Animations](../concepts/3
 | `builder` | `AnimState -> AnimBuilder` | Create builder for defining animations |
 | `animate` | `(Value -> Cmd msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )` | Execute animation with state tracking |
 | `fireAndForget` | `(Value -> Cmd msg) -> AnimBuilder -> Cmd msg` | Execute animation without state tracking |
+| `decode` | `AnimState -> Value -> ( AnimState, Maybe AnimationEvent )` | Decode port events |
+
+### View Functions
+
+| Function | Type | Description |
+| ---------- | ------ | ------------- |
+| `htmlAttributes` | `String -> AnimState -> List (Html.Attribute msg)` | Get HTML animation attributes |
 
 ### Control Functions
 
@@ -361,40 +419,25 @@ The WAAPI Engine fully supports 3D animations. See [3D Animations](../concepts/3
 | `reset` | `String -> (Value -> Cmd msg) -> AnimState -> ( AnimState, Cmd msg )` | Return to start state |
 | `restart` | `String -> (Value -> Cmd msg) -> AnimState -> ( AnimState, Cmd msg )` | Replay from beginning |
 
-### Events
+### Query Functions
 
 | Function | Type | Description |
-| ---------- | ------ | ------------- |
-| `decode` | `AnimState -> Value -> ( AnimState, Maybe AnimationEvent )` | Decode port events |
+| ---------- | ----- | ------------- |
+| `anyRunning` | `AnimState -> Bool` | Check if any animations are running |
+| `isRunning` | `String -> AnimState -> Bool` | Check if specific element is animating |
+| `allComplete` | `AnimState -> Maybe Bool` | Check if all animations completed |
+| `isComplete` | `String -> AnimState -> Maybe Bool` | Check if specific element's animation completed |
+| `getCurrentTranslate` | `String -> AnimState -> Maybe { x : Float, y : Float, z : Float }` | Get current translate position |
+| `getStartRotate` | `String -> AnimState -> Maybe { x : Float, y : Float, z : Float }` | Get the start rotation |
+| `getEndScale` | `String -> AnimState -> Maybe { x : Float, y : Float, z : Float }` | Get the target end scale |
 
-### Configuration Functions
+### Global Functions
 
-| Function | Description |
-| ---------- | ------------- |
-| `duration` | Set animation duration (ms) |
-| `speed` | Set animation speed (px/sec) |
-| `easing` | Set easing function |
-| `delay` | Set animation delay (ms) |
-
-### State Query Functions
-
-| Function | Description |
-| ---------- | ------------- |
-| `anyRunning` | Check if any animations are running |
-| `isRunning` | Check if specific element is animating |
-| `allComplete` | Check if all animations completed |
-| `isComplete` | Check if specific element's animation completed |
-| `getCurrentTranslate` | Get current translate values |
-| `getCurrentOpacity` | Get current opacity |
-| `getCurrentScale` | Get current scale values |
-| `getCurrentRotate` | Get current rotation values |
-
-### Types
-
-| Type | Description |
-| ------ | ------------- |
-| `AnimState` | Animation state container |
-| `AnimBuilder` | Builder for configuring animations |
-| `AnimationEvent` | Lifecycle events: `Started`, `Completed`, `Paused`, `Resumed`, `Canceled`, `Restarted` |
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `duration` | `Int -> AnimBuilder -> AnimBuilder` | Set default duration (ms) |
+| `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set default speed (property units/sec) |
+| `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing function |
+| `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
 
 For complete API details, see the [elm-lang.org package documentation](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI).
