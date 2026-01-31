@@ -82,81 +82,26 @@ The WAAPI engine uses just two ports - one for commands and one for events:
 ??? example "View Source Code"
 
     ```elm
-    import Anim.Engine.WAAPI as WAAPI
-    import Anim.Property.Translate as Translate
-
-
-    type alias Model =
-        { animState : WAAPI.AnimState }
-
-
-    type Msg
-        = StartAnimation
-        | GotWaapiUpdate ( WAAPI.AnimState, Maybe WAAPI.AnimationEvent )
-
-
-    init : ( Model, Cmd Msg )
-    init =
-        ( { animState = WAAPI.init }, Cmd.none )
-
-
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
-        case msg of
-            StartAnimation ->
-                let
-                    ( newAnimState, cmd ) =
-                        WAAPI.animate waapiCommand model.animState <|
-                            \builder ->
-                                builder
-                                    |> Translate.for "box"
-                                    |> Translate.fromX -100
-                                    |> Translate.toX 0
-                                    |> Translate.duration 500
-                                    |> Translate.build
-                in
-                ( { model | animState = newAnimState }, cmd )
-
-            GotWaapiUpdate ( newAnimState, maybeEvent ) ->
-                case maybeEvent of
-                    Just WAAPI.Completed ->
-                        -- Animation finished, trigger next action
-                        ( { model | animState = newAnimState }, Cmd.none )
-
-                    _ ->
-                        -- Property updates or other events
-                        ( { model | animState = newAnimState }, Cmd.none )
-
-
-    subscriptions : Model -> Sub Msg
-    subscriptions model =
-        waapiEvent (GotWaapiUpdate << WAAPI.decode model.animState)
-
-
-    view : Model -> Html Msg
-    view model =
-        div
-            [ id "box"
-            , style "width" "100px"
-            , style "height" "100px"
-            , style "background" "blue"
-            ]
-            [ text "Hello!" ]
+    --8<-- "docs/examples/src/Engines/WAAPI/BasicUsage/Main.elm"
     ```
+
+[:material-play-circle: Run this example](../examples/src/Engines/WAAPI/BasicUsage/index.html){ .md-button target="_blank" }
+
 
 ## Fire-and-Forget Animations
 
-For simple animations that don't need state tracking:
+For any animations that don't need state tracking:
 
 ??? example "View Source Code"
 
     ```elm
-    startSimpleAnimation : Cmd msg
-    startSimpleAnimation =
+    simpleButtonHover : Cmd msg
+    simpleButtonHover =
         WAAPI.init
             |> WAAPI.builder
-            |> Translate.for "box"
-            |> Translate.toX 100
+            |> Translate.for "button"
+            |> Translate.fromZ 0
+            |> Translate.toZ 10
             |> Translate.duration 500
             |> Translate.build
             |> WAAPI.fireAndForget waapiCommand
