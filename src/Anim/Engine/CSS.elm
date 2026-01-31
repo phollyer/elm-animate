@@ -274,7 +274,7 @@ type KeyframeEvent
 
     import Anim.Engine.CSS as CSS
 
-    { model | animations : CSS.AnimState }
+    { model | animState : CSS.AnimState }
 
 This state keeps track of animations and their configurations.
 
@@ -316,6 +316,17 @@ in which **transform** properties should be animated.
     -- Custom transform order: Scale → Rotate → Position
     CSS.animateOrder [ Scale, Rotate, Position ] model.animState <|
         (rotateLeft >> scaleUp >> moveRight)
+
+**Smart list handling:**
+
+  - Duplicates are removed (first occurrence kept)
+  - Missing transforms are appended in the default order (Translate → Rotate → Scale)
+
+Examples:
+
+  - `[ Scale ]` becomes `[ Scale, Translate, Rotate ]`
+  - `[ Rotate, Scale ]` becomes `[ Rotate, Scale, Translate ]`
+  - `[ Scale, Scale, Rotate ]` becomes `[ Scale, Rotate, Translate ]`
 
 **Note**: The order of animations in the builder chain does not affect the transform order.
 
@@ -368,6 +379,9 @@ in which **transform** properties should be animated.
     CSS.fireAndForgetOrder [ Scale, Rotate, Position ] <|
         (rotateLeft >> scaleUp >> moveRight)
 
+**Smart list handling:** See [animateOrder](#animateOrder) for details on how
+incomplete or duplicate lists are normalized.
+
 **Note**: The order of animations in the builder chain does not affect the transform order.
 
     (rotateLeft >> scaleUp >> moveRight) == (moveRight >> rotateLeft >> scaleUp)
@@ -382,7 +396,7 @@ fireAndForgetOrder order =
 
     import Anim.Engine.CSS as CSS
 
-    { model | animations = CSS.init }
+    { model | animState = CSS.init }
 
 Or, when you want fire-and-forget animations.
 
@@ -402,7 +416,7 @@ init =
 Use this to start building new animations.
 
     -- Create a new animation based on current state
-    model.animations
+    model.animState
         |> CSS.builder
         |> ... -- continue building the animation
 
@@ -467,7 +481,7 @@ can add this node anywhere in your DOM, typically near the top.
 
     view model =
         div []
-            [ CSS.keyframesStyleNode model.animationState ]
+            [ CSS.keyframesStyleNode model.animStatetate ]
 
 If there are no animations, this returns an empty text node.
 
@@ -482,7 +496,7 @@ keyframes are included in your DOM. You can add this node anywhere in your DOM, 
 
     view model =
         div []
-            [ CSS.keyframesStyleNodeFor "my-element" model.animationState ]
+            [ CSS.keyframesStyleNodeFor "my-element" model.animStatetate ]
 
 If the element has no animations, this returns an empty text node.
 
@@ -549,7 +563,7 @@ Call this function from your update function to keep the animation state in sync
     update msg model =
         case msg of
             TransitionMsg event ->
-                { model | animations = CSS.handleTransitionEvent event model.animations }
+                { model | animState = CSS.handleTransitionEvent event model.animState }
 
 -}
 handleTransitionEvent : TransitionEvent -> AnimState -> AnimState
@@ -578,7 +592,7 @@ Call this function from your update function to keep the animation state in sync
     update msg model =
         case msg of
             KeyframeMsg event ->
-                { model | animations = CSS.handleKeyframeEvent event model.animations }
+                { model | animState = CSS.handleKeyframeEvent event model.animState }
 
 -}
 handleKeyframeEvent : KeyframeEvent -> AnimState -> AnimState
@@ -918,7 +932,7 @@ getCurrentSize elementId animState =
 
 {-| Set the global duration in milliseconds (overrides any previous speed setting).
 
-    model.animations
+    model.animState
         |> CSS.builder
         |> Css.duration 1000
         |> ... -- continue building the animation
@@ -934,7 +948,7 @@ duration =
 Exactly what "units" means depends on the properties being animated. For position properties, this is pixels per second.
 Refer to the relevant property documentation for specific details for each property.
 
-    model.animations
+    model.animState
         |> CSS.builder
         |> Css.speed 100
         |> ... -- continue building the animation
@@ -947,7 +961,7 @@ speed =
 
 {-| Set the global easing function.
 
-    model.animations
+    model.animState
         |> CSS.builder
         |> Css.easing EaseInOutQuad
         |> ... -- continue building the animation
@@ -960,7 +974,7 @@ easing =
 
 {-| Set the global delay in milliseconds.
 
-    model.animations
+    model.animState
         |> CSS.builder
         |> Css.delay 500
         |> ... -- continue building the animation
@@ -1085,7 +1099,7 @@ onAnimationCancel =
 
 {-| Stop a running animation by instantly jumping to its end state.
 
-    CSS.stop "my-element" model.animations
+    CSS.stop "my-element" model.animState
 
 -}
 stop : String -> AnimState -> AnimState
@@ -1095,7 +1109,7 @@ stop =
 
 {-| Reset an animation by instantly jumping back to its start state.
 
-    CSS.reset "my-element" model.animations
+    CSS.reset "my-element" model.animState
 
 -}
 reset : String -> AnimState -> AnimState
@@ -1105,7 +1119,7 @@ reset =
 
 {-| Restart an animation from the beginning.
 
-    CSS.restart "my-element" model.animations
+    CSS.restart "my-element" model.animState
 
 -}
 restart : String -> AnimState -> AnimState
@@ -1119,7 +1133,7 @@ restart =
 CSS transitions cannot be paused once started - this is a limitation of CSS itself.
 
     pausedAnimations =
-        CSS.pause "my-element" model.animations
+        CSS.pause "my-element" model.animState
 
 -}
 pause : String -> AnimState -> AnimState
@@ -1132,7 +1146,7 @@ pause =
 **Note**: This only works with keyframe animations, not CSS transitions.
 
     resumedAnimations =
-        CSS.resume "my-element" model.animations
+        CSS.resume "my-element" model.animState
 
 -}
 resume : String -> AnimState -> AnimState

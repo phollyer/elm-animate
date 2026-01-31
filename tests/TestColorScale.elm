@@ -16,21 +16,20 @@ suite =
             \_ ->
                 let
                     animations =
-                        CSS.init
-                            |> CSS.builder
-                            |> CSS.duration 900
-                            |> CSS.easing Easing.QuartInOut
-                            |> BackgroundColor.for "box"
-                            |> BackgroundColor.from (Color.fromRgb { r = 59, g = 130, b = 246 })
-                            |> BackgroundColor.to (Color.fromRgb { r = 255, g = 100, b = 150 })
-                            |> BackgroundColor.duration 900
-                            |> BackgroundColor.build
-                            |> Scale.for "box"
-                            |> Scale.fromXY 1.0 1.0
-                            |> Scale.toXY 1.3 1.3
-                            |> Scale.duration 900
-                            |> Scale.build
-                            |> CSS.animate
+                        CSS.fireAndForget <|
+                            (CSS.duration 900
+                                >> CSS.easing Easing.QuartInOut
+                                >> BackgroundColor.for "box"
+                                >> BackgroundColor.from (Color.fromRgb { r = 59, g = 130, b = 246 })
+                                >> BackgroundColor.to (Color.fromRgb { r = 255, g = 100, b = 150 })
+                                >> BackgroundColor.duration 900
+                                >> BackgroundColor.build
+                                >> Scale.for "box"
+                                >> Scale.fromXY 1.0 1.0
+                                >> Scale.toXY 1.3 1.3
+                                >> Scale.duration 900
+                                >> Scale.build
+                            )
 
                     keyframes =
                         CSS.getElementKeyframes "box" animations

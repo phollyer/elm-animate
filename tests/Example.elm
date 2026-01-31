@@ -22,14 +22,13 @@ suite =
                     let
                         -- Create animation data for internal function
                         animations =
-                            CSS.init
-                                |> CSS.builder
-                                |> Position.for "box"
-                                |> Position.toXY 100 100
-                                |> Position.duration 1000
-                                |> Position.easing Easing.Linear
-                                |> Position.build
-                                |> CSS.animate
+                            CSS.fireAndForget <|
+                                (Position.for "box"
+                                    >> Position.toXY 100 100
+                                    >> Position.duration 1000
+                                    >> Position.easing Easing.Linear
+                                    >> Position.build
+                                )
 
                         -- Internal function should generate keyframes string with expected content
                         actualKeyframes =
@@ -50,14 +49,13 @@ suite =
                     let
                         -- Create animation data for internal function
                         animations =
-                            CSS.init
-                                |> CSS.builder
-                                |> Position.for "box"
-                                |> Position.toXY 100 100
-                                |> Position.duration 1000
-                                |> Position.easing Easing.Linear
-                                |> Position.build
-                                |> CSS.animate
+                            CSS.fireAndForget <|
+                                (Position.for "box"
+                                    >> Position.toXY 100 100
+                                    >> Position.duration 1000
+                                    >> Position.easing Easing.Linear
+                                    >> Position.build
+                                )
 
                         -- Internal function should generate animation CSS property value
                         actualAnimation =
@@ -82,14 +80,13 @@ suite =
                     let
                         -- Create animation: move from (0,0) to (100,100) over 1s with linear easing
                         animations =
-                            CSS.init
-                                |> CSS.builder
-                                |> Position.for "box"
-                                |> Position.toXY 100 100
-                                |> Position.duration 1000
-                                |> Position.easing Easing.Linear
-                                |> Position.build
-                                |> CSS.animate
+                            CSS.fireAndForget <|
+                                (Position.for "box"
+                                    >> Position.toXY 100 100
+                                    >> Position.duration 1000
+                                    >> Position.easing Easing.Linear
+                                    >> Position.build
+                                )
 
                         -- The CSS.keyframesStyleNodeFor function should produce a <style> element
                         -- containing valid CSS content for injection into the DOM
@@ -115,14 +112,13 @@ suite =
                     let
                         -- Same animation setup
                         animations =
-                            CSS.init
-                                |> CSS.builder
-                                |> Position.for "box"
-                                |> Position.toXY 100 100
-                                |> Position.duration 1000
-                                |> Position.easing Easing.Linear
-                                |> Position.build
-                                |> CSS.animate
+                            CSS.fireAndForget <|
+                                (Position.for "box"
+                                    >> Position.toXY 100 100
+                                    >> Position.duration 1000
+                                    >> Position.easing Easing.Linear
+                                    >> Position.build
+                                )
 
                         -- This should produce a <style> HTML element containing our expected CSS
                         _ =
@@ -139,14 +135,13 @@ suite =
                     let
                         -- Create the same animation: move from (0,0) to (100,100) over 1s with linear easing
                         animations =
-                            CSS.init
-                                |> CSS.builder
-                                |> Position.for "box"
-                                |> Position.toXY 100 100
-                                |> Position.duration 1000
-                                |> Position.easing Easing.Linear
-                                |> Position.build
-                                |> CSS.animate
+                            CSS.fireAndForget <|
+                                (Position.for "box"
+                                    >> Position.toXY 100 100
+                                    >> Position.duration 1000
+                                    >> Position.easing Easing.Linear
+                                    >> Position.build
+                                )
 
                         -- CSS.animationStyleAttribute should produce an HTML style attribute
                         -- that applies the animation to the DOM element

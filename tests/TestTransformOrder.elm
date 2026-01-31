@@ -16,24 +16,23 @@ suite =
             \_ ->
                 let
                     animations =
-                        CSS.init
-                            |> CSS.builder
-                            |> CSS.duration 1000
-                            |> CSS.easing Easing.Linear
-                            -- First: Position
-                            |> Position.for "test-element"
-                            |> Position.toXY 100 50
-                            |> Position.build
-                            -- Second: Rotate
-                            |> Rotate.for "test-element"
-                            |> Rotate.to 45
-                            |> Rotate.build
-                            -- Third: Scale
-                            |> Scale.for "test-element"
-                            |> Scale.fromXY 1.0 1.0
-                            |> Scale.toXY 1.5 1.2
-                            |> Scale.build
-                            |> CSS.animate
+                        CSS.fireAndForget <|
+                            (CSS.duration 1000
+                                >> CSS.easing Easing.Linear
+                                -- First: Position
+                                >> Position.for "test-element"
+                                >> Position.toXY 100 50
+                                >> Position.build
+                                -- Second: Rotate
+                                >> Rotate.for "test-element"
+                                >> Rotate.to 45
+                                >> Rotate.build
+                                -- Third: Scale
+                                >> Scale.for "test-element"
+                                >> Scale.fromXY 1.0 1.0
+                                >> Scale.toXY 1.5 1.2
+                                >> Scale.build
+                            )
 
                     keyframes =
                         CSS.getElementKeyframes "test-element" animations

@@ -152,7 +152,7 @@ This state keeps track of animations and their configurations.
 
     import Anim.Engine.Sub as Sub
 
-    { model | animations : Sub.AnimState }
+    { model | animState : Sub.AnimState }
 
 -}
 type alias AnimState =
@@ -173,7 +173,7 @@ type alias ElementId =
 
     import Anim.Engine.Sub as Sub
 
-    { model | animations = Sub.init }
+    { model | animState = Sub.init }
 
 -}
 init : AnimState
@@ -186,7 +186,7 @@ init =
 Use this to start building new animations.
 
     newBuilder =
-        model.animations
+        model.animState
             |> Sub.builder
             |> ... -- Continue building the animation
 
@@ -200,9 +200,9 @@ builder =
 
     let
         newAnimations =
-            Sub.animate model.animations myAnimation
+            Sub.animate model.animState myAnimation
     in
-    { model | animations = newAnimations }
+    { model | animState = newAnimations }
 
 -}
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
@@ -212,7 +212,7 @@ animate =
 
 {-| Set global duration in milliseconds (overrides any previous speed setting).
 
-    Sub.animate model.animations
+    Sub.animate model.animState
         (Sub.duration 1000
             >> ... -- Continue building the animation
         )
@@ -225,7 +225,7 @@ duration =
 
 {-| Set global speed in units per second (overrides any previous duration setting).
 
-    model.animations
+    model.animState
         |> Sub.builder
         |> Sub.speed 100
         |> ... -- Continue building the animation
@@ -238,7 +238,7 @@ speed =
 
 {-| Set global easing function.
 
-    model.animations
+    model.animState
         |> Sub.builder
         |> Sub.easing EaseInOutQuad
         |> ... -- Continue building the animation
@@ -251,7 +251,7 @@ easing =
 
 {-| Set global delay in milliseconds.
 
-    model.animations
+    model.animState
         |> Sub.builder
         |> Sub.delay 500
         |> ... -- Continue building the animation
@@ -287,7 +287,7 @@ type alias AnimMsg =
     update msg model =
         case msg of
             GotSubAnimMsg subMsg ->
-                { model | animations = Sub.update subMsg model.animations }
+                { model | animState = Sub.update subMsg model.animState }
 
             ...
 
@@ -313,7 +313,7 @@ Your animations will not run without this subscription.
 
     subscriptions : Model -> Sub AnimationMsg
     subscriptions model =
-        Sub.subscriptions SubAnimationMsg model.animations
+        Sub.subscriptions SubAnimationMsg model.animState
 
 -}
 subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg
@@ -668,7 +668,7 @@ htmlAttributes =
 {-| Stop an animation by instantly jumping to its end state.
 
     stoppedAnimations =
-        Sub.stop "my-element" model.animations
+        Sub.stop "my-element" model.animState
 
 -}
 stop : String -> AnimState -> AnimState
@@ -679,7 +679,7 @@ stop elementId animState =
 {-| Reset an animation by instantly jumping back to its start state.
 
     resetAnimations =
-        Sub.reset "my-element" model.animations
+        Sub.reset "my-element" model.animState
 
 -}
 reset : String -> AnimState -> AnimState
@@ -690,7 +690,7 @@ reset elementId animState =
 {-| Restart an animation from the beginning.
 
     restartedAnimations =
-        Sub.restart "my-element" model.animations
+        Sub.restart "my-element" model.animState
 
 -}
 restart : String -> AnimState -> AnimState
@@ -703,7 +703,7 @@ restart elementId animState =
 Animation state is preserved and can be resumed later.
 
     pausedAnimations =
-        Sub.pause "my-element" model.animations
+        Sub.pause "my-element" model.animState
 
 -}
 pause : String -> AnimState -> AnimState
@@ -716,7 +716,7 @@ pause elementId animState =
 Animations continue from where they were paused.
 
     resumedAnimations =
-        Sub.resume "my-element" model.animations
+        Sub.resume "my-element" model.animState
 
 -}
 resume : String -> AnimState -> AnimState

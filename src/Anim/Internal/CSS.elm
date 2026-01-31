@@ -144,11 +144,57 @@ type TransformOrder
     | Scale
 
 
+{-| Normalize a transform order list:
+
+1.  Remove duplicates, keeping the first occurrence
+2.  Append any missing transforms in the default order (Translate → Rotate → Scale)
+
+Examples:
+
+  - `[Scale]` → `[Scale, Translate, Rotate]`
+  - `[Rotate, Scale]` → `[Rotate, Scale, Translate]`
+  - `[Scale, Scale, Rotate]` → `[Scale, Rotate, Translate]`
+
+-}
+normalizeTransformOrder : List TransformOrder -> List TransformOrder
+normalizeTransformOrder order =
+    let
+        -- Remove duplicates, keeping first occurrence
+        removeDuplicates : List TransformOrder -> List TransformOrder -> List TransformOrder
+        removeDuplicates seen remaining =
+            case remaining of
+                [] ->
+                    List.reverse seen
+
+                x :: xs ->
+                    if List.member x seen then
+                        removeDuplicates seen xs
+
+                    else
+                        removeDuplicates (x :: seen) xs
+
+        deduped =
+            removeDuplicates [] order
+
+        -- Default order for missing transforms
+        defaultOrder =
+            [ Translate, Rotate, Scale ]
+
+        -- Find missing transforms and add them in default order
+        missing =
+            List.filter (\t -> not (List.member t deduped)) defaultOrder
+    in
+    deduped ++ missing
+
+
 {-| Apply animation with custom transform ordering.
 -}
 animateWithOrder : List TransformOrder -> AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
 animateWithOrder order animState transform =
     let
+        normalizedOrder =
+            normalizeTransformOrder order
+
         builder_ =
             animState
                 |> builder
@@ -163,7 +209,7 @@ animateWithOrder order animState transform =
         { elementAnimations =
             builder_
                 |> Builder.elements
-                |> Dict.map (generateElementAnimation (Just order))
+                |> Dict.map (generateElementAnimation (Just normalizedOrder))
         , elementStates =
             elementIds
                 |> List.map (\id -> ( id, NotStarted ))

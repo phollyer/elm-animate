@@ -187,7 +187,7 @@ This state keeps track of animations and their configurations.
 
     import Anim.Engine.WAAPI as WAAPI
 
-    { model | animations : WAAPI.AnimState }
+    { model | animState : WAAPI.AnimState }
 
 **Note:** You do not need this for fire-and-forget animations.
 
@@ -200,7 +200,7 @@ type alias AnimState =
 
     import Anim.Engine.WAAPI as WAAPI
 
-    { model | animations = WAAPI.init }
+    { model | animState = WAAPI.init }
 
     -- Or, when you want fire-and-forget animations.
 
@@ -227,7 +227,7 @@ type alias AnimBuilder =
 Use this to start building new animations.
 
         -- Create a new animation based on current state
-        model.animations
+        model.animState
             |> WAAPI.builder
             |> -- continue building the animation
 
@@ -244,7 +244,7 @@ builder =
 
 {-| Set global duration in milliseconds (overrides any previous speed setting).
 
-    model.animations
+    model.animState
         |> WAAPI.builder
         |> WAAPI.duration 1000
         |> -- continue building the animation
@@ -257,7 +257,7 @@ duration =
 
 {-| Set global speed in units per second (overrides any previous duration setting).
 
-    model.animations
+    model.animState
         |> WAAPI.builder
         |> WAAPI.speed 100
         |> -- continue building the animation
@@ -270,7 +270,7 @@ speed =
 
 {-| Set global easing function.
 
-    model.animations
+    model.animState
         |> WAAPI.builder
         |> WAAPI.easing EaseInOutQuad
         |> ... -- continue building the animation
@@ -283,7 +283,7 @@ easing =
 
 {-| Set global delay in milliseconds.
 
-    model.animations
+    model.animState
         |> WAAPI.builder
         |> WAAPI.delay 500
         |> -- continue building the animation
@@ -306,7 +306,7 @@ Returns the updated animation state and command that talks to the JavaScript Web
 
     let
         ( newAnimState, animCmd ) =
-            WAAPI.animate waapiCommand model.animations <|
+            WAAPI.animate waapiCommand model.animState <|
                 \builder ->
                     builder
                         |> -- configure animation
@@ -404,7 +404,7 @@ Sends a command to JavaScript to cancel and reset the animation.
 
     let
         ( newAnimState, resetCmd ) =
-            WAAPI.reset "my-element" waapiCommand model.animations
+            WAAPI.reset "my-element" waapiCommand model.animState
     in
     ( { model | animations = newAnimState }, resetCmd )
 
@@ -422,7 +422,7 @@ Sends a command to JavaScript to cancel and replay the animation.
 
     let
         ( newAnimState, restartCmd ) =
-            WAAPI.restart "my-element" waapiCommand model.animations
+            WAAPI.restart "my-element" waapiCommand model.animState
     in
     ( { model | animations = newAnimState }, restartCmd )
 
@@ -495,7 +495,7 @@ like reset, restart, or pause/resume.
                       }
                     ]
                     waapiCommand
-                    model.animationState
+                    model.animStatetate
         in
         ( { model
             | animationState = newAnimState
@@ -873,7 +873,7 @@ animations too, but property queries won't work since fire-and-forget doesn't tr
 
     subscriptions : Model -> Sub Msg
     subscriptions model =
-        waapiEvent (GotWaapiUpdate << WAAPI.decode model.animationState)
+        waapiEvent (GotWaapiUpdate << WAAPI.decode model.animStatetate)
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
