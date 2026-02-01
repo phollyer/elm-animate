@@ -242,9 +242,12 @@ setContainer containerId animBuilder =
 -- ANIMATION EXECUTION
 
 
-toCmd : (String -> msg) -> AnimBuilder -> Cmd msg
-toCmd toMsg animBuilder =
+toCmd : (String -> msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
+toCmd toMsg buildAnimation =
     let
+        animBuilder =
+            buildAnimation Builder.init
+
         scrollTargets =
             getScrollTargets animBuilder
 
@@ -349,9 +352,12 @@ toCmd toMsg animBuilder =
 
 {-| Create scroll animation from AnimBuilder.
 -}
-animate : (AnimationMsg -> msg) -> AnimBuilder -> ( AnimState, Cmd msg )
-animate toMsg animBuilder =
+animate : (AnimationMsg -> msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
+animate toMsg _ buildAnimation =
     let
+        animBuilder =
+            buildAnimation Builder.init
+
         scrollTargets =
             Builder.getScrollTargets animBuilder
 

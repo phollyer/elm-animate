@@ -1,8 +1,9 @@
 module Anim.Engine.Scroll exposing
-    ( toCmd
+    ( AnimBuilder
+    , toCmd
     , ScrollError(..), ScrollOk, toTask
     , animate
-    , AnimState, init, AnimBuilder, builder
+    , AnimState, init
     , AnimationMsg, update, subscriptions
     , duration, speed
     , easing
@@ -60,8 +61,10 @@ is not smooth enough, consider using subscription-based scrolling with [animate]
 
 # Execute
 
+@docs AnimBuilder
 
-## Cmd
+
+## Fire-And-Forget Cmd
 
 Use `Cmd` execution for fire-and-forget scrolling when you don't need state management or error handling.
 The animation will run automatically without requiring subscriptions, and any errors will be ignored.
@@ -69,7 +72,7 @@ The animation will run automatically without requiring subscriptions, and any er
 @docs toCmd
 
 
-## Task
+## Composable Task
 
 Use `Task` execution when you want to handle success or failure of the scroll animations, or compose them with other tasks.
 
@@ -78,14 +81,15 @@ Use `Task` execution when you want to handle success or failure of the scroll an
 
 ## Stateful Animation
 
-Use stateful subscription-based animations when you need to track ongoing scrolls, query their state, or react to their progress.
+Use stateful subscription-based animations when you need to track ongoing scrolls, query their state, react to their progress,
+or redirect mid-flight.
 
 @docs animate
 
 
 # Build
 
-@docs AnimState, init, AnimBuilder, builder
+@docs AnimState, init
 
 
 # Update
@@ -301,6 +305,7 @@ For the curious, here's how the different execution methods work after following
 -}
 
 import Anim.Easing exposing (Easing)
+import Anim.Internal.Builder as InternalBuilder
 import Anim.Internal.Easing as InternalEasing
 import Anim.Internal.Properties.ScrollTarget as ScrollTarget exposing (Axis(..))
 import Anim.Internal.Scroll as InternalScroll
@@ -374,22 +379,13 @@ type alias ScrollOk =
     }
 
 
-
--- ANIMATION EXECUTION
-
-
 {-| Initialize empty scroll animation state.
 
-    -- For stateful subscription-based scroll animations
     init : Model
     init =
         { scrollAnimations = Scroll.init
         , ...
         }
-
-    -- For fire-and-forget Cmd or Task based scrolling
-    Scroll.init
-        |> ... -- configure scroll animation
 
 -}
 init : AnimState
@@ -397,33 +393,11 @@ init =
     InternalScroll.init
 
 
-{-| Turn the [AnimState](#AnimState) into an [AnimBuilder](#AnimBuilder) in order to
-start building a new scroll animation.
-
-    -- Start a new fire-and-forget scroll animation
-    Scroll.init
-        |> Scroll.builder
-        |>.. -- configure scroll animation
-
-    -- Start a new scroll animation based on current state
-    (newState, scrollCmd) =
-        model.scrollAnimations
-            |> Scroll.builder
-            |> ... -- configure scroll animation
-
--}
-builder : AnimState -> AnimBuilder
-builder =
-    InternalScroll.builder
-
-
 {-| Execute a subscription-based scroll animation with state management.
 
-    (newAnimState, cmd) =
-        model.scrollAnimations
-            |> Scroll.builder
-            |> ... -- configure scroll animation
-            |> Scroll.animate ScrollMsg
+    ( newAnimState, cmd ) =
+        Scroll.animate ScrollMsg model.scrollState <|
+            scrollToElement "target-section"
 
     type Msg
         = ScrollMsg Scroll.AnimationMsg
@@ -435,16 +409,16 @@ builder =
             ScrollMsg scrollMsg ->
                 let
                     ( newScrollState, scrollCmd ) =
-                        Scroll.update ScrollMsg scrollMsg model.scrollAnimations
+                        Scroll.update ScrollMsg scrollMsg model.scrollState
                 in
-                ( { model | scrollAnimations = newScrollState }
+                ( { model | scrollState = newScrollState }
                 , scrollCmd
                 )
 
             ...
 
 -}
-animate : (AnimationMsg -> msg) -> AnimBuilder -> ( AnimState, Cmd msg )
+animate : (AnimationMsg -> msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
 animate =
     InternalScroll.animate
 
@@ -455,11 +429,10 @@ animate =
 
 {-| Set the global duration in milliseconds (overrides any previous speed setting).
 
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.duration 1000
-        |> ... -- configure scroll animation
-        |> Scroll.toCmd ScrollCompleted
+    Scroll.toCmd ScrollCompleted <|
+        (Scroll.duration 1000
+            >> scrollToElement "target-section"
+        )
 
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -469,11 +442,10 @@ duration =
 
 {-| Set the global speed in pixels per second (overrides any previous duration setting).
 
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.speed 500
-        |> ... -- configure scroll animation
-        |> Scroll.toCmd ScrollCompleted
+    Scroll.toCmd ScrollCompleted <|
+        (Scroll.speed 500
+            >> scrollToElement "target-section"
+        )
 
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
@@ -483,11 +455,10 @@ speed =
 
 {-| Set the global easing function.
 
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.easing EaseInOutQuad
-        |> ... -- configure scroll animation
-        |> Scroll.toCmd ScrollCompleted
+    Scroll.toCmd ScrollCompleted <|
+        (Scroll.easing EaseInOutQuad
+            >> scrollToElement "target-section"
+        )
 
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
@@ -497,20 +468,15 @@ easing =
 
 {-| Set the global delay in milliseconds.
 
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.delay 500
-        |> ... -- configure scroll animation
-        |> Scroll.toCmd ScrollCompleted
+    Scroll.toCmd ScrollCompleted <|
+        (Scroll.delay 500
+            >> scrollToElement "target-section"
+        )
 
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
     InternalScroll.delay
-
-
-
--- ANIMATION MANAGEMENT
 
 
 {-| Subscribe for scroll animation updates.
@@ -650,8 +616,8 @@ getDuration =
 
 {-| Execute scroll animations as a [Cmd](https://package.elm-lang.org/packages/elm/core/latest/Cmd).
 
-    ... -- Build your Scroll animation
-    |> Scroll.toCmd ScrollCompleted
+    Scroll.toCmd ScrollCompleted <|
+        scrollToElement "target-section"
 
     type Msg
         = ScrollCompleted String
@@ -664,16 +630,15 @@ getDuration =
                 ...
 
 -}
-toCmd : (String -> msg) -> AnimBuilder -> Cmd msg
+toCmd : (String -> msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
 toCmd =
     InternalScroll.toCmd
 
 
 {-| Execute scroll animations as a [Task](https://package.elm-lang.org/packages/elm/core/latest/Task).
 
-    ... -- Build your AnimBuilder
-    |> Scroll.toTask
-    |> Task.attempt HandleScrollResult
+    Scroll.toTask (scrollToElement "target-section")
+        |> Task.attempt HandleScrollResult
 
     type Msg
         = HandleScrollResult (Result ScrollError ScrollOk)
@@ -688,9 +653,12 @@ toCmd =
                 ...
 
 -}
-toTask : AnimBuilder -> Task ScrollError ScrollOk
-toTask animBuilder =
+toTask : (AnimBuilder -> AnimBuilder) -> Task ScrollError ScrollOk
+toTask buildAnimation =
     let
+        animBuilder =
+            buildAnimation InternalBuilder.init
+
         scrollTargets =
             InternalScroll.getScrollTargets animBuilder
 
