@@ -553,8 +553,9 @@ A speed of `50.0` means the element will move 50 pixels per second, so our anima
 
     animBuilder
         |> Translate.for "my-element"
-        |> Translate.toY 300
-        |> Translate.speed 500
+        |> Translate.fromX 0
+        |> Translate.toX 100
+        |> Translate.speed 50
         |> ...
 
 Similarly, a speed of `100.0` would complete the same animation in 1 second, and a speed of `25.0` would take 4 seconds.

@@ -1,19 +1,19 @@
 module Anim.Engine.CSS exposing
-    ( transitionAttributes
+    ( AnimState, init
+    , transitionAttributes
+    , TransitionEvent(..), handleTransitionEvent
+    , transitionEvents
+    , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
     , keyframesAttribute
     , keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
-    , AnimState, init, AnimBuilder, builder
-    , animate, fireAndForget, TransformOrder(..), animateOrder, fireAndForgetOrder
+    , KeyframeEvent(..), handleKeyframeEvent
+    , keyframeAnimationEvents
+    , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
+    , AnimBuilder, animate, fireAndForget, TransformOrder(..), animateOrder, fireAndForgetOrder
     , duration, speed
     , easing
     , delay
     , stop, reset, restart, pause, resume
-    , TransitionEvent(..), handleTransitionEvent
-    , transitionEvents
-    , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
-    , KeyframeEvent(..), handleKeyframeEvent
-    , keyframeAnimationEvents
-    , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , anyRunning, isRunning, allComplete, isComplete
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
     , getStartOpacity, getEndOpacity, getCurrentOpacity
@@ -36,7 +36,8 @@ over how the CSS is integrated into your application.
 
 ## Design Decisions
 
-**Choosing Between Transitions and Keyframes**
+
+### 1. Transitions vs Keyframes
 
 The choice between transitions and keyframes is the main decision you need to make when using this Engine,
 configuring animations with either approach is exactly the same using the [AnimBuilder](#AnimBuilder) API.
@@ -52,10 +53,36 @@ configuring animations with either approach is exactly the same using the [AnimB
   - Complex animations
   - Advanced easing curves (bounce, elastic, back, etc.)
   - Fine-grained control over animation timing
+  - Pause/Resume functionality
+  - Iteration (looping) support (TODO)
   - Better debugging visibility in DevTools
 
 
-## CSS Transitions
+### 2. State Tracking vs Fire-and-Forget
+
+This Engine supports both state-tracked animations and fire-and-forget animations.
+
+**State-tracked** animations allow you to query the state of your animations.
+This is useful if you need to:
+
+  - Query if animations are running or complete
+  - Query start/end/current values of animated properties
+  - Sequence animations that start from the end state of previous animations
+
+**Fire-and-forget** animations are simpler to use when you just want to apply an animation without
+tracking its state. Use this for one-shot animations:
+
+  - Entrance/exit animations
+  - Simple hover/focus effects
+  - Any animation where you don't need to query state or values
+
+
+# State
+
+@docs AnimState, init
+
+
+# CSS Transitions
 
 For CSS transitions, you just need to apply the generated [transition](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transitions/Using)
 and [transform](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transforms/Using)
@@ -64,7 +91,22 @@ attributes to your elements.
 @docs transitionAttributes
 
 
-## Keyframe Animations
+## Transition Events
+
+CSS transitions trigger events at various stages of their lifecycle.
+
+Use these events to keep your [AnimState](#AnimState) in sync or to trigger other actions in your application.
+
+@docs TransitionEvent, handleTransitionEvent
+
+@docs transitionEvents
+
+The following event handlers allow you more granular control over which CSS transition events are received.
+
+@docs onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
+
+
+# Keyframe Animations
 
 For Keyframe animations, you need to apply the generated CSS [animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation) property to your elements
 and also add the generated keyframes to a node in your DOM.
@@ -74,14 +116,25 @@ and also add the generated keyframes to a node in your DOM.
 @docs keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
 
 
-# Build
+## Keyframe Animation Events
 
-@docs AnimState, init, AnimBuilder, builder
+Keyframe animations trigger events at various stages of their lifecycle.
+
+Use these events to keep your [AnimState](#AnimState) in sync or to trigger other actions in your application.
+
+@docs KeyframeEvent, handleKeyframeEvent
+
+@docs keyframeAnimationEvents
+
+The following event handlers allow you more granular control over which CSS keyframe animation events
+are received.
+
+@docs onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
 
 
 # Execute
 
-@docs animate, fireAndForget, TransformOrder, animateOrder, fireAndForgetOrder
+@docs AnimBuilder, animate, fireAndForget, TransformOrder, animateOrder, fireAndForgetOrder
 
 
 # Global Settings
@@ -98,11 +151,11 @@ These settings will be used for all animations unless overridden on a per-proper
 
 @docs easing
 
-**Reminder:**
+**Note:**
 
   - **Keyframe Animations:** the easing is baked into the keyframes themselves, enabling complex easing
     curves like bounce and elastic to be accurately represented,
-  - **Transform Animations:** complex easing curves like bounce and elastic have to be approximated by a `cubic-bezier` curve, meaning that
+  - **CSS Transitions:** complex easing curves like bounce and elastic have to be approximated by a `cubic-bezier` curve, meaning that
     they **can not** be perfectly represented. _This is a limitation of CSS transitions, not the animation engine itself._
 
 
@@ -118,47 +171,14 @@ Control running animations with stop, reset, restart, pause, and resume function
 **CSS Animation Behavior:**
 
   - **stop**: Instantly jumps to the animation's end state.
-    Triggers `transitionend`/`animationend` events.
   - **reset**: Instantly jumps back to the animation's start state.
-    Triggers `transitionend`/`animationend` events.
   - **restart**: Restarts the animation from the beginning.
-    Triggers `transitionrun`/`animationstart` events.
   - **pause**: Pauses animations mid-flight.
-    Note: Only works with keyframe animations, not CSS transitions.
-  - **resume**: Resumes paused keyframe animations.
-    Note: Only works with keyframe animations, not CSS transitions.
+  - **resume**: Resumes paused animations.
+
+**Note**: `pause` and `resume` only work with keyframe animations, not CSS transitions. _This is a limitation of CSS itself._
 
 @docs stop, reset, restart, pause, resume
-
-
-# Event Handling
-
-CSS transitions and keyframe animations trigger events at various stages of their lifecycle.
-
-Use these events to keep your [AnimState](#AnimState) in sync or to trigger other actions in your application.
-
-
-## Transition Events
-
-@docs TransitionEvent, handleTransitionEvent
-
-@docs transitionEvents
-
-The following event handlers allow you more granular control over which CSS transition events are received.
-
-@docs onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
-
-
-## Keyframe Animation Events
-
-@docs KeyframeEvent, handleKeyframeEvent
-
-@docs keyframeAnimationEvents
-
-The following event handlers allow you more granular control over which CSS keyframe animation events
-are received.
-
-@docs onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
 
 
 # Querying Animation State
@@ -270,15 +290,14 @@ type KeyframeEvent
     | AnimationIteration String
 
 
-{-| Optional State for managing animations.
+{-| The animation state type used to store animation configurations, transitions, and keyframes.
 
-    import Anim.Engine.CSS as CSS
+Both state-tracked and fire-and-forget animations produce an `AnimState`, but only
+state-tracked animations require storing it in your model:
 
-    { model | animState : CSS.AnimState }
-
-This state keeps track of animations and their configurations.
-
-**Note**: You do not need this for fire-and-forget animations.
+    -- State-tracked: store in your model
+    type alias Model =
+        { animState : CSS.AnimState }
 
 -}
 type alias AnimState =
@@ -313,8 +332,8 @@ animate =
 This is an alternative to [animate](#animate) that allows you to specify the order
 in which **transform** properties should be animated.
 
-    -- Custom transform order: Scale → Rotate → Position
-    CSS.animateOrder [ Scale, Rotate, Position ] model.animState <|
+    -- Custom transform order: Scale → Rotate → Translate
+    CSS.animateOrder [ Scale, Rotate, Translate ] model.animState <|
         (rotateLeft >> scaleUp >> moveRight)
 
 **Smart list handling:**
@@ -352,17 +371,14 @@ animateOrder order =
 
 {-| Create a fire-and-forget animation without state tracking.
 
-Use this for one-shot animations where you don't need to:
+    entranceAnimation : CSS.AnimState
+    entranceAnimation =
+        CSS.fireAndForget <|
+            (fadeIn >> slideIn)
 
-  - Query animation state (running, complete, etc.)
-  - Track start/end values for later querying
+Then use `entranceAnimation` in your view to apply the animation.
 
-```
-fadeInAnimation : CSS.AnimState
-fadeInAnimation =
-    CSS.fireAndForget <|
-        (fadeIn >> slideIn)
-```
+    CSS.transitionAttributes "my-element" entranceAnimation
 
 -}
 fireAndForget : (AnimBuilder -> AnimBuilder) -> AnimState
@@ -398,38 +414,10 @@ fireAndForgetOrder order =
 
     { model | animState = CSS.init }
 
-Or, when you want fire-and-forget animations.
-
-    import Anim.Engine.CSS as CSS
-
-    CSS.init
-        |> ... -- continue building the animation
-
 -}
 init : AnimState
 init =
     InternalCSS.init
-
-
-{-| Turn the [AnimState](#AnimState) into an [AnimBuilder](#AnimBuilder).
-
-Use this to start building new animations.
-
-    -- Create a new animation based on current state
-    model.animState
-        |> CSS.builder
-        |> ... -- continue building the animation
-
-
-    -- Create a new fire-and-forget animation
-    CSS.init
-        |> CSS.builder
-        |> ... -- continue building the animation
-
--}
-builder : AnimState -> AnimBuilder
-builder =
-    InternalCSS.builder
 
 
 {-| The simplest way to receive keyframe animation event messages for the target element.
@@ -467,7 +455,7 @@ This is is how you connect the generated keyframes to your element. Without this
     import Html exposing (div, text)
 
     div
-        [ CSS.keyframesAttribute "my-element" animationState ]
+        [ CSS.keyframesAttribute "my-element" animState ]
         [ text "Animating element" ]
 
 -}
@@ -481,7 +469,7 @@ can add this node anywhere in your DOM, typically near the top.
 
     view model =
         div []
-            [ CSS.keyframesStyleNode model.animStatetate ]
+            [ CSS.keyframesStyleNode animState ]
 
 If there are no animations, this returns an empty text node.
 
@@ -496,7 +484,7 @@ keyframes are included in your DOM. You can add this node anywhere in your DOM, 
 
     view model =
         div []
-            [ CSS.keyframesStyleNodeFor "my-element" model.animStatetate ]
+            [ CSS.keyframesStyleNodeFor "my-element" animState ]
 
 If the element has no animations, this returns an empty text node.
 
@@ -943,10 +931,10 @@ duration =
     InternalCSS.duration
 
 
-{-| Set the global speed in units per second (overrides any previous duration setting).
+{-| Set the global speed in _units_ per second (overrides any previous duration setting).
 
-Exactly what "units" means depends on the properties being animated. For position properties, this is pixels per second.
-Refer to the relevant property documentation for specific details for each property.
+Exactly what _"units"_ means depends on the properties being animated. For [Translate](Anim.Property.Translate#speed), this is pixels per second.
+Refer to the `speed` function in the relevant property module for specific details regarding the property you are animating.
 
     model.animState
         |> CSS.builder
@@ -993,7 +981,7 @@ and apply them directly to the target element.
     import Html exposing (div, text)
 
     div
-        (CSS.transitionAttributes "my-element" animationState)
+        (CSS.transitionAttributes "my-element" animState)
         [ text "Animating element" ]
 
 -}
@@ -1013,7 +1001,7 @@ This function generates all the necessary event handlers for CSS transitions.
         = TransitionMsg CSS.TransitionEvent
 
     div
-        (CSS.transitionAttributes "my-element" animationState
+        (CSS.transitionAttributes "my-element" animState
             ++ CSS.transitionEvents "my-element" TransitionMsg
         )
         [ text "Animating element" ]
@@ -1127,7 +1115,7 @@ restart =
     InternalCSS.restartAnimation
 
 
-{-| Pause a running keyframe animation using CSS `animation-play-state`.
+{-| Pause a running keyframe animation.
 
 **Note**: This only works with keyframe animations, not CSS transitions.
 CSS transitions cannot be paused once started - this is a limitation of CSS itself.
@@ -1141,7 +1129,7 @@ pause =
     InternalCSS.pauseAnimation
 
 
-{-| Resume a paused keyframe animation using CSS `animation-play-state`.
+{-| Resume a paused keyframe animation.
 
 **Note**: This only works with keyframe animations, not CSS transitions.
 

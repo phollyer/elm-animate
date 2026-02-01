@@ -1,5 +1,5 @@
 module Anim.Engine.Sub exposing
-    ( AnimState, init, AnimBuilder, builder
+    ( AnimState, init, AnimBuilder
     , animate
     , AnimMsg, update, subscriptions
     , htmlAttributes
@@ -24,7 +24,7 @@ subscriptions for smooth, controlled animations.
 
 # Build
 
-@docs AnimState, init, AnimBuilder, builder
+@docs AnimState, init, AnimBuilder
 
 
 # Execute
@@ -179,21 +179,6 @@ type alias ElementId =
 init : AnimState
 init =
     InternalSub.init
-
-
-{-| Turn the [AnimState](#AnimState) into an [AnimBuilder](#AnimBuilder).
-
-Use this to start building new animations.
-
-    newBuilder =
-        model.animState
-            |> Sub.builder
-            |> ... -- Continue building the animation
-
--}
-builder : AnimState -> AnimBuilder
-builder =
-    InternalSub.builder
 
 
 {-| Create animations ready to be applied in the view.
