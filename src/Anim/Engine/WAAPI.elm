@@ -1,5 +1,5 @@
 module Anim.Engine.WAAPI exposing
-    ( AnimState, init, initProperties, AnimBuilder, builder
+    ( AnimState, init, AnimBuilder, initProperties
     , animate, fireAndForget
     , AnimationEvent(..), decode
     , stop, reset, restart, pause, resume
@@ -63,9 +63,9 @@ Both outgoing command and incoming event ports are needed.
         port waapiEvent : (Json.Encode.Value -> msg) -> Sub msg
 
 
-# Build
+# State
 
-@docs AnimState, init, initProperties, AnimBuilder, builder
+@docs AnimState, init, AnimBuilder, initProperties
 
 
 # Animation Execution
@@ -90,11 +90,11 @@ Control running animations with stop, reset, restart, pause, and resume function
 
 **WAAPI Animation Behavior:**
 
-  - **stop**: Calls `Animation.finish()` to instantly jump to the animation's end state.
-  - **reset**: Calls `Animation.cancel()` to instantly jump back to the animation's start state.
-  - **restart**: Calls `Animation.cancel()` followed by `Animation.play()` to restart from the beginning.
-  - **pause**: Calls `Animation.pause()` to freeze the animation at its current progress.
-  - **resume**: Calls `Animation.play()` to continue a paused animation from where it was paused.
+  - **stop**: Instantly jump to the animation's end state.
+  - **reset**: Instantly jump back to the animation's start state.
+  - **restart**: Instantly jump back to the animation's start state, then start playing.
+  - **pause**: Freeze the animation at its current progress.
+  - **resume**: Continue a paused animation from where it was paused.
 
 All control methods work with Web Animations API animations and trigger the appropriate animation lifecycle events.
 
@@ -103,7 +103,7 @@ All control methods work with Web Animations API animations and trigger the appr
 
 # Responsive Layout
 
-Handle window and container resizes by repositioning elements proportionally without creating animation history.
+Handle window and container resizes by repositioning elements proportionally.
 
 @docs onResize
 
@@ -202,11 +202,6 @@ type alias AnimState =
 
     { model | animState = WAAPI.init }
 
-    -- Or, when you want fire-and-forget animations.
-
-    WAAPI.init
-        |> ... -- continue building the animation
-
 -}
 init : AnimState
 init =
@@ -222,32 +217,12 @@ type alias AnimBuilder =
     Internal.AnimBuilder
 
 
-{-| Turn the [AnimState](#AnimState) into an [AnimBuilder](#AnimBuilder).
-
-Use this to start building new animations.
-
-        -- Create a new animation based on current state
-        model.animState
-            |> WAAPI.builder
-            |> -- continue building the animation
-
-        -- Create a new fire-and-forget animation
-        WAAPI.init
-            |> WAAPI.builder
-            |> -- continue building the animation
-
--}
-builder : AnimState -> AnimBuilder
-builder =
-    Internal.builder
-
-
 {-| Set global duration in milliseconds (overrides any previous speed setting).
 
-    model.animState
-        |> WAAPI.builder
-        |> WAAPI.duration 1000
-        |> -- continue building the animation
+    WAAPI.animate waapiCommand model.animState <|
+        (WAAPI.duration 1000
+            >> ... -- continue building the animation
+        )
 
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -257,10 +232,10 @@ duration =
 
 {-| Set global speed in units per second (overrides any previous duration setting).
 
-    model.animState
-        |> WAAPI.builder
-        |> WAAPI.speed 100
-        |> -- continue building the animation
+    WAAPI.animate waapiCommand model.animState <|
+        (WAAPI.speed 100
+            >> ... -- continue building the animation
+        )
 
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
@@ -270,10 +245,10 @@ speed =
 
 {-| Set global easing function.
 
-    model.animState
-        |> WAAPI.builder
-        |> WAAPI.easing EaseInOutQuad
-        |> ... -- continue building the animation
+    WAAPI.animate waapiCommand model.animState <|
+        (WAAPI.easing EaseInOutQuad
+            >> ... -- continue building the animation
+        )
 
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
@@ -283,10 +258,10 @@ easing =
 
 {-| Set global delay in milliseconds.
 
-    model.animState
-        |> WAAPI.builder
-        |> WAAPI.delay 500
-        |> -- continue building the animation
+    WAAPI.animate waapiCommand model.animState <|
+        (WAAPI.delay 500
+            >> ... -- continue building the animation
+        )
 
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
@@ -320,11 +295,11 @@ animate =
     Internal.animate
 
 
-{-| Initialize properties without creating animations.
+{-| Initialize properties ready for animating.
 
 All animations need a starting point to animate from. This function sets
-initial property values without creating animation history. They are also used by
-the accompanying JavaScript to set the initial state of the animated elements.
+initial property values. If you don't set an initial value, sensible defaults
+will be assumed (e.g., opacity 1.0, translate {0,0,0}, etc.).
 
 **Note:** If you set the same property both here and via inline CSS styles in your
 view, the values set here will take precedence (JavaScript applies them after
@@ -333,22 +308,21 @@ Elm renders the view). To avoid confusion, pick one approach:
   - Use `initProperties` for initial state (no inline styles needed), or
   - Use inline styles and ensure your `from` values in animations match them
 
-If you try to animate a property that has no initial value set, the engine
-will assume sensible start values (e.g., opacity 1.0, translate {0,0,0}, etc.).
+```
+port waapiCommand : Encode.Value -> Cmd msg
 
-    port waapiCommand : Encode.Value -> Cmd msg
-
-    init : Model -> ( Model, Cmd Msg )
-    init model =
-        let
-            ( initialAnimState, initCmd ) =
-                WAAPI.initProperties waapiCommand
-                    [ Translate.initXY "element-id" 100 50
-                    , Opacity.init "element-id" 1.0
-                    ... -- more properties if needed
-                    ]
-        in
-        ( { model | animations = initialAnimState }, initCmd )
+init : Model -> ( Model, Cmd Msg )
+init model =
+    let
+        ( initialAnimState, initCmd ) =
+            WAAPI.initProperties waapiCommand
+                [ Translate.initXY "element-id" 100 50
+                , Opacity.init "element-id" 1.0
+                ... -- more properties if needed
+                ]
+    in
+    ( { model | animations = initialAnimState }, initCmd )
+```
 
 -}
 initProperties : (Encode.Value -> Cmd msg) -> List (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
@@ -365,17 +339,17 @@ The animation runs entirely in the browser via the Web Animations API.
 
     myAnimationCmd : Cmd msg
     myAnimationCmd =
-        WAAPI.init
-            |> WAAPI.builder
-            |> -- configure animation
-            |> WAAPI.fireAndForget waapiCommand
+        WAAPI.fireAndForget waapiCommand <|
+            \builder ->
+                builder
+                    |> -- configure animation
 
 For state management and continuity, use `animate` instead.
 
 -}
-fireAndForget : (Encode.Value -> Cmd msg) -> AnimBuilder -> Cmd msg
+fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
 fireAndForget =
-    Internal.animateStateless
+    Internal.fireAndForget
 
 
 
@@ -383,8 +357,6 @@ fireAndForget =
 
 
 {-| Stop an animation by instantly jumping to its end state.
-
-Sends a command to JavaScript to call the native `Animation.finish()` method.
 
     port waapiCommand : Encode.Value -> Cmd msg
 
@@ -397,8 +369,6 @@ stop =
 
 
 {-| Reset an animation by instantly jumping back to its start state.
-
-Sends a command to JavaScript to cancel and reset the animation.
 
     port waapiCommand : Encode.Value -> Cmd msg
 
@@ -415,8 +385,6 @@ reset =
 
 
 {-| Restart an animation from the beginning.
-
-Sends a command to JavaScript to cancel and replay the animation.
 
     port waapiCommand : Encode.Value -> Cmd msg
 
@@ -463,8 +431,7 @@ resume =
 {-| Handle window or container resize by repositioning elements proportionally.
 
 This function scales element positions when their container dimensions change, maintaining their
-relative positioning without creating animation history that would interfere with control functions
-like reset, restart, or pause/resume.
+relative positioning.
 
 **Use case:** Responsive layouts where container size changes (window resize, sidebar toggle, orientation change, breakpoint changes, etc.)
 

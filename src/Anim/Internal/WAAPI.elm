@@ -3,7 +3,6 @@ module Anim.Internal.WAAPI exposing
     , AnimState
     , allComplete
     , animate
-    , animateStateless
     , anyRunning
     , builder
     , decodeEvent
@@ -12,6 +11,7 @@ module Anim.Internal.WAAPI exposing
     , easing
     , encode
     , encodeCommand
+    , fireAndForget
     , getCurrentBackgroundColor
     , getCurrentOpacity
     , getCurrentRotate
@@ -172,11 +172,11 @@ delay =
 -- Execute Animation
 
 
-animateStateless : (Encode.Value -> Cmd msg) -> AnimBuilder -> Cmd msg
-animateStateless portFunction animBuilder =
+fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
+fireAndForget portFunction buildAnimation =
     let
         processedData =
-            Builder.processAnimationData animBuilder
+            Builder.processAnimationData (buildAnimation Builder.init)
 
         encodedData =
             encode processedData

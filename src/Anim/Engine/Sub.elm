@@ -1,6 +1,6 @@
 module Anim.Engine.Sub exposing
-    ( AnimState, init, AnimBuilder
-    , animate
+    ( AnimState, init
+    , AnimBuilder, animate
     , AnimMsg, update, subscriptions
     , htmlAttributes
     , stop, reset, restart, pause, resume
@@ -22,14 +22,14 @@ This Engine converts [AnimBuilder](#AnimBuilder) configurations to frame-based a
 subscriptions for smooth, controlled animations.
 
 
-# Build
+# State
 
-@docs AnimState, init, AnimBuilder
+@docs AnimState, init
 
 
 # Execute
 
-@docs animate
+@docs AnimBuilder, animate
 
 
 # Update
@@ -51,9 +51,8 @@ Control running animations with stop, reset, restart, pause, and resume function
   - **stop**: Instantly jumps to the animation's end state.
   - **reset**: Instantly jumps back to the animation's start state.
   - **restart**: Restarts the animation from the beginning.
-  - **pause**: Pauses a specific element's animations by stopping subscription updates for that element.
-    Animation state is preserved at current position.
-  - **resume**: Resumes a specific element's paused animations by restarting subscription updates for that element.
+  - **pause**: Pauses an animation.
+  - **resume**: Resumes an animation.
 
 @docs stop, reset, restart, pause, resume
 
@@ -185,7 +184,9 @@ init =
 
     let
         newAnimations =
-            Sub.animate model.animState myAnimation
+            Sub.animate model.animState <|
+                ( ... -- Build your animation here
+                )
     in
     { model | animState = newAnimations }
 
@@ -197,7 +198,7 @@ animate =
 
 {-| Set global duration in milliseconds (overrides any previous speed setting).
 
-    Sub.animate model.animState
+    Sub.animate model.animState <|
         (Sub.duration 1000
             >> ... -- Continue building the animation
         )
@@ -210,10 +211,10 @@ duration =
 
 {-| Set global speed in units per second (overrides any previous duration setting).
 
-    model.animState
-        |> Sub.builder
-        |> Sub.speed 100
-        |> ... -- Continue building the animation
+    Sub.animate model.animState <|
+        (Sub.speed 100
+            >> ... -- Continue building the animation
+        )
 
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
@@ -223,10 +224,10 @@ speed =
 
 {-| Set global easing function.
 
-    model.animState
-        |> Sub.builder
-        |> Sub.easing EaseInOutQuad
-        |> ... -- Continue building the animation
+    Sub.animate model.animState <|
+        (Sub.easing EaseInOutQuad
+            >> ... -- Continue building the animation
+        )
 
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
@@ -236,10 +237,10 @@ easing =
 
 {-| Set global delay in milliseconds.
 
-    model.animState
-        |> Sub.builder
-        |> Sub.delay 500
-        |> ... -- Continue building the animation
+    Sub.animate model.animState <|
+        (Sub.delay 500
+            >> ... -- Continue building the animation
+        )
 
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
@@ -286,7 +287,7 @@ update =
 -- SUBSCRIPTIONS
 
 
-{-| Subscribe to receive animation updates - this is **required**.
+{-| Subscribe to receive animation updates.
 
 Your animations will not run without this subscription.
 

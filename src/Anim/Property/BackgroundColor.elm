@@ -111,7 +111,7 @@ Use this to initialize the background color in your `init` function.
     import Anim.Engine.* as Engine
     import Anim.Property.BackgroundColor as BackgroundColor
 
-    Engine.init
+    Engine.initProperties
         |> Engine.builder
         |> BackgroundColor.init "element-id" (hex "#ff0000")
         |> ... -- continue setting initial values

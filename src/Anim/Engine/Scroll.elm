@@ -87,7 +87,7 @@ or redirect mid-flight.
 @docs animate
 
 
-# Build
+# State
 
 @docs AnimState, init
 
