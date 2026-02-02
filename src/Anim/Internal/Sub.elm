@@ -100,13 +100,63 @@ type AnimState
         }
 
 
-init : AnimState
-init =
-    AnimState
-        { elementAnimations = Dict.empty
-        , isRunning = False
-        , builder = Builder.init
-        }
+{-| Initialize animation state with optional property initializers.
+
+Pass an empty list for empty state, or property initializers to set initial values.
+
+-}
+init : List (AnimBuilder -> AnimBuilder) -> AnimState
+init propertyInitializers =
+    case propertyInitializers of
+        [] ->
+            AnimState
+                { elementAnimations = Dict.empty
+                , isRunning = False
+                , builder = Builder.init
+                }
+
+        _ ->
+            let
+                -- Apply all property initializers to a fresh builder
+                configuredBuilder =
+                    List.foldl (\initializer b -> initializer b)
+                        Builder.init
+                        propertyInitializers
+
+                processedData =
+                    Builder.processAnimationData configuredBuilder
+
+                -- Use default start values since we're just initializing
+                startValues =
+                    { translate = Translate.default |> Translate.toRecord
+                    , rotate = Rotate.default |> Rotate.toRecord
+                    , scale = Scale.default |> Scale.toRecord
+                    , backgroundColor = BackgroundColor.default
+                    , fontColor = FontColor.default
+                    , opacity = 1.0
+                    , size = Size.default |> Size.toRecord
+                    }
+
+                -- Create element states with all animations marked as complete (no running animations)
+                elementStates =
+                    Dict.map (createElementAnimState startValues) processedData.elements
+                        |> Dict.map
+                            (\_ elem ->
+                                { elem
+                                    | isComplete = True
+                                    , properties =
+                                        List.map (\p -> { p | isComplete = True }) elem.properties
+                                }
+                            )
+            in
+            AnimState
+                { elementAnimations = elementStates
+                , isRunning = False
+                , builder =
+                    configuredBuilder
+                        |> Builder.markDirty
+                        |> Builder.clearCurrentElement
+                }
 
 
 type alias AnimBuilder =

@@ -95,13 +95,48 @@ type alias ElementAnimation =
     }
 
 
-init : AnimState
-init =
-    AnimState
-        { elementAnimations = Dict.empty
-        , elementStates = Dict.empty
-        , builder = Builder.init
-        }
+{-| Initialize animation state with optional property initializers.
+
+Pass an empty list for empty state, or property initializers to set initial values.
+
+-}
+init : List (AnimBuilder -> AnimBuilder) -> AnimState
+init propertyInitializers =
+    case propertyInitializers of
+        [] ->
+            AnimState
+                { elementAnimations = Dict.empty
+                , elementStates = Dict.empty
+                , builder = Builder.init
+                }
+
+        _ ->
+            let
+                -- Apply all property initializers to a fresh builder
+                configuredBuilder =
+                    List.foldl (\initializer b -> initializer b)
+                        Builder.init
+                        propertyInitializers
+
+                elementIds =
+                    configuredBuilder
+                        |> Builder.elements
+                        |> Dict.keys
+            in
+            AnimState
+                { elementAnimations =
+                    configuredBuilder
+                        |> Builder.elements
+                        |> Dict.map (generateElementAnimation Nothing)
+                , elementStates =
+                    elementIds
+                        |> List.map (\id -> ( id, Complete ))
+                        |> Dict.fromList
+                , builder =
+                    configuredBuilder
+                        |> Builder.markDirty
+                        |> Builder.clearCurrentElement
+                }
 
 
 builder : AnimState -> AnimBuilder

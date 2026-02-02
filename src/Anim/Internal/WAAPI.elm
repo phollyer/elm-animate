@@ -36,7 +36,6 @@ module Anim.Internal.WAAPI exposing
     , getStartTranslate
     , getTranslateRange
     , init
-    , initProperties
     , isElementComplete
     , isElementRunning
     , onResize
@@ -131,15 +130,6 @@ type AnimState
         { elementAnimations : Dict ElementId ElementAnimation
         , isRunning : Bool
         , builder : AnimBuilder
-        }
-
-
-init : AnimState
-init =
-    AnimState
-        { elementAnimations = Dict.empty
-        , isRunning = False
-        , builder = Builder.init
         }
 
 
@@ -337,73 +327,91 @@ animate portFunction (AnimState state) buildAnimation =
     )
 
 
-{-| Initialize properties without creating animation history.
-This sets AnimState and sends position updates to JS without WAAPI animations.
+{-| Initialize animation state.
+
+Pass an empty list for empty state (returns `Cmd.none`), or property initializers
+to set initial values (sends property updates to JS).
+
 -}
-initProperties : (Encode.Value -> Cmd msg) -> List (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
-initProperties portFunction propertyInitializers =
-    let
-        -- Start with init AnimState
-        (AnimState state) =
-            init
+init : (Encode.Value -> Cmd msg) -> List (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
+init portFunction propertyInitializers =
+    case propertyInitializers of
+        [] ->
+            ( AnimState
+                { elementAnimations = Dict.empty
+                , isRunning = False
+                , builder = Builder.init
+                }
+            , Cmd.none
+            )
 
-        -- Apply all property initializers to the builder
-        configuredBuilder =
-            List.foldl (\initializer b -> initializer b)
-                state.builder
-                propertyInitializers
-
-        processedData =
-            Builder.processAnimationData configuredBuilder
-
-        -- Extract end states (which are same as start states for init)
-        elementAnimations =
-            processedData.elements
-                |> Dict.map
-                    (\_ elementConfig ->
-                        let
-                            endStates =
-                                extractElementEndStates elementConfig
-                        in
-                        { currentStates = endStates
-                        , properties = Dict.empty -- No property tracking for init
+        _ ->
+            let
+                -- Start with inititial AnimState
+                (AnimState state) =
+                    AnimState
+                        { elementAnimations = Dict.empty
+                        , isRunning = False
+                        , builder = Builder.init
                         }
-                    )
 
-        -- Create property updates for JS (without creating WAAPI animations)
-        -- ARCHITECTURE: Initialize ALL properties (transforms, opacity, colors, size)
-        -- This ensures inline styles, JS state, and Elm state all start synchronized
-        propertyUpdates =
-            processedData.elements
-                |> Dict.toList
-                |> List.map
-                    (\( elementId, elementConfig ) ->
-                        ( elementId, encodeInitProperties elementConfig.properties )
-                    )
-    in
-    ( AnimState
-        { elementAnimations = elementAnimations
-        , isRunning = False
-        , builder =
-            state.builder
-                |> Builder.markDirty
-                |> Builder.clearCurrentElement
-        }
-    , portFunction <|
-        Encode.object
-            [ ( "type", Encode.string "setProperties" )
-            , ( "updates"
-              , Encode.list
-                    (\( elementId, props ) ->
-                        Encode.object
-                            [ ( "elementId", Encode.string elementId )
-                            , ( "properties", props )
-                            ]
-                    )
-                    propertyUpdates
-              )
-            ]
-    )
+                -- Apply all property initializers to the builder
+                configuredBuilder =
+                    List.foldl (\initializer b -> initializer b)
+                        state.builder
+                        propertyInitializers
+
+                processedData =
+                    Builder.processAnimationData configuredBuilder
+
+                -- Extract end states (which are same as start states for init)
+                elementAnimations =
+                    processedData.elements
+                        |> Dict.map
+                            (\_ elementConfig ->
+                                let
+                                    endStates =
+                                        extractElementEndStates elementConfig
+                                in
+                                { currentStates = endStates
+                                , properties = Dict.empty -- No property tracking for init
+                                }
+                            )
+
+                -- Create property updates for JS (without creating WAAPI animations)
+                -- ARCHITECTURE: Initialize ALL properties (transforms, opacity, colors, size)
+                -- This ensures inline styles, JS state, and Elm state all start synchronized
+                propertyUpdates =
+                    processedData.elements
+                        |> Dict.toList
+                        |> List.map
+                            (\( elementId, elementConfig ) ->
+                                ( elementId, encodeInitProperties elementConfig.properties )
+                            )
+            in
+            ( AnimState
+                { elementAnimations = elementAnimations
+                , isRunning = False
+                , builder =
+                    state.builder
+                        |> Builder.markDirty
+                        |> Builder.clearCurrentElement
+                }
+            , portFunction <|
+                Encode.object
+                    [ ( "type", Encode.string "setProperties" )
+                    , ( "updates"
+                      , Encode.list
+                            (\( elementId, props ) ->
+                                Encode.object
+                                    [ ( "elementId", Encode.string elementId )
+                                    , ( "properties", props )
+                                    ]
+                            )
+                            propertyUpdates
+                      )
+                    ]
+            )
 
 
 propertyTypeString : Builder.ProcessedPropertyConfig -> String

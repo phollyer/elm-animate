@@ -383,7 +383,7 @@ Then use `entranceAnimation` in your view to apply the animation.
 -}
 fireAndForget : (AnimBuilder -> AnimBuilder) -> AnimState
 fireAndForget =
-    animate init
+    animate (init [])
 
 
 {-| Create a fire-and-forget animation with custom transform ordering.
@@ -405,17 +405,27 @@ incomplete or duplicate lists are normalized.
 -}
 fireAndForgetOrder : List TransformOrder -> (AnimBuilder -> AnimBuilder) -> AnimState
 fireAndForgetOrder order =
-    animateOrder order init
+    animateOrder order (init [])
 
 
-{-| Initialize empty animation state.
+{-| Initialize animation state with optional property initializers.
 
-    import Anim.Engine.CSS as CSS
+Pass an empty list for empty state, or property initializers to set initial values:
 
-    { model | animState = CSS.init }
+    -- Empty state
+    CSS.init []
+
+    -- With initial properties
+    CSS.init
+        [ Translate.initXY "element-id" 100 50
+        , Opacity.init "element-id" 0.5
+        ]
+
+Initial values are applied in the view via `transitionAttributes` or `keyframesAttribute`.
+No animations will run until `animate` is called.
 
 -}
-init : AnimState
+init : List (AnimBuilder -> AnimBuilder) -> AnimState
 init =
     InternalCSS.init
 

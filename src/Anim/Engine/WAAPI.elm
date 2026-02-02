@@ -1,5 +1,5 @@
 module Anim.Engine.WAAPI exposing
-    ( AnimState, init, AnimBuilder, initProperties
+    ( AnimState, init, AnimBuilder
     , animate, fireAndForget
     , AnimationEvent(..), decode
     , stop, reset, restart, pause, resume
@@ -65,7 +65,7 @@ Both outgoing command and incoming event ports are needed.
 
 # State
 
-@docs AnimState, init, AnimBuilder, initProperties
+@docs AnimState, init, AnimBuilder
 
 
 # Animation Execution
@@ -196,14 +196,29 @@ type alias AnimState =
     Internal.AnimState
 
 
-{-| Initialize empty animation state.
+{-| Initialize animation state with optional property initializers.
 
-    import Anim.Engine.WAAPI as WAAPI
+Pass an empty list for empty state (returns `Cmd.none`), or property initializers
+to set initial values (sends property updates to JS):
 
-    { model | animState = WAAPI.init }
+    -- Empty state
+    WAAPI.init waapiCommand []
+
+    -- With initial properties
+    WAAPI.init waapiCommand
+        [ Translate.initXY "element-id" 100 50
+        , Opacity.init "element-id" 1.0
+        ]
+
+**Note:** If you set the same property both here and via inline CSS styles in your
+view, the values set here will take precedence (JavaScript applies them after
+Elm renders the view). To avoid confusion, pick one approach:
+
+  - Use `init` with property initializers (no inline styles needed), or
+  - Use inline styles and ensure your `from` values in animations match them
 
 -}
-init : AnimState
+init : (Encode.Value -> Cmd msg) -> List (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
 init =
     Internal.init
 
@@ -293,41 +308,6 @@ Returns the updated animation state and command that talks to the JavaScript Web
 animate : (Encode.Value -> Cmd msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
 animate =
     Internal.animate
-
-
-{-| Initialize properties ready for animating.
-
-All animations need a starting point to animate from. This function sets
-initial property values. If you don't set an initial value, sensible defaults
-will be assumed (e.g., opacity 1.0, translate {0,0,0}, etc.).
-
-**Note:** If you set the same property both here and via inline CSS styles in your
-view, the values set here will take precedence (JavaScript applies them after
-Elm renders the view). To avoid confusion, pick one approach:
-
-  - Use `initProperties` for initial state (no inline styles needed), or
-  - Use inline styles and ensure your `from` values in animations match them
-
-```
-port waapiCommand : Encode.Value -> Cmd msg
-
-init : Model -> ( Model, Cmd Msg )
-init model =
-    let
-        ( initialAnimState, initCmd ) =
-            WAAPI.initProperties waapiCommand
-                [ Translate.initXY "element-id" 100 50
-                , Opacity.init "element-id" 1.0
-                ... -- more properties if needed
-                ]
-    in
-    ( { model | animations = initialAnimState }, initCmd )
-```
-
--}
-initProperties : (Encode.Value -> Cmd msg) -> List (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
-initProperties =
-    Internal.initProperties
 
 
 {-| Execute a fire-and-forget animation without state tracking.

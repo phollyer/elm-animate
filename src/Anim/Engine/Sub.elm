@@ -168,14 +168,24 @@ type alias ElementId =
     String
 
 
-{-| Initialize empty animation state.
+{-| Initialize animation state with optional property initializers.
 
-    import Anim.Engine.Sub as Sub
+Pass an empty list for empty state, or property initializers to set initial values:
 
-    { model | animState = Sub.init }
+    -- Empty state
+    Sub.init []
+
+    -- With initial properties
+    Sub.init
+        [ Translate.initXY "element-id" 100 50
+        , Opacity.init "element-id" 0.5
+        ]
+
+Initial values are applied in the view via `htmlAttributes`.
+No animations will run until `animate` is called.
 
 -}
-init : AnimState
+init : List (AnimBuilder -> AnimBuilder) -> AnimState
 init =
     InternalSub.init
 
