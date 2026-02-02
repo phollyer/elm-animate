@@ -1,7 +1,9 @@
 module Anim.Engine.WAAPI exposing
     ( AnimState, init, AnimBuilder
     , animate, fireAndForget
-    , AnimationEvent(..), decode
+    , subscriptions
+    , Msg, update
+    , AnimationEvent(..)
     , stop, reset, restart, pause, resume
     , onResize
     , duration, speed
@@ -46,7 +48,7 @@ Then import and initialize it in your JavaScript code:
 The JavaScript companion automatically connects to these ports when you call `ElmAnimateWAAPI.init(app.ports)` in your JavaScript code.
 
   - **`waapiCommand`**: Outgoing port to send animation commands to JavaScript (always required)
-  - **`waapiEvent`**: Incoming port to receive animation updates from JavaScript (only required for stateful animations)
+  - **`waapiSubscription`**: Incoming port to receive property updates and lifecycle events (required for stateful animations)
 
 **For fire-and-forget animations** (no state tracking):
 
@@ -54,13 +56,13 @@ Only the outgoing command port is needed to send animation instructions to JavaS
 
         port waapiCommand : Json.Encode.Value -> Cmd msg
 
-**For stateful animations** (with state tracking and real-time updates):
+**For stateful animations** (with state tracking, real-time updates, and lifecycle events):
 
-Both outgoing command and incoming event ports are needed.
+Both command and subscription ports are needed.
 
         port waapiCommand : Json.Encode.Value -> Cmd msg
 
-        port waapiEvent : (Json.Encode.Value -> msg) -> Sub msg
+        port waapiSubscription : (Json.Decode.Value -> msg) -> Sub msg
 
 
 # State
@@ -73,7 +75,7 @@ Both outgoing command and incoming event ports are needed.
 @docs animate, fireAndForget
 
 
-# Updates
+# Property Updates
 
 The JavaScript companion library sends real-time property updates back to Elm during animations.
 
@@ -81,7 +83,25 @@ Updates are throttled to approximately 60 FPS (~16ms intervals) regardless of di
 This balances real-time feedback with performance, preventing message flooding on high-refresh-rate
 displays (120Hz, 144Hz, etc.) while maintaining smooth visual feedback.
 
-@docs AnimationEvent, decode
+@docs subscriptions
+
+
+# TEA Update
+
+Handle messages from subscriptions using the standard TEA pattern.
+
+@docs Msg, update
+
+
+# Animation Events
+
+Animation lifecycle events notify you when animations change state, allowing you to trigger
+side effects like starting the next animation in a sequence.
+
+Events are delivered via the `update` function's `Maybe AnimationEvent` return value.
+Simply ignore them if you don't need event handling.
+
+@docs AnimationEvent
 
 
 # Animation Control
@@ -174,6 +194,7 @@ during animation playback.
 import Anim.Color exposing (Color)
 import Anim.Easing exposing (Easing)
 import Anim.Internal.WAAPI as Internal
+import Json.Decode as Decode
 import Json.Encode as Encode
 
 
@@ -185,27 +206,35 @@ import Json.Encode as Encode
 
 This state keeps track of animations and their configurations.
 
+The `msg` type parameter is your `Msg` type.
+
     import Anim.Engine.WAAPI as WAAPI
 
-    { model | animState : WAAPI.AnimState }
+    type Msg
+        = ...
+
+    type alias Model =
+        { animState : WAAPI.AnimState Msg
+        , ...
+        }
 
 **Note:** You do not need this for fire-and-forget animations.
 
 -}
-type alias AnimState =
-    Internal.AnimState
+type alias AnimState msg =
+    Internal.AnimState msg
 
 
-{-| Initialize animation state with optional property initializers.
+{-| Initialize animation state.
 
-Pass an empty list for empty state (returns `Cmd.none`), or property initializers
-to set initial values (sends property updates to JS):
+Takes the command port, subscription port, and optional property initializers:
 
-    -- Empty state
-    WAAPI.init waapiCommand []
+    -- Basic initialization
+    WAAPI.init waapiCommand waapiSubscription []
 
     -- With initial properties
     WAAPI.init waapiCommand
+        waapiSubscription
         [ Translate.initXY "element-id" 100 50
         , Opacity.init "element-id" 1.0
         ]
@@ -218,7 +247,7 @@ Elm renders the view). To avoid confusion, pick one approach:
   - Use inline styles and ensure your `from` values in animations match them
 
 -}
-init : (Encode.Value -> Cmd msg) -> List (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
+init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
 init =
     Internal.init
 
@@ -290,13 +319,11 @@ delay =
 
 {-| Configure an animation.
 
-Returns the updated animation state and command that talks to the JavaScript Web Animations API via ports.
-
-    port waapiCommand : Encode.Value -> Cmd msg
+Returns the updated animation state and the command to execute the animation.
 
     let
         ( newAnimState, animCmd ) =
-            WAAPI.animate waapiCommand model.animState <|
+            WAAPI.animate model.animState <|
                 \builder ->
                     builder
                         |> -- configure animation
@@ -305,7 +332,7 @@ Returns the updated animation state and command that talks to the JavaScript Web
     ( { model | animations = newAnimState }, animCmd )
 
 -}
-animate : (Encode.Value -> Cmd msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
+animate : AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
 animate =
     Internal.animate
 
@@ -324,7 +351,7 @@ The animation runs entirely in the browser via the Web Animations API.
                 builder
                     |> -- configure animation
 
-For state management and continuity, use `animate` instead.
+For state management and continuity, use [animate](#animate) instead.
 
 -}
 fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
@@ -338,68 +365,70 @@ fireAndForget =
 
 {-| Stop an animation by instantly jumping to its end state.
 
-    port waapiCommand : Encode.Value -> Cmd msg
-
-    WAAPI.stop "my-element" waapiCommand
+    let
+        ( newAnimState, stopCmd ) =
+            WAAPI.stop "my-element" model.animState
+    in
+    ( { model | animations = newAnimState }, stopCmd )
 
 -}
-stop : String -> (Encode.Value -> Cmd msg) -> Cmd msg
+stop : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 stop =
     Internal.stop
 
 
 {-| Reset an animation by instantly jumping back to its start state.
 
-    port waapiCommand : Encode.Value -> Cmd msg
-
     let
         ( newAnimState, resetCmd ) =
-            WAAPI.reset "my-element" waapiCommand model.animState
+            WAAPI.reset "my-element" model.animState
     in
     ( { model | animations = newAnimState }, resetCmd )
 
 -}
-reset : String -> (Encode.Value -> Cmd msg) -> AnimState -> ( AnimState, Cmd msg )
+reset : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 reset =
     Internal.reset
 
 
 {-| Restart an animation from the beginning.
 
-    port waapiCommand : Encode.Value -> Cmd msg
-
     let
         ( newAnimState, restartCmd ) =
-            WAAPI.restart "my-element" waapiCommand model.animState
+            WAAPI.restart "my-element" model.animState
     in
     ( { model | animations = newAnimState }, restartCmd )
 
 -}
-restart : String -> (Encode.Value -> Cmd msg) -> AnimState -> ( AnimState, Cmd msg )
+restart : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 restart =
     Internal.restart
 
 
 {-| Pause a running animation for a specific element.
 
-    port waapiCommand : Encode.Value -> Cmd msg
-
-    WAAPI.pause "my-element" waapiCommand
+    let
+        ( newAnimState, pauseCmd ) =
+            WAAPI.pause "my-element" model.animState
+    in
+    ( { model | animations = newAnimState }, pauseCmd )
 
 -}
-pause : String -> (Encode.Value -> Cmd msg) -> Cmd msg
+pause : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 pause =
     Internal.pause
 
 
 {-| Resume a paused animation for a specific element.
 
-    port waapiCommand : Encode.Value -> Cmd msg
-
-    WAAPI.resume "my-element" waapiCommand
+    let
+        ( newAnimState, resumeCmd ) =
+            WAAPI.resume "my-element" model.animState
+    in
+    ( { model | animations = newAnimState }, resumeCmd )
 
 -}
-resume : String -> (Encode.Value -> Cmd msg) -> Cmd msg
+resume : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 resume =
     Internal.resume
 
@@ -472,9 +501,8 @@ onResize :
         , oldContainerSize : { width : Int, height : Int }
         , newContainerSize : { width : Int, height : Int }
         }
-    -> (Encode.Value -> Cmd msg)
-    -> AnimState
-    -> ( AnimState, Cmd msg )
+    -> AnimState msg
+    -> ( AnimState msg, Cmd msg )
 onResize =
     Internal.onResize
 
@@ -485,14 +513,14 @@ onResize =
 
 {-| Check if any animations are currently running.
 -}
-anyRunning : AnimState -> Bool
+anyRunning : AnimState msg -> Bool
 anyRunning =
     Internal.anyRunning
 
 
 {-| Check if a specific element has any animations currently running.
 -}
-isRunning : String -> AnimState -> Bool
+isRunning : String -> AnimState msg -> Bool
 isRunning =
     Internal.isElementRunning
 
@@ -502,7 +530,7 @@ isRunning =
 Returns `Nothing` if there are no animations.
 
 -}
-allComplete : AnimState -> Maybe Bool
+allComplete : AnimState msg -> Maybe Bool
 allComplete =
     Internal.allComplete
 
@@ -512,7 +540,7 @@ allComplete =
 Returns `Nothing` if there are no animations for the element.
 
 -}
-isComplete : String -> AnimState -> Maybe Bool
+isComplete : String -> AnimState msg -> Maybe Bool
 isComplete =
     Internal.isElementComplete
 
@@ -528,7 +556,7 @@ Returns `Nothing` if the element has no background color animation.
 Returns `transparent white (rgba 255 255 255 0)` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartBackgroundColor : String -> AnimState -> Maybe Color
+getStartBackgroundColor : String -> AnimState msg -> Maybe Color
 getStartBackgroundColor =
     Internal.getStartBackgroundColor
 
@@ -538,7 +566,7 @@ getStartBackgroundColor =
 Returns `Nothing` if the element has no background color animation.
 
 -}
-getEndBackgroundColor : String -> AnimState -> Maybe Color
+getEndBackgroundColor : String -> AnimState msg -> Maybe Color
 getEndBackgroundColor =
     Internal.getEndBackgroundColor
 
@@ -554,7 +582,7 @@ Returns the current interpolated color if the animation is running.
 Returns the end color if the animation has completed.
 
 -}
-getCurrentBackgroundColor : String -> AnimState -> Maybe Color
+getCurrentBackgroundColor : String -> AnimState msg -> Maybe Color
 getCurrentBackgroundColor =
     Internal.getCurrentBackgroundColor
 
@@ -570,7 +598,7 @@ Returns `Nothing` if the element has no opacity animation.
 Returns `Just 1.0` (fully opaque) if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartOpacity : String -> AnimState -> Maybe Float
+getStartOpacity : String -> AnimState msg -> Maybe Float
 getStartOpacity =
     Internal.getStartOpacity
 
@@ -580,7 +608,7 @@ getStartOpacity =
 Returns `Nothing` if the element has no opacity animation.
 
 -}
-getEndOpacity : String -> AnimState -> Maybe Float
+getEndOpacity : String -> AnimState msg -> Maybe Float
 getEndOpacity =
     Internal.getEndOpacity
 
@@ -596,7 +624,7 @@ Returns the current interpolated opacity if the animation is running.
 Returns the end opacity if the animation has completed.
 
 -}
-getCurrentOpacity : String -> AnimState -> Maybe Float
+getCurrentOpacity : String -> AnimState msg -> Maybe Float
 getCurrentOpacity =
     Internal.getCurrentOpacity
 
@@ -612,7 +640,7 @@ Returns `Nothing` if the element has no translate animation.
 Returns `Just {x = 0, y = 0, z = 0}` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getStartTranslate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getStartTranslate =
     Internal.getStartTranslate
 
@@ -622,7 +650,7 @@ getStartTranslate =
 Returns `Nothing` if the element has no translate animation.
 
 -}
-getEndTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getEndTranslate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getEndTranslate =
     Internal.getEndTranslate
 
@@ -638,7 +666,7 @@ Returns the current interpolated translate if the animation is running.
 Returns the end translate if the animation has completed.
 
 -}
-getCurrentTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getCurrentTranslate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getCurrentTranslate =
     Internal.getCurrentTranslate
 
@@ -654,7 +682,7 @@ Returns `Nothing` if the element has no rotate animation.
 Returns `Just { x = 0, y = 0, z = 0 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getStartRotate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getStartRotate =
     Internal.getStartRotate
 
@@ -664,7 +692,7 @@ getStartRotate =
 Returns `Nothing` if the element has no rotate animation.
 
 -}
-getEndRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getEndRotate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getEndRotate =
     Internal.getEndRotate
 
@@ -680,7 +708,7 @@ Returns the current interpolated rotation if the animation is running.
 Returns the end rotation if the animation has completed.
 
 -}
-getCurrentRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getCurrentRotate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getCurrentRotate =
     Internal.getCurrentRotate
 
@@ -696,7 +724,7 @@ Returns `Nothing` if the element has no scale animation.
 Returns `Just { x = 1, y = 1, z = 1 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getStartScale : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getStartScale =
     Internal.getStartScale
 
@@ -706,7 +734,7 @@ getStartScale =
 Returns `Nothing` if the element has no scale animation.
 
 -}
-getEndScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getEndScale : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getEndScale =
     Internal.getEndScale
 
@@ -722,7 +750,7 @@ Returns the current interpolated scale if the animation is running.
 Returns the end scale if the animation has completed.
 
 -}
-getCurrentScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getCurrentScale : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getCurrentScale =
     Internal.getCurrentScale
 
@@ -738,7 +766,7 @@ Returns `Nothing` if the element has no size animation.
 Returns `Just { width = 0, height = 0 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartSize : String -> AnimState -> Maybe { width : Float, height : Float }
+getStartSize : String -> AnimState msg -> Maybe { width : Float, height : Float }
 getStartSize =
     Internal.getStartSize
 
@@ -748,7 +776,7 @@ getStartSize =
 Returns `Nothing` if the element has no size animation.
 
 -}
-getEndSize : String -> AnimState -> Maybe { width : Float, height : Float }
+getEndSize : String -> AnimState msg -> Maybe { width : Float, height : Float }
 getEndSize =
     Internal.getEndSize
 
@@ -764,13 +792,9 @@ Returns the current interpolated size if the animation is running.
 Returns the end size if the animation has completed.
 
 -}
-getCurrentSize : String -> AnimState -> Maybe { width : Float, height : Float }
+getCurrentSize : String -> AnimState msg -> Maybe { width : Float, height : Float }
 getCurrentSize =
     Internal.getCurrentSize
-
-
-
--- PORT INTEGRATION: TYPES
 
 
 {-| Animation lifecycle events from the Web Animations API.
@@ -778,14 +802,7 @@ getCurrentSize =
 These events notify you when animations change state, allowing you to trigger
 side effects like starting the next animation in a sequence or updating the UI.
 
-Each event carries the `elementId` of the animated element:
-
-  - **Started elementId**: Animation has begun playing
-  - **Completed elementId**: Animation finished naturally
-  - **Paused elementId**: Animation was paused
-  - **Resumed elementId**: Animation continued after being paused
-  - **Canceled elementId**: Animation was canceled (via reset)
-  - **Restarted elementId**: Animation was restarted from the beginning
+Each event carries the `elementId` of the animated element.
 
 -}
 type AnimationEvent
@@ -797,80 +814,99 @@ type AnimationEvent
     | Restarted String
 
 
+{-| Opaque message type for WAAPI subscriptions.
 
--- PORT INTEGRATION: DECODE
-
-
-{-| Decode WAAPI events and update animation state.
-
-This function decodes incoming port messages and returns the updated `AnimState`
-along with a `Maybe AnimationEvent` for lifecycle changes.
-
-Property updates (translate, opacity, etc.) are automatically applied to `AnimState`.
-You can query current values using getter functions by [querying animated properties](#querying-animated-properties).
-
-**Note:** You can receive lifecycle events (Started, Completed, etc.) for fire-and-forget
-animations too, but property queries won't work since fire-and-forget doesn't track state.
-
-    port waapiEvent : (Encode.Value -> msg) -> Sub msg
+Use this with `subscriptions` and `update` to handle animation messages
+in a standard TEA pattern.
 
     type Msg
-        = GotWaapiUpdate ( WAAPI.AnimState, Maybe WAAPI.AnimationEvent )
+        = WaapiMsg WAAPI.Msg
+        | ...
+
+-}
+type alias Msg =
+    Internal.Msg
+
+
+{-| Subscribe to WAAPI messages from JavaScript.
+
+This creates a subscription that listens for both property updates and lifecycle events
+(if enabled via `withEvents`). Use with `update` to handle messages.
+
+    type Msg
+        = WaapiMsg WAAPI.Msg
         | ...
 
     subscriptions : Model -> Sub Msg
     subscriptions model =
-        waapiEvent (GotWaapiUpdate << WAAPI.decode model.animStatetate)
+        WAAPI.subscriptions WaapiMsg model.animState
+
+-}
+subscriptions : (Msg -> msg) -> AnimState msg -> Sub msg
+subscriptions =
+    Internal.subscriptions
+
+
+{-| TEA-style update function for WAAPI messages.
+
+Handles both property updates and lifecycle events, returning the updated state
+and optionally an `AnimationEvent` for side effects.
+
+    type Msg
+        = WaapiMsg WAAPI.Msg
+        | ...
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
         case msg of
-            GotWaapiUpdate ( newAnimState, maybeEvent ) ->
+            WaapiMsg waapiMsg ->
+                let
+                    ( newAnimState, maybeEvent ) =
+                        WAAPI.update waapiMsg model.animState
+                in
                 case maybeEvent of
                     Just (WAAPI.Completed "box") ->
                         -- The "box" element finished animating
-                        ( { model | animationState = newAnimState }, startNextAnimation )
-
-                    Just (WAAPI.Completed elementId) ->
-                        -- Some other element finished
-                        ( { model | animationState = newAnimState }, Cmd.none )
+                        ( { model | animState = newAnimState }, startNextAnimation )
 
                     _ ->
-                        -- Just update state (property updates, other events)
-                        ( { model | animationState = newAnimState }, Cmd.none )
+                        ( { model | animState = newAnimState }, Cmd.none )
 
             ...
 
 -}
-decode : AnimState -> Encode.Value -> ( AnimState, Maybe AnimationEvent )
-decode currentAnimState eventValue =
+update : Msg -> AnimState msg -> ( AnimState msg, Maybe AnimationEvent )
+update msg animState =
     let
-        ( updatedState, maybeStatusAndId ) =
-            Internal.decodeEvent eventValue currentAnimState
+        ( newState, maybeRawEvent ) =
+            Internal.update msg animState
     in
-    ( updatedState, Maybe.andThen (\( elementId, status ) -> statusStringToEvent elementId status) maybeStatusAndId )
+    ( newState
+    , Maybe.map (\( elementId, status ) -> statusStringToEvent elementId status) maybeRawEvent
+    )
 
 
-statusStringToEvent : String -> String -> Maybe AnimationEvent
+statusStringToEvent : String -> String -> AnimationEvent
 statusStringToEvent elementId status =
     case status of
         "started" ->
-            Just (Started elementId)
+            Started elementId
 
         "paused" ->
-            Just (Paused elementId)
+            Paused elementId
 
         "resumed" ->
-            Just (Resumed elementId)
+            Resumed elementId
 
         "completed" ->
-            Just (Completed elementId)
+            Completed elementId
 
         "canceled" ->
-            Just (Canceled elementId)
+            Canceled elementId
 
         "restarted" ->
-            Just (Restarted elementId)
+            Restarted elementId
 
         _ ->
-            Nothing
+            -- Fallback for unknown status (shouldn't happen with valid events)
+            Started elementId

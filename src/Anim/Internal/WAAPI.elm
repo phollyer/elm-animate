@@ -1,10 +1,12 @@
 module Anim.Internal.WAAPI exposing
     ( AnimBuilder
     , AnimState
+    , Msg
     , allComplete
     , animate
     , anyRunning
     , builder
+    , decodeAnimationEvent
     , decodeEvent
     , delay
     , duration
@@ -45,6 +47,7 @@ module Anim.Internal.WAAPI exposing
     , resume
     , speed
     , stop
+    , subscriptions
     , update
     , updatePositions
     , updateStatus
@@ -125,15 +128,39 @@ type alias ElementAnimation =
     }
 
 
-type AnimState
+{-| Pending actions for optimistic state management.
+When control functions are called, Elm immediately updates its internal state,
+then sends a command to JS. These pending actions allow reconciliation when
+JS events return.
+-}
+type PendingAction
+    = PendingStop
+    | PendingReset ElementStates
+    | PendingRestart
+    | PendingPause
+    | PendingResume
+
+
+{-| Opaque message type for WAAPI subscriptions.
+Handles both property updates and lifecycle events internally.
+-}
+type Msg
+    = PropertyUpdate Decode.Value
+    | Event Decode.Value
+
+
+type AnimState msg
     = AnimState
         { elementAnimations : Dict ElementId ElementAnimation
         , isRunning : Bool
         , builder : AnimBuilder
+        , commandPort : Encode.Value -> Cmd msg
+        , subscriptionPort : (Decode.Value -> msg) -> Sub msg
+        , pendingActions : Dict ElementId PendingAction
         }
 
 
-builder : AnimState -> AnimBuilder
+builder : AnimState msg -> AnimBuilder
 builder (AnimState state) =
     state.builder
 
@@ -174,8 +201,8 @@ fireAndForget portFunction buildAnimation =
     portFunction encodedData
 
 
-animate : (Encode.Value -> Cmd msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
-animate portFunction (AnimState state) buildAnimation =
+animate : AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
+animate (AnimState state) buildAnimation =
     let
         _ =
             Debug.log "Animating with current state:" state
@@ -315,14 +342,15 @@ animate portFunction (AnimState state) buildAnimation =
                 processedData.elements
     in
     ( AnimState
-        { elementAnimations = updatedElementAnimations
-        , isRunning = not (Dict.isEmpty newElementAnimations)
-        , builder =
-            builderWithHistory
-                |> Builder.markDirty
-                |> Builder.clearCurrentElement
+        { state
+            | elementAnimations = updatedElementAnimations
+            , isRunning = not (Dict.isEmpty newElementAnimations)
+            , builder =
+                builderWithHistory
+                    |> Builder.markDirty
+                    |> Builder.clearCurrentElement
         }
-    , portFunction <|
+    , state.commandPort <|
         encodeWithVersions updatedElementAnimations processedData
     )
 
@@ -333,14 +361,17 @@ Pass an empty list for empty state (returns `Cmd.none`), or property initializer
 to set initial values (sends property updates to JS).
 
 -}
-init : (Encode.Value -> Cmd msg) -> List (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
-init portFunction propertyInitializers =
+init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
+init commandPort subscriptionPort propertyInitializers =
     case propertyInitializers of
         [] ->
             ( AnimState
                 { elementAnimations = Dict.empty
                 , isRunning = False
                 , builder = Builder.init
+                , commandPort = commandPort
+                , subscriptionPort = subscriptionPort
+                , pendingActions = Dict.empty
                 }
             , Cmd.none
             )
@@ -353,6 +384,9 @@ init portFunction propertyInitializers =
                         { elementAnimations = Dict.empty
                         , isRunning = False
                         , builder = Builder.init
+                        , commandPort = commandPort
+                        , subscriptionPort = subscriptionPort
+                        , pendingActions = Dict.empty
                         }
 
                 -- Apply all property initializers to the builder
@@ -396,8 +430,11 @@ init portFunction propertyInitializers =
                     state.builder
                         |> Builder.markDirty
                         |> Builder.clearCurrentElement
+                , commandPort = commandPort
+                , subscriptionPort = subscriptionPort
+                , pendingActions = Dict.empty
                 }
-            , portFunction <|
+            , commandPort <|
                 Encode.object
                     [ ( "type", Encode.string "setProperties" )
                     , ( "updates"
@@ -505,7 +542,7 @@ extractElementStartStates elementConfig =
 
 {-| Handle animation status updates from JavaScript (paused, resumed).
 -}
-updateStatus : Decode.Value -> AnimState -> AnimState
+updateStatus : Decode.Value -> AnimState msg -> AnimState msg
 updateStatus jsonValue (AnimState state) =
     case Decode.decodeValue statusUpdateDecoder jsonValue of
         Ok { elementId, status } ->
@@ -551,11 +588,12 @@ updateStatus jsonValue (AnimState state) =
                 { state
                     | elementAnimations = updatedAnimations
                     , isRunning = hasRunningAnimations
+                    , pendingActions = Dict.remove elementId state.pendingActions
                 }
 
         Err _ ->
             -- Fallback to old propertyUpdate decoder for backward compatibility
-            update jsonValue (AnimState state)
+            updatePropertyUpdate jsonValue (AnimState state)
 
 
 {-| Decode a WAAPI event from JavaScript and update AnimState.
@@ -565,12 +603,12 @@ Returns the updated state and optionally the animation event status string
 Property updates return Nothing for the status since they're just state updates.
 
 -}
-decodeEvent : Decode.Value -> AnimState -> ( AnimState, Maybe ( String, String ) )
+decodeEvent : Decode.Value -> AnimState msg -> ( AnimState msg, Maybe ( String, String ) )
 decodeEvent jsonValue animState =
     case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue of
         Ok "propertyUpdate" ->
             -- Property updates: apply to state, no event
-            ( update jsonValue animState, Nothing )
+            ( updatePropertyUpdate jsonValue animState, Nothing )
 
         Ok "animationUpdate" ->
             -- Animation lifecycle: apply to state, return status string and elementId
@@ -594,10 +632,53 @@ decodeEvent jsonValue animState =
             ( animState, Nothing )
 
 
-{-| Handle full property updates from JavaScript (for backward compatibility).
+{-| Decode just the animation event from JavaScript (without state updates).
+Returns the elementId and status string if this is an animation lifecycle event.
+Returns Nothing for property updates or unknown event types.
 -}
-update : Decode.Value -> AnimState -> AnimState
-update jsonValue (AnimState state) =
+decodeAnimationEvent : Decode.Value -> Maybe ( String, String )
+decodeAnimationEvent jsonValue =
+    case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue of
+        Ok "animationUpdate" ->
+            Decode.decodeValue
+                (Decode.map2 Tuple.pair
+                    (Decode.at [ "payload", "elementId" ] Decode.string)
+                    (Decode.at [ "payload", "status" ] Decode.string)
+                )
+                jsonValue
+                |> Result.toMaybe
+
+        _ ->
+            Nothing
+
+
+{-| TEA-style update function for WAAPI messages.
+
+Handles both property updates and lifecycle events, returning the updated state
+and optionally an animation event (elementId, status) for side effects.
+
+-}
+update : Msg -> AnimState msg -> ( AnimState msg, Maybe ( String, String ) )
+update msg animState =
+    case msg of
+        PropertyUpdate jsonValue ->
+            ( updatePropertyUpdate jsonValue animState, Nothing )
+
+        Event jsonValue ->
+            case decodeAnimationEvent jsonValue of
+                Just ( elementId, status ) ->
+                    ( handleEventInternal elementId status animState
+                    , Just ( elementId, status )
+                    )
+
+                Nothing ->
+                    ( animState, Nothing )
+
+
+{-| Handle full property updates from JavaScript.
+-}
+updatePropertyUpdate : Decode.Value -> AnimState msg -> AnimState msg
+updatePropertyUpdate jsonValue (AnimState state) =
     case Decode.decodeValue animationUpdateDecoder jsonValue of
         Ok animationUpdate ->
             let
@@ -674,6 +755,89 @@ updateElementAnimation animUpdate elementAnimation =
     }
 
 
+{-| Subscribe to WAAPI messages from JavaScript.
+
+This creates a subscription that listens for both property updates and lifecycle events.
+Messages are routed based on their JSON type field. Use with `update` to handle messages.
+
+-}
+subscriptions : (Msg -> msg) -> AnimState msg -> Sub msg
+subscriptions toMsg (AnimState state) =
+    state.subscriptionPort
+        (\jsonValue ->
+            -- Route based on JSON type field
+            case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue of
+                Ok "animationUpdate" ->
+                    toMsg (Event jsonValue)
+
+                _ ->
+                    -- propertyUpdate or unknown types go to PropertyUpdate
+                    toMsg (PropertyUpdate jsonValue)
+        )
+
+
+{-| Internal: Update optimistic state based on an animation lifecycle event.
+-}
+handleEventInternal : String -> String -> AnimState msg -> AnimState msg
+handleEventInternal elementId status (AnimState state) =
+    let
+        newStatus =
+            case status of
+                "started" ->
+                    Running
+
+                "paused" ->
+                    Paused
+
+                "resumed" ->
+                    Running
+
+                "completed" ->
+                    Complete
+
+                "canceled" ->
+                    Complete
+
+                "restarted" ->
+                    Running
+
+                _ ->
+                    NotStarted
+
+        -- Clear pending action for this element since we got the event
+        clearedPendingActions =
+            Dict.remove elementId state.pendingActions
+
+        updatedElementAnimations =
+            Dict.update elementId
+                (Maybe.map
+                    (\anim ->
+                        { anim
+                            | properties =
+                                Dict.map
+                                    (\_ propAnim -> { propAnim | status = newStatus })
+                                    anim.properties
+                        }
+                    )
+                )
+                state.elementAnimations
+
+        isRunning =
+            Dict.values updatedElementAnimations
+                |> List.any
+                    (\anim ->
+                        Dict.values anim.properties
+                            |> List.any (\prop -> prop.status == Running)
+                    )
+    in
+    AnimState
+        { state
+            | elementAnimations = updatedElementAnimations
+            , isRunning = isRunning
+            , pendingActions = clearedPendingActions
+        }
+
+
 onResize :
     List
         { elementId : String
@@ -681,10 +845,9 @@ onResize :
         , oldContainerSize : { width : Int, height : Int }
         , newContainerSize : { width : Int, height : Int }
         }
-    -> (Encode.Value -> Cmd msg)
-    -> AnimState
-    -> ( AnimState, Cmd msg )
-onResize elements portCmd animState =
+    -> AnimState msg
+    -> ( AnimState msg, Cmd msg )
+onResize elements animState =
     let
         updates =
             List.filterMap (calculateResizePosition animState) elements
@@ -698,11 +861,13 @@ onResize elements portCmd animState =
             ( newAnimState, updateData ) =
                 updatePositions updates animState
         in
-        ( newAnimState, portCmd updateData )
+        case animState of
+            AnimState state ->
+                ( newAnimState, state.commandPort updateData )
 
 
 calculateResizePosition :
-    AnimState
+    AnimState msg
     ->
         { elementId : String
         , elementSize : { width : Int, height : Int }
@@ -796,8 +961,8 @@ and sends the appropriate command to JavaScript:
 -}
 updatePositions :
     List { elementId : String, startX : Float, startY : Float, startZ : Float, endX : Float, endY : Float, endZ : Float }
-    -> AnimState
-    -> ( AnimState, Encode.Value )
+    -> AnimState msg
+    -> ( AnimState msg, Encode.Value )
 updatePositions updates (AnimState state) =
     let
         -- Update AnimState with new end positions
@@ -1043,7 +1208,7 @@ encodeProperty property =
 -- Query State
 
 
-allComplete : AnimState -> Maybe Bool
+allComplete : AnimState msg -> Maybe Bool
 allComplete (AnimState state) =
     if Dict.isEmpty state.elementAnimations then
         Nothing
@@ -1059,12 +1224,12 @@ allComplete (AnimState state) =
             |> Just
 
 
-anyRunning : AnimState -> Bool
+anyRunning : AnimState msg -> Bool
 anyRunning (AnimState state) =
     not (Dict.isEmpty state.elementAnimations) && state.isRunning
 
 
-isElementComplete : String -> AnimState -> Maybe Bool
+isElementComplete : String -> AnimState msg -> Maybe Bool
 isElementComplete elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.map
@@ -1074,7 +1239,7 @@ isElementComplete elementId (AnimState state) =
             )
 
 
-isElementRunning : String -> AnimState -> Bool
+isElementRunning : String -> AnimState msg -> Bool
 isElementRunning elementId (AnimState state) =
     case Dict.get elementId state.elementAnimations of
         Nothing ->
@@ -1094,7 +1259,7 @@ isElementRunning elementId (AnimState state) =
 
 getPropertyRange :
     String
-    -> AnimState
+    -> AnimState msg
     -> (Builder.ProcessedPropertyConfig -> Maybe { start : Maybe a, end : a })
     -> Maybe { start : Maybe a, end : a }
 getPropertyRange elementId (AnimState state) extractor =
@@ -1129,25 +1294,25 @@ getStartWithDefault default maybeRange =
 -- Background Color
 
 
-getStartBackgroundColor : String -> AnimState -> Maybe Color
+getStartBackgroundColor : String -> AnimState msg -> Maybe Color
 getStartBackgroundColor elementId animState =
     getBackgroundColorRange elementId animState
         |> getStartWithDefault BackgroundColor.default
 
 
-getEndBackgroundColor : String -> AnimState -> Maybe Color
+getEndBackgroundColor : String -> AnimState msg -> Maybe Color
 getEndBackgroundColor elementId animState =
     getBackgroundColorRange elementId animState
         |> Maybe.map .end
 
 
-getCurrentBackgroundColor : String -> AnimState -> Maybe Color
+getCurrentBackgroundColor : String -> AnimState msg -> Maybe Color
 getCurrentBackgroundColor elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.andThen (.currentStates >> .backgroundColor)
 
 
-getBackgroundColorRange : String -> AnimState -> Maybe { start : Maybe Color, end : Color }
+getBackgroundColorRange : String -> AnimState msg -> Maybe { start : Maybe Color, end : Color }
 getBackgroundColorRange elementId animState =
     getPropertyRange elementId animState <|
         \prop ->
@@ -1163,28 +1328,28 @@ getBackgroundColorRange elementId animState =
 -- Opacity
 
 
-getStartOpacity : String -> AnimState -> Maybe Float
+getStartOpacity : String -> AnimState msg -> Maybe Float
 getStartOpacity elementId animState =
     getOpacityRange elementId animState
         |> getStartWithDefault Opacity.default
         |> Maybe.map Opacity.toFloat
 
 
-getEndOpacity : String -> AnimState -> Maybe Float
+getEndOpacity : String -> AnimState msg -> Maybe Float
 getEndOpacity elementId animState =
     getOpacityRange elementId animState
         |> Maybe.map .end
         |> Maybe.map Opacity.toFloat
 
 
-getCurrentOpacity : String -> AnimState -> Maybe Float
+getCurrentOpacity : String -> AnimState msg -> Maybe Float
 getCurrentOpacity elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.andThen (.currentStates >> .opacity)
         |> Maybe.map Opacity.toFloat
 
 
-getOpacityRange : String -> AnimState -> Maybe { start : Maybe Opacity, end : Opacity }
+getOpacityRange : String -> AnimState msg -> Maybe { start : Maybe Opacity, end : Opacity }
 getOpacityRange elementId animState =
     getPropertyRange elementId animState <|
         \prop ->
@@ -1200,28 +1365,28 @@ getOpacityRange elementId animState =
 -- Translate
 
 
-getStartTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getStartTranslate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getStartTranslate elementId animState =
     getTranslateRange elementId animState
         |> getStartWithDefault Translate.default
         |> Maybe.map Translate.toRecord
 
 
-getEndTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getEndTranslate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getEndTranslate elementId animState =
     getTranslateRange elementId animState
         |> Maybe.map .end
         |> Maybe.map Translate.toRecord
 
 
-getCurrentTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getCurrentTranslate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getCurrentTranslate elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.andThen (.currentStates >> .translate)
         |> Maybe.map Translate.toRecord
 
 
-getTranslateRange : String -> AnimState -> Maybe { start : Maybe Translate, end : Translate }
+getTranslateRange : String -> AnimState msg -> Maybe { start : Maybe Translate, end : Translate }
 getTranslateRange elementId animState =
     getPropertyRange elementId animState <|
         \prop ->
@@ -1237,28 +1402,28 @@ getTranslateRange elementId animState =
 -- Rotate
 
 
-getStartRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getStartRotate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getStartRotate elementId animState =
     getRotateRange elementId animState
         |> getStartWithDefault Rotate.default
         |> Maybe.map Rotate.toRecord
 
 
-getEndRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getEndRotate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getEndRotate elementId animState =
     getRotateRange elementId animState
         |> Maybe.map .end
         |> Maybe.map Rotate.toRecord
 
 
-getCurrentRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getCurrentRotate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getCurrentRotate elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.andThen (.currentStates >> .rotate)
         |> Maybe.map Rotate.toRecord
 
 
-getRotateRange : String -> AnimState -> Maybe { start : Maybe Rotate, end : Rotate }
+getRotateRange : String -> AnimState msg -> Maybe { start : Maybe Rotate, end : Rotate }
 getRotateRange elementId animState =
     getPropertyRange elementId animState <|
         \prop ->
@@ -1274,28 +1439,28 @@ getRotateRange elementId animState =
 -- Scale
 
 
-getStartScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getStartScale : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getStartScale elementId animState =
     getScaleRange elementId animState
         |> getStartWithDefault Scale.default
         |> Maybe.map Scale.toRecord
 
 
-getEndScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getEndScale : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getEndScale elementId animState =
     getScaleRange elementId animState
         |> Maybe.map .end
         |> Maybe.map Scale.toRecord
 
 
-getCurrentScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getCurrentScale : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getCurrentScale elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.andThen (.currentStates >> .scale)
         |> Maybe.map Scale.toRecord
 
 
-getScaleRange : String -> AnimState -> Maybe { start : Maybe Scale, end : Scale }
+getScaleRange : String -> AnimState msg -> Maybe { start : Maybe Scale, end : Scale }
 getScaleRange elementId animState =
     getPropertyRange elementId animState <|
         \prop ->
@@ -1311,28 +1476,28 @@ getScaleRange elementId animState =
 -- Size
 
 
-getStartSize : String -> AnimState -> Maybe { width : Float, height : Float }
+getStartSize : String -> AnimState msg -> Maybe { width : Float, height : Float }
 getStartSize elementId animState =
     getSizeRange elementId animState
         |> getStartWithDefault Size.default
         |> Maybe.map Size.toRecord
 
 
-getEndSize : String -> AnimState -> Maybe { width : Float, height : Float }
+getEndSize : String -> AnimState msg -> Maybe { width : Float, height : Float }
 getEndSize elementId animState =
     getSizeRange elementId animState
         |> Maybe.map .end
         |> Maybe.map Size.toRecord
 
 
-getCurrentSize : String -> AnimState -> Maybe { width : Float, height : Float }
+getCurrentSize : String -> AnimState msg -> Maybe { width : Float, height : Float }
 getCurrentSize elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.andThen (.currentStates >> .size)
         |> Maybe.map Size.toRecord
 
 
-getSizeRange : String -> AnimState -> Maybe { start : Maybe Size, end : Size }
+getSizeRange : String -> AnimState msg -> Maybe { start : Maybe Size, end : Size }
 getSizeRange elementId animState =
     getPropertyRange elementId animState <|
         \prop ->
@@ -1860,22 +2025,32 @@ isComplexEasing easing_ =
             False
 
 
-stop : String -> (Encode.Value -> Cmd msg) -> Cmd msg
-stop elementId portFunction =
-    portFunction <|
+stop : String -> AnimState msg -> ( AnimState msg, Cmd msg )
+stop elementId (AnimState state) =
+    ( AnimState
+        { state
+            | pendingActions = Dict.insert elementId PendingStop state.pendingActions
+        }
+    , state.commandPort <|
         encodeCommand "stop" elementId
+    )
 
 
-pause : String -> (Encode.Value -> Cmd msg) -> Cmd msg
-pause elementId portFunction =
-    portFunction <|
+pause : String -> AnimState msg -> ( AnimState msg, Cmd msg )
+pause elementId (AnimState state) =
+    ( AnimState
+        { state
+            | pendingActions = Dict.insert elementId PendingPause state.pendingActions
+        }
+    , state.commandPort <|
         encodeCommand "pause" elementId
+    )
 
 
 {-| Reset an element to its initial animation state by resetting internal state and creating a 0ms animation to start positions.
 -}
-reset : String -> (Encode.Value -> Cmd msg) -> AnimState -> ( AnimState, Cmd msg )
-reset elementId portFunction (AnimState state) =
+reset : String -> AnimState msg -> ( AnimState msg, Cmd msg )
+reset elementId (AnimState state) =
     case Builder.getCurrentAnimation elementId state.builder of
         Nothing ->
             ( AnimState state, Cmd.none )
@@ -1936,10 +2111,11 @@ reset elementId portFunction (AnimState state) =
                                 { state
                                     | elementAnimations = updatedElementAnimations
                                     , isRunning = False
+                                    , pendingActions = Dict.insert elementId (PendingReset startStates) state.pendingActions
                                 }
                     in
                     ( updatedAnimState
-                    , portFunction <|
+                    , state.commandPort <|
                         encodeWithVersions updatedElementAnimations processedData
                     )
 
@@ -1980,10 +2156,11 @@ reset elementId portFunction (AnimState state) =
                                                     Dict.values anim.properties
                                                         |> List.any (\prop -> prop.status == Running)
                                                 )
+                                    , pendingActions = Dict.insert elementId (PendingReset startStates) state.pendingActions
                                 }
                     in
                     ( updatedAnimState
-                    , portFunction <|
+                    , state.commandPort <|
                         encodeWithVersions updatedElementAnimations processedData
                     )
 
@@ -1991,8 +2168,8 @@ reset elementId portFunction (AnimState state) =
 {-| Restart the last animation by retrieving it from Builder history and replaying it.
 The history will have already been updated by onResize, so we can use it directly.
 -}
-restart : String -> (Encode.Value -> Cmd msg) -> AnimState -> ( AnimState, Cmd msg )
-restart elementId portFunction (AnimState state) =
+restart : String -> AnimState msg -> ( AnimState msg, Cmd msg )
+restart elementId (AnimState state) =
     case Builder.restartCurrentAnimation elementId state.builder of
         Nothing ->
             ( AnimState state, Cmd.none )
@@ -2035,10 +2212,11 @@ restart elementId portFunction (AnimState state) =
                                 { state
                                     | elementAnimations = updatedElementAnimations
                                     , isRunning = True
+                                    , pendingActions = Dict.insert elementId PendingRestart state.pendingActions
                                 }
                     in
                     ( updatedAnimState
-                    , portFunction <|
+                    , state.commandPort <|
                         encodeWithVersions updatedElementAnimations processedData
                     )
 
@@ -2076,18 +2254,24 @@ restart elementId portFunction (AnimState state) =
                                 { state
                                     | elementAnimations = updatedElementAnimations
                                     , isRunning = True
+                                    , pendingActions = Dict.insert elementId PendingRestart state.pendingActions
                                 }
                     in
                     ( updatedAnimState
-                    , portFunction <|
+                    , state.commandPort <|
                         encodeWithVersions updatedElementAnimations processedData
                     )
 
 
-resume : String -> (Encode.Value -> Cmd msg) -> Cmd msg
-resume elementId portFunction =
-    portFunction <|
+resume : String -> AnimState msg -> ( AnimState msg, Cmd msg )
+resume elementId (AnimState state) =
+    ( AnimState
+        { state
+            | pendingActions = Dict.insert elementId PendingResume state.pendingActions
+        }
+    , state.commandPort <|
         encodeCommand "resume" elementId
+    )
 
 
 {-| Helper to add reset properties to a builder for all animated properties.
