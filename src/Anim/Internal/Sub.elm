@@ -1,5 +1,6 @@
 module Anim.Internal.Sub exposing
     ( AnimBuilder
+    , AnimEvent(..)
     , AnimMsg
     , AnimState
     , allComplete
@@ -97,6 +98,7 @@ type AnimState
         { elementAnimations : Dict ElementId ElementAnimation
         , isRunning : Bool
         , builder : AnimBuilder
+        , pendingEvents : List AnimEvent
         }
 
 
@@ -113,6 +115,7 @@ init propertyInitializers =
                 { elementAnimations = Dict.empty
                 , isRunning = False
                 , builder = Builder.init
+                , pendingEvents = []
                 }
 
         _ ->
@@ -156,6 +159,7 @@ init propertyInitializers =
                     configuredBuilder
                         |> Builder.markDirty
                         |> Builder.clearCurrentElement
+                , pendingEvents = []
                 }
 
 
@@ -169,10 +173,10 @@ builder ((AnimState state) as animationState) =
 
 
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
-animate animState transform =
+animate (AnimState state) transform =
     let
         builder_ =
-            animState
+            AnimState state
                 |> builder
                 |> transform
 
@@ -195,6 +199,11 @@ animate animState transform =
 
         elementStates =
             Dict.map (createElementAnimState startValues) processedData.elements
+
+        -- Queue Started events for all animated elements
+        startedEvents =
+            Dict.keys elementStates
+                |> List.map Started
     in
     AnimState
         { elementAnimations = elementStates
@@ -203,6 +212,7 @@ animate animState transform =
             builder_
                 |> Builder.markDirty
                 |> Builder.clearCurrentElement
+        , pendingEvents = state.pendingEvents ++ startedEvents
         }
 
 
@@ -234,11 +244,22 @@ type AnimMsg
     = AnimationFrame Float
 
 
+{-| Animation lifecycle events.
+-}
+type AnimEvent
+    = Started String
+    | Completed String
+    | Canceled String
+    | Paused String
+    | Resumed String
+    | Restarted String
+
+
 
 -- delta time in milliseconds
 
 
-update : AnimMsg -> AnimState -> AnimState
+update : AnimMsg -> AnimState -> ( AnimState, List AnimEvent )
 update msg (AnimState state) =
     case msg of
         AnimationFrame deltaMs ->
@@ -248,12 +269,44 @@ update msg (AnimState state) =
 
                 stillRunning =
                     Dict.values updatedElements |> List.any (not << .isComplete)
+
+                -- Detect newly completed elements
+                completedEvents =
+                    detectCompletedElements state.elementAnimations updatedElements
+
+                -- Combine pending events with any new completion events
+                allEvents =
+                    state.pendingEvents ++ completedEvents
+
+                newState =
+                    AnimState
+                        { elementAnimations = updatedElements
+                        , isRunning = stillRunning
+                        , builder = state.builder
+                        , pendingEvents = []
+                        }
             in
-            AnimState
-                { elementAnimations = updatedElements
-                , isRunning = stillRunning
-                , builder = state.builder
-                }
+            ( newState, allEvents )
+
+
+{-| Detect all elements that just completed (were running, now complete).
+-}
+detectCompletedElements : Dict String ElementAnimation -> Dict String ElementAnimation -> List AnimEvent
+detectCompletedElements oldElements newElements =
+    Dict.toList newElements
+        |> List.filterMap
+            (\( elementId, newElem ) ->
+                Dict.get elementId oldElements
+                    |> Maybe.andThen
+                        (\oldElem ->
+                            -- Was running (not complete), now complete
+                            if not oldElem.isComplete && newElem.isComplete then
+                                Just (Completed elementId)
+
+                            else
+                                Nothing
+                        )
+            )
 
 
 
@@ -1416,8 +1469,10 @@ stopElement elementId (AnimState state) =
             AnimState state
 
         Just elementAnim ->
-            -- Set each property's elapsedMs to totalDurationMs and currentStepIndex to last frame
             let
+                wasRunning =
+                    not elementAnim.isComplete && not elementAnim.isPaused
+
                 updatedProperties =
                     List.map
                         (\prop ->
@@ -1438,8 +1493,15 @@ stopElement elementId (AnimState state) =
 
                 updatedDict =
                     Dict.insert elementId updatedAnim state.elementAnimations
+
+                newPendingEvents =
+                    if wasRunning then
+                        state.pendingEvents ++ [ Canceled elementId ]
+
+                    else
+                        state.pendingEvents
             in
-            AnimState { state | elementAnimations = updatedDict }
+            AnimState { state | elementAnimations = updatedDict, pendingEvents = newPendingEvents }
 
 
 {-| Reset animation by jumping to its start state.
@@ -1451,8 +1513,10 @@ resetElement elementId (AnimState state) =
             AnimState state
 
         Just elementAnim ->
-            -- Set each property's elapsedMs to 0 and reset to first step
             let
+                wasRunning =
+                    not elementAnim.isComplete && not elementAnim.isPaused
+
                 updatedProperties =
                     List.map
                         (\prop ->
@@ -1470,8 +1534,15 @@ resetElement elementId (AnimState state) =
 
                 updatedDict =
                     Dict.insert elementId updatedAnim state.elementAnimations
+
+                newPendingEvents =
+                    if wasRunning then
+                        state.pendingEvents ++ [ Canceled elementId ]
+
+                    else
+                        state.pendingEvents
             in
-            AnimState { state | elementAnimations = updatedDict }
+            AnimState { state | elementAnimations = updatedDict, isRunning = False, pendingEvents = newPendingEvents }
 
 
 {-| Restart animation from the beginning.
@@ -1483,7 +1554,6 @@ restartElement elementId (AnimState state) =
             AnimState state
 
         Just elementAnim ->
-            -- Set each property's elapsedMs to 0 and reset to first step
             let
                 updatedProperties =
                     List.map
@@ -1503,30 +1573,60 @@ restartElement elementId (AnimState state) =
                 updatedDict =
                     Dict.insert elementId updatedAnim state.elementAnimations
             in
-            AnimState { state | elementAnimations = updatedDict }
+            AnimState { state | elementAnimations = updatedDict, isRunning = True, pendingEvents = state.pendingEvents ++ [ Restarted elementId ] }
 
 
 {-| Pause animation for a specific element.
 -}
 pauseElement : String -> AnimState -> AnimState
 pauseElement elementId (AnimState state) =
-    let
-        updatedAnimations =
-            Dict.update elementId
-                (Maybe.map (\elementAnim -> { elementAnim | isPaused = True }))
-                state.elementAnimations
-    in
-    AnimState { state | elementAnimations = updatedAnimations }
+    case Dict.get elementId state.elementAnimations of
+        Nothing ->
+            AnimState state
+
+        Just elementAnim ->
+            let
+                wasRunning =
+                    not elementAnim.isComplete && not elementAnim.isPaused
+
+                updatedAnimations =
+                    Dict.update elementId
+                        (Maybe.map (\ea -> { ea | isPaused = True }))
+                        state.elementAnimations
+
+                newPendingEvents =
+                    if wasRunning then
+                        state.pendingEvents ++ [ Paused elementId ]
+
+                    else
+                        state.pendingEvents
+            in
+            AnimState { state | elementAnimations = updatedAnimations, pendingEvents = newPendingEvents }
 
 
 {-| Resume animation for a specific element.
 -}
 resumeElement : String -> AnimState -> AnimState
 resumeElement elementId (AnimState state) =
-    let
-        updatedAnimations =
-            Dict.update elementId
-                (Maybe.map (\elementAnim -> { elementAnim | isPaused = False }))
-                state.elementAnimations
-    in
-    AnimState { state | elementAnimations = updatedAnimations }
+    case Dict.get elementId state.elementAnimations of
+        Nothing ->
+            AnimState state
+
+        Just elementAnim ->
+            let
+                wasPaused =
+                    elementAnim.isPaused && not elementAnim.isComplete
+
+                updatedAnimations =
+                    Dict.update elementId
+                        (Maybe.map (\ea -> { ea | isPaused = False }))
+                        state.elementAnimations
+
+                newPendingEvents =
+                    if wasPaused then
+                        state.pendingEvents ++ [ Resumed elementId ]
+
+                    else
+                        state.pendingEvents
+            in
+            AnimState { state | elementAnimations = updatedAnimations, isRunning = True, pendingEvents = newPendingEvents }

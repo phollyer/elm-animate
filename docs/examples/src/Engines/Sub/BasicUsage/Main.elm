@@ -29,14 +29,18 @@ slideIn =
 
 
 type Msg
-    = GotAnimationUpdate Sub.AnimationMsg
+    = GotAnimationUpdate Sub.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         GotAnimationUpdate animationMsg ->
-            ( { model | animState = Sub.update animationMsg model.animState }
+            let
+                ( newAnimState, _ ) =
+                    Sub.update animationMsg model.animState
+            in
+            ( { model | animState = newAnimState }
             , Cmd.none
             )
 

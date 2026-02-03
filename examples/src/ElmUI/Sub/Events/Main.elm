@@ -78,6 +78,9 @@ type EventType
     | AnimationEnd
     | AnimationRun
     | AnimationCancel
+    | AnimationPause
+    | AnimationResume
+    | AnimationRestart
 
 
 
@@ -86,7 +89,7 @@ type EventType
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = Sub.init
+    ( { animations = Sub.init []
       , isAnimating = False
       , eventLog = []
       , eventCounter = 0
@@ -109,7 +112,7 @@ type Msg
     | MoveToCenter
     | StopAnimation
     | ClearEventLog
-    | AnimationMsg Sub.AnimationMsg
+    | AnimationMsg Sub.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -124,7 +127,7 @@ update msg model =
                     Sub.animate model.animations
                         (Sub.duration 1000
                             >> Sub.easing Linear
-                            >> PositionAnim.moveToXY elementId 450 300
+                            >> PositionAnim.moveToXY 450 300 Linear
                         )
 
                 updatedModel =
@@ -150,7 +153,7 @@ update msg model =
                     Sub.animate model.animations
                         (Sub.duration 800
                             >> Sub.easing Linear
-                            >> PositionAnim.moveToXY elementId 225 150
+                            >> PositionAnim.moveToXY 225 150 Linear
                         )
 
                 updatedModel =
@@ -196,40 +199,64 @@ update msg model =
 
         AnimationMsg subMsg ->
             let
-                wasAnimating =
-                    Sub.isRunning elementId model.animations
-
-                newAnimations =
+                ( newAnimations, events ) =
                     Sub.update subMsg model.animations
 
                 isStillAnimating =
                     Sub.isRunning elementId newAnimations
 
-                updatedModel =
+                baseModel =
                     { model
                         | animations = newAnimations
                         , isAnimating = isStillAnimating
                     }
+
+                -- Process events and add to log
+                modelWithEvents =
+                    List.foldl processAnimEvent baseModel events
+
+                -- Also track "running" status periodically (for the AnimationRun event)
+                finalModel =
+                    if isStillAnimating && List.length modelWithEvents.eventLog > 0 then
+                        case List.head modelWithEvents.eventLog of
+                            Just lastEvent ->
+                                if lastEvent.eventType /= AnimationRun && (modelWithEvents.eventCounter - lastEvent.id) < 5 then
+                                    addEventToLog AnimationRun "Animation is running" modelWithEvents
+
+                                else
+                                    modelWithEvents
+
+                            Nothing ->
+                                modelWithEvents
+
+                    else
+                        modelWithEvents
             in
-            ( if wasAnimating && not isStillAnimating then
-                addEventToLog AnimationEnd "Animation completed" updatedModel
+            ( finalModel, Cmd.none )
 
-              else if isStillAnimating && List.length model.eventLog > 0 then
-                case List.head model.eventLog of
-                    Just lastEvent ->
-                        if lastEvent.eventType /= AnimationRun && (model.eventCounter - lastEvent.id) < 5 then
-                            addEventToLog AnimationRun "Animation is running" updatedModel
 
-                        else
-                            updatedModel
+{-| Process an animation event and add appropriate log entry
+-}
+processAnimEvent : Sub.AnimEvent -> Model -> Model
+processAnimEvent event model =
+    case event of
+        Sub.Started _ ->
+            addEventToLog AnimationStart "Animation started" model
 
-                    Nothing ->
-                        updatedModel
+        Sub.Completed _ ->
+            addEventToLog AnimationEnd "Animation completed" model
 
-              else
-                updatedModel
-            , Cmd.none
-            )
+        Sub.Canceled _ ->
+            addEventToLog AnimationCancel "Animation canceled" model
+
+        Sub.Paused _ ->
+            addEventToLog AnimationPause "Animation paused" model
+
+        Sub.Resumed _ ->
+            addEventToLog AnimationResume "Animation resumed" model
+
+        Sub.Restarted _ ->
+            addEventToLog AnimationRestart "Animation restarted" model
 
 
 addEventToLog : EventType -> String -> Model -> Model
@@ -464,4 +491,28 @@ getEventTypeInfo eventType =
             , textColor = Colors.red
             , bgColor = Element.rgba255 239 68 68 0.1
             , borderColor = Colors.red
+            }
+
+        AnimationPause ->
+            { name = "animationpause"
+            , icon = "⏸️"
+            , textColor = Colors.purple
+            , bgColor = Element.rgba255 147 51 234 0.1
+            , borderColor = Colors.purple
+            }
+
+        AnimationResume ->
+            { name = "animationresume"
+            , icon = "▶️"
+            , textColor = Colors.purple
+            , bgColor = Element.rgba255 147 51 234 0.1
+            , borderColor = Colors.purple
+            }
+
+        AnimationRestart ->
+            { name = "animationrestart"
+            , icon = "🔄"
+            , textColor = Colors.warning
+            , bgColor = Element.rgba255 245 158 11 0.1
+            , borderColor = Colors.warning
             }

@@ -1,4 +1,4 @@
-port module Engines.WAAPI.Controls.Main exposing (main)
+port module Engines.Sub.Controls.Main exposing (main)
 
 {-| Anim.Engine.WAAPI Controls Example using ElmUI - Demonstrating Animation controls
 
@@ -13,7 +13,7 @@ This example showcases all animation control functions available in the Anim.Eng
 
 -}
 
-import Anim.Engine.WAAPI as WAAPI
+import Anim.Engine.Sub as Sub
 import Browser exposing (Document)
 import Browser.Events exposing (onResize)
 import Common.Animations.Controls as Controls exposing (elementId)
@@ -53,7 +53,7 @@ type AnimationStatus
 
 
 type alias Model =
-    { animationState : WAAPI.AnimState Msg
+    { animationState : Sub.AnimState
     , status : AnimationStatus
     , animationAreaSize : { width : Int, height : Int }
     }
@@ -83,8 +83,8 @@ init { window } =
         animationAreaWidth =
             min 500 (window.width - 40)
 
-        ( initialAnimState, initCmd ) =
-            WAAPI.init waapiCommand waapiSubscriptions <|
+        initialAnimState =
+            Sub.init <|
                 [ Controls.init animationAreaWidth ]
     in
     ( { animationState = initialAnimState
@@ -94,7 +94,7 @@ init { window } =
             , height = 350
             }
       }
-    , initCmd
+    , Cmd.none
     )
 
 
@@ -109,80 +109,58 @@ type Msg
     | Resume
     | Reset
     | Restart
-    | GotWaapiMsg WAAPI.Msg
+    | GotSubMsg Sub.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GotWaapiMsg subMsg ->
+        GotSubMsg subMsg ->
             let
                 ( newAnimState, events ) =
-                    WAAPI.update subMsg model.animationState
+                    Sub.update subMsg model.animationState
             in
             handleAnimationEvents events { model | animationState = newAnimState }
 
         Animate ->
-            let
-                ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animationState Controls.animate
-            in
-            ( { model | animationState = newAnimState }
-            , animCmd
+            ( { model
+                | animationState = Sub.animate model.animationState Controls.animate
+              }
+            , Cmd.none
             )
 
         -- --8<-- [start:stop]
         Stop ->
-            let
-                ( newAnimState, stopCmd ) =
-                    WAAPI.stop elementId model.animationState
-            in
-            ( { model | animationState = newAnimState }
-            , stopCmd
+            ( { model | animationState = Sub.stop elementId model.animationState }
+            , Cmd.none
             )
 
         -- --8<-- [end:stop]
         -- --8<-- [start:pause]
         Pause ->
-            let
-                ( newAnimState, pauseCmd ) =
-                    WAAPI.pause elementId model.animationState
-            in
-            ( { model | animationState = newAnimState }
-            , pauseCmd
+            ( { model | animationState = Sub.pause elementId model.animationState }
+            , Cmd.none
             )
 
         -- --8<-- [end:pause]
         -- --8<-- [start:resume]
         Resume ->
-            let
-                ( newAnimState, resumeCmd ) =
-                    WAAPI.resume elementId model.animationState
-            in
-            ( { model | animationState = newAnimState }
-            , resumeCmd
+            ( { model | animationState = Sub.resume elementId model.animationState }
+            , Cmd.none
             )
 
         -- --8<-- [end:resume]
         -- --8<-- [start:reset]
         Reset ->
-            let
-                ( newAnimState, resetCmd ) =
-                    WAAPI.reset elementId model.animationState
-            in
-            ( { model | animationState = newAnimState }
-            , resetCmd
+            ( { model | animationState = Sub.reset elementId model.animationState }
+            , Cmd.none
             )
 
         -- --8<-- [end:reset]
         -- --8<-- [start:restart]
         Restart ->
-            let
-                ( newAnimState, restartCmd ) =
-                    WAAPI.restart elementId model.animationState
-            in
-            ( { model | animationState = newAnimState }
-            , restartCmd
+            ( { model | animationState = Sub.restart elementId model.animationState }
+            , Cmd.none
             )
 
 
@@ -191,30 +169,30 @@ update msg model =
 -- --8<-- [start:handleAnimationEvent]
 
 
-handleAnimationEvents : List WAAPI.AnimationEvent -> Model -> ( Model, Cmd Msg )
+handleAnimationEvents : List Sub.AnimEvent -> Model -> ( Model, Cmd Msg )
 handleAnimationEvents events model =
     List.foldl handleSingleEvent ( model, Cmd.none ) events
 
 
-handleSingleEvent : WAAPI.AnimationEvent -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+handleSingleEvent : Sub.AnimEvent -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 handleSingleEvent event ( model, cmd ) =
     case event of
-        WAAPI.Started _ ->
+        Sub.Started _ ->
             ( { model | status = Running }, cmd )
 
-        WAAPI.Restarted _ ->
+        Sub.Restarted _ ->
             ( { model | status = Running }, cmd )
 
-        WAAPI.Canceled _ ->
+        Sub.Canceled _ ->
             ( { model | status = Idle }, cmd )
 
-        WAAPI.Completed _ ->
+        Sub.Completed _ ->
             ( { model | status = Idle }, cmd )
 
-        WAAPI.Paused _ ->
+        Sub.Paused _ ->
             ( { model | status = Paused }, cmd )
 
-        WAAPI.Resumed _ ->
+        Sub.Resumed _ ->
             ( { model | status = Running }, cmd )
 
 
@@ -225,7 +203,7 @@ handleSingleEvent event ( model, cmd ) =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    WAAPI.subscriptions GotWaapiMsg model.animationState
+    Sub.subscriptions GotSubMsg model.animationState
 
 
 
@@ -235,14 +213,14 @@ subscriptions model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.WAAPI Controls ElmUI Example"
+        "Anim.Engine.Sub Controls ElmUI Example"
         UI.Basic
         (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ UI.pageHeader "WAAPI Engine Controls"
+    [ UI.pageHeader "Sub Engine Controls"
     , paragraph
         [ width fill
         , Font.size 16

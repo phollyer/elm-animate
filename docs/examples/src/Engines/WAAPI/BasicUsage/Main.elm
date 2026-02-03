@@ -92,18 +92,23 @@ update msg model =
 
         GotWaapiMsg subMsg ->
             let
-                ( newAnimState, maybeEvent ) =
+                ( newAnimState, events ) =
                     WAAPI.update subMsg model.animState
             in
-            handleEvent maybeEvent { model | animState = newAnimState }
+            handleEvents events { model | animState = newAnimState }
 
 
-handleEvent : Maybe WAAPI.AnimationEvent -> Model -> ( Model, Cmd Msg )
-handleEvent maybeEvent model =
+handleEvents : List WAAPI.AnimationEvent -> Model -> ( Model, Cmd Msg )
+handleEvents events model =
     -- Handle/react to events
-    case maybeEvent of
+    List.foldl handleSingleEvent ( model, Cmd.none ) events
+
+
+handleSingleEvent : WAAPI.AnimationEvent -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+handleSingleEvent event ( model, cmd ) =
+    case event of
         _ ->
-            ( model, Cmd.none )
+            ( model, cmd )
 
 
 subscriptions : Model -> Sub Msg

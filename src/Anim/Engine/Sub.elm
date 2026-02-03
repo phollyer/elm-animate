@@ -1,7 +1,7 @@
 module Anim.Engine.Sub exposing
     ( AnimState, init
     , AnimBuilder, animate
-    , AnimMsg, update, subscriptions
+    , AnimMsg, AnimEvent(..), update, subscriptions
     , htmlAttributes
     , stop, reset, restart, pause, resume
     , duration, speed
@@ -34,7 +34,7 @@ subscriptions for smooth, controlled animations.
 
 # Update
 
-@docs AnimMsg, update, subscriptions
+@docs AnimMsg, AnimEvent, update, subscriptions
 
 
 # View
@@ -192,18 +192,12 @@ init =
 
 {-| Create animations ready to be applied in the view.
 
-    let
-        newAnimations =
-            Sub.animate model.animState <|
-                ( ... -- Build your animation here
-                )
-    in
-    { model | animState = newAnimations }
+    { model | animState = Sub.animate model.animState Controls.animate }
 
 -}
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
-animate =
-    InternalSub.animate
+animate animState transform =
+    InternalSub.animate animState transform
 
 
 {-| Set global duration in milliseconds (overrides any previous speed setting).
@@ -275,22 +269,78 @@ type alias AnimMsg =
     InternalSub.AnimMsg
 
 
-{-| Update animation state.
+{-| Animation events.
+
+Emitted by `update` when animation state changes:
+
+  - **Started**: Animation started for an element
+  - **Completed**: Animation reached its end naturally
+  - **Canceled**: Animation was stopped or reset
+  - **Paused**: Animation was paused
+  - **Resumed**: Animation was resumed
+  - **Restarted**: Animation was restarted
+
+The `String` is the element ID affected.
+
+-}
+type AnimEvent
+    = Started String
+    | Completed String
+    | Canceled String
+    | Paused String
+    | Resumed String
+    | Restarted String
+
+
+{-| Update animation state and check for animation events.
+
+Returns the updated state and a list of events that occurred.
+Events include animation starts, completions, pauses, resumes, etc.
 
     import Anim.Engine.Sub as Sub
 
-    update : Msg -> Model -> Model
+    update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
         case msg of
             GotSubAnimMsg subMsg ->
-                { model | animState = Sub.update subMsg model.animState }
+                let
+                    ( newAnimState, events ) =
+                        Sub.update subMsg model.animState
+                in
+                handleAnimationEvents events { model | animState = newAnimState }
 
             ...
 
 -}
-update : AnimMsg -> AnimState -> AnimState
-update =
-    InternalSub.update
+update : AnimMsg -> AnimState -> ( AnimState, List AnimEvent )
+update msg animState =
+    let
+        ( newState, internalEvents ) =
+            InternalSub.update msg animState
+    in
+    ( newState, List.filterMap toAnimEvent internalEvents )
+
+
+toAnimEvent : InternalSub.AnimEvent -> Maybe AnimEvent
+toAnimEvent event =
+    case event of
+        InternalSub.Started elementId ->
+            Just (Started elementId)
+
+        InternalSub.Completed elementId ->
+            Just (Completed elementId)
+
+        InternalSub.Canceled elementId ->
+            Just (Canceled elementId)
+
+        InternalSub.Paused elementId ->
+            Just (Paused elementId)
+
+        InternalSub.Resumed elementId ->
+            Just (Resumed elementId)
+
+        InternalSub.Restarted elementId ->
+            Just (Restarted elementId)
 
 
 
@@ -663,8 +713,7 @@ htmlAttributes =
 
 {-| Stop an animation by instantly jumping to its end state.
 
-    stoppedAnimations =
-        Sub.stop "my-element" model.animState
+    { model | animState = Sub.stop "my-element" model.animState }
 
 -}
 stop : String -> AnimState -> AnimState
@@ -674,8 +723,7 @@ stop elementId animState =
 
 {-| Reset an animation by instantly jumping back to its start state.
 
-    resetAnimations =
-        Sub.reset "my-element" model.animState
+    { model | animState = Sub.reset "my-element" model.animState }
 
 -}
 reset : String -> AnimState -> AnimState
@@ -685,8 +733,7 @@ reset elementId animState =
 
 {-| Restart an animation from the beginning.
 
-    restartedAnimations =
-        Sub.restart "my-element" model.animState
+    { model | animState = Sub.restart "my-element" model.animState }
 
 -}
 restart : String -> AnimState -> AnimState
@@ -698,8 +745,7 @@ restart elementId animState =
 
 Animation state is preserved and can be resumed later.
 
-    pausedAnimations =
-        Sub.pause "my-element" model.animState
+    { model | animState = Sub.pause "my-element" model.animState }
 
 -}
 pause : String -> AnimState -> AnimState
@@ -711,8 +757,7 @@ pause elementId animState =
 
 Animations continue from where they were paused.
 
-    resumedAnimations =
-        Sub.resume "my-element" model.animState
+    { model | animState = Sub.resume "my-element" model.animState }
 
 -}
 resume : String -> AnimState -> AnimState

@@ -17,7 +17,7 @@ USAGE:
 
 -}
 
-import Anim.Internal.Builder as Builder
+import Anim.Builder as Builder
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Translate as Translate
 

@@ -32,9 +32,9 @@ ANIMATIONS:
 
 -}
 
+import Anim.Builder exposing (AnimBuilder)
 import Anim.Color exposing (Color)
 import Anim.Easing exposing (Easing(..))
-import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Property.BackgroundColor as Color
 import Anim.Property.Opacity as Opacity
 import Anim.Property.Rotate as Rotate

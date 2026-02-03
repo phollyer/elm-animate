@@ -85,7 +85,7 @@ type Msg
     = ScatterElements
     | ResetPositions
     | CircleFormation
-    | AnimationMsg Sub.AnimationMsg
+    | AnimationMsg Sub.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -120,7 +120,7 @@ update msg model =
 
         AnimationMsg subMsg ->
             let
-                updatedAnimations =
+                ( updatedAnimations, _ ) =
                     Sub.update subMsg model.animations
             in
             ( { model | animations = updatedAnimations }

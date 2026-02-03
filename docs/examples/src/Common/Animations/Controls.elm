@@ -13,8 +13,8 @@ animation logic works identically across all engines!
 
 -}
 
+import Anim.Builder exposing (AnimBuilder)
 import Anim.Easing exposing (Easing(..))
-import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Property.Translate as Translate
 
 

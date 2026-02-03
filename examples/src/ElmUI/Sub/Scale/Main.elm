@@ -71,7 +71,7 @@ type Msg
     | ScaleReset
     | ScaleWide
     | ScaleTall
-    | AnimationMsg Sub.AnimationMsg
+    | AnimationMsg Sub.AnimMsg
 
 
 
@@ -122,7 +122,11 @@ update msg model =
             )
 
         AnimationMsg animMsg ->
-            ( { model | animations = Sub.update animMsg model.animations }
+            let
+                ( newAnimations, _ ) =
+                    Sub.update animMsg model.animations
+            in
+            ( { model | animations = newAnimations }
             , Cmd.none
             )
 

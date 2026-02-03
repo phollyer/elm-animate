@@ -822,7 +822,7 @@ subscriptions =
 
 
 {-| Handles both property updates and lifecycle events, returning the updated state
-and maybe an `AnimationEvent` that you can pattern match on and react to.
+and a list of `AnimationEvent`s that you can pattern match on and react to.
 
     type Msg
         = WaapiMsg WAAPI.Msg
@@ -833,28 +833,36 @@ and maybe an `AnimationEvent` that you can pattern match on and react to.
         case msg of
             WaapiMsg waapiMsg ->
                 let
-                    ( newAnimState, maybeEvent ) =
+                    ( newAnimState, events ) =
                         WAAPI.update waapiMsg model.animState
                 in
-                case maybeEvent of
-                    Just (WAAPI.Completed "box") ->
-                        -- The "box" element finished animating
-                        ( { model | animState = newAnimState }, startNextAnimation )
-
-                    _ ->
-                        ( { model | animState = newAnimState }, Cmd.none )
+                handleAnimationEvents events { model | animState = newAnimState }
 
             ...
 
+    handleAnimationEvents : List WAAPI.AnimationEvent -> Model -> ( Model, Cmd Msg )
+    handleAnimationEvents events model =
+        List.foldl handleSingleEvent ( model, Cmd.none ) events
+
+    handleSingleEvent : WAAPI.AnimationEvent -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+    handleSingleEvent event ( model, cmd ) =
+        case event of
+            WAAPI.Completed "box" ->
+                -- The "box" element finished animating
+                ( model, Cmd.batch [ cmd, startNextAnimation ] )
+
+            _ ->
+                ( model, cmd )
+
 -}
-update : Msg -> AnimState msg -> ( AnimState msg, Maybe AnimationEvent )
+update : Msg -> AnimState msg -> ( AnimState msg, List AnimationEvent )
 update msg animState =
     let
-        ( newState, maybeRawEvent ) =
+        ( newState, rawEvents ) =
             Internal.update msg animState
     in
     ( newState
-    , Maybe.map (\( elementId, status ) -> statusStringToEvent elementId status) maybeRawEvent
+    , List.map (\( elementId, status ) -> statusStringToEvent elementId status) rawEvents
     )
 
 

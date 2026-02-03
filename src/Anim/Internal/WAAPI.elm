@@ -655,24 +655,24 @@ decodeAnimationEvent jsonValue =
 {-| TEA-style update function for WAAPI messages.
 
 Handles both property updates and lifecycle events, returning the updated state
-and optionally an animation event (elementId, status) for side effects.
+and a list of animation events (elementId, status) for side effects.
 
 -}
-update : Msg -> AnimState msg -> ( AnimState msg, Maybe ( String, String ) )
+update : Msg -> AnimState msg -> ( AnimState msg, List ( String, String ) )
 update msg animState =
     case msg of
         PropertyUpdate jsonValue ->
-            ( updatePropertyUpdate jsonValue animState, Nothing )
+            ( updatePropertyUpdate jsonValue animState, [] )
 
         Event jsonValue ->
             case decodeAnimationEvent jsonValue of
                 Just ( elementId, status ) ->
                     ( handleEventInternal elementId status animState
-                    , Just ( elementId, status )
+                    , [ ( elementId, status ) ]
                     )
 
                 Nothing ->
-                    ( animState, Nothing )
+                    ( animState, [] )
 
 
 {-| Handle full property updates from JavaScript.

@@ -10,9 +10,9 @@ module Common.Animations.BackgroundColor exposing
 {-| Common BackgroundColor animations that work across all animation engines.
 -}
 
+import Anim.Builder as Builder
 import Anim.Color as Color
 import Anim.Easing as Easing
-import Anim.Internal.Builder as Builder
 import Anim.Property.BackgroundColor as ColorBuilder
 
 
