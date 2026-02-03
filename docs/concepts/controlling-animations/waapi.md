@@ -5,7 +5,7 @@ The WAAPI Engine provides full programmatic control over running animations thro
 ## Available Controls
 
 | Function | Behavior |
-|----------|----------|
+| ---------- | ---------- |
 | `stop` | Jump instantly to the animation's **end state** and stop |
 | `pause` | Freeze the animation at its current position |
 | `resume` | Continue a paused animation from where it was frozen |
@@ -91,7 +91,7 @@ When using control functions, the WAAPI engine fires lifecycle events that you c
 ### Event Types
 
 | Event | Triggered When |
-|-------|----------------|
+| ------- | ---------------- |
 | `Started` | Animation begins playing |
 | `Completed` | Animation reaches its end naturally |
 | `Canceled` | Animation is stopped before completion |

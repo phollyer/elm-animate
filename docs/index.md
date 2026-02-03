@@ -36,7 +36,7 @@ animState =
 ## Animation Engines
 
 | Engine | Best For |
-|--------|----------|
+| -------- | ---------- |
 | [CSS](engines/css.md) | Fire-and-forget animations, minimal setup |
 | [Sub](engines/sub.md) | Full programmatic control, mid-flight queries |
 | [WAAPI](engines/waapi.md) | Browser-native performance with programmatic control |
