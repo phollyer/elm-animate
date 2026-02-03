@@ -1,9 +1,7 @@
 module Anim.Engine.WAAPI exposing
-    ( AnimState, init, AnimBuilder
+    ( AnimState, AnimBuilder, init
+    , Msg, AnimationEvent(..), update, subscriptions
     , animate, fireAndForget
-    , subscriptions
-    , Msg, update
-    , AnimationEvent(..)
     , stop, reset, restart, pause, resume
     , onResize
     , duration, speed
@@ -67,41 +65,23 @@ Both command and subscription ports are needed.
 
 # State
 
-@docs AnimState, init, AnimBuilder
+@docs AnimState, AnimBuilder, init
 
 
-# Animation Execution
+# Update
 
-@docs animate, fireAndForget
-
-
-# Property Updates
-
-The JavaScript companion library sends real-time property updates back to Elm during animations.
+The JavaScript companion library sends real-time property updates and events back to Elm during animations.
 
 Updates are throttled to approximately 60 FPS (~16ms intervals) regardless of display refresh rate.
 This balances real-time feedback with performance, preventing message flooding on high-refresh-rate
 displays (120Hz, 144Hz, etc.) while maintaining smooth visual feedback.
 
-@docs subscriptions
+@docs Msg, AnimationEvent, update, subscriptions
 
 
-# TEA Update
+# Execute
 
-Handle messages from subscriptions using the standard TEA pattern.
-
-@docs Msg, update
-
-
-# Animation Events
-
-Animation lifecycle events notify you when animations change state, allowing you to trigger
-side effects like starting the next animation in a sequence.
-
-Events are delivered via the `update` function's `Maybe AnimationEvent` return value.
-Simply ignore them if you don't need event handling.
-
-@docs AnimationEvent
+@docs animate, fireAndForget
 
 
 # Animation Control
@@ -814,10 +794,7 @@ type AnimationEvent
     | Restarted String
 
 
-{-| Opaque message type for WAAPI subscriptions.
-
-Use this with `subscriptions` and `update` to handle animation messages
-in a standard TEA pattern.
+{-| Opaque message type for WAAPI updates and subscriptions.
 
     type Msg
         = WaapiMsg WAAPI.Msg
@@ -829,9 +806,6 @@ type alias Msg =
 
 
 {-| Subscribe to WAAPI messages from JavaScript.
-
-This creates a subscription that listens for both property updates and lifecycle events
-(if enabled via `withEvents`). Use with `update` to handle messages.
 
     type Msg
         = WaapiMsg WAAPI.Msg
@@ -847,10 +821,8 @@ subscriptions =
     Internal.subscriptions
 
 
-{-| TEA-style update function for WAAPI messages.
-
-Handles both property updates and lifecycle events, returning the updated state
-and optionally an `AnimationEvent` for side effects.
+{-| Handles both property updates and lifecycle events, returning the updated state
+and maybe an `AnimationEvent` that you can pattern match on and react to.
 
     type Msg
         = WaapiMsg WAAPI.Msg
