@@ -7,14 +7,14 @@
     <title>WAAPI Engine Controls Example - Elm Animate</title>
     <link rel="stylesheet" href="../../../../css/base.css">
     <link rel="stylesheet" href="../../../../css/ui-components.css">
+    <script src="../../../../js/elm-animate-waapi.js"></script>
+    <script src="index.js"></script>
 </head>
 
 <body>
     <div id="elm-app"></div>
-    <script src="../../../../js/elm-animate-waapi.js"></script>
-    <script src="index.js"></script>
     <script>
-        const app = Elm.ElmUI.WAAPI.Controls.Main.init({
+        const app = Elm.Engines.WAAPI.Controls.Main.init({
             node: document.getElementById('elm-app'), flags: {
                 window: {
                     width: window.innerWidth,

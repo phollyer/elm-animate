@@ -1,4 +1,4 @@
-port module ElmUI.WAAPI.Controls.Main exposing (main)
+port module Engines.WAAPI.Controls.Main exposing (main)
 
 {-| Anim.Engine.WAAPI Controls Example using ElmUI - Demonstrating Animation controls
 
@@ -39,7 +39,7 @@ port waapiCommand : Encode.Value -> Cmd msg
 
 {-| Incoming port for receiving events from JavaScript
 -}
-port waapiEvent : (Encode.Value -> msg) -> Sub msg
+port waapiSubscriptions : (Encode.Value -> msg) -> Sub msg
 
 
 
@@ -53,9 +53,8 @@ type AnimationStatus
 
 
 type alias Model =
-    { animationState : WAAPI.AnimState
+    { animationState : WAAPI.AnimState Msg
     , status : AnimationStatus
-    , window : { width : Int, height : Int }
     , animationAreaSize : { width : Int, height : Int }
     }
 
@@ -85,12 +84,11 @@ init { window } =
             min 500 (window.width - 40)
 
         ( initialAnimState, initCmd ) =
-            WAAPI.initProperties waapiCommand <|
+            WAAPI.init waapiCommand waapiSubscriptions <|
                 [ Controls.init animationAreaWidth ]
     in
     ( { animationState = initialAnimState
       , status = Idle
-      , window = window
       , animationAreaSize =
             { width = animationAreaWidth
             , height = 350
@@ -111,138 +109,123 @@ type Msg
     | Resume
     | Reset
     | Restart
-    | WaapiEventReceived ( WAAPI.AnimState, Maybe WAAPI.AnimationEvent )
-    | OnResize Int Int
+    | GotWaapiMsg WAAPI.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        OnResize newWidth newHeight ->
+        GotWaapiMsg subMsg ->
             let
-                newAnimationAreaWidth =
-                    min 500 (newWidth - 40)
-
-                oldAnimationAreaWidth =
-                    model.animationAreaSize.width
-
-                -- Use WAAPI.onResize to handle repositioning
-                ( newAnimState, resizeCmd ) =
-                    WAAPI.onResize
-                        [ { elementId = elementId
-                          , elementSize = { width = 50, height = 50 }
-                          , oldContainerSize =
-                                { width = oldAnimationAreaWidth
-                                , height = 350
-                                }
-                          , newContainerSize =
-                                { width = newAnimationAreaWidth
-                                , height = 350
-                                }
-                          }
-                        ]
-                        waapiCommand
-                        model.animationState
+                ( newAnimState, maybeEvent ) =
+                    WAAPI.update subMsg model.animationState
             in
-            ( { model
-                | window = { width = newWidth, height = newHeight }
-                , animationAreaSize =
-                    { width = newAnimationAreaWidth |> Debug.log "New animation area width"
-                    , height = 350
-                    }
-                , animationState = newAnimState
-              }
-            , resizeCmd
-            )
-
-        WaapiEventReceived ( newAnimState, maybeEvent ) ->
-            let
-                newModel =
-                    { model | animationState = newAnimState }
-            in
-            case maybeEvent of
-                Just event ->
-                    -- Animation lifecycle event - update local status flags
-                    handleAnimationEvent event newModel
-
-                Nothing ->
-                    ( newModel, Cmd.none )
+            handleAnimationEvent maybeEvent { model | animationState = newAnimState }
 
         Animate ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate waapiCommand model.animationState Controls.animate
+                    WAAPI.animate model.animationState Controls.animate
             in
             ( { model | animationState = newAnimState }
             , animCmd
             )
 
+        -- --8<-- [start:stop]
         Stop ->
-            ( model
-            , WAAPI.stop elementId waapiCommand
+            let
+                ( newAnimState, stopCmd ) =
+                    WAAPI.stop elementId model.animationState
+            in
+            ( { model | animationState = newAnimState }
+            , stopCmd
             )
 
+        -- --8<-- [end:stop]
+        -- --8<-- [start:pause]
         Pause ->
-            ( model
-            , WAAPI.pause elementId waapiCommand
+            let
+                ( newAnimState, pauseCmd ) =
+                    WAAPI.pause elementId model.animationState
+            in
+            ( { model | animationState = newAnimState }
+            , pauseCmd
             )
 
+        -- --8<-- [end:pause]
+        -- --8<-- [start:resume]
         Resume ->
-            ( model
-            , WAAPI.resume elementId waapiCommand
+            let
+                ( newAnimState, resumeCmd ) =
+                    WAAPI.resume elementId model.animationState
+            in
+            ( { model | animationState = newAnimState }
+            , resumeCmd
             )
 
+        -- --8<-- [end:resume]
+        -- --8<-- [start:reset]
         Reset ->
             let
                 ( newAnimState, resetCmd ) =
-                    WAAPI.reset elementId waapiCommand model.animationState
+                    WAAPI.reset elementId model.animationState
             in
             ( { model | animationState = newAnimState }
             , resetCmd
             )
 
+        -- --8<-- [end:reset]
+        -- --8<-- [start:restart]
         Restart ->
             let
                 ( newAnimState, restartCmd ) =
-                    WAAPI.restart elementId waapiCommand model.animationState
+                    WAAPI.restart elementId model.animationState
             in
             ( { model | animationState = newAnimState }
             , restartCmd
             )
 
 
-handleAnimationEvent : WAAPI.AnimationEvent -> Model -> ( Model, Cmd Msg )
-handleAnimationEvent event model =
-    case event of
-        WAAPI.Started ->
-            ( { model | status = Running }, Cmd.none )
 
-        WAAPI.Restarted ->
-            ( { model | status = Running }, Cmd.none )
-
-        WAAPI.Canceled ->
-            ( { model | status = Idle }, Cmd.none )
-
-        WAAPI.Completed ->
-            ( { model | status = Idle }, Cmd.none )
-
-        WAAPI.Paused ->
-            ( { model | status = Paused }, Cmd.none )
-
-        WAAPI.Resumed ->
-            ( { model | status = Running }, Cmd.none )
+-- --8<-- [end:restart]
+-- --8<-- [start:handleAnimationEvent]
 
 
+handleAnimationEvent : Maybe WAAPI.AnimationEvent -> Model -> ( Model, Cmd Msg )
+handleAnimationEvent maybeEvent model =
+    case maybeEvent of
+        Just event ->
+            case event of
+                WAAPI.Started _ ->
+                    ( { model | status = Running }, Cmd.none )
 
+                WAAPI.Restarted _ ->
+                    ( { model | status = Running }, Cmd.none )
+
+                WAAPI.Canceled _ ->
+                    ( { model | status = Idle }, Cmd.none )
+
+                WAAPI.Completed _ ->
+                    ( { model | status = Idle }, Cmd.none )
+
+                WAAPI.Paused _ ->
+                    ( { model | status = Paused }, Cmd.none )
+
+                WAAPI.Resumed _ ->
+                    ( { model | status = Running }, Cmd.none )
+
+        Nothing ->
+            ( model, Cmd.none )
+
+
+
+-- --8<-- [end:handleAnimationEvent]
 -- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.batch
-        [ waapiEvent (WaapiEventReceived << WAAPI.decode model.animationState)
-        , onResize OnResize
-        ]
+    WAAPI.subscriptions GotWaapiMsg model.animationState
 
 
 
@@ -259,23 +242,7 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    let
-        currentTranslate =
-            WAAPI.getCurrentTranslate elementId model.animationState
-
-        centerX_expected =
-            toFloat model.animationAreaSize.width / 2 - 25
-
-        translateText =
-            case currentTranslate of
-                Just pos ->
-                    "x=" ++ String.fromFloat pos.x ++ ", y=" ++ String.fromFloat pos.y
-
-                Nothing ->
-                    "Not found!"
-    in
-    [ UI.backButton
-    , UI.pageHeader "WAAPI Engine Controls"
+    [ UI.pageHeader "WAAPI Engine Controls"
     , paragraph
         [ width fill
         , Font.size 16
@@ -355,22 +322,6 @@ viewContent model =
             , color = Element.rgba 0 0 0 0.1
             }
         , centerX
-        , inFront <|
-            el
-                [ width (px 1)
-                , height fill
-                , Border.width 1
-                , Border.color Colors.borderLight
-                , centerX
-                ]
-            <|
-                el
-                    [ centerX ]
-                    (text <|
-                        ((toFloat model.animationAreaSize.width / 2)
-                            |> String.fromFloat
-                        )
-                    )
         ]
         (el
             [ width (px 50)

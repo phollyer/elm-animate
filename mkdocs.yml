@@ -68,9 +68,13 @@ nav:
   - Concepts:
     - Animation Engines: concepts/engines.md
     - Builder Pattern: concepts/builder-pattern.md
+    - Controlling Animations: 
+      - CSS Engine Controls: concepts/controlling-animations/css.md
+      - Sub Engine Controls: concepts/controlling-animations/sub.md
+      - WAAPI Engine Controls: concepts/controlling-animations/waapi.md
     - Properties: concepts/properties.md
-    - 3D Animations: concepts/3d.md
     - Easing Functions: concepts/easing.md
+    - 3D Animations: concepts/3d.md
   - Engines:
     - CSS Engine: engines/css.md
     - Sub Engine: engines/sub.md
