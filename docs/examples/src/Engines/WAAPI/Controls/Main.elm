@@ -326,7 +326,6 @@ viewContent model =
         (el
             [ width (px 50)
             , height (px 50)
-            , htmlAttribute (Html.Attributes.style "transform" ("translateX(" ++ String.fromFloat ((toFloat model.animationAreaSize.width / 2) - 25) ++ "px) translateY(50px)"))
             , htmlAttribute (Html.Attributes.id elementId)
             , htmlAttribute (Html.Attributes.style "position" "relative")
             ]

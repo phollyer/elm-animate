@@ -9410,51 +9410,56 @@ var $author$project$Common$Animations$Controls$animate = A2(
 					$author$project$Anim$Property$Translate$build)))));
 var $author$project$Engines$WAAPI$Controls$Main$Paused = {$: 'Paused'};
 var $author$project$Engines$WAAPI$Controls$Main$Running = {$: 'Running'};
-var $author$project$Engines$WAAPI$Controls$Main$handleAnimationEvent = F2(
-	function (maybeEvent, model) {
-		if (maybeEvent.$ === 'Just') {
-			var event = maybeEvent.a;
-			switch (event.$) {
-				case 'Started':
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{status: $author$project$Engines$WAAPI$Controls$Main$Running}),
-						$elm$core$Platform$Cmd$none);
-				case 'Restarted':
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{status: $author$project$Engines$WAAPI$Controls$Main$Running}),
-						$elm$core$Platform$Cmd$none);
-				case 'Canceled':
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{status: $author$project$Engines$WAAPI$Controls$Main$Idle}),
-						$elm$core$Platform$Cmd$none);
-				case 'Completed':
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{status: $author$project$Engines$WAAPI$Controls$Main$Idle}),
-						$elm$core$Platform$Cmd$none);
-				case 'Paused':
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{status: $author$project$Engines$WAAPI$Controls$Main$Paused}),
-						$elm$core$Platform$Cmd$none);
-				default:
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{status: $author$project$Engines$WAAPI$Controls$Main$Running}),
-						$elm$core$Platform$Cmd$none);
-			}
-		} else {
-			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+var $author$project$Engines$WAAPI$Controls$Main$handleSingleEvent = F2(
+	function (event, _v0) {
+		var model = _v0.a;
+		var cmd = _v0.b;
+		switch (event.$) {
+			case 'Started':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{status: $author$project$Engines$WAAPI$Controls$Main$Running}),
+					cmd);
+			case 'Restarted':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{status: $author$project$Engines$WAAPI$Controls$Main$Running}),
+					cmd);
+			case 'Canceled':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{status: $author$project$Engines$WAAPI$Controls$Main$Idle}),
+					cmd);
+			case 'Completed':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{status: $author$project$Engines$WAAPI$Controls$Main$Idle}),
+					cmd);
+			case 'Paused':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{status: $author$project$Engines$WAAPI$Controls$Main$Paused}),
+					cmd);
+			default:
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{status: $author$project$Engines$WAAPI$Controls$Main$Running}),
+					cmd);
 		}
+	});
+var $author$project$Engines$WAAPI$Controls$Main$handleAnimationEvents = F2(
+	function (events, model) {
+		return A3(
+			$elm$core$List$foldl,
+			$author$project$Engines$WAAPI$Controls$Main$handleSingleEvent,
+			_Utils_Tuple2(model, $elm$core$Platform$Cmd$none),
+			events);
 	});
 var $author$project$Anim$Internal$WAAPI$PendingPause = {$: 'PendingPause'};
 var $author$project$Anim$Internal$WAAPI$encodeCommand = F2(
@@ -11299,7 +11304,7 @@ var $author$project$Anim$Internal$WAAPI$update = F2(
 			var jsonValue = msg.a;
 			return _Utils_Tuple2(
 				A2($author$project$Anim$Internal$WAAPI$updatePropertyUpdate, jsonValue, animState),
-				$elm$core$Maybe$Nothing);
+				_List_Nil);
 		} else {
 			var jsonValue = msg.a;
 			var _v1 = $author$project$Anim$Internal$WAAPI$decodeAnimationEvent(jsonValue);
@@ -11309,10 +11314,12 @@ var $author$project$Anim$Internal$WAAPI$update = F2(
 				var status = _v2.b;
 				return _Utils_Tuple2(
 					A3($author$project$Anim$Internal$WAAPI$handleEventInternal, elementId, status, animState),
-					$elm$core$Maybe$Just(
-						_Utils_Tuple2(elementId, status)));
+					_List_fromArray(
+						[
+							_Utils_Tuple2(elementId, status)
+						]));
 			} else {
-				return _Utils_Tuple2(animState, $elm$core$Maybe$Nothing);
+				return _Utils_Tuple2(animState, _List_Nil);
 			}
 		}
 	});
@@ -11320,17 +11327,17 @@ var $author$project$Anim$Engine$WAAPI$update = F2(
 	function (msg, animState) {
 		var _v0 = A2($author$project$Anim$Internal$WAAPI$update, msg, animState);
 		var newState = _v0.a;
-		var maybeRawEvent = _v0.b;
+		var rawEvents = _v0.b;
 		return _Utils_Tuple2(
 			newState,
 			A2(
-				$elm$core$Maybe$map,
+				$elm$core$List$map,
 				function (_v1) {
 					var elementId = _v1.a;
 					var status = _v1.b;
 					return A2($author$project$Anim$Engine$WAAPI$statusStringToEvent, elementId, status);
 				},
-				maybeRawEvent));
+				rawEvents));
 	});
 var $author$project$Engines$WAAPI$Controls$Main$update = F2(
 	function (msg, model) {
@@ -11339,10 +11346,10 @@ var $author$project$Engines$WAAPI$Controls$Main$update = F2(
 				var subMsg = msg.a;
 				var _v1 = A2($author$project$Anim$Engine$WAAPI$update, subMsg, model.animationState);
 				var newAnimState = _v1.a;
-				var maybeEvent = _v1.b;
+				var events = _v1.b;
 				return A2(
-					$author$project$Engines$WAAPI$Controls$Main$handleAnimationEvent,
-					maybeEvent,
+					$author$project$Engines$WAAPI$Controls$Main$handleAnimationEvents,
+					events,
 					_Utils_update(
 						model,
 						{animationState: newAnimState}));
@@ -17719,11 +17726,6 @@ var $author$project$Engines$WAAPI$Controls$Main$viewContent = function (model) {
 						$mdgriffith$elm_ui$Element$px(50)),
 						$mdgriffith$elm_ui$Element$height(
 						$mdgriffith$elm_ui$Element$px(50)),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						A2(
-							$elm$html$Html$Attributes$style,
-							'transform',
-							'translateX(' + ($elm$core$String$fromFloat((model.animationAreaSize.width / 2) - 25) + 'px) translateY(50px)'))),
 						$mdgriffith$elm_ui$Element$htmlAttribute(
 						$elm$html$Html$Attributes$id($author$project$Common$Animations$Controls$elementId)),
 						$mdgriffith$elm_ui$Element$htmlAttribute(
