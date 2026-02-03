@@ -299,7 +299,6 @@ detectCompletedElements oldElements newElements =
                 Dict.get elementId oldElements
                     |> Maybe.andThen
                         (\oldElem ->
-                            -- Was running (not complete), now complete
                             if not oldElem.isComplete && newElem.isComplete then
                                 Just (Completed elementId)
 
