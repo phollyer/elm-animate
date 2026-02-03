@@ -5,7 +5,7 @@ import Anim.Property.Opacity as Opacity
 import Anim.Property.Translate as Translate
 import Browser
 import Html exposing (Html, div, text)
-import Html.Attributes exposing (id, style)
+import Html.Attributes exposing (id)
 import Json.Encode as Encode
 import Process
 import Task
@@ -22,7 +22,7 @@ port waapiCommand : Encode.Value -> Cmd msg
 -- Incoming Port
 
 
-port waapiEvent : (Encode.Value -> msg) -> Sub msg
+port waapiSubscriptions : (Encode.Value -> msg) -> Sub msg
 
 
 
@@ -35,7 +35,7 @@ elementId =
 
 
 type alias Model =
-    { animState : WAAPI.AnimState }
+    { animState : WAAPI.AnimState Msg }
 
 
 init : ( Model, Cmd Msg )
@@ -43,7 +43,7 @@ init =
     let
         -- Initialize the starting state for our element
         ( initialAnimState, initCmd ) =
-            WAAPI.initProperties waapiCommand <|
+            WAAPI.init waapiCommand waapiSubscriptions <|
                 [ Translate.initX elementId -100
                 , Opacity.init elementId 0
                 ]
@@ -62,7 +62,7 @@ fadeIn : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 fadeIn =
     Opacity.for elementId
         >> Opacity.to 1
-        >> Opacity.duration 1000
+        >> Opacity.duration 2000
         >> Opacity.build
 
 
@@ -76,7 +76,7 @@ slideIn =
 
 type Msg
     = StartAnimation
-    | GotWaapiUpdate ( WAAPI.AnimState, Maybe WAAPI.AnimationEvent )
+    | GotWaapiMsg WAAPI.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -85,12 +85,16 @@ update msg model =
         StartAnimation ->
             let
                 ( newAnimState, cmd ) =
-                    WAAPI.animate waapiCommand model.animState <|
+                    WAAPI.animate model.animState <|
                         (fadeIn >> slideIn)
             in
             ( { model | animState = newAnimState }, cmd )
 
-        GotWaapiUpdate ( newAnimState, maybeEvent ) ->
+        GotWaapiMsg subMsg ->
+            let
+                ( newAnimState, maybeEvent ) =
+                    WAAPI.update subMsg model.animState
+            in
             handleEvent maybeEvent { model | animState = newAnimState }
 
 
@@ -104,7 +108,7 @@ handleEvent maybeEvent model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    waapiEvent (GotWaapiUpdate << WAAPI.decode model.animState)
+    WAAPI.subscriptions GotWaapiMsg model.animState
 
 
 view : Model -> Html Msg
