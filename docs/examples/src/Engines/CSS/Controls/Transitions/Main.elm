@@ -1,6 +1,6 @@
-module Engines.Sub.Controls.Main exposing (main)
+module Engines.CSS.Controls.Transitions.Main exposing (main)
 
-import Anim.Engine.Sub as Sub
+import Anim.Engine.CSS as CSS
 import Browser exposing (Document)
 import Browser.Events exposing (onResize)
 import Common.Animations.Controls as Controls exposing (elementId)
@@ -16,23 +16,6 @@ import Time
 
 
 
--- MODEL
-
-
-type AnimationStatus
-    = Idle
-    | Running
-    | Paused
-
-
-type alias Model =
-    { animState : Sub.AnimState
-    , status : AnimationStatus
-    , animAreaSize : { width : Int, height : Int }
-    }
-
-
-
 -- MAIN
 
 
@@ -42,8 +25,18 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = always Sub.none
         }
+
+
+
+-- MODEL
+
+
+type alias Model =
+    { animState : CSS.AnimState
+    , animAreaSize : { width : Int, height : Int }
+    }
 
 
 
@@ -57,11 +50,10 @@ init { window } =
             min 500 (window.width - 40)
 
         initialAnimState =
-            Sub.init <|
+            CSS.init <|
                 [ Controls.init animAreaWidth ]
     in
     ( { animState = initialAnimState
-      , status = Idle
       , animAreaSize =
             { width = animAreaWidth
             , height = 350
@@ -78,129 +70,76 @@ init { window } =
 type Msg
     = Animate
     | Stop
-    | Pause
-    | Resume
     | Reset
     | Restart
-    | GotSubMsg Sub.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GotSubMsg subMsg ->
-            let
-                ( newAnimState, events ) =
-                    Sub.update subMsg model.animState
-            in
-            handleAnimationEvents events { model | animState = newAnimState }
-
         Animate ->
             ( { model
-                | animState = Sub.animate model.animState Controls.animate
+                | animState = CSS.animate model.animState Controls.animate
               }
             , Cmd.none
             )
 
         -- --8<-- [start:stop]
         Stop ->
-            ( { model | animState = Sub.stop elementId model.animState }
-            , Cmd.none
-            )
-
-        -- --8<-- [end:stop]
-        -- --8<-- [start:pause]
-        Pause ->
-            ( { model | animState = Sub.pause elementId model.animState }
-            , Cmd.none
-            )
-
-        -- --8<-- [end:pause]
-        -- --8<-- [start:resume]
-        Resume ->
-            ( { model | animState = Sub.resume elementId model.animState }
+            ( { model | animState = CSS.stop elementId model.animState }
             , Cmd.none
             )
 
         -- --8<-- [end:resume]
         -- --8<-- [start:reset]
         Reset ->
-            ( { model | animState = Sub.reset elementId model.animState }
+            ( { model | animState = CSS.reset elementId model.animState }
             , Cmd.none
             )
 
         -- --8<-- [end:reset]
         -- --8<-- [start:restart]
         Restart ->
-            ( { model | animState = Sub.restart elementId model.animState }
+            ( { model | animState = CSS.restart elementId model.animState }
             , Cmd.none
             )
 
 
 
 -- --8<-- [end:restart]
--- --8<-- [start:handleAnimationEvent]
-
-
-handleAnimationEvents : List Sub.AnimEvent -> Model -> ( Model, Cmd Msg )
-handleAnimationEvents events model =
-    List.foldl handleSingleEvent ( model, Cmd.none ) events
-
-
-handleSingleEvent : Sub.AnimEvent -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
-handleSingleEvent event ( model, cmd ) =
-    case event of
-        Sub.Started _ ->
-            ( { model | status = Running }, cmd )
-
-        Sub.Restarted _ ->
-            ( { model | status = Running }, cmd )
-
-        Sub.Canceled _ ->
-            ( { model | status = Idle }, cmd )
-
-        Sub.Completed _ ->
-            ( { model | status = Idle }, cmd )
-
-        Sub.Paused _ ->
-            ( { model | status = Paused }, cmd )
-
-        Sub.Resumed _ ->
-            ( { model | status = Running }, cmd )
-
-
-
--- --8<-- [end:handleAnimationEvent]
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.subscriptions GotSubMsg model.animState
-
-
-
 -- VIEW
 
 
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.Sub Controls ElmUI Example"
+        "Anim.Engine.CSS Controls ElmUI Example"
         UI.Basic
         (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ UI.pageHeader "Sub Engine Controls"
-    , paragraph
+    [ UI.pageHeader "CSS Engine Controls"
+    , column
         [ width fill
-        , Font.size 16
-        , Font.color Colors.textMedium
-        , Font.center
+        , spacing 8
         ]
-        [ text "Demonstrating all available Engine Controls" ]
+        [ paragraph
+            [ width fill
+            , Font.size 16
+            , Font.color Colors.textMedium
+            , Font.center
+            ]
+            [ text "Demonstrating all available Engine Controls" ]
+        , paragraph
+            [ width fill
+            , Font.size 16
+            , Font.color Colors.textMedium
+            , Font.center
+            ]
+            [ text "for CSS Keyframe Animations" ]
+        ]
     , -- Controls explanation
       column
         [ centerX
@@ -237,8 +176,6 @@ viewContent model =
             [ width fill ]
             [ viewControlDescription 0 "🏀 Animate" "Drop the ball"
             , viewControlDescription 1 "⏹️ Stop" "Jump instantly to end state and stop"
-            , viewControlDescription 1 "⏸️ Pause" "Pause animation at current position"
-            , viewControlDescription 1 "▶️ Resume" "Continue paused animation"
             , viewControlDescription 1 "⏮️ Reset" "Jump instantly to start state and stop"
             , viewControlDescription 1 "🔄 Restart" "Reset to start, then begin animation again"
             ]
@@ -249,10 +186,6 @@ viewContent model =
         [ buttons
             [ ( UI.Primary, Animate, "🏀 Animate" )
             , ( UI.Warning, Stop, "⏹️ Stop" )
-            ]
-        , buttons
-            [ ( UI.Success, Pause, "⏸️ Pause" )
-            , ( UI.Success, Resume, "▶️ Resume" )
             ]
         , buttons
             [ ( UI.Purple, Reset, "⏮️ Reset" )
@@ -277,10 +210,9 @@ viewContent model =
         (el
             ([ width (px 50)
              , height (px 50)
-             , htmlAttribute (Html.Attributes.id elementId)
              , htmlAttribute (Html.Attributes.style "position" "relative")
              ]
-                ++ List.map htmlAttribute (Sub.htmlAttributes elementId model.animState)
+                ++ List.map htmlAttribute (CSS.transitionAttributes elementId model.animState)
             )
             (el [ centerX, centerY, Font.size 50 ] (text "🏀"))
         )
@@ -324,16 +256,3 @@ button =
     UI.htmlButton
         >> html
         >> el [ centerX ]
-
-
-statusToString : AnimationStatus -> String
-statusToString status =
-    case status of
-        Idle ->
-            "Idle"
-
-        Running ->
-            "Running"
-
-        Paused ->
-            "Paused"

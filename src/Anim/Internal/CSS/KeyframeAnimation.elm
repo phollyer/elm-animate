@@ -1,6 +1,7 @@
 module Anim.Internal.CSS.KeyframeAnimation exposing
     ( KeyframeAnimation
     , generate
+    , generateWithSuffix
     , toAttributeString
     )
 
@@ -32,6 +33,14 @@ type alias KeyframeAnimation =
 -}
 generate : String -> List Builder.PropertyConfig -> List KeyframeAnimation
 generate elementId properties =
+    generateWithSuffix elementId "" properties
+
+
+{-| Generate animation layers with an optional suffix for the animation name.
+Used for restarting animations - passing a unique suffix forces the browser to treat it as a new animation.
+-}
+generateWithSuffix : String -> String -> List Builder.PropertyConfig -> List KeyframeAnimation
+generateWithSuffix elementId suffix properties =
     if List.isEmpty properties then
         []
 
@@ -358,7 +367,15 @@ generate elementId properties =
                         0
 
             animationName =
-                elementId ++ "-anim-" ++ String.fromInt betterHash
+                elementId
+                    ++ "-anim-"
+                    ++ String.fromInt betterHash
+                    ++ (if String.isEmpty suffix then
+                            ""
+
+                        else
+                            "-" ++ suffix
+                       )
 
             keyframesString =
                 buildKeyframesString animationName keyframeSteps

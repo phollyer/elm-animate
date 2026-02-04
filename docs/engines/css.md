@@ -233,7 +233,7 @@ The CSS Engine fully supports 3D animations. See [3D Animations](../concepts/3d.
 | ---------- | ------ | ------------- |
 | `transitionAttributes` | `String -> AnimState -> List (Html.Attribute msg)` | Get the HTML `transition` attributes for the element |
 | `transitionEvents` | `String -> (TransitionEvent -> msg) -> List (Attribute msg)` | Attach CSS transition event listeners |
-| `keyframesAttribute` | `String -> AnimState -> Html.Attribute msg` | Get the HTML `animation` attribute for the element |
+| `keyframesStyles` | `String -> AnimState -> List (Html.Attribute msg)` | Get the HTML `animation` and style attributes for the element |
 | `keyframeAnimationEvents` | `String -> (KeyframeEvent -> msg) -> List (Attribute msg)` | Attach keyframe animation event listeners |
 | `keyframesStyleNode` | `AnimState -> Html msg` | Get the Keyframes `node` for  all the animated elements |
 | `keyframesStyleNodeFor` | `String -> AnimState -> Html msg` | Get the Keyframes `node` for a specific element |

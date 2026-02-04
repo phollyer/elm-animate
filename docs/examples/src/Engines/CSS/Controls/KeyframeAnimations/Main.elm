@@ -1,4 +1,4 @@
-module Engines.CSS.Controls.Main exposing (main)
+module Engines.CSS.Controls.KeyframeAnimations.Main exposing (main)
 
 import Anim.Engine.CSS as CSS
 import Browser exposing (Document)
@@ -16,23 +16,6 @@ import Time
 
 
 
--- MODEL
-
-
-type AnimationStatus
-    = Idle
-    | Running
-    | Paused
-
-
-type alias Model =
-    { animationState : CSS.AnimState
-    , status : AnimationStatus
-    , animationAreaSize : { width : Int, height : Int }
-    }
-
-
-
 -- MAIN
 
 
@@ -47,23 +30,32 @@ main =
 
 
 
+-- MODEL
+
+
+type alias Model =
+    { animState : CSS.AnimState
+    , animAreaSize : { width : Int, height : Int }
+    }
+
+
+
 -- INIT
 
 
 init : { window : { width : Int, height : Int } } -> ( Model, Cmd Msg )
 init { window } =
     let
-        animationAreaWidth =
+        animAreaWidth =
             min 500 (window.width - 40)
 
         initialAnimState =
             CSS.init <|
-                [ Controls.init animationAreaWidth ]
+                [ Controls.init animAreaWidth ]
     in
-    ( { animationState = initialAnimState
-      , status = Idle
-      , animationAreaSize =
-            { width = animationAreaWidth
+    ( { animState = initialAnimState
+      , animAreaSize =
+            { width = animAreaWidth
             , height = 350
             }
       }
@@ -78,10 +70,10 @@ init { window } =
 type Msg
     = Animate
     | Stop
-    | Pause
-    | Resume
     | Reset
     | Restart
+    | Pause
+    | Resume
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -89,49 +81,48 @@ update msg model =
     case msg of
         Animate ->
             ( { model
-                | animationState = CSS.animate model.animationState Controls.animate
+                | animState = CSS.animate model.animState Controls.animate
               }
             , Cmd.none
             )
 
         -- --8<-- [start:stop]
         Stop ->
-            ( { model | animationState = CSS.stop elementId model.animationState }
+            ( { model | animState = CSS.stop elementId model.animState }
             , Cmd.none
             )
 
         -- --8<-- [end:stop]
-        -- --8<-- [start:pause]
-        Pause ->
-            ( { model | animationState = CSS.pause elementId model.animationState }
-            , Cmd.none
-            )
-
-        -- --8<-- [end:pause]
-        -- --8<-- [start:resume]
-        Resume ->
-            ( { model | animationState = CSS.resume elementId model.animationState }
-            , Cmd.none
-            )
-
-        -- --8<-- [end:resume]
         -- --8<-- [start:reset]
         Reset ->
-            ( { model | animationState = CSS.reset elementId model.animationState }
+            ( { model | animState = CSS.reset elementId model.animState }
             , Cmd.none
             )
 
         -- --8<-- [end:reset]
         -- --8<-- [start:restart]
         Restart ->
-            ( { model | animationState = CSS.restart elementId model.animationState }
+            ( { model | animState = CSS.restart elementId model.animState }
+            , Cmd.none
+            )
+
+        -- --8<-- [end:restart]
+        -- --8<-- [start:pause]
+        Pause ->
+            ( { model | animState = CSS.pause elementId model.animState }
+            , Cmd.none
+            )
+
+        -- --8<-- [end:pause]
+        -- --8<-- [start:resume]
+        Resume ->
+            ( { model | animState = CSS.resume elementId model.animState }
             , Cmd.none
             )
 
 
 
--- --8<-- [end:restart]
--- --8<-- [end:handleAnimationEvent]
+-- --8<-- [end:resume]
 -- VIEW
 
 
@@ -145,15 +136,28 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ html <| CSS.keyframesStyleNodeFor elementId model.animationState
+    [ html <|
+        CSS.keyframesStyleNodeFor elementId model.animState
     , UI.pageHeader "CSS Engine Controls"
-    , paragraph
+    , column
         [ width fill
-        , Font.size 16
-        , Font.color Colors.textMedium
-        , Font.center
+        , spacing 8
         ]
-        [ text "Demonstrating all available Engine Controls" ]
+        [ paragraph
+            [ width fill
+            , Font.size 16
+            , Font.color Colors.textMedium
+            , Font.center
+            ]
+            [ text "Demonstrating all available Engine Controls" ]
+        , paragraph
+            [ width fill
+            , Font.size 16
+            , Font.color Colors.textMedium
+            , Font.center
+            ]
+            [ text "for CSS Keyframe Animations" ]
+        ]
     , -- Controls explanation
       column
         [ centerX
@@ -215,7 +219,7 @@ viewContent model =
     , -- Animation area
       el
         [ width <|
-            px model.animationAreaSize.width
+            px model.animAreaSize.width
         , height (px 350)
         , Background.color Colors.backgroundWhite
         , Border.rounded 12
@@ -228,11 +232,12 @@ viewContent model =
         , centerX
         ]
         (el
-            [ width (px 50)
-            , height (px 50)
-            , htmlAttribute (Html.Attributes.style "position" "relative")
-            , htmlAttribute (CSS.keyframesAttribute elementId model.animationState)
-            ]
+            ([ width (px 50)
+             , height (px 50)
+             , htmlAttribute (Html.Attributes.style "position" "relative")
+             ]
+                ++ List.map htmlAttribute (CSS.keyframesStyles elementId model.animState)
+            )
             (el [ centerX, centerY, Font.size 50 ] (text "🏀"))
         )
     ]
@@ -275,16 +280,3 @@ button =
     UI.htmlButton
         >> html
         >> el [ centerX ]
-
-
-statusToString : AnimationStatus -> String
-statusToString status =
-    case status of
-        Idle ->
-            "Idle"
-
-        Running ->
-            "Running"
-
-        Paused ->
-            "Paused"

@@ -5202,7 +5202,6 @@ var $elm$core$Task$perform = F2(
 	});
 var $elm$browser$Browser$document = _Browser_document;
 var $elm$json$Json$Decode$field = _Json_decodeField;
-var $author$project$Engines$CSS$Controls$Main$Idle = {$: 'Idle'};
 var $author$project$Anim$Internal$CSS$AnimState = function (a) {
 	return {$: 'AnimState', a: a};
 };
@@ -5374,6 +5373,492 @@ var $elm$core$List$filterMap = F2(
 			xs);
 	});
 var $elm$core$String$fromFloat = _String_fromNumber;
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $elm$core$Basics$neq = _Utils_notEqual;
+var $author$project$Anim$Internal$Properties$Rotate$to3DCssString = function (_v0) {
+	var angles = _v0.a;
+	var parts = A2(
+		$elm$core$List$filterMap,
+		$elm$core$Basics$identity,
+		_List_fromArray(
+			[
+				(!(!angles.x)) ? $elm$core$Maybe$Just(
+				'rotateX(' + ($elm$core$String$fromFloat(angles.x) + 'deg)')) : $elm$core$Maybe$Nothing,
+				(!(!angles.y)) ? $elm$core$Maybe$Just(
+				'rotateY(' + ($elm$core$String$fromFloat(angles.y) + 'deg)')) : $elm$core$Maybe$Nothing,
+				(!(!angles.z)) ? $elm$core$Maybe$Just(
+				'rotateZ(' + ($elm$core$String$fromFloat(angles.z) + 'deg)')) : $elm$core$Maybe$Nothing
+			]));
+	return $elm$core$List$isEmpty(parts) ? 'rotateZ(0deg)' : A2($elm$core$String$join, ' ', parts);
+};
+var $author$project$Anim$Internal$Properties$Translate$toCssString = function (_v0) {
+	var coords = _v0.a;
+	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px'))));
+};
+var $author$project$Anim$Internal$Properties$Scale$Scale = function (a) {
+	return {$: 'Scale', a: a};
+};
+var $author$project$Anim$Internal$Properties$Scale$default = $author$project$Anim$Internal$Properties$Scale$Scale(
+	{x: 1.0, y: 1.0, z: 1.0});
+var $author$project$Anim$Internal$Properties$Scale$support = {
+	add: F2(
+		function (_v0, _v1) {
+			var a = _v0.a;
+			var b = _v1.a;
+			return $author$project$Anim$Internal$Properties$Scale$Scale(
+				{x: a.x + b.x, y: a.y + b.y, z: a.z + b.z});
+		}),
+	fromRecord: $author$project$Anim$Internal$Properties$Scale$Scale,
+	scale: F2(
+		function (factor, _v2) {
+			var coords = _v2.a;
+			return $author$project$Anim$Internal$Properties$Scale$Scale(
+				{x: coords.x * factor, y: coords.y * factor, z: coords.z * factor});
+		}),
+	subtract: F2(
+		function (_v3, _v4) {
+			var a = _v3.a;
+			var b = _v4.a;
+			return $author$project$Anim$Internal$Properties$Scale$Scale(
+				{x: a.x - b.x, y: a.y - b.y, z: a.z - b.z});
+		}),
+	toRecord: function (_v5) {
+		var coords = _v5.a;
+		return coords;
+	},
+	zero: $author$project$Anim$Internal$Properties$Scale$default
+};
+var $author$project$Anim$Internal$Builders$Coordinate3D$toTuple = F2(
+	function (support, coord) {
+		var record = support.toRecord(coord);
+		return _Utils_Tuple2(record.x, record.y);
+	});
+var $author$project$Anim$Internal$Properties$Scale$toTuple = $author$project$Anim$Internal$Builders$Coordinate3D$toTuple($author$project$Anim$Internal$Properties$Scale$support);
+var $author$project$Anim$Internal$CSS$Transform$collectProcessedTransform = F2(
+	function (property, acc) {
+		switch (property.$) {
+			case 'ProcessedTranslateConfig':
+				var config = property.a;
+				return _Utils_update(
+					acc,
+					{
+						translate: 'translate3d(' + ($author$project$Anim$Internal$Properties$Translate$toCssString(config.end) + ')')
+					});
+			case 'ProcessedRotateConfig':
+				var config = property.a;
+				return _Utils_update(
+					acc,
+					{
+						rotate: $author$project$Anim$Internal$Properties$Rotate$to3DCssString(config.end)
+					});
+			case 'ProcessedScaleConfig':
+				var config = property.a;
+				var _v1 = $author$project$Anim$Internal$Properties$Scale$toTuple(config.end);
+				var x = _v1.a;
+				var y = _v1.b;
+				return _Utils_update(
+					acc,
+					{
+						scale: 'scale(' + ($elm$core$String$fromFloat(x) + (', ' + ($elm$core$String$fromFloat(y) + ')')))
+					});
+			default:
+				return acc;
+		}
+	});
+var $author$project$Anim$Internal$CSS$Transform$emptyTransformParts = {rotate: '', scale: '', translate: ''};
+var $author$project$Anim$Internal$CSS$Transform$extractTransformsFromProcessed = function (properties) {
+	return A3($elm$core$List$foldl, $author$project$Anim$Internal$CSS$Transform$collectProcessedTransform, $author$project$Anim$Internal$CSS$Transform$emptyTransformParts, properties);
+};
+var $elm$core$String$trim = _String_trim;
+var $author$project$Anim$Internal$CSS$Transform$generateFromProcessed = function (properties) {
+	var transformParts = $author$project$Anim$Internal$CSS$Transform$extractTransformsFromProcessed(properties);
+	return $elm$core$String$trim(transformParts.translate + (' ' + (transformParts.rotate + (' ' + transformParts.scale))));
+};
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$core$Basics$not = _Basics_not;
+var $elm$core$List$all = F2(
+	function (isOkay, list) {
+		return !A2(
+			$elm$core$List$any,
+			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
+			list);
+	});
+var $author$project$Anim$Easing$EaseInOut = {$: 'EaseInOut'};
+var $author$project$Anim$Internal$CSS$Transition$extractProcessedDelay = function (property) {
+	switch (property.$) {
+		case 'ProcessedTranslateConfig':
+			var config = property.a;
+			return config.delay;
+		case 'ProcessedRotateConfig':
+			var config = property.a;
+			return config.delay;
+		case 'ProcessedScaleConfig':
+			var config = property.a;
+			return config.delay;
+		default:
+			return 0;
+	}
+};
+var $author$project$Anim$Internal$CSS$Transition$extractProcessedDuration = function (property) {
+	switch (property.$) {
+		case 'ProcessedTranslateConfig':
+			var config = property.a;
+			return config.duration;
+		case 'ProcessedRotateConfig':
+			var config = property.a;
+			return config.duration;
+		case 'ProcessedScaleConfig':
+			var config = property.a;
+			return config.duration;
+		default:
+			return 0;
+	}
+};
+var $author$project$Anim$Internal$CSS$Transition$extractProcessedEasing = function (property) {
+	switch (property.$) {
+		case 'ProcessedTranslateConfig':
+			var config = property.a;
+			return config.easing;
+		case 'ProcessedRotateConfig':
+			var config = property.a;
+			return config.easing;
+		case 'ProcessedScaleConfig':
+			var config = property.a;
+			return config.easing;
+		default:
+			return $author$project$Anim$Easing$EaseInOut;
+	}
+};
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$List$maximum = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(
+			A3($elm$core$List$foldl, $elm$core$Basics$max, x, xs));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var $elm$core$List$minimum = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(
+			A3($elm$core$List$foldl, $elm$core$Basics$min, x, xs));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$Internal$Easing$easingToCSS = function (easing) {
+	switch (easing.$) {
+		case 'CubicBezier':
+			var p1x = easing.a;
+			var p1y = easing.b;
+			var p2x = easing.c;
+			var p2y = easing.d;
+			return 'cubic-bezier(' + ($elm$core$String$fromFloat(p1x) + (', ' + ($elm$core$String$fromFloat(p1y) + (', ' + ($elm$core$String$fromFloat(p2x) + (', ' + ($elm$core$String$fromFloat(p2y) + ')')))))));
+		case 'Linear':
+			return 'linear';
+		case 'Ease':
+			return 'ease';
+		case 'EaseIn':
+			return 'ease-in';
+		case 'EaseOut':
+			return 'ease-out';
+		case 'EaseInOut':
+			return 'ease-in-out';
+		case 'SineIn':
+			return 'cubic-bezier(0.12, 0, 0.39, 0)';
+		case 'SineOut':
+			return 'cubic-bezier(0.61, 1, 0.88, 1)';
+		case 'SineInOut':
+			return 'cubic-bezier(0.37, 0, 0.63, 1)';
+		case 'QuadIn':
+			return 'cubic-bezier(0.11, 0, 0.5, 0)';
+		case 'QuadOut':
+			return 'cubic-bezier(0.5, 1, 0.89, 1)';
+		case 'QuadInOut':
+			return 'cubic-bezier(0.45, 0, 0.55, 1)';
+		case 'CubicIn':
+			return 'cubic-bezier(0.32, 0, 0.67, 0)';
+		case 'CubicOut':
+			return 'cubic-bezier(0.33, 1, 0.68, 1)';
+		case 'CubicInOut':
+			return 'cubic-bezier(0.65, 0, 0.35, 1)';
+		case 'QuartIn':
+			return 'cubic-bezier(0.5, 0, 0.75, 0)';
+		case 'QuartOut':
+			return 'cubic-bezier(0.25, 1, 0.5, 1)';
+		case 'QuartInOut':
+			return 'cubic-bezier(0.76, 0, 0.24, 1)';
+		case 'QuintIn':
+			return 'cubic-bezier(0.64, 0, 0.78, 0)';
+		case 'QuintOut':
+			return 'cubic-bezier(0.22, 1, 0.36, 1)';
+		case 'QuintInOut':
+			return 'cubic-bezier(0.83, 0, 0.17, 1)';
+		case 'ExpoIn':
+			return 'cubic-bezier(0.7, 0, 0.84, 0)';
+		case 'ExpoOut':
+			return 'cubic-bezier(0.16, 1, 0.3, 1)';
+		case 'ExpoInOut':
+			return 'cubic-bezier(0.87, 0, 0.13, 1)';
+		case 'CircIn':
+			return 'cubic-bezier(0.55, 0, 1, 0.45)';
+		case 'CircOut':
+			return 'cubic-bezier(0, 0.55, 0.45, 1)';
+		case 'CircInOut':
+			return 'cubic-bezier(0.85, 0, 0.15, 1)';
+		case 'BackIn':
+			return 'cubic-bezier(0.36, 0, 0.66, -0.56)';
+		case 'BackOut':
+			return 'cubic-bezier(0.34, 1.56, 0.64, 1)';
+		case 'BackInOut':
+			return 'cubic-bezier(0.68, -0.6, 0.32, 1.6)';
+		case 'BackInCustom':
+			return 'linear';
+		case 'BackOutCustom':
+			return 'linear';
+		case 'BackInOutCustom':
+			return 'linear';
+		case 'ElasticIn':
+			return 'cubic-bezier(0.55, 0.055, 0.675, 0.19)';
+		case 'ElasticOut':
+			return 'cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+		case 'ElasticInOut':
+			return 'cubic-bezier(0.445, 0.05, 0.55, 0.95)';
+		case 'ElasticInCustom':
+			return 'linear';
+		case 'ElasticOutCustom':
+			return 'linear';
+		case 'ElasticInOutCustom':
+			return 'linear';
+		case 'ElasticInAdvanced':
+			return 'linear';
+		case 'ElasticOutAdvanced':
+			return 'linear';
+		case 'ElasticInOutAdvanced':
+			return 'linear';
+		case 'BounceIn':
+			return 'cubic-bezier(0.6, 0.04, 0.98, 0.335)';
+		case 'BounceOut':
+			return 'cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+		case 'BounceInOut':
+			return 'cubic-bezier(0.445, 0.050, 0.550, 0.950)';
+		case 'BounceInCustom':
+			return 'linear';
+		case 'BounceOutCustom':
+			return 'linear';
+		case 'BounceInOutCustom':
+			return 'linear';
+		case 'BounceInAdvanced':
+			return 'linear';
+		case 'BounceOutAdvanced':
+			return 'linear';
+		default:
+			return 'linear';
+	}
+};
+var $author$project$Anim$Internal$Easing$toCSS = function (maybeEasing) {
+	if (maybeEasing.$ === 'Just') {
+		var easing = maybeEasing.a;
+		return $author$project$Anim$Internal$Easing$easingToCSS(easing);
+	} else {
+		return 'ease';
+	}
+};
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Anim$Internal$CSS$Transition$consolidateProcessedTiming = function (transformProps) {
+	if (!transformProps.b) {
+		return $elm$core$Maybe$Nothing;
+	} else {
+		var longestDuration = A2(
+			$elm$core$Maybe$withDefault,
+			0,
+			$elm$core$List$maximum(
+				A2($elm$core$List$map, $author$project$Anim$Internal$CSS$Transition$extractProcessedDuration, transformProps)));
+		var latestEasing = A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Anim$Easing$EaseInOut,
+			$elm$core$List$head(
+				A2($elm$core$List$map, $author$project$Anim$Internal$CSS$Transition$extractProcessedEasing, transformProps)));
+		var earliestDelay = A2(
+			$elm$core$Maybe$withDefault,
+			0,
+			$elm$core$List$minimum(
+				A2($elm$core$List$map, $author$project$Anim$Internal$CSS$Transition$extractProcessedDelay, transformProps)));
+		return $elm$core$Maybe$Just(
+			'transform ' + ($elm$core$String$fromInt(longestDuration) + ('ms ' + ($author$project$Anim$Internal$Easing$toCSS(
+				$elm$core$Maybe$Just(latestEasing)) + (' ' + ($elm$core$String$fromInt(earliestDelay) + 'ms'))))));
+	}
+};
+var $author$project$Anim$Internal$CSS$Transition$isProcessedTransformProperty = function (property) {
+	switch (property.$) {
+		case 'ProcessedTranslateConfig':
+			return true;
+		case 'ProcessedRotateConfig':
+			return true;
+		case 'ProcessedScaleConfig':
+			return true;
+		default:
+			return false;
+	}
+};
+var $elm$core$List$partition = F2(
+	function (pred, list) {
+		var step = F2(
+			function (x, _v0) {
+				var trues = _v0.a;
+				var falses = _v0.b;
+				return pred(x) ? _Utils_Tuple2(
+					A2($elm$core$List$cons, x, trues),
+					falses) : _Utils_Tuple2(
+					trues,
+					A2($elm$core$List$cons, x, falses));
+			});
+		return A3(
+			$elm$core$List$foldr,
+			step,
+			_Utils_Tuple2(_List_Nil, _List_Nil),
+			list);
+	});
+var $author$project$Anim$Internal$CSS$Transition$transitionFromProcessedNonTransform = function (property) {
+	switch (property.$) {
+		case 'ProcessedBackgroundColorConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				'background-color ' + ($elm$core$String$fromInt(config.duration) + ('ms ' + ($author$project$Anim$Internal$Easing$toCSS(
+					$elm$core$Maybe$Just(config.easing)) + (' ' + ($elm$core$String$fromInt(config.delay) + 'ms'))))));
+		case 'ProcessedOpacityConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				'opacity ' + ($elm$core$String$fromInt(config.duration) + ('ms ' + ($author$project$Anim$Internal$Easing$toCSS(
+					$elm$core$Maybe$Just(config.easing)) + (' ' + ($elm$core$String$fromInt(config.delay) + 'ms'))))));
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$Internal$CSS$Transition$generateFromProcessed = function (properties) {
+	var allDurationsZero = A2(
+		$elm$core$List$all,
+		function (prop) {
+			switch (prop.$) {
+				case 'ProcessedTranslateConfig':
+					var config = prop.a;
+					return !config.duration;
+				case 'ProcessedRotateConfig':
+					var config = prop.a;
+					return !config.duration;
+				case 'ProcessedScaleConfig':
+					var config = prop.a;
+					return !config.duration;
+				case 'ProcessedBackgroundColorConfig':
+					var config = prop.a;
+					return !config.duration;
+				case 'ProcessedOpacityConfig':
+					var config = prop.a;
+					return !config.duration;
+				default:
+					return true;
+			}
+		},
+		properties);
+	if (allDurationsZero) {
+		return 'none';
+	} else {
+		var _v0 = A2($elm$core$List$partition, $author$project$Anim$Internal$CSS$Transition$isProcessedTransformProperty, properties);
+		var transformProps = _v0.a;
+		var nonTransformProps = _v0.b;
+		var nonTransformTransitions = A2($elm$core$List$filterMap, $author$project$Anim$Internal$CSS$Transition$transitionFromProcessedNonTransform, nonTransformProps);
+		var transformTransition = function () {
+			var _v1 = $author$project$Anim$Internal$CSS$Transition$consolidateProcessedTiming(transformProps);
+			if (_v1.$ === 'Just') {
+				var transition = _v1.a;
+				return _List_fromArray(
+					[transition]);
+			} else {
+				return _List_Nil;
+			}
+		}();
+		var allTransitions = _Utils_ap(transformTransition, nonTransformTransitions);
+		return A2($elm$core$String$join, ', ', allTransitions);
+	}
+};
+var $author$project$Anim$Internal$CSS$Transform$getTransformByName = F2(
+	function (parts, name) {
+		switch (name) {
+			case 'translate':
+				return $elm$core$String$isEmpty(parts.translate) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(parts.translate);
+			case 'rotate':
+				return $elm$core$String$isEmpty(parts.rotate) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(parts.rotate);
+			case 'scale':
+				return $elm$core$String$isEmpty(parts.scale) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(parts.scale);
+			default:
+				return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$Anim$Internal$CSS$Transform$generateFromProcessedWithOrder = F2(
+	function (order, properties) {
+		var transformParts = $author$project$Anim$Internal$CSS$Transform$extractTransformsFromProcessed(properties);
+		var orderedTransforms = A2(
+			$elm$core$List$filterMap,
+			$author$project$Anim$Internal$CSS$Transform$getTransformByName(transformParts),
+			order);
+		return $elm$core$String$trim(
+			A2($elm$core$String$join, ' ', orderedTransforms));
+	});
 var $author$project$Anim$Internal$CSS$KeyframeAnimation$buildKeyframesString = F2(
 	function (elementId, steps) {
 		var stepToString = function (_v1) {
@@ -5434,11 +5919,6 @@ var $author$project$Anim$Internal$Properties$Rotate$Rotate = function (a) {
 };
 var $author$project$Anim$Internal$Properties$Rotate$default = $author$project$Anim$Internal$Properties$Rotate$Rotate(
 	{x: 0, y: 0, z: 0});
-var $author$project$Anim$Internal$Properties$Scale$Scale = function (a) {
-	return {$: 'Scale', a: a};
-};
-var $author$project$Anim$Internal$Properties$Scale$default = $author$project$Anim$Internal$Properties$Scale$Scale(
-	{x: 1.0, y: 1.0, z: 1.0});
 var $author$project$Anim$Internal$Properties$Size$Size = function (a) {
 	return {$: 'Size', a: a};
 };
@@ -5545,15 +6025,6 @@ var $author$project$Anim$Internal$Properties$Color$hexToInt = function (str) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
 var $author$project$Anim$Internal$Properties$Color$hexToRgb = function (hex_) {
 	var cleanHex = A2(
 		$elm$core$String$dropLeft,
@@ -5588,30 +6059,6 @@ var $author$project$Anim$Internal$Properties$Color$floatMod = F2(
 		return a - ($elm$core$Basics$floor(a / b) * b);
 	});
 var $elm$core$Basics$ge = _Utils_ge;
-var $elm$core$List$maximum = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(
-			A3($elm$core$List$foldl, $elm$core$Basics$max, x, xs));
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $elm$core$Basics$min = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) < 0) ? x : y;
-	});
-var $elm$core$List$minimum = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(
-			A3($elm$core$List$foldl, $elm$core$Basics$min, x, xs));
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
 var $author$project$Anim$Internal$Properties$Color$rgbToHsl = function (rgb_) {
 	var r = rgb_.r / 255;
 	var g = rgb_.g / 255;
@@ -5950,34 +6397,6 @@ var $author$project$Anim$Internal$Properties$Rotate$support = {
 	zero: $author$project$Anim$Internal$Properties$Rotate$default
 };
 var $author$project$Anim$Internal$Properties$Rotate$interpolate = $author$project$Anim$Internal$Builders$Coordinate3D$interpolate($author$project$Anim$Internal$Properties$Rotate$support);
-var $author$project$Anim$Internal$Properties$Scale$support = {
-	add: F2(
-		function (_v0, _v1) {
-			var a = _v0.a;
-			var b = _v1.a;
-			return $author$project$Anim$Internal$Properties$Scale$Scale(
-				{x: a.x + b.x, y: a.y + b.y, z: a.z + b.z});
-		}),
-	fromRecord: $author$project$Anim$Internal$Properties$Scale$Scale,
-	scale: F2(
-		function (factor, _v2) {
-			var coords = _v2.a;
-			return $author$project$Anim$Internal$Properties$Scale$Scale(
-				{x: coords.x * factor, y: coords.y * factor, z: coords.z * factor});
-		}),
-	subtract: F2(
-		function (_v3, _v4) {
-			var a = _v3.a;
-			var b = _v4.a;
-			return $author$project$Anim$Internal$Properties$Scale$Scale(
-				{x: a.x - b.x, y: a.y - b.y, z: a.z - b.z});
-		}),
-	toRecord: function (_v5) {
-		var coords = _v5.a;
-		return coords;
-	},
-	zero: $author$project$Anim$Internal$Properties$Scale$default
-};
 var $author$project$Anim$Internal$Properties$Scale$interpolate = $author$project$Anim$Internal$Builders$Coordinate3D$interpolate($author$project$Anim$Internal$Properties$Scale$support);
 var $author$project$Anim$Internal$Properties$Size$interpolate = F3(
 	function (t, _v0, _v1) {
@@ -6015,13 +6434,6 @@ var $author$project$Anim$Internal$Properties$Translate$support = {
 	zero: $author$project$Anim$Internal$Properties$Translate$default
 };
 var $author$project$Anim$Internal$Properties$Translate$interpolate = $author$project$Anim$Internal$Builders$Coordinate3D$interpolate($author$project$Anim$Internal$Properties$Translate$support);
-var $elm$core$List$isEmpty = function (xs) {
-	if (!xs.b) {
-		return true;
-	} else {
-		return false;
-	}
-};
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
 		if (maybe.$ === 'Just') {
@@ -6033,7 +6445,6 @@ var $elm$core$Maybe$map = F2(
 		}
 	});
 var $elm$core$Basics$modBy = _Basics_modBy;
-var $elm$core$Basics$neq = _Utils_notEqual;
 var $author$project$Anim$Internal$Builder$ProcessedBackgroundColorConfig = function (a) {
 	return {$: 'ProcessedBackgroundColorConfig', a: a};
 };
@@ -6207,7 +6618,6 @@ var $author$project$Anim$Internal$Builders$Coordinate3D$fromTuple = F2(
 			{x: x, y: y, z: 0});
 	});
 var $author$project$Anim$Internal$Properties$Translate$fromTuple = $author$project$Anim$Internal$Builders$Coordinate3D$fromTuple($author$project$Anim$Internal$Properties$Translate$support);
-var $author$project$Anim$Easing$EaseInOut = {$: 'EaseInOut'};
 var $author$project$Anim$Internal$Builder$resolveMaybeWithDefault = F3(
 	function (local, global, _default) {
 		var _v0 = _Utils_Tuple2(local, global);
@@ -6442,22 +6852,6 @@ var $author$project$Anim$Internal$Builder$processElement = F2(
 				elementConfig.properties)
 		};
 	});
-var $author$project$Anim$Internal$Properties$Rotate$to3DCssString = function (_v0) {
-	var angles = _v0.a;
-	var parts = A2(
-		$elm$core$List$filterMap,
-		$elm$core$Basics$identity,
-		_List_fromArray(
-			[
-				(!(!angles.x)) ? $elm$core$Maybe$Just(
-				'rotateX(' + ($elm$core$String$fromFloat(angles.x) + 'deg)')) : $elm$core$Maybe$Nothing,
-				(!(!angles.y)) ? $elm$core$Maybe$Just(
-				'rotateY(' + ($elm$core$String$fromFloat(angles.y) + 'deg)')) : $elm$core$Maybe$Nothing,
-				(!(!angles.z)) ? $elm$core$Maybe$Just(
-				'rotateZ(' + ($elm$core$String$fromFloat(angles.z) + 'deg)')) : $elm$core$Maybe$Nothing
-			]));
-	return $elm$core$List$isEmpty(parts) ? 'rotateZ(0deg)' : A2($elm$core$String$join, ' ', parts);
-};
 var $elm$core$String$concat = function (strings) {
 	return A2($elm$core$String$join, '', strings);
 };
@@ -6523,10 +6917,6 @@ var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) 
 	var x = _v0.a.x;
 	var y = _v0.a.y;
 	return $elm$core$String$fromFloat(x) + (',' + $elm$core$String$fromFloat(y));
-};
-var $author$project$Anim$Internal$Properties$Translate$toCssString = function (_v0) {
-	var coords = _v0.a;
-	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px'))));
 };
 var $elm$core$Basics$pi = _Basics_pi;
 var $elm$core$Basics$pow = _Basics_pow;
@@ -6910,8 +7300,8 @@ var $author$project$Anim$Internal$Properties$Size$toString = function (size) {
 	var height = _v0.b;
 	return '(' + ($elm$core$String$fromFloat(width) + (', ' + ($elm$core$String$fromFloat(height) + ')')));
 };
-var $author$project$Anim$Internal$CSS$KeyframeAnimation$generate = F2(
-	function (elementId, properties) {
+var $author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix = F3(
+	function (elementId, suffix, properties) {
 		if ($elm$core$List$isEmpty(properties)) {
 			return _List_Nil;
 		} else {
@@ -7240,7 +7630,7 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$generate = F2(
 					}),
 				0,
 				$elm$core$String$toList(contentForHash));
-			var animationName = elementId + ('-anim-' + $elm$core$String$fromInt(betterHash));
+			var animationName = elementId + ('-anim-' + ($elm$core$String$fromInt(betterHash) + ($elm$core$String$isEmpty(suffix) ? '' : ('-' + suffix))));
 			var keyframesString = A2($author$project$Anim$Internal$CSS$KeyframeAnimation$buildKeyframesString, animationName, keyframeSteps);
 			var animatedProperties = _List_fromArray(
 				['transform', 'background-color', 'opacity', 'width', 'height']);
@@ -7249,397 +7639,6 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$generate = F2(
 					{animationName: animationName, delay: 0, duration: totalAnimationTime, easing: 'linear', keyframes: keyframesString, properties: animatedProperties}
 				]);
 		}
-	});
-var $author$project$Anim$Internal$Builders$Coordinate3D$toTuple = F2(
-	function (support, coord) {
-		var record = support.toRecord(coord);
-		return _Utils_Tuple2(record.x, record.y);
-	});
-var $author$project$Anim$Internal$Properties$Scale$toTuple = $author$project$Anim$Internal$Builders$Coordinate3D$toTuple($author$project$Anim$Internal$Properties$Scale$support);
-var $author$project$Anim$Internal$CSS$Transform$collectProcessedTransform = F2(
-	function (property, acc) {
-		switch (property.$) {
-			case 'ProcessedTranslateConfig':
-				var config = property.a;
-				return _Utils_update(
-					acc,
-					{
-						translate: 'translate3d(' + ($author$project$Anim$Internal$Properties$Translate$toCssString(config.end) + ')')
-					});
-			case 'ProcessedRotateConfig':
-				var config = property.a;
-				return _Utils_update(
-					acc,
-					{
-						rotate: $author$project$Anim$Internal$Properties$Rotate$to3DCssString(config.end)
-					});
-			case 'ProcessedScaleConfig':
-				var config = property.a;
-				var _v1 = $author$project$Anim$Internal$Properties$Scale$toTuple(config.end);
-				var x = _v1.a;
-				var y = _v1.b;
-				return _Utils_update(
-					acc,
-					{
-						scale: 'scale(' + ($elm$core$String$fromFloat(x) + (', ' + ($elm$core$String$fromFloat(y) + ')')))
-					});
-			default:
-				return acc;
-		}
-	});
-var $author$project$Anim$Internal$CSS$Transform$emptyTransformParts = {rotate: '', scale: '', translate: ''};
-var $author$project$Anim$Internal$CSS$Transform$extractTransformsFromProcessed = function (properties) {
-	return A3($elm$core$List$foldl, $author$project$Anim$Internal$CSS$Transform$collectProcessedTransform, $author$project$Anim$Internal$CSS$Transform$emptyTransformParts, properties);
-};
-var $elm$core$String$trim = _String_trim;
-var $author$project$Anim$Internal$CSS$Transform$generateFromProcessed = function (properties) {
-	var transformParts = $author$project$Anim$Internal$CSS$Transform$extractTransformsFromProcessed(properties);
-	return $elm$core$String$trim(transformParts.translate + (' ' + (transformParts.rotate + (' ' + transformParts.scale))));
-};
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
-var $elm$core$Basics$not = _Basics_not;
-var $elm$core$List$all = F2(
-	function (isOkay, list) {
-		return !A2(
-			$elm$core$List$any,
-			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
-			list);
-	});
-var $author$project$Anim$Internal$CSS$Transition$extractProcessedDelay = function (property) {
-	switch (property.$) {
-		case 'ProcessedTranslateConfig':
-			var config = property.a;
-			return config.delay;
-		case 'ProcessedRotateConfig':
-			var config = property.a;
-			return config.delay;
-		case 'ProcessedScaleConfig':
-			var config = property.a;
-			return config.delay;
-		default:
-			return 0;
-	}
-};
-var $author$project$Anim$Internal$CSS$Transition$extractProcessedDuration = function (property) {
-	switch (property.$) {
-		case 'ProcessedTranslateConfig':
-			var config = property.a;
-			return config.duration;
-		case 'ProcessedRotateConfig':
-			var config = property.a;
-			return config.duration;
-		case 'ProcessedScaleConfig':
-			var config = property.a;
-			return config.duration;
-		default:
-			return 0;
-	}
-};
-var $author$project$Anim$Internal$CSS$Transition$extractProcessedEasing = function (property) {
-	switch (property.$) {
-		case 'ProcessedTranslateConfig':
-			var config = property.a;
-			return config.easing;
-		case 'ProcessedRotateConfig':
-			var config = property.a;
-			return config.easing;
-		case 'ProcessedScaleConfig':
-			var config = property.a;
-			return config.easing;
-		default:
-			return $author$project$Anim$Easing$EaseInOut;
-	}
-};
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Anim$Internal$Easing$easingToCSS = function (easing) {
-	switch (easing.$) {
-		case 'CubicBezier':
-			var p1x = easing.a;
-			var p1y = easing.b;
-			var p2x = easing.c;
-			var p2y = easing.d;
-			return 'cubic-bezier(' + ($elm$core$String$fromFloat(p1x) + (', ' + ($elm$core$String$fromFloat(p1y) + (', ' + ($elm$core$String$fromFloat(p2x) + (', ' + ($elm$core$String$fromFloat(p2y) + ')')))))));
-		case 'Linear':
-			return 'linear';
-		case 'Ease':
-			return 'ease';
-		case 'EaseIn':
-			return 'ease-in';
-		case 'EaseOut':
-			return 'ease-out';
-		case 'EaseInOut':
-			return 'ease-in-out';
-		case 'SineIn':
-			return 'cubic-bezier(0.12, 0, 0.39, 0)';
-		case 'SineOut':
-			return 'cubic-bezier(0.61, 1, 0.88, 1)';
-		case 'SineInOut':
-			return 'cubic-bezier(0.37, 0, 0.63, 1)';
-		case 'QuadIn':
-			return 'cubic-bezier(0.11, 0, 0.5, 0)';
-		case 'QuadOut':
-			return 'cubic-bezier(0.5, 1, 0.89, 1)';
-		case 'QuadInOut':
-			return 'cubic-bezier(0.45, 0, 0.55, 1)';
-		case 'CubicIn':
-			return 'cubic-bezier(0.32, 0, 0.67, 0)';
-		case 'CubicOut':
-			return 'cubic-bezier(0.33, 1, 0.68, 1)';
-		case 'CubicInOut':
-			return 'cubic-bezier(0.65, 0, 0.35, 1)';
-		case 'QuartIn':
-			return 'cubic-bezier(0.5, 0, 0.75, 0)';
-		case 'QuartOut':
-			return 'cubic-bezier(0.25, 1, 0.5, 1)';
-		case 'QuartInOut':
-			return 'cubic-bezier(0.76, 0, 0.24, 1)';
-		case 'QuintIn':
-			return 'cubic-bezier(0.64, 0, 0.78, 0)';
-		case 'QuintOut':
-			return 'cubic-bezier(0.22, 1, 0.36, 1)';
-		case 'QuintInOut':
-			return 'cubic-bezier(0.83, 0, 0.17, 1)';
-		case 'ExpoIn':
-			return 'cubic-bezier(0.7, 0, 0.84, 0)';
-		case 'ExpoOut':
-			return 'cubic-bezier(0.16, 1, 0.3, 1)';
-		case 'ExpoInOut':
-			return 'cubic-bezier(0.87, 0, 0.13, 1)';
-		case 'CircIn':
-			return 'cubic-bezier(0.55, 0, 1, 0.45)';
-		case 'CircOut':
-			return 'cubic-bezier(0, 0.55, 0.45, 1)';
-		case 'CircInOut':
-			return 'cubic-bezier(0.85, 0, 0.15, 1)';
-		case 'BackIn':
-			return 'cubic-bezier(0.36, 0, 0.66, -0.56)';
-		case 'BackOut':
-			return 'cubic-bezier(0.34, 1.56, 0.64, 1)';
-		case 'BackInOut':
-			return 'cubic-bezier(0.68, -0.6, 0.32, 1.6)';
-		case 'BackInCustom':
-			return 'linear';
-		case 'BackOutCustom':
-			return 'linear';
-		case 'BackInOutCustom':
-			return 'linear';
-		case 'ElasticIn':
-			return 'cubic-bezier(0.55, 0.055, 0.675, 0.19)';
-		case 'ElasticOut':
-			return 'cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-		case 'ElasticInOut':
-			return 'cubic-bezier(0.445, 0.05, 0.55, 0.95)';
-		case 'ElasticInCustom':
-			return 'linear';
-		case 'ElasticOutCustom':
-			return 'linear';
-		case 'ElasticInOutCustom':
-			return 'linear';
-		case 'ElasticInAdvanced':
-			return 'linear';
-		case 'ElasticOutAdvanced':
-			return 'linear';
-		case 'ElasticInOutAdvanced':
-			return 'linear';
-		case 'BounceIn':
-			return 'cubic-bezier(0.6, 0.04, 0.98, 0.335)';
-		case 'BounceOut':
-			return 'cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-		case 'BounceInOut':
-			return 'cubic-bezier(0.445, 0.050, 0.550, 0.950)';
-		case 'BounceInCustom':
-			return 'linear';
-		case 'BounceOutCustom':
-			return 'linear';
-		case 'BounceInOutCustom':
-			return 'linear';
-		case 'BounceInAdvanced':
-			return 'linear';
-		case 'BounceOutAdvanced':
-			return 'linear';
-		default:
-			return 'linear';
-	}
-};
-var $author$project$Anim$Internal$Easing$toCSS = function (maybeEasing) {
-	if (maybeEasing.$ === 'Just') {
-		var easing = maybeEasing.a;
-		return $author$project$Anim$Internal$Easing$easingToCSS(easing);
-	} else {
-		return 'ease';
-	}
-};
-var $author$project$Anim$Internal$CSS$Transition$consolidateProcessedTiming = function (transformProps) {
-	if (!transformProps.b) {
-		return $elm$core$Maybe$Nothing;
-	} else {
-		var longestDuration = A2(
-			$elm$core$Maybe$withDefault,
-			0,
-			$elm$core$List$maximum(
-				A2($elm$core$List$map, $author$project$Anim$Internal$CSS$Transition$extractProcessedDuration, transformProps)));
-		var latestEasing = A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Anim$Easing$EaseInOut,
-			$elm$core$List$head(
-				A2($elm$core$List$map, $author$project$Anim$Internal$CSS$Transition$extractProcessedEasing, transformProps)));
-		var earliestDelay = A2(
-			$elm$core$Maybe$withDefault,
-			0,
-			$elm$core$List$minimum(
-				A2($elm$core$List$map, $author$project$Anim$Internal$CSS$Transition$extractProcessedDelay, transformProps)));
-		return $elm$core$Maybe$Just(
-			'transform ' + ($elm$core$String$fromInt(longestDuration) + ('ms ' + ($author$project$Anim$Internal$Easing$toCSS(
-				$elm$core$Maybe$Just(latestEasing)) + (' ' + ($elm$core$String$fromInt(earliestDelay) + 'ms'))))));
-	}
-};
-var $author$project$Anim$Internal$CSS$Transition$isProcessedTransformProperty = function (property) {
-	switch (property.$) {
-		case 'ProcessedTranslateConfig':
-			return true;
-		case 'ProcessedRotateConfig':
-			return true;
-		case 'ProcessedScaleConfig':
-			return true;
-		default:
-			return false;
-	}
-};
-var $elm$core$List$partition = F2(
-	function (pred, list) {
-		var step = F2(
-			function (x, _v0) {
-				var trues = _v0.a;
-				var falses = _v0.b;
-				return pred(x) ? _Utils_Tuple2(
-					A2($elm$core$List$cons, x, trues),
-					falses) : _Utils_Tuple2(
-					trues,
-					A2($elm$core$List$cons, x, falses));
-			});
-		return A3(
-			$elm$core$List$foldr,
-			step,
-			_Utils_Tuple2(_List_Nil, _List_Nil),
-			list);
-	});
-var $author$project$Anim$Internal$CSS$Transition$transitionFromProcessedNonTransform = function (property) {
-	switch (property.$) {
-		case 'ProcessedBackgroundColorConfig':
-			var config = property.a;
-			return $elm$core$Maybe$Just(
-				'background-color ' + ($elm$core$String$fromInt(config.duration) + ('ms ' + ($author$project$Anim$Internal$Easing$toCSS(
-					$elm$core$Maybe$Just(config.easing)) + (' ' + ($elm$core$String$fromInt(config.delay) + 'ms'))))));
-		case 'ProcessedOpacityConfig':
-			var config = property.a;
-			return $elm$core$Maybe$Just(
-				'opacity ' + ($elm$core$String$fromInt(config.duration) + ('ms ' + ($author$project$Anim$Internal$Easing$toCSS(
-					$elm$core$Maybe$Just(config.easing)) + (' ' + ($elm$core$String$fromInt(config.delay) + 'ms'))))));
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Anim$Internal$CSS$Transition$generateFromProcessed = function (properties) {
-	var allDurationsZero = A2(
-		$elm$core$List$all,
-		function (prop) {
-			switch (prop.$) {
-				case 'ProcessedTranslateConfig':
-					var config = prop.a;
-					return !config.duration;
-				case 'ProcessedRotateConfig':
-					var config = prop.a;
-					return !config.duration;
-				case 'ProcessedScaleConfig':
-					var config = prop.a;
-					return !config.duration;
-				case 'ProcessedBackgroundColorConfig':
-					var config = prop.a;
-					return !config.duration;
-				case 'ProcessedOpacityConfig':
-					var config = prop.a;
-					return !config.duration;
-				default:
-					return true;
-			}
-		},
-		properties);
-	if (allDurationsZero) {
-		return 'none';
-	} else {
-		var _v0 = A2($elm$core$List$partition, $author$project$Anim$Internal$CSS$Transition$isProcessedTransformProperty, properties);
-		var transformProps = _v0.a;
-		var nonTransformProps = _v0.b;
-		var nonTransformTransitions = A2($elm$core$List$filterMap, $author$project$Anim$Internal$CSS$Transition$transitionFromProcessedNonTransform, nonTransformProps);
-		var transformTransition = function () {
-			var _v1 = $author$project$Anim$Internal$CSS$Transition$consolidateProcessedTiming(transformProps);
-			if (_v1.$ === 'Just') {
-				var transition = _v1.a;
-				return _List_fromArray(
-					[transition]);
-			} else {
-				return _List_Nil;
-			}
-		}();
-		var allTransitions = _Utils_ap(transformTransition, nonTransformTransitions);
-		return A2($elm$core$String$join, ', ', allTransitions);
-	}
-};
-var $author$project$Anim$Internal$CSS$Transform$getTransformByName = F2(
-	function (parts, name) {
-		switch (name) {
-			case 'translate':
-				return $elm$core$String$isEmpty(parts.translate) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(parts.translate);
-			case 'rotate':
-				return $elm$core$String$isEmpty(parts.rotate) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(parts.rotate);
-			case 'scale':
-				return $elm$core$String$isEmpty(parts.scale) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(parts.scale);
-			default:
-				return $elm$core$Maybe$Nothing;
-		}
-	});
-var $author$project$Anim$Internal$CSS$Transform$generateFromProcessedWithOrder = F2(
-	function (order, properties) {
-		var transformParts = $author$project$Anim$Internal$CSS$Transform$extractTransformsFromProcessed(properties);
-		var orderedTransforms = A2(
-			$elm$core$List$filterMap,
-			$author$project$Anim$Internal$CSS$Transform$getTransformByName(transformParts),
-			order);
-		return $elm$core$String$trim(
-			A2($elm$core$String$join, ' ', orderedTransforms));
 	});
 var $author$project$Anim$Internal$CSS$transformOrderToString = function (order) {
 	switch (order.$) {
@@ -7651,8 +7650,8 @@ var $author$project$Anim$Internal$CSS$transformOrderToString = function (order) 
 			return 'scale';
 	}
 };
-var $author$project$Anim$Internal$CSS$generateElementAnimation = F3(
-	function (maybeOrder, elementId, elementConfig) {
+var $author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix = F4(
+	function (maybeOrder, suffix, elementId, elementConfig) {
 		var processed = A2(
 			$author$project$Anim$Internal$Builder$processElement,
 			{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil},
@@ -7710,9 +7709,13 @@ var $author$project$Anim$Internal$CSS$generateElementAnimation = F3(
 					]),
 				_Utils_ap(colorStyles, opacityStyles)));
 		return {
-			animationLayers: A2($author$project$Anim$Internal$CSS$KeyframeAnimation$generate, elementId, elementConfig.properties),
+			animationLayers: A3($author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix, elementId, suffix, elementConfig.properties),
 			styles: allStyles
 		};
+	});
+var $author$project$Anim$Internal$CSS$generateElementAnimation = F3(
+	function (maybeOrder, elementId, elementConfig) {
+		return A4($author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix, maybeOrder, '', elementId, elementConfig);
 	});
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
 	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil});
@@ -7824,7 +7827,7 @@ var $author$project$Anim$Internal$Builder$markDirty = function (_v0) {
 var $author$project$Anim$Internal$CSS$init = function (propertyInitializers) {
 	if (!propertyInitializers.b) {
 		return $author$project$Anim$Internal$CSS$AnimState(
-			{builder: $author$project$Anim$Internal$Builder$init, elementAnimations: $elm$core$Dict$empty, elementStates: $elm$core$Dict$empty});
+			{builder: $author$project$Anim$Internal$Builder$init, elementAnimations: $elm$core$Dict$empty, elementStates: $elm$core$Dict$empty, restartCounters: $elm$core$Dict$empty});
 	} else {
 		var configuredBuilder = A3(
 			$elm$core$List$foldl,
@@ -7850,7 +7853,8 @@ var $author$project$Anim$Internal$CSS$init = function (propertyInitializers) {
 						function (id) {
 							return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$Complete);
 						},
-						elementIds))
+						elementIds)),
+				restartCounters: $elm$core$Dict$empty
 			});
 	}
 };
@@ -8429,25 +8433,24 @@ var $author$project$Anim$Property$Translate$initXY = F4(
 					y,
 					A2($author$project$Anim$Internal$Builders$Translate$for, elementId, animBuilder))));
 	});
-var $author$project$Common$Animations$Controls$init = function (animationAreaWidth) {
-	var xPos = (animationAreaWidth / 2) - 25;
+var $author$project$Common$Animations$Controls$init = function (animAreaWidth) {
+	var xPos = (animAreaWidth / 2) - 25;
 	return A3($author$project$Anim$Property$Translate$initXY, $author$project$Common$Animations$Controls$elementId, xPos, 50);
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$Engines$CSS$Controls$Main$init = function (_v0) {
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$init = function (_v0) {
 	var window = _v0.window;
-	var animationAreaWidth = A2($elm$core$Basics$min, 500, window.width - 40);
+	var animAreaWidth = A2($elm$core$Basics$min, 500, window.width - 40);
 	var initialAnimState = $author$project$Anim$Engine$CSS$init(
 		_List_fromArray(
 			[
-				$author$project$Common$Animations$Controls$init(animationAreaWidth)
+				$author$project$Common$Animations$Controls$init(animAreaWidth)
 			]));
 	return _Utils_Tuple2(
 		{
-			animationAreaSize: {height: 350, width: animationAreaWidth},
-			animationState: initialAnimState,
-			status: $author$project$Engines$CSS$Controls$Main$Idle
+			animAreaSize: {height: 350, width: animAreaWidth},
+			animState: initialAnimState
 		},
 		$elm$core$Platform$Cmd$none);
 };
@@ -8467,8 +8470,7 @@ var $author$project$Anim$Internal$CSS$animate = F2(
 			$author$project$Anim$Internal$Builder$elements(builder_));
 		return $author$project$Anim$Internal$CSS$AnimState(
 			{
-				builder: $author$project$Anim$Internal$Builder$clearCurrentElement(
-					$author$project$Anim$Internal$Builder$markDirty(builder_)),
+				builder: $author$project$Anim$Internal$Builder$clearCurrentElement(builder_),
 				elementAnimations: A2(
 					$elm$core$Dict$map,
 					$author$project$Anim$Internal$CSS$generateElementAnimation($elm$core$Maybe$Nothing),
@@ -8479,7 +8481,8 @@ var $author$project$Anim$Internal$CSS$animate = F2(
 						function (id) {
 							return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$NotStarted);
 						},
-						elementIds))
+						elementIds)),
+				restartCounters: $elm$core$Dict$empty
 			});
 	});
 var $author$project$Anim$Engine$CSS$animate = $author$project$Anim$Internal$CSS$animate;
@@ -8985,32 +8988,222 @@ var $author$project$Anim$Internal$CSS$pauseAnimation = F2(
 				{elementAnimations: updatedAnimations}));
 	});
 var $author$project$Anim$Engine$CSS$pause = $author$project$Anim$Internal$CSS$pauseAnimation;
-var $author$project$Anim$Internal$Builder$duration = F2(
-	function (ms, _v0) {
-		var data = _v0.a;
-		return $author$project$Anim$Internal$Builder$AnimBuilder(
-			_Utils_update(
-				data,
-				{
-					globalTiming: $elm$core$Maybe$Just(
-						$author$project$Anim$Internal$Timing$TimeSpec$Duration(ms))
-				}));
-	});
-var $author$project$Anim$Internal$Builder$easing = F2(
-	function (easingValue, _v0) {
-		var data = _v0.a;
-		return $author$project$Anim$Internal$Builder$AnimBuilder(
-			_Utils_update(
-				data,
-				{
-					globalEasing: $elm$core$Maybe$Just(easingValue)
-				}));
-	});
-var $author$project$Anim$Internal$CSS$easing = $author$project$Anim$Internal$Builder$easing;
 var $author$project$Anim$Internal$Properties$Scale$fromUniform = function (s) {
 	return $author$project$Anim$Internal$Properties$Scale$Scale(
 		{x: s, y: s, z: s});
 };
+var $author$project$Anim$Internal$CSS$generateStylesOnly = F2(
+	function (maybeOrder, elementConfig) {
+		var processed = A2(
+			$author$project$Anim$Internal$Builder$processElement,
+			{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil},
+			elementConfig);
+		var processedProps = processed.properties;
+		var transforms = function () {
+			if (maybeOrder.$ === 'Nothing') {
+				return $author$project$Anim$Internal$CSS$Transform$generateFromProcessed(processedProps);
+			} else {
+				var order = maybeOrder.a;
+				var orderStrings = A2($elm$core$List$map, $author$project$Anim$Internal$CSS$transformOrderToString, order);
+				return A2($author$project$Anim$Internal$CSS$Transform$generateFromProcessedWithOrder, orderStrings, processedProps);
+			}
+		}();
+		var opacityStyles = A2(
+			$elm$core$List$filterMap,
+			function (prop) {
+				if (prop.$ === 'ProcessedOpacityConfig') {
+					var config = prop.a;
+					return $elm$core$Maybe$Just(
+						_Utils_Tuple2(
+							'opacity',
+							$author$project$Anim$Internal$Properties$Opacity$toString(config.end)));
+				} else {
+					return $elm$core$Maybe$Nothing;
+				}
+			},
+			processedProps);
+		var colorStyles = A2(
+			$elm$core$List$filterMap,
+			function (prop) {
+				if (prop.$ === 'ProcessedBackgroundColorConfig') {
+					var config = prop.a;
+					return $elm$core$Maybe$Just(
+						_Utils_Tuple2(
+							'background-color',
+							$author$project$Anim$Internal$Properties$Color$toCssString(config.end)));
+				} else {
+					return $elm$core$Maybe$Nothing;
+				}
+			},
+			processedProps);
+		var allStyles = A2(
+			$elm$core$List$filter,
+			function (_v0) {
+				var key = _v0.a;
+				var value = _v0.b;
+				return (key === 'animation') || (!$elm$core$String$isEmpty(value));
+			},
+			_Utils_ap(
+				_List_fromArray(
+					[
+						_Utils_Tuple2('transform', transforms),
+						_Utils_Tuple2('animation', 'none')
+					]),
+				_Utils_ap(colorStyles, opacityStyles)));
+		return {animationLayers: _List_Nil, styles: allStyles};
+	});
+var $author$project$Anim$Internal$CSS$setStylesInstantly = F3(
+	function (elementId, elementConfig, _v0) {
+		var state = _v0.a;
+		var elementAnimation = A2($author$project$Anim$Internal$CSS$generateStylesOnly, $elm$core$Maybe$Nothing, elementConfig);
+		return $author$project$Anim$Internal$CSS$AnimState(
+			_Utils_update(
+				state,
+				{
+					elementAnimations: A3($elm$core$Dict$insert, elementId, elementAnimation, state.elementAnimations),
+					elementStates: A3($elm$core$Dict$insert, elementId, $author$project$Anim$Internal$CSS$Complete, state.elementStates)
+				}));
+	});
+var $author$project$Anim$Internal$CSS$reset = F2(
+	function (elementId, _v0) {
+		var state = _v0.a;
+		var _v1 = A2($author$project$Anim$Internal$Builder$getElementConfig, elementId, state.builder);
+		if (_v1.$ === 'Nothing') {
+			return $author$project$Anim$Internal$CSS$AnimState(state);
+		} else {
+			var elementConfig = _v1.a;
+			var makeInstantConfig = function (value) {
+				return {
+					delay: $elm$core$Maybe$Nothing,
+					distance: 0,
+					duration: 0,
+					easing: $elm$core$Maybe$Just($author$project$Anim$Easing$Linear),
+					end: value,
+					isDirty: true,
+					speed: 0,
+					start: $elm$core$Maybe$Just(value),
+					timing: $elm$core$Maybe$Just(
+						$author$project$Anim$Internal$Timing$TimeSpec$Duration(0))
+				};
+			};
+			var properties = A2(
+				$elm$core$List$filterMap,
+				function (prop) {
+					switch (prop.$) {
+						case 'TranslateConfig':
+							var config = prop.a;
+							return $elm$core$Maybe$Just(
+								$author$project$Anim$Internal$Builder$TranslateConfig(
+									makeInstantConfig(
+										A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Properties$Translate$default, config.start))));
+						case 'ScaleConfig':
+							var config = prop.a;
+							return $elm$core$Maybe$Just(
+								$author$project$Anim$Internal$Builder$ScaleConfig(
+									makeInstantConfig(
+										A2(
+											$elm$core$Maybe$withDefault,
+											$author$project$Anim$Internal$Properties$Scale$fromUniform(1.0),
+											config.start))));
+						case 'RotateConfig':
+							var config = prop.a;
+							return $elm$core$Maybe$Just(
+								$author$project$Anim$Internal$Builder$RotateConfig(
+									makeInstantConfig(
+										A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Properties$Rotate$default, config.start))));
+						case 'OpacityConfig':
+							var config = prop.a;
+							return $elm$core$Maybe$Just(
+								$author$project$Anim$Internal$Builder$OpacityConfig(
+									makeInstantConfig(
+										A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Properties$Opacity$default, config.start))));
+						case 'BackgroundColorConfig':
+							var config = prop.a;
+							return $elm$core$Maybe$Just(
+								$author$project$Anim$Internal$Builder$BackgroundColorConfig(
+									makeInstantConfig(
+										A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Properties$BackgroundColor$default, config.start))));
+						case 'SizeConfig':
+							var config = prop.a;
+							return $elm$core$Maybe$Just(
+								$author$project$Anim$Internal$Builder$SizeConfig(
+									makeInstantConfig(
+										A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Properties$Size$default, config.start))));
+						default:
+							return $elm$core$Maybe$Nothing;
+					}
+				},
+				elementConfig.properties);
+			var newElementConfig = {properties: properties};
+			return $elm$core$List$isEmpty(properties) ? $author$project$Anim$Internal$CSS$AnimState(state) : A3(
+				$author$project$Anim$Internal$CSS$setStylesInstantly,
+				elementId,
+				newElementConfig,
+				$author$project$Anim$Internal$CSS$AnimState(state));
+		}
+	});
+var $author$project$Anim$Engine$CSS$reset = $author$project$Anim$Internal$CSS$reset;
+var $author$project$Anim$Internal$CSS$restartAnimation = F2(
+	function (elementId, animState) {
+		var state = animState.a;
+		var _v0 = A2($author$project$Anim$Internal$Builder$getElementConfig, elementId, state.builder);
+		if (_v0.$ === 'Nothing') {
+			return animState;
+		} else {
+			var elementConfig = _v0.a;
+			var resetState = A2($author$project$Anim$Internal$CSS$reset, elementId, animState);
+			var currentCounter = A2(
+				$elm$core$Maybe$withDefault,
+				0,
+				A2($elm$core$Dict$get, elementId, state.restartCounters));
+			var newCounter = currentCounter + 1;
+			var suffix = 'r' + $elm$core$String$fromInt(newCounter);
+			var elementAnimation = A4($author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix, $elm$core$Maybe$Nothing, suffix, elementId, elementConfig);
+			var _v1 = resetState;
+			var resetStateData = _v1.a;
+			return $author$project$Anim$Internal$CSS$AnimState(
+				_Utils_update(
+					resetStateData,
+					{
+						elementAnimations: A3($elm$core$Dict$insert, elementId, elementAnimation, resetStateData.elementAnimations),
+						elementStates: A3($elm$core$Dict$insert, elementId, $author$project$Anim$Internal$CSS$NotStarted, resetStateData.elementStates),
+						restartCounters: A3($elm$core$Dict$insert, elementId, newCounter, resetStateData.restartCounters)
+					}));
+		}
+	});
+var $author$project$Anim$Engine$CSS$restart = $author$project$Anim$Internal$CSS$restartAnimation;
+var $author$project$Anim$Internal$CSS$resumeAnimation = F2(
+	function (elementId, _v0) {
+		var state = _v0.a;
+		var updatedAnimations = A3(
+			$elm$core$Dict$update,
+			elementId,
+			$elm$core$Maybe$map(
+				function (element) {
+					var filteredStyles = A2(
+						$elm$core$List$filter,
+						function (_v1) {
+							var key = _v1.a;
+							return key !== 'animation-play-state';
+						},
+						element.styles);
+					var newStyles = _Utils_ap(
+						filteredStyles,
+						_List_fromArray(
+							[
+								_Utils_Tuple2('animation-play-state', 'running')
+							]));
+					return _Utils_update(
+						element,
+						{styles: newStyles});
+				}),
+			state.elementAnimations);
+		return $author$project$Anim$Internal$CSS$AnimState(
+			_Utils_update(
+				state,
+				{elementAnimations: updatedAnimations}));
+	});
+var $author$project$Anim$Engine$CSS$resume = $author$project$Anim$Internal$CSS$resumeAnimation;
 var $author$project$Anim$Internal$Builder$processAnimationData = function (_v0) {
 	var data = _v0.a;
 	var processedElements = A2(
@@ -9160,346 +9353,75 @@ var $author$project$Anim$Internal$CSS$getTranslateRange = F2(
 			},
 			A2($elm$core$Dict$get, elementId, processedData.elements));
 	});
-var $author$project$Anim$Internal$CSS$resetAnimation = F2(
-	function (elementId, animState) {
-		var getStartValue = F2(
-			function (maybeStart, defaultValue) {
-				return A2($elm$core$Maybe$withDefault, defaultValue, maybeStart);
-			});
-		var addPropertyIfExists = F3(
-			function (maybeRange, toConfig, builderState) {
-				if (maybeRange.$ === 'Just') {
-					var range = maybeRange.a;
-					return A2(
-						$author$project$Anim$Internal$Builders$Property$add,
-						toConfig(range),
-						builderState);
-				} else {
-					return builderState;
-				}
-			});
-		var withAllProperties = function (b) {
-			return A3(
-				addPropertyIfExists,
-				A2($author$project$Anim$Internal$CSS$getSizeRange, elementId, animState),
-				function (range) {
-					var startSize = A2(getStartValue, range.start, $author$project$Anim$Internal$Properties$Size$default);
-					return $author$project$Anim$Internal$Builder$SizeConfig(
-						{
-							delay: $elm$core$Maybe$Nothing,
-							distance: 0,
-							duration: 0,
-							easing: $elm$core$Maybe$Just($author$project$Anim$Easing$Linear),
-							end: startSize,
-							isDirty: true,
-							speed: 0,
-							start: $elm$core$Maybe$Just(startSize),
-							timing: $elm$core$Maybe$Just(
-								$author$project$Anim$Internal$Timing$TimeSpec$Duration(0))
-						});
-				},
-				A3(
-					addPropertyIfExists,
-					A2($author$project$Anim$Internal$CSS$getBackgroundColorRange, elementId, animState),
-					function (range) {
-						var startColor = A2(getStartValue, range.start, $author$project$Anim$Internal$Properties$BackgroundColor$default);
-						return $author$project$Anim$Internal$Builder$BackgroundColorConfig(
-							{
-								delay: $elm$core$Maybe$Nothing,
-								distance: 0,
-								duration: 0,
-								easing: $elm$core$Maybe$Just($author$project$Anim$Easing$Linear),
-								end: startColor,
-								isDirty: true,
-								speed: 0,
-								start: $elm$core$Maybe$Just(startColor),
-								timing: $elm$core$Maybe$Just(
-									$author$project$Anim$Internal$Timing$TimeSpec$Duration(0))
-							});
-					},
-					A3(
-						addPropertyIfExists,
-						A2($author$project$Anim$Internal$CSS$getOpacityRange, elementId, animState),
-						function (range) {
-							var startOpacity = A2(getStartValue, range.start, $author$project$Anim$Internal$Properties$Opacity$default);
-							return $author$project$Anim$Internal$Builder$OpacityConfig(
-								{
-									delay: $elm$core$Maybe$Nothing,
-									distance: 0,
-									duration: 0,
-									easing: $elm$core$Maybe$Just($author$project$Anim$Easing$Linear),
-									end: startOpacity,
-									isDirty: true,
-									speed: 0,
-									start: $elm$core$Maybe$Just(startOpacity),
-									timing: $elm$core$Maybe$Just(
-										$author$project$Anim$Internal$Timing$TimeSpec$Duration(0))
-								});
-						},
-						A3(
-							addPropertyIfExists,
-							A2($author$project$Anim$Internal$CSS$getRotateRange, elementId, animState),
-							function (range) {
-								var startRotate = A2(getStartValue, range.start, $author$project$Anim$Internal$Properties$Rotate$default);
-								return $author$project$Anim$Internal$Builder$RotateConfig(
-									{
-										delay: $elm$core$Maybe$Nothing,
-										distance: 0,
-										duration: 0,
-										easing: $elm$core$Maybe$Just($author$project$Anim$Easing$Linear),
-										end: startRotate,
-										isDirty: true,
-										speed: 0,
-										start: $elm$core$Maybe$Just(startRotate),
-										timing: $elm$core$Maybe$Just(
-											$author$project$Anim$Internal$Timing$TimeSpec$Duration(0))
-									});
-							},
-							A3(
-								addPropertyIfExists,
-								A2($author$project$Anim$Internal$CSS$getScaleRange, elementId, animState),
-								function (range) {
-									var startScale = A2(
-										getStartValue,
-										range.start,
-										$author$project$Anim$Internal$Properties$Scale$fromUniform(1.0));
-									return $author$project$Anim$Internal$Builder$ScaleConfig(
-										{
-											delay: $elm$core$Maybe$Nothing,
-											distance: 0,
-											duration: 0,
-											easing: $elm$core$Maybe$Just($author$project$Anim$Easing$Linear),
-											end: startScale,
-											isDirty: true,
-											speed: 0,
-											start: $elm$core$Maybe$Just(startScale),
-											timing: $elm$core$Maybe$Just(
-												$author$project$Anim$Internal$Timing$TimeSpec$Duration(0))
-										});
-								},
-								A3(
-									addPropertyIfExists,
-									A2($author$project$Anim$Internal$CSS$getTranslateRange, elementId, animState),
-									function (range) {
-										var startPos = A2(getStartValue, range.start, $author$project$Anim$Internal$Properties$Translate$default);
-										return $author$project$Anim$Internal$Builder$TranslateConfig(
-											{
-												delay: $elm$core$Maybe$Nothing,
-												distance: 0,
-												duration: 0,
-												easing: $elm$core$Maybe$Just($author$project$Anim$Easing$Linear),
-												end: startPos,
-												isDirty: true,
-												speed: 0,
-												start: $elm$core$Maybe$Just(startPos),
-												timing: $elm$core$Maybe$Just(
-													$author$project$Anim$Internal$Timing$TimeSpec$Duration(0))
-											});
-									},
-									A2(
-										$author$project$Anim$Internal$Builder$for,
-										elementId,
-										A2(
-											$author$project$Anim$Internal$CSS$easing,
-											$author$project$Anim$Easing$Linear,
-											A2($author$project$Anim$Internal$Builder$duration, 0, b)))))))));
-		};
-		return A2($author$project$Anim$Internal$CSS$animate, animState, withAllProperties);
-	});
-var $author$project$Anim$Engine$CSS$reset = $author$project$Anim$Internal$CSS$resetAnimation;
-var $author$project$Anim$Internal$CSS$getElementAnimation = F2(
-	function (elementId, _v0) {
-		var state = _v0.a;
-		return A2($elm$core$Dict$get, elementId, state.elementAnimations);
-	});
-var $author$project$Anim$Internal$CSS$restartAnimation = F2(
-	function (elementId, animState) {
-		var state = animState.a;
-		var _v0 = A2($author$project$Anim$Internal$CSS$getElementAnimation, elementId, animState);
-		if (_v0.$ === 'Nothing') {
-			return animState;
-		} else {
-			var updatedElements = A3($elm$core$Dict$insert, elementId, $author$project$Anim$Internal$CSS$NotStarted, state.elementStates);
-			return $author$project$Anim$Internal$CSS$AnimState(
-				_Utils_update(
-					state,
-					{elementStates: updatedElements}));
-		}
-	});
-var $author$project$Anim$Engine$CSS$restart = $author$project$Anim$Internal$CSS$restartAnimation;
-var $author$project$Anim$Internal$CSS$resumeAnimation = F2(
-	function (elementId, _v0) {
-		var state = _v0.a;
-		var updatedAnimations = A3(
-			$elm$core$Dict$update,
-			elementId,
-			$elm$core$Maybe$map(
-				function (element) {
-					var filteredStyles = A2(
-						$elm$core$List$filter,
-						function (_v1) {
-							var key = _v1.a;
-							return key !== 'animation-play-state';
-						},
-						element.styles);
-					var newStyles = _Utils_ap(
-						filteredStyles,
-						_List_fromArray(
-							[
-								_Utils_Tuple2('animation-play-state', 'running')
-							]));
-					return _Utils_update(
-						element,
-						{styles: newStyles});
-				}),
-			state.elementAnimations);
-		return $author$project$Anim$Internal$CSS$AnimState(
-			_Utils_update(
-				state,
-				{elementAnimations: updatedAnimations}));
-	});
-var $author$project$Anim$Engine$CSS$resume = $author$project$Anim$Internal$CSS$resumeAnimation;
 var $author$project$Anim$Internal$CSS$stopAnimation = F2(
 	function (elementId, animState) {
-		var addPropertyIfExists = F3(
-			function (maybeRange, toConfig, builderState) {
-				if (maybeRange.$ === 'Just') {
-					var range = maybeRange.a;
-					return A2(
-						$author$project$Anim$Internal$Builders$Property$add,
-						toConfig(range),
-						builderState);
-				} else {
-					return builderState;
-				}
-			});
-		var withAllProperties = function (b) {
-			return A3(
-				addPropertyIfExists,
-				A2($author$project$Anim$Internal$CSS$getSizeRange, elementId, animState),
-				function (range) {
-					var endSize = range.end;
-					return $author$project$Anim$Internal$Builder$SizeConfig(
-						{
-							delay: $elm$core$Maybe$Nothing,
-							distance: 0,
-							duration: 0,
-							easing: $elm$core$Maybe$Just($author$project$Anim$Easing$Linear),
-							end: endSize,
-							isDirty: true,
-							speed: 0,
-							start: $elm$core$Maybe$Just(endSize),
-							timing: $elm$core$Maybe$Just(
-								$author$project$Anim$Internal$Timing$TimeSpec$Duration(0))
-						});
-				},
-				A3(
-					addPropertyIfExists,
-					A2($author$project$Anim$Internal$CSS$getBackgroundColorRange, elementId, animState),
-					function (range) {
-						var endColor = range.end;
-						return $author$project$Anim$Internal$Builder$BackgroundColorConfig(
-							{
-								delay: $elm$core$Maybe$Nothing,
-								distance: 0,
-								duration: 0,
-								easing: $elm$core$Maybe$Just($author$project$Anim$Easing$Linear),
-								end: endColor,
-								isDirty: true,
-								speed: 0,
-								start: $elm$core$Maybe$Just(endColor),
-								timing: $elm$core$Maybe$Just(
-									$author$project$Anim$Internal$Timing$TimeSpec$Duration(0))
-							});
-					},
-					A3(
-						addPropertyIfExists,
-						A2($author$project$Anim$Internal$CSS$getOpacityRange, elementId, animState),
-						function (range) {
-							var endOpacity = range.end;
-							return $author$project$Anim$Internal$Builder$OpacityConfig(
-								{
-									delay: $elm$core$Maybe$Nothing,
-									distance: 0,
-									duration: 0,
-									easing: $elm$core$Maybe$Just($author$project$Anim$Easing$Linear),
-									end: endOpacity,
-									isDirty: true,
-									speed: 0,
-									start: $elm$core$Maybe$Just(endOpacity),
-									timing: $elm$core$Maybe$Just(
-										$author$project$Anim$Internal$Timing$TimeSpec$Duration(0))
-								});
-						},
-						A3(
-							addPropertyIfExists,
-							A2($author$project$Anim$Internal$CSS$getRotateRange, elementId, animState),
-							function (range) {
-								var endRotate = range.end;
-								return $author$project$Anim$Internal$Builder$RotateConfig(
-									{
-										delay: $elm$core$Maybe$Nothing,
-										distance: 0,
-										duration: 0,
-										easing: $elm$core$Maybe$Just($author$project$Anim$Easing$Linear),
-										end: endRotate,
-										isDirty: true,
-										speed: 0,
-										start: $elm$core$Maybe$Just(endRotate),
-										timing: $elm$core$Maybe$Just(
-											$author$project$Anim$Internal$Timing$TimeSpec$Duration(0))
-									});
-							},
-							A3(
-								addPropertyIfExists,
-								A2($author$project$Anim$Internal$CSS$getScaleRange, elementId, animState),
-								function (range) {
-									var endScale = range.end;
-									return $author$project$Anim$Internal$Builder$ScaleConfig(
-										{
-											delay: $elm$core$Maybe$Nothing,
-											distance: 0,
-											duration: 0,
-											easing: $elm$core$Maybe$Just($author$project$Anim$Easing$Linear),
-											end: endScale,
-											isDirty: true,
-											speed: 0,
-											start: $elm$core$Maybe$Just(endScale),
-											timing: $elm$core$Maybe$Just(
-												$author$project$Anim$Internal$Timing$TimeSpec$Duration(0))
-										});
-								},
-								A3(
-									addPropertyIfExists,
-									A2($author$project$Anim$Internal$CSS$getTranslateRange, elementId, animState),
-									function (range) {
-										var endPos = range.end;
-										return $author$project$Anim$Internal$Builder$TranslateConfig(
-											{
-												delay: $elm$core$Maybe$Nothing,
-												distance: 0,
-												duration: 0,
-												easing: $elm$core$Maybe$Just($author$project$Anim$Easing$Linear),
-												end: endPos,
-												isDirty: true,
-												speed: 0,
-												start: $elm$core$Maybe$Just(endPos),
-												timing: $elm$core$Maybe$Just(
-													$author$project$Anim$Internal$Timing$TimeSpec$Duration(0))
-											});
-									},
-									A2(
-										$author$project$Anim$Internal$Builder$for,
-										elementId,
-										A2(
-											$author$project$Anim$Internal$CSS$easing,
-											$author$project$Anim$Easing$Linear,
-											A2($author$project$Anim$Internal$Builder$duration, 0, b)))))))));
+		var makeInstantConfig = function (value) {
+			return {
+				delay: $elm$core$Maybe$Nothing,
+				distance: 0,
+				duration: 0,
+				easing: $elm$core$Maybe$Just($author$project$Anim$Easing$Linear),
+				end: value,
+				isDirty: true,
+				speed: 0,
+				start: $elm$core$Maybe$Just(value),
+				timing: $elm$core$Maybe$Just(
+					$author$project$Anim$Internal$Timing$TimeSpec$Duration(0))
+			};
 		};
-		return A2($author$project$Anim$Internal$CSS$animate, animState, withAllProperties);
+		var properties = A2(
+			$elm$core$List$filterMap,
+			$elm$core$Basics$identity,
+			_List_fromArray(
+				[
+					A2(
+					$elm$core$Maybe$map,
+					function (range) {
+						return $author$project$Anim$Internal$Builder$TranslateConfig(
+							makeInstantConfig(range.end));
+					},
+					A2($author$project$Anim$Internal$CSS$getTranslateRange, elementId, animState)),
+					A2(
+					$elm$core$Maybe$map,
+					function (range) {
+						return $author$project$Anim$Internal$Builder$ScaleConfig(
+							makeInstantConfig(range.end));
+					},
+					A2($author$project$Anim$Internal$CSS$getScaleRange, elementId, animState)),
+					A2(
+					$elm$core$Maybe$map,
+					function (range) {
+						return $author$project$Anim$Internal$Builder$RotateConfig(
+							makeInstantConfig(range.end));
+					},
+					A2($author$project$Anim$Internal$CSS$getRotateRange, elementId, animState)),
+					A2(
+					$elm$core$Maybe$map,
+					function (range) {
+						return $author$project$Anim$Internal$Builder$OpacityConfig(
+							makeInstantConfig(range.end));
+					},
+					A2($author$project$Anim$Internal$CSS$getOpacityRange, elementId, animState)),
+					A2(
+					$elm$core$Maybe$map,
+					function (range) {
+						return $author$project$Anim$Internal$Builder$BackgroundColorConfig(
+							makeInstantConfig(range.end));
+					},
+					A2($author$project$Anim$Internal$CSS$getBackgroundColorRange, elementId, animState)),
+					A2(
+					$elm$core$Maybe$map,
+					function (range) {
+						return $author$project$Anim$Internal$Builder$SizeConfig(
+							makeInstantConfig(range.end));
+					},
+					A2($author$project$Anim$Internal$CSS$getSizeRange, elementId, animState))
+				]));
+		var elementConfig = {properties: properties};
+		return $elm$core$List$isEmpty(properties) ? animState : A3($author$project$Anim$Internal$CSS$setStylesInstantly, elementId, elementConfig, animState);
 	});
 var $author$project$Anim$Engine$CSS$stop = $author$project$Anim$Internal$CSS$stopAnimation;
-var $author$project$Engines$CSS$Controls$Main$update = F2(
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'Animate':
@@ -9507,7 +9429,7 @@ var $author$project$Engines$CSS$Controls$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animationState: A2($author$project$Anim$Engine$CSS$animate, model.animationState, $author$project$Common$Animations$Controls$animate)
+							animState: A2($author$project$Anim$Engine$CSS$animate, model.animState, $author$project$Common$Animations$Controls$animate)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Stop':
@@ -9515,23 +9437,7 @@ var $author$project$Engines$CSS$Controls$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animationState: A2($author$project$Anim$Engine$CSS$stop, $author$project$Common$Animations$Controls$elementId, model.animationState)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'Pause':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							animationState: A2($author$project$Anim$Engine$CSS$pause, $author$project$Common$Animations$Controls$elementId, model.animationState)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'Resume':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							animationState: A2($author$project$Anim$Engine$CSS$resume, $author$project$Common$Animations$Controls$elementId, model.animationState)
+							animState: A2($author$project$Anim$Engine$CSS$stop, $author$project$Common$Animations$Controls$elementId, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Reset':
@@ -9539,7 +9445,23 @@ var $author$project$Engines$CSS$Controls$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animationState: A2($author$project$Anim$Engine$CSS$reset, $author$project$Common$Animations$Controls$elementId, model.animationState)
+							animState: A2($author$project$Anim$Engine$CSS$reset, $author$project$Common$Animations$Controls$elementId, model.animState)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'Restart':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							animState: A2($author$project$Anim$Engine$CSS$restart, $author$project$Common$Animations$Controls$elementId, model.animState)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'Pause':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							animState: A2($author$project$Anim$Engine$CSS$pause, $author$project$Common$Animations$Controls$elementId, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 			default:
@@ -9547,7 +9469,7 @@ var $author$project$Engines$CSS$Controls$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animationState: A2($author$project$Anim$Engine$CSS$restart, $author$project$Common$Animations$Controls$elementId, model.animationState)
+							animState: A2($author$project$Anim$Engine$CSS$resume, $author$project$Common$Animations$Controls$elementId, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 		}
@@ -15393,14 +15315,14 @@ var $author$project$Common$UI$createDocument = F3(
 			title: title
 		};
 	});
-var $author$project$Engines$CSS$Controls$Main$Animate = {$: 'Animate'};
-var $author$project$Engines$CSS$Controls$Main$Pause = {$: 'Pause'};
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Animate = {$: 'Animate'};
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Pause = {$: 'Pause'};
 var $author$project$Common$UI$Primary = {$: 'Primary'};
 var $author$project$Common$UI$Purple = {$: 'Purple'};
-var $author$project$Engines$CSS$Controls$Main$Reset = {$: 'Reset'};
-var $author$project$Engines$CSS$Controls$Main$Restart = {$: 'Restart'};
-var $author$project$Engines$CSS$Controls$Main$Resume = {$: 'Resume'};
-var $author$project$Engines$CSS$Controls$Main$Stop = {$: 'Stop'};
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Reset = {$: 'Reset'};
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Restart = {$: 'Restart'};
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Resume = {$: 'Resume'};
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Stop = {$: 'Stop'};
 var $author$project$Common$UI$Success = {$: 'Success'};
 var $author$project$Common$UI$Warning = {$: 'Warning'};
 var $author$project$Common$Colors$backgroundWhite = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
@@ -15470,7 +15392,7 @@ var $author$project$Common$UI$htmlButton = function (_v0) {
 				$elm$html$Html$text(label)
 			]));
 };
-var $author$project$Engines$CSS$Controls$Main$button = A2(
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$button = A2(
 	$elm$core$Basics$composeR,
 	$author$project$Common$UI$htmlButton,
 	A2(
@@ -15479,14 +15401,14 @@ var $author$project$Engines$CSS$Controls$Main$button = A2(
 		$mdgriffith$elm_ui$Element$el(
 			_List_fromArray(
 				[$mdgriffith$elm_ui$Element$centerX]))));
-var $author$project$Engines$CSS$Controls$Main$buttons = A2(
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$buttons = A2(
 	$elm$core$Basics$composeL,
 	$mdgriffith$elm_ui$Element$column(
 		_List_fromArray(
 			[
 				$mdgriffith$elm_ui$Element$spacing(12)
 			])),
-	$elm$core$List$map($author$project$Engines$CSS$Controls$Main$button));
+	$elm$core$List$map($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$button));
 var $mdgriffith$elm_ui$Internal$Model$Class = F2(
 	function (a, b) {
 		return {$: 'Class', a: a, b: b};
@@ -15529,31 +15451,6 @@ var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
 			'color',
 			fontColor));
 };
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$Anim$Internal$CSS$KeyframeAnimation$toAttributeString = function (animationLayers) {
-	return (!$elm$core$List$isEmpty(animationLayers)) ? A2(
-		$elm$core$String$join,
-		', ',
-		A2(
-			$elm$core$List$map,
-			function (layer) {
-				return layer.animationName + (' ' + ($elm$core$String$fromInt(layer.duration) + ('ms ' + (layer.easing + (' ' + ($elm$core$String$fromInt(layer.delay) + 'ms forwards'))))));
-			},
-			animationLayers)) : '';
-};
-var $author$project$Anim$Internal$CSS$keyframesAttribute = F2(
-	function (elementId, animationState) {
-		var _v0 = A2($author$project$Anim$Internal$CSS$getElementAnimation, elementId, animationState);
-		if (_v0.$ === 'Just') {
-			var elementAnimation = _v0.a;
-			var animationValues = $author$project$Anim$Internal$CSS$KeyframeAnimation$toAttributeString(elementAnimation.animationLayers);
-			return A2($elm$html$Html$Attributes$style, 'animation', animationValues);
-		} else {
-			return A2($elm$html$Html$Attributes$style, 'animation', '');
-		}
-	});
-var $author$project$Anim$Engine$CSS$keyframesAttribute = $author$project$Anim$Internal$CSS$keyframesAttribute;
 var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
 var $author$project$Anim$Internal$CSS$keyframesStyleNodeFor = F2(
 	function (elementId, _v0) {
@@ -15587,6 +15484,53 @@ var $author$project$Anim$Internal$CSS$keyframesStyleNodeFor = F2(
 		}
 	});
 var $author$project$Anim$Engine$CSS$keyframesStyleNodeFor = $author$project$Anim$Internal$CSS$keyframesStyleNodeFor;
+var $author$project$Anim$Internal$CSS$getElementAnimation = F2(
+	function (elementId, _v0) {
+		var state = _v0.a;
+		return A2($elm$core$Dict$get, elementId, state.elementAnimations);
+	});
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $author$project$Anim$Internal$CSS$KeyframeAnimation$toAttributeString = function (animationLayers) {
+	return (!$elm$core$List$isEmpty(animationLayers)) ? A2(
+		$elm$core$String$join,
+		', ',
+		A2(
+			$elm$core$List$map,
+			function (layer) {
+				return layer.animationName + (' ' + ($elm$core$String$fromInt(layer.duration) + ('ms ' + (layer.easing + (' ' + ($elm$core$String$fromInt(layer.delay) + 'ms forwards'))))));
+			},
+			animationLayers)) : '';
+};
+var $author$project$Anim$Internal$CSS$keyframesStyles = F2(
+	function (elementId, animState) {
+		var _v0 = A2($author$project$Anim$Internal$CSS$getElementAnimation, elementId, animState);
+		if (_v0.$ === 'Just') {
+			var elementAnimation = _v0.a;
+			var otherStyleAttrs = A2(
+				$elm$core$List$map,
+				function (_v2) {
+					var key = _v2.a;
+					var value = _v2.b;
+					return A2($elm$html$Html$Attributes$style, key, value);
+				},
+				A2(
+					$elm$core$List$filter,
+					function (_v1) {
+						var key = _v1.a;
+						return key !== 'animation';
+					},
+					elementAnimation.styles));
+			var animationAttr = A2(
+				$elm$html$Html$Attributes$style,
+				'animation',
+				$author$project$Anim$Internal$CSS$KeyframeAnimation$toAttributeString(elementAnimation.animationLayers));
+			return A2($elm$core$List$cons, animationAttr, otherStyleAttrs);
+		} else {
+			return _List_Nil;
+		}
+	});
+var $author$project$Anim$Engine$CSS$keyframesStyles = $author$project$Anim$Internal$CSS$keyframesStyles;
 var $mdgriffith$elm_ui$Internal$Flag$fontWeight = $mdgriffith$elm_ui$Internal$Flag$flag(13);
 var $mdgriffith$elm_ui$Element$Font$medium = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textMedium);
 var $mdgriffith$elm_ui$Element$padding = function (x) {
@@ -15761,7 +15705,7 @@ var $mdgriffith$elm_ui$Element$Border$widthEach = function (_v0) {
 			bottom,
 			left));
 };
-var $author$project$Engines$CSS$Controls$Main$viewControlDescription = F3(
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewControlDescription = F3(
 	function (borderWidth, control, description) {
 		return A2(
 			$mdgriffith$elm_ui$Element$row,
@@ -15795,24 +15739,47 @@ var $author$project$Engines$CSS$Controls$Main$viewControlDescription = F3(
 					$mdgriffith$elm_ui$Element$text(description))
 				]));
 	});
-var $author$project$Engines$CSS$Controls$Main$viewContent = function (model) {
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewContent = function (model) {
 	return _List_fromArray(
 		[
 			$mdgriffith$elm_ui$Element$html(
-			A2($author$project$Anim$Engine$CSS$keyframesStyleNodeFor, $author$project$Common$Animations$Controls$elementId, model.animationState)),
+			A2($author$project$Anim$Engine$CSS$keyframesStyleNodeFor, $author$project$Common$Animations$Controls$elementId, model.animState)),
 			$author$project$Common$UI$pageHeader('CSS Engine Controls'),
 			A2(
-			$mdgriffith$elm_ui$Element$paragraph,
+			$mdgriffith$elm_ui$Element$column,
 			_List_fromArray(
 				[
 					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-					$mdgriffith$elm_ui$Element$Font$size(16),
-					$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium),
-					$mdgriffith$elm_ui$Element$Font$center
+					$mdgriffith$elm_ui$Element$spacing(8)
 				]),
 			_List_fromArray(
 				[
-					$mdgriffith$elm_ui$Element$text('Demonstrating all available Engine Controls')
+					A2(
+					$mdgriffith$elm_ui$Element$paragraph,
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+							$mdgriffith$elm_ui$Element$Font$size(16),
+							$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium),
+							$mdgriffith$elm_ui$Element$Font$center
+						]),
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$text('Demonstrating all available Engine Controls')
+						])),
+					A2(
+					$mdgriffith$elm_ui$Element$paragraph,
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+							$mdgriffith$elm_ui$Element$Font$size(16),
+							$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium),
+							$mdgriffith$elm_ui$Element$Font$center
+						]),
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$text('for CSS Keyframe Animations')
+						]))
 				])),
 			A2(
 			$mdgriffith$elm_ui$Element$column,
@@ -15860,12 +15827,12 @@ var $author$project$Engines$CSS$Controls$Main$viewContent = function (model) {
 						]),
 					_List_fromArray(
 						[
-							A3($author$project$Engines$CSS$Controls$Main$viewControlDescription, 0, '🏀 Animate', 'Drop the ball'),
-							A3($author$project$Engines$CSS$Controls$Main$viewControlDescription, 1, '⏹️ Stop', 'Jump instantly to end state and stop'),
-							A3($author$project$Engines$CSS$Controls$Main$viewControlDescription, 1, '⏸️ Pause', 'Pause animation at current position'),
-							A3($author$project$Engines$CSS$Controls$Main$viewControlDescription, 1, '▶️ Resume', 'Continue paused animation'),
-							A3($author$project$Engines$CSS$Controls$Main$viewControlDescription, 1, '⏮️ Reset', 'Jump instantly to start state and stop'),
-							A3($author$project$Engines$CSS$Controls$Main$viewControlDescription, 1, '🔄 Restart', 'Reset to start, then begin animation again')
+							A3($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewControlDescription, 0, '🏀 Animate', 'Drop the ball'),
+							A3($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewControlDescription, 1, '⏹️ Stop', 'Jump instantly to end state and stop'),
+							A3($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewControlDescription, 1, '⏸️ Pause', 'Pause animation at current position'),
+							A3($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewControlDescription, 1, '▶️ Resume', 'Continue paused animation'),
+							A3($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewControlDescription, 1, '⏮️ Reset', 'Jump instantly to start state and stop'),
+							A3($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewControlDescription, 1, '🔄 Restart', 'Reset to start, then begin animation again')
 						]))
 				])),
 			A2(
@@ -15877,23 +15844,23 @@ var $author$project$Engines$CSS$Controls$Main$viewContent = function (model) {
 				]),
 			_List_fromArray(
 				[
-					$author$project$Engines$CSS$Controls$Main$buttons(
+					$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$buttons(
 					_List_fromArray(
 						[
-							_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$Engines$CSS$Controls$Main$Animate, '🏀 Animate'),
-							_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$Engines$CSS$Controls$Main$Stop, '⏹️ Stop')
+							_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Animate, '🏀 Animate'),
+							_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Stop, '⏹️ Stop')
 						])),
-					$author$project$Engines$CSS$Controls$Main$buttons(
+					$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$buttons(
 					_List_fromArray(
 						[
-							_Utils_Tuple3($author$project$Common$UI$Success, $author$project$Engines$CSS$Controls$Main$Pause, '⏸️ Pause'),
-							_Utils_Tuple3($author$project$Common$UI$Success, $author$project$Engines$CSS$Controls$Main$Resume, '▶️ Resume')
+							_Utils_Tuple3($author$project$Common$UI$Success, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Pause, '⏸️ Pause'),
+							_Utils_Tuple3($author$project$Common$UI$Success, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Resume, '▶️ Resume')
 						])),
-					$author$project$Engines$CSS$Controls$Main$buttons(
+					$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$buttons(
 					_List_fromArray(
 						[
-							_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Engines$CSS$Controls$Main$Reset, '⏮️ Reset'),
-							_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Engines$CSS$Controls$Main$Restart, '🔄 Restart')
+							_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Reset, '⏮️ Reset'),
+							_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Restart, '🔄 Restart')
 						]))
 				])),
 			A2(
@@ -15901,7 +15868,7 @@ var $author$project$Engines$CSS$Controls$Main$viewContent = function (model) {
 			_List_fromArray(
 				[
 					$mdgriffith$elm_ui$Element$width(
-					$mdgriffith$elm_ui$Element$px(model.animationAreaSize.width)),
+					$mdgriffith$elm_ui$Element$px(model.animAreaSize.width)),
 					$mdgriffith$elm_ui$Element$height(
 					$mdgriffith$elm_ui$Element$px(350)),
 					$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundWhite),
@@ -15917,17 +15884,20 @@ var $author$project$Engines$CSS$Controls$Main$viewContent = function (model) {
 				]),
 			A2(
 				$mdgriffith$elm_ui$Element$el,
-				_List_fromArray(
-					[
-						$mdgriffith$elm_ui$Element$width(
-						$mdgriffith$elm_ui$Element$px(50)),
-						$mdgriffith$elm_ui$Element$height(
-						$mdgriffith$elm_ui$Element$px(50)),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						A2($elm$html$Html$Attributes$style, 'position', 'relative')),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						A2($author$project$Anim$Engine$CSS$keyframesAttribute, $author$project$Common$Animations$Controls$elementId, model.animationState))
-					]),
+				_Utils_ap(
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$width(
+							$mdgriffith$elm_ui$Element$px(50)),
+							$mdgriffith$elm_ui$Element$height(
+							$mdgriffith$elm_ui$Element$px(50)),
+							$mdgriffith$elm_ui$Element$htmlAttribute(
+							A2($elm$html$Html$Attributes$style, 'position', 'relative'))
+						]),
+					A2(
+						$elm$core$List$map,
+						$mdgriffith$elm_ui$Element$htmlAttribute,
+						A2($author$project$Anim$Engine$CSS$keyframesStyles, $author$project$Common$Animations$Controls$elementId, model.animState))),
 				A2(
 					$mdgriffith$elm_ui$Element$el,
 					_List_fromArray(
@@ -15939,21 +15909,21 @@ var $author$project$Engines$CSS$Controls$Main$viewContent = function (model) {
 					$mdgriffith$elm_ui$Element$text('🏀'))))
 		]);
 };
-var $author$project$Engines$CSS$Controls$Main$view = function (model) {
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$view = function (model) {
 	return A3(
 		$author$project$Common$UI$createDocument,
 		'Anim.Engine.CSS Controls ElmUI Example',
 		$author$project$Common$UI$Basic,
-		$author$project$Engines$CSS$Controls$Main$viewContent(model));
+		$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewContent(model));
 };
-var $author$project$Engines$CSS$Controls$Main$main = $elm$browser$Browser$document(
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$main = $elm$browser$Browser$document(
 	{
-		init: $author$project$Engines$CSS$Controls$Main$init,
+		init: $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$init,
 		subscriptions: $elm$core$Basics$always($elm$core$Platform$Sub$none),
-		update: $author$project$Engines$CSS$Controls$Main$update,
-		view: $author$project$Engines$CSS$Controls$Main$view
+		update: $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$update,
+		view: $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$view
 	});
-_Platform_export({'Engines':{'CSS':{'Controls':{'Main':{'init':$author$project$Engines$CSS$Controls$Main$main(
+_Platform_export({'Engines':{'CSS':{'Controls':{'KeyframeAnimations':{'Main':{'init':$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$main(
 	A2(
 		$elm$json$Json$Decode$andThen,
 		function (window) {
@@ -15974,4 +15944,4 @@ _Platform_export({'Engines':{'CSS':{'Controls':{'Main':{'init':$author$project$E
 						},
 						A2($elm$json$Json$Decode$field, 'height', $elm$json$Json$Decode$int));
 				},
-				A2($elm$json$Json$Decode$field, 'width', $elm$json$Json$Decode$int)))))(0)}}}}});}(this));
+				A2($elm$json$Json$Decode$field, 'width', $elm$json$Json$Decode$int)))))(0)}}}}}});}(this));

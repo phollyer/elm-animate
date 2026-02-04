@@ -1,8 +1,8 @@
-# Controlling CSS Animations
+# Controlling CSS Transitions
 
-The CSS Engine provides partial programmatic control over running animations.
-You can stop, reset, and restart animations at any time. For `pause` and `resume` functionality
-you'll need to use the [Sub](sub.md) or [WAAPI](waapi.md) engines.
+The CSS Engine provides partial programmatic control over CSS transitions. _This is a limitation of CSS itself, not the engine_.
+
+You can `stop`, `reset`, and `restart` animations at any time. For `pause` and `resume` functionality, use [Keyframe Animations](keyframes.md), or switch to either the [Sub](../sub.md) Engine or the [WAAPI](../waapi.md) Engine.
 
 ## Available Controls
 
@@ -12,16 +12,15 @@ you'll need to use the [Sub](sub.md) or [WAAPI](waapi.md) engines.
 | `reset` | Jump instantly to the animation's **start state** and stop |
 | `restart` | Reset to start state, then begin playing the animation again |
 
-
 ## Live Example
 
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/CSS/Controls/Main.elm"
+    --8<-- "docs/examples/src/Engines/CSS/Controls/Transitions/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../../examples/src/Engines/CSS/Controls/index.html){ .md-button target="_blank" }
+[:material-play-circle: Run this example](../../../examples/src/Engines/CSS/Controls/Transitions/index.html){ .md-button target="_blank" }
 
 ## Using Control Functions
 
@@ -34,9 +33,8 @@ Immediately jumps to the animation's end state and stops playback:
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/CSS/Controls/Main.elm:stop"
+    --8<-- "docs/examples/src/Engines/CSS/Controls/Transitions/Main.elm:stop"
     ```
-`
 
 ### Reset
 
@@ -45,7 +43,7 @@ Immediately jumps back to the animation's start state and stops:
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/CSS/Controls/Main.elm:reset"
+    --8<-- "docs/examples/src/Engines/CSS/Controls/Transitions/Main.elm:reset"
     ```
 
 ### Restart
@@ -55,7 +53,7 @@ Resets to the start state, then immediately begins playing the animation again:
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/CSS/Controls/Main.elm:restart"
+    --8<-- "docs/examples/src/Engines/CSS/Controls/Transitions/Main.elm:restart"
     ```
 
 
@@ -67,7 +65,7 @@ When using control functions, the WAAPI engine fires lifecycle events that you c
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/CSS/Controls/Main.elm:handleAnimationEvent"
+    --8<-- "docs/examples/src/Engines/CSS/Controls/Transitions/Main.elm:handleAnimationEvent"
     ```
 
 ### Event Types

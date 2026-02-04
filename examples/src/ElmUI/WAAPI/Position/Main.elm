@@ -65,7 +65,7 @@ main =
 
 
 type alias Model =
-    { animationState : WAAPI.AnimState
+    { animState : WAAPI.AnimState
     , isAnimating : Bool
     }
 
@@ -80,7 +80,7 @@ init _ =
         ( initialAnimState, initCmd ) =
             WAAPI.animate waapiCommand WAAPI.init Animations.init
     in
-    ( { animationState = initialAnimState
+    ( { animState = initialAnimState
       , isAnimating = False
       }
     , initCmd
@@ -107,10 +107,10 @@ animate : (WAAPI.AnimBuilder -> WAAPI.AnimBuilder) -> Model -> ( Model, Cmd Msg 
 animate builder model =
     let
         ( newAnimState, builderCmd ) =
-            WAAPI.animate waapiCommand model.animationState builder
+            WAAPI.animate waapiCommand model.animState builder
     in
     ( { model
-        | animationState = newAnimState
+        | animState = newAnimState
         , isAnimating = True
       }
     , builderCmd
@@ -149,7 +149,7 @@ update msg model =
         WaapiEventReceived ( newAnimState, maybeEvent ) ->
             let
                 newModel =
-                    { model | animationState = newAnimState }
+                    { model | animState = newAnimState }
             in
             case maybeEvent of
                 Just WAAPI.Completed ->
@@ -165,7 +165,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    waapiEvent (WaapiEventReceived << WAAPI.decode model.animationState)
+    waapiEvent (WaapiEventReceived << WAAPI.decode model.animState)
 
 
 

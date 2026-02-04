@@ -69,7 +69,9 @@ nav:
     - Animation Engines: concepts/engines.md
     - Builder Pattern: concepts/builder-pattern.md
     - Controlling Animations: 
-      - CSS Engine Controls: concepts/controlling-animations/css.md
+      - CSS Engine Controls: 
+        - Transitions: concepts/controlling-animations/css/transitions.md
+        - Keyframe Animations: concepts/controlling-animations/css/keyframes.md
       - Sub Engine Controls: concepts/controlling-animations/sub.md
       - WAAPI Engine Controls: concepts/controlling-animations/waapi.md
     - Properties: concepts/properties.md

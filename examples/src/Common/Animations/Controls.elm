@@ -24,10 +24,10 @@ elementId =
 
 
 init : Int -> AnimBuilder -> AnimBuilder
-init animationAreaWidth =
+init animAreaWidth =
     let
         xPos =
-            toFloat animationAreaWidth / 2 - 25
+            toFloat animAreaWidth / 2 - 25
     in
     Translate.initXY elementId xPos 50
 

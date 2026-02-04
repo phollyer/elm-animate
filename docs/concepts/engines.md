@@ -93,10 +93,10 @@ type Msg
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    waapiEvent (GotWaapiUpdate << WAAPI.decode model.animationState)
+    waapiEvent (GotWaapiUpdate << WAAPI.decode model.animState)
 
 (animState, animCmd) =
-    WAAPI.animate waapiCommand model.animationState <|
+    WAAPI.animate waapiCommand model.animState <|
         \ builder -> myAnimation builder
 
 ```

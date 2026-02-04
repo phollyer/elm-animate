@@ -168,8 +168,8 @@ type alias AnimBuilder =
 
 
 builder : AnimState -> AnimBuilder
-builder ((AnimState state) as animationState) =
-    Dict.foldl (setInitialValues animationState) state.builder state.elementAnimations
+builder ((AnimState state) as animState) =
+    Dict.foldl (setInitialValues animState) state.builder state.elementAnimations
 
 
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
@@ -725,7 +725,7 @@ delayToFrames delayMs =
 
 
 setInitialValues : AnimState -> String -> ElementAnimation -> AnimBuilder -> AnimBuilder
-setInitialValues animationState elementId _ builderAcc =
+setInitialValues animState elementId _ builderAcc =
     let
         funcList =
             [ mapCurrentValue getTranslate initTranslate
@@ -737,14 +737,14 @@ setInitialValues animationState elementId _ builderAcc =
             ]
     in
     List.foldl
-        (\func acc -> func elementId animationState acc)
+        (\func acc -> func elementId animState acc)
         (Builder.for elementId builderAcc)
         funcList
 
 
 mapCurrentValue : (String -> AnimState -> maybeProp) -> (AnimBuilder -> maybeProp -> AnimBuilder) -> String -> AnimState -> AnimBuilder -> AnimBuilder
-mapCurrentValue getter setter elementId animationState animBuilder =
-    getter elementId animationState
+mapCurrentValue getter setter elementId animState animBuilder =
+    getter elementId animState
         |> setter animBuilder
 
 

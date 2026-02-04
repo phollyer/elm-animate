@@ -31,6 +31,7 @@ module Anim.Internal.CSS exposing
     , keyframesAttribute
     , keyframesStyleNode
     , keyframesStyleNodeFor
+    , keyframesStyles
     , onAnimationCancel
     , onAnimationEnd
     , onAnimationIteration
@@ -40,7 +41,7 @@ module Anim.Internal.CSS exposing
     , onTransitionRun
     , onTransitionStart
     , pauseAnimation
-    , resetAnimation
+    , reset
     , restartAnimation
     , resumeAnimation
     , speed
@@ -86,6 +87,7 @@ type AnimState
         { elementAnimations : Dict ElementId ElementAnimation
         , elementStates : Dict ElementId ElementState
         , builder : AnimBuilder
+        , restartCounters : Dict ElementId Int
         }
 
 
@@ -108,6 +110,7 @@ init propertyInitializers =
                 { elementAnimations = Dict.empty
                 , elementStates = Dict.empty
                 , builder = Builder.init
+                , restartCounters = Dict.empty
                 }
 
         _ ->
@@ -136,6 +139,7 @@ init propertyInitializers =
                     configuredBuilder
                         |> Builder.markDirty
                         |> Builder.clearCurrentElement
+                , restartCounters = Dict.empty
                 }
 
 
@@ -168,8 +172,8 @@ animate animState transform =
                 |> Dict.fromList
         , builder =
             builder_
-                |> Builder.markDirty
                 |> Builder.clearCurrentElement
+        , restartCounters = Dict.empty
         }
 
 
@@ -249,7 +253,8 @@ animateWithOrder order animState transform =
             elementIds
                 |> List.map (\id -> ( id, NotStarted ))
                 |> Dict.fromList
-        , builder = Builder.markDirty builder_
+        , builder = Builder.clearCurrentElement builder_
+        , restartCounters = Dict.empty
         }
 
 
@@ -691,9 +696,14 @@ getTranslateAnimationDuration elementId (AnimState state) =
 -- View
 
 
+{-| Get the animation attribute for keyframe-based animations.
+When animations are active, returns the animation property from keyframe layers.
+When no animations are active (after reset/stop), returns an empty animation.
+Note: Use `keyframesStyles` to get all styles including transform for instant jumps.
+-}
 keyframesAttribute : String -> AnimState -> Html.Attribute msg
-keyframesAttribute elementId animationState =
-    case getElementAnimation elementId animationState of
+keyframesAttribute elementId animState =
+    case getElementAnimation elementId animState of
         Just elementAnimation ->
             let
                 animationValues =
@@ -703,6 +713,33 @@ keyframesAttribute elementId animationState =
 
         Nothing ->
             Html.Attributes.style "animation" ""
+
+
+{-| Get all styles for keyframe-based animations as a list of Html attributes.
+This includes both the animation property (when active) and any other styles
+like transform (for instant jumps after reset/stop).
+Use this instead of `keyframesAttribute` when you need full style support.
+-}
+keyframesStyles : String -> AnimState -> List (Html.Attribute msg)
+keyframesStyles elementId animState =
+    case getElementAnimation elementId animState of
+        Just elementAnimation ->
+            let
+                -- Get animation from layers
+                animationAttr =
+                    Html.Attributes.style "animation"
+                        (KeyframeAnimation.toAttributeString elementAnimation.animationLayers)
+
+                -- Get other styles (transform, etc.)
+                otherStyleAttrs =
+                    elementAnimation.styles
+                        |> List.filter (\( key, _ ) -> key /= "animation")
+                        |> List.map (\( key, value ) -> Html.Attributes.style key value)
+            in
+            animationAttr :: otherStyleAttrs
+
+        Nothing ->
+            []
 
 
 transitionAttributes : String -> AnimState -> List (Html.Attribute msg)
@@ -794,6 +831,14 @@ transformOrderToString order =
 
 generateElementAnimation : Maybe (List TransformOrder) -> String -> Builder.ElementConfig -> ElementAnimation
 generateElementAnimation maybeOrder elementId elementConfig =
+    generateElementAnimationWithSuffix maybeOrder "" elementId elementConfig
+
+
+{-| Generate element animation with a suffix for the animation name.
+Used for restarting animations - passing a unique suffix forces the browser to treat it as a new animation.
+-}
+generateElementAnimationWithSuffix : Maybe (List TransformOrder) -> String -> String -> Builder.ElementConfig -> ElementAnimation
+generateElementAnimationWithSuffix maybeOrder suffix elementId elementConfig =
     let
         -- Process properties first (like keyframes do) for consistency
         processed =
@@ -864,8 +909,98 @@ generateElementAnimation maybeOrder elementId elementConfig =
                 |> List.filter (\( _, value ) -> not (String.isEmpty value))
     in
     { styles = allStyles
-    , animationLayers = KeyframeAnimation.generate elementId elementConfig.properties
+    , animationLayers = KeyframeAnimation.generateWithSuffix elementId suffix elementConfig.properties
     }
+
+
+{-| Generate styles-only for instant jumps (no keyframe animations).
+Used by reset and stop to instantly move to a position without animation.
+-}
+generateStylesOnly : Maybe (List TransformOrder) -> Builder.ElementConfig -> ElementAnimation
+generateStylesOnly maybeOrder elementConfig =
+    let
+        processed =
+            Builder.processElement
+                { globalTiming = Nothing
+                , globalEasing = Nothing
+                , globalDelay = Nothing
+                , currentElementId = Nothing
+                , elements = Dict.empty
+                , scrollTargets = []
+                , scrollContainer = "document"
+                , animationHistories = Dict.empty
+                , nextAnimationId = 0
+                , elementBaselines = Dict.empty
+                }
+                elementConfig
+
+        processedProps =
+            processed.properties
+
+        transforms =
+            case maybeOrder of
+                Nothing ->
+                    Transforms.generateFromProcessed processedProps
+
+                Just order ->
+                    let
+                        orderStrings =
+                            List.map transformOrderToString order
+                    in
+                    Transforms.generateFromProcessedWithOrder orderStrings processedProps
+
+        colorStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.ProcessedBackgroundColorConfig config ->
+                            Just ( "background-color", Color.toCssString config.end )
+
+                        _ ->
+                            Nothing
+                )
+                processedProps
+
+        opacityStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.ProcessedOpacityConfig config ->
+                            Just ( "opacity", Opacity.toString config.end )
+
+                        _ ->
+                            Nothing
+                )
+                processedProps
+
+        -- For instant jumps, we set the transform directly and clear any running animation
+        allStyles =
+            [ ( "transform", transforms )
+            , ( "animation", "none" ) -- Clear any running keyframe animation
+            ]
+                ++ colorStyles
+                ++ opacityStyles
+                |> List.filter (\( key, value ) -> key == "animation" || not (String.isEmpty value))
+    in
+    { styles = allStyles
+    , animationLayers = [] -- No keyframes for instant jumps
+    }
+
+
+{-| Set styles instantly for an element without creating keyframe animations.
+Used internally by reset and stop for instant position jumps.
+-}
+setStylesInstantly : String -> Builder.ElementConfig -> AnimState -> AnimState
+setStylesInstantly elementId elementConfig (AnimState state) =
+    let
+        elementAnimation =
+            generateStylesOnly Nothing elementConfig
+    in
+    AnimState
+        { state
+            | elementAnimations = Dict.insert elementId elementAnimation state.elementAnimations
+            , elementStates = Dict.insert elementId Complete state.elementStates
+        }
 
 
 getElementStyles : String -> AnimState -> List ( String, String )
@@ -924,303 +1059,179 @@ resumeAnimation elementId (AnimState state) =
     AnimState { state | elementAnimations = updatedAnimations }
 
 
-{-| Stop an animation by jumping to its end state with transition: none.
+{-| Stop an animation by jumping instantly to its end state.
+Sets styles directly without creating keyframe animations.
 -}
 stopAnimation : String -> AnimState -> AnimState
 stopAnimation elementId animState =
     let
-        -- Helper function to add a property if it exists
-        addPropertyIfExists : Maybe a -> (a -> Builder.PropertyConfig) -> Builder.AnimBuilder -> Builder.AnimBuilder
-        addPropertyIfExists maybeRange toConfig builderState =
-            case maybeRange of
-                Just range ->
-                    Property.add (toConfig range) builderState
+        -- Helper to build a minimal PropertyConfig for instant positioning
+        makeInstantConfig : a -> Builder.AnimationConfig a
+        makeInstantConfig value =
+            { start = Just value
+            , end = value
+            , duration = 0
+            , speed = 0
+            , distance = 0
+            , timing = Just (Duration 0)
+            , easing = Just Anim.Easing.Linear
+            , delay = Nothing
+            , isDirty = True
+            }
 
-                Nothing ->
-                    builderState
+        -- Collect all properties with their end values
+        properties =
+            [ getTranslateRange elementId animState
+                |> Maybe.map (\range -> Builder.TranslateConfig (makeInstantConfig range.end))
+            , getScaleRange elementId animState
+                |> Maybe.map (\range -> Builder.ScaleConfig (makeInstantConfig range.end))
+            , getRotateRange elementId animState
+                |> Maybe.map (\range -> Builder.RotateConfig (makeInstantConfig range.end))
+            , getOpacityRange elementId animState
+                |> Maybe.map (\range -> Builder.OpacityConfig (makeInstantConfig range.end))
+            , getBackgroundColorRange elementId animState
+                |> Maybe.map (\range -> Builder.BackgroundColorConfig (makeInstantConfig range.end))
+            , getSizeRange elementId animState
+                |> Maybe.map (\range -> Builder.SizeConfig (makeInstantConfig range.end))
+            ]
+                |> List.filterMap identity
 
-        -- Build animation function with all end values
-        withAllProperties : AnimBuilder -> AnimBuilder
-        withAllProperties b =
-            b
-                |> Builder.duration 0
-                |> easing Anim.Easing.Linear
-                |> Builder.for elementId
-                |> addPropertyIfExists
-                    (getTranslateRange elementId animState)
-                    (\range ->
-                        let
-                            endPos =
-                                range.end
-                        in
-                        Builder.TranslateConfig
-                            { start = Just endPos
-                            , end = endPos
-                            , duration = 0
-                            , speed = 0
-                            , distance = 0
-                            , timing = Just (Duration 0)
-                            , easing = Just Anim.Easing.Linear
-                            , delay = Nothing
-                            , isDirty = True
-                            }
-                    )
-                |> addPropertyIfExists
-                    (getScaleRange elementId animState)
-                    (\range ->
-                        let
-                            endScale =
-                                range.end
-                        in
-                        Builder.ScaleConfig
-                            { start = Just endScale
-                            , end = endScale
-                            , duration = 0
-                            , speed = 0
-                            , distance = 0
-                            , timing = Just (Duration 0)
-                            , easing = Just Anim.Easing.Linear
-                            , delay = Nothing
-                            , isDirty = True
-                            }
-                    )
-                |> addPropertyIfExists
-                    (getRotateRange elementId animState)
-                    (\range ->
-                        let
-                            endRotate =
-                                range.end
-                        in
-                        Builder.RotateConfig
-                            { start = Just endRotate
-                            , end = endRotate
-                            , duration = 0
-                            , speed = 0
-                            , distance = 0
-                            , timing = Just (Duration 0)
-                            , easing = Just Anim.Easing.Linear
-                            , delay = Nothing
-                            , isDirty = True
-                            }
-                    )
-                |> addPropertyIfExists
-                    (getOpacityRange elementId animState)
-                    (\range ->
-                        let
-                            endOpacity =
-                                range.end
-                        in
-                        Builder.OpacityConfig
-                            { start = Just endOpacity
-                            , end = endOpacity
-                            , duration = 0
-                            , speed = 0
-                            , distance = 0
-                            , timing = Just (Duration 0)
-                            , easing = Just Anim.Easing.Linear
-                            , delay = Nothing
-                            , isDirty = True
-                            }
-                    )
-                |> addPropertyIfExists
-                    (getBackgroundColorRange elementId animState)
-                    (\range ->
-                        let
-                            endColor =
-                                range.end
-                        in
-                        Builder.BackgroundColorConfig
-                            { start = Just endColor
-                            , end = endColor
-                            , duration = 0
-                            , speed = 0
-                            , distance = 0
-                            , timing = Just (Duration 0)
-                            , easing = Just Anim.Easing.Linear
-                            , delay = Nothing
-                            , isDirty = True
-                            }
-                    )
-                |> addPropertyIfExists
-                    (getSizeRange elementId animState)
-                    (\range ->
-                        let
-                            endSize =
-                                range.end
-                        in
-                        Builder.SizeConfig
-                            { start = Just endSize
-                            , end = endSize
-                            , duration = 0
-                            , speed = 0
-                            , distance = 0
-                            , timing = Just (Duration 0)
-                            , easing = Just Anim.Easing.Linear
-                            , delay = Nothing
-                            , isDirty = True
-                            }
-                    )
+        elementConfig =
+            { properties = properties }
     in
-    animate animState withAllProperties
+    if List.isEmpty properties then
+        animState
+
+    else
+        setStylesInstantly elementId elementConfig animState
 
 
-{-| Reset an animation by jumping to its start state with a 0ms transition.
+{-| Reset an animation by jumping instantly to its start state.
+Sets styles directly without creating keyframe animations.
+Uses the original animation config (not processed/baseline-merged) to get true start values.
 -}
-resetAnimation : String -> AnimState -> AnimState
-resetAnimation elementId animState =
-    let
-        -- Helper to always use the start value (or default if not provided)
-        getStartValue : Maybe a -> a -> a
-        getStartValue maybeStart defaultValue =
-            Maybe.withDefault defaultValue maybeStart
+reset : String -> AnimState -> AnimState
+reset elementId (AnimState state) =
+    case Builder.getElementConfig elementId state.builder of
+        Nothing ->
+            AnimState state
 
-        -- Helper function to add a property if it exists
-        addPropertyIfExists : Maybe a -> (a -> Builder.PropertyConfig) -> Builder.AnimBuilder -> Builder.AnimBuilder
-        addPropertyIfExists maybeRange toConfig builderState =
-            case maybeRange of
-                Just range ->
-                    Property.add (toConfig range) builderState
+        Just elementConfig ->
+            let
+                -- Helper to build a minimal PropertyConfig for instant positioning
+                makeInstantConfig : a -> Builder.AnimationConfig a
+                makeInstantConfig value =
+                    { start = Just value
+                    , end = value
+                    , duration = 0
+                    , speed = 0
+                    , distance = 0
+                    , timing = Just (Duration 0)
+                    , easing = Just Anim.Easing.Linear
+                    , delay = Nothing
+                    , isDirty = True
+                    }
 
-                Nothing ->
-                    builderState
+                -- Extract start values from the ORIGINAL config (not processed)
+                -- This ensures we get the true animation start, not baseline-merged values
+                properties =
+                    elementConfig.properties
+                        |> List.filterMap
+                            (\prop ->
+                                case prop of
+                                    Builder.TranslateConfig config ->
+                                        Just <|
+                                            Builder.TranslateConfig
+                                                (makeInstantConfig
+                                                    (Maybe.withDefault Translate.default config.start)
+                                                )
 
-        -- Build animation function that resets all properties to their start values
-        withAllProperties : AnimBuilder -> AnimBuilder
-        withAllProperties b =
-            b
-                |> Builder.duration 0
-                |> easing Anim.Easing.Linear
-                |> Builder.for elementId
-                |> addPropertyIfExists
-                    (getTranslateRange elementId animState)
-                    (\range ->
-                        let
-                            startPos =
-                                getStartValue range.start Translate.default
-                        in
-                        Builder.TranslateConfig
-                            { start = Just startPos
-                            , end = startPos
-                            , duration = 0
-                            , speed = 0
-                            , distance = 0
-                            , timing = Just (Duration 0)
-                            , easing = Just Anim.Easing.Linear
-                            , delay = Nothing
-                            , isDirty = True
-                            }
-                    )
-                |> addPropertyIfExists
-                    (getScaleRange elementId animState)
-                    (\range ->
-                        let
-                            startScale =
-                                getStartValue range.start (Scale.fromUniform 1.0)
-                        in
-                        Builder.ScaleConfig
-                            { start = Just startScale
-                            , end = startScale
-                            , duration = 0
-                            , speed = 0
-                            , distance = 0
-                            , timing = Just (Duration 0)
-                            , easing = Just Anim.Easing.Linear
-                            , delay = Nothing
-                            , isDirty = True
-                            }
-                    )
-                |> addPropertyIfExists
-                    (getRotateRange elementId animState)
-                    (\range ->
-                        let
-                            startRotate =
-                                getStartValue range.start Rotate.default
-                        in
-                        Builder.RotateConfig
-                            { start = Just startRotate
-                            , end = startRotate
-                            , duration = 0
-                            , speed = 0
-                            , distance = 0
-                            , timing = Just (Duration 0)
-                            , easing = Just Anim.Easing.Linear
-                            , delay = Nothing
-                            , isDirty = True
-                            }
-                    )
-                |> addPropertyIfExists
-                    (getOpacityRange elementId animState)
-                    (\range ->
-                        let
-                            startOpacity =
-                                getStartValue range.start Opacity.default
-                        in
-                        Builder.OpacityConfig
-                            { start = Just startOpacity
-                            , end = startOpacity
-                            , duration = 0
-                            , speed = 0
-                            , distance = 0
-                            , timing = Just (Duration 0)
-                            , easing = Just Anim.Easing.Linear
-                            , delay = Nothing
-                            , isDirty = True
-                            }
-                    )
-                |> addPropertyIfExists
-                    (getBackgroundColorRange elementId animState)
-                    (\range ->
-                        let
-                            startColor =
-                                getStartValue range.start BackgroundColor.default
-                        in
-                        Builder.BackgroundColorConfig
-                            { start = Just startColor
-                            , end = startColor
-                            , duration = 0
-                            , speed = 0
-                            , distance = 0
-                            , timing = Just (Duration 0)
-                            , easing = Just Anim.Easing.Linear
-                            , delay = Nothing
-                            , isDirty = True
-                            }
-                    )
-                |> addPropertyIfExists
-                    (getSizeRange elementId animState)
-                    (\range ->
-                        let
-                            startSize =
-                                getStartValue range.start Size.default
-                        in
-                        Builder.SizeConfig
-                            { start = Just startSize
-                            , end = startSize
-                            , duration = 0
-                            , speed = 0
-                            , distance = 0
-                            , timing = Just (Duration 0)
-                            , easing = Just Anim.Easing.Linear
-                            , delay = Nothing
-                            , isDirty = True
-                            }
-                    )
-    in
-    animate animState withAllProperties
+                                    Builder.ScaleConfig config ->
+                                        Just <|
+                                            Builder.ScaleConfig
+                                                (makeInstantConfig
+                                                    (Maybe.withDefault (Scale.fromUniform 1.0) config.start)
+                                                )
+
+                                    Builder.RotateConfig config ->
+                                        Just <|
+                                            Builder.RotateConfig
+                                                (makeInstantConfig
+                                                    (Maybe.withDefault Rotate.default config.start)
+                                                )
+
+                                    Builder.OpacityConfig config ->
+                                        Just <|
+                                            Builder.OpacityConfig
+                                                (makeInstantConfig
+                                                    (Maybe.withDefault Opacity.default config.start)
+                                                )
+
+                                    Builder.BackgroundColorConfig config ->
+                                        Just <|
+                                            Builder.BackgroundColorConfig
+                                                (makeInstantConfig
+                                                    (Maybe.withDefault BackgroundColor.default config.start)
+                                                )
+
+                                    Builder.SizeConfig config ->
+                                        Just <|
+                                            Builder.SizeConfig
+                                                (makeInstantConfig
+                                                    (Maybe.withDefault Size.default config.start)
+                                                )
+
+                                    Builder.FontColorConfig _ ->
+                                        -- FontColor not supported in reset yet
+                                        Nothing
+                            )
+
+                newElementConfig =
+                    { properties = properties }
+            in
+            if List.isEmpty properties then
+                AnimState state
+
+            else
+                setStylesInstantly elementId newElementConfig (AnimState state)
 
 
 {-| Restart an animation from the beginning.
+First resets to start position, then re-applies the original animation keyframes with a new name to force browser restart.
 -}
 restartAnimation : String -> AnimState -> AnimState
 restartAnimation elementId ((AnimState state) as animState) =
-    case getElementAnimation elementId animState of
+    case Builder.getElementConfig elementId state.builder of
         Nothing ->
             animState
 
-        Just _ ->
-            -- Mark the element as NotStarted to re-trigger the animation
+        Just elementConfig ->
             let
-                updatedElements =
-                    Dict.insert elementId NotStarted state.elementStates
+                -- First reset to start position (instantly)
+                resetState =
+                    reset elementId animState
+
+                (AnimState resetStateData) =
+                    resetState
+
+                -- Increment restart counter for this element
+                currentCounter =
+                    Dict.get elementId state.restartCounters
+                        |> Maybe.withDefault 0
+
+                newCounter =
+                    currentCounter + 1
+
+                -- Generate animation with restart suffix to force browser to treat as new animation
+                suffix =
+                    "r" ++ String.fromInt newCounter
+
+                elementAnimation =
+                    generateElementAnimationWithSuffix Nothing suffix elementId elementConfig
             in
-            AnimState { state | elementStates = updatedElements }
+            AnimState
+                { resetStateData
+                    | elementAnimations = Dict.insert elementId elementAnimation resetStateData.elementAnimations
+                    , elementStates = Dict.insert elementId NotStarted resetStateData.elementStates
+                    , restartCounters = Dict.insert elementId newCounter resetStateData.restartCounters
+                }

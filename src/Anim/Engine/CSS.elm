@@ -4,7 +4,7 @@ module Anim.Engine.CSS exposing
     , TransitionEvent(..), handleTransitionEvent
     , transitionEvents
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
-    , keyframesAttribute
+    , keyframesStyles
     , keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
     , KeyframeEvent(..), handleKeyframeEvent
     , keyframeAnimationEvents
@@ -108,10 +108,10 @@ The following event handlers allow you more granular control over which CSS tran
 
 # Keyframe Animations
 
-For Keyframe animations, you need to apply the generated CSS [animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation) property to your elements
+For Keyframe animations, you need to apply the generated CSS styles to your elements
 and also add the generated keyframes to a node in your DOM.
 
-@docs keyframesAttribute
+@docs keyframesStyles
 
 @docs keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
 
@@ -421,7 +421,7 @@ Pass an empty list for empty state, or property initializers to set initial valu
         , Opacity.init "element-id" 0.5
         ]
 
-Initial values are applied in the view via `transitionAttributes` or `keyframesAttribute`.
+Initial values are applied in the view via `transitionAttributes` or `keyframesStyles`.
 No animations will run until `animate` is called.
 
 -}
@@ -441,7 +441,7 @@ This function generates all the necessary event handlers for CSS keyframe animat
         = KeyframeMsg CSS.KeyframeEvent
 
     div
-        ( CSS.keyframesAttribute "my-element" animationState
+        ( CSS.keyframesStyles "my-element" animState
             ++ CSS.keyframeAnimationEvents "my-element" KeyframeMsg
         )
         [ text "Animating element" ]
@@ -457,21 +457,19 @@ keyframeAnimationEvents elementId toMsg =
         ]
 
 
-{-| Get the CSS [animation](https://developer.mozilla.org/en-US/docs/Web/CSS/animation) property and apply it directly to the element you want to animate.
-
-This is is how you connect the generated keyframes to your element. Without this attribute the browser won't know which element to apply the keyframe animations to.
+{-| Get all styles for keyframe-based animations.
 
     import Anim.Engine.CSS as CSS
     import Html exposing (div, text)
 
     div
-        [ CSS.keyframesAttribute "my-element" animState ]
+        (CSS.keyframesStyles "my-element" animState)
         [ text "Animating element" ]
 
 -}
-keyframesAttribute : String -> AnimState -> Html.Attribute msg
-keyframesAttribute =
-    InternalCSS.keyframesAttribute
+keyframesStyles : String -> AnimState -> List (Html.Attribute msg)
+keyframesStyles =
+    InternalCSS.keyframesStyles
 
 
 {-| Get a `<style>` node containing keyframes for all animated elements. You
@@ -1112,7 +1110,7 @@ stop =
 -}
 reset : String -> AnimState -> AnimState
 reset =
-    InternalCSS.resetAnimation
+    InternalCSS.reset
 
 
 {-| Restart an animation from the beginning.

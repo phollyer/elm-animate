@@ -688,8 +688,8 @@ updateScrollAnimation deltaMs animation =
 
 
 subscriptions : (AnimationMsg -> msg) -> AnimState -> Sub msg
-subscriptions toMsg animationState =
-    if anyRunning animationState then
+subscriptions toMsg animState =
+    if anyRunning animState then
         Browser.Events.onAnimationFrameDelta (AnimationFrame >> toMsg)
 
     else

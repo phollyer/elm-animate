@@ -454,7 +454,7 @@ relative positioning.
                     model.animStatetate
         in
         ( { model
-            | animationState = newAnimState
+            | animState = newAnimState
             , containerSize = { width = newContainerWidth, height = 350 }
           }
         , resizeCmd

@@ -53,9 +53,9 @@ type AnimationStatus
 
 
 type alias Model =
-    { animationState : WAAPI.AnimState Msg
+    { animState : WAAPI.AnimState Msg
     , status : AnimationStatus
-    , animationAreaSize : { width : Int, height : Int }
+    , animAreaSize : { width : Int, height : Int }
     }
 
 
@@ -80,17 +80,17 @@ main =
 init : { window : { width : Int, height : Int } } -> ( Model, Cmd Msg )
 init { window } =
     let
-        animationAreaWidth =
+        animAreaWidth =
             min 500 (window.width - 40)
 
         ( initialAnimState, initCmd ) =
             WAAPI.init waapiCommand waapiSubscriptions <|
-                [ Controls.init animationAreaWidth ]
+                [ Controls.init animAreaWidth ]
     in
-    ( { animationState = initialAnimState
+    ( { animState = initialAnimState
       , status = Idle
-      , animationAreaSize =
-            { width = animationAreaWidth
+      , animAreaSize =
+            { width = animAreaWidth
             , height = 350
             }
       }
@@ -118,16 +118,16 @@ update msg model =
         GotWaapiMsg subMsg ->
             let
                 ( newAnimState, events ) =
-                    WAAPI.update subMsg model.animationState
+                    WAAPI.update subMsg model.animState
             in
-            handleAnimationEvents events { model | animationState = newAnimState }
+            handleAnimationEvents events { model | animState = newAnimState }
 
         Animate ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animationState Controls.animate
+                    WAAPI.animate model.animState Controls.animate
             in
-            ( { model | animationState = newAnimState }
+            ( { model | animState = newAnimState }
             , animCmd
             )
 
@@ -135,9 +135,9 @@ update msg model =
         Stop ->
             let
                 ( newAnimState, stopCmd ) =
-                    WAAPI.stop elementId model.animationState
+                    WAAPI.stop elementId model.animState
             in
-            ( { model | animationState = newAnimState }
+            ( { model | animState = newAnimState }
             , stopCmd
             )
 
@@ -146,9 +146,9 @@ update msg model =
         Pause ->
             let
                 ( newAnimState, pauseCmd ) =
-                    WAAPI.pause elementId model.animationState
+                    WAAPI.pause elementId model.animState
             in
-            ( { model | animationState = newAnimState }
+            ( { model | animState = newAnimState }
             , pauseCmd
             )
 
@@ -157,9 +157,9 @@ update msg model =
         Resume ->
             let
                 ( newAnimState, resumeCmd ) =
-                    WAAPI.resume elementId model.animationState
+                    WAAPI.resume elementId model.animState
             in
-            ( { model | animationState = newAnimState }
+            ( { model | animState = newAnimState }
             , resumeCmd
             )
 
@@ -168,9 +168,9 @@ update msg model =
         Reset ->
             let
                 ( newAnimState, resetCmd ) =
-                    WAAPI.reset elementId model.animationState
+                    WAAPI.reset elementId model.animState
             in
-            ( { model | animationState = newAnimState }
+            ( { model | animState = newAnimState }
             , resetCmd
             )
 
@@ -179,9 +179,9 @@ update msg model =
         Restart ->
             let
                 ( newAnimState, restartCmd ) =
-                    WAAPI.restart elementId model.animationState
+                    WAAPI.restart elementId model.animState
             in
-            ( { model | animationState = newAnimState }
+            ( { model | animState = newAnimState }
             , restartCmd
             )
 
@@ -225,7 +225,7 @@ handleSingleEvent event ( model, cmd ) =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    WAAPI.subscriptions GotWaapiMsg model.animationState
+    WAAPI.subscriptions GotWaapiMsg model.animState
 
 
 
@@ -311,7 +311,7 @@ viewContent model =
     , -- Animation area
       el
         [ width <|
-            px model.animationAreaSize.width
+            px model.animAreaSize.width
         , height (px 350)
         , Background.color Colors.backgroundWhite
         , Border.rounded 12
