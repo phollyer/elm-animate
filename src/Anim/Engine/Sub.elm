@@ -22,6 +22,27 @@ This Engine converts [AnimBuilder](#AnimBuilder) configurations to frame-based a
 subscriptions for smooth, controlled animations.
 
 
+## Design Decisions
+
+**When to use this Engine:**
+
+The Sub Engine is ideal when you need full programmatic control over your animations in pure Elm.
+
+**Use the Sub Engine for:**
+
+  - Complete Elm-side control without JavaScript
+  - Real-time access to animated property values
+  - Dynamic animation adjustments based on model state
+  - Animations that need to react to external events mid-flight
+  - Applications where you want to avoid ports/JS interop
+
+**Consider other engines when:**
+
+  - You want fire-and-forget simplicity → use [CSS Engine](Anim-Engine-CSS)
+  - You need maximum performance for complex animations → use [WAAPI Engine](Anim-Engine-WAAPI)
+  - You only need scroll animations → use [Scroll Engine](Anim-Engine-Scroll)
+
+
 # State
 
 @docs AnimState, init

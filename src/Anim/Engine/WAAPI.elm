@@ -24,6 +24,30 @@ calls via Elm [ports](https://guide.elm-lang.org/interop/ports) for maximum perf
 **Note:** This module requires the accompanying JavaScript library to handle the Web Animations API.
 
 
+## Design Decisions
+
+
+### State Tracking vs Fire-and-Forget
+
+This Engine supports both state-tracked animations and fire-and-forget animations.
+
+**State-tracked** animations allow you to query the state of your animations.
+Use [animate](#animate) when you need to:
+
+  - Query if animations are running or complete
+  - Query start/end/current values of animated properties
+  - React to animation lifecycle events (start, end, cancel)
+  - Sequence animations based on previous animation state
+
+**Fire-and-forget** animations are simpler when you just want to run an animation without
+tracking its state. Use [fireAndForget](#fireAndForget) for:
+
+  - Entrance/exit animations
+  - Simple hover/focus effects
+  - Any animation where you don't need to query state or values
+  - Reduced port traffic (no subscription port needed)
+
+
 ## JavaScript Companion
 
 Install the `elm-animate-waapi` package from npm.
