@@ -2,7 +2,6 @@ module Engines.Sub.Controls.Main exposing (main)
 
 import Anim.Engine.Sub as Sub
 import Browser exposing (Document)
-import Browser.Events exposing (onResize)
 import Common.Animations.Controls as Controls exposing (elementId)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -11,25 +10,6 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
-import Json.Encode as Encode
-import Time
-
-
-
--- MODEL
-
-
-type AnimationStatus
-    = Idle
-    | Running
-    | Paused
-
-
-type alias Model =
-    { animState : Sub.AnimState
-    , status : AnimationStatus
-    , animAreaSize : { width : Int, height : Int }
-    }
 
 
 
@@ -47,6 +27,16 @@ main =
 
 
 
+-- MODEL
+
+
+type alias Model =
+    { animState : Sub.AnimState
+    , animAreaSize : { width : Int, height : Int }
+    }
+
+
+
 -- INIT
 
 
@@ -61,7 +51,6 @@ init { window } =
                 [ Controls.init animAreaWidth ]
     in
     ( { animState = initialAnimState
-      , status = Idle
       , animAreaSize =
             { width = animAreaWidth
             , height = 350
@@ -90,10 +79,12 @@ update msg model =
     case msg of
         GotSubMsg subMsg ->
             let
-                ( newAnimState, events ) =
+                ( newAnimState, _ ) =
                     Sub.update subMsg model.animState
             in
-            handleAnimationEvents events { model | animState = newAnimState }
+            ( { model | animState = newAnimState }
+            , Cmd.none
+            )
 
         Animate ->
             ( { model
@@ -139,38 +130,6 @@ update msg model =
 
 
 -- --8<-- [end:restart]
--- --8<-- [start:handleAnimationEvent]
-
-
-handleAnimationEvents : List Sub.AnimEvent -> Model -> ( Model, Cmd Msg )
-handleAnimationEvents events model =
-    List.foldl handleSingleEvent ( model, Cmd.none ) events
-
-
-handleSingleEvent : Sub.AnimEvent -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
-handleSingleEvent event ( model, cmd ) =
-    case event of
-        Sub.Started _ ->
-            ( { model | status = Running }, cmd )
-
-        Sub.Restarted _ ->
-            ( { model | status = Running }, cmd )
-
-        Sub.Canceled _ ->
-            ( { model | status = Idle }, cmd )
-
-        Sub.Completed _ ->
-            ( { model | status = Idle }, cmd )
-
-        Sub.Paused _ ->
-            ( { model | status = Paused }, cmd )
-
-        Sub.Resumed _ ->
-            ( { model | status = Running }, cmd )
-
-
-
--- --8<-- [end:handleAnimationEvent]
 -- SUBSCRIPTIONS
 
 
@@ -194,13 +153,6 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.pageHeader "Sub Engine Controls"
-    , paragraph
-        [ width fill
-        , Font.size 16
-        , Font.color Colors.textMedium
-        , Font.center
-        ]
-        [ text "Demonstrating all available Engine Controls" ]
     , -- Controls explanation
       column
         [ centerX
@@ -277,7 +229,6 @@ viewContent model =
         (el
             ([ width (px 50)
              , height (px 50)
-             , htmlAttribute (Html.Attributes.id elementId)
              , htmlAttribute (Html.Attributes.style "position" "relative")
              ]
                 ++ List.map htmlAttribute (Sub.htmlAttributes elementId model.animState)
@@ -324,16 +275,3 @@ button =
     UI.htmlButton
         >> html
         >> el [ centerX ]
-
-
-statusToString : AnimationStatus -> String
-statusToString status =
-    case status of
-        Idle ->
-            "Idle"
-
-        Running ->
-            "Running"
-
-        Paused ->
-            "Paused"

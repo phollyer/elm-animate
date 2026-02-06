@@ -172,11 +172,13 @@ Control running animations with stop, reset, restart, pause, and resume function
 
   - **stop**: Instantly jumps to the animation's end state.
   - **reset**: Instantly jumps back to the animation's start state.
-  - **restart**: Restarts the animation from the beginning.
-  - **pause**: Pauses animations mid-flight.
-  - **resume**: Resumes paused animations.
+  - **restart**: Restarts the animation from the beginning. _(Keyframe animations only)_
+  - **pause**: Pauses animations mid-flight. _(Keyframe animations only)_
+  - **resume**: Resumes paused animations. _(Keyframe animations only)_
 
-**Note**: `pause` and `resume` only work with keyframe animations, not CSS transitions. _This is a limitation of CSS itself._
+**Note**: `restart`, `pause`, and `resume` only work with keyframe animations, not CSS transitions.
+CSS transitions require a value change between renders to trigger, making restart impossible in a single update.
+For transitions, use `reset` to jump to start, then call `animate` again on a subsequent user interaction.
 
 @docs stop, reset, restart, pause, resume
 
@@ -1114,6 +1116,11 @@ reset =
 
 
 {-| Restart an animation from the beginning.
+
+**Note**: This only works with keyframe animations, not CSS transitions.
+CSS transitions require a value change between renders to trigger, so restart
+cannot work in a single update. For transitions, use `reset` to jump to start,
+then call `animate` again on a subsequent user interaction.
 
     CSS.restart "my-element" model.animState
 

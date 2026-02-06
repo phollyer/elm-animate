@@ -5198,7 +5198,6 @@ var $elm$core$Task$perform = F2(
 	});
 var $elm$browser$Browser$document = _Browser_document;
 var $elm$json$Json$Decode$field = _Json_decodeField;
-var $author$project$Engines$Sub$Controls$Main$Idle = {$: 'Idle'};
 var $author$project$Anim$Internal$Sub$AnimState = function (a) {
 	return {$: 'AnimState', a: a};
 };
@@ -7856,25 +7855,24 @@ var $author$project$Anim$Property$Translate$initXY = F4(
 					y,
 					A2($author$project$Anim$Internal$Builders$Translate$for, elementId, animBuilder))));
 	});
-var $author$project$Common$Animations$Controls$init = function (animationAreaWidth) {
-	var xPos = (animationAreaWidth / 2) - 25;
+var $author$project$Common$Animations$Controls$init = function (animAreaWidth) {
+	var xPos = (animAreaWidth / 2) - 25;
 	return A3($author$project$Anim$Property$Translate$initXY, $author$project$Common$Animations$Controls$elementId, xPos, 50);
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Engines$Sub$Controls$Main$init = function (_v0) {
 	var window = _v0.window;
-	var animationAreaWidth = A2($elm$core$Basics$min, 500, window.width - 40);
+	var animAreaWidth = A2($elm$core$Basics$min, 500, window.width - 40);
 	var initialAnimState = $author$project$Anim$Engine$Sub$init(
 		_List_fromArray(
 			[
-				$author$project$Common$Animations$Controls$init(animationAreaWidth)
+				$author$project$Common$Animations$Controls$init(animAreaWidth)
 			]));
 	return _Utils_Tuple2(
 		{
-			animationAreaSize: {height: 350, width: animationAreaWidth},
-			animationState: initialAnimState,
-			status: $author$project$Engines$Sub$Controls$Main$Idle
+			animAreaSize: {height: 350, width: animAreaWidth},
+			animState: initialAnimState
 		},
 		$elm$core$Platform$Cmd$none);
 };
@@ -8027,7 +8025,7 @@ var $author$project$Anim$Internal$Sub$subscriptions = F2(
 	});
 var $author$project$Anim$Engine$Sub$subscriptions = $author$project$Anim$Internal$Sub$subscriptions;
 var $author$project$Engines$Sub$Controls$Main$subscriptions = function (model) {
-	return A2($author$project$Anim$Engine$Sub$subscriptions, $author$project$Engines$Sub$Controls$Main$GotSubMsg, model.animationState);
+	return A2($author$project$Anim$Engine$Sub$subscriptions, $author$project$Engines$Sub$Controls$Main$GotSubMsg, model.animState);
 };
 var $author$project$Anim$Internal$Sub$Started = function (a) {
 	return {$: 'Started', a: a};
@@ -8314,14 +8312,14 @@ var $author$project$Anim$Internal$Sub$initTranslate = F2(
 		}
 	});
 var $author$project$Anim$Internal$Sub$mapCurrentValue = F5(
-	function (getter, setter, elementId, animationState, animBuilder) {
+	function (getter, setter, elementId, animState, animBuilder) {
 		return A2(
 			setter,
 			animBuilder,
-			A2(getter, elementId, animationState));
+			A2(getter, elementId, animState));
 	});
 var $author$project$Anim$Internal$Sub$setInitialValues = F4(
-	function (animationState, elementId, _v0, builderAcc) {
+	function (animState, elementId, _v0, builderAcc) {
 		var funcList = _List_fromArray(
 			[
 				A2($author$project$Anim$Internal$Sub$mapCurrentValue, $author$project$Anim$Internal$Sub$getTranslate, $author$project$Anim$Internal$Sub$initTranslate),
@@ -8335,16 +8333,16 @@ var $author$project$Anim$Internal$Sub$setInitialValues = F4(
 			$elm$core$List$foldl,
 			F2(
 				function (func, acc) {
-					return A3(func, elementId, animationState, acc);
+					return A3(func, elementId, animState, acc);
 				}),
 			A2($author$project$Anim$Internal$Builder$for, elementId, builderAcc),
 			funcList);
 	});
-var $author$project$Anim$Internal$Sub$builder = function (animationState) {
-	var state = animationState.a;
+var $author$project$Anim$Internal$Sub$builder = function (animState) {
+	var state = animState.a;
 	return A3(
 		$elm$core$Dict$foldl,
-		$author$project$Anim$Internal$Sub$setInitialValues(animationState),
+		$author$project$Anim$Internal$Sub$setInitialValues(animState),
 		state.builder,
 		state.elementAnimations);
 };
@@ -8607,59 +8605,6 @@ var $author$project$Common$Animations$Controls$animate = A2(
 					$elm$core$Basics$composeR,
 					$author$project$Anim$Property$Translate$easing($author$project$Anim$Easing$BounceOut),
 					$author$project$Anim$Property$Translate$build)))));
-var $author$project$Engines$Sub$Controls$Main$Paused = {$: 'Paused'};
-var $author$project$Engines$Sub$Controls$Main$Running = {$: 'Running'};
-var $author$project$Engines$Sub$Controls$Main$handleSingleEvent = F2(
-	function (event, _v0) {
-		var model = _v0.a;
-		var cmd = _v0.b;
-		switch (event.$) {
-			case 'Started':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{status: $author$project$Engines$Sub$Controls$Main$Running}),
-					cmd);
-			case 'Restarted':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{status: $author$project$Engines$Sub$Controls$Main$Running}),
-					cmd);
-			case 'Canceled':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{status: $author$project$Engines$Sub$Controls$Main$Idle}),
-					cmd);
-			case 'Completed':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{status: $author$project$Engines$Sub$Controls$Main$Idle}),
-					cmd);
-			case 'Paused':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{status: $author$project$Engines$Sub$Controls$Main$Paused}),
-					cmd);
-			default:
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{status: $author$project$Engines$Sub$Controls$Main$Running}),
-					cmd);
-		}
-	});
-var $author$project$Engines$Sub$Controls$Main$handleAnimationEvents = F2(
-	function (events, model) {
-		return A3(
-			$elm$core$List$foldl,
-			$author$project$Engines$Sub$Controls$Main$handleSingleEvent,
-			_Utils_Tuple2(model, $elm$core$Platform$Cmd$none),
-			events);
-	});
 var $author$project$Anim$Internal$Sub$Paused = function (a) {
 	return {$: 'Paused', a: a};
 };
@@ -9410,21 +9355,19 @@ var $author$project$Engines$Sub$Controls$Main$update = F2(
 		switch (msg.$) {
 			case 'GotSubMsg':
 				var subMsg = msg.a;
-				var _v1 = A2($author$project$Anim$Engine$Sub$update, subMsg, model.animationState);
+				var _v1 = A2($author$project$Anim$Engine$Sub$update, subMsg, model.animState);
 				var newAnimState = _v1.a;
-				var events = _v1.b;
-				return A2(
-					$author$project$Engines$Sub$Controls$Main$handleAnimationEvents,
-					events,
+				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animationState: newAnimState}));
+						{animState: newAnimState}),
+					$elm$core$Platform$Cmd$none);
 			case 'Animate':
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							animationState: A2($author$project$Anim$Engine$Sub$animate, model.animationState, $author$project$Common$Animations$Controls$animate)
+							animState: A2($author$project$Anim$Engine$Sub$animate, model.animState, $author$project$Common$Animations$Controls$animate)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Stop':
@@ -9432,7 +9375,7 @@ var $author$project$Engines$Sub$Controls$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animationState: A2($author$project$Anim$Engine$Sub$stop, $author$project$Common$Animations$Controls$elementId, model.animationState)
+							animState: A2($author$project$Anim$Engine$Sub$stop, $author$project$Common$Animations$Controls$elementId, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Pause':
@@ -9440,7 +9383,7 @@ var $author$project$Engines$Sub$Controls$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animationState: A2($author$project$Anim$Engine$Sub$pause, $author$project$Common$Animations$Controls$elementId, model.animationState)
+							animState: A2($author$project$Anim$Engine$Sub$pause, $author$project$Common$Animations$Controls$elementId, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Resume':
@@ -9448,7 +9391,7 @@ var $author$project$Engines$Sub$Controls$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animationState: A2($author$project$Anim$Engine$Sub$resume, $author$project$Common$Animations$Controls$elementId, model.animationState)
+							animState: A2($author$project$Anim$Engine$Sub$resume, $author$project$Common$Animations$Controls$elementId, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Reset':
@@ -9456,7 +9399,7 @@ var $author$project$Engines$Sub$Controls$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animationState: A2($author$project$Anim$Engine$Sub$reset, $author$project$Common$Animations$Controls$elementId, model.animationState)
+							animState: A2($author$project$Anim$Engine$Sub$reset, $author$project$Common$Animations$Controls$elementId, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 			default:
@@ -9464,7 +9407,7 @@ var $author$project$Engines$Sub$Controls$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animationState: A2($author$project$Anim$Engine$Sub$restart, $author$project$Common$Animations$Controls$elementId, model.animationState)
+							animState: A2($author$project$Anim$Engine$Sub$restart, $author$project$Common$Animations$Controls$elementId, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 		}
@@ -15415,12 +15358,6 @@ var $author$project$Engines$Sub$Controls$Main$buttons = A2(
 				$mdgriffith$elm_ui$Element$spacing(12)
 			])),
 	$elm$core$List$map($author$project$Engines$Sub$Controls$Main$button));
-var $mdgriffith$elm_ui$Internal$Model$Class = F2(
-	function (a, b) {
-		return {$: 'Class', a: a, b: b};
-	});
-var $mdgriffith$elm_ui$Internal$Flag$fontAlignment = $mdgriffith$elm_ui$Internal$Flag$flag(12);
-var $mdgriffith$elm_ui$Element$Font$center = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontAlignment, $mdgriffith$elm_ui$Internal$Style$classes.textCenter);
 var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
 	return {$: 'AlignY', a: a};
 };
@@ -15738,6 +15675,10 @@ var $author$project$Anim$Internal$Sub$htmlAttributes = F2(
 	});
 var $author$project$Anim$Engine$Sub$htmlAttributes = $author$project$Anim$Internal$Sub$htmlAttributes;
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $mdgriffith$elm_ui$Internal$Model$Class = F2(
+	function (a, b) {
+		return {$: 'Class', a: a, b: b};
+	});
 var $mdgriffith$elm_ui$Internal$Flag$fontWeight = $mdgriffith$elm_ui$Internal$Flag$flag(13);
 var $mdgriffith$elm_ui$Element$Font$medium = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textMedium);
 var $mdgriffith$elm_ui$Element$padding = function (x) {
@@ -15753,6 +15694,8 @@ var $mdgriffith$elm_ui$Element$padding = function (x) {
 			f,
 			f));
 };
+var $mdgriffith$elm_ui$Internal$Flag$fontAlignment = $mdgriffith$elm_ui$Internal$Flag$flag(12);
+var $mdgriffith$elm_ui$Element$Font$center = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontAlignment, $mdgriffith$elm_ui$Internal$Style$classes.textCenter);
 var $mdgriffith$elm_ui$Internal$Model$Describe = function (a) {
 	return {$: 'Describe', a: a};
 };
@@ -15865,8 +15808,8 @@ var $mdgriffith$elm_ui$Element$Font$size = function (i) {
 		$mdgriffith$elm_ui$Internal$Flag$fontSize,
 		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
 };
-var $author$project$Common$Colors$textMedium = A3($mdgriffith$elm_ui$Element$rgb255, 71, 85, 105);
 var $author$project$Common$Colors$primary = A3($mdgriffith$elm_ui$Element$rgb255, 59, 130, 246);
+var $author$project$Common$Colors$textMedium = A3($mdgriffith$elm_ui$Element$rgb255, 71, 85, 105);
 var $mdgriffith$elm_ui$Internal$Model$BorderWidth = F5(
 	function (a, b, c, d, e) {
 		return {$: 'BorderWidth', a: a, b: b, c: c, d: d, e: e};
@@ -15950,19 +15893,6 @@ var $author$project$Engines$Sub$Controls$Main$viewContent = function (model) {
 	return _List_fromArray(
 		[
 			$author$project$Common$UI$pageHeader('Sub Engine Controls'),
-			A2(
-			$mdgriffith$elm_ui$Element$paragraph,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-					$mdgriffith$elm_ui$Element$Font$size(16),
-					$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium),
-					$mdgriffith$elm_ui$Element$Font$center
-				]),
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$text('Demonstrating all available Engine Controls')
-				])),
 			A2(
 			$mdgriffith$elm_ui$Element$column,
 			_List_fromArray(
@@ -16050,7 +15980,7 @@ var $author$project$Engines$Sub$Controls$Main$viewContent = function (model) {
 			_List_fromArray(
 				[
 					$mdgriffith$elm_ui$Element$width(
-					$mdgriffith$elm_ui$Element$px(model.animationAreaSize.width)),
+					$mdgriffith$elm_ui$Element$px(model.animAreaSize.width)),
 					$mdgriffith$elm_ui$Element$height(
 					$mdgriffith$elm_ui$Element$px(350)),
 					$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundWhite),
@@ -16081,7 +16011,7 @@ var $author$project$Engines$Sub$Controls$Main$viewContent = function (model) {
 					A2(
 						$elm$core$List$map,
 						$mdgriffith$elm_ui$Element$htmlAttribute,
-						A2($author$project$Anim$Engine$Sub$htmlAttributes, $author$project$Common$Animations$Controls$elementId, model.animationState))),
+						A2($author$project$Anim$Engine$Sub$htmlAttributes, $author$project$Common$Animations$Controls$elementId, model.animState))),
 				A2(
 					$mdgriffith$elm_ui$Element$el,
 					_List_fromArray(

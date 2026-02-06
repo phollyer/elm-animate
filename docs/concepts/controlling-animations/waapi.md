@@ -1,6 +1,6 @@
 # Controlling WAAPI Animations
 
-The WAAPI Engine provides full programmatic control over running animations through the Web Animations API. You can stop, pause, resume, reset, and restart animations at any time.
+The WAAPI Engine provides full programmatic control over running animations through the Web Animations API. You can `stop`, `reset`, `restart`, `pause` and `resume` animations at any time.
 
 ## Available Controls
 
@@ -75,37 +75,3 @@ Resets to the start state, then immediately begins playing the animation again:
     ```elm
     --8<-- "docs/examples/src/Engines/WAAPI/Controls/Main.elm:restart"
     ```
-
-
-
-## Animation Events
-
-When using control functions, the WAAPI engine fires lifecycle events that you can handle in your update function:
-
-??? example "View Source Code"
-
-    ```elm
-    --8<-- "docs/examples/src/Engines/WAAPI/Controls/Main.elm:handleAnimationEvent"
-    ```
-
-### Event Types
-
-| Event | Triggered When |
-| ------- | ---------------- |
-| `Started` | Animation begins playing |
-| `Completed` | Animation reaches its end naturally |
-| `Canceled` | Animation is stopped before completion |
-| `Paused` | Animation is paused |
-| `Resumed` | Paused animation continues |
-| `Restarted` | Animation is restarted |
-
-## Best Practices
-
-!!! tip "Always update AnimState"
-    Control functions return a new `AnimState` that reflects the pending operation. Always update your model with this new state to keep Elm and JavaScript synchronized.
-
-!!! tip "Handle events for UI feedback"
-    Use animation events to update UI elements like status indicators, enable/disable buttons, or trigger subsequent animations.
-
-!!! tip "Pause vs Stop"
-    Use `pause` when you want to temporarily freeze an animation and resume later. Use `stop` when the animation should jump to its final state immediately.

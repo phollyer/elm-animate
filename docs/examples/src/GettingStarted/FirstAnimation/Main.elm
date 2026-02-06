@@ -1,5 +1,6 @@
 module GettingStarted.FirstAnimation.Main exposing (main)
 
+import Anim.Easing exposing (Easing(..))
 import Anim.Engine.CSS as CSS
 import Anim.Property.Opacity as Opacity
 import Browser
@@ -9,8 +10,20 @@ import Process
 import Task
 
 
-type alias Model =
-    { state : State }
+-- MAIN
+
+
+main : Program () Model Msg
+main =
+    Browser.element
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = always Sub.none
+        }
+
+
+-- MODEL
 
 
 type State
@@ -18,11 +31,18 @@ type State
     | FadeIn
 
 
+type alias Model =
+    { state : State }
+
+
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { state = Ready }
     , Process.sleep 50 |> Task.perform (always TriggerFadeIn)
     )
+
+
+-- UPDATE
 
 
 type Msg
@@ -36,69 +56,49 @@ update msg model =
             ( { model | state = FadeIn }, Cmd.none )
 
 
-
+-- ANIMATION BUILDER
 -- --8<-- [start:fadeIn]
 
 
 fadeInBuilder : CSS.AnimBuilder -> CSS.AnimBuilder
-fadeInBuilder builder =
-    builder
-        |> Opacity.for "my-box"
-        |> Opacity.from 0
-        |> Opacity.to 1
-        |> Opacity.duration 2500
-        |> Opacity.build
+fadeInBuilder =
+    Opacity.for "my-box"
+        >> Opacity.from 0
+        >> Opacity.to 1
+        >> Opacity.duration 2500
+        >> Opacity.easing CubicIn
+        >> Opacity.build
 
 
 
 -- --8<-- [end:fadeIn]
--- --8<-- [start:animState]
-
-
-fadeInAnimation : CSS.AnimState
-fadeInAnimation =
-    CSS.animate CSS.init fadeInBuilder
-
-
-
--- --8<-- [end:animState]
--- --8<-- [start:applyStyles]
+-- VIEW
 
 
 view : Model -> Html Msg
 view model =
+    -- --8<-- [start:fireAndForget]
     let
-        fadeIn =
+        animState =
             case model.state of
                 Ready ->
                     CSS.init
+                        [ Opacity.init "my-box" 0 ]
 
                 FadeIn ->
-                    fadeInAnimation
+                    CSS.fireAndForget fadeInBuilder
     in
-    div []
-        [ div
-            ([ id "my-box"
-             , style "opacity" "0"
-             , style "width" "100px"
-             , style "height" "100px"
-             , style "background-color" "blue"
-             ]
-                ++ CSS.transitionAttributes "my-box" fadeIn
-            )
-            [ text "Hello!" ]
-        ]
+    -- --8<-- [end:fireAndForget]
+    -- --8<-- [start:applyStyles]
+    div
+        ([ style "width" "100px"
+         , style "height" "100px"
+         , style "background-color" "blue"
+         ]
+            ++ CSS.transitionAttributes "my-box" animState
+        )
+        []
 
 
 
 -- --8<-- [end:applyStyles]
-
-
-main : Program () Model Msg
-main =
-    Browser.element
-        { init = init
-        , view = view
-        , update = update
-        , subscriptions = always Sub.none
-        }

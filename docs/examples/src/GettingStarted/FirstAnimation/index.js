@@ -5188,35 +5188,73 @@ var $author$project$GettingStarted$FirstAnimation$Main$update = F2(
 			$elm$core$Platform$Cmd$none);
 	});
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $author$project$Anim$Internal$CSS$AnimState = function (a) {
-	return {$: 'AnimState', a: a};
+var $author$project$Anim$Easing$CubicIn = {$: 'CubicIn'};
+var $author$project$Anim$Internal$Builder$OpacityConfig = function (a) {
+	return {$: 'OpacityConfig', a: a};
 };
-var $author$project$Anim$Internal$CSS$NotStarted = {$: 'NotStarted'};
-var $author$project$Anim$Internal$CSS$builder = function (_v0) {
-	var state = _v0.a;
-	return state.builder;
+var $elm$core$Basics$compare = _Utils_compare;
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Anim$Internal$Builder$getCurrentElementConfig = function (_v0) {
+	var data = _v0.a;
+	var _v1 = data.currentElementId;
+	if (_v1.$ === 'Nothing') {
+		return {properties: _List_Nil};
+	} else {
+		var elementId = _v1.a;
+		return A2(
+			$elm$core$Maybe$withDefault,
+			{properties: _List_Nil},
+			A2($elm$core$Dict$get, elementId, data.elements));
+	}
 };
 var $author$project$Anim$Internal$Builder$AnimBuilder = function (a) {
 	return {$: 'AnimBuilder', a: a};
 };
-var $author$project$Anim$Internal$Builder$clearCurrentElement = function (_v0) {
-	var data = _v0.a;
-	return $author$project$Anim$Internal$Builder$AnimBuilder(
-		_Utils_update(
-			data,
-			{currentElementId: $elm$core$Maybe$Nothing}));
-};
-var $author$project$Anim$Internal$Builder$elements = function (_v0) {
-	var data = _v0.a;
-	return data.elements;
-};
-var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
-var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $elm$core$Dict$Black = {$: 'Black'};
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
 		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
 	});
+var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$Red = {$: 'Red'};
 var $elm$core$Dict$balance = F5(
 	function (color, key, value, left, right) {
@@ -5272,7 +5310,6 @@ var $elm$core$Dict$balance = F5(
 			}
 		}
 	});
-var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$insertHelp = F3(
 	function (key, value, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
@@ -5321,18 +5358,242 @@ var $elm$core$Dict$insert = F3(
 			return x;
 		}
 	});
-var $elm$core$Dict$fromList = function (assocs) {
-	return A3(
-		$elm$core$List$foldl,
-		F2(
-			function (_v0, dict) {
-				var key = _v0.a;
-				var value = _v0.b;
-				return A3($elm$core$Dict$insert, key, value, dict);
-			}),
-		$elm$core$Dict$empty,
-		assocs);
+var $author$project$Anim$Internal$Builder$updateCurrentElement = F2(
+	function (config, _v0) {
+		var data = _v0.a;
+		var _v1 = data.currentElementId;
+		if (_v1.$ === 'Nothing') {
+			return $author$project$Anim$Internal$Builder$AnimBuilder(data);
+		} else {
+			var elementId = _v1.a;
+			return $author$project$Anim$Internal$Builder$AnimBuilder(
+				_Utils_update(
+					data,
+					{
+						elements: A3($elm$core$Dict$insert, elementId, config, data.elements)
+					}));
+		}
+	});
+var $author$project$Anim$Internal$Builders$Property$add = F2(
+	function (propertyConfig, builder) {
+		var currentElement = $author$project$Anim$Internal$Builder$getCurrentElementConfig(builder);
+		var updatedElement = _Utils_update(
+			currentElement,
+			{
+				properties: _Utils_ap(
+					currentElement.properties,
+					_List_fromArray(
+						[propertyConfig]))
+			});
+		return A2($author$project$Anim$Internal$Builder$updateCurrentElement, updatedElement, builder);
+	});
+var $author$project$Anim$Internal$Builder$BackgroundColorConfig = function (a) {
+	return {$: 'BackgroundColorConfig', a: a};
 };
+var $author$project$Anim$Internal$Builder$FontColorConfig = function (a) {
+	return {$: 'FontColorConfig', a: a};
+};
+var $author$project$Anim$Internal$Builder$RotateConfig = function (a) {
+	return {$: 'RotateConfig', a: a};
+};
+var $author$project$Anim$Internal$Builder$ScaleConfig = function (a) {
+	return {$: 'ScaleConfig', a: a};
+};
+var $author$project$Anim$Internal$Builder$SizeConfig = function (a) {
+	return {$: 'SizeConfig', a: a};
+};
+var $author$project$Anim$Internal$Builder$TranslateConfig = function (a) {
+	return {$: 'TranslateConfig', a: a};
+};
+var $author$project$Anim$Easing$BounceInCustom = function (a) {
+	return {$: 'BounceInCustom', a: a};
+};
+var $author$project$Anim$Easing$BounceInOutCustom = function (a) {
+	return {$: 'BounceInOutCustom', a: a};
+};
+var $author$project$Anim$Easing$BounceOutCustom = function (a) {
+	return {$: 'BounceOutCustom', a: a};
+};
+var $author$project$Anim$Easing$ElasticInCustom = function (a) {
+	return {$: 'ElasticInCustom', a: a};
+};
+var $author$project$Anim$Easing$ElasticInOutCustom = function (a) {
+	return {$: 'ElasticInOutCustom', a: a};
+};
+var $author$project$Anim$Easing$ElasticOutCustom = function (a) {
+	return {$: 'ElasticOutCustom', a: a};
+};
+var $elm$core$Basics$clamp = F3(
+	function (low, high, number) {
+		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
+	});
+var $author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength = F2(
+	function (baseStrength, config) {
+		var animDuration = ((config.distance > 0) && (config.speed > 0)) ? ((config.distance / config.speed) * 1000) : config.duration;
+		var velocity = (animDuration > 0) ? ((config.distance / animDuration) * 1000) : 0;
+		var normalizedVelocity = A3($elm$core$Basics$clamp, 0, 1, velocity / 500);
+		var velocityInfluence = 0.3 * normalizedVelocity;
+		var adjustedStrength = (baseStrength * 0.7) + velocityInfluence;
+		var finalStrength = A3($elm$core$Basics$clamp, 0.1, 1.0, adjustedStrength);
+		return finalStrength;
+	});
+var $author$project$Anim$Internal$Builders$Property$adjustConfigEasing = function (config) {
+	var _v0 = config.easing;
+	_v0$6:
+	while (true) {
+		if (_v0.$ === 'Just') {
+			switch (_v0.a.$) {
+				case 'BounceOutCustom':
+					var baseStrength = _v0.a.a;
+					return _Utils_update(
+						config,
+						{
+							easing: $elm$core$Maybe$Just(
+								$author$project$Anim$Easing$BounceOutCustom(
+									A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrength, config)))
+						});
+				case 'BounceInCustom':
+					var baseStrength = _v0.a.a;
+					return _Utils_update(
+						config,
+						{
+							easing: $elm$core$Maybe$Just(
+								$author$project$Anim$Easing$BounceInCustom(
+									A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrength, config)))
+						});
+				case 'BounceInOutCustom':
+					var _v1 = _v0.a.a;
+					var baseStrengthIn = _v1.a;
+					var baseStrengthOut = _v1.b;
+					return _Utils_update(
+						config,
+						{
+							easing: $elm$core$Maybe$Just(
+								$author$project$Anim$Easing$BounceInOutCustom(
+									_Utils_Tuple2(
+										A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrengthIn, config),
+										A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrengthOut, config))))
+						});
+				case 'ElasticOutCustom':
+					var baseStrength = _v0.a.a;
+					return _Utils_update(
+						config,
+						{
+							easing: $elm$core$Maybe$Just(
+								$author$project$Anim$Easing$ElasticOutCustom(
+									A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrength, config)))
+						});
+				case 'ElasticInCustom':
+					var baseStrength = _v0.a.a;
+					return _Utils_update(
+						config,
+						{
+							easing: $elm$core$Maybe$Just(
+								$author$project$Anim$Easing$ElasticInCustom(
+									A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrength, config)))
+						});
+				case 'ElasticInOutCustom':
+					var _v2 = _v0.a.a;
+					var baseStrengthIn = _v2.a;
+					var baseStrengthOut = _v2.b;
+					return _Utils_update(
+						config,
+						{
+							easing: $elm$core$Maybe$Just(
+								$author$project$Anim$Easing$ElasticInOutCustom(
+									_Utils_Tuple2(
+										A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrengthIn, config),
+										A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrengthOut, config))))
+						});
+				default:
+					break _v0$6;
+			}
+		} else {
+			break _v0$6;
+		}
+	}
+	return config;
+};
+var $author$project$Anim$Internal$Builders$Property$adjustBounceEasing = function (propertyConfig) {
+	switch (propertyConfig.$) {
+		case 'TranslateConfig':
+			var config = propertyConfig.a;
+			return $author$project$Anim$Internal$Builder$TranslateConfig(
+				$author$project$Anim$Internal$Builders$Property$adjustConfigEasing(config));
+		case 'ScaleConfig':
+			var config = propertyConfig.a;
+			return $author$project$Anim$Internal$Builder$ScaleConfig(
+				$author$project$Anim$Internal$Builders$Property$adjustConfigEasing(config));
+		case 'RotateConfig':
+			var config = propertyConfig.a;
+			return $author$project$Anim$Internal$Builder$RotateConfig(
+				$author$project$Anim$Internal$Builders$Property$adjustConfigEasing(config));
+		case 'SizeConfig':
+			var config = propertyConfig.a;
+			return $author$project$Anim$Internal$Builder$SizeConfig(
+				$author$project$Anim$Internal$Builders$Property$adjustConfigEasing(config));
+		case 'OpacityConfig':
+			var config = propertyConfig.a;
+			return $author$project$Anim$Internal$Builder$OpacityConfig(
+				$author$project$Anim$Internal$Builders$Property$adjustConfigEasing(config));
+		case 'BackgroundColorConfig':
+			var config = propertyConfig.a;
+			return $author$project$Anim$Internal$Builder$BackgroundColorConfig(
+				$author$project$Anim$Internal$Builders$Property$adjustConfigEasing(config));
+		default:
+			var config = propertyConfig.a;
+			return $author$project$Anim$Internal$Builder$FontColorConfig(
+				$author$project$Anim$Internal$Builders$Property$adjustConfigEasing(config));
+	}
+};
+var $author$project$Anim$Internal$Builders$Property$configsMatch = F2(
+	function (prop1, prop2) {
+		var _v0 = _Utils_Tuple2(prop1, prop2);
+		_v0$6:
+		while (true) {
+			switch (_v0.a.$) {
+				case 'TranslateConfig':
+					if (_v0.b.$ === 'TranslateConfig') {
+						return true;
+					} else {
+						break _v0$6;
+					}
+				case 'RotateConfig':
+					if (_v0.b.$ === 'RotateConfig') {
+						return true;
+					} else {
+						break _v0$6;
+					}
+				case 'ScaleConfig':
+					if (_v0.b.$ === 'ScaleConfig') {
+						return true;
+					} else {
+						break _v0$6;
+					}
+				case 'BackgroundColorConfig':
+					if (_v0.b.$ === 'BackgroundColorConfig') {
+						return true;
+					} else {
+						break _v0$6;
+					}
+				case 'OpacityConfig':
+					if (_v0.b.$ === 'OpacityConfig') {
+						return true;
+					} else {
+						break _v0$6;
+					}
+				case 'SizeConfig':
+					if (_v0.b.$ === 'SizeConfig') {
+						return true;
+					} else {
+						break _v0$6;
+					}
+				default:
+					break _v0$6;
+			}
+		}
+		return false;
+	});
 var $elm$core$List$filter = F2(
 	function (isGood, list) {
 		return A3(
@@ -5343,6 +5604,172 @@ var $elm$core$List$filter = F2(
 				}),
 			_List_Nil,
 			list);
+	});
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$Internal$Builders$Property$find = F2(
+	function (predicate, builder) {
+		var currentElement = $author$project$Anim$Internal$Builder$getCurrentElementConfig(builder);
+		return $elm$core$List$head(
+			A2($elm$core$List$filter, predicate, currentElement.properties));
+	});
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$core$Basics$not = _Basics_not;
+var $author$project$Anim$Internal$Builders$Property$replace = F2(
+	function (propertyConfig, builder) {
+		var currentElement = $author$project$Anim$Internal$Builder$getCurrentElementConfig(builder);
+		var updatedProperties = _Utils_ap(
+			A2(
+				$elm$core$List$filter,
+				A2(
+					$elm$core$Basics$composeL,
+					$elm$core$Basics$not,
+					$author$project$Anim$Internal$Builders$Property$configsMatch(propertyConfig)),
+				currentElement.properties),
+			_List_fromArray(
+				[propertyConfig]));
+		var updatedElement = _Utils_update(
+			currentElement,
+			{properties: updatedProperties});
+		return A2($author$project$Anim$Internal$Builder$updateCurrentElement, updatedElement, builder);
+	});
+var $author$project$Anim$Internal$Builders$Property$upsert = F2(
+	function (propertyConfig, builder) {
+		var adjustedConfig = $author$project$Anim$Internal$Builders$Property$adjustBounceEasing(propertyConfig);
+		var _v0 = A2(
+			$author$project$Anim$Internal$Builders$Property$find,
+			$author$project$Anim$Internal$Builders$Property$configsMatch(adjustedConfig),
+			builder);
+		if (_v0.$ === 'Just') {
+			return A2($author$project$Anim$Internal$Builders$Property$replace, adjustedConfig, builder);
+		} else {
+			return A2($author$project$Anim$Internal$Builders$Property$add, adjustedConfig, builder);
+		}
+	});
+var $author$project$Anim$Internal$Builders$Opacity$build = function (_v0) {
+	var config = _v0.a;
+	var builder = _v0.b;
+	return A2(
+		$author$project$Anim$Internal$Builders$Property$upsert,
+		$author$project$Anim$Internal$Builder$OpacityConfig(config),
+		builder);
+};
+var $author$project$Anim$Property$Opacity$build = $author$project$Anim$Internal$Builders$Opacity$build;
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var $author$project$Anim$Internal$Builders$Opacity$OpacityBuilder = F2(
+	function (a, b) {
+		return {$: 'OpacityBuilder', a: a, b: b};
+	});
+var $author$project$Anim$Internal$Timing$TimeSpec$Duration = function (a) {
+	return {$: 'Duration', a: a};
+};
+var $author$project$Anim$Internal$Builders$Property$withDuration = F2(
+	function (ms, config) {
+		return _Utils_update(
+			config,
+			{
+				duration: ms,
+				timing: $elm$core$Maybe$Just(
+					$author$project$Anim$Internal$Timing$TimeSpec$Duration(ms))
+			});
+	});
+var $author$project$Anim$Internal$Builders$Opacity$duration = F2(
+	function (dur, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builders$Opacity$OpacityBuilder,
+			A2($author$project$Anim$Internal$Builders$Property$withDuration, dur, config),
+			builder);
+	});
+var $author$project$Anim$Property$Opacity$duration = $author$project$Anim$Internal$Builders$Opacity$duration;
+var $author$project$Anim$Internal$Builders$Property$withEasing = F2(
+	function (easing_, config) {
+		return _Utils_update(
+			config,
+			{
+				easing: $elm$core$Maybe$Just(easing_)
+			});
+	});
+var $author$project$Anim$Internal$Builders$Opacity$easing = F2(
+	function (ease, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builders$Opacity$OpacityBuilder,
+			A2($author$project$Anim$Internal$Builders$Property$withEasing, ease, config),
+			builder);
+	});
+var $author$project$Anim$Property$Opacity$easing = $author$project$Anim$Internal$Builders$Opacity$easing;
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$Anim$Internal$Builder$getDelay = function (_v0) {
+	var data = _v0.a;
+	return data.globalDelay;
+};
+var $author$project$Anim$Internal$Builder$getEasing = function (_v0) {
+	var data = _v0.a;
+	return data.globalEasing;
+};
+var $author$project$Anim$Internal$Builder$getTimespec = function (_v0) {
+	var data = _v0.a;
+	return data.globalTiming;
+};
+var $author$project$Anim$Internal$Builders$Property$applyGlobalDefaults = F2(
+	function (builder, config) {
+		return _Utils_update(
+			config,
+			{
+				delay: function () {
+					var _v0 = config.delay;
+					if (_v0.$ === 'Just') {
+						var delay_ = _v0.a;
+						return $elm$core$Maybe$Just(delay_);
+					} else {
+						return $author$project$Anim$Internal$Builder$getDelay(builder);
+					}
+				}(),
+				easing: function () {
+					var _v1 = config.easing;
+					if (_v1.$ === 'Just') {
+						var easing_ = _v1.a;
+						return $elm$core$Maybe$Just(easing_);
+					} else {
+						return $author$project$Anim$Internal$Builder$getEasing(builder);
+					}
+				}(),
+				timing: function () {
+					var _v2 = config.timing;
+					if (_v2.$ === 'Just') {
+						var timing_ = _v2.a;
+						return $elm$core$Maybe$Just(timing_);
+					} else {
+						return $author$project$Anim$Internal$Builder$getTimespec(builder);
+					}
+				}()
+			});
 	});
 var $elm$core$List$maybeCons = F3(
 	function (f, mx, xs) {
@@ -5362,7 +5789,682 @@ var $elm$core$List$filterMap = F2(
 			_List_Nil,
 			xs);
 	});
+var $author$project$Anim$Internal$Builder$getElementBaseline = F2(
+	function (elementId, _v0) {
+		var data = _v0.a;
+		return A2($elm$core$Dict$get, elementId, data.elementBaselines);
+	});
+var $author$project$Anim$Internal$Builder$getElementConfig = F2(
+	function (elementId, _v0) {
+		var data = _v0.a;
+		return A2($elm$core$Dict$get, elementId, data.elements);
+	});
+var $author$project$Anim$Internal$Builders$Property$createFor = F5(
+	function (extractExisting, extractBaseline, defaultConfig_, elementId, builder) {
+		var existingConfig = A2(
+			$elm$core$Maybe$andThen,
+			function (_v4) {
+				var properties = _v4.properties;
+				return $elm$core$List$head(
+					A2($elm$core$List$filterMap, extractExisting, properties));
+			},
+			A2($author$project$Anim$Internal$Builder$getElementConfig, elementId, builder));
+		var baselineValue = A2(
+			$elm$core$Maybe$andThen,
+			extractBaseline,
+			A2($author$project$Anim$Internal$Builder$getElementBaseline, elementId, builder));
+		if (existingConfig.$ === 'Just') {
+			var config = existingConfig.a;
+			return A2(
+				$author$project$Anim$Internal$Builders$Property$applyGlobalDefaults,
+				builder,
+				_Utils_update(
+					config,
+					{
+						delay: $elm$core$Maybe$Nothing,
+						distance: 0,
+						duration: 0,
+						easing: $elm$core$Maybe$Nothing,
+						end: function () {
+							if (baselineValue.$ === 'Just') {
+								var baseline = baselineValue.a;
+								return baseline;
+							} else {
+								return config.end;
+							}
+						}(),
+						isDirty: false,
+						speed: 0,
+						start: function () {
+							if (baselineValue.$ === 'Just') {
+								var baseline = baselineValue.a;
+								return $elm$core$Maybe$Just(baseline);
+							} else {
+								return $elm$core$Maybe$Just(config.end);
+							}
+						}(),
+						timing: $elm$core$Maybe$Nothing
+					}));
+		} else {
+			if (baselineValue.$ === 'Just') {
+				var baseline = baselineValue.a;
+				return A2(
+					$author$project$Anim$Internal$Builders$Property$applyGlobalDefaults,
+					builder,
+					_Utils_update(
+						defaultConfig_,
+						{
+							end: baseline,
+							start: $elm$core$Maybe$Just(baseline)
+						}));
+			} else {
+				return A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, defaultConfig_);
+			}
+		}
+	});
+var $author$project$Anim$Internal$Builders$Property$defaultConfig = function (defaultEnd) {
+	return {delay: $elm$core$Maybe$Nothing, distance: 0, duration: 0, easing: $elm$core$Maybe$Nothing, end: defaultEnd, isDirty: false, speed: 0, start: $elm$core$Maybe$Nothing, timing: $elm$core$Maybe$Nothing};
+};
+var $author$project$Anim$Internal$Properties$Opacity$Opacity = function (a) {
+	return {$: 'Opacity', a: a};
+};
+var $author$project$Anim$Internal$Properties$Opacity$fromFloat = function (o) {
+	return $author$project$Anim$Internal$Properties$Opacity$Opacity(o);
+};
+var $author$project$Anim$Internal$Builders$Opacity$defaultConfig = $author$project$Anim$Internal$Builders$Property$defaultConfig(
+	$author$project$Anim$Internal$Properties$Opacity$fromFloat(1));
+var $author$project$Anim$Internal$Builder$for = F2(
+	function (elementId, _v0) {
+		var data = _v0.a;
+		return $author$project$Anim$Internal$Builder$AnimBuilder(
+			_Utils_update(
+				data,
+				{
+					currentElementId: $elm$core$Maybe$Just(elementId)
+				}));
+	});
+var $author$project$Anim$Internal$Builders$Opacity$for = F2(
+	function (elementId, builder) {
+		var extractExisting = function (propertyConfig) {
+			if (propertyConfig.$ === 'OpacityConfig') {
+				var cfg = propertyConfig.a;
+				return $elm$core$Maybe$Just(cfg);
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		};
+		var extractBaseline = function (endStates) {
+			return endStates.opacity;
+		};
+		var config = A5($author$project$Anim$Internal$Builders$Property$createFor, extractExisting, extractBaseline, $author$project$Anim$Internal$Builders$Opacity$defaultConfig, elementId, builder);
+		return A2(
+			$author$project$Anim$Internal$Builders$Opacity$OpacityBuilder,
+			config,
+			A2($author$project$Anim$Internal$Builder$for, elementId, builder));
+	});
+var $author$project$Anim$Property$Opacity$for = $author$project$Anim$Internal$Builders$Opacity$for;
+var $author$project$Anim$Internal$Builders$Opacity$from = F2(
+	function (opacity, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builders$Opacity$OpacityBuilder,
+			_Utils_update(
+				config,
+				{
+					start: $elm$core$Maybe$Just(opacity)
+				}),
+			builder);
+	});
+var $author$project$Anim$Property$Opacity$from = A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Builders$Opacity$from, $author$project$Anim$Internal$Properties$Opacity$fromFloat);
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var $author$project$Anim$Internal$Properties$Opacity$distance = F2(
+	function (_v0, _v1) {
+		var o1 = _v0.a;
+		var o2 = _v1.a;
+		return $elm$core$Basics$abs(o2 - o1);
+	});
+var $author$project$Anim$Internal$Builders$Opacity$to = F2(
+	function (opacity, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var startPos = function () {
+			var _v1 = config.start;
+			if (_v1.$ === 'Just') {
+				var opacity_ = _v1.a;
+				return opacity_;
+			} else {
+				return $author$project$Anim$Internal$Properties$Opacity$fromFloat(1);
+			}
+		}();
+		return A2(
+			$author$project$Anim$Internal$Builders$Opacity$OpacityBuilder,
+			_Utils_update(
+				config,
+				{
+					distance: A2($author$project$Anim$Internal$Properties$Opacity$distance, startPos, opacity),
+					end: opacity,
+					start: $elm$core$Maybe$Just(startPos)
+				}),
+			builder);
+	});
+var $author$project$Anim$Property$Opacity$to = A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Builders$Opacity$to, $author$project$Anim$Internal$Properties$Opacity$fromFloat);
+var $author$project$GettingStarted$FirstAnimation$Main$fadeInBuilder = A2(
+	$elm$core$Basics$composeR,
+	$author$project$Anim$Property$Opacity$for('my-box'),
+	A2(
+		$elm$core$Basics$composeR,
+		$author$project$Anim$Property$Opacity$from(0),
+		A2(
+			$elm$core$Basics$composeR,
+			$author$project$Anim$Property$Opacity$to(1),
+			A2(
+				$elm$core$Basics$composeR,
+				$author$project$Anim$Property$Opacity$duration(2500),
+				A2(
+					$elm$core$Basics$composeR,
+					$author$project$Anim$Property$Opacity$easing($author$project$Anim$Easing$CubicIn),
+					$author$project$Anim$Property$Opacity$build)))));
+var $author$project$Anim$Internal$CSS$AnimState = function (a) {
+	return {$: 'AnimState', a: a};
+};
+var $author$project$Anim$Internal$CSS$NotStarted = {$: 'NotStarted'};
+var $author$project$Anim$Internal$CSS$builder = function (_v0) {
+	var state = _v0.a;
+	return state.builder;
+};
+var $author$project$Anim$Internal$Builder$clearCurrentElement = function (_v0) {
+	var data = _v0.a;
+	return $author$project$Anim$Internal$Builder$AnimBuilder(
+		_Utils_update(
+			data,
+			{currentElementId: $elm$core$Maybe$Nothing}));
+};
+var $author$project$Anim$Internal$Builder$elements = function (_v0) {
+	var data = _v0.a;
+	return data.elements;
+};
+var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
+var $elm$core$Dict$fromList = function (assocs) {
+	return A3(
+		$elm$core$List$foldl,
+		F2(
+			function (_v0, dict) {
+				var key = _v0.a;
+				var value = _v0.b;
+				return A3($elm$core$Dict$insert, key, value, dict);
+			}),
+		$elm$core$Dict$empty,
+		assocs);
+};
 var $elm$core$String$fromFloat = _String_fromNumber;
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $elm$core$Basics$neq = _Utils_notEqual;
+var $author$project$Anim$Internal$Properties$Rotate$to3DCssString = function (_v0) {
+	var angles = _v0.a;
+	var parts = A2(
+		$elm$core$List$filterMap,
+		$elm$core$Basics$identity,
+		_List_fromArray(
+			[
+				(!(!angles.x)) ? $elm$core$Maybe$Just(
+				'rotateX(' + ($elm$core$String$fromFloat(angles.x) + 'deg)')) : $elm$core$Maybe$Nothing,
+				(!(!angles.y)) ? $elm$core$Maybe$Just(
+				'rotateY(' + ($elm$core$String$fromFloat(angles.y) + 'deg)')) : $elm$core$Maybe$Nothing,
+				(!(!angles.z)) ? $elm$core$Maybe$Just(
+				'rotateZ(' + ($elm$core$String$fromFloat(angles.z) + 'deg)')) : $elm$core$Maybe$Nothing
+			]));
+	return $elm$core$List$isEmpty(parts) ? 'rotateZ(0deg)' : A2($elm$core$String$join, ' ', parts);
+};
+var $author$project$Anim$Internal$Properties$Translate$toCssString = function (_v0) {
+	var coords = _v0.a;
+	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px'))));
+};
+var $author$project$Anim$Internal$Properties$Scale$Scale = function (a) {
+	return {$: 'Scale', a: a};
+};
+var $author$project$Anim$Internal$Properties$Scale$default = $author$project$Anim$Internal$Properties$Scale$Scale(
+	{x: 1.0, y: 1.0, z: 1.0});
+var $author$project$Anim$Internal$Properties$Scale$support = {
+	add: F2(
+		function (_v0, _v1) {
+			var a = _v0.a;
+			var b = _v1.a;
+			return $author$project$Anim$Internal$Properties$Scale$Scale(
+				{x: a.x + b.x, y: a.y + b.y, z: a.z + b.z});
+		}),
+	fromRecord: $author$project$Anim$Internal$Properties$Scale$Scale,
+	scale: F2(
+		function (factor, _v2) {
+			var coords = _v2.a;
+			return $author$project$Anim$Internal$Properties$Scale$Scale(
+				{x: coords.x * factor, y: coords.y * factor, z: coords.z * factor});
+		}),
+	subtract: F2(
+		function (_v3, _v4) {
+			var a = _v3.a;
+			var b = _v4.a;
+			return $author$project$Anim$Internal$Properties$Scale$Scale(
+				{x: a.x - b.x, y: a.y - b.y, z: a.z - b.z});
+		}),
+	toRecord: function (_v5) {
+		var coords = _v5.a;
+		return coords;
+	},
+	zero: $author$project$Anim$Internal$Properties$Scale$default
+};
+var $author$project$Anim$Internal$Builders$Coordinate3D$toTuple = F2(
+	function (support, coord) {
+		var record = support.toRecord(coord);
+		return _Utils_Tuple2(record.x, record.y);
+	});
+var $author$project$Anim$Internal$Properties$Scale$toTuple = $author$project$Anim$Internal$Builders$Coordinate3D$toTuple($author$project$Anim$Internal$Properties$Scale$support);
+var $author$project$Anim$Internal$CSS$Transform$collectProcessedTransform = F2(
+	function (property, acc) {
+		switch (property.$) {
+			case 'ProcessedTranslateConfig':
+				var config = property.a;
+				return _Utils_update(
+					acc,
+					{
+						translate: 'translate3d(' + ($author$project$Anim$Internal$Properties$Translate$toCssString(config.end) + ')')
+					});
+			case 'ProcessedRotateConfig':
+				var config = property.a;
+				return _Utils_update(
+					acc,
+					{
+						rotate: $author$project$Anim$Internal$Properties$Rotate$to3DCssString(config.end)
+					});
+			case 'ProcessedScaleConfig':
+				var config = property.a;
+				var _v1 = $author$project$Anim$Internal$Properties$Scale$toTuple(config.end);
+				var x = _v1.a;
+				var y = _v1.b;
+				return _Utils_update(
+					acc,
+					{
+						scale: 'scale(' + ($elm$core$String$fromFloat(x) + (', ' + ($elm$core$String$fromFloat(y) + ')')))
+					});
+			default:
+				return acc;
+		}
+	});
+var $author$project$Anim$Internal$CSS$Transform$emptyTransformParts = {rotate: '', scale: '', translate: ''};
+var $author$project$Anim$Internal$CSS$Transform$extractTransformsFromProcessed = function (properties) {
+	return A3($elm$core$List$foldl, $author$project$Anim$Internal$CSS$Transform$collectProcessedTransform, $author$project$Anim$Internal$CSS$Transform$emptyTransformParts, properties);
+};
+var $elm$core$String$trim = _String_trim;
+var $author$project$Anim$Internal$CSS$Transform$generateFromProcessed = function (properties) {
+	var transformParts = $author$project$Anim$Internal$CSS$Transform$extractTransformsFromProcessed(properties);
+	return $elm$core$String$trim(transformParts.translate + (' ' + (transformParts.rotate + (' ' + transformParts.scale))));
+};
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$List$all = F2(
+	function (isOkay, list) {
+		return !A2(
+			$elm$core$List$any,
+			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
+			list);
+	});
+var $author$project$Anim$Easing$EaseInOut = {$: 'EaseInOut'};
+var $author$project$Anim$Internal$CSS$Transition$extractProcessedDelay = function (property) {
+	switch (property.$) {
+		case 'ProcessedTranslateConfig':
+			var config = property.a;
+			return config.delay;
+		case 'ProcessedRotateConfig':
+			var config = property.a;
+			return config.delay;
+		case 'ProcessedScaleConfig':
+			var config = property.a;
+			return config.delay;
+		default:
+			return 0;
+	}
+};
+var $author$project$Anim$Internal$CSS$Transition$extractProcessedDuration = function (property) {
+	switch (property.$) {
+		case 'ProcessedTranslateConfig':
+			var config = property.a;
+			return config.duration;
+		case 'ProcessedRotateConfig':
+			var config = property.a;
+			return config.duration;
+		case 'ProcessedScaleConfig':
+			var config = property.a;
+			return config.duration;
+		default:
+			return 0;
+	}
+};
+var $author$project$Anim$Internal$CSS$Transition$extractProcessedEasing = function (property) {
+	switch (property.$) {
+		case 'ProcessedTranslateConfig':
+			var config = property.a;
+			return config.easing;
+		case 'ProcessedRotateConfig':
+			var config = property.a;
+			return config.easing;
+		case 'ProcessedScaleConfig':
+			var config = property.a;
+			return config.easing;
+		default:
+			return $author$project$Anim$Easing$EaseInOut;
+	}
+};
+var $elm$core$List$maximum = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(
+			A3($elm$core$List$foldl, $elm$core$Basics$max, x, xs));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var $elm$core$List$minimum = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(
+			A3($elm$core$List$foldl, $elm$core$Basics$min, x, xs));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$Internal$Easing$easingToCSS = function (easing) {
+	switch (easing.$) {
+		case 'CubicBezier':
+			var p1x = easing.a;
+			var p1y = easing.b;
+			var p2x = easing.c;
+			var p2y = easing.d;
+			return 'cubic-bezier(' + ($elm$core$String$fromFloat(p1x) + (', ' + ($elm$core$String$fromFloat(p1y) + (', ' + ($elm$core$String$fromFloat(p2x) + (', ' + ($elm$core$String$fromFloat(p2y) + ')')))))));
+		case 'Linear':
+			return 'linear';
+		case 'Ease':
+			return 'ease';
+		case 'EaseIn':
+			return 'ease-in';
+		case 'EaseOut':
+			return 'ease-out';
+		case 'EaseInOut':
+			return 'ease-in-out';
+		case 'SineIn':
+			return 'cubic-bezier(0.12, 0, 0.39, 0)';
+		case 'SineOut':
+			return 'cubic-bezier(0.61, 1, 0.88, 1)';
+		case 'SineInOut':
+			return 'cubic-bezier(0.37, 0, 0.63, 1)';
+		case 'QuadIn':
+			return 'cubic-bezier(0.11, 0, 0.5, 0)';
+		case 'QuadOut':
+			return 'cubic-bezier(0.5, 1, 0.89, 1)';
+		case 'QuadInOut':
+			return 'cubic-bezier(0.45, 0, 0.55, 1)';
+		case 'CubicIn':
+			return 'cubic-bezier(0.32, 0, 0.67, 0)';
+		case 'CubicOut':
+			return 'cubic-bezier(0.33, 1, 0.68, 1)';
+		case 'CubicInOut':
+			return 'cubic-bezier(0.65, 0, 0.35, 1)';
+		case 'QuartIn':
+			return 'cubic-bezier(0.5, 0, 0.75, 0)';
+		case 'QuartOut':
+			return 'cubic-bezier(0.25, 1, 0.5, 1)';
+		case 'QuartInOut':
+			return 'cubic-bezier(0.76, 0, 0.24, 1)';
+		case 'QuintIn':
+			return 'cubic-bezier(0.64, 0, 0.78, 0)';
+		case 'QuintOut':
+			return 'cubic-bezier(0.22, 1, 0.36, 1)';
+		case 'QuintInOut':
+			return 'cubic-bezier(0.83, 0, 0.17, 1)';
+		case 'ExpoIn':
+			return 'cubic-bezier(0.7, 0, 0.84, 0)';
+		case 'ExpoOut':
+			return 'cubic-bezier(0.16, 1, 0.3, 1)';
+		case 'ExpoInOut':
+			return 'cubic-bezier(0.87, 0, 0.13, 1)';
+		case 'CircIn':
+			return 'cubic-bezier(0.55, 0, 1, 0.45)';
+		case 'CircOut':
+			return 'cubic-bezier(0, 0.55, 0.45, 1)';
+		case 'CircInOut':
+			return 'cubic-bezier(0.85, 0, 0.15, 1)';
+		case 'BackIn':
+			return 'cubic-bezier(0.36, 0, 0.66, -0.56)';
+		case 'BackOut':
+			return 'cubic-bezier(0.34, 1.56, 0.64, 1)';
+		case 'BackInOut':
+			return 'cubic-bezier(0.68, -0.6, 0.32, 1.6)';
+		case 'BackInCustom':
+			return 'linear';
+		case 'BackOutCustom':
+			return 'linear';
+		case 'BackInOutCustom':
+			return 'linear';
+		case 'ElasticIn':
+			return 'cubic-bezier(0.55, 0.055, 0.675, 0.19)';
+		case 'ElasticOut':
+			return 'cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+		case 'ElasticInOut':
+			return 'cubic-bezier(0.445, 0.05, 0.55, 0.95)';
+		case 'ElasticInCustom':
+			return 'linear';
+		case 'ElasticOutCustom':
+			return 'linear';
+		case 'ElasticInOutCustom':
+			return 'linear';
+		case 'ElasticInAdvanced':
+			return 'linear';
+		case 'ElasticOutAdvanced':
+			return 'linear';
+		case 'ElasticInOutAdvanced':
+			return 'linear';
+		case 'BounceIn':
+			return 'cubic-bezier(0.6, 0.04, 0.98, 0.335)';
+		case 'BounceOut':
+			return 'cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+		case 'BounceInOut':
+			return 'cubic-bezier(0.445, 0.050, 0.550, 0.950)';
+		case 'BounceInCustom':
+			return 'linear';
+		case 'BounceOutCustom':
+			return 'linear';
+		case 'BounceInOutCustom':
+			return 'linear';
+		case 'BounceInAdvanced':
+			return 'linear';
+		case 'BounceOutAdvanced':
+			return 'linear';
+		default:
+			return 'linear';
+	}
+};
+var $author$project$Anim$Internal$Easing$toCSS = function (maybeEasing) {
+	if (maybeEasing.$ === 'Just') {
+		var easing = maybeEasing.a;
+		return $author$project$Anim$Internal$Easing$easingToCSS(easing);
+	} else {
+		return 'ease';
+	}
+};
+var $author$project$Anim$Internal$CSS$Transition$consolidateProcessedTiming = function (transformProps) {
+	if (!transformProps.b) {
+		return $elm$core$Maybe$Nothing;
+	} else {
+		var longestDuration = A2(
+			$elm$core$Maybe$withDefault,
+			0,
+			$elm$core$List$maximum(
+				A2($elm$core$List$map, $author$project$Anim$Internal$CSS$Transition$extractProcessedDuration, transformProps)));
+		var latestEasing = A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Anim$Easing$EaseInOut,
+			$elm$core$List$head(
+				A2($elm$core$List$map, $author$project$Anim$Internal$CSS$Transition$extractProcessedEasing, transformProps)));
+		var earliestDelay = A2(
+			$elm$core$Maybe$withDefault,
+			0,
+			$elm$core$List$minimum(
+				A2($elm$core$List$map, $author$project$Anim$Internal$CSS$Transition$extractProcessedDelay, transformProps)));
+		return $elm$core$Maybe$Just(
+			'transform ' + ($elm$core$String$fromInt(longestDuration) + ('ms ' + ($author$project$Anim$Internal$Easing$toCSS(
+				$elm$core$Maybe$Just(latestEasing)) + (' ' + ($elm$core$String$fromInt(earliestDelay) + 'ms'))))));
+	}
+};
+var $author$project$Anim$Internal$CSS$Transition$isProcessedTransformProperty = function (property) {
+	switch (property.$) {
+		case 'ProcessedTranslateConfig':
+			return true;
+		case 'ProcessedRotateConfig':
+			return true;
+		case 'ProcessedScaleConfig':
+			return true;
+		default:
+			return false;
+	}
+};
+var $elm$core$List$partition = F2(
+	function (pred, list) {
+		var step = F2(
+			function (x, _v0) {
+				var trues = _v0.a;
+				var falses = _v0.b;
+				return pred(x) ? _Utils_Tuple2(
+					A2($elm$core$List$cons, x, trues),
+					falses) : _Utils_Tuple2(
+					trues,
+					A2($elm$core$List$cons, x, falses));
+			});
+		return A3(
+			$elm$core$List$foldr,
+			step,
+			_Utils_Tuple2(_List_Nil, _List_Nil),
+			list);
+	});
+var $author$project$Anim$Internal$CSS$Transition$transitionFromProcessedNonTransform = function (property) {
+	switch (property.$) {
+		case 'ProcessedBackgroundColorConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				'background-color ' + ($elm$core$String$fromInt(config.duration) + ('ms ' + ($author$project$Anim$Internal$Easing$toCSS(
+					$elm$core$Maybe$Just(config.easing)) + (' ' + ($elm$core$String$fromInt(config.delay) + 'ms'))))));
+		case 'ProcessedOpacityConfig':
+			var config = property.a;
+			return $elm$core$Maybe$Just(
+				'opacity ' + ($elm$core$String$fromInt(config.duration) + ('ms ' + ($author$project$Anim$Internal$Easing$toCSS(
+					$elm$core$Maybe$Just(config.easing)) + (' ' + ($elm$core$String$fromInt(config.delay) + 'ms'))))));
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$Internal$CSS$Transition$generateFromProcessed = function (properties) {
+	var allDurationsZero = A2(
+		$elm$core$List$all,
+		function (prop) {
+			switch (prop.$) {
+				case 'ProcessedTranslateConfig':
+					var config = prop.a;
+					return !config.duration;
+				case 'ProcessedRotateConfig':
+					var config = prop.a;
+					return !config.duration;
+				case 'ProcessedScaleConfig':
+					var config = prop.a;
+					return !config.duration;
+				case 'ProcessedBackgroundColorConfig':
+					var config = prop.a;
+					return !config.duration;
+				case 'ProcessedOpacityConfig':
+					var config = prop.a;
+					return !config.duration;
+				default:
+					return true;
+			}
+		},
+		properties);
+	if (allDurationsZero) {
+		return 'none';
+	} else {
+		var _v0 = A2($elm$core$List$partition, $author$project$Anim$Internal$CSS$Transition$isProcessedTransformProperty, properties);
+		var transformProps = _v0.a;
+		var nonTransformProps = _v0.b;
+		var nonTransformTransitions = A2($elm$core$List$filterMap, $author$project$Anim$Internal$CSS$Transition$transitionFromProcessedNonTransform, nonTransformProps);
+		var transformTransition = function () {
+			var _v1 = $author$project$Anim$Internal$CSS$Transition$consolidateProcessedTiming(transformProps);
+			if (_v1.$ === 'Just') {
+				var transition = _v1.a;
+				return _List_fromArray(
+					[transition]);
+			} else {
+				return _List_Nil;
+			}
+		}();
+		var allTransitions = _Utils_ap(transformTransition, nonTransformTransitions);
+		return A2($elm$core$String$join, ', ', allTransitions);
+	}
+};
+var $author$project$Anim$Internal$CSS$Transform$getTransformByName = F2(
+	function (parts, name) {
+		switch (name) {
+			case 'translate':
+				return $elm$core$String$isEmpty(parts.translate) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(parts.translate);
+			case 'rotate':
+				return $elm$core$String$isEmpty(parts.rotate) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(parts.rotate);
+			case 'scale':
+				return $elm$core$String$isEmpty(parts.scale) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(parts.scale);
+			default:
+				return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$Anim$Internal$CSS$Transform$generateFromProcessedWithOrder = F2(
+	function (order, properties) {
+		var transformParts = $author$project$Anim$Internal$CSS$Transform$extractTransformsFromProcessed(properties);
+		var orderedTransforms = A2(
+			$elm$core$List$filterMap,
+			$author$project$Anim$Internal$CSS$Transform$getTransformByName(transformParts),
+			order);
+		return $elm$core$String$trim(
+			A2($elm$core$String$join, ' ', orderedTransforms));
+	});
 var $author$project$Anim$Internal$CSS$KeyframeAnimation$buildKeyframesString = F2(
 	function (elementId, steps) {
 		var stepToString = function (_v1) {
@@ -5385,10 +6487,6 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$buildKeyframesString = F
 			A2($elm$core$List$map, stepToString, steps));
 		var animationPropertiesComment = '\n\n/* Animation properties for ' + (elementId + ' */\n');
 		return '@keyframes ' + (elementId + (' {\n' + (stepsString + ('\n}' + animationPropertiesComment))));
-	});
-var $elm$core$Basics$clamp = F3(
-	function (low, high, number) {
-		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
 	});
 var $elm$core$List$append = F2(
 	function (xs, ys) {
@@ -5414,20 +6512,12 @@ var $author$project$Anim$Internal$Properties$Color$fromRGBA = function (_v0) {
 };
 var $author$project$Anim$Internal$Properties$BackgroundColor$default = $author$project$Anim$Internal$Properties$Color$fromRGBA(
 	{a: 0, b: 255, g: 255, r: 255});
-var $author$project$Anim$Internal$Properties$Opacity$Opacity = function (a) {
-	return {$: 'Opacity', a: a};
-};
 var $author$project$Anim$Internal$Properties$Opacity$default = $author$project$Anim$Internal$Properties$Opacity$Opacity(1);
 var $author$project$Anim$Internal$Properties$Rotate$Rotate = function (a) {
 	return {$: 'Rotate', a: a};
 };
 var $author$project$Anim$Internal$Properties$Rotate$default = $author$project$Anim$Internal$Properties$Rotate$Rotate(
 	{x: 0, y: 0, z: 0});
-var $author$project$Anim$Internal$Properties$Scale$Scale = function (a) {
-	return {$: 'Scale', a: a};
-};
-var $author$project$Anim$Internal$Properties$Scale$default = $author$project$Anim$Internal$Properties$Scale$Scale(
-	{x: 1.0, y: 1.0, z: 1.0});
 var $author$project$Anim$Internal$Properties$Size$Size = function (a) {
 	return {$: 'Size', a: a};
 };
@@ -5534,15 +6624,6 @@ var $author$project$Anim$Internal$Properties$Color$hexToInt = function (str) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
 var $author$project$Anim$Internal$Properties$Color$hexToRgb = function (hex_) {
 	var cleanHex = A2(
 		$elm$core$String$dropLeft,
@@ -5566,41 +6647,11 @@ var $author$project$Anim$Internal$Properties$Color$hexToRgb = function (hex_) {
 	return {b: b, g: g, r: r};
 };
 var $elm$core$Basics$round = _Basics_round;
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
 var $author$project$Anim$Internal$Properties$Color$floatMod = F2(
 	function (a, b) {
 		return a - ($elm$core$Basics$floor(a / b) * b);
 	});
 var $elm$core$Basics$ge = _Utils_ge;
-var $elm$core$List$maximum = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(
-			A3($elm$core$List$foldl, $elm$core$Basics$max, x, xs));
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $elm$core$Basics$min = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) < 0) ? x : y;
-	});
-var $elm$core$List$minimum = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(
-			A3($elm$core$List$foldl, $elm$core$Basics$min, x, xs));
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
 var $author$project$Anim$Internal$Properties$Color$rgbToHsl = function (rgb_) {
 	var r = rgb_.r / 255;
 	var g = rgb_.g / 255;
@@ -5939,34 +6990,6 @@ var $author$project$Anim$Internal$Properties$Rotate$support = {
 	zero: $author$project$Anim$Internal$Properties$Rotate$default
 };
 var $author$project$Anim$Internal$Properties$Rotate$interpolate = $author$project$Anim$Internal$Builders$Coordinate3D$interpolate($author$project$Anim$Internal$Properties$Rotate$support);
-var $author$project$Anim$Internal$Properties$Scale$support = {
-	add: F2(
-		function (_v0, _v1) {
-			var a = _v0.a;
-			var b = _v1.a;
-			return $author$project$Anim$Internal$Properties$Scale$Scale(
-				{x: a.x + b.x, y: a.y + b.y, z: a.z + b.z});
-		}),
-	fromRecord: $author$project$Anim$Internal$Properties$Scale$Scale,
-	scale: F2(
-		function (factor, _v2) {
-			var coords = _v2.a;
-			return $author$project$Anim$Internal$Properties$Scale$Scale(
-				{x: coords.x * factor, y: coords.y * factor, z: coords.z * factor});
-		}),
-	subtract: F2(
-		function (_v3, _v4) {
-			var a = _v3.a;
-			var b = _v4.a;
-			return $author$project$Anim$Internal$Properties$Scale$Scale(
-				{x: a.x - b.x, y: a.y - b.y, z: a.z - b.z});
-		}),
-	toRecord: function (_v5) {
-		var coords = _v5.a;
-		return coords;
-	},
-	zero: $author$project$Anim$Internal$Properties$Scale$default
-};
 var $author$project$Anim$Internal$Properties$Scale$interpolate = $author$project$Anim$Internal$Builders$Coordinate3D$interpolate($author$project$Anim$Internal$Properties$Scale$support);
 var $author$project$Anim$Internal$Properties$Size$interpolate = F3(
 	function (t, _v0, _v1) {
@@ -6004,13 +7027,6 @@ var $author$project$Anim$Internal$Properties$Translate$support = {
 	zero: $author$project$Anim$Internal$Properties$Translate$default
 };
 var $author$project$Anim$Internal$Properties$Translate$interpolate = $author$project$Anim$Internal$Builders$Coordinate3D$interpolate($author$project$Anim$Internal$Properties$Translate$support);
-var $elm$core$List$isEmpty = function (xs) {
-	if (!xs.b) {
-		return true;
-	} else {
-		return false;
-	}
-};
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
 		if (maybe.$ === 'Just') {
@@ -6022,7 +7038,6 @@ var $elm$core$Maybe$map = F2(
 		}
 	});
 var $elm$core$Basics$modBy = _Basics_modBy;
-var $elm$core$Basics$neq = _Utils_notEqual;
 var $author$project$Anim$Internal$Builder$ProcessedBackgroundColorConfig = function (a) {
 	return {$: 'ProcessedBackgroundColorConfig', a: a};
 };
@@ -6043,9 +7058,6 @@ var $author$project$Anim$Internal$Builder$ProcessedSizeConfig = function (a) {
 };
 var $author$project$Anim$Internal$Builder$ProcessedTranslateConfig = function (a) {
 	return {$: 'ProcessedTranslateConfig', a: a};
-};
-var $author$project$Anim$Internal$Timing$TimeSpec$Duration = function (a) {
-	return {$: 'Duration', a: a};
 };
 var $author$project$Anim$Easing$Linear = {$: 'Linear'};
 var $author$project$Anim$Internal$Builder$createDirtyConfig = function (_v0) {
@@ -6072,12 +7084,6 @@ var $author$project$Anim$Internal$Properties$Color$distance = F2(
 		var dg = rgb2.g - rgb1.g;
 		var db = rgb2.b - rgb1.b;
 		return $elm$core$Basics$sqrt(((dr * dr) + (dg * dg)) + (db * db));
-	});
-var $author$project$Anim$Internal$Properties$Opacity$distance = F2(
-	function (_v0, _v1) {
-		var o1 = _v0.a;
-		var o2 = _v1.a;
-		return $elm$core$Basics$abs(o2 - o1);
 	});
 var $author$project$Anim$Internal$Builders$Coordinate3D$distance = F3(
 	function (support, coord1, coord2) {
@@ -6162,9 +7168,6 @@ var $author$project$Anim$Internal$Properties$Translate$duration = F2(
 			return (distance_ / unitsPerSecond) * 1000;
 		}
 	});
-var $author$project$Anim$Internal$Properties$Opacity$fromFloat = function (o) {
-	return $author$project$Anim$Internal$Properties$Opacity$Opacity(o);
-};
 var $author$project$Anim$Internal$Properties$Rotate$fromFloat = function (angle) {
 	return $author$project$Anim$Internal$Properties$Rotate$Rotate(
 		{x: angle, y: angle, z: angle});
@@ -6196,7 +7199,6 @@ var $author$project$Anim$Internal$Builders$Coordinate3D$fromTuple = F2(
 			{x: x, y: y, z: 0});
 	});
 var $author$project$Anim$Internal$Properties$Translate$fromTuple = $author$project$Anim$Internal$Builders$Coordinate3D$fromTuple($author$project$Anim$Internal$Properties$Translate$support);
-var $author$project$Anim$Easing$EaseInOut = {$: 'EaseInOut'};
 var $author$project$Anim$Internal$Builder$resolveMaybeWithDefault = F3(
 	function (local, global, _default) {
 		var _v0 = _Utils_Tuple2(local, global);
@@ -6431,22 +7433,6 @@ var $author$project$Anim$Internal$Builder$processElement = F2(
 				elementConfig.properties)
 		};
 	});
-var $author$project$Anim$Internal$Properties$Rotate$to3DCssString = function (_v0) {
-	var angles = _v0.a;
-	var parts = A2(
-		$elm$core$List$filterMap,
-		$elm$core$Basics$identity,
-		_List_fromArray(
-			[
-				(!(!angles.x)) ? $elm$core$Maybe$Just(
-				'rotateX(' + ($elm$core$String$fromFloat(angles.x) + 'deg)')) : $elm$core$Maybe$Nothing,
-				(!(!angles.y)) ? $elm$core$Maybe$Just(
-				'rotateY(' + ($elm$core$String$fromFloat(angles.y) + 'deg)')) : $elm$core$Maybe$Nothing,
-				(!(!angles.z)) ? $elm$core$Maybe$Just(
-				'rotateZ(' + ($elm$core$String$fromFloat(angles.z) + 'deg)')) : $elm$core$Maybe$Nothing
-			]));
-	return $elm$core$List$isEmpty(parts) ? 'rotateZ(0deg)' : A2($elm$core$String$join, ' ', parts);
-};
 var $elm$core$String$concat = function (strings) {
 	return A2($elm$core$String$join, '', strings);
 };
@@ -6512,10 +7498,6 @@ var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) 
 	var x = _v0.a.x;
 	var y = _v0.a.y;
 	return $elm$core$String$fromFloat(x) + (',' + $elm$core$String$fromFloat(y));
-};
-var $author$project$Anim$Internal$Properties$Translate$toCssString = function (_v0) {
-	var coords = _v0.a;
-	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px'))));
 };
 var $elm$core$Basics$pi = _Basics_pi;
 var $elm$core$Basics$pow = _Basics_pow;
@@ -6899,8 +7881,8 @@ var $author$project$Anim$Internal$Properties$Size$toString = function (size) {
 	var height = _v0.b;
 	return '(' + ($elm$core$String$fromFloat(width) + (', ' + ($elm$core$String$fromFloat(height) + ')')));
 };
-var $author$project$Anim$Internal$CSS$KeyframeAnimation$generate = F2(
-	function (elementId, properties) {
+var $author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix = F3(
+	function (elementId, suffix, properties) {
 		if ($elm$core$List$isEmpty(properties)) {
 			return _List_Nil;
 		} else {
@@ -7229,7 +8211,7 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$generate = F2(
 					}),
 				0,
 				$elm$core$String$toList(contentForHash));
-			var animationName = elementId + ('-anim-' + $elm$core$String$fromInt(betterHash));
+			var animationName = elementId + ('-anim-' + ($elm$core$String$fromInt(betterHash) + ($elm$core$String$isEmpty(suffix) ? '' : ('-' + suffix))));
 			var keyframesString = A2($author$project$Anim$Internal$CSS$KeyframeAnimation$buildKeyframesString, animationName, keyframeSteps);
 			var animatedProperties = _List_fromArray(
 				['transform', 'background-color', 'opacity', 'width', 'height']);
@@ -7238,397 +8220,6 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$generate = F2(
 					{animationName: animationName, delay: 0, duration: totalAnimationTime, easing: 'linear', keyframes: keyframesString, properties: animatedProperties}
 				]);
 		}
-	});
-var $author$project$Anim$Internal$Builders$Coordinate3D$toTuple = F2(
-	function (support, coord) {
-		var record = support.toRecord(coord);
-		return _Utils_Tuple2(record.x, record.y);
-	});
-var $author$project$Anim$Internal$Properties$Scale$toTuple = $author$project$Anim$Internal$Builders$Coordinate3D$toTuple($author$project$Anim$Internal$Properties$Scale$support);
-var $author$project$Anim$Internal$CSS$Transform$collectProcessedTransform = F2(
-	function (property, acc) {
-		switch (property.$) {
-			case 'ProcessedTranslateConfig':
-				var config = property.a;
-				return _Utils_update(
-					acc,
-					{
-						translate: 'translate3d(' + ($author$project$Anim$Internal$Properties$Translate$toCssString(config.end) + ')')
-					});
-			case 'ProcessedRotateConfig':
-				var config = property.a;
-				return _Utils_update(
-					acc,
-					{
-						rotate: $author$project$Anim$Internal$Properties$Rotate$to3DCssString(config.end)
-					});
-			case 'ProcessedScaleConfig':
-				var config = property.a;
-				var _v1 = $author$project$Anim$Internal$Properties$Scale$toTuple(config.end);
-				var x = _v1.a;
-				var y = _v1.b;
-				return _Utils_update(
-					acc,
-					{
-						scale: 'scale(' + ($elm$core$String$fromFloat(x) + (', ' + ($elm$core$String$fromFloat(y) + ')')))
-					});
-			default:
-				return acc;
-		}
-	});
-var $author$project$Anim$Internal$CSS$Transform$emptyTransformParts = {rotate: '', scale: '', translate: ''};
-var $author$project$Anim$Internal$CSS$Transform$extractTransformsFromProcessed = function (properties) {
-	return A3($elm$core$List$foldl, $author$project$Anim$Internal$CSS$Transform$collectProcessedTransform, $author$project$Anim$Internal$CSS$Transform$emptyTransformParts, properties);
-};
-var $elm$core$String$trim = _String_trim;
-var $author$project$Anim$Internal$CSS$Transform$generateFromProcessed = function (properties) {
-	var transformParts = $author$project$Anim$Internal$CSS$Transform$extractTransformsFromProcessed(properties);
-	return $elm$core$String$trim(transformParts.translate + (' ' + (transformParts.rotate + (' ' + transformParts.scale))));
-};
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
-var $elm$core$Basics$not = _Basics_not;
-var $elm$core$List$all = F2(
-	function (isOkay, list) {
-		return !A2(
-			$elm$core$List$any,
-			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
-			list);
-	});
-var $author$project$Anim$Internal$CSS$Transition$extractProcessedDelay = function (property) {
-	switch (property.$) {
-		case 'ProcessedTranslateConfig':
-			var config = property.a;
-			return config.delay;
-		case 'ProcessedRotateConfig':
-			var config = property.a;
-			return config.delay;
-		case 'ProcessedScaleConfig':
-			var config = property.a;
-			return config.delay;
-		default:
-			return 0;
-	}
-};
-var $author$project$Anim$Internal$CSS$Transition$extractProcessedDuration = function (property) {
-	switch (property.$) {
-		case 'ProcessedTranslateConfig':
-			var config = property.a;
-			return config.duration;
-		case 'ProcessedRotateConfig':
-			var config = property.a;
-			return config.duration;
-		case 'ProcessedScaleConfig':
-			var config = property.a;
-			return config.duration;
-		default:
-			return 0;
-	}
-};
-var $author$project$Anim$Internal$CSS$Transition$extractProcessedEasing = function (property) {
-	switch (property.$) {
-		case 'ProcessedTranslateConfig':
-			var config = property.a;
-			return config.easing;
-		case 'ProcessedRotateConfig':
-			var config = property.a;
-			return config.easing;
-		case 'ProcessedScaleConfig':
-			var config = property.a;
-			return config.easing;
-		default:
-			return $author$project$Anim$Easing$EaseInOut;
-	}
-};
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Anim$Internal$Easing$easingToCSS = function (easing) {
-	switch (easing.$) {
-		case 'CubicBezier':
-			var p1x = easing.a;
-			var p1y = easing.b;
-			var p2x = easing.c;
-			var p2y = easing.d;
-			return 'cubic-bezier(' + ($elm$core$String$fromFloat(p1x) + (', ' + ($elm$core$String$fromFloat(p1y) + (', ' + ($elm$core$String$fromFloat(p2x) + (', ' + ($elm$core$String$fromFloat(p2y) + ')')))))));
-		case 'Linear':
-			return 'linear';
-		case 'Ease':
-			return 'ease';
-		case 'EaseIn':
-			return 'ease-in';
-		case 'EaseOut':
-			return 'ease-out';
-		case 'EaseInOut':
-			return 'ease-in-out';
-		case 'SineIn':
-			return 'cubic-bezier(0.12, 0, 0.39, 0)';
-		case 'SineOut':
-			return 'cubic-bezier(0.61, 1, 0.88, 1)';
-		case 'SineInOut':
-			return 'cubic-bezier(0.37, 0, 0.63, 1)';
-		case 'QuadIn':
-			return 'cubic-bezier(0.11, 0, 0.5, 0)';
-		case 'QuadOut':
-			return 'cubic-bezier(0.5, 1, 0.89, 1)';
-		case 'QuadInOut':
-			return 'cubic-bezier(0.45, 0, 0.55, 1)';
-		case 'CubicIn':
-			return 'cubic-bezier(0.32, 0, 0.67, 0)';
-		case 'CubicOut':
-			return 'cubic-bezier(0.33, 1, 0.68, 1)';
-		case 'CubicInOut':
-			return 'cubic-bezier(0.65, 0, 0.35, 1)';
-		case 'QuartIn':
-			return 'cubic-bezier(0.5, 0, 0.75, 0)';
-		case 'QuartOut':
-			return 'cubic-bezier(0.25, 1, 0.5, 1)';
-		case 'QuartInOut':
-			return 'cubic-bezier(0.76, 0, 0.24, 1)';
-		case 'QuintIn':
-			return 'cubic-bezier(0.64, 0, 0.78, 0)';
-		case 'QuintOut':
-			return 'cubic-bezier(0.22, 1, 0.36, 1)';
-		case 'QuintInOut':
-			return 'cubic-bezier(0.83, 0, 0.17, 1)';
-		case 'ExpoIn':
-			return 'cubic-bezier(0.7, 0, 0.84, 0)';
-		case 'ExpoOut':
-			return 'cubic-bezier(0.16, 1, 0.3, 1)';
-		case 'ExpoInOut':
-			return 'cubic-bezier(0.87, 0, 0.13, 1)';
-		case 'CircIn':
-			return 'cubic-bezier(0.55, 0, 1, 0.45)';
-		case 'CircOut':
-			return 'cubic-bezier(0, 0.55, 0.45, 1)';
-		case 'CircInOut':
-			return 'cubic-bezier(0.85, 0, 0.15, 1)';
-		case 'BackIn':
-			return 'cubic-bezier(0.36, 0, 0.66, -0.56)';
-		case 'BackOut':
-			return 'cubic-bezier(0.34, 1.56, 0.64, 1)';
-		case 'BackInOut':
-			return 'cubic-bezier(0.68, -0.6, 0.32, 1.6)';
-		case 'BackInCustom':
-			return 'linear';
-		case 'BackOutCustom':
-			return 'linear';
-		case 'BackInOutCustom':
-			return 'linear';
-		case 'ElasticIn':
-			return 'cubic-bezier(0.55, 0.055, 0.675, 0.19)';
-		case 'ElasticOut':
-			return 'cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-		case 'ElasticInOut':
-			return 'cubic-bezier(0.445, 0.05, 0.55, 0.95)';
-		case 'ElasticInCustom':
-			return 'linear';
-		case 'ElasticOutCustom':
-			return 'linear';
-		case 'ElasticInOutCustom':
-			return 'linear';
-		case 'ElasticInAdvanced':
-			return 'linear';
-		case 'ElasticOutAdvanced':
-			return 'linear';
-		case 'ElasticInOutAdvanced':
-			return 'linear';
-		case 'BounceIn':
-			return 'cubic-bezier(0.6, 0.04, 0.98, 0.335)';
-		case 'BounceOut':
-			return 'cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-		case 'BounceInOut':
-			return 'cubic-bezier(0.445, 0.050, 0.550, 0.950)';
-		case 'BounceInCustom':
-			return 'linear';
-		case 'BounceOutCustom':
-			return 'linear';
-		case 'BounceInOutCustom':
-			return 'linear';
-		case 'BounceInAdvanced':
-			return 'linear';
-		case 'BounceOutAdvanced':
-			return 'linear';
-		default:
-			return 'linear';
-	}
-};
-var $author$project$Anim$Internal$Easing$toCSS = function (maybeEasing) {
-	if (maybeEasing.$ === 'Just') {
-		var easing = maybeEasing.a;
-		return $author$project$Anim$Internal$Easing$easingToCSS(easing);
-	} else {
-		return 'ease';
-	}
-};
-var $author$project$Anim$Internal$CSS$Transition$consolidateProcessedTiming = function (transformProps) {
-	if (!transformProps.b) {
-		return $elm$core$Maybe$Nothing;
-	} else {
-		var longestDuration = A2(
-			$elm$core$Maybe$withDefault,
-			0,
-			$elm$core$List$maximum(
-				A2($elm$core$List$map, $author$project$Anim$Internal$CSS$Transition$extractProcessedDuration, transformProps)));
-		var latestEasing = A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Anim$Easing$EaseInOut,
-			$elm$core$List$head(
-				A2($elm$core$List$map, $author$project$Anim$Internal$CSS$Transition$extractProcessedEasing, transformProps)));
-		var earliestDelay = A2(
-			$elm$core$Maybe$withDefault,
-			0,
-			$elm$core$List$minimum(
-				A2($elm$core$List$map, $author$project$Anim$Internal$CSS$Transition$extractProcessedDelay, transformProps)));
-		return $elm$core$Maybe$Just(
-			'transform ' + ($elm$core$String$fromInt(longestDuration) + ('ms ' + ($author$project$Anim$Internal$Easing$toCSS(
-				$elm$core$Maybe$Just(latestEasing)) + (' ' + ($elm$core$String$fromInt(earliestDelay) + 'ms'))))));
-	}
-};
-var $author$project$Anim$Internal$CSS$Transition$isProcessedTransformProperty = function (property) {
-	switch (property.$) {
-		case 'ProcessedTranslateConfig':
-			return true;
-		case 'ProcessedRotateConfig':
-			return true;
-		case 'ProcessedScaleConfig':
-			return true;
-		default:
-			return false;
-	}
-};
-var $elm$core$List$partition = F2(
-	function (pred, list) {
-		var step = F2(
-			function (x, _v0) {
-				var trues = _v0.a;
-				var falses = _v0.b;
-				return pred(x) ? _Utils_Tuple2(
-					A2($elm$core$List$cons, x, trues),
-					falses) : _Utils_Tuple2(
-					trues,
-					A2($elm$core$List$cons, x, falses));
-			});
-		return A3(
-			$elm$core$List$foldr,
-			step,
-			_Utils_Tuple2(_List_Nil, _List_Nil),
-			list);
-	});
-var $author$project$Anim$Internal$CSS$Transition$transitionFromProcessedNonTransform = function (property) {
-	switch (property.$) {
-		case 'ProcessedBackgroundColorConfig':
-			var config = property.a;
-			return $elm$core$Maybe$Just(
-				'background-color ' + ($elm$core$String$fromInt(config.duration) + ('ms ' + ($author$project$Anim$Internal$Easing$toCSS(
-					$elm$core$Maybe$Just(config.easing)) + (' ' + ($elm$core$String$fromInt(config.delay) + 'ms'))))));
-		case 'ProcessedOpacityConfig':
-			var config = property.a;
-			return $elm$core$Maybe$Just(
-				'opacity ' + ($elm$core$String$fromInt(config.duration) + ('ms ' + ($author$project$Anim$Internal$Easing$toCSS(
-					$elm$core$Maybe$Just(config.easing)) + (' ' + ($elm$core$String$fromInt(config.delay) + 'ms'))))));
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Anim$Internal$CSS$Transition$generateFromProcessed = function (properties) {
-	var allDurationsZero = A2(
-		$elm$core$List$all,
-		function (prop) {
-			switch (prop.$) {
-				case 'ProcessedTranslateConfig':
-					var config = prop.a;
-					return !config.duration;
-				case 'ProcessedRotateConfig':
-					var config = prop.a;
-					return !config.duration;
-				case 'ProcessedScaleConfig':
-					var config = prop.a;
-					return !config.duration;
-				case 'ProcessedBackgroundColorConfig':
-					var config = prop.a;
-					return !config.duration;
-				case 'ProcessedOpacityConfig':
-					var config = prop.a;
-					return !config.duration;
-				default:
-					return true;
-			}
-		},
-		properties);
-	if (allDurationsZero) {
-		return 'none';
-	} else {
-		var _v0 = A2($elm$core$List$partition, $author$project$Anim$Internal$CSS$Transition$isProcessedTransformProperty, properties);
-		var transformProps = _v0.a;
-		var nonTransformProps = _v0.b;
-		var nonTransformTransitions = A2($elm$core$List$filterMap, $author$project$Anim$Internal$CSS$Transition$transitionFromProcessedNonTransform, nonTransformProps);
-		var transformTransition = function () {
-			var _v1 = $author$project$Anim$Internal$CSS$Transition$consolidateProcessedTiming(transformProps);
-			if (_v1.$ === 'Just') {
-				var transition = _v1.a;
-				return _List_fromArray(
-					[transition]);
-			} else {
-				return _List_Nil;
-			}
-		}();
-		var allTransitions = _Utils_ap(transformTransition, nonTransformTransitions);
-		return A2($elm$core$String$join, ', ', allTransitions);
-	}
-};
-var $author$project$Anim$Internal$CSS$Transform$getTransformByName = F2(
-	function (parts, name) {
-		switch (name) {
-			case 'translate':
-				return $elm$core$String$isEmpty(parts.translate) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(parts.translate);
-			case 'rotate':
-				return $elm$core$String$isEmpty(parts.rotate) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(parts.rotate);
-			case 'scale':
-				return $elm$core$String$isEmpty(parts.scale) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(parts.scale);
-			default:
-				return $elm$core$Maybe$Nothing;
-		}
-	});
-var $author$project$Anim$Internal$CSS$Transform$generateFromProcessedWithOrder = F2(
-	function (order, properties) {
-		var transformParts = $author$project$Anim$Internal$CSS$Transform$extractTransformsFromProcessed(properties);
-		var orderedTransforms = A2(
-			$elm$core$List$filterMap,
-			$author$project$Anim$Internal$CSS$Transform$getTransformByName(transformParts),
-			order);
-		return $elm$core$String$trim(
-			A2($elm$core$String$join, ' ', orderedTransforms));
 	});
 var $author$project$Anim$Internal$CSS$transformOrderToString = function (order) {
 	switch (order.$) {
@@ -7640,8 +8231,8 @@ var $author$project$Anim$Internal$CSS$transformOrderToString = function (order) 
 			return 'scale';
 	}
 };
-var $author$project$Anim$Internal$CSS$generateElementAnimation = F3(
-	function (maybeOrder, elementId, elementConfig) {
+var $author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix = F4(
+	function (maybeOrder, suffix, elementId, elementConfig) {
 		var processed = A2(
 			$author$project$Anim$Internal$Builder$processElement,
 			{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil},
@@ -7699,9 +8290,13 @@ var $author$project$Anim$Internal$CSS$generateElementAnimation = F3(
 					]),
 				_Utils_ap(colorStyles, opacityStyles)));
 		return {
-			animationLayers: A2($author$project$Anim$Internal$CSS$KeyframeAnimation$generate, elementId, elementConfig.properties),
+			animationLayers: A3($author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix, elementId, suffix, elementConfig.properties),
 			styles: allStyles
 		};
+	});
+var $author$project$Anim$Internal$CSS$generateElementAnimation = F3(
+	function (maybeOrder, elementId, elementConfig) {
+		return A4($author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix, maybeOrder, '', elementId, elementConfig);
 	});
 var $elm$core$Dict$map = F2(
 	function (func, dict) {
@@ -7722,27 +8317,32 @@ var $elm$core$Dict$map = F2(
 				A2($elm$core$Dict$map, func, right));
 		}
 	});
-var $author$project$Anim$Internal$Builder$BackgroundColorConfig = function (a) {
-	return {$: 'BackgroundColorConfig', a: a};
-};
-var $author$project$Anim$Internal$Builder$FontColorConfig = function (a) {
-	return {$: 'FontColorConfig', a: a};
-};
-var $author$project$Anim$Internal$Builder$OpacityConfig = function (a) {
-	return {$: 'OpacityConfig', a: a};
-};
-var $author$project$Anim$Internal$Builder$RotateConfig = function (a) {
-	return {$: 'RotateConfig', a: a};
-};
-var $author$project$Anim$Internal$Builder$ScaleConfig = function (a) {
-	return {$: 'ScaleConfig', a: a};
-};
-var $author$project$Anim$Internal$Builder$SizeConfig = function (a) {
-	return {$: 'SizeConfig', a: a};
-};
-var $author$project$Anim$Internal$Builder$TranslateConfig = function (a) {
-	return {$: 'TranslateConfig', a: a};
-};
+var $author$project$Anim$Internal$CSS$animate = F2(
+	function (animState, transform) {
+		var builder_ = transform(
+			$author$project$Anim$Internal$CSS$builder(animState));
+		var elementIds = $elm$core$Dict$keys(
+			$author$project$Anim$Internal$Builder$elements(builder_));
+		return $author$project$Anim$Internal$CSS$AnimState(
+			{
+				builder: $author$project$Anim$Internal$Builder$clearCurrentElement(builder_),
+				elementAnimations: A2(
+					$elm$core$Dict$map,
+					$author$project$Anim$Internal$CSS$generateElementAnimation($elm$core$Maybe$Nothing),
+					$author$project$Anim$Internal$Builder$elements(builder_)),
+				elementStates: $elm$core$Dict$fromList(
+					A2(
+						$elm$core$List$map,
+						function (id) {
+							return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$NotStarted);
+						},
+						elementIds)),
+				restartCounters: $elm$core$Dict$empty
+			});
+	});
+var $author$project$Anim$Engine$CSS$animate = $author$project$Anim$Internal$CSS$animate;
+var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
+	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil});
 var $author$project$Anim$Internal$Builder$markPropertyDirty = function (property) {
 	switch (property.$) {
 		case 'TranslateConfig':
@@ -7808,592 +8408,56 @@ var $author$project$Anim$Internal$Builder$markDirty = function (_v0) {
 					data.elements)
 			}));
 };
-var $author$project$Anim$Internal$CSS$animate = F2(
-	function (animState, transform) {
-		var builder_ = transform(
-			$author$project$Anim$Internal$CSS$builder(animState));
+var $author$project$Anim$Internal$CSS$init = function (propertyInitializers) {
+	if (!propertyInitializers.b) {
+		return $author$project$Anim$Internal$CSS$AnimState(
+			{builder: $author$project$Anim$Internal$Builder$init, elementAnimations: $elm$core$Dict$empty, elementStates: $elm$core$Dict$empty, restartCounters: $elm$core$Dict$empty});
+	} else {
+		var configuredBuilder = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (initializer, b) {
+					return initializer(b);
+				}),
+			$author$project$Anim$Internal$Builder$init,
+			propertyInitializers);
 		var elementIds = $elm$core$Dict$keys(
-			$author$project$Anim$Internal$Builder$elements(builder_));
+			$author$project$Anim$Internal$Builder$elements(configuredBuilder));
 		return $author$project$Anim$Internal$CSS$AnimState(
 			{
 				builder: $author$project$Anim$Internal$Builder$clearCurrentElement(
-					$author$project$Anim$Internal$Builder$markDirty(builder_)),
+					$author$project$Anim$Internal$Builder$markDirty(configuredBuilder)),
 				elementAnimations: A2(
 					$elm$core$Dict$map,
 					$author$project$Anim$Internal$CSS$generateElementAnimation($elm$core$Maybe$Nothing),
-					$author$project$Anim$Internal$Builder$elements(builder_)),
+					$author$project$Anim$Internal$Builder$elements(configuredBuilder)),
 				elementStates: $elm$core$Dict$fromList(
 					A2(
 						$elm$core$List$map,
 						function (id) {
 							return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$NotStarted);
 						},
-						elementIds))
+						elementIds)),
+				restartCounters: $elm$core$Dict$empty
 			});
-	});
-var $author$project$Anim$Engine$CSS$animate = $author$project$Anim$Internal$CSS$animate;
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
-var $author$project$Anim$Internal$Builder$getCurrentElementConfig = function (_v0) {
-	var data = _v0.a;
-	var _v1 = data.currentElementId;
-	if (_v1.$ === 'Nothing') {
-		return {properties: _List_Nil};
-	} else {
-		var elementId = _v1.a;
-		return A2(
-			$elm$core$Maybe$withDefault,
-			{properties: _List_Nil},
-			A2($elm$core$Dict$get, elementId, data.elements));
 	}
 };
-var $author$project$Anim$Internal$Builder$updateCurrentElement = F2(
-	function (config, _v0) {
-		var data = _v0.a;
-		var _v1 = data.currentElementId;
-		if (_v1.$ === 'Nothing') {
-			return $author$project$Anim$Internal$Builder$AnimBuilder(data);
-		} else {
-			var elementId = _v1.a;
-			return $author$project$Anim$Internal$Builder$AnimBuilder(
-				_Utils_update(
-					data,
-					{
-						elements: A3($elm$core$Dict$insert, elementId, config, data.elements)
-					}));
-		}
-	});
-var $author$project$Anim$Internal$Builders$Property$add = F2(
-	function (propertyConfig, builder) {
-		var currentElement = $author$project$Anim$Internal$Builder$getCurrentElementConfig(builder);
-		var updatedElement = _Utils_update(
-			currentElement,
-			{
-				properties: _Utils_ap(
-					currentElement.properties,
-					_List_fromArray(
-						[propertyConfig]))
-			});
-		return A2($author$project$Anim$Internal$Builder$updateCurrentElement, updatedElement, builder);
-	});
-var $author$project$Anim$Easing$BounceInCustom = function (a) {
-	return {$: 'BounceInCustom', a: a};
-};
-var $author$project$Anim$Easing$BounceInOutCustom = function (a) {
-	return {$: 'BounceInOutCustom', a: a};
-};
-var $author$project$Anim$Easing$BounceOutCustom = function (a) {
-	return {$: 'BounceOutCustom', a: a};
-};
-var $author$project$Anim$Easing$ElasticInCustom = function (a) {
-	return {$: 'ElasticInCustom', a: a};
-};
-var $author$project$Anim$Easing$ElasticInOutCustom = function (a) {
-	return {$: 'ElasticInOutCustom', a: a};
-};
-var $author$project$Anim$Easing$ElasticOutCustom = function (a) {
-	return {$: 'ElasticOutCustom', a: a};
-};
-var $author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength = F2(
-	function (baseStrength, config) {
-		var animDuration = ((config.distance > 0) && (config.speed > 0)) ? ((config.distance / config.speed) * 1000) : config.duration;
-		var velocity = (animDuration > 0) ? ((config.distance / animDuration) * 1000) : 0;
-		var normalizedVelocity = A3($elm$core$Basics$clamp, 0, 1, velocity / 500);
-		var velocityInfluence = 0.3 * normalizedVelocity;
-		var adjustedStrength = (baseStrength * 0.7) + velocityInfluence;
-		var finalStrength = A3($elm$core$Basics$clamp, 0.1, 1.0, adjustedStrength);
-		return finalStrength;
-	});
-var $author$project$Anim$Internal$Builders$Property$adjustConfigEasing = function (config) {
-	var _v0 = config.easing;
-	_v0$6:
-	while (true) {
-		if (_v0.$ === 'Just') {
-			switch (_v0.a.$) {
-				case 'BounceOutCustom':
-					var baseStrength = _v0.a.a;
-					return _Utils_update(
-						config,
-						{
-							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$BounceOutCustom(
-									A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrength, config)))
-						});
-				case 'BounceInCustom':
-					var baseStrength = _v0.a.a;
-					return _Utils_update(
-						config,
-						{
-							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$BounceInCustom(
-									A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrength, config)))
-						});
-				case 'BounceInOutCustom':
-					var _v1 = _v0.a.a;
-					var baseStrengthIn = _v1.a;
-					var baseStrengthOut = _v1.b;
-					return _Utils_update(
-						config,
-						{
-							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$BounceInOutCustom(
-									_Utils_Tuple2(
-										A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrengthIn, config),
-										A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrengthOut, config))))
-						});
-				case 'ElasticOutCustom':
-					var baseStrength = _v0.a.a;
-					return _Utils_update(
-						config,
-						{
-							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$ElasticOutCustom(
-									A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrength, config)))
-						});
-				case 'ElasticInCustom':
-					var baseStrength = _v0.a.a;
-					return _Utils_update(
-						config,
-						{
-							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$ElasticInCustom(
-									A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrength, config)))
-						});
-				case 'ElasticInOutCustom':
-					var _v2 = _v0.a.a;
-					var baseStrengthIn = _v2.a;
-					var baseStrengthOut = _v2.b;
-					return _Utils_update(
-						config,
-						{
-							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$ElasticInOutCustom(
-									_Utils_Tuple2(
-										A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrengthIn, config),
-										A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrengthOut, config))))
-						});
-				default:
-					break _v0$6;
-			}
-		} else {
-			break _v0$6;
-		}
-	}
-	return config;
-};
-var $author$project$Anim$Internal$Builders$Property$adjustBounceEasing = function (propertyConfig) {
-	switch (propertyConfig.$) {
-		case 'TranslateConfig':
-			var config = propertyConfig.a;
-			return $author$project$Anim$Internal$Builder$TranslateConfig(
-				$author$project$Anim$Internal$Builders$Property$adjustConfigEasing(config));
-		case 'ScaleConfig':
-			var config = propertyConfig.a;
-			return $author$project$Anim$Internal$Builder$ScaleConfig(
-				$author$project$Anim$Internal$Builders$Property$adjustConfigEasing(config));
-		case 'RotateConfig':
-			var config = propertyConfig.a;
-			return $author$project$Anim$Internal$Builder$RotateConfig(
-				$author$project$Anim$Internal$Builders$Property$adjustConfigEasing(config));
-		case 'SizeConfig':
-			var config = propertyConfig.a;
-			return $author$project$Anim$Internal$Builder$SizeConfig(
-				$author$project$Anim$Internal$Builders$Property$adjustConfigEasing(config));
-		case 'OpacityConfig':
-			var config = propertyConfig.a;
-			return $author$project$Anim$Internal$Builder$OpacityConfig(
-				$author$project$Anim$Internal$Builders$Property$adjustConfigEasing(config));
-		case 'BackgroundColorConfig':
-			var config = propertyConfig.a;
-			return $author$project$Anim$Internal$Builder$BackgroundColorConfig(
-				$author$project$Anim$Internal$Builders$Property$adjustConfigEasing(config));
-		default:
-			var config = propertyConfig.a;
-			return $author$project$Anim$Internal$Builder$FontColorConfig(
-				$author$project$Anim$Internal$Builders$Property$adjustConfigEasing(config));
-	}
-};
-var $author$project$Anim$Internal$Builders$Property$configsMatch = F2(
-	function (prop1, prop2) {
-		var _v0 = _Utils_Tuple2(prop1, prop2);
-		_v0$6:
-		while (true) {
-			switch (_v0.a.$) {
-				case 'TranslateConfig':
-					if (_v0.b.$ === 'TranslateConfig') {
-						return true;
-					} else {
-						break _v0$6;
-					}
-				case 'RotateConfig':
-					if (_v0.b.$ === 'RotateConfig') {
-						return true;
-					} else {
-						break _v0$6;
-					}
-				case 'ScaleConfig':
-					if (_v0.b.$ === 'ScaleConfig') {
-						return true;
-					} else {
-						break _v0$6;
-					}
-				case 'BackgroundColorConfig':
-					if (_v0.b.$ === 'BackgroundColorConfig') {
-						return true;
-					} else {
-						break _v0$6;
-					}
-				case 'OpacityConfig':
-					if (_v0.b.$ === 'OpacityConfig') {
-						return true;
-					} else {
-						break _v0$6;
-					}
-				case 'SizeConfig':
-					if (_v0.b.$ === 'SizeConfig') {
-						return true;
-					} else {
-						break _v0$6;
-					}
-				default:
-					break _v0$6;
-			}
-		}
-		return false;
-	});
-var $author$project$Anim$Internal$Builders$Property$find = F2(
-	function (predicate, builder) {
-		var currentElement = $author$project$Anim$Internal$Builder$getCurrentElementConfig(builder);
-		return $elm$core$List$head(
-			A2($elm$core$List$filter, predicate, currentElement.properties));
-	});
-var $author$project$Anim$Internal$Builders$Property$replace = F2(
-	function (propertyConfig, builder) {
-		var currentElement = $author$project$Anim$Internal$Builder$getCurrentElementConfig(builder);
-		var updatedProperties = _Utils_ap(
-			A2(
-				$elm$core$List$filter,
-				A2(
-					$elm$core$Basics$composeL,
-					$elm$core$Basics$not,
-					$author$project$Anim$Internal$Builders$Property$configsMatch(propertyConfig)),
-				currentElement.properties),
-			_List_fromArray(
-				[propertyConfig]));
-		var updatedElement = _Utils_update(
-			currentElement,
-			{properties: updatedProperties});
-		return A2($author$project$Anim$Internal$Builder$updateCurrentElement, updatedElement, builder);
-	});
-var $author$project$Anim$Internal$Builders$Property$upsert = F2(
-	function (propertyConfig, builder) {
-		var adjustedConfig = $author$project$Anim$Internal$Builders$Property$adjustBounceEasing(propertyConfig);
-		var _v0 = A2(
-			$author$project$Anim$Internal$Builders$Property$find,
-			$author$project$Anim$Internal$Builders$Property$configsMatch(adjustedConfig),
-			builder);
-		if (_v0.$ === 'Just') {
-			return A2($author$project$Anim$Internal$Builders$Property$replace, adjustedConfig, builder);
-		} else {
-			return A2($author$project$Anim$Internal$Builders$Property$add, adjustedConfig, builder);
-		}
-	});
-var $author$project$Anim$Internal$Builders$Opacity$build = function (_v0) {
-	var config = _v0.a;
-	var builder = _v0.b;
-	return A2(
-		$author$project$Anim$Internal$Builders$Property$upsert,
-		$author$project$Anim$Internal$Builder$OpacityConfig(config),
-		builder);
-};
-var $author$project$Anim$Property$Opacity$build = $author$project$Anim$Internal$Builders$Opacity$build;
-var $author$project$Anim$Internal$Builders$Opacity$OpacityBuilder = F2(
-	function (a, b) {
-		return {$: 'OpacityBuilder', a: a, b: b};
-	});
-var $author$project$Anim$Internal$Builders$Property$withDuration = F2(
-	function (ms, config) {
-		return _Utils_update(
-			config,
-			{
-				duration: ms,
-				timing: $elm$core$Maybe$Just(
-					$author$project$Anim$Internal$Timing$TimeSpec$Duration(ms))
-			});
-	});
-var $author$project$Anim$Internal$Builders$Opacity$duration = F2(
-	function (dur, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		return A2(
-			$author$project$Anim$Internal$Builders$Opacity$OpacityBuilder,
-			A2($author$project$Anim$Internal$Builders$Property$withDuration, dur, config),
-			builder);
-	});
-var $author$project$Anim$Property$Opacity$duration = $author$project$Anim$Internal$Builders$Opacity$duration;
-var $elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $author$project$Anim$Internal$Builder$getDelay = function (_v0) {
-	var data = _v0.a;
-	return data.globalDelay;
-};
-var $author$project$Anim$Internal$Builder$getEasing = function (_v0) {
-	var data = _v0.a;
-	return data.globalEasing;
-};
-var $author$project$Anim$Internal$Builder$getTimespec = function (_v0) {
-	var data = _v0.a;
-	return data.globalTiming;
-};
-var $author$project$Anim$Internal$Builders$Property$applyGlobalDefaults = F2(
-	function (builder, config) {
-		return _Utils_update(
-			config,
-			{
-				delay: function () {
-					var _v0 = config.delay;
-					if (_v0.$ === 'Just') {
-						var delay_ = _v0.a;
-						return $elm$core$Maybe$Just(delay_);
-					} else {
-						return $author$project$Anim$Internal$Builder$getDelay(builder);
-					}
-				}(),
-				easing: function () {
-					var _v1 = config.easing;
-					if (_v1.$ === 'Just') {
-						var easing_ = _v1.a;
-						return $elm$core$Maybe$Just(easing_);
-					} else {
-						return $author$project$Anim$Internal$Builder$getEasing(builder);
-					}
-				}(),
-				timing: function () {
-					var _v2 = config.timing;
-					if (_v2.$ === 'Just') {
-						var timing_ = _v2.a;
-						return $elm$core$Maybe$Just(timing_);
-					} else {
-						return $author$project$Anim$Internal$Builder$getTimespec(builder);
-					}
-				}()
-			});
-	});
-var $author$project$Anim$Internal$Builder$getElementBaseline = F2(
-	function (elementId, _v0) {
-		var data = _v0.a;
-		return A2($elm$core$Dict$get, elementId, data.elementBaselines);
-	});
-var $author$project$Anim$Internal$Builder$getElementConfig = F2(
-	function (elementId, _v0) {
-		var data = _v0.a;
-		return A2($elm$core$Dict$get, elementId, data.elements);
-	});
-var $author$project$Anim$Internal$Builders$Property$createFor = F5(
-	function (extractExisting, extractBaseline, defaultConfig_, elementId, builder) {
-		var existingConfig = A2(
-			$elm$core$Maybe$andThen,
-			function (_v4) {
-				var properties = _v4.properties;
-				return $elm$core$List$head(
-					A2($elm$core$List$filterMap, extractExisting, properties));
-			},
-			A2($author$project$Anim$Internal$Builder$getElementConfig, elementId, builder));
-		var baselineValue = A2(
-			$elm$core$Maybe$andThen,
-			extractBaseline,
-			A2($author$project$Anim$Internal$Builder$getElementBaseline, elementId, builder));
-		if (existingConfig.$ === 'Just') {
-			var config = existingConfig.a;
-			return A2(
-				$author$project$Anim$Internal$Builders$Property$applyGlobalDefaults,
-				builder,
-				_Utils_update(
-					config,
-					{
-						delay: $elm$core$Maybe$Nothing,
-						distance: 0,
-						duration: 0,
-						easing: $elm$core$Maybe$Nothing,
-						end: function () {
-							if (baselineValue.$ === 'Just') {
-								var baseline = baselineValue.a;
-								return baseline;
-							} else {
-								return config.end;
-							}
-						}(),
-						isDirty: false,
-						speed: 0,
-						start: function () {
-							if (baselineValue.$ === 'Just') {
-								var baseline = baselineValue.a;
-								return $elm$core$Maybe$Just(baseline);
-							} else {
-								return $elm$core$Maybe$Just(config.end);
-							}
-						}(),
-						timing: $elm$core$Maybe$Nothing
-					}));
-		} else {
-			if (baselineValue.$ === 'Just') {
-				var baseline = baselineValue.a;
-				return A2(
-					$author$project$Anim$Internal$Builders$Property$applyGlobalDefaults,
-					builder,
-					_Utils_update(
-						defaultConfig_,
-						{
-							end: baseline,
-							start: $elm$core$Maybe$Just(baseline)
-						}));
-			} else {
-				return A2($author$project$Anim$Internal$Builders$Property$applyGlobalDefaults, builder, defaultConfig_);
-			}
-		}
-	});
-var $author$project$Anim$Internal$Builders$Property$defaultConfig = function (defaultEnd) {
-	return {delay: $elm$core$Maybe$Nothing, distance: 0, duration: 0, easing: $elm$core$Maybe$Nothing, end: defaultEnd, isDirty: false, speed: 0, start: $elm$core$Maybe$Nothing, timing: $elm$core$Maybe$Nothing};
-};
-var $author$project$Anim$Internal$Builders$Opacity$defaultConfig = $author$project$Anim$Internal$Builders$Property$defaultConfig(
-	$author$project$Anim$Internal$Properties$Opacity$fromFloat(1));
-var $author$project$Anim$Internal$Builder$for = F2(
-	function (elementId, _v0) {
-		var data = _v0.a;
-		return $author$project$Anim$Internal$Builder$AnimBuilder(
-			_Utils_update(
-				data,
-				{
-					currentElementId: $elm$core$Maybe$Just(elementId)
-				}));
-	});
-var $author$project$Anim$Internal$Builders$Opacity$for = F2(
-	function (elementId, builder) {
-		var extractExisting = function (propertyConfig) {
-			if (propertyConfig.$ === 'OpacityConfig') {
-				var cfg = propertyConfig.a;
-				return $elm$core$Maybe$Just(cfg);
-			} else {
-				return $elm$core$Maybe$Nothing;
-			}
-		};
-		var extractBaseline = function (endStates) {
-			return endStates.opacity;
-		};
-		var config = A5($author$project$Anim$Internal$Builders$Property$createFor, extractExisting, extractBaseline, $author$project$Anim$Internal$Builders$Opacity$defaultConfig, elementId, builder);
-		return A2(
-			$author$project$Anim$Internal$Builders$Opacity$OpacityBuilder,
-			config,
-			A2($author$project$Anim$Internal$Builder$for, elementId, builder));
-	});
-var $author$project$Anim$Property$Opacity$for = $author$project$Anim$Internal$Builders$Opacity$for;
-var $author$project$Anim$Internal$Builders$Opacity$from = F2(
-	function (opacity, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		return A2(
-			$author$project$Anim$Internal$Builders$Opacity$OpacityBuilder,
-			_Utils_update(
-				config,
-				{
-					start: $elm$core$Maybe$Just(opacity)
-				}),
-			builder);
-	});
-var $author$project$Anim$Property$Opacity$from = A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Builders$Opacity$from, $author$project$Anim$Internal$Properties$Opacity$fromFloat);
-var $author$project$Anim$Internal$Builders$Opacity$to = F2(
-	function (opacity, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		var startPos = function () {
-			var _v1 = config.start;
-			if (_v1.$ === 'Just') {
-				var opacity_ = _v1.a;
-				return opacity_;
-			} else {
-				return $author$project$Anim$Internal$Properties$Opacity$fromFloat(1);
-			}
-		}();
-		return A2(
-			$author$project$Anim$Internal$Builders$Opacity$OpacityBuilder,
-			_Utils_update(
-				config,
-				{
-					distance: A2($author$project$Anim$Internal$Properties$Opacity$distance, startPos, opacity),
-					end: opacity,
-					start: $elm$core$Maybe$Just(startPos)
-				}),
-			builder);
-	});
-var $author$project$Anim$Property$Opacity$to = A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Builders$Opacity$to, $author$project$Anim$Internal$Properties$Opacity$fromFloat);
-var $author$project$GettingStarted$FirstAnimation$Main$fadeInBuilder = function (builder) {
-	return $author$project$Anim$Property$Opacity$build(
-		A2(
-			$author$project$Anim$Property$Opacity$duration,
-			2500,
-			A2(
-				$author$project$Anim$Property$Opacity$to,
-				1,
-				A2(
-					$author$project$Anim$Property$Opacity$from,
-					0,
-					A2($author$project$Anim$Property$Opacity$for, 'my-box', builder)))));
-};
-var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
-	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil});
-var $author$project$Anim$Internal$CSS$init = $author$project$Anim$Internal$CSS$AnimState(
-	{builder: $author$project$Anim$Internal$Builder$init, elementAnimations: $elm$core$Dict$empty, elementStates: $elm$core$Dict$empty});
 var $author$project$Anim$Engine$CSS$init = $author$project$Anim$Internal$CSS$init;
-var $author$project$GettingStarted$FirstAnimation$Main$fadeInAnimation = A2($author$project$Anim$Engine$CSS$animate, $author$project$Anim$Engine$CSS$init, $author$project$GettingStarted$FirstAnimation$Main$fadeInBuilder);
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
+var $author$project$Anim$Engine$CSS$fireAndForget = $author$project$Anim$Engine$CSS$animate(
+	$author$project$Anim$Engine$CSS$init(_List_Nil));
+var $author$project$Anim$Property$Opacity$init = F3(
+	function (elementId, value, animBuilder) {
+		return $author$project$Anim$Internal$Builders$Opacity$build(
+			A2(
+				$author$project$Anim$Internal$Builders$Opacity$to,
+				$author$project$Anim$Internal$Properties$Opacity$fromFloat(value),
+				A2(
+					$author$project$Anim$Internal$Builders$Opacity$from,
+					$author$project$Anim$Internal$Properties$Opacity$fromFloat(value),
+					A2($author$project$Anim$Internal$Builders$Opacity$for, elementId, animBuilder))));
 	});
-var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Anim$Internal$CSS$getElementStyles = F2(
 	function (elementId, _v0) {
 		var state = _v0.a;
@@ -8422,36 +8486,29 @@ var $author$project$Anim$Internal$CSS$transitionAttributes = F2(
 	});
 var $author$project$Anim$Engine$CSS$transitionAttributes = $author$project$Anim$Internal$CSS$transitionAttributes;
 var $author$project$GettingStarted$FirstAnimation$Main$view = function (model) {
-	var fadeIn = function () {
+	var animState = function () {
 		var _v0 = model.state;
 		if (_v0.$ === 'Ready') {
-			return $author$project$Anim$Engine$CSS$init;
+			return $author$project$Anim$Engine$CSS$init(
+				_List_fromArray(
+					[
+						A2($author$project$Anim$Property$Opacity$init, 'my-box', 0)
+					]));
 		} else {
-			return $author$project$GettingStarted$FirstAnimation$Main$fadeInAnimation;
+			return $author$project$Anim$Engine$CSS$fireAndForget($author$project$GettingStarted$FirstAnimation$Main$fadeInBuilder);
 		}
 	}();
 	return A2(
 		$elm$html$Html$div,
-		_List_Nil,
-		_List_fromArray(
-			[
-				A2(
-				$elm$html$Html$div,
-				_Utils_ap(
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$id('my-box'),
-							A2($elm$html$Html$Attributes$style, 'opacity', '0'),
-							A2($elm$html$Html$Attributes$style, 'width', '100px'),
-							A2($elm$html$Html$Attributes$style, 'height', '100px'),
-							A2($elm$html$Html$Attributes$style, 'background-color', 'blue')
-						]),
-					A2($author$project$Anim$Engine$CSS$transitionAttributes, 'my-box', fadeIn)),
-				_List_fromArray(
-					[
-						$elm$html$Html$text('Hello!')
-					]))
-			]));
+		_Utils_ap(
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'width', '100px'),
+					A2($elm$html$Html$Attributes$style, 'height', '100px'),
+					A2($elm$html$Html$Attributes$style, 'background-color', 'blue')
+				]),
+			A2($author$project$Anim$Engine$CSS$transitionAttributes, 'my-box', animState)),
+		_List_Nil);
 };
 var $author$project$GettingStarted$FirstAnimation$Main$main = $elm$browser$Browser$element(
 	{

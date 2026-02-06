@@ -8,8 +8,6 @@ Install the Elm package:
 elm install phollyer/elm-animate
 ```
 
-This gives you access to all animation engines and properties.
-
 ## WAAPI JavaScript (Optional)
 
 If you plan to use the [WAAPI Engine](../engines/waapi.md), you'll also need the JavaScript companion:

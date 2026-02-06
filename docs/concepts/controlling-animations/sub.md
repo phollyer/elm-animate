@@ -1,16 +1,16 @@
 # Controlling Sub Animations
 
-The Sub Engine provides full programmatic control over running animations through the Web Animations API. You can stop, pause, resume, reset, and restart animations at any time.
+The Sub Engine provides full programmatic control over running animations. You can `stop`,  `reset`, `restart`, `pause` and `resume`, animations at any time.
 
 ## Available Controls
 
 | Function | Behavior |
 | ---------- | ---------- |
 | `stop` | Jump instantly to the animation's **end state** and stop |
-| `pause` | Freeze the animation at its current position |
-| `resume` | Continue a paused animation from where it was frozen |
 | `reset` | Jump instantly to the animation's **start state** and stop |
 | `restart` | Reset to start state, then begin playing the animation again |
+| `pause` | Freeze the animation at its current position |
+| `resume` | Continue a paused animation from where it was frozen |
 
 ## Live Example
 
@@ -77,27 +77,6 @@ Resets to the start state, then immediately begins playing the animation again:
     ```
 
 
-
-## Animation Events
-
-When using control functions, the Sub engine fires lifecycle events that you can handle in your update function:
-
-??? example "View Source Code"
-
-    ```elm
-    --8<-- "docs/examples/src/Engines/Sub/Controls/Main.elm:handleAnimationEvent"
-    ```
-
-### Event Types
-
-| Event | Triggered When |
-| ------- | ---------------- |
-| `Started` | Animation begins playing |
-| `Completed` | Animation reaches its end naturally |
-| `Canceled` | Animation is stopped before completion |
-| `Paused` | Animation is paused |
-| `Resumed` | Paused animation continues |
-| `Restarted` | Animation is restarted |
 
 ## Best Practices
 

@@ -1,7 +1,7 @@
-# Controlling CSS Transitions
+# Controlling CSS Keyframe Animations
 
-The CSS Engine provides partial programmatic control over running animations.
-You can stop, reset, and restart animations at any time.
+The CSS Engine provides full programmatic control over keyframe animations.
+You can `stop`, `reset`, `restart`, `pause` and `resume` animations at any time.
 
 ## Available Controls
 
@@ -25,7 +25,7 @@ You can stop, reset, and restart animations at any time.
 
 ## Using Control Functions
 
-All control functions follow the same pattern - they take an element ID and the current `AnimState`, returning an updated state and a command.
+All control functions follow the same pattern - they take an element ID and the current `AnimState`, returning the updated state.
 
 ### Stop
 
@@ -36,7 +36,7 @@ Immediately jumps to the animation's end state and stops playback:
     ```elm
     --8<-- "docs/examples/src/Engines/CSS/Controls/KeyframeAnimations/Main.elm:stop"
     ```
-`
+
 
 ### Reset
 
@@ -78,26 +78,6 @@ Resumes a paused animation:
     ```elm
     --8<-- docs/examples/src/Engines/CSS/Controls/KeyframeAnimations/Main.md:resume
     ```
-
-
-## Animation Events
-
-When using control functions, the WAAPI engine fires lifecycle events that you can handle in your update function:
-
-??? example "View Source Code"
-
-    ```elm
-    --8<-- "docs/examples/src/Engines/CSS/Controls/KeyframeAnimations/Main.elm:handleAnimationEvent"
-    ```
-
-### Event Types
-
-| Event | Triggered When |
-| ------- | ---------------- |
-| `Started` | Animation begins playing |
-| `Completed` | Animation reaches its end naturally |
-| `Canceled` | Animation is stopped before completion |
-| `Restarted` | Animation is restarted |
 
 ## Best Practices
 

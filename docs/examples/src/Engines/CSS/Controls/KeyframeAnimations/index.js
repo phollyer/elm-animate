@@ -15315,18 +15315,11 @@ var $author$project$Common$UI$createDocument = F3(
 			title: title
 		};
 	});
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Animate = {$: 'Animate'};
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Pause = {$: 'Pause'};
-var $author$project$Common$UI$Primary = {$: 'Primary'};
-var $author$project$Common$UI$Purple = {$: 'Purple'};
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Reset = {$: 'Reset'};
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Restart = {$: 'Restart'};
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Resume = {$: 'Resume'};
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Stop = {$: 'Stop'};
-var $author$project$Common$UI$Success = {$: 'Success'};
-var $author$project$Common$UI$Warning = {$: 'Warning'};
-var $author$project$Common$Colors$backgroundWhite = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
-var $author$project$Common$Colors$borderMedium = A3($mdgriffith$elm_ui$Element$rgb255, 203, 213, 225);
+var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
+	return {$: 'AlignY', a: a};
+};
+var $mdgriffith$elm_ui$Internal$Model$CenterY = {$: 'CenterY'};
+var $mdgriffith$elm_ui$Element$centerY = $mdgriffith$elm_ui$Internal$Model$AlignY($mdgriffith$elm_ui$Internal$Model$CenterY);
 var $mdgriffith$elm_ui$Element$el = F2(
 	function (attrs, child) {
 		return A4(
@@ -15344,6 +15337,176 @@ var $mdgriffith$elm_ui$Element$el = F2(
 				_List_fromArray(
 					[child])));
 	});
+var $author$project$Anim$Internal$CSS$getElementAnimation = F2(
+	function (elementId, _v0) {
+		var state = _v0.a;
+		return A2($elm$core$Dict$get, elementId, state.elementAnimations);
+	});
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $author$project$Anim$Internal$CSS$KeyframeAnimation$toAttributeString = function (animationLayers) {
+	return (!$elm$core$List$isEmpty(animationLayers)) ? A2(
+		$elm$core$String$join,
+		', ',
+		A2(
+			$elm$core$List$map,
+			function (layer) {
+				return layer.animationName + (' ' + ($elm$core$String$fromInt(layer.duration) + ('ms ' + (layer.easing + (' ' + ($elm$core$String$fromInt(layer.delay) + 'ms forwards'))))));
+			},
+			animationLayers)) : '';
+};
+var $author$project$Anim$Internal$CSS$keyframesStyles = F2(
+	function (elementId, animState) {
+		var _v0 = A2($author$project$Anim$Internal$CSS$getElementAnimation, elementId, animState);
+		if (_v0.$ === 'Just') {
+			var elementAnimation = _v0.a;
+			var otherStyleAttrs = A2(
+				$elm$core$List$map,
+				function (_v2) {
+					var key = _v2.a;
+					var value = _v2.b;
+					return A2($elm$html$Html$Attributes$style, key, value);
+				},
+				A2(
+					$elm$core$List$filter,
+					function (_v1) {
+						var key = _v1.a;
+						return key !== 'animation';
+					},
+					elementAnimation.styles));
+			var animationAttr = A2(
+				$elm$html$Html$Attributes$style,
+				'animation',
+				$author$project$Anim$Internal$CSS$KeyframeAnimation$toAttributeString(elementAnimation.animationLayers));
+			return A2($elm$core$List$cons, animationAttr, otherStyleAttrs);
+		} else {
+			return _List_Nil;
+		}
+	});
+var $author$project$Anim$Engine$CSS$keyframesStyles = $author$project$Anim$Internal$CSS$keyframesStyles;
+var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
+	return {$: 'Px', a: a};
+};
+var $mdgriffith$elm_ui$Element$px = $mdgriffith$elm_ui$Internal$Model$Px;
+var $mdgriffith$elm_ui$Element$Font$size = function (i) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$fontSize,
+		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
+};
+var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
+	return {$: 'Text', a: a};
+};
+var $mdgriffith$elm_ui$Element$text = function (content) {
+	return $mdgriffith$elm_ui$Internal$Model$Text(content);
+};
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$animatedBall = function (animState) {
+	return A2(
+		$mdgriffith$elm_ui$Element$el,
+		_Utils_ap(
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$width(
+					$mdgriffith$elm_ui$Element$px(50)),
+					$mdgriffith$elm_ui$Element$height(
+					$mdgriffith$elm_ui$Element$px(50)),
+					$mdgriffith$elm_ui$Element$htmlAttribute(
+					A2($elm$html$Html$Attributes$style, 'position', 'relative'))
+				]),
+			A2(
+				$elm$core$List$map,
+				$mdgriffith$elm_ui$Element$htmlAttribute,
+				A2($author$project$Anim$Engine$CSS$keyframesStyles, $author$project$Common$Animations$Controls$elementId, animState))),
+		A2(
+			$mdgriffith$elm_ui$Element$el,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$centerX,
+					$mdgriffith$elm_ui$Element$centerY,
+					$mdgriffith$elm_ui$Element$Font$size(50)
+				]),
+			$mdgriffith$elm_ui$Element$text('🏀')));
+};
+var $author$project$Common$Colors$backgroundWhite = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
+var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$bgColor,
+		A3(
+			$mdgriffith$elm_ui$Internal$Model$Colored,
+			'bg-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(clr),
+			'background-color',
+			clr));
+};
+var $mdgriffith$elm_ui$Element$rgba = $mdgriffith$elm_ui$Internal$Model$Rgba;
+var $mdgriffith$elm_ui$Internal$Flag$borderRound = $mdgriffith$elm_ui$Internal$Flag$flag(17);
+var $mdgriffith$elm_ui$Element$Border$rounded = function (radius) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$borderRound,
+		A3(
+			$mdgriffith$elm_ui$Internal$Model$Single,
+			'br-' + $elm$core$String$fromInt(radius),
+			'border-radius',
+			$elm$core$String$fromInt(radius) + 'px'));
+};
+var $mdgriffith$elm_ui$Internal$Model$boxShadowClass = function (shadow) {
+	return $elm$core$String$concat(
+		_List_fromArray(
+			[
+				shadow.inset ? 'box-inset' : 'box-',
+				$mdgriffith$elm_ui$Internal$Model$floatClass(shadow.offset.a) + 'px',
+				$mdgriffith$elm_ui$Internal$Model$floatClass(shadow.offset.b) + 'px',
+				$mdgriffith$elm_ui$Internal$Model$floatClass(shadow.blur) + 'px',
+				$mdgriffith$elm_ui$Internal$Model$floatClass(shadow.size) + 'px',
+				$mdgriffith$elm_ui$Internal$Model$formatColorClass(shadow.color)
+			]));
+};
+var $mdgriffith$elm_ui$Internal$Flag$shadows = $mdgriffith$elm_ui$Internal$Flag$flag(19);
+var $mdgriffith$elm_ui$Element$Border$shadow = function (almostShade) {
+	var shade = {blur: almostShade.blur, color: almostShade.color, inset: false, offset: almostShade.offset, size: almostShade.size};
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$shadows,
+		A3(
+			$mdgriffith$elm_ui$Internal$Model$Single,
+			$mdgriffith$elm_ui$Internal$Model$boxShadowClass(shade),
+			'box-shadow',
+			$mdgriffith$elm_ui$Internal$Model$formatBoxShadow(shade)));
+};
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$animationArea = F2(
+	function (size, animState) {
+		return A2(
+			$mdgriffith$elm_ui$Element$el,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$width(
+					$mdgriffith$elm_ui$Element$px(size.width)),
+					$mdgriffith$elm_ui$Element$height(
+					$mdgriffith$elm_ui$Element$px(size.height)),
+					$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundWhite),
+					$mdgriffith$elm_ui$Element$Border$rounded(12),
+					$mdgriffith$elm_ui$Element$Border$shadow(
+					{
+						blur: 8,
+						color: A4($mdgriffith$elm_ui$Element$rgba, 0, 0, 0, 0.1),
+						offset: _Utils_Tuple2(0, 4),
+						size: 0
+					}),
+					$mdgriffith$elm_ui$Element$centerX
+				]),
+			$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$animatedBall(animState));
+	});
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Animate = {$: 'Animate'};
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Pause = {$: 'Pause'};
+var $author$project$Common$UI$Primary = {$: 'Primary'};
+var $author$project$Common$UI$Purple = {$: 'Purple'};
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Reset = {$: 'Reset'};
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Restart = {$: 'Restart'};
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Resume = {$: 'Resume'};
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Stop = {$: 'Stop'};
+var $author$project$Common$UI$Success = {$: 'Success'};
+var $author$project$Common$UI$Warning = {$: 'Warning'};
 var $mdgriffith$elm_ui$Internal$Model$unstyled = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Unstyled, $elm$core$Basics$always);
 var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
 var $elm$html$Html$button = _VirtualDom_node('button');
@@ -15409,27 +15572,55 @@ var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$buttons = A2(
 				$mdgriffith$elm_ui$Element$spacing(12)
 			])),
 	$elm$core$List$map($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$button));
-var $mdgriffith$elm_ui$Internal$Model$Class = F2(
-	function (a, b) {
-		return {$: 'Class', a: a, b: b};
+var $mdgriffith$elm_ui$Internal$Model$AsRow = {$: 'AsRow'};
+var $mdgriffith$elm_ui$Internal$Model$asRow = $mdgriffith$elm_ui$Internal$Model$AsRow;
+var $mdgriffith$elm_ui$Element$row = F2(
+	function (attrs, children) {
+		return A4(
+			$mdgriffith$elm_ui$Internal$Model$element,
+			$mdgriffith$elm_ui$Internal$Model$asRow,
+			$mdgriffith$elm_ui$Internal$Model$div,
+			A2(
+				$elm$core$List$cons,
+				$mdgriffith$elm_ui$Internal$Model$htmlClass($mdgriffith$elm_ui$Internal$Style$classes.contentLeft + (' ' + $mdgriffith$elm_ui$Internal$Style$classes.contentCenterY)),
+				A2(
+					$elm$core$List$cons,
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
+					A2(
+						$elm$core$List$cons,
+						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$shrink),
+						attrs))),
+			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
 	});
-var $mdgriffith$elm_ui$Internal$Flag$fontAlignment = $mdgriffith$elm_ui$Internal$Flag$flag(12);
-var $mdgriffith$elm_ui$Element$Font$center = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontAlignment, $mdgriffith$elm_ui$Internal$Style$classes.textCenter);
-var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
-	return {$: 'AlignY', a: a};
-};
-var $mdgriffith$elm_ui$Internal$Model$CenterY = {$: 'CenterY'};
-var $mdgriffith$elm_ui$Element$centerY = $mdgriffith$elm_ui$Internal$Model$AlignY($mdgriffith$elm_ui$Internal$Model$CenterY);
-var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$bgColor,
-		A3(
-			$mdgriffith$elm_ui$Internal$Model$Colored,
-			'bg-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(clr),
-			'background-color',
-			clr));
-};
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$controlButtons = A2(
+	$mdgriffith$elm_ui$Element$row,
+	_List_fromArray(
+		[
+			$mdgriffith$elm_ui$Element$spacing(12),
+			$mdgriffith$elm_ui$Element$centerX
+		]),
+	_List_fromArray(
+		[
+			$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$buttons(
+			_List_fromArray(
+				[
+					_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Animate, '🏀 Animate'),
+					_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Stop, '⏹️ Stop')
+				])),
+			$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$buttons(
+			_List_fromArray(
+				[
+					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Pause, '⏸️ Pause'),
+					_Utils_Tuple3($author$project$Common$UI$Success, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Resume, '▶️ Resume')
+				])),
+			$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$buttons(
+			_List_fromArray(
+				[
+					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Reset, '⏮️ Reset'),
+					_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Restart, '🔄 Restart')
+				]))
+		]));
+var $author$project$Common$Colors$borderMedium = A3($mdgriffith$elm_ui$Element$rgb255, 203, 213, 225);
 var $mdgriffith$elm_ui$Internal$Flag$borderColor = $mdgriffith$elm_ui$Internal$Flag$flag(28);
 var $mdgriffith$elm_ui$Element$Border$color = function (clr) {
 	return A2(
@@ -15451,86 +15642,10 @@ var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
 			'color',
 			fontColor));
 };
-var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
-var $author$project$Anim$Internal$CSS$keyframesStyleNodeFor = F2(
-	function (elementId, _v0) {
-		var state = _v0.a;
-		var _v1 = A2($elm$core$Dict$get, elementId, state.elementAnimations);
-		if (_v1.$ === 'Just') {
-			var elementAnimation = _v1.a;
-			if ($elm$core$List$isEmpty(elementAnimation.animationLayers)) {
-				return $elm$html$Html$text('');
-			} else {
-				var elementKeyframes = A2(
-					$elm$core$String$join,
-					'\n\n',
-					A2(
-						$elm$core$List$map,
-						function ($) {
-							return $.keyframes;
-						},
-						elementAnimation.animationLayers));
-				return A3(
-					$elm$html$Html$node,
-					'style',
-					_List_Nil,
-					_List_fromArray(
-						[
-							$elm$html$Html$text(elementKeyframes)
-						]));
-			}
-		} else {
-			return $elm$html$Html$text('');
-		}
+var $mdgriffith$elm_ui$Internal$Model$Class = F2(
+	function (a, b) {
+		return {$: 'Class', a: a, b: b};
 	});
-var $author$project$Anim$Engine$CSS$keyframesStyleNodeFor = $author$project$Anim$Internal$CSS$keyframesStyleNodeFor;
-var $author$project$Anim$Internal$CSS$getElementAnimation = F2(
-	function (elementId, _v0) {
-		var state = _v0.a;
-		return A2($elm$core$Dict$get, elementId, state.elementAnimations);
-	});
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$Anim$Internal$CSS$KeyframeAnimation$toAttributeString = function (animationLayers) {
-	return (!$elm$core$List$isEmpty(animationLayers)) ? A2(
-		$elm$core$String$join,
-		', ',
-		A2(
-			$elm$core$List$map,
-			function (layer) {
-				return layer.animationName + (' ' + ($elm$core$String$fromInt(layer.duration) + ('ms ' + (layer.easing + (' ' + ($elm$core$String$fromInt(layer.delay) + 'ms forwards'))))));
-			},
-			animationLayers)) : '';
-};
-var $author$project$Anim$Internal$CSS$keyframesStyles = F2(
-	function (elementId, animState) {
-		var _v0 = A2($author$project$Anim$Internal$CSS$getElementAnimation, elementId, animState);
-		if (_v0.$ === 'Just') {
-			var elementAnimation = _v0.a;
-			var otherStyleAttrs = A2(
-				$elm$core$List$map,
-				function (_v2) {
-					var key = _v2.a;
-					var value = _v2.b;
-					return A2($elm$html$Html$Attributes$style, key, value);
-				},
-				A2(
-					$elm$core$List$filter,
-					function (_v1) {
-						var key = _v1.a;
-						return key !== 'animation';
-					},
-					elementAnimation.styles));
-			var animationAttr = A2(
-				$elm$html$Html$Attributes$style,
-				'animation',
-				$author$project$Anim$Internal$CSS$KeyframeAnimation$toAttributeString(elementAnimation.animationLayers));
-			return A2($elm$core$List$cons, animationAttr, otherStyleAttrs);
-		} else {
-			return _List_Nil;
-		}
-	});
-var $author$project$Anim$Engine$CSS$keyframesStyles = $author$project$Anim$Internal$CSS$keyframesStyles;
 var $mdgriffith$elm_ui$Internal$Flag$fontWeight = $mdgriffith$elm_ui$Internal$Flag$flag(13);
 var $mdgriffith$elm_ui$Element$Font$medium = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textMedium);
 var $mdgriffith$elm_ui$Element$padding = function (x) {
@@ -15546,120 +15661,8 @@ var $mdgriffith$elm_ui$Element$padding = function (x) {
 			f,
 			f));
 };
-var $mdgriffith$elm_ui$Internal$Model$Describe = function (a) {
-	return {$: 'Describe', a: a};
-};
-var $mdgriffith$elm_ui$Internal$Model$Paragraph = {$: 'Paragraph'};
-var $mdgriffith$elm_ui$Element$paragraph = F2(
-	function (attrs, children) {
-		return A4(
-			$mdgriffith$elm_ui$Internal$Model$element,
-			$mdgriffith$elm_ui$Internal$Model$asParagraph,
-			$mdgriffith$elm_ui$Internal$Model$div,
-			A2(
-				$elm$core$List$cons,
-				$mdgriffith$elm_ui$Internal$Model$Describe($mdgriffith$elm_ui$Internal$Model$Paragraph),
-				A2(
-					$elm$core$List$cons,
-					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-					A2(
-						$elm$core$List$cons,
-						$mdgriffith$elm_ui$Element$spacing(5),
-						attrs))),
-			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
-	});
-var $mdgriffith$elm_ui$Element$Font$semiBold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textSemiBold);
-var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
-	return {$: 'Text', a: a};
-};
-var $mdgriffith$elm_ui$Element$text = function (content) {
-	return $mdgriffith$elm_ui$Internal$Model$Text(content);
-};
-var $author$project$Common$Colors$textDark = A3($mdgriffith$elm_ui$Element$rgb255, 30, 41, 59);
-var $author$project$Common$UI$pageHeader = function (title) {
-	return A2(
-		$mdgriffith$elm_ui$Element$paragraph,
-		_List_fromArray(
-			[
-				$mdgriffith$elm_ui$Element$Font$semiBold,
-				$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textDark),
-				$mdgriffith$elm_ui$Element$Font$center,
-				$mdgriffith$elm_ui$Element$htmlAttribute(
-				$elm$html$Html$Attributes$class('responsive-header'))
-			]),
-		_List_fromArray(
-			[
-				$mdgriffith$elm_ui$Element$text(title)
-			]));
-};
-var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
-	return {$: 'Px', a: a};
-};
-var $mdgriffith$elm_ui$Element$px = $mdgriffith$elm_ui$Internal$Model$Px;
-var $mdgriffith$elm_ui$Element$rgba = $mdgriffith$elm_ui$Internal$Model$Rgba;
-var $mdgriffith$elm_ui$Internal$Flag$borderRound = $mdgriffith$elm_ui$Internal$Flag$flag(17);
-var $mdgriffith$elm_ui$Element$Border$rounded = function (radius) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$borderRound,
-		A3(
-			$mdgriffith$elm_ui$Internal$Model$Single,
-			'br-' + $elm$core$String$fromInt(radius),
-			'border-radius',
-			$elm$core$String$fromInt(radius) + 'px'));
-};
-var $mdgriffith$elm_ui$Internal$Model$AsRow = {$: 'AsRow'};
-var $mdgriffith$elm_ui$Internal$Model$asRow = $mdgriffith$elm_ui$Internal$Model$AsRow;
-var $mdgriffith$elm_ui$Element$row = F2(
-	function (attrs, children) {
-		return A4(
-			$mdgriffith$elm_ui$Internal$Model$element,
-			$mdgriffith$elm_ui$Internal$Model$asRow,
-			$mdgriffith$elm_ui$Internal$Model$div,
-			A2(
-				$elm$core$List$cons,
-				$mdgriffith$elm_ui$Internal$Model$htmlClass($mdgriffith$elm_ui$Internal$Style$classes.contentLeft + (' ' + $mdgriffith$elm_ui$Internal$Style$classes.contentCenterY)),
-				A2(
-					$elm$core$List$cons,
-					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
-					A2(
-						$elm$core$List$cons,
-						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$shrink),
-						attrs))),
-			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
-	});
-var $mdgriffith$elm_ui$Internal$Model$boxShadowClass = function (shadow) {
-	return $elm$core$String$concat(
-		_List_fromArray(
-			[
-				shadow.inset ? 'box-inset' : 'box-',
-				$mdgriffith$elm_ui$Internal$Model$floatClass(shadow.offset.a) + 'px',
-				$mdgriffith$elm_ui$Internal$Model$floatClass(shadow.offset.b) + 'px',
-				$mdgriffith$elm_ui$Internal$Model$floatClass(shadow.blur) + 'px',
-				$mdgriffith$elm_ui$Internal$Model$floatClass(shadow.size) + 'px',
-				$mdgriffith$elm_ui$Internal$Model$formatColorClass(shadow.color)
-			]));
-};
-var $mdgriffith$elm_ui$Internal$Flag$shadows = $mdgriffith$elm_ui$Internal$Flag$flag(19);
-var $mdgriffith$elm_ui$Element$Border$shadow = function (almostShade) {
-	var shade = {blur: almostShade.blur, color: almostShade.color, inset: false, offset: almostShade.offset, size: almostShade.size};
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$shadows,
-		A3(
-			$mdgriffith$elm_ui$Internal$Model$Single,
-			$mdgriffith$elm_ui$Internal$Model$boxShadowClass(shade),
-			'box-shadow',
-			$mdgriffith$elm_ui$Internal$Model$formatBoxShadow(shade)));
-};
-var $mdgriffith$elm_ui$Element$Font$size = function (i) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$fontSize,
-		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
-};
-var $author$project$Common$Colors$textMedium = A3($mdgriffith$elm_ui$Element$rgb255, 71, 85, 105);
 var $author$project$Common$Colors$primary = A3($mdgriffith$elm_ui$Element$rgb255, 59, 130, 246);
+var $author$project$Common$Colors$textMedium = A3($mdgriffith$elm_ui$Element$rgb255, 71, 85, 105);
 var $mdgriffith$elm_ui$Internal$Model$BorderWidth = F5(
 	function (a, b, c, d, e) {
 		return {$: 'BorderWidth', a: a, b: b, c: c, d: d, e: e};
@@ -15705,7 +15708,7 @@ var $mdgriffith$elm_ui$Element$Border$widthEach = function (_v0) {
 			bottom,
 			left));
 };
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewControlDescription = F3(
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$controlDescription = F3(
 	function (borderWidth, control, description) {
 		return A2(
 			$mdgriffith$elm_ui$Element$row,
@@ -15739,180 +15742,163 @@ var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewControlDesc
 					$mdgriffith$elm_ui$Element$text(description))
 				]));
 	});
+var $author$project$Common$Colors$textDark = A3($mdgriffith$elm_ui$Element$rgb255, 30, 41, 59);
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$controlsTable = A2(
+	$mdgriffith$elm_ui$Element$column,
+	_List_fromArray(
+		[
+			$mdgriffith$elm_ui$Element$centerX,
+			$mdgriffith$elm_ui$Element$Border$width(1),
+			$mdgriffith$elm_ui$Element$Border$color($author$project$Common$Colors$borderMedium),
+			$mdgriffith$elm_ui$Element$Border$shadow(
+			{
+				blur: 4,
+				color: A4($mdgriffith$elm_ui$Element$rgba, 0, 0, 0, 0.1),
+				offset: _Utils_Tuple2(0, 2),
+				size: 2
+			}),
+			$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundLight),
+			$mdgriffith$elm_ui$Element$Border$rounded(8)
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$mdgriffith$elm_ui$Element$el,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+					$mdgriffith$elm_ui$Element$Border$widthEach(
+					{bottom: 1, left: 0, right: 0, top: 0})
+				]),
+			A2(
+				$mdgriffith$elm_ui$Element$el,
+				_List_fromArray(
+					[
+						$mdgriffith$elm_ui$Element$Font$size(18),
+						$mdgriffith$elm_ui$Element$padding(8),
+						$mdgriffith$elm_ui$Element$centerX,
+						$mdgriffith$elm_ui$Element$Font$medium,
+						$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textDark)
+					]),
+				$mdgriffith$elm_ui$Element$text('🎮 Control Functions'))),
+			A2(
+			$mdgriffith$elm_ui$Element$column,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
+				]),
+			_List_fromArray(
+				[
+					A3($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$controlDescription, 0, '🏀 Animate', 'Drop the ball'),
+					A3($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$controlDescription, 1, '⏹️ Stop', 'Jump instantly to end state and stop'),
+					A3($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$controlDescription, 1, '⏸️ Pause', 'Pause animation at current position'),
+					A3($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$controlDescription, 1, '▶️ Resume', 'Continue paused animation'),
+					A3($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$controlDescription, 1, '⏮️ Reset', 'Jump instantly to start state and stop'),
+					A3($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$controlDescription, 1, '🔄 Restart', 'Reset to start, then begin animation again')
+				]))
+		]));
+var $mdgriffith$elm_ui$Internal$Flag$fontAlignment = $mdgriffith$elm_ui$Internal$Flag$flag(12);
+var $mdgriffith$elm_ui$Element$Font$center = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontAlignment, $mdgriffith$elm_ui$Internal$Style$classes.textCenter);
+var $mdgriffith$elm_ui$Internal$Model$Describe = function (a) {
+	return {$: 'Describe', a: a};
+};
+var $mdgriffith$elm_ui$Internal$Model$Paragraph = {$: 'Paragraph'};
+var $mdgriffith$elm_ui$Element$paragraph = F2(
+	function (attrs, children) {
+		return A4(
+			$mdgriffith$elm_ui$Internal$Model$element,
+			$mdgriffith$elm_ui$Internal$Model$asParagraph,
+			$mdgriffith$elm_ui$Internal$Model$div,
+			A2(
+				$elm$core$List$cons,
+				$mdgriffith$elm_ui$Internal$Model$Describe($mdgriffith$elm_ui$Internal$Model$Paragraph),
+				A2(
+					$elm$core$List$cons,
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+					A2(
+						$elm$core$List$cons,
+						$mdgriffith$elm_ui$Element$spacing(5),
+						attrs))),
+			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
+	});
+var $mdgriffith$elm_ui$Element$Font$semiBold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textSemiBold);
+var $author$project$Common$UI$pageHeader = function (title) {
+	return A2(
+		$mdgriffith$elm_ui$Element$paragraph,
+		_List_fromArray(
+			[
+				$mdgriffith$elm_ui$Element$Font$semiBold,
+				$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textDark),
+				$mdgriffith$elm_ui$Element$Font$center,
+				$mdgriffith$elm_ui$Element$htmlAttribute(
+				$elm$html$Html$Attributes$class('responsive-header'))
+			]),
+		_List_fromArray(
+			[
+				$mdgriffith$elm_ui$Element$text(title)
+			]));
+};
+var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$header = A2(
+	$mdgriffith$elm_ui$Element$column,
+	_List_fromArray(
+		[
+			$mdgriffith$elm_ui$Element$centerX,
+			$mdgriffith$elm_ui$Element$spacing(8)
+		]),
+	_List_fromArray(
+		[
+			$author$project$Common$UI$pageHeader('CSS Engine Controls'),
+			$author$project$Common$UI$pageHeader('for'),
+			$author$project$Common$UI$pageHeader('Keyframe Animations')
+		]));
+var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
+var $author$project$Anim$Internal$CSS$keyframesStyleNodeFor = F2(
+	function (elementId, _v0) {
+		var state = _v0.a;
+		var _v1 = A2($elm$core$Dict$get, elementId, state.elementAnimations);
+		if (_v1.$ === 'Just') {
+			var elementAnimation = _v1.a;
+			if ($elm$core$List$isEmpty(elementAnimation.animationLayers)) {
+				return $elm$html$Html$text('');
+			} else {
+				var elementKeyframes = A2(
+					$elm$core$String$join,
+					'\n\n',
+					A2(
+						$elm$core$List$map,
+						function ($) {
+							return $.keyframes;
+						},
+						elementAnimation.animationLayers));
+				return A3(
+					$elm$html$Html$node,
+					'style',
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(elementKeyframes)
+						]));
+			}
+		} else {
+			return $elm$html$Html$text('');
+		}
+	});
+var $author$project$Anim$Engine$CSS$keyframesStyleNodeFor = $author$project$Anim$Internal$CSS$keyframesStyleNodeFor;
 var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewContent = function (model) {
 	return _List_fromArray(
 		[
 			$mdgriffith$elm_ui$Element$html(
 			A2($author$project$Anim$Engine$CSS$keyframesStyleNodeFor, $author$project$Common$Animations$Controls$elementId, model.animState)),
-			$author$project$Common$UI$pageHeader('CSS Engine Controls'),
-			A2(
-			$mdgriffith$elm_ui$Element$column,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-					$mdgriffith$elm_ui$Element$spacing(8)
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$mdgriffith$elm_ui$Element$paragraph,
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-							$mdgriffith$elm_ui$Element$Font$size(16),
-							$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium),
-							$mdgriffith$elm_ui$Element$Font$center
-						]),
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$text('Demonstrating all available Engine Controls')
-						])),
-					A2(
-					$mdgriffith$elm_ui$Element$paragraph,
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-							$mdgriffith$elm_ui$Element$Font$size(16),
-							$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium),
-							$mdgriffith$elm_ui$Element$Font$center
-						]),
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$text('for CSS Keyframe Animations')
-						]))
-				])),
-			A2(
-			$mdgriffith$elm_ui$Element$column,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$centerX,
-					$mdgriffith$elm_ui$Element$Border$width(1),
-					$mdgriffith$elm_ui$Element$Border$color($author$project$Common$Colors$borderMedium),
-					$mdgriffith$elm_ui$Element$Border$shadow(
-					{
-						blur: 4,
-						color: A4($mdgriffith$elm_ui$Element$rgba, 0, 0, 0, 0.1),
-						offset: _Utils_Tuple2(0, 2),
-						size: 2
-					}),
-					$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundLight),
-					$mdgriffith$elm_ui$Element$Border$rounded(8)
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$mdgriffith$elm_ui$Element$el,
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-							$mdgriffith$elm_ui$Element$Border$widthEach(
-							{bottom: 1, left: 0, right: 0, top: 0})
-						]),
-					A2(
-						$mdgriffith$elm_ui$Element$el,
-						_List_fromArray(
-							[
-								$mdgriffith$elm_ui$Element$Font$size(18),
-								$mdgriffith$elm_ui$Element$padding(8),
-								$mdgriffith$elm_ui$Element$centerX,
-								$mdgriffith$elm_ui$Element$Font$medium,
-								$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textDark)
-							]),
-						$mdgriffith$elm_ui$Element$text('🎮 Control Functions'))),
-					A2(
-					$mdgriffith$elm_ui$Element$column,
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
-						]),
-					_List_fromArray(
-						[
-							A3($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewControlDescription, 0, '🏀 Animate', 'Drop the ball'),
-							A3($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewControlDescription, 1, '⏹️ Stop', 'Jump instantly to end state and stop'),
-							A3($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewControlDescription, 1, '⏸️ Pause', 'Pause animation at current position'),
-							A3($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewControlDescription, 1, '▶️ Resume', 'Continue paused animation'),
-							A3($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewControlDescription, 1, '⏮️ Reset', 'Jump instantly to start state and stop'),
-							A3($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewControlDescription, 1, '🔄 Restart', 'Reset to start, then begin animation again')
-						]))
-				])),
-			A2(
-			$mdgriffith$elm_ui$Element$row,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$spacing(12),
-					$mdgriffith$elm_ui$Element$centerX
-				]),
-			_List_fromArray(
-				[
-					$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$buttons(
-					_List_fromArray(
-						[
-							_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Animate, '🏀 Animate'),
-							_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Stop, '⏹️ Stop')
-						])),
-					$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$buttons(
-					_List_fromArray(
-						[
-							_Utils_Tuple3($author$project$Common$UI$Success, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Pause, '⏸️ Pause'),
-							_Utils_Tuple3($author$project$Common$UI$Success, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Resume, '▶️ Resume')
-						])),
-					$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$buttons(
-					_List_fromArray(
-						[
-							_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Reset, '⏮️ Reset'),
-							_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Restart, '🔄 Restart')
-						]))
-				])),
-			A2(
-			$mdgriffith$elm_ui$Element$el,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$width(
-					$mdgriffith$elm_ui$Element$px(model.animAreaSize.width)),
-					$mdgriffith$elm_ui$Element$height(
-					$mdgriffith$elm_ui$Element$px(350)),
-					$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundWhite),
-					$mdgriffith$elm_ui$Element$Border$rounded(12),
-					$mdgriffith$elm_ui$Element$Border$shadow(
-					{
-						blur: 8,
-						color: A4($mdgriffith$elm_ui$Element$rgba, 0, 0, 0, 0.1),
-						offset: _Utils_Tuple2(0, 4),
-						size: 0
-					}),
-					$mdgriffith$elm_ui$Element$centerX
-				]),
-			A2(
-				$mdgriffith$elm_ui$Element$el,
-				_Utils_ap(
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$width(
-							$mdgriffith$elm_ui$Element$px(50)),
-							$mdgriffith$elm_ui$Element$height(
-							$mdgriffith$elm_ui$Element$px(50)),
-							$mdgriffith$elm_ui$Element$htmlAttribute(
-							A2($elm$html$Html$Attributes$style, 'position', 'relative'))
-						]),
-					A2(
-						$elm$core$List$map,
-						$mdgriffith$elm_ui$Element$htmlAttribute,
-						A2($author$project$Anim$Engine$CSS$keyframesStyles, $author$project$Common$Animations$Controls$elementId, model.animState))),
-				A2(
-					$mdgriffith$elm_ui$Element$el,
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$centerX,
-							$mdgriffith$elm_ui$Element$centerY,
-							$mdgriffith$elm_ui$Element$Font$size(50)
-						]),
-					$mdgriffith$elm_ui$Element$text('🏀'))))
+			$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$header,
+			$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$controlsTable,
+			$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$controlButtons,
+			A2($author$project$Engines$CSS$Controls$KeyframeAnimations$Main$animationArea, model.animAreaSize, model.animState)
 		]);
 };
 var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$view = function (model) {
 	return A3(
 		$author$project$Common$UI$createDocument,
-		'Anim.Engine.CSS Controls ElmUI Example',
+		'Anim.Engine.CSS Keyframe Animation Controls Example',
 		$author$project$Common$UI$Basic,
 		$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewContent(model));
 };
@@ -15936,12 +15922,7 @@ _Platform_export({'Engines':{'CSS':{'Controls':{'KeyframeAnimations':{'Main':{'i
 			A2(
 				$elm$json$Json$Decode$andThen,
 				function (width) {
-					return A2(
-						$elm$json$Json$Decode$andThen,
-						function (height) {
-							return $elm$json$Json$Decode$succeed(
-								{height: height, width: width});
-						},
-						A2($elm$json$Json$Decode$field, 'height', $elm$json$Json$Decode$int));
+					return $elm$json$Json$Decode$succeed(
+						{width: width});
 				},
 				A2($elm$json$Json$Decode$field, 'width', $elm$json$Json$Decode$int)))))(0)}}}}}});}(this));

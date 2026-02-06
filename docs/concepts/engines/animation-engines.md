@@ -5,26 +5,30 @@ Elm Animate provides multiple animation engines, each optimized for different us
 ## Overview
 
 | Engine | Rendering | Control | Use Case |
-|--------|-----------|---------|----------|
+| -------- | ----------- | --------- | ---------- |
 | [CSS](#css-engine) | Browser CSS | Fire-and-forget | Simple animations, Native performance |
 | [Sub](#sub-engine) | Elm subscriptions | Programmatic | Complex interactions, state queries |
 | [WAAPI](#waapi-engine) | Web Animations API | Fire-and-forget, Programmatic | Native performance, complex interactions, state queries |
-| [Scroll](#scroll-engine) | Browser scroll | Fire-and-forget, Programmatic | Document and container scrolling |
 
 ## CSS Engine
 
-The CSS Engine generates native CSS transitions or keyframe animations. The browser handles all the rendering, which means:
+The CSS Engine generates native CSS transitions and keyframe animations. The browser handles all the rendering, which means:
 
 - **Native performance** — Hardware-accelerated by the browser
 - **Battery efficient** — No JavaScript running during animation playback
 - **Simple setup** — No subscriptions or ports needed
 
-```elm
-import Anim.Engine.CSS as CSS
+??? example "View Source Code"
 
-animState =
-    CSS.animate CSS.init myAnimation
-```
+    ```elm
+    import Anim.Engine.CSS as CSS
+
+    animState =
+        CSS.animate model.animState myAnimation
+
+    animState =
+        CSS.fireAndForget myAnimation
+    ```
 
 **Best for:**
 
@@ -45,20 +49,22 @@ The Sub Engine uses Elm subscriptions to update animation state on each frame. T
 - **Query current values** — Know exactly where elements are mid-animation
 - **Perform Dynamic interruptions** — Smoothly transition to new targets mid-flight
 
-```elm
-import Anim.Engine.Sub as Sub
+??? example "View Source Code"
 
-type Msg 
-    = AnimationMsg Sub.AnimationMsg
-    | ...
+    ```elm
+    import Anim.Engine.Sub as Sub
 
-animState =
-    Sub.animate Sub.init myAnimation
+    type Msg 
+        = AnimationMsg Sub.AnimMsg
+        | ...
 
--- In your subscriptions
-subscriptions model =
-    Sub.subscriptions AnimationMsg model.animState
-```
+    animState =
+        Sub.animate model.animState myAnimation
+
+    -- In your subscriptions
+    subscriptions model =
+        Sub.subscriptions AnimationMsg model.animState
+    ```
 
 **Best for:**
 
@@ -80,26 +86,41 @@ The WAAPI Engine combines all the good bits from the CSS and Sub Engines by usin
 - **Query current values** — Know exactly where elements are mid-animation
 - **Perform Dynamic interruptions** — Smoothly transition to new targets mid-flight
 
-```elm
-import Anim.Engine.WAAPI as WAAPI
-import Json.Encode exposing (Value)
+??? example "View Source Code"
 
-port waapiCommand : Value -> Cmd msg
-port waapiEvent : (Value -> msg) -> Sub msg
+    ```elm
+    import Anim.Engine.WAAPI as WAAPI
+    import Json.Encode exposing (Value)
 
-type Msg
-    = GotWaapiUpdate ( WAAPI.AnimState, Maybe WAAPI.AnimationEvent )
-    | ...
+    port waapiCommand : Value -> Cmd msg
+    port waapiSubscription : (Value -> msg) -> Sub msg
 
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    waapiEvent (GotWaapiUpdate << WAAPI.decode model.animState)
+    init : Model
+    init =
+        { animState = WAAPI.init waapiCommand waapiSubscription [] }
 
-(animState, animCmd) =
-    WAAPI.animate waapiCommand model.animState <|
-        \ builder -> myAnimation builder
+    type Msg
+        = GotWaapiMsg WAAPI.Msg
+        | ...
 
-```
+    update : Msg -> Model -> (Model Cmd Msg)
+    update msg model =
+        case msg of
+            GotWaapiMsg waapiMsg ->
+                let 
+                    (animState, events) =
+                        WAAPI.update waapiMsg model.animState
+                in 
+                ...
+
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        WAAPI.subscriptions GotWaapiMsg model.animState
+
+    (animState, animCmd) =
+        WAAPI.animate model.animState myAnimation
+
+    ```
 
 **Best for:**
 
@@ -108,51 +129,35 @@ subscriptions model =
 
 [Learn more about WAAPI Engine →](../engines/waapi.md)
 
-## Scroll Engine
-
-The Scroll Engine provides smooth Document and container scrolling to elements or positions:
-
-- **Document or container scrolling**
-- **X, Y, or both axes**
-- **Configurable offsets**
-- **Full easing support**
-
-```elm
-import Anim.Engine.Scroll as Scroll
-import Anim.Action.Scroll as ScrollAction
-
-scrollCmd =
-    Scroll.init
-        |> Scroll.builder
-        |> ScrollAction.toElement "target-section"
-        |> ScrollAction.build
-        |> Scroll.toCmd NoOp
-```
-
-[Learn more about Scroll Engine →](../engines/scroll.md)
-
 ## Switching Engines
 
 Because all engines share the same builder API, animations are portable:
 
-```elm
--- This animation works with any engine
-myAnimation : AnimBuilder -> AnimBuilder
-myAnimation builder =
-    builder
-        |> Translate.for "box"
-        |> Translate.toXY 100 200
-        |> Translate.duration 500
-        |> Translate.build
+??? example "View Source Code"
 
--- Use with CSS
-CSS.animate CSS.init myAnimation
+    ```elm
+    -- This animation works with any engine
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "box"
+            >> Translate.toXY 100 200
+            >> Translate.duration 500
+            >> Translate.build
 
--- Use with Sub
-Sub.animate Sub.init myAnimation
+    -- Use with CSS
+    CSS.fireAndForget myAnimation
 
--- Use with WAAPI (returns tuple with Cmd)
-WAAPI.animate toJS WAAPI.init myAnimation
-```
+    -- Use with Sub
+    Sub.animate model.animState myAnimation
+
+    -- Use with WAAPI
+    WAAPI.animate model.animState myAnimation
+    ```
 
 This makes it easy to start simple with the CSS Engine and migrate to Sub or WAAPI as your requirements grow.
+
+## Next Steps
+
+Now that you've learned about the animation engines, lets move on to the scroll engine.
+
+[Scroll Engine →](scroll-engine.md){ .md-button .md-button--primary }

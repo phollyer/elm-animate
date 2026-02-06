@@ -51,7 +51,6 @@ module Anim.Internal.CSS exposing
 
 import Anim.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Builders.Property as Property
 import Anim.Internal.CSS.KeyframeAnimation as KeyframeAnimation exposing (KeyframeAnimation)
 import Anim.Internal.CSS.Transform as Transforms
 import Anim.Internal.CSS.Transition as Transitions
@@ -133,7 +132,7 @@ init propertyInitializers =
                         |> Dict.map (generateElementAnimation Nothing)
                 , elementStates =
                     elementIds
-                        |> List.map (\id -> ( id, Complete ))
+                        |> List.map (\id -> ( id, NotStarted ))
                         |> Dict.fromList
                 , builder =
                     configuredBuilder
@@ -977,10 +976,11 @@ generateStylesOnly maybeOrder elementConfig =
         allStyles =
             [ ( "transform", transforms )
             , ( "animation", "none" ) -- Clear any running keyframe animation
+            , ( "transition", "none" ) -- Clear any CSS transition for instant jump
             ]
                 ++ colorStyles
                 ++ opacityStyles
-                |> List.filter (\( key, value ) -> key == "animation" || not (String.isEmpty value))
+                |> List.filter (\( key, value ) -> key == "animation" || key == "transition" || not (String.isEmpty value))
     in
     { styles = allStyles
     , animationLayers = [] -- No keyframes for instant jumps
@@ -990,8 +990,8 @@ generateStylesOnly maybeOrder elementConfig =
 {-| Set styles instantly for an element without creating keyframe animations.
 Used internally by reset and stop for instant position jumps.
 -}
-setStylesInstantly : String -> Builder.ElementConfig -> AnimState -> AnimState
-setStylesInstantly elementId elementConfig (AnimState state) =
+setStylesInstantly : String -> ElementState -> Builder.ElementConfig -> AnimState -> AnimState
+setStylesInstantly elementId targetState elementConfig (AnimState state) =
     let
         elementAnimation =
             generateStylesOnly Nothing elementConfig
@@ -999,7 +999,7 @@ setStylesInstantly elementId elementConfig (AnimState state) =
     AnimState
         { state
             | elementAnimations = Dict.insert elementId elementAnimation state.elementAnimations
-            , elementStates = Dict.insert elementId Complete state.elementStates
+            , elementStates = Dict.insert elementId targetState state.elementStates
         }
 
 
@@ -1103,7 +1103,7 @@ stopAnimation elementId animState =
         animState
 
     else
-        setStylesInstantly elementId elementConfig animState
+        setStylesInstantly elementId Complete elementConfig animState
 
 
 {-| Reset an animation by jumping instantly to its start state.
@@ -1193,7 +1193,7 @@ reset elementId (AnimState state) =
                 AnimState state
 
             else
-                setStylesInstantly elementId newElementConfig (AnimState state)
+                setStylesInstantly elementId NotStarted newElementConfig (AnimState state)
 
 
 {-| Restart an animation from the beginning.

@@ -6,16 +6,24 @@ Elm Animate uses a fluent builder pattern for defining animations. This approach
 
 Every animation follows this pattern:
 
-```elm
-animationFunction : AnimBuilder -> AnimBuilder
-animationFunction builder =
-    builder
-        |> Property.for "element-id"    -- Target element
-        |> Property.from startValue     -- Starting value (optional)
-        |> Property.to endValue         -- Ending value
-        |> Property.duration 500        -- Timing
-        |> Property.build               -- Finalize
-```
+
+??? example "Show Source Code"
+
+    ```elm
+    animationFunction : AnimBuilder -> AnimBuilder
+    animationFunction =
+        Property.for "element-id"           -- Target element (required)
+            >> Property.from startValue     -- Starting value
+            >> Property.to endValue         -- Ending value
+            >> Property.delay 100           -- Delay (ms) before starting
+            >> Property.duration 500        -- Timing (or Property.speed)
+            >> Property.easing BounceOut    -- Easing function
+            >> Property.build               -- Finalize (required)
+    ```
+
+    `for` and `build` are required to start and end the builder chain respectively. All other configurations are optional, although without a `to` value the animations won't have anywhere to go!!
+    
+    A timing configuration of either `duration` or `speed` is also required, or the element will snap/jump to the end value. However, this can be set on the engine pipeline for all animations, and then overriden where necessary on a per-property basis.
 
 ## Why Builders?
 
@@ -23,167 +31,127 @@ animationFunction builder =
 
 Small animations combine into larger ones:
 
-```elm
-fadeIn : AnimBuilder -> AnimBuilder
-fadeIn builder =
-    builder
-        |> Opacity.for "box"
-        |> Opacity.from 0
-        |> Opacity.to 1
-        |> Opacity.build
+??? example "Show Source Code"
 
-slideUp : AnimBuilder -> AnimBuilder
-slideUp builder =
-    builder
-        |> Translate.for "box"
-        |> Translate.fromY 50
-        |> Translate.toY 0
-        |> Translate.build
+    ```elm
+    fadeIn : AnimBuilder -> AnimBuilder
+    fadeIn =
+        Opacity.for "box"
+            >> Opacity.from 0
+            >> Opacity.to 1
+            >> Opacity.build
 
--- Compose them
-enterAnimation : AnimBuilder -> AnimBuilder
-enterAnimation =
-    fadeIn >> slideUp
-```
+    slideUp : AnimBuilder -> AnimBuilder
+    slideUp =
+        Translate.for "box"
+            >> Translate.fromY 50
+            >> Translate.toY 0
+            >> Translate.build
+
+    -- Compose them
+    enterAnimation : AnimBuilder -> AnimBuilder
+    enterAnimation =
+        fadeIn >> slideUp
+    ```
 
 ### 2. Reusability
 
 Define once, use everywhere:
 
-```elm
--- Define a standard fade-in transition
-standardFadeIn : String -> AnimBuilder -> AnimBuilder
-standardFadeIn elementId builder =
-    builder
-        |> Opacity.for elementId
-        |> Opacity.from 0
-        |> Opacity.to 1
-        |> Opacity.duration 300
-        |> Opacity.easing QuintOut
-        |> Opacity.build
+??? example "Show Source Code"
 
--- Reuse for different elements
-entranceAnimation : AnimBuilder -> AnimBuilder
-entranceAnimation builder =
-    builder
-        |> standardFadeIn "card-1"
-        |> standardFadeIn "card-2"
-        |> standardFadeIn "card-3"
-```
+    ```elm
+    -- Define a standard fade-in transition
+    standardFadeIn : String -> AnimBuilder -> AnimBuilder
+    standardFadeIn elementId =
+        Opacity.for elementId
+            >> Opacity.from 0
+            >> Opacity.to 1
+            >> Opacity.duration 300
+            >> Opacity.easing QuintOut
+            >> Opacity.build
+
+    -- Reuse for different elements
+    entranceAnimation : AnimBuilder -> AnimBuilder
+    entranceAnimation =
+        standardFadeIn "card-1"
+            >> standardFadeIn "card-2"
+            >> standardFadeIn "card-3"
+    ```
 
 ### 3. Engine Independence
 
 The same animation works with any engine:
 
-```elm
-myAnimation : AnimBuilder -> AnimBuilder
-myAnimation builder =
-    builder
-        |> Translate.for "box"
-        |> Translate.toXY 100 200
-        |> Translate.build
+??? example "Show Source Code"
 
--- Works with CSS
-CSS.animate CSS.init myAnimation
+    ```elm
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "box"
+            >> Translate.toXY 100 200
+            >> Translate.speed 100
+            >> Translate.build
 
--- Works with Sub
-Sub.animate Sub.init myAnimation
+    -- Works with CSS
+    CSS.animate model.animState myAnimation
+    
+    CSS.fireAndForget myAnimation
 
--- Works with WAAPI (slightly different API)
--- Fire-and-forget animations
-WAAPI.fireAndForget toJS myAnimation
+    -- Works with Sub
+    Sub.animate model.animState myAnimation
 
--- State tracked animations
-port waapiCommand : Json.Encode.Value -> Cmd msg
+    -- Works with WAAPI
+    WAAPI.animate model.animState myAnimation
 
-WAAPI.animate waapiCommand model.animations myAnimation
-```
+    port waapiCommand : Json.Encode.Value -> Cmd msg
 
-## Global Settings
+    WAAPI.fireAndForget waapiCommand myAnimation
 
-Set defaults that apply to all properties:
-
-```elm
-CSS.animate CSS.init
-    (CSS.duration 500           -- Default duration 500ms
-        >> CSS.easing QuintOut  -- Default easing
-        >> myAnimation          -- Properties can override
-    )
-```
-
-Properties can override global settings:
-
-```elm
-myAnimation builder =
-    builder
-        |> Opacity.for "box"
-        |> Opacity.duration 1000  -- Overrides global default 500ms
-        |> Opacity.build
-```
+    ```
 
 ## Multiple Elements
 
 Animate multiple elements in a single animation:
 
-```elm
-multiElementAnimation : AnimBuilder -> AnimBuilder
-multiElementAnimation builder =
-    builder
+??? example "Show Source Code"
+
+    ```elm
+    multiElementAnimation : AnimBuilder -> AnimBuilder
+    multiElementAnimation =
         -- First element
-        |> Translate.for "box-1"
-        |> Translate.toX 100
-        |> Translate.build
-        -- Second element
-        |> Translate.for "box-2"
-        |> Translate.toX 200
-        |> Translate.build
-        -- Third element
-        |> Translate.for "box-3"
-        |> Translate.toX 300
-        |> Translate.build
-```
+        Translate.for "box-1"
+            >> Translate.toX 100
+            >> Translate.build
+            -- Second element
+            >> Translate.for "box-2"
+            >> Translate.toX 200
+            >> Translate.build
+            -- Third element
+            >> Translate.for "box-3"
+            >> Translate.toX 300
+            >> Translate.build
+    ```
 
 ## Multiple Properties
 
 Animate multiple properties on the same element:
 
-```elm
-complexAnimation : AnimBuilder -> AnimBuilder
-complexAnimation builder =
-    builder
-        |> Translate.for "box"
-        |> Translate.toXY 100 200
-        |> Translate.build
-        |> Rotate.for "box"
-        |> Rotate.to 45
-        |> Rotate.build
-        |> Scale.for "box"
-        |> Scale.to 1.5
-        |> Scale.build
-```
+??? example "Show Source Code"
 
-## Conditional Animations
-
-Build animations based on state:
-
-```elm
-animation : Model -> AnimBuilder -> AnimBuilder
-animation model builder =
-    let
-        base =
-            builder
-                |> Translate.for "box"
-                |> Translate.duration 500
-    in
-    if model.isExpanded then
-        base
-            |> Translate.toY 0
-            |> Translate.build
-    else
-        base
-            |> Translate.toY -100
-            |> Translate.build
-```
+    ```elm
+    complexAnimation : AnimBuilder -> AnimBuilder
+    complexAnimation =
+        Translate.for "box"
+            >> Translate.toXY 100 200
+            >> Translate.build
+            >> Rotate.for "box"
+            >> Rotate.to 45
+            >> Rotate.build
+            >> Scale.for "box"
+            >> Scale.to 1.5
+            >> Scale.build
+    ```
 
 ## Best Practices
 
@@ -194,25 +162,23 @@ animation model builder =
     Name your animation functions based on what they do: `fadeIn`, `slideLeft`, `bounceOnHover`.
 
 !!! tip "Extract common patterns"
-    If you use the same duration/easing combination often, create a helper function.
+    If you use the same configurations often, create helper functions.
 
-```elm
--- Common timing helper
-withStandardTiming : AnimBuilder -> AnimBuilder
-withStandardTiming builder =
-    builder
-        |> CSS.duration 300
-        |> CSS.easing QuintOut
+    ```elm
+    -- Common timing helper
+    withStandardTiming : AnimBuilder -> AnimBuilder
+    withStandardTiming =
+        CSS.duration 300
+            >> CSS.easing QuintOut
 
--- Use it with any animation
-myAnimation : AnimBuilder -> AnimBuilder
-myAnimation builder =
-    builder
-        |> withStandardTiming
-        |> Translate.for "box"
-        |> Translate.toX 100
-        |> Translate.build
-        |> Opacity.for "box"
-        |> Opacity.to 1
-        |> Opacity.build
-```
+    -- Use it with any animation
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        withStandardTiming
+            >> Translate.for "box"
+            >> Translate.toX 100
+            >> Translate.build
+            >> Opacity.for "box"
+            >> Opacity.to 1
+            >> Opacity.build
+    ```

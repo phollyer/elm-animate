@@ -2,24 +2,21 @@ module Engines.CSS.Controls.Transitions.Main exposing (main)
 
 import Anim.Engine.CSS as CSS
 import Browser exposing (Document)
-import Browser.Events exposing (onResize)
 import Common.Animations.Controls as Controls exposing (elementId)
 import Common.Colors as Colors
 import Common.UI as UI
-import Element exposing (Element, centerX, centerY, column, el, explain, fill, height, html, htmlAttribute, inFront, maximum, none, padding, paddingEach, paragraph, px, row, spacing, text, width)
+import Element exposing (Element, centerX, centerY, clip, column, el, explain, fill, height, html, htmlAttribute, inFront, maximum, none, padding, paddingEach, paragraph, px, row, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
-import Json.Encode as Encode
-import Time
 
 
 
 -- MAIN
 
 
-main : Program { window : { width : Int, height : Int } } Model Msg
+main : Program { window : { width : Int } } Model Msg
 main =
     Browser.document
         { init = init
@@ -43,7 +40,7 @@ type alias Model =
 -- INIT
 
 
-init : { window : { width : Int, height : Int } } -> ( Model, Cmd Msg )
+init : { window : { width : Int } } -> ( Model, Cmd Msg )
 init { window } =
     let
         animAreaWidth =
@@ -71,7 +68,6 @@ type Msg
     = Animate
     | Stop
     | Reset
-    | Restart
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -90,58 +86,110 @@ update msg model =
             , Cmd.none
             )
 
-        -- --8<-- [end:resume]
+        -- --8<-- [end:stop]
         -- --8<-- [start:reset]
         Reset ->
-            ( { model | animState = CSS.reset elementId model.animState }
-            , Cmd.none
-            )
-
-        -- --8<-- [end:reset]
-        -- --8<-- [start:restart]
-        Restart ->
-            ( { model | animState = CSS.restart elementId model.animState }
+            ( { model
+                | animState = CSS.reset elementId model.animState
+              }
             , Cmd.none
             )
 
 
 
--- --8<-- [end:restart]
+-- --8<-- [end:reset]
 -- VIEW
 
 
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.CSS Controls ElmUI Example"
+        "Anim.Engine.CSS Transition Controls Example"
         UI.Basic
         (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ UI.pageHeader "CSS Engine Controls"
-    , column
-        [ width fill
+    [ header
+    , controlsTable
+    , controlButtons
+    , animationArea model.animAreaSize model.animState
+    , warningMessage
+    ]
+
+
+warningMessage : Element Msg
+warningMessage =
+    el
+        [ centerX
+        , padding 12
+        , Background.color (Element.rgb255 255 243 205)
+        , Border.rounded 8
+        , Border.width 1
+        , Border.color (Element.rgb255 255 193 7)
+        , Font.color (Element.rgb255 133 100 4)
+        , Font.size 14
+        ]
+        (text "For CSS transitions, you must reset the animation before running it again.")
+
+
+header : Element Msg
+header =
+    column
+        [ centerX
         , spacing 8
         ]
-        [ paragraph
-            [ width fill
-            , Font.size 16
-            , Font.color Colors.textMedium
-            , Font.center
-            ]
-            [ text "Demonstrating all available Engine Controls" ]
-        , paragraph
-            [ width fill
-            , Font.size 16
-            , Font.color Colors.textMedium
-            , Font.center
-            ]
-            [ text "for CSS Keyframe Animations" ]
+        [ UI.pageHeader "CSS Engine Controls"
+        , UI.pageHeader "for"
+        , UI.pageHeader "CSS Transitions"
         ]
-    , -- Controls explanation
-      column
+
+
+
+-- Animation Area
+
+
+animationArea : { width : Int, height : Int } -> CSS.AnimState -> Element Msg
+animationArea size animState =
+    el
+        [ width <|
+            px size.width
+        , height (px size.height)
+        , Background.color Colors.backgroundWhite
+        , Border.rounded 12
+        , Border.shadow
+            { offset = ( 0, 4 )
+            , size = 0
+            , blur = 8
+            , color = Element.rgba 0 0 0 0.1
+            }
+        , centerX
+        , clip
+        ]
+        (animatedBall animState)
+
+
+animatedBall : CSS.AnimState -> Element Msg
+animatedBall animState =
+    el
+        ([ width (px 50)
+         , height (px 50)
+         , htmlAttribute (Html.Attributes.style "position" "relative")
+         ]
+            -- For transitions, we apply the transition attributes to the element itself
+            ++ List.map htmlAttribute (CSS.transitionAttributes elementId animState)
+        )
+        (el [ centerX, centerY, Font.size 50 ] (text "🏀"))
+
+
+
+-- Controls Table
+
+
+controlsTable : Element Msg
+controlsTable =
+    column
         [ centerX
         , Border.width 1
         , Border.color Colors.borderMedium
@@ -174,53 +222,15 @@ viewContent model =
                 (text "🎮 Control Functions")
         , column
             [ width fill ]
-            [ viewControlDescription 0 "🏀 Animate" "Drop the ball"
-            , viewControlDescription 1 "⏹️ Stop" "Jump instantly to end state and stop"
-            , viewControlDescription 1 "⏮️ Reset" "Jump instantly to start state and stop"
-            , viewControlDescription 1 "🔄 Restart" "Reset to start, then begin animation again"
+            [ controlDescription 0 "🏀 Animate" "Drop the ball"
+            , controlDescription 1 "⏹️ Stop" "Jump instantly to end state and stop"
+            , controlDescription 1 "⏮️ Reset" "Jump instantly to start state and stop"
             ]
         ]
-    , -- Control buttons
-      row
-        [ spacing 12, centerX ]
-        [ buttons
-            [ ( UI.Primary, Animate, "🏀 Animate" )
-            , ( UI.Warning, Stop, "⏹️ Stop" )
-            ]
-        , buttons
-            [ ( UI.Purple, Reset, "⏮️ Reset" )
-            , ( UI.Purple, Restart, "🔄 Restart" )
-            ]
-        ]
-    , -- Animation area
-      el
-        [ width <|
-            px model.animAreaSize.width
-        , height (px 350)
-        , Background.color Colors.backgroundWhite
-        , Border.rounded 12
-        , Border.shadow
-            { offset = ( 0, 4 )
-            , size = 0
-            , blur = 8
-            , color = Element.rgba 0 0 0 0.1
-            }
-        , centerX
-        ]
-        (el
-            ([ width (px 50)
-             , height (px 50)
-             , htmlAttribute (Html.Attributes.style "position" "relative")
-             ]
-                ++ List.map htmlAttribute (CSS.transitionAttributes elementId model.animState)
-            )
-            (el [ centerX, centerY, Font.size 50 ] (text "🏀"))
-        )
-    ]
 
 
-viewControlDescription : Int -> String -> String -> Element Msg
-viewControlDescription borderWidth control description =
+controlDescription : Int -> String -> String -> Element Msg
+controlDescription borderWidth control description =
     row
         [ width fill
         , Border.widthEach
@@ -243,6 +253,20 @@ viewControlDescription borderWidth control description =
             , Font.color Colors.textMedium
             ]
             (text description)
+        ]
+
+
+
+-- Buttons
+
+
+controlButtons : Element Msg
+controlButtons =
+    row
+        [ spacing 12, centerX ]
+        [ button ( UI.Primary, Animate, "🏀 Animate" )
+        , button ( UI.Warning, Stop, "⏹️ Stop" )
+        , button ( UI.Purple, Reset, "⏮️ Reset" )
         ]
 
 

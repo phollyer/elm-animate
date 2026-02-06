@@ -2,7 +2,6 @@ module Engines.CSS.Controls.KeyframeAnimations.Main exposing (main)
 
 import Anim.Engine.CSS as CSS
 import Browser exposing (Document)
-import Browser.Events exposing (onResize)
 import Common.Animations.Controls as Controls exposing (elementId)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -11,15 +10,13 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
-import Json.Encode as Encode
-import Time
 
 
 
 -- MAIN
 
 
-main : Program { window : { width : Int, height : Int } } Model Msg
+main : Program { window : { width : Int } } Model Msg
 main =
     Browser.document
         { init = init
@@ -43,7 +40,7 @@ type alias Model =
 -- INIT
 
 
-init : { window : { width : Int, height : Int } } -> ( Model, Cmd Msg )
+init : { window : { width : Int } } -> ( Model, Cmd Msg )
 init { window } =
     let
         animAreaWidth =
@@ -123,43 +120,88 @@ update msg model =
 
 
 -- --8<-- [end:resume]
--- VIEW
+-- VIEW - Using ElmUI, but the same animation logic works with any view layer
 
 
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.CSS Controls ElmUI Example"
+        "Anim.Engine.CSS Keyframe Animation Controls Example"
         UI.Basic
         (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ html <|
+    [ -- Add the generated keyframes to the DOM
+      html <|
         CSS.keyframesStyleNodeFor elementId model.animState
-    , UI.pageHeader "CSS Engine Controls"
-    , column
-        [ width fill
+    , header
+    , controlsTable
+    , controlButtons
+    , animationArea model.animAreaSize model.animState
+    ]
+
+
+header : Element Msg
+header =
+    column
+        [ centerX
         , spacing 8
         ]
-        [ paragraph
-            [ width fill
-            , Font.size 16
-            , Font.color Colors.textMedium
-            , Font.center
-            ]
-            [ text "Demonstrating all available Engine Controls" ]
-        , paragraph
-            [ width fill
-            , Font.size 16
-            , Font.color Colors.textMedium
-            , Font.center
-            ]
-            [ text "for CSS Keyframe Animations" ]
+        [ UI.pageHeader "CSS Engine Controls"
+        , UI.pageHeader "for"
+        , UI.pageHeader "Keyframe Animations"
         ]
-    , -- Controls explanation
-      column
+
+
+
+-- Animation Area
+
+
+animationArea : { width : Int, height : Int } -> CSS.AnimState -> Element Msg
+animationArea size animState =
+    el
+        [ width <|
+            px size.width
+        , height <|
+            px size.height
+        , Background.color Colors.backgroundWhite
+        , Border.rounded 12
+        , Border.shadow
+            { offset = ( 0, 4 )
+            , size = 0
+            , blur = 8
+            , color = Element.rgba 0 0 0 0.1
+            }
+        , centerX
+        ]
+    <|
+        animatedBall animState
+
+
+animatedBall : CSS.AnimState -> Element Msg
+animatedBall animState =
+    el
+        ([ width (px 50)
+         , height (px 50)
+         , htmlAttribute (Html.Attributes.style "position" "relative")
+         ]
+            -- Add the generated animation styles to the element
+            -- This is how the browser knows to apply the keyframes animation to this element
+            ++ List.map htmlAttribute
+                (CSS.keyframesStyles elementId animState)
+        )
+        (el [ centerX, centerY, Font.size 50 ] (text "🏀"))
+
+
+
+-- Controls Table
+
+
+controlsTable : Element Msg
+controlsTable =
+    column
         [ centerX
         , Border.width 1
         , Border.color Colors.borderMedium
@@ -192,59 +234,18 @@ viewContent model =
                 (text "🎮 Control Functions")
         , column
             [ width fill ]
-            [ viewControlDescription 0 "🏀 Animate" "Drop the ball"
-            , viewControlDescription 1 "⏹️ Stop" "Jump instantly to end state and stop"
-            , viewControlDescription 1 "⏸️ Pause" "Pause animation at current position"
-            , viewControlDescription 1 "▶️ Resume" "Continue paused animation"
-            , viewControlDescription 1 "⏮️ Reset" "Jump instantly to start state and stop"
-            , viewControlDescription 1 "🔄 Restart" "Reset to start, then begin animation again"
+            [ controlDescription 0 "🏀 Animate" "Drop the ball"
+            , controlDescription 1 "⏹️ Stop" "Jump instantly to end state and stop"
+            , controlDescription 1 "⏸️ Pause" "Pause animation at current position"
+            , controlDescription 1 "▶️ Resume" "Continue paused animation"
+            , controlDescription 1 "⏮️ Reset" "Jump instantly to start state and stop"
+            , controlDescription 1 "🔄 Restart" "Reset to start, then begin animation again"
             ]
         ]
-    , -- Control buttons
-      row
-        [ spacing 12, centerX ]
-        [ buttons
-            [ ( UI.Primary, Animate, "🏀 Animate" )
-            , ( UI.Warning, Stop, "⏹️ Stop" )
-            ]
-        , buttons
-            [ ( UI.Success, Pause, "⏸️ Pause" )
-            , ( UI.Success, Resume, "▶️ Resume" )
-            ]
-        , buttons
-            [ ( UI.Purple, Reset, "⏮️ Reset" )
-            , ( UI.Purple, Restart, "🔄 Restart" )
-            ]
-        ]
-    , -- Animation area
-      el
-        [ width <|
-            px model.animAreaSize.width
-        , height (px 350)
-        , Background.color Colors.backgroundWhite
-        , Border.rounded 12
-        , Border.shadow
-            { offset = ( 0, 4 )
-            , size = 0
-            , blur = 8
-            , color = Element.rgba 0 0 0 0.1
-            }
-        , centerX
-        ]
-        (el
-            ([ width (px 50)
-             , height (px 50)
-             , htmlAttribute (Html.Attributes.style "position" "relative")
-             ]
-                ++ List.map htmlAttribute (CSS.keyframesStyles elementId model.animState)
-            )
-            (el [ centerX, centerY, Font.size 50 ] (text "🏀"))
-        )
-    ]
 
 
-viewControlDescription : Int -> String -> String -> Element Msg
-viewControlDescription borderWidth control description =
+controlDescription : Int -> String -> String -> Element Msg
+controlDescription borderWidth control description =
     row
         [ width fill
         , Border.widthEach
@@ -267,6 +268,29 @@ viewControlDescription borderWidth control description =
             , Font.color Colors.textMedium
             ]
             (text description)
+        ]
+
+
+
+-- Buttons
+
+
+controlButtons : Element Msg
+controlButtons =
+    row
+        [ spacing 12, centerX ]
+        [ buttons
+            [ ( UI.Primary, Animate, "🏀 Animate" )
+            , ( UI.Warning, Stop, "⏹️ Stop" )
+            ]
+        , buttons
+            [ ( UI.Success, Pause, "⏸️ Pause" )
+            , ( UI.Success, Resume, "▶️ Resume" )
+            ]
+        , buttons
+            [ ( UI.Purple, Reset, "⏮️ Reset" )
+            , ( UI.Purple, Restart, "🔄 Restart" )
+            ]
         ]
 
 

@@ -10,41 +10,61 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 - **Full 3D Support** — Transform elements in 3D space with XYZ positioning, multi-axis rotation, and configurable perspective
 - **Composable & Type-Safe** — Build complex animations from simple, reusable pieces
 
-## Quick Example
+## Quick Example - reusable animation
 
-```elm
-import Anim.Engine.CSS as CSS
-import Anim.Property.Translate as Translate
-import Anim.Easing exposing (Easing(..))
+??? example "View Source Code"
 
--- Define a reusable animation
-slideIn : AnimBuilder -> AnimBuilder
-slideIn builder =
-    builder
-        |> Translate.for "my-element"
-        |> Translate.fromX -100
-        |> Translate.toX 0
-        |> Translate.duration 500
-        |> Translate.easing QuintOut
-        |> Translate.build
+    ```elm
+    import Anim.Engine.CSS as CSS
+    import Anim.Engine.Sub as Sub
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Property.Translate as Translate
+    import Anim.Easing exposing (Easing(..))
+    import Json.Encode as Encode
 
--- Use it with the CSS engine
-animState =
-    CSS.animate CSS.init slideIn
-```
+    -- Define a reusable animation
+    slideIn : AnimBuilder -> AnimBuilder
+    slideIn =
+        Translate.for "my-element"
+            >> Translate.fromX -100
+            >> Translate.toX 0
+            >> Translate.duration 500
+            >> Translate.easing QuintOut
+            >> Translate.build
+
+    -- Use it with the CSS engine
+    animState =
+        CSS.animate model.animState slideIn
+
+    animState =
+        CSS.fireAndForget slideIn
+
+    -- Use it with the Sub engine
+    animState =
+        Sub.animate model.animState slideIn
+
+    -- Use it with the WAAPI engine
+    (animState, cmd) =
+        WAAPI.animate model.animState slideIn
+
+    port waapiCommand : Encode.Value -> Cmd msg
+
+    cmd =
+        WAAPI.fireAndForget waapiCommand slideIn
+    ```
 
 ## Animation Engines
 
 | Engine | Best For |
 | -------- | ---------- |
-| [CSS](engines/css.md) | Fire-and-forget animations, minimal setup |
-| [Sub](engines/sub.md) | Full programmatic control, mid-flight queries |
-| [WAAPI](engines/waapi.md) | Browser-native performance with programmatic control |
+| [CSS](engines/css.md) | Browser-native performance, minimal setup |
+| [Sub](engines/sub.md) | Programmatic control, mid-flight queries/diversions |
+| [WAAPI](engines/waapi.md) | Browser-native performance, programmatic control, mid-flight queries/diversions |
 | [Scroll](engines/scroll.md) | Smooth scrolling to elements or positions |
 
 ## Getting Started
 
-Ready to add smooth animations to your Elm app?
+Ready to add Elm Animate to your Elm app?
 
 [Get Started →](getting-started/installation.md){ .md-button .md-button--primary }
 
