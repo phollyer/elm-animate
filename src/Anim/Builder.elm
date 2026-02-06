@@ -17,7 +17,7 @@ import Anim.Internal.Builder as Internal
 
 {-| A builder for configuring animations.
 
-Use this type when creating reusable animation functions that should work
+Use this type when creating reusable animation functions that will work
 across all engines:
 
     import Anim.Builder exposing (AnimBuilder)
