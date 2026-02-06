@@ -182,3 +182,10 @@ Animate multiple properties on the same element:
             >> Opacity.to 1
             >> Opacity.build
     ```
+
+## Next Steps
+
+Now that you've learned about the builder pattern for building animations, we'll look at how to control them.
+
+[Controlling Animations →](../concepts/controlling-animations/css/transitions.md){ .md-button .md-button--primary }
+

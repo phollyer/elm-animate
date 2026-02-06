@@ -48,7 +48,14 @@ Immediately jumps back to the animation's start state and stops:
 ## Best Practices
 
 !!! warning "Reset before re-animating"
-    CSS transitions can only run once. Therefore, if you wish to **replay/repeat** an animation after completion, you must call `reset` to return to the start state before calling `animate` again.
+    CSS transitions can only run once, . Therefore, if you wish to **replay/repeat** an animation after completion, you must call `reset` to return to the start state before calling `animate` again.
 
 !!! warning "Avoid DOM changes during animation start"
     CSS transitions are sensitive to DOM reflows. If other DOM elements are added or removed in the same render cycle as starting an animation, the browser may skip the transition entirely. Keep DOM structure stable when triggering animations.
+
+## Next Steps
+
+Controlling CSS Keyframe Animations.
+
+[Controlling Keyframe Animations →](keyframes.md){ .md-button .md-button--primary }
+

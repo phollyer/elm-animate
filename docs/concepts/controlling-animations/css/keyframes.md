@@ -81,11 +81,13 @@ Resumes a paused animation:
 
 ## Best Practices
 
-!!! tip "Always update AnimState"
-    Control functions return a new `AnimState` that reflects the pending operation. Always update your model with this new state to keep Elm and JavaScript synchronized.
-
 !!! tip "Handle events for UI feedback"
     Use animation events to update UI elements like status indicators, enable/disable buttons, or trigger subsequent animations.
 
-!!! tip "Pause vs Stop"
-    Use `pause` when you want to temporarily freeze an animation and resume later. Use `stop` when the animation should jump to its final state immediately.
+## Next Steps
+
+Controlling Sub Engine Animations.
+
+[Controlling Sub Engine Animations →](../sub.md){ .md-button .md-button--primary }
+
+
