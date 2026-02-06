@@ -15,6 +15,7 @@ module Anim.Engine.CSS exposing
     , delay
     , allowDiscreteTransitions
     , startingStyleNode, startingStyleNodeFor
+    , iterations, loopForever
     , stop, reset, restart, pause, resume
     , anyRunning, isRunning, allComplete, isComplete
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
@@ -191,6 +192,14 @@ For **entry animations** (elements appearing), you also need `@starting-style` C
 to define the initial state. These functions generate the required CSS:
 
 @docs startingStyleNode, startingStyleNodeFor
+
+
+## Iteration / Looping (Keyframes Only)
+
+Control how many times a keyframe animation repeats. These settings only apply to keyframe animations,
+not CSS transitions (which inherently run once).
+
+@docs iterations, loopForever
 
 
 # Animation Control
@@ -1083,6 +1092,34 @@ Use this when you only need starting styles for one element, rather than all ani
 startingStyleNodeFor : String -> AnimState -> Html.Html msg
 startingStyleNodeFor =
     InternalCSS.startingStyleNodeFor
+
+
+{-| Set how many times a keyframe animation should repeat.
+
+    CSS.animate model.animState <|
+        (iterations 3 >> pulse "my-element")
+
+**Note:** Only applies to keyframe animations. CSS transitions always run once.
+
+-}
+iterations : Int -> AnimBuilder -> AnimBuilder
+iterations =
+    Builder.iterations
+
+
+{-| Make a keyframe animation loop infinitely.
+
+    CSS.animate model.animState <|
+        (loopForever >> pulse "my-element")
+
+The animation will continue until you call `stop`, `reset`, or remove the element.
+
+**Note:** Only applies to keyframe animations. CSS transitions always run once.
+
+-}
+loopForever : AnimBuilder -> AnimBuilder
+loopForever =
+    Builder.loopForever
 
 
 {-| Get the animation [transition](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transitions/Using)

@@ -2,6 +2,7 @@ module Anim.Internal.CSS.KeyframeAnimation exposing
     ( KeyframeAnimation
     , generate
     , generateWithSuffix
+    , setIterationCount
     , toAttributeString
     )
 
@@ -26,6 +27,7 @@ type alias KeyframeAnimation =
     , easing : String
     , delay : Int
     , properties : List String -- Properties this layer animates
+    , iterationCount : Builder.IterationCount
     }
 
 
@@ -48,7 +50,7 @@ generateWithSuffix elementId suffix properties =
         let
             processed =
                 Builder.processElement
-                    { globalTiming = Nothing, globalEasing = Nothing, globalDelay = Nothing, currentElementId = Nothing, elements = Dict.empty, scrollTargets = [], scrollContainer = "document", animationHistories = Dict.empty, nextAnimationId = 0, elementBaselines = Dict.empty, discreteTransitions = False }
+                    { globalTiming = Nothing, globalEasing = Nothing, globalDelay = Nothing, currentElementId = Nothing, elements = Dict.empty, scrollTargets = [], scrollContainer = "document", animationHistories = Dict.empty, nextAnimationId = 0, elementBaselines = Dict.empty, discreteTransitions = False, iterationCount = Builder.Once }
                     { properties = properties }
 
             processedProps =
@@ -389,8 +391,16 @@ generateWithSuffix elementId suffix properties =
           , easing = "linear"
           , delay = 0
           , properties = animatedProperties
+          , iterationCount = Builder.Once -- Default, can be overridden via setIterationCount
           }
         ]
+
+
+{-| Set the iteration count on all animation layers.
+-}
+setIterationCount : Builder.IterationCount -> List KeyframeAnimation -> List KeyframeAnimation
+setIterationCount count layers =
+    List.map (\layer -> { layer | iterationCount = count }) layers
 
 
 toAttributeString : List KeyframeAnimation -> String
@@ -399,6 +409,18 @@ toAttributeString animationLayers =
         animationLayers
             |> List.map
                 (\layer ->
+                    let
+                        iterationString =
+                            case layer.iterationCount of
+                                Builder.Once ->
+                                    "1"
+
+                                Builder.Times n ->
+                                    String.fromInt n
+
+                                Builder.Infinite ->
+                                    "infinite"
+                    in
                     layer.animationName
                         ++ " "
                         ++ String.fromInt layer.duration
@@ -406,7 +428,9 @@ toAttributeString animationLayers =
                         ++ layer.easing
                         ++ " "
                         ++ String.fromInt layer.delay
-                        ++ "ms forwards"
+                        ++ "ms "
+                        ++ iterationString
+                        ++ " forwards"
                 )
             |> String.join ", "
 

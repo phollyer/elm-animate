@@ -6,6 +6,7 @@ module Anim.Internal.Builder exposing
     , AnimationId
     , ElementConfig
     , ElementEndStates
+    , IterationCount(..)
     , ProcessedAnimationData
     , ProcessedElementConfig
     , ProcessedPropertyConfig(..)
@@ -35,6 +36,7 @@ module Anim.Internal.Builder exposing
     , getEasingWithDefault
     , getElementBaseline
     , getElementConfig
+    , getIterationCount
     , getPreviousAnimation
     , getScrollContainer
     , getScrollTargets
@@ -42,6 +44,8 @@ module Anim.Internal.Builder exposing
     , getTimespec
     , init
     , injectCurrentStates
+    , iterations
+    , loopForever
     , mapScrollTargets
     , markAnimationAsExecuted
     , markDirty
@@ -97,7 +101,21 @@ type alias BuilderData =
     , nextAnimationId : AnimationId
     , elementBaselines : Dict ElementId ElementEndStates -- Current animated states used as baselines
     , discreteTransitions : Bool -- Whether to allow discrete CSS properties (display, visibility) to transition
+    , iterationCount : IterationCount -- How many times the animation should repeat
     }
+
+
+{-| Specifies how many times an animation should repeat.
+
+  - `Once` - Animation plays once and stops (default)
+  - `Times n` - Animation repeats exactly n times
+  - `Infinite` - Animation loops forever
+
+-}
+type IterationCount
+    = Once
+    | Times Int
+    | Infinite
 
 
 {-| Animation history for a single element.
@@ -232,6 +250,7 @@ init =
         , nextAnimationId = 1 -- NEW: Start animation IDs from 1
         , elementBaselines = Dict.empty -- NEW: Initialize empty baselines
         , discreteTransitions = False -- Disabled by default
+        , iterationCount = Once -- Default: play once
         }
 
 
@@ -310,6 +329,39 @@ allowDiscreteTransitions (AnimBuilder data) =
 discreteTransitionsEnabled : AnimBuilder -> Bool
 discreteTransitionsEnabled (AnimBuilder data) =
     data.discreteTransitions
+
+
+{-| Set the animation to repeat a specific number of times.
+
+**Note:** This only works with CSS keyframe animations, not CSS transitions.
+
+    CSS.animate model.animState <|
+        (iterations 3 >> bounce)  -- Bounces 3 times
+
+-}
+iterations : Int -> AnimBuilder -> AnimBuilder
+iterations count (AnimBuilder data) =
+    AnimBuilder { data | iterationCount = Times count }
+
+
+{-| Set the animation to loop forever.
+
+**Note:** This only works with CSS keyframe animations, not CSS transitions.
+
+    CSS.animate model.animState <|
+        (loopForever >> pulse)  -- Pulses continuously
+
+-}
+loopForever : AnimBuilder -> AnimBuilder
+loopForever (AnimBuilder data) =
+    AnimBuilder { data | iterationCount = Infinite }
+
+
+{-| Get the configured iteration count.
+-}
+getIterationCount : AnimBuilder -> IterationCount
+getIterationCount (AnimBuilder data) =
+    data.iterationCount
 
 
 

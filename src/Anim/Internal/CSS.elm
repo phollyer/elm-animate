@@ -131,7 +131,7 @@ init propertyInitializers =
                 { elementAnimations =
                     configuredBuilder
                         |> Builder.elements
-                        |> Dict.map (generateElementAnimation Nothing (Builder.discreteTransitionsEnabled configuredBuilder))
+                        |> Dict.map (generateElementAnimation Nothing (Builder.discreteTransitionsEnabled configuredBuilder) (Builder.getIterationCount configuredBuilder))
                 , elementStates =
                     elementIds
                         |> List.map (\id -> ( id, NotStarted ))
@@ -166,7 +166,7 @@ animate animState transform =
         { elementAnimations =
             builder_
                 |> Builder.elements
-                |> Dict.map (generateElementAnimation Nothing (Builder.discreteTransitionsEnabled builder_))
+                |> Dict.map (generateElementAnimation Nothing (Builder.discreteTransitionsEnabled builder_) (Builder.getIterationCount builder_))
         , elementStates =
             elementIds
                 |> List.map (\id -> ( id, NotStarted ))
@@ -249,7 +249,7 @@ animateWithOrder order animState transform =
         { elementAnimations =
             builder_
                 |> Builder.elements
-                |> Dict.map (generateElementAnimation (Just normalizedOrder) (Builder.discreteTransitionsEnabled builder_))
+                |> Dict.map (generateElementAnimation (Just normalizedOrder) (Builder.discreteTransitionsEnabled builder_) (Builder.getIterationCount builder_))
         , elementStates =
             elementIds
                 |> List.map (\id -> ( id, NotStarted ))
@@ -975,16 +975,16 @@ transformOrderToString order =
 -- CSS GENERATION
 
 
-generateElementAnimation : Maybe (List TransformOrder) -> Bool -> String -> Builder.ElementConfig -> ElementAnimation
-generateElementAnimation maybeOrder discreteTransitions elementId elementConfig =
-    generateElementAnimationWithSuffix maybeOrder discreteTransitions "" elementId elementConfig
+generateElementAnimation : Maybe (List TransformOrder) -> Bool -> Builder.IterationCount -> String -> Builder.ElementConfig -> ElementAnimation
+generateElementAnimation maybeOrder discreteTransitions iterationCount elementId elementConfig =
+    generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount "" elementId elementConfig
 
 
 {-| Generate element animation with a suffix for the animation name.
 Used for restarting animations - passing a unique suffix forces the browser to treat it as a new animation.
 -}
-generateElementAnimationWithSuffix : Maybe (List TransformOrder) -> Bool -> String -> String -> Builder.ElementConfig -> ElementAnimation
-generateElementAnimationWithSuffix maybeOrder discreteTransitions suffix elementId elementConfig =
+generateElementAnimationWithSuffix : Maybe (List TransformOrder) -> Bool -> Builder.IterationCount -> String -> String -> Builder.ElementConfig -> ElementAnimation
+generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount suffix elementId elementConfig =
     let
         -- Process properties first (like keyframes do) for consistency
         processed =
@@ -1000,6 +1000,7 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions suffix element
                 , nextAnimationId = 0
                 , elementBaselines = Dict.empty
                 , discreteTransitions = discreteTransitions
+                , iterationCount = iterationCount
                 }
                 elementConfig
 
@@ -1065,7 +1066,9 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions suffix element
                 |> List.filter (\( _, value ) -> not (String.isEmpty value))
     in
     { styles = allStyles
-    , animationLayers = KeyframeAnimation.generateWithSuffix elementId suffix elementConfig.properties
+    , animationLayers =
+        KeyframeAnimation.generateWithSuffix elementId suffix elementConfig.properties
+            |> KeyframeAnimation.setIterationCount iterationCount
     }
 
 
@@ -1088,6 +1091,7 @@ generateStylesOnly maybeOrder elementConfig =
                 , nextAnimationId = 0
                 , elementBaselines = Dict.empty
                 , discreteTransitions = False
+                , iterationCount = Builder.Once
                 }
                 elementConfig
 
@@ -1385,7 +1389,7 @@ restartAnimation elementId ((AnimState state) as animState) =
                     "r" ++ String.fromInt newCounter
 
                 elementAnimation =
-                    generateElementAnimationWithSuffix Nothing (Builder.discreteTransitionsEnabled state.builder) suffix elementId elementConfig
+                    generateElementAnimationWithSuffix Nothing (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) suffix elementId elementConfig
             in
             AnimState
                 { resetStateData
