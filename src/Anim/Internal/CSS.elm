@@ -45,6 +45,8 @@ module Anim.Internal.CSS exposing
     , restartAnimation
     , resumeAnimation
     , speed
+    , startingStyleNode
+    , startingStyleNodeFor
     , stopAnimation
     , transitionAttributes
     )
@@ -129,7 +131,7 @@ init propertyInitializers =
                 { elementAnimations =
                     configuredBuilder
                         |> Builder.elements
-                        |> Dict.map (generateElementAnimation Nothing)
+                        |> Dict.map (generateElementAnimation Nothing (Builder.discreteTransitionsEnabled configuredBuilder))
                 , elementStates =
                     elementIds
                         |> List.map (\id -> ( id, NotStarted ))
@@ -164,7 +166,7 @@ animate animState transform =
         { elementAnimations =
             builder_
                 |> Builder.elements
-                |> Dict.map (generateElementAnimation Nothing)
+                |> Dict.map (generateElementAnimation Nothing (Builder.discreteTransitionsEnabled builder_))
         , elementStates =
             elementIds
                 |> List.map (\id -> ( id, NotStarted ))
@@ -247,7 +249,7 @@ animateWithOrder order animState transform =
         { elementAnimations =
             builder_
                 |> Builder.elements
-                |> Dict.map (generateElementAnimation (Just normalizedOrder))
+                |> Dict.map (generateElementAnimation (Just normalizedOrder) (Builder.discreteTransitionsEnabled builder_))
         , elementStates =
             elementIds
                 |> List.map (\id -> ( id, NotStarted ))
@@ -805,6 +807,151 @@ getElementKeyframes elementId (AnimState state) =
             )
 
 
+{-| Generate a style node containing @starting-style rules for all animated elements.
+
+This is required for entry animations when using discrete transitions (like display/visibility).
+Include this in your view alongside the animated elements.
+
+    view model =
+        div []
+            [ CSS.startingStyleNode model.animState
+            , div (CSS.transitionAttributes "my-element" model.animState) [ text "Animated" ]
+            ]
+
+-}
+startingStyleNode : AnimState -> Html msg
+startingStyleNode ((AnimState state) as animState) =
+    let
+        elementIds =
+            Dict.keys state.elementAnimations
+
+        allStartingStyles =
+            elementIds
+                |> List.filterMap (\id -> generateStartingStyleForElement id animState)
+                |> String.join "\n"
+    in
+    if String.isEmpty allStartingStyles then
+        Html.text ""
+
+    else
+        Html.node "style" [] [ Html.text ("@starting-style {\n" ++ allStartingStyles ++ "\n}") ]
+
+
+{-| Generate a style node containing @starting-style rules for a specific element.
+
+Use this when you only need starting styles for one element.
+
+-}
+startingStyleNodeFor : String -> AnimState -> Html msg
+startingStyleNodeFor elementId animState =
+    case generateStartingStyleForElement elementId animState of
+        Just css ->
+            Html.node "style" [] [ Html.text ("@starting-style {\n" ++ css ++ "\n}") ]
+
+        Nothing ->
+            Html.text ""
+
+
+{-| Generate the CSS content for @starting-style for a single element.
+Returns Nothing if the element has no animations with start values.
+-}
+generateStartingStyleForElement : String -> AnimState -> Maybe String
+generateStartingStyleForElement elementId (AnimState state) =
+    let
+        processedData =
+            Builder.processAnimationData state.builder
+
+        maybeElementConfig =
+            Dict.get elementId processedData.elements
+    in
+    case maybeElementConfig of
+        Nothing ->
+            Nothing
+
+        Just elementConfig ->
+            let
+                -- Collect non-transform starting styles
+                nonTransformStyles =
+                    elementConfig.properties
+                        |> List.filterMap propertyToNonTransformStartingStyle
+
+                -- Collect transform parts and combine into single declaration
+                transformParts =
+                    elementConfig.properties
+                        |> List.filterMap propertyToTransformPart
+
+                transformStyle =
+                    if List.isEmpty transformParts then
+                        []
+
+                    else
+                        [ "transform: " ++ String.join " " transformParts ++ ";" ]
+
+                allStyles =
+                    transformStyle ++ nonTransformStyles
+            in
+            if List.isEmpty allStyles then
+                Nothing
+
+            else
+                Just ("  #" ++ elementId ++ " {\n" ++ String.join "\n" (List.map (\s -> "    " ++ s) allStyles) ++ "\n  }")
+
+
+{-| Convert a processed property config to a non-transform CSS starting style declaration.
+Only returns a value for non-transform properties with defined start values.
+-}
+propertyToNonTransformStartingStyle : Builder.ProcessedPropertyConfig -> Maybe String
+propertyToNonTransformStartingStyle prop =
+    case prop of
+        Builder.ProcessedOpacityConfig config ->
+            config.start
+                |> Maybe.map (\start -> "opacity: " ++ Opacity.toString start ++ ";")
+
+        Builder.ProcessedBackgroundColorConfig config ->
+            config.start
+                |> Maybe.map (\start -> "background-color: " ++ Color.toCssString start ++ ";")
+
+        Builder.ProcessedSizeConfig config ->
+            config.start
+                |> Maybe.map
+                    (\start ->
+                        let
+                            ( w, h ) =
+                                Size.toTuple start
+                        in
+                        "width: " ++ String.fromFloat w ++ "px; height: " ++ String.fromFloat h ++ "px;"
+                    )
+
+        Builder.ProcessedFontColorConfig config ->
+            config.start
+                |> Maybe.map (\start -> "color: " ++ Color.toCssString start ++ ";")
+
+        _ ->
+            Nothing
+
+
+{-| Extract a transform function string from a transform property's start value.
+Returns Nothing for non-transform properties or properties without start values.
+-}
+propertyToTransformPart : Builder.ProcessedPropertyConfig -> Maybe String
+propertyToTransformPart prop =
+    case prop of
+        Builder.ProcessedTranslateConfig config ->
+            config.start
+                |> Maybe.map (\start -> "translate3d(" ++ Translate.toCssString start ++ ")")
+
+        Builder.ProcessedRotateConfig config ->
+            config.start
+                |> Maybe.map Rotate.toCssString
+
+        Builder.ProcessedScaleConfig config ->
+            config.start
+                |> Maybe.map Scale.toCssString
+
+        _ ->
+            Nothing
+
+
 
 -- HELPERS
 
@@ -828,16 +975,16 @@ transformOrderToString order =
 -- CSS GENERATION
 
 
-generateElementAnimation : Maybe (List TransformOrder) -> String -> Builder.ElementConfig -> ElementAnimation
-generateElementAnimation maybeOrder elementId elementConfig =
-    generateElementAnimationWithSuffix maybeOrder "" elementId elementConfig
+generateElementAnimation : Maybe (List TransformOrder) -> Bool -> String -> Builder.ElementConfig -> ElementAnimation
+generateElementAnimation maybeOrder discreteTransitions elementId elementConfig =
+    generateElementAnimationWithSuffix maybeOrder discreteTransitions "" elementId elementConfig
 
 
 {-| Generate element animation with a suffix for the animation name.
 Used for restarting animations - passing a unique suffix forces the browser to treat it as a new animation.
 -}
-generateElementAnimationWithSuffix : Maybe (List TransformOrder) -> String -> String -> Builder.ElementConfig -> ElementAnimation
-generateElementAnimationWithSuffix maybeOrder suffix elementId elementConfig =
+generateElementAnimationWithSuffix : Maybe (List TransformOrder) -> Bool -> String -> String -> Builder.ElementConfig -> ElementAnimation
+generateElementAnimationWithSuffix maybeOrder discreteTransitions suffix elementId elementConfig =
     let
         -- Process properties first (like keyframes do) for consistency
         processed =
@@ -852,6 +999,7 @@ generateElementAnimationWithSuffix maybeOrder suffix elementId elementConfig =
                 , animationHistories = Dict.empty
                 , nextAnimationId = 0
                 , elementBaselines = Dict.empty
+                , discreteTransitions = discreteTransitions
                 }
                 elementConfig
 
@@ -899,10 +1047,19 @@ generateElementAnimationWithSuffix maybeOrder suffix elementId elementConfig =
                 )
                 processedProps
 
+        -- Add transition-behavior for discrete properties
+        transitionBehaviorStyle =
+            if discreteTransitions then
+                [ ( "transition-behavior", "allow-discrete" ) ]
+
+            else
+                []
+
         allStyles =
             [ ( "transform", transforms )
             , ( "transition", transitions )
             ]
+                ++ transitionBehaviorStyle
                 ++ colorStyles
                 ++ opacityStyles
                 |> List.filter (\( _, value ) -> not (String.isEmpty value))
@@ -930,6 +1087,7 @@ generateStylesOnly maybeOrder elementConfig =
                 , animationHistories = Dict.empty
                 , nextAnimationId = 0
                 , elementBaselines = Dict.empty
+                , discreteTransitions = False
                 }
                 elementConfig
 
@@ -1227,7 +1385,7 @@ restartAnimation elementId ((AnimState state) as animState) =
                     "r" ++ String.fromInt newCounter
 
                 elementAnimation =
-                    generateElementAnimationWithSuffix Nothing suffix elementId elementConfig
+                    generateElementAnimationWithSuffix Nothing (Builder.discreteTransitionsEnabled state.builder) suffix elementId elementConfig
             in
             AnimState
                 { resetStateData

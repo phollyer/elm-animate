@@ -13,6 +13,8 @@ module Anim.Engine.CSS exposing
     , duration, speed
     , easing
     , delay
+    , allowDiscreteTransitions
+    , startingStyleNode, startingStyleNodeFor
     , stop, reset, restart, pause, resume
     , anyRunning, isRunning, allComplete, isComplete
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
@@ -75,6 +77,20 @@ tracking its state. Use this for one-shot animations:
   - Entrance/exit animations
   - Simple hover/focus effects
   - Any animation where you don't need to query state or values
+
+
+### 3. Discrete Property Transitions
+
+CSS transitions only work by default with properties that have intermediate values (e.g., `opacity: 0.5`).
+Discrete properties like `display`, `visibility`, and `content-visibility` normally snap instantly.
+
+Use [allowDiscreteTransitions](#allowDiscreteTransitions) when you need to:
+
+  - Fade out elements before setting `display: none`
+  - Coordinate visibility changes with other animated properties
+  - Create smooth entry/exit animations that toggle element visibility
+
+**Browser support:** Chrome 117+, Firefox 129+, Safari 17.4+.
 
 
 # State
@@ -164,6 +180,19 @@ These settings will be used for all animations unless overridden on a per-proper
 @docs delay
 
 
+## Discrete Property Transitions
+
+CSS transitions only work by default with properties that have intermediate values.
+Discrete properties like `display`, `visibility`, and `content-visibility` normally snap instantly.
+
+@docs allowDiscreteTransitions
+
+For **entry animations** (elements appearing), you also need `@starting-style` CSS rules
+to define the initial state. These functions generate the required CSS:
+
+@docs startingStyleNode, startingStyleNodeFor
+
+
 # Animation Control
 
 Control running animations with stop, reset, restart, pause, and resume functionality.
@@ -233,6 +262,7 @@ In CSS, `translate` refers to the 2D or 3D position of an element.
 
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
+import Anim.Internal.Builder as Builder
 import Anim.Internal.CSS as InternalCSS exposing (ElementState(..), Event(..))
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Opacity as Opacity
@@ -981,6 +1011,78 @@ easing =
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
     InternalCSS.delay
+
+
+{-| Enable transitions for discrete CSS properties using `transition-behavior: allow-discrete`.
+
+By default, CSS transitions only work with properties that have intermediate values (like `opacity: 0.5`).
+Discrete properties like `display`, `visibility`, and `content-visibility` snap instantly between values.
+
+With `allowDiscreteTransitions`, these properties can participate in transitions:
+
+    CSS.animate model.animState <|
+        (allowDiscreteTransitions >> fadeIn >> slideIn)
+
+**Use cases:**
+
+  - Fade out an element then set `display: none`
+  - Animate `visibility` changes with other properties
+  - Entry/exit animations that toggle element visibility
+
+**Browser support:** Chrome 117+, Firefox 129+, Safari 17.4+.
+
+-}
+allowDiscreteTransitions : AnimBuilder -> AnimBuilder
+allowDiscreteTransitions =
+    Builder.allowDiscreteTransitions
+
+
+{-| Generate a `<style>` node containing [`@starting-style`](https://developer.mozilla.org/en-US/docs/Web/CSS/@starting-style)
+rules for all animated elements.
+
+**Why is this needed?**
+
+When an element enters the DOM (or changes from `display: none` to visible), the browser needs to know
+what values to animate FROM. Without `@starting-style`, the browser has no "before" state, so it skips
+the transition and jumps directly to the end values.
+
+**Example:**
+
+    view model =
+        div []
+            [ CSS.startingStyleNode model.animState -- Include this!
+            , div
+                (CSS.transitionAttributes "my-element" model.animState)
+                [ text "I'll animate when I appear" ]
+            ]
+
+\*\*Important <notes:**>
+
+  - Only needed for **entry animations** (elements appearing)
+  - Exit animations (fading out before `display: none`) work without this
+  - Uses animation start values to generate the CSS
+  - Only generates rules for properties that have explicit start values defined
+
+**Browser support:** Chrome 117+, Firefox 129+, Safari 17.4+.
+
+See also: [MDN @starting-style documentation](https://developer.mozilla.org/en-US/docs/Web/CSS/@starting-style)
+
+-}
+startingStyleNode : AnimState -> Html.Html msg
+startingStyleNode =
+    InternalCSS.startingStyleNode
+
+
+{-| Generate a `<style>` node containing `@starting-style` rules for a specific element.
+
+Use this when you only need starting styles for one element, rather than all animated elements.
+
+    CSS.startingStyleNodeFor "my-element" model.animState
+
+-}
+startingStyleNodeFor : String -> AnimState -> Html.Html msg
+startingStyleNodeFor =
+    InternalCSS.startingStyleNodeFor
 
 
 {-| Get the animation [transition](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Transitions/Using)

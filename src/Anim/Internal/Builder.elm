@@ -13,10 +13,12 @@ module Anim.Internal.Builder exposing
     , TransformParts
     , addAnimationToHistory
     , addScrollTarget
+    , allowDiscreteTransitions
     , clearAnimationHistory
       -- Animation Control Functions
     , clearCurrentElement
     , delay
+    , discreteTransitionsEnabled
     , duration
     , easing
     , elements
@@ -94,6 +96,7 @@ type alias BuilderData =
     , animationHistories : Dict ElementId AnimationHistory
     , nextAnimationId : AnimationId
     , elementBaselines : Dict ElementId ElementEndStates -- Current animated states used as baselines
+    , discreteTransitions : Bool -- Whether to allow discrete CSS properties (display, visibility) to transition
     }
 
 
@@ -228,6 +231,7 @@ init =
         , animationHistories = Dict.empty -- NEW: Initialize empty animation histories
         , nextAnimationId = 1 -- NEW: Start animation IDs from 1
         , elementBaselines = Dict.empty -- NEW: Initialize empty baselines
+        , discreteTransitions = False -- Disabled by default
         }
 
 
@@ -280,6 +284,32 @@ delay ms (AnimBuilder data) =
                 Just <|
                     ms
         }
+
+
+{-| Enable discrete CSS property transitions via `transition-behavior: allow-discrete`.
+
+This allows properties like `display`, `visibility`, and `content-visibility` to participate
+in transitions, enabling smoother entry/exit animations.
+
+**Example:**
+
+    CSS.animate model.animState <|
+        (allowDiscreteTransitions >> fadeIn >> slideIn)
+
+**Browser support:** The `transition-behavior` property is supported in modern browsers
+(Chrome 117+, Firefox 129+, Safari 17.4+).
+
+-}
+allowDiscreteTransitions : AnimBuilder -> AnimBuilder
+allowDiscreteTransitions (AnimBuilder data) =
+    AnimBuilder { data | discreteTransitions = True }
+
+
+{-| Check if discrete transitions are enabled for this animation.
+-}
+discreteTransitionsEnabled : AnimBuilder -> Bool
+discreteTransitionsEnabled (AnimBuilder data) =
+    data.discreteTransitions
 
 
 
