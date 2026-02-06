@@ -10,7 +10,7 @@ Animate the background color of elements.
 
 ```elm
 import Anim.Property.BackgroundColor as BackgroundColor
-import Anim.Color exposing (hex, rgb)
+import Anim.Extra.Color exposing (hex, rgb)
 
 highlightAnimation : AnimBuilder -> AnimBuilder
 highlightAnimation builder =
@@ -114,7 +114,7 @@ warningPulse builder =
 The `Anim.Color` module provides color constructors:
 
 ```elm
-import Anim.Color exposing (hex, rgb, rgba, hsl, hsla)
+import Anim.Extra.Color exposing (hex, rgb, rgba, hsl, hsla)
 
 -- Hex colors
 hex "#ff0000"

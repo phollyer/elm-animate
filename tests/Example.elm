@@ -1,6 +1,6 @@
 module Example exposing (..)
 
-import Anim.Easing as Easing
+import Anim.Extra.Easing as Easing
 import Anim.Engine.CSS as CSS
 import Anim.Internal.CSS as InternalCSS
 import Anim.Internal.CSS.KeyframeAnimation as KeyframeAnimation

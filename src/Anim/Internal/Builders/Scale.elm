@@ -22,7 +22,7 @@ module Anim.Internal.Builders.Scale exposing
     , toZ
     )
 
-import Anim.Easing exposing (Easing)
+import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)

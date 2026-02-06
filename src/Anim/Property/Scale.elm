@@ -23,7 +23,7 @@ Build animations that scale elements along the X, Y, and Z axes.
 
 For 3D scaling, set a non-zero value for the 'Z' axis and add perspective to the parent container using `Anim.View3D`:
 
-    import Anim.View3D as View3D
+    import Anim.Extra.View3D as View3D
 
     view model =
         div [ id "container", View3D.perspective 1000 ]
@@ -73,7 +73,7 @@ when you want to override that behavior.
 
 -}
 
-import Anim.Easing exposing (Easing)
+import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Scale as SB
 

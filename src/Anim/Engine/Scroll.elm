@@ -204,7 +204,7 @@ you can select one or both axes to scroll.
 
 -}
 
-import Anim.Easing exposing (Easing)
+import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as InternalBuilder
 import Anim.Internal.Builders.Scroll as SB
 import Anim.Internal.Easing as InternalEasing

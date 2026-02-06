@@ -1,7 +1,7 @@
 import Anim.Engine.CSS as CSS
 import Anim.Property.BackgroundColor as BackgroundColor
 import Anim.Property.Scale as Scale
-import Anim.Easing as Easing
+import Anim.Extra.Easing as Easing
 
 animations =
     CSS.init

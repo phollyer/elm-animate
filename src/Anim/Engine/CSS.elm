@@ -231,8 +231,8 @@ In CSS, `translate` refers to the 2D or 3D position of an element.
 
 -}
 
-import Anim.Color exposing (Color)
-import Anim.Easing exposing (Easing)
+import Anim.Extra.Color exposing (Color)
+import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.CSS as InternalCSS exposing (ElementState(..), Event(..))
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Opacity as Opacity

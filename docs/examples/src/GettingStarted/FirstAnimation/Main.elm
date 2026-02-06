@@ -1,6 +1,6 @@
 module GettingStarted.FirstAnimation.Main exposing (main)
 
-import Anim.Easing exposing (Easing(..))
+import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Engine.CSS as CSS
 import Anim.Property.Opacity as Opacity
 import Browser

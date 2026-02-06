@@ -11,7 +11,7 @@ module Anim.Internal.Builders.Property exposing
     , withSpeed
     )
 
-import Anim.Easing exposing (Easing(..))
+import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 

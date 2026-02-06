@@ -15,7 +15,7 @@ FEATURES:
 
 -}
 
-import Anim.Easing as Easing
+import Anim.Extra.Easing as Easing
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Scale as Scale
 import Browser exposing (Document)

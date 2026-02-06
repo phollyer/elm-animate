@@ -49,7 +49,7 @@ module Anim.Internal.CSS exposing
     , transitionAttributes
     )
 
-import Anim.Easing exposing (Easing)
+import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.CSS.KeyframeAnimation as KeyframeAnimation exposing (KeyframeAnimation)
 import Anim.Internal.CSS.Transform as Transforms
@@ -1074,7 +1074,7 @@ stopAnimation elementId animState =
             , speed = 0
             , distance = 0
             , timing = Just (Duration 0)
-            , easing = Just Anim.Easing.Linear
+            , easing = Just Anim.Extra.Easing.Linear
             , delay = Nothing
             , isDirty = True
             }
@@ -1127,7 +1127,7 @@ reset elementId (AnimState state) =
                     , speed = 0
                     , distance = 0
                     , timing = Just (Duration 0)
-                    , easing = Just Anim.Easing.Linear
+                    , easing = Just Anim.Extra.Easing.Linear
                     , delay = Nothing
                     , isDirty = True
                     }

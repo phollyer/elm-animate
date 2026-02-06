@@ -8,7 +8,7 @@ module Anim.Internal.CSS.Transform exposing
     , isTransformProperty
     )
 
-import Anim.Easing exposing (Easing(..))
+import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Easing as Easing
 import Anim.Internal.Properties.Rotate as Rotate

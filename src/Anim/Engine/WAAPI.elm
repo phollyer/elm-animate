@@ -171,8 +171,8 @@ during animation playback.
 
 -}
 
-import Anim.Color exposing (Color)
-import Anim.Easing exposing (Easing)
+import Anim.Extra.Color exposing (Color)
+import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.WAAPI as Internal
 import Json.Decode as Decode
 import Json.Encode as Encode

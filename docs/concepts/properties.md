@@ -3,38 +3,46 @@
 Elm Animate supports various CSS properties that can be animated. All properties share the same consistent builder API, making them easy to learn and compose.
 
 !!! note "Why one module per property?"
-    Rather than use a single `Property` phantom type that supports all properties, I chose individual property modules despite the increased maintenance load. This provides improved readability and better IDE autocompletion.
+    Rather than use a single `Property` phantom type that supports all properties, I chose individual property modules despite the increased maintenance load. This provides improved readability and better IDE autocompletion, but more importantly, simpler and more obvious type safety.
 
 ## Common API
 
 All properties follow the same builder pattern (Start with `for` -> Configure -> End with `build`):
 
-```elm
-myAnimation builder =
-    builder
-        |> Property.for "element-id"    -- Target element by ID
-        |> Property.from startValue     -- Starting value 
-        |> Property.to endValue         -- Ending value
-        |> Property.duration 500        -- Duration in milliseconds
-        |> Property.easing QuintOut     -- Easing function
-        |> Property.delay 100           -- Start delay in ms
-        |> Property.build               -- Finalize the property
-```
+??? example "View Source Code"
 
-The `Configure` steps are all optional, some more so than others. After all, it wouldn't be much of an animation if there was no end state (`to`) to animate to.
+    ```elm
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        -- Start
+        Property.for "element-id"           -- Target element by ID (required)
+            -- Configure
+            >> Property.from startValue     -- Starting value 
+            >> Property.to endValue         -- Ending value
+            >> Property.duration 500        -- Duration in milliseconds
+            >> Property.easing QuintOut     -- Easing function
+            >> Property.delay 100           -- Start delay in ms
+            -- End
+            >> Property.build               -- Finalize the property (required)
+    ```
+
+    The `Configure` steps between `for` and `build` are all optional, some more so than others. After all, it wouldn't be much of an animation if there was no end state (`to`) to animate to.
 
 ### Duration vs Speed
 
 You can specify timing with either `duration` (fixed time) or `speed` (distance-based):
 
-```elm
--- Fixed 500ms regardless of distance
-|> Translate.duration 500
 
--- 200 units per second (duration varies with distance)
-|> Translate.speed 200
+??? example "View Source Code"
 
-```
+    ```elm
+    -- Fixed 500ms regardless of distance
+    |> Translate.duration 500
+
+    -- 200 pixels per second (duration varies with distance)
+    |> Translate.speed 200
+
+    ```
 
 !!! note "Units for speed"
     The meaning of 'units' varies by property type. For `Translate` it's 'pixels'. Refer to each individual property for how speed is interpretted.
@@ -65,7 +73,7 @@ These properties are composited on the GPU for smooth 60fps performance with min
 These properties trigger browser repaints and/or reflows. Use them when needed, but be mindful of performance with many simultaneous animations.
 
 !!! warning "Size animations"
-    Size changes trigger browser reflows. The scope depends on layout context — fixed-size containers can limit reflow to their subtree. Consider using `Scale` transforms when you don't need actual layout changes.
+    Size changes also trigger browser reflows. The scope depends on layout context — fixed-size containers can limit reflow to their subtree. Consider using `Scale` transforms when you don't need actual layout changes.
 
 | Property | Description | Module | Impact |
 |----------|-------------|--------|--------|

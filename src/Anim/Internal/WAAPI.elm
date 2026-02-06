@@ -53,7 +53,7 @@ module Anim.Internal.WAAPI exposing
     , updateStatus
     )
 
-import Anim.Easing exposing (Easing(..))
+import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builders.BackgroundColor as BackgroundColor
 import Anim.Internal.Builders.Opacity as Opacity

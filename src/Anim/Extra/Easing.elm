@@ -1,4 +1,4 @@
-module Anim.Easing exposing (Easing(..))
+module Anim.Extra.Easing exposing (Easing(..))
 
 {-| Easing functions for animations.
 

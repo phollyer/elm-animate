@@ -24,7 +24,7 @@ USAGE EXAMPLES:
 
 -}
 
-import Anim.Easing as Easing
+import Anim.Extra.Easing as Easing
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)

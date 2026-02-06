@@ -15,7 +15,7 @@ FEATURES:
 
 -}
 
-import Anim.Easing as Easing exposing (Easing(..))
+import Anim.Extra.Easing as Easing exposing (Easing(..))
 import Anim.Engine.CSS as CSS
 import Anim.Property.Scale as Scale
 import Browser exposing (Document)

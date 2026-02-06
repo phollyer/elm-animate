@@ -14,7 +14,7 @@ FEATURES:
 
 -}
 
-import Anim.Easing as Easing exposing (Easing(..))
+import Anim.Extra.Easing as Easing exposing (Easing(..))
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Opacity as Opacity
 import Browser exposing (Document)

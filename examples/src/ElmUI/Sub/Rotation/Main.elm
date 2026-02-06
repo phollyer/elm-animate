@@ -15,7 +15,7 @@ FEATURES:
 
 -}
 
-import Anim.Easing as Easing exposing (Easing(..))
+import Anim.Extra.Easing as Easing exposing (Easing(..))
 import Anim.Engine.Sub as Sub
 import Anim.Property.Rotate as Rotate exposing (Builder)
 import Browser exposing (Document)

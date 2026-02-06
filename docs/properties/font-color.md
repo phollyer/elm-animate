@@ -10,7 +10,7 @@ Animate the text color of elements.
 
 ```elm
 import Anim.Property.FontColor as FontColor
-import Anim.Color exposing (hex)
+import Anim.Extra.Color exposing (hex)
 
 textHighlight : AnimBuilder -> AnimBuilder
 textHighlight builder =

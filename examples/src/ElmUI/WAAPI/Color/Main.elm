@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim.Color
-import Anim.Easing as Easing
+import Anim.Extra.Color
+import Anim.Extra.Easing as Easing
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.BackgroundColor as Color
 import Browser exposing (Document)
@@ -71,7 +71,7 @@ init _ =
     let
         ( initialAnimState, initCmd ) =
             WAAPI.animate animateElement WAAPI.init <|
-                \b -> b |> Color.init "box" (Anim.Color.fromRgba { r = 149, g = 165, b = 166, a = 1 })
+                \b -> b |> Color.init "box" (Anim.Extra.Color.fromRgba { r = 149, g = 165, b = 166, a = 1 })
     in
     ( { animState = initialAnimState }
     , initCmd

@@ -19,7 +19,7 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
     import Anim.Engine.Sub as Sub
     import Anim.Engine.WAAPI as WAAPI
     import Anim.Property.Translate as Translate
-    import Anim.Easing exposing (Easing(..))
+    import Anim.Extra.Easing exposing (Easing(..))
     import Json.Encode as Encode
 
     -- Define a reusable animation

@@ -1,4 +1,4 @@
-module Anim.View3D exposing
+module Anim.Extra.View3D exposing
     ( PerspectiveOrigin(..), BackfaceVisibility(..), TransformStyle(..)
     , perspective, perspectiveOrigin
     , backfaceVisibility, transformStyle
@@ -39,7 +39,7 @@ import Html.Attributes exposing (style)
 The perspective origin determines where the viewer is looking from.
 Default is `Center` (center of the element).
 
-    import Anim.View3D exposing (PerspectiveOrigin(..))
+    import Anim.Extra.View3D exposing (PerspectiveOrigin(..))
 
     -- Keyword positions
     div [ View3D.perspective 1000, View3D.perspectiveOrigin TopLeft ] [ card ]
@@ -69,7 +69,7 @@ type PerspectiveOrigin
 
 When flipping elements 180°, you typically want to hide the back face.
 
-    import Anim.View3D exposing (BackfaceVisibility(..))
+    import Anim.Extra.View3D exposing (BackfaceVisibility(..))
 
     div
         [ id "card"
@@ -88,7 +88,7 @@ type BackfaceVisibility
 Use `Preserve3D` when you have nested 3D transforms and want children
 to maintain their own 3D positions relative to the parent.
 
-    import Anim.View3D exposing (TransformStyle(..))
+    import Anim.Extra.View3D exposing (TransformStyle(..))
 
     -- For nested 3D elements
     div
@@ -118,7 +118,7 @@ more dramatic effects, larger values are more subtle.
 | 1000-1500px | Natural, balanced perspective |
 | 2000px+ | Subtle, distant 3D effect |
 
-    import Anim.View3D as View3D
+    import Anim.Extra.View3D as View3D
 
     view model =
         div
@@ -138,7 +138,7 @@ perspective value =
 This determines the vanishing point for 3D transforms. Use this together
 with `perspective` on the same parent element.
 
-    import Anim.View3D exposing (PerspectiveOrigin(..))
+    import Anim.Extra.View3D exposing (PerspectiveOrigin(..))
 
     -- Vanishing point at top-left corner
     div
@@ -169,7 +169,7 @@ perspectiveOrigin origin =
 Essential for card flip animations where you don't want to see
 the mirrored back of the front face.
 
-    import Anim.View3D exposing (BackfaceVisibility(..))
+    import Anim.Extra.View3D exposing (BackfaceVisibility(..))
 
     -- Front of card
     div
@@ -204,7 +204,7 @@ Use `Preserve3D` when you have nested 3D transforms and want children
 to maintain their 3D context. Use `Flat` (default) to flatten children
 onto the parent's plane.
 
-    import Anim.View3D exposing (TransformStyle(..))
+    import Anim.Extra.View3D exposing (TransformStyle(..))
 
     -- Parent maintains 3D context for children
     div

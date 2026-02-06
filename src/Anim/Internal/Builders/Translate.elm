@@ -32,7 +32,7 @@ module Anim.Internal.Builders.Translate exposing
     , toZ
     )
 
-import Anim.Easing exposing (Easing(..))
+import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Translate as Translate exposing (Translate)

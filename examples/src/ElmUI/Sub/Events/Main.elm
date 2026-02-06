@@ -23,7 +23,7 @@ BENEFITS:
 
 -}
 
-import Anim.Easing as Easing exposing (Easing(..))
+import Anim.Extra.Easing as Easing exposing (Easing(..))
 import Anim.Engine.Sub as Sub
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)

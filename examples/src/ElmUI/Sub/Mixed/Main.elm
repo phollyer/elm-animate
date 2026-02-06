@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim.Color
-import Anim.Easing as Easing exposing (Easing(..))
+import Anim.Extra.Color
+import Anim.Extra.Easing as Easing exposing (Easing(..))
 import Anim.Engine.Sub as Sub
 import Anim.Property.BackgroundColor as Color
 import Anim.Property.Opacity as Opacity
@@ -70,7 +70,7 @@ init _ =
                     >> Size.initWH "mixed-box" 80 80
                     >> Rotate.initZ "mixed-box" 0
                     >> Opacity.init "mixed-box" 1.0
-                    >> Color.init "mixed-box" (Anim.Color.fromHsl { h = 207 / 360, s = 0.9, l = 0.54 })
+                    >> Color.init "mixed-box" (Anim.Extra.Color.fromHsl { h = 207 / 360, s = 0.9, l = 0.54 })
                 )
       }
     , Cmd.none

@@ -21,7 +21,7 @@ Build animations that rotate elements around the X, Y, and Z axes.
 
 For 3D rotations, you need to set a perspective on the parent container using `Anim.View3D`:
 
-    import Anim.View3D as View3D
+    import Anim.Extra.View3D as View3D
 
     view model =
         div [ id "container", View3D.perspective 1000 ]
@@ -71,7 +71,7 @@ when you want to override that behavior.
 
 -}
 
-import Anim.Easing exposing (Easing)
+import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Rotate as RB
 import Anim.Internal.Properties.Rotate as R

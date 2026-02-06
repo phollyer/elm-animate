@@ -16,7 +16,7 @@ module Anim.Internal.Builders.Size exposing
     , toW
     )
 
-import Anim.Easing exposing (Easing)
+import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Properties.Size as Size exposing (Size)

@@ -65,7 +65,7 @@ when you want to override that behavior.
 
 -}
 
-import Anim.Easing exposing (Easing)
+import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Size as SB
 import Anim.Internal.Properties.Size as S

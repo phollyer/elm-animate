@@ -15,7 +15,7 @@ FEATURES:
 
 -}
 
-import Anim.Easing as Easing exposing (Easing(..))
+import Anim.Extra.Easing as Easing exposing (Easing(..))
 import Anim.Engine.Sub as Sub
 import Browser exposing (Document)
 import Common.Animations.Opacity as Animations

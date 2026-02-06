@@ -58,8 +58,8 @@ module Anim.Internal.Builder exposing
       -- Animation History Management
     )
 
-import Anim.Color exposing (Color)
-import Anim.Easing exposing (Easing(..))
+import Anim.Extra.Color exposing (Color)
+import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Properties.Color as Color
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)

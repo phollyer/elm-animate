@@ -11,7 +11,7 @@ module Common.Animations.Rotate exposing
 -}
 
 import Anim.Builder as Builder
-import Anim.Easing as Easing
+import Anim.Extra.Easing as Easing
 import Anim.Property.Rotate as Rotate
 
 

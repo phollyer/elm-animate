@@ -33,8 +33,8 @@ ANIMATIONS:
 -}
 
 import Anim.Builder exposing (AnimBuilder)
-import Anim.Color exposing (Color)
-import Anim.Easing exposing (Easing(..))
+import Anim.Extra.Color exposing (Color)
+import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.BackgroundColor as Color
 import Anim.Property.Opacity as Opacity
 import Anim.Property.Rotate as Rotate
@@ -98,7 +98,7 @@ sizeAnimation speed easing ( w, h ) =
 
 init : AnimBuilder -> AnimBuilder
 init =
-    Color.init elementId (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
+    Color.init elementId (Anim.Extra.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
         >> Opacity.init elementId 1.0
         >> Translate.initXY elementId 0 0
         >> Rotate.initXYZ elementId 0 0 0
@@ -137,7 +137,7 @@ Rotation, scaling, and color morph working together
 -}
 spinScaleColor : AnimBuilder -> AnimBuilder
 spinScaleColor =
-    colorAnimation 1.0 EaseInOut (Anim.Color.fromHsl { h = 120 / 360, s = 0.8, l = 0.6 })
+    colorAnimation 1.0 EaseInOut (Anim.Extra.Color.fromHsl { h = 120 / 360, s = 0.8, l = 0.6 })
         >> Color.build
         >> rotateAnimation 180.0 EaseInOut 180
         >> Rotate.build
@@ -150,7 +150,7 @@ Background color, element size, and opacity changing together
 -}
 colorSizeOpacity : AnimBuilder -> AnimBuilder
 colorSizeOpacity =
-    colorAnimation 1.5 EaseOut (Anim.Color.fromHsl { h = 280 / 360, s = 0.7, l = 0.5 })
+    colorAnimation 1.5 EaseOut (Anim.Extra.Color.fromHsl { h = 280 / 360, s = 0.7, l = 0.5 })
         >> Color.build
         >> opacityAnimation 1.5 EaseOut 0.8
         >> Opacity.build
@@ -163,7 +163,7 @@ Position, Scale, Size, Rotation, Opacity, and Color all animating
 -}
 allProperties : AnimBuilder -> AnimBuilder
 allProperties =
-    colorAnimation 1.0 EaseOut (Anim.Color.fromHsl { h = 60 / 360, s = 0.9, l = 0.7 })
+    colorAnimation 1.0 EaseOut (Anim.Extra.Color.fromHsl { h = 60 / 360, s = 0.9, l = 0.7 })
         >> Color.build
         >> opacityAnimation 1.2 EaseOut 0.6
         >> Opacity.build
@@ -182,7 +182,7 @@ Returns all animated properties to their starting values
 -}
 resetAll : AnimBuilder -> AnimBuilder
 resetAll =
-    colorAnimation 300.0 EaseOut (Anim.Color.fromHsl { h = 207 / 360, s = 0.9, l = 0.54 })
+    colorAnimation 300.0 EaseOut (Anim.Extra.Color.fromHsl { h = 207 / 360, s = 0.9, l = 0.54 })
         >> Color.build
         >> opacityAnimation 1.5 EaseInOut 1.0
         >> Opacity.build

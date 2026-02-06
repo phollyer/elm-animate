@@ -24,8 +24,8 @@ BENEFITS:
 
 -}
 
-import Anim.Color
-import Anim.Easing as Easing exposing (Easing(..))
+import Anim.Extra.Color
+import Anim.Extra.Easing as Easing exposing (Easing(..))
 import Anim.Engine.CSS as CSS
 import Anim.Property.BackgroundColor as Color
 import Anim.Property.Opacity as Opacity
@@ -84,12 +84,12 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations =
             CSS.animate CSS.init
-                (Color.init elementId (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
+                (Color.init elementId (Anim.Extra.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
                     >> Translate.initXY elementId 0 0
                     >> Rotate.init elementId 0
                     >> Scale.initXY elementId 1 1
                     >> Color.for elementId
-                    >> Color.to (Anim.Color.fromRgb { r = 59, g = 130, b = 246 })
+                    >> Color.to (Anim.Extra.Color.fromRgb { r = 59, g = 130, b = 246 })
                     >> Color.build
                     >> Translate.for elementId
                     >> Translate.toXY 0 0
@@ -227,7 +227,7 @@ update msg model =
                             >> CSS.easing QuartInOut
                             -- Color
                             >> Color.for elementId
-                            >> Color.to (Anim.Color.fromRgb { r = 255, g = 100, b = 150 })
+                            >> Color.to (Anim.Extra.Color.fromRgb { r = 255, g = 100, b = 150 })
                             >> Color.duration 900
                             >> Color.build
                             -- Scale
@@ -276,7 +276,7 @@ update msg model =
                             >> Opacity.build
                             -- Color
                             >> Color.for elementId
-                            >> Color.to (Anim.Color.fromRgb { r = 100, g = 255, b = 200 })
+                            >> Color.to (Anim.Extra.Color.fromRgb { r = 100, g = 255, b = 200 })
                             >> Color.easing QuintInOut
                             >> Color.duration 1100
                             >> Color.delay 400
@@ -313,7 +313,7 @@ update msg model =
                             >> Rotate.build
                             -- Color
                             >> Color.for elementId
-                            >> Color.to (Anim.Color.fromRgb { r = 59, g = 130, b = 246 })
+                            >> Color.to (Anim.Extra.Color.fromRgb { r = 59, g = 130, b = 246 })
                             >> Color.build
                         )
                 , isAnimating = True

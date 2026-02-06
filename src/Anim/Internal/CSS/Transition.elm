@@ -4,7 +4,7 @@ module Anim.Internal.CSS.Transition exposing
     , generateFromProcessed
     )
 
-import Anim.Easing as Easing
+import Anim.Extra.Easing as Easing
 import Anim.Internal.Builder as Builder
 import Anim.Internal.CSS.Transform as TH
 import Anim.Internal.Easing as InternalEasing

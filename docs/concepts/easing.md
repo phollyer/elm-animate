@@ -5,7 +5,7 @@ Easing functions control the rate of change during an animation, making motion f
 ## Available Easings
 
 ```elm
-import Anim.Easing exposing (Easing(..))
+import Anim.Extra.Easing exposing (Easing(..))
 ```
 
 ### Linear

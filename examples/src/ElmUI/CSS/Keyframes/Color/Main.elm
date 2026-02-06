@@ -22,8 +22,8 @@ USAGE:
 
 -}
 
-import Anim.Color
-import Anim.Easing as Easing
+import Anim.Extra.Color
+import Anim.Extra.Easing as Easing
 import Anim.Engine.CSS as CSS
 import Anim.Property.BackgroundColor as Color
 import Browser exposing (Document)
@@ -68,7 +68,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations =
             CSS.animate CSS.init
-                (Color.init elementId (Anim.Color.fromRgba { r = 149, g = 165, b = 166, a = 1 }))
+                (Color.init elementId (Anim.Extra.Color.fromRgba { r = 149, g = 165, b = 166, a = 1 }))
       }
     , Cmd.none
     )

@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim.Color
-import Anim.Easing as Easing exposing (Easing(..))
+import Anim.Extra.Color
+import Anim.Extra.Easing as Easing exposing (Easing(..))
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.BackgroundColor as Color
 import Anim.Property.Opacity as Opacity

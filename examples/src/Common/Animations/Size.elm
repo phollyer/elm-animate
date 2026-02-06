@@ -13,7 +13,7 @@ fixed-target animations. More complex relative sizing can be done in examples.
 
 -}
 
-import Anim.Easing as Easing
+import Anim.Extra.Easing as Easing
 import Anim.Internal.Builder as Builder
 import Anim.Property.Size as Size
 

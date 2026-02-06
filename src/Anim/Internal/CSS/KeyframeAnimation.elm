@@ -5,7 +5,7 @@ module Anim.Internal.CSS.KeyframeAnimation exposing
     , toAttributeString
     )
 
-import Anim.Easing exposing (Easing)
+import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Easing as Easing
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor

@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim.Color
-import Anim.Easing as Easing
+import Anim.Extra.Color
+import Anim.Extra.Easing as Easing
 import Anim.Engine.CSS as CSS
 import Anim.Property.BackgroundColor as Color
 import Browser exposing (Document)
@@ -60,7 +60,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations =
             CSS.animate CSS.init
-                (Color.init "animated-box" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 }))
+                (Color.init "animated-box" (Anim.Extra.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 }))
       }
     , Cmd.none
     )

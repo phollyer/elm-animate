@@ -1,4 +1,4 @@
-module Anim.Color exposing
+module Anim.Extra.Color exposing
     ( Color
     , hex, rgb, rgba, hsl, hsla, elmColor
     , fromHex, toHex

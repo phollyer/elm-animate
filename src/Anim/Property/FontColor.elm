@@ -12,7 +12,7 @@ module Anim.Property.FontColor exposing
 
 Build animations that change the font color of elements.
 
-    import Anim.Color exposing (hex)
+    import Anim.Extra.Color exposing (hex)
 
     animBuilder
         |> FontColor.for "my-element"
@@ -65,7 +65,7 @@ when you want to override that behavior.
 
 -}
 
-import Anim.Easing exposing (Easing)
+import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.FontColor as CB
 import Anim.Internal.Properties.Color exposing (Color(..))
@@ -107,7 +107,7 @@ for elementId =
 
 Use this to initialize the text color in your `init` function.
 
-    import Anim.Color exposing (hex)
+    import Anim.Extra.Color exposing (hex)
     import Anim.Engine.* as Engine
     import Anim.Property.FontColor as FontColor
 
@@ -146,7 +146,7 @@ build =
 
 {-| Set the starting color for the current element.
 
-    import Anim.Color exposing (hex, elmColor)
+    import Anim.Extra.Color exposing (hex, elmColor)
     import Color
 
     animBuilder
@@ -167,7 +167,7 @@ from =
 
 {-| Set the target color for the current element.
 
-    import Anim.Color exposing (hex, rgb, elmColor)
+    import Anim.Extra.Color exposing (hex, rgb, elmColor)
     import Color
 
     animBuilder
@@ -246,7 +246,7 @@ speed =
 
 See [Anim.Easing](Anim-Easing) for available easing functions.
 
-    import Anim.Easing exposing (Easing(..))
+    import Anim.Extra.Easing exposing (Easing(..))
 
     animBuilder
         |> FontColor.for "my-element"

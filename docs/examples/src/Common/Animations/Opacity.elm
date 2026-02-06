@@ -10,7 +10,7 @@ module Common.Animations.Opacity exposing
 -}
 
 import Anim.Builder as Builder
-import Anim.Easing as Easing
+import Anim.Extra.Easing as Easing
 import Anim.Property.Opacity as Opacity
 
 

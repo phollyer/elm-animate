@@ -28,7 +28,7 @@ Whereas "position" often refers to the CSS `position` property which controls _h
 
 For 3D positioning, set a non-zero value for the 'Z' axis and add perspective to the parent container using `Anim.View3D`:
 
-    import Anim.View3D as View3D
+    import Anim.Extra.View3D as View3D
 
     view model =
         div [ id "container", View3D.perspective 1000 ]
@@ -85,7 +85,7 @@ Move by a specific amount relative to the start position.
 
 -}
 
-import Anim.Easing exposing (Easing)
+import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Translate as TB
 import Anim.Internal.Properties.Translate as T

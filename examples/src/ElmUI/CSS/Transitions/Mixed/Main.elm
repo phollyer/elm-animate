@@ -24,8 +24,8 @@ BENEFITS:
 
 -}
 
-import Anim.Color
-import Anim.Easing as Easing exposing (Easing(..))
+import Anim.Extra.Color
+import Anim.Extra.Easing as Easing exposing (Easing(..))
 import Anim.Engine.CSS as CSS
 import Anim.Property.BackgroundColor as Color
 import Anim.Property.Opacity as Opacity
@@ -83,9 +83,9 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations =
             CSS.animate CSS.init
-                (Color.init "box-1" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
-                    >> Color.init "box-2" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
-                    >> Color.init "box-3" (Anim.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
+                (Color.init "box-1" (Anim.Extra.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
+                    >> Color.init "box-2" (Anim.Extra.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
+                    >> Color.init "box-3" (Anim.Extra.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
                     >> Translate.initXY "box-1" 0 0
                     >> Translate.initXY "box-2" 0 0
                     >> Translate.initXY "box-3" 0 0
@@ -211,7 +211,7 @@ update msg model =
                             >> CSS.easing QuartInOut
                             -- Color
                             >> Color.for "mixed-box"
-                            >> Color.to (Anim.Color.fromRgb { r = 255, g = 100, b = 150 })
+                            >> Color.to (Anim.Extra.Color.fromRgb { r = 255, g = 100, b = 150 })
                             >> Color.build
                             -- Scale
                             >> Scale.for "mixed-box"
@@ -258,7 +258,7 @@ update msg model =
                             >> Opacity.build
                             -- Color
                             >> Color.for "mixed-box"
-                            >> Color.to (Anim.Color.fromRgb { r = 100, g = 255, b = 200 })
+                            >> Color.to (Anim.Extra.Color.fromRgb { r = 100, g = 255, b = 200 })
                             >> Color.easing QuintInOut
                             >> Color.duration 1100
                             >> Color.delay 400
@@ -295,7 +295,7 @@ update msg model =
                             >> Rotate.build
                             -- Color
                             >> Color.for "mixed-box"
-                            >> Color.to (Anim.Color.fromRgb { r = 59, g = 130, b = 246 })
+                            >> Color.to (Anim.Extra.Color.fromRgb { r = 59, g = 130, b = 246 })
                             >> Color.build
                         )
                 , isAnimating = True
