@@ -110,42 +110,37 @@ Uses the same fluent builder API as the animation engines. This makes it easy to
 
 ```elm
 
-import Anim.Action.Scroll as ScrollAction
 import Anim.Engine.Scroll as Scroll exposing (ScrollError(..), ScrollResult)
 
 -- Reusable scroll animation
 
-scrollToElement : String -> String -> AnimState -> AnimBuilder
-scrollToElement targetElementId elementContainerId animState =
-    animState
-        |> Scroll.builder
-        |> ScrollAction.forContainer elementContainerId
-        |> ScrollAction.toElement targetElementId
-        |> ScrollAction.build
+scrollToElement : String -> String -> ScrollBuilder -> ScrollBuilder
+scrollToElement targetElementId elementContainerId builder =
+    builder
+        |> Scroll.forContainer elementContainerId
+        >> Scroll.toElement targetElementId
+        >> Scroll.build
 
 -- Fire-and-forget Cmd
 
 doScroll : Cmd Msg 
 doScroll =
-    Scroll.init
-        |> scrollToElement "my-element" "my-element-container"
-        |> Scroll.toCmd NoOp
+    Scroll.toCmd (always NoOp) <|
+        scrollToElement "my-element" "my-element-container"
 
 -- Composable Tasks with errors
 
 doScroll : Task ScrollError ScrollResult
 doScroll =
-    Scroll.init
-        |> scrollToElement "my-element" "my-element-container"
-        |> Scroll.toTask
+    Scroll.toTask <|
+        scrollToElement "my-element" "my-element-container"
 
 -- Mid-flight control/updates with state tracking and subscriptions
 
 doScroll : Model -> (AnimState, Cmd Msg)
 doScroll model =
-    model.scrollAnimations
-        |> scrollToElement "my-element" "me-element-container" 
-        |> Scroll.animate ScrollMsg
+    Scroll.animate ScrollMsg model.scrollAnimations <|
+        scrollToElement "my-element" "my-element-container" 
 ```
 
 ---

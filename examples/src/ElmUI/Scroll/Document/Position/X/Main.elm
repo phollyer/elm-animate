@@ -1,6 +1,5 @@
 module ElmUI.Scroll.Document.Position.X.Main exposing (main)
 
-import Anim.Action.Scroll as ScrollAction
 import Anim.Engine.Scroll as Scroll
 import Browser exposing (Document)
 import Browser.Dom
@@ -52,26 +51,26 @@ init _ =
 
 scrollToElement : String -> Cmd Msg
 scrollToElement targetId =
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.speed 500
-        |> ScrollAction.forDocument
-        |> ScrollAction.toElement targetId
-        |> ScrollAction.onXAxisWithOffset 20
-        |> ScrollAction.build
-        |> Scroll.toCmd (\_ -> NoOp)
+    Scroll.toCmd (\_ -> NoOp) <|
+        (Scroll.defaultSpeed 500
+            >> Scroll.forDocument
+            >> Scroll.toElement targetId
+            >> Scroll.onXAxis
+            >> Scroll.withOffsetX 20
+            >> Scroll.build
+        )
 
 
 scrollToX : Float -> Cmd Msg
 scrollToX xPos =
-    Scroll.init
-        |> Scroll.builder
-        |> Scroll.speed 500
-        |> ScrollAction.forDocument
-        |> ScrollAction.toX xPos
-        |> ScrollAction.onXAxisWithOffset 20
-        |> ScrollAction.build
-        |> Scroll.toCmd (\_ -> NoOp)
+    Scroll.toCmd (\_ -> NoOp) <|
+        (Scroll.defaultSpeed 500
+            >> Scroll.forDocument
+            >> Scroll.toX xPos
+            >> Scroll.onXAxis
+            >> Scroll.withOffsetX 20
+            >> Scroll.build
+        )
 
 
 

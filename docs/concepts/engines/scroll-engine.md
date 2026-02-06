@@ -19,15 +19,12 @@ The Scroll Engine provides smooth Document and container scrolling to elements o
 
     ```elm
     import Anim.Engine.Scroll as Scroll
-    import Anim.Action.Scroll as ScrollAction
 
     scrollCmd =
         Scroll.toCmd ScrollComplete <|
-            (ScrollAction.toElement "target-section"
-                >> ScrollAction.duration 2000
-                >> ScrollAction.build
-            )
-            
+            Scroll.toElement "target-section"
+                >> Scroll.duration 2000
+                >> Scroll.build
     ```
 
 ## Next Steps

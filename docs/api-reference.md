@@ -9,22 +9,16 @@ The complete API documentation is available on the official Elm package reposito
 ### Engines
 
 | Module | Description |
-|--------|-------------|
+| -------- | ------------- |
 | [Anim.Engine.CSS](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS) | CSS transitions and keyframe animations |
 | [Anim.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Sub) | Subscription-based frame animations |
 | [Anim.Engine.WAAPI](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI) | Web Animations API via ports |
 | [Anim.Engine.Scroll](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Scroll) | Smooth scrolling engine |
 
-### Actions
-
-| Module | Description |
-|--------|-------------|
-| [Anim.Action.Scroll](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Action-Scroll) | Scroll action builder |
-
 ### Properties
 
 | Module | Description |
-|--------|-------------|
+| -------- | ------------- |
 | [Anim.Property.Translate](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-Translate) | Position/movement animations |
 | [Anim.Property.Rotate](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-Rotate) | Rotation animations |
 | [Anim.Property.Scale](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-Scale) | Scale/zoom animations |
@@ -36,7 +30,7 @@ The complete API documentation is available on the official Elm package reposito
 ### Utilities
 
 | Module | Description |
-|--------|-------------|
+| -------- | ------------- |
 | [Anim.Easing](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Easing) | Easing functions |
 | [Anim.Color](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Color) | Color utilities |
 
