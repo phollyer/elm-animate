@@ -166,19 +166,9 @@ scrollAnimation : Scroll.AnimBuilder -> Scroll.AnimBuilder
 scrollAnimation =
     Scroll.forContainer containerId
         >> Scroll.toElement targetId
-        >> Scroll.duration 3000
-        >> Scroll.easing EaseInOut
+        >> Scroll.speed 200
+        >> Scroll.easing BounceOut
         >> Scroll.build
-
-
-testScrollCmd : Cmd Msg
-testScrollCmd =
-    Scroll.toCmd (\_ -> NoOp) <|
-        (Scroll.defaultSpeed 500
-            >> Scroll.forContainer containerId
-            >> Scroll.toElement targetId
-            >> Scroll.build
-        )
 
 
 
