@@ -1,10 +1,10 @@
-import Anim.Engine.CSS as CSS
+import Anim.Engine.CSS.Keyframes as CSS
 import Anim.Property.BackgroundColor as BackgroundColor
 import Anim.Property.Scale as Scale
 import Anim.Extra.Easing as Easing
 
 animations =
-    CSS.init
+    CSS.init []
         |> CSS.builder
         |> CSS.duration 900
         |> CSS.easing Easing.QuartInOut

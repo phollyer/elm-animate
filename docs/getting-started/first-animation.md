@@ -1,6 +1,6 @@
 # Your First Animation
 
-Let's create a simple fire-and-forget fade-in animation using the CSS Engine. This is the quickest way to get started.
+Let's create a simple fire-and-forget fade-in animation using the CSS Transitions Engine. This is the quickest way to get started.
 
 ## The Animation
 
@@ -68,10 +68,10 @@ slideAndFade =
 
 ```
 
-Both animations run simultaneously on the same element!
+Both animations run simultaneously on the same `my-box` element!
 
 ## Next Steps
 
 Now that you can create a simple animation, let's learn about the Engines themselves.
 
-[Animation Engines →](../concepts/engines.md){ .md-button .md-button--primary }
+[Animation Engines →](../concepts/engines/animation-engines.md){ .md-button .md-button--primary }

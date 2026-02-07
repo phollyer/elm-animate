@@ -860,41 +860,37 @@ generateStartingStyleForElement elementId (AnimState state) =
     let
         processedData =
             Builder.processAnimationData state.builder
-
-        maybeElementConfig =
-            Dict.get elementId processedData.elements
     in
-    case maybeElementConfig of
-        Nothing ->
-            Nothing
+    Dict.get elementId processedData.elements
+        |> Maybe.andThen
+            (\elementConfig ->
+                let
+                    -- Collect non-transform starting styles
+                    nonTransformStyles =
+                        elementConfig.properties
+                            |> List.filterMap propertyToNonTransformStartingStyle
 
-        Just elementConfig ->
-            let
-                -- Collect non-transform starting styles
-                nonTransformStyles =
-                    elementConfig.properties
-                        |> List.filterMap propertyToNonTransformStartingStyle
+                    -- Collect transform parts and combine into single declaration
+                    transformParts =
+                        elementConfig.properties
+                            |> List.filterMap propertyToTransformPart
 
-                -- Collect transform parts and combine into single declaration
-                transformParts =
-                    elementConfig.properties
-                        |> List.filterMap propertyToTransformPart
+                    transformStyle =
+                        if List.isEmpty transformParts then
+                            []
 
-                transformStyle =
-                    if List.isEmpty transformParts then
-                        []
+                        else
+                            [ "transform: " ++ String.join " " transformParts ++ ";" ]
 
-                    else
-                        [ "transform: " ++ String.join " " transformParts ++ ";" ]
+                    allStyles =
+                        transformStyle ++ nonTransformStyles
+                in
+                if List.isEmpty allStyles then
+                    Nothing
 
-                allStyles =
-                    transformStyle ++ nonTransformStyles
-            in
-            if List.isEmpty allStyles then
-                Nothing
-
-            else
-                Just ("  #" ++ elementId ++ " {\n" ++ String.join "\n" (List.map (\s -> "    " ++ s) allStyles) ++ "\n  }")
+                else
+                    Just ("  #" ++ elementId ++ " {\n" ++ String.join "\n" (List.map (\s -> "    " ++ s) allStyles) ++ "\n  }")
+            )
 
 
 {-| Convert a processed property config to a non-transform CSS starting style declaration.

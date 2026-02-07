@@ -24,7 +24,7 @@ USAGE:
 -}
 
 import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.CSS as CSS
+import Anim.Engine.CSS.Keyframes as CSS
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Translate as Animations
@@ -66,7 +66,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = CSS.init }
+    ( { animations = CSS.init [] }
     , Cmd.none
     )
 
@@ -214,7 +214,7 @@ viewContent model =
             , Border.rounded 8
             , htmlAttribute (Html.Attributes.id elementId)
             , htmlAttribute (Html.Attributes.style "position" "absolute")
-            , htmlAttribute (CSS.animationStyleAttribute elementId model.animations)
+            , htmlAttribute (CSS.keyframeAttribute elementId model.animations)
             ]
             none
         )

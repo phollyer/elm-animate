@@ -24,7 +24,7 @@ BENEFITS:
 -}
 
 import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.CSS as CSS
+import Anim.Engine.CSS.Transitions as CSS
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Translate as PositionAnim
@@ -85,7 +85,7 @@ type EventType
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = CSS.init
+    ( { animations = CSS.init []
       , isAnimating = False
       , eventLog = []
       , eventCounter = 0
@@ -288,7 +288,7 @@ viewContent model =
              , htmlAttribute (Html.Attributes.id "event-box")
              , htmlAttribute (Html.Attributes.style "position" "absolute")
              ]
-                ++ List.map htmlAttribute (CSS.htmlAttributes "event-box" model.animations)
+                ++ List.map htmlAttribute (CSS.transitionAttributes "event-box" model.animations)
                 ++ [ htmlAttribute (CSS.onTransitionStart OnTransitionStart)
                    , htmlAttribute (CSS.onTransitionEnd OnTransitionEnd)
                    , htmlAttribute (CSS.onTransitionRun OnTransitionRun)

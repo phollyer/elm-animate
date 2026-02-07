@@ -26,7 +26,7 @@ BENEFITS:
 
 import Anim.Extra.Color
 import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.CSS as CSS
+import Anim.Engine.CSS.Transitions as CSS
 import Anim.Property.BackgroundColor as Color
 import Anim.Property.Opacity as Opacity
 import Anim.Property.Rotate as Rotate
@@ -82,7 +82,7 @@ type AnimationType
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations =
-            CSS.animate CSS.init
+            CSS.animate (CSS.init [])
                 (Color.init "box-1" (Anim.Extra.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
                     >> Color.init "box-2" (Anim.Extra.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
                     >> Color.init "box-3" (Anim.Extra.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
@@ -416,7 +416,7 @@ viewContent model =
              , htmlAttribute (Html.Attributes.style "align-items" "center")
              , htmlAttribute (Html.Attributes.style "justify-content" "center")
              ]
-                ++ List.map htmlAttribute (CSS.htmlAttributes "mixed-box" model.animations)
+                ++ List.map htmlAttribute (CSS.transitionAttributes "mixed-box" model.animations)
             )
             (el [ centerX, centerY, Font.size 24, Font.color Colors.backgroundWhite ]
                 (text "🎨")

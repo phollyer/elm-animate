@@ -16,7 +16,6 @@ module Anim.Internal.Builder exposing
     , addScrollTarget
     , allowDiscreteTransitions
     , clearAnimationHistory
-      -- Animation Control Functions
     , clearCurrentElement
     , delay
     , discreteTransitionsEnabled
@@ -51,7 +50,6 @@ module Anim.Internal.Builder exposing
     , markDirty
     , processAnimationData
     , processAnimationDataWithHistory
-      -- NEW: Process and store in history
     , processElement
     , restartAnimationById
     , restartCurrentAnimation
@@ -61,7 +59,6 @@ module Anim.Internal.Builder exposing
     , updateAnimationHistoryTranslates
     , updateCurrentElement
     , updateElementConfig
-      -- Animation History Management
     )
 
 import Anim.Extra.Color exposing (Color)

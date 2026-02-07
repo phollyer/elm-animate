@@ -1,13 +1,14 @@
 module GettingStarted.FirstAnimation.Main exposing (main)
 
+import Anim.Engine.CSS.Transitions as CSS
 import Anim.Extra.Easing exposing (Easing(..))
-import Anim.Engine.CSS as CSS
 import Anim.Property.Opacity as Opacity
 import Browser
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (id, style)
 import Process
 import Task
+
 
 
 -- MAIN
@@ -21,6 +22,7 @@ main =
         , update = update
         , subscriptions = always Sub.none
         }
+
 
 
 -- MODEL
@@ -42,6 +44,7 @@ init _ =
     )
 
 
+
 -- UPDATE
 
 
@@ -54,6 +57,7 @@ update msg model =
     case msg of
         TriggerFadeIn ->
             ( { model | state = FadeIn }, Cmd.none )
+
 
 
 -- ANIMATION BUILDER

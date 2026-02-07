@@ -25,7 +25,7 @@ USAGE EXAMPLES:
 -}
 
 import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.CSS as CSS
+import Anim.Engine.CSS.Keyframes as CSS
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Choreography as Choreography
@@ -68,7 +68,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = CSS.init }
+    ( { animations = CSS.init [] }
     , Cmd.none
     )
 
@@ -222,6 +222,6 @@ animatedBox elementId label color1 model =
         , Font.size 16
         , htmlAttribute (Html.Attributes.id elementId)
         , htmlAttribute (Html.Attributes.style "position" "absolute")
-        , htmlAttribute (CSS.animationStyleAttribute elementId model.animations)
+        , htmlAttribute (CSS.keyframeAttribute elementId model.animations)
         ]
         (el [ centerX, centerY ] (text label))

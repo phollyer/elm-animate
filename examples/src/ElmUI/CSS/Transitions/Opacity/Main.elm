@@ -16,7 +16,7 @@ FEATURES:
 -}
 
 import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.CSS as CSS
+import Anim.Engine.CSS.Transitions as CSS
 import Anim.Property.Opacity as Opacity
 import Browser exposing (Document)
 import Common.Animations.Opacity as Animations
@@ -57,7 +57,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = CSS.init }
+    ( { animations = CSS.init [] }
     , Cmd.none
     )
 
@@ -206,7 +206,7 @@ animatedBox elementId label color model =
          , htmlAttribute (Html.Attributes.style "justify-content" "center")
          ]
             -- Add CSS animation attributes
-            ++ List.map htmlAttribute (CSS.htmlAttributes elementId model.animations)
+            ++ List.map htmlAttribute (CSS.transitionAttributes elementId model.animations)
         )
         (el
             [ centerX

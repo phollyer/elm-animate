@@ -24,7 +24,7 @@ BENEFITS:
 -}
 
 import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.CSS as CSS
+import Anim.Engine.CSS.Keyframes as CSS
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Translate as PositionAnim
@@ -87,7 +87,7 @@ type EventType
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations =
-            CSS.animate CSS.init
+            CSS.animate (CSS.init [])
                 (Translate.initXY elementId 0 0)
       , isAnimating = False
       , eventLog = []
@@ -291,7 +291,7 @@ viewContent model =
             , Border.rounded 8
             , htmlAttribute (Html.Attributes.id "event-box")
             , htmlAttribute (Html.Attributes.style "position" "absolute")
-            , htmlAttribute (CSS.animationStyleAttribute elementId model.animations)
+            , htmlAttribute (CSS.keyframeAttribute elementId model.animations)
             , htmlAttribute (CSS.onAnimationStart OnAnimationStart)
             , htmlAttribute (CSS.onAnimationEnd OnAnimationEnd)
             , htmlAttribute (CSS.onAnimationIteration OnAnimationIteration)

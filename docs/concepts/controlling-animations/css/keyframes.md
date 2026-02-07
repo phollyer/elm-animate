@@ -1,6 +1,6 @@
 # Controlling CSS Keyframe Animations
 
-The CSS Engine provides full programmatic control over keyframe animations.
+The CSS Keyframes Engine provides full programmatic control over keyframe animations.
 You can `stop`, `reset`, `restart`, `pause` and `resume` animations at any time.
 
 ## Available Controls
@@ -78,11 +78,6 @@ Resumes a paused animation:
     ```elm
     --8<-- docs/examples/src/Engines/CSS/Controls/KeyframeAnimations/Main.md:resume
     ```
-
-## Best Practices
-
-!!! tip "Handle events for UI feedback"
-    Use animation events to update UI elements like status indicators, enable/disable buttons, or trigger subsequent animations.
 
 ## Next Steps
 

@@ -1,6 +1,6 @@
 module Engines.CSS.BasicUsage.Main exposing (main)
 
-import Anim.Engine.CSS as CSS
+import Anim.Engine.CSS.Transitions as CSS
 import Anim.Property.Translate as Translate
 import Browser
 import Html exposing (Html, div, text)
@@ -21,7 +21,7 @@ init _ =
 
 initialState : CSS.AnimState
 initialState =
-    CSS.animate CSS.init (Translate.initX "hello-text" -100)
+    CSS.animate (CSS.init []) (Translate.initX "hello-text" -100)
 
 
 slideIn : CSS.AnimBuilder -> CSS.AnimBuilder

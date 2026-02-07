@@ -10,7 +10,8 @@ The complete API documentation is available on the official Elm package reposito
 
 | Module | Description |
 | -------- | ------------- |
-| [Anim.Engine.CSS](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS) | CSS transitions and keyframe animations |
+| [Anim.Engine.CSS.Transitions](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Transitions) | CSS transitions for A→B animations |
+| [Anim.Engine.CSS.Keyframes](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Keyframes) | CSS keyframe animations for complex animations |
 | [Anim.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Sub) | Subscription-based frame animations |
 | [Anim.Engine.WAAPI](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI) | Web Animations API via ports |
 | [Anim.Engine.Scroll](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Scroll) | Smooth scrolling engine |

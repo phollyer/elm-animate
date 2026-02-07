@@ -27,7 +27,7 @@ USAGE EXAMPLES:
 -- Common UI imports
 
 import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.CSS as CSS
+import Anim.Engine.CSS.Transitions as CSS
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Choreography as Choreography
@@ -71,7 +71,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = CSS.init
+    ( { animations = CSS.init []
       }
     , Cmd.none
     )
@@ -213,6 +213,6 @@ animatedBox elementId label color1 color2 model =
          , htmlAttribute (Html.Attributes.id elementId)
          , htmlAttribute (Html.Attributes.style "position" "absolute")
          ]
-            ++ List.map htmlAttribute (CSS.htmlAttributes elementId model.animations)
+            ++ List.map htmlAttribute (CSS.transitionAttributes elementId model.animations)
         )
         (el [ centerX, centerY ] (text label))

@@ -1,6 +1,6 @@
 # Controlling CSS Transitions
 
-The CSS Engine provides minimal programmatic control over CSS transitions. _This is a limitation of CSS itself, not the engine_.
+The CSS Transitions Engine provides minimal programmatic control over CSS transitions. _This is a limitation of CSS itself, not the engine_.
 
 You can `stop` and `reset` animations but for `pause`, `resume` and `restart` functionality, use [Keyframe Animations](keyframes.md), or switch to either the [Sub](../sub.md) Engine or the [WAAPI](../waapi.md) Engine.
 
@@ -53,8 +53,10 @@ Discrete properties like `display`, `visibility`, and `content-visibility` snap 
 To enable smooth transitions with discrete properties, use `allowDiscreteTransitions`:
 
 ```elm
-CSS.animate model.animState <|
-    (allowDiscreteTransitions >> fadeIn >> slideIn)
+Transitions.fireAndForget <|
+    Transitions.allowDiscreteTransitions 
+        >> fadeIn 
+        >> slideIn
 ```
 
 This adds `transition-behavior: allow-discrete` to your animation.
@@ -71,9 +73,10 @@ Discrete transitions behave differently depending on direction:
     the transition, then hides it at the end.
     
     ```elm
-    -- This just works™
-    CSS.animate model.animState <|
-        (allowDiscreteTransitions >> fadeOut)
+    -- This just works
+    Transitions.fireAndForget <|
+        Transitions.allowDiscreteTransitions 
+            >> fadeOut
     ```
 
 === "Entry Animations (Showing)"
@@ -97,7 +100,7 @@ Discrete transitions behave differently depending on direction:
 
 ### Why Entry Animations Need Extra Setup
 
-When the browser encounters a new element (or one changing from `display: none`), it has no "before" state to transition from. The `@starting-style` CSS rule tells the browser: "when this element enters, pretend it started with these values."
+When the browser encounters a new element being added to the DOM (or one changing from `display: none`), it has no "before" state to transition from. The `@starting-style` CSS rule tells the browser: "when this element enters, pretend it started with these values."
 
 The engine generates this automatically from your animation's start values:
 
@@ -112,11 +115,8 @@ The engine generates this automatically from your animation's start values:
 ```
 
 !!! tip "When to use startingStyleNode"
-    - **Use it** when elements appear/disappear based on model state
+    - **Use it** when elements are added to the DOM
     - **Skip it** for elements always in the DOM that just animate their properties
-
-!!! note "Browser Support"
-    `transition-behavior` and `@starting-style` are supported in Chrome 117+, Firefox 129+, and Safari 17.4+.
 
 ??? info "Further Reading"
     - [MDN: transition-behavior](https://developer.mozilla.org/en-US/docs/Web/CSS/transition-behavior)

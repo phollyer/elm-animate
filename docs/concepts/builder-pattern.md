@@ -16,14 +16,14 @@ Every animation follows this pattern:
             >> Property.from startValue     -- Starting value
             >> Property.to endValue         -- Ending value
             >> Property.delay 100           -- Delay (ms) before starting
-            >> Property.duration 500        -- Timing (or Property.speed)
+            >> Property.duration 500        -- Timing (ms, or Property.speed)
             >> Property.easing BounceOut    -- Easing function
             >> Property.build               -- Finalize (required)
     ```
 
     `for` and `build` are required to start and end the builder chain respectively. All other configurations are optional, although without a `to` value the animations won't have anywhere to go!!
     
-    A timing configuration of either `duration` or `speed` is also required, or the element will snap/jump to the end value. However, this can be set on the engine pipeline for all animations, and then overriden where necessary on a per-property basis.
+    A timing configuration of either `duration` or `speed` is also required, or a `duration` of `0ms` will be used causing the element to instantly jump to the end value. However, this can be set once on the engine pipeline for all properties, and then overriden where necessary on a per-property basis.
 
 ## Why Builders?
 
@@ -93,10 +93,15 @@ The same animation works with any engine:
             >> Translate.speed 100
             >> Translate.build
 
-    -- Works with CSS
-    CSS.animate model.animState myAnimation
+    -- Works with CSS.Transitions
+    Transitions.animate model.animState myAnimation
     
-    CSS.fireAndForget myAnimation
+    Transitions.fireAndForget myAnimation
+
+    -- Works with CSS.Keyframes
+    Keyframes.animate model.animState myAnimation
+
+    Keyframes.fireAndForget myAnimation
 
     -- Works with Sub
     Sub.animate model.animState myAnimation

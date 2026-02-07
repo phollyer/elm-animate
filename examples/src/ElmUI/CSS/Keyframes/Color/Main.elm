@@ -24,7 +24,7 @@ USAGE:
 
 import Anim.Extra.Color
 import Anim.Extra.Easing as Easing
-import Anim.Engine.CSS as CSS
+import Anim.Engine.CSS.Keyframes as CSS
 import Anim.Property.BackgroundColor as Color
 import Browser exposing (Document)
 import Common.Animations.BackgroundColor as Animations
@@ -67,7 +67,7 @@ type alias Model =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations =
-            CSS.animate CSS.init
+            CSS.animate (CSS.init [])
                 (Color.init elementId (Anim.Extra.Color.fromRgba { r = 149, g = 165, b = 166, a = 1 }))
       }
     , Cmd.none
@@ -210,7 +210,7 @@ viewContent model =
             , height (px 150)
             , Border.rounded 8
             , htmlAttribute (Html.Attributes.id elementId)
-            , htmlAttribute (CSS.animationStyleAttribute elementId model.animations)
+            , htmlAttribute (CSS.keyframeAttribute elementId model.animations)
             ]
             (el [ centerX, centerY ] (text "Color"))
         )

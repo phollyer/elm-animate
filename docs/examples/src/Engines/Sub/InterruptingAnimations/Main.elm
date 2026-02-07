@@ -1,7 +1,7 @@
 module Engines.Sub.InterruptingAnimations.Main exposing (main)
 
-import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Engine.Sub as Sub
+import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Translate as Translate
 import Browser
 import Html exposing (Html, div, text)

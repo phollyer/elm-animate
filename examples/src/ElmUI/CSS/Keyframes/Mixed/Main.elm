@@ -26,7 +26,7 @@ BENEFITS:
 
 import Anim.Extra.Color
 import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.CSS as CSS
+import Anim.Engine.CSS.Keyframes as CSS
 import Anim.Property.BackgroundColor as Color
 import Anim.Property.Opacity as Opacity
 import Anim.Property.Rotate as Rotate
@@ -83,7 +83,7 @@ type AnimationType
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations =
-            CSS.animate CSS.init
+            CSS.animate (CSS.init [])
                 (Color.init elementId (Anim.Extra.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
                     >> Translate.initXY elementId 0 0
                     >> Rotate.init elementId 0
@@ -434,7 +434,7 @@ viewContent model =
             , htmlAttribute (Html.Attributes.style "display" "flex")
             , htmlAttribute (Html.Attributes.style "align-items" "center")
             , htmlAttribute (Html.Attributes.style "justify-content" "center")
-            , htmlAttribute (CSS.animationStyleAttribute elementId model.animations)
+            , htmlAttribute (CSS.keyframeAttribute elementId model.animations)
             ]
             (el [ centerX, centerY, Font.size 24, Font.color Colors.backgroundWhite ]
                 (text "🎨")

@@ -15,7 +15,7 @@ FEATURES:
 -}
 
 import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.CSS as CSS
+import Anim.Engine.CSS.Keyframes as CSS
 import Anim.Property.Rotate as Rotate
 import Browser exposing (Document)
 import Common.Animations.Rotate as Animations
@@ -57,7 +57,7 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animations = CSS.init }
+    ( { animations = CSS.init [] }
     , Cmd.none
     )
 
@@ -221,7 +221,7 @@ rotatingElement symbol label color model =
         , htmlAttribute (Html.Attributes.style "display" "flex")
         , htmlAttribute (Html.Attributes.style "align-items" "center")
         , htmlAttribute (Html.Attributes.style "justify-content" "center")
-        , htmlAttribute (CSS.animationStyleAttribute elementId model.animations)
+        , htmlAttribute (CSS.keyframeAttribute elementId model.animations)
         ]
         (column
             [ centerX

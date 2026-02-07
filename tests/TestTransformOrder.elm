@@ -1,7 +1,7 @@
 module TestTransformOrder exposing (suite)
 
+import Anim.Engine.CSS.Keyframes as CSS
 import Anim.Extra.Easing as Easing
-import Anim.Engine.CSS as CSS
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
 import Anim.Property.Translate as Position

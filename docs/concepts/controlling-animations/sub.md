@@ -77,14 +77,9 @@ Resets to the start state, then immediately begins playing the animation again:
     ```
 
 
+## Next Steps
 
-## Best Practices
+Controlling WAAPI Animations.
 
-!!! tip "Always update AnimState"
-    Control functions return a new `AnimState` that reflects the pending operation. Always update your model with this new state to keep Elm and JavaScript synchronized.
+[Controlling WAAPI Animations →](waapi.md){ .md-button .md-button--primary }
 
-!!! tip "Handle events for UI feedback"
-    Use animation events to update UI elements like status indicators, enable/disable buttons, or trigger subsequent animations.
-
-!!! tip "Pause vs Stop"
-    Use `pause` when you want to temporarily freeze an animation and resume later. Use `stop` when the animation should jump to its final state immediately.

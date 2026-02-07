@@ -17,7 +17,7 @@ FEATURES:
 
 import Anim.Extra.Color
 import Anim.Extra.Easing as Easing
-import Anim.Engine.CSS as CSS
+import Anim.Engine.CSS.Transitions as CSS
 import Anim.Property.BackgroundColor as Color
 import Browser exposing (Document)
 import Common.Animations.BackgroundColor as Animations
@@ -59,7 +59,7 @@ type alias Model =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animations =
-            CSS.animate CSS.init
+            CSS.animate (CSS.init [])
                 (Color.init "animated-box" (Anim.Extra.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 }))
       }
     , Cmd.none
@@ -200,7 +200,7 @@ viewContent model =
              , htmlAttribute (CSS.onTransitionEnd AnimationComplete)
              ]
                 -- Apply CSS styles for the animation
-                ++ List.map htmlAttribute (CSS.htmlAttributes "box" model.animations)
+                ++ List.map htmlAttribute (CSS.transitionAttributes "box" model.animations)
             )
             (el [ centerX, centerY ] (text "Color"))
         )

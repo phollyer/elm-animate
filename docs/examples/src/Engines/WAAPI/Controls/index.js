@@ -5198,7 +5198,6 @@ var $elm$core$Task$perform = F2(
 	});
 var $elm$browser$Browser$document = _Browser_document;
 var $elm$json$Json$Decode$field = _Json_decodeField;
-var $author$project$Engines$WAAPI$Controls$Main$Idle = {$: 'Idle'};
 var $author$project$Anim$Internal$WAAPI$AnimState = function (a) {
 	return {$: 'AnimState', a: a};
 };
@@ -5564,8 +5563,9 @@ var $author$project$Anim$Internal$WAAPI$extractElementEndStates = function (elem
 		});
 	return A3($elm$core$List$foldl, extractPropertyEndState, $author$project$Anim$Internal$WAAPI$emptyElementStates, elementConfig.properties);
 };
+var $author$project$Anim$Internal$Builder$Once = {$: 'Once'};
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
-	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil});
+	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil});
 var $elm$json$Json$Encode$list = F2(
 	function (func, entries) {
 		return _Json_wrap(
@@ -5728,7 +5728,7 @@ var $author$project$Anim$Internal$Builder$ProcessedTranslateConfig = function (a
 var $author$project$Anim$Internal$Timing$TimeSpec$Duration = function (a) {
 	return {$: 'Duration', a: a};
 };
-var $author$project$Anim$Easing$Linear = {$: 'Linear'};
+var $author$project$Anim$Extra$Easing$Linear = {$: 'Linear'};
 var $author$project$Anim$Internal$Builder$createDirtyConfig = function (_v0) {
 	var end = _v0.end;
 	var wrapper = _v0.wrapper;
@@ -5737,7 +5737,7 @@ var $author$project$Anim$Internal$Builder$createDirtyConfig = function (_v0) {
 			delay: 0,
 			distance: 0,
 			duration: 0,
-			easing: $author$project$Anim$Easing$Linear,
+			easing: $author$project$Anim$Extra$Easing$Linear,
 			end: end,
 			speed: 0,
 			start: $elm$core$Maybe$Just(end),
@@ -6065,7 +6065,7 @@ var $author$project$Anim$Internal$Builders$Coordinate3D$fromTuple = F2(
 			{x: x, y: y, z: 0});
 	});
 var $author$project$Anim$Internal$Properties$Translate$fromTuple = $author$project$Anim$Internal$Builders$Coordinate3D$fromTuple($author$project$Anim$Internal$Properties$Translate$support);
-var $author$project$Anim$Easing$EaseInOut = {$: 'EaseInOut'};
+var $author$project$Anim$Extra$Easing$EaseInOut = {$: 'EaseInOut'};
 var $author$project$Anim$Internal$Builder$resolveMaybeWithDefault = F3(
 	function (local, global, _default) {
 		var _v0 = _Utils_Tuple2(local, global);
@@ -6109,7 +6109,7 @@ var $author$project$Anim$Internal$Builder$processStandardAnimation = function (_
 			delay: A3($author$project$Anim$Internal$Builder$resolveDelayWithDefault, config.delay, globalData.globalDelay, 0),
 			distance: distance_,
 			duration: $elm$core$Basics$round(duration_),
-			easing: A3($author$project$Anim$Internal$Builder$resolveEasingWithDefault, config.easing, globalData.globalEasing, $author$project$Anim$Easing$EaseInOut),
+			easing: A3($author$project$Anim$Internal$Builder$resolveEasingWithDefault, config.easing, globalData.globalEasing, $author$project$Anim$Extra$Easing$EaseInOut),
 			end: config.end,
 			speed: speed_,
 			start: config.start,
@@ -6567,22 +6567,22 @@ var $author$project$Anim$Internal$Builders$Property$add = F2(
 			});
 		return A2($author$project$Anim$Internal$Builder$updateCurrentElement, updatedElement, builder);
 	});
-var $author$project$Anim$Easing$BounceInCustom = function (a) {
+var $author$project$Anim$Extra$Easing$BounceInCustom = function (a) {
 	return {$: 'BounceInCustom', a: a};
 };
-var $author$project$Anim$Easing$BounceInOutCustom = function (a) {
+var $author$project$Anim$Extra$Easing$BounceInOutCustom = function (a) {
 	return {$: 'BounceInOutCustom', a: a};
 };
-var $author$project$Anim$Easing$BounceOutCustom = function (a) {
+var $author$project$Anim$Extra$Easing$BounceOutCustom = function (a) {
 	return {$: 'BounceOutCustom', a: a};
 };
-var $author$project$Anim$Easing$ElasticInCustom = function (a) {
+var $author$project$Anim$Extra$Easing$ElasticInCustom = function (a) {
 	return {$: 'ElasticInCustom', a: a};
 };
-var $author$project$Anim$Easing$ElasticInOutCustom = function (a) {
+var $author$project$Anim$Extra$Easing$ElasticInOutCustom = function (a) {
 	return {$: 'ElasticInOutCustom', a: a};
 };
-var $author$project$Anim$Easing$ElasticOutCustom = function (a) {
+var $author$project$Anim$Extra$Easing$ElasticOutCustom = function (a) {
 	return {$: 'ElasticOutCustom', a: a};
 };
 var $elm$core$Basics$clamp = F3(
@@ -6611,7 +6611,7 @@ var $author$project$Anim$Internal$Builders$Property$adjustConfigEasing = functio
 						config,
 						{
 							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$BounceOutCustom(
+								$author$project$Anim$Extra$Easing$BounceOutCustom(
 									A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrength, config)))
 						});
 				case 'BounceInCustom':
@@ -6620,7 +6620,7 @@ var $author$project$Anim$Internal$Builders$Property$adjustConfigEasing = functio
 						config,
 						{
 							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$BounceInCustom(
+								$author$project$Anim$Extra$Easing$BounceInCustom(
 									A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrength, config)))
 						});
 				case 'BounceInOutCustom':
@@ -6631,7 +6631,7 @@ var $author$project$Anim$Internal$Builders$Property$adjustConfigEasing = functio
 						config,
 						{
 							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$BounceInOutCustom(
+								$author$project$Anim$Extra$Easing$BounceInOutCustom(
 									_Utils_Tuple2(
 										A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrengthIn, config),
 										A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrengthOut, config))))
@@ -6642,7 +6642,7 @@ var $author$project$Anim$Internal$Builders$Property$adjustConfigEasing = functio
 						config,
 						{
 							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$ElasticOutCustom(
+								$author$project$Anim$Extra$Easing$ElasticOutCustom(
 									A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrength, config)))
 						});
 				case 'ElasticInCustom':
@@ -6651,7 +6651,7 @@ var $author$project$Anim$Internal$Builders$Property$adjustConfigEasing = functio
 						config,
 						{
 							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$ElasticInCustom(
+								$author$project$Anim$Extra$Easing$ElasticInCustom(
 									A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrength, config)))
 						});
 				case 'ElasticInOutCustom':
@@ -6662,7 +6662,7 @@ var $author$project$Anim$Internal$Builders$Property$adjustConfigEasing = functio
 						config,
 						{
 							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$ElasticInOutCustom(
+								$author$project$Anim$Extra$Easing$ElasticInOutCustom(
 									_Utils_Tuple2(
 										A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrengthIn, config),
 										A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrengthOut, config))))
@@ -7107,8 +7107,8 @@ var $author$project$Anim$Property$Translate$initXY = F4(
 					y,
 					A2($author$project$Anim$Internal$Builders$Translate$for, elementId, animBuilder))));
 	});
-var $author$project$Common$Animations$Controls$init = function (animationAreaWidth) {
-	var xPos = (animationAreaWidth / 2) - 25;
+var $author$project$Common$Animations$Controls$init = function (animAreaWidth) {
+	var xPos = (animAreaWidth / 2) - 25;
 	return A3($author$project$Anim$Property$Translate$initXY, $author$project$Common$Animations$Controls$elementId, xPos, 50);
 };
 var $elm$core$Basics$min = F2(
@@ -7120,22 +7120,21 @@ var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Engines$WAAPI$Controls$Main$waapiSubscriptions = _Platform_incomingPort('waapiSubscriptions', $elm$json$Json$Decode$value);
 var $author$project$Engines$WAAPI$Controls$Main$init = function (_v0) {
 	var window = _v0.window;
-	var animationAreaWidth = A2($elm$core$Basics$min, 500, window.width - 40);
+	var animAreaWidth = A2($elm$core$Basics$min, 500, window.width - 40);
 	var _v1 = A3(
 		$author$project$Anim$Engine$WAAPI$init,
 		$author$project$Engines$WAAPI$Controls$Main$waapiCommand,
 		$author$project$Engines$WAAPI$Controls$Main$waapiSubscriptions,
 		_List_fromArray(
 			[
-				$author$project$Common$Animations$Controls$init(animationAreaWidth)
+				$author$project$Common$Animations$Controls$init(animAreaWidth)
 			]));
 	var initialAnimState = _v1.a;
 	var initCmd = _v1.b;
 	return _Utils_Tuple2(
 		{
-			animationAreaSize: {height: 350, width: animationAreaWidth},
-			animationState: initialAnimState,
-			status: $author$project$Engines$WAAPI$Controls$Main$Idle
+			animAreaSize: {height: 350, width: animAreaWidth},
+			animState: initialAnimState
 		},
 		initCmd);
 };
@@ -7171,7 +7170,7 @@ var $author$project$Anim$Internal$WAAPI$subscriptions = F2(
 	});
 var $author$project$Anim$Engine$WAAPI$subscriptions = $author$project$Anim$Internal$WAAPI$subscriptions;
 var $author$project$Engines$WAAPI$Controls$Main$subscriptions = function (model) {
-	return A2($author$project$Anim$Engine$WAAPI$subscriptions, $author$project$Engines$WAAPI$Controls$Main$GotWaapiMsg, model.animationState);
+	return A2($author$project$Anim$Engine$WAAPI$subscriptions, $author$project$Engines$WAAPI$Controls$Main$GotWaapiMsg, model.animState);
 };
 var $author$project$Anim$Internal$WAAPI$NotStarted = {$: 'NotStarted'};
 var $author$project$Anim$Internal$Builder$createEmptyHistory = function (timestamp) {
@@ -9305,7 +9304,7 @@ var $author$project$Anim$Internal$WAAPI$animate = F2(
 				A2($author$project$Anim$Internal$WAAPI$encodeWithVersions, updatedElementAnimations, processedData)));
 	});
 var $author$project$Anim$Engine$WAAPI$animate = $author$project$Anim$Internal$WAAPI$animate;
-var $author$project$Anim$Easing$BounceOut = {$: 'BounceOut'};
+var $author$project$Anim$Extra$Easing$BounceOut = {$: 'BounceOut'};
 var $author$project$Anim$Property$Translate$build = $author$project$Anim$Internal$Builders$Translate$build;
 var $elm$core$Basics$composeR = F3(
 	function (f, g, x) {
@@ -9406,61 +9405,8 @@ var $author$project$Common$Animations$Controls$animate = A2(
 				$author$project$Anim$Property$Translate$speed(200),
 				A2(
 					$elm$core$Basics$composeR,
-					$author$project$Anim$Property$Translate$easing($author$project$Anim$Easing$BounceOut),
+					$author$project$Anim$Property$Translate$easing($author$project$Anim$Extra$Easing$BounceOut),
 					$author$project$Anim$Property$Translate$build)))));
-var $author$project$Engines$WAAPI$Controls$Main$Paused = {$: 'Paused'};
-var $author$project$Engines$WAAPI$Controls$Main$Running = {$: 'Running'};
-var $author$project$Engines$WAAPI$Controls$Main$handleSingleEvent = F2(
-	function (event, _v0) {
-		var model = _v0.a;
-		var cmd = _v0.b;
-		switch (event.$) {
-			case 'Started':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{status: $author$project$Engines$WAAPI$Controls$Main$Running}),
-					cmd);
-			case 'Restarted':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{status: $author$project$Engines$WAAPI$Controls$Main$Running}),
-					cmd);
-			case 'Canceled':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{status: $author$project$Engines$WAAPI$Controls$Main$Idle}),
-					cmd);
-			case 'Completed':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{status: $author$project$Engines$WAAPI$Controls$Main$Idle}),
-					cmd);
-			case 'Paused':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{status: $author$project$Engines$WAAPI$Controls$Main$Paused}),
-					cmd);
-			default:
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{status: $author$project$Engines$WAAPI$Controls$Main$Running}),
-					cmd);
-		}
-	});
-var $author$project$Engines$WAAPI$Controls$Main$handleAnimationEvents = F2(
-	function (events, model) {
-		return A3(
-			$elm$core$List$foldl,
-			$author$project$Engines$WAAPI$Controls$Main$handleSingleEvent,
-			_Utils_Tuple2(model, $elm$core$Platform$Cmd$none),
-			events);
-	});
 var $author$project$Anim$Internal$WAAPI$PendingPause = {$: 'PendingPause'};
 var $author$project$Anim$Internal$WAAPI$encodeCommand = F2(
 	function (commandType, elementId) {
@@ -10102,7 +10048,7 @@ var $author$project$Anim$Internal$WAAPI$reset = F2(
 					elementId,
 					A2(
 						$author$project$Anim$Internal$Builder$easing,
-						$author$project$Anim$Easing$Linear,
+						$author$project$Anim$Extra$Easing$Linear,
 						A2($author$project$Anim$Internal$Builder$duration, 0, $author$project$Anim$Internal$Builder$init))));
 			var processedData = $author$project$Anim$Internal$Builder$processAnimationData(resetBuilder);
 			var animatedPropertyTypes = A2(
@@ -11344,68 +11290,66 @@ var $author$project$Engines$WAAPI$Controls$Main$update = F2(
 		switch (msg.$) {
 			case 'GotWaapiMsg':
 				var subMsg = msg.a;
-				var _v1 = A2($author$project$Anim$Engine$WAAPI$update, subMsg, model.animationState);
+				var _v1 = A2($author$project$Anim$Engine$WAAPI$update, subMsg, model.animState);
 				var newAnimState = _v1.a;
-				var events = _v1.b;
-				return A2(
-					$author$project$Engines$WAAPI$Controls$Main$handleAnimationEvents,
-					events,
+				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animationState: newAnimState}));
+						{animState: newAnimState}),
+					$elm$core$Platform$Cmd$none);
 			case 'Animate':
-				var _v2 = A2($author$project$Anim$Engine$WAAPI$animate, model.animationState, $author$project$Common$Animations$Controls$animate);
+				var _v2 = A2($author$project$Anim$Engine$WAAPI$animate, model.animState, $author$project$Common$Animations$Controls$animate);
 				var newAnimState = _v2.a;
 				var animCmd = _v2.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animationState: newAnimState}),
+						{animState: newAnimState}),
 					animCmd);
 			case 'Stop':
-				var _v3 = A2($author$project$Anim$Engine$WAAPI$stop, $author$project$Common$Animations$Controls$elementId, model.animationState);
+				var _v3 = A2($author$project$Anim$Engine$WAAPI$stop, $author$project$Common$Animations$Controls$elementId, model.animState);
 				var newAnimState = _v3.a;
 				var stopCmd = _v3.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animationState: newAnimState}),
+						{animState: newAnimState}),
 					stopCmd);
 			case 'Pause':
-				var _v4 = A2($author$project$Anim$Engine$WAAPI$pause, $author$project$Common$Animations$Controls$elementId, model.animationState);
+				var _v4 = A2($author$project$Anim$Engine$WAAPI$pause, $author$project$Common$Animations$Controls$elementId, model.animState);
 				var newAnimState = _v4.a;
 				var pauseCmd = _v4.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animationState: newAnimState}),
+						{animState: newAnimState}),
 					pauseCmd);
 			case 'Resume':
-				var _v5 = A2($author$project$Anim$Engine$WAAPI$resume, $author$project$Common$Animations$Controls$elementId, model.animationState);
+				var _v5 = A2($author$project$Anim$Engine$WAAPI$resume, $author$project$Common$Animations$Controls$elementId, model.animState);
 				var newAnimState = _v5.a;
 				var resumeCmd = _v5.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animationState: newAnimState}),
+						{animState: newAnimState}),
 					resumeCmd);
 			case 'Reset':
-				var _v6 = A2($author$project$Anim$Engine$WAAPI$reset, $author$project$Common$Animations$Controls$elementId, model.animationState);
+				var _v6 = A2($author$project$Anim$Engine$WAAPI$reset, $author$project$Common$Animations$Controls$elementId, model.animState);
 				var newAnimState = _v6.a;
 				var resetCmd = _v6.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animationState: newAnimState}),
+						{animState: newAnimState}),
 					resetCmd);
 			default:
-				var _v7 = A2($author$project$Anim$Engine$WAAPI$restart, $author$project$Common$Animations$Controls$elementId, model.animationState);
+				var _v7 = A2($author$project$Anim$Engine$WAAPI$restart, $author$project$Common$Animations$Controls$elementId, model.animState);
 				var newAnimState = _v7.a;
 				var restartCmd = _v7.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{animationState: newAnimState}),
+						{animState: newAnimState}),
 					restartCmd);
 		}
 	});
@@ -17259,8 +17203,11 @@ var $author$project$Engines$WAAPI$Controls$Main$Resume = {$: 'Resume'};
 var $author$project$Engines$WAAPI$Controls$Main$Stop = {$: 'Stop'};
 var $author$project$Common$UI$Success = {$: 'Success'};
 var $author$project$Common$UI$Warning = {$: 'Warning'};
-var $author$project$Common$Colors$backgroundWhite = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
-var $author$project$Common$Colors$borderMedium = A3($mdgriffith$elm_ui$Element$rgb255, 203, 213, 225);
+var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
+	return {$: 'AlignY', a: a};
+};
+var $mdgriffith$elm_ui$Internal$Model$CenterY = {$: 'CenterY'};
+var $mdgriffith$elm_ui$Element$centerY = $mdgriffith$elm_ui$Internal$Model$AlignY($mdgriffith$elm_ui$Internal$Model$CenterY);
 var $mdgriffith$elm_ui$Element$el = F2(
 	function (attrs, child) {
 		return A4(
@@ -17278,6 +17225,114 @@ var $mdgriffith$elm_ui$Element$el = F2(
 				_List_fromArray(
 					[child])));
 	});
+var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
+	return {$: 'Px', a: a};
+};
+var $mdgriffith$elm_ui$Element$px = $mdgriffith$elm_ui$Internal$Model$Px;
+var $mdgriffith$elm_ui$Element$Font$size = function (i) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$fontSize,
+		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
+};
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
+	return {$: 'Text', a: a};
+};
+var $mdgriffith$elm_ui$Element$text = function (content) {
+	return $mdgriffith$elm_ui$Internal$Model$Text(content);
+};
+var $author$project$Engines$WAAPI$Controls$Main$animatedBall = A2(
+	$mdgriffith$elm_ui$Element$el,
+	_List_fromArray(
+		[
+			$mdgriffith$elm_ui$Element$htmlAttribute(
+			$elm$html$Html$Attributes$id($author$project$Common$Animations$Controls$elementId)),
+			$mdgriffith$elm_ui$Element$width(
+			$mdgriffith$elm_ui$Element$px(50)),
+			$mdgriffith$elm_ui$Element$height(
+			$mdgriffith$elm_ui$Element$px(50)),
+			$mdgriffith$elm_ui$Element$htmlAttribute(
+			A2($elm$html$Html$Attributes$style, 'position', 'relative'))
+		]),
+	A2(
+		$mdgriffith$elm_ui$Element$el,
+		_List_fromArray(
+			[
+				$mdgriffith$elm_ui$Element$centerX,
+				$mdgriffith$elm_ui$Element$centerY,
+				$mdgriffith$elm_ui$Element$Font$size(50)
+			]),
+		$mdgriffith$elm_ui$Element$text('🏀')));
+var $author$project$Common$Colors$backgroundWhite = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
+var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$bgColor,
+		A3(
+			$mdgriffith$elm_ui$Internal$Model$Colored,
+			'bg-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(clr),
+			'background-color',
+			clr));
+};
+var $mdgriffith$elm_ui$Element$rgba = $mdgriffith$elm_ui$Internal$Model$Rgba;
+var $mdgriffith$elm_ui$Internal$Flag$borderRound = $mdgriffith$elm_ui$Internal$Flag$flag(17);
+var $mdgriffith$elm_ui$Element$Border$rounded = function (radius) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$borderRound,
+		A3(
+			$mdgriffith$elm_ui$Internal$Model$Single,
+			'br-' + $elm$core$String$fromInt(radius),
+			'border-radius',
+			$elm$core$String$fromInt(radius) + 'px'));
+};
+var $mdgriffith$elm_ui$Internal$Model$boxShadowClass = function (shadow) {
+	return $elm$core$String$concat(
+		_List_fromArray(
+			[
+				shadow.inset ? 'box-inset' : 'box-',
+				$mdgriffith$elm_ui$Internal$Model$floatClass(shadow.offset.a) + 'px',
+				$mdgriffith$elm_ui$Internal$Model$floatClass(shadow.offset.b) + 'px',
+				$mdgriffith$elm_ui$Internal$Model$floatClass(shadow.blur) + 'px',
+				$mdgriffith$elm_ui$Internal$Model$floatClass(shadow.size) + 'px',
+				$mdgriffith$elm_ui$Internal$Model$formatColorClass(shadow.color)
+			]));
+};
+var $mdgriffith$elm_ui$Internal$Flag$shadows = $mdgriffith$elm_ui$Internal$Flag$flag(19);
+var $mdgriffith$elm_ui$Element$Border$shadow = function (almostShade) {
+	var shade = {blur: almostShade.blur, color: almostShade.color, inset: false, offset: almostShade.offset, size: almostShade.size};
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$shadows,
+		A3(
+			$mdgriffith$elm_ui$Internal$Model$Single,
+			$mdgriffith$elm_ui$Internal$Model$boxShadowClass(shade),
+			'box-shadow',
+			$mdgriffith$elm_ui$Internal$Model$formatBoxShadow(shade)));
+};
+var $author$project$Common$View$Controls$animationArea = function (size) {
+	return $mdgriffith$elm_ui$Element$el(
+		_List_fromArray(
+			[
+				$mdgriffith$elm_ui$Element$width(
+				$mdgriffith$elm_ui$Element$px(size.width)),
+				$mdgriffith$elm_ui$Element$height(
+				$mdgriffith$elm_ui$Element$px(size.height)),
+				$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundWhite),
+				$mdgriffith$elm_ui$Element$Border$rounded(12),
+				$mdgriffith$elm_ui$Element$Border$shadow(
+				{
+					blur: 8,
+					color: A4($mdgriffith$elm_ui$Element$rgba, 0, 0, 0, 0.1),
+					offset: _Utils_Tuple2(0, 4),
+					size: 0
+				}),
+				$mdgriffith$elm_ui$Element$centerX
+			]));
+};
 var $elm$core$Basics$always = F2(
 	function (a, _v0) {
 		return a;
@@ -17330,7 +17385,7 @@ var $author$project$Common$UI$htmlButton = function (_v0) {
 				$elm$html$Html$text(label)
 			]));
 };
-var $author$project$Engines$WAAPI$Controls$Main$button = A2(
+var $author$project$Common$View$Controls$button = A2(
 	$elm$core$Basics$composeR,
 	$author$project$Common$UI$htmlButton,
 	A2(
@@ -17339,46 +17394,49 @@ var $author$project$Engines$WAAPI$Controls$Main$button = A2(
 		$mdgriffith$elm_ui$Element$el(
 			_List_fromArray(
 				[$mdgriffith$elm_ui$Element$centerX]))));
-var $author$project$Engines$WAAPI$Controls$Main$buttons = A2(
+var $author$project$Common$View$Controls$buttons_ = A2(
 	$elm$core$Basics$composeL,
 	$mdgriffith$elm_ui$Element$column(
 		_List_fromArray(
 			[
 				$mdgriffith$elm_ui$Element$spacing(12)
 			])),
-	$elm$core$List$map($author$project$Engines$WAAPI$Controls$Main$button));
+	$elm$core$List$map($author$project$Common$View$Controls$button));
+var $mdgriffith$elm_ui$Internal$Model$AsRow = {$: 'AsRow'};
+var $mdgriffith$elm_ui$Internal$Model$asRow = $mdgriffith$elm_ui$Internal$Model$AsRow;
+var $mdgriffith$elm_ui$Element$row = F2(
+	function (attrs, children) {
+		return A4(
+			$mdgriffith$elm_ui$Internal$Model$element,
+			$mdgriffith$elm_ui$Internal$Model$asRow,
+			$mdgriffith$elm_ui$Internal$Model$div,
+			A2(
+				$elm$core$List$cons,
+				$mdgriffith$elm_ui$Internal$Model$htmlClass($mdgriffith$elm_ui$Internal$Style$classes.contentLeft + (' ' + $mdgriffith$elm_ui$Internal$Style$classes.contentCenterY)),
+				A2(
+					$elm$core$List$cons,
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
+					A2(
+						$elm$core$List$cons,
+						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$shrink),
+						attrs))),
+			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
+	});
+var $author$project$Common$View$Controls$buttons = A2(
+	$elm$core$Basics$composeL,
+	$mdgriffith$elm_ui$Element$row(
+		_List_fromArray(
+			[
+				$mdgriffith$elm_ui$Element$spacing(12),
+				$mdgriffith$elm_ui$Element$centerX
+			])),
+	$elm$core$List$map($author$project$Common$View$Controls$buttons_));
 var $mdgriffith$elm_ui$Internal$Model$Class = F2(
 	function (a, b) {
 		return {$: 'Class', a: a, b: b};
 	});
 var $mdgriffith$elm_ui$Internal$Flag$fontAlignment = $mdgriffith$elm_ui$Internal$Flag$flag(12);
 var $mdgriffith$elm_ui$Element$Font$center = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontAlignment, $mdgriffith$elm_ui$Internal$Style$classes.textCenter);
-var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
-	return {$: 'AlignY', a: a};
-};
-var $mdgriffith$elm_ui$Internal$Model$CenterY = {$: 'CenterY'};
-var $mdgriffith$elm_ui$Element$centerY = $mdgriffith$elm_ui$Internal$Model$AlignY($mdgriffith$elm_ui$Internal$Model$CenterY);
-var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$bgColor,
-		A3(
-			$mdgriffith$elm_ui$Internal$Model$Colored,
-			'bg-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(clr),
-			'background-color',
-			clr));
-};
-var $mdgriffith$elm_ui$Internal$Flag$borderColor = $mdgriffith$elm_ui$Internal$Flag$flag(28);
-var $mdgriffith$elm_ui$Element$Border$color = function (clr) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$borderColor,
-		A3(
-			$mdgriffith$elm_ui$Internal$Model$Colored,
-			'bc-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(clr),
-			'border-color',
-			clr));
-};
 var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
 	return A2(
 		$mdgriffith$elm_ui$Internal$Model$StyleClass,
@@ -17388,22 +17446,6 @@ var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
 			'fc-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(fontColor),
 			'color',
 			fontColor));
-};
-var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
-var $mdgriffith$elm_ui$Internal$Flag$fontWeight = $mdgriffith$elm_ui$Internal$Flag$flag(13);
-var $mdgriffith$elm_ui$Element$Font$medium = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textMedium);
-var $mdgriffith$elm_ui$Element$padding = function (x) {
-	var f = x;
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$padding,
-		A5(
-			$mdgriffith$elm_ui$Internal$Model$PaddingStyle,
-			'p-' + $elm$core$String$fromInt(x),
-			f,
-			f,
-			f,
-			f));
 };
 var $mdgriffith$elm_ui$Internal$Model$Describe = function (a) {
 	return {$: 'Describe', a: a};
@@ -17427,13 +17469,8 @@ var $mdgriffith$elm_ui$Element$paragraph = F2(
 						attrs))),
 			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
 	});
+var $mdgriffith$elm_ui$Internal$Flag$fontWeight = $mdgriffith$elm_ui$Internal$Flag$flag(13);
 var $mdgriffith$elm_ui$Element$Font$semiBold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textSemiBold);
-var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
-	return {$: 'Text', a: a};
-};
-var $mdgriffith$elm_ui$Element$text = function (content) {
-	return $mdgriffith$elm_ui$Internal$Model$Text(content);
-};
 var $author$project$Common$Colors$textDark = A3($mdgriffith$elm_ui$Element$rgb255, 30, 41, 59);
 var $author$project$Common$UI$pageHeader = function (title) {
 	return A2(
@@ -17451,76 +17488,43 @@ var $author$project$Common$UI$pageHeader = function (title) {
 				$mdgriffith$elm_ui$Element$text(title)
 			]));
 };
-var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
-	return {$: 'Px', a: a};
-};
-var $mdgriffith$elm_ui$Element$px = $mdgriffith$elm_ui$Internal$Model$Px;
-var $mdgriffith$elm_ui$Element$rgba = $mdgriffith$elm_ui$Internal$Model$Rgba;
-var $mdgriffith$elm_ui$Internal$Flag$borderRound = $mdgriffith$elm_ui$Internal$Flag$flag(17);
-var $mdgriffith$elm_ui$Element$Border$rounded = function (radius) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$borderRound,
-		A3(
-			$mdgriffith$elm_ui$Internal$Model$Single,
-			'br-' + $elm$core$String$fromInt(radius),
-			'border-radius',
-			$elm$core$String$fromInt(radius) + 'px'));
-};
-var $mdgriffith$elm_ui$Internal$Model$AsRow = {$: 'AsRow'};
-var $mdgriffith$elm_ui$Internal$Model$asRow = $mdgriffith$elm_ui$Internal$Model$AsRow;
-var $mdgriffith$elm_ui$Element$row = F2(
-	function (attrs, children) {
-		return A4(
-			$mdgriffith$elm_ui$Internal$Model$element,
-			$mdgriffith$elm_ui$Internal$Model$asRow,
-			$mdgriffith$elm_ui$Internal$Model$div,
-			A2(
-				$elm$core$List$cons,
-				$mdgriffith$elm_ui$Internal$Model$htmlClass($mdgriffith$elm_ui$Internal$Style$classes.contentLeft + (' ' + $mdgriffith$elm_ui$Internal$Style$classes.contentCenterY)),
-				A2(
-					$elm$core$List$cons,
-					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
-					A2(
-						$elm$core$List$cons,
-						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$shrink),
-						attrs))),
-			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
-	});
-var $mdgriffith$elm_ui$Internal$Model$boxShadowClass = function (shadow) {
-	return $elm$core$String$concat(
+var $author$project$Common$View$Controls$header = A2(
+	$elm$core$Basics$composeL,
+	$mdgriffith$elm_ui$Element$column(
 		_List_fromArray(
 			[
-				shadow.inset ? 'box-inset' : 'box-',
-				$mdgriffith$elm_ui$Internal$Model$floatClass(shadow.offset.a) + 'px',
-				$mdgriffith$elm_ui$Internal$Model$floatClass(shadow.offset.b) + 'px',
-				$mdgriffith$elm_ui$Internal$Model$floatClass(shadow.blur) + 'px',
-				$mdgriffith$elm_ui$Internal$Model$floatClass(shadow.size) + 'px',
-				$mdgriffith$elm_ui$Internal$Model$formatColorClass(shadow.color)
-			]));
-};
-var $mdgriffith$elm_ui$Internal$Flag$shadows = $mdgriffith$elm_ui$Internal$Flag$flag(19);
-var $mdgriffith$elm_ui$Element$Border$shadow = function (almostShade) {
-	var shade = {blur: almostShade.blur, color: almostShade.color, inset: false, offset: almostShade.offset, size: almostShade.size};
+				$mdgriffith$elm_ui$Element$centerX,
+				$mdgriffith$elm_ui$Element$spacing(8)
+			])),
+	$elm$core$List$map($author$project$Common$UI$pageHeader));
+var $author$project$Common$Colors$borderMedium = A3($mdgriffith$elm_ui$Element$rgb255, 203, 213, 225);
+var $mdgriffith$elm_ui$Internal$Flag$borderColor = $mdgriffith$elm_ui$Internal$Flag$flag(28);
+var $mdgriffith$elm_ui$Element$Border$color = function (clr) {
 	return A2(
 		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$shadows,
+		$mdgriffith$elm_ui$Internal$Flag$borderColor,
 		A3(
-			$mdgriffith$elm_ui$Internal$Model$Single,
-			$mdgriffith$elm_ui$Internal$Model$boxShadowClass(shade),
-			'box-shadow',
-			$mdgriffith$elm_ui$Internal$Model$formatBoxShadow(shade)));
+			$mdgriffith$elm_ui$Internal$Model$Colored,
+			'bc-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(clr),
+			'border-color',
+			clr));
 };
-var $mdgriffith$elm_ui$Element$Font$size = function (i) {
+var $mdgriffith$elm_ui$Element$Font$medium = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textMedium);
+var $mdgriffith$elm_ui$Element$padding = function (x) {
+	var f = x;
 	return A2(
 		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$fontSize,
-		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
+		$mdgriffith$elm_ui$Internal$Flag$padding,
+		A5(
+			$mdgriffith$elm_ui$Internal$Model$PaddingStyle,
+			'p-' + $elm$core$String$fromInt(x),
+			f,
+			f,
+			f,
+			f));
 };
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$Common$Colors$textMedium = A3($mdgriffith$elm_ui$Element$rgb255, 71, 85, 105);
 var $author$project$Common$Colors$primary = A3($mdgriffith$elm_ui$Element$rgb255, 59, 130, 246);
+var $author$project$Common$Colors$textMedium = A3($mdgriffith$elm_ui$Element$rgb255, 71, 85, 105);
 var $mdgriffith$elm_ui$Internal$Model$BorderWidth = F5(
 	function (a, b, c, d, e) {
 		return {$: 'BorderWidth', a: a, b: b, c: c, d: d, e: e};
@@ -17566,8 +17570,8 @@ var $mdgriffith$elm_ui$Element$Border$widthEach = function (_v0) {
 			bottom,
 			left));
 };
-var $author$project$Engines$WAAPI$Controls$Main$viewControlDescription = F3(
-	function (borderWidth, control, description) {
+var $author$project$Common$View$Controls$description = F3(
+	function (borderWidth, control, description_) {
 		return A2(
 			$mdgriffith$elm_ui$Element$row,
 			_List_fromArray(
@@ -17597,149 +17601,101 @@ var $author$project$Engines$WAAPI$Controls$Main$viewControlDescription = F3(
 							$mdgriffith$elm_ui$Element$Font$size(14),
 							$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium)
 						]),
-					$mdgriffith$elm_ui$Element$text(description))
+					$mdgriffith$elm_ui$Element$text(description_))
 				]));
 	});
-var $author$project$Engines$WAAPI$Controls$Main$viewContent = function (model) {
-	return _List_fromArray(
-		[
-			$author$project$Common$UI$pageHeader('WAAPI Engine Controls'),
-			A2(
-			$mdgriffith$elm_ui$Element$paragraph,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-					$mdgriffith$elm_ui$Element$Font$size(16),
-					$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium),
-					$mdgriffith$elm_ui$Element$Font$center
-				]),
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$text('Demonstrating all available Engine Controls')
-				])),
-			A2(
-			$mdgriffith$elm_ui$Element$column,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$centerX,
-					$mdgriffith$elm_ui$Element$Border$width(1),
-					$mdgriffith$elm_ui$Element$Border$color($author$project$Common$Colors$borderMedium),
-					$mdgriffith$elm_ui$Element$Border$shadow(
-					{
-						blur: 4,
-						color: A4($mdgriffith$elm_ui$Element$rgba, 0, 0, 0, 0.1),
-						offset: _Utils_Tuple2(0, 2),
-						size: 2
-					}),
-					$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundLight),
-					$mdgriffith$elm_ui$Element$Border$rounded(8)
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$mdgriffith$elm_ui$Element$el,
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-							$mdgriffith$elm_ui$Element$Border$widthEach(
-							{bottom: 1, left: 0, right: 0, top: 0})
-						]),
-					A2(
-						$mdgriffith$elm_ui$Element$el,
-						_List_fromArray(
-							[
-								$mdgriffith$elm_ui$Element$Font$size(18),
-								$mdgriffith$elm_ui$Element$padding(8),
-								$mdgriffith$elm_ui$Element$centerX,
-								$mdgriffith$elm_ui$Element$Font$medium,
-								$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textDark)
-							]),
-						$mdgriffith$elm_ui$Element$text('🎮 Control Functions'))),
-					A2(
-					$mdgriffith$elm_ui$Element$column,
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
-						]),
-					_List_fromArray(
-						[
-							A3($author$project$Engines$WAAPI$Controls$Main$viewControlDescription, 0, '🏀 Animate', 'Drop the ball'),
-							A3($author$project$Engines$WAAPI$Controls$Main$viewControlDescription, 1, '⏹️ Stop', 'Jump instantly to end state and stop'),
-							A3($author$project$Engines$WAAPI$Controls$Main$viewControlDescription, 1, '⏸️ Pause', 'Pause animation at current position'),
-							A3($author$project$Engines$WAAPI$Controls$Main$viewControlDescription, 1, '▶️ Resume', 'Continue paused animation'),
-							A3($author$project$Engines$WAAPI$Controls$Main$viewControlDescription, 1, '⏮️ Reset', 'Jump instantly to start state and stop'),
-							A3($author$project$Engines$WAAPI$Controls$Main$viewControlDescription, 1, '🔄 Restart', 'Reset to start, then begin animation again')
-						]))
-				])),
-			A2(
-			$mdgriffith$elm_ui$Element$row,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$spacing(12),
-					$mdgriffith$elm_ui$Element$centerX
-				]),
-			_List_fromArray(
-				[
-					$author$project$Engines$WAAPI$Controls$Main$buttons(
-					_List_fromArray(
-						[
-							_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$Engines$WAAPI$Controls$Main$Animate, '🏀 Animate'),
-							_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$Engines$WAAPI$Controls$Main$Stop, '⏹️ Stop')
-						])),
-					$author$project$Engines$WAAPI$Controls$Main$buttons(
-					_List_fromArray(
-						[
-							_Utils_Tuple3($author$project$Common$UI$Success, $author$project$Engines$WAAPI$Controls$Main$Pause, '⏸️ Pause'),
-							_Utils_Tuple3($author$project$Common$UI$Success, $author$project$Engines$WAAPI$Controls$Main$Resume, '▶️ Resume')
-						])),
-					$author$project$Engines$WAAPI$Controls$Main$buttons(
-					_List_fromArray(
-						[
-							_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Engines$WAAPI$Controls$Main$Reset, '⏮️ Reset'),
-							_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Engines$WAAPI$Controls$Main$Restart, '🔄 Restart')
-						]))
-				])),
-			A2(
-			$mdgriffith$elm_ui$Element$el,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$width(
-					$mdgriffith$elm_ui$Element$px(model.animationAreaSize.width)),
-					$mdgriffith$elm_ui$Element$height(
-					$mdgriffith$elm_ui$Element$px(350)),
-					$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundWhite),
-					$mdgriffith$elm_ui$Element$Border$rounded(12),
-					$mdgriffith$elm_ui$Element$Border$shadow(
-					{
-						blur: 8,
-						color: A4($mdgriffith$elm_ui$Element$rgba, 0, 0, 0, 0.1),
-						offset: _Utils_Tuple2(0, 4),
-						size: 0
-					}),
-					$mdgriffith$elm_ui$Element$centerX
-				]),
-			A2(
+var $author$project$Common$View$Controls$table = function (descriptions) {
+	return A2(
+		$mdgriffith$elm_ui$Element$column,
+		_List_fromArray(
+			[
+				$mdgriffith$elm_ui$Element$centerX,
+				$mdgriffith$elm_ui$Element$Border$width(1),
+				$mdgriffith$elm_ui$Element$Border$color($author$project$Common$Colors$borderMedium),
+				$mdgriffith$elm_ui$Element$Border$shadow(
+				{
+					blur: 4,
+					color: A4($mdgriffith$elm_ui$Element$rgba, 0, 0, 0, 0.1),
+					offset: _Utils_Tuple2(0, 2),
+					size: 2
+				}),
+				$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundLight),
+				$mdgriffith$elm_ui$Element$Border$rounded(8)
+			]),
+		_List_fromArray(
+			[
+				A2(
 				$mdgriffith$elm_ui$Element$el,
 				_List_fromArray(
 					[
-						$mdgriffith$elm_ui$Element$width(
-						$mdgriffith$elm_ui$Element$px(50)),
-						$mdgriffith$elm_ui$Element$height(
-						$mdgriffith$elm_ui$Element$px(50)),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						$elm$html$Html$Attributes$id($author$project$Common$Animations$Controls$elementId)),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						A2($elm$html$Html$Attributes$style, 'position', 'relative'))
+						$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+						$mdgriffith$elm_ui$Element$Border$widthEach(
+						{bottom: 1, left: 0, right: 0, top: 0})
 					]),
 				A2(
 					$mdgriffith$elm_ui$Element$el,
 					_List_fromArray(
 						[
+							$mdgriffith$elm_ui$Element$Font$size(18),
+							$mdgriffith$elm_ui$Element$padding(8),
 							$mdgriffith$elm_ui$Element$centerX,
-							$mdgriffith$elm_ui$Element$centerY,
-							$mdgriffith$elm_ui$Element$Font$size(50)
+							$mdgriffith$elm_ui$Element$Font$medium,
+							$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textDark)
 						]),
-					$mdgriffith$elm_ui$Element$text('🏀'))))
+					$mdgriffith$elm_ui$Element$text('🎮 Control Functions'))),
+				A2(
+				$mdgriffith$elm_ui$Element$column,
+				_List_fromArray(
+					[
+						$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
+					]),
+				A2(
+					$elm$core$List$map,
+					function (_v0) {
+						var borderWidth = _v0.a;
+						var control = _v0.b;
+						var desc = _v0.c;
+						return A3($author$project$Common$View$Controls$description, borderWidth, control, desc);
+					},
+					descriptions))
+			]));
+};
+var $author$project$Engines$WAAPI$Controls$Main$viewContent = function (model) {
+	return _List_fromArray(
+		[
+			$author$project$Common$View$Controls$header(
+			_List_fromArray(
+				['WAAPI Engine Controls'])),
+			$author$project$Common$View$Controls$table(
+			_List_fromArray(
+				[
+					_Utils_Tuple3(0, '🏀 Animate', 'Drop the ball'),
+					_Utils_Tuple3(1, '⏹️ Stop', 'Jump instantly to end state and stop'),
+					_Utils_Tuple3(1, '⏸️ Pause', 'Pause animation at current position'),
+					_Utils_Tuple3(1, '▶️ Resume', 'Continue paused animation'),
+					_Utils_Tuple3(1, '⏮️ Reset', 'Jump instantly to start state and stop'),
+					_Utils_Tuple3(1, '🔄 Restart', 'Reset to start, then begin animation again')
+				])),
+			$author$project$Common$View$Controls$buttons(
+			_List_fromArray(
+				[
+					_List_fromArray(
+					[
+						_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$Engines$WAAPI$Controls$Main$Animate, '🏀 Animate'),
+						_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$Engines$WAAPI$Controls$Main$Stop, '⏹️ Stop')
+					]),
+					_List_fromArray(
+					[
+						_Utils_Tuple3($author$project$Common$UI$Success, $author$project$Engines$WAAPI$Controls$Main$Pause, '⏸️ Pause'),
+						_Utils_Tuple3($author$project$Common$UI$Success, $author$project$Engines$WAAPI$Controls$Main$Resume, '▶️ Resume')
+					]),
+					_List_fromArray(
+					[
+						_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Engines$WAAPI$Controls$Main$Reset, '⏮️ Reset'),
+						_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Engines$WAAPI$Controls$Main$Restart, '🔄 Restart')
+					])
+				])),
+			A2($author$project$Common$View$Controls$animationArea, model.animAreaSize, $author$project$Engines$WAAPI$Controls$Main$animatedBall)
 		]);
 };
 var $author$project$Engines$WAAPI$Controls$Main$view = function (model) {

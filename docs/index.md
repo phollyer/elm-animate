@@ -15,7 +15,7 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 ??? example "View Source Code"
 
     ```elm
-    import Anim.Engine.CSS as CSS
+    import Anim.Engine.CSS.Transitions as CSS
     import Anim.Engine.Sub as Sub
     import Anim.Engine.WAAPI as WAAPI
     import Anim.Property.Translate as Translate
@@ -57,7 +57,8 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 | Engine | Best For |
 | -------- | ---------- |
-| [CSS](engines/css.md) | Browser-native performance, minimal setup |
+| [CSS Transitions](engines/css-transitions.md) | Browser-native performance, simple A→B animations |
+| [CSS Keyframes](engines/css-keyframes.md) | Browser-native performance, looping, pause/resume |
 | [Sub](engines/sub.md) | Programmatic control, mid-flight queries/diversions |
 | [WAAPI](engines/waapi.md) | Browser-native performance, programmatic control, mid-flight queries/diversions |
 | [Scroll](engines/scroll.md) | Smooth scrolling to elements or positions |

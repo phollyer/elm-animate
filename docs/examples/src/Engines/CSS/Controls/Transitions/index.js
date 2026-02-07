@@ -5216,6 +5216,10 @@ var $author$project$Anim$Internal$Builder$clearCurrentElement = function (_v0) {
 			data,
 			{currentElementId: $elm$core$Maybe$Nothing}));
 };
+var $author$project$Anim$Internal$Builder$discreteTransitionsEnabled = function (_v0) {
+	var data = _v0.a;
+	return data.discreteTransitions;
+};
 var $author$project$Anim$Internal$Builder$elements = function (_v0) {
 	var data = _v0.a;
 	return data.elements;
@@ -5514,7 +5518,7 @@ var $elm$core$List$all = F2(
 			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
 			list);
 	});
-var $author$project$Anim$Easing$EaseInOut = {$: 'EaseInOut'};
+var $author$project$Anim$Extra$Easing$EaseInOut = {$: 'EaseInOut'};
 var $author$project$Anim$Internal$CSS$Transition$extractProcessedDelay = function (property) {
 	switch (property.$) {
 		case 'ProcessedTranslateConfig':
@@ -5557,7 +5561,7 @@ var $author$project$Anim$Internal$CSS$Transition$extractProcessedEasing = functi
 			var config = property.a;
 			return config.easing;
 		default:
-			return $author$project$Anim$Easing$EaseInOut;
+			return $author$project$Anim$Extra$Easing$EaseInOut;
 	}
 };
 var $elm$core$List$head = function (list) {
@@ -5731,7 +5735,7 @@ var $author$project$Anim$Internal$CSS$Transition$consolidateProcessedTiming = fu
 				A2($elm$core$List$map, $author$project$Anim$Internal$CSS$Transition$extractProcessedDuration, transformProps)));
 		var latestEasing = A2(
 			$elm$core$Maybe$withDefault,
-			$author$project$Anim$Easing$EaseInOut,
+			$author$project$Anim$Extra$Easing$EaseInOut,
 			$elm$core$List$head(
 				A2($elm$core$List$map, $author$project$Anim$Internal$CSS$Transition$extractProcessedEasing, transformProps)));
 		var earliestDelay = A2(
@@ -5859,6 +5863,7 @@ var $author$project$Anim$Internal$CSS$Transform$generateFromProcessedWithOrder =
 		return $elm$core$String$trim(
 			A2($elm$core$String$join, ' ', orderedTransforms));
 	});
+var $author$project$Anim$Internal$Builder$Once = {$: 'Once'};
 var $author$project$Anim$Internal$CSS$KeyframeAnimation$buildKeyframesString = F2(
 	function (elementId, steps) {
 		var stepToString = function (_v1) {
@@ -6469,7 +6474,7 @@ var $author$project$Anim$Internal$Builder$ProcessedTranslateConfig = function (a
 var $author$project$Anim$Internal$Timing$TimeSpec$Duration = function (a) {
 	return {$: 'Duration', a: a};
 };
-var $author$project$Anim$Easing$Linear = {$: 'Linear'};
+var $author$project$Anim$Extra$Easing$Linear = {$: 'Linear'};
 var $author$project$Anim$Internal$Builder$createDirtyConfig = function (_v0) {
 	var end = _v0.end;
 	var wrapper = _v0.wrapper;
@@ -6478,7 +6483,7 @@ var $author$project$Anim$Internal$Builder$createDirtyConfig = function (_v0) {
 			delay: 0,
 			distance: 0,
 			duration: 0,
-			easing: $author$project$Anim$Easing$Linear,
+			easing: $author$project$Anim$Extra$Easing$Linear,
 			end: end,
 			speed: 0,
 			start: $elm$core$Maybe$Just(end),
@@ -6661,7 +6666,7 @@ var $author$project$Anim$Internal$Builder$processStandardAnimation = function (_
 			delay: A3($author$project$Anim$Internal$Builder$resolveDelayWithDefault, config.delay, globalData.globalDelay, 0),
 			distance: distance_,
 			duration: $elm$core$Basics$round(duration_),
-			easing: A3($author$project$Anim$Internal$Builder$resolveEasingWithDefault, config.easing, globalData.globalEasing, $author$project$Anim$Easing$EaseInOut),
+			easing: A3($author$project$Anim$Internal$Builder$resolveEasingWithDefault, config.easing, globalData.globalEasing, $author$project$Anim$Extra$Easing$EaseInOut),
 			end: config.end,
 			speed: speed_,
 			start: config.start,
@@ -7307,7 +7312,7 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix = F3(
 		} else {
 			var processed = A2(
 				$author$project$Anim$Internal$Builder$processElement,
-				{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil},
+				{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil},
 				{properties: properties});
 			var processedProps = processed.properties;
 			var maxDuration = A2(
@@ -7636,9 +7641,20 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix = F3(
 				['transform', 'background-color', 'opacity', 'width', 'height']);
 			return _List_fromArray(
 				[
-					{animationName: animationName, delay: 0, duration: totalAnimationTime, easing: 'linear', keyframes: keyframesString, properties: animatedProperties}
+					{animationName: animationName, delay: 0, duration: totalAnimationTime, easing: 'linear', iterationCount: $author$project$Anim$Internal$Builder$Once, keyframes: keyframesString, properties: animatedProperties}
 				]);
 		}
+	});
+var $author$project$Anim$Internal$CSS$KeyframeAnimation$setIterationCount = F2(
+	function (count, layers) {
+		return A2(
+			$elm$core$List$map,
+			function (layer) {
+				return _Utils_update(
+					layer,
+					{iterationCount: count});
+			},
+			layers);
 	});
 var $author$project$Anim$Internal$CSS$transformOrderToString = function (order) {
 	switch (order.$) {
@@ -7650,11 +7666,15 @@ var $author$project$Anim$Internal$CSS$transformOrderToString = function (order) 
 			return 'scale';
 	}
 };
-var $author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix = F4(
-	function (maybeOrder, suffix, elementId, elementConfig) {
+var $author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix = F6(
+	function (maybeOrder, discreteTransitions, iterationCount, suffix, elementId, elementConfig) {
+		var transitionBehaviorStyle = discreteTransitions ? _List_fromArray(
+			[
+				_Utils_Tuple2('transition-behavior', 'allow-discrete')
+			]) : _List_Nil;
 		var processed = A2(
 			$author$project$Anim$Internal$Builder$processElement,
-			{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil},
+			{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: discreteTransitions, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: iterationCount, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil},
 			elementConfig);
 		var processedProps = processed.properties;
 		var transforms = function () {
@@ -7707,18 +7727,27 @@ var $author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix = F4(
 						_Utils_Tuple2('transform', transforms),
 						_Utils_Tuple2('transition', transitions)
 					]),
-				_Utils_ap(colorStyles, opacityStyles)));
+				_Utils_ap(
+					transitionBehaviorStyle,
+					_Utils_ap(colorStyles, opacityStyles))));
 		return {
-			animationLayers: A3($author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix, elementId, suffix, elementConfig.properties),
+			animationLayers: A2(
+				$author$project$Anim$Internal$CSS$KeyframeAnimation$setIterationCount,
+				iterationCount,
+				A3($author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix, elementId, suffix, elementConfig.properties)),
 			styles: allStyles
 		};
 	});
-var $author$project$Anim$Internal$CSS$generateElementAnimation = F3(
-	function (maybeOrder, elementId, elementConfig) {
-		return A4($author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix, maybeOrder, '', elementId, elementConfig);
+var $author$project$Anim$Internal$CSS$generateElementAnimation = F5(
+	function (maybeOrder, discreteTransitions, iterationCount, elementId, elementConfig) {
+		return A6($author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix, maybeOrder, discreteTransitions, iterationCount, '', elementId, elementConfig);
 	});
+var $author$project$Anim$Internal$Builder$getIterationCount = function (_v0) {
+	var data = _v0.a;
+	return data.iterationCount;
+};
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
-	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil});
+	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil});
 var $elm$core$Dict$map = F2(
 	function (func, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
@@ -7845,7 +7874,11 @@ var $author$project$Anim$Internal$CSS$init = function (propertyInitializers) {
 					$author$project$Anim$Internal$Builder$markDirty(configuredBuilder)),
 				elementAnimations: A2(
 					$elm$core$Dict$map,
-					$author$project$Anim$Internal$CSS$generateElementAnimation($elm$core$Maybe$Nothing),
+					A3(
+						$author$project$Anim$Internal$CSS$generateElementAnimation,
+						$elm$core$Maybe$Nothing,
+						$author$project$Anim$Internal$Builder$discreteTransitionsEnabled(configuredBuilder),
+						$author$project$Anim$Internal$Builder$getIterationCount(configuredBuilder)),
 					$author$project$Anim$Internal$Builder$elements(configuredBuilder)),
 				elementStates: $elm$core$Dict$fromList(
 					A2(
@@ -7858,7 +7891,7 @@ var $author$project$Anim$Internal$CSS$init = function (propertyInitializers) {
 			});
 	}
 };
-var $author$project$Anim$Engine$CSS$init = $author$project$Anim$Internal$CSS$init;
+var $author$project$Anim$Engine$CSS$Transitions$init = $author$project$Anim$Internal$CSS$init;
 var $author$project$Common$Animations$Controls$elementId = 'bouncing-ball';
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -7933,22 +7966,22 @@ var $author$project$Anim$Internal$Builders$Property$add = F2(
 			});
 		return A2($author$project$Anim$Internal$Builder$updateCurrentElement, updatedElement, builder);
 	});
-var $author$project$Anim$Easing$BounceInCustom = function (a) {
+var $author$project$Anim$Extra$Easing$BounceInCustom = function (a) {
 	return {$: 'BounceInCustom', a: a};
 };
-var $author$project$Anim$Easing$BounceInOutCustom = function (a) {
+var $author$project$Anim$Extra$Easing$BounceInOutCustom = function (a) {
 	return {$: 'BounceInOutCustom', a: a};
 };
-var $author$project$Anim$Easing$BounceOutCustom = function (a) {
+var $author$project$Anim$Extra$Easing$BounceOutCustom = function (a) {
 	return {$: 'BounceOutCustom', a: a};
 };
-var $author$project$Anim$Easing$ElasticInCustom = function (a) {
+var $author$project$Anim$Extra$Easing$ElasticInCustom = function (a) {
 	return {$: 'ElasticInCustom', a: a};
 };
-var $author$project$Anim$Easing$ElasticInOutCustom = function (a) {
+var $author$project$Anim$Extra$Easing$ElasticInOutCustom = function (a) {
 	return {$: 'ElasticInOutCustom', a: a};
 };
-var $author$project$Anim$Easing$ElasticOutCustom = function (a) {
+var $author$project$Anim$Extra$Easing$ElasticOutCustom = function (a) {
 	return {$: 'ElasticOutCustom', a: a};
 };
 var $author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength = F2(
@@ -7973,7 +8006,7 @@ var $author$project$Anim$Internal$Builders$Property$adjustConfigEasing = functio
 						config,
 						{
 							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$BounceOutCustom(
+								$author$project$Anim$Extra$Easing$BounceOutCustom(
 									A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrength, config)))
 						});
 				case 'BounceInCustom':
@@ -7982,7 +8015,7 @@ var $author$project$Anim$Internal$Builders$Property$adjustConfigEasing = functio
 						config,
 						{
 							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$BounceInCustom(
+								$author$project$Anim$Extra$Easing$BounceInCustom(
 									A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrength, config)))
 						});
 				case 'BounceInOutCustom':
@@ -7993,7 +8026,7 @@ var $author$project$Anim$Internal$Builders$Property$adjustConfigEasing = functio
 						config,
 						{
 							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$BounceInOutCustom(
+								$author$project$Anim$Extra$Easing$BounceInOutCustom(
 									_Utils_Tuple2(
 										A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrengthIn, config),
 										A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrengthOut, config))))
@@ -8004,7 +8037,7 @@ var $author$project$Anim$Internal$Builders$Property$adjustConfigEasing = functio
 						config,
 						{
 							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$ElasticOutCustom(
+								$author$project$Anim$Extra$Easing$ElasticOutCustom(
 									A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrength, config)))
 						});
 				case 'ElasticInCustom':
@@ -8013,7 +8046,7 @@ var $author$project$Anim$Internal$Builders$Property$adjustConfigEasing = functio
 						config,
 						{
 							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$ElasticInCustom(
+								$author$project$Anim$Extra$Easing$ElasticInCustom(
 									A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrength, config)))
 						});
 				case 'ElasticInOutCustom':
@@ -8024,7 +8057,7 @@ var $author$project$Anim$Internal$Builders$Property$adjustConfigEasing = functio
 						config,
 						{
 							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$ElasticInOutCustom(
+								$author$project$Anim$Extra$Easing$ElasticInOutCustom(
 									_Utils_Tuple2(
 										A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrengthIn, config),
 										A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrengthOut, config))))
@@ -8442,15 +8475,14 @@ var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Engines$CSS$Controls$Transitions$Main$init = function (_v0) {
 	var window = _v0.window;
 	var animAreaWidth = A2($elm$core$Basics$min, 500, window.width - 40);
-	var initialAnimState = $author$project$Anim$Engine$CSS$init(
-		_List_fromArray(
-			[
-				$author$project$Common$Animations$Controls$init(animAreaWidth)
-			]));
 	return _Utils_Tuple2(
 		{
 			animAreaSize: {height: 350, width: animAreaWidth},
-			animState: initialAnimState
+			animState: $author$project$Anim$Engine$CSS$Transitions$init(
+				_List_fromArray(
+					[
+						$author$project$Common$Animations$Controls$init(animAreaWidth)
+					]))
 		},
 		$elm$core$Platform$Cmd$none);
 };
@@ -8472,7 +8504,11 @@ var $author$project$Anim$Internal$CSS$animate = F2(
 				builder: $author$project$Anim$Internal$Builder$clearCurrentElement(builder_),
 				elementAnimations: A2(
 					$elm$core$Dict$map,
-					$author$project$Anim$Internal$CSS$generateElementAnimation($elm$core$Maybe$Nothing),
+					A3(
+						$author$project$Anim$Internal$CSS$generateElementAnimation,
+						$elm$core$Maybe$Nothing,
+						$author$project$Anim$Internal$Builder$discreteTransitionsEnabled(builder_),
+						$author$project$Anim$Internal$Builder$getIterationCount(builder_)),
 					$author$project$Anim$Internal$Builder$elements(builder_)),
 				elementStates: $elm$core$Dict$fromList(
 					A2(
@@ -8484,8 +8520,8 @@ var $author$project$Anim$Internal$CSS$animate = F2(
 				restartCounters: $elm$core$Dict$empty
 			});
 	});
-var $author$project$Anim$Engine$CSS$animate = $author$project$Anim$Internal$CSS$animate;
-var $author$project$Anim$Easing$BounceOut = {$: 'BounceOut'};
+var $author$project$Anim$Engine$CSS$Transitions$animate = $author$project$Anim$Internal$CSS$animate;
+var $author$project$Anim$Extra$Easing$BounceOut = {$: 'BounceOut'};
 var $author$project$Anim$Property$Translate$build = $author$project$Anim$Internal$Builders$Translate$build;
 var $elm$core$Basics$composeR = F3(
 	function (f, g, x) {
@@ -8586,7 +8622,7 @@ var $author$project$Common$Animations$Controls$animate = A2(
 				$author$project$Anim$Property$Translate$speed(200),
 				A2(
 					$elm$core$Basics$composeR,
-					$author$project$Anim$Property$Translate$easing($author$project$Anim$Easing$BounceOut),
+					$author$project$Anim$Property$Translate$easing($author$project$Anim$Extra$Easing$BounceOut),
 					$author$project$Anim$Property$Translate$build)))));
 var $author$project$Anim$Internal$Properties$Scale$fromUniform = function (s) {
 	return $author$project$Anim$Internal$Properties$Scale$Scale(
@@ -8596,7 +8632,7 @@ var $author$project$Anim$Internal$CSS$generateStylesOnly = F2(
 	function (maybeOrder, elementConfig) {
 		var processed = A2(
 			$author$project$Anim$Internal$Builder$processElement,
-			{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil},
+			{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil},
 			elementConfig);
 		var processedProps = processed.properties;
 		var transforms = function () {
@@ -8678,7 +8714,7 @@ var $author$project$Anim$Internal$CSS$reset = F2(
 					delay: $elm$core$Maybe$Nothing,
 					distance: 0,
 					duration: 0,
-					easing: $elm$core$Maybe$Just($author$project$Anim$Easing$Linear),
+					easing: $elm$core$Maybe$Just($author$project$Anim$Extra$Easing$Linear),
 					end: value,
 					isDirty: true,
 					speed: 0,
@@ -8744,7 +8780,7 @@ var $author$project$Anim$Internal$CSS$reset = F2(
 				$author$project$Anim$Internal$CSS$AnimState(state));
 		}
 	});
-var $author$project$Anim$Engine$CSS$reset = $author$project$Anim$Internal$CSS$reset;
+var $author$project$Anim$Engine$CSS$Transitions$reset = $author$project$Anim$Internal$CSS$reset;
 var $author$project$Anim$Internal$CSS$Complete = {$: 'Complete'};
 var $author$project$Anim$Internal$Builder$processAnimationData = function (_v0) {
 	var data = _v0.a;
@@ -8902,7 +8938,7 @@ var $author$project$Anim$Internal$CSS$stopAnimation = F2(
 				delay: $elm$core$Maybe$Nothing,
 				distance: 0,
 				duration: 0,
-				easing: $elm$core$Maybe$Just($author$project$Anim$Easing$Linear),
+				easing: $elm$core$Maybe$Just($author$project$Anim$Extra$Easing$Linear),
 				end: value,
 				isDirty: true,
 				speed: 0,
@@ -8962,7 +8998,7 @@ var $author$project$Anim$Internal$CSS$stopAnimation = F2(
 		var elementConfig = {properties: properties};
 		return $elm$core$List$isEmpty(properties) ? animState : A4($author$project$Anim$Internal$CSS$setStylesInstantly, elementId, $author$project$Anim$Internal$CSS$Complete, elementConfig, animState);
 	});
-var $author$project$Anim$Engine$CSS$stop = $author$project$Anim$Internal$CSS$stopAnimation;
+var $author$project$Anim$Engine$CSS$Transitions$stop = $author$project$Anim$Internal$CSS$stopAnimation;
 var $author$project$Engines$CSS$Controls$Transitions$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
@@ -8971,7 +9007,7 @@ var $author$project$Engines$CSS$Controls$Transitions$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animState: A2($author$project$Anim$Engine$CSS$animate, model.animState, $author$project$Common$Animations$Controls$animate)
+							animState: A2($author$project$Anim$Engine$CSS$Transitions$animate, model.animState, $author$project$Common$Animations$Controls$animate)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Stop':
@@ -8979,7 +9015,7 @@ var $author$project$Engines$CSS$Controls$Transitions$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animState: A2($author$project$Anim$Engine$CSS$stop, $author$project$Common$Animations$Controls$elementId, model.animState)
+							animState: A2($author$project$Anim$Engine$CSS$Transitions$stop, $author$project$Common$Animations$Controls$elementId, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 			default:
@@ -8987,7 +9023,7 @@ var $author$project$Engines$CSS$Controls$Transitions$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animState: A2($author$project$Anim$Engine$CSS$reset, $author$project$Common$Animations$Controls$elementId, model.animState)
+							animState: A2($author$project$Anim$Engine$CSS$Transitions$reset, $author$project$Common$Animations$Controls$elementId, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 		}
@@ -14833,6 +14869,12 @@ var $author$project$Common$UI$createDocument = F3(
 			title: title
 		};
 	});
+var $author$project$Engines$CSS$Controls$Transitions$Main$Animate = {$: 'Animate'};
+var $author$project$Common$UI$Primary = {$: 'Primary'};
+var $author$project$Common$UI$Purple = {$: 'Purple'};
+var $author$project$Engines$CSS$Controls$Transitions$Main$Reset = {$: 'Reset'};
+var $author$project$Engines$CSS$Controls$Transitions$Main$Stop = {$: 'Stop'};
+var $author$project$Common$UI$Warning = {$: 'Warning'};
 var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
 	return {$: 'AlignY', a: a};
 };
@@ -14899,11 +14941,16 @@ var $author$project$Anim$Internal$CSS$transitionAttributes = F2(
 			styles);
 		return attrs;
 	});
-var $author$project$Anim$Engine$CSS$transitionAttributes = $author$project$Anim$Internal$CSS$transitionAttributes;
+var $author$project$Anim$Engine$CSS$Transitions$transitionAttributes = $author$project$Anim$Internal$CSS$transitionAttributes;
+var $author$project$Engines$CSS$Controls$Transitions$Main$transitionAttributes = A2(
+	$elm$core$Basics$composeR,
+	$author$project$Anim$Engine$CSS$Transitions$transitionAttributes($author$project$Common$Animations$Controls$elementId),
+	$elm$core$List$map($mdgriffith$elm_ui$Element$htmlAttribute));
 var $author$project$Engines$CSS$Controls$Transitions$Main$animatedBall = function (animState) {
 	return A2(
 		$mdgriffith$elm_ui$Element$el,
 		_Utils_ap(
+			$author$project$Engines$CSS$Controls$Transitions$Main$transitionAttributes(animState),
 			_List_fromArray(
 				[
 					$mdgriffith$elm_ui$Element$width(
@@ -14912,11 +14959,7 @@ var $author$project$Engines$CSS$Controls$Transitions$Main$animatedBall = functio
 					$mdgriffith$elm_ui$Element$px(50)),
 					$mdgriffith$elm_ui$Element$htmlAttribute(
 					A2($elm$html$Html$Attributes$style, 'position', 'relative'))
-				]),
-			A2(
-				$elm$core$List$map,
-				$mdgriffith$elm_ui$Element$htmlAttribute,
-				A2($author$project$Anim$Engine$CSS$transitionAttributes, $author$project$Common$Animations$Controls$elementId, animState))),
+				])),
 		A2(
 			$mdgriffith$elm_ui$Element$el,
 			_List_fromArray(
@@ -14928,12 +14971,6 @@ var $author$project$Engines$CSS$Controls$Transitions$Main$animatedBall = functio
 			$mdgriffith$elm_ui$Element$text('🏀')));
 };
 var $author$project$Common$Colors$backgroundWhite = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
-var $mdgriffith$elm_ui$Internal$Model$Class = F2(
-	function (a, b) {
-		return {$: 'Class', a: a, b: b};
-	});
-var $mdgriffith$elm_ui$Internal$Flag$overflow = $mdgriffith$elm_ui$Internal$Flag$flag(20);
-var $mdgriffith$elm_ui$Element$clip = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$overflow, $mdgriffith$elm_ui$Internal$Style$classes.clip);
 var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
 	return A2(
 		$mdgriffith$elm_ui$Internal$Model$StyleClass,
@@ -14980,36 +15017,26 @@ var $mdgriffith$elm_ui$Element$Border$shadow = function (almostShade) {
 			'box-shadow',
 			$mdgriffith$elm_ui$Internal$Model$formatBoxShadow(shade)));
 };
-var $author$project$Engines$CSS$Controls$Transitions$Main$animationArea = F2(
-	function (size, animState) {
-		return A2(
-			$mdgriffith$elm_ui$Element$el,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$width(
-					$mdgriffith$elm_ui$Element$px(size.width)),
-					$mdgriffith$elm_ui$Element$height(
-					$mdgriffith$elm_ui$Element$px(size.height)),
-					$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundWhite),
-					$mdgriffith$elm_ui$Element$Border$rounded(12),
-					$mdgriffith$elm_ui$Element$Border$shadow(
-					{
-						blur: 8,
-						color: A4($mdgriffith$elm_ui$Element$rgba, 0, 0, 0, 0.1),
-						offset: _Utils_Tuple2(0, 4),
-						size: 0
-					}),
-					$mdgriffith$elm_ui$Element$centerX,
-					$mdgriffith$elm_ui$Element$clip
-				]),
-			$author$project$Engines$CSS$Controls$Transitions$Main$animatedBall(animState));
-	});
-var $author$project$Engines$CSS$Controls$Transitions$Main$Animate = {$: 'Animate'};
-var $author$project$Common$UI$Primary = {$: 'Primary'};
-var $author$project$Common$UI$Purple = {$: 'Purple'};
-var $author$project$Engines$CSS$Controls$Transitions$Main$Reset = {$: 'Reset'};
-var $author$project$Engines$CSS$Controls$Transitions$Main$Stop = {$: 'Stop'};
-var $author$project$Common$UI$Warning = {$: 'Warning'};
+var $author$project$Common$View$Controls$animationArea = function (size) {
+	return $mdgriffith$elm_ui$Element$el(
+		_List_fromArray(
+			[
+				$mdgriffith$elm_ui$Element$width(
+				$mdgriffith$elm_ui$Element$px(size.width)),
+				$mdgriffith$elm_ui$Element$height(
+				$mdgriffith$elm_ui$Element$px(size.height)),
+				$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundWhite),
+				$mdgriffith$elm_ui$Element$Border$rounded(12),
+				$mdgriffith$elm_ui$Element$Border$shadow(
+				{
+					blur: 8,
+					color: A4($mdgriffith$elm_ui$Element$rgba, 0, 0, 0, 0.1),
+					offset: _Utils_Tuple2(0, 4),
+					size: 0
+				}),
+				$mdgriffith$elm_ui$Element$centerX
+			]));
+};
 var $mdgriffith$elm_ui$Internal$Model$unstyled = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Unstyled, $elm$core$Basics$always);
 var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
 var $elm$html$Html$button = _VirtualDom_node('button');
@@ -15058,7 +15085,7 @@ var $author$project$Common$UI$htmlButton = function (_v0) {
 				$elm$html$Html$text(label)
 			]));
 };
-var $author$project$Engines$CSS$Controls$Transitions$Main$button = A2(
+var $author$project$Common$View$Controls$button = A2(
 	$elm$core$Basics$composeR,
 	$author$project$Common$UI$htmlButton,
 	A2(
@@ -15067,6 +15094,14 @@ var $author$project$Engines$CSS$Controls$Transitions$Main$button = A2(
 		$mdgriffith$elm_ui$Element$el(
 			_List_fromArray(
 				[$mdgriffith$elm_ui$Element$centerX]))));
+var $author$project$Common$View$Controls$buttons_ = A2(
+	$elm$core$Basics$composeL,
+	$mdgriffith$elm_ui$Element$column(
+		_List_fromArray(
+			[
+				$mdgriffith$elm_ui$Element$spacing(12)
+			])),
+	$elm$core$List$map($author$project$Common$View$Controls$button));
 var $mdgriffith$elm_ui$Internal$Model$AsRow = {$: 'AsRow'};
 var $mdgriffith$elm_ui$Internal$Model$asRow = $mdgriffith$elm_ui$Internal$Model$AsRow;
 var $mdgriffith$elm_ui$Element$row = F2(
@@ -15087,22 +15122,81 @@ var $mdgriffith$elm_ui$Element$row = F2(
 						attrs))),
 			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
 	});
-var $author$project$Engines$CSS$Controls$Transitions$Main$controlButtons = A2(
-	$mdgriffith$elm_ui$Element$row,
-	_List_fromArray(
-		[
-			$mdgriffith$elm_ui$Element$spacing(12),
-			$mdgriffith$elm_ui$Element$centerX
-		]),
-	_List_fromArray(
-		[
-			$author$project$Engines$CSS$Controls$Transitions$Main$button(
-			_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$Engines$CSS$Controls$Transitions$Main$Animate, '🏀 Animate')),
-			$author$project$Engines$CSS$Controls$Transitions$Main$button(
-			_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$Engines$CSS$Controls$Transitions$Main$Stop, '⏹️ Stop')),
-			$author$project$Engines$CSS$Controls$Transitions$Main$button(
-			_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Engines$CSS$Controls$Transitions$Main$Reset, '⏮️ Reset'))
-		]));
+var $author$project$Common$View$Controls$buttons = A2(
+	$elm$core$Basics$composeL,
+	$mdgriffith$elm_ui$Element$row(
+		_List_fromArray(
+			[
+				$mdgriffith$elm_ui$Element$spacing(12),
+				$mdgriffith$elm_ui$Element$centerX
+			])),
+	$elm$core$List$map($author$project$Common$View$Controls$buttons_));
+var $mdgriffith$elm_ui$Internal$Model$Class = F2(
+	function (a, b) {
+		return {$: 'Class', a: a, b: b};
+	});
+var $mdgriffith$elm_ui$Internal$Flag$fontAlignment = $mdgriffith$elm_ui$Internal$Flag$flag(12);
+var $mdgriffith$elm_ui$Element$Font$center = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontAlignment, $mdgriffith$elm_ui$Internal$Style$classes.textCenter);
+var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$fontColor,
+		A3(
+			$mdgriffith$elm_ui$Internal$Model$Colored,
+			'fc-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(fontColor),
+			'color',
+			fontColor));
+};
+var $mdgriffith$elm_ui$Internal$Model$Describe = function (a) {
+	return {$: 'Describe', a: a};
+};
+var $mdgriffith$elm_ui$Internal$Model$Paragraph = {$: 'Paragraph'};
+var $mdgriffith$elm_ui$Element$paragraph = F2(
+	function (attrs, children) {
+		return A4(
+			$mdgriffith$elm_ui$Internal$Model$element,
+			$mdgriffith$elm_ui$Internal$Model$asParagraph,
+			$mdgriffith$elm_ui$Internal$Model$div,
+			A2(
+				$elm$core$List$cons,
+				$mdgriffith$elm_ui$Internal$Model$Describe($mdgriffith$elm_ui$Internal$Model$Paragraph),
+				A2(
+					$elm$core$List$cons,
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+					A2(
+						$elm$core$List$cons,
+						$mdgriffith$elm_ui$Element$spacing(5),
+						attrs))),
+			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
+	});
+var $mdgriffith$elm_ui$Internal$Flag$fontWeight = $mdgriffith$elm_ui$Internal$Flag$flag(13);
+var $mdgriffith$elm_ui$Element$Font$semiBold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textSemiBold);
+var $author$project$Common$Colors$textDark = A3($mdgriffith$elm_ui$Element$rgb255, 30, 41, 59);
+var $author$project$Common$UI$pageHeader = function (title) {
+	return A2(
+		$mdgriffith$elm_ui$Element$paragraph,
+		_List_fromArray(
+			[
+				$mdgriffith$elm_ui$Element$Font$semiBold,
+				$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textDark),
+				$mdgriffith$elm_ui$Element$Font$center,
+				$mdgriffith$elm_ui$Element$htmlAttribute(
+				$elm$html$Html$Attributes$class('responsive-header'))
+			]),
+		_List_fromArray(
+			[
+				$mdgriffith$elm_ui$Element$text(title)
+			]));
+};
+var $author$project$Common$View$Controls$header = A2(
+	$elm$core$Basics$composeL,
+	$mdgriffith$elm_ui$Element$column(
+		_List_fromArray(
+			[
+				$mdgriffith$elm_ui$Element$centerX,
+				$mdgriffith$elm_ui$Element$spacing(8)
+			])),
+	$elm$core$List$map($author$project$Common$UI$pageHeader));
 var $author$project$Common$Colors$borderMedium = A3($mdgriffith$elm_ui$Element$rgb255, 203, 213, 225);
 var $mdgriffith$elm_ui$Internal$Flag$borderColor = $mdgriffith$elm_ui$Internal$Flag$flag(28);
 var $mdgriffith$elm_ui$Element$Border$color = function (clr) {
@@ -15115,17 +15209,6 @@ var $mdgriffith$elm_ui$Element$Border$color = function (clr) {
 			'border-color',
 			clr));
 };
-var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$fontColor,
-		A3(
-			$mdgriffith$elm_ui$Internal$Model$Colored,
-			'fc-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(fontColor),
-			'color',
-			fontColor));
-};
-var $mdgriffith$elm_ui$Internal$Flag$fontWeight = $mdgriffith$elm_ui$Internal$Flag$flag(13);
 var $mdgriffith$elm_ui$Element$Font$medium = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textMedium);
 var $mdgriffith$elm_ui$Element$padding = function (x) {
 	var f = x;
@@ -15187,8 +15270,8 @@ var $mdgriffith$elm_ui$Element$Border$widthEach = function (_v0) {
 			bottom,
 			left));
 };
-var $author$project$Engines$CSS$Controls$Transitions$Main$controlDescription = F3(
-	function (borderWidth, control, description) {
+var $author$project$Common$View$Controls$description = F3(
+	function (borderWidth, control, description_) {
 		return A2(
 			$mdgriffith$elm_ui$Element$row,
 			_List_fromArray(
@@ -15218,140 +15301,92 @@ var $author$project$Engines$CSS$Controls$Transitions$Main$controlDescription = F
 							$mdgriffith$elm_ui$Element$Font$size(14),
 							$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textMedium)
 						]),
-					$mdgriffith$elm_ui$Element$text(description))
+					$mdgriffith$elm_ui$Element$text(description_))
 				]));
 	});
-var $author$project$Common$Colors$textDark = A3($mdgriffith$elm_ui$Element$rgb255, 30, 41, 59);
-var $author$project$Engines$CSS$Controls$Transitions$Main$controlsTable = A2(
-	$mdgriffith$elm_ui$Element$column,
-	_List_fromArray(
-		[
-			$mdgriffith$elm_ui$Element$centerX,
-			$mdgriffith$elm_ui$Element$Border$width(1),
-			$mdgriffith$elm_ui$Element$Border$color($author$project$Common$Colors$borderMedium),
-			$mdgriffith$elm_ui$Element$Border$shadow(
-			{
-				blur: 4,
-				color: A4($mdgriffith$elm_ui$Element$rgba, 0, 0, 0, 0.1),
-				offset: _Utils_Tuple2(0, 2),
-				size: 2
-			}),
-			$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundLight),
-			$mdgriffith$elm_ui$Element$Border$rounded(8)
-		]),
-	_List_fromArray(
-		[
-			A2(
-			$mdgriffith$elm_ui$Element$el,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-					$mdgriffith$elm_ui$Element$Border$widthEach(
-					{bottom: 1, left: 0, right: 0, top: 0})
-				]),
-			A2(
-				$mdgriffith$elm_ui$Element$el,
-				_List_fromArray(
-					[
-						$mdgriffith$elm_ui$Element$Font$size(18),
-						$mdgriffith$elm_ui$Element$padding(8),
-						$mdgriffith$elm_ui$Element$centerX,
-						$mdgriffith$elm_ui$Element$Font$medium,
-						$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textDark)
-					]),
-				$mdgriffith$elm_ui$Element$text('🎮 Control Functions'))),
-			A2(
-			$mdgriffith$elm_ui$Element$column,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
-				]),
-			_List_fromArray(
-				[
-					A3($author$project$Engines$CSS$Controls$Transitions$Main$controlDescription, 0, '🏀 Animate', 'Drop the ball'),
-					A3($author$project$Engines$CSS$Controls$Transitions$Main$controlDescription, 1, '⏹️ Stop', 'Jump instantly to end state and stop'),
-					A3($author$project$Engines$CSS$Controls$Transitions$Main$controlDescription, 1, '⏮️ Reset', 'Jump instantly to start state and stop')
-				]))
-		]));
-var $mdgriffith$elm_ui$Internal$Flag$fontAlignment = $mdgriffith$elm_ui$Internal$Flag$flag(12);
-var $mdgriffith$elm_ui$Element$Font$center = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontAlignment, $mdgriffith$elm_ui$Internal$Style$classes.textCenter);
-var $mdgriffith$elm_ui$Internal$Model$Describe = function (a) {
-	return {$: 'Describe', a: a};
-};
-var $mdgriffith$elm_ui$Internal$Model$Paragraph = {$: 'Paragraph'};
-var $mdgriffith$elm_ui$Element$paragraph = F2(
-	function (attrs, children) {
-		return A4(
-			$mdgriffith$elm_ui$Internal$Model$element,
-			$mdgriffith$elm_ui$Internal$Model$asParagraph,
-			$mdgriffith$elm_ui$Internal$Model$div,
-			A2(
-				$elm$core$List$cons,
-				$mdgriffith$elm_ui$Internal$Model$Describe($mdgriffith$elm_ui$Internal$Model$Paragraph),
-				A2(
-					$elm$core$List$cons,
-					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-					A2(
-						$elm$core$List$cons,
-						$mdgriffith$elm_ui$Element$spacing(5),
-						attrs))),
-			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
-	});
-var $mdgriffith$elm_ui$Element$Font$semiBold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textSemiBold);
-var $author$project$Common$UI$pageHeader = function (title) {
+var $author$project$Common$View$Controls$table = function (descriptions) {
 	return A2(
-		$mdgriffith$elm_ui$Element$paragraph,
+		$mdgriffith$elm_ui$Element$column,
 		_List_fromArray(
 			[
-				$mdgriffith$elm_ui$Element$Font$semiBold,
-				$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textDark),
-				$mdgriffith$elm_ui$Element$Font$center,
-				$mdgriffith$elm_ui$Element$htmlAttribute(
-				$elm$html$Html$Attributes$class('responsive-header'))
+				$mdgriffith$elm_ui$Element$centerX,
+				$mdgriffith$elm_ui$Element$Border$width(1),
+				$mdgriffith$elm_ui$Element$Border$color($author$project$Common$Colors$borderMedium),
+				$mdgriffith$elm_ui$Element$Border$shadow(
+				{
+					blur: 4,
+					color: A4($mdgriffith$elm_ui$Element$rgba, 0, 0, 0, 0.1),
+					offset: _Utils_Tuple2(0, 2),
+					size: 2
+				}),
+				$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundLight),
+				$mdgriffith$elm_ui$Element$Border$rounded(8)
 			]),
 		_List_fromArray(
 			[
-				$mdgriffith$elm_ui$Element$text(title)
+				A2(
+				$mdgriffith$elm_ui$Element$el,
+				_List_fromArray(
+					[
+						$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+						$mdgriffith$elm_ui$Element$Border$widthEach(
+						{bottom: 1, left: 0, right: 0, top: 0})
+					]),
+				A2(
+					$mdgriffith$elm_ui$Element$el,
+					_List_fromArray(
+						[
+							$mdgriffith$elm_ui$Element$Font$size(18),
+							$mdgriffith$elm_ui$Element$padding(8),
+							$mdgriffith$elm_ui$Element$centerX,
+							$mdgriffith$elm_ui$Element$Font$medium,
+							$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textDark)
+						]),
+					$mdgriffith$elm_ui$Element$text('🎮 Control Functions'))),
+				A2(
+				$mdgriffith$elm_ui$Element$column,
+				_List_fromArray(
+					[
+						$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
+					]),
+				A2(
+					$elm$core$List$map,
+					function (_v0) {
+						var borderWidth = _v0.a;
+						var control = _v0.b;
+						var desc = _v0.c;
+						return A3($author$project$Common$View$Controls$description, borderWidth, control, desc);
+					},
+					descriptions))
 			]));
 };
-var $author$project$Engines$CSS$Controls$Transitions$Main$header = A2(
-	$mdgriffith$elm_ui$Element$column,
-	_List_fromArray(
-		[
-			$mdgriffith$elm_ui$Element$centerX,
-			$mdgriffith$elm_ui$Element$spacing(8)
-		]),
-	_List_fromArray(
-		[
-			$author$project$Common$UI$pageHeader('CSS Engine Controls'),
-			$author$project$Common$UI$pageHeader('for'),
-			$author$project$Common$UI$pageHeader('CSS Transitions')
-		]));
-var $author$project$Engines$CSS$Controls$Transitions$Main$warningMessage = A2(
-	$mdgriffith$elm_ui$Element$el,
-	_List_fromArray(
-		[
-			$mdgriffith$elm_ui$Element$centerX,
-			$mdgriffith$elm_ui$Element$padding(12),
-			$mdgriffith$elm_ui$Element$Background$color(
-			A3($mdgriffith$elm_ui$Element$rgb255, 255, 243, 205)),
-			$mdgriffith$elm_ui$Element$Border$rounded(8),
-			$mdgriffith$elm_ui$Element$Border$width(1),
-			$mdgriffith$elm_ui$Element$Border$color(
-			A3($mdgriffith$elm_ui$Element$rgb255, 255, 193, 7)),
-			$mdgriffith$elm_ui$Element$Font$color(
-			A3($mdgriffith$elm_ui$Element$rgb255, 133, 100, 4)),
-			$mdgriffith$elm_ui$Element$Font$size(14)
-		]),
-	$mdgriffith$elm_ui$Element$text('For CSS transitions, you must reset the animation before running it again.'));
 var $author$project$Engines$CSS$Controls$Transitions$Main$viewContent = function (model) {
 	return _List_fromArray(
 		[
-			$author$project$Engines$CSS$Controls$Transitions$Main$header,
-			$author$project$Engines$CSS$Controls$Transitions$Main$controlsTable,
-			$author$project$Engines$CSS$Controls$Transitions$Main$controlButtons,
-			A2($author$project$Engines$CSS$Controls$Transitions$Main$animationArea, model.animAreaSize, model.animState),
-			$author$project$Engines$CSS$Controls$Transitions$Main$warningMessage
+			$author$project$Common$View$Controls$header(
+			_List_fromArray(
+				['CSS Engine Controls', 'for', 'Transitions'])),
+			$author$project$Common$View$Controls$table(
+			_List_fromArray(
+				[
+					_Utils_Tuple3(0, '🏀 Animate', 'Drop the ball'),
+					_Utils_Tuple3(1, '⏹️ Stop', 'Jump instantly to end state and stop'),
+					_Utils_Tuple3(1, '⏮️ Reset', 'Jump instantly to start state and stop')
+				])),
+			$author$project$Common$View$Controls$buttons(
+			_List_fromArray(
+				[
+					_List_fromArray(
+					[
+						_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$Engines$CSS$Controls$Transitions$Main$Animate, '🏀 Animate'),
+						_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$Engines$CSS$Controls$Transitions$Main$Stop, '⏹️ Stop'),
+						_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Engines$CSS$Controls$Transitions$Main$Reset, '⏮️ Reset')
+					])
+				])),
+			A2(
+			$author$project$Common$View$Controls$animationArea,
+			model.animAreaSize,
+			$author$project$Engines$CSS$Controls$Transitions$Main$animatedBall(model.animState))
 		]);
 };
 var $author$project$Engines$CSS$Controls$Transitions$Main$view = function (model) {

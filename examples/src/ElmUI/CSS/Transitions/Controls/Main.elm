@@ -15,7 +15,7 @@ All controls work with CSS transitions for optimal performance and browser compa
 
 -}
 
-import Anim.Engine.CSS as CSS
+import Anim.Engine.CSS.Transitions as CSS
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Translate as PositionAnim
@@ -62,7 +62,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         initialAnimations =
-            CSS.animate CSS.init
+            CSS.animate (CSS.init [])
                 (Translate.initXY elementId 50 50)
     in
     ( { animations = initialAnimations
@@ -268,7 +268,7 @@ viewContent model =
          , htmlAttribute (Html.Attributes.style "position" "relative")
          , htmlAttribute (Html.Attributes.style "overflow" "hidden")
          ]
-            ++ List.map htmlAttribute (CSS.htmlAttributes elementId model.animations)
+            ++ List.map htmlAttribute (CSS.transitionAttributes elementId model.animations)
         )
         (el
             [ width (px 50)

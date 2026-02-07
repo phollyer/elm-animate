@@ -3,7 +3,7 @@ module Anim.Builder exposing (AnimBuilder)
 {-| The core animation builder type used across all engines.
 
 This module exposes the `AnimBuilder` type for creating reusable animation
-functions that work with any engine (CSS, WAAPI, Sub, Scroll).
+functions that work with any engine.
 
 
 # Type
@@ -26,20 +26,27 @@ across all engines:
     moveRight : AnimBuilder -> AnimBuilder
     moveRight =
         Translate.for "box"
+            >> Translate.fromX 0
             >> Translate.toX 200
             >> Translate.speed 100
             >> Translate.build
 
 These functions can then be used with any engine:
 
-    -- With CSS Engine
-    CSS.animate animState moveRight
+    -- With CSS Engines
+    Anim.Engine.CSS.Transitions.animate animState moveRight
 
-    -- With WAAPI Engine
-    WAAPI.animate animState moveRight
+    Anim.Engine.CSS.Transitions.fireAndForget moveRight
+
+    Anim.Engine.CSS.Keyframes.animate animState moveRight
+
+    Anim.Engine.CSS.Keyframes.fireAndForget moveRight
 
     -- With Sub Engine
-    Sub.animate animState moveRight
+    Anim.Engine.Sub.animate animState moveRight
+
+    -- With WAAPI Engine
+    Anim.Engine.WAAPI.animate animState moveRight
 
 -}
 type alias AnimBuilder =

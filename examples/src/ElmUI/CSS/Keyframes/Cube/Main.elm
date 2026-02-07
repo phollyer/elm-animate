@@ -24,7 +24,7 @@ The cube is built with 6 positioned faces, each transformed to form a cube:
 -}
 
 import Anim.Extra.Easing as Easing
-import Anim.Engine.CSS as CSS
+import Anim.Engine.CSS.Keyframes as CSS
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
@@ -79,7 +79,7 @@ type Msg
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animState =
-            CSS.animate CSS.init
+            CSS.animate (CSS.init [])
                 (Translate.initZ "cube" 0
                     >> Rotate.initXYZ "cube" 0 0 0
                 )
@@ -265,7 +265,7 @@ viewCube model =
              , Html.Attributes.style "transform-style" "preserve-3d"
              , Html.Attributes.style "transform-origin" "center"
              ]
-                ++ CSS.htmlAttributes "cube" model.animState
+                ++ CSS.keyframesStyles "cube" model.animState
             )
             [ -- Front face
               Html.div
