@@ -710,8 +710,16 @@ update toMsg msg (AnimState animData) =
                         Nothing ->
                             createScrollAnimationFromViewport animBuilder scrollTarget domResult.viewport
 
+                -- Only add animation if there's actual distance to scroll
+                hasDistance =
+                    calculateDistance animation.config.axis animation.startX animation.startY animation.config.targetX animation.config.targetY > 0
+
                 updatedAnimations =
-                    Dict.insert animId animation animData.animations
+                    if hasDistance then
+                        Dict.insert animId animation animData.animations
+
+                    else
+                        animData.animations
             in
             ( AnimState { animData | animations = updatedAnimations }
             , Cmd.none

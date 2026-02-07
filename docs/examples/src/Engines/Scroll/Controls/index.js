@@ -6782,7 +6782,8 @@ var $author$project$Anim$Internal$Scroll$update = F3(
 						return A3($author$project$Anim$Internal$Scroll$createScrollAnimationFromViewport, animBuilder, scrollTarget, domResult.viewport);
 					}
 				}();
-				var updatedAnimations = A3($elm$core$Dict$insert, animId, animation, animData.animations);
+				var hasDistance = A5($author$project$Anim$Internal$Scroll$calculateDistance, animation.config.axis, animation.startX, animation.startY, animation.config.targetX, animation.config.targetY) > 0;
+				var updatedAnimations = hasDistance ? A3($elm$core$Dict$insert, animId, animation, animData.animations) : animData.animations;
 				return _Utils_Tuple2(
 					$author$project$Anim$Internal$Scroll$AnimState(
 						_Utils_update(
