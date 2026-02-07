@@ -76,6 +76,7 @@ nav:
         - Keyframe Animations: concepts/controlling-animations/css/keyframes.md
       - Sub Engine Controls: concepts/controlling-animations/sub.md
       - WAAPI Engine Controls: concepts/controlling-animations/waapi.md
+      - Scroll Engine Controls: concepts/controlling-animations/scroll.md
     - Properties: concepts/properties.md
     - Easing Functions: concepts/easing.md
     - 3D Animations: concepts/3d.md

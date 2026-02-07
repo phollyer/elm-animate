@@ -75,3 +75,10 @@ Resets to the start state, then immediately begins playing the animation again:
     ```elm
     --8<-- "docs/examples/src/Engines/WAAPI/Controls/Main.elm:restart"
     ```
+
+
+## Next Steps
+
+Controlling Scroll Animations.
+
+[Controlling Scroll Animations →](scroll.md){ .md-button .md-button--primary }
