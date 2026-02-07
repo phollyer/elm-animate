@@ -100,7 +100,10 @@ subscriptions model =
 
 view : Model -> Document Msg
 view model =
-    UI.createDocument "SmoothMoveScroll - Container Scrolling (ElmUI)" UI.Container (viewContent model)
+    UI.createDocument 
+        "SmoothMoveScroll - Container Scrolling (ElmUI)" 
+        UI.Container 
+        (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)

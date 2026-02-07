@@ -117,8 +117,50 @@ forContainer =
 build : ScrollBuilder -> AnimBuilder
 build (ScrollBuilder config) =
     -- Add the completed scroll target to the AnimBuilder
+    -- and apply any per-scroll timing settings
     config.animBuilder
+        |> applyTiming config.timing
+        |> applyEasing config.easing
+        |> applyDelay config.delay
         |> Builder.addScrollTarget config.scrollTarget
+
+
+{-| Apply timing from ScrollBuilder to AnimBuilder if set.
+-}
+applyTiming : Maybe TimeSpec -> AnimBuilder -> AnimBuilder
+applyTiming maybeTiming animBuilder =
+    case maybeTiming of
+        Just (Duration ms) ->
+            Builder.duration ms animBuilder
+
+        Just (Speed pxPerSec) ->
+            Builder.speed pxPerSec animBuilder
+
+        Nothing ->
+            animBuilder
+
+
+{-| Apply easing from ScrollBuilder to AnimBuilder if set.
+-}
+applyEasing : Maybe Easing -> AnimBuilder -> AnimBuilder
+applyEasing maybeEasing animBuilder =
+    case maybeEasing of
+        Just easingFn ->
+            Builder.easing easingFn animBuilder
+
+        Nothing ->
+            animBuilder
+
+
+{-| Apply delay from ScrollBuilder to AnimBuilder if set.
+-}
+applyDelay : Int -> AnimBuilder -> AnimBuilder
+applyDelay delayMs animBuilder =
+    if delayMs > 0 then
+        Builder.delay delayMs animBuilder
+
+    else
+        animBuilder
 
 
 

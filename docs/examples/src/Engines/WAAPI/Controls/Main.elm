@@ -213,7 +213,7 @@ animatedBall : Element msg
 animatedBall =
     el
         [ -- The WAAPI engine requires an id attribute to target the element for animation
-          -- The JS side will use this id to identify the element to animate, 
+          -- The JS side will use this id to identify the element to animate,
           -- and to manage animation state for that element
           htmlAttribute (Html.Attributes.id elementId)
         , width (px 50)

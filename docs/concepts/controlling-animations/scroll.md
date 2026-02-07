@@ -15,6 +15,16 @@ The Scroll Engine provides full programmatic control over running scroll animati
 | `reset` | Jump instantly to the **start position** and stop |
 | `restart` | Reset to start position, then begin scrolling again |
 
+## Live Example
+
+??? example "View Source Code"
+
+    ```elm
+    --8<-- "docs/examples/src/Engines/Scroll/Controls/Main.elm"
+    ```
+
+[:material-play-circle: Run this example](../../examples/src/Engines/Scroll/Controls/index.html){ .md-button target="_blank" }
+
 ## Document vs Container
 
 Each control function has two variants:
@@ -24,80 +34,74 @@ Each control function has two variants:
 
 ```elm
 -- Stop document scrolling
-Scroll.stop model.scrollAnimations
+let
+    ( newState, cmd ) = Scroll.stop GotScrollMsg model.scrollAnimations
+in
+( { model | scrollAnimations = newState }, cmd )
 
 -- Stop a specific container's scrolling
-Scroll.stopContainer "my-scrollable-div" model.scrollAnimations
+let
+    ( newState, cmd ) = Scroll.stopContainer GotScrollMsg "my-scrollable-div" model.scrollAnimations
+in
+( { model | scrollAnimations = newState }, cmd )
 ```
 
 ## Using Control Functions
 
-All control functions follow the same pattern - they take the current `AnimState` and return an updated state.
+Control functions follow two patterns:
+
+- **Pause/Resume** - Take the current `AnimState` and return an updated state
+- **Stop/Reset/Restart** - Require a message wrapper and return `(AnimState, Cmd msg)` to issue immediate scroll commands
 
 ### Stop
 
 Immediately jumps to the target scroll position and completes the animation:
 
-```elm
-update msg model =
-    case msg of
-        StopScrolling ->
-            ( { model | scrollAnimations = Scroll.stop model.scrollAnimations }
-            , Cmd.none
-            )
-```
+??? example "View Source Code"
+
+    ```elm
+    --8<-- "docs/examples/src/Engines/Scroll/Controls/Main.elm:stop"
+    ```
 
 ### Pause
 
 Freezes the scroll at its current position. The scroll can be resumed later:
 
-```elm
-update msg model =
-    case msg of
-        PauseScrolling ->
-            ( { model | scrollAnimations = Scroll.pause model.scrollAnimations }
-            , Cmd.none
-            )
-```
+??? example "View Source Code"
+
+    ```elm
+    --8<-- "docs/examples/src/Engines/Scroll/Controls/Main.elm:pause"
+    ```
 
 ### Resume
 
 Continues a paused scroll from exactly where it was frozen:
 
-```elm
-update msg model =
-    case msg of
-        ResumeScrolling ->
-            ( { model | scrollAnimations = Scroll.resume model.scrollAnimations }
-            , Cmd.none
-            )
-```
+??? example "View Source Code"
+
+    ```elm
+    --8<-- "docs/examples/src/Engines/Scroll/Controls/Main.elm:resume"
+    ```
 
 ### Reset
 
 Immediately jumps back to the starting scroll position and stops:
 
-```elm
-update msg model =
-    case msg of
-        ResetScrolling ->
-            ( { model | scrollAnimations = Scroll.reset model.scrollAnimations }
-            , Cmd.none
-            )
-```
+??? example "View Source Code"
+
+    ```elm
+    --8<-- "docs/examples/src/Engines/Scroll/Controls/Main.elm:reset"
+    ```
 
 ### Restart
 
 Resets to the start position, then immediately begins scrolling again:
 
-```elm
-update msg model =
-    case msg of
-        RestartScrolling ->
-            ( { model | scrollAnimations = Scroll.restart model.scrollAnimations }
-            , Cmd.none
-            )
-```
+??? example "View Source Code"
+
+    ```elm
+    --8<-- "docs/examples/src/Engines/Scroll/Controls/Main.elm:restart"
+    ```
 
 ## Container-Specific Controls
 
@@ -111,6 +115,9 @@ Scroll.pauseContainer "article-content" model.scrollAnimations
 Scroll.resumeContainer "article-content" model.scrollAnimations
 
 -- Stop scrolling in a sidebar
-Scroll.stopContainer "sidebar-nav" model.scrollAnimations
+let
+    ( newState, cmd ) = Scroll.stopContainer GotScrollMsg "sidebar-nav" model.scrollAnimations
+in
+( { model | scrollAnimations = newState }, cmd )
 ```
 
