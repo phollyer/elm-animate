@@ -20,6 +20,11 @@ module Anim.Engine.Scroll exposing
     , easing
     , anyRunning, isRunning, getMaxDuration, getDuration
     , getPosition, getPositionX, getPositionY
+    , stop, stopContainer
+    , pause, pauseContainer
+    , resume, resumeContainer
+    , reset, resetContainer
+    , restart, restartContainer
     , onBothAxes, onXAxis, onYAxis
     )
 
@@ -191,6 +196,48 @@ This overrides the global easing setting.
 ## Scroll Position
 
 @docs getPosition, getPositionX, getPositionY
+
+
+# Controls
+
+**Note:** These functions are only applicable for stateful, subscription-based animations executed with [animate](#animate).
+
+Use these functions to control ongoing scroll animations:
+
+
+## Stop
+
+Stop a scroll animation by jumping to the target position.
+
+@docs stop, stopContainer
+
+
+## Pause
+
+Paused scrolls retain their current position and progress. Use [resume](#resume) to continue.
+
+@docs pause, pauseContainer
+
+
+## Resume
+
+Resume a paused scroll animation from its current position and progress.
+
+@docs resume, resumeContainer
+
+
+## Reset
+
+Resets a scroll animation to its starting position.
+
+@docs reset, resetContainer
+
+
+## Restart
+
+Restart a scroll animation from its starting position. Animation begins playing immediately from the beginning.
+
+@docs restart, restartContainer
 
 
 ## Axis Selection
@@ -521,6 +568,135 @@ Returns `Nothing` if no animation is running for the specified container.
 getDuration : String -> AnimState -> Maybe Int
 getDuration =
     InternalScroll.getContainerDuration
+
+
+
+-- ANIMATION CONTROLS
+
+
+{-| Stop the Document scroll animation.
+
+    update msg model =
+        case msg of
+            StopScrolling ->
+                ( { model | scrollAnimations = Scroll.stop model.scrollAnimations }
+                , Cmd.none
+                )
+
+-}
+stop : AnimState -> AnimState
+stop =
+    InternalScroll.stopContainer "document"
+
+
+{-| Stop a scroll animation for a specific container.
+
+    Scroll.stopContainer "my-container" model.scrollAnimations
+
+-}
+stopContainer : String -> AnimState -> AnimState
+stopContainer =
+    InternalScroll.stopContainer
+
+
+{-| Pause a Document scroll animation.
+
+    update msg model =
+        case msg of
+            PauseScrolling ->
+                ( { model | scrollAnimations = Scroll.pause model.scrollAnimations }
+                , Cmd.none
+                )
+
+-}
+pause : AnimState -> AnimState
+pause =
+    InternalScroll.pauseContainer "document"
+
+
+{-| Pause a scroll animation for a specific container.
+
+    Scroll.pauseContainer "my-container" model.scrollAnimations
+
+-}
+pauseContainer : String -> AnimState -> AnimState
+pauseContainer =
+    InternalScroll.pauseContainer
+
+
+{-| Resume a Document scroll animation.
+
+    update msg model =
+        case msg of
+            ResumeScrolling ->
+                ( { model | scrollAnimations = Scroll.resume model.scrollAnimations }
+                , Cmd.none
+                )
+
+-}
+resume : AnimState -> AnimState
+resume =
+    InternalScroll.resumeContainer "document"
+
+
+{-| Resume a scroll animation for a specific container.
+
+    Scroll.resumeContainer "my-container" model.scrollAnimations
+
+-}
+resumeContainer : String -> AnimState -> AnimState
+resumeContainer =
+    InternalScroll.resumeContainer
+
+
+{-| Reset a Document scroll animation to its starting position.
+
+    update msg model =
+        case msg of
+            ResetScrolling ->
+                ( { model | scrollAnimations = Scroll.reset model.scrollAnimations }
+                , Cmd.none
+                )
+
+-}
+reset : AnimState -> AnimState
+reset =
+    InternalScroll.resetContainer "document"
+
+
+{-| Reset a scroll animation for a specific container.
+
+    Scroll.resetContainer "my-container" model.scrollAnimations
+
+-}
+resetContainer : String -> AnimState -> AnimState
+resetContainer =
+    InternalScroll.resetContainer
+
+
+{-| Restart a Document scroll animation from its starting position.
+
+    update msg model =
+        case msg of
+            RestartScrolling ->
+                ( { model | scrollAnimations = Scroll.restart model.scrollAnimations }
+                , Cmd.none
+                )
+
+-}
+restart : AnimState -> AnimState
+restart =
+    InternalScroll.restartContainer "document"
+
+
+{-| Restart scroll animation for a specific container.
+
+    Scroll.restartContainer "my-container" model.scrollAnimations
+
+-}
+restartContainer : String -> AnimState -> AnimState
+restartContainer =
+    InternalScroll.restartContainer
 
 
 {-| Execute scroll animations as a [Cmd](https://package.elm-lang.org/packages/elm/core/latest/Cmd).

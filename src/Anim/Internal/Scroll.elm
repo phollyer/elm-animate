@@ -20,12 +20,22 @@ module Anim.Internal.Scroll exposing
     , getScrollTargets
     , init
     , isRunning
+    , pause
+    , pauseContainer
+    , reset
+    , resetContainer
+    , restart
+    , restartContainer
+    , resume
+    , resumeContainer
     , setAxis
     , setContainer
     , setOffset
     , setOffsetX
     , setOffsetY
     , speed
+    , stop
+    , stopContainer
     , subscriptions
     , toCmd
     , update
@@ -97,6 +107,7 @@ type alias ScrollAnimation =
     , elapsedMs : Float
     , delayMs : Float
     , delayComplete : Bool
+    , isPaused : Bool
     }
 
 
@@ -475,6 +486,7 @@ createScrollAnimationFromDom animBuilder scrollTarget viewport element =
     , elapsedMs = 0.0
     , delayMs = delayMs
     , delayComplete = delayMs == 0.0
+    , isPaused = False
     }
 
 
@@ -518,6 +530,7 @@ createScrollAnimationFromViewport animBuilder scrollTarget viewport =
     , elapsedMs = 0.0
     , delayMs = delayMs
     , delayComplete = delayMs == 0.0
+    , isPaused = False
     }
 
 
@@ -579,13 +592,17 @@ update toMsg msg (AnimState animData) =
                 ( updatedAnimations, scrollCommands ) =
                     Dict.foldl
                         (\animId anim ( accAnims, accCmds ) ->
-                            let
-                                updatedAnim =
-                                    updateScrollAnimation deltaMs anim
+                            -- Skip paused animations - keep them in state but don't update
+                            if anim.isPaused then
+                                ( Dict.insert animId anim accAnims, accCmds )
 
-                                scrollCmd =
-                                    if updatedAnim.progress < 1.0 then
-                                        -- Perform scroll operation during animation
+                            else
+                                let
+                                    updatedAnim =
+                                        updateScrollAnimation deltaMs anim
+
+                                    -- Issue scroll command for both ongoing and completing animations
+                                    scrollCmd =
                                         case updatedAnim.config.containerId of
                                             DocumentBody ->
                                                 Dom.setViewport updatedAnim.currentX updatedAnim.currentY
@@ -594,15 +611,13 @@ update toMsg msg (AnimState animData) =
                                             ElementId containerId ->
                                                 Dom.setViewportOf containerId updatedAnim.currentX updatedAnim.currentY
                                                     |> Task.attempt (\_ -> toMsg NoOp)
+                                in
+                                if updatedAnim.progress < 1.0 then
+                                    ( Dict.insert animId updatedAnim accAnims, scrollCmd :: accCmds )
 
-                                    else
-                                        Cmd.none
-                            in
-                            if updatedAnim.progress < 1.0 then
-                                ( Dict.insert animId updatedAnim accAnims, scrollCmd :: accCmds )
-
-                            else
-                                ( accAnims, accCmds )
+                                else
+                                    -- Animation complete - issue final scroll and remove
+                                    ( accAnims, scrollCmd :: accCmds )
                         )
                         ( Dict.empty, [] )
                         animData.animations
@@ -700,11 +715,13 @@ subscriptions toMsg animState =
 -- QUERYING ANIMATION STATE
 
 
-{-| Check if any scroll animations are currently running.
+{-| Check if any scroll animations are currently running (not paused).
 -}
 anyRunning : AnimState -> Bool
 anyRunning (AnimState animData) =
-    not (Dict.isEmpty animData.animations)
+    animData.animations
+        |> Dict.values
+        |> List.any (\anim -> not anim.isPaused)
 
 
 {-| Get the maximum duration of currently running scroll animations.
@@ -788,6 +805,214 @@ getContainerDuration containerId (AnimState animData) =
         |> List.filter (\anim -> containerIdMatches containerId anim.config.containerId)
         |> List.head
         |> Maybe.map (\anim -> round anim.durationMs)
+
+
+
+-- ANIMATION CONTROLS
+
+
+{-| Stop all scroll animations by jumping to their end positions.
+Animations are marked complete and will scroll to their targets on the next frame.
+-}
+stop : AnimState -> AnimState
+stop (AnimState animData) =
+    let
+        updatedAnimations =
+            Dict.map
+                (\_ anim ->
+                    { anim
+                        | currentX = anim.config.targetX
+                        , currentY = anim.config.targetY
+                        , progress = 1.0
+                        , isPaused = False
+                    }
+                )
+                animData.animations
+    in
+    AnimState { animData | animations = updatedAnimations }
+
+
+{-| Stop scroll animation for a specific container by jumping to end position.
+-}
+stopContainer : String -> AnimState -> AnimState
+stopContainer containerId (AnimState animData) =
+    let
+        updatedAnimations =
+            Dict.map
+                (\_ anim ->
+                    if containerIdMatches containerId anim.config.containerId then
+                        { anim
+                            | currentX = anim.config.targetX
+                            , currentY = anim.config.targetY
+                            , progress = 1.0
+                            , isPaused = False
+                        }
+
+                    else
+                        anim
+                )
+                animData.animations
+    in
+    AnimState { animData | animations = updatedAnimations }
+
+
+{-| Pause all scroll animations.
+Paused animations retain their current position and progress.
+-}
+pause : AnimState -> AnimState
+pause (AnimState animData) =
+    let
+        updatedAnimations =
+            Dict.map (\_ anim -> { anim | isPaused = True }) animData.animations
+    in
+    AnimState { animData | animations = updatedAnimations }
+
+
+{-| Pause scroll animation for a specific container.
+-}
+pauseContainer : String -> AnimState -> AnimState
+pauseContainer containerId (AnimState animData) =
+    let
+        updatedAnimations =
+            Dict.map
+                (\_ anim ->
+                    if containerIdMatches containerId anim.config.containerId then
+                        { anim | isPaused = True }
+
+                    else
+                        anim
+                )
+                animData.animations
+    in
+    AnimState { animData | animations = updatedAnimations }
+
+
+{-| Resume all paused scroll animations.
+-}
+resume : AnimState -> AnimState
+resume (AnimState animData) =
+    let
+        updatedAnimations =
+            Dict.map (\_ anim -> { anim | isPaused = False }) animData.animations
+    in
+    AnimState { animData | animations = updatedAnimations }
+
+
+{-| Resume scroll animation for a specific container.
+-}
+resumeContainer : String -> AnimState -> AnimState
+resumeContainer containerId (AnimState animData) =
+    let
+        updatedAnimations =
+            Dict.map
+                (\_ anim ->
+                    if containerIdMatches containerId anim.config.containerId then
+                        { anim | isPaused = False }
+
+                    else
+                        anim
+                )
+                animData.animations
+    in
+    AnimState { animData | animations = updatedAnimations }
+
+
+{-| Reset all scroll animations to their starting positions.
+Animations return to progress 0 but remain paused.
+-}
+reset : AnimState -> AnimState
+reset (AnimState animData) =
+    let
+        updatedAnimations =
+            Dict.map
+                (\_ anim ->
+                    { anim
+                        | currentX = anim.startX
+                        , currentY = anim.startY
+                        , progress = 0.0
+                        , elapsedMs = 0.0
+                        , delayComplete = anim.delayMs == 0.0
+                        , isPaused = True
+                    }
+                )
+                animData.animations
+    in
+    AnimState { animData | animations = updatedAnimations }
+
+
+{-| Reset scroll animation for a specific container.
+-}
+resetContainer : String -> AnimState -> AnimState
+resetContainer containerId (AnimState animData) =
+    let
+        updatedAnimations =
+            Dict.map
+                (\_ anim ->
+                    if containerIdMatches containerId anim.config.containerId then
+                        { anim
+                            | currentX = anim.startX
+                            , currentY = anim.startY
+                            , progress = 0.0
+                            , elapsedMs = 0.0
+                            , delayComplete = anim.delayMs == 0.0
+                            , isPaused = True
+                        }
+
+                    else
+                        anim
+                )
+                animData.animations
+    in
+    AnimState { animData | animations = updatedAnimations }
+
+
+{-| Restart all scroll animations from their starting positions.
+Animations begin playing immediately.
+-}
+restart : AnimState -> AnimState
+restart (AnimState animData) =
+    let
+        updatedAnimations =
+            Dict.map
+                (\_ anim ->
+                    { anim
+                        | currentX = anim.startX
+                        , currentY = anim.startY
+                        , progress = 0.0
+                        , elapsedMs = 0.0
+                        , delayComplete = anim.delayMs == 0.0
+                        , isPaused = False
+                    }
+                )
+                animData.animations
+    in
+    AnimState { animData | animations = updatedAnimations }
+
+
+{-| Restart scroll animation for a specific container.
+-}
+restartContainer : String -> AnimState -> AnimState
+restartContainer containerId (AnimState animData) =
+    let
+        updatedAnimations =
+            Dict.map
+                (\_ anim ->
+                    if containerIdMatches containerId anim.config.containerId then
+                        { anim
+                            | currentX = anim.startX
+                            , currentY = anim.startY
+                            , progress = 0.0
+                            , elapsedMs = 0.0
+                            , delayComplete = anim.delayMs == 0.0
+                            , isPaused = False
+                        }
+
+                    else
+                        anim
+                )
+                animData.animations
+    in
+    AnimState { animData | animations = updatedAnimations }
 
 
 
