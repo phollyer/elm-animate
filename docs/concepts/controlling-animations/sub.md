@@ -17,10 +17,10 @@ The Sub Engine provides full programmatic control over running animations. You c
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/Sub/Controls/Main.elm"
+    --8<-- "docs/examples/src/Concepts/ControllingAnimations/SubEngine/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../../examples/src/Engines/Sub/Controls/index.html){ .md-button target="_blank" }
+[:material-play-circle: Run this example](../../examples/src/Concepts/ControllingAnimations/SubEngine/index.html){ .md-button target="_blank" }
 
 ## Using Control Functions
 

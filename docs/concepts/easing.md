@@ -4,10 +4,6 @@ Easing functions control the rate of change during an animation, making motion f
 
 ## Available Easings
 
-```elm
-import Anim.Extra.Easing exposing (Easing(..))
-```
-
 ### Linear
 
 Constant speed throughout. Rarely what you want for UI animations.
@@ -16,10 +12,12 @@ Constant speed throughout. Rarely what you want for UI animations.
 |> Property.easing Linear
 ```
 
-### Ease In/Out Variants
+### Ease
 
-| Easing | Description |
-|--------|-------------|
+The standard CSS easing functions — a good default choice for most UI animations.
+
+| Easing | Feel |
+| -------- | ------ |
 | `EaseIn` | Starts slow, ends fast |
 | `EaseOut` | Starts fast, ends slow |
 | `EaseInOut` | Slow at both ends |
@@ -29,7 +27,7 @@ Constant speed throughout. Rarely what you want for UI animations.
 Gentle, subtle easing based on sine curve.
 
 | Easing | Feel |
-|--------|------|
+| -------- | ------ |
 | `SineIn` | Gentle acceleration |
 | `SineOut` | Gentle deceleration |
 | `SineInOut` | Gentle both ends |
@@ -39,7 +37,7 @@ Gentle, subtle easing based on sine curve.
 Quadratic (power of 2) — slightly more pronounced than sine.
 
 | Easing | Feel |
-|--------|------|
+| -------- | ------ |
 | `QuadIn` | Moderate acceleration |
 | `QuadOut` | Moderate deceleration |
 | `QuadInOut` | Moderate both ends |
@@ -49,7 +47,7 @@ Quadratic (power of 2) — slightly more pronounced than sine.
 Cubic (power of 3) — more noticeable acceleration/deceleration.
 
 | Easing | Feel |
-|--------|------|
+| -------- | ------ |
 | `CubicIn` | Noticeable acceleration |
 | `CubicOut` | Noticeable deceleration |
 | `CubicInOut` | Noticeable both ends |
@@ -59,7 +57,7 @@ Cubic (power of 3) — more noticeable acceleration/deceleration.
 Quartic (power of 4) — dramatic effect.
 
 | Easing | Feel |
-|--------|------|
+| -------- | ------ |
 | `QuartIn` | Strong acceleration |
 | `QuartOut` | Strong deceleration |
 | `QuartInOut` | Strong both ends |
@@ -69,7 +67,7 @@ Quartic (power of 4) — dramatic effect.
 Quintic (power of 5) — very dramatic.
 
 | Easing | Feel |
-|--------|------|
+| -------- | ------ |
 | `QuintIn` | Very strong acceleration |
 | `QuintOut` | Very strong deceleration |
 | `QuintInOut` | Very strong both ends |
@@ -79,7 +77,7 @@ Quintic (power of 5) — very dramatic.
 Exponential — extremely dramatic.
 
 | Easing | Feel |
-|--------|------|
+| -------- | ------ |
 | `ExpoIn` | Explosive acceleration |
 | `ExpoOut` | Explosive deceleration |
 | `ExpoInOut` | Explosive both ends |
@@ -89,7 +87,7 @@ Exponential — extremely dramatic.
 Circular — based on quarter circle.
 
 | Easing | Feel |
-|--------|------|
+| -------- | ------ |
 | `CircIn` | Circular acceleration |
 | `CircOut` | Circular deceleration |
 | `CircInOut` | Circular both ends |
@@ -99,7 +97,7 @@ Circular — based on quarter circle.
 Overshoots slightly then returns.
 
 | Easing | Feel |
-|--------|------|
+| -------- | ------ |
 | `BackIn` | Pulls back then accelerates |
 | `BackOut` | Overshoots then settles |
 | `BackInOut` | Both effects |
@@ -109,7 +107,7 @@ Overshoots slightly then returns.
 Spring-like bounce effect.
 
 | Easing | Feel |
-|--------|------|
+| -------- | ------ |
 | `ElasticIn` | Winds up like a spring |
 | `ElasticOut` | Springs and oscillates |
 | `ElasticInOut` | Both effects |
@@ -119,10 +117,20 @@ Spring-like bounce effect.
 Bouncing ball effect.
 
 | Easing | Feel |
-|--------|------|
+| -------- | ------ |
 | `BounceIn` | Bounces at start |
 | `BounceOut` | Bounces at end |
 | `BounceInOut` | Both effects |
+
+### CubicBezier
+
+Custom easing curve defined by two control points — the same format used by CSS `cubic-bezier()`.
+
+```elm
+|> Property.easing (CubicBezier 0.68 -0.55 0.265 1.55)
+```
+
+The four parameters (`x1 y1 x2 y2`) define the curve's control points. Use tools like [cubic-bezier.com](https://cubic-bezier.com) to visualize and create custom curves.
 
 ## Choosing an Easing
 
@@ -199,3 +207,11 @@ shake builder =
         |> Rotate.easing ElasticOut
         |> Rotate.build
 ```
+
+## Next Steps
+
+Learn about animating in 3D!!
+
+[3D Animations →](3d.md){ .md-button .md-button--primary }
+
+

@@ -26,20 +26,20 @@ spin builder =
 ### Targeting
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `for` | Target an element by ID |
 
 ### Values — Uniform (all axes)
 
 | Function | Type | Description |
-|----------|------|-------------|
+| ---------- | ------ | ------------- |
 | `from` | `Float` | Starting rotation in degrees (all axes) |
 | `to` | `Float` | Ending rotation in degrees (all axes) |
 
 ### Values — Individual Axes
 
 | Function | Type | Description |
-|----------|------|-------------|
+| ---------- | ------ | ------------- |
 | `fromX` | `Float` | Starting X-axis rotation (degrees) |
 | `fromY` | `Float` | Starting Y-axis rotation (degrees) |
 | `fromZ` | `Float` | Starting Z-axis rotation (degrees) |
@@ -50,7 +50,7 @@ spin builder =
 ### Timing
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `duration` | Animation duration in milliseconds |
 | `speed` | Animation speed in degrees per second |
 | `delay` | Delay before animation starts |
@@ -59,7 +59,7 @@ spin builder =
 ### Initialization
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `initX`, `initY`, `initZ` | Set initial rotation on single axis |
 | `initXYZ` | Set initial rotation on all axes |
 

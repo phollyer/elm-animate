@@ -29,13 +29,13 @@ expandBox builder =
 ### Targeting
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `for` | Target an element by ID |
 
 ### Values — Individual
 
 | Function | Type | Description |
-|----------|------|-------------|
+| ---------- | ------ | ------------- |
 | `fromW` | `Float` | Starting width (pixels) |
 | `fromH` | `Float` | Starting height (pixels) |
 | `toW` | `Float` | Ending width (pixels) |
@@ -44,14 +44,14 @@ expandBox builder =
 ### Values — Combined
 
 | Function | Type | Description |
-|----------|------|-------------|
+| ---------- | ------ | ------------- |
 | `fromWH` | `Float -> Float` | Starting width and height |
 | `toWH` | `Float -> Float` | Ending width and height |
 
 ### Timing
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `duration` | Animation duration in milliseconds |
 | `speed` | Animation speed in pixels per second |
 | `delay` | Delay before animation starts |
@@ -60,7 +60,7 @@ expandBox builder =
 ### Initialization
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `initW`, `initH` | Set initial width or height |
 | `initWH` | Set initial width and height |
 
@@ -119,7 +119,7 @@ expandWidth builder =
 ## Scale vs Size
 
 | Aspect | Scale | Size |
-|--------|-------|------|
+| -------- | ------- | ------ |
 | GPU Accelerated | ✅ Yes | ❌ No |
 | Affects Layout | ❌ No | ✅ Yes |
 | Affects Children | Scales children | Children reflow |

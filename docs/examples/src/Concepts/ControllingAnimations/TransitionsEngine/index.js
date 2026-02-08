@@ -7891,7 +7891,7 @@ var $author$project$Anim$Internal$CSS$init = function (propertyInitializers) {
 			});
 	}
 };
-var $author$project$Anim$Engine$CSS$Keyframes$init = $author$project$Anim$Internal$CSS$init;
+var $author$project$Anim$Engine$CSS$Transitions$init = $author$project$Anim$Internal$CSS$init;
 var $author$project$Common$Animations$Controls$elementId = 'bouncing-ball';
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -8472,13 +8472,13 @@ var $author$project$Common$Animations$Controls$init = function (animAreaWidth) {
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$init = function (_v0) {
+var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$init = function (_v0) {
 	var window = _v0.window;
 	var animAreaWidth = A2($elm$core$Basics$min, 500, window.width - 40);
 	return _Utils_Tuple2(
 		{
 			animAreaSize: {height: 350, width: animAreaWidth},
-			animState: $author$project$Anim$Engine$CSS$Keyframes$init(
+			animState: $author$project$Anim$Engine$CSS$Transitions$init(
 				_List_fromArray(
 					[
 						$author$project$Common$Animations$Controls$init(animAreaWidth)
@@ -8520,7 +8520,7 @@ var $author$project$Anim$Internal$CSS$animate = F2(
 				restartCounters: $elm$core$Dict$empty
 			});
 	});
-var $author$project$Anim$Engine$CSS$Keyframes$animate = $author$project$Anim$Internal$CSS$animate;
+var $author$project$Anim$Engine$CSS$Transitions$animate = $author$project$Anim$Internal$CSS$animate;
 var $author$project$Anim$Extra$Easing$BounceOut = {$: 'BounceOut'};
 var $author$project$Anim$Property$Translate$build = $author$project$Anim$Internal$Builders$Translate$build;
 var $elm$core$Basics$composeR = F3(
@@ -8624,405 +8624,6 @@ var $author$project$Common$Animations$Controls$animate = A2(
 					$elm$core$Basics$composeR,
 					$author$project$Anim$Property$Translate$easing($author$project$Anim$Extra$Easing$BounceOut),
 					$author$project$Anim$Property$Translate$build)))));
-var $elm$core$Dict$getMin = function (dict) {
-	getMin:
-	while (true) {
-		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
-			var left = dict.d;
-			var $temp$dict = left;
-			dict = $temp$dict;
-			continue getMin;
-		} else {
-			return dict;
-		}
-	}
-};
-var $elm$core$Dict$moveRedLeft = function (dict) {
-	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
-		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v1 = dict.d;
-			var lClr = _v1.a;
-			var lK = _v1.b;
-			var lV = _v1.c;
-			var lLeft = _v1.d;
-			var lRight = _v1.e;
-			var _v2 = dict.e;
-			var rClr = _v2.a;
-			var rK = _v2.b;
-			var rV = _v2.c;
-			var rLeft = _v2.d;
-			var _v3 = rLeft.a;
-			var rlK = rLeft.b;
-			var rlV = rLeft.c;
-			var rlL = rLeft.d;
-			var rlR = rLeft.e;
-			var rRight = _v2.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				$elm$core$Dict$Red,
-				rlK,
-				rlV,
-				A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					rlL),
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rlR, rRight));
-		} else {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v4 = dict.d;
-			var lClr = _v4.a;
-			var lK = _v4.b;
-			var lV = _v4.c;
-			var lLeft = _v4.d;
-			var lRight = _v4.e;
-			var _v5 = dict.e;
-			var rClr = _v5.a;
-			var rK = _v5.b;
-			var rV = _v5.c;
-			var rLeft = _v5.d;
-			var rRight = _v5.e;
-			if (clr.$ === 'Black') {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			}
-		}
-	} else {
-		return dict;
-	}
-};
-var $elm$core$Dict$moveRedRight = function (dict) {
-	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
-		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v1 = dict.d;
-			var lClr = _v1.a;
-			var lK = _v1.b;
-			var lV = _v1.c;
-			var _v2 = _v1.d;
-			var _v3 = _v2.a;
-			var llK = _v2.b;
-			var llV = _v2.c;
-			var llLeft = _v2.d;
-			var llRight = _v2.e;
-			var lRight = _v1.e;
-			var _v4 = dict.e;
-			var rClr = _v4.a;
-			var rK = _v4.b;
-			var rV = _v4.c;
-			var rLeft = _v4.d;
-			var rRight = _v4.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				$elm$core$Dict$Red,
-				lK,
-				lV,
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
-				A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					lRight,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight)));
-		} else {
-			var clr = dict.a;
-			var k = dict.b;
-			var v = dict.c;
-			var _v5 = dict.d;
-			var lClr = _v5.a;
-			var lK = _v5.b;
-			var lV = _v5.c;
-			var lLeft = _v5.d;
-			var lRight = _v5.e;
-			var _v6 = dict.e;
-			var rClr = _v6.a;
-			var rK = _v6.b;
-			var rV = _v6.c;
-			var rLeft = _v6.d;
-			var rRight = _v6.e;
-			if (clr.$ === 'Black') {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Black,
-					k,
-					v,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
-			}
-		}
-	} else {
-		return dict;
-	}
-};
-var $elm$core$Dict$removeHelpPrepEQGT = F7(
-	function (targetKey, dict, color, key, value, left, right) {
-		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-			var _v1 = left.a;
-			var lK = left.b;
-			var lV = left.c;
-			var lLeft = left.d;
-			var lRight = left.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				lK,
-				lV,
-				lLeft,
-				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, lRight, right));
-		} else {
-			_v2$2:
-			while (true) {
-				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
-					if (right.d.$ === 'RBNode_elm_builtin') {
-						if (right.d.a.$ === 'Black') {
-							var _v3 = right.a;
-							var _v4 = right.d;
-							var _v5 = _v4.a;
-							return $elm$core$Dict$moveRedRight(dict);
-						} else {
-							break _v2$2;
-						}
-					} else {
-						var _v6 = right.a;
-						var _v7 = right.d;
-						return $elm$core$Dict$moveRedRight(dict);
-					}
-				} else {
-					break _v2$2;
-				}
-			}
-			return dict;
-		}
-	});
-var $elm$core$Dict$removeMin = function (dict) {
-	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
-		var color = dict.a;
-		var key = dict.b;
-		var value = dict.c;
-		var left = dict.d;
-		var lColor = left.a;
-		var lLeft = left.d;
-		var right = dict.e;
-		if (lColor.$ === 'Black') {
-			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
-				var _v3 = lLeft.a;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					color,
-					key,
-					value,
-					$elm$core$Dict$removeMin(left),
-					right);
-			} else {
-				var _v4 = $elm$core$Dict$moveRedLeft(dict);
-				if (_v4.$ === 'RBNode_elm_builtin') {
-					var nColor = _v4.a;
-					var nKey = _v4.b;
-					var nValue = _v4.c;
-					var nLeft = _v4.d;
-					var nRight = _v4.e;
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						$elm$core$Dict$removeMin(nLeft),
-						nRight);
-				} else {
-					return $elm$core$Dict$RBEmpty_elm_builtin;
-				}
-			}
-		} else {
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				key,
-				value,
-				$elm$core$Dict$removeMin(left),
-				right);
-		}
-	} else {
-		return $elm$core$Dict$RBEmpty_elm_builtin;
-	}
-};
-var $elm$core$Dict$removeHelp = F2(
-	function (targetKey, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		} else {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			if (_Utils_cmp(targetKey, key) < 0) {
-				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
-					var _v4 = left.a;
-					var lLeft = left.d;
-					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
-						var _v6 = lLeft.a;
-						return A5(
-							$elm$core$Dict$RBNode_elm_builtin,
-							color,
-							key,
-							value,
-							A2($elm$core$Dict$removeHelp, targetKey, left),
-							right);
-					} else {
-						var _v7 = $elm$core$Dict$moveRedLeft(dict);
-						if (_v7.$ === 'RBNode_elm_builtin') {
-							var nColor = _v7.a;
-							var nKey = _v7.b;
-							var nValue = _v7.c;
-							var nLeft = _v7.d;
-							var nRight = _v7.e;
-							return A5(
-								$elm$core$Dict$balance,
-								nColor,
-								nKey,
-								nValue,
-								A2($elm$core$Dict$removeHelp, targetKey, nLeft),
-								nRight);
-						} else {
-							return $elm$core$Dict$RBEmpty_elm_builtin;
-						}
-					}
-				} else {
-					return A5(
-						$elm$core$Dict$RBNode_elm_builtin,
-						color,
-						key,
-						value,
-						A2($elm$core$Dict$removeHelp, targetKey, left),
-						right);
-				}
-			} else {
-				return A2(
-					$elm$core$Dict$removeHelpEQGT,
-					targetKey,
-					A7($elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
-			}
-		}
-	});
-var $elm$core$Dict$removeHelpEQGT = F2(
-	function (targetKey, dict) {
-		if (dict.$ === 'RBNode_elm_builtin') {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			if (_Utils_eq(targetKey, key)) {
-				var _v1 = $elm$core$Dict$getMin(right);
-				if (_v1.$ === 'RBNode_elm_builtin') {
-					var minKey = _v1.b;
-					var minValue = _v1.c;
-					return A5(
-						$elm$core$Dict$balance,
-						color,
-						minKey,
-						minValue,
-						left,
-						$elm$core$Dict$removeMin(right));
-				} else {
-					return $elm$core$Dict$RBEmpty_elm_builtin;
-				}
-			} else {
-				return A5(
-					$elm$core$Dict$balance,
-					color,
-					key,
-					value,
-					left,
-					A2($elm$core$Dict$removeHelp, targetKey, right));
-			}
-		} else {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		}
-	});
-var $elm$core$Dict$remove = F2(
-	function (key, dict) {
-		var _v0 = A2($elm$core$Dict$removeHelp, key, dict);
-		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
-			var _v1 = _v0.a;
-			var k = _v0.b;
-			var v = _v0.c;
-			var l = _v0.d;
-			var r = _v0.e;
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
-		} else {
-			var x = _v0;
-			return x;
-		}
-	});
-var $elm$core$Dict$update = F3(
-	function (targetKey, alter, dictionary) {
-		var _v0 = alter(
-			A2($elm$core$Dict$get, targetKey, dictionary));
-		if (_v0.$ === 'Just') {
-			var value = _v0.a;
-			return A3($elm$core$Dict$insert, targetKey, value, dictionary);
-		} else {
-			return A2($elm$core$Dict$remove, targetKey, dictionary);
-		}
-	});
-var $author$project$Anim$Internal$CSS$pauseAnimation = F2(
-	function (elementId, _v0) {
-		var state = _v0.a;
-		var updatedAnimations = A3(
-			$elm$core$Dict$update,
-			elementId,
-			$elm$core$Maybe$map(
-				function (element) {
-					return _Utils_update(
-						element,
-						{
-							styles: _Utils_ap(
-								element.styles,
-								_List_fromArray(
-									[
-										_Utils_Tuple2('animation-play-state', 'paused')
-									]))
-						});
-				}),
-			state.elementAnimations);
-		return $author$project$Anim$Internal$CSS$AnimState(
-			_Utils_update(
-				state,
-				{elementAnimations: updatedAnimations}));
-	});
-var $author$project$Anim$Engine$CSS$Keyframes$pause = $author$project$Anim$Internal$CSS$pauseAnimation;
 var $author$project$Anim$Internal$Properties$Scale$fromUniform = function (s) {
 	return $author$project$Anim$Internal$Properties$Scale$Scale(
 		{x: s, y: s, z: s});
@@ -9179,75 +8780,7 @@ var $author$project$Anim$Internal$CSS$reset = F2(
 				$author$project$Anim$Internal$CSS$AnimState(state));
 		}
 	});
-var $author$project$Anim$Engine$CSS$Keyframes$reset = $author$project$Anim$Internal$CSS$reset;
-var $author$project$Anim$Internal$CSS$restartAnimation = F2(
-	function (elementId, animState) {
-		var state = animState.a;
-		var _v0 = A2($author$project$Anim$Internal$Builder$getElementConfig, elementId, state.builder);
-		if (_v0.$ === 'Nothing') {
-			return animState;
-		} else {
-			var elementConfig = _v0.a;
-			var resetState = A2($author$project$Anim$Internal$CSS$reset, elementId, animState);
-			var currentCounter = A2(
-				$elm$core$Maybe$withDefault,
-				0,
-				A2($elm$core$Dict$get, elementId, state.restartCounters));
-			var newCounter = currentCounter + 1;
-			var suffix = 'r' + $elm$core$String$fromInt(newCounter);
-			var elementAnimation = A6(
-				$author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix,
-				$elm$core$Maybe$Nothing,
-				$author$project$Anim$Internal$Builder$discreteTransitionsEnabled(state.builder),
-				$author$project$Anim$Internal$Builder$getIterationCount(state.builder),
-				suffix,
-				elementId,
-				elementConfig);
-			var _v1 = resetState;
-			var resetStateData = _v1.a;
-			return $author$project$Anim$Internal$CSS$AnimState(
-				_Utils_update(
-					resetStateData,
-					{
-						elementAnimations: A3($elm$core$Dict$insert, elementId, elementAnimation, resetStateData.elementAnimations),
-						elementStates: A3($elm$core$Dict$insert, elementId, $author$project$Anim$Internal$CSS$NotStarted, resetStateData.elementStates),
-						restartCounters: A3($elm$core$Dict$insert, elementId, newCounter, resetStateData.restartCounters)
-					}));
-		}
-	});
-var $author$project$Anim$Engine$CSS$Keyframes$restart = $author$project$Anim$Internal$CSS$restartAnimation;
-var $author$project$Anim$Internal$CSS$resumeAnimation = F2(
-	function (elementId, _v0) {
-		var state = _v0.a;
-		var updatedAnimations = A3(
-			$elm$core$Dict$update,
-			elementId,
-			$elm$core$Maybe$map(
-				function (element) {
-					var filteredStyles = A2(
-						$elm$core$List$filter,
-						function (_v1) {
-							var key = _v1.a;
-							return key !== 'animation-play-state';
-						},
-						element.styles);
-					var newStyles = _Utils_ap(
-						filteredStyles,
-						_List_fromArray(
-							[
-								_Utils_Tuple2('animation-play-state', 'running')
-							]));
-					return _Utils_update(
-						element,
-						{styles: newStyles});
-				}),
-			state.elementAnimations);
-		return $author$project$Anim$Internal$CSS$AnimState(
-			_Utils_update(
-				state,
-				{elementAnimations: updatedAnimations}));
-	});
-var $author$project$Anim$Engine$CSS$Keyframes$resume = $author$project$Anim$Internal$CSS$resumeAnimation;
+var $author$project$Anim$Engine$CSS$Transitions$reset = $author$project$Anim$Internal$CSS$reset;
 var $author$project$Anim$Internal$CSS$Complete = {$: 'Complete'};
 var $author$project$Anim$Internal$Builder$processAnimationData = function (_v0) {
 	var data = _v0.a;
@@ -9465,8 +8998,8 @@ var $author$project$Anim$Internal$CSS$stopAnimation = F2(
 		var elementConfig = {properties: properties};
 		return $elm$core$List$isEmpty(properties) ? animState : A4($author$project$Anim$Internal$CSS$setStylesInstantly, elementId, $author$project$Anim$Internal$CSS$Complete, elementConfig, animState);
 	});
-var $author$project$Anim$Engine$CSS$Keyframes$stop = $author$project$Anim$Internal$CSS$stopAnimation;
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$update = F2(
+var $author$project$Anim$Engine$CSS$Transitions$stop = $author$project$Anim$Internal$CSS$stopAnimation;
+var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'Animate':
@@ -9474,7 +9007,7 @@ var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animState: A2($author$project$Anim$Engine$CSS$Keyframes$animate, model.animState, $author$project$Common$Animations$Controls$animate)
+							animState: A2($author$project$Anim$Engine$CSS$Transitions$animate, model.animState, $author$project$Common$Animations$Controls$animate)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Stop':
@@ -9482,31 +9015,7 @@ var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animState: A2($author$project$Anim$Engine$CSS$Keyframes$stop, $author$project$Common$Animations$Controls$elementId, model.animState)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'Reset':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							animState: A2($author$project$Anim$Engine$CSS$Keyframes$reset, $author$project$Common$Animations$Controls$elementId, model.animState)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'Restart':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							animState: A2($author$project$Anim$Engine$CSS$Keyframes$restart, $author$project$Common$Animations$Controls$elementId, model.animState)
-						}),
-					$elm$core$Platform$Cmd$none);
-			case 'Pause':
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							animState: A2($author$project$Anim$Engine$CSS$Keyframes$pause, $author$project$Common$Animations$Controls$elementId, model.animState)
+							animState: A2($author$project$Anim$Engine$CSS$Transitions$stop, $author$project$Common$Animations$Controls$elementId, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 			default:
@@ -9514,7 +9023,7 @@ var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							animState: A2($author$project$Anim$Engine$CSS$Keyframes$resume, $author$project$Common$Animations$Controls$elementId, model.animState)
+							animState: A2($author$project$Anim$Engine$CSS$Transitions$reset, $author$project$Common$Animations$Controls$elementId, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 		}
@@ -15360,15 +14869,11 @@ var $author$project$Common$UI$createDocument = F3(
 			title: title
 		};
 	});
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Animate = {$: 'Animate'};
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Pause = {$: 'Pause'};
+var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$Animate = {$: 'Animate'};
 var $author$project$Common$UI$Primary = {$: 'Primary'};
 var $author$project$Common$UI$Purple = {$: 'Purple'};
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Reset = {$: 'Reset'};
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Restart = {$: 'Restart'};
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Resume = {$: 'Resume'};
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Stop = {$: 'Stop'};
-var $author$project$Common$UI$Success = {$: 'Success'};
+var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$Reset = {$: 'Reset'};
+var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$Stop = {$: 'Stop'};
 var $author$project$Common$UI$Warning = {$: 'Warning'};
 var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
 	return {$: 'AlignY', a: a};
@@ -15410,11 +14915,42 @@ var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
 var $mdgriffith$elm_ui$Element$text = function (content) {
 	return $mdgriffith$elm_ui$Internal$Model$Text(content);
 };
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$animatedBall = function (animationAttrs) {
+var $author$project$Anim$Internal$CSS$getElementStyles = F2(
+	function (elementId, _v0) {
+		var state = _v0.a;
+		return A2(
+			$elm$core$Maybe$withDefault,
+			_List_Nil,
+			A2(
+				$elm$core$Maybe$map,
+				function ($) {
+					return $.styles;
+				},
+				A2($elm$core$Dict$get, elementId, state.elementAnimations)));
+	});
+var $author$project$Anim$Internal$CSS$transitionAttributes = F2(
+	function (elementId, animationResult) {
+		var styles = A2($author$project$Anim$Internal$CSS$getElementStyles, elementId, animationResult);
+		var attrs = A2(
+			$elm$core$List$map,
+			function (_v0) {
+				var prop = _v0.a;
+				var value = _v0.b;
+				return A2($elm$html$Html$Attributes$style, prop, value);
+			},
+			styles);
+		return attrs;
+	});
+var $author$project$Anim$Engine$CSS$Transitions$attributes = $author$project$Anim$Internal$CSS$transitionAttributes;
+var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$transitionAttributes = A2(
+	$elm$core$Basics$composeR,
+	$author$project$Anim$Engine$CSS$Transitions$attributes($author$project$Common$Animations$Controls$elementId),
+	$elm$core$List$map($mdgriffith$elm_ui$Element$htmlAttribute));
+var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$animatedBall = function (animState) {
 	return A2(
 		$mdgriffith$elm_ui$Element$el,
 		_Utils_ap(
-			animationAttrs,
+			$author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$transitionAttributes(animState),
 			_List_fromArray(
 				[
 					$mdgriffith$elm_ui$Element$width(
@@ -15661,104 +15197,6 @@ var $author$project$Common$View$Controls$header = A2(
 				$mdgriffith$elm_ui$Element$spacing(8)
 			])),
 	$elm$core$List$map($author$project$Common$UI$pageHeader));
-var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
-var $author$project$Anim$Internal$CSS$keyframesStyleNodeFor = F2(
-	function (elementId, _v0) {
-		var state = _v0.a;
-		var _v1 = A2($elm$core$Dict$get, elementId, state.elementAnimations);
-		if (_v1.$ === 'Just') {
-			var elementAnimation = _v1.a;
-			if ($elm$core$List$isEmpty(elementAnimation.animationLayers)) {
-				return $elm$html$Html$text('');
-			} else {
-				var elementKeyframes = A2(
-					$elm$core$String$join,
-					'\n\n',
-					A2(
-						$elm$core$List$map,
-						function ($) {
-							return $.keyframes;
-						},
-						elementAnimation.animationLayers));
-				return A3(
-					$elm$html$Html$node,
-					'style',
-					_List_Nil,
-					_List_fromArray(
-						[
-							$elm$html$Html$text(elementKeyframes)
-						]));
-			}
-		} else {
-			return $elm$html$Html$text('');
-		}
-	});
-var $author$project$Anim$Engine$CSS$Keyframes$keyframesStyleNodeFor = $author$project$Anim$Internal$CSS$keyframesStyleNodeFor;
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$keyframesNode = A2(
-	$elm$core$Basics$composeR,
-	$author$project$Anim$Engine$CSS$Keyframes$keyframesStyleNodeFor($author$project$Common$Animations$Controls$elementId),
-	$mdgriffith$elm_ui$Element$html);
-var $author$project$Anim$Internal$CSS$getElementAnimation = F2(
-	function (elementId, _v0) {
-		var state = _v0.a;
-		return A2($elm$core$Dict$get, elementId, state.elementAnimations);
-	});
-var $author$project$Anim$Internal$CSS$KeyframeAnimation$toAttributeString = function (animationLayers) {
-	return (!$elm$core$List$isEmpty(animationLayers)) ? A2(
-		$elm$core$String$join,
-		', ',
-		A2(
-			$elm$core$List$map,
-			function (layer) {
-				var iterationString = function () {
-					var _v0 = layer.iterationCount;
-					switch (_v0.$) {
-						case 'Once':
-							return '1';
-						case 'Times':
-							var n = _v0.a;
-							return $elm$core$String$fromInt(n);
-						default:
-							return 'infinite';
-					}
-				}();
-				return layer.animationName + (' ' + ($elm$core$String$fromInt(layer.duration) + ('ms ' + (layer.easing + (' ' + ($elm$core$String$fromInt(layer.delay) + ('ms ' + (iterationString + ' forwards'))))))));
-			},
-			animationLayers)) : '';
-};
-var $author$project$Anim$Internal$CSS$keyframesStyles = F2(
-	function (elementId, animState) {
-		var _v0 = A2($author$project$Anim$Internal$CSS$getElementAnimation, elementId, animState);
-		if (_v0.$ === 'Just') {
-			var elementAnimation = _v0.a;
-			var otherStyleAttrs = A2(
-				$elm$core$List$map,
-				function (_v2) {
-					var key = _v2.a;
-					var value = _v2.b;
-					return A2($elm$html$Html$Attributes$style, key, value);
-				},
-				A2(
-					$elm$core$List$filter,
-					function (_v1) {
-						var key = _v1.a;
-						return key !== 'animation';
-					},
-					elementAnimation.styles));
-			var animationAttr = A2(
-				$elm$html$Html$Attributes$style,
-				'animation',
-				$author$project$Anim$Internal$CSS$KeyframeAnimation$toAttributeString(elementAnimation.animationLayers));
-			return A2($elm$core$List$cons, animationAttr, otherStyleAttrs);
-		} else {
-			return _List_Nil;
-		}
-	});
-var $author$project$Anim$Engine$CSS$Keyframes$keyframesStyles = $author$project$Anim$Internal$CSS$keyframesStyles;
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$keyframesStyles = A2(
-	$elm$core$Basics$composeR,
-	$author$project$Anim$Engine$CSS$Keyframes$keyframesStyles($author$project$Common$Animations$Controls$elementId),
-	$elm$core$List$map($mdgriffith$elm_ui$Element$htmlAttribute));
 var $author$project$Common$Colors$borderMedium = A3($mdgriffith$elm_ui$Element$rgb255, 203, 213, 225);
 var $mdgriffith$elm_ui$Internal$Flag$borderColor = $mdgriffith$elm_ui$Internal$Flag$flag(28);
 var $mdgriffith$elm_ui$Element$Border$color = function (clr) {
@@ -15922,64 +15360,50 @@ var $author$project$Common$View$Controls$table = function (descriptions) {
 					descriptions))
 			]));
 };
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewContent = function (model) {
+var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$viewContent = function (model) {
 	return _List_fromArray(
 		[
-			$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$keyframesNode(model.animState),
 			$author$project$Common$View$Controls$header(
 			_List_fromArray(
-				['CSS Engine Controls', 'for', 'Keyframe Animations'])),
+				['Transitions Engine Controls'])),
 			$author$project$Common$View$Controls$table(
 			_List_fromArray(
 				[
 					_Utils_Tuple3(0, '🏀 Animate', 'Drop the ball'),
 					_Utils_Tuple3(1, '⏹️ Stop', 'Jump instantly to end state and stop'),
-					_Utils_Tuple3(1, '⏸️ Pause', 'Pause animation at current position'),
-					_Utils_Tuple3(1, '▶️ Resume', 'Continue paused animation'),
-					_Utils_Tuple3(1, '⏮️ Reset', 'Jump instantly to start state and stop'),
-					_Utils_Tuple3(1, '🔄 Restart', 'Reset to start, then begin animation again')
+					_Utils_Tuple3(1, '⏮️ Reset', 'Jump instantly to start state and stop')
 				])),
 			$author$project$Common$View$Controls$buttons(
 			_List_fromArray(
 				[
 					_List_fromArray(
 					[
-						_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Animate, '🏀 Animate'),
-						_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Stop, '⏹️ Stop')
-					]),
-					_List_fromArray(
-					[
-						_Utils_Tuple3($author$project$Common$UI$Success, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Pause, '⏸️ Pause'),
-						_Utils_Tuple3($author$project$Common$UI$Success, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Resume, '▶️ Resume')
-					]),
-					_List_fromArray(
-					[
-						_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Reset, '⏮️ Reset'),
-						_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$Restart, '🔄 Restart')
+						_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$Animate, '🏀 Animate'),
+						_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$Stop, '⏹️ Stop'),
+						_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$Reset, '⏮️ Reset')
 					])
 				])),
 			A2(
 			$author$project$Common$View$Controls$animationArea,
 			model.animAreaSize,
-			$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$animatedBall(
-				$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$keyframesStyles(model.animState)))
+			$author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$animatedBall(model.animState))
 		]);
 };
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$view = function (model) {
+var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$view = function (model) {
 	return A3(
 		$author$project$Common$UI$createDocument,
-		'Anim.Engine.CSS Keyframe Animation Controls Example',
+		'Anim.Engine.CSS Transition Controls Example',
 		$author$project$Common$UI$Basic,
-		$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$viewContent(model));
+		$author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$viewContent(model));
 };
-var $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$main = $elm$browser$Browser$document(
+var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$main = $elm$browser$Browser$document(
 	{
-		init: $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$init,
+		init: $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$init,
 		subscriptions: $elm$core$Basics$always($elm$core$Platform$Sub$none),
-		update: $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$update,
-		view: $author$project$Engines$CSS$Controls$KeyframeAnimations$Main$view
+		update: $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$update,
+		view: $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$view
 	});
-_Platform_export({'Engines':{'CSS':{'Controls':{'KeyframeAnimations':{'Main':{'init':$author$project$Engines$CSS$Controls$KeyframeAnimations$Main$main(
+_Platform_export({'Concepts':{'ControllingAnimations':{'TransitionsEngine':{'Main':{'init':$author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$main(
 	A2(
 		$elm$json$Json$Decode$andThen,
 		function (window) {
@@ -15995,4 +15419,4 @@ _Platform_export({'Engines':{'CSS':{'Controls':{'KeyframeAnimations':{'Main':{'i
 					return $elm$json$Json$Decode$succeed(
 						{width: width});
 				},
-				A2($elm$json$Json$Decode$field, 'width', $elm$json$Json$Decode$int)))))(0)}}}}}});}(this));
+				A2($elm$json$Json$Decode$field, 'width', $elm$json$Json$Decode$int)))))(0)}}}}});}(this));

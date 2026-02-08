@@ -1,14 +1,13 @@
 module Anim.Engine.CSS.Transitions exposing
     ( AnimState, init
-    , transitionAttributes
-    , TransitionEvent(..), handleTransitionEvent
-    , transitionEvents
+    , attributes
+    , Event(..), handleEvent, events
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
     , AnimBuilder, animate, fireAndForget, TransformOrder(..), animateOrder, fireAndForgetOrder
     , duration, speed
     , easing
     , delay
-    , allowDiscreteTransitions
+    , allowDiscrete
     , startingStyleNode, startingStyleNodeFor
     , stop, reset
     , anyRunning, isRunning, allComplete, isComplete
@@ -45,16 +44,9 @@ interpolating between two states when a property value changes.
 
 # Apply Transitions
 
-Apply transition styles to your elements:
+Apply transition styles to your elements
 
-    import Anim.Engine.CSS.Transitions as Transitions
-
-    view model =
-        div
-            (Transitions.transitionAttributes "my-element" model.animState)
-            [ text "Animating element" ]
-
-@docs transitionAttributes
+@docs attributes
 
 
 # Transition Events
@@ -62,9 +54,7 @@ Apply transition styles to your elements:
 CSS transitions trigger events at various stages of their lifecycle.
 Use these events to keep your [AnimState](#AnimState) in sync.
 
-@docs TransitionEvent, handleTransitionEvent
-
-@docs transitionEvents
+@docs Event, handleEvent, events
 
 For more granular control over which events to handle:
 
@@ -102,7 +92,7 @@ For accurate complex curves, use [Keyframes](Anim.Engine.CSS.Keyframes) instead.
 CSS transitions only work by default with properties that have intermediate values.
 Discrete properties like `display`, `visibility`, and `content-visibility` normally snap instantly.
 
-@docs allowDiscreteTransitions
+@docs allowDiscrete
 
 For **entry animations** (elements appearing), you also need `@starting-style` CSS rules
 to define the initial state:
@@ -115,9 +105,8 @@ to define the initial state:
 @docs stop, reset
 
 **Note:** `restart`, `pause`, and `resume` are not available for CSS transitions.
-CSS transitions require a value change between renders to trigger, making restart
-impossible in a single update. For transitions, use `reset` to jump to start,
-then call `animate` again on a subsequent user interaction.
+This is a limitation of the CSS API, not the engine. For these features,
+consider using [Transitions](Anim.Engine.CSS.Transitions), [Sub](Anim.Engine.Sub) or [WAAPI](Anim.Engine.WAAPI) engines instead.
 
 
 # Querying Animation State
@@ -218,11 +207,11 @@ type TransformOrder
 
 {-| CSS transition lifecycle events.
 -}
-type TransitionEvent
-    = TransitionStarted String
-    | TransitionEnded String
-    | TransitionCancelled String
-    | TransitionRun String
+type Event
+    = Started String
+    | Ended String
+    | Cancelled String
+    | Run String
 
 
 
@@ -366,15 +355,12 @@ delay =
 
 {-| Enable transitions for discrete CSS properties using `transition-behavior: allow-discrete`.
 
-By default, CSS transitions only work with properties that have intermediate values.
-Discrete properties like `display`, `visibility`, and `content-visibility` snap instantly.
-
     Transitions.animate model.animState <|
-        (allowDiscreteTransitions >> fadeIn >> slideIn)
+        (Transitions.allowDiscrete >> fadeIn >> slideIn)
 
 -}
-allowDiscreteTransitions : AnimBuilder -> AnimBuilder
-allowDiscreteTransitions =
+allowDiscrete : AnimBuilder -> AnimBuilder
+allowDiscrete =
     Builder.allowDiscreteTransitions
 
 
@@ -387,7 +373,7 @@ the transition.
     view model =
         div []
             [ Transitions.startingStyleNode model.animState
-            , div (Transitions.transitionAttributes "fadeIn" model.animState)
+            , div (Transitions.attributes "fadeIn" model.animState)
                 [ text "I fade in!" ]
             ]
 
@@ -402,7 +388,7 @@ startingStyleNode =
     view model =
         div []
             [ Transitions.startingStyleNodeFor "fadeIn" model.animState
-            , div (Transitions.transitionAttributes "fadeIn" model.animState)
+            , div (Transitions.attributes "fadeIn" model.animState)
                 [ text "I fade in!" ]
             ]
 
@@ -419,12 +405,12 @@ startingStyleNodeFor =
 {-| Get the transition and transform attributes to apply to the target element.
 
     div
-        (Transitions.transitionAttributes "my-element" animState)
+        (Transitions.attributes "my-element" animState)
         [ text "Animating element" ]
 
 -}
-transitionAttributes : String -> AnimState -> List (Html.Attribute msg)
-transitionAttributes =
+attributes : String -> AnimState -> List (Html.Attribute msg)
+attributes =
     InternalCSS.transitionAttributes
 
 
@@ -435,22 +421,22 @@ transitionAttributes =
 {-| The simplest way to receive transition event messages.
 
     type Msg
-        = TransitionMsg Transitions.TransitionEvent
+        = TransitionMsg Transitions.Event
 
     div
-        (Transitions.transitionAttributes "my-element" animState
-            ++ Transitions.transitionEvents "my-element" TransitionMsg
+        (Transitions.attributes "my-element" animState
+            ++ Transitions.events "my-element" TransitionMsg
         )
         [ text "Animating element" ]
 
 -}
-transitionEvents : String -> (TransitionEvent -> msg) -> List (Html.Attribute msg)
-transitionEvents elementId toMsg =
+events : String -> (Event -> msg) -> List (Html.Attribute msg)
+events elementId toMsg =
     List.map (Html.Attributes.map toMsg) <|
-        [ onTransitionStart (TransitionStarted elementId)
-        , onTransitionEnd (TransitionEnded elementId)
-        , onTransitionRun (TransitionRun elementId)
-        , onTransitionCancel (TransitionCancelled elementId)
+        [ onTransitionStart (Started elementId)
+        , onTransitionEnd (Ended elementId)
+        , onTransitionRun (Run elementId)
+        , onTransitionCancel (Cancelled elementId)
         ]
 
 
@@ -459,22 +445,22 @@ transitionEvents elementId toMsg =
     update msg model =
         case msg of
             TransitionMsg event ->
-                { model | animState = Transitions.handleTransitionEvent event model.animState }
+                { model | animState = Transitions.handleEvent event model.animState }
 
 -}
-handleTransitionEvent : TransitionEvent -> AnimState -> AnimState
-handleTransitionEvent event animState =
+handleEvent : Event -> AnimState -> AnimState
+handleEvent event animState =
     case event of
-        TransitionStarted elementId ->
+        Started elementId ->
             InternalCSS.handleEvent (InternalCSS.TransitionStarted elementId) animState
 
-        TransitionEnded elementId ->
+        Ended elementId ->
             InternalCSS.handleEvent (InternalCSS.TransitionEnded elementId) animState
 
-        TransitionRun elementId ->
+        Run elementId ->
             InternalCSS.handleEvent (InternalCSS.TransitionRun elementId) animState
 
-        TransitionCancelled elementId ->
+        Cancelled elementId ->
             InternalCSS.handleEvent (InternalCSS.TransitionCancelled elementId) animState
 
 

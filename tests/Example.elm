@@ -9,7 +9,7 @@ import Expect
 import Test exposing (..)
 
 
-{-| Test-Driven Development for CSS.keyframesStyleNodeFor function.
+{-| Test-Driven Development for CSS.styleNodeFor function.
 This test defines the exact expected CSS content that should be generated
 and injected into the DOM as a <style> element.
 -}
@@ -74,7 +74,7 @@ suite =
                         ]
                         actualAnimation
             ]
-        , describe "CSS.keyframesStyleNodeFor"
+        , describe "CSS.styleNodeFor"
             [ test "move element from (0,0) to (100,100) over 1000ms with linear easing produces valid CSS content" <|
                 \_ ->
                     let
@@ -88,7 +88,7 @@ suite =
                                     >> Position.build
                                 )
 
-                        -- The CSS.keyframesStyleNodeFor function should produce a <style> element
+                        -- The CSS.styleNodeFor function should produce a <style> element
                         -- containing valid CSS content for injection into the DOM
                         actualCSS =
                             CSS.getElementKeyframes "box" animations
@@ -107,7 +107,7 @@ suite =
                             , \_ -> actualCSS |> String.contains "translate3d(100px, 100px, 0px)" |> Expect.equal True
                             ]
                             actualCSS
-            , test "CSS.keyframesStyleNodeFor produces HTML style element (integration test)" <|
+            , test "CSS.styleNodeFor produces HTML style element (integration test)" <|
                 \_ ->
                     let
                         -- Same animation setup
@@ -122,7 +122,7 @@ suite =
 
                         -- This should produce a <style> HTML element containing our expected CSS
                         _ =
-                            CSS.keyframesStyleNodeFor "box" animations
+                            CSS.styleNodeFor "box" animations
 
                         -- We can't directly inspect the HTML content in Elm tests,
                         -- but we can verify the function executes without errors
@@ -147,7 +147,7 @@ suite =
                         -- that applies the animation to the DOM element
                         -- Expected: style="animation: box-layer-0-animation 1000ms linear 0ms;"
                         styleAttributes =
-                            CSS.keyframesStyles "box" animations
+                            CSS.styles "box" animations
 
                         -- We can't directly inspect Html.Attribute content in Elm tests,
                         -- but we can verify the function executes without errors

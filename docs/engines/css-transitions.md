@@ -78,7 +78,7 @@ Use `CSS.transitionEvents` in your view to generate events.
     ```elm
     view model =
         div
-            (CSS.transitionAttributes "box" model.animState
+            (CSS.attributes "box" model.animState
                 ++ CSS.transitionEvents "box" GotTransitionEvent
             )
             [...]
@@ -191,7 +191,7 @@ Discrete transitions behave differently depending on direction:
         div []
             [ CSS.startingStyleNode model.animState  -- Required for entry!
             , div
-                (CSS.transitionAttributes "my-element" model.animState)
+                (CSS.attributes "my-element" model.animState)
                 [ text "I'll animate when I appear" ]
             ]
     ```

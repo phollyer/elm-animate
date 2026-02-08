@@ -1,4 +1,4 @@
-module Engines.Sub.Controls.Main exposing (main)
+module Concepts.ControllingAnimations.SubEngine.Main exposing (main)
 
 import Anim.Engine.Sub as Sub
 import Browser exposing (Document)

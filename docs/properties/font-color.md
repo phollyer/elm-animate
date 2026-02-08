@@ -27,13 +27,13 @@ textHighlight builder =
 ### Targeting
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `for` | Target an element by ID |
 
 ### Values
 
 | Function | Type | Description |
-|----------|------|-------------|
+| ---------- | ------ | ------------- |
 | `from` | `Color` | Starting text color |
 | `to` | `Color` | Ending text color |
 
@@ -46,7 +46,7 @@ Colors can be created using the `Anim.Color` module:
 ### Timing
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `duration` | Animation duration in milliseconds |
 | `speed` | Animation speed |
 | `delay` | Delay before animation starts |
@@ -55,7 +55,7 @@ Colors can be created using the `Anim.Color` module:
 ### Initialization
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `init` | Set initial font color without animating |
 
 ## Examples

@@ -815,7 +815,7 @@ Include this in your view alongside the animated elements.
     view model =
         div []
             [ CSS.startingStyleNode model.animState
-            , div (CSS.transitionAttributes "my-element" model.animState) [ text "Animated" ]
+            , div (CSS.attributes "my-element" model.animState) [ text "Animated" ]
             ]
 
 -}

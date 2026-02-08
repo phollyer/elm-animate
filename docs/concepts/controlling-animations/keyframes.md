@@ -18,10 +18,10 @@ You can `stop`, `reset`, `restart`, `pause` and `resume` animations at any time.
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/CSS/Controls/KeyframeAnimations/Main.elm"
+    --8<-- "docs/examples/src/Concepts/ControllingAnimations/KeyframesEngine/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../../../examples/src/Engines/CSS/Controls/KeyframeAnimations/index.html){ .md-button target="_blank" }
+[:material-play-circle: Run this example](../../../examples/src/Concepts/ControllingAnimations/KeyframesEngine/index.html){ .md-button target="_blank" }
 
 ## Using Control Functions
 
@@ -83,6 +83,6 @@ Resumes a paused animation:
 
 Controlling Sub Engine Animations.
 
-[Controlling Sub Engine Animations →](../sub.md){ .md-button .md-button--primary }
+[Controlling Sub Engine Animations →](sub.md){ .md-button .md-button--primary }
 
 

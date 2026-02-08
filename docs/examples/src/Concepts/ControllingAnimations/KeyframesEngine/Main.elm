@@ -1,12 +1,14 @@
-module Engines.CSS.Controls.Transitions.Main exposing (main)
+module Concepts.ControllingAnimations.KeyframesEngine.Main exposing (main)
 
-import Anim.Engine.CSS.Transitions as CSS
+import Anim.Engine.CSS.Keyframes as CSS
 import Browser exposing (Document)
 import Common.Animations.Controls as Controls exposing (elementId)
 import Common.Colors as Colors
 import Common.UI as UI
 import Common.View.Controls as ViewControls
-import Element exposing (Element, centerX, centerY, el, height, html, htmlAttribute, px, text, width)
+import Element exposing (Element, centerX, centerY, column, el, explain, fill, height, html, htmlAttribute, inFront, maximum, none, padding, paddingEach, paragraph, px, row, spacing, text, width)
+import Element.Background as Background
+import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
 
@@ -65,6 +67,9 @@ type Msg
     = Animate
     | Stop
     | Reset
+    | Restart
+    | Pause
+    | Resume
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -90,18 +95,44 @@ update msg model =
             , Cmd.none
             )
 
+        -- --8<-- [end:reset]
+        -- --8<-- [start:restart]
+        Restart ->
+            ( { model | animState = CSS.restart elementId model.animState }
+            , Cmd.none
+            )
+
+        -- --8<-- [end:restart]
+        -- --8<-- [start:pause]
+        Pause ->
+            ( { model | animState = CSS.pause elementId model.animState }
+            , Cmd.none
+            )
+
+        -- --8<-- [end:pause]
+        -- --8<-- [start:resume]
+        Resume ->
+            ( { model | animState = CSS.resume elementId model.animState }
+            , Cmd.none
+            )
 
 
--- --8<-- [end:reset]
+
+-- --8<-- [end:resume]
 -- VIEW - Using ElmUI, but the same animation logic works with any view layer
 --
 --
 -- Engine-specific view helpers
 
 
-transitionAttributes : CSS.AnimState -> List (Element.Attribute msg)
-transitionAttributes =
-    CSS.transitionAttributes elementId >> List.map htmlAttribute
+keyframesNode : CSS.AnimState -> Element msg
+keyframesNode =
+    CSS.styleNodeFor elementId >> html
+
+
+keyframesStyles : CSS.AnimState -> List (Element.Attribute msg)
+keyframesStyles =
+    CSS.styles elementId >> List.map htmlAttribute
 
 
 
@@ -111,27 +142,33 @@ transitionAttributes =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.CSS Transition Controls Example"
+        "Keyframes Engine Controls Example - Elm Animate"
         UI.Basic
         (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ ViewControls.header
-        [ "CSS Engine Controls"
-        , "for"
-        , "Transitions"
-        ]
+    [ keyframesNode model.animState
+    , ViewControls.header
+        [ "Keyframes Engine Controls" ]
     , ViewControls.table
         [ ( 0, "🏀 Animate", "Drop the ball" )
         , ( 1, "⏹️ Stop", "Jump instantly to end state and stop" )
+        , ( 1, "⏸️ Pause", "Pause animation at current position" )
+        , ( 1, "▶️ Resume", "Continue paused animation" )
         , ( 1, "⏮️ Reset", "Jump instantly to start state and stop" )
+        , ( 1, "🔄 Restart", "Reset to start, then begin animation again" )
         ]
     , ViewControls.buttons
         [ [ ( UI.Primary, Animate, "🏀 Animate" )
           , ( UI.Warning, Stop, "⏹️ Stop" )
-          , ( UI.Purple, Reset, "⏮️ Reset" )
+          ]
+        , [ ( UI.Success, Pause, "⏸️ Pause" )
+          , ( UI.Success, Resume, "▶️ Resume" )
+          ]
+        , [ ( UI.Purple, Reset, "⏮️ Reset" )
+          , ( UI.Purple, Restart, "🔄 Restart" )
           ]
         ]
     , ViewControls.animationArea model.animAreaSize <|
@@ -142,7 +179,7 @@ viewContent model =
 animatedBall : CSS.AnimState -> Element msg
 animatedBall animState =
     el
-        (transitionAttributes animState
+        (keyframesStyles animState
             ++ [ width (px 50)
                , height (px 50)
                , htmlAttribute (Html.Attributes.style "position" "relative")

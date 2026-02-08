@@ -26,20 +26,20 @@ fadeIn builder =
 ### Targeting
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `for` | Target an element by ID |
 
 ### Values
 
 | Function | Type | Description |
-|----------|------|-------------|
+| ---------- | ------ | ------------- |
 | `from` | `Float` | Starting opacity (0.0 to 1.0) |
 | `to` | `Float` | Ending opacity (0.0 to 1.0) |
 
 ### Timing
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `duration` | Animation duration in milliseconds |
 | `speed` | Animation speed (alternative to duration) |
 | `delay` | Delay before animation starts |
@@ -48,7 +48,7 @@ fadeIn builder =
 ### Initialization
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `init` | Set initial opacity without animating |
 
 ## Examples

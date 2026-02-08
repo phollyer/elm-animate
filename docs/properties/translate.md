@@ -26,13 +26,13 @@ slideRight builder =
 ### Targeting
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `for` | Target an element by ID |
 
 ### Values — Individual Axes
 
 | Function | Type | Description |
-|----------|------|-------------|
+| ---------- | ------ | ------------- |
 | `fromX` | `Float` | Starting X position (pixels) |
 | `fromY` | `Float` | Starting Y position (pixels) |
 | `fromZ` | `Float` | Starting Z position (pixels) |
@@ -43,7 +43,7 @@ slideRight builder =
 ### Values — Combined
 
 | Function | Type | Description |
-|----------|------|-------------|
+| ---------- | ------ | ------------- |
 | `fromXY` | `Float -> Float` | Starting X and Y positions |
 | `fromXYZ` | `Float -> Float -> Float` | Starting X, Y, and Z positions |
 | `toXY` | `Float -> Float` | Ending X and Y positions |
@@ -52,7 +52,7 @@ slideRight builder =
 ### Timing
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `duration` | Animation duration in milliseconds |
 | `speed` | Animation speed in pixels per second |
 | `delay` | Delay before animation starts |
@@ -61,7 +61,7 @@ slideRight builder =
 ### Initialization
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `initX`, `initY`, `initZ` | Set initial position on single axis |
 | `initXY` | Set initial X and Y positions |
 | `initXYZ` | Set initial X, Y, and Z positions |

@@ -71,12 +71,11 @@ nav:
       - Scrolling: concepts/engines/scroll-engine.md
     - Builder Pattern: concepts/builder-pattern.md
     - Controlling Animations: 
-      - CSS Engine Controls: 
-        - Transitions: concepts/controlling-animations/css/transitions.md
-        - Keyframe Animations: concepts/controlling-animations/css/keyframes.md
-      - Sub Engine Controls: concepts/controlling-animations/sub.md
-      - WAAPI Engine Controls: concepts/controlling-animations/waapi.md
-      - Scroll Engine Controls: concepts/controlling-animations/scroll.md
+      - Transitions Engine: concepts/controlling-animations/transitions.md
+      - Keyframes Engine: concepts/controlling-animations/keyframes.md
+      - Sub Engine: concepts/controlling-animations/sub.md
+      - WAAPI Engine: concepts/controlling-animations/waapi.md
+      - Scroll Engine: concepts/controlling-animations/scroll.md
     - Properties: concepts/properties.md
     - Easing Functions: concepts/easing.md
     - 3D Animations: concepts/3d.md

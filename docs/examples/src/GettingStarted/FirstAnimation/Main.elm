@@ -99,7 +99,7 @@ view model =
          , style "height" "100px"
          , style "background-color" "blue"
          ]
-            ++ CSS.transitionAttributes "my-box" animState
+            ++ CSS.attributes "my-box" animState
         )
         []
 

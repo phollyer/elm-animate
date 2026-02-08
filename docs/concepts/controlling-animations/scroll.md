@@ -20,10 +20,10 @@ The Scroll Engine provides full programmatic control over running scroll animati
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/Scroll/Controls/Main.elm"
+    --8<-- "docs/examples/src/Concepts/ControllingAnimations/ScrollEngine/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../../examples/src/Engines/Scroll/Controls/index.html){ .md-button target="_blank" }
+[:material-play-circle: Run this example](../../examples/src/Concepts/ControllingAnimations/ScrollEngine/index.html){ .md-button target="_blank" }
 
 ## Document vs Container
 
@@ -120,4 +120,11 @@ let
 in
 ( { model | scrollAnimations = newState }, cmd )
 ```
+
+## Next Steps
+
+Now you know how to control the Engines, lets look at animating properties.
+
+[Animating Properties →](../properties.md){ .md-button .md-button--primary }
+
 

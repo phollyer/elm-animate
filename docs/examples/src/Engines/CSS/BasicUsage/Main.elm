@@ -53,7 +53,7 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div
-        (CSS.transitionAttributes "hello-text" model.animState)
+        (CSS.attributes "hello-text" model.animState)
         [ text "Hello!" ]
 
 

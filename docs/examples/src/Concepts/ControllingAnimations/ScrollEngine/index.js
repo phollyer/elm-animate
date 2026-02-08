@@ -5212,7 +5212,7 @@ var $elm$core$Basics$min = F2(
 	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$Engines$Scroll$Controls$Main$init = function (_v0) {
+var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$init = function (_v0) {
 	var window = _v0.window;
 	var animAreaWidth = A2($elm$core$Basics$min, 500, window.width - 40);
 	return _Utils_Tuple2(
@@ -5223,7 +5223,7 @@ var $author$project$Engines$Scroll$Controls$Main$init = function (_v0) {
 		$elm$core$Platform$Cmd$none);
 };
 var $elm$json$Json$Decode$int = _Json_decodeInt;
-var $author$project$Engines$Scroll$Controls$Main$GotScrollMsg = function (a) {
+var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$GotScrollMsg = function (a) {
 	return {$: 'GotScrollMsg', a: a};
 };
 var $author$project$Anim$Internal$Scroll$AnimationFrame = function (a) {
@@ -5417,8 +5417,8 @@ var $author$project$Anim$Internal$Scroll$subscriptions = F2(
 			A2($elm$core$Basics$composeR, $author$project$Anim$Internal$Scroll$AnimationFrame, toMsg)) : $elm$core$Platform$Sub$none;
 	});
 var $author$project$Anim$Engine$Scroll$subscriptions = $author$project$Anim$Internal$Scroll$subscriptions;
-var $author$project$Engines$Scroll$Controls$Main$subscriptions = function (model) {
-	return A2($author$project$Anim$Engine$Scroll$subscriptions, $author$project$Engines$Scroll$Controls$Main$GotScrollMsg, model.scrollState);
+var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$subscriptions = function (model) {
+	return A2($author$project$Anim$Engine$Scroll$subscriptions, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$GotScrollMsg, model.scrollState);
 };
 var $author$project$Anim$Internal$Scroll$DomQueriesCompleted = F4(
 	function (a, b, c, d) {
@@ -5572,7 +5572,7 @@ var $author$project$Anim$Internal$Scroll$animate = F3(
 			$elm$core$Platform$Cmd$batch(domQueries));
 	});
 var $author$project$Anim$Engine$Scroll$animate = $author$project$Anim$Internal$Scroll$animate;
-var $author$project$Engines$Scroll$Controls$Main$containerId = 'scroll-container';
+var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$containerId = 'scroll-container';
 var $elm$core$Debug$log = _Debug_log;
 var $author$project$Anim$Internal$Scroll$containerIdMatches = F2(
 	function (id, containerId) {
@@ -6020,7 +6020,7 @@ var $author$project$Anim$Internal$Builders$Scroll$speed = F2(
 				}));
 	});
 var $author$project$Anim$Engine$Scroll$speed = $author$project$Anim$Internal$Builders$Scroll$speed;
-var $author$project$Engines$Scroll$Controls$Main$targetId = 'scroll-target';
+var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$targetId = 'scroll-target';
 var $author$project$Anim$Internal$Properties$ScrollTarget$Element = function (a) {
 	return {$: 'Element', a: a};
 };
@@ -6045,12 +6045,12 @@ var $author$project$Anim$Internal$Builders$Scroll$toElement = F2(
 				}));
 	});
 var $author$project$Anim$Engine$Scroll$toElement = $author$project$Anim$Internal$Builders$Scroll$toElement;
-var $author$project$Engines$Scroll$Controls$Main$scrollAnimation = A2(
+var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$scrollAnimation = A2(
 	$elm$core$Basics$composeR,
-	$author$project$Anim$Engine$Scroll$forContainer($author$project$Engines$Scroll$Controls$Main$containerId),
+	$author$project$Anim$Engine$Scroll$forContainer($author$project$Concepts$ControllingAnimations$ScrollEngine$Main$containerId),
 	A2(
 		$elm$core$Basics$composeR,
-		$author$project$Anim$Engine$Scroll$toElement($author$project$Engines$Scroll$Controls$Main$targetId),
+		$author$project$Anim$Engine$Scroll$toElement($author$project$Concepts$ControllingAnimations$ScrollEngine$Main$targetId),
 		A2(
 			$elm$core$Basics$composeR,
 			$author$project$Anim$Engine$Scroll$speed(200),
@@ -6797,7 +6797,7 @@ var $author$project$Anim$Internal$Scroll$update = F3(
 		}
 	});
 var $author$project$Anim$Engine$Scroll$update = $author$project$Anim$Internal$Scroll$update;
-var $author$project$Engines$Scroll$Controls$Main$update = F2(
+var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$update = F2(
 	function (msg, model) {
 		var _v0 = A2($elm$core$Debug$log, 'Msg', msg);
 		switch (_v0.$) {
@@ -6805,7 +6805,7 @@ var $author$project$Engines$Scroll$Controls$Main$update = F2(
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'GotScrollMsg':
 				var scrollMsg = _v0.a;
-				var _v1 = A3($author$project$Anim$Engine$Scroll$update, $author$project$Engines$Scroll$Controls$Main$GotScrollMsg, scrollMsg, model.scrollState);
+				var _v1 = A3($author$project$Anim$Engine$Scroll$update, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$GotScrollMsg, scrollMsg, model.scrollState);
 				var newScrollState = _v1.a;
 				var scrollCmd = _v1.b;
 				return _Utils_Tuple2(
@@ -6814,7 +6814,7 @@ var $author$project$Engines$Scroll$Controls$Main$update = F2(
 						{scrollState: newScrollState}),
 					scrollCmd);
 			case 'ScrollAnimate':
-				var _v2 = A3($author$project$Anim$Engine$Scroll$animate, $author$project$Engines$Scroll$Controls$Main$GotScrollMsg, model.scrollState, $author$project$Engines$Scroll$Controls$Main$scrollAnimation);
+				var _v2 = A3($author$project$Anim$Engine$Scroll$animate, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$GotScrollMsg, model.scrollState, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$scrollAnimation);
 				var newScrollState = _v2.a;
 				var scrollCmd = _v2.b;
 				return _Utils_Tuple2(
@@ -6823,7 +6823,7 @@ var $author$project$Engines$Scroll$Controls$Main$update = F2(
 						{scrollState: newScrollState}),
 					scrollCmd);
 			case 'Stop':
-				var _v3 = A3($author$project$Anim$Engine$Scroll$stopContainer, $author$project$Engines$Scroll$Controls$Main$GotScrollMsg, $author$project$Engines$Scroll$Controls$Main$containerId, model.scrollState);
+				var _v3 = A3($author$project$Anim$Engine$Scroll$stopContainer, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$GotScrollMsg, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$containerId, model.scrollState);
 				var newScrollState = _v3.a;
 				var scrollCmd = _v3.b;
 				return _Utils_Tuple2(
@@ -6836,7 +6836,7 @@ var $author$project$Engines$Scroll$Controls$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							scrollState: A2($author$project$Anim$Engine$Scroll$pauseContainer, $author$project$Engines$Scroll$Controls$Main$containerId, model.scrollState)
+							scrollState: A2($author$project$Anim$Engine$Scroll$pauseContainer, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$containerId, model.scrollState)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Resume':
@@ -6844,11 +6844,11 @@ var $author$project$Engines$Scroll$Controls$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							scrollState: A2($author$project$Anim$Engine$Scroll$resumeContainer, $author$project$Engines$Scroll$Controls$Main$containerId, model.scrollState)
+							scrollState: A2($author$project$Anim$Engine$Scroll$resumeContainer, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$containerId, model.scrollState)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Reset':
-				var _v4 = A3($author$project$Anim$Engine$Scroll$resetContainer, $author$project$Engines$Scroll$Controls$Main$GotScrollMsg, $author$project$Engines$Scroll$Controls$Main$containerId, model.scrollState);
+				var _v4 = A3($author$project$Anim$Engine$Scroll$resetContainer, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$GotScrollMsg, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$containerId, model.scrollState);
 				var newScrollState = _v4.a;
 				var scrollCmd = _v4.b;
 				return _Utils_Tuple2(
@@ -6857,7 +6857,7 @@ var $author$project$Engines$Scroll$Controls$Main$update = F2(
 						{scrollState: newScrollState}),
 					scrollCmd);
 			default:
-				var _v5 = A3($author$project$Anim$Engine$Scroll$restartContainer, $author$project$Engines$Scroll$Controls$Main$GotScrollMsg, $author$project$Engines$Scroll$Controls$Main$containerId, model.scrollState);
+				var _v5 = A3($author$project$Anim$Engine$Scroll$restartContainer, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$GotScrollMsg, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$containerId, model.scrollState);
 				var newScrollState = _v5.a;
 				var scrollCmd = _v5.b;
 				return _Utils_Tuple2(
@@ -12821,14 +12821,14 @@ var $author$project$Common$UI$createDocument = F3(
 			title: title
 		};
 	});
-var $author$project$Engines$Scroll$Controls$Main$Pause = {$: 'Pause'};
+var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$Pause = {$: 'Pause'};
 var $author$project$Common$UI$Primary = {$: 'Primary'};
 var $author$project$Common$UI$Purple = {$: 'Purple'};
-var $author$project$Engines$Scroll$Controls$Main$Reset = {$: 'Reset'};
-var $author$project$Engines$Scroll$Controls$Main$Restart = {$: 'Restart'};
-var $author$project$Engines$Scroll$Controls$Main$Resume = {$: 'Resume'};
-var $author$project$Engines$Scroll$Controls$Main$ScrollAnimate = {$: 'ScrollAnimate'};
-var $author$project$Engines$Scroll$Controls$Main$Stop = {$: 'Stop'};
+var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$Reset = {$: 'Reset'};
+var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$Restart = {$: 'Restart'};
+var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$Resume = {$: 'Resume'};
+var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$ScrollAnimate = {$: 'ScrollAnimate'};
+var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$Stop = {$: 'Stop'};
 var $author$project$Common$UI$Success = {$: 'Success'};
 var $author$project$Common$UI$Warning = {$: 'Warning'};
 var $mdgriffith$elm_ui$Element$el = F2(
@@ -13060,7 +13060,7 @@ var $mdgriffith$elm_ui$Element$Font$size = function (i) {
 		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
 };
 var $author$project$Common$Colors$textMedium = A3($mdgriffith$elm_ui$Element$rgb255, 71, 85, 105);
-var $author$project$Engines$Scroll$Controls$Main$contentSection = F3(
+var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$contentSection = F3(
 	function (title, description_, color) {
 		return A2(
 			$mdgriffith$elm_ui$Element$column,
@@ -13148,7 +13148,7 @@ var $mdgriffith$elm_ui$Element$Border$width = function (v) {
 			v,
 			v));
 };
-var $author$project$Engines$Scroll$Controls$Main$targetSection = A2(
+var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$targetSection = A2(
 	$mdgriffith$elm_ui$Element$column,
 	_List_fromArray(
 		[
@@ -13162,7 +13162,7 @@ var $author$project$Engines$Scroll$Controls$Main$targetSection = A2(
 			$mdgriffith$elm_ui$Element$Border$color(
 			A3($mdgriffith$elm_ui$Element$rgb255, 255, 152, 0)),
 			$mdgriffith$elm_ui$Element$htmlAttribute(
-			$elm$html$Html$Attributes$id($author$project$Engines$Scroll$Controls$Main$targetId))
+			$elm$html$Html$Attributes$id($author$project$Concepts$ControllingAnimations$ScrollEngine$Main$targetId))
 		]),
 	_List_fromArray(
 		[
@@ -13188,7 +13188,7 @@ var $author$project$Engines$Scroll$Controls$Main$targetSection = A2(
 					$mdgriffith$elm_ui$Element$text('This is the scroll target. The scroll animation will bring this section into view.')
 				]))
 		]));
-var $author$project$Engines$Scroll$Controls$Main$content = A2(
+var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$content = A2(
 	$mdgriffith$elm_ui$Element$column,
 	_List_fromArray(
 		[
@@ -13201,27 +13201,27 @@ var $author$project$Engines$Scroll$Controls$Main$content = A2(
 			[
 				_List_fromArray(
 				[
-					A3($author$project$Engines$Scroll$Controls$Main$contentSection, '📍 Start', 'This is the beginning of the scrollable content.', $author$project$Common$Colors$primary)
+					A3($author$project$Concepts$ControllingAnimations$ScrollEngine$Main$contentSection, '📍 Start', 'This is the beginning of the scrollable content.', $author$project$Common$Colors$primary)
 				]),
 				A2(
 				$elm$core$List$indexedMap,
 				F2(
 					function (i, _v0) {
 						return A3(
-							$author$project$Engines$Scroll$Controls$Main$contentSection,
+							$author$project$Concepts$ControllingAnimations$ScrollEngine$Main$contentSection,
 							'Section ' + $elm$core$String$fromInt(i + 1),
 							'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
 							$author$project$Common$Colors$textMedium);
 					}),
 				A2($elm$core$List$repeat, 5, _Utils_Tuple0)),
 				_List_fromArray(
-				[$author$project$Engines$Scroll$Controls$Main$targetSection]),
+				[$author$project$Concepts$ControllingAnimations$ScrollEngine$Main$targetSection]),
 				A2(
 				$elm$core$List$indexedMap,
 				F2(
 					function (i, _v1) {
 						return A3(
-							$author$project$Engines$Scroll$Controls$Main$contentSection,
+							$author$project$Concepts$ControllingAnimations$ScrollEngine$Main$contentSection,
 							'Section ' + $elm$core$String$fromInt(i + 7),
 							'Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.',
 							$author$project$Common$Colors$textMedium);
@@ -13229,7 +13229,7 @@ var $author$project$Engines$Scroll$Controls$Main$content = A2(
 				A2($elm$core$List$repeat, 3, _Utils_Tuple0)),
 				_List_fromArray(
 				[
-					A3($author$project$Engines$Scroll$Controls$Main$contentSection, '📍 End', 'This is the end of the scrollable content.', $author$project$Common$Colors$primary)
+					A3($author$project$Concepts$ControllingAnimations$ScrollEngine$Main$contentSection, '📍 End', 'This is the end of the scrollable content.', $author$project$Common$Colors$primary)
 				])
 			])));
 var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
@@ -13266,7 +13266,7 @@ var $mdgriffith$elm_ui$Element$Border$shadow = function (almostShade) {
 			'box-shadow',
 			$mdgriffith$elm_ui$Internal$Model$formatBoxShadow(shade)));
 };
-var $author$project$Engines$Scroll$Controls$Main$scrollableContainer = function (model) {
+var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$scrollableContainer = function (model) {
 	return A2(
 		$mdgriffith$elm_ui$Element$el,
 		_List_fromArray(
@@ -13280,7 +13280,7 @@ var $author$project$Engines$Scroll$Controls$Main$scrollableContainer = function 
 			_List_fromArray(
 				[
 					$mdgriffith$elm_ui$Element$htmlAttribute(
-					$elm$html$Html$Attributes$id($author$project$Engines$Scroll$Controls$Main$containerId)),
+					$elm$html$Html$Attributes$id($author$project$Concepts$ControllingAnimations$ScrollEngine$Main$containerId)),
 					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
 					$mdgriffith$elm_ui$Element$height(
 					$mdgriffith$elm_ui$Element$px(model.animAreaSize.height)),
@@ -13297,7 +13297,7 @@ var $author$project$Engines$Scroll$Controls$Main$scrollableContainer = function 
 					}),
 					$mdgriffith$elm_ui$Element$scrollbarY
 				]),
-			$author$project$Engines$Scroll$Controls$Main$content));
+			$author$project$Concepts$ControllingAnimations$ScrollEngine$Main$content));
 };
 var $mdgriffith$elm_ui$Element$Font$medium = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textMedium);
 var $mdgriffith$elm_ui$Element$Border$widthXY = F2(
@@ -13420,7 +13420,7 @@ var $author$project$Common$View$Controls$table = function (descriptions) {
 					descriptions))
 			]));
 };
-var $author$project$Engines$Scroll$Controls$Main$viewContent = function (model) {
+var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$viewContent = function (model) {
 	return _List_fromArray(
 		[
 			$author$project$Common$View$Controls$header(
@@ -13441,33 +13441,33 @@ var $author$project$Engines$Scroll$Controls$Main$viewContent = function (model) 
 				[
 					_List_fromArray(
 					[
-						_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$Engines$Scroll$Controls$Main$ScrollAnimate, '📜 Scroll'),
-						_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$Engines$Scroll$Controls$Main$Stop, '⏹️ Stop')
+						_Utils_Tuple3($author$project$Common$UI$Primary, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$ScrollAnimate, '📜 Scroll'),
+						_Utils_Tuple3($author$project$Common$UI$Warning, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$Stop, '⏹️ Stop')
 					]),
 					_List_fromArray(
 					[
-						_Utils_Tuple3($author$project$Common$UI$Success, $author$project$Engines$Scroll$Controls$Main$Pause, '⏸️ Pause'),
-						_Utils_Tuple3($author$project$Common$UI$Success, $author$project$Engines$Scroll$Controls$Main$Resume, '▶️ Resume')
+						_Utils_Tuple3($author$project$Common$UI$Success, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$Pause, '⏸️ Pause'),
+						_Utils_Tuple3($author$project$Common$UI$Success, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$Resume, '▶️ Resume')
 					]),
 					_List_fromArray(
 					[
-						_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Engines$Scroll$Controls$Main$Reset, '⏮️ Reset'),
-						_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Engines$Scroll$Controls$Main$Restart, '🔄 Restart')
+						_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$Reset, '⏮️ Reset'),
+						_Utils_Tuple3($author$project$Common$UI$Purple, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$Restart, '🔄 Restart')
 					])
 				])),
-			$author$project$Engines$Scroll$Controls$Main$scrollableContainer(model)
+			$author$project$Concepts$ControllingAnimations$ScrollEngine$Main$scrollableContainer(model)
 		]);
 };
-var $author$project$Engines$Scroll$Controls$Main$view = function (model) {
+var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$view = function (model) {
 	return A3(
 		$author$project$Common$UI$createDocument,
 		'Anim.Engine.Scroll Controls ElmUI Example',
 		$author$project$Common$UI$Container,
-		$author$project$Engines$Scroll$Controls$Main$viewContent(model));
+		$author$project$Concepts$ControllingAnimations$ScrollEngine$Main$viewContent(model));
 };
-var $author$project$Engines$Scroll$Controls$Main$main = $elm$browser$Browser$document(
-	{init: $author$project$Engines$Scroll$Controls$Main$init, subscriptions: $author$project$Engines$Scroll$Controls$Main$subscriptions, update: $author$project$Engines$Scroll$Controls$Main$update, view: $author$project$Engines$Scroll$Controls$Main$view});
-_Platform_export({'Engines':{'Scroll':{'Controls':{'Main':{'init':$author$project$Engines$Scroll$Controls$Main$main(
+var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$main = $elm$browser$Browser$document(
+	{init: $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$init, subscriptions: $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$subscriptions, update: $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$update, view: $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$view});
+_Platform_export({'Concepts':{'ControllingAnimations':{'ScrollEngine':{'Main':{'init':$author$project$Concepts$ControllingAnimations$ScrollEngine$Main$main(
 	A2(
 		$elm$json$Json$Decode$andThen,
 		function (window) {

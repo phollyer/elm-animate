@@ -165,7 +165,7 @@ viewContent model =
                 |> List.map
                     (\{ id } ->
                         Element.html <|
-                            CSS.keyframesStyleNodeFor id model.animations
+                            CSS.styleNodeFor id model.animations
                     )
     in
     keyframeStyleNodes

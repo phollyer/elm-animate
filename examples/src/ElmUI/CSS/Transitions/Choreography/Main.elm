@@ -213,6 +213,6 @@ animatedBox elementId label color1 color2 model =
          , htmlAttribute (Html.Attributes.id elementId)
          , htmlAttribute (Html.Attributes.style "position" "absolute")
          ]
-            ++ List.map htmlAttribute (CSS.transitionAttributes elementId model.animations)
+            ++ List.map htmlAttribute (CSS.attributes elementId model.animations)
         )
         (el [ centerX, centerY ] (text label))

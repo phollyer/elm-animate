@@ -206,7 +206,7 @@ scaledElement elementId label color model =
          , htmlAttribute (Html.Attributes.style "align-items" "center")
          , htmlAttribute (Html.Attributes.style "justify-content" "center")
          ]
-            ++ List.map htmlAttribute (CSS.transitionAttributes elementId model.animations)
+            ++ List.map htmlAttribute (CSS.attributes elementId model.animations)
         )
         (el
             [ centerX

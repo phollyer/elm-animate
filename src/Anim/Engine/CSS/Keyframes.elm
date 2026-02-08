@@ -1,9 +1,9 @@
 module Anim.Engine.CSS.Keyframes exposing
     ( AnimState, init
-    , keyframesStyles, keyframeAttribute
-    , keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
-    , KeyframeEvent(..), handleKeyframeEvent
-    , keyframeAnimationEvents
+    , styles
+    , styleNode, styleNodeFor, getElementKeyframes
+    , Event(..), handleEvent
+    , events
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , AnimBuilder, animate, fireAndForget, TransformOrder(..), animateOrder, fireAndForgetOrder
     , duration, speed
@@ -52,15 +52,15 @@ Keyframe animations require both styles on the element AND a `<style>` node in t
 
     view model =
         div []
-            [ Keyframes.keyframesStyleNode model.animState
+            [ Keyframes.styleNode model.animState
             , div
-                (Keyframes.keyframesStyles "my-element" model.animState)
+                (Keyframes.styles "my-element" model.animState)
                 [ text "Animating element" ]
             ]
 
-@docs keyframesStyles, keyframeAttribute
+@docs styles
 
-@docs keyframesStyleNode, keyframesStyleNodeFor, getElementKeyframes
+@docs styleNode, styleNodeFor, getElementKeyframes
 
 
 # Keyframe Animation Events
@@ -68,9 +68,9 @@ Keyframe animations require both styles on the element AND a `<style>` node in t
 CSS keyframe animations trigger events at various stages of their lifecycle.
 Use these events to keep your [AnimState](#AnimState) in sync.
 
-@docs KeyframeEvent, handleKeyframeEvent
+@docs Event, handleEvent
 
-@docs keyframeAnimationEvents
+@docs events
 
 For more granular control over which events to handle:
 
@@ -213,11 +213,11 @@ type TransformOrder
 
 {-| CSS keyframe animation lifecycle events.
 -}
-type KeyframeEvent
-    = AnimationStarted String
-    | AnimationEnded String
-    | AnimationCancelled String
-    | AnimationIteration String
+type Event
+    = Started String
+    | Ended String
+    | Cancelled String
+    | Iteration String
 
 
 
@@ -390,45 +390,28 @@ loopForever =
 {-| Get all styles for keyframe-based animations.
 
     div
-        (Keyframes.keyframesStyles "my-element" animState)
+        (Keyframes.styles "my-element" animState)
         [ text "Animating element" ]
 
 -}
-keyframesStyles : String -> AnimState -> List (Html.Attribute msg)
-keyframesStyles =
+styles : String -> AnimState -> List (Html.Attribute msg)
+styles =
     InternalCSS.keyframesStyles
-
-
-{-| Get just the animation attribute for keyframe-based animations.
-
-Use this when you only need the `animation` CSS property, not all styles.
-
-    div
-        [ Keyframes.keyframeAttribute "my-element" animState ]
-        [ text "Animating element" ]
-
-**Note:** Use [keyframesStyles](#keyframesStyles) if you need transform styles
-for instant position jumps (e.g., after reset/stop).
-
--}
-keyframeAttribute : String -> AnimState -> Html.Attribute msg
-keyframeAttribute =
-    InternalCSS.keyframesAttribute
 
 
 {-| Get a `<style>` node containing keyframes for all animated elements.
 
     view model =
         div []
-            [ Keyframes.keyframesStyleNode animState
+            [ Keyframes.styleNode animState
             , ...
             ]
 
 If there are no animations, this returns an empty text node.
 
 -}
-keyframesStyleNode : AnimState -> Html.Html msg
-keyframesStyleNode =
+styleNode : AnimState -> Html.Html msg
+styleNode =
     InternalCSS.keyframesStyleNode
 
 
@@ -436,21 +419,21 @@ keyframesStyleNode =
 
     view model =
         div []
-            [ Keyframes.keyframesStyleNodeFor "my-element" animState
+            [ Keyframes.styleNodeFor "my-element" animState
             , ...
             ]
 
 If the element has no animations, this returns an empty text node.
 
 -}
-keyframesStyleNodeFor : String -> AnimState -> Html.Html msg
-keyframesStyleNodeFor =
+styleNodeFor : String -> AnimState -> Html.Html msg
+styleNodeFor =
     InternalCSS.keyframesStyleNodeFor
 
 
 {-| Get the raw generated CSS keyframes string for advanced use cases.
 
-You probably want [keyframesStyleNodeFor](#keyframesStyleNodeFor) instead,
+You probably want [styleNodeFor](#styleNodeFor) instead,
 which handles creating the full `<style>` node for you.
 
 -}
@@ -466,22 +449,22 @@ getElementKeyframes =
 {-| The simplest way to receive keyframe animation event messages.
 
     type Msg
-        = KeyframeMsg Keyframes.KeyframeEvent
+        = KeyframeMsg Keyframes.Event
 
     div
-        (Keyframes.keyframesStyles "my-element" animState
-            ++ Keyframes.keyframeAnimationEvents "my-element" KeyframeMsg
+        (Keyframes.styles "my-element" animState
+            ++ Keyframes.events "my-element" KeyframeMsg
         )
         [ text "Animating element" ]
 
 -}
-keyframeAnimationEvents : String -> (KeyframeEvent -> msg) -> List (Html.Attribute msg)
-keyframeAnimationEvents elementId toMsg =
+events : String -> (Event -> msg) -> List (Html.Attribute msg)
+events elementId toMsg =
     List.map (Html.Attributes.map toMsg) <|
-        [ onAnimationStart (AnimationStarted elementId)
-        , onAnimationEnd (AnimationEnded elementId)
-        , onAnimationCancel (AnimationCancelled elementId)
-        , onAnimationIteration (AnimationIteration elementId)
+        [ onAnimationStart (Started elementId)
+        , onAnimationEnd (Ended elementId)
+        , onAnimationCancel (Cancelled elementId)
+        , onAnimationIteration (Iteration elementId)
         ]
 
 
@@ -490,22 +473,22 @@ keyframeAnimationEvents elementId toMsg =
     update msg model =
         case msg of
             KeyframeMsg event ->
-                { model | animState = Keyframes.handleKeyframeEvent event model.animState }
+                { model | animState = Keyframes.handleEvent event model.animState }
 
 -}
-handleKeyframeEvent : KeyframeEvent -> AnimState -> AnimState
-handleKeyframeEvent event animState =
+handleEvent : Event -> AnimState -> AnimState
+handleEvent event animState =
     case event of
-        AnimationStarted elementId ->
+        Started elementId ->
             InternalCSS.handleEvent (InternalCSS.AnimationStarted elementId) animState
 
-        AnimationEnded elementId ->
+        Ended elementId ->
             InternalCSS.handleEvent (InternalCSS.AnimationEnded elementId) animState
 
-        AnimationCancelled elementId ->
+        Cancelled elementId ->
             InternalCSS.handleEvent (InternalCSS.AnimationCancelled elementId) animState
 
-        AnimationIteration elementId ->
+        Iteration elementId ->
             InternalCSS.handleEvent (InternalCSS.AnimationIteration elementId) animState
 
 

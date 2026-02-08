@@ -288,7 +288,7 @@ viewContent model =
              , htmlAttribute (Html.Attributes.id "event-box")
              , htmlAttribute (Html.Attributes.style "position" "absolute")
              ]
-                ++ List.map htmlAttribute (CSS.transitionAttributes "event-box" model.animations)
+                ++ List.map htmlAttribute (CSS.attributes "event-box" model.animations)
                 ++ [ htmlAttribute (CSS.onTransitionStart OnTransitionStart)
                    , htmlAttribute (CSS.onTransitionEnd OnTransitionEnd)
                    , htmlAttribute (CSS.onTransitionRun OnTransitionRun)

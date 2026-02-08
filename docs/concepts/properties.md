@@ -80,3 +80,11 @@ These properties trigger browser repaints and/or reflows. Use them when needed, 
 | [Background Color](../properties/background-color.md) | Animate element backgrounds | `Anim.Property.BackgroundColor` | Repaint |
 | [Font Color](../properties/font-color.md) | Animate text colors | `Anim.Property.FontColor` | Repaint |
 | [Size](../properties/size.md) | Animate width and height | `Anim.Property.Size` | Reflow + Repaint |
+
+## Next Steps
+
+Natural motion with Easing.
+
+[Easing →](easing.md){ .md-button .md-button--primary }
+
+

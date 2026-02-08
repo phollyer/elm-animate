@@ -1,14 +1,12 @@
-module Engines.CSS.Controls.KeyframeAnimations.Main exposing (main)
+module Concepts.ControllingAnimations.TransitionsEngine.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframes as CSS
+import Anim.Engine.CSS.Transitions as CSS
 import Browser exposing (Document)
 import Common.Animations.Controls as Controls exposing (elementId)
 import Common.Colors as Colors
 import Common.UI as UI
 import Common.View.Controls as ViewControls
-import Element exposing (Element, centerX, centerY, column, el, explain, fill, height, html, htmlAttribute, inFront, maximum, none, padding, paddingEach, paragraph, px, row, spacing, text, width)
-import Element.Background as Background
-import Element.Border as Border
+import Element exposing (Element, centerX, centerY, el, height, html, htmlAttribute, px, text, width)
 import Element.Font as Font
 import Html.Attributes
 
@@ -67,9 +65,6 @@ type Msg
     = Animate
     | Stop
     | Reset
-    | Restart
-    | Pause
-    | Resume
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -95,44 +90,18 @@ update msg model =
             , Cmd.none
             )
 
-        -- --8<-- [end:reset]
-        -- --8<-- [start:restart]
-        Restart ->
-            ( { model | animState = CSS.restart elementId model.animState }
-            , Cmd.none
-            )
-
-        -- --8<-- [end:restart]
-        -- --8<-- [start:pause]
-        Pause ->
-            ( { model | animState = CSS.pause elementId model.animState }
-            , Cmd.none
-            )
-
-        -- --8<-- [end:pause]
-        -- --8<-- [start:resume]
-        Resume ->
-            ( { model | animState = CSS.resume elementId model.animState }
-            , Cmd.none
-            )
 
 
-
--- --8<-- [end:resume]
+-- --8<-- [end:reset]
 -- VIEW - Using ElmUI, but the same animation logic works with any view layer
 --
 --
 -- Engine-specific view helpers
 
 
-keyframesNode : CSS.AnimState -> Element msg
-keyframesNode =
-    CSS.keyframesStyleNodeFor elementId >> html
-
-
-keyframesStyles : CSS.AnimState -> List (Element.Attribute msg)
-keyframesStyles =
-    CSS.keyframesStyles elementId >> List.map htmlAttribute
+transitionAttributes : CSS.AnimState -> List (Element.Attribute msg)
+transitionAttributes =
+    CSS.attributes elementId >> List.map htmlAttribute
 
 
 
@@ -142,36 +111,24 @@ keyframesStyles =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.CSS Keyframe Animation Controls Example"
+        "Anim.Engine.CSS Transition Controls Example"
         UI.Basic
         (viewContent model)
 
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ keyframesNode model.animState
-    , ViewControls.header
-        [ "CSS Engine Controls"
-        , "for"
-        , "Keyframe Animations"
-        ]
+    [ ViewControls.header
+        [ "Transitions Engine Controls" ]
     , ViewControls.table
         [ ( 0, "🏀 Animate", "Drop the ball" )
         , ( 1, "⏹️ Stop", "Jump instantly to end state and stop" )
-        , ( 1, "⏸️ Pause", "Pause animation at current position" )
-        , ( 1, "▶️ Resume", "Continue paused animation" )
         , ( 1, "⏮️ Reset", "Jump instantly to start state and stop" )
-        , ( 1, "🔄 Restart", "Reset to start, then begin animation again" )
         ]
     , ViewControls.buttons
         [ [ ( UI.Primary, Animate, "🏀 Animate" )
           , ( UI.Warning, Stop, "⏹️ Stop" )
-          ]
-        , [ ( UI.Success, Pause, "⏸️ Pause" )
-          , ( UI.Success, Resume, "▶️ Resume" )
-          ]
-        , [ ( UI.Purple, Reset, "⏮️ Reset" )
-          , ( UI.Purple, Restart, "🔄 Restart" )
+          , ( UI.Purple, Reset, "⏮️ Reset" )
           ]
         ]
     , ViewControls.animationArea model.animAreaSize <|
@@ -182,7 +139,7 @@ viewContent model =
 animatedBall : CSS.AnimState -> Element msg
 animatedBall animState =
     el
-        (keyframesStyles animState
+        (transitionAttributes animState
             ++ [ width (px 50)
                , height (px 50)
                , htmlAttribute (Html.Attributes.style "position" "relative")

@@ -26,20 +26,20 @@ grow builder =
 ### Targeting
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `for` | Target an element by ID |
 
 ### Values — Uniform
 
 | Function | Type | Description |
-|----------|------|-------------|
+| ---------- | ------ | ------------- |
 | `from` | `Float` | Starting scale (1.0 = 100%) |
 | `to` | `Float` | Ending scale (1.0 = 100%) |
 
 ### Values — Individual Axes
 
 | Function | Type | Description |
-|----------|------|-------------|
+| ---------- | ------ | ------------- |
 | `fromX` | `Float` | Starting X-axis scale |
 | `fromY` | `Float` | Starting Y-axis scale |
 | `fromZ` | `Float` | Starting Z-axis scale |
@@ -50,7 +50,7 @@ grow builder =
 ### Timing
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `duration` | Animation duration in milliseconds |
 | `speed` | Animation speed |
 | `delay` | Delay before animation starts |
@@ -59,7 +59,7 @@ grow builder =
 ### Initialization
 
 | Function | Description |
-|----------|-------------|
+| ---------- | ------------- |
 | `initX`, `initY`, `initZ` | Set initial scale on single axis |
 | `initXYZ` | Set initial scale on all axes |
 

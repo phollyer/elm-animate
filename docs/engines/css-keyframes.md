@@ -43,7 +43,7 @@ view model =
     div []
         [ CSS.keyframesStyleNode model.animState  -- Required!
         , div
-            (CSS.keyframesStyles "box" model.animState)
+            (CSS.styles"box" model.animState)
             [ text "Animated content" ]
         ]
 ```
@@ -51,7 +51,7 @@ view model =
 Or for a specific element:
 
 ```elm
-CSS.keyframesStyleNodeFor "box" model.animState
+CSS.styleNodeFor "box" model.animState
 ```
 
 ## Iterations and Looping
@@ -95,7 +95,7 @@ Use `CSS.keyframeEvents` in your view to generate events.
     ```elm
     view model =
         div
-            (CSS.keyframesStyles "box" model.animState
+            (CSS.styles"box" model.animState
                 ++ CSS.keyframeEvents "box" GotKeyframeEvent
             )
             [...]

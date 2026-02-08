@@ -2,7 +2,7 @@
 
 The CSS Transitions Engine provides minimal programmatic control over CSS transitions. _This is a limitation of CSS itself, not the engine_.
 
-You can `stop` and `reset` animations but for `pause`, `resume` and `restart` functionality, use [Keyframe Animations](keyframes.md), or switch to either the [Sub](../sub.md) Engine or the [WAAPI](../waapi.md) Engine.
+You can `stop` and `reset` animations but for `pause`, `resume` and `restart` functionality, use the [Keyframes](keyframes.md) Engine, the [Sub](../sub.md) Engine or the [WAAPI](../waapi.md) Engine.
 
 ## Available Controls
 
@@ -16,10 +16,10 @@ You can `stop` and `reset` animations but for `pause`, `resume` and `restart` fu
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/CSS/Controls/Transitions/Main.elm"
+    --8<-- "docs/examples/src/Concepts/ControllingAnimations/TransitionsEngine/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../../../examples/src/Engines/CSS/Controls/Transitions/index.html){ .md-button target="_blank" }
+[:material-play-circle: Run this example](../../../examples/src/Concepts/ControllingAnimations/TransitionsEngine/index.html){ .md-button target="_blank" }
 
 ## Using Control Functions
 
@@ -93,7 +93,7 @@ Discrete transitions behave differently depending on direction:
         div []
             [ CSS.startingStyleNode model.animState  -- Required for entry!
             , div
-                (CSS.transitionAttributes "my-element" model.animState)
+                (CSS.attributes "my-element" model.animState)
                 [ text "I'll animate when I appear" ]
             ]
     ```

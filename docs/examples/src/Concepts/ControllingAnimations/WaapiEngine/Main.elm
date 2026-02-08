@@ -1,4 +1,4 @@
-port module Engines.WAAPI.Controls.Main exposing (main)
+port module Concepts.ControllingAnimations.WaapiEngine.Main exposing (main)
 
 import Anim.Engine.WAAPI as WAAPI
 import Browser exposing (Document)

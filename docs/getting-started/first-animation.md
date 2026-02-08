@@ -40,7 +40,7 @@ Animations are defined as functions that transform an `AnimBuilder`:
 
 ### 3. Apply Attributes
 
-Use `CSS.transitionAttributes` to get the HTML attributes for your element's transition:
+Use `CSS.attributes` to get the HTML attributes for your element's transition:
 
 ```elm
 --8<-- "docs/examples/src/GettingStarted/FirstAnimation/Main.elm:applyStyles"
