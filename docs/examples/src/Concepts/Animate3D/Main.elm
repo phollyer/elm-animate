@@ -1,7 +1,7 @@
 module Concepts.Animate3D.Main exposing (main)
 
 import Anim.Engine.CSS.Keyframes as Keyframes
-import Anim.Extra.Easing as Easing exposing (Easing(..))
+import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.View3D as View3D
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Translate as Translate
@@ -12,7 +12,6 @@ import Element exposing (Element, centerX, centerY, column, el, fill, height, ht
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
-import Html
 import Html.Attributes
 
 
@@ -55,8 +54,7 @@ cubeSize =
 
 depth : Float
 depth =
-    -- +2 for border thickness
-    cubeSize / 2 + 2
+    cubeSize / 2
 
 
 init : { window : { width : Int } } -> ( Model, Cmd Msg )
@@ -237,16 +235,12 @@ moveBottomFaceIn =
 
 
 type Msg
-    = NoOp
-    | GotKeyframeEvent Keyframes.Event
+    = GotKeyframeEvent Keyframes.Event
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
-            ( model, Cmd.none )
-
         GotKeyframeEvent event ->
             let
                 newModel =
@@ -341,8 +335,6 @@ viewContent model =
                 [ centerX
                 , centerY
                 , htmlAttribute <|
-                    Html.Attributes.style "position" "relative"
-                , htmlAttribute <|
                     View3D.perspective 1000
                 ]
                 (viewCube model)
@@ -351,145 +343,153 @@ viewContent model =
     ]
 
 
+type alias FaceConfig =
+    { id : String
+    , label : String
+    , background : Element.Color
+    , borderColor : Element.Color
+    , listenForEvents : Bool
+    }
 
--- +2 for border thickness
+
+frontFace : FaceConfig
+frontFace =
+    { id = "front-face"
+    , label = "FRONT"
+    , background = Element.rgb255 52 152 219
+    , borderColor = Element.rgb255 41 128 185
+    , listenForEvents = True
+    }
+
+
+backFace : FaceConfig
+backFace =
+    { id = "back-face"
+    , label = "BACK"
+    , background = Element.rgb255 41 128 185
+    , borderColor = Element.rgb255 33 97 140
+    , listenForEvents = False
+    }
+
+
+rightFace : FaceConfig
+rightFace =
+    { id = "right-face"
+    , label = "RIGHT"
+    , background = Element.rgb255 231 76 60
+    , borderColor = Element.rgb255 192 57 43
+    , listenForEvents = False
+    }
+
+
+leftFace : FaceConfig
+leftFace =
+    { id = "left-face"
+    , label = "LEFT"
+    , background = Element.rgb255 230 126 34
+    , borderColor = Element.rgb255 211 84 0
+    , listenForEvents = False
+    }
+
+
+topFace : FaceConfig
+topFace =
+    { id = "top-face"
+    , label = "TOP"
+    , background = Element.rgb255 46 204 113
+    , borderColor = Element.rgb255 39 174 96
+    , listenForEvents = False
+    }
+
+
+bottomFace : FaceConfig
+bottomFace =
+    { id = "bottom-face"
+    , label = "BOTTOM"
+    , background = Element.rgb255 155 89 182
+    , borderColor = Element.rgb255 142 68 173
+    , listenForEvents = False
+    }
 
 
 viewCube : Model -> Element Msg
 viewCube model =
-    Element.html <|
-        Html.div
-            ([ Html.Attributes.id "cube"
-             , Html.Attributes.style "width" (String.fromFloat cubeSize ++ "px")
-             , Html.Attributes.style "height" (String.fromFloat cubeSize ++ "px")
-             , Html.Attributes.style "position" "relative"
-             , View3D.transformStyle View3D.Preserve3D
-             , View3D.perspectiveOrigin View3D.Center
-             ]
-                ++ Keyframes.styles "cube" model.animState
-                ++ (if model.state == RotatingOpen || model.state == RotatingClosed then
-                        Keyframes.events "cube" GotKeyframeEvent
+    let
+        shouldListenForSideEvents =
+            model.state == Opening || model.state == Closing
 
-                    else
-                        []
-                   )
-            )
-            [ -- Front face
-              Html.div
-                ([ Html.Attributes.id "front-face"
-                 , Html.Attributes.style "position" "absolute"
-                 , Html.Attributes.style "width" (String.fromFloat cubeSize ++ "px")
-                 , Html.Attributes.style "height" (String.fromFloat cubeSize ++ "px")
-                 , Html.Attributes.style "background" "#3498db"
-                 , Html.Attributes.style "border" "2px solid #2980b9"
-                 , Html.Attributes.style "display" "flex"
-                 , Html.Attributes.style "align-items" "center"
-                 , Html.Attributes.style "justify-content" "center"
-                 , Html.Attributes.style "color" "white"
-                 , Html.Attributes.style "font-weight" "bold"
-                 , Html.Attributes.style "font-size" "14px"
-                 ]
-                    ++ Keyframes.styles "front-face" model.animState
-                    ++ (if model.state == Opening || model.state == Closing then
-                            Keyframes.events "front-face" GotKeyframeEvent
+        cubeStyles =
+            Keyframes.styles "cube" model.animState
+                |> List.map htmlAttribute
 
-                        else
-                            []
-                       )
-                )
-                [ Html.text "FRONT" ]
-            , -- Back face
-              Html.div
-                ([ Html.Attributes.id "back-face"
-                 , Html.Attributes.style "position" "absolute"
-                 , Html.Attributes.style "width" (String.fromFloat cubeSize ++ "px")
-                 , Html.Attributes.style "height" (String.fromFloat cubeSize ++ "px")
-                 , Html.Attributes.style "background" "#2980b9"
-                 , Html.Attributes.style "border" "2px solid #21618c"
-                 , Html.Attributes.style "display" "flex"
-                 , Html.Attributes.style "align-items" "center"
-                 , Html.Attributes.style "justify-content" "center"
-                 , Html.Attributes.style "color" "white"
-                 , Html.Attributes.style "font-weight" "bold"
-                 , Html.Attributes.style "font-size" "14px"
-                 ]
-                    ++ Keyframes.styles "back-face" model.animState
-                )
-                [ Html.text "BACK" ]
-            , -- Right face
-              Html.div
-                ([ Html.Attributes.id "right-face"
-                 , Html.Attributes.style "position" "absolute"
-                 , Html.Attributes.style "width" (String.fromFloat cubeSize ++ "px")
-                 , Html.Attributes.style "height" (String.fromFloat cubeSize ++ "px")
-                 , Html.Attributes.style "background" "#e74c3c"
-                 , Html.Attributes.style "border" "2px solid #c0392b"
-                 , Html.Attributes.style "display" "flex"
-                 , Html.Attributes.style "align-items" "center"
-                 , Html.Attributes.style "justify-content" "center"
-                 , Html.Attributes.style "color" "white"
-                 , Html.Attributes.style "font-weight" "bold"
-                 , Html.Attributes.style "font-size" "14px"
-                 ]
-                    ++ Keyframes.styles "right-face" model.animState
-                )
-                [ Html.text "RIGHT" ]
-            , -- Left face
-              Html.div
-                ([ Html.Attributes.id "left-face"
-                 , Html.Attributes.style "position" "absolute"
-                 , Html.Attributes.style "width" (String.fromFloat cubeSize ++ "px")
-                 , Html.Attributes.style "height" (String.fromFloat cubeSize ++ "px")
-                 , Html.Attributes.style "background" "#e67e22"
-                 , Html.Attributes.style "border" "2px solid #d35400"
-                 , Html.Attributes.style "display" "flex"
-                 , Html.Attributes.style "align-items" "center"
-                 , Html.Attributes.style "justify-content" "center"
-                 , Html.Attributes.style "color" "white"
-                 , Html.Attributes.style "font-weight" "bold"
-                 , Html.Attributes.style "font-size" "14px"
-                 ]
-                    ++ Keyframes.styles "left-face" model.animState
-                )
-                [ Html.text "LEFT" ]
-            , -- Top face
-              Html.div
-                ([ Html.Attributes.id "top-face"
-                 , Html.Attributes.style "position" "absolute"
-                 , Html.Attributes.style "width" (String.fromFloat cubeSize ++ "px")
-                 , Html.Attributes.style "height" (String.fromFloat cubeSize ++ "px")
-                 , Html.Attributes.style "background" "#2ecc71"
-                 , Html.Attributes.style "border" "2px solid #27ae60"
-                 , Html.Attributes.style "display" "flex"
-                 , Html.Attributes.style "align-items" "center"
-                 , Html.Attributes.style "justify-content" "center"
-                 , Html.Attributes.style "color" "white"
-                 , Html.Attributes.style "font-weight" "bold"
-                 , Html.Attributes.style "font-size" "14px"
-                 , Html.Attributes.style "transform" ("rotateX(90deg) translateZ(" ++ String.fromFloat depth ++ "px)")
-                 ]
-                    ++ Keyframes.styles "top-face" model.animState
-                )
-                [ Html.text "TOP" ]
-            , -- Bottom face
-              Html.div
-                ([ Html.Attributes.id "bottom-face"
-                 , Html.Attributes.style "position" "absolute"
-                 , Html.Attributes.style "width" (String.fromFloat cubeSize ++ "px")
-                 , Html.Attributes.style "height" (String.fromFloat cubeSize ++ "px")
-                 , Html.Attributes.style "background" "#9b59b6"
-                 , Html.Attributes.style "border" "2px solid #8e44ad"
-                 , Html.Attributes.style "display" "flex"
-                 , Html.Attributes.style "align-items" "center"
-                 , Html.Attributes.style "justify-content" "center"
-                 , Html.Attributes.style "color" "white"
-                 , Html.Attributes.style "font-weight" "bold"
-                 , Html.Attributes.style "font-size" "14px"
-                 ]
-                    ++ Keyframes.styles "bottom-face" model.animState
-                )
-                [ Html.text "BOTTOM" ]
+        cubeEvents =
+            if model.state == RotatingOpen || model.state == RotatingClosed then
+                Keyframes.events "cube" GotKeyframeEvent
+                    |> List.map htmlAttribute
+
+            else
+                []
+    in
+    column
+        ([ htmlAttribute <|
+            Html.Attributes.id "cube"
+         , width <|
+            px (round cubeSize)
+         , height <|
+            px (round cubeSize)
+         , htmlAttribute <|
+            View3D.transformStyle View3D.Preserve3D
+         , htmlAttribute <|
+            View3D.perspectiveOrigin View3D.Center
+         ]
+            ++ cubeStyles
+            ++ cubeEvents
+        )
+        [ viewFace model.animState (shouldListenForSideEvents && frontFace.listenForEvents) frontFace
+        , viewFace model.animState False backFace
+        , viewFace model.animState False rightFace
+        , viewFace model.animState False leftFace
+        , viewFace model.animState False topFace
+        , viewFace model.animState False bottomFace
+        ]
+
+
+viewFace : Keyframes.AnimState -> Bool -> FaceConfig -> Element Msg
+viewFace animState listenForEvents config =
+    let
+        baseAttributes =
+            [ htmlAttribute <|
+                Html.Attributes.id config.id
+            , width <|
+                px (round cubeSize)
+            , height <|
+                px (round cubeSize)
+            , Background.color config.background
+            , Border.width 2
+            , Border.color config.borderColor
+            , Font.color <|
+                Element.rgb 1 1 1
+            , Font.bold
+            , Font.size 14
+            , htmlAttribute <|
+                Html.Attributes.style "position" "absolute"
             ]
+
+        animAttributes =
+            Keyframes.styles config.id animState
+                |> List.map htmlAttribute
+
+        eventAttributes =
+            if listenForEvents then
+                Keyframes.events config.id GotKeyframeEvent
+                    |> List.map htmlAttribute
+
+            else
+                []
+    in
+    el
+        (baseAttributes ++ animAttributes ++ eventAttributes)
+        (el [ centerX, centerY ] (text config.label))
 
 
 viewExplanation : Element Msg

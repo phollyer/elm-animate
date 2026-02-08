@@ -7800,7 +7800,7 @@ var $elm$core$Basics$composeR = F3(
 			f(x));
 	});
 var $author$project$Concepts$Animate3D$Main$cubeSize = 100;
-var $author$project$Concepts$Animate3D$Main$depth = ($author$project$Concepts$Animate3D$Main$cubeSize / 2) + 2;
+var $author$project$Concepts$Animate3D$Main$depth = $author$project$Concepts$Animate3D$Main$cubeSize / 2;
 var $author$project$Anim$Extra$Easing$BounceOut = {$: 'BounceOut'};
 var $author$project$Anim$Internal$Builder$TranslateConfig = function (a) {
 	return {$: 'TranslateConfig', a: a};
@@ -9101,74 +9101,70 @@ var $author$project$Anim$Engine$CSS$Keyframes$handleEvent = F2(
 	});
 var $author$project$Concepts$Animate3D$Main$update = F2(
 	function (msg, model) {
-		if (msg.$ === 'NoOp') {
-			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-		} else {
-			var event = msg.a;
-			var newModel = _Utils_update(
-				model,
-				{
-					animState: A2($author$project$Anim$Engine$CSS$Keyframes$handleEvent, event, model.animState)
-				});
-			_v1$2:
-			while (true) {
-				if (event.$ === 'Ended') {
-					switch (event.a) {
-						case 'cube':
-							var newState = function () {
-								var _v2 = newModel.state;
-								switch (_v2.$) {
-									case 'RotatingOpen':
-										return $author$project$Concepts$Animate3D$Main$Closing;
-									case 'RotatingClosed':
-										return $author$project$Concepts$Animate3D$Main$Opening;
-									default:
-										return newModel.state;
-								}
-							}();
-							return _Utils_Tuple2(
-								_Utils_update(
-									newModel,
-									{
-										animState: A2(
-											$author$project$Anim$Engine$CSS$Keyframes$animate,
-											newModel.animState,
-											$author$project$Concepts$Animate3D$Main$animate(newState)),
-										state: newState
-									}),
-								$elm$core$Platform$Cmd$none);
-						case 'front-face':
-							var newState = function () {
-								var _v3 = newModel.state;
-								switch (_v3.$) {
-									case 'Opening':
-										return $author$project$Concepts$Animate3D$Main$RotatingOpen;
-									case 'Closing':
-										return $author$project$Concepts$Animate3D$Main$RotatingClosed;
-									default:
-										return newModel.state;
-								}
-							}();
-							return _Utils_Tuple2(
-								_Utils_update(
-									newModel,
-									{
-										animState: A2(
-											$author$project$Anim$Engine$CSS$Keyframes$animate,
-											newModel.animState,
-											$author$project$Concepts$Animate3D$Main$animate(newState)),
-										state: newState
-									}),
-								$elm$core$Platform$Cmd$none);
-						default:
-							break _v1$2;
-					}
-				} else {
-					break _v1$2;
+		var event = msg.a;
+		var newModel = _Utils_update(
+			model,
+			{
+				animState: A2($author$project$Anim$Engine$CSS$Keyframes$handleEvent, event, model.animState)
+			});
+		_v1$2:
+		while (true) {
+			if (event.$ === 'Ended') {
+				switch (event.a) {
+					case 'cube':
+						var newState = function () {
+							var _v2 = newModel.state;
+							switch (_v2.$) {
+								case 'RotatingOpen':
+									return $author$project$Concepts$Animate3D$Main$Closing;
+								case 'RotatingClosed':
+									return $author$project$Concepts$Animate3D$Main$Opening;
+								default:
+									return newModel.state;
+							}
+						}();
+						return _Utils_Tuple2(
+							_Utils_update(
+								newModel,
+								{
+									animState: A2(
+										$author$project$Anim$Engine$CSS$Keyframes$animate,
+										newModel.animState,
+										$author$project$Concepts$Animate3D$Main$animate(newState)),
+									state: newState
+								}),
+							$elm$core$Platform$Cmd$none);
+					case 'front-face':
+						var newState = function () {
+							var _v3 = newModel.state;
+							switch (_v3.$) {
+								case 'Opening':
+									return $author$project$Concepts$Animate3D$Main$RotatingOpen;
+								case 'Closing':
+									return $author$project$Concepts$Animate3D$Main$RotatingClosed;
+								default:
+									return newModel.state;
+							}
+						}();
+						return _Utils_Tuple2(
+							_Utils_update(
+								newModel,
+								{
+									animState: A2(
+										$author$project$Anim$Engine$CSS$Keyframes$animate,
+										newModel.animState,
+										$author$project$Concepts$Animate3D$Main$animate(newState)),
+									state: newState
+								}),
+							$elm$core$Platform$Cmd$none);
+					default:
+						break _v1$2;
 				}
+			} else {
+				break _v1$2;
 			}
-			return _Utils_Tuple2(newModel, $elm$core$Platform$Cmd$none);
 		}
+		return _Utils_Tuple2(newModel, $elm$core$Platform$Cmd$none);
 	});
 var $author$project$Common$UI$Basic = {$: 'Basic'};
 var $mdgriffith$elm_ui$Internal$Model$Rgba = F4(
@@ -15216,6 +15212,20 @@ var $author$project$Concepts$Animate3D$Main$GotKeyframeEvent = function (a) {
 	return {$: 'GotKeyframeEvent', a: a};
 };
 var $author$project$Anim$Extra$View3D$Preserve3D = {$: 'Preserve3D'};
+var $author$project$Concepts$Animate3D$Main$backFace = {
+	background: A3($mdgriffith$elm_ui$Element$rgb255, 41, 128, 185),
+	borderColor: A3($mdgriffith$elm_ui$Element$rgb255, 33, 97, 140),
+	id: 'back-face',
+	label: 'BACK',
+	listenForEvents: false
+};
+var $author$project$Concepts$Animate3D$Main$bottomFace = {
+	background: A3($mdgriffith$elm_ui$Element$rgb255, 155, 89, 182),
+	borderColor: A3($mdgriffith$elm_ui$Element$rgb255, 142, 68, 173),
+	id: 'bottom-face',
+	label: 'BOTTOM',
+	listenForEvents: false
+};
 var $author$project$Anim$Engine$CSS$Keyframes$Cancelled = function (a) {
 	return {$: 'Cancelled', a: a};
 };
@@ -15278,7 +15288,21 @@ var $author$project$Anim$Engine$CSS$Keyframes$events = F2(
 					$author$project$Anim$Engine$CSS$Keyframes$Iteration(elementId))
 				]));
 	});
+var $author$project$Concepts$Animate3D$Main$frontFace = {
+	background: A3($mdgriffith$elm_ui$Element$rgb255, 52, 152, 219),
+	borderColor: A3($mdgriffith$elm_ui$Element$rgb255, 41, 128, 185),
+	id: 'front-face',
+	label: 'FRONT',
+	listenForEvents: true
+};
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $author$project$Concepts$Animate3D$Main$leftFace = {
+	background: A3($mdgriffith$elm_ui$Element$rgb255, 230, 126, 34),
+	borderColor: A3($mdgriffith$elm_ui$Element$rgb255, 211, 84, 0),
+	id: 'left-face',
+	label: 'LEFT',
+	listenForEvents: false
+};
 var $author$project$Anim$Extra$View3D$perspectiveOriginToString = function (origin) {
 	switch (origin.$) {
 		case 'Center':
@@ -15314,6 +15338,13 @@ var $author$project$Anim$Extra$View3D$perspectiveOrigin = function (origin) {
 		$elm$html$Html$Attributes$style,
 		'perspective-origin',
 		$author$project$Anim$Extra$View3D$perspectiveOriginToString(origin));
+};
+var $author$project$Concepts$Animate3D$Main$rightFace = {
+	background: A3($mdgriffith$elm_ui$Element$rgb255, 231, 76, 60),
+	borderColor: A3($mdgriffith$elm_ui$Element$rgb255, 192, 57, 43),
+	id: 'right-face',
+	label: 'RIGHT',
+	listenForEvents: false
 };
 var $author$project$Anim$Internal$CSS$getElementAnimation = F2(
 	function (elementId, _v0) {
@@ -15372,6 +15403,13 @@ var $author$project$Anim$Internal$CSS$keyframesStyles = F2(
 		}
 	});
 var $author$project$Anim$Engine$CSS$Keyframes$styles = $author$project$Anim$Internal$CSS$keyframesStyles;
+var $author$project$Concepts$Animate3D$Main$topFace = {
+	background: A3($mdgriffith$elm_ui$Element$rgb255, 46, 204, 113),
+	borderColor: A3($mdgriffith$elm_ui$Element$rgb255, 39, 174, 96),
+	id: 'top-face',
+	label: 'TOP',
+	listenForEvents: false
+};
 var $author$project$Anim$Extra$View3D$transformStyle = function (ts) {
 	return A2(
 		$elm$html$Html$Attributes$style,
@@ -15384,214 +15422,124 @@ var $author$project$Anim$Extra$View3D$transformStyle = function (ts) {
 			}
 		}());
 };
-var $author$project$Concepts$Animate3D$Main$viewCube = function (model) {
-	return $mdgriffith$elm_ui$Element$html(
-		A2(
-			$elm$html$Html$div,
+var $mdgriffith$elm_ui$Element$Font$bold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.bold);
+var $mdgriffith$elm_ui$Internal$Flag$borderColor = $mdgriffith$elm_ui$Internal$Flag$flag(28);
+var $mdgriffith$elm_ui$Element$Border$color = function (clr) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$borderColor,
+		A3(
+			$mdgriffith$elm_ui$Internal$Model$Colored,
+			'bc-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(clr),
+			'border-color',
+			clr));
+};
+var $mdgriffith$elm_ui$Element$rgb = F3(
+	function (r, g, b) {
+		return A4($mdgriffith$elm_ui$Internal$Model$Rgba, r, g, b, 1);
+	});
+var $mdgriffith$elm_ui$Element$Font$size = function (i) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$fontSize,
+		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
+};
+var $mdgriffith$elm_ui$Internal$Model$BorderWidth = F5(
+	function (a, b, c, d, e) {
+		return {$: 'BorderWidth', a: a, b: b, c: c, d: d, e: e};
+	});
+var $mdgriffith$elm_ui$Element$Border$width = function (v) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$borderWidth,
+		A5(
+			$mdgriffith$elm_ui$Internal$Model$BorderWidth,
+			'b-' + $elm$core$String$fromInt(v),
+			v,
+			v,
+			v,
+			v));
+};
+var $author$project$Concepts$Animate3D$Main$viewFace = F3(
+	function (animState, listenForEvents, config) {
+		var eventAttributes = listenForEvents ? A2(
+			$elm$core$List$map,
+			$mdgriffith$elm_ui$Element$htmlAttribute,
+			A2($author$project$Anim$Engine$CSS$Keyframes$events, config.id, $author$project$Concepts$Animate3D$Main$GotKeyframeEvent)) : _List_Nil;
+		var baseAttributes = _List_fromArray(
+			[
+				$mdgriffith$elm_ui$Element$htmlAttribute(
+				$elm$html$Html$Attributes$id(config.id)),
+				$mdgriffith$elm_ui$Element$width(
+				$mdgriffith$elm_ui$Element$px(
+					$elm$core$Basics$round($author$project$Concepts$Animate3D$Main$cubeSize))),
+				$mdgriffith$elm_ui$Element$height(
+				$mdgriffith$elm_ui$Element$px(
+					$elm$core$Basics$round($author$project$Concepts$Animate3D$Main$cubeSize))),
+				$mdgriffith$elm_ui$Element$Background$color(config.background),
+				$mdgriffith$elm_ui$Element$Border$width(2),
+				$mdgriffith$elm_ui$Element$Border$color(config.borderColor),
+				$mdgriffith$elm_ui$Element$Font$color(
+				A3($mdgriffith$elm_ui$Element$rgb, 1, 1, 1)),
+				$mdgriffith$elm_ui$Element$Font$bold,
+				$mdgriffith$elm_ui$Element$Font$size(14),
+				$mdgriffith$elm_ui$Element$htmlAttribute(
+				A2($elm$html$Html$Attributes$style, 'position', 'absolute'))
+			]);
+		var animAttributes = A2(
+			$elm$core$List$map,
+			$mdgriffith$elm_ui$Element$htmlAttribute,
+			A2($author$project$Anim$Engine$CSS$Keyframes$styles, config.id, animState));
+		return A2(
+			$mdgriffith$elm_ui$Element$el,
 			_Utils_ap(
+				baseAttributes,
+				_Utils_ap(animAttributes, eventAttributes)),
+			A2(
+				$mdgriffith$elm_ui$Element$el,
 				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$id('cube'),
-						A2(
-						$elm$html$Html$Attributes$style,
-						'width',
-						$elm$core$String$fromFloat($author$project$Concepts$Animate3D$Main$cubeSize) + 'px'),
-						A2(
-						$elm$html$Html$Attributes$style,
-						'height',
-						$elm$core$String$fromFloat($author$project$Concepts$Animate3D$Main$cubeSize) + 'px'),
-						A2($elm$html$Html$Attributes$style, 'position', 'relative'),
-						$author$project$Anim$Extra$View3D$transformStyle($author$project$Anim$Extra$View3D$Preserve3D),
-						$author$project$Anim$Extra$View3D$perspectiveOrigin($author$project$Anim$Extra$View3D$Center)
-					]),
-				_Utils_ap(
-					A2($author$project$Anim$Engine$CSS$Keyframes$styles, 'cube', model.animState),
-					(_Utils_eq(model.state, $author$project$Concepts$Animate3D$Main$RotatingOpen) || _Utils_eq(model.state, $author$project$Concepts$Animate3D$Main$RotatingClosed)) ? A2($author$project$Anim$Engine$CSS$Keyframes$events, 'cube', $author$project$Concepts$Animate3D$Main$GotKeyframeEvent) : _List_Nil)),
+					[$mdgriffith$elm_ui$Element$centerX, $mdgriffith$elm_ui$Element$centerY]),
+				$mdgriffith$elm_ui$Element$text(config.label)));
+	});
+var $author$project$Concepts$Animate3D$Main$viewCube = function (model) {
+	var shouldListenForSideEvents = _Utils_eq(model.state, $author$project$Concepts$Animate3D$Main$Opening) || _Utils_eq(model.state, $author$project$Concepts$Animate3D$Main$Closing);
+	var cubeStyles = A2(
+		$elm$core$List$map,
+		$mdgriffith$elm_ui$Element$htmlAttribute,
+		A2($author$project$Anim$Engine$CSS$Keyframes$styles, 'cube', model.animState));
+	var cubeEvents = (_Utils_eq(model.state, $author$project$Concepts$Animate3D$Main$RotatingOpen) || _Utils_eq(model.state, $author$project$Concepts$Animate3D$Main$RotatingClosed)) ? A2(
+		$elm$core$List$map,
+		$mdgriffith$elm_ui$Element$htmlAttribute,
+		A2($author$project$Anim$Engine$CSS$Keyframes$events, 'cube', $author$project$Concepts$Animate3D$Main$GotKeyframeEvent)) : _List_Nil;
+	return A2(
+		$mdgriffith$elm_ui$Element$column,
+		_Utils_ap(
 			_List_fromArray(
 				[
-					A2(
-					$elm$html$Html$div,
-					_Utils_ap(
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$id('front-face'),
-								A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
-								A2(
-								$elm$html$Html$Attributes$style,
-								'width',
-								$elm$core$String$fromFloat($author$project$Concepts$Animate3D$Main$cubeSize) + 'px'),
-								A2(
-								$elm$html$Html$Attributes$style,
-								'height',
-								$elm$core$String$fromFloat($author$project$Concepts$Animate3D$Main$cubeSize) + 'px'),
-								A2($elm$html$Html$Attributes$style, 'background', '#3498db'),
-								A2($elm$html$Html$Attributes$style, 'border', '2px solid #2980b9'),
-								A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-								A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
-								A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-								A2($elm$html$Html$Attributes$style, 'color', 'white'),
-								A2($elm$html$Html$Attributes$style, 'font-weight', 'bold'),
-								A2($elm$html$Html$Attributes$style, 'font-size', '14px')
-							]),
-						_Utils_ap(
-							A2($author$project$Anim$Engine$CSS$Keyframes$styles, 'front-face', model.animState),
-							(_Utils_eq(model.state, $author$project$Concepts$Animate3D$Main$Opening) || _Utils_eq(model.state, $author$project$Concepts$Animate3D$Main$Closing)) ? A2($author$project$Anim$Engine$CSS$Keyframes$events, 'front-face', $author$project$Concepts$Animate3D$Main$GotKeyframeEvent) : _List_Nil)),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('FRONT')
-						])),
-					A2(
-					$elm$html$Html$div,
-					_Utils_ap(
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$id('back-face'),
-								A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
-								A2(
-								$elm$html$Html$Attributes$style,
-								'width',
-								$elm$core$String$fromFloat($author$project$Concepts$Animate3D$Main$cubeSize) + 'px'),
-								A2(
-								$elm$html$Html$Attributes$style,
-								'height',
-								$elm$core$String$fromFloat($author$project$Concepts$Animate3D$Main$cubeSize) + 'px'),
-								A2($elm$html$Html$Attributes$style, 'background', '#2980b9'),
-								A2($elm$html$Html$Attributes$style, 'border', '2px solid #21618c'),
-								A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-								A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
-								A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-								A2($elm$html$Html$Attributes$style, 'color', 'white'),
-								A2($elm$html$Html$Attributes$style, 'font-weight', 'bold'),
-								A2($elm$html$Html$Attributes$style, 'font-size', '14px')
-							]),
-						A2($author$project$Anim$Engine$CSS$Keyframes$styles, 'back-face', model.animState)),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('BACK')
-						])),
-					A2(
-					$elm$html$Html$div,
-					_Utils_ap(
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$id('right-face'),
-								A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
-								A2(
-								$elm$html$Html$Attributes$style,
-								'width',
-								$elm$core$String$fromFloat($author$project$Concepts$Animate3D$Main$cubeSize) + 'px'),
-								A2(
-								$elm$html$Html$Attributes$style,
-								'height',
-								$elm$core$String$fromFloat($author$project$Concepts$Animate3D$Main$cubeSize) + 'px'),
-								A2($elm$html$Html$Attributes$style, 'background', '#e74c3c'),
-								A2($elm$html$Html$Attributes$style, 'border', '2px solid #c0392b'),
-								A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-								A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
-								A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-								A2($elm$html$Html$Attributes$style, 'color', 'white'),
-								A2($elm$html$Html$Attributes$style, 'font-weight', 'bold'),
-								A2($elm$html$Html$Attributes$style, 'font-size', '14px')
-							]),
-						A2($author$project$Anim$Engine$CSS$Keyframes$styles, 'right-face', model.animState)),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('RIGHT')
-						])),
-					A2(
-					$elm$html$Html$div,
-					_Utils_ap(
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$id('left-face'),
-								A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
-								A2(
-								$elm$html$Html$Attributes$style,
-								'width',
-								$elm$core$String$fromFloat($author$project$Concepts$Animate3D$Main$cubeSize) + 'px'),
-								A2(
-								$elm$html$Html$Attributes$style,
-								'height',
-								$elm$core$String$fromFloat($author$project$Concepts$Animate3D$Main$cubeSize) + 'px'),
-								A2($elm$html$Html$Attributes$style, 'background', '#e67e22'),
-								A2($elm$html$Html$Attributes$style, 'border', '2px solid #d35400'),
-								A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-								A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
-								A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-								A2($elm$html$Html$Attributes$style, 'color', 'white'),
-								A2($elm$html$Html$Attributes$style, 'font-weight', 'bold'),
-								A2($elm$html$Html$Attributes$style, 'font-size', '14px')
-							]),
-						A2($author$project$Anim$Engine$CSS$Keyframes$styles, 'left-face', model.animState)),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('LEFT')
-						])),
-					A2(
-					$elm$html$Html$div,
-					_Utils_ap(
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$id('top-face'),
-								A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
-								A2(
-								$elm$html$Html$Attributes$style,
-								'width',
-								$elm$core$String$fromFloat($author$project$Concepts$Animate3D$Main$cubeSize) + 'px'),
-								A2(
-								$elm$html$Html$Attributes$style,
-								'height',
-								$elm$core$String$fromFloat($author$project$Concepts$Animate3D$Main$cubeSize) + 'px'),
-								A2($elm$html$Html$Attributes$style, 'background', '#2ecc71'),
-								A2($elm$html$Html$Attributes$style, 'border', '2px solid #27ae60'),
-								A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-								A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
-								A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-								A2($elm$html$Html$Attributes$style, 'color', 'white'),
-								A2($elm$html$Html$Attributes$style, 'font-weight', 'bold'),
-								A2($elm$html$Html$Attributes$style, 'font-size', '14px'),
-								A2(
-								$elm$html$Html$Attributes$style,
-								'transform',
-								'rotateX(90deg) translateZ(' + ($elm$core$String$fromFloat($author$project$Concepts$Animate3D$Main$depth) + 'px)'))
-							]),
-						A2($author$project$Anim$Engine$CSS$Keyframes$styles, 'top-face', model.animState)),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('TOP')
-						])),
-					A2(
-					$elm$html$Html$div,
-					_Utils_ap(
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$id('bottom-face'),
-								A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
-								A2(
-								$elm$html$Html$Attributes$style,
-								'width',
-								$elm$core$String$fromFloat($author$project$Concepts$Animate3D$Main$cubeSize) + 'px'),
-								A2(
-								$elm$html$Html$Attributes$style,
-								'height',
-								$elm$core$String$fromFloat($author$project$Concepts$Animate3D$Main$cubeSize) + 'px'),
-								A2($elm$html$Html$Attributes$style, 'background', '#9b59b6'),
-								A2($elm$html$Html$Attributes$style, 'border', '2px solid #8e44ad'),
-								A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-								A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
-								A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
-								A2($elm$html$Html$Attributes$style, 'color', 'white'),
-								A2($elm$html$Html$Attributes$style, 'font-weight', 'bold'),
-								A2($elm$html$Html$Attributes$style, 'font-size', '14px')
-							]),
-						A2($author$project$Anim$Engine$CSS$Keyframes$styles, 'bottom-face', model.animState)),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('BOTTOM')
-						]))
-				])));
+					$mdgriffith$elm_ui$Element$htmlAttribute(
+					$elm$html$Html$Attributes$id('cube')),
+					$mdgriffith$elm_ui$Element$width(
+					$mdgriffith$elm_ui$Element$px(
+						$elm$core$Basics$round($author$project$Concepts$Animate3D$Main$cubeSize))),
+					$mdgriffith$elm_ui$Element$height(
+					$mdgriffith$elm_ui$Element$px(
+						$elm$core$Basics$round($author$project$Concepts$Animate3D$Main$cubeSize))),
+					$mdgriffith$elm_ui$Element$htmlAttribute(
+					$author$project$Anim$Extra$View3D$transformStyle($author$project$Anim$Extra$View3D$Preserve3D)),
+					$mdgriffith$elm_ui$Element$htmlAttribute(
+					$author$project$Anim$Extra$View3D$perspectiveOrigin($author$project$Anim$Extra$View3D$Center))
+				]),
+			_Utils_ap(cubeStyles, cubeEvents)),
+		_List_fromArray(
+			[
+				A3($author$project$Concepts$Animate3D$Main$viewFace, model.animState, shouldListenForSideEvents && $author$project$Concepts$Animate3D$Main$frontFace.listenForEvents, $author$project$Concepts$Animate3D$Main$frontFace),
+				A3($author$project$Concepts$Animate3D$Main$viewFace, model.animState, false, $author$project$Concepts$Animate3D$Main$backFace),
+				A3($author$project$Concepts$Animate3D$Main$viewFace, model.animState, false, $author$project$Concepts$Animate3D$Main$rightFace),
+				A3($author$project$Concepts$Animate3D$Main$viewFace, model.animState, false, $author$project$Concepts$Animate3D$Main$leftFace),
+				A3($author$project$Concepts$Animate3D$Main$viewFace, model.animState, false, $author$project$Concepts$Animate3D$Main$topFace),
+				A3($author$project$Concepts$Animate3D$Main$viewFace, model.animState, false, $author$project$Concepts$Animate3D$Main$bottomFace)
+			]));
 };
-var $mdgriffith$elm_ui$Element$Font$bold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.bold);
 var $mdgriffith$elm_ui$Internal$Model$Max = F2(
 	function (a, b) {
 		return {$: 'Max', a: a, b: b};
@@ -15633,16 +15581,6 @@ var $mdgriffith$elm_ui$Element$paddingEach = function (_v0) {
 				bottom,
 				left));
 	}
-};
-var $mdgriffith$elm_ui$Element$rgb = F3(
-	function (r, g, b) {
-		return A4($mdgriffith$elm_ui$Internal$Model$Rgba, r, g, b, 1);
-	});
-var $mdgriffith$elm_ui$Element$Font$size = function (i) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$fontSize,
-		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
 };
 var $author$project$Concepts$Animate3D$Main$viewExplanation = A2(
 	$mdgriffith$elm_ui$Element$column,
@@ -15808,8 +15746,6 @@ var $author$project$Concepts$Animate3D$Main$viewContent = function (model) {
 						[
 							$mdgriffith$elm_ui$Element$centerX,
 							$mdgriffith$elm_ui$Element$centerY,
-							$mdgriffith$elm_ui$Element$htmlAttribute(
-							A2($elm$html$Html$Attributes$style, 'position', 'relative')),
 							$mdgriffith$elm_ui$Element$htmlAttribute(
 							$author$project$Anim$Extra$View3D$perspective(1000))
 						]),
