@@ -181,12 +181,13 @@ subscriptions model =
 
 
 
--- VIEW - Using ElmUI, but the scroll engine works with any view layer 
+-- VIEW - Using ElmUI, but the scroll engine works with any view layer
 --        since it targets DOM elements directly.
 --
---        All the scroll animation logic is handled by the engine in your 
---        update function, there is nothing Engine-specific to add to your 
+--        All the scroll animation logic is handled by the engine in your
+--        update function, there is nothing Engine-specific to add to your
 --        view layer.
+
 
 view : Model -> Document Msg
 view model =

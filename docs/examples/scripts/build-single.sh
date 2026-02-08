@@ -62,7 +62,7 @@ while IFS= read -r -d '' file; do
     else
         FAILED_FORMAT+=("$file")
     fi
-done < <(find src/GettingStarted -name "*.elm" -type f -print0 2>/dev/null)
+done < <(find src -name "*.elm" -type f -print0 2>/dev/null)
 
 echo ""
 

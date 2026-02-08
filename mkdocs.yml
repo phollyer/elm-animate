@@ -80,8 +80,8 @@ nav:
     - Easing Functions: concepts/easing.md
     - 3D Animations: concepts/3d.md
   - Engines:
-    - CSS Transitions: engines/css-transitions.md
-    - CSS Keyframes: engines/css-keyframes.md
+    - Transitions Engine: engines/css-transitions.md
+    - Keyframes Engine: engines/css-keyframes.md
     - Sub Engine: engines/sub.md
     - WAAPI Engine: engines/waapi.md
     - Scroll Engine: engines/scroll.md

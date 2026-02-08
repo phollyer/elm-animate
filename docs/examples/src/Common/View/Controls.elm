@@ -1,20 +1,20 @@
-module Common.View.Controls exposing 
-    (buttons
-    , table
+module Common.View.Controls exposing
+    ( animationArea
+    , buttons
     , header
-    , animationArea
+    , table
     )
 
-
+import Common.Colors as Colors
 import Common.UI as UI
-import Element exposing (Element, html, centerY, px, htmlAttribute, text, padding, height, width, fill, el, column, row, spacing, centerX)
-import Element.Border as Border 
-import Element.Font as Font
-import Common.Colors as Colors  
+import Element exposing (Element, centerX, centerY, column, el, fill, height, html, htmlAttribute, padding, px, row, spacing, text, width)
 import Element.Background as Background
+import Element.Border as Border
+import Element.Font as Font
 import Html.Attributes
 
-animationArea : { width : Int, height : Int } -> (Element msg) -> Element msg
+
+animationArea : { width : Int, height : Int } -> Element msg -> Element msg
 animationArea size =
     el
         [ width <|
@@ -33,22 +33,21 @@ animationArea size =
         ]
 
 
-
-animatedBall : List (Element.Attribute msg)  -> Element msg
+animatedBall : List (Element.Attribute msg) -> Element msg
 animatedBall animationAttrs =
     el
-        (animationAttrs ++ 
-        [ width (px 50)
-         , height (px 50)
-         , htmlAttribute (Html.Attributes.style "position" "relative")
-         ]
-         
+        (animationAttrs
+            ++ [ width (px 50)
+               , height (px 50)
+               , htmlAttribute (Html.Attributes.style "position" "relative")
+               ]
         )
         (el [ centerX, centerY, Font.size 50 ] (text "🏀"))
 
 
 
--- Header 
+-- Header
+
 
 header : List String -> Element msg
 header =
@@ -57,9 +56,13 @@ header =
         , spacing 8
         ]
         << List.map UI.pageHeader
+
+
+
 -- Table
 
-table : List (Int, String, String) -> Element msg
+
+table : List ( Int, String, String ) -> Element msg
 table descriptions =
     column
         [ centerX
@@ -94,14 +97,13 @@ table descriptions =
                 (text "🎮 Control Functions")
         , column
             [ width fill ]
-            <| List.map 
-            (\( borderWidth, control, desc ) -> 
-            description borderWidth control desc
-            )
-             descriptions
+          <|
+            List.map
+                (\( borderWidth, control, desc ) ->
+                    description borderWidth control desc
+                )
+                descriptions
         ]
-
-
 
 
 description : Int -> String -> String -> Element msg
@@ -131,10 +133,11 @@ description borderWidth control description_ =
         ]
 
 
+
 -- Buttons
 
 
-buttons : List (List (UI.ButtonStyle, msg, String)) -> Element msg
+buttons : List (List ( UI.ButtonStyle, msg, String )) -> Element msg
 buttons =
     row
         [ spacing 12, centerX ]
