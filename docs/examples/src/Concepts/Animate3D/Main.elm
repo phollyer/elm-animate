@@ -8,7 +8,7 @@ import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
-import Element exposing (Element, centerX, centerY, column, el, fill, height, html, htmlAttribute, maximum, padding, px, spacing, text, width)
+import Element exposing (Element, centerX, centerY, column, el, fill, height, html, htmlAttribute, maximum, padding, paddingEach, px, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -59,16 +59,20 @@ depth =
 
 init : { window : { width : Int } } -> ( Model, Cmd Msg )
 init flags =
+    -- --8<-- [start:initializeProperties]
     let
-        animState =
+        initialAnimState =
             Keyframes.init
                 [ Translate.initZ "cube" 200
+                -- Position each face in 3D space
                 , Translate.initZ "front-face" depth
                 , Translate.initZ "back-face" (depth * -1)
                 , Translate.initX "right-face" depth
                 , Translate.initX "left-face" (-1 * depth)
                 , Translate.initY "top-face" (-1 * depth)
                 , Translate.initY "bottom-face" depth
+                -- Rotate each face to build the cube
+                -- Front face is not rotated due to facing forward by default
                 , Rotate.initY "back-face" 180
                 , Rotate.initY "right-face" 90
                 , Rotate.initY "left-face" -90
@@ -79,9 +83,12 @@ init flags =
         state =
             Opening
     in
-    ( { animState =
-            Keyframes.animate animState <|
+    -- --8<-- [end:initializeProperties]
+    -- --8<-- [start:startAnimation]
+     ( { animState =
+            Keyframes.animate initialAnimState <|
                 animate state
+    -- --8<-- [end:startAnimation]
       , state = state
       , animAreaSize =
             { width = min 500 (flags.window.width - 40)
@@ -91,7 +98,7 @@ init flags =
     , Cmd.none
     )
 
-
+-- --8<-- [start:animationSelector]
 animate : State -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 animate state =
     case state of
@@ -106,8 +113,9 @@ animate state =
 
         RotatingClosed ->
             rotateCubeAntiClockwise
+-- --8<-- [end:animationSelector]
 
-
+-- --8<-- [start:animationFunctions]
 rotateCube : (Rotate.Builder -> Rotate.Builder) -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 rotateCube targetFunc =
     Rotate.for "cube"
@@ -228,7 +236,7 @@ moveBottomFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveBottomFaceIn =
     moveFace "bottom-face" <|
         Translate.toY depth
-
+-- --8<-- [end:animationFunctions]
 
 
 -- UPDATE
@@ -238,6 +246,7 @@ type Msg
     = GotKeyframeEvent Keyframes.Event
 
 
+-- --8<-- [start:stateMachine]
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -293,7 +302,7 @@ update msg model =
 
                 _ ->
                     ( newModel, Cmd.none )
-
+-- --8<-- [end:stateMachine]
 
 
 -- VIEW
@@ -312,34 +321,30 @@ viewContent model =
     [ UI.pageHeader "Keyframes 3D Example"
     , html <|
         Keyframes.styleNode model.animState
-    , el
-        [ centerX
-        , padding 20
-        ]
-      <|
-        el
-            [ width <|
-                px model.animAreaSize.width
-            , height <|
-                px model.animAreaSize.height
-            , Background.color Colors.backgroundWhite
-            , Border.rounded 12
-            , Border.shadow
-                { offset = ( 0, 4 )
-                , size = 0
-                , blur = 8
-                , color = Element.rgba 0 0 0 0.1
-                }
-            ]
-            (el
-                [ centerX
-                , centerY
-                , htmlAttribute <|
-                    View3D.perspective 1000
-                ]
-                (viewCube model)
-            )
     , viewExplanation
+    , el
+        [ width <|
+            px model.animAreaSize.width
+        , height <|
+            px model.animAreaSize.height
+        , centerX
+        , Background.color Colors.backgroundWhite
+        , Border.rounded 12
+        , Border.shadow
+            { offset = ( 0, 4 )
+            , size = 0
+            , blur = 8
+            , color = Element.rgba 0 0 0 0.1
+            }
+        ]
+        (el
+            [ centerX
+            , centerY
+            , htmlAttribute <|
+                View3D.perspective 1000
+            ]
+            (viewCube model)
+        )
     ]
 
 
@@ -412,6 +417,7 @@ bottomFace =
     }
 
 
+-- --8<-- [start:viewCube]
 viewCube : Model -> Element Msg
 viewCube model =
     let
@@ -452,8 +458,10 @@ viewCube model =
         , viewFace model.animState False topFace
         , viewFace model.animState False bottomFace
         ]
+-- --8<-- [end:viewCube]
 
 
+-- --8<-- [start:viewFace]
 viewFace : Keyframes.AnimState -> Bool -> FaceConfig -> Element Msg
 viewFace animState listenForEvents config =
     let
@@ -490,53 +498,33 @@ viewFace animState listenForEvents config =
     el
         (baseAttributes ++ animAttributes ++ eventAttributes)
         (el [ centerX, centerY ] (text config.label))
+-- --8<-- [end:viewFace]
 
 
 viewExplanation : Element Msg
 viewExplanation =
-    column
-        [ width (fill |> maximum 700)
-        , centerX
-        , padding 20
-        , spacing 15
-        , Background.color (Element.rgb 1 0.95 0.8)
-        , Border.rounded 8
-        , Font.size 14
+    el
+        [ centerX
+        , paddingEach
+            { top = 20
+            , right = 0
+            , left = 0
+            , bottom = 0
+            }
         ]
-        [ el [ Font.bold, Font.size 16 ] (text "How the 3D Cube Works")
-        , Element.paragraph []
-            [ text "Each face is a flat div positioned in 3D space using transforms:" ]
-        , column [ spacing 5, padding 10 ]
-            [ text "• Front/Back: translateZ(±50px)"
-            , text "• Left/Right: rotateY(±90°) + translateZ(50px)"
-            , text "• Top/Bottom: rotateX(±90°) + translateZ(50px)"
+    <|
+        column
+            [ width (fill |> maximum 700)
+            , centerX
+            , padding 20
+            , spacing 10
+            , Background.color (Element.rgb 0.95 0.97 1)
+            , Border.rounded 8
+            , Font.size 14
             ]
-        , Element.paragraph []
-            [ text "The entire cube rotates as one unit when you animate the container div. "
+            [ el [ Font.bold, Font.size 16 ] (text "3D Cube Animation")
+            , Element.paragraph []
+                [ text "This example demonstrates a 3D cube built with six positioned faces "
+                , text "that cycles through: expand sides → rotate → close sides → rotate back."
+                ]
             ]
-        , el [ Font.bold, Font.size 16, Element.paddingEach { top = 10, bottom = 0, left = 0, right = 0 } ] (text "The Near Clipping Plane")
-        , Element.paragraph []
-            [ text "The perspective origin acts as an "
-            , el [ Font.bold ] (text "opaque clipping plane")
-            , text ". Any part of the cube that passes behind this plane (negative Z direction) becomes invisible."
-            ]
-        , Element.paragraph []
-            [ text "This is why the cube disappears when Z Position is too small. The cube is 100px deep (±50px from center), so at Z=50px, the back face reaches Z=0px. Any closer (Z<50px) causes parts to go behind the plane and disappear."
-            ]
-        , Element.paragraph []
-            [ text "When rotating or scaling, parts can also disappear if they move behind the plane."
-            ]
-        , Element.paragraph []
-            [ text "The safe rule: "
-            , el [ Font.bold ] (text "Z Position ≥ (object depth / 2)")
-            , text " ensures all faces stay visible during any rotation. For this 100px cube, that means Z ≥ 50px."
-            ]
-        , el [ Font.bold, Font.size 16, Element.paddingEach { top = 10, bottom = 0, left = 0, right = 0 } ] (text "Perspective and Depth")
-        , Element.paragraph []
-            [ text "The perspective value controls how pronounced the 3D effect appears. Lower values create a stronger perspective, making depth changes more dramatic."
-            ]
-        , Element.paragraph []
-            [ text "Experiment with the sliders to see how perspective, Z position, and rotations affect the cube's appearance! "
-            , text "For maximum zoom effect, set Perspective low (closer to the viewer) and Z Position high (closer to the viewer)."
-            ]
-        ]

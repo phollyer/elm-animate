@@ -8980,7 +8980,7 @@ var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Concepts$Animate3D$Main$init = function (flags) {
 	var state = $author$project$Concepts$Animate3D$Main$Opening;
-	var animState = $author$project$Anim$Engine$CSS$Keyframes$init(
+	var initialAnimState = $author$project$Anim$Engine$CSS$Keyframes$init(
 		_List_fromArray(
 			[
 				A2($author$project$Anim$Property$Translate$initZ, 'cube', 200),
@@ -9004,7 +9004,7 @@ var $author$project$Concepts$Animate3D$Main$init = function (flags) {
 			},
 			animState: A2(
 				$author$project$Anim$Engine$CSS$Keyframes$animate,
-				animState,
+				initialAnimState,
 				$author$project$Concepts$Animate3D$Main$animate(state)),
 			state: state
 		},
@@ -15046,19 +15046,6 @@ var $elm$core$Basics$always = F2(
 	});
 var $mdgriffith$elm_ui$Internal$Model$unstyled = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Unstyled, $elm$core$Basics$always);
 var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
-var $mdgriffith$elm_ui$Element$padding = function (x) {
-	var f = x;
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$padding,
-		A5(
-			$mdgriffith$elm_ui$Internal$Model$PaddingStyle,
-			'p-' + $elm$core$String$fromInt(x),
-			f,
-			f,
-			f,
-			f));
-};
 var $mdgriffith$elm_ui$Internal$Model$Class = F2(
 	function (a, b) {
 		return {$: 'Class', a: a, b: b};
@@ -15548,6 +15535,19 @@ var $mdgriffith$elm_ui$Element$maximum = F2(
 	function (i, l) {
 		return A2($mdgriffith$elm_ui$Internal$Model$Max, i, l);
 	});
+var $mdgriffith$elm_ui$Element$padding = function (x) {
+	var f = x;
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$padding,
+		A5(
+			$mdgriffith$elm_ui$Internal$Model$PaddingStyle,
+			'p-' + $elm$core$String$fromInt(x),
+			f,
+			f,
+			f,
+			f));
+};
 var $mdgriffith$elm_ui$Internal$Model$paddingName = F4(
 	function (top, right, bottom, left) {
 		return 'pad-' + ($elm$core$String$fromInt(top) + ('-' + ($elm$core$String$fromInt(right) + ('-' + ($elm$core$String$fromInt(bottom) + ('-' + $elm$core$String$fromInt(left)))))));
@@ -15583,174 +15583,82 @@ var $mdgriffith$elm_ui$Element$paddingEach = function (_v0) {
 	}
 };
 var $author$project$Concepts$Animate3D$Main$viewExplanation = A2(
-	$mdgriffith$elm_ui$Element$column,
+	$mdgriffith$elm_ui$Element$el,
 	_List_fromArray(
 		[
-			$mdgriffith$elm_ui$Element$width(
-			A2($mdgriffith$elm_ui$Element$maximum, 700, $mdgriffith$elm_ui$Element$fill)),
 			$mdgriffith$elm_ui$Element$centerX,
-			$mdgriffith$elm_ui$Element$padding(20),
-			$mdgriffith$elm_ui$Element$spacing(15),
-			$mdgriffith$elm_ui$Element$Background$color(
-			A3($mdgriffith$elm_ui$Element$rgb, 1, 0.95, 0.8)),
-			$mdgriffith$elm_ui$Element$Border$rounded(8),
-			$mdgriffith$elm_ui$Element$Font$size(14)
+			$mdgriffith$elm_ui$Element$paddingEach(
+			{bottom: 0, left: 0, right: 0, top: 20})
 		]),
-	_List_fromArray(
-		[
-			A2(
-			$mdgriffith$elm_ui$Element$el,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$Font$bold,
-					$mdgriffith$elm_ui$Element$Font$size(16)
-				]),
-			$mdgriffith$elm_ui$Element$text('How the 3D Cube Works')),
-			A2(
-			$mdgriffith$elm_ui$Element$paragraph,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$text('Each face is a flat div positioned in 3D space using transforms:')
-				])),
-			A2(
-			$mdgriffith$elm_ui$Element$column,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$spacing(5),
-					$mdgriffith$elm_ui$Element$padding(10)
-				]),
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$text('• Front/Back: translateZ(±50px)'),
-					$mdgriffith$elm_ui$Element$text('• Left/Right: rotateY(±90°) + translateZ(50px)'),
-					$mdgriffith$elm_ui$Element$text('• Top/Bottom: rotateX(±90°) + translateZ(50px)')
-				])),
-			A2(
-			$mdgriffith$elm_ui$Element$paragraph,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$text('The entire cube rotates as one unit when you animate the container div. ')
-				])),
-			A2(
-			$mdgriffith$elm_ui$Element$el,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$Font$bold,
-					$mdgriffith$elm_ui$Element$Font$size(16),
-					$mdgriffith$elm_ui$Element$paddingEach(
-					{bottom: 0, left: 0, right: 0, top: 10})
-				]),
-			$mdgriffith$elm_ui$Element$text('The Near Clipping Plane')),
-			A2(
-			$mdgriffith$elm_ui$Element$paragraph,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$text('The perspective origin acts as an '),
-					A2(
-					$mdgriffith$elm_ui$Element$el,
-					_List_fromArray(
-						[$mdgriffith$elm_ui$Element$Font$bold]),
-					$mdgriffith$elm_ui$Element$text('opaque clipping plane')),
-					$mdgriffith$elm_ui$Element$text('. Any part of the cube that passes behind this plane (negative Z direction) becomes invisible.')
-				])),
-			A2(
-			$mdgriffith$elm_ui$Element$paragraph,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$text('This is why the cube disappears when Z Position is too small. The cube is 100px deep (±50px from center), so at Z=50px, the back face reaches Z=0px. Any closer (Z<50px) causes parts to go behind the plane and disappear.')
-				])),
-			A2(
-			$mdgriffith$elm_ui$Element$paragraph,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$text('When rotating or scaling, parts can also disappear if they move behind the plane.')
-				])),
-			A2(
-			$mdgriffith$elm_ui$Element$paragraph,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$text('The safe rule: '),
-					A2(
-					$mdgriffith$elm_ui$Element$el,
-					_List_fromArray(
-						[$mdgriffith$elm_ui$Element$Font$bold]),
-					$mdgriffith$elm_ui$Element$text('Z Position ≥ (object depth / 2)')),
-					$mdgriffith$elm_ui$Element$text(' ensures all faces stay visible during any rotation. For this 100px cube, that means Z ≥ 50px.')
-				])),
-			A2(
-			$mdgriffith$elm_ui$Element$el,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$Font$bold,
-					$mdgriffith$elm_ui$Element$Font$size(16),
-					$mdgriffith$elm_ui$Element$paddingEach(
-					{bottom: 0, left: 0, right: 0, top: 10})
-				]),
-			$mdgriffith$elm_ui$Element$text('Perspective and Depth')),
-			A2(
-			$mdgriffith$elm_ui$Element$paragraph,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$text('The perspective value controls how pronounced the 3D effect appears. Lower values create a stronger perspective, making depth changes more dramatic.')
-				])),
-			A2(
-			$mdgriffith$elm_ui$Element$paragraph,
-			_List_Nil,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$text('Experiment with the sliders to see how perspective, Z position, and rotations affect the cube\'s appearance! '),
-					$mdgriffith$elm_ui$Element$text('For maximum zoom effect, set Perspective low (closer to the viewer) and Z Position high (closer to the viewer).')
-				]))
-		]));
+	A2(
+		$mdgriffith$elm_ui$Element$column,
+		_List_fromArray(
+			[
+				$mdgriffith$elm_ui$Element$width(
+				A2($mdgriffith$elm_ui$Element$maximum, 700, $mdgriffith$elm_ui$Element$fill)),
+				$mdgriffith$elm_ui$Element$centerX,
+				$mdgriffith$elm_ui$Element$padding(20),
+				$mdgriffith$elm_ui$Element$spacing(10),
+				$mdgriffith$elm_ui$Element$Background$color(
+				A3($mdgriffith$elm_ui$Element$rgb, 0.95, 0.97, 1)),
+				$mdgriffith$elm_ui$Element$Border$rounded(8),
+				$mdgriffith$elm_ui$Element$Font$size(14)
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$mdgriffith$elm_ui$Element$el,
+				_List_fromArray(
+					[
+						$mdgriffith$elm_ui$Element$Font$bold,
+						$mdgriffith$elm_ui$Element$Font$size(16)
+					]),
+				$mdgriffith$elm_ui$Element$text('3D Cube Animation')),
+				A2(
+				$mdgriffith$elm_ui$Element$paragraph,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$mdgriffith$elm_ui$Element$text('This example demonstrates a 3D cube built with six positioned faces '),
+						$mdgriffith$elm_ui$Element$text('that cycles through: expand sides → rotate → close sides → rotate back.')
+					]))
+			])));
 var $author$project$Concepts$Animate3D$Main$viewContent = function (model) {
 	return _List_fromArray(
 		[
 			$author$project$Common$UI$pageHeader('Keyframes 3D Example'),
 			$mdgriffith$elm_ui$Element$html(
 			$author$project$Anim$Engine$CSS$Keyframes$styleNode(model.animState)),
+			$author$project$Concepts$Animate3D$Main$viewExplanation,
 			A2(
 			$mdgriffith$elm_ui$Element$el,
 			_List_fromArray(
 				[
+					$mdgriffith$elm_ui$Element$width(
+					$mdgriffith$elm_ui$Element$px(model.animAreaSize.width)),
+					$mdgriffith$elm_ui$Element$height(
+					$mdgriffith$elm_ui$Element$px(model.animAreaSize.height)),
 					$mdgriffith$elm_ui$Element$centerX,
-					$mdgriffith$elm_ui$Element$padding(20)
+					$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundWhite),
+					$mdgriffith$elm_ui$Element$Border$rounded(12),
+					$mdgriffith$elm_ui$Element$Border$shadow(
+					{
+						blur: 8,
+						color: A4($mdgriffith$elm_ui$Element$rgba, 0, 0, 0, 0.1),
+						offset: _Utils_Tuple2(0, 4),
+						size: 0
+					})
 				]),
 			A2(
 				$mdgriffith$elm_ui$Element$el,
 				_List_fromArray(
 					[
-						$mdgriffith$elm_ui$Element$width(
-						$mdgriffith$elm_ui$Element$px(model.animAreaSize.width)),
-						$mdgriffith$elm_ui$Element$height(
-						$mdgriffith$elm_ui$Element$px(model.animAreaSize.height)),
-						$mdgriffith$elm_ui$Element$Background$color($author$project$Common$Colors$backgroundWhite),
-						$mdgriffith$elm_ui$Element$Border$rounded(12),
-						$mdgriffith$elm_ui$Element$Border$shadow(
-						{
-							blur: 8,
-							color: A4($mdgriffith$elm_ui$Element$rgba, 0, 0, 0, 0.1),
-							offset: _Utils_Tuple2(0, 4),
-							size: 0
-						})
+						$mdgriffith$elm_ui$Element$centerX,
+						$mdgriffith$elm_ui$Element$centerY,
+						$mdgriffith$elm_ui$Element$htmlAttribute(
+						$author$project$Anim$Extra$View3D$perspective(1000))
 					]),
-				A2(
-					$mdgriffith$elm_ui$Element$el,
-					_List_fromArray(
-						[
-							$mdgriffith$elm_ui$Element$centerX,
-							$mdgriffith$elm_ui$Element$centerY,
-							$mdgriffith$elm_ui$Element$htmlAttribute(
-							$author$project$Anim$Extra$View3D$perspective(1000))
-						]),
-					$author$project$Concepts$Animate3D$Main$viewCube(model)))),
-			$author$project$Concepts$Animate3D$Main$viewExplanation
+				$author$project$Concepts$Animate3D$Main$viewCube(model)))
 		]);
 };
 var $author$project$Concepts$Animate3D$Main$view = function (model) {
