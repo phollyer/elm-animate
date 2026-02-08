@@ -8,13 +8,9 @@ Easing functions control the rate of change during an animation, making motion f
 
 Constant speed throughout. Rarely what you want for UI animations.
 
-```elm
-|> Property.easing Linear
-```
-
 ### Ease
 
-The standard CSS easing functions — a good default choice for most UI animations.
+The standard CSS easing functions.
 
 | Easing | Feel |
 | -------- | ------ |
@@ -153,60 +149,68 @@ The four parameters (`x1 y1 x2 y2`) define the curve's control points. Use tools
 
 ### Snappy button response
 
-```elm
-buttonHover builder =
-    builder
-        |> Scale.for "button"
-        |> Scale.to 1.05
-        |> Scale.duration 150
-        |> Scale.easing QuintOut
-        |> Scale.build
-```
+??? example "Show Source Code"
+
+    ```elm
+    buttonHover : AnimBuilder -> AnimBuilder
+    buttonHover =
+        Scale.for "button"
+            >> Scale.to 1.05
+            >> Scale.duration 150
+            >> Scale.easing QuintOut
+            >> Scale.build
+    ```
 
 ### Smooth modal entrance
 
-```elm
-modalEnter builder =
-    builder
-        |> Opacity.for "modal"
-        |> Opacity.from 0
-        |> Opacity.to 1
-        |> Opacity.duration 300
-        |> Opacity.easing CubicOut
-        |> Opacity.build
-        |> Translate.for "modal"
-        |> Translate.fromY 20
-        |> Translate.toY 0
-        |> Translate.duration 300
-        |> Translate.easing CubicOut
-        |> Translate.build
-```
+??? example "Show Source Code"
+
+    ```elm
+    modalEnter : AnimBuilder -> AnimBuilder
+    modalEnter =
+        Opacity.for "modal"
+            >> Opacity.from 0
+            >> Opacity.to 1
+            >> Opacity.duration 300
+            >> Opacity.easing CubicOut
+            >> Opacity.build
+            >> Translate.for "modal"
+            >> Translate.fromY 20
+            >> Translate.toY 0
+            >> Translate.duration 300
+            >> Translate.easing CubicOut
+            >> Translate.build
+    ```
 
 ### Playful bounce
 
-```elm
-notification builder =
-    builder
-        |> Translate.for "toast"
-        |> Translate.fromY -100
-        |> Translate.toY 0
-        |> Translate.duration 600
-        |> Translate.easing BounceOut
-        |> Translate.build
-```
+??? example "Show Source Code"
+
+    ```elm
+    notification : AnimBuilder -> AnimBuilder
+    notification =
+        Translate.for "toast"
+            >> Translate.fromY -100
+            >> Translate.toY 0
+            >> Translate.duration 600
+            >> Translate.easing BounceOut
+            >> Translate.build
+    ```
 
 ### Elastic attention
 
-```elm
-shake builder =
-    builder
-        |> Rotate.for "icon"
-        |> Rotate.from 0
-        |> Rotate.to 15
-        |> Rotate.duration 400
-        |> Rotate.easing ElasticOut
-        |> Rotate.build
-```
+??? example "Show Source Code"
+
+    ```elm
+    shake : AnimBuilder -> AnimBuilder
+    shake =
+        Rotate.for "icon"
+            >> Rotate.from 0
+            >> Rotate.to 15
+            >> Rotate.duration 400
+            >> Rotate.easing ElasticOut
+            >> Rotate.build
+    ```
 
 ## Next Steps
 
