@@ -2,7 +2,7 @@ module Anim.Engine.CSS.Keyframes exposing
     ( AnimState, init
     , attributes
     , styleNode, styleNodeFor, getElementKeyframes
-    , Event(..), handleEvent
+    , AnimEvent(..), handleEvent
     , events
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , AnimBuilder, animate, fireAndForget, TransformOrder(..), animateOrder, fireAndForgetOrder
@@ -68,7 +68,7 @@ Keyframe animations require both styles on the element AND a `<style>` node in t
 CSS keyframe animations trigger events at various stages of their lifecycle.
 Use these events to keep your [AnimState](#AnimState) in sync.
 
-@docs Event, handleEvent
+@docs AnimEvent, handleEvent
 
 @docs events
 
@@ -213,7 +213,7 @@ type TransformOrder
 
 {-| CSS keyframe animation lifecycle events.
 -}
-type Event
+type AnimEvent
     = Started String
     | Ended String
     | Cancelled String
@@ -449,7 +449,7 @@ getElementKeyframes =
 {-| The simplest way to receive keyframe animation event messages.
 
     type Msg
-        = KeyframeMsg Keyframes.Event
+        = KeyframeMsg Keyframes.AnimEvent
 
     div
         (Keyframes.attributes "my-element" animState
@@ -458,7 +458,7 @@ getElementKeyframes =
         [ text "Animating element" ]
 
 -}
-events : String -> (Event -> msg) -> List (Html.Attribute msg)
+events : String -> (AnimEvent -> msg) -> List (Html.Attribute msg)
 events elementId toMsg =
     List.map (Html.Attributes.map toMsg) <|
         [ onAnimationStart (Started elementId)
@@ -476,7 +476,7 @@ events elementId toMsg =
                 { model | animState = Keyframes.handleEvent event model.animState }
 
 -}
-handleEvent : Event -> AnimState -> AnimState
+handleEvent : AnimEvent -> AnimState -> AnimState
 handleEvent event animState =
     case event of
         Started elementId ->

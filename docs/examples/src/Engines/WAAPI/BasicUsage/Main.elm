@@ -36,7 +36,7 @@ port waapiCommand : Encode.Value -> Cmd msg
 -- Incoming Port
 
 
-port waapiEvents : (Encode.Value -> msg) -> Sub msg
+port waapiEvent : (Encode.Value -> msg) -> Sub msg
 
 
 
@@ -58,7 +58,7 @@ init =
     let
         -- Initialize the starting state for our element
         ( initialAnimState, initCmd ) =
-            WAAPI.init waapiCommand waapiEvents <|
+            WAAPI.init waapiCommand waapiEvent <|
                 [ Opacity.init elementId 0 ]
     in
     ( { animState = initialAnimState }
@@ -66,7 +66,7 @@ init =
         [ initCmd
 
         -- Simulate a user action to start the animation after a short delay
-        --, Process.sleep 50 |> Task.perform (always StartAnimation)
+        , Process.sleep 50 |> Task.perform (always StartAnimation)
         ]
     )
 
@@ -89,7 +89,7 @@ fadeIn =
 
 type Msg
     = StartAnimation
-    | GotWaapiMsg WAAPI.Msg
+    | GotWaapiMsg WAAPI.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -135,8 +135,8 @@ view model =
         , style "width" "100vw"
         ]
         [ div
-            [ id elementId
-            , style "opacity" "0"
-            ]
+            (WAAPI.attributes elementId model.animState
+                ++ [ id elementId ]
+            )
             [ text "Hello World!" ]
         ]

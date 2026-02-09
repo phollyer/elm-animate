@@ -1,7 +1,7 @@
 module Anim.Internal.Scroll exposing
     ( AnimBuilder
+    , AnimMsg(..)
     , AnimState
-    , AnimationMsg(..)
     , addScrollTarget
     , animate
     , anyRunning
@@ -127,7 +127,7 @@ type AnimState
 
 {-| Animation messages
 -}
-type AnimationMsg
+type AnimMsg
     = AnimationFrame Float
     | DomQueriesCompleted String ScrollTarget AnimBuilder DomQueryResult
     | NoOp
@@ -372,7 +372,7 @@ toCmd toMsg buildAnimation =
 
 {-| Create scroll animation from AnimBuilder.
 -}
-animate : (AnimationMsg -> msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
+animate : (AnimMsg -> msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
 animate toMsg _ buildAnimation =
     let
         animBuilder =
@@ -654,7 +654,7 @@ calculateDistance axis startX startY targetX targetY =
 
 {-| Update scroll animation state with animation frame.
 -}
-update : (AnimationMsg -> msg) -> AnimationMsg -> AnimState -> ( AnimState, Cmd msg )
+update : (AnimMsg -> msg) -> AnimMsg -> AnimState -> ( AnimState, Cmd msg )
 update toMsg msg (AnimState animData) =
     case msg of
         AnimationFrame deltaMs ->
@@ -784,7 +784,7 @@ updateScrollAnimation deltaMs animation =
         }
 
 
-subscriptions : (AnimationMsg -> msg) -> AnimState -> Sub msg
+subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg
 subscriptions toMsg animState =
     if anyRunning animState then
         Browser.Events.onAnimationFrameDelta (AnimationFrame >> toMsg)
@@ -896,7 +896,7 @@ getContainerDuration containerId (AnimState animData) =
 {-| Stop all scroll animations by jumping to their end positions.
 Animations are marked complete and scroll to their targets immediately.
 -}
-stop : (AnimationMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+stop : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 stop toMsg (AnimState animData) =
     let
         ( updatedAnimations, scrollCmds ) =
@@ -919,7 +919,7 @@ stop toMsg (AnimState animData) =
 
 {-| Stop scroll animation for a specific container by jumping to end position.
 -}
-stopContainer : (AnimationMsg -> msg) -> String -> AnimState -> ( AnimState, Cmd msg )
+stopContainer : (AnimMsg -> msg) -> String -> AnimState -> ( AnimState, Cmd msg )
 stopContainer toMsg containerId (AnimState animData) =
     let
         ( updatedAnimations, scrollCmds ) =
@@ -1008,7 +1008,7 @@ resumeContainer containerId (AnimState animData) =
 {-| Reset all scroll animations to their starting positions.
 Animations return to progress 0, scroll to start immediately, and remain paused.
 -}
-reset : (AnimationMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+reset : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 reset toMsg (AnimState animData) =
     let
         ( updatedAnimations, scrollCmds ) =
@@ -1040,7 +1040,7 @@ reset toMsg (AnimState animData) =
 
 {-| Reset scroll animation for a specific container.
 -}
-resetContainer : (AnimationMsg -> msg) -> String -> AnimState -> ( AnimState, Cmd msg )
+resetContainer : (AnimMsg -> msg) -> String -> AnimState -> ( AnimState, Cmd msg )
 resetContainer toMsg containerId (AnimState animData) =
     let
         ( updatedAnimations, scrollCmds ) =
@@ -1077,7 +1077,7 @@ resetContainer toMsg containerId (AnimState animData) =
 {-| Restart all scroll animations from their starting positions.
 Animations scroll to start immediately and begin playing.
 -}
-restart : (AnimationMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+restart : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 restart toMsg (AnimState animData) =
     let
         ( updatedAnimations, scrollCmds ) =
@@ -1109,7 +1109,7 @@ restart toMsg (AnimState animData) =
 
 {-| Restart scroll animation for a specific container.
 -}
-restartContainer : (AnimationMsg -> msg) -> String -> AnimState -> ( AnimState, Cmd msg )
+restartContainer : (AnimMsg -> msg) -> String -> AnimState -> ( AnimState, Cmd msg )
 restartContainer toMsg containerId (AnimState animData) =
     let
         ( updatedAnimations, scrollCmds ) =
@@ -1145,7 +1145,7 @@ restartContainer toMsg containerId (AnimState animData) =
 
 {-| Issue a scroll command to move to a specific position.
 -}
-scrollToPosition : (AnimationMsg -> msg) -> ContainerId -> Float -> Float -> Cmd msg
+scrollToPosition : (AnimMsg -> msg) -> ContainerId -> Float -> Float -> Cmd msg
 scrollToPosition toMsg containerId x y =
     case containerId of
         DocumentBody ->

@@ -4,7 +4,7 @@ module Anim.Engine.Scroll exposing
     , ScrollError(..), ScrollOk, toTask
     , animate
     , AnimState, init
-    , AnimationMsg, update, subscriptions
+    , AnimMsg, update, subscriptions
     , defaultDuration, defaultSpeed
     , defaultEasing
     , defaultDelay
@@ -112,7 +112,7 @@ or redirect mid-flight.
 
 **Note:** Only required for stateful subscription-based animations. Not needed for [Cmd](#cmd) or [Task](#task) based scrolling.
 
-@docs AnimationMsg, update, subscriptions
+@docs AnimMsg, update, subscriptions
 
 
 # Default Settings
@@ -290,8 +290,8 @@ type alias AnimState =
 
 {-| Animation message type.
 -}
-type alias AnimationMsg =
-    InternalScroll.AnimationMsg
+type alias AnimMsg =
+    InternalScroll.AnimMsg
 
 
 {-| Error type for failed scroll [Task](http://package.elm-lang.org/packages/elm/core/latest/Task)s.
@@ -348,7 +348,7 @@ init =
             scrollToElement "target-section"
 
     type Msg
-        = ScrollMsg Scroll.AnimationMsg
+        = ScrollMsg Scroll.AnimMsg
         | ...
 
     update : Msg -> Model -> ( Model, Cmd Msg )
@@ -366,7 +366,7 @@ init =
             ...
 
 -}
-animate : (AnimationMsg -> msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
+animate : (AnimMsg -> msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
 animate =
     InternalScroll.animate
 
@@ -445,7 +445,7 @@ defaultDelay =
             ]
 
 -}
-subscriptions : (AnimationMsg -> msg) -> AnimState -> Sub msg
+subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg
 subscriptions =
     InternalScroll.subscriptions
 
@@ -453,7 +453,7 @@ subscriptions =
 {-| Update the scroll animation state.
 
     type Msg
-        = ScrollMsg Scroll.AnimationMsg
+        = ScrollMsg Scroll.AnimMsg
         | ...
 
     update : Msg -> Model -> ( Model, Cmd Msg )
@@ -471,7 +471,7 @@ subscriptions =
             ...
 
 -}
-update : (AnimationMsg -> msg) -> AnimationMsg -> AnimState -> ( AnimState, Cmd msg )
+update : (AnimMsg -> msg) -> AnimMsg -> AnimState -> ( AnimState, Cmd msg )
 update =
     InternalScroll.update
 
@@ -590,7 +590,7 @@ The scroll completes immediately and the animation is removed.
                 )
 
 -}
-stop : (AnimationMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+stop : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 stop toMsg =
     InternalScroll.stopContainer toMsg "document"
 
@@ -604,7 +604,7 @@ stop toMsg =
     ( { model | scrollAnimations = newScrollState }, scrollCmd )
 
 -}
-stopContainer : (AnimationMsg -> msg) -> String -> AnimState -> ( AnimState, Cmd msg )
+stopContainer : (AnimMsg -> msg) -> String -> AnimState -> ( AnimState, Cmd msg )
 stopContainer =
     InternalScroll.stopContainer
 
@@ -678,7 +678,7 @@ Use [resume](#resume) or [restart](#restart) to continue.
                 )
 
 -}
-reset : (AnimationMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+reset : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 reset toMsg =
     InternalScroll.resetContainer toMsg "document"
 
@@ -692,7 +692,7 @@ reset toMsg =
     ( { model | scrollAnimations = newScrollState }, scrollCmd )
 
 -}
-resetContainer : (AnimationMsg -> msg) -> String -> AnimState -> ( AnimState, Cmd msg )
+resetContainer : (AnimMsg -> msg) -> String -> AnimState -> ( AnimState, Cmd msg )
 resetContainer =
     InternalScroll.resetContainer
 
@@ -713,7 +713,7 @@ The scroll jumps back to the start immediately and begins playing.
                 )
 
 -}
-restart : (AnimationMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+restart : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 restart toMsg =
     InternalScroll.restartContainer toMsg "document"
 
@@ -727,7 +727,7 @@ restart toMsg =
     ( { model | scrollAnimations = newScrollState }, scrollCmd )
 
 -}
-restartContainer : (AnimationMsg -> msg) -> String -> AnimState -> ( AnimState, Cmd msg )
+restartContainer : (AnimMsg -> msg) -> String -> AnimState -> ( AnimState, Cmd msg )
 restartContainer =
     InternalScroll.restartContainer
 

@@ -71,7 +71,7 @@ Keyframe animations generate events throughout their lifecycle. Use these events
 
         ```elm
         type Msg
-            = GotKeyframeEvent Keyframes.Event
+            = GotKeyframeEvent Keyframes.AnimEvent
             | ...
         ```
 
@@ -170,7 +170,7 @@ For details on `stop`, `reset`, `restart`, `pause`, and `resume` controls, see [
 | ---- | ----------- |
 | `AnimState` | Tracks animations and their states |
 | `AnimBuilder` | Carries all the animations configurations |
-| `Event` | Events received during a keyframe animation lifecycle |
+| `AnimEvent` | Events received during a keyframe animation lifecycle |
 | `TransformOrder` | Custom transform ordering |
 
 ### Core Functions
@@ -188,13 +188,13 @@ For details on `stop`, `reset`, `restart`, `pause`, and `resume` controls, see [
 | `attributes` | `String -> AnimState -> List (Html.Attribute msg)` | Get the animation attributes for an element |
 | `styleNode` | `AnimState -> Html msg` | Generate `@keyframes` rules for all elements |
 | `styleNodeFor` | `String -> AnimState -> Html msg` | Generate `@keyframes` rules for a specific element |
-| `events` | `String -> (KeyframeEvent -> msg) -> List (Attribute msg)` | Attach keyframe event listeners |
+| `events` | `String -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach keyframe event listeners |
 
 ### Event Functions
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `handleEvent` | `Event -> AnimState -> AnimState` | Update AnimState after a keyframe event |
+| `handleEvent` | `AnimEvent -> AnimState -> AnimState` | Update AnimState after a keyframe event |
 
 ### Default Functions
 

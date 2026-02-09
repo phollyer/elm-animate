@@ -375,12 +375,12 @@ Your animations will not run without this subscription.
     import Anim.Engine.Sub as Sub
 
     type Msg
-        = SubAnimationMsg Sub.AnimationMsg
+        = SubAnimMsg Sub.AnimMsg
         | ...
 
-    subscriptions : Model -> Sub AnimationMsg
+    subscriptions : Model -> Sub Msg
     subscriptions model =
-        Sub.subscriptions SubAnimationMsg model.animState
+        Sub.subscriptions SubAnimMsg model.animState
 
 -}
 subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg

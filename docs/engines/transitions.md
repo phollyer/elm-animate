@@ -48,7 +48,7 @@ CSS transitions generate events throughout their lifecycle. Use these events to 
 
         ```elm
         type Msg
-            = GotTransitionEvent Transitions.Event
+            = GotTransitionEvent Transitions.AnimEvent
             | ...
         ```
 
@@ -194,7 +194,7 @@ For details on `stop` and `reset` controls, see [Controlling CSS Transitions](..
 | ---- | ----------- |
 | `AnimState` | Tracks animations and their states |
 | `AnimBuilder` | Carries all the animations configurations |
-| `Event` | Events received during a transitions lifecycle |
+| `AnimEvent` | Events received during a transitions lifecycle |
 | `TransformOrder` | Custom transform ordering |
 
 ### Core Functions
@@ -210,13 +210,13 @@ For details on `stop` and `reset` controls, see [Controlling CSS Transitions](..
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
 | `attributes` | `String -> AnimState -> List (Html.Attribute msg)` | Get the transition attributes for an element |
-| `events` | `String -> (Event -> msg) -> List (Attribute msg)` | Attach transition event listeners |
+| `events` | `String -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach transition event listeners |
 
 ### Event Functions
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `handleEvent` | `Event -> AnimState -> AnimState` | Update AnimState after a transition event |
+| `handleEvent` | `AnimEvent -> AnimState -> AnimState` | Update AnimState after a transition event |
 
 ### Default Functions
 

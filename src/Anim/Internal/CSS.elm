@@ -1,8 +1,8 @@
 module Anim.Internal.CSS exposing
     ( AnimBuilder
+    , AnimEvent(..)
     , AnimState
     , ElementState(..)
-    , Event(..)
     , TransformOrder(..)
     , allComplete
     , animate
@@ -293,7 +293,7 @@ type ElementState
 
 {-| Animation lifecycle events.
 -}
-type Event
+type AnimEvent
     = AnimationStarted String
     | AnimationEnded String
     | AnimationCancelled String
@@ -306,7 +306,7 @@ type Event
 
 {-| Handle animation lifecycle events to update element states.
 -}
-handleEvent : Event -> AnimState -> AnimState
+handleEvent : AnimEvent -> AnimState -> AnimState
 handleEvent event (AnimState state) =
     let
         ( elementId, newElementState ) =

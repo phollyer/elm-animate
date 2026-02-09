@@ -25,7 +25,8 @@ The simplest approach — just scroll and forget:
             ScrollToSection ->
                 ( model
                 , Scroll.toCmd (\_ -> NoOp) <|
-                    Scroll.toElement "target-section"
+                    Scroll.forDocument
+                        >> Scroll.toElement "target-section"
                         >> Scroll.build
                 )
 
@@ -46,7 +47,7 @@ Use Tasks for composable operations with error handling:
 
     type Msg
         = ScrollToSection
-        | ScrollResult (Result Scroll.ScrollError Scroll.ScrollResult)
+        | ScrollResult (Result Scroll.ScrollError Scroll.ScrollOk)
 
 
     update : Msg -> Model -> ( Model, Cmd Msg )
@@ -55,7 +56,8 @@ Use Tasks for composable operations with error handling:
             ScrollToSection ->
                 ( model
                 , Scroll.toTask
-                    (Scroll.toElement "target-section"
+                    (Scroll.forDocument
+                        >> Scroll.toElement "target-section"
                         >> Scroll.build
                     )
                     |> Task.attempt ScrollResult
@@ -65,15 +67,9 @@ Use Tasks for composable operations with error handling:
                 -- Scroll completed successfully
                 ( model, Cmd.none )
 
-            ScrollResult (Err error) ->
-                case error of
-                    Scroll.ElementNotFound elementId ->
-                        -- Handle missing element
-                        ( model, Cmd.none )
-
-                    Scroll.ContainerNotFound containerId ->
-                        -- Handle missing container
-                        ( model, Cmd.none )
+            ScrollResult (Err (Scroll.ScrollError error)) ->
+                -- Handle scroll error - check error.domError, error.containerId, error.targetElementId
+                ( model, Cmd.none )
     ```
 
 ### With State Tracking (Subscriptions)
@@ -92,7 +88,7 @@ For full control with mid-scroll updates:
 
     type Msg
         = ScrollToSection
-        | ScrollMsg Scroll.Msg
+        | ScrollMsg Scroll.AnimMsg
 
 
     update : Msg -> Model -> ( Model, Cmd Msg )
@@ -102,7 +98,8 @@ For full control with mid-scroll updates:
                 let
                     ( newState, cmd ) =
                         Scroll.animate ScrollMsg model.scrollState <|
-                            Scroll.toElement "target-section"
+                            Scroll.forDocument
+                                >> Scroll.toElement "target-section"
                                 >> Scroll.build
                 in
                 ( { model | scrollState = newState }, cmd )
@@ -110,9 +107,9 @@ For full control with mid-scroll updates:
             ScrollMsg scrollMsg ->
                 let
                     ( newState, cmd ) =
-                        Scroll.update scrollMsg model.scrollState
+                        Scroll.update ScrollMsg scrollMsg model.scrollState
                 in
-                ( { model | scrollState = newState }, Cmd.map ScrollMsg cmd )
+                ( { model | scrollState = newState }, cmd )
 
 
     subscriptions : Model -> Sub Msg
@@ -127,7 +124,9 @@ For full control with mid-scroll updates:
 ??? example "View Source Code"
 
     ```elm
-    Scroll.toElement "section-id"
+    Scroll.forDocument
+        >> Scroll.toElement "section-id"
+        >> Scroll.build
     ```
 
 ### Scroll to Position
@@ -136,13 +135,19 @@ For full control with mid-scroll updates:
 
     ```elm
     -- Scroll to specific Y position
-    Scroll.toY 500
+    Scroll.forDocument
+        >> Scroll.toY 500
+        >> Scroll.build
 
     -- Scroll to specific X position
-    Scroll.toX 200
+    Scroll.forDocument
+        >> Scroll.toX 200
+        >> Scroll.build
 
     -- Scroll to both
-    Scroll.toXY 200 500
+    Scroll.forDocument
+        >> Scroll.toXY 200 500
+        >> Scroll.build
     ```
 
 ### Scroll to Top/Bottom
@@ -151,10 +156,14 @@ For full control with mid-scroll updates:
 
     ```elm
     -- Scroll to top
-    Scroll.toTop
+    Scroll.forDocument
+        >> Scroll.toTop
+        >> Scroll.build
 
     -- Scroll to bottom
-    Scroll.toBottom
+    Scroll.forDocument
+        >> Scroll.toBottom
+        >> Scroll.build
     ```
 
 ## Container Scrolling
@@ -186,6 +195,7 @@ These settings will be used for all scroll actions.
     ```elm
     Scroll.toCmd (\_ -> NoOp) <|
         Scroll.defaultDuration 800  -- 800ms scroll duration
+            >> Scroll.forDocument
             >> Scroll.toElement "section"
             >> Scroll.build
     ```
@@ -197,6 +207,7 @@ These settings will be used for all scroll actions.
     ```elm
     Scroll.toCmd (\_ -> NoOp) <|
         Scroll.defaultEasing QuintOut
+            >> Scroll.forDocument
             >> Scroll.toElement "section"
             >> Scroll.build
     ```
@@ -212,8 +223,10 @@ Add offset from the target (useful for fixed headers):
 ??? example "View Source Code"
 
     ```elm
-    Scroll.toElement "section"
+    Scroll.forDocument
+        >> Scroll.toElement "section"
         >> Scroll.withOffsetY 80  -- 80px offset from top
+        >> Scroll.build
     ```
 
 ### Axis
@@ -224,13 +237,22 @@ Control which axis to scroll:
 
     ```elm
     -- Vertical only (default)
-    Scroll.onYAxis
+    Scroll.forDocument
+        >> Scroll.toElement "section"
+        >> Scroll.onYAxis
+        >> Scroll.build
 
     -- Horizontal only
-    Scroll.onXAxis
+    Scroll.forDocument
+        >> Scroll.toElement "section"
+        >> Scroll.onXAxis
+        >> Scroll.build
 
     -- Both axes
-    Scroll.onBothAxes
+    Scroll.forDocument
+        >> Scroll.toElement "section"
+        >> Scroll.onBothAxes
+        >> Scroll.build
     ```
 
 ### Per-Scroll Duration/Speed/Easing
@@ -238,9 +260,11 @@ Control which axis to scroll:
 ??? example "View Source Code"
 
     ```elm
-    Scroll.toElement "section"
+    Scroll.forDocument
+        >> Scroll.toElement "section"
         >> Scroll.duration 500
         >> Scroll.easing QuintOut
+        >> Scroll.build
     ```
 
 ## Error Handling
@@ -251,8 +275,11 @@ The Scroll Engine can fail if elements don't exist:
 
     ```elm
     type ScrollError
-        = ElementNotFound String      -- Target element not found
-        | ContainerNotFound String    -- Container element not found
+        = ScrollError
+            { containerId : String
+            , targetElementId : Maybe String
+            , domError : Dom.Error
+            }
     ```
 
 Handle errors with Tasks:
@@ -261,7 +288,8 @@ Handle errors with Tasks:
 
     ```elm
     Scroll.toTask
-        (Scroll.toElement "section"
+        (Scroll.forDocument
+            >> Scroll.toElement "section"
             >> Scroll.build
         )
         |> Task.attempt
@@ -270,11 +298,8 @@ Handle errors with Tasks:
                     Ok _ ->
                         ScrollComplete
 
-                    Err (Scroll.ElementNotFound id) ->
-                        ShowError ("Element not found: " ++ id)
-
-                    Err (Scroll.ContainerNotFound id) ->
-                        ShowError ("Container not found: " ++ id)
+                    Err (Scroll.ScrollError error) ->
+                        ShowError ("Scroll failed: " ++ Debug.toString error.domError)
             )
     ```
 
@@ -286,33 +311,35 @@ Handle errors with Tasks:
 | ---- | ----------- |
 | `AnimState` | Tracks scroll state for subscription-based scrolling |
 | `AnimBuilder` | Carries all the scroll configurations |
-| `ScrollError` | Error types: `ElementNotFound`, `ContainerNotFound` |
-| `ScrollResult` | Result of a completed scroll operation |
-| `Axis` | Scroll axis: `X`, `Y`, `Both` |
+| `AnimMsg` | Opaque message type for subscription-based scrolling |
+| `ScrollBuilder` | Per-scroll configuration builder |
+| `ScrollError` | Error record with containerId, targetElementId, and domError |
+| `ScrollOk` | Result of a completed scroll operation |
 
 ### Core Functions
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
 | `init` | `AnimState` | Create initial state |
-| `toCmd` | `(ScrollResult -> msg) -> ScrollBuilder -> Cmd msg` | Execute as Cmd (fire-and-forget) |
-| `toTask` | `ScrollBuilder -> Task ScrollError ScrollResult` | Execute as Task (with error handling) |
-| `animate` | `(Msg -> msg) -> AnimState -> ScrollBuilder -> ( AnimState, Cmd msg )` | Execute with state tracking |
-| `update` | `Msg -> AnimState -> ( AnimState, Cmd Msg )` | Update scroll state |
-| `subscriptions` | `(Msg -> msg) -> AnimState -> Sub msg` | Animation frame subscription |
+| `toCmd` | `(String -> msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Execute as Cmd (fire-and-forget) |
+| `toTask` | `(AnimBuilder -> AnimBuilder) -> Task ScrollError ScrollOk` | Execute as Task (with error handling) |
+| `animate` | `(AnimMsg -> msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )` | Execute with state tracking |
+| `update` | `(AnimMsg -> msg) -> AnimMsg -> AnimState -> ( AnimState, Cmd msg )` | Update scroll state |
+| `subscriptions` | `(AnimMsg -> msg) -> AnimState -> Sub msg` | Animation frame subscription |
 
 ### Scroll Target Functions
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `toElement` | `String -> ScrollBuilder` | Scroll to element by ID |
-| `toTop` | `ScrollBuilder` | Scroll to top |
-| `toBottom` | `ScrollBuilder` | Scroll to bottom |
-| `toX` | `Float -> ScrollBuilder` | Scroll to X position |
-| `toY` | `Float -> ScrollBuilder` | Scroll to Y position |
-| `toXY` | `Float -> Float -> ScrollBuilder` | Scroll to X and Y position |
-| `forDocument` | `ScrollBuilder` | Scroll in document (default) |
-| `forContainer` | `String -> ScrollBuilder` | Scroll in container |
+| `forDocument` | `AnimBuilder -> ScrollBuilder` | Start scroll in document |
+| `forContainer` | `String -> AnimBuilder -> ScrollBuilder` | Start scroll in container |
+| `toElement` | `String -> ScrollBuilder -> ScrollBuilder` | Scroll to element by ID |
+| `toTop` | `ScrollBuilder -> ScrollBuilder` | Scroll to top |
+| `toBottom` | `ScrollBuilder -> ScrollBuilder` | Scroll to bottom |
+| `toX` | `Float -> ScrollBuilder -> ScrollBuilder` | Scroll to X position |
+| `toY` | `Float -> ScrollBuilder -> ScrollBuilder` | Scroll to Y position |
+| `toXY` | `Float -> Float -> ScrollBuilder -> ScrollBuilder` | Scroll to X and Y position |
+| `build` | `ScrollBuilder -> AnimBuilder` | Finalize scroll action |
 
 ### Per-Scroll Functions
 
@@ -327,16 +354,15 @@ Handle errors with Tasks:
 | `onBothAxes` | `ScrollBuilder -> ScrollBuilder` | Scroll both axes |
 | `withOffsetX` | `Float -> ScrollBuilder -> ScrollBuilder` | Add X offset |
 | `withOffsetY` | `Float -> ScrollBuilder -> ScrollBuilder` | Add Y offset |
-| `build` | `ScrollBuilder -> ScrollBuilder` | Finalize scroll action |
 
 ### Default Functions
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `defaultDuration` | `Int -> ScrollBuilder -> ScrollBuilder` | Set default duration (ms) |
-| `defaultSpeed` | `Float -> ScrollBuilder -> ScrollBuilder` | Set default speed (px/sec) |
-| `defaultEasing` | `Easing -> ScrollBuilder -> ScrollBuilder` | Set default easing |
-| `defaultDelay` | `Int -> ScrollBuilder -> ScrollBuilder` | Set default delay (ms) |
+| `defaultDuration` | `Int -> AnimBuilder -> AnimBuilder` | Set default duration (ms) |
+| `defaultSpeed` | `Float -> AnimBuilder -> AnimBuilder` | Set default speed (px/sec) |
+| `defaultEasing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing |
+| `defaultDelay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
 
 For complete API details, see the [elm-lang.org package documentation](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Scroll).
 

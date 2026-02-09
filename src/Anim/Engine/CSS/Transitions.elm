@@ -1,7 +1,7 @@
 module Anim.Engine.CSS.Transitions exposing
     ( AnimState, init
     , attributes
-    , Event(..), handleEvent, events
+    , AnimEvent(..), handleEvent, events
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
     , AnimBuilder, animate, fireAndForget, TransformOrder(..), animateOrder, fireAndForgetOrder
     , duration, speed
@@ -54,7 +54,7 @@ Apply transition styles to your elements
 CSS transitions trigger events at various stages of their lifecycle.
 Use these events to keep your [AnimState](#AnimState) in sync.
 
-@docs Event, handleEvent, events
+@docs AnimEvent, handleEvent, events
 
 For more granular control over which events to handle:
 
@@ -207,7 +207,7 @@ type TransformOrder
 
 {-| CSS transition lifecycle events.
 -}
-type Event
+type AnimEvent
     = Started String
     | Ended String
     | Cancelled String
@@ -421,7 +421,7 @@ attributes =
 {-| The simplest way to receive transition event messages.
 
     type Msg
-        = TransitionMsg Transitions.Event
+        = TransitionMsg Transitions.AnimEvent
 
     div
         (Transitions.attributes "my-element" animState
@@ -430,7 +430,7 @@ attributes =
         [ text "Animating element" ]
 
 -}
-events : String -> (Event -> msg) -> List (Html.Attribute msg)
+events : String -> (AnimEvent -> msg) -> List (Html.Attribute msg)
 events elementId toMsg =
     List.map (Html.Attributes.map toMsg) <|
         [ onTransitionStart (Started elementId)
@@ -448,7 +448,7 @@ events elementId toMsg =
                 { model | animState = Transitions.handleEvent event model.animState }
 
 -}
-handleEvent : Event -> AnimState -> AnimState
+handleEvent : AnimEvent -> AnimState -> AnimState
 handleEvent event animState =
     case event of
         Started elementId ->

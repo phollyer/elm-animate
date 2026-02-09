@@ -1,10 +1,11 @@
 module Anim.Internal.WAAPI exposing
     ( AnimBuilder
+    , AnimMsg
     , AnimState
-    , Msg
     , allComplete
     , animate
     , anyRunning
+    , attributes
     , builder
     , decodeAnimationEvent
     , decodeEvent
@@ -70,6 +71,8 @@ import Anim.Internal.Properties.Scale as Scale exposing (Scale)
 import Anim.Internal.Properties.Size as Size exposing (Size)
 import Anim.Internal.Properties.Translate as Translate exposing (Translate)
 import Dict exposing (Dict)
+import Html
+import Html.Attributes
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 
@@ -144,9 +147,9 @@ type PendingAction
 {-| Opaque message type for WAAPI subscriptions.
 Handles both property updates and lifecycle events internally.
 -}
-type Msg
+type AnimMsg
     = PropertyUpdate Decode.Value
-    | Event Decode.Value
+    | AnimEvent Decode.Value
 
 
 type AnimState msg
@@ -658,13 +661,13 @@ Handles both property updates and lifecycle events, returning the updated state
 and a list of animation events (elementId, status) for side effects.
 
 -}
-update : Msg -> AnimState msg -> ( AnimState msg, List ( String, String ) )
+update : AnimMsg -> AnimState msg -> ( AnimState msg, List ( String, String ) )
 update msg animState =
     case msg of
         PropertyUpdate jsonValue ->
             ( updatePropertyUpdate jsonValue animState, [] )
 
-        Event jsonValue ->
+        AnimEvent jsonValue ->
             case decodeAnimationEvent jsonValue of
                 Just ( elementId, status ) ->
                     ( handleEventInternal elementId status animState
@@ -761,14 +764,14 @@ This creates a subscription that listens for both property updates and lifecycle
 Messages are routed based on their JSON type field. Use with `update` to handle messages.
 
 -}
-subscriptions : (Msg -> msg) -> AnimState msg -> Sub msg
+subscriptions : (AnimMsg -> msg) -> AnimState msg -> Sub msg
 subscriptions toMsg (AnimState state) =
     state.subscriptionPort
         (\jsonValue ->
             -- Route based on JSON type field
             case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue of
                 Ok "animationUpdate" ->
-                    toMsg (Event jsonValue)
+                    toMsg (AnimEvent jsonValue)
 
                 _ ->
                     -- propertyUpdate or unknown types go to PropertyUpdate
@@ -1202,6 +1205,88 @@ encodeProperty property =
             [ ( "width", Encode.float size.width )
             , ( "height", Encode.float size.height )
             ]
+
+
+
+-- View
+
+
+{-| Get HTML attributes that apply the current animation state as inline styles.
+
+This ensures initial values set via `init` are rendered synchronously,
+avoiding a flash of unstyled content before JavaScript processes the port command.
+
+-}
+attributes : String -> AnimState msg -> List (Html.Attribute msg)
+attributes elementId (AnimState state) =
+    case Dict.get elementId state.elementAnimations of
+        Nothing ->
+            []
+
+        Just elementAnimation ->
+            let
+                currentStates =
+                    elementAnimation.currentStates
+
+                -- Build transform string: translate, rotate, scale
+                translatePart =
+                    currentStates.translate
+                        |> Maybe.map Translate.toCssString
+                        |> Maybe.withDefault ""
+
+                rotatePart =
+                    currentStates.rotate
+                        |> Maybe.map Rotate.toCssString
+                        |> Maybe.withDefault ""
+
+                scalePart =
+                    currentStates.scale
+                        |> Maybe.map Scale.toCssString
+                        |> Maybe.withDefault ""
+
+                transformString =
+                    String.trim (translatePart ++ " " ++ rotatePart ++ " " ++ scalePart)
+
+                transformStyle =
+                    if String.isEmpty transformString then
+                        []
+
+                    else
+                        [ Html.Attributes.style "transform" transformString ]
+
+                opacityStyle =
+                    currentStates.opacity
+                        |> Maybe.map (\o -> Html.Attributes.style "opacity" (Opacity.toString o))
+                        |> Maybe.map List.singleton
+                        |> Maybe.withDefault []
+
+                backgroundColorStyle =
+                    currentStates.backgroundColor
+                        |> Maybe.map (\c -> Html.Attributes.style "background-color" (Color.toCssString c))
+                        |> Maybe.map List.singleton
+                        |> Maybe.withDefault []
+
+                fontColorStyle =
+                    currentStates.fontColor
+                        |> Maybe.map (\c -> Html.Attributes.style "color" (Color.toCssString c))
+                        |> Maybe.map List.singleton
+                        |> Maybe.withDefault []
+
+                sizeStyles =
+                    currentStates.size
+                        |> Maybe.map
+                            (\s ->
+                                let
+                                    size =
+                                        Size.toRecord s
+                                in
+                                [ Html.Attributes.style "width" (String.fromFloat size.width ++ "px")
+                                , Html.Attributes.style "height" (String.fromFloat size.height ++ "px")
+                                ]
+                            )
+                        |> Maybe.withDefault []
+            in
+            transformStyle ++ opacityStyle ++ backgroundColorStyle ++ fontColorStyle ++ sizeStyles
 
 
 

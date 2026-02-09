@@ -255,7 +255,7 @@ moveBottomFaceIn =
 
 
 type Msg
-    = GotKeyframeEvent Keyframes.Event
+    = GotKeyframeEvent Keyframes.AnimEvent
 
 
 

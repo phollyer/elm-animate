@@ -1,7 +1,8 @@
 module Anim.Engine.WAAPI exposing
     ( AnimState, AnimBuilder, init
-    , Msg, AnimationEvent(..), update, subscriptions
     , animate, fireAndForget
+    , AnimMsg, AnimEvent(..), update, subscriptions
+    , attributes
     , stop, reset, restart, pause, resume
     , onResize
     , duration, speed
@@ -84,12 +85,17 @@ Both command and subscription ports are needed.
 
         port waapiCommand : Json.Encode.Value -> Cmd msg
 
-        port waapiSubscription : (Json.Decode.Value -> msg) -> Sub msg
+        port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
 
 
 # State
 
 @docs AnimState, AnimBuilder, init
+
+
+# Execute
+
+@docs animate, fireAndForget
 
 
 # Update
@@ -100,12 +106,12 @@ Updates are throttled to approximately 60 FPS (~16ms intervals) regardless of di
 This balances real-time feedback with performance, preventing message flooding on high-refresh-rate
 displays (120Hz, 144Hz, etc.) while maintaining smooth visual feedback.
 
-@docs Msg, AnimationEvent, update, subscriptions
+@docs AnimMsg, AnimEvent, update, subscriptions
 
 
-# Execute
+# View
 
-@docs animate, fireAndForget
+@docs attributes
 
 
 # Animation Control
@@ -198,6 +204,7 @@ during animation playback.
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.WAAPI as Internal
+import Html
 import Json.Decode as Decode
 import Json.Encode as Encode
 
@@ -243,17 +250,32 @@ Takes the command port, subscription port, and optional property initializers:
         , Opacity.init "element-id" 1.0
         ]
 
-**Note:** If you set the same property both here and via inline CSS styles in your
-view, the values set here will take precedence (JavaScript applies them after
-Elm renders the view). To avoid confusion, pick one approach:
-
-  - Use `init` with property initializers (no inline styles needed), or
-  - Use inline styles and ensure your `from` values in animations match them
+**Important:** Use [attributes](#attributes) in your view to apply initial values
+synchronously. This prevents a flash of unstyled content before JavaScript
+processes the port command.
 
 -}
 init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
 init =
     Internal.init
+
+
+{-| Get HTML attributes that apply the current animation state as inline styles.
+
+Use this in your view to ensure initial values from `init` are rendered synchronously,
+avoiding a flash of unstyled content before JavaScript processes the port command.
+
+    view model =
+        div
+            ([ id elementId ]
+                ++ WAAPI.attributes elementId model.animState
+            )
+            [ text "Hello World!" ]
+
+-}
+attributes : String -> AnimState msg -> List (Html.Attribute msg)
+attributes =
+    Internal.attributes
 
 
 {-| Animation builder type.
@@ -809,7 +831,7 @@ side effects like starting the next animation in a sequence or updating the UI.
 Each event carries the `elementId` of the animated element.
 
 -}
-type AnimationEvent
+type AnimEvent
     = Started String
     | Paused String
     | Resumed String
@@ -821,12 +843,12 @@ type AnimationEvent
 {-| Opaque message type for WAAPI updates and subscriptions.
 
     type Msg
-        = WaapiMsg WAAPI.Msg
+        = WaapiMsg WAAPI.AnimMsg
         | ...
 
 -}
-type alias Msg =
-    Internal.Msg
+type alias AnimMsg =
+    Internal.AnimMsg
 
 
 {-| Subscribe to WAAPI messages from JavaScript.
@@ -840,16 +862,16 @@ type alias Msg =
         WAAPI.subscriptions WaapiMsg model.animState
 
 -}
-subscriptions : (Msg -> msg) -> AnimState msg -> Sub msg
+subscriptions : (AnimMsg -> msg) -> AnimState msg -> Sub msg
 subscriptions =
     Internal.subscriptions
 
 
 {-| Handles both property updates and lifecycle events, returning the updated state
-and a list of `AnimationEvent`s that you can pattern match on and react to.
+and a list of `AnimEvent`s that you can pattern match on and react to.
 
     type Msg
-        = WaapiMsg WAAPI.Msg
+        = WaapiMsg WAAPI.AnimMsg
         | ...
 
     update : Msg -> Model -> ( Model, Cmd Msg )
@@ -864,11 +886,11 @@ and a list of `AnimationEvent`s that you can pattern match on and react to.
 
             ...
 
-    handleAnimationEvents : List WAAPI.AnimationEvent -> Model -> ( Model, Cmd Msg )
+    handleAnimationEvents : List WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleAnimationEvents events model =
         List.foldl handleSingleEvent ( model, Cmd.none ) events
 
-    handleSingleEvent : WAAPI.AnimationEvent -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+    handleSingleEvent : WAAPI.AnimEvent -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
     handleSingleEvent event ( model, cmd ) =
         case event of
             WAAPI.Completed "box" ->
@@ -879,7 +901,7 @@ and a list of `AnimationEvent`s that you can pattern match on and react to.
                 ( model, cmd )
 
 -}
-update : Msg -> AnimState msg -> ( AnimState msg, List AnimationEvent )
+update : AnimMsg -> AnimState msg -> ( AnimState msg, List AnimEvent )
 update msg animState =
     let
         ( newState, rawEvents ) =
@@ -890,7 +912,7 @@ update msg animState =
     )
 
 
-statusStringToEvent : String -> String -> AnimationEvent
+statusStringToEvent : String -> String -> AnimEvent
 statusStringToEvent elementId status =
     case status of
         "started" ->

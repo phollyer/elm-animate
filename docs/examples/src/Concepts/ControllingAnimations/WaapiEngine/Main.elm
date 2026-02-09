@@ -80,7 +80,7 @@ type Msg
     | Resume
     | Reset
     | Restart
-    | GotWaapiMsg WAAPI.Msg
+    | GotWaapiMsg WAAPI.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

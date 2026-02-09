@@ -5159,6 +5159,11 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$element = _Browser_element;
+var $author$project$Engines$WAAPI$BasicUsage$Main$StartAnimation = {$: 'StartAnimation'};
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $author$project$Engines$WAAPI$BasicUsage$Main$elementId = 'hello-text';
 var $author$project$Anim$Internal$WAAPI$AnimState = function (a) {
@@ -7002,14 +7007,15 @@ var $author$project$Anim$Property$Opacity$init = F3(
 					$author$project$Anim$Internal$Properties$Opacity$fromFloat(value),
 					A2($author$project$Anim$Internal$Builders$Opacity$for, elementId, animBuilder))));
 	});
+var $elm$core$Process$sleep = _Process_sleep;
 var $author$project$Engines$WAAPI$BasicUsage$Main$waapiCommand = _Platform_outgoingPort('waapiCommand', $elm$core$Basics$identity);
 var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $author$project$Engines$WAAPI$BasicUsage$Main$waapiEvents = _Platform_incomingPort('waapiEvents', $elm$json$Json$Decode$value);
+var $author$project$Engines$WAAPI$BasicUsage$Main$waapiSubscriptionsAnd = _Platform_incomingPort('waapiSubscriptionsAnd', $elm$json$Json$Decode$value);
 var $author$project$Engines$WAAPI$BasicUsage$Main$init = function () {
 	var _v0 = A3(
 		$author$project$Anim$Engine$WAAPI$init,
 		$author$project$Engines$WAAPI$BasicUsage$Main$waapiCommand,
-		$author$project$Engines$WAAPI$BasicUsage$Main$waapiEvents,
+		$author$project$Engines$WAAPI$BasicUsage$Main$waapiSubscriptionsAnd,
 		_List_fromArray(
 			[
 				A2($author$project$Anim$Property$Opacity$init, $author$project$Engines$WAAPI$BasicUsage$Main$elementId, 0)
@@ -7020,7 +7026,13 @@ var $author$project$Engines$WAAPI$BasicUsage$Main$init = function () {
 		{animState: initialAnimState},
 		$elm$core$Platform$Cmd$batch(
 			_List_fromArray(
-				[initCmd])));
+				[
+					initCmd,
+					A2(
+					$elm$core$Task$perform,
+					$elm$core$Basics$always($author$project$Engines$WAAPI$BasicUsage$Main$StartAnimation),
+					$elm$core$Process$sleep(50))
+				])));
 }();
 var $author$project$Engines$WAAPI$BasicUsage$Main$GotWaapiMsg = function (a) {
 	return {$: 'GotWaapiMsg', a: a};
@@ -10337,6 +10349,133 @@ var $author$project$Engines$WAAPI$BasicUsage$Main$update = F2(
 				$elm$core$Platform$Cmd$none);
 		}
 	});
+var $elm$core$List$singleton = function (value) {
+	return _List_fromArray(
+		[value]);
+};
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $author$project$Anim$Internal$Properties$Rotate$toString = function (_v0) {
+	var angles = _v0.a;
+	return $elm$core$String$fromFloat(angles.z);
+};
+var $author$project$Anim$Internal$Properties$Rotate$toCssString = function (rotate) {
+	return $author$project$Anim$Internal$Properties$Rotate$toString(rotate) + 'deg';
+};
+var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) {
+	var x = _v0.a.x;
+	var y = _v0.a.y;
+	return $elm$core$String$fromFloat(x) + (',' + $elm$core$String$fromFloat(y));
+};
+var $author$project$Anim$Internal$Properties$Translate$toCssString = function (_v0) {
+	var coords = _v0.a;
+	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px'))));
+};
+var $author$project$Anim$Internal$Properties$Opacity$toString = function (_v0) {
+	var o = _v0.a;
+	return $elm$core$String$fromFloat(o);
+};
+var $author$project$Anim$Internal$WAAPI$attributes = F2(
+	function (elementId, _v0) {
+		var state = _v0.a;
+		var _v1 = A2($elm$core$Dict$get, elementId, state.elementAnimations);
+		if (_v1.$ === 'Nothing') {
+			return _List_Nil;
+		} else {
+			var elementAnimation = _v1.a;
+			var currentStates = elementAnimation.currentStates;
+			var fontColorStyle = A2(
+				$elm$core$Maybe$withDefault,
+				_List_Nil,
+				A2(
+					$elm$core$Maybe$map,
+					$elm$core$List$singleton,
+					A2(
+						$elm$core$Maybe$map,
+						function (c) {
+							return A2(
+								$elm$html$Html$Attributes$style,
+								'color',
+								$author$project$Anim$Internal$Properties$Color$toCssString(c));
+						},
+						currentStates.fontColor)));
+			var opacityStyle = A2(
+				$elm$core$Maybe$withDefault,
+				_List_Nil,
+				A2(
+					$elm$core$Maybe$map,
+					$elm$core$List$singleton,
+					A2(
+						$elm$core$Maybe$map,
+						function (o) {
+							return A2(
+								$elm$html$Html$Attributes$style,
+								'opacity',
+								$author$project$Anim$Internal$Properties$Opacity$toString(o));
+						},
+						currentStates.opacity)));
+			var rotatePart = A2(
+				$elm$core$Maybe$withDefault,
+				'',
+				A2($elm$core$Maybe$map, $author$project$Anim$Internal$Properties$Rotate$toCssString, currentStates.rotate));
+			var scalePart = A2(
+				$elm$core$Maybe$withDefault,
+				'',
+				A2($elm$core$Maybe$map, $author$project$Anim$Internal$Properties$Scale$toCssString, currentStates.scale));
+			var sizeStyles = A2(
+				$elm$core$Maybe$withDefault,
+				_List_Nil,
+				A2(
+					$elm$core$Maybe$map,
+					function (s) {
+						var size = $author$project$Anim$Internal$Properties$Size$toRecord(s);
+						return _List_fromArray(
+							[
+								A2(
+								$elm$html$Html$Attributes$style,
+								'width',
+								$elm$core$String$fromFloat(size.width) + 'px'),
+								A2(
+								$elm$html$Html$Attributes$style,
+								'height',
+								$elm$core$String$fromFloat(size.height) + 'px')
+							]);
+					},
+					currentStates.size));
+			var translatePart = A2(
+				$elm$core$Maybe$withDefault,
+				'',
+				A2($elm$core$Maybe$map, $author$project$Anim$Internal$Properties$Translate$toCssString, currentStates.translate));
+			var transformString = $elm$core$String$trim(translatePart + (' ' + (rotatePart + (' ' + scalePart))));
+			var transformStyle = $elm$core$String$isEmpty(transformString) ? _List_Nil : _List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'transform', transformString)
+				]);
+			var backgroundColorStyle = A2(
+				$elm$core$Maybe$withDefault,
+				_List_Nil,
+				A2(
+					$elm$core$Maybe$map,
+					$elm$core$List$singleton,
+					A2(
+						$elm$core$Maybe$map,
+						function (c) {
+							return A2(
+								$elm$html$Html$Attributes$style,
+								'background-color',
+								$author$project$Anim$Internal$Properties$Color$toCssString(c));
+						},
+						currentStates.backgroundColor)));
+			return _Utils_ap(
+				transformStyle,
+				_Utils_ap(
+					opacityStyle,
+					_Utils_ap(
+						backgroundColorStyle,
+						_Utils_ap(fontColorStyle, sizeStyles))));
+		}
+	});
+var $author$project$Anim$Engine$WAAPI$attributes = $author$project$Anim$Internal$WAAPI$attributes;
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -10346,8 +10485,6 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 			$elm$json$Json$Encode$string(string));
 	});
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Engines$WAAPI$BasicUsage$Main$view = function (model) {
@@ -10367,10 +10504,12 @@ var $author$project$Engines$WAAPI$BasicUsage$Main$view = function (model) {
 			[
 				A2(
 				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$id($author$project$Engines$WAAPI$BasicUsage$Main$elementId)
-					]),
+				_Utils_ap(
+					A2($author$project$Anim$Engine$WAAPI$attributes, $author$project$Engines$WAAPI$BasicUsage$Main$elementId, model.animState),
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$id($author$project$Engines$WAAPI$BasicUsage$Main$elementId)
+						])),
 				_List_fromArray(
 					[
 						$elm$html$Html$text('Hello World!')
