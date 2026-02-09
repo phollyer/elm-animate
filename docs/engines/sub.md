@@ -1,19 +1,7 @@
 # Sub Engine
 
-The Sub Engine uses Elm subscriptions to update animation state on every frame. This provides full programmatic control over animations.
-
-## When to Use
-
-✅ **For:**
-
-- Interrupting and redirecting animations mid-flight
-- Querying current animated values mid-flight
-- Games and interactive visualizations
-
-❌ **Consider other engines for:**
-
-- Simple fire-and-forget animations (use CSS)
-- Browser-native performance with control (use WAAPI)
+The Sub Engine uses Elm subscriptions to update animation state on every frame. This provides full programmatic control over animations, including mid-flight queries and mid-flight
+redirections.
 
 ## Basic Usage
 
@@ -92,12 +80,12 @@ These settings will be used for all property animations.
 
     ```elm
     animState =
-        Sub.animate model.animState
-            (Sub.duration 500
+        Sub.animate model.animState <|
+            Sub.duration 500
                 >> Sub.easing QuintOut
                 >> Sub.delay 100
                 >> myAnimation
-            )
+            
     ```
 
 Individual properties can override them:
@@ -105,13 +93,13 @@ Individual properties can override them:
 ??? example "View Source Code"
 
     ```elm
-    myAnimation builder =
-        builder
-            |> Opacity.for "box"
-            |> Opacity.duration 1000  
-            |> Opacity.easing SineOut 
-            |> Opacity.delay 0
-            |> Opacity.build
+    myAnimation : Sub.AnimBuilder -> Sub.AnimBuilder
+    myAnimation =
+        Opacity.for "box"
+            >> Opacity.duration 1000  
+            >> Opacity.easing SineOut 
+            >> Opacity.delay 0
+            >> Opacity.build
     ```
 
 
@@ -133,9 +121,8 @@ The Sub Engine fully supports 3D animations. See [3D Animations](../concepts/3d.
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `init` | `AnimState` | Create initial animation state |
-| `builder` | `AnimState -> AnimBuilder` | Get builder for defining animations |
-| `animate` | `AnimBuilder -> AnimState` | Start the animation |
+| `init` | `List (AnimBuilder -> AnimBUilder) -> AnimState` | Create initial animation state |
+| `animate` | `AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Start the animation |
 | `update` | `AnimMsg -> AnimState -> AnimState` | Update the animation state |
 | `subscriptions` | `(AnimMsg -> msg) -> AnimState -> Sub msg` | Animation frame subscription |
 
@@ -143,16 +130,7 @@ The Sub Engine fully supports 3D animations. See [3D Animations](../concepts/3d.
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `htmlAttributes` | `String -> AnimState -> List (Html.Attribute msg)` | Get HTML animation attributes |
-
-### Query Functions
-
-| Function | Type | Description |
-| ---------- | ----- | ------------- |
-| `isAnimating` | `String -> AnimState -> Bool` | Check if any animation is running |
-| `getCurrentTranslate` | `String -> AnimState -> Maybe { x : Float, y : Float, z : Float  }` | Get current translate position |
-| `getStartRotate` | `String -> AnimState -> Maybe { x : Float, y : Float, z : Float  }` | Get the start rotation |
-| `getEndScale` | `String -> AnimState -> Maybe { x : Float, y : Float, z : Float  }` | Get the target end scale |
+| `attributes` | `String -> AnimState -> List (Html.Attribute msg)` | Get HTML animation attributes |
 
 ### Default Functions
 
@@ -163,4 +141,20 @@ The Sub Engine fully supports 3D animations. See [3D Animations](../concepts/3d.
 | `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing function |
 | `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
 
+### Control Functions
+
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `stop` | `String -> AnimState -> AnimState` | Jump to end state and stop |
+| `reset` | `String -> AnimState -> AnimState` | Jump to start state and stop |
+| `restart` | `String -> AnimState -> AnimState` | Reset and begin playing again |
+| `pause` | `String -> AnimState -> AnimState` | Freeze at current position |
+| `resume` | `String -> AnimState -> AnimState` | Continue from paused position |
+
 For complete API details, see the [elm-lang.org package documentation](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Sub).
+
+## Next Steps
+
+The WAAPI Engine which provides all of the features of the Transitions, Keyframes and Sub Engines combined; all with Native browser control.
+
+[WAAPI Engine →](waapi.md){ .md-button .md-button--primary }

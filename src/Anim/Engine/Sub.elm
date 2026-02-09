@@ -2,7 +2,7 @@ module Anim.Engine.Sub exposing
     ( AnimState, init
     , AnimBuilder, animate
     , AnimMsg, AnimEvent(..), update, subscriptions
-    , htmlAttributes
+    , attributes
     , stop, reset, restart, pause, resume
     , duration, speed
     , easing
@@ -60,7 +60,7 @@ The Sub Engine is ideal when you need full programmatic control over your animat
 
 # View
 
-@docs htmlAttributes
+@docs attributes
 
 
 # Animation Control
@@ -719,12 +719,12 @@ getCurrentSize elementId animState =
 {-| Get all the HTML attributes needed for the CSS animations on the target element.
 
     div
-        (CSS.htmlAttributes "my-element" animState)
+        (Sub.attributes "my-element" animState)
         [ text "Animating element" ]
 
 -}
-htmlAttributes : ElementId -> AnimState -> List (Html.Attribute msg)
-htmlAttributes =
+attributes : ElementId -> AnimState -> List (Html.Attribute msg)
+attributes =
     InternalSub.htmlAttributes
 
 

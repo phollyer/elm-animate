@@ -132,7 +132,7 @@ keyframesNode =
 
 keyframesStyles : CSS.AnimState -> List (Element.Attribute msg)
 keyframesStyles =
-    CSS.styles elementId >> List.map htmlAttribute
+    CSS.attributes elementId >> List.map htmlAttribute
 
 
 

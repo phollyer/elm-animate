@@ -368,7 +368,7 @@ viewContent model =
              , htmlAttribute (Html.Attributes.id "event-box")
              , htmlAttribute (Html.Attributes.style "position" "absolute")
              ]
-                ++ List.map htmlAttribute (Sub.htmlAttributes "event-box" model.animations)
+                ++ List.map htmlAttribute (Sub.attributes "event-box" model.animations)
             )
             (el [ centerX, centerY, Font.size 20 ] (text "📦"))
         )

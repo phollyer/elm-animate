@@ -1,12 +1,10 @@
-module Engines.Transitions.BasicUsage.Main exposing (main)
+module Engines.Keyframes.BasicUsage.Main exposing (main)
 
-import Anim.Engine.CSS.Transitions as Transitions
+import Anim.Engine.CSS.Keyframes as Keyframes
 import Anim.Property.Opacity as Opacity
 import Browser
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (style)
-import Process
-import Task
 
 
 
@@ -28,17 +26,20 @@ main =
 
 
 type alias Model =
-    { animState : Transitions.AnimState }
+    { animState : Keyframes.AnimState }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animState =
-            Transitions.init
+    let
+        initialAnimState =
+            Keyframes.init
                 [ Opacity.init "hello-text" 0 ]
+    in
+    ( { animState =
+            Keyframes.animate initialAnimState fadeIn
       }
-    , Process.sleep 50
-        |> Task.perform (always TriggerAnimation)
+    , Cmd.none
     )
 
 
@@ -46,7 +47,7 @@ init _ =
 -- ANIMATION
 
 
-fadeIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
+fadeIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 fadeIn =
     Opacity.for "hello-text"
         >> Opacity.to 1
@@ -59,19 +60,14 @@ fadeIn =
 
 
 type Msg
-    = TriggerAnimation
+    = NoOp
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        TriggerAnimation ->
-            ( { model
-                | animState =
-                    Transitions.animate model.animState fadeIn
-              }
-            , Cmd.none
-            )
+        NoOp ->
+            ( model, Cmd.none )
 
 
 
@@ -89,7 +85,8 @@ view model =
         , style "height" "100vh"
         , style "width" "100vw"
         ]
-        [ div
-            (Transitions.attributes "hello-text" model.animState)
+        [ Keyframes.styleNode model.animState
+        , div
+            (Keyframes.attributes "hello-text" model.animState)
             [ text "Hello World!" ]
         ]

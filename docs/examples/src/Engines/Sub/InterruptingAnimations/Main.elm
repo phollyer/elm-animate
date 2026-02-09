@@ -9,9 +9,28 @@ import Html.Attributes
 import Html.Events
 
 
+
+-- MAIN
+
+
+main : Program { width : Float, height : Float } Model Msg
+main =
+    Browser.element
+        { init = init
+        , update = update
+        , view = view
+        , subscriptions = subscriptions
+        }
+
+
+
+-- MODEL
+
+
 type alias Model =
     { animState : Sub.AnimState
     , width : Float
+    , height : Float
     }
 
 
@@ -20,20 +39,72 @@ boxWidth =
     100
 
 
-init : { width : Float } -> ( Model, Cmd Msg )
-init { width } =
+init : { width : Float, height : Float } -> ( Model, Cmd Msg )
+init { width, height } =
     ( { animState =
-            Sub.animate Sub.init (Translate.initX "moving-box" (width / 2 - boxWidth / 2))
-      , width = width
+            Sub.init
+                [ Translate.initX "moving-box" (width / 2 - boxWidth / 2) ]
+      , width = width - 20 -- Account for some padding on the sides
+      , height = height - 75 -- Account for buttons height
       }
     , Cmd.none
     )
+
+
+
+-- ANIMATIONS
+
+
+moveLeft : Sub.AnimState -> Sub.AnimState
+moveLeft =
+    moveToX 0
+
+
+moveRight : Float -> Sub.AnimState -> Sub.AnimState
+moveRight width =
+    moveToX (width - boxWidth)
+
+
+moveUp : Sub.AnimState -> Sub.AnimState
+moveUp =
+    moveToY 0
+
+
+moveDown : Float -> Sub.AnimState -> Sub.AnimState
+moveDown height =
+    moveToY (height - boxWidth)
+
+
+moveToX : Float -> Sub.AnimState -> Sub.AnimState
+moveToX targetX =
+    moveBox (Translate.toX targetX)
+
+
+moveToY : Float -> Sub.AnimState -> Sub.AnimState
+moveToY targetY =
+    moveBox (Translate.toY targetY)
+
+
+moveBox : (Translate.Builder -> Translate.Builder) -> Sub.AnimState -> Sub.AnimState
+moveBox moveFunc animState =
+    Sub.animate animState <|
+        Translate.for "moving-box"
+            >> moveFunc
+            >> Translate.speed 200
+            >> Translate.easing BounceOut
+            >> Translate.build
+
+
+
+-- UPDATE
 
 
 type Msg
     = GotAnimationUpdate Sub.AnimMsg
     | MoveLeft
     | MoveRight
+    | MoveUp
+    | MoveDown
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -58,31 +129,28 @@ update msg model =
             , Cmd.none
             )
 
+        MoveUp ->
+            ( { model | animState = moveUp model.animState }
+            , Cmd.none
+            )
 
-moveLeft : Sub.AnimState -> Sub.AnimState
-moveLeft =
-    moveTo 0
+        MoveDown ->
+            ( { model | animState = moveDown model.height model.animState }
+            , Cmd.none
+            )
 
 
-moveRight : Float -> Sub.AnimState -> Sub.AnimState
-moveRight width =
-    moveTo (width - boxWidth)
 
-
-moveTo : Float -> Sub.AnimState -> Sub.AnimState
-moveTo targetX animState =
-    Sub.animate animState
-        (Translate.for "moving-box"
-            >> Translate.toX targetX
-            >> Translate.speed 200
-            >> Translate.easing BounceOut
-            >> Translate.build
-        )
+-- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub.Sub Msg
 subscriptions model =
     Sub.subscriptions GotAnimationUpdate model.animState
+
+
+
+-- VIEW
 
 
 view : Model -> Html Msg
@@ -107,9 +175,15 @@ view model =
         moveRightButton =
             button "#28A745" "Move Right" MoveRight
 
+        moveUpButton =
+            button "#6F42C1" "Move Up" MoveUp
+
+        moveDownButton =
+            button "#FFC107" "Move Down" MoveDown
+
         box =
             div
-                (Sub.htmlAttributes "moving-box" model.animState
+                (Sub.attributes "moving-box" model.animState
                     ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "background-color" "#FF5733"
@@ -122,15 +196,7 @@ view model =
     div []
         [ moveLeftButton
         , moveRightButton
+        , moveUpButton
+        , moveDownButton
         , box
         ]
-
-
-main : Program { width : Float } Model Msg
-main =
-    Browser.element
-        { init = init
-        , update = update
-        , view = view
-        , subscriptions = subscriptions
-        }

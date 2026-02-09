@@ -231,7 +231,7 @@ viewContent model =
              , htmlAttribute (Html.Attributes.id "box")
              , htmlAttribute (Html.Attributes.style "position" "absolute")
              ]
-                ++ List.map htmlAttribute (Sub.htmlAttributes "box" model.animations)
+                ++ List.map htmlAttribute (Sub.attributes "box" model.animations)
             )
             (text "")
         )

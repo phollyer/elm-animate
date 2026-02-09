@@ -230,7 +230,7 @@ rotatingElement elementId symbol label color model =
          , htmlAttribute (Html.Attributes.style "align-items" "center")
          , htmlAttribute (Html.Attributes.style "justify-content" "center")
          ]
-            ++ List.map htmlAttribute (Sub.htmlAttributes elementId model.animations)
+            ++ List.map htmlAttribute (Sub.attributes elementId model.animations)
         )
         (column
             [ centerX

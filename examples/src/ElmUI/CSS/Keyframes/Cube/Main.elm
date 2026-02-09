@@ -265,7 +265,7 @@ viewCube model =
              , Html.Attributes.style "transform-style" "preserve-3d"
              , Html.Attributes.style "transform-origin" "center"
              ]
-                ++ CSS.styles"cube" model.animState
+                ++ CSS.attributes "cube" model.animState
             )
             [ -- Front face
               Html.div

@@ -8447,21 +8447,17 @@ var $author$project$Anim$Internal$Builders$Opacity$duration = F2(
 	});
 var $author$project$Anim$Property$Opacity$duration = $author$project$Anim$Internal$Builders$Opacity$duration;
 var $author$project$Anim$Property$Opacity$for = $author$project$Anim$Internal$Builders$Opacity$for;
-var $author$project$Anim$Property$Opacity$from = A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Builders$Opacity$from, $author$project$Anim$Internal$Properties$Opacity$fromFloat);
 var $author$project$Anim$Property$Opacity$to = A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Builders$Opacity$to, $author$project$Anim$Internal$Properties$Opacity$fromFloat);
 var $author$project$Engines$Transitions$BasicUsage$Main$fadeIn = A2(
 	$elm$core$Basics$composeR,
 	$author$project$Anim$Property$Opacity$for('hello-text'),
 	A2(
 		$elm$core$Basics$composeR,
-		$author$project$Anim$Property$Opacity$from(0),
+		$author$project$Anim$Property$Opacity$to(1),
 		A2(
 			$elm$core$Basics$composeR,
-			$author$project$Anim$Property$Opacity$to(1),
-			A2(
-				$elm$core$Basics$composeR,
-				$author$project$Anim$Property$Opacity$duration(5000),
-				$author$project$Anim$Property$Opacity$build))));
+			$author$project$Anim$Property$Opacity$duration(5000),
+			$author$project$Anim$Property$Opacity$build)));
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Engines$Transitions$BasicUsage$Main$update = F2(

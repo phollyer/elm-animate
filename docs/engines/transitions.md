@@ -184,7 +184,7 @@ Fully supports 3D animations. See [3D Animations](../concepts/3d.md) for more in
 
 ## Controlling Animations
 
-For details on `stop` and `reset` controls, see [Controlling CSS Transitions](../concepts/controlling-animations/css/transitions.md).
+For details on `stop` and `reset` controls, see [Controlling CSS Transitions](../concepts/controlling-animations/transitions.md).
 
 ## API Quick Reference
 
@@ -201,7 +201,7 @@ For details on `stop` and `reset` controls, see [Controlling CSS Transitions](..
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `init` | `List (String, String, String) -> AnimState` | Create initial animation state |
+| `init` | `List (AnimBuilder -> AnimBuilder) -> AnimState` | Create initial animation state |
 | `animate` | `AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Generate final animation state |
 | `fireAndForget` | `(AnimBuilder -> AnimBuilder) -> AnimState` | Fire-and-forget animation |
 
@@ -243,3 +243,9 @@ For details on `stop` and `reset` controls, see [Controlling CSS Transitions](..
 | `startingStyleNodeFor` | `String -> AnimState -> Html msg` | Generate `@starting-style` for a specific element |
 
 For complete API details, see the [Anim.Engine.CSS.Transitions](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Transitions) documentation.
+
+## Next Steps
+
+The Keyframes Engine which provides a few more features than you get with transitions.
+
+[Keyframes Engine →](keyframes.md){ .md-button .md-button--primary }

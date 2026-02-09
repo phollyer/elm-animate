@@ -1,6 +1,6 @@
 module Anim.Engine.CSS.Keyframes exposing
     ( AnimState, init
-    , styles
+    , attributes
     , styleNode, styleNodeFor, getElementKeyframes
     , Event(..), handleEvent
     , events
@@ -54,11 +54,11 @@ Keyframe animations require both styles on the element AND a `<style>` node in t
         div []
             [ Keyframes.styleNode model.animState
             , div
-                (Keyframes.styles "my-element" model.animState)
+                (Keyframes.attributes "my-element" model.animState)
                 [ text "Animating element" ]
             ]
 
-@docs styles
+@docs attributes
 
 @docs styleNode, styleNodeFor, getElementKeyframes
 
@@ -387,15 +387,15 @@ loopForever =
 -- KEYFRAMES STYLES
 
 
-{-| Get all styles for keyframe-based animations.
+{-| Get all attributes for keyframe-based animations.
 
     div
-        (Keyframes.styles "my-element" animState)
+        (Keyframes.attributes "my-element" animState)
         [ text "Animating element" ]
 
 -}
-styles : String -> AnimState -> List (Html.Attribute msg)
-styles =
+attributes : String -> AnimState -> List (Html.Attribute msg)
+attributes =
     InternalCSS.keyframesStyles
 
 
@@ -452,7 +452,7 @@ getElementKeyframes =
         = KeyframeMsg Keyframes.Event
 
     div
-        (Keyframes.styles "my-element" animState
+        (Keyframes.attributes "my-element" animState
             ++ Keyframes.events "my-element" KeyframeMsg
         )
         [ text "Animating element" ]

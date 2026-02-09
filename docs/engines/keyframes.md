@@ -2,57 +2,40 @@
 
 The CSS Keyframes Engine uses native browser CSS `@keyframes` animations for complex animations with iterations, looping, and pause/resume control. The browser handles all rendering, providing excellent performance.
 
-```elm
-import Anim.Engine.CSS.Keyframes as CSS
-```
-
-## When to Use
-
-✅ **For:**
-
-- Animations that need looping or iterations
-- Pause/resume control during animation
-- Entry animations without `Process.sleep` delays
-- Complex multi-step animations
-- Fire-and-forget animations with callbacks
-
-❌ **Consider [Transitions](css-transitions.md) when:**
-
-- Simple A→B property changes
-- You don't need pause/resume or looping
-- Minimal setup is preferred
-
 ## Basic Usage
 
-Keyframe animations run immediately when rendered — no `Process.sleep` delay needed:
+Keyframe animations run immediately when rendered — no `Process.sleep` delay needed for page entry
+animations like there is with transitions:
 
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/CSS/Controls/KeyframeAnimations/Main.elm"
+    --8<-- "docs/examples/src/Engines/Keyframes/BasicUsage/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../examples/src/Engines/CSS/Controls/KeyframeAnimations/index.html){ .md-button target="_blank" }
+[:material-play-circle: Run this example](../examples/src/Engines/Keyframes/BasicUsage/index.html){ .md-button target="_blank" }
 
 ## Keyframes Style Node
 
 Keyframe animations require a `<style>` node to define the `@keyframes` rules. Include this in your view:
 
-```elm
-view model =
-    div []
-        [ CSS.keyframesStyleNode model.animState  -- Required!
-        , div
-            (CSS.styles"box" model.animState)
-            [ text "Animated content" ]
-        ]
-```
+??? example "View Source Code"
 
-Or for a specific element:
+    ```elm
+    view model =
+        div []
+            [ Keyframes.styleNode model.animState
+            , div
+                []
+                [ ... ]
+            ]
+    ```
 
-```elm
-CSS.styleNodeFor "box" model.animState
-```
+    Or for a specific element:
+
+    ```elm
+    Keyframes.styleNodeFor "box" model.animState
+    ```
 
 ## Iterations and Looping
 
@@ -60,71 +43,79 @@ CSS.styleNodeFor "box" model.animState
 
 Run an animation a specific number of times:
 
-```elm
-CSS.animate model.animState <|
-    (CSS.iterations 3 >> bounceAnimation)
-```
+??? example "View Source Code"
+
+    ```elm
+    Keyframes.animate model.animState <|
+        (Keyframes.iterations 3 >> bounceAnimation)
+    ```
 
 ### Infinite Looping
 
 Run an animation forever:
 
-```elm
-CSS.animate model.animState <|
-    (CSS.loopForever >> pulseAnimation)
-```
+??? example "View Source Code"
+
+    ```elm
+    Keyframes.animate model.animState <|
+        (Keyframes.loopForever >> pulseAnimation)
+    ```
 
 ## Event Handling
 
 Keyframe animations generate events throughout their lifecycle. Use these events to chain animations, update state, or trigger follow-up actions.
 
-Create a `Msg` type variant for your keyframe events.
+1. Create a `Msg` type variant for your keyframe events.
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    ```elm
-    type Msg
-        = GotKeyframeEvent CSS.KeyframeEvent
-        | ...
-    ```
+        ```elm
+        type Msg
+            = GotKeyframeEvent Keyframes.Event
+            | ...
+        ```
 
-Use `CSS.keyframeEvents` in your view to generate events.
+2. Use `Keyframes.events` in your view to generate events.
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    ```elm
-    view model =
-        div
-            (CSS.styles"box" model.animState
-                ++ CSS.keyframeEvents "box" GotKeyframeEvent
-            )
-            [...]
-    ```
+        ```elm
+        view model =
+            div
+                []
+                [ Keyframes.styleNodeFor "box" model.animState
+                , div
+                    (Keyframes.attributes "box" model.animState
+                        ++ Keyframes.events "box" GotKeyframeEvent
+                    )
+                    [...]
+                ]
+        ```
 
-Use `CSS.handleKeyframeEvent` in your `update` function. This will keep the internal state in sync with the animation lifecycle.
+3. Use `Keyframes.handleEvent` in your `update` function. This will keep the internal state in sync with the animation lifecycle.
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    ```elm
-    update msg model =
-        case msg of
-            GotKeyframeEvent event ->
-                let
-                    newModel =
-                        { model | animState = CSS.handleKeyframeEvent event model.animState}
-                in
-                case event of
-                    CSS.AnimationEnded "box" ->
-                        -- Animation complete
-                        (newModel, Cmd.none)
+        ```elm
+        update msg model =
+            case msg of
+                GotKeyframeEvent event ->
+                    let
+                        newModel =
+                            { model | animState = Keyframes.handleEvent event model.animState}
+                    in
+                    case event of
+                        Keyframes.Ended "box" ->
+                            -- Animation complete
+                            (newModel, Cmd.none)
 
-                    CSS.AnimationStarted "box" ->
-                        -- Animation started
-                        (newModel, Cmd.none)
+                        Keyframes.Started "box" ->
+                            -- Animation started
+                            (newModel, Cmd.none)
 
-                    _ ->
-                        ( newModel, Cmd.none )
-    ```
+                        _ ->
+                            ( newModel, Cmd.none )
+        ```
 
 ## Default Settings
 
@@ -133,7 +124,6 @@ Set (optional) defaults for all properties:
 - Timing: use `speed` or `duration`
 - Easing
 - Delay
-- Iterations
 
 These settings will be used for all property animations in the pipeline.
 
@@ -142,13 +132,12 @@ These settings will be used for all property animations in the pipeline.
     ```elm
 
     animState =
-        CSS.animate (CSS.init [])
-            (CSS.duration 500
-                >> CSS.easing QuintOut
-                >> CSS.delay 100
-                >> CSS.iterations 2
+        Keyframes.animate model.animState <|
+            Keyframes.duration 500 -- Or Keyframes.speed
+                >> Keyframes.easing QuintOut
+                >> Keyframes.delay 100
                 >> myAnimation
-            )
+            
     ```
 
 Individual properties can override them:
@@ -156,13 +145,13 @@ Individual properties can override them:
 ??? example "View Source Code"
 
     ```elm
-    myAnimation builder =
-        builder
-            |> Opacity.for "box"
-            |> Opacity.duration 1000  
-            |> Opacity.easing SineOut 
-            |> Opacity.delay 0
-            |> Opacity.build
+    myAnimation : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+    myAnimation =
+        Opacity.for "box"
+            >> Opacity.duration 1000  
+            >> Opacity.easing SineOut 
+            >> Opacity.delay 0
+            >> Opacity.build
     ```
 
 ## 3D Transforms
@@ -171,7 +160,7 @@ Fully supports 3D animations. See [3D Animations](../concepts/3d.md) for more in
 
 ## Controlling Animations
 
-For details on `stop`, `reset`, `restart`, `pause`, and `resume` controls, see [Controlling CSS Keyframe Animations](../concepts/controlling-animations/css/keyframes.md).
+For details on `stop`, `reset`, `restart`, `pause`, and `resume` controls, see [Controlling CSS Keyframe Animations](../concepts/controlling-animations/keyframes.md).
 
 ## API Quick Reference
 
@@ -181,15 +170,14 @@ For details on `stop`, `reset`, `restart`, `pause`, and `resume` controls, see [
 | ---- | ----------- |
 | `AnimState` | Tracks animations and their states |
 | `AnimBuilder` | Carries all the animations configurations |
-| `KeyframeEvent` | Events received during a keyframe animation lifecycle |
+| `Event` | Events received during a keyframe animation lifecycle |
 | `TransformOrder` | Custom transform ordering |
 
 ### Core Functions
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `init` | `List (String, String, String) -> AnimState` | Create initial animation state |
-| `builder` | `AnimState -> AnimBuilder` | Get builder for defining animations |
+| `init` | `List (AnimBuilder -> AnimBuilder) -> AnimState` | Create initial animation state |
 | `animate` | `AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Generate final animation state |
 | `fireAndForget` | `(AnimBuilder -> AnimBuilder) -> AnimState` | Fire-and-forget animation |
 
@@ -197,17 +185,16 @@ For details on `stop`, `reset`, `restart`, `pause`, and `resume` controls, see [
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `keyframesStyles` | `String -> AnimState -> List (Html.Attribute msg)` | Get the animation styles for an element |
-| `keyframeAttribute` | `AnimBuilder -> Html.Attribute msg` | Get the animation attribute from a builder |
-| `keyframesStyleNode` | `AnimState -> Html msg` | Generate `@keyframes` rules for all elements |
-| `keyframesStyleNodeFor` | `String -> AnimState -> Html msg` | Generate `@keyframes` rules for a specific element |
-| `keyframeEvents` | `String -> (KeyframeEvent -> msg) -> List (Attribute msg)` | Attach keyframe event listeners |
+| `attributes` | `String -> AnimState -> List (Html.Attribute msg)` | Get the animation attributes for an element |
+| `styleNode` | `AnimState -> Html msg` | Generate `@keyframes` rules for all elements |
+| `styleNodeFor` | `String -> AnimState -> Html msg` | Generate `@keyframes` rules for a specific element |
+| `events` | `String -> (KeyframeEvent -> msg) -> List (Attribute msg)` | Attach keyframe event listeners |
 
 ### Event Functions
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `handleKeyframeEvent` | `KeyframeEvent -> AnimState -> AnimState` | Update AnimState after a keyframe event |
+| `handleEvent` | `Event -> AnimState -> AnimState` | Update AnimState after a keyframe event |
 
 ### Default Functions
 
@@ -217,6 +204,11 @@ For details on `stop`, `reset`, `restart`, `pause`, and `resume` controls, see [
 | `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set default speed (property units/sec) |
 | `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing function |
 | `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
+
+### Iteration Functions
+
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
 | `iterations` | `Int -> AnimBuilder -> AnimBuilder` | Set number of iterations |
 | `loopForever` | `AnimBuilder -> AnimBuilder` | Loop animation infinitely |
 
@@ -231,3 +223,9 @@ For details on `stop`, `reset`, `restart`, `pause`, and `resume` controls, see [
 | `resume` | `String -> AnimState -> AnimState` | Continue from paused position |
 
 For complete API details, see the [Anim.Engine.CSS.Keyframes](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Keyframes) documentation.
+
+## Next Steps
+
+The Sub Engine which provides a few more features than you get with keyframes.
+
+[Sub Engine →](sub.md){ .md-button .md-button--primary }

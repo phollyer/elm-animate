@@ -268,7 +268,7 @@ viewContent model =
          , htmlAttribute (Html.Attributes.style "position" "relative")
          , htmlAttribute (Html.Attributes.style "overflow" "hidden")
          ]
-            ++ List.map htmlAttribute (CSS.styles elementId model.animations)
+            ++ List.map htmlAttribute (CSS.attributes elementId model.animations)
         )
         (el
             [ width (px 50)

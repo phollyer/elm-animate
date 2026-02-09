@@ -444,7 +444,7 @@ viewCube model =
             model.state == Opening || model.state == Closing
 
         cubeStyles =
-            Keyframes.styles "cube" model.animState
+            Keyframes.attributes "cube" model.animState
                 |> List.map htmlAttribute
 
         cubeEvents =
@@ -506,7 +506,7 @@ viewFace animState listenForEvents config =
             ]
 
         animAttributes =
-            Keyframes.styles config.id animState
+            Keyframes.attributes config.id animState
                 |> List.map htmlAttribute
 
         eventAttributes =

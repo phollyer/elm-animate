@@ -143,7 +143,7 @@ subscriptions model =
 
 subAttributes : Sub.AnimState -> List (Element.Attribute msg)
 subAttributes =
-    Sub.htmlAttributes elementId >> List.map htmlAttribute
+    Sub.attributes elementId >> List.map htmlAttribute
 
 
 

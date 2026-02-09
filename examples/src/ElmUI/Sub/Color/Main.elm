@@ -213,7 +213,7 @@ viewContent model =
              , htmlAttribute (Html.Attributes.id "box")
              , htmlAttribute (Html.Attributes.style "background-color" "#95a5a6") -- Default gray
              ]
-                ++ (Sub.htmlAttributes "box" model.animations
+                ++ (Sub.attributes "box" model.animations
                         |> List.map htmlAttribute
                    )
             )

@@ -5159,11 +5159,6 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$element = _Browser_element;
-var $author$project$Engines$WAAPI$BasicUsage$Main$StartAnimation = {$: 'StartAnimation'};
-var $elm$core$Basics$always = F2(
-	function (a, _v0) {
-		return a;
-	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $author$project$Engines$WAAPI$BasicUsage$Main$elementId = 'hello-text';
 var $author$project$Anim$Internal$WAAPI$AnimState = function (a) {
@@ -5531,8 +5526,9 @@ var $author$project$Anim$Internal$WAAPI$extractElementEndStates = function (elem
 		});
 	return A3($elm$core$List$foldl, extractPropertyEndState, $author$project$Anim$Internal$WAAPI$emptyElementStates, elementConfig.properties);
 };
+var $author$project$Anim$Internal$Builder$Once = {$: 'Once'};
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
-	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil});
+	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil});
 var $elm$json$Json$Encode$list = F2(
 	function (func, entries) {
 		return _Json_wrap(
@@ -5694,7 +5690,7 @@ var $author$project$Anim$Internal$Builder$ProcessedTranslateConfig = function (a
 var $author$project$Anim$Internal$Timing$TimeSpec$Duration = function (a) {
 	return {$: 'Duration', a: a};
 };
-var $author$project$Anim$Easing$Linear = {$: 'Linear'};
+var $author$project$Anim$Extra$Easing$Linear = {$: 'Linear'};
 var $author$project$Anim$Internal$Builder$createDirtyConfig = function (_v0) {
 	var end = _v0.end;
 	var wrapper = _v0.wrapper;
@@ -5703,7 +5699,7 @@ var $author$project$Anim$Internal$Builder$createDirtyConfig = function (_v0) {
 			delay: 0,
 			distance: 0,
 			duration: 0,
-			easing: $author$project$Anim$Easing$Linear,
+			easing: $author$project$Anim$Extra$Easing$Linear,
 			end: end,
 			speed: 0,
 			start: $elm$core$Maybe$Just(end),
@@ -6031,7 +6027,7 @@ var $author$project$Anim$Internal$Builders$Coordinate3D$fromTuple = F2(
 			{x: x, y: y, z: 0});
 	});
 var $author$project$Anim$Internal$Properties$Translate$fromTuple = $author$project$Anim$Internal$Builders$Coordinate3D$fromTuple($author$project$Anim$Internal$Properties$Translate$support);
-var $author$project$Anim$Easing$EaseInOut = {$: 'EaseInOut'};
+var $author$project$Anim$Extra$Easing$EaseInOut = {$: 'EaseInOut'};
 var $author$project$Anim$Internal$Builder$resolveMaybeWithDefault = F3(
 	function (local, global, _default) {
 		var _v0 = _Utils_Tuple2(local, global);
@@ -6075,7 +6071,7 @@ var $author$project$Anim$Internal$Builder$processStandardAnimation = function (_
 			delay: A3($author$project$Anim$Internal$Builder$resolveDelayWithDefault, config.delay, globalData.globalDelay, 0),
 			distance: distance_,
 			duration: $elm$core$Basics$round(duration_),
-			easing: A3($author$project$Anim$Internal$Builder$resolveEasingWithDefault, config.easing, globalData.globalEasing, $author$project$Anim$Easing$EaseInOut),
+			easing: A3($author$project$Anim$Internal$Builder$resolveEasingWithDefault, config.easing, globalData.globalEasing, $author$project$Anim$Extra$Easing$EaseInOut),
 			end: config.end,
 			speed: speed_,
 			start: config.start,
@@ -6532,22 +6528,22 @@ var $author$project$Anim$Internal$Builders$Property$add = F2(
 			});
 		return A2($author$project$Anim$Internal$Builder$updateCurrentElement, updatedElement, builder);
 	});
-var $author$project$Anim$Easing$BounceInCustom = function (a) {
+var $author$project$Anim$Extra$Easing$BounceInCustom = function (a) {
 	return {$: 'BounceInCustom', a: a};
 };
-var $author$project$Anim$Easing$BounceInOutCustom = function (a) {
+var $author$project$Anim$Extra$Easing$BounceInOutCustom = function (a) {
 	return {$: 'BounceInOutCustom', a: a};
 };
-var $author$project$Anim$Easing$BounceOutCustom = function (a) {
+var $author$project$Anim$Extra$Easing$BounceOutCustom = function (a) {
 	return {$: 'BounceOutCustom', a: a};
 };
-var $author$project$Anim$Easing$ElasticInCustom = function (a) {
+var $author$project$Anim$Extra$Easing$ElasticInCustom = function (a) {
 	return {$: 'ElasticInCustom', a: a};
 };
-var $author$project$Anim$Easing$ElasticInOutCustom = function (a) {
+var $author$project$Anim$Extra$Easing$ElasticInOutCustom = function (a) {
 	return {$: 'ElasticInOutCustom', a: a};
 };
-var $author$project$Anim$Easing$ElasticOutCustom = function (a) {
+var $author$project$Anim$Extra$Easing$ElasticOutCustom = function (a) {
 	return {$: 'ElasticOutCustom', a: a};
 };
 var $elm$core$Basics$clamp = F3(
@@ -6576,7 +6572,7 @@ var $author$project$Anim$Internal$Builders$Property$adjustConfigEasing = functio
 						config,
 						{
 							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$BounceOutCustom(
+								$author$project$Anim$Extra$Easing$BounceOutCustom(
 									A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrength, config)))
 						});
 				case 'BounceInCustom':
@@ -6585,7 +6581,7 @@ var $author$project$Anim$Internal$Builders$Property$adjustConfigEasing = functio
 						config,
 						{
 							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$BounceInCustom(
+								$author$project$Anim$Extra$Easing$BounceInCustom(
 									A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrength, config)))
 						});
 				case 'BounceInOutCustom':
@@ -6596,7 +6592,7 @@ var $author$project$Anim$Internal$Builders$Property$adjustConfigEasing = functio
 						config,
 						{
 							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$BounceInOutCustom(
+								$author$project$Anim$Extra$Easing$BounceInOutCustom(
 									_Utils_Tuple2(
 										A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrengthIn, config),
 										A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrengthOut, config))))
@@ -6607,7 +6603,7 @@ var $author$project$Anim$Internal$Builders$Property$adjustConfigEasing = functio
 						config,
 						{
 							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$ElasticOutCustom(
+								$author$project$Anim$Extra$Easing$ElasticOutCustom(
 									A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrength, config)))
 						});
 				case 'ElasticInCustom':
@@ -6616,7 +6612,7 @@ var $author$project$Anim$Internal$Builders$Property$adjustConfigEasing = functio
 						config,
 						{
 							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$ElasticInCustom(
+								$author$project$Anim$Extra$Easing$ElasticInCustom(
 									A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrength, config)))
 						});
 				case 'ElasticInOutCustom':
@@ -6627,7 +6623,7 @@ var $author$project$Anim$Internal$Builders$Property$adjustConfigEasing = functio
 						config,
 						{
 							easing: $elm$core$Maybe$Just(
-								$author$project$Anim$Easing$ElasticInOutCustom(
+								$author$project$Anim$Extra$Easing$ElasticInOutCustom(
 									_Utils_Tuple2(
 										A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrengthIn, config),
 										A2($author$project$Anim$Internal$Builders$Property$calculateAdjustedStrength, baseStrengthOut, config))))
@@ -7006,172 +7002,16 @@ var $author$project$Anim$Property$Opacity$init = F3(
 					$author$project$Anim$Internal$Properties$Opacity$fromFloat(value),
 					A2($author$project$Anim$Internal$Builders$Opacity$for, elementId, animBuilder))));
 	});
-var $author$project$Anim$Internal$Builders$Translate$build = function (_v0) {
-	var config = _v0.a;
-	var builder = _v0.b;
-	return A2(
-		$author$project$Anim$Internal$Builders$Property$upsert,
-		$author$project$Anim$Internal$Builder$TranslateConfig(config),
-		builder);
-};
-var $author$project$Anim$Internal$Builders$Translate$TranslateBuilder = F2(
-	function (a, b) {
-		return {$: 'TranslateBuilder', a: a, b: b};
-	});
-var $author$project$Anim$Internal$Builders$Coordinate3D$fromTriple = F2(
-	function (support, _v0) {
-		var x = _v0.a;
-		var y = _v0.b;
-		var z = _v0.c;
-		return support.fromRecord(
-			{x: x, y: y, z: z});
-	});
-var $author$project$Anim$Internal$Properties$Translate$fromTriple = $author$project$Anim$Internal$Builders$Coordinate3D$fromTriple($author$project$Anim$Internal$Properties$Translate$support);
-var $author$project$Anim$Internal$Builders$Translate$defaultConfig = $author$project$Anim$Internal$Builders$Property$defaultConfig(
-	$author$project$Anim$Internal$Properties$Translate$fromTriple(
-		_Utils_Tuple3(0, 0, 0)));
-var $author$project$Anim$Internal$Builders$Translate$for = F2(
-	function (elementId, builder) {
-		var extractExisting = function (propertyConfig) {
-			if (propertyConfig.$ === 'TranslateConfig') {
-				var cfg = propertyConfig.a;
-				return $elm$core$Maybe$Just(cfg);
-			} else {
-				return $elm$core$Maybe$Nothing;
-			}
-		};
-		var extractBaseline = function (endStates) {
-			return endStates.translate;
-		};
-		var config = A5($author$project$Anim$Internal$Builders$Property$createFor, extractExisting, extractBaseline, $author$project$Anim$Internal$Builders$Translate$defaultConfig, elementId, builder);
-		return A2(
-			$author$project$Anim$Internal$Builders$Translate$TranslateBuilder,
-			config,
-			A2($author$project$Anim$Internal$Builder$for, elementId, builder));
-	});
-var $author$project$Anim$Internal$Builders$Translate$from = F2(
-	function (value, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		return A2(
-			$author$project$Anim$Internal$Builders$Translate$TranslateBuilder,
-			_Utils_update(
-				config,
-				{
-					start: $elm$core$Maybe$Just(value)
-				}),
-			builder);
-	});
-var $author$project$Anim$Internal$Builders$Translate$fromXYZ = F3(
-	function (x, y, z) {
-		return $author$project$Anim$Internal$Builders$Translate$from(
-			$author$project$Anim$Internal$Properties$Translate$fromTriple(
-				_Utils_Tuple3(x, y, z)));
-	});
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $author$project$Anim$Internal$Properties$Translate$y = function (_v0) {
-	var coords = _v0.a;
-	return coords.y;
-};
-var $author$project$Anim$Internal$Properties$Translate$z = function (_v0) {
-	var coords = _v0.a;
-	return coords.z;
-};
-var $author$project$Anim$Internal$Builders$Translate$fromX = F2(
-	function (x, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		var z = A2(
-			$elm$core$Maybe$withDefault,
-			0,
-			A2($elm$core$Maybe$map, $author$project$Anim$Internal$Properties$Translate$z, config.start));
-		var y = A2(
-			$elm$core$Maybe$withDefault,
-			0,
-			A2($elm$core$Maybe$map, $author$project$Anim$Internal$Properties$Translate$y, config.start));
-		return A4(
-			$author$project$Anim$Internal$Builders$Translate$fromXYZ,
-			x,
-			y,
-			z,
-			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
-	});
-var $author$project$Anim$Property$Translate$fromX = $author$project$Anim$Internal$Builders$Translate$fromX;
-var $author$project$Anim$Internal$Builders$Translate$to = F2(
-	function (value, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		var startVal = function () {
-			var _v1 = config.start;
-			if (_v1.$ === 'Just') {
-				var s = _v1.a;
-				return s;
-			} else {
-				return $author$project$Anim$Internal$Properties$Translate$default;
-			}
-		}();
-		return A2(
-			$author$project$Anim$Internal$Builders$Translate$TranslateBuilder,
-			_Utils_update(
-				config,
-				{
-					distance: A2($author$project$Anim$Internal$Properties$Translate$distance, startVal, value),
-					end: value,
-					start: $elm$core$Maybe$Just(startVal)
-				}),
-			builder);
-	});
-var $author$project$Anim$Internal$Builders$Translate$toXYZ = F3(
-	function (x, y, z) {
-		return $author$project$Anim$Internal$Builders$Translate$to(
-			$author$project$Anim$Internal$Properties$Translate$fromTriple(
-				_Utils_Tuple3(x, y, z)));
-	});
-var $author$project$Anim$Internal$Builders$Translate$toX = F2(
-	function (x, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		var z = $author$project$Anim$Internal$Properties$Translate$z(config.end);
-		var y = $author$project$Anim$Internal$Properties$Translate$y(config.end);
-		return A4(
-			$author$project$Anim$Internal$Builders$Translate$toXYZ,
-			x,
-			y,
-			z,
-			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
-	});
-var $author$project$Anim$Property$Translate$initX = F3(
-	function (elementId, x, animBuilder) {
-		return $author$project$Anim$Internal$Builders$Translate$build(
-			A2(
-				$author$project$Anim$Internal$Builders$Translate$toX,
-				x,
-				A2(
-					$author$project$Anim$Property$Translate$fromX,
-					x,
-					A2($author$project$Anim$Internal$Builders$Translate$for, elementId, animBuilder))));
-	});
-var $elm$core$Process$sleep = _Process_sleep;
 var $author$project$Engines$WAAPI$BasicUsage$Main$waapiCommand = _Platform_outgoingPort('waapiCommand', $elm$core$Basics$identity);
 var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $author$project$Engines$WAAPI$BasicUsage$Main$waapiSubscriptions = _Platform_incomingPort('waapiSubscriptions', $elm$json$Json$Decode$value);
+var $author$project$Engines$WAAPI$BasicUsage$Main$waapiEvents = _Platform_incomingPort('waapiEvents', $elm$json$Json$Decode$value);
 var $author$project$Engines$WAAPI$BasicUsage$Main$init = function () {
 	var _v0 = A3(
 		$author$project$Anim$Engine$WAAPI$init,
 		$author$project$Engines$WAAPI$BasicUsage$Main$waapiCommand,
-		$author$project$Engines$WAAPI$BasicUsage$Main$waapiSubscriptions,
+		$author$project$Engines$WAAPI$BasicUsage$Main$waapiEvents,
 		_List_fromArray(
 			[
-				A2($author$project$Anim$Property$Translate$initX, $author$project$Engines$WAAPI$BasicUsage$Main$elementId, -100),
 				A2($author$project$Anim$Property$Opacity$init, $author$project$Engines$WAAPI$BasicUsage$Main$elementId, 0)
 			]));
 	var initialAnimState = _v0.a;
@@ -7180,13 +7020,7 @@ var $author$project$Engines$WAAPI$BasicUsage$Main$init = function () {
 		{animState: initialAnimState},
 		$elm$core$Platform$Cmd$batch(
 			_List_fromArray(
-				[
-					initCmd,
-					A2(
-					$elm$core$Task$perform,
-					$elm$core$Basics$always($author$project$Engines$WAAPI$BasicUsage$Main$StartAnimation),
-					$elm$core$Process$sleep(50))
-				])));
+				[initCmd])));
 }();
 var $author$project$Engines$WAAPI$BasicUsage$Main$GotWaapiMsg = function (a) {
 	return {$: 'GotWaapiMsg', a: a};
@@ -7515,6 +7349,16 @@ var $author$project$Anim$Internal$Easing$generateElasticOscillationsWithFrames =
 					}),
 				A2($elm$core$List$range, 0, totalCycles - 1)));
 		return allFrames;
+	});
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
 	});
 var $elm$core$Tuple$pair = F2(
 	function (a, b) {
@@ -9358,12 +9202,12 @@ var $author$project$Anim$Internal$WAAPI$animate = F2(
 				A2($author$project$Anim$Internal$WAAPI$encodeWithVersions, updatedElementAnimations, processedData)));
 	});
 var $author$project$Anim$Engine$WAAPI$animate = $author$project$Anim$Internal$WAAPI$animate;
+var $author$project$Anim$Property$Opacity$build = $author$project$Anim$Internal$Builders$Opacity$build;
 var $elm$core$Basics$composeR = F3(
 	function (f, g, x) {
 		return g(
 			f(x));
 	});
-var $author$project$Anim$Property$Opacity$build = $author$project$Anim$Internal$Builders$Opacity$build;
 var $author$project$Anim$Internal$Builders$Property$withDuration = F2(
 	function (ms, config) {
 		return _Utils_update(
@@ -9394,35 +9238,8 @@ var $author$project$Engines$WAAPI$BasicUsage$Main$fadeIn = A2(
 		$author$project$Anim$Property$Opacity$to(1),
 		A2(
 			$elm$core$Basics$composeR,
-			$author$project$Anim$Property$Opacity$duration(2000),
+			$author$project$Anim$Property$Opacity$duration(5000),
 			$author$project$Anim$Property$Opacity$build)));
-var $author$project$Engines$WAAPI$BasicUsage$Main$handleEvent = F2(
-	function (maybeEvent, model) {
-		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-	});
-var $author$project$Anim$Property$Translate$build = $author$project$Anim$Internal$Builders$Translate$build;
-var $author$project$Anim$Internal$Builders$Translate$duration = F2(
-	function (ms, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		return A2(
-			$author$project$Anim$Internal$Builders$Translate$TranslateBuilder,
-			A2($author$project$Anim$Internal$Builders$Property$withDuration, ms, config),
-			builder);
-	});
-var $author$project$Anim$Property$Translate$duration = $author$project$Anim$Internal$Builders$Translate$duration;
-var $author$project$Anim$Property$Translate$for = $author$project$Anim$Internal$Builders$Translate$for;
-var $author$project$Anim$Property$Translate$toX = $author$project$Anim$Internal$Builders$Translate$toX;
-var $author$project$Engines$WAAPI$BasicUsage$Main$slideIn = A2(
-	$elm$core$Basics$composeR,
-	$author$project$Anim$Property$Translate$for($author$project$Engines$WAAPI$BasicUsage$Main$elementId),
-	A2(
-		$elm$core$Basics$composeR,
-		$author$project$Anim$Property$Translate$toX(0),
-		A2(
-			$elm$core$Basics$composeR,
-			$author$project$Anim$Property$Translate$duration(500),
-			$author$project$Anim$Property$Translate$build)));
 var $author$project$Anim$Engine$WAAPI$Canceled = function (a) {
 	return {$: 'Canceled', a: a};
 };
@@ -10375,8 +10192,17 @@ var $author$project$Anim$Internal$Properties$Color$fromString = function (str) {
 	var trimmed = $elm$core$String$trim(str);
 	return A2($elm$core$String$startsWith, '#', trimmed) ? $author$project$Anim$Internal$Properties$Color$fromHex(trimmed) : (A2($elm$core$String$startsWith, 'rgb(', trimmed) ? $author$project$Anim$Internal$Properties$Color$parseRgbString(trimmed) : (A2($elm$core$String$startsWith, 'rgba(', trimmed) ? $author$project$Anim$Internal$Properties$Color$parseRgbaString(trimmed) : (A2($elm$core$String$startsWith, 'hsl(', trimmed) ? $author$project$Anim$Internal$Properties$Color$parseHslString(trimmed) : (A2($elm$core$String$startsWith, 'hsla(', trimmed) ? $author$project$Anim$Internal$Properties$Color$parseHslaString(trimmed) : $author$project$Anim$Internal$Properties$Color$fromHex(trimmed)))));
 };
+var $author$project$Anim$Internal$Builders$Coordinate3D$fromTriple = F2(
+	function (support, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		var z = _v0.c;
+		return support.fromRecord(
+			{x: x, y: y, z: z});
+	});
 var $author$project$Anim$Internal$Properties$Rotate$fromTriple = $author$project$Anim$Internal$Builders$Coordinate3D$fromTriple($author$project$Anim$Internal$Properties$Rotate$support);
 var $author$project$Anim$Internal$Properties$Scale$fromTriple = $author$project$Anim$Internal$Builders$Coordinate3D$fromTriple($author$project$Anim$Internal$Properties$Scale$support);
+var $author$project$Anim$Internal$Properties$Translate$fromTriple = $author$project$Anim$Internal$Builders$Coordinate3D$fromTriple($author$project$Anim$Internal$Properties$Translate$support);
 var $author$project$Anim$Internal$WAAPI$updateElementAnimation = F2(
 	function (animUpdate, elementAnimation) {
 		var newStatus = animUpdate.isAnimating ? $author$project$Anim$Internal$WAAPI$Running : $author$project$Anim$Internal$WAAPI$Complete;
@@ -10454,7 +10280,7 @@ var $author$project$Anim$Internal$WAAPI$update = F2(
 			var jsonValue = msg.a;
 			return _Utils_Tuple2(
 				A2($author$project$Anim$Internal$WAAPI$updatePropertyUpdate, jsonValue, animState),
-				$elm$core$Maybe$Nothing);
+				_List_Nil);
 		} else {
 			var jsonValue = msg.a;
 			var _v1 = $author$project$Anim$Internal$WAAPI$decodeAnimationEvent(jsonValue);
@@ -10464,10 +10290,12 @@ var $author$project$Anim$Internal$WAAPI$update = F2(
 				var status = _v2.b;
 				return _Utils_Tuple2(
 					A3($author$project$Anim$Internal$WAAPI$handleEventInternal, elementId, status, animState),
-					$elm$core$Maybe$Just(
-						_Utils_Tuple2(elementId, status)));
+					_List_fromArray(
+						[
+							_Utils_Tuple2(elementId, status)
+						]));
 			} else {
-				return _Utils_Tuple2(animState, $elm$core$Maybe$Nothing);
+				return _Utils_Tuple2(animState, _List_Nil);
 			}
 		}
 	});
@@ -10475,25 +10303,22 @@ var $author$project$Anim$Engine$WAAPI$update = F2(
 	function (msg, animState) {
 		var _v0 = A2($author$project$Anim$Internal$WAAPI$update, msg, animState);
 		var newState = _v0.a;
-		var maybeRawEvent = _v0.b;
+		var rawEvents = _v0.b;
 		return _Utils_Tuple2(
 			newState,
 			A2(
-				$elm$core$Maybe$map,
+				$elm$core$List$map,
 				function (_v1) {
 					var elementId = _v1.a;
 					var status = _v1.b;
 					return A2($author$project$Anim$Engine$WAAPI$statusStringToEvent, elementId, status);
 				},
-				maybeRawEvent));
+				rawEvents));
 	});
 var $author$project$Engines$WAAPI$BasicUsage$Main$update = F2(
 	function (msg, model) {
 		if (msg.$ === 'StartAnimation') {
-			var _v1 = A2(
-				$author$project$Anim$Engine$WAAPI$animate,
-				model.animState,
-				A2($elm$core$Basics$composeR, $author$project$Engines$WAAPI$BasicUsage$Main$fadeIn, $author$project$Engines$WAAPI$BasicUsage$Main$slideIn));
+			var _v1 = A2($author$project$Anim$Engine$WAAPI$animate, model.animState, $author$project$Engines$WAAPI$BasicUsage$Main$fadeIn);
 			var newAnimState = _v1.a;
 			var cmd = _v1.b;
 			return _Utils_Tuple2(
@@ -10505,13 +10330,11 @@ var $author$project$Engines$WAAPI$BasicUsage$Main$update = F2(
 			var subMsg = msg.a;
 			var _v2 = A2($author$project$Anim$Engine$WAAPI$update, subMsg, model.animState);
 			var newAnimState = _v2.a;
-			var maybeEvent = _v2.b;
-			return A2(
-				$author$project$Engines$WAAPI$BasicUsage$Main$handleEvent,
-				maybeEvent,
+			return _Utils_Tuple2(
 				_Utils_update(
 					model,
-					{animState: newAnimState}));
+					{animState: newAnimState}),
+				$elm$core$Platform$Cmd$none);
 		}
 	});
 var $elm$html$Html$div = _VirtualDom_node('div');
@@ -10523,6 +10346,8 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 			$elm$json$Json$Encode$string(string));
 	});
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Engines$WAAPI$BasicUsage$Main$view = function (model) {
@@ -10530,11 +10355,26 @@ var $author$project$Engines$WAAPI$BasicUsage$Main$view = function (model) {
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
-				$elm$html$Html$Attributes$id($author$project$Engines$WAAPI$BasicUsage$Main$elementId)
+				A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+				A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
+				A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
+				A2($elm$html$Html$Attributes$style, 'font-size', '48px'),
+				A2($elm$html$Html$Attributes$style, 'font-weight', 'bold'),
+				A2($elm$html$Html$Attributes$style, 'height', '100vh'),
+				A2($elm$html$Html$Attributes$style, 'width', '100vw')
 			]),
 		_List_fromArray(
 			[
-				$elm$html$Html$text('Hello!')
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$id($author$project$Engines$WAAPI$BasicUsage$Main$elementId)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Hello World!')
+					]))
 			]));
 };
 var $author$project$Engines$WAAPI$BasicUsage$Main$main = $elm$browser$Browser$element(

@@ -2,21 +2,6 @@
 
 The WAAPI Engine uses the Web Animations API via Elm ports and a JavaScript companion. It combines browser-native performance with programmatic control.
 
-## When to Use
-
-✅ **For:**
-
-- Complex animations needing both performance and control
-- Pause, resume, reset, and restart functionality
-- Many simultaneous element animations
-- When you need browser-native rendering with JavaScript control
-- Animations requiring state tracking and querying
-
-❌ **Consider other engines for:**
-
-- Avoiding JavaScript dependencies (use CSS or Sub)
-- Simple fire-and-forget animations (use CSS)
-
 ## Setup
 
 ### 1. Install the JavaScript package
@@ -352,12 +337,6 @@ The WAAPI Engine fully supports 3D animations. See [3D Animations](../concepts/3
 | `animate` | `(Value -> Cmd msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )` | Execute animation with state tracking |
 | `fireAndForget` | `(Value -> Cmd msg) -> AnimBuilder -> Cmd msg` | Execute animation without state tracking |
 | `decode` | `AnimState -> Value -> ( AnimState, Maybe AnimationEvent )` | Decode port events |
-
-### View Functions
-
-| Function | Type | Description |
-| ---------- | ------ | ------------- |
-| `htmlAttributes` | `String -> AnimState -> List (Html.Attribute msg)` | Get HTML animation attributes |
 
 ### Control Functions
 

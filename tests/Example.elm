@@ -147,7 +147,7 @@ suite =
                         -- that applies the animation to the DOM element
                         -- Expected: style="animation: box-layer-0-animation 1000ms linear 0ms;"
                         styleAttributes =
-                            CSS.styles "box" animations
+                            CSS.attributes "box" animations
 
                         -- We can't directly inspect Html.Attribute content in Elm tests,
                         -- but we can verify the function executes without errors
