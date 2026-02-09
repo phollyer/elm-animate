@@ -11,8 +11,8 @@ module Anim.Internal.Scroll exposing
     , easing
     , getContainer
     , getContainerDuration
+    , getDefaultSettings
     , getDuration
-    , getGlobalSettings
     , getScrollPosition
     , getScrollPositionX
     , getScrollPositionXY
@@ -271,21 +271,21 @@ toCmd toMsg buildAnimation =
         scrollTargets =
             getScrollTargets animBuilder
 
-        globalSettings =
-            getGlobalSettings animBuilder
+        defaultSettings =
+            getDefaultSettings animBuilder
 
-        -- Create scroll config from global settings
+        -- Create scroll config from default settings
         -- Note: We use 1000ms (1 second) as baseline duration for easing function
         -- The actual animation duration is determined later based on distance and speed/duration
         config =
             { timing =
-                case globalSettings.timeSpec of
+                case defaultSettings.timeSpec of
                     Speed s ->
                         ScrollCommon.Speed s
 
                     Duration d ->
                         ScrollCommon.Duration d
-            , easing = Easing.toFunction 1000.0 globalSettings.easing
+            , easing = Easing.toFunction 1000.0 defaultSettings.easing
             , axis = ScrollCommon.Both
             }
 
@@ -1180,10 +1180,10 @@ getScrollTargets animBuilder =
     Builder.getScrollTargets animBuilder
 
 
-{-| Get global settings from AnimBuilder for toCmd/toTask implementations.
+{-| Get default settings from AnimBuilder for toCmd/toTask implementations.
 -}
-getGlobalSettings : AnimBuilder -> { timeSpec : TimeSpec, easing : Easing, offset : Float }
-getGlobalSettings animBuilder =
+getDefaultSettings : AnimBuilder -> { timeSpec : TimeSpec, easing : Easing, offset : Float }
+getDefaultSettings animBuilder =
     let
         timeSpec =
             Builder.getTimeSpec animBuilder

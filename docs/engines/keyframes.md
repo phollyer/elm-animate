@@ -126,7 +126,7 @@ Use `CSS.handleKeyframeEvent` in your `update` function. This will keep the inte
                         ( newModel, Cmd.none )
     ```
 
-## Global Settings
+## Default Settings
 
 Set (optional) defaults for all properties:
 
@@ -209,7 +209,7 @@ For details on `stop`, `reset`, `restart`, `pause`, and `resume` controls, see [
 | ---------- | ---- | ------------- |
 | `handleKeyframeEvent` | `KeyframeEvent -> AnimState -> AnimState` | Update AnimState after a keyframe event |
 
-### Global Functions
+### Default Functions
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |

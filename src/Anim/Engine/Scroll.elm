@@ -115,7 +115,7 @@ or redirect mid-flight.
 @docs AnimationMsg, update, subscriptions
 
 
-# Global Settings
+# Default Settings
 
 These settings will be used for all scroll animations unless overridden on a per-scroll basis.
 
@@ -171,7 +171,7 @@ Build scroll animations with per-scroll settings.
 
 ## Per-Scroll Timing
 
-These override global settings for individual scroll targets.
+These override default settings for individual scroll targets.
 
 @docs delay, duration, speed
 
@@ -780,21 +780,21 @@ toTask buildAnimation =
         scrollTargets =
             InternalScroll.getScrollTargets animBuilder
 
-        globalSettings =
-            InternalScroll.getGlobalSettings animBuilder
+        defaultSettings =
+            InternalScroll.getDefaultSettings animBuilder
 
-        -- Create scroll config from global settings
+        -- Create scroll config from default settings
         -- Note: We use 1000ms (1 second) as baseline duration for easing function
         -- The actual animation duration is determined later based on distance and speed/duration
         config =
             { timing =
-                case globalSettings.timeSpec of
+                case defaultSettings.timeSpec of
                     Speed s ->
                         ScrollCommon.Speed s
 
                     Duration d ->
                         ScrollCommon.Duration d
-            , easing = InternalEasing.toFunction 1000.0 globalSettings.easing
+            , easing = InternalEasing.toFunction 1000.0 defaultSettings.easing
             , axis = ScrollCommon.Both
             }
 

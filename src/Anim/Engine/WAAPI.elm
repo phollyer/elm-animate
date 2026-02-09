@@ -132,7 +132,7 @@ Handle window and container resizes by repositioning elements proportionally.
 @docs onResize
 
 
-# Global Settings
+# Default Settings
 
 These settings will be used for all animations unless overridden on a per-property basis.
 

@@ -2,35 +2,16 @@
 
 The CSS Transitions Engine uses native browser CSS transitions for simple A→B property animations. The browser handles all rendering, providing excellent performance with minimal setup.
 
-```elm
-import Anim.Engine.CSS.Transitions as CSS
-```
-
-## When to Use
-
-✅ **For:**
-
-- Fire-and-forget animations
-- Hover effects and micro-interactions
-- Page transitions and entrances
-- Simple A→B property changes
-- When you don't need pause/resume control
-
-❌ **Consider [Keyframes](css-keyframes.md) when:**
-
-- You need looping or iterations
-- You need pause/resume functionality
-- Entry animations without `Process.sleep` delays
 
 ## Basic Usage
 
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/CSS/BasicUsage/Main.elm"
+    --8<-- "docs/examples/src/Engines/Transitions/BasicUsage/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../examples/src/Engines/CSS/BasicUsage/index.html){ .md-button target="_blank" }
+[:material-play-circle: Run this example](../examples/src/Engines/Transitions/BasicUsage/index.html){ .md-button target="_blank" }
 
 !!! note "Why the delay?"
     CSS transitions only trigger when the browser detects a *change* between renders. `Process.sleep 50` is used to ensure the element renders in its initial state first, then the animation is applied 50ms later. This creates the *change* the browser needs.
@@ -52,7 +33,7 @@ In practice, most animations are triggered by user interactions, which naturally
             AnimateBox ->
                 let
                     newAnimState =
-                        CSS.animate (CSS.init []) moveToNewPosition
+                        Transitions.animate model.animState moveToNewPosition
                 in
                 ( { model | animState = newAnimState }, Cmd.none )
     ```
@@ -61,55 +42,58 @@ In practice, most animations are triggered by user interactions, which naturally
 
 CSS transitions generate events throughout their lifecycle. Use these events to chain animations, update state, or trigger follow-up actions.
 
-Create a `Msg` type variant for your CSS transition events.
+1. Create a `Msg` type variant for your transition events.
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    ```elm
-    type Msg
-        = GotTransitionEvent CSS.TransitionEvent
-        | ...
-    ```
+        ```elm
+        type Msg
+            = GotTransitionEvent Transitions.Event
+            | ...
+        ```
 
-Use `CSS.transitionEvents` in your view to generate events.
+2. Use `Transitions.events` in your view to generate events.
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    ```elm
-    view model =
-        div
-            (CSS.attributes "box" model.animState
-                ++ CSS.transitionEvents "box" GotTransitionEvent
-            )
-            [...]
-    ```
+        ```elm
+        view model =
+            div
+                (Transitions.attributes "box" model.animState
+                    ++ Transitions.events "box" GotTransitionEvent
+                )
+                [...]
+        ```
 
-Use `CSS.handleTransitionEvent` in your `update` function. This will keep the internal state in sync with the animation lifecycle.
+3. Use `Transitions.handleEvent` in your `update` function. This will keep the internal state in sync with the animation lifecycle.
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    ```elm
-    update msg model =
-        case msg of
-            GotTransitionEvent event ->
-                let
-                    newModel =
-                        { model | animState = CSS.handleTransitionEvent event model.animState}
-                in
-                case event of
-                    CSS.TransitionEnded "box" ->
-                        -- Animation complete
-                        (newModel, Cmd.none)
+        ```elm
+        update msg model =
+            case msg of
+                GotTransitionEvent event ->
+                    let
+                        newModel =
+                            { model | animState = Transitions.handleEvent event model.animState}
+                    in
+                    case event of
+                        Transitions.Ended "box" ->
+                            -- Animation complete
+                            (newModel, Cmd.none)
 
-                    CSS.TransitionStarted "box" ->
-                        -- Animation started
-                        (newModel, Cmd.none)
+                        Transitions.Started "box" ->
+                            -- Animation started
+                            (newModel, Cmd.none)
 
-                    _ ->
-                        ( newModel, Cmd.none )
-    ```
+                        _ ->
+                            ( newModel, Cmd.none )
+        ```
 
-## Global Settings
+!!! info "Event Bubbling"
+    CSS transition events bubble up the DOM tree. If a child element's transition ends, the event fires on the child then bubbles to its parent. When using nested elements with transitions, conditionally attach event listeners based on which element's events you care about to avoid spurious events triggering unintended actions.
+
+## Default Settings
 
 Set (optional) defaults for all properties:
 
@@ -124,12 +108,12 @@ These settings will be used for all property animations in the pipeline.
     ```elm
 
     animState =
-        CSS.animate (CSS.init [])
-            (CSS.duration 500
-                >> CSS.easing QuintOut
-                >> CSS.delay 100
+        Transitions.animate model.animState <|
+            Transitions.duration 500
+                >> Transitions.easing QuintOut
+                >> Transitions.delay 100
                 >> myAnimation
-            )
+            
     ```
 
 Individual properties can override them:
@@ -137,28 +121,26 @@ Individual properties can override them:
 ??? example "View Source Code"
 
     ```elm
-    myAnimation builder =
-        builder
-            |> Opacity.for "box"
-            |> Opacity.duration 1000  
-            |> Opacity.easing SineOut 
-            |> Opacity.delay 0
-            |> Opacity.build
+    myAnimation : Transitions.AnimBuilder -> Transitions.AnimBuilder
+    myAnimation =
+        Opacity.for "box"
+            >> Opacity.duration 1000  
+            >> Opacity.easing SineOut 
+            >> Opacity.delay 0
+            >> Opacity.build
     ```
 
 ## Discrete Transitions
 
-By default, CSS transitions only work with properties that have intermediate values (like `opacity: 0.5`).
-Discrete properties like `display`, `visibility`, and `content-visibility` snap instantly between values.
+By default, CSS transitions only work with properties that can have intermediate values (like `opacity: 0.5`).
+Discrete properties like `display`, `visibility`, and `content-visibility` have no in-between states — they snap instantly from one value to the next.
 
-To enable smooth transitions with discrete properties, use `allowDiscreteTransitions`:
+To enable smooth transitions with discrete properties, use `allowDiscrete`:
 
 ```elm
-CSS.animate model.animState <|
-    (allowDiscreteTransitions >> fadeIn >> slideIn)
+Transitions.animate model.animState <|
+    (Transitions.allowDiscrete >> fadeIn >> slideIn)
 ```
-
-This adds `transition-behavior: allow-discrete` to your animation.
 
 ### Entry vs Exit Animations
 
@@ -166,15 +148,15 @@ Discrete transitions behave differently depending on direction:
 
 === "Exit Animations (Hiding)"
 
-    **Exit animations work automatically** with just `allowDiscreteTransitions`.
+    **Exit animations work automatically** with just `allowDiscrete`.
     
     When transitioning TO `display: none`, the browser keeps the element visible during
     the transition, then hides it at the end.
     
     ```elm
     -- This just works™
-    CSS.animate model.animState <|
-        (allowDiscreteTransitions >> fadeOut)
+    Transitions.animate model.animState <|
+        Transitions.allowDiscrete >> fadeOut
     ```
 
 === "Entry Animations (Showing)"
@@ -189,15 +171,12 @@ Discrete transitions behave differently depending on direction:
     ```elm
     view model =
         div []
-            [ CSS.startingStyleNode model.animState  -- Required for entry!
+            [ Transitions.startingStyleNode model.animState  
             , div
-                (CSS.attributes "my-element" model.animState)
+                (Transitions.attributes "my-element" model.animState)
                 [ text "I'll animate when I appear" ]
             ]
     ```
-
-!!! note "Browser Support"
-    `transition-behavior` and `@starting-style` are supported in Chrome 117+, Firefox 129+, and Safari 17.4+.
 
 ## 3D Transforms
 
@@ -215,7 +194,7 @@ For details on `stop` and `reset` controls, see [Controlling CSS Transitions](..
 | ---- | ----------- |
 | `AnimState` | Tracks animations and their states |
 | `AnimBuilder` | Carries all the animations configurations |
-| `TransitionEvent` | Events received during a transitions lifecycle |
+| `Event` | Events received during a transitions lifecycle |
 | `TransformOrder` | Custom transform ordering |
 
 ### Core Functions
@@ -223,7 +202,6 @@ For details on `stop` and `reset` controls, see [Controlling CSS Transitions](..
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
 | `init` | `List (String, String, String) -> AnimState` | Create initial animation state |
-| `builder` | `AnimState -> AnimBuilder` | Get builder for defining animations |
 | `animate` | `AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Generate final animation state |
 | `fireAndForget` | `(AnimBuilder -> AnimBuilder) -> AnimState` | Fire-and-forget animation |
 
@@ -231,18 +209,16 @@ For details on `stop` and `reset` controls, see [Controlling CSS Transitions](..
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `transitionAttributes` | `String -> AnimState -> List (Html.Attribute msg)` | Get the transition attributes for an element |
-| `transitionEvents` | `String -> (TransitionEvent -> msg) -> List (Attribute msg)` | Attach transition event listeners |
-| `startingStyleNode` | `AnimState -> Html msg` | Generate `@starting-style` for entry animations |
-| `startingStyleNodeFor` | `String -> AnimState -> Html msg` | Generate `@starting-style` for a specific element |
+| `attributes` | `String -> AnimState -> List (Html.Attribute msg)` | Get the transition attributes for an element |
+| `events` | `String -> (Event -> msg) -> List (Attribute msg)` | Attach transition event listeners |
 
 ### Event Functions
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `handleTransitionEvent` | `TransitionEvent -> AnimState -> AnimState` | Update AnimState after a transition event |
+| `handleEvent` | `Event -> AnimState -> AnimState` | Update AnimState after a transition event |
 
-### Global Functions
+### Default Functions
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
@@ -250,7 +226,6 @@ For details on `stop` and `reset` controls, see [Controlling CSS Transitions](..
 | `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set default speed (property units/sec) |
 | `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing function |
 | `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
-| `allowDiscreteTransitions` | `AnimBuilder -> AnimBuilder` | Enable `transition-behavior: allow-discrete` |
 
 ### Control Functions
 
@@ -258,5 +233,13 @@ For details on `stop` and `reset` controls, see [Controlling CSS Transitions](..
 | ---------- | ---- | ------------- |
 | `stop` | `String -> AnimState -> AnimState` | Jump to end state and stop |
 | `reset` | `String -> AnimState -> AnimState` | Jump to start state and stop |
+
+### Discrete Transition Functions
+
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `allowDiscrete` | `AnimBuilder -> AnimBuilder` | Enable `transition-behavior: allow-discrete` |
+| `startingStyleNode` | `AnimState -> Html msg` | Generate `@starting-style` for discrete entry animations |
+| `startingStyleNodeFor` | `String -> AnimState -> Html msg` | Generate `@starting-style` for a specific element |
 
 For complete API details, see the [Anim.Engine.CSS.Transitions](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Transitions) documentation.

@@ -78,7 +78,7 @@ Check if animations are running:
             ]
     ```
 
-## Global Settings
+## Default Settings
 
 Set (optional) defaults for all properties:
 
@@ -154,7 +154,7 @@ The Sub Engine fully supports 3D animations. See [3D Animations](../concepts/3d.
 | `getStartRotate` | `String -> AnimState -> Maybe { x : Float, y : Float, z : Float  }` | Get the start rotation |
 | `getEndScale` | `String -> AnimState -> Maybe { x : Float, y : Float, z : Float  }` | Get the target end scale |
 
-### Global Functions
+### Default Functions
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |

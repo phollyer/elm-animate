@@ -170,7 +170,7 @@ By default, scrolls the document. To scroll within a container:
             >> Scroll.build
     ```
 
-## Global Settings
+## Default Settings
 
 Set (optional) defaults for all scroll actions:
 
@@ -314,7 +314,7 @@ Handle errors with Tasks:
 | `forDocument` | `ScrollBuilder` | Scroll in document (default) |
 | `forContainer` | `String -> ScrollBuilder` | Scroll in container |
 
-### Per-Scroll Settings
+### Per-Scroll Functions
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
@@ -329,7 +329,7 @@ Handle errors with Tasks:
 | `withOffsetY` | `Float -> ScrollBuilder -> ScrollBuilder` | Add Y offset |
 | `build` | `ScrollBuilder -> ScrollBuilder` | Finalize scroll action |
 
-### Global Defaults
+### Default Functions
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |

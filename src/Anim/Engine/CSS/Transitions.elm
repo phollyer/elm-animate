@@ -66,7 +66,7 @@ For more granular control over which events to handle:
 @docs AnimBuilder, animate, fireAndForget, TransformOrder, animateOrder, fireAndForgetOrder
 
 
-# Global Settings
+# Default Settings
 
 
 ## Timing

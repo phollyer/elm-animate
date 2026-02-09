@@ -231,7 +231,7 @@ Restart replays the animation from the beginning:
                 ( { model | animState = newAnimState }, cmd )
     ```
 
-## Global Settings
+## Default Settings
 
 Set (optional) defaults for all properties:
 
@@ -381,7 +381,7 @@ The WAAPI Engine fully supports 3D animations. See [3D Animations](../concepts/3
 | `getStartRotate` | `String -> AnimState -> Maybe { x : Float, y : Float, z : Float }` | Get the start rotation |
 | `getEndScale` | `String -> AnimState -> Maybe { x : Float, y : Float, z : Float }` | Get the target end scale |
 
-### Global Functions
+### Default Functions
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |

@@ -64,6 +64,7 @@ init flags =
         initialAnimState =
             Keyframes.init
                 [ Translate.initZ "cube" 200
+
                 -- Position each face in 3D space
                 , Translate.initZ "front-face" depth
                 , Translate.initZ "back-face" (depth * -1)
@@ -71,6 +72,7 @@ init flags =
                 , Translate.initX "left-face" (-1 * depth)
                 , Translate.initY "top-face" (-1 * depth)
                 , Translate.initY "bottom-face" depth
+
                 -- Rotate each face to build the cube
                 -- Front face is not rotated due to facing forward by default
                 , Rotate.initY "back-face" 180
@@ -85,10 +87,11 @@ init flags =
     in
     -- --8<-- [end:initializeProperties]
     -- --8<-- [start:startAnimation]
-     ( { animState =
+    ( { animState =
             Keyframes.animate initialAnimState <|
                 animate state
-    -- --8<-- [end:startAnimation]
+
+      -- --8<-- [end:startAnimation]
       , state = state
       , animAreaSize =
             { width = min 500 (flags.window.width - 40)
@@ -98,7 +101,11 @@ init flags =
     , Cmd.none
     )
 
+
+
 -- --8<-- [start:animationSelector]
+
+
 animate : State -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 animate state =
     case state of
@@ -113,9 +120,13 @@ animate state =
 
         RotatingClosed ->
             rotateCubeAntiClockwise
--- --8<-- [end:animationSelector]
 
+
+
+-- --8<-- [end:animationSelector]
 -- --8<-- [start:animationFunctions]
+
+
 rotateCube : (Rotate.Builder -> Rotate.Builder) -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 rotateCube targetFunc =
     Rotate.for "cube"
@@ -236,9 +247,10 @@ moveBottomFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveBottomFaceIn =
     moveFace "bottom-face" <|
         Translate.toY depth
+
+
+
 -- --8<-- [end:animationFunctions]
-
-
 -- UPDATE
 
 
@@ -246,7 +258,10 @@ type Msg
     = GotKeyframeEvent Keyframes.Event
 
 
+
 -- --8<-- [start:stateMachine]
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -302,9 +317,10 @@ update msg model =
 
                 _ ->
                     ( newModel, Cmd.none )
+
+
+
 -- --8<-- [end:stateMachine]
-
-
 -- VIEW
 
 
@@ -417,7 +433,10 @@ bottomFace =
     }
 
 
+
 -- --8<-- [start:viewCube]
+
+
 viewCube : Model -> Element Msg
 viewCube model =
     let
@@ -458,10 +477,13 @@ viewCube model =
         , viewFace model.animState False topFace
         , viewFace model.animState False bottomFace
         ]
+
+
+
 -- --8<-- [end:viewCube]
-
-
 -- --8<-- [start:viewFace]
+
+
 viewFace : Keyframes.AnimState -> Bool -> FaceConfig -> Element Msg
 viewFace animState listenForEvents config =
     let
@@ -498,6 +520,9 @@ viewFace animState listenForEvents config =
     el
         (baseAttributes ++ animAttributes ++ eventAttributes)
         (el [ centerX, centerY ] (text config.label))
+
+
+
 -- --8<-- [end:viewFace]
 
 
