@@ -5164,7 +5164,6 @@ var $elm$core$Basics$always = F2(
 	function (a, _v0) {
 		return a;
 	});
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $author$project$Engines$WAAPI$BasicUsage$Main$elementId = 'hello-text';
 var $author$project$Anim$Internal$WAAPI$AnimState = function (a) {
 	return {$: 'AnimState', a: a};
@@ -5181,298 +5180,6 @@ var $author$project$Anim$Internal$Builder$clearCurrentElement = function (_v0) {
 };
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
-var $elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
-		}
-	});
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
-var $elm$core$List$concatMap = F2(
-	function (f, list) {
-		return $elm$core$List$concat(
-			A2($elm$core$List$map, f, list));
-	});
-var $elm$json$Json$Encode$float = _Json_wrap;
-var $elm$json$Json$Encode$string = _Json_wrap;
-var $elm$core$String$fromFloat = _String_fromNumber;
-var $elm$core$String$concat = function (strings) {
-	return A2($elm$core$String$join, '', strings);
-};
-var $elm$core$Basics$round = _Basics_round;
-var $avh4$elm_color$Color$toCssString = function (_v0) {
-	var r = _v0.a;
-	var g = _v0.b;
-	var b = _v0.c;
-	var a = _v0.d;
-	var roundTo = function (x) {
-		return $elm$core$Basics$round(x * 1000) / 1000;
-	};
-	var pct = function (x) {
-		return $elm$core$Basics$round(x * 10000) / 100;
-	};
-	return $elm$core$String$concat(
-		_List_fromArray(
-			[
-				'rgba(',
-				$elm$core$String$fromFloat(
-				pct(r)),
-				'%,',
-				$elm$core$String$fromFloat(
-				pct(g)),
-				'%,',
-				$elm$core$String$fromFloat(
-				pct(b)),
-				'%,',
-				$elm$core$String$fromFloat(
-				roundTo(a)),
-				')'
-			]));
-};
-var $author$project$Anim$Internal$Properties$Color$toCssString = function (color) {
-	switch (color.$) {
-		case 'Hex':
-			var hex = color.a;
-			return hex;
-		case 'Rgb':
-			var rgb_ = color.a;
-			return 'rgb(' + ($elm$core$String$fromInt(rgb_.r) + (', ' + ($elm$core$String$fromInt(rgb_.g) + (', ' + ($elm$core$String$fromInt(rgb_.b) + ')')))));
-		case 'Rgba':
-			var rgba_ = color.a;
-			return 'rgba(' + ($elm$core$String$fromInt(rgba_.r) + (', ' + ($elm$core$String$fromInt(rgba_.g) + (', ' + ($elm$core$String$fromInt(rgba_.b) + (', ' + ($elm$core$String$fromFloat(rgba_.a) + ')')))))));
-		case 'Hsl':
-			var hsl_ = color.a;
-			return 'hsl(' + ($elm$core$String$fromFloat(hsl_.h) + (', ' + ($elm$core$String$fromFloat(hsl_.s) + ('%, ' + ($elm$core$String$fromFloat(hsl_.l) + '%)')))));
-		case 'Hsla':
-			var hsla_ = color.a;
-			return 'hsla(' + ($elm$core$String$fromFloat(hsla_.h) + (', ' + ($elm$core$String$fromFloat(hsla_.s) + ('%, ' + ($elm$core$String$fromFloat(hsla_.l) + ('%, ' + ($elm$core$String$fromFloat(hsla_.a) + ')')))))));
-		default:
-			var elmColor_ = color.a;
-			return $avh4$elm_color$Color$toCssString(elmColor_);
-	}
-};
-var $author$project$Anim$Internal$Properties$Opacity$toFloat = function (_v0) {
-	var o = _v0.a;
-	return o;
-};
-var $author$project$Anim$Internal$Properties$Rotate$Rotate = function (a) {
-	return {$: 'Rotate', a: a};
-};
-var $author$project$Anim$Internal$Properties$Rotate$default = $author$project$Anim$Internal$Properties$Rotate$Rotate(
-	{x: 0, y: 0, z: 0});
-var $author$project$Anim$Internal$Properties$Rotate$support = {
-	add: F2(
-		function (_v0, _v1) {
-			var a = _v0.a;
-			var b = _v1.a;
-			return $author$project$Anim$Internal$Properties$Rotate$Rotate(
-				{x: a.x + b.x, y: a.y + b.y, z: a.z + b.z});
-		}),
-	fromRecord: $author$project$Anim$Internal$Properties$Rotate$Rotate,
-	scale: F2(
-		function (factor, _v2) {
-			var angles = _v2.a;
-			return $author$project$Anim$Internal$Properties$Rotate$Rotate(
-				{x: angles.x * factor, y: angles.y * factor, z: angles.z * factor});
-		}),
-	subtract: F2(
-		function (_v3, _v4) {
-			var a = _v3.a;
-			var b = _v4.a;
-			return $author$project$Anim$Internal$Properties$Rotate$Rotate(
-				{x: a.x - b.x, y: a.y - b.y, z: a.z - b.z});
-		}),
-	toRecord: function (_v5) {
-		var angles = _v5.a;
-		return angles;
-	},
-	zero: $author$project$Anim$Internal$Properties$Rotate$default
-};
-var $author$project$Anim$Internal$Builders$Coordinate3D$toRecord = function (support) {
-	return support.toRecord;
-};
-var $author$project$Anim$Internal$Properties$Rotate$toRecord = $author$project$Anim$Internal$Builders$Coordinate3D$toRecord($author$project$Anim$Internal$Properties$Rotate$support);
-var $author$project$Anim$Internal$Properties$Scale$Scale = function (a) {
-	return {$: 'Scale', a: a};
-};
-var $author$project$Anim$Internal$Properties$Scale$default = $author$project$Anim$Internal$Properties$Scale$Scale(
-	{x: 1.0, y: 1.0, z: 1.0});
-var $author$project$Anim$Internal$Properties$Scale$support = {
-	add: F2(
-		function (_v0, _v1) {
-			var a = _v0.a;
-			var b = _v1.a;
-			return $author$project$Anim$Internal$Properties$Scale$Scale(
-				{x: a.x + b.x, y: a.y + b.y, z: a.z + b.z});
-		}),
-	fromRecord: $author$project$Anim$Internal$Properties$Scale$Scale,
-	scale: F2(
-		function (factor, _v2) {
-			var coords = _v2.a;
-			return $author$project$Anim$Internal$Properties$Scale$Scale(
-				{x: coords.x * factor, y: coords.y * factor, z: coords.z * factor});
-		}),
-	subtract: F2(
-		function (_v3, _v4) {
-			var a = _v3.a;
-			var b = _v4.a;
-			return $author$project$Anim$Internal$Properties$Scale$Scale(
-				{x: a.x - b.x, y: a.y - b.y, z: a.z - b.z});
-		}),
-	toRecord: function (_v5) {
-		var coords = _v5.a;
-		return coords;
-	},
-	zero: $author$project$Anim$Internal$Properties$Scale$default
-};
-var $author$project$Anim$Internal$Properties$Scale$toRecord = $author$project$Anim$Internal$Builders$Coordinate3D$toRecord($author$project$Anim$Internal$Properties$Scale$support);
-var $author$project$Anim$Internal$Properties$Size$toRecord = function (_v0) {
-	var dimensions = _v0.a;
-	return {height: dimensions.h, width: dimensions.w};
-};
-var $author$project$Anim$Internal$Properties$Translate$Translate = function (a) {
-	return {$: 'Translate', a: a};
-};
-var $author$project$Anim$Internal$Properties$Translate$default = $author$project$Anim$Internal$Properties$Translate$Translate(
-	{x: 0, y: 0, z: 0});
-var $author$project$Anim$Internal$Properties$Translate$support = {
-	add: F2(
-		function (_v0, _v1) {
-			var a = _v0.a;
-			var b = _v1.a;
-			return $author$project$Anim$Internal$Properties$Translate$Translate(
-				{x: a.x + b.x, y: a.y + b.y, z: a.z + b.z});
-		}),
-	fromRecord: $author$project$Anim$Internal$Properties$Translate$Translate,
-	scale: F2(
-		function (factor, _v2) {
-			var coords = _v2.a;
-			return $author$project$Anim$Internal$Properties$Translate$Translate(
-				{x: coords.x * factor, y: coords.y * factor, z: coords.z * factor});
-		}),
-	subtract: F2(
-		function (_v3, _v4) {
-			var a = _v3.a;
-			var b = _v4.a;
-			return $author$project$Anim$Internal$Properties$Translate$Translate(
-				{x: a.x - b.x, y: a.y - b.y, z: a.z - b.z});
-		}),
-	toRecord: function (_v5) {
-		var coords = _v5.a;
-		return coords;
-	},
-	zero: $author$project$Anim$Internal$Properties$Translate$default
-};
-var $author$project$Anim$Internal$Properties$Translate$toRecord = $author$project$Anim$Internal$Builders$Coordinate3D$toRecord($author$project$Anim$Internal$Properties$Translate$support);
-var $author$project$Anim$Internal$WAAPI$encodeProperty = function (property) {
-	switch (property.$) {
-		case 'ProcessedTranslateConfig':
-			var config = property.a;
-			var pos = $author$project$Anim$Internal$Properties$Translate$toRecord(config.end);
-			return _List_fromArray(
-				[
-					_Utils_Tuple2(
-					'x',
-					$elm$json$Json$Encode$float(pos.x)),
-					_Utils_Tuple2(
-					'y',
-					$elm$json$Json$Encode$float(pos.y)),
-					_Utils_Tuple2(
-					'z',
-					$elm$json$Json$Encode$float(pos.z))
-				]);
-		case 'ProcessedScaleConfig':
-			var config = property.a;
-			var scale = $author$project$Anim$Internal$Properties$Scale$toRecord(config.end);
-			return _List_fromArray(
-				[
-					_Utils_Tuple2(
-					'scaleX',
-					$elm$json$Json$Encode$float(scale.x)),
-					_Utils_Tuple2(
-					'scaleY',
-					$elm$json$Json$Encode$float(scale.y)),
-					_Utils_Tuple2(
-					'scaleZ',
-					$elm$json$Json$Encode$float(scale.z))
-				]);
-		case 'ProcessedRotateConfig':
-			var config = property.a;
-			var rotate = $author$project$Anim$Internal$Properties$Rotate$toRecord(config.end);
-			return _List_fromArray(
-				[
-					_Utils_Tuple2(
-					'rotateX',
-					$elm$json$Json$Encode$float(rotate.x)),
-					_Utils_Tuple2(
-					'rotateY',
-					$elm$json$Json$Encode$float(rotate.y)),
-					_Utils_Tuple2(
-					'rotateZ',
-					$elm$json$Json$Encode$float(rotate.z))
-				]);
-		case 'ProcessedOpacityConfig':
-			var config = property.a;
-			return _List_fromArray(
-				[
-					_Utils_Tuple2(
-					'opacity',
-					$elm$json$Json$Encode$float(
-						$author$project$Anim$Internal$Properties$Opacity$toFloat(config.end)))
-				]);
-		case 'ProcessedBackgroundColorConfig':
-			var config = property.a;
-			return _List_fromArray(
-				[
-					_Utils_Tuple2(
-					'backgroundColor',
-					$elm$json$Json$Encode$string(
-						$author$project$Anim$Internal$Properties$Color$toCssString(config.end)))
-				]);
-		case 'ProcessedFontColorConfig':
-			var config = property.a;
-			return _List_fromArray(
-				[
-					_Utils_Tuple2(
-					'color',
-					$elm$json$Json$Encode$string(
-						$author$project$Anim$Internal$Properties$Color$toCssString(config.end)))
-				]);
-		default:
-			var config = property.a;
-			var size = $author$project$Anim$Internal$Properties$Size$toRecord(config.end);
-			return _List_fromArray(
-				[
-					_Utils_Tuple2(
-					'width',
-					$elm$json$Json$Encode$float(size.width)),
-					_Utils_Tuple2(
-					'height',
-					$elm$json$Json$Encode$float(size.height))
-				]);
-	}
-};
-var $elm$json$Json$Encode$object = function (pairs) {
-	return _Json_wrap(
-		A3(
-			$elm$core$List$foldl,
-			F2(
-				function (_v0, obj) {
-					var k = _v0.a;
-					var v = _v0.b;
-					return A3(_Json_addField, k, v, obj);
-				}),
-			_Json_emptyObject(_Utils_Tuple0),
-			pairs));
-};
-var $author$project$Anim$Internal$WAAPI$encodeInitProperties = function (properties) {
-	var propertyFields = A2($elm$core$List$concatMap, $author$project$Anim$Internal$WAAPI$encodeProperty, properties);
-	return $elm$json$Json$Encode$object(propertyFields);
-};
 var $author$project$Anim$Internal$WAAPI$emptyElementStates = {backgroundColor: $elm$core$Maybe$Nothing, fontColor: $elm$core$Maybe$Nothing, opacity: $elm$core$Maybe$Nothing, rotate: $elm$core$Maybe$Nothing, scale: $elm$core$Maybe$Nothing, size: $elm$core$Maybe$Nothing, translate: $elm$core$Maybe$Nothing};
 var $author$project$Anim$Internal$WAAPI$extractElementEndStates = function (elementConfig) {
 	var extractPropertyEndState = F2(
@@ -5534,15 +5241,6 @@ var $author$project$Anim$Internal$WAAPI$extractElementEndStates = function (elem
 var $author$project$Anim$Internal$Builder$Once = {$: 'Once'};
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
 	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil});
-var $elm$json$Json$Encode$list = F2(
-	function (func, entries) {
-		return _Json_wrap(
-			A3(
-				$elm$core$List$foldl,
-				_Json_addEntry(func),
-				_Json_emptyArray(_Utils_Tuple0),
-				entries));
-	});
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
 		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
@@ -5652,7 +5350,6 @@ var $author$project$Anim$Internal$Builder$markDirty = function (_v0) {
 					data.elements)
 			}));
 };
-var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $elm$core$List$maybeCons = F3(
 	function (f, mx, xs) {
 		var _v0 = f(mx);
@@ -5840,6 +5537,7 @@ var $author$project$Anim$Internal$Properties$Color$floatMod = F2(
 	function (a, b) {
 		return a - ($elm$core$Basics$floor(a / b) * b);
 	});
+var $elm$core$Basics$round = _Basics_round;
 var $author$project$Anim$Internal$Properties$Color$hslToRgb = function (hslValue) {
 	var s = hslValue.s / 100;
 	var l = hslValue.l / 100;
@@ -5918,7 +5616,73 @@ var $author$project$Anim$Internal$Builders$Coordinate3D$distance = F3(
 			dx,
 			A2($elm$core$Basics$max, dy, dz));
 	});
+var $author$project$Anim$Internal$Properties$Rotate$Rotate = function (a) {
+	return {$: 'Rotate', a: a};
+};
+var $author$project$Anim$Internal$Properties$Rotate$default = $author$project$Anim$Internal$Properties$Rotate$Rotate(
+	{x: 0, y: 0, z: 0});
+var $author$project$Anim$Internal$Properties$Rotate$support = {
+	add: F2(
+		function (_v0, _v1) {
+			var a = _v0.a;
+			var b = _v1.a;
+			return $author$project$Anim$Internal$Properties$Rotate$Rotate(
+				{x: a.x + b.x, y: a.y + b.y, z: a.z + b.z});
+		}),
+	fromRecord: $author$project$Anim$Internal$Properties$Rotate$Rotate,
+	scale: F2(
+		function (factor, _v2) {
+			var angles = _v2.a;
+			return $author$project$Anim$Internal$Properties$Rotate$Rotate(
+				{x: angles.x * factor, y: angles.y * factor, z: angles.z * factor});
+		}),
+	subtract: F2(
+		function (_v3, _v4) {
+			var a = _v3.a;
+			var b = _v4.a;
+			return $author$project$Anim$Internal$Properties$Rotate$Rotate(
+				{x: a.x - b.x, y: a.y - b.y, z: a.z - b.z});
+		}),
+	toRecord: function (_v5) {
+		var angles = _v5.a;
+		return angles;
+	},
+	zero: $author$project$Anim$Internal$Properties$Rotate$default
+};
 var $author$project$Anim$Internal$Properties$Rotate$distance = $author$project$Anim$Internal$Builders$Coordinate3D$distance($author$project$Anim$Internal$Properties$Rotate$support);
+var $author$project$Anim$Internal$Properties$Scale$Scale = function (a) {
+	return {$: 'Scale', a: a};
+};
+var $author$project$Anim$Internal$Properties$Scale$default = $author$project$Anim$Internal$Properties$Scale$Scale(
+	{x: 1.0, y: 1.0, z: 1.0});
+var $author$project$Anim$Internal$Properties$Scale$support = {
+	add: F2(
+		function (_v0, _v1) {
+			var a = _v0.a;
+			var b = _v1.a;
+			return $author$project$Anim$Internal$Properties$Scale$Scale(
+				{x: a.x + b.x, y: a.y + b.y, z: a.z + b.z});
+		}),
+	fromRecord: $author$project$Anim$Internal$Properties$Scale$Scale,
+	scale: F2(
+		function (factor, _v2) {
+			var coords = _v2.a;
+			return $author$project$Anim$Internal$Properties$Scale$Scale(
+				{x: coords.x * factor, y: coords.y * factor, z: coords.z * factor});
+		}),
+	subtract: F2(
+		function (_v3, _v4) {
+			var a = _v3.a;
+			var b = _v4.a;
+			return $author$project$Anim$Internal$Properties$Scale$Scale(
+				{x: a.x - b.x, y: a.y - b.y, z: a.z - b.z});
+		}),
+	toRecord: function (_v5) {
+		var coords = _v5.a;
+		return coords;
+	},
+	zero: $author$project$Anim$Internal$Properties$Scale$default
+};
 var $author$project$Anim$Internal$Properties$Scale$distance = $author$project$Anim$Internal$Builders$Coordinate3D$distance($author$project$Anim$Internal$Properties$Scale$support);
 var $author$project$Anim$Internal$Properties$Size$distance = F2(
 	function (_v0, _v1) {
@@ -5928,6 +5692,39 @@ var $author$project$Anim$Internal$Properties$Size$distance = F2(
 		var dh = end.h - start.h;
 		return $elm$core$Basics$sqrt((dw * dw) + (dh * dh));
 	});
+var $author$project$Anim$Internal$Properties$Translate$Translate = function (a) {
+	return {$: 'Translate', a: a};
+};
+var $author$project$Anim$Internal$Properties$Translate$default = $author$project$Anim$Internal$Properties$Translate$Translate(
+	{x: 0, y: 0, z: 0});
+var $author$project$Anim$Internal$Properties$Translate$support = {
+	add: F2(
+		function (_v0, _v1) {
+			var a = _v0.a;
+			var b = _v1.a;
+			return $author$project$Anim$Internal$Properties$Translate$Translate(
+				{x: a.x + b.x, y: a.y + b.y, z: a.z + b.z});
+		}),
+	fromRecord: $author$project$Anim$Internal$Properties$Translate$Translate,
+	scale: F2(
+		function (factor, _v2) {
+			var coords = _v2.a;
+			return $author$project$Anim$Internal$Properties$Translate$Translate(
+				{x: coords.x * factor, y: coords.y * factor, z: coords.z * factor});
+		}),
+	subtract: F2(
+		function (_v3, _v4) {
+			var a = _v3.a;
+			var b = _v4.a;
+			return $author$project$Anim$Internal$Properties$Translate$Translate(
+				{x: a.x - b.x, y: a.y - b.y, z: a.z - b.z});
+		}),
+	toRecord: function (_v5) {
+		var coords = _v5.a;
+		return coords;
+	},
+	zero: $author$project$Anim$Internal$Properties$Translate$default
+};
 var $author$project$Anim$Internal$Properties$Translate$distance = $author$project$Anim$Internal$Builders$Coordinate3D$distance($author$project$Anim$Internal$Properties$Translate$support);
 var $author$project$Anim$Internal$Properties$Color$duration = F2(
 	function (distance_, timeSpec) {
@@ -6281,10 +6078,8 @@ var $author$project$Anim$Internal$Builder$processAnimationData = function (_v0) 
 var $author$project$Anim$Internal$WAAPI$init = F3(
 	function (commandPort, subscriptionPort, propertyInitializers) {
 		if (!propertyInitializers.b) {
-			return _Utils_Tuple2(
-				$author$project$Anim$Internal$WAAPI$AnimState(
-					{builder: $author$project$Anim$Internal$Builder$init, commandPort: commandPort, elementAnimations: $elm$core$Dict$empty, isRunning: false, pendingActions: $elm$core$Dict$empty, subscriptionPort: subscriptionPort}),
-				$elm$core$Platform$Cmd$none);
+			return $author$project$Anim$Internal$WAAPI$AnimState(
+				{builder: $author$project$Anim$Internal$Builder$init, commandPort: commandPort, elementAnimations: $elm$core$Dict$empty, isRunning: false, pendingActions: $elm$core$Dict$empty, subscriptionPort: subscriptionPort});
 		} else {
 			var _v1 = $author$project$Anim$Internal$WAAPI$AnimState(
 				{builder: $author$project$Anim$Internal$Builder$init, commandPort: commandPort, elementAnimations: $elm$core$Dict$empty, isRunning: false, pendingActions: $elm$core$Dict$empty, subscriptionPort: subscriptionPort});
@@ -6301,57 +6096,21 @@ var $author$project$Anim$Internal$WAAPI$init = F3(
 			var elementAnimations = A2(
 				$elm$core$Dict$map,
 				F2(
-					function (_v4, elementConfig) {
+					function (_v2, elementConfig) {
 						var endStates = $author$project$Anim$Internal$WAAPI$extractElementEndStates(elementConfig);
 						return {currentStates: endStates, properties: $elm$core$Dict$empty};
 					}),
 				processedData.elements);
-			var propertyUpdates = A2(
-				$elm$core$List$map,
-				function (_v3) {
-					var elementId = _v3.a;
-					var elementConfig = _v3.b;
-					return _Utils_Tuple2(
-						elementId,
-						$author$project$Anim$Internal$WAAPI$encodeInitProperties(elementConfig.properties));
-				},
-				$elm$core$Dict$toList(processedData.elements));
-			return _Utils_Tuple2(
-				$author$project$Anim$Internal$WAAPI$AnimState(
-					{
-						builder: $author$project$Anim$Internal$Builder$clearCurrentElement(
-							$author$project$Anim$Internal$Builder$markDirty(state.builder)),
-						commandPort: commandPort,
-						elementAnimations: elementAnimations,
-						isRunning: false,
-						pendingActions: $elm$core$Dict$empty,
-						subscriptionPort: subscriptionPort
-					}),
-				commandPort(
-					$elm$json$Json$Encode$object(
-						_List_fromArray(
-							[
-								_Utils_Tuple2(
-								'type',
-								$elm$json$Json$Encode$string('setProperties')),
-								_Utils_Tuple2(
-								'updates',
-								A2(
-									$elm$json$Json$Encode$list,
-									function (_v2) {
-										var elementId = _v2.a;
-										var props = _v2.b;
-										return $elm$json$Json$Encode$object(
-											_List_fromArray(
-												[
-													_Utils_Tuple2(
-													'elementId',
-													$elm$json$Json$Encode$string(elementId)),
-													_Utils_Tuple2('properties', props)
-												]));
-									},
-									propertyUpdates))
-							]))));
+			return $author$project$Anim$Internal$WAAPI$AnimState(
+				{
+					builder: $author$project$Anim$Internal$Builder$clearCurrentElement(
+						$author$project$Anim$Internal$Builder$markDirty(state.builder)),
+					commandPort: commandPort,
+					elementAnimations: elementAnimations,
+					isRunning: false,
+					pendingActions: $elm$core$Dict$empty,
+					subscriptionPort: subscriptionPort
+				});
 		}
 	});
 var $author$project$Anim$Engine$WAAPI$init = $author$project$Anim$Internal$WAAPI$init;
@@ -7010,35 +6769,27 @@ var $author$project$Anim$Property$Opacity$init = F3(
 var $elm$core$Process$sleep = _Process_sleep;
 var $author$project$Engines$WAAPI$BasicUsage$Main$waapiCommand = _Platform_outgoingPort('waapiCommand', $elm$core$Basics$identity);
 var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $author$project$Engines$WAAPI$BasicUsage$Main$waapiSubscriptionsAnd = _Platform_incomingPort('waapiSubscriptionsAnd', $elm$json$Json$Decode$value);
-var $author$project$Engines$WAAPI$BasicUsage$Main$init = function () {
-	var _v0 = A3(
-		$author$project$Anim$Engine$WAAPI$init,
-		$author$project$Engines$WAAPI$BasicUsage$Main$waapiCommand,
-		$author$project$Engines$WAAPI$BasicUsage$Main$waapiSubscriptionsAnd,
-		_List_fromArray(
-			[
-				A2($author$project$Anim$Property$Opacity$init, $author$project$Engines$WAAPI$BasicUsage$Main$elementId, 0)
-			]));
-	var initialAnimState = _v0.a;
-	var initCmd = _v0.b;
-	return _Utils_Tuple2(
-		{animState: initialAnimState},
-		$elm$core$Platform$Cmd$batch(
+var $author$project$Engines$WAAPI$BasicUsage$Main$waapiEvent = _Platform_incomingPort('waapiEvent', $elm$json$Json$Decode$value);
+var $author$project$Engines$WAAPI$BasicUsage$Main$init = _Utils_Tuple2(
+	{
+		animState: A3(
+			$author$project$Anim$Engine$WAAPI$init,
+			$author$project$Engines$WAAPI$BasicUsage$Main$waapiCommand,
+			$author$project$Engines$WAAPI$BasicUsage$Main$waapiEvent,
 			_List_fromArray(
 				[
-					initCmd,
-					A2(
-					$elm$core$Task$perform,
-					$elm$core$Basics$always($author$project$Engines$WAAPI$BasicUsage$Main$StartAnimation),
-					$elm$core$Process$sleep(50))
-				])));
-}();
+					A2($author$project$Anim$Property$Opacity$init, $author$project$Engines$WAAPI$BasicUsage$Main$elementId, 0)
+				]))
+	},
+	A2(
+		$elm$core$Task$perform,
+		$elm$core$Basics$always($author$project$Engines$WAAPI$BasicUsage$Main$StartAnimation),
+		$elm$core$Process$sleep(50)));
 var $author$project$Engines$WAAPI$BasicUsage$Main$GotWaapiMsg = function (a) {
 	return {$: 'GotWaapiMsg', a: a};
 };
-var $author$project$Anim$Internal$WAAPI$Event = function (a) {
-	return {$: 'Event', a: a};
+var $author$project$Anim$Internal$WAAPI$AnimEvent = function (a) {
+	return {$: 'AnimEvent', a: a};
 };
 var $author$project$Anim$Internal$WAAPI$PropertyUpdate = function (a) {
 	return {$: 'PropertyUpdate', a: a};
@@ -7057,7 +6808,7 @@ var $author$project$Anim$Internal$WAAPI$subscriptions = F2(
 					jsonValue);
 				if ((_v1.$ === 'Ok') && (_v1.a === 'animationUpdate')) {
 					return toMsg(
-						$author$project$Anim$Internal$WAAPI$Event(jsonValue));
+						$author$project$Anim$Internal$WAAPI$AnimEvent(jsonValue));
 				} else {
 					return toMsg(
 						$author$project$Anim$Internal$WAAPI$PropertyUpdate(jsonValue));
@@ -7116,6 +6867,7 @@ var $author$project$Anim$Internal$Builder$addAnimationToHistory = F4(
 			$author$project$Anim$Internal$Builder$AnimBuilder(updatedData),
 			newAnimationId);
 	});
+var $elm$json$Json$Encode$float = _Json_wrap;
 var $author$project$Anim$Internal$Easing$customBackOut = F2(
 	function (strength, t) {
 		var s = strength;
@@ -7154,6 +6906,17 @@ var $elm$core$List$drop = F2(
 		}
 	});
 var $elm$core$Basics$ge = _Utils_ge;
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
 var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$core$Basics$pow = _Basics_pow;
 var $elm$core$List$sum = function (numbers) {
@@ -8523,6 +8286,17 @@ var $author$project$Anim$Internal$WAAPI$isComplexEasing = function (easing_) {
 			return false;
 	}
 };
+var $elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				$elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(_Utils_Tuple0),
+				entries));
+	});
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $elm$core$String$fromFloat = _String_fromNumber;
 var $author$project$Anim$Internal$Easing$toWebAnimations = function (easing) {
 	switch (easing.$) {
 		case 'CubicBezier':
@@ -8655,6 +8429,19 @@ var $author$project$Anim$Internal$WAAPI$encodeEasingWithKeyframes = F2(
 			]);
 	});
 var $elm$json$Json$Encode$int = _Json_wrap;
+var $elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, obj) {
+					var k = _v0.a;
+					var v = _v0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
 var $author$project$Anim$Internal$WAAPI$propertyTypeString = function (property) {
 	switch (property.$) {
 		case 'ProcessedTranslateConfig':
@@ -8672,6 +8459,64 @@ var $author$project$Anim$Internal$WAAPI$propertyTypeString = function (property)
 		default:
 			return 'size';
 	}
+};
+var $elm$core$String$concat = function (strings) {
+	return A2($elm$core$String$join, '', strings);
+};
+var $avh4$elm_color$Color$toCssString = function (_v0) {
+	var r = _v0.a;
+	var g = _v0.b;
+	var b = _v0.c;
+	var a = _v0.d;
+	var roundTo = function (x) {
+		return $elm$core$Basics$round(x * 1000) / 1000;
+	};
+	var pct = function (x) {
+		return $elm$core$Basics$round(x * 10000) / 100;
+	};
+	return $elm$core$String$concat(
+		_List_fromArray(
+			[
+				'rgba(',
+				$elm$core$String$fromFloat(
+				pct(r)),
+				'%,',
+				$elm$core$String$fromFloat(
+				pct(g)),
+				'%,',
+				$elm$core$String$fromFloat(
+				pct(b)),
+				'%,',
+				$elm$core$String$fromFloat(
+				roundTo(a)),
+				')'
+			]));
+};
+var $author$project$Anim$Internal$Properties$Color$toCssString = function (color) {
+	switch (color.$) {
+		case 'Hex':
+			var hex = color.a;
+			return hex;
+		case 'Rgb':
+			var rgb_ = color.a;
+			return 'rgb(' + ($elm$core$String$fromInt(rgb_.r) + (', ' + ($elm$core$String$fromInt(rgb_.g) + (', ' + ($elm$core$String$fromInt(rgb_.b) + ')')))));
+		case 'Rgba':
+			var rgba_ = color.a;
+			return 'rgba(' + ($elm$core$String$fromInt(rgba_.r) + (', ' + ($elm$core$String$fromInt(rgba_.g) + (', ' + ($elm$core$String$fromInt(rgba_.b) + (', ' + ($elm$core$String$fromFloat(rgba_.a) + ')')))))));
+		case 'Hsl':
+			var hsl_ = color.a;
+			return 'hsl(' + ($elm$core$String$fromFloat(hsl_.h) + (', ' + ($elm$core$String$fromFloat(hsl_.s) + ('%, ' + ($elm$core$String$fromFloat(hsl_.l) + '%)')))));
+		case 'Hsla':
+			var hsla_ = color.a;
+			return 'hsla(' + ($elm$core$String$fromFloat(hsla_.h) + (', ' + ($elm$core$String$fromFloat(hsla_.s) + ('%, ' + ($elm$core$String$fromFloat(hsla_.l) + ('%, ' + ($elm$core$String$fromFloat(hsla_.a) + ')')))))));
+		default:
+			var elmColor_ = color.a;
+			return $avh4$elm_color$Color$toCssString(elmColor_);
+	}
+};
+var $author$project$Anim$Internal$Properties$Opacity$toFloat = function (_v0) {
+	var o = _v0.a;
+	return o;
 };
 var $author$project$Anim$Internal$Builders$Coordinate3D$toTriple = F2(
 	function (support, coord) {
@@ -9252,6 +9097,8 @@ var $author$project$Engines$WAAPI$BasicUsage$Main$fadeIn = A2(
 			$elm$core$Basics$composeR,
 			$author$project$Anim$Property$Opacity$duration(5000),
 			$author$project$Anim$Property$Opacity$build)));
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Anim$Engine$WAAPI$Canceled = function (a) {
 	return {$: 'Canceled', a: a};
 };
@@ -10360,16 +10207,20 @@ var $author$project$Anim$Internal$Properties$Rotate$toString = function (_v0) {
 	return $elm$core$String$fromFloat(angles.z);
 };
 var $author$project$Anim$Internal$Properties$Rotate$toCssString = function (rotate) {
-	return $author$project$Anim$Internal$Properties$Rotate$toString(rotate) + 'deg';
+	return 'rotateZ(' + ($author$project$Anim$Internal$Properties$Rotate$toString(rotate) + 'deg)');
 };
 var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) {
 	var x = _v0.a.x;
 	var y = _v0.a.y;
-	return $elm$core$String$fromFloat(x) + (',' + $elm$core$String$fromFloat(y));
+	return 'scale(' + ($elm$core$String$fromFloat(x) + (', ' + ($elm$core$String$fromFloat(y) + ')')));
 };
 var $author$project$Anim$Internal$Properties$Translate$toCssString = function (_v0) {
 	var coords = _v0.a;
-	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px'))));
+	return 'translate3d(' + ($elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px)')))));
+};
+var $author$project$Anim$Internal$Properties$Size$toRecord = function (_v0) {
+	var dimensions = _v0.a;
+	return {height: dimensions.h, width: dimensions.w};
 };
 var $author$project$Anim$Internal$Properties$Opacity$toString = function (_v0) {
 	var o = _v0.a;

@@ -154,7 +154,7 @@ toString (Translate coords) =
 
 toCssString : Translate -> String
 toCssString (Translate coords) =
-    String.fromFloat coords.x ++ "px, " ++ String.fromFloat coords.y ++ "px, " ++ String.fromFloat coords.z ++ "px"
+    "translate3d(" ++ String.fromFloat coords.x ++ "px, " ++ String.fromFloat coords.y ++ "px, " ++ String.fromFloat coords.z ++ "px)"
 
 
 encode : Translate -> Encode.Value

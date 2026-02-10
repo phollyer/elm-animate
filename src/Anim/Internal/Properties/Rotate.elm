@@ -81,7 +81,7 @@ toString (Rotate angles) =
 
 toCssString : Rotate -> String
 toCssString rotate =
-    toString rotate ++ "deg"
+    "rotateZ(" ++ toString rotate ++ "deg)"
 
 
 to3DCssString : Rotate -> String

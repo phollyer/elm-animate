@@ -228,7 +228,7 @@ view model =
                        , Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "background-color" "#FF5733"
-                       , Html.Attributes.style "position" "relative"
+                       , Html.Attributes.style "position" "absolute"
                        , Html.Attributes.style "margin-top" "20px"
                        ]
                 )

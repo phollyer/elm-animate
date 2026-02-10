@@ -55,19 +55,11 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    let
-        -- Initialize the starting state for our element
-        ( initialAnimState, initCmd ) =
+    ( { animState =
             WAAPI.init waapiCommand waapiEvent <|
                 [ Opacity.init elementId 0 ]
-    in
-    ( { animState = initialAnimState }
-    , Cmd.batch
-        [ initCmd
-
-        -- Simulate a user action to start the animation after a short delay
-        , Process.sleep 50 |> Task.perform (always StartAnimation)
-        ]
+      }
+    , Process.sleep 50 |> Task.perform (always StartAnimation)
     )
 
 

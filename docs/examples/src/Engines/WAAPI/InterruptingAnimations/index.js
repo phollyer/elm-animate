@@ -10389,16 +10389,16 @@ var $author$project$Anim$Internal$Properties$Rotate$toString = function (_v0) {
 	return $elm$core$String$fromFloat(angles.z);
 };
 var $author$project$Anim$Internal$Properties$Rotate$toCssString = function (rotate) {
-	return $author$project$Anim$Internal$Properties$Rotate$toString(rotate) + 'deg';
+	return 'rotateZ(' + ($author$project$Anim$Internal$Properties$Rotate$toString(rotate) + 'deg)');
 };
 var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) {
 	var x = _v0.a.x;
 	var y = _v0.a.y;
-	return $elm$core$String$fromFloat(x) + (',' + $elm$core$String$fromFloat(y));
+	return 'scale(' + ($elm$core$String$fromFloat(x) + (', ' + ($elm$core$String$fromFloat(y) + ')')));
 };
 var $author$project$Anim$Internal$Properties$Translate$toCssString = function (_v0) {
 	var coords = _v0.a;
-	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px'))));
+	return 'translate3d(' + ($elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px)')))));
 };
 var $author$project$Anim$Internal$Properties$Size$toRecord = function (_v0) {
 	var dimensions = _v0.a;
@@ -10578,7 +10578,7 @@ var $author$project$Engines$WAAPI$InterruptingAnimations$Main$view = function (m
 					'height',
 					$elm$core$String$fromFloat($author$project$Engines$WAAPI$InterruptingAnimations$Main$boxWidth) + 'px'),
 					A2($elm$html$Html$Attributes$style, 'background-color', '#FF5733'),
-					A2($elm$html$Html$Attributes$style, 'position', 'relative'),
+					A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
 					A2($elm$html$Html$Attributes$style, 'margin-top', '20px')
 				])),
 		_List_Nil);

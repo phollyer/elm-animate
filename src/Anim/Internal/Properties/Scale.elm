@@ -67,7 +67,7 @@ toString (Scale { x, y, z }) =
 
 toCssString : Scale -> String
 toCssString (Scale { x, y }) =
-    String.fromFloat x ++ "," ++ String.fromFloat y
+    "scale(" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")"
 
 
 
