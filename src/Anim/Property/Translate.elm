@@ -85,16 +85,6 @@ import Anim.Internal.Builders.Translate as TB
 import Anim.Internal.Properties.Translate as T
 
 
-{-| The default translate value used when no initial value is specified:
-
-`{ x = 0, y = 0, z = 0 }` (no translation).
-
--}
-default : { x : Float, y : Float, z : Float }
-default =
-    { x = 0, y = 0, z = 0 }
-
-
 {-| Type alias for the internal `TranslateBuilder`.
 -}
 type alias Builder =

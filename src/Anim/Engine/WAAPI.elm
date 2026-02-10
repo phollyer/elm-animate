@@ -250,20 +250,18 @@ Takes the command port, subscription port, and optional property initializers:
         , Opacity.init "element-id" 1.0
         ]
 
-**Important:** Use [attributes](#attributes) in your view to apply initial values
-synchronously. This prevents a flash of unstyled content before JavaScript
-processes the port command.
+Always returns `Cmd.none` - use [attributes](#attributes) in your view to apply
+initial values as CSS inline styles.
 
 -}
-init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
+init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> AnimState msg
 init =
     Internal.init
 
 
 {-| Get HTML attributes that apply the current animation state as inline styles.
 
-Use this in your view to ensure initial values from `init` are rendered synchronously,
-avoiding a flash of unstyled content before JavaScript processes the port command.
+Use this in your view to apply initial values and maintain state between animations:
 
     view model =
         div

@@ -71,16 +71,6 @@ import Anim.Internal.Builders.Rotate as RB
 import Anim.Internal.Properties.Rotate as R
 
 
-{-| The default rotation value used when no initial value is specified:
-
-`{ x = 0, y = 0, z = 0 }` (no rotation).
-
--}
-default : { x : Float, y : Float, z : Float }
-default =
-    { x = 0, y = 0, z = 0 }
-
-
 {-| Type alias for the internal `RotateBuilder`.
 -}
 type alias Builder =

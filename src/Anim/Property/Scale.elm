@@ -72,16 +72,6 @@ import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Scale as SB
 
 
-{-| The default scale value used when no initial value is specified:
-
-`{ x = 1, y = 1, z = 1 }` (no scaling).
-
--}
-default : { x : Float, y : Float, z : Float }
-default =
-    { x = 1, y = 1, z = 1 }
-
-
 {-| Type alias for the internal `ScaleBuilder`.
 -}
 type alias Builder =

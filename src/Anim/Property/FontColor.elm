@@ -65,16 +65,6 @@ import Anim.Internal.Builders.FontColor as CB
 import Anim.Internal.Properties.Color exposing (Color(..))
 
 
-{-| The default font color used when no initial value is specified:
-
-`rgb(0, 0, 0)` (opaque black).
-
--}
-default : Color
-default =
-    Rgba { r = 0, g = 0, b = 0, a = 1 }
-
-
 {-| Type alias for the internal `ColorBuilder`.
 -}
 type alias Builder =

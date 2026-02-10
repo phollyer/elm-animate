@@ -90,6 +90,23 @@ For any animations that don't need state tracking:
                 >> Translate.build
     ```
 
+
+
+## Interrupting Animations
+
+Start a new animation at any time — the WAAPI Engine handles smooth transitions:
+
+??? example "View Source Code"
+
+    ```elm
+    --8<-- "docs/examples/src/Engines/WAAPI/InterruptingAnimations/Main.elm"
+    ```
+
+[:material-play-circle: Run this example](../examples/src/Engines/WAAPI/InterruptingAnimations/index.html){ .md-button target="_blank" }
+
+The new animation starts from the current position, not the original start position.
+
+
 ## Event Handling
 
 The WAAPI engine uses a subscription-based event pattern. The `subscriptions` function handles incoming messages from JavaScript, and `update` processes them, returning the updated `AnimState` and a list of `AnimEvent`s:
@@ -318,7 +335,7 @@ Check if animations are running:
 
 ## Initializing Properties
 
-Set initial property values when creating your `AnimState`. Use `WAAPI.attributes` in your view to apply these values synchronously, preventing a flash of unstyled content:
+Set initial property values when creating your `AnimState`. Use `WAAPI.attributes` in your view to apply these values as CSS inline styles:
 
 ??? example "View Source Code"
 
@@ -326,13 +343,13 @@ Set initial property values when creating your `AnimState`. Use `WAAPI.attribute
     init : ( Model, Cmd Msg )
     init =
         let
-            ( initialAnimState, initCmd ) =
+            ( initialAnimState, _ ) =
                 WAAPI.init waapiCommand waapiEvent
                     [ Translate.initXY "element-id" 100 50
                     , Opacity.init "element-id" 0
                     ]
         in
-        ( { animState = initialAnimState }, initCmd )
+        ( { animState = initialAnimState }, Cmd.none )
 
 
     view model =
@@ -342,6 +359,8 @@ Set initial property values when creating your `AnimState`. Use `WAAPI.attribute
             )
             [ text "Content" ]
     ```
+
+    **Note:** `init` always returns `Cmd.none`. The `attributes` function handles applying initial values.
 
 ## 3D Transforms and Perspective
 
@@ -362,7 +381,7 @@ The WAAPI Engine fully supports 3D animations. See [3D Animations](../concepts/3
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `init` | `(Value -> Cmd msg) -> ((Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )` | Create initial animation state with ports and optional property initializers |
+| `init` | `(Value -> Cmd msg) -> ((Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )` | Create initial animation state with ports and optional property initializers. Always returns `Cmd.none` |
 | `animate` | `AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )` | Execute animation with state tracking |
 | `fireAndForget` | `(Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Execute animation without state tracking |
 | `update` | `AnimMsg -> AnimState msg -> ( AnimState msg, List AnimEvent )` | Process WAAPI messages and return events |

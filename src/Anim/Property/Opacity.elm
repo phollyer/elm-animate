@@ -63,16 +63,6 @@ import Anim.Internal.Builders.Opacity as OB
 import Anim.Internal.Properties.Opacity as O
 
 
-{-| The default opacity value used when no initial value is specified:
-
-`1.0` (fully opaque).
-
--}
-default : Float
-default =
-    1.0
-
-
 {-| Type alias for the internal `OpacityBuilder`.
 -}
 type alias Builder =

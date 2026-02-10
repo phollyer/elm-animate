@@ -65,16 +65,6 @@ import Anim.Internal.Builders.BackgroundColor as CB
 import Anim.Internal.Properties.Color exposing (Color(..))
 
 
-{-| The default background color used when no initial value is specified:
-
-`rgba(255, 255, 255, 0)` (fully transparent white).
-
--}
-default : Color
-default =
-    Rgba { r = 255, g = 255, b = 255, a = 0 }
-
-
 {-| Type alias for the internal `ColorBuilder`.
 -}
 type alias Builder =

@@ -360,15 +360,20 @@ animate (AnimState state) buildAnimation =
 
 {-| Initialize animation state.
 
-Pass an empty list for empty state (returns `Cmd.none`), or property initializers
-to set initial values (sends property updates to JS).
+Pass an empty list for empty state, or property initializers to set up initial
+element state. Always returns `Cmd.none` - use `attributes` in your view to apply
+initial CSS values.
 
 -}
-init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
+init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> AnimState msg
 init commandPort subscriptionPort propertyInitializers =
+    -- ARCHITECTURE: No Cmd for JS - the `attributes` function applies initial CSS
+    -- values in the view. JS only needs to know about animations.
+    -- If there are no property initializers, we can skip all the Builder processing
+    -- and just return empty state.
     case propertyInitializers of
         [] ->
-            ( AnimState
+            AnimState
                 { elementAnimations = Dict.empty
                 , isRunning = False
                 , builder = Builder.init
@@ -376,8 +381,6 @@ init commandPort subscriptionPort propertyInitializers =
                 , subscriptionPort = subscriptionPort
                 , pendingActions = Dict.empty
                 }
-            , Cmd.none
-            )
 
         _ ->
             let
@@ -398,10 +401,13 @@ init commandPort subscriptionPort propertyInitializers =
                         state.builder
                         propertyInitializers
 
+                -- Process the builder to extract element configs
                 processedData =
                     Builder.processAnimationData configuredBuilder
 
-                -- Extract end states (which are same as start states for init)
+                -- Extract end states
+                -- which are the same as the start states for init
+                -- since there's no animation
                 elementAnimations =
                     processedData.elements
                         |> Dict.map
@@ -414,19 +420,8 @@ init commandPort subscriptionPort propertyInitializers =
                                 , properties = Dict.empty -- No property tracking for init
                                 }
                             )
-
-                -- Create property updates for JS (without creating WAAPI animations)
-                -- ARCHITECTURE: Initialize ALL properties (transforms, opacity, colors, size)
-                -- This ensures inline styles, JS state, and Elm state all start synchronized
-                propertyUpdates =
-                    processedData.elements
-                        |> Dict.toList
-                        |> List.map
-                            (\( elementId, elementConfig ) ->
-                                ( elementId, encodeInitProperties elementConfig.properties )
-                            )
             in
-            ( AnimState
+            AnimState
                 { elementAnimations = elementAnimations
                 , isRunning = False
                 , builder =
@@ -437,21 +432,6 @@ init commandPort subscriptionPort propertyInitializers =
                 , subscriptionPort = subscriptionPort
                 , pendingActions = Dict.empty
                 }
-            , commandPort <|
-                Encode.object
-                    [ ( "type", Encode.string "setProperties" )
-                    , ( "updates"
-                      , Encode.list
-                            (\( elementId, props ) ->
-                                Encode.object
-                                    [ ( "elementId", Encode.string elementId )
-                                    , ( "properties", props )
-                                    ]
-                            )
-                            propertyUpdates
-                      )
-                    ]
-            )
 
 
 propertyTypeString : Builder.ProcessedPropertyConfig -> String
