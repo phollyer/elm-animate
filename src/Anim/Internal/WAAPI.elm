@@ -207,20 +207,52 @@ fireAndForget portFunction buildAnimation =
 animate : AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
 animate (AnimState state) buildAnimation =
     let
+        -- DEBUG: Log current states that will be used as baselines
         _ =
-            Debug.log "Animating with current state:" state
+            state.elementAnimations
+                |> Dict.toList
+                |> List.map
+                    (\( elId, anim ) ->
+                        ( elId
+                        , anim.currentStates.translate
+                            |> Maybe.map Translate.toTriple
+                        )
+                    )
+                |> Debug.log "[animate] Current states (baselines):"
 
         -- Inject current animated states as baselines, then apply user configuration
         configuredBuilder =
             state.builder
-                |> Debug.log "Builder before injecting current states:"
                 |> Builder.injectCurrentStates state.elementAnimations
-                |> Debug.log "Builder after injecting current states:"
                 |> buildAnimation
-                |> Debug.log "Builder after user configuration:"
 
         processedData =
             Builder.processAnimationData configuredBuilder
+
+        -- DEBUG: Log processed animation data (start/end)
+        _ =
+            processedData.elements
+                |> Dict.toList
+                |> List.map
+                    (\( elId, cfg ) ->
+                        cfg.properties
+                            |> List.filterMap
+                                (\prop ->
+                                    case prop of
+                                        Builder.ProcessedTranslateConfig tc ->
+                                            Just
+                                                ( elId
+                                                , { start = Maybe.map Translate.toTriple tc.start
+                                                  , end = Translate.toTriple tc.end
+                                                  }
+                                                )
+
+                                        _ ->
+                                            Nothing
+                                )
+                    )
+                |> List.concat
+                |> Debug.log "[animate] Processed translate (start->end):"
 
         -- Create element animations from processed data with property-level versioning
         newElementAnimations =
@@ -228,9 +260,6 @@ animate (AnimState state) buildAnimation =
                 |> Dict.map
                     (\elementId elementConfig ->
                         let
-                            _ =
-                                Debug.log "Processing element:" ( elementId, elementConfig )
-
                             -- Get existing element animation to preserve states and versions for non-animated properties
                             existingAnimation =
                                 Dict.get elementId state.elementAnimations
@@ -265,7 +294,6 @@ animate (AnimState state) buildAnimation =
                                         , opacity = orElse animationEndStates.opacity base.opacity
                                         , size = orElse animationEndStates.size base.size
                                         }
-                                            |> Debug.log "Merged current states"
 
                                     Nothing ->
                                         -- First animation: use end states directly
@@ -665,6 +693,14 @@ updatePropertyUpdate jsonValue (AnimState state) =
     case Decode.decodeValue animationUpdateDecoder jsonValue of
         Ok animationUpdate ->
             let
+                -- DEBUG: Log received position update from JS
+                _ =
+                    Debug.log "[updatePropertyUpdate] Received from JS:"
+                        { elementId = animationUpdate.elementId
+                        , translate = ( animationUpdate.translateX, animationUpdate.translateY, animationUpdate.translateZ )
+                        , isAnimating = animationUpdate.isAnimating
+                        }
+
                 updatedAnimations =
                     Dict.update animationUpdate.elementId
                         (Maybe.map (updateElementAnimation animationUpdate))

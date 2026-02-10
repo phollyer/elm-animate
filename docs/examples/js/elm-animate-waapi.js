@@ -630,6 +630,7 @@ window.ElmAnimateWAAPI = (function () {
                         isAnimating: true,
                         propertyVersions: propertyVersions
                     };
+                    console.log('[JS propertyUpdate] Sending:', elementId, 'translate:', propertyData.translate);
                     sendEventToElm('propertyUpdate', elementId, propertyData);
                 }
                 lastTime = now;
@@ -797,7 +798,7 @@ window.ElmAnimateWAAPI = (function () {
             const eventData = {
                 type: eventType,
                 elementId: elementId,
-                payload: payload || null
+                ...(payload || {})
             };
             window.app.ports.waapiEvent.send(eventData);
         }
@@ -1045,7 +1046,6 @@ window.ElmAnimateWAAPI = (function () {
                     }
 
                     const commandType = commandData.type;
-                    console.log('ElmAnimateWAAPI: Received command:', commandType, commandData);
                     switch (commandType) {
                         case 'animate':
                             // Animation data with elements

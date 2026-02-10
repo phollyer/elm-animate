@@ -6867,6 +6867,17 @@ var $author$project$Anim$Internal$Builder$addAnimationToHistory = F4(
 			$author$project$Anim$Internal$Builder$AnimBuilder(updatedData),
 			newAnimationId);
 	});
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
 var $elm$json$Json$Encode$float = _Json_wrap;
 var $author$project$Anim$Internal$Easing$customBackOut = F2(
 	function (strength, t) {
@@ -6906,17 +6917,6 @@ var $elm$core$List$drop = F2(
 		}
 	});
 var $elm$core$Basics$ge = _Utils_ge;
-var $elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
-		}
-	});
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
 var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$core$Basics$pow = _Basics_pow;
 var $elm$core$List$sum = function (numbers) {
@@ -8929,17 +8929,8 @@ var $elm$core$Dict$union = F2(
 var $author$project$Anim$Internal$WAAPI$animate = F2(
 	function (_v0, buildAnimation) {
 		var state = _v0.a;
-		var configuredBuilder = A2(
-			$elm$core$Debug$log,
-			'Builder after user configuration:',
-			buildAnimation(
-				A2(
-					$elm$core$Debug$log,
-					'Builder after injecting current states:',
-					A2(
-						$author$project$Anim$Internal$Builder$injectCurrentStates,
-						state.elementAnimations,
-						A2($elm$core$Debug$log, 'Builder before injecting current states:', state.builder)))));
+		var configuredBuilder = buildAnimation(
+			A2($author$project$Anim$Internal$Builder$injectCurrentStates, state.elementAnimations, state.builder));
 		var processedData = $author$project$Anim$Internal$Builder$processAnimationData(configuredBuilder);
 		var newElementAnimations = A2(
 			$elm$core$Dict$map,
@@ -8991,26 +8982,19 @@ var $author$project$Anim$Internal$WAAPI$animate = F2(
 									}
 								});
 							var base = existing.currentStates;
-							return A2(
-								$elm$core$Debug$log,
-								'Merged current states',
-								{
-									backgroundColor: A2(orElse, animationEndStates.backgroundColor, base.backgroundColor),
-									fontColor: A2(orElse, animationEndStates.fontColor, base.fontColor),
-									opacity: A2(orElse, animationEndStates.opacity, base.opacity),
-									rotate: A2(orElse, animationEndStates.rotate, base.rotate),
-									scale: A2(orElse, animationEndStates.scale, base.scale),
-									size: A2(orElse, animationEndStates.size, base.size),
-									translate: A2(orElse, animationEndStates.translate, base.translate)
-								});
+							return {
+								backgroundColor: A2(orElse, animationEndStates.backgroundColor, base.backgroundColor),
+								fontColor: A2(orElse, animationEndStates.fontColor, base.fontColor),
+								opacity: A2(orElse, animationEndStates.opacity, base.opacity),
+								rotate: A2(orElse, animationEndStates.rotate, base.rotate),
+								scale: A2(orElse, animationEndStates.scale, base.scale),
+								size: A2(orElse, animationEndStates.size, base.size),
+								translate: A2(orElse, animationEndStates.translate, base.translate)
+							};
 						} else {
 							return animationEndStates;
 						}
 					}();
-					var _v4 = A2(
-						$elm$core$Debug$log,
-						'Processing element:',
-						_Utils_Tuple2(elementId, elementConfig));
 					return {currentStates: currentStates, properties: mergedPropertyVersions};
 				}),
 			processedData.elements);
@@ -9018,11 +9002,11 @@ var $author$project$Anim$Internal$WAAPI$animate = F2(
 			$elm$core$Dict$foldl,
 			F3(
 				function (elementId, newAnim, acc) {
-					var _v3 = A2($elm$core$Dict$get, elementId, acc);
-					if (_v3.$ === 'Nothing') {
+					var _v7 = A2($elm$core$Dict$get, elementId, acc);
+					if (_v7.$ === 'Nothing') {
 						return A3($elm$core$Dict$insert, elementId, newAnim, acc);
 					} else {
-						var existingAnim = _v3.a;
+						var existingAnim = _v7.a;
 						var mergedProperties = A2($elm$core$Dict$union, newAnim.properties, existingAnim.properties);
 						return A2(
 							$elm$core$Debug$log,
@@ -9039,12 +9023,52 @@ var $author$project$Anim$Internal$WAAPI$animate = F2(
 		var builderWithHistory = A3(
 			$elm$core$Dict$foldl,
 			F3(
-				function (elementId, _v2, accBuilder) {
+				function (elementId, _v6, accBuilder) {
 					return A4($author$project$Anim$Internal$Builder$addAnimationToHistory, elementId, processedData, $elm$core$Maybe$Nothing, accBuilder).a;
 				}),
 			configuredBuilder,
 			processedData.elements);
-		var _v1 = A2($elm$core$Debug$log, 'Animating with current state:', state);
+		var _v1 = A2(
+			$elm$core$Debug$log,
+			'[animate] Current states (baselines):',
+			A2(
+				$elm$core$List$map,
+				function (_v2) {
+					var elId = _v2.a;
+					var anim = _v2.b;
+					return _Utils_Tuple2(
+						elId,
+						A2($elm$core$Maybe$map, $author$project$Anim$Internal$Properties$Translate$toTriple, anim.currentStates.translate));
+				},
+				$elm$core$Dict$toList(state.elementAnimations)));
+		var _v3 = A2(
+			$elm$core$Debug$log,
+			'[animate] Processed translate (start->end):',
+			$elm$core$List$concat(
+				A2(
+					$elm$core$List$map,
+					function (_v4) {
+						var elId = _v4.a;
+						var cfg = _v4.b;
+						return A2(
+							$elm$core$List$filterMap,
+							function (prop) {
+								if (prop.$ === 'ProcessedTranslateConfig') {
+									var tc = prop.a;
+									return $elm$core$Maybe$Just(
+										_Utils_Tuple2(
+											elId,
+											{
+												end: $author$project$Anim$Internal$Properties$Translate$toTriple(tc.end),
+												start: A2($elm$core$Maybe$map, $author$project$Anim$Internal$Properties$Translate$toTriple, tc.start)
+											}));
+								} else {
+									return $elm$core$Maybe$Nothing;
+								}
+							},
+							cfg.properties);
+					},
+					$elm$core$Dict$toList(processedData.elements))));
 		return _Utils_Tuple2(
 			$author$project$Anim$Internal$WAAPI$AnimState(
 				_Utils_update(
@@ -10125,6 +10149,14 @@ var $author$project$Anim$Internal$WAAPI$updatePropertyUpdate = F2(
 						$elm$core$Dict$values(elementAnim.properties));
 				},
 				$elm$core$Dict$values(updatedAnimations));
+			var _v2 = A2(
+				$elm$core$Debug$log,
+				'[updatePropertyUpdate] Received from JS:',
+				{
+					elementId: animationUpdate.elementId,
+					isAnimating: animationUpdate.isAnimating,
+					translate: _Utils_Tuple3(animationUpdate.translateX, animationUpdate.translateY, animationUpdate.translateZ)
+				});
 			return $author$project$Anim$Internal$WAAPI$AnimState(
 				_Utils_update(
 					state,
