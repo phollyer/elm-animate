@@ -1,6 +1,5 @@
 module Anim.Property.Opacity exposing
-    ( default
-    , init
+    ( init
     , Builder, for, build
     , from
     , to
@@ -18,11 +17,6 @@ Build animations that change the opacity of elements.
         |> ... -- other opacity configuration steps
         |> Opacity.build
         |> ... -- continue with animation
-
-
-# Default
-
-@docs default
 
 
 # Initialize

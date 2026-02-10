@@ -47,6 +47,19 @@ spin builder =
 | `toY` | `Float` | Ending Y-axis rotation (degrees) |
 | `toZ` | `Float` | Ending Z-axis rotation (degrees) |
 
+### Values — Combined
+
+| Function | Type | Description |
+| ---------- | ------ | ------------- |
+| `fromXY` | `Float -> Float` | Starting X and Y rotations |
+| `fromXZ` | `Float -> Float` | Starting X and Z rotations |
+| `fromYZ` | `Float -> Float` | Starting Y and Z rotations |
+| `fromXYZ` | `Float -> Float -> Float` | Starting X, Y, and Z rotations |
+| `toXY` | `Float -> Float` | Ending X and Y rotations |
+| `toXZ` | `Float -> Float` | Ending X and Z rotations |
+| `toYZ` | `Float -> Float` | Ending Y and Z rotations |
+| `toXYZ` | `Float -> Float -> Float` | Ending X, Y, and Z rotations |
+
 ### Timing
 
 | Function | Description |
@@ -60,7 +73,9 @@ spin builder =
 
 | Function | Description |
 | ---------- | ------------- |
+| `init` | Set initial rotation (uniform) |
 | `initX`, `initY`, `initZ` | Set initial rotation on single axis |
+| `initXY`, `initXZ`, `initYZ` | Set initial rotation on two axes |
 | `initXYZ` | Set initial rotation on all axes |
 
 ## Examples

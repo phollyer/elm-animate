@@ -1,6 +1,5 @@
 module Anim.Property.Size exposing
-    ( default
-    , init, initWH, initW, initH
+    ( init, initWH, initW, initH
     , Builder, for, build
     , from, fromHW, fromH, fromW
     , to, toHW, toH, toW
@@ -20,11 +19,6 @@ Build animations that change the size (width and height) of elements.
         |> ... -- other size configuration steps
         |> Size.build
         |> ... -- continue with animation
-
-
-# Default
-
-@docs default
 
 
 # Initialize

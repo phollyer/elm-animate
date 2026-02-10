@@ -8,115 +8,120 @@ Fade elements in and out by animating their opacity value.
 
 ## Basic Usage
 
-```elm
-import Anim.Property.Opacity as Opacity
+??? example "Show Source Code"
 
-fadeIn : AnimBuilder -> AnimBuilder
-fadeIn builder =
-    builder
-        |> Opacity.for "my-element"
-        |> Opacity.from 0
-        |> Opacity.to 1
-        |> Opacity.duration 500
-        |> Opacity.build
-```
+    ```elm
+    import Anim.Property.Opacity as Opacity
+
+    fadeIn : AnimBuilder -> AnimBuilder
+    fadeIn =
+        Opacity.for "my-element"
+            >> Opacity.from 0
+            >> Opacity.to 1
+            >> Opacity.duration 500
+            >> Opacity.build
+    ```
 
 ## API
 
-### Targeting
+### Types
 
-| Function | Description |
-| ---------- | ------------- |
-| `for` | Target an element by ID |
-
-### Values
-
-| Function | Type | Description |
-| ---------- | ------ | ------------- |
-| `from` | `Float` | Starting opacity (0.0 to 1.0) |
-| `to` | `Float` | Ending opacity (0.0 to 1.0) |
-
-### Timing
-
-| Function | Description |
-| ---------- | ------------- |
-| `duration` | Animation duration in milliseconds |
-| `speed` | Animation speed (alternative to duration) |
-| `delay` | Delay before animation starts |
-| `easing` | Easing function for the animation |
+| Type | Description |
+| ---- | ----------- |
+| `Builder` | Internal builder that carries the animation configuration |
 
 ### Initialization
 
-| Function | Description |
-| ---------- | ------------- |
-| `init` | Set initial opacity without animating |
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `init` | `String -> Float -> AnimBuilder -> AnimBuilder` | Set the initial opacity value for your element id so that your Engine can set it in your view |
 
-## Examples
+### Targeting
 
-### Fade In
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `for` | `String -> AnimBuilder -> Builder` | Start the property builder pipeline by targeting the element id |
 
-```elm
-fadeIn builder =
-    builder
-        |> Opacity.for "box"
-        |> Opacity.from 0
-        |> Opacity.to 1
-        |> Opacity.duration 300
-        |> Opacity.easing QuintOut
-        |> Opacity.build
-```
+### Values
 
-### Fade Out
+| Function | Signature | Description |
+| ---------- | ------ | ------------- |
+| `from` | `Float -> Builder -> Builder` | Starting opacity (0.0 to 1.0) |
+| `to` | `Float -> Builder -> Builder` | Ending opacity (0.0 to 1.0) |
 
-```elm
-fadeOut builder =
-    builder
-        |> Opacity.for "box"
-        |> Opacity.from 1
-        |> Opacity.to 0
-        |> Opacity.duration 300
-        |> Opacity.easing QuintIn
-        |> Opacity.build
-```
+### Timing
+
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `duration` | `Int -> Builder -> Builder` | Animation duration in milliseconds |
+| `speed` | `Float -> Builder -> Builder` | Animation speed (alternative to duration) |
+| `delay` | `Int -> Builder -> Builder` | Delay before the animation starts in milliseconds |
+| `easing` | `Easing -> Builder -> Builder` | Easing function for the animation |
+
+### Build
+
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `build` | `Builder -> AnimBuilder` | Finish the property builder pipeline and return an `AnimBuilder` so that the animation can be used by an Engine, or composed with other animations |
+
+## Example
 
 ### Pulse Effect
 
-Combine with other properties for a pulse:
+Combine with other properties for a pulse.
 
-```elm
-pulse builder =
-    builder
-        |> Opacity.for "box"
-        |> Opacity.from 1
-        |> Opacity.to 0.5
-        |> Opacity.duration 500
-        |> Opacity.easing SineInOut
-        |> Opacity.build
-        |> Scale.for "box"
-        |> Scale.from 1
-        |> Scale.to 1.05
-        |> Scale.duration 500
-        |> Scale.easing SineInOut
-        |> Scale.build
-```
+??? example "Show Source Code"
+
+    ```elm
+    fade : AnimBuilder -> AnimBuilder
+    fade =
+        Opacity.for "box"
+            >> Opacity.from 1
+            >> Opacity.to 0.5
+            >> Opacity.duration 500
+            >> Opacity.easing SineInOut
+            >> Opacity.build
+
+    scale : AnimBuilder -> AnimBuilder
+    scale =
+        Scale.for "box"
+            >> Scale.from 1
+            >> Scale.to 1.05
+            >> Scale.duration 500
+            >> Scale.easing SineInOut
+            >> Scale.build
+
+    pulse : AnimBuilder -> AnimBuilder
+    pulse =
+        fade >> scale
+    ```
 
 ## Tips
 
 !!! tip "Omit `from` for current value"
-    If you omit `from`, the animation starts from the element's current opacity. This is useful for interrupting animations smoothly.
+    If you omit `from`, the animation starts from the element's current opacity. This is useful for interrupting animations.
 
 !!! tip "Combine with Translate for entrances"
     Fade-in animations feel more polished when combined with subtle movement:
 
     ```elm
-    slideAndFade builder =
-        builder
-            |> Opacity.for "box"
-            |> Opacity.from 0
-            |> Opacity.to 1
-            |> Opacity.build
-            |> Translate.for "box"
-            |> Translate.fromY 20
-            |> Translate.toY 0
-            |> Translate.build
+    slide : AnimBuilder -> AnimBuilder
+    slide =
+        Translate.for "box"
+            >> Translate.fromY 20
+            >> Translate.toY 0
+            >> Translate.build
+
+
+    fade : AnimBuilder -> AnimBuilder
+    fade =
+        Opacity.for "box"
+            >> Opacity.from 0
+            >> Opacity.to 1
+            >> Opacity.build
+
+    
+    slideAndFade : AnimBuilder -> AnimBuilder
+    slideAndFade =
+        slide >> fade
     ```

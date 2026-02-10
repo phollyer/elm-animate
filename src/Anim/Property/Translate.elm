@@ -1,6 +1,5 @@
 module Anim.Property.Translate exposing
-    ( default
-    , init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
+    ( init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
     , Builder, for, build
     , from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
     , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
@@ -33,11 +32,6 @@ For 3D positioning, set a non-zero value for the 'Z' axis and add perspective to
     view model =
         div [ id "container", View3D.perspective 1000 ]
             [ animatedElement ]
-
-
-# Default
-
-@docs default
 
 
 # Initialize

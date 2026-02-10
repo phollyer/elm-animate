@@ -1,6 +1,5 @@
 module Anim.Property.BackgroundColor exposing
-    ( default
-    , init
+    ( init
     , Builder, for, build
     , from
     , to
@@ -20,11 +19,6 @@ Build animations that change the background color of elements.
         |> ... -- other color configuration steps
         |> BackgroundColor.build
         |> ... -- continue with animation
-
-
-# Default
-
-@docs default
 
 
 # Initialize

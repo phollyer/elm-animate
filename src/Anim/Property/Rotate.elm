@@ -1,6 +1,5 @@
 module Anim.Property.Rotate exposing
-    ( default
-    , init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
+    ( init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
     , Builder, for, build
     , from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
     , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
@@ -26,11 +25,6 @@ For 3D rotations, you need to set a perspective on the parent container using `A
     view model =
         div [ id "container", View3D.perspective 1000 ]
             [ animatedElement ]
-
-
-# Default
-
-@docs default
 
 
 # Initialize

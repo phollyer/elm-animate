@@ -1,6 +1,5 @@
 module Anim.Property.FontColor exposing
-    ( default
-    , init
+    ( init
     , Builder, for, build
     , from
     , to
@@ -20,11 +19,6 @@ Build animations that change the font color of elements.
         |> ... -- other color configuration steps
         |> FontColor.build
         |> ... -- continue with animation
-
-
-# Default
-
-@docs default
 
 
 # Initialize

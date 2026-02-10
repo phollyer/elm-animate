@@ -6,6 +6,12 @@ The complete API documentation is available on the official Elm package reposito
 
 ## Module Overview
 
+### Core
+
+| Module | Description |
+| -------- | ------------- |
+| [Anim.Builder](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Builder) | AnimBuilder type for reusable animations |
+
 ### Engines
 
 | Module | Description |
@@ -32,8 +38,9 @@ The complete API documentation is available on the official Elm package reposito
 
 | Module | Description |
 | -------- | ------------- |
-| [Anim.Easing](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Easing) | Easing functions |
-| [Anim.Color](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Color) | Color utilities |
+| [Anim.Extra.Easing](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Extra-Easing) | Easing functions |
+| [Anim.Extra.Color](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Extra-Color) | Color utilities |
+| [Anim.Extra.View3D](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Extra-View3D) | 3D perspective helpers |
 
 ## Common Patterns
 
@@ -52,10 +59,10 @@ This makes them composable with `>>` and reusable across engines.
 All engines follow this pipeline:
 
 ```elm
-Engine.init
-    |> Engine.builder
-    |> myAnimation
-    |> Engine.animate
+Engine.animate animState <|
+    \ builder ->
+        builder
+            |> ... -- Build animation
 ```
 
 ### Property Builder Pattern

@@ -29,6 +29,13 @@ slideRight builder =
 | ---------- | ------------- |
 | `for` | Target an element by ID |
 
+### Values — Uniform (all axes)
+
+| Function | Type | Description |
+| ---------- | ------ | ------------- |
+| `from` | `Float` | Starting position (all axes) |
+| `to` | `Float` | Ending position (all axes) |
+
 ### Values — Individual Axes
 
 | Function | Type | Description |
@@ -45,9 +52,26 @@ slideRight builder =
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
 | `fromXY` | `Float -> Float` | Starting X and Y positions |
+| `fromXZ` | `Float -> Float` | Starting X and Z positions |
+| `fromYZ` | `Float -> Float` | Starting Y and Z positions |
 | `fromXYZ` | `Float -> Float -> Float` | Starting X, Y, and Z positions |
 | `toXY` | `Float -> Float` | Ending X and Y positions |
+| `toXZ` | `Float -> Float` | Ending X and Z positions |
+| `toYZ` | `Float -> Float` | Ending Y and Z positions |
 | `toXYZ` | `Float -> Float -> Float` | Ending X, Y, and Z positions |
+
+### Relative Movement (by)
+
+| Function | Type | Description |
+| ---------- | ------ | ------------- |
+| `by` | `Float` | Move by amount (all axes) |
+| `byX` | `Float` | Move by X amount |
+| `byY` | `Float` | Move by Y amount |
+| `byZ` | `Float` | Move by Z amount |
+| `byXY` | `Float -> Float` | Move by X and Y amounts |
+| `byXZ` | `Float -> Float` | Move by X and Z amounts |
+| `byYZ` | `Float -> Float` | Move by Y and Z amounts |
+| `byXYZ` | `Float -> Float -> Float` | Move by X, Y, and Z amounts |
 
 ### Timing
 
@@ -62,8 +86,9 @@ slideRight builder =
 
 | Function | Description |
 | ---------- | ------------- |
+| `init` | Set initial position (uniform) |
 | `initX`, `initY`, `initZ` | Set initial position on single axis |
-| `initXY` | Set initial X and Y positions |
+| `initXY`, `initXZ`, `initYZ` | Set initial position on two axes |
 | `initXYZ` | Set initial X, Y, and Z positions |
 
 ## Examples

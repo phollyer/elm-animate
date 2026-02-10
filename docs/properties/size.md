@@ -18,8 +18,8 @@ expandBox : AnimBuilder -> AnimBuilder
 expandBox builder =
     builder
         |> Size.for "my-element"
-        |> Size.fromWH 100 100
-        |> Size.toWH 200 150
+        |> Size.fromHW 100 100
+        |> Size.toHW 150 200
         |> Size.duration 300
         |> Size.build
 ```
@@ -32,21 +32,28 @@ expandBox builder =
 | ---------- | ------------- |
 | `for` | Target an element by ID |
 
+### Values — Uniform
+
+| Function | Type | Description |
+| ---------- | ------ | ------------- |
+| `from` | `Float` | Starting size (both dimensions) |
+| `to` | `Float` | Ending size (both dimensions) |
+
 ### Values — Individual
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `fromW` | `Float` | Starting width (pixels) |
 | `fromH` | `Float` | Starting height (pixels) |
-| `toW` | `Float` | Ending width (pixels) |
+| `fromW` | `Float` | Starting width (pixels) |
 | `toH` | `Float` | Ending height (pixels) |
+| `toW` | `Float` | Ending width (pixels) |
 
 ### Values — Combined
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `fromWH` | `Float -> Float` | Starting width and height |
-| `toWH` | `Float -> Float` | Ending width and height |
+| `fromHW` | `Float -> Float` | Starting height and width |
+| `toHW` | `Float -> Float` | Ending height and width |
 
 ### Timing
 
@@ -61,7 +68,8 @@ expandBox builder =
 
 | Function | Description |
 | ---------- | ------------- |
-| `initW`, `initH` | Set initial width or height |
+| `init` | Set initial size (uniform) |
+| `initH`, `initW` | Set initial height or width |
 | `initWH` | Set initial width and height |
 
 ## Examples
@@ -97,8 +105,8 @@ collapsePanel builder =
 resizeCard builder =
     builder
         |> Size.for "card"
-        |> Size.fromWH 200 150
-        |> Size.toWH 400 300
+        |> Size.fromHW 150 200
+        |> Size.toHW 300 400
         |> Size.duration 400
         |> Size.easing QuintInOut
         |> Size.build
