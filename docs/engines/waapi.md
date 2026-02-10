@@ -343,7 +343,7 @@ Set initial property values when creating your `AnimState`. Use `WAAPI.attribute
     init : ( Model, Cmd Msg )
     init =
         let
-            ( initialAnimState, _ ) =
+            initialAnimState =
                 WAAPI.init waapiCommand waapiEvent
                     [ Translate.initXY "element-id" 100 50
                     , Opacity.init "element-id" 0
@@ -352,15 +352,16 @@ Set initial property values when creating your `AnimState`. Use `WAAPI.attribute
         ( { animState = initialAnimState }, Cmd.none )
 
 
+    view : Model -> Html Msg
     view model =
         div
-            ([ id "element-id" ]
-                ++ WAAPI.attributes "element-id" model.animState
+            (WAAPI.attributes "element-id" model.animState
+                ++ [ id "element-id" ]
             )
             [ text "Content" ]
     ```
 
-    **Note:** `init` always returns `Cmd.none`. The `attributes` function handles applying initial values.
+    **Note:** The `attributes` function handles applying initial values.
 
 ## 3D Transforms and Perspective
 
@@ -381,7 +382,7 @@ The WAAPI Engine fully supports 3D animations. See [3D Animations](../concepts/3
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `init` | `(Value -> Cmd msg) -> ((Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )` | Create initial animation state with ports and optional property initializers. Always returns `Cmd.none` |
+| `init` | `(Value -> Cmd msg) -> ((Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> AnimState msg` | Create initial animation state with ports and optional property initializers. |
 | `animate` | `AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )` | Execute animation with state tracking |
 | `fireAndForget` | `(Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Execute animation without state tracking |
 | `update` | `AnimMsg -> AnimState msg -> ( AnimState msg, List AnimEvent )` | Process WAAPI messages and return events |
@@ -391,7 +392,7 @@ The WAAPI Engine fully supports 3D animations. See [3D Animations](../concepts/3
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `attributes` | `String -> AnimState msg -> List (Html.Attribute msg)` | Apply current animation state as inline styles |
+| `attributes` | `String -> AnimState msg -> List (Html.Attribute msg)` | Apply initial animation state as inline styles |
 
 ### Control Functions
 
