@@ -95,7 +95,7 @@ nav:
       - Background Color: properties/background-color.md
       - Font Color: properties/font-color.md
       - Size: properties/size.md
-  - Examples: examples/index.md
+  - Examples: examples.md
   - API Reference: api-reference.md
 
 extra:
