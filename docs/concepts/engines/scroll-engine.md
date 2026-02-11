@@ -29,7 +29,7 @@ The Scroll Engine provides smooth Document and container scrolling to elements o
 
 ## Next Steps
 
-Now that you've learned about the engines, we'll look at the builder pattern used for all animations.
+Now that you've learned a bit about each of the engines, we'll look at the builder pattern used for all animations.
 
 [Builder Pattern →](../builder-pattern.md){ .md-button .md-button--primary }
 

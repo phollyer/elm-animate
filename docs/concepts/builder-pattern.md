@@ -13,11 +13,11 @@ Every animation follows this pattern:
     animationFunction : AnimBuilder -> AnimBuilder
     animationFunction =
         Property.for "element-id"           -- Target element (required)
-            >> Property.from startValue     -- Starting value
-            >> Property.to endValue         -- Ending value
-            >> Property.delay 100           -- Delay (ms) before starting
-            >> Property.duration 500        -- Timing (ms, or Property.speed)
-            >> Property.easing BounceOut    -- Easing function
+            >> Property.from startValue     
+            >> Property.to endValue         
+            >> Property.delay 100           -- ms
+            >> Property.duration 500        -- ms, or (Property.speed 50 -- Int)
+            >> Property.easing BounceOut    
             >> Property.build               -- Finalize (required)
     ```
 
@@ -79,7 +79,7 @@ Define once, use everywhere:
             >> standardFadeIn "card-3"
     ```
 
-### 3. Engine Independence
+### 3. Portability
 
 The same animation works with any engine:
 
@@ -173,8 +173,8 @@ Animate multiple properties on the same element:
     -- Common timing helper
     withStandardTiming : AnimBuilder -> AnimBuilder
     withStandardTiming =
-        CSS.duration 300
-            >> CSS.easing QuintOut
+        Sub.duration 300
+            >> Sub.easing QuintOut
 
     -- Use it with any animation
     myAnimation : AnimBuilder -> AnimBuilder
