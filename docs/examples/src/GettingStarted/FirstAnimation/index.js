@@ -5187,11 +5187,6 @@ var $author$project$GettingStarted$FirstAnimation$Main$update = F2(
 				{state: $author$project$GettingStarted$FirstAnimation$Main$FadeIn}),
 			$elm$core$Platform$Cmd$none);
 	});
-var $elm$html$Html$div = _VirtualDom_node('div');
-var $author$project$Anim$Extra$Easing$CubicIn = {$: 'CubicIn'};
-var $author$project$Anim$Internal$Builder$OpacityConfig = function (a) {
-	return {$: 'OpacityConfig', a: a};
-};
 var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -5224,6 +5219,16 @@ var $elm$core$Dict$get = F2(
 			}
 		}
 	});
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
 		if (maybe.$ === 'Just') {
@@ -5233,6 +5238,40 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
+var $author$project$Anim$Internal$CSS$getElementStyles = F2(
+	function (elementId, _v0) {
+		var state = _v0.a;
+		return A2(
+			$elm$core$Maybe$withDefault,
+			_List_Nil,
+			A2(
+				$elm$core$Maybe$map,
+				function ($) {
+					return $.styles;
+				},
+				A2($elm$core$Dict$get, elementId, state.elementAnimations)));
+	});
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $author$project$Anim$Internal$CSS$transitionAttributes = F2(
+	function (elementId, animationResult) {
+		var styles = A2($author$project$Anim$Internal$CSS$getElementStyles, elementId, animationResult);
+		var attrs = A2(
+			$elm$core$List$map,
+			function (_v0) {
+				var prop = _v0.a;
+				var value = _v0.b;
+				return A2($elm$html$Html$Attributes$style, prop, value);
+			},
+			styles);
+		return attrs;
+	});
+var $author$project$Anim$Engine$CSS$Transitions$attributes = $author$project$Anim$Internal$CSS$transitionAttributes;
+var $elm$html$Html$div = _VirtualDom_node('div');
+var $author$project$Anim$Extra$Easing$CubicIn = {$: 'CubicIn'};
+var $author$project$Anim$Internal$Builder$OpacityConfig = function (a) {
+	return {$: 'OpacityConfig', a: a};
+};
 var $author$project$Anim$Internal$Builder$getCurrentElementConfig = function (_v0) {
 	var data = _v0.a;
 	var _v1 = data.currentElementId;
@@ -6033,7 +6072,7 @@ var $author$project$Anim$Internal$Properties$Rotate$to3DCssString = function (_v
 };
 var $author$project$Anim$Internal$Properties$Translate$toCssString = function (_v0) {
 	var coords = _v0.a;
-	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px'))));
+	return 'translate3d(' + ($elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px)')))));
 };
 var $author$project$Anim$Internal$Properties$Scale$Scale = function (a) {
 	return {$: 'Scale', a: a};
@@ -7032,16 +7071,6 @@ var $author$project$Anim$Internal$Properties$Translate$support = {
 	zero: $author$project$Anim$Internal$Properties$Translate$default
 };
 var $author$project$Anim$Internal$Properties$Translate$interpolate = $author$project$Anim$Internal$Builders$Coordinate3D$interpolate($author$project$Anim$Internal$Properties$Translate$support);
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
 var $elm$core$Basics$modBy = _Basics_modBy;
 var $author$project$Anim$Internal$Builder$ProcessedBackgroundColorConfig = function (a) {
 	return {$: 'ProcessedBackgroundColorConfig', a: a};
@@ -7497,12 +7526,12 @@ var $author$project$Anim$Internal$Properties$Rotate$toString = function (_v0) {
 	return $elm$core$String$fromFloat(angles.z);
 };
 var $author$project$Anim$Internal$Properties$Rotate$toCssString = function (rotate) {
-	return $author$project$Anim$Internal$Properties$Rotate$toString(rotate) + 'deg';
+	return 'rotateZ(' + ($author$project$Anim$Internal$Properties$Rotate$toString(rotate) + 'deg)');
 };
 var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) {
 	var x = _v0.a.x;
 	var y = _v0.a.y;
-	return $elm$core$String$fromFloat(x) + (',' + $elm$core$String$fromFloat(y));
+	return 'scale(' + ($elm$core$String$fromFloat(x) + (', ' + ($elm$core$String$fromFloat(y) + ')')));
 };
 var $elm$core$Basics$pi = _Basics_pi;
 var $elm$core$Basics$pow = _Basics_pow;
@@ -8493,35 +8522,6 @@ var $author$project$Anim$Property$Opacity$init = F3(
 					$author$project$Anim$Internal$Properties$Opacity$fromFloat(value),
 					A2($author$project$Anim$Internal$Builders$Opacity$for, elementId, animBuilder))));
 	});
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$Anim$Internal$CSS$getElementStyles = F2(
-	function (elementId, _v0) {
-		var state = _v0.a;
-		return A2(
-			$elm$core$Maybe$withDefault,
-			_List_Nil,
-			A2(
-				$elm$core$Maybe$map,
-				function ($) {
-					return $.styles;
-				},
-				A2($elm$core$Dict$get, elementId, state.elementAnimations)));
-	});
-var $author$project$Anim$Internal$CSS$transitionAttributes = F2(
-	function (elementId, animationResult) {
-		var styles = A2($author$project$Anim$Internal$CSS$getElementStyles, elementId, animationResult);
-		var attrs = A2(
-			$elm$core$List$map,
-			function (_v0) {
-				var prop = _v0.a;
-				var value = _v0.b;
-				return A2($elm$html$Html$Attributes$style, prop, value);
-			},
-			styles);
-		return attrs;
-	});
-var $author$project$Anim$Engine$CSS$Transitions$transitionAttributes = $author$project$Anim$Internal$CSS$transitionAttributes;
 var $author$project$GettingStarted$FirstAnimation$Main$view = function (model) {
 	var animState = function () {
 		var _v0 = model.state;
@@ -8538,13 +8538,13 @@ var $author$project$GettingStarted$FirstAnimation$Main$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
 		_Utils_ap(
+			A2($author$project$Anim$Engine$CSS$Transitions$attributes, 'my-box', animState),
 			_List_fromArray(
 				[
 					A2($elm$html$Html$Attributes$style, 'width', '100px'),
 					A2($elm$html$Html$Attributes$style, 'height', '100px'),
 					A2($elm$html$Html$Attributes$style, 'background-color', 'blue')
-				]),
-			A2($author$project$Anim$Engine$CSS$Transitions$transitionAttributes, 'my-box', animState)),
+				])),
 		_List_Nil);
 };
 var $author$project$GettingStarted$FirstAnimation$Main$main = $elm$browser$Browser$element(

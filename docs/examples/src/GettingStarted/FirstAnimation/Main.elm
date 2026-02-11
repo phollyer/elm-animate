@@ -1,6 +1,6 @@
 module GettingStarted.FirstAnimation.Main exposing (main)
 
-import Anim.Engine.CSS.Transitions as CSS
+import Anim.Engine.CSS.Transitions as Transitions exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Opacity as Opacity
 import Browser
@@ -64,7 +64,7 @@ update msg model =
 -- --8<-- [start:fadeIn]
 
 
-fadeInBuilder : CSS.AnimBuilder -> CSS.AnimBuilder
+fadeInBuilder : AnimBuilder -> AnimBuilder
 fadeInBuilder =
     Opacity.for "my-box"
         >> Opacity.from 0
@@ -86,20 +86,20 @@ view model =
         animState =
             case model.state of
                 Ready ->
-                    CSS.init
+                    Transitions.init
                         [ Opacity.init "my-box" 0 ]
 
                 FadeIn ->
-                    CSS.fireAndForget fadeInBuilder
+                    Transitions.fireAndForget fadeInBuilder
     in
     -- --8<-- [end:fireAndForget]
     -- --8<-- [start:applyStyles]
     div
-        ([ style "width" "100px"
-         , style "height" "100px"
-         , style "background-color" "blue"
-         ]
-            ++ CSS.attributes "my-box" animState
+        (Transitions.attributes "my-box" animState
+            ++ [ style "width" "100px"
+               , style "height" "100px"
+               , style "background-color" "blue"
+               ]
         )
         []
 

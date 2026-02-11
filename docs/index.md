@@ -15,7 +15,8 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 ??? example "View Source Code"
 
     ```elm
-    import Anim.Engine.CSS.Transitions as CSS
+    import Anim.Engine.CSS.Keyframes as Keyframes
+    import Anim.Engine.CSS.Transitions as Transitions
     import Anim.Engine.Sub as Sub
     import Anim.Engine.WAAPI as WAAPI
     import Anim.Property.Translate as Translate
@@ -32,12 +33,19 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
             >> Translate.easing QuintOut
             >> Translate.build
 
-    -- Use it with the CSS engine
+    -- Use it with the CSS Transitions engine
     animState =
-        CSS.animate model.animState slideIn
+        Transitions.animate model.animState slideIn
 
     animState =
-        CSS.fireAndForget slideIn
+        Transitions.fireAndForget slideIn
+
+    -- Use it with the CSS Keyframes engine
+    animState =
+        Keyframes.animate model.animState slideIn
+
+    animState =
+        Keyframes.fireAndForget slideIn
 
     -- Use it with the Sub engine
     animState =
@@ -57,8 +65,8 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 | Engine | Best For |
 | -------- | ---------- |
-| [CSS Transitions](engines/css-transitions.md) | Browser-native performance, simple A→B animations |
-| [CSS Keyframes](engines/css-keyframes.md) | Browser-native performance, looping, pause/resume |
+| [CSS Transitions](engines/transitions.md) | Browser-native performance, simple A→B animations |
+| [CSS Keyframes](engines/keyframes.md) | Browser-native performance, looping, pause/resume |
 | [Sub](engines/sub.md) | Programmatic control, mid-flight queries/diversions |
 | [WAAPI](engines/waapi.md) | Browser-native performance, programmatic control, mid-flight queries/diversions |
 | [Scroll](engines/scroll.md) | Smooth scrolling to elements or positions |

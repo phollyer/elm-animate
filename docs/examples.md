@@ -20,10 +20,14 @@ Interactive examples demonstrating Elm Animate capabilities.
 
 - [Basic Usage](src/Engines/Sub/BasicUsage/index.html) - Subscription-based fade-in animation
 
+- [Interrupting Animations](src/Engines/Sub/InterruptingAnimations/index.html) - Subscription-based animation demonstrating mid-flight re-directions
+
 ### WAAPI Engine
 
 
 - [Basic Usage](src/Engines/WAAPI/BasicUsage/index.html) - Web Animations API fade-in animation
+
+- [Interrupting Animations](src/Engines/WAAPI/InterruptingAnimations/index.html) - Web Animations API animation demonstrating mid-flight re-directions
 
 
 ---
