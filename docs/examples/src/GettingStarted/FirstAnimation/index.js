@@ -5993,7 +5993,7 @@ var $author$project$Anim$Internal$Builders$Opacity$to = F2(
 			builder);
 	});
 var $author$project$Anim$Property$Opacity$to = A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Builders$Opacity$to, $author$project$Anim$Internal$Properties$Opacity$fromFloat);
-var $author$project$GettingStarted$FirstAnimation$Main$fadeInBuilder = A2(
+var $author$project$GettingStarted$FirstAnimation$Main$fadeIn = A2(
 	$elm$core$Basics$composeR,
 	$author$project$Anim$Property$Opacity$for('my-box'),
 	A2(
@@ -8532,7 +8532,7 @@ var $author$project$GettingStarted$FirstAnimation$Main$view = function (model) {
 						A2($author$project$Anim$Property$Opacity$init, 'my-box', 0)
 					]));
 		} else {
-			return $author$project$Anim$Engine$CSS$Transitions$fireAndForget($author$project$GettingStarted$FirstAnimation$Main$fadeInBuilder);
+			return $author$project$Anim$Engine$CSS$Transitions$fireAndForget($author$project$GettingStarted$FirstAnimation$Main$fadeIn);
 		}
 	}();
 	return A2(

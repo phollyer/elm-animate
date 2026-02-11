@@ -64,8 +64,8 @@ update msg model =
 -- --8<-- [start:fadeIn]
 
 
-fadeInBuilder : AnimBuilder -> AnimBuilder
-fadeInBuilder =
+fadeIn : AnimBuilder -> AnimBuilder
+fadeIn =
     Opacity.for "my-box"
         >> Opacity.from 0
         >> Opacity.to 1
@@ -90,7 +90,7 @@ view model =
                         [ Opacity.init "my-box" 0 ]
 
                 FadeIn ->
-                    Transitions.fireAndForget fadeInBuilder
+                    Transitions.fireAndForget fadeIn
     in
     -- --8<-- [end:fireAndForget]
     -- --8<-- [start:applyStyles]
