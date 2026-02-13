@@ -263,7 +263,9 @@ animate =
 
     -- Custom transform order: Scale → Rotate → Translate
     Keyframes.animateOrder [ Scale, Rotate, Translate ] model.animState <|
-        (rotateLeft >> scaleUp >> moveRight)
+        rotateLeft
+            >> scaleUp
+            >> moveRight
 
 -}
 animateOrder : List TransformOrder -> AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState

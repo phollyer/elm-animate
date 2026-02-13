@@ -1,6 +1,7 @@
 module Anim.Engine.WAAPI exposing
     ( AnimState, AnimBuilder, init
     , animate, fireAndForget
+    , TransformOrder(..), animateOrder, fireAndForgetOrder
     , AnimMsg, AnimEvent(..), update, subscriptions
     , attributes
     , stop, reset, restart, pause, resume
@@ -15,7 +16,6 @@ module Anim.Engine.WAAPI exposing
     , getStartRotate, getEndRotate, getCurrentRotate
     , getStartScale, getEndScale, getCurrentScale
     , getStartSize, getEndSize, getCurrentSize
-    , TransformOrder(..), animateOrder, fireAndForgetOrder
     )
 
 {-| Ports-based animation system with optional state tracking.
@@ -38,16 +38,11 @@ Use [animate](#animate) when you need to:
 
   - Query if animations are running or complete
   - Query start/end/current values of animated properties
-  - React to animation lifecycle events (start, end, cancel)
-  - Sequence animations based on previous animation state
+  - Chain animations that continue from the previous end state
+  - Use animation controls (pause, resume, stop, reset, restart)
 
-**Fire-and-forget** animations are simpler when you just want to run an animation without
-tracking its state. Use [fireAndForget](#fireAndForget) for:
-
-  - Entrance/exit animations
-  - Simple hover/focus effects
-  - Any animation where you don't need to query state or values
-  - Reduced port traffic (no subscription port needed)
+**Fire-and-forget** animations don't require `AnimState` in your model.
+Use [fireAndForget](#fireAndForget) when you don't need any of the above.
 
 
 ## JavaScript Companion
@@ -72,7 +67,7 @@ Then import and initialize it in your JavaScript code:
 The JavaScript companion automatically connects to these ports when you call `ElmAnimateWAAPI.init(app.ports)` in your JavaScript code.
 
   - **`waapiCommand`**: Outgoing port to send animation commands to JavaScript (always required)
-  - **`waapiSubscription`**: Incoming port to receive property updates and lifecycle events (required for stateful animations)
+  - **`waapiEvent`**: Incoming port to receive animation lifecycle events (required for stateful animations)
 
 **For fire-and-forget animations** (no state tracking):
 
@@ -82,7 +77,7 @@ Only the outgoing command port is needed to send animation instructions to JavaS
 
 **For stateful animations** (with state tracking, real-time updates, and lifecycle events):
 
-Both command and subscription ports are needed.
+Both ports are needed.
 
         port waapiCommand : Json.Encode.Value -> Cmd msg
 
@@ -97,6 +92,8 @@ Both command and subscription ports are needed.
 # Execute
 
 @docs animate, fireAndForget
+
+@docs TransformOrder, animateOrder, fireAndForgetOrder
 
 
 # Update
@@ -239,20 +236,18 @@ type alias AnimState msg =
 
 {-| Initialize animation state.
 
-Takes the command port, subscription port, and optional property initializers:
+Takes the command port, event port, and optional property initializers:
 
     -- Basic initialization
-    WAAPI.init waapiCommand waapiSubscription []
+    WAAPI.init waapiCommand waapiEvent []
 
     -- With initial properties
-    WAAPI.init waapiCommand
-        waapiSubscription
+    WAAPI.init waapiCommand waapiEvent <|
         [ Translate.initXY "element-id" 100 50
         , Opacity.init "element-id" 1.0
         ]
 
-Always returns `Cmd.none` - use [attributes](#attributes) in your view to apply
-initial values as CSS inline styles.
+Use [attributes](#attributes) in your view to apply these initial property values as CSS inline styles.
 
 -}
 init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> AnimState msg
@@ -262,7 +257,7 @@ init =
 
 {-| Get HTML attributes that apply the current animation state as inline styles.
 
-Use this in your view to apply initial values and maintain state between animations:
+Use this in your view to apply initial property values and maintain state between animations:
 
     view model =
         div
@@ -362,13 +357,13 @@ animate =
     Internal.animate
 
 
-{-| Specifies the order in which transform operations are applied.
+{-| Type for specifying the order in which transform operations are applied.
 
-CSS transforms are applied right to left, so `[Rotate, Translate, Scale]` means:
+CSS transforms are applied left to right, so `[Rotate, Translate, Scale]` means:
 
-1.  Scale first (closest to element)
+1.  Rotate first
 2.  Translate second
-3.  Rotate last (outer transform)
+3.  Scale last
 
 The order significantly affects the final result - rotating then translating
 produces different results than translating then rotating.

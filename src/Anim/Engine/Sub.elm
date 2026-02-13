@@ -235,9 +235,10 @@ type TransformOrder
 {-| Apply animation with custom transform ordering.
 
     -- Scale → Rotate → Translate
-    Sub.animateOrder [ Sub.Scale, Sub.Rotate, Sub.Translate ]
-        model.animState
-        (scaleUp >> rotateLeft >> moveRight)
+    Sub.animateOrder [ Scale, Rotate, Translate ] model.animState <|
+        scaleUp
+            >> rotateLeft
+            >> moveRight
 
 Transform order affects how combined transforms render. For example, rotating then
 translating moves along the rotated axis, while translating then rotating moves
