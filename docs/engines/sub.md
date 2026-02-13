@@ -107,6 +107,9 @@ Individual properties can override them:
 
 The Sub Engine fully supports 3D animations. See [3D Animations](../concepts/3d.md) for how to define 3D transforms.
 
+!!! note "Performance Consideration"
+    For most applications, performance is excellent. If you're animating dozens of elements simultaneously in a complex view, the [WAAPI Engine](waapi.md) may offer better performance since the browser handles interpolation natively.
+
 ## API Quick Reference
 
 ### Types

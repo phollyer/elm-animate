@@ -1,8 +1,9 @@
 module Concepts.ControllingAnimations.SubEngine.Main exposing (main)
 
-import Anim.Engine.Sub as Sub
+import Anim.Engine.Sub as Sub exposing (AnimBuilder)
+import Anim.Extra.Easing exposing (Easing(..))
+import Anim.Property.Translate as Translate
 import Browser exposing (Document)
-import Common.Animations.Controls as Controls exposing (elementId)
 import Common.UI as UI
 import Common.View.Controls as ViewControls
 import Element exposing (Element, centerX, centerY, el, height, htmlAttribute, px, text, width)
@@ -34,6 +35,11 @@ type alias Model =
     }
 
 
+elementId : String
+elementId =
+    "bouncing-ball"
+
+
 
 -- INIT
 
@@ -43,10 +49,13 @@ init { window } =
     let
         animAreaWidth =
             min 500 (window.width - 40)
+
+        xPos =
+            toFloat animAreaWidth / 2 - 25
     in
     ( { animState =
             Sub.init <|
-                [ Controls.init animAreaWidth ]
+                [ Translate.initXY elementId xPos 50 ]
       , animAreaSize =
             { width = animAreaWidth
             , height = 350
@@ -54,6 +63,20 @@ init { window } =
       }
     , Cmd.none
     )
+
+
+
+-- ANIMATION
+
+
+dropBall : AnimBuilder -> AnimBuilder
+dropBall =
+    Translate.for elementId
+        >> Translate.fromY 50
+        >> Translate.toY 300
+        >> Translate.speed 200
+        >> Translate.easing BounceOut
+        >> Translate.build
 
 
 
@@ -84,7 +107,7 @@ update msg model =
 
         Animate ->
             ( { model
-                | animState = Sub.animate model.animState Controls.animate
+                | animState = Sub.animate model.animState dropBall
               }
             , Cmd.none
             )
@@ -136,18 +159,6 @@ subscriptions model =
 
 
 -- VIEW - Using ElmUI, but the same animation logic works with any view layer
---
---
--- Engine-specific view helpers
-
-
-subAttributes : Sub.AnimState -> List (Element.Attribute msg)
-subAttributes =
-    Sub.attributes elementId >> List.map htmlAttribute
-
-
-
--- View Helpers
 
 
 view : Model -> Document Msg
@@ -190,10 +201,10 @@ viewContent model =
 animatedBall : Sub.AnimState -> Element msg
 animatedBall animState =
     el
-        (subAttributes animState
-            ++ [ width (px 50)
+        (List.map htmlAttribute (Sub.attributes elementId animState)
+            ++ [ htmlAttribute (Html.Attributes.style "position" "relative")
+               , width (px 50)
                , height (px 50)
-               , htmlAttribute (Html.Attributes.style "position" "relative")
                ]
         )
         (el [ centerX, centerY, Font.size 50 ] (text "🏀"))

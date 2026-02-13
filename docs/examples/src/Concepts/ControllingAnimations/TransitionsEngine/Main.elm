@@ -1,12 +1,12 @@
 module Concepts.ControllingAnimations.TransitionsEngine.Main exposing (main)
 
-import Anim.Engine.CSS.Transitions as CSS
+import Anim.Engine.CSS.Transitions as Transitions exposing (AnimBuilder)
+import Anim.Extra.Easing exposing (Easing(..))
+import Anim.Property.Translate as Translate
 import Browser exposing (Document)
-import Common.Animations.Controls as Controls exposing (elementId)
-import Common.Colors as Colors
 import Common.UI as UI
 import Common.View.Controls as ViewControls
-import Element exposing (Element, centerX, centerY, el, height, html, htmlAttribute, px, text, width)
+import Element exposing (Element, centerX, centerY, el, height, htmlAttribute, px, text, width)
 import Element.Font as Font
 import Html.Attributes
 
@@ -30,9 +30,14 @@ main =
 
 
 type alias Model =
-    { animState : CSS.AnimState
+    { animState : Transitions.AnimState
     , animAreaSize : { width : Int, height : Int }
     }
+
+
+elementId : String
+elementId =
+    "bouncing-ball"
 
 
 
@@ -44,10 +49,13 @@ init { window } =
     let
         animAreaWidth =
             min 500 (window.width - 40)
+
+        xPos =
+            toFloat animAreaWidth / 2 - 25
     in
     ( { animState =
-            CSS.init <|
-                [ Controls.init animAreaWidth ]
+            Transitions.init <|
+                [ Translate.initXY elementId xPos 50 ]
       , animAreaSize =
             { width = animAreaWidth
             , height = 350
@@ -55,6 +63,20 @@ init { window } =
       }
     , Cmd.none
     )
+
+
+
+-- ANIMATION
+
+
+dropBall : AnimBuilder -> AnimBuilder
+dropBall =
+    Translate.for elementId
+        >> Translate.fromY 50
+        >> Translate.toY 300
+        >> Translate.speed 200
+        >> Translate.easing BounceOut
+        >> Translate.build
 
 
 
@@ -72,21 +94,21 @@ update msg model =
     case msg of
         Animate ->
             ( { model
-                | animState = CSS.animate model.animState Controls.animate
+                | animState = Transitions.animate model.animState dropBall
               }
             , Cmd.none
             )
 
         -- --8<-- [start:stop]
         Stop ->
-            ( { model | animState = CSS.stop elementId model.animState }
+            ( { model | animState = Transitions.stop elementId model.animState }
             , Cmd.none
             )
 
         -- --8<-- [end:stop]
         -- --8<-- [start:reset]
         Reset ->
-            ( { model | animState = CSS.reset elementId model.animState }
+            ( { model | animState = Transitions.reset elementId model.animState }
             , Cmd.none
             )
 
@@ -94,24 +116,12 @@ update msg model =
 
 -- --8<-- [end:reset]
 -- VIEW - Using ElmUI, but the same animation logic works with any view layer
---
---
--- Engine-specific view helpers
-
-
-transitionAttributes : CSS.AnimState -> List (Element.Attribute msg)
-transitionAttributes =
-    CSS.attributes elementId >> List.map htmlAttribute
-
-
-
--- View Helpers
 
 
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.CSS Transition Controls Example"
+        "Anim.Engine.Transitions Transition Controls Example"
         UI.Basic
         (viewContent model)
 
@@ -136,13 +146,13 @@ viewContent model =
     ]
 
 
-animatedBall : CSS.AnimState -> Element msg
+animatedBall : Transitions.AnimState -> Element msg
 animatedBall animState =
     el
-        (transitionAttributes animState
-            ++ [ width (px 50)
+        (List.map htmlAttribute (Transitions.attributes elementId animState)
+            ++ [ htmlAttribute (Html.Attributes.style "position" "relative")
+               , width (px 50)
                , height (px 50)
-               , htmlAttribute (Html.Attributes.style "position" "relative")
                ]
         )
         (el [ centerX, centerY, Font.size 50 ] (text "🏀"))

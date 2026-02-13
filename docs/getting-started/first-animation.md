@@ -3,7 +3,7 @@
 Let's create a simple **fire-and-forget** fade-in animation using the **Transitions Engine**. This is the quickest way to get started.
 
 !!! info "What is fire-and-forget?"
-    A fire-and-forget animation runs once without requiring ongoing state management. You trigger it, and it completes on its own—no subscriptions, no update messages, no cleanup needed.
+    A fire-and-forget animation requires no state management or subscriptions to drive it. You trigger it once, and the browser handles the rest — completion events are available if you need them.
 
 ## The Animation
 
@@ -16,13 +16,6 @@ We'll animate an element's opacity from 0 to 1 over 2500 milliseconds.
     ```
 
 [:material-play-circle: Run this example](../examples/src/GettingStarted/FirstAnimation/index.html){ .md-button target="_blank" }
-
-!!! note "Why Process.sleep?"
-    The example uses `Process.sleep 50` to delay triggering the animation until after the initial render. **Transitions** only animate **changes** to properties — if the element is created with the transition already applied, there's no change to animate. The brief delay ensures the element first renders at opacity 0, then the state change triggers the transition to opacity 1.
-
-    This pattern is only required for page entry animations using transitions. In practice, most animations are triggered by user interaction or state changes, so you won't need this delay.
-
-    To avoid this pattern, use **CSS Keyframe animations** instead — they run as soon as the browser renders the page.
 
 
 ## Breaking It Down
@@ -94,6 +87,6 @@ Both animations run simultaneously on the same `my-box` element because they tar
 
 ## Next Steps
 
-Now that you can create a simple animation, let's learn about the Engines themselves.
+Now that you can create a simple animation, let's get a feel for the Engines themselves.
 
 [Animation Engines →](../concepts/engines/animation-engines.md){ .md-button .md-button--primary }

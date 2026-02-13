@@ -1,57 +1,6 @@
 # Properties
 
-Elm Animate supports various CSS properties that can be animated. All properties share the same consistent builder API, making them easy to learn and compose.
-
-!!! note "Why one module per property?"
-    Rather than use a single `Property` phantom type that supports all properties, I chose individual property modules despite the increased maintenance load. This provides improved readability and better IDE autocompletion, but more importantly, simpler and more obvious type safety.
-
-## Common API
-
-All properties follow the same builder pattern (Start with `for` -> Configure -> End with `build`):
-
-??? example "View Source Code"
-
-    ```elm
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        -- Start
-        Property.for "element-id"           -- Target element by ID (required)
-            -- Configure
-            >> Property.from startValue     -- Starting value 
-            >> Property.to endValue         -- Ending value
-            >> Property.duration 500        -- Duration in milliseconds
-            >> Property.easing QuintOut     -- Easing function
-            >> Property.delay 100           -- Start delay in ms
-            -- End
-            >> Property.build               -- Finalize the property (required)
-    ```
-
-    The `Configure` steps between `for` and `build` are all optional, some more so than others. After all, it wouldn't be much of an animation if there was no end state (`to`) to animate to.
-
-### Duration vs Speed
-
-You can specify timing with either `duration` (fixed time) or `speed` (distance-based):
-
-
-??? example "View Source Code"
-
-    ```elm
-    -- Fixed 500ms regardless of distance
-    |> Translate.duration 500
-
-    -- 200 pixels per second (duration varies with distance)
-    |> Translate.speed 200
-
-    ```
-
-!!! note "Units for speed"
-    The meaning of 'units' varies by property type. For `Translate` it's 'pixels'. Refer to each individual property for how speed is interpretted.
-
-!!! warning
-    Use either `duration` or `speed`, not both. If both are set, the last one wins.
-
-!!! warning
-    If no `duration` or `speed` is set, either globally on the engine, or locally on the property, then a duration of 0ms will be used, and the element will instantly jump to it's end state.
+Elm Animate supports various CSS properties that can be animated. All properties use the same [builder pattern](builder-pattern.md) — start with `for`, configure, end with `build`.
 
 
 ## GPU Accelerated Properties

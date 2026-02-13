@@ -34,7 +34,7 @@ Immediately jumps to the animation's end state and stops playback:
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/CSS/Controls/KeyframeAnimations/Main.elm:stop"
+    --8<-- "docs/examples/src/Concepts/ControllingAnimations/KeyframesEngine/Main.elm:stop"
     ```
 
 
@@ -45,7 +45,7 @@ Immediately jumps back to the animation's start state and stops:
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/CSS/Controls/KeyframeAnimations/Main.elm:reset"
+    --8<-- "docs/examples/src/Concepts/ControllingAnimations/KeyframesEngine/Main.elm:reset"
     ```
 
 ### Restart
@@ -55,7 +55,7 @@ Resets to the start state, then immediately begins playing the animation again:
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/CSS/Controls/KeyframeAnimations/Main.elm:restart"
+    --8<-- "docs/examples/src/Concepts/ControllingAnimations/KeyframesEngine/Main.elm:restart"
     ```
 
 ### Pause
@@ -65,7 +65,7 @@ Pauses the animation in it's current state:
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/CSS/Controls/KeyframeAnimations/Main.elm:pause"
+    --8<-- "docs/examples/src/Concepts/ControllingAnimations/KeyframesEngine/Main.elm:pause"
     ```
 
 
@@ -76,7 +76,7 @@ Resumes a paused animation:
 ??? example "View Source Code"
 
     ```elm
-    --8<-- docs/examples/src/Engines/CSS/Controls/KeyframeAnimations/Main.md:resume
+    --8<-- "docs/examples/src/Concepts/ControllingAnimations/KeyframesEngine/Main.elm:resume"
     ```
 
 ## Next Steps

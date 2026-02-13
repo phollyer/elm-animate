@@ -10,18 +10,26 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 - **Full 3D Support** — Transform elements in 3D space with XYZ positioning, multi-axis rotation, and configurable perspective
 - **Composable & Type-Safe** — Build complex animations from simple, reusable pieces
 
-## Quick Example - reusable animation
+## ⚙️ Engines
+
+| Engine | Best For |
+| -------- | ---------- |
+| [CSS Transitions](engines/transitions.md) | Browser-native performance, simple A→B animations |
+| [CSS Keyframes](engines/keyframes.md) | Browser-native performance, looping, pause/resume |
+| [Sub](engines/sub.md) | Programmatic control, mid-flight queries/diversions |
+| [WAAPI](engines/waapi.md) | Browser-native performance, programmatic control, mid-flight queries/diversions |
+| [Scroll](engines/scroll.md) | Smooth scrolling to elements or positions |
+
+## 🚀 Quick Example
 
 ??? example "View Source Code"
 
+    🎨 Define a reusable animation
+
     ```elm
-    import Anim.Engine.CSS.Keyframes as Keyframes
-    import Anim.Engine.CSS.Transitions as Transitions
-    import Anim.Engine.Sub as Sub
-    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Builder exposing (AnimBuilder)
     import Anim.Property.Translate as Translate
     import Anim.Extra.Easing exposing (Easing(..))
-    import Json.Encode as Encode
 
     -- Define a reusable animation
     slideIn : AnimBuilder -> AnimBuilder
@@ -32,6 +40,16 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
             >> Translate.duration 500
             >> Translate.easing QuintOut
             >> Translate.build
+    ```
+
+    🎉 Use it with any Animation Engine
+
+    ```elm
+    import Anim.Engine.CSS.Keyframes as Keyframes
+    import Anim.Engine.CSS.Transitions as Transitions
+    import Anim.Engine.Sub as Sub
+    import Anim.Engine.WAAPI as WAAPI
+    import Json.Encode as Encode
 
     -- Use it with the CSS Transitions engine
     animState =
@@ -61,23 +79,13 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
         WAAPI.fireAndForget waapiCommand slideIn
     ```
 
-## Animation Engines
-
-| Engine | Best For |
-| -------- | ---------- |
-| [CSS Transitions](engines/transitions.md) | Browser-native performance, simple A→B animations |
-| [CSS Keyframes](engines/keyframes.md) | Browser-native performance, looping, pause/resume |
-| [Sub](engines/sub.md) | Programmatic control, mid-flight queries/diversions |
-| [WAAPI](engines/waapi.md) | Browser-native performance, programmatic control, mid-flight queries/diversions |
-| [Scroll](engines/scroll.md) | Smooth scrolling to elements or positions |
-
-## Getting Started
+## 📖 Getting Started
 
 Ready to add Elm Animate to your Elm app?
 
 [Get Started →](getting-started/installation.md){ .md-button .md-button--primary }
 
-## API Reference
+## 📚 API Reference
 
 For detailed API documentation, see the official Elm package docs:
 

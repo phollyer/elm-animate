@@ -919,8 +919,8 @@ stop toMsg (AnimState animData) =
 
 {-| Stop scroll animation for a specific container by jumping to end position.
 -}
-stopContainer : (AnimMsg -> msg) -> String -> AnimState -> ( AnimState, Cmd msg )
-stopContainer toMsg containerId (AnimState animData) =
+stopContainer : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+stopContainer containerId toMsg (AnimState animData) =
     let
         ( updatedAnimations, scrollCmds ) =
             Dict.foldl
@@ -1040,8 +1040,8 @@ reset toMsg (AnimState animData) =
 
 {-| Reset scroll animation for a specific container.
 -}
-resetContainer : (AnimMsg -> msg) -> String -> AnimState -> ( AnimState, Cmd msg )
-resetContainer toMsg containerId (AnimState animData) =
+resetContainer : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+resetContainer containerId toMsg (AnimState animData) =
     let
         ( updatedAnimations, scrollCmds ) =
             Dict.foldl
@@ -1109,8 +1109,8 @@ restart toMsg (AnimState animData) =
 
 {-| Restart scroll animation for a specific container.
 -}
-restartContainer : (AnimMsg -> msg) -> String -> AnimState -> ( AnimState, Cmd msg )
-restartContainer toMsg containerId (AnimState animData) =
+restartContainer : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+restartContainer containerId toMsg (AnimState animData) =
     let
         ( updatedAnimations, scrollCmds ) =
             Dict.foldl

@@ -5365,7 +5365,7 @@ var $author$project$Anim$Internal$Properties$Rotate$to3DCssString = function (_v
 };
 var $author$project$Anim$Internal$Properties$Translate$toCssString = function (_v0) {
 	var coords = _v0.a;
-	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px'))));
+	return 'translate3d(' + ($elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px)')))));
 };
 var $author$project$Anim$Internal$Properties$Scale$Scale = function (a) {
 	return {$: 'Scale', a: a};
@@ -5414,7 +5414,7 @@ var $author$project$Anim$Internal$CSS$Transform$collectProcessedTransform = F2(
 				return _Utils_update(
 					acc,
 					{
-						translate: 'translate3d(' + ($author$project$Anim$Internal$Properties$Translate$toCssString(config.end) + ')')
+						translate: $author$project$Anim$Internal$Properties$Translate$toCssString(config.end)
 					});
 			case 'ProcessedRotateConfig':
 				var config = property.a;
@@ -6878,12 +6878,12 @@ var $author$project$Anim$Internal$Properties$Rotate$toString = function (_v0) {
 	return $elm$core$String$fromFloat(angles.z);
 };
 var $author$project$Anim$Internal$Properties$Rotate$toCssString = function (rotate) {
-	return $author$project$Anim$Internal$Properties$Rotate$toString(rotate) + 'deg';
+	return 'rotateZ(' + ($author$project$Anim$Internal$Properties$Rotate$toString(rotate) + 'deg)');
 };
 var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) {
 	var x = _v0.a.x;
 	var y = _v0.a.y;
-	return $elm$core$String$fromFloat(x) + (',' + $elm$core$String$fromFloat(y));
+	return 'scale(' + ($elm$core$String$fromFloat(x) + (', ' + ($elm$core$String$fromFloat(y) + ')')));
 };
 var $elm$core$Basics$pi = _Basics_pi;
 var $elm$core$Basics$pow = _Basics_pow;
@@ -7461,7 +7461,7 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix = F3(
 										return _Utils_update(
 											acc,
 											{
-												translate: 'translate3d(' + ($author$project$Anim$Internal$Properties$Translate$toCssString(interpolatedPos) + ')')
+												translate: $author$project$Anim$Internal$Properties$Translate$toCssString(interpolatedPos)
 											});
 									case 'ProcessedRotateConfig':
 										var cfg = p.a;

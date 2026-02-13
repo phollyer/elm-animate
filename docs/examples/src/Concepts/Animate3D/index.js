@@ -5404,7 +5404,7 @@ var $author$project$Anim$Internal$Properties$Rotate$to3DCssString = function (_v
 };
 var $author$project$Anim$Internal$Properties$Translate$toCssString = function (_v0) {
 	var coords = _v0.a;
-	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px'))));
+	return 'translate3d(' + ($elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px)')))));
 };
 var $author$project$Anim$Internal$Properties$Scale$Scale = function (a) {
 	return {$: 'Scale', a: a};
@@ -5453,7 +5453,7 @@ var $author$project$Anim$Internal$CSS$Transform$collectProcessedTransform = F2(
 				return _Utils_update(
 					acc,
 					{
-						translate: 'translate3d(' + ($author$project$Anim$Internal$Properties$Translate$toCssString(config.end) + ')')
+						translate: $author$project$Anim$Internal$Properties$Translate$toCssString(config.end)
 					});
 			case 'ProcessedRotateConfig':
 				var config = property.a;
@@ -6917,12 +6917,12 @@ var $author$project$Anim$Internal$Properties$Rotate$toString = function (_v0) {
 	return $elm$core$String$fromFloat(angles.z);
 };
 var $author$project$Anim$Internal$Properties$Rotate$toCssString = function (rotate) {
-	return $author$project$Anim$Internal$Properties$Rotate$toString(rotate) + 'deg';
+	return 'rotateZ(' + ($author$project$Anim$Internal$Properties$Rotate$toString(rotate) + 'deg)');
 };
 var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) {
 	var x = _v0.a.x;
 	var y = _v0.a.y;
-	return $elm$core$String$fromFloat(x) + (',' + $elm$core$String$fromFloat(y));
+	return 'scale(' + ($elm$core$String$fromFloat(x) + (', ' + ($elm$core$String$fromFloat(y) + ')')));
 };
 var $elm$core$Basics$pi = _Basics_pi;
 var $elm$core$Basics$pow = _Basics_pow;
@@ -7500,7 +7500,7 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix = F3(
 										return _Utils_update(
 											acc,
 											{
-												translate: 'translate3d(' + ($author$project$Anim$Internal$Properties$Translate$toCssString(interpolatedPos) + ')')
+												translate: $author$project$Anim$Internal$Properties$Translate$toCssString(interpolatedPos)
 											});
 									case 'ProcessedRotateConfig':
 										var cfg = p.a;
@@ -7794,17 +7794,135 @@ var $author$project$Anim$Internal$CSS$animate = F2(
 			});
 	});
 var $author$project$Anim$Engine$CSS$Keyframes$animate = $author$project$Anim$Internal$CSS$animate;
-var $elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
 var $author$project$Concepts$Animate3D$Main$cubeSize = 100;
 var $author$project$Concepts$Animate3D$Main$depth = $author$project$Concepts$Animate3D$Main$cubeSize / 2;
-var $author$project$Anim$Extra$Easing$BounceOut = {$: 'BounceOut'};
+var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
+	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil});
+var $author$project$Anim$Internal$Builder$BackgroundColorConfig = function (a) {
+	return {$: 'BackgroundColorConfig', a: a};
+};
+var $author$project$Anim$Internal$Builder$FontColorConfig = function (a) {
+	return {$: 'FontColorConfig', a: a};
+};
+var $author$project$Anim$Internal$Builder$OpacityConfig = function (a) {
+	return {$: 'OpacityConfig', a: a};
+};
+var $author$project$Anim$Internal$Builder$RotateConfig = function (a) {
+	return {$: 'RotateConfig', a: a};
+};
+var $author$project$Anim$Internal$Builder$ScaleConfig = function (a) {
+	return {$: 'ScaleConfig', a: a};
+};
+var $author$project$Anim$Internal$Builder$SizeConfig = function (a) {
+	return {$: 'SizeConfig', a: a};
+};
 var $author$project$Anim$Internal$Builder$TranslateConfig = function (a) {
 	return {$: 'TranslateConfig', a: a};
 };
+var $author$project$Anim$Internal$Builder$markPropertyDirty = function (property) {
+	switch (property.$) {
+		case 'TranslateConfig':
+			var config = property.a;
+			return $author$project$Anim$Internal$Builder$TranslateConfig(
+				_Utils_update(
+					config,
+					{isDirty: true}));
+		case 'RotateConfig':
+			var config = property.a;
+			return $author$project$Anim$Internal$Builder$RotateConfig(
+				_Utils_update(
+					config,
+					{isDirty: true}));
+		case 'ScaleConfig':
+			var config = property.a;
+			return $author$project$Anim$Internal$Builder$ScaleConfig(
+				_Utils_update(
+					config,
+					{isDirty: true}));
+		case 'BackgroundColorConfig':
+			var config = property.a;
+			return $author$project$Anim$Internal$Builder$BackgroundColorConfig(
+				_Utils_update(
+					config,
+					{isDirty: true}));
+		case 'FontColorConfig':
+			var config = property.a;
+			return $author$project$Anim$Internal$Builder$FontColorConfig(
+				_Utils_update(
+					config,
+					{isDirty: true}));
+		case 'OpacityConfig':
+			var config = property.a;
+			return $author$project$Anim$Internal$Builder$OpacityConfig(
+				_Utils_update(
+					config,
+					{isDirty: true}));
+		default:
+			var config = property.a;
+			return $author$project$Anim$Internal$Builder$SizeConfig(
+				_Utils_update(
+					config,
+					{isDirty: true}));
+	}
+};
+var $author$project$Anim$Internal$Builder$markDirty = function (_v0) {
+	var data = _v0.a;
+	return $author$project$Anim$Internal$Builder$AnimBuilder(
+		_Utils_update(
+			data,
+			{
+				elements: A2(
+					$elm$core$Dict$map,
+					F2(
+						function (_v1, el) {
+							return _Utils_update(
+								el,
+								{
+									properties: A2($elm$core$List$map, $author$project$Anim$Internal$Builder$markPropertyDirty, el.properties)
+								});
+						}),
+					data.elements)
+			}));
+};
+var $author$project$Anim$Internal$CSS$init = function (propertyInitializers) {
+	if (!propertyInitializers.b) {
+		return $author$project$Anim$Internal$CSS$AnimState(
+			{builder: $author$project$Anim$Internal$Builder$init, elementAnimations: $elm$core$Dict$empty, elementStates: $elm$core$Dict$empty, restartCounters: $elm$core$Dict$empty});
+	} else {
+		var configuredBuilder = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (initializer, b) {
+					return initializer(b);
+				}),
+			$author$project$Anim$Internal$Builder$init,
+			propertyInitializers);
+		var elementIds = $elm$core$Dict$keys(
+			$author$project$Anim$Internal$Builder$elements(configuredBuilder));
+		return $author$project$Anim$Internal$CSS$AnimState(
+			{
+				builder: $author$project$Anim$Internal$Builder$clearCurrentElement(
+					$author$project$Anim$Internal$Builder$markDirty(configuredBuilder)),
+				elementAnimations: A2(
+					$elm$core$Dict$map,
+					A3(
+						$author$project$Anim$Internal$CSS$generateElementAnimation,
+						$elm$core$Maybe$Nothing,
+						$author$project$Anim$Internal$Builder$discreteTransitionsEnabled(configuredBuilder),
+						$author$project$Anim$Internal$Builder$getIterationCount(configuredBuilder)),
+					$author$project$Anim$Internal$Builder$elements(configuredBuilder)),
+				elementStates: $elm$core$Dict$fromList(
+					A2(
+						$elm$core$List$map,
+						function (id) {
+							return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$NotStarted);
+						},
+						elementIds)),
+				restartCounters: $elm$core$Dict$empty
+			});
+	}
+};
+var $author$project$Anim$Engine$CSS$Keyframes$init = $author$project$Anim$Internal$CSS$init;
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
 		get:
@@ -7878,24 +7996,6 @@ var $author$project$Anim$Internal$Builders$Property$add = F2(
 			});
 		return A2($author$project$Anim$Internal$Builder$updateCurrentElement, updatedElement, builder);
 	});
-var $author$project$Anim$Internal$Builder$BackgroundColorConfig = function (a) {
-	return {$: 'BackgroundColorConfig', a: a};
-};
-var $author$project$Anim$Internal$Builder$FontColorConfig = function (a) {
-	return {$: 'FontColorConfig', a: a};
-};
-var $author$project$Anim$Internal$Builder$OpacityConfig = function (a) {
-	return {$: 'OpacityConfig', a: a};
-};
-var $author$project$Anim$Internal$Builder$RotateConfig = function (a) {
-	return {$: 'RotateConfig', a: a};
-};
-var $author$project$Anim$Internal$Builder$ScaleConfig = function (a) {
-	return {$: 'ScaleConfig', a: a};
-};
-var $author$project$Anim$Internal$Builder$SizeConfig = function (a) {
-	return {$: 'SizeConfig', a: a};
-};
 var $author$project$Anim$Extra$Easing$BounceInCustom = function (a) {
 	return {$: 'BounceInCustom', a: a};
 };
@@ -8118,57 +8218,19 @@ var $author$project$Anim$Internal$Builders$Property$upsert = F2(
 			return A2($author$project$Anim$Internal$Builders$Property$add, adjustedConfig, builder);
 		}
 	});
-var $author$project$Anim$Internal$Builders$Translate$build = function (_v0) {
+var $author$project$Anim$Internal$Builders$Rotate$build = function (_v0) {
 	var config = _v0.a;
 	var builder = _v0.b;
 	return A2(
 		$author$project$Anim$Internal$Builders$Property$upsert,
-		$author$project$Anim$Internal$Builder$TranslateConfig(config),
+		$author$project$Anim$Internal$Builder$RotateConfig(config),
 		builder);
 };
-var $author$project$Anim$Property$Translate$build = $author$project$Anim$Internal$Builders$Translate$build;
-var $author$project$Anim$Internal$Builders$Translate$TranslateBuilder = F2(
+var $author$project$Anim$Property$Rotate$build = $author$project$Anim$Internal$Builders$Rotate$build;
+var $author$project$Anim$Internal$Builders$Rotate$RotateBuilder = F2(
 	function (a, b) {
-		return {$: 'TranslateBuilder', a: a, b: b};
+		return {$: 'RotateBuilder', a: a, b: b};
 	});
-var $author$project$Anim$Internal$Builders$Property$withDuration = F2(
-	function (ms, config) {
-		return _Utils_update(
-			config,
-			{
-				duration: ms,
-				timing: $elm$core$Maybe$Just(
-					$author$project$Anim$Internal$Timing$TimeSpec$Duration(ms))
-			});
-	});
-var $author$project$Anim$Internal$Builders$Translate$duration = F2(
-	function (ms, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		return A2(
-			$author$project$Anim$Internal$Builders$Translate$TranslateBuilder,
-			A2($author$project$Anim$Internal$Builders$Property$withDuration, ms, config),
-			builder);
-	});
-var $author$project$Anim$Property$Translate$duration = $author$project$Anim$Internal$Builders$Translate$duration;
-var $author$project$Anim$Internal$Builders$Property$withEasing = F2(
-	function (easing_, config) {
-		return _Utils_update(
-			config,
-			{
-				easing: $elm$core$Maybe$Just(easing_)
-			});
-	});
-var $author$project$Anim$Internal$Builders$Translate$easing = F2(
-	function (easing_, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		return A2(
-			$author$project$Anim$Internal$Builders$Translate$TranslateBuilder,
-			A2($author$project$Anim$Internal$Builders$Property$withEasing, easing_, config),
-			builder);
-	});
-var $author$project$Anim$Property$Translate$easing = $author$project$Anim$Internal$Builders$Translate$easing;
 var $elm$core$Maybe$andThen = F2(
 	function (callback, maybeValue) {
 		if (maybeValue.$ === 'Just') {
@@ -8308,10 +8370,10 @@ var $author$project$Anim$Internal$Builders$Coordinate3D$fromTriple = F2(
 		return support.fromRecord(
 			{x: x, y: y, z: z});
 	});
-var $author$project$Anim$Internal$Properties$Translate$fromTriple = $author$project$Anim$Internal$Builders$Coordinate3D$fromTriple($author$project$Anim$Internal$Properties$Translate$support);
-var $author$project$Anim$Internal$Builders$Translate$defaultConfig = $author$project$Anim$Internal$Builders$Property$defaultConfig(
-	$author$project$Anim$Internal$Properties$Translate$fromTriple(
-		_Utils_Tuple3(0, 0, 0)));
+var $author$project$Anim$Internal$Properties$Rotate$fromTriple = $author$project$Anim$Internal$Builders$Coordinate3D$fromTriple($author$project$Anim$Internal$Properties$Rotate$support);
+var $author$project$Anim$Internal$Builders$Rotate$defaultConfig = $author$project$Anim$Internal$Builders$Property$defaultConfig(
+	$author$project$Anim$Internal$Properties$Rotate$fromTriple(
+		_Utils_Tuple3(0.0, 0.0, 0.0)));
 var $author$project$Anim$Internal$Builder$for = F2(
 	function (elementId, _v0) {
 		var data = _v0.a;
@@ -8322,238 +8384,6 @@ var $author$project$Anim$Internal$Builder$for = F2(
 					currentElementId: $elm$core$Maybe$Just(elementId)
 				}));
 	});
-var $author$project$Anim$Internal$Builders$Translate$for = F2(
-	function (elementId, builder) {
-		var extractExisting = function (propertyConfig) {
-			if (propertyConfig.$ === 'TranslateConfig') {
-				var cfg = propertyConfig.a;
-				return $elm$core$Maybe$Just(cfg);
-			} else {
-				return $elm$core$Maybe$Nothing;
-			}
-		};
-		var extractBaseline = function (endStates) {
-			return endStates.translate;
-		};
-		var config = A5($author$project$Anim$Internal$Builders$Property$createFor, extractExisting, extractBaseline, $author$project$Anim$Internal$Builders$Translate$defaultConfig, elementId, builder);
-		return A2(
-			$author$project$Anim$Internal$Builders$Translate$TranslateBuilder,
-			config,
-			A2($author$project$Anim$Internal$Builder$for, elementId, builder));
-	});
-var $author$project$Anim$Property$Translate$for = $author$project$Anim$Internal$Builders$Translate$for;
-var $author$project$Concepts$Animate3D$Main$moveFace = F2(
-	function (faceId, targetFunc) {
-		return A2(
-			$elm$core$Basics$composeR,
-			$author$project$Anim$Property$Translate$for(faceId),
-			A2(
-				$elm$core$Basics$composeR,
-				targetFunc,
-				A2(
-					$elm$core$Basics$composeR,
-					$author$project$Anim$Property$Translate$duration(1000),
-					A2(
-						$elm$core$Basics$composeR,
-						$author$project$Anim$Property$Translate$easing($author$project$Anim$Extra$Easing$BounceOut),
-						$author$project$Anim$Property$Translate$build))));
-	});
-var $author$project$Anim$Internal$Builders$Translate$to = F2(
-	function (value, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		var startVal = function () {
-			var _v1 = config.start;
-			if (_v1.$ === 'Just') {
-				var s = _v1.a;
-				return s;
-			} else {
-				return $author$project$Anim$Internal$Properties$Translate$default;
-			}
-		}();
-		return A2(
-			$author$project$Anim$Internal$Builders$Translate$TranslateBuilder,
-			_Utils_update(
-				config,
-				{
-					distance: A2($author$project$Anim$Internal$Properties$Translate$distance, startVal, value),
-					end: value,
-					start: $elm$core$Maybe$Just(startVal)
-				}),
-			builder);
-	});
-var $author$project$Anim$Internal$Builders$Translate$toXYZ = F3(
-	function (x, y, z) {
-		return $author$project$Anim$Internal$Builders$Translate$to(
-			$author$project$Anim$Internal$Properties$Translate$fromTriple(
-				_Utils_Tuple3(x, y, z)));
-	});
-var $author$project$Anim$Internal$Properties$Translate$x = function (_v0) {
-	var coords = _v0.a;
-	return coords.x;
-};
-var $author$project$Anim$Internal$Properties$Translate$y = function (_v0) {
-	var coords = _v0.a;
-	return coords.y;
-};
-var $author$project$Anim$Internal$Builders$Translate$toZ = F2(
-	function (z, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		var y = $author$project$Anim$Internal$Properties$Translate$y(config.end);
-		var x = $author$project$Anim$Internal$Properties$Translate$x(config.end);
-		return A4(
-			$author$project$Anim$Internal$Builders$Translate$toXYZ,
-			x,
-			y,
-			z,
-			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
-	});
-var $author$project$Anim$Property$Translate$toZ = $author$project$Anim$Internal$Builders$Translate$toZ;
-var $author$project$Concepts$Animate3D$Main$moveBackFaceIn = A2(
-	$author$project$Concepts$Animate3D$Main$moveFace,
-	'back-face',
-	$author$project$Anim$Property$Translate$toZ((-1) * $author$project$Concepts$Animate3D$Main$depth));
-var $author$project$Anim$Internal$Properties$Translate$z = function (_v0) {
-	var coords = _v0.a;
-	return coords.z;
-};
-var $author$project$Anim$Internal$Builders$Translate$toY = F2(
-	function (y, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		var z = $author$project$Anim$Internal$Properties$Translate$z(config.end);
-		var x = $author$project$Anim$Internal$Properties$Translate$x(config.end);
-		return A4(
-			$author$project$Anim$Internal$Builders$Translate$toXYZ,
-			x,
-			y,
-			z,
-			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
-	});
-var $author$project$Anim$Property$Translate$toY = $author$project$Anim$Internal$Builders$Translate$toY;
-var $author$project$Concepts$Animate3D$Main$moveBottomFaceIn = A2(
-	$author$project$Concepts$Animate3D$Main$moveFace,
-	'bottom-face',
-	$author$project$Anim$Property$Translate$toY($author$project$Concepts$Animate3D$Main$depth));
-var $author$project$Concepts$Animate3D$Main$moveFrontFaceIn = A2(
-	$author$project$Concepts$Animate3D$Main$moveFace,
-	'front-face',
-	$author$project$Anim$Property$Translate$toZ($author$project$Concepts$Animate3D$Main$depth));
-var $author$project$Anim$Internal$Builders$Translate$toX = F2(
-	function (x, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		var z = $author$project$Anim$Internal$Properties$Translate$z(config.end);
-		var y = $author$project$Anim$Internal$Properties$Translate$y(config.end);
-		return A4(
-			$author$project$Anim$Internal$Builders$Translate$toXYZ,
-			x,
-			y,
-			z,
-			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
-	});
-var $author$project$Anim$Property$Translate$toX = $author$project$Anim$Internal$Builders$Translate$toX;
-var $author$project$Concepts$Animate3D$Main$moveLeftFaceIn = A2(
-	$author$project$Concepts$Animate3D$Main$moveFace,
-	'left-face',
-	$author$project$Anim$Property$Translate$toX((-1) * $author$project$Concepts$Animate3D$Main$depth));
-var $author$project$Concepts$Animate3D$Main$moveRightFaceIn = A2(
-	$author$project$Concepts$Animate3D$Main$moveFace,
-	'right-face',
-	$author$project$Anim$Property$Translate$toX($author$project$Concepts$Animate3D$Main$depth));
-var $author$project$Concepts$Animate3D$Main$moveTopFaceIn = A2(
-	$author$project$Concepts$Animate3D$Main$moveFace,
-	'top-face',
-	$author$project$Anim$Property$Translate$toY((-1) * $author$project$Concepts$Animate3D$Main$depth));
-var $author$project$Concepts$Animate3D$Main$moveSidesIn = A2(
-	$elm$core$Basics$composeR,
-	$author$project$Concepts$Animate3D$Main$moveFrontFaceIn,
-	A2(
-		$elm$core$Basics$composeR,
-		$author$project$Concepts$Animate3D$Main$moveBackFaceIn,
-		A2(
-			$elm$core$Basics$composeR,
-			$author$project$Concepts$Animate3D$Main$moveRightFaceIn,
-			A2(
-				$elm$core$Basics$composeR,
-				$author$project$Concepts$Animate3D$Main$moveLeftFaceIn,
-				A2($elm$core$Basics$composeR, $author$project$Concepts$Animate3D$Main$moveTopFaceIn, $author$project$Concepts$Animate3D$Main$moveBottomFaceIn)))));
-var $author$project$Concepts$Animate3D$Main$moveBackFaceOut = A2(
-	$author$project$Concepts$Animate3D$Main$moveFace,
-	'back-face',
-	$author$project$Anim$Property$Translate$toZ(((-1) * $author$project$Concepts$Animate3D$Main$depth) - 50));
-var $author$project$Concepts$Animate3D$Main$moveBottomFaceOut = A2(
-	$author$project$Concepts$Animate3D$Main$moveFace,
-	'bottom-face',
-	$author$project$Anim$Property$Translate$toY($author$project$Concepts$Animate3D$Main$depth + 50));
-var $author$project$Concepts$Animate3D$Main$moveFrontFaceOut = A2(
-	$author$project$Concepts$Animate3D$Main$moveFace,
-	'front-face',
-	$author$project$Anim$Property$Translate$toZ($author$project$Concepts$Animate3D$Main$depth + 50));
-var $author$project$Concepts$Animate3D$Main$moveLeftFaceOut = A2(
-	$author$project$Concepts$Animate3D$Main$moveFace,
-	'left-face',
-	$author$project$Anim$Property$Translate$toX(((-1) * $author$project$Concepts$Animate3D$Main$depth) - 50));
-var $author$project$Concepts$Animate3D$Main$moveRightFaceOut = A2(
-	$author$project$Concepts$Animate3D$Main$moveFace,
-	'right-face',
-	$author$project$Anim$Property$Translate$toX($author$project$Concepts$Animate3D$Main$depth + 50));
-var $author$project$Concepts$Animate3D$Main$moveTopFaceOut = A2(
-	$author$project$Concepts$Animate3D$Main$moveFace,
-	'top-face',
-	$author$project$Anim$Property$Translate$toY(((-1) * $author$project$Concepts$Animate3D$Main$depth) - 50));
-var $author$project$Concepts$Animate3D$Main$moveSidesOut = A2(
-	$elm$core$Basics$composeR,
-	$author$project$Concepts$Animate3D$Main$moveFrontFaceOut,
-	A2(
-		$elm$core$Basics$composeR,
-		$author$project$Concepts$Animate3D$Main$moveBackFaceOut,
-		A2(
-			$elm$core$Basics$composeR,
-			$author$project$Concepts$Animate3D$Main$moveRightFaceOut,
-			A2(
-				$elm$core$Basics$composeR,
-				$author$project$Concepts$Animate3D$Main$moveLeftFaceOut,
-				A2($elm$core$Basics$composeR, $author$project$Concepts$Animate3D$Main$moveTopFaceOut, $author$project$Concepts$Animate3D$Main$moveBottomFaceOut)))));
-var $author$project$Anim$Extra$Easing$BackInOut = {$: 'BackInOut'};
-var $author$project$Anim$Internal$Builders$Rotate$build = function (_v0) {
-	var config = _v0.a;
-	var builder = _v0.b;
-	return A2(
-		$author$project$Anim$Internal$Builders$Property$upsert,
-		$author$project$Anim$Internal$Builder$RotateConfig(config),
-		builder);
-};
-var $author$project$Anim$Property$Rotate$build = $author$project$Anim$Internal$Builders$Rotate$build;
-var $author$project$Anim$Internal$Builders$Rotate$RotateBuilder = F2(
-	function (a, b) {
-		return {$: 'RotateBuilder', a: a, b: b};
-	});
-var $author$project$Anim$Internal$Builders$Rotate$duration = F2(
-	function (ms, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		return A2(
-			$author$project$Anim$Internal$Builders$Rotate$RotateBuilder,
-			A2($author$project$Anim$Internal$Builders$Property$withDuration, ms, config),
-			builder);
-	});
-var $author$project$Anim$Property$Rotate$duration = $author$project$Anim$Internal$Builders$Rotate$duration;
-var $author$project$Anim$Internal$Builders$Rotate$easing = F2(
-	function (easing_, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		return A2(
-			$author$project$Anim$Internal$Builders$Rotate$RotateBuilder,
-			A2($author$project$Anim$Internal$Builders$Property$withEasing, easing_, config),
-			builder);
-	});
-var $author$project$Anim$Property$Rotate$easing = $author$project$Anim$Internal$Builders$Rotate$easing;
-var $author$project$Anim$Internal$Properties$Rotate$fromTriple = $author$project$Anim$Internal$Builders$Coordinate3D$fromTriple($author$project$Anim$Internal$Properties$Rotate$support);
-var $author$project$Anim$Internal$Builders$Rotate$defaultConfig = $author$project$Anim$Internal$Builders$Property$defaultConfig(
-	$author$project$Anim$Internal$Properties$Rotate$fromTriple(
-		_Utils_Tuple3(0.0, 0.0, 0.0)));
 var $author$project$Anim$Internal$Builders$Rotate$for = F2(
 	function (elementId, builder) {
 		var extractExisting = function (propertyConfig) {
@@ -8574,169 +8404,6 @@ var $author$project$Anim$Internal$Builders$Rotate$for = F2(
 			A2($author$project$Anim$Internal$Builder$for, elementId, builder));
 	});
 var $author$project$Anim$Property$Rotate$for = $author$project$Anim$Internal$Builders$Rotate$for;
-var $author$project$Concepts$Animate3D$Main$rotateCube = function (targetFunc) {
-	return A2(
-		$elm$core$Basics$composeR,
-		$author$project$Anim$Property$Rotate$for('cube'),
-		A2(
-			$elm$core$Basics$composeR,
-			targetFunc,
-			A2(
-				$elm$core$Basics$composeR,
-				$author$project$Anim$Property$Rotate$easing($author$project$Anim$Extra$Easing$BackInOut),
-				A2(
-					$elm$core$Basics$composeR,
-					$author$project$Anim$Property$Rotate$duration(4000),
-					$author$project$Anim$Property$Rotate$build))));
-};
-var $author$project$Anim$Internal$Builders$Rotate$to = F2(
-	function (endRotate, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		var startRotate = function () {
-			var _v1 = config.start;
-			if (_v1.$ === 'Just') {
-				var s = _v1.a;
-				return s;
-			} else {
-				return $author$project$Anim$Internal$Properties$Rotate$fromTriple(
-					_Utils_Tuple3(0, 0, 0));
-			}
-		}();
-		return A2(
-			$author$project$Anim$Internal$Builders$Rotate$RotateBuilder,
-			_Utils_update(
-				config,
-				{
-					distance: A2($author$project$Anim$Internal$Properties$Rotate$distance, startRotate, endRotate),
-					end: endRotate,
-					start: $elm$core$Maybe$Just(startRotate)
-				}),
-			builder);
-	});
-var $author$project$Anim$Property$Rotate$to = A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Builders$Rotate$to, $author$project$Anim$Internal$Properties$Rotate$fromFloat);
-var $author$project$Concepts$Animate3D$Main$rotateCubeAntiClockwise = $author$project$Concepts$Animate3D$Main$rotateCube(
-	$author$project$Anim$Property$Rotate$to((-1) * 360));
-var $author$project$Concepts$Animate3D$Main$rotateCubeClockwise = $author$project$Concepts$Animate3D$Main$rotateCube(
-	$author$project$Anim$Property$Rotate$to(360));
-var $author$project$Concepts$Animate3D$Main$animate = function (state) {
-	switch (state.$) {
-		case 'Opening':
-			return $author$project$Concepts$Animate3D$Main$moveSidesOut;
-		case 'Closing':
-			return $author$project$Concepts$Animate3D$Main$moveSidesIn;
-		case 'RotatingOpen':
-			return $author$project$Concepts$Animate3D$Main$rotateCubeClockwise;
-		default:
-			return $author$project$Concepts$Animate3D$Main$rotateCubeAntiClockwise;
-	}
-};
-var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
-	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil});
-var $author$project$Anim$Internal$Builder$markPropertyDirty = function (property) {
-	switch (property.$) {
-		case 'TranslateConfig':
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$TranslateConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-		case 'RotateConfig':
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$RotateConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-		case 'ScaleConfig':
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$ScaleConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-		case 'BackgroundColorConfig':
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$BackgroundColorConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-		case 'FontColorConfig':
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$FontColorConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-		case 'OpacityConfig':
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$OpacityConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-		default:
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$SizeConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-	}
-};
-var $author$project$Anim$Internal$Builder$markDirty = function (_v0) {
-	var data = _v0.a;
-	return $author$project$Anim$Internal$Builder$AnimBuilder(
-		_Utils_update(
-			data,
-			{
-				elements: A2(
-					$elm$core$Dict$map,
-					F2(
-						function (_v1, el) {
-							return _Utils_update(
-								el,
-								{
-									properties: A2($elm$core$List$map, $author$project$Anim$Internal$Builder$markPropertyDirty, el.properties)
-								});
-						}),
-					data.elements)
-			}));
-};
-var $author$project$Anim$Internal$CSS$init = function (propertyInitializers) {
-	if (!propertyInitializers.b) {
-		return $author$project$Anim$Internal$CSS$AnimState(
-			{builder: $author$project$Anim$Internal$Builder$init, elementAnimations: $elm$core$Dict$empty, elementStates: $elm$core$Dict$empty, restartCounters: $elm$core$Dict$empty});
-	} else {
-		var configuredBuilder = A3(
-			$elm$core$List$foldl,
-			F2(
-				function (initializer, b) {
-					return initializer(b);
-				}),
-			$author$project$Anim$Internal$Builder$init,
-			propertyInitializers);
-		var elementIds = $elm$core$Dict$keys(
-			$author$project$Anim$Internal$Builder$elements(configuredBuilder));
-		return $author$project$Anim$Internal$CSS$AnimState(
-			{
-				builder: $author$project$Anim$Internal$Builder$clearCurrentElement(
-					$author$project$Anim$Internal$Builder$markDirty(configuredBuilder)),
-				elementAnimations: A2(
-					$elm$core$Dict$map,
-					A3(
-						$author$project$Anim$Internal$CSS$generateElementAnimation,
-						$elm$core$Maybe$Nothing,
-						$author$project$Anim$Internal$Builder$discreteTransitionsEnabled(configuredBuilder),
-						$author$project$Anim$Internal$Builder$getIterationCount(configuredBuilder)),
-					$author$project$Anim$Internal$Builder$elements(configuredBuilder)),
-				elementStates: $elm$core$Dict$fromList(
-					A2(
-						$elm$core$List$map,
-						function (id) {
-							return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$NotStarted);
-						},
-						elementIds)),
-				restartCounters: $elm$core$Dict$empty
-			});
-	}
-};
-var $author$project$Anim$Engine$CSS$Keyframes$init = $author$project$Anim$Internal$CSS$init;
 var $author$project$Anim$Internal$Builders$Rotate$from = F2(
 	function (rotate, _v0) {
 		var config = _v0.a;
@@ -8784,6 +8451,31 @@ var $author$project$Anim$Internal$Builders$Rotate$fromX = F2(
 			A2($author$project$Anim$Internal$Builders$Rotate$RotateBuilder, config, builder));
 	});
 var $author$project$Anim$Property$Rotate$fromX = $author$project$Anim$Internal$Builders$Rotate$fromX;
+var $author$project$Anim$Internal$Builders$Rotate$to = F2(
+	function (endRotate, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var startRotate = function () {
+			var _v1 = config.start;
+			if (_v1.$ === 'Just') {
+				var s = _v1.a;
+				return s;
+			} else {
+				return $author$project$Anim$Internal$Properties$Rotate$fromTriple(
+					_Utils_Tuple3(0, 0, 0));
+			}
+		}();
+		return A2(
+			$author$project$Anim$Internal$Builders$Rotate$RotateBuilder,
+			_Utils_update(
+				config,
+				{
+					distance: A2($author$project$Anim$Internal$Properties$Rotate$distance, startRotate, endRotate),
+					end: endRotate,
+					start: $elm$core$Maybe$Just(startRotate)
+				}),
+			builder);
+	});
 var $author$project$Anim$Internal$Builders$Rotate$toXYZ = F3(
 	function (x, y, z) {
 		return $author$project$Anim$Internal$Builders$Rotate$to(
@@ -8815,6 +8507,41 @@ var $author$project$Anim$Property$Rotate$initX = F3(
 					x,
 					A2($author$project$Anim$Property$Rotate$for, elementId, animBuilder))));
 	});
+var $author$project$Anim$Internal$Builders$Translate$build = function (_v0) {
+	var config = _v0.a;
+	var builder = _v0.b;
+	return A2(
+		$author$project$Anim$Internal$Builders$Property$upsert,
+		$author$project$Anim$Internal$Builder$TranslateConfig(config),
+		builder);
+};
+var $author$project$Anim$Internal$Builders$Translate$TranslateBuilder = F2(
+	function (a, b) {
+		return {$: 'TranslateBuilder', a: a, b: b};
+	});
+var $author$project$Anim$Internal$Properties$Translate$fromTriple = $author$project$Anim$Internal$Builders$Coordinate3D$fromTriple($author$project$Anim$Internal$Properties$Translate$support);
+var $author$project$Anim$Internal$Builders$Translate$defaultConfig = $author$project$Anim$Internal$Builders$Property$defaultConfig(
+	$author$project$Anim$Internal$Properties$Translate$fromTriple(
+		_Utils_Tuple3(0, 0, 0)));
+var $author$project$Anim$Internal$Builders$Translate$for = F2(
+	function (elementId, builder) {
+		var extractExisting = function (propertyConfig) {
+			if (propertyConfig.$ === 'TranslateConfig') {
+				var cfg = propertyConfig.a;
+				return $elm$core$Maybe$Just(cfg);
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		};
+		var extractBaseline = function (endStates) {
+			return endStates.translate;
+		};
+		var config = A5($author$project$Anim$Internal$Builders$Property$createFor, extractExisting, extractBaseline, $author$project$Anim$Internal$Builders$Translate$defaultConfig, elementId, builder);
+		return A2(
+			$author$project$Anim$Internal$Builders$Translate$TranslateBuilder,
+			config,
+			A2($author$project$Anim$Internal$Builder$for, elementId, builder));
+	});
 var $author$project$Anim$Internal$Builders$Translate$from = F2(
 	function (value, _v0) {
 		var config = _v0.a;
@@ -8834,6 +8561,14 @@ var $author$project$Anim$Internal$Builders$Translate$fromXYZ = F3(
 			$author$project$Anim$Internal$Properties$Translate$fromTriple(
 				_Utils_Tuple3(x, y, z)));
 	});
+var $author$project$Anim$Internal$Properties$Translate$y = function (_v0) {
+	var coords = _v0.a;
+	return coords.y;
+};
+var $author$project$Anim$Internal$Properties$Translate$z = function (_v0) {
+	var coords = _v0.a;
+	return coords.z;
+};
 var $author$project$Anim$Internal$Builders$Translate$fromX = F2(
 	function (x, _v0) {
 		var config = _v0.a;
@@ -8854,6 +8589,49 @@ var $author$project$Anim$Internal$Builders$Translate$fromX = F2(
 			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
 	});
 var $author$project$Anim$Property$Translate$fromX = $author$project$Anim$Internal$Builders$Translate$fromX;
+var $author$project$Anim$Internal$Builders$Translate$to = F2(
+	function (value, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var startVal = function () {
+			var _v1 = config.start;
+			if (_v1.$ === 'Just') {
+				var s = _v1.a;
+				return s;
+			} else {
+				return $author$project$Anim$Internal$Properties$Translate$default;
+			}
+		}();
+		return A2(
+			$author$project$Anim$Internal$Builders$Translate$TranslateBuilder,
+			_Utils_update(
+				config,
+				{
+					distance: A2($author$project$Anim$Internal$Properties$Translate$distance, startVal, value),
+					end: value,
+					start: $elm$core$Maybe$Just(startVal)
+				}),
+			builder);
+	});
+var $author$project$Anim$Internal$Builders$Translate$toXYZ = F3(
+	function (x, y, z) {
+		return $author$project$Anim$Internal$Builders$Translate$to(
+			$author$project$Anim$Internal$Properties$Translate$fromTriple(
+				_Utils_Tuple3(x, y, z)));
+	});
+var $author$project$Anim$Internal$Builders$Translate$toX = F2(
+	function (x, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var z = $author$project$Anim$Internal$Properties$Translate$z(config.end);
+		var y = $author$project$Anim$Internal$Properties$Translate$y(config.end);
+		return A4(
+			$author$project$Anim$Internal$Builders$Translate$toXYZ,
+			x,
+			y,
+			z,
+			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
+	});
 var $author$project$Anim$Property$Translate$initX = F3(
 	function (elementId, x, animBuilder) {
 		return $author$project$Anim$Internal$Builders$Translate$build(
@@ -8914,6 +8692,10 @@ var $author$project$Anim$Property$Rotate$initY = F3(
 					y,
 					A2($author$project$Anim$Property$Rotate$for, elementId, animBuilder))));
 	});
+var $author$project$Anim$Internal$Properties$Translate$x = function (_v0) {
+	var coords = _v0.a;
+	return coords.x;
+};
 var $author$project$Anim$Internal$Builders$Translate$fromY = F2(
 	function (y, _v0) {
 		var config = _v0.a;
@@ -8934,6 +8716,19 @@ var $author$project$Anim$Internal$Builders$Translate$fromY = F2(
 			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
 	});
 var $author$project$Anim$Property$Translate$fromY = $author$project$Anim$Internal$Builders$Translate$fromY;
+var $author$project$Anim$Internal$Builders$Translate$toY = F2(
+	function (y, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var z = $author$project$Anim$Internal$Properties$Translate$z(config.end);
+		var x = $author$project$Anim$Internal$Properties$Translate$x(config.end);
+		return A4(
+			$author$project$Anim$Internal$Builders$Translate$toXYZ,
+			x,
+			y,
+			z,
+			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
+	});
 var $author$project$Anim$Property$Translate$initY = F3(
 	function (elementId, y, animBuilder) {
 		return $author$project$Anim$Internal$Builders$Translate$build(
@@ -8965,6 +8760,19 @@ var $author$project$Anim$Internal$Builders$Translate$fromZ = F2(
 			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
 	});
 var $author$project$Anim$Property$Translate$fromZ = $author$project$Anim$Internal$Builders$Translate$fromZ;
+var $author$project$Anim$Internal$Builders$Translate$toZ = F2(
+	function (z, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var y = $author$project$Anim$Internal$Properties$Translate$y(config.end);
+		var x = $author$project$Anim$Internal$Properties$Translate$x(config.end);
+		return A4(
+			$author$project$Anim$Internal$Builders$Translate$toXYZ,
+			x,
+			y,
+			z,
+			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
+	});
 var $author$project$Anim$Property$Translate$initZ = F3(
 	function (elementId, z, animBuilder) {
 		return $author$project$Anim$Internal$Builders$Translate$build(
@@ -8976,10 +8784,111 @@ var $author$project$Anim$Property$Translate$initZ = F3(
 					z,
 					A2($author$project$Anim$Internal$Builders$Translate$for, elementId, animBuilder))));
 	});
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var $author$project$Anim$Extra$Easing$BounceOut = {$: 'BounceOut'};
+var $author$project$Anim$Property$Translate$build = $author$project$Anim$Internal$Builders$Translate$build;
+var $author$project$Anim$Internal$Builders$Property$withDuration = F2(
+	function (ms, config) {
+		return _Utils_update(
+			config,
+			{
+				duration: ms,
+				timing: $elm$core$Maybe$Just(
+					$author$project$Anim$Internal$Timing$TimeSpec$Duration(ms))
+			});
+	});
+var $author$project$Anim$Internal$Builders$Translate$duration = F2(
+	function (ms, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builders$Translate$TranslateBuilder,
+			A2($author$project$Anim$Internal$Builders$Property$withDuration, ms, config),
+			builder);
+	});
+var $author$project$Anim$Property$Translate$duration = $author$project$Anim$Internal$Builders$Translate$duration;
+var $author$project$Anim$Internal$Builders$Property$withEasing = F2(
+	function (easing_, config) {
+		return _Utils_update(
+			config,
+			{
+				easing: $elm$core$Maybe$Just(easing_)
+			});
+	});
+var $author$project$Anim$Internal$Builders$Translate$easing = F2(
+	function (easing_, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builders$Translate$TranslateBuilder,
+			A2($author$project$Anim$Internal$Builders$Property$withEasing, easing_, config),
+			builder);
+	});
+var $author$project$Anim$Property$Translate$easing = $author$project$Anim$Internal$Builders$Translate$easing;
+var $author$project$Anim$Property$Translate$for = $author$project$Anim$Internal$Builders$Translate$for;
+var $author$project$Concepts$Animate3D$Main$moveFace = F2(
+	function (faceId, targetFunc) {
+		return A2(
+			$elm$core$Basics$composeR,
+			$author$project$Anim$Property$Translate$for(faceId),
+			A2(
+				$elm$core$Basics$composeR,
+				targetFunc,
+				A2(
+					$elm$core$Basics$composeR,
+					$author$project$Anim$Property$Translate$duration(1000),
+					A2(
+						$elm$core$Basics$composeR,
+						$author$project$Anim$Property$Translate$easing($author$project$Anim$Extra$Easing$BounceOut),
+						$author$project$Anim$Property$Translate$build))));
+	});
+var $author$project$Anim$Property$Translate$toZ = $author$project$Anim$Internal$Builders$Translate$toZ;
+var $author$project$Concepts$Animate3D$Main$moveBackFaceOut = A2(
+	$author$project$Concepts$Animate3D$Main$moveFace,
+	'back-face',
+	$author$project$Anim$Property$Translate$toZ(((-1) * $author$project$Concepts$Animate3D$Main$depth) - 50));
+var $author$project$Anim$Property$Translate$toY = $author$project$Anim$Internal$Builders$Translate$toY;
+var $author$project$Concepts$Animate3D$Main$moveBottomFaceOut = A2(
+	$author$project$Concepts$Animate3D$Main$moveFace,
+	'bottom-face',
+	$author$project$Anim$Property$Translate$toY($author$project$Concepts$Animate3D$Main$depth + 50));
+var $author$project$Concepts$Animate3D$Main$moveFrontFaceOut = A2(
+	$author$project$Concepts$Animate3D$Main$moveFace,
+	'front-face',
+	$author$project$Anim$Property$Translate$toZ($author$project$Concepts$Animate3D$Main$depth + 50));
+var $author$project$Anim$Property$Translate$toX = $author$project$Anim$Internal$Builders$Translate$toX;
+var $author$project$Concepts$Animate3D$Main$moveLeftFaceOut = A2(
+	$author$project$Concepts$Animate3D$Main$moveFace,
+	'left-face',
+	$author$project$Anim$Property$Translate$toX(((-1) * $author$project$Concepts$Animate3D$Main$depth) - 50));
+var $author$project$Concepts$Animate3D$Main$moveRightFaceOut = A2(
+	$author$project$Concepts$Animate3D$Main$moveFace,
+	'right-face',
+	$author$project$Anim$Property$Translate$toX($author$project$Concepts$Animate3D$Main$depth + 50));
+var $author$project$Concepts$Animate3D$Main$moveTopFaceOut = A2(
+	$author$project$Concepts$Animate3D$Main$moveFace,
+	'top-face',
+	$author$project$Anim$Property$Translate$toY(((-1) * $author$project$Concepts$Animate3D$Main$depth) - 50));
+var $author$project$Concepts$Animate3D$Main$moveSidesOut = A2(
+	$elm$core$Basics$composeR,
+	$author$project$Concepts$Animate3D$Main$moveFrontFaceOut,
+	A2(
+		$elm$core$Basics$composeR,
+		$author$project$Concepts$Animate3D$Main$moveBackFaceOut,
+		A2(
+			$elm$core$Basics$composeR,
+			$author$project$Concepts$Animate3D$Main$moveRightFaceOut,
+			A2(
+				$elm$core$Basics$composeR,
+				$author$project$Concepts$Animate3D$Main$moveLeftFaceOut,
+				A2($elm$core$Basics$composeR, $author$project$Concepts$Animate3D$Main$moveTopFaceOut, $author$project$Concepts$Animate3D$Main$moveBottomFaceOut)))));
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Concepts$Animate3D$Main$init = function (flags) {
-	var state = $author$project$Concepts$Animate3D$Main$Opening;
 	var initialAnimState = $author$project$Anim$Engine$CSS$Keyframes$init(
 		_List_fromArray(
 			[
@@ -9002,11 +8911,8 @@ var $author$project$Concepts$Animate3D$Main$init = function (flags) {
 				height: 350,
 				width: A2($elm$core$Basics$min, 500, flags.window.width - 40)
 			},
-			animState: A2(
-				$author$project$Anim$Engine$CSS$Keyframes$animate,
-				initialAnimState,
-				$author$project$Concepts$Animate3D$Main$animate(state)),
-			state: state
+			animState: A2($author$project$Anim$Engine$CSS$Keyframes$animate, initialAnimState, $author$project$Concepts$Animate3D$Main$moveSidesOut),
+			state: $author$project$Concepts$Animate3D$Main$Opening
 		},
 		$elm$core$Platform$Cmd$none);
 };
@@ -9099,6 +9005,96 @@ var $author$project$Anim$Engine$CSS$Keyframes$handleEvent = F2(
 					animState);
 		}
 	});
+var $author$project$Concepts$Animate3D$Main$moveBackFaceIn = A2(
+	$author$project$Concepts$Animate3D$Main$moveFace,
+	'back-face',
+	$author$project$Anim$Property$Translate$toZ((-1) * $author$project$Concepts$Animate3D$Main$depth));
+var $author$project$Concepts$Animate3D$Main$moveBottomFaceIn = A2(
+	$author$project$Concepts$Animate3D$Main$moveFace,
+	'bottom-face',
+	$author$project$Anim$Property$Translate$toY($author$project$Concepts$Animate3D$Main$depth));
+var $author$project$Concepts$Animate3D$Main$moveFrontFaceIn = A2(
+	$author$project$Concepts$Animate3D$Main$moveFace,
+	'front-face',
+	$author$project$Anim$Property$Translate$toZ($author$project$Concepts$Animate3D$Main$depth));
+var $author$project$Concepts$Animate3D$Main$moveLeftFaceIn = A2(
+	$author$project$Concepts$Animate3D$Main$moveFace,
+	'left-face',
+	$author$project$Anim$Property$Translate$toX((-1) * $author$project$Concepts$Animate3D$Main$depth));
+var $author$project$Concepts$Animate3D$Main$moveRightFaceIn = A2(
+	$author$project$Concepts$Animate3D$Main$moveFace,
+	'right-face',
+	$author$project$Anim$Property$Translate$toX($author$project$Concepts$Animate3D$Main$depth));
+var $author$project$Concepts$Animate3D$Main$moveTopFaceIn = A2(
+	$author$project$Concepts$Animate3D$Main$moveFace,
+	'top-face',
+	$author$project$Anim$Property$Translate$toY((-1) * $author$project$Concepts$Animate3D$Main$depth));
+var $author$project$Concepts$Animate3D$Main$moveSidesIn = A2(
+	$elm$core$Basics$composeR,
+	$author$project$Concepts$Animate3D$Main$moveFrontFaceIn,
+	A2(
+		$elm$core$Basics$composeR,
+		$author$project$Concepts$Animate3D$Main$moveBackFaceIn,
+		A2(
+			$elm$core$Basics$composeR,
+			$author$project$Concepts$Animate3D$Main$moveRightFaceIn,
+			A2(
+				$elm$core$Basics$composeR,
+				$author$project$Concepts$Animate3D$Main$moveLeftFaceIn,
+				A2($elm$core$Basics$composeR, $author$project$Concepts$Animate3D$Main$moveTopFaceIn, $author$project$Concepts$Animate3D$Main$moveBottomFaceIn)))));
+var $author$project$Anim$Extra$Easing$BackInOut = {$: 'BackInOut'};
+var $author$project$Anim$Internal$Builders$Rotate$duration = F2(
+	function (ms, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builders$Rotate$RotateBuilder,
+			A2($author$project$Anim$Internal$Builders$Property$withDuration, ms, config),
+			builder);
+	});
+var $author$project$Anim$Property$Rotate$duration = $author$project$Anim$Internal$Builders$Rotate$duration;
+var $author$project$Anim$Internal$Builders$Rotate$easing = F2(
+	function (easing_, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builders$Rotate$RotateBuilder,
+			A2($author$project$Anim$Internal$Builders$Property$withEasing, easing_, config),
+			builder);
+	});
+var $author$project$Anim$Property$Rotate$easing = $author$project$Anim$Internal$Builders$Rotate$easing;
+var $author$project$Concepts$Animate3D$Main$rotateCube = function (targetFunc) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$author$project$Anim$Property$Rotate$for('cube'),
+		A2(
+			$elm$core$Basics$composeR,
+			targetFunc,
+			A2(
+				$elm$core$Basics$composeR,
+				$author$project$Anim$Property$Rotate$easing($author$project$Anim$Extra$Easing$BackInOut),
+				A2(
+					$elm$core$Basics$composeR,
+					$author$project$Anim$Property$Rotate$duration(4000),
+					$author$project$Anim$Property$Rotate$build))));
+};
+var $author$project$Anim$Property$Rotate$to = A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Builders$Rotate$to, $author$project$Anim$Internal$Properties$Rotate$fromFloat);
+var $author$project$Concepts$Animate3D$Main$rotateCubeAntiClockwise = $author$project$Concepts$Animate3D$Main$rotateCube(
+	$author$project$Anim$Property$Rotate$to((-1) * 360));
+var $author$project$Concepts$Animate3D$Main$rotateCubeClockwise = $author$project$Concepts$Animate3D$Main$rotateCube(
+	$author$project$Anim$Property$Rotate$to(360));
+var $author$project$Concepts$Animate3D$Main$selectAnimation = function (state) {
+	switch (state.$) {
+		case 'Opening':
+			return $author$project$Concepts$Animate3D$Main$moveSidesOut;
+		case 'Closing':
+			return $author$project$Concepts$Animate3D$Main$moveSidesIn;
+		case 'RotatingOpen':
+			return $author$project$Concepts$Animate3D$Main$rotateCubeClockwise;
+		default:
+			return $author$project$Concepts$Animate3D$Main$rotateCubeAntiClockwise;
+	}
+};
 var $author$project$Concepts$Animate3D$Main$update = F2(
 	function (msg, model) {
 		var event = msg.a;
@@ -9130,7 +9126,7 @@ var $author$project$Concepts$Animate3D$Main$update = F2(
 									animState: A2(
 										$author$project$Anim$Engine$CSS$Keyframes$animate,
 										newModel.animState,
-										$author$project$Concepts$Animate3D$Main$animate(newState)),
+										$author$project$Concepts$Animate3D$Main$selectAnimation(newState)),
 									state: newState
 								}),
 							$elm$core$Platform$Cmd$none);
@@ -9153,7 +9149,7 @@ var $author$project$Concepts$Animate3D$Main$update = F2(
 									animState: A2(
 										$author$project$Anim$Engine$CSS$Keyframes$animate,
 										newModel.animState,
-										$author$project$Concepts$Animate3D$Main$animate(newState)),
+										$author$project$Concepts$Animate3D$Main$selectAnimation(newState)),
 									state: newState
 								}),
 							$elm$core$Platform$Cmd$none);
@@ -15046,6 +15042,9 @@ var $elm$core$Basics$always = F2(
 	});
 var $mdgriffith$elm_ui$Internal$Model$unstyled = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Unstyled, $elm$core$Basics$always);
 var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled;
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $author$project$Anim$Extra$View3D$opacityHack = A2($elm$html$Html$Attributes$style, 'opacity', '0.99');
 var $mdgriffith$elm_ui$Internal$Model$Class = F2(
 	function (a, b) {
 		return {$: 'Class', a: a, b: b};
@@ -15109,8 +15108,6 @@ var $author$project$Common$UI$pageHeader = function (title) {
 				$mdgriffith$elm_ui$Element$text(title)
 			]));
 };
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Anim$Extra$View3D$perspective = function (value) {
 	return A2(
 		$elm$html$Html$Attributes$style,
@@ -15199,19 +15196,74 @@ var $author$project$Concepts$Animate3D$Main$GotKeyframeEvent = function (a) {
 	return {$: 'GotKeyframeEvent', a: a};
 };
 var $author$project$Anim$Extra$View3D$Preserve3D = {$: 'Preserve3D'};
+var $author$project$Anim$Internal$CSS$getElementAnimation = F2(
+	function (elementId, _v0) {
+		var state = _v0.a;
+		return A2($elm$core$Dict$get, elementId, state.elementAnimations);
+	});
+var $author$project$Anim$Internal$CSS$KeyframeAnimation$toAttributeString = function (animationLayers) {
+	return (!$elm$core$List$isEmpty(animationLayers)) ? A2(
+		$elm$core$String$join,
+		', ',
+		A2(
+			$elm$core$List$map,
+			function (layer) {
+				var iterationString = function () {
+					var _v0 = layer.iterationCount;
+					switch (_v0.$) {
+						case 'Once':
+							return '1';
+						case 'Times':
+							var n = _v0.a;
+							return $elm$core$String$fromInt(n);
+						default:
+							return 'infinite';
+					}
+				}();
+				return layer.animationName + (' ' + ($elm$core$String$fromInt(layer.duration) + ('ms ' + (layer.easing + (' ' + ($elm$core$String$fromInt(layer.delay) + ('ms ' + (iterationString + ' forwards'))))))));
+			},
+			animationLayers)) : '';
+};
+var $author$project$Anim$Internal$CSS$keyframesStyles = F2(
+	function (elementId, animState) {
+		var _v0 = A2($author$project$Anim$Internal$CSS$getElementAnimation, elementId, animState);
+		if (_v0.$ === 'Just') {
+			var elementAnimation = _v0.a;
+			var otherStyleAttrs = A2(
+				$elm$core$List$map,
+				function (_v2) {
+					var key = _v2.a;
+					var value = _v2.b;
+					return A2($elm$html$Html$Attributes$style, key, value);
+				},
+				A2(
+					$elm$core$List$filter,
+					function (_v1) {
+						var key = _v1.a;
+						return key !== 'animation';
+					},
+					elementAnimation.styles));
+			var animationAttr = A2(
+				$elm$html$Html$Attributes$style,
+				'animation',
+				$author$project$Anim$Internal$CSS$KeyframeAnimation$toAttributeString(elementAnimation.animationLayers));
+			return A2($elm$core$List$cons, animationAttr, otherStyleAttrs);
+		} else {
+			return _List_Nil;
+		}
+	});
+var $author$project$Anim$Engine$CSS$Keyframes$attributes = $author$project$Anim$Internal$CSS$keyframesStyles;
 var $author$project$Concepts$Animate3D$Main$backFace = {
 	background: A3($mdgriffith$elm_ui$Element$rgb255, 41, 128, 185),
 	borderColor: A3($mdgriffith$elm_ui$Element$rgb255, 33, 97, 140),
 	id: 'back-face',
-	label: 'BACK',
-	listenForEvents: false
+	label: 'BACK'
 };
 var $author$project$Concepts$Animate3D$Main$bottomFace = {
 	background: A3($mdgriffith$elm_ui$Element$rgb255, 155, 89, 182),
 	borderColor: A3($mdgriffith$elm_ui$Element$rgb255, 142, 68, 173),
 	id: 'bottom-face',
-	label: 'BOTTOM',
-	listenForEvents: false
+	label: 'BOTTOM'
 };
 var $author$project$Anim$Engine$CSS$Keyframes$Cancelled = function (a) {
 	return {$: 'Cancelled', a: a};
@@ -15279,16 +15331,13 @@ var $author$project$Concepts$Animate3D$Main$frontFace = {
 	background: A3($mdgriffith$elm_ui$Element$rgb255, 52, 152, 219),
 	borderColor: A3($mdgriffith$elm_ui$Element$rgb255, 41, 128, 185),
 	id: 'front-face',
-	label: 'FRONT',
-	listenForEvents: true
+	label: 'FRONT'
 };
-var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $author$project$Concepts$Animate3D$Main$leftFace = {
 	background: A3($mdgriffith$elm_ui$Element$rgb255, 230, 126, 34),
 	borderColor: A3($mdgriffith$elm_ui$Element$rgb255, 211, 84, 0),
 	id: 'left-face',
-	label: 'LEFT',
-	listenForEvents: false
+	label: 'LEFT'
 };
 var $author$project$Anim$Extra$View3D$perspectiveOriginToString = function (origin) {
 	switch (origin.$) {
@@ -15330,72 +15379,13 @@ var $author$project$Concepts$Animate3D$Main$rightFace = {
 	background: A3($mdgriffith$elm_ui$Element$rgb255, 231, 76, 60),
 	borderColor: A3($mdgriffith$elm_ui$Element$rgb255, 192, 57, 43),
 	id: 'right-face',
-	label: 'RIGHT',
-	listenForEvents: false
+	label: 'RIGHT'
 };
-var $author$project$Anim$Internal$CSS$getElementAnimation = F2(
-	function (elementId, _v0) {
-		var state = _v0.a;
-		return A2($elm$core$Dict$get, elementId, state.elementAnimations);
-	});
-var $author$project$Anim$Internal$CSS$KeyframeAnimation$toAttributeString = function (animationLayers) {
-	return (!$elm$core$List$isEmpty(animationLayers)) ? A2(
-		$elm$core$String$join,
-		', ',
-		A2(
-			$elm$core$List$map,
-			function (layer) {
-				var iterationString = function () {
-					var _v0 = layer.iterationCount;
-					switch (_v0.$) {
-						case 'Once':
-							return '1';
-						case 'Times':
-							var n = _v0.a;
-							return $elm$core$String$fromInt(n);
-						default:
-							return 'infinite';
-					}
-				}();
-				return layer.animationName + (' ' + ($elm$core$String$fromInt(layer.duration) + ('ms ' + (layer.easing + (' ' + ($elm$core$String$fromInt(layer.delay) + ('ms ' + (iterationString + ' forwards'))))))));
-			},
-			animationLayers)) : '';
-};
-var $author$project$Anim$Internal$CSS$keyframesStyles = F2(
-	function (elementId, animState) {
-		var _v0 = A2($author$project$Anim$Internal$CSS$getElementAnimation, elementId, animState);
-		if (_v0.$ === 'Just') {
-			var elementAnimation = _v0.a;
-			var otherStyleAttrs = A2(
-				$elm$core$List$map,
-				function (_v2) {
-					var key = _v2.a;
-					var value = _v2.b;
-					return A2($elm$html$Html$Attributes$style, key, value);
-				},
-				A2(
-					$elm$core$List$filter,
-					function (_v1) {
-						var key = _v1.a;
-						return key !== 'animation';
-					},
-					elementAnimation.styles));
-			var animationAttr = A2(
-				$elm$html$Html$Attributes$style,
-				'animation',
-				$author$project$Anim$Internal$CSS$KeyframeAnimation$toAttributeString(elementAnimation.animationLayers));
-			return A2($elm$core$List$cons, animationAttr, otherStyleAttrs);
-		} else {
-			return _List_Nil;
-		}
-	});
-var $author$project$Anim$Engine$CSS$Keyframes$styles = $author$project$Anim$Internal$CSS$keyframesStyles;
 var $author$project$Concepts$Animate3D$Main$topFace = {
 	background: A3($mdgriffith$elm_ui$Element$rgb255, 46, 204, 113),
 	borderColor: A3($mdgriffith$elm_ui$Element$rgb255, 39, 174, 96),
 	id: 'top-face',
-	label: 'TOP',
-	listenForEvents: false
+	label: 'TOP'
 };
 var $author$project$Anim$Extra$View3D$transformStyle = function (ts) {
 	return A2(
@@ -15456,27 +15446,23 @@ var $author$project$Concepts$Animate3D$Main$viewFace = F3(
 		var baseAttributes = _List_fromArray(
 			[
 				$mdgriffith$elm_ui$Element$htmlAttribute(
-				$elm$html$Html$Attributes$id(config.id)),
+				A2($elm$html$Html$Attributes$style, 'position', 'absolute')),
 				$mdgriffith$elm_ui$Element$width(
-				$mdgriffith$elm_ui$Element$px(
-					$elm$core$Basics$round($author$project$Concepts$Animate3D$Main$cubeSize))),
+				$mdgriffith$elm_ui$Element$px($author$project$Concepts$Animate3D$Main$cubeSize)),
 				$mdgriffith$elm_ui$Element$height(
-				$mdgriffith$elm_ui$Element$px(
-					$elm$core$Basics$round($author$project$Concepts$Animate3D$Main$cubeSize))),
+				$mdgriffith$elm_ui$Element$px($author$project$Concepts$Animate3D$Main$cubeSize)),
 				$mdgriffith$elm_ui$Element$Background$color(config.background),
 				$mdgriffith$elm_ui$Element$Border$width(2),
 				$mdgriffith$elm_ui$Element$Border$color(config.borderColor),
 				$mdgriffith$elm_ui$Element$Font$color(
 				A3($mdgriffith$elm_ui$Element$rgb, 1, 1, 1)),
 				$mdgriffith$elm_ui$Element$Font$bold,
-				$mdgriffith$elm_ui$Element$Font$size(14),
-				$mdgriffith$elm_ui$Element$htmlAttribute(
-				A2($elm$html$Html$Attributes$style, 'position', 'absolute'))
+				$mdgriffith$elm_ui$Element$Font$size(14)
 			]);
 		var animAttributes = A2(
 			$elm$core$List$map,
 			$mdgriffith$elm_ui$Element$htmlAttribute,
-			A2($author$project$Anim$Engine$CSS$Keyframes$styles, config.id, animState));
+			A2($author$project$Anim$Engine$CSS$Keyframes$attributes, config.id, animState));
 		return A2(
 			$mdgriffith$elm_ui$Element$el,
 			_Utils_ap(
@@ -15493,7 +15479,7 @@ var $author$project$Concepts$Animate3D$Main$viewCube = function (model) {
 	var cubeStyles = A2(
 		$elm$core$List$map,
 		$mdgriffith$elm_ui$Element$htmlAttribute,
-		A2($author$project$Anim$Engine$CSS$Keyframes$styles, 'cube', model.animState));
+		A2($author$project$Anim$Engine$CSS$Keyframes$attributes, 'cube', model.animState));
 	var cubeEvents = (_Utils_eq(model.state, $author$project$Concepts$Animate3D$Main$RotatingOpen) || _Utils_eq(model.state, $author$project$Concepts$Animate3D$Main$RotatingClosed)) ? A2(
 		$elm$core$List$map,
 		$mdgriffith$elm_ui$Element$htmlAttribute,
@@ -15501,25 +15487,23 @@ var $author$project$Concepts$Animate3D$Main$viewCube = function (model) {
 	return A2(
 		$mdgriffith$elm_ui$Element$column,
 		_Utils_ap(
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$htmlAttribute(
-					$elm$html$Html$Attributes$id('cube')),
-					$mdgriffith$elm_ui$Element$width(
-					$mdgriffith$elm_ui$Element$px(
-						$elm$core$Basics$round($author$project$Concepts$Animate3D$Main$cubeSize))),
-					$mdgriffith$elm_ui$Element$height(
-					$mdgriffith$elm_ui$Element$px(
-						$elm$core$Basics$round($author$project$Concepts$Animate3D$Main$cubeSize))),
-					$mdgriffith$elm_ui$Element$htmlAttribute(
-					$author$project$Anim$Extra$View3D$transformStyle($author$project$Anim$Extra$View3D$Preserve3D)),
-					$mdgriffith$elm_ui$Element$htmlAttribute(
-					$author$project$Anim$Extra$View3D$perspectiveOrigin($author$project$Anim$Extra$View3D$Center))
-				]),
-			_Utils_ap(cubeStyles, cubeEvents)),
+			cubeStyles,
+			_Utils_ap(
+				cubeEvents,
+				_List_fromArray(
+					[
+						$mdgriffith$elm_ui$Element$htmlAttribute(
+						$author$project$Anim$Extra$View3D$transformStyle($author$project$Anim$Extra$View3D$Preserve3D)),
+						$mdgriffith$elm_ui$Element$htmlAttribute(
+						$author$project$Anim$Extra$View3D$perspectiveOrigin($author$project$Anim$Extra$View3D$Center)),
+						$mdgriffith$elm_ui$Element$width(
+						$mdgriffith$elm_ui$Element$px($author$project$Concepts$Animate3D$Main$cubeSize)),
+						$mdgriffith$elm_ui$Element$height(
+						$mdgriffith$elm_ui$Element$px($author$project$Concepts$Animate3D$Main$cubeSize))
+					]))),
 		_List_fromArray(
 			[
-				A3($author$project$Concepts$Animate3D$Main$viewFace, model.animState, shouldListenForSideEvents && $author$project$Concepts$Animate3D$Main$frontFace.listenForEvents, $author$project$Concepts$Animate3D$Main$frontFace),
+				A3($author$project$Concepts$Animate3D$Main$viewFace, model.animState, shouldListenForSideEvents, $author$project$Concepts$Animate3D$Main$frontFace),
 				A3($author$project$Concepts$Animate3D$Main$viewFace, model.animState, false, $author$project$Concepts$Animate3D$Main$backFace),
 				A3($author$project$Concepts$Animate3D$Main$viewFace, model.animState, false, $author$project$Concepts$Animate3D$Main$rightFace),
 				A3($author$project$Concepts$Animate3D$Main$viewFace, model.animState, false, $author$project$Concepts$Animate3D$Main$leftFace),
@@ -15653,10 +15637,11 @@ var $author$project$Concepts$Animate3D$Main$viewContent = function (model) {
 				$mdgriffith$elm_ui$Element$el,
 				_List_fromArray(
 					[
-						$mdgriffith$elm_ui$Element$centerX,
-						$mdgriffith$elm_ui$Element$centerY,
 						$mdgriffith$elm_ui$Element$htmlAttribute(
-						$author$project$Anim$Extra$View3D$perspective(1000))
+						$author$project$Anim$Extra$View3D$perspective(1000)),
+						$mdgriffith$elm_ui$Element$htmlAttribute($author$project$Anim$Extra$View3D$opacityHack),
+						$mdgriffith$elm_ui$Element$centerX,
+						$mdgriffith$elm_ui$Element$centerY
 					]),
 				$author$project$Concepts$Animate3D$Main$viewCube(model)))
 		]);

@@ -1,8 +1,9 @@
 port module Concepts.ControllingAnimations.WaapiEngine.Main exposing (main)
 
-import Anim.Engine.WAAPI as WAAPI
+import Anim.Engine.WAAPI as WAAPI exposing (AnimBuilder)
+import Anim.Extra.Easing exposing (Easing(..))
+import Anim.Property.Translate as Translate
 import Browser exposing (Document)
-import Common.Animations.Controls as Controls exposing (elementId)
 import Common.UI as UI
 import Common.View.Controls as ViewControls
 import Element exposing (Element, centerX, centerY, el, height, htmlAttribute, px, text, width)
@@ -18,7 +19,7 @@ import Json.Encode as Encode
 port waapiCommand : Encode.Value -> Cmd msg
 
 
-port waapiSubscriptions : (Encode.Value -> msg) -> Sub msg
+port waapiEvent : (Encode.Value -> msg) -> Sub msg
 
 
 
@@ -45,6 +46,11 @@ type alias Model =
     }
 
 
+elementId : String
+elementId =
+    "bouncing-ball"
+
+
 
 -- INIT
 
@@ -55,9 +61,12 @@ init { window } =
         animAreaWidth =
             min 500 (window.width - 40)
 
-        ( initialAnimState, initCmd ) =
-            WAAPI.init waapiCommand waapiSubscriptions <|
-                [ Controls.init animAreaWidth ]
+        xPos =
+            toFloat animAreaWidth / 2 - 25
+
+        initialAnimState =
+            WAAPI.init waapiCommand waapiEvent <|
+                [ Translate.initXY elementId xPos 50 ]
     in
     ( { animState = initialAnimState
       , animAreaSize =
@@ -65,8 +74,22 @@ init { window } =
             , height = 350
             }
       }
-    , initCmd
+    , Cmd.none
     )
+
+
+
+-- ANIMATION
+
+
+dropBall : AnimBuilder -> AnimBuilder
+dropBall =
+    Translate.for elementId
+        >> Translate.fromY 50
+        >> Translate.toY 300
+        >> Translate.speed 200
+        >> Translate.easing BounceOut
+        >> Translate.build
 
 
 
@@ -85,7 +108,7 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
+    case msg |> Debug.log "" of
         GotWaapiMsg subMsg ->
             let
                 ( newAnimState, _ ) =
@@ -98,7 +121,7 @@ update msg model =
         Animate ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState Controls.animate
+                    WAAPI.animate model.animState dropBall
             in
             ( { model | animState = newAnimState }
             , animCmd
@@ -205,19 +228,19 @@ viewContent model =
           , ( UI.Purple, Restart, "🔄 Restart" )
           ]
         ]
-    , ViewControls.animationArea model.animAreaSize animatedBall
+    , ViewControls.animationArea model.animAreaSize <|
+        animatedBall model.animState
     ]
 
 
-animatedBall : Element msg
-animatedBall =
+animatedBall : WAAPI.AnimState msg -> Element msg
+animatedBall animState =
     el
-        [ -- The WAAPI engine requires an id attribute to target the element for animation
-          -- The JS side will use this id to identify the element to animate,
-          -- and to manage animation state for that element
-          htmlAttribute (Html.Attributes.id elementId)
-        , width (px 50)
-        , height (px 50)
-        , htmlAttribute (Html.Attributes.style "position" "relative")
-        ]
+        (List.map htmlAttribute (WAAPI.attributes elementId animState)
+            ++ [ htmlAttribute (Html.Attributes.id elementId)
+               , htmlAttribute (Html.Attributes.style "position" "relative")
+               , width (px 50)
+               , height (px 50)
+               ]
+        )
         (el [ centerX, centerY, Font.size 50 ] (text "🏀"))

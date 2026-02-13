@@ -2,6 +2,7 @@ module Anim.Extra.View3D exposing
     ( PerspectiveOrigin(..), BackfaceVisibility(..), TransformStyle(..)
     , perspective, perspectiveOrigin
     , backfaceVisibility, transformStyle
+    , opacityHack
     )
 
 {-| Helper module for 3D CSS properties.
@@ -27,6 +28,11 @@ These go on the **parent** element of the animated element.
 These go on the **animated element itself**.
 
 @docs backfaceVisibility, transformStyle
+
+
+# Workarounds
+
+@docs opacityHack
 
 -}
 
@@ -225,6 +231,27 @@ transformStyle ts =
 
             Preserve3D ->
                 "preserve-3d"
+
+
+{-| Workaround for Chrome GPU compositing issues on macOS.
+
+Some complex 3D animations may cause rendering artifacts in Chrome on macOS
+(colored rectangles appearing over the page). Apply this attribute to the
+**direct parent** of the animated element to fix the issue.
+
+    div
+        [ View3D.opacityHack
+        , View3D.perspective 1000
+        ]
+        [ animated3DElement ]
+
+This sets `opacity: 0.99`, which forces a new compositing layer without
+visible effect. You can safely include this on all 3D containers.
+
+-}
+opacityHack : Html.Attribute msg
+opacityHack =
+    style "opacity" "0.99"
 
 
 

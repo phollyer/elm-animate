@@ -162,7 +162,7 @@ collectProcessedTransform : Builder.ProcessedPropertyConfig -> Builder.Transform
 collectProcessedTransform property acc =
     case property of
         Builder.ProcessedTranslateConfig config ->
-            { acc | translate = "translate3d(" ++ Translate.toCssString config.end ++ ")" }
+            { acc | translate = Translate.toCssString config.end }
 
         Builder.ProcessedRotateConfig config ->
             { acc | rotate = Rotate.to3DCssString config.end }

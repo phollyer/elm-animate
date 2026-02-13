@@ -1,29 +1,46 @@
 # Scroll Engine
 
-Scrolling the Document or a container is effectively an animation - animating scroll position rather than CSS properties. The Scroll Engine uses frame-by-frame interpolation (like the Sub Engine) to smoothly scroll to elements or positions with full easing control.
+The Scroll Engine uses frame-by-frame interpolation to smoothly scroll to elements or positions with full easing control.
 
-## Overview
+## Features
 
-| Engine | Rendering | Control | Use Case |
-| -------- | ----------- | --------- | ---------- |
-| [Scroll](#scroll-engine) | Browser scroll | Fire-and-forget, Programmatic | Document and container scrolling |
+- **Document or container scrolling** — Scroll the entire page or within a scrollable container element
+- **Element or position targets** — Scroll to a specific element by ID, or to exact X/Y coordinates
+- **Axis control** — Scroll on the X axis, Y axis, or both simultaneously
+- **Configurable offsets** — Add pixel offsets (e.g., account for fixed headers)
+- **Full easing support** — Apply any easing function for natural-feeling motion
 
-The Scroll Engine provides smooth Document and container scrolling to elements or positions:
+## Document Scrolling
 
-- **Document or container scrolling**
-- **X, Y, or both axes**
-- **Configurable offsets**
-- **Full easing support**
+Scroll the entire page to bring an element into view:
 
-??? example "View Source Code"
+??? example "Show Source Code"
 
     ```elm
     import Anim.Engine.Scroll as Scroll
 
     scrollCmd =
         Scroll.toCmd ScrollComplete <|
-            Scroll.toElement "target-section"
-                >> Scroll.duration 2000
+            Scroll.forDocument
+                >> Scroll.toElement "target-section"
+                >> Scroll.duration 800
+                >> Scroll.easing CubicOut
+                >> Scroll.build
+    ```
+
+## Container Scrolling
+
+Scroll within a specific scrollable container:
+
+??? example "Show Source Code"
+
+    ```elm
+    scrollCmd =
+        Scroll.toCmd ScrollComplete <|
+            Scroll.forContainer "scroll-container"
+                >> Scroll.toElement "item-42"
+                >> Scroll.duration 500
+                >> Scroll.easing CubicOut
                 >> Scroll.build
     ```
 

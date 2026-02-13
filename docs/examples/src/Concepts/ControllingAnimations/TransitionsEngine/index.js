@@ -5202,6 +5202,7 @@ var $elm$core$Task$perform = F2(
 	});
 var $elm$browser$Browser$document = _Browser_document;
 var $elm$json$Json$Decode$field = _Json_decodeField;
+var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$elementId = 'bouncing-ball';
 var $author$project$Anim$Internal$CSS$AnimState = function (a) {
 	return {$: 'AnimState', a: a};
 };
@@ -5403,7 +5404,7 @@ var $author$project$Anim$Internal$Properties$Rotate$to3DCssString = function (_v
 };
 var $author$project$Anim$Internal$Properties$Translate$toCssString = function (_v0) {
 	var coords = _v0.a;
-	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px'))));
+	return 'translate3d(' + ($elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px)')))));
 };
 var $author$project$Anim$Internal$Properties$Scale$Scale = function (a) {
 	return {$: 'Scale', a: a};
@@ -5452,7 +5453,7 @@ var $author$project$Anim$Internal$CSS$Transform$collectProcessedTransform = F2(
 				return _Utils_update(
 					acc,
 					{
-						translate: 'translate3d(' + ($author$project$Anim$Internal$Properties$Translate$toCssString(config.end) + ')')
+						translate: $author$project$Anim$Internal$Properties$Translate$toCssString(config.end)
 					});
 			case 'ProcessedRotateConfig':
 				var config = property.a;
@@ -6916,12 +6917,12 @@ var $author$project$Anim$Internal$Properties$Rotate$toString = function (_v0) {
 	return $elm$core$String$fromFloat(angles.z);
 };
 var $author$project$Anim$Internal$Properties$Rotate$toCssString = function (rotate) {
-	return $author$project$Anim$Internal$Properties$Rotate$toString(rotate) + 'deg';
+	return 'rotateZ(' + ($author$project$Anim$Internal$Properties$Rotate$toString(rotate) + 'deg)');
 };
 var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) {
 	var x = _v0.a.x;
 	var y = _v0.a.y;
-	return $elm$core$String$fromFloat(x) + (',' + $elm$core$String$fromFloat(y));
+	return 'scale(' + ($elm$core$String$fromFloat(x) + (', ' + ($elm$core$String$fromFloat(y) + ')')));
 };
 var $elm$core$Basics$pi = _Basics_pi;
 var $elm$core$Basics$pow = _Basics_pow;
@@ -7499,7 +7500,7 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix = F3(
 										return _Utils_update(
 											acc,
 											{
-												translate: 'translate3d(' + ($author$project$Anim$Internal$Properties$Translate$toCssString(interpolatedPos) + ')')
+												translate: $author$project$Anim$Internal$Properties$Translate$toCssString(interpolatedPos)
 											});
 									case 'ProcessedRotateConfig':
 										var cfg = p.a;
@@ -7892,7 +7893,6 @@ var $author$project$Anim$Internal$CSS$init = function (propertyInitializers) {
 	}
 };
 var $author$project$Anim$Engine$CSS$Transitions$init = $author$project$Anim$Internal$CSS$init;
-var $author$project$Common$Animations$Controls$elementId = 'bouncing-ball';
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
 		get:
@@ -8466,22 +8466,19 @@ var $author$project$Anim$Property$Translate$initXY = F4(
 					y,
 					A2($author$project$Anim$Internal$Builders$Translate$for, elementId, animBuilder))));
 	});
-var $author$project$Common$Animations$Controls$init = function (animAreaWidth) {
-	var xPos = (animAreaWidth / 2) - 25;
-	return A3($author$project$Anim$Property$Translate$initXY, $author$project$Common$Animations$Controls$elementId, xPos, 50);
-};
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$init = function (_v0) {
 	var window = _v0.window;
 	var animAreaWidth = A2($elm$core$Basics$min, 500, window.width - 40);
+	var xPos = (animAreaWidth / 2) - 25;
 	return _Utils_Tuple2(
 		{
 			animAreaSize: {height: 350, width: animAreaWidth},
 			animState: $author$project$Anim$Engine$CSS$Transitions$init(
 				_List_fromArray(
 					[
-						$author$project$Common$Animations$Controls$init(animAreaWidth)
+						A3($author$project$Anim$Property$Translate$initXY, $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$elementId, xPos, 50)
 					]))
 		},
 		$elm$core$Platform$Cmd$none);
@@ -8608,9 +8605,9 @@ var $author$project$Anim$Internal$Builders$Translate$toY = F2(
 			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
 	});
 var $author$project$Anim$Property$Translate$toY = $author$project$Anim$Internal$Builders$Translate$toY;
-var $author$project$Common$Animations$Controls$animate = A2(
+var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$dropBall = A2(
 	$elm$core$Basics$composeR,
-	$author$project$Anim$Property$Translate$for($author$project$Common$Animations$Controls$elementId),
+	$author$project$Anim$Property$Translate$for($author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$elementId),
 	A2(
 		$elm$core$Basics$composeR,
 		$author$project$Anim$Property$Translate$fromY(50),
@@ -9007,7 +9004,7 @@ var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$update
 					_Utils_update(
 						model,
 						{
-							animState: A2($author$project$Anim$Engine$CSS$Transitions$animate, model.animState, $author$project$Common$Animations$Controls$animate)
+							animState: A2($author$project$Anim$Engine$CSS$Transitions$animate, model.animState, $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$dropBall)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Stop':
@@ -9015,7 +9012,7 @@ var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$update
 					_Utils_update(
 						model,
 						{
-							animState: A2($author$project$Anim$Engine$CSS$Transitions$stop, $author$project$Common$Animations$Controls$elementId, model.animState)
+							animState: A2($author$project$Anim$Engine$CSS$Transitions$stop, $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$elementId, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 			default:
@@ -9023,7 +9020,7 @@ var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$update
 					_Utils_update(
 						model,
 						{
-							animState: A2($author$project$Anim$Engine$CSS$Transitions$reset, $author$project$Common$Animations$Controls$elementId, model.animState)
+							animState: A2($author$project$Anim$Engine$CSS$Transitions$reset, $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$elementId, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 		}
@@ -14875,6 +14872,35 @@ var $author$project$Common$UI$Purple = {$: 'Purple'};
 var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$Reset = {$: 'Reset'};
 var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$Stop = {$: 'Stop'};
 var $author$project$Common$UI$Warning = {$: 'Warning'};
+var $author$project$Anim$Internal$CSS$getElementStyles = F2(
+	function (elementId, _v0) {
+		var state = _v0.a;
+		return A2(
+			$elm$core$Maybe$withDefault,
+			_List_Nil,
+			A2(
+				$elm$core$Maybe$map,
+				function ($) {
+					return $.styles;
+				},
+				A2($elm$core$Dict$get, elementId, state.elementAnimations)));
+	});
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $author$project$Anim$Internal$CSS$transitionAttributes = F2(
+	function (elementId, animationResult) {
+		var styles = A2($author$project$Anim$Internal$CSS$getElementStyles, elementId, animationResult);
+		var attrs = A2(
+			$elm$core$List$map,
+			function (_v0) {
+				var prop = _v0.a;
+				var value = _v0.b;
+				return A2($elm$html$Html$Attributes$style, prop, value);
+			},
+			styles);
+		return attrs;
+	});
+var $author$project$Anim$Engine$CSS$Transitions$attributes = $author$project$Anim$Internal$CSS$transitionAttributes;
 var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
 	return {$: 'AlignY', a: a};
 };
@@ -14907,58 +14933,28 @@ var $mdgriffith$elm_ui$Element$Font$size = function (i) {
 		$mdgriffith$elm_ui$Internal$Flag$fontSize,
 		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
 };
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
 	return {$: 'Text', a: a};
 };
 var $mdgriffith$elm_ui$Element$text = function (content) {
 	return $mdgriffith$elm_ui$Internal$Model$Text(content);
 };
-var $author$project$Anim$Internal$CSS$getElementStyles = F2(
-	function (elementId, _v0) {
-		var state = _v0.a;
-		return A2(
-			$elm$core$Maybe$withDefault,
-			_List_Nil,
-			A2(
-				$elm$core$Maybe$map,
-				function ($) {
-					return $.styles;
-				},
-				A2($elm$core$Dict$get, elementId, state.elementAnimations)));
-	});
-var $author$project$Anim$Internal$CSS$transitionAttributes = F2(
-	function (elementId, animationResult) {
-		var styles = A2($author$project$Anim$Internal$CSS$getElementStyles, elementId, animationResult);
-		var attrs = A2(
-			$elm$core$List$map,
-			function (_v0) {
-				var prop = _v0.a;
-				var value = _v0.b;
-				return A2($elm$html$Html$Attributes$style, prop, value);
-			},
-			styles);
-		return attrs;
-	});
-var $author$project$Anim$Engine$CSS$Transitions$attributes = $author$project$Anim$Internal$CSS$transitionAttributes;
-var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$transitionAttributes = A2(
-	$elm$core$Basics$composeR,
-	$author$project$Anim$Engine$CSS$Transitions$attributes($author$project$Common$Animations$Controls$elementId),
-	$elm$core$List$map($mdgriffith$elm_ui$Element$htmlAttribute));
 var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$animatedBall = function (animState) {
 	return A2(
 		$mdgriffith$elm_ui$Element$el,
 		_Utils_ap(
-			$author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$transitionAttributes(animState),
+			A2(
+				$elm$core$List$map,
+				$mdgriffith$elm_ui$Element$htmlAttribute,
+				A2($author$project$Anim$Engine$CSS$Transitions$attributes, $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$elementId, animState)),
 			_List_fromArray(
 				[
+					$mdgriffith$elm_ui$Element$htmlAttribute(
+					A2($elm$html$Html$Attributes$style, 'position', 'relative')),
 					$mdgriffith$elm_ui$Element$width(
 					$mdgriffith$elm_ui$Element$px(50)),
 					$mdgriffith$elm_ui$Element$height(
-					$mdgriffith$elm_ui$Element$px(50)),
-					$mdgriffith$elm_ui$Element$htmlAttribute(
-					A2($elm$html$Html$Attributes$style, 'position', 'relative'))
+					$mdgriffith$elm_ui$Element$px(50))
 				])),
 		A2(
 			$mdgriffith$elm_ui$Element$el,
@@ -15392,7 +15388,7 @@ var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$viewCo
 var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$view = function (model) {
 	return A3(
 		$author$project$Common$UI$createDocument,
-		'Anim.Engine.CSS Transition Controls Example',
+		'Anim.Engine.Transitions Transition Controls Example',
 		$author$project$Common$UI$Basic,
 		$author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$viewContent(model));
 };

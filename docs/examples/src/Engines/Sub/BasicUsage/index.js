@@ -8611,7 +8611,6 @@ var $author$project$Engines$Sub$BasicUsage$Main$update = F2(
 				{animState: newAnimState}),
 			$elm$core$Platform$Cmd$none);
 	});
-var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$core$String$fromFloat = _String_fromNumber;
 var $elm$core$List$isEmpty = function (xs) {
 	if (!xs.b) {
@@ -8639,7 +8638,7 @@ var $author$project$Anim$Internal$Properties$Rotate$to3DCssString = function (_v
 };
 var $author$project$Anim$Internal$Properties$Translate$toCssString = function (_v0) {
 	var coords = _v0.a;
-	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px'))));
+	return 'translate3d(' + ($elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px)')))));
 };
 var $author$project$Anim$Internal$Builder$collectProcessedTransform = F2(
 	function (property, acc) {
@@ -8649,7 +8648,7 @@ var $author$project$Anim$Internal$Builder$collectProcessedTransform = F2(
 				return _Utils_update(
 					acc,
 					{
-						translate: 'translate3d(' + ($author$project$Anim$Internal$Properties$Translate$toCssString(config.end) + ')')
+						translate: $author$project$Anim$Internal$Properties$Translate$toCssString(config.end)
 					});
 			case 'ProcessedRotateConfig':
 				var config = property.a;
@@ -8903,7 +8902,8 @@ var $author$project$Anim$Internal$Sub$htmlAttributes = F2(
 				_Utils_ap(sizeStyles, nonTransformStyles));
 		}
 	});
-var $author$project$Anim$Engine$Sub$htmlAttributes = $author$project$Anim$Internal$Sub$htmlAttributes;
+var $author$project$Anim$Engine$Sub$attributes = $author$project$Anim$Internal$Sub$htmlAttributes;
+var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Engines$Sub$BasicUsage$Main$view = function (model) {
@@ -8923,7 +8923,7 @@ var $author$project$Engines$Sub$BasicUsage$Main$view = function (model) {
 			[
 				A2(
 				$elm$html$Html$div,
-				A2($author$project$Anim$Engine$Sub$htmlAttributes, 'hello-text', model.animState),
+				A2($author$project$Anim$Engine$Sub$attributes, 'hello-text', model.animState),
 				_List_fromArray(
 					[
 						$elm$html$Html$text('Hello World!')

@@ -854,7 +854,7 @@ collectProcessedTransform : ProcessedPropertyConfig -> TransformParts -> Transfo
 collectProcessedTransform property acc =
     case property of
         ProcessedTranslateConfig config ->
-            { acc | translate = "translate3d(" ++ Translate.toCssString config.end ++ ")" }
+            { acc | translate = Translate.toCssString config.end }
 
         ProcessedRotateConfig config ->
             { acc | rotate = Rotate.to3DCssString config.end }
@@ -880,7 +880,7 @@ collectPropertyTransform property acc =
                 acc
 
             else
-                { acc | translate = "translate3d(" ++ Translate.toCssString config.end ++ ")" }
+                { acc | translate = Translate.toCssString config.end }
 
         RotateConfig config ->
             if config.isDirty then

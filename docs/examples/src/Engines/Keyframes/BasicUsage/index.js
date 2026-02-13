@@ -5368,7 +5368,7 @@ var $author$project$Anim$Internal$Properties$Rotate$to3DCssString = function (_v
 };
 var $author$project$Anim$Internal$Properties$Translate$toCssString = function (_v0) {
 	var coords = _v0.a;
-	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px'))));
+	return 'translate3d(' + ($elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px)')))));
 };
 var $author$project$Anim$Internal$Properties$Scale$Scale = function (a) {
 	return {$: 'Scale', a: a};
@@ -5417,7 +5417,7 @@ var $author$project$Anim$Internal$CSS$Transform$collectProcessedTransform = F2(
 				return _Utils_update(
 					acc,
 					{
-						translate: 'translate3d(' + ($author$project$Anim$Internal$Properties$Translate$toCssString(config.end) + ')')
+						translate: $author$project$Anim$Internal$Properties$Translate$toCssString(config.end)
 					});
 			case 'ProcessedRotateConfig':
 				var config = property.a;
@@ -6881,12 +6881,12 @@ var $author$project$Anim$Internal$Properties$Rotate$toString = function (_v0) {
 	return $elm$core$String$fromFloat(angles.z);
 };
 var $author$project$Anim$Internal$Properties$Rotate$toCssString = function (rotate) {
-	return $author$project$Anim$Internal$Properties$Rotate$toString(rotate) + 'deg';
+	return 'rotateZ(' + ($author$project$Anim$Internal$Properties$Rotate$toString(rotate) + 'deg)');
 };
 var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) {
 	var x = _v0.a.x;
 	var y = _v0.a.y;
-	return $elm$core$String$fromFloat(x) + (',' + $elm$core$String$fromFloat(y));
+	return 'scale(' + ($elm$core$String$fromFloat(x) + (', ' + ($elm$core$String$fromFloat(y) + ')')));
 };
 var $elm$core$Basics$pi = _Basics_pi;
 var $elm$core$Basics$pow = _Basics_pow;
@@ -7464,7 +7464,7 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix = F3(
 										return _Utils_update(
 											acc,
 											{
-												translate: 'translate3d(' + ($author$project$Anim$Internal$Properties$Translate$toCssString(interpolatedPos) + ')')
+												translate: $author$project$Anim$Internal$Properties$Translate$toCssString(interpolatedPos)
 											});
 									case 'ProcessedRotateConfig':
 										var cfg = p.a;
@@ -8460,62 +8460,13 @@ var $author$project$Engines$Keyframes$BasicUsage$Main$update = F2(
 	function (msg, model) {
 		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 	});
-var $elm$html$Html$div = _VirtualDom_node('div');
-var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $elm$core$List$concatMap = F2(
-	function (f, list) {
-		return $elm$core$List$concat(
-			A2($elm$core$List$map, f, list));
-	});
-var $elm$virtual_dom$VirtualDom$node = function (tag) {
-	return _VirtualDom_node(
-		_VirtualDom_noScript(tag));
-};
-var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$core$Dict$values = function (dict) {
-	return A3(
-		$elm$core$Dict$foldr,
-		F3(
-			function (key, value, valueList) {
-				return A2($elm$core$List$cons, value, valueList);
-			}),
-		_List_Nil,
-		dict);
-};
-var $author$project$Anim$Internal$CSS$keyframesStyleNode = function (_v0) {
-	var state = _v0.a;
-	var allKeyframes = A2(
-		$elm$core$String$join,
-		'\n\n',
-		A2(
-			$elm$core$List$map,
-			function ($) {
-				return $.keyframes;
-			},
-			A2(
-				$elm$core$List$concatMap,
-				function ($) {
-					return $.animationLayers;
-				},
-				$elm$core$Dict$values(state.elementAnimations))));
-	return $elm$core$String$isEmpty(allKeyframes) ? $elm$html$Html$text('') : A3(
-		$elm$html$Html$node,
-		'style',
-		_List_Nil,
-		_List_fromArray(
-			[
-				$elm$html$Html$text(allKeyframes)
-			]));
-};
-var $author$project$Anim$Engine$CSS$Keyframes$styleNode = $author$project$Anim$Internal$CSS$keyframesStyleNode;
 var $author$project$Anim$Internal$CSS$getElementAnimation = F2(
 	function (elementId, _v0) {
 		var state = _v0.a;
 		return A2($elm$core$Dict$get, elementId, state.elementAnimations);
 	});
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Anim$Internal$CSS$KeyframeAnimation$toAttributeString = function (animationLayers) {
 	return (!$elm$core$List$isEmpty(animationLayers)) ? A2(
 		$elm$core$String$join,
@@ -8567,7 +8518,56 @@ var $author$project$Anim$Internal$CSS$keyframesStyles = F2(
 			return _List_Nil;
 		}
 	});
-var $author$project$Anim$Engine$CSS$Keyframes$styles = $author$project$Anim$Internal$CSS$keyframesStyles;
+var $author$project$Anim$Engine$CSS$Keyframes$attributes = $author$project$Anim$Internal$CSS$keyframesStyles;
+var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$core$List$concatMap = F2(
+	function (f, list) {
+		return $elm$core$List$concat(
+			A2($elm$core$List$map, f, list));
+	});
+var $elm$virtual_dom$VirtualDom$node = function (tag) {
+	return _VirtualDom_node(
+		_VirtualDom_noScript(tag));
+};
+var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$core$Dict$values = function (dict) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2($elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
+};
+var $author$project$Anim$Internal$CSS$keyframesStyleNode = function (_v0) {
+	var state = _v0.a;
+	var allKeyframes = A2(
+		$elm$core$String$join,
+		'\n\n',
+		A2(
+			$elm$core$List$map,
+			function ($) {
+				return $.keyframes;
+			},
+			A2(
+				$elm$core$List$concatMap,
+				function ($) {
+					return $.animationLayers;
+				},
+				$elm$core$Dict$values(state.elementAnimations))));
+	return $elm$core$String$isEmpty(allKeyframes) ? $elm$html$Html$text('') : A3(
+		$elm$html$Html$node,
+		'style',
+		_List_Nil,
+		_List_fromArray(
+			[
+				$elm$html$Html$text(allKeyframes)
+			]));
+};
+var $author$project$Anim$Engine$CSS$Keyframes$styleNode = $author$project$Anim$Internal$CSS$keyframesStyleNode;
 var $author$project$Engines$Keyframes$BasicUsage$Main$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
@@ -8586,7 +8586,7 @@ var $author$project$Engines$Keyframes$BasicUsage$Main$view = function (model) {
 				$author$project$Anim$Engine$CSS$Keyframes$styleNode(model.animState),
 				A2(
 				$elm$html$Html$div,
-				A2($author$project$Anim$Engine$CSS$Keyframes$styles, 'hello-text', model.animState),
+				A2($author$project$Anim$Engine$CSS$Keyframes$attributes, 'hello-text', model.animState),
 				_List_fromArray(
 					[
 						$elm$html$Html$text('Hello World!')

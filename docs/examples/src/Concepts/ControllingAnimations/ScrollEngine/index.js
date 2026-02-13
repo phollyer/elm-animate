@@ -5573,7 +5573,6 @@ var $author$project$Anim$Internal$Scroll$animate = F3(
 	});
 var $author$project$Anim$Engine$Scroll$animate = $author$project$Anim$Internal$Scroll$animate;
 var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$containerId = 'scroll-container';
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$Anim$Internal$Scroll$containerIdMatches = F2(
 	function (id, containerId) {
 		if (containerId.$ === 'DocumentBody') {
@@ -5776,7 +5775,7 @@ var $author$project$Anim$Internal$Scroll$scrollToPosition = F4(
 		}
 	});
 var $author$project$Anim$Internal$Scroll$resetContainer = F3(
-	function (toMsg, containerId, _v0) {
+	function (containerId, toMsg, _v0) {
 		var animData = _v0.a;
 		var _v1 = A3(
 			$elm$core$Dict$foldl,
@@ -5811,7 +5810,7 @@ var $author$project$Anim$Internal$Scroll$resetContainer = F3(
 	});
 var $author$project$Anim$Engine$Scroll$resetContainer = $author$project$Anim$Internal$Scroll$resetContainer;
 var $author$project$Anim$Internal$Scroll$restartContainer = F3(
-	function (toMsg, containerId, _v0) {
+	function (containerId, toMsg, _v0) {
 		var animData = _v0.a;
 		var _v1 = A3(
 			$elm$core$Dict$foldl,
@@ -6059,7 +6058,7 @@ var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$scrollAnima
 				$author$project$Anim$Engine$Scroll$easing($author$project$Anim$Extra$Easing$BounceOut),
 				$author$project$Anim$Engine$Scroll$build))));
 var $author$project$Anim$Internal$Scroll$stopContainer = F3(
-	function (toMsg, containerId, _v0) {
+	function (containerId, toMsg, _v0) {
 		var animData = _v0.a;
 		var _v1 = A3(
 			$elm$core$Dict$foldl,
@@ -6799,12 +6798,11 @@ var $author$project$Anim$Internal$Scroll$update = F3(
 var $author$project$Anim$Engine$Scroll$update = $author$project$Anim$Internal$Scroll$update;
 var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$update = F2(
 	function (msg, model) {
-		var _v0 = A2($elm$core$Debug$log, 'Msg', msg);
-		switch (_v0.$) {
+		switch (msg.$) {
 			case 'NoOp':
 				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 			case 'GotScrollMsg':
-				var scrollMsg = _v0.a;
+				var scrollMsg = msg.a;
 				var _v1 = A3($author$project$Anim$Engine$Scroll$update, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$GotScrollMsg, scrollMsg, model.scrollState);
 				var newScrollState = _v1.a;
 				var scrollCmd = _v1.b;
@@ -6823,7 +6821,7 @@ var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$update = F2
 						{scrollState: newScrollState}),
 					scrollCmd);
 			case 'Stop':
-				var _v3 = A3($author$project$Anim$Engine$Scroll$stopContainer, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$GotScrollMsg, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$containerId, model.scrollState);
+				var _v3 = A3($author$project$Anim$Engine$Scroll$stopContainer, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$containerId, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$GotScrollMsg, model.scrollState);
 				var newScrollState = _v3.a;
 				var scrollCmd = _v3.b;
 				return _Utils_Tuple2(
@@ -6848,7 +6846,7 @@ var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$update = F2
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Reset':
-				var _v4 = A3($author$project$Anim$Engine$Scroll$resetContainer, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$GotScrollMsg, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$containerId, model.scrollState);
+				var _v4 = A3($author$project$Anim$Engine$Scroll$resetContainer, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$containerId, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$GotScrollMsg, model.scrollState);
 				var newScrollState = _v4.a;
 				var scrollCmd = _v4.b;
 				return _Utils_Tuple2(
@@ -6857,7 +6855,7 @@ var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$update = F2
 						{scrollState: newScrollState}),
 					scrollCmd);
 			default:
-				var _v5 = A3($author$project$Anim$Engine$Scroll$restartContainer, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$GotScrollMsg, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$containerId, model.scrollState);
+				var _v5 = A3($author$project$Anim$Engine$Scroll$restartContainer, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$containerId, $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$GotScrollMsg, model.scrollState);
 				var newScrollState = _v5.a;
 				var scrollCmd = _v5.b;
 				return _Utils_Tuple2(

@@ -5202,6 +5202,7 @@ var $elm$core$Task$perform = F2(
 	});
 var $elm$browser$Browser$document = _Browser_document;
 var $elm$json$Json$Decode$field = _Json_decodeField;
+var $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$elementId = 'bouncing-ball';
 var $author$project$Anim$Internal$CSS$AnimState = function (a) {
 	return {$: 'AnimState', a: a};
 };
@@ -5403,7 +5404,7 @@ var $author$project$Anim$Internal$Properties$Rotate$to3DCssString = function (_v
 };
 var $author$project$Anim$Internal$Properties$Translate$toCssString = function (_v0) {
 	var coords = _v0.a;
-	return $elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px'))));
+	return 'translate3d(' + ($elm$core$String$fromFloat(coords.x) + ('px, ' + ($elm$core$String$fromFloat(coords.y) + ('px, ' + ($elm$core$String$fromFloat(coords.z) + 'px)')))));
 };
 var $author$project$Anim$Internal$Properties$Scale$Scale = function (a) {
 	return {$: 'Scale', a: a};
@@ -5452,7 +5453,7 @@ var $author$project$Anim$Internal$CSS$Transform$collectProcessedTransform = F2(
 				return _Utils_update(
 					acc,
 					{
-						translate: 'translate3d(' + ($author$project$Anim$Internal$Properties$Translate$toCssString(config.end) + ')')
+						translate: $author$project$Anim$Internal$Properties$Translate$toCssString(config.end)
 					});
 			case 'ProcessedRotateConfig':
 				var config = property.a;
@@ -6916,12 +6917,12 @@ var $author$project$Anim$Internal$Properties$Rotate$toString = function (_v0) {
 	return $elm$core$String$fromFloat(angles.z);
 };
 var $author$project$Anim$Internal$Properties$Rotate$toCssString = function (rotate) {
-	return $author$project$Anim$Internal$Properties$Rotate$toString(rotate) + 'deg';
+	return 'rotateZ(' + ($author$project$Anim$Internal$Properties$Rotate$toString(rotate) + 'deg)');
 };
 var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) {
 	var x = _v0.a.x;
 	var y = _v0.a.y;
-	return $elm$core$String$fromFloat(x) + (',' + $elm$core$String$fromFloat(y));
+	return 'scale(' + ($elm$core$String$fromFloat(x) + (', ' + ($elm$core$String$fromFloat(y) + ')')));
 };
 var $elm$core$Basics$pi = _Basics_pi;
 var $elm$core$Basics$pow = _Basics_pow;
@@ -7499,7 +7500,7 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix = F3(
 										return _Utils_update(
 											acc,
 											{
-												translate: 'translate3d(' + ($author$project$Anim$Internal$Properties$Translate$toCssString(interpolatedPos) + ')')
+												translate: $author$project$Anim$Internal$Properties$Translate$toCssString(interpolatedPos)
 											});
 									case 'ProcessedRotateConfig':
 										var cfg = p.a;
@@ -7892,7 +7893,6 @@ var $author$project$Anim$Internal$CSS$init = function (propertyInitializers) {
 	}
 };
 var $author$project$Anim$Engine$CSS$Keyframes$init = $author$project$Anim$Internal$CSS$init;
-var $author$project$Common$Animations$Controls$elementId = 'bouncing-ball';
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
 		get:
@@ -8466,22 +8466,19 @@ var $author$project$Anim$Property$Translate$initXY = F4(
 					y,
 					A2($author$project$Anim$Internal$Builders$Translate$for, elementId, animBuilder))));
 	});
-var $author$project$Common$Animations$Controls$init = function (animAreaWidth) {
-	var xPos = (animAreaWidth / 2) - 25;
-	return A3($author$project$Anim$Property$Translate$initXY, $author$project$Common$Animations$Controls$elementId, xPos, 50);
-};
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$init = function (_v0) {
 	var window = _v0.window;
 	var animAreaWidth = A2($elm$core$Basics$min, 500, window.width - 40);
+	var xPos = (animAreaWidth / 2) - 25;
 	return _Utils_Tuple2(
 		{
 			animAreaSize: {height: 350, width: animAreaWidth},
 			animState: $author$project$Anim$Engine$CSS$Keyframes$init(
 				_List_fromArray(
 					[
-						$author$project$Common$Animations$Controls$init(animAreaWidth)
+						A3($author$project$Anim$Property$Translate$initXY, $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$elementId, xPos, 50)
 					]))
 		},
 		$elm$core$Platform$Cmd$none);
@@ -8608,9 +8605,9 @@ var $author$project$Anim$Internal$Builders$Translate$toY = F2(
 			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
 	});
 var $author$project$Anim$Property$Translate$toY = $author$project$Anim$Internal$Builders$Translate$toY;
-var $author$project$Common$Animations$Controls$animate = A2(
+var $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$dropBall = A2(
 	$elm$core$Basics$composeR,
-	$author$project$Anim$Property$Translate$for($author$project$Common$Animations$Controls$elementId),
+	$author$project$Anim$Property$Translate$for($author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$elementId),
 	A2(
 		$elm$core$Basics$composeR,
 		$author$project$Anim$Property$Translate$fromY(50),
@@ -9474,7 +9471,7 @@ var $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$update =
 					_Utils_update(
 						model,
 						{
-							animState: A2($author$project$Anim$Engine$CSS$Keyframes$animate, model.animState, $author$project$Common$Animations$Controls$animate)
+							animState: A2($author$project$Anim$Engine$CSS$Keyframes$animate, model.animState, $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$dropBall)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Stop':
@@ -9482,7 +9479,7 @@ var $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$update =
 					_Utils_update(
 						model,
 						{
-							animState: A2($author$project$Anim$Engine$CSS$Keyframes$stop, $author$project$Common$Animations$Controls$elementId, model.animState)
+							animState: A2($author$project$Anim$Engine$CSS$Keyframes$stop, $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$elementId, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Reset':
@@ -9490,7 +9487,7 @@ var $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$update =
 					_Utils_update(
 						model,
 						{
-							animState: A2($author$project$Anim$Engine$CSS$Keyframes$reset, $author$project$Common$Animations$Controls$elementId, model.animState)
+							animState: A2($author$project$Anim$Engine$CSS$Keyframes$reset, $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$elementId, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Restart':
@@ -9498,7 +9495,7 @@ var $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$update =
 					_Utils_update(
 						model,
 						{
-							animState: A2($author$project$Anim$Engine$CSS$Keyframes$restart, $author$project$Common$Animations$Controls$elementId, model.animState)
+							animState: A2($author$project$Anim$Engine$CSS$Keyframes$restart, $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$elementId, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Pause':
@@ -9506,7 +9503,7 @@ var $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$update =
 					_Utils_update(
 						model,
 						{
-							animState: A2($author$project$Anim$Engine$CSS$Keyframes$pause, $author$project$Common$Animations$Controls$elementId, model.animState)
+							animState: A2($author$project$Anim$Engine$CSS$Keyframes$pause, $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$elementId, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 			default:
@@ -9514,7 +9511,7 @@ var $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$update =
 					_Utils_update(
 						model,
 						{
-							animState: A2($author$project$Anim$Engine$CSS$Keyframes$resume, $author$project$Common$Animations$Controls$elementId, model.animState)
+							animState: A2($author$project$Anim$Engine$CSS$Keyframes$resume, $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$elementId, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 		}
@@ -15370,28 +15367,6 @@ var $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$Resume =
 var $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$Stop = {$: 'Stop'};
 var $author$project$Common$UI$Success = {$: 'Success'};
 var $author$project$Common$UI$Warning = {$: 'Warning'};
-var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
-	return {$: 'AlignY', a: a};
-};
-var $mdgriffith$elm_ui$Internal$Model$CenterY = {$: 'CenterY'};
-var $mdgriffith$elm_ui$Element$centerY = $mdgriffith$elm_ui$Internal$Model$AlignY($mdgriffith$elm_ui$Internal$Model$CenterY);
-var $mdgriffith$elm_ui$Element$el = F2(
-	function (attrs, child) {
-		return A4(
-			$mdgriffith$elm_ui$Internal$Model$element,
-			$mdgriffith$elm_ui$Internal$Model$asEl,
-			$mdgriffith$elm_ui$Internal$Model$div,
-			A2(
-				$elm$core$List$cons,
-				$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
-				A2(
-					$elm$core$List$cons,
-					$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$shrink),
-					attrs)),
-			$mdgriffith$elm_ui$Internal$Model$Unkeyed(
-				_List_fromArray(
-					[child])));
-	});
 var $author$project$Anim$Internal$CSS$getElementAnimation = F2(
 	function (elementId, _v0) {
 		var state = _v0.a;
@@ -15450,11 +15425,29 @@ var $author$project$Anim$Internal$CSS$keyframesStyles = F2(
 			return _List_Nil;
 		}
 	});
-var $author$project$Anim$Engine$CSS$Keyframes$styles = $author$project$Anim$Internal$CSS$keyframesStyles;
-var $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$keyframesStyles = A2(
-	$elm$core$Basics$composeR,
-	$author$project$Anim$Engine$CSS$Keyframes$styles($author$project$Common$Animations$Controls$elementId),
-	$elm$core$List$map($mdgriffith$elm_ui$Element$htmlAttribute));
+var $author$project$Anim$Engine$CSS$Keyframes$attributes = $author$project$Anim$Internal$CSS$keyframesStyles;
+var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
+	return {$: 'AlignY', a: a};
+};
+var $mdgriffith$elm_ui$Internal$Model$CenterY = {$: 'CenterY'};
+var $mdgriffith$elm_ui$Element$centerY = $mdgriffith$elm_ui$Internal$Model$AlignY($mdgriffith$elm_ui$Internal$Model$CenterY);
+var $mdgriffith$elm_ui$Element$el = F2(
+	function (attrs, child) {
+		return A4(
+			$mdgriffith$elm_ui$Internal$Model$element,
+			$mdgriffith$elm_ui$Internal$Model$asEl,
+			$mdgriffith$elm_ui$Internal$Model$div,
+			A2(
+				$elm$core$List$cons,
+				$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
+				A2(
+					$elm$core$List$cons,
+					$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$shrink),
+					attrs)),
+			$mdgriffith$elm_ui$Internal$Model$Unkeyed(
+				_List_fromArray(
+					[child])));
+	});
 var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
 	return {$: 'Px', a: a};
 };
@@ -15475,15 +15468,18 @@ var $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$animated
 	return A2(
 		$mdgriffith$elm_ui$Element$el,
 		_Utils_ap(
-			$author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$keyframesStyles(animState),
+			A2(
+				$elm$core$List$map,
+				$mdgriffith$elm_ui$Element$htmlAttribute,
+				A2($author$project$Anim$Engine$CSS$Keyframes$attributes, $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$elementId, animState)),
 			_List_fromArray(
 				[
+					$mdgriffith$elm_ui$Element$htmlAttribute(
+					A2($elm$html$Html$Attributes$style, 'position', 'relative')),
 					$mdgriffith$elm_ui$Element$width(
 					$mdgriffith$elm_ui$Element$px(50)),
 					$mdgriffith$elm_ui$Element$height(
-					$mdgriffith$elm_ui$Element$px(50)),
-					$mdgriffith$elm_ui$Element$htmlAttribute(
-					A2($elm$html$Html$Attributes$style, 'position', 'relative'))
+					$mdgriffith$elm_ui$Element$px(50))
 				])),
 		A2(
 			$mdgriffith$elm_ui$Element$el,
@@ -15755,10 +15751,6 @@ var $author$project$Anim$Internal$CSS$keyframesStyleNodeFor = F2(
 		}
 	});
 var $author$project$Anim$Engine$CSS$Keyframes$styleNodeFor = $author$project$Anim$Internal$CSS$keyframesStyleNodeFor;
-var $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$keyframesNode = A2(
-	$elm$core$Basics$composeR,
-	$author$project$Anim$Engine$CSS$Keyframes$styleNodeFor($author$project$Common$Animations$Controls$elementId),
-	$mdgriffith$elm_ui$Element$html);
 var $author$project$Common$Colors$borderMedium = A3($mdgriffith$elm_ui$Element$rgb255, 203, 213, 225);
 var $mdgriffith$elm_ui$Internal$Flag$borderColor = $mdgriffith$elm_ui$Internal$Flag$flag(28);
 var $mdgriffith$elm_ui$Element$Border$color = function (clr) {
@@ -15925,7 +15917,8 @@ var $author$project$Common$View$Controls$table = function (descriptions) {
 var $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$viewContent = function (model) {
 	return _List_fromArray(
 		[
-			$author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$keyframesNode(model.animState),
+			$mdgriffith$elm_ui$Element$html(
+			A2($author$project$Anim$Engine$CSS$Keyframes$styleNodeFor, $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$elementId, model.animState)),
 			$author$project$Common$View$Controls$header(
 			_List_fromArray(
 				['Keyframes Engine Controls'])),

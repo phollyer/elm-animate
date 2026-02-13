@@ -22,14 +22,10 @@ Every animation follows this pattern:
     ```
 
     `for` and `build` are required to start and end the builder chain respectively. All other configurations are optional, although without a `to` value the animations won't have anywhere to go!!
-    
-    A timing configuration of either `duration` or `speed` is also required, or a `duration` of `0ms` will be used causing the element to instantly jump to the end value. However, this can be set once on the engine pipeline for all properties, and then overriden where necessary on a per-property basis.
 
 ## Why Builders?
 
-### 1. Composability
-
-Small animations combine into larger ones:
+The `AnimBuilder -> AnimBuilder` type signature enables function composition with `>>`. Small, focused animations combine into larger ones:
 
 ??? example "Show Source Code"
 
@@ -54,66 +50,7 @@ Small animations combine into larger ones:
         fadeIn >> slideUp
     ```
 
-### 2. Reusability
-
-Define once, use everywhere:
-
-??? example "Show Source Code"
-
-    ```elm
-    -- Define a standard fade-in transition
-    standardFadeIn : String -> AnimBuilder -> AnimBuilder
-    standardFadeIn elementId =
-        Opacity.for elementId
-            >> Opacity.from 0
-            >> Opacity.to 1
-            >> Opacity.duration 300
-            >> Opacity.easing QuintOut
-            >> Opacity.build
-
-    -- Reuse for different elements
-    entranceAnimation : AnimBuilder -> AnimBuilder
-    entranceAnimation =
-        standardFadeIn "card-1"
-            >> standardFadeIn "card-2"
-            >> standardFadeIn "card-3"
-    ```
-
-### 3. Portability
-
-The same animation works with any engine:
-
-??? example "Show Source Code"
-
-    ```elm
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        Translate.for "box"
-            >> Translate.toXY 100 200
-            >> Translate.speed 100
-            >> Translate.build
-
-    -- Works with CSS.Transitions
-    Transitions.animate model.animState myAnimation
-    
-    Transitions.fireAndForget myAnimation
-
-    -- Works with CSS.Keyframes
-    Keyframes.animate model.animState myAnimation
-
-    Keyframes.fireAndForget myAnimation
-
-    -- Works with Sub
-    Sub.animate model.animState myAnimation
-
-    -- Works with WAAPI
-    WAAPI.animate model.animState myAnimation
-
-    port waapiCommand : Json.Encode.Value -> Cmd msg
-
-    WAAPI.fireAndForget waapiCommand myAnimation
-
-    ```
+Because all engines accept `AnimBuilder -> AnimBuilder`, the same animation works with any engine — start simple with CSS Transitions and migrate to WAAPI later without rewriting your animations.
 
 ## Multiple Elements
 
@@ -157,6 +94,30 @@ Animate multiple properties on the same element:
             >> Scale.to 1.5
             >> Scale.build
     ```
+
+## Duration vs Speed
+
+You can specify timing with either `duration` (fixed time) or `speed` (distance-based):
+
+??? example "View Source Code"
+
+    ```elm
+    -- Fixed 500ms regardless of distance
+    |> Translate.duration 500
+
+    -- 200 pixels per second (duration varies with distance)
+    |> Translate.speed 200
+    ```
+
+!!! note "Units for speed"
+    The meaning of 'units' varies by property type. For `Translate` it's 'pixels'. Refer to each individual property for how speed is interpreted.
+
+!!! warning
+    Use either `duration` or `speed`, not both. If both are set, the last one wins.
+
+!!! warning
+    If no `duration` or `speed` is set, either globally on the engine, or locally on the property, then a duration of 0ms will be used, and the element will instantly jump to its end state.
+
 
 ## Best Practices
 

@@ -14,20 +14,6 @@ import Html.Attributes
 
 
 
--- CONFIG
-
-
-containerId : String
-containerId =
-    "scroll-container"
-
-
-targetId : String
-targetId =
-    "scroll-target"
-
-
-
 -- MAIN
 
 
@@ -49,6 +35,16 @@ type alias Model =
     { scrollState : Scroll.AnimState
     , animAreaSize : { width : Int, height : Int }
     }
+
+
+containerId : String
+containerId =
+    "scroll-container"
+
+
+targetId : String
+targetId =
+    "scroll-target"
 
 
 
@@ -82,13 +78,13 @@ type Msg
     | Resume
     | Reset
     | Restart
-    | GotScrollMsg Scroll.AnimationMsg
+    | GotScrollMsg Scroll.AnimMsg
     | NoOp
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg |> Debug.log "Msg" of
+    case msg of
         NoOp ->
             ( model, Cmd.none )
 
@@ -114,7 +110,7 @@ update msg model =
         Stop ->
             let
                 ( newScrollState, scrollCmd ) =
-                    Scroll.stopContainer GotScrollMsg containerId model.scrollState
+                    Scroll.stopContainer containerId GotScrollMsg model.scrollState
             in
             ( { model | scrollState = newScrollState }
             , scrollCmd
@@ -139,7 +135,7 @@ update msg model =
         Reset ->
             let
                 ( newScrollState, scrollCmd ) =
-                    Scroll.resetContainer GotScrollMsg containerId model.scrollState
+                    Scroll.resetContainer containerId GotScrollMsg model.scrollState
             in
             ( { model | scrollState = newScrollState }
             , scrollCmd
@@ -150,7 +146,7 @@ update msg model =
         Restart ->
             let
                 ( newScrollState, scrollCmd ) =
-                    Scroll.restartContainer GotScrollMsg containerId model.scrollState
+                    Scroll.restartContainer containerId GotScrollMsg model.scrollState
             in
             ( { model | scrollState = newScrollState }
             , scrollCmd

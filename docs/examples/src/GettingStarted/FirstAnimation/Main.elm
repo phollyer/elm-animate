@@ -4,10 +4,9 @@ import Anim.Engine.CSS.Transitions as Transitions exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Opacity as Opacity
 import Browser
-import Html exposing (Html, div, text)
+import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (id, style)
-import Process
-import Task
+import Html.Events exposing (onClick)
 
 
 
@@ -31,6 +30,7 @@ main =
 type State
     = Ready
     | FadeIn
+    | FadeOut
 
 
 type alias Model =
@@ -40,7 +40,7 @@ type alias Model =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { state = Ready }
-    , Process.sleep 50 |> Task.perform (always TriggerFadeIn)
+    , Cmd.none
     )
 
 
@@ -50,6 +50,7 @@ init _ =
 
 type Msg
     = TriggerFadeIn
+    | TriggerFadeOut
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -57,6 +58,9 @@ update msg model =
     case msg of
         TriggerFadeIn ->
             ( { model | state = FadeIn }, Cmd.none )
+
+        TriggerFadeOut ->
+            ( { model | state = FadeOut }, Cmd.none )
 
 
 
@@ -66,11 +70,21 @@ update msg model =
 
 fadeIn : AnimBuilder -> AnimBuilder
 fadeIn =
+    fade 0 1
+
+
+fadeOut : AnimBuilder -> AnimBuilder
+fadeOut =
+    fade 1 0
+
+
+fade : Float -> Float -> AnimBuilder -> AnimBuilder
+fade from to =
     Opacity.for "my-box"
-        >> Opacity.from 0
-        >> Opacity.to 1
+        >> Opacity.from from
+        >> Opacity.to to
         >> Opacity.duration 2500
-        >> Opacity.easing CubicIn
+        >> Opacity.easing CubicInOut
         >> Opacity.build
 
 
@@ -91,18 +105,24 @@ view model =
 
                 FadeIn ->
                     Transitions.fireAndForget fadeIn
+
+                FadeOut ->
+                    Transitions.fireAndForget fadeOut
     in
     -- --8<-- [end:fireAndForget]
-    -- --8<-- [start:applyStyles]
     div
-        (Transitions.attributes "my-box" animState
-            ++ [ style "width" "100px"
-               , style "height" "100px"
-               , style "background-color" "blue"
-               ]
-        )
         []
+        [ button [ onClick TriggerFadeIn ] [ text "Fade In" ]
+        , button [ onClick TriggerFadeOut ] [ text "Fade Out" ]
+        , -- --8<-- [start:applyStyles]
+          div
+            (Transitions.attributes "my-box" animState
+                ++ [ style "width" "100px"
+                   , style "height" "100px"
+                   , style "background-color" "blue"
+                   ]
+            )
+            []
 
-
-
--- --8<-- [end:applyStyles]
+        -- --8<-- [end:applyStyles]
+        ]

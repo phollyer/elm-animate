@@ -5164,29 +5164,35 @@ var $elm$core$Task$perform = F2(
 	});
 var $elm$browser$Browser$element = _Browser_element;
 var $author$project$GettingStarted$FirstAnimation$Main$Ready = {$: 'Ready'};
-var $author$project$GettingStarted$FirstAnimation$Main$TriggerFadeIn = {$: 'TriggerFadeIn'};
-var $elm$core$Process$sleep = _Process_sleep;
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$GettingStarted$FirstAnimation$Main$init = function (_v0) {
 	return _Utils_Tuple2(
 		{state: $author$project$GettingStarted$FirstAnimation$Main$Ready},
-		A2(
-			$elm$core$Task$perform,
-			$elm$core$Basics$always($author$project$GettingStarted$FirstAnimation$Main$TriggerFadeIn),
-			$elm$core$Process$sleep(50)));
+		$elm$core$Platform$Cmd$none);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$GettingStarted$FirstAnimation$Main$FadeIn = {$: 'FadeIn'};
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
-var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $author$project$GettingStarted$FirstAnimation$Main$FadeOut = {$: 'FadeOut'};
 var $author$project$GettingStarted$FirstAnimation$Main$update = F2(
 	function (msg, model) {
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{state: $author$project$GettingStarted$FirstAnimation$Main$FadeIn}),
-			$elm$core$Platform$Cmd$none);
+		if (msg.$ === 'TriggerFadeIn') {
+			return _Utils_Tuple2(
+				_Utils_update(
+					model,
+					{state: $author$project$GettingStarted$FirstAnimation$Main$FadeIn}),
+				$elm$core$Platform$Cmd$none);
+		} else {
+			return _Utils_Tuple2(
+				_Utils_update(
+					model,
+					{state: $author$project$GettingStarted$FirstAnimation$Main$FadeOut}),
+				$elm$core$Platform$Cmd$none);
+		}
 	});
+var $author$project$GettingStarted$FirstAnimation$Main$TriggerFadeIn = {$: 'TriggerFadeIn'};
+var $author$project$GettingStarted$FirstAnimation$Main$TriggerFadeOut = {$: 'TriggerFadeOut'};
 var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -5267,8 +5273,9 @@ var $author$project$Anim$Internal$CSS$transitionAttributes = F2(
 		return attrs;
 	});
 var $author$project$Anim$Engine$CSS$Transitions$attributes = $author$project$Anim$Internal$CSS$transitionAttributes;
+var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $author$project$Anim$Extra$Easing$CubicIn = {$: 'CubicIn'};
+var $author$project$Anim$Extra$Easing$CubicInOut = {$: 'CubicInOut'};
 var $author$project$Anim$Internal$Builder$OpacityConfig = function (a) {
 	return {$: 'OpacityConfig', a: a};
 };
@@ -5993,22 +6000,27 @@ var $author$project$Anim$Internal$Builders$Opacity$to = F2(
 			builder);
 	});
 var $author$project$Anim$Property$Opacity$to = A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Builders$Opacity$to, $author$project$Anim$Internal$Properties$Opacity$fromFloat);
-var $author$project$GettingStarted$FirstAnimation$Main$fadeIn = A2(
-	$elm$core$Basics$composeR,
-	$author$project$Anim$Property$Opacity$for('my-box'),
-	A2(
-		$elm$core$Basics$composeR,
-		$author$project$Anim$Property$Opacity$from(0),
-		A2(
+var $author$project$GettingStarted$FirstAnimation$Main$fade = F2(
+	function (from, to) {
+		return A2(
 			$elm$core$Basics$composeR,
-			$author$project$Anim$Property$Opacity$to(1),
+			$author$project$Anim$Property$Opacity$for('my-box'),
 			A2(
 				$elm$core$Basics$composeR,
-				$author$project$Anim$Property$Opacity$duration(2500),
+				$author$project$Anim$Property$Opacity$from(from),
 				A2(
 					$elm$core$Basics$composeR,
-					$author$project$Anim$Property$Opacity$easing($author$project$Anim$Extra$Easing$CubicIn),
-					$author$project$Anim$Property$Opacity$build)))));
+					$author$project$Anim$Property$Opacity$to(to),
+					A2(
+						$elm$core$Basics$composeR,
+						$author$project$Anim$Property$Opacity$duration(2500),
+						A2(
+							$elm$core$Basics$composeR,
+							$author$project$Anim$Property$Opacity$easing($author$project$Anim$Extra$Easing$CubicInOut),
+							$author$project$Anim$Property$Opacity$build)))));
+	});
+var $author$project$GettingStarted$FirstAnimation$Main$fadeIn = A2($author$project$GettingStarted$FirstAnimation$Main$fade, 0, 1);
+var $author$project$GettingStarted$FirstAnimation$Main$fadeOut = A2($author$project$GettingStarted$FirstAnimation$Main$fade, 1, 0);
 var $author$project$Anim$Internal$CSS$AnimState = function (a) {
 	return {$: 'AnimState', a: a};
 };
@@ -6121,7 +6133,7 @@ var $author$project$Anim$Internal$CSS$Transform$collectProcessedTransform = F2(
 				return _Utils_update(
 					acc,
 					{
-						translate: 'translate3d(' + ($author$project$Anim$Internal$Properties$Translate$toCssString(config.end) + ')')
+						translate: $author$project$Anim$Internal$Properties$Translate$toCssString(config.end)
 					});
 			case 'ProcessedRotateConfig':
 				var config = property.a;
@@ -8109,7 +8121,7 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix = F3(
 										return _Utils_update(
 											acc,
 											{
-												translate: 'translate3d(' + ($author$project$Anim$Internal$Properties$Translate$toCssString(interpolatedPos) + ')')
+												translate: $author$project$Anim$Internal$Properties$Translate$toCssString(interpolatedPos)
 											});
 									case 'ProcessedRotateConfig':
 										var cfg = p.a;
@@ -8522,30 +8534,78 @@ var $author$project$Anim$Property$Opacity$init = F3(
 					$author$project$Anim$Internal$Properties$Opacity$fromFloat(value),
 					A2($author$project$Anim$Internal$Builders$Opacity$for, elementId, animBuilder))));
 	});
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$GettingStarted$FirstAnimation$Main$view = function (model) {
 	var animState = function () {
 		var _v0 = model.state;
-		if (_v0.$ === 'Ready') {
-			return $author$project$Anim$Engine$CSS$Transitions$init(
-				_List_fromArray(
-					[
-						A2($author$project$Anim$Property$Opacity$init, 'my-box', 0)
-					]));
-		} else {
-			return $author$project$Anim$Engine$CSS$Transitions$fireAndForget($author$project$GettingStarted$FirstAnimation$Main$fadeIn);
+		switch (_v0.$) {
+			case 'Ready':
+				return $author$project$Anim$Engine$CSS$Transitions$init(
+					_List_fromArray(
+						[
+							A2($author$project$Anim$Property$Opacity$init, 'my-box', 0)
+						]));
+			case 'FadeIn':
+				return $author$project$Anim$Engine$CSS$Transitions$fireAndForget($author$project$GettingStarted$FirstAnimation$Main$fadeIn);
+			default:
+				return $author$project$Anim$Engine$CSS$Transitions$fireAndForget($author$project$GettingStarted$FirstAnimation$Main$fadeOut);
 		}
 	}();
 	return A2(
 		$elm$html$Html$div,
-		_Utils_ap(
-			A2($author$project$Anim$Engine$CSS$Transitions$attributes, 'my-box', animState),
-			_List_fromArray(
-				[
-					A2($elm$html$Html$Attributes$style, 'width', '100px'),
-					A2($elm$html$Html$Attributes$style, 'height', '100px'),
-					A2($elm$html$Html$Attributes$style, 'background-color', 'blue')
-				])),
-		_List_Nil);
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick($author$project$GettingStarted$FirstAnimation$Main$TriggerFadeIn)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Fade In')
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick($author$project$GettingStarted$FirstAnimation$Main$TriggerFadeOut)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Fade Out')
+					])),
+				A2(
+				$elm$html$Html$div,
+				_Utils_ap(
+					A2($author$project$Anim$Engine$CSS$Transitions$attributes, 'my-box', animState),
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'width', '100px'),
+							A2($elm$html$Html$Attributes$style, 'height', '100px'),
+							A2($elm$html$Html$Attributes$style, 'background-color', 'blue')
+						])),
+				_List_Nil)
+			]));
 };
 var $author$project$GettingStarted$FirstAnimation$Main$main = $elm$browser$Browser$element(
 	{

@@ -592,19 +592,19 @@ The scroll completes immediately and the animation is removed.
 -}
 stop : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 stop toMsg =
-    InternalScroll.stopContainer toMsg "document"
+    InternalScroll.stopContainer "document" toMsg
 
 
 {-| Stop a scroll animation for a specific container by jumping to the target position.
 
     let
         ( newScrollState, scrollCmd ) =
-            Scroll.stopContainer GotScrollMsg "my-container" model.scrollAnimations
+            Scroll.stopContainer "my-container" GotScrollMsg model.scrollAnimations
     in
     ( { model | scrollAnimations = newScrollState }, scrollCmd )
 
 -}
-stopContainer : (AnimMsg -> msg) -> String -> AnimState -> ( AnimState, Cmd msg )
+stopContainer : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 stopContainer =
     InternalScroll.stopContainer
 
@@ -680,19 +680,19 @@ Use [resume](#resume) or [restart](#restart) to continue.
 -}
 reset : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 reset toMsg =
-    InternalScroll.resetContainer toMsg "document"
+    InternalScroll.resetContainer "document" toMsg
 
 
 {-| Reset a scroll animation for a specific container.
 
     let
         ( newScrollState, scrollCmd ) =
-            Scroll.resetContainer GotScrollMsg "my-container" model.scrollAnimations
+            Scroll.resetContainer "my-container" GotScrollMsg model.scrollAnimations
     in
     ( { model | scrollAnimations = newScrollState }, scrollCmd )
 
 -}
-resetContainer : (AnimMsg -> msg) -> String -> AnimState -> ( AnimState, Cmd msg )
+resetContainer : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 resetContainer =
     InternalScroll.resetContainer
 
@@ -715,19 +715,19 @@ The scroll jumps back to the start immediately and begins playing.
 -}
 restart : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 restart toMsg =
-    InternalScroll.restartContainer toMsg "document"
+    InternalScroll.restartContainer "document" toMsg
 
 
 {-| Restart scroll animation for a specific container.
 
     let
         ( newScrollState, scrollCmd ) =
-            Scroll.restartContainer GotScrollMsg "my-container" model.scrollAnimations
+            Scroll.restartContainer "my-container" GotScrollMsg model.scrollAnimations
     in
     ( { model | scrollAnimations = newScrollState }, scrollCmd )
 
 -}
-restartContainer : (AnimMsg -> msg) -> String -> AnimState -> ( AnimState, Cmd msg )
+restartContainer : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 restartContainer =
     InternalScroll.restartContainer
 

@@ -27,7 +27,7 @@ while IFS= read -r -d '' file; do
     else
         FAILED_FORMAT+=("$file")
     fi
-done < <(find src/Engines -name "*.elm" -type f -print0 2>/dev/null)
+done < <(find src -name "*.elm" -type f -print0 2>/dev/null)
 
 while IFS= read -r -d '' file; do
     if elm-format --yes "$file" > /dev/null 2>&1; then

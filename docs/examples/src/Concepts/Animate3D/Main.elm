@@ -8,7 +8,7 @@ import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
-import Element exposing (Element, centerX, centerY, column, el, fill, height, html, htmlAttribute, maximum, padding, paddingEach, px, spacing, text, width)
+import Element exposing (Element, centerX, centerY, clip, column, el, fill, height, html, htmlAttribute, maximum, padding, paddingEach, px, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -47,14 +47,18 @@ type alias Model =
     }
 
 
-cubeSize : Float
+cubeSize : Int
 cubeSize =
     100
 
 
 depth : Float
 depth =
-    cubeSize / 2
+    toFloat cubeSize / 2
+
+
+
+-- INIT
 
 
 init : { window : { width : Int } } -> ( Model, Cmd Msg )
@@ -63,7 +67,11 @@ init flags =
     let
         initialAnimState =
             Keyframes.init
-                [ Translate.initZ "cube" 200
+                [ -- Bring the cube forward on the Z axis
+                  -- so that it doesn't get clipped by the
+                  -- z=0 clipping plane when we expand the
+                  -- sides and rotate
+                  Translate.initZ "cube" 200
 
                 -- Position each face in 3D space
                 , Translate.initZ "front-face" depth
@@ -81,18 +89,13 @@ init flags =
                 , Rotate.initX "top-face" 90
                 , Rotate.initX "bottom-face" -90
                 ]
-
-        state =
-            Opening
     in
     -- --8<-- [end:initializeProperties]
     -- --8<-- [start:startAnimation]
-    ( { animState =
-            Keyframes.animate initialAnimState <|
-                animate state
+    ( { animState = Keyframes.animate initialAnimState moveSidesOut
 
       -- --8<-- [end:startAnimation]
-      , state = state
+      , state = Opening
       , animAreaSize =
             { width = min 500 (flags.window.width - 40)
             , height = 350
@@ -103,27 +106,7 @@ init flags =
 
 
 
--- --8<-- [start:animationSelector]
-
-
-animate : State -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
-animate state =
-    case state of
-        Opening ->
-            moveSidesOut
-
-        Closing ->
-            moveSidesIn
-
-        RotatingOpen ->
-            rotateCubeClockwise
-
-        RotatingClosed ->
-            rotateCubeAntiClockwise
-
-
-
--- --8<-- [end:animationSelector]
+-- ANIMATIONS
 -- --8<-- [start:animationFunctions]
 
 
@@ -288,7 +271,7 @@ update msg model =
                         | state = newState
                         , animState =
                             Keyframes.animate newModel.animState <|
-                                animate newState
+                                selectAnimation newState
                       }
                     , Cmd.none
                     )
@@ -310,7 +293,7 @@ update msg model =
                         | state = newState
                         , animState =
                             Keyframes.animate newModel.animState <|
-                                animate newState
+                                selectAnimation newState
                       }
                     , Cmd.none
                     )
@@ -321,6 +304,27 @@ update msg model =
 
 
 -- --8<-- [end:stateMachine]
+-- --8<-- [start:animationSelector]
+
+
+selectAnimation : State -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+selectAnimation state =
+    case state of
+        Opening ->
+            moveSidesOut
+
+        Closing ->
+            moveSidesIn
+
+        RotatingOpen ->
+            rotateCubeClockwise
+
+        RotatingClosed ->
+            rotateCubeAntiClockwise
+
+
+
+-- --8<-- [end:animationSelector]
 -- VIEW
 
 
@@ -335,14 +339,12 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.pageHeader "Keyframes 3D Example"
-    , html <|
-        Keyframes.styleNode model.animState
+    , Keyframes.styleNode model.animState
+        |> html
     , viewExplanation
     , el
-        [ width <|
-            px model.animAreaSize.width
-        , height <|
-            px model.animAreaSize.height
+        [ width (px model.animAreaSize.width)
+        , height (px model.animAreaSize.height)
         , centerX
         , Background.color Colors.backgroundWhite
         , Border.rounded 12
@@ -354,10 +356,15 @@ viewContent model =
             }
         ]
         (el
-            [ centerX
+            [ View3D.perspective 1000
+                |> htmlAttribute
+            , View3D.opacityHack
+                -- Fixes Chrome/macOS compositor tile corruption when
+                -- animating 3D transforms by creating a new stacking
+                -- context for the animation area
+                |> htmlAttribute
+            , centerX
             , centerY
-            , htmlAttribute <|
-                View3D.perspective 1000
             ]
             (viewCube model)
         )
@@ -369,7 +376,6 @@ type alias FaceConfig =
     , label : String
     , background : Element.Color
     , borderColor : Element.Color
-    , listenForEvents : Bool
     }
 
 
@@ -379,7 +385,6 @@ frontFace =
     , label = "FRONT"
     , background = Element.rgb255 52 152 219
     , borderColor = Element.rgb255 41 128 185
-    , listenForEvents = True
     }
 
 
@@ -389,7 +394,6 @@ backFace =
     , label = "BACK"
     , background = Element.rgb255 41 128 185
     , borderColor = Element.rgb255 33 97 140
-    , listenForEvents = False
     }
 
 
@@ -399,7 +403,6 @@ rightFace =
     , label = "RIGHT"
     , background = Element.rgb255 231 76 60
     , borderColor = Element.rgb255 192 57 43
-    , listenForEvents = False
     }
 
 
@@ -409,7 +412,6 @@ leftFace =
     , label = "LEFT"
     , background = Element.rgb255 230 126 34
     , borderColor = Element.rgb255 211 84 0
-    , listenForEvents = False
     }
 
 
@@ -419,7 +421,6 @@ topFace =
     , label = "TOP"
     , background = Element.rgb255 46 204 113
     , borderColor = Element.rgb255 39 174 96
-    , listenForEvents = False
     }
 
 
@@ -429,7 +430,6 @@ bottomFace =
     , label = "BOTTOM"
     , background = Element.rgb255 155 89 182
     , borderColor = Element.rgb255 142 68 173
-    , listenForEvents = False
     }
 
 
@@ -456,21 +456,20 @@ viewCube model =
                 []
     in
     column
-        ([ htmlAttribute <|
-            Html.Attributes.id "cube"
-         , width <|
-            px (round cubeSize)
-         , height <|
-            px (round cubeSize)
-         , htmlAttribute <|
-            View3D.transformStyle View3D.Preserve3D
-         , htmlAttribute <|
-            View3D.perspectiveOrigin View3D.Center
-         ]
-            ++ cubeStyles
+        (cubeStyles
             ++ cubeEvents
+            ++ [ View3D.transformStyle View3D.Preserve3D
+                    |> htmlAttribute
+               , View3D.perspectiveOrigin View3D.Center
+                    |> htmlAttribute
+               , width (px cubeSize)
+               , height (px cubeSize)
+               ]
         )
-        [ viewFace model.animState (shouldListenForSideEvents && frontFace.listenForEvents) frontFace
+        [ -- we only listen for animation events on the front face
+          -- since all side faces trigger at the same time,
+          -- so listening to one is sufficient to know when to rotate
+          viewFace model.animState shouldListenForSideEvents frontFace
         , viewFace model.animState False backFace
         , viewFace model.animState False rightFace
         , viewFace model.animState False leftFace
@@ -488,21 +487,16 @@ viewFace : Keyframes.AnimState -> Bool -> FaceConfig -> Element Msg
 viewFace animState listenForEvents config =
     let
         baseAttributes =
-            [ htmlAttribute <|
-                Html.Attributes.id config.id
-            , width <|
-                px (round cubeSize)
-            , height <|
-                px (round cubeSize)
+            [ Html.Attributes.style "position" "absolute"
+                |> htmlAttribute
+            , width (px cubeSize)
+            , height (px cubeSize)
             , Background.color config.background
             , Border.width 2
             , Border.color config.borderColor
-            , Font.color <|
-                Element.rgb 1 1 1
+            , Font.color (Element.rgb 1 1 1)
             , Font.bold
             , Font.size 14
-            , htmlAttribute <|
-                Html.Attributes.style "position" "absolute"
             ]
 
         animAttributes =

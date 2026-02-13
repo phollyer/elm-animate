@@ -182,7 +182,7 @@ generateWithSuffix elementId suffix properties =
                                                             interpolatedPos =
                                                                 Translate.interpolate progress startPos cfg.end
                                                         in
-                                                        { acc | translate = "translate3d(" ++ Translate.toCssString interpolatedPos ++ ")" }
+                                                        { acc | translate = Translate.toCssString interpolatedPos }
 
                                                     Builder.ProcessedRotateConfig cfg ->
                                                         let

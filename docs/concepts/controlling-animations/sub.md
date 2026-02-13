@@ -33,27 +33,7 @@ Immediately jumps to the animation's end state and stops playback:
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/Sub/Controls/Main.elm:stop"
-    ```
-
-### Pause
-
-Freezes the animation at its current position. The animation can be resumed later:
-
-??? example "View Source Code"
-
-    ```elm
-    --8<-- "docs/examples/src/Engines/Sub/Controls/Main.elm:pause"
-    ```
-
-### Resume
-
-Continues a paused animation from exactly where it was frozen:
-
-??? example "View Source Code"
-
-    ```elm
-    --8<-- "docs/examples/src/Engines/Sub/Controls/Main.elm:resume"
+    --8<-- "docs/examples/src/Concepts/ControllingAnimations/SubEngine/Main.elm:stop"
     ```
 
 ### Reset
@@ -63,7 +43,7 @@ Immediately jumps back to the animation's start state and stops:
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/Sub/Controls/Main.elm:reset"
+    --8<-- "docs/examples/src/Concepts/ControllingAnimations/SubEngine/Main.elm:reset"
     ```
 
 ### Restart
@@ -73,9 +53,30 @@ Resets to the start state, then immediately begins playing the animation again:
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/Sub/Controls/Main.elm:restart"
+    --8<-- "docs/examples/src/Concepts/ControllingAnimations/SubEngine/Main.elm:restart"
     ```
 
+
+
+### Pause
+
+Freezes the animation at its current position. The animation can be resumed later:
+
+??? example "View Source Code"
+
+    ```elm
+    --8<-- "docs/examples/src/Concepts/ControllingAnimations/SubEngine/Main.elm:pause"
+    ```
+
+### Resume
+
+Continues a paused animation from exactly where it was frozen:
+
+??? example "View Source Code"
+
+    ```elm
+    --8<-- "docs/examples/src/Concepts/ControllingAnimations/SubEngine/Main.elm:resume"
+    ```
 
 ## Next Steps
 

@@ -934,7 +934,7 @@ propertyToTransformPart prop =
     case prop of
         Builder.ProcessedTranslateConfig config ->
             config.start
-                |> Maybe.map (\start -> "translate3d(" ++ Translate.toCssString start ++ ")")
+                |> Maybe.map Translate.toCssString
 
         Builder.ProcessedRotateConfig config ->
             config.start

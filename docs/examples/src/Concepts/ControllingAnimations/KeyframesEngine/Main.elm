@@ -1,14 +1,12 @@
 module Concepts.ControllingAnimations.KeyframesEngine.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframes as CSS
+import Anim.Engine.CSS.Keyframes as Keyframes exposing (AnimBuilder)
+import Anim.Extra.Easing exposing (Easing(..))
+import Anim.Property.Translate as Translate
 import Browser exposing (Document)
-import Common.Animations.Controls as Controls exposing (elementId)
-import Common.Colors as Colors
 import Common.UI as UI
 import Common.View.Controls as ViewControls
-import Element exposing (Element, centerX, centerY, column, el, explain, fill, height, html, htmlAttribute, inFront, maximum, none, padding, paddingEach, paragraph, px, row, spacing, text, width)
-import Element.Background as Background
-import Element.Border as Border
+import Element exposing (Element, centerX, centerY, el, height, html, htmlAttribute, px, text, width)
 import Element.Font as Font
 import Html.Attributes
 
@@ -32,9 +30,14 @@ main =
 
 
 type alias Model =
-    { animState : CSS.AnimState
+    { animState : Keyframes.AnimState
     , animAreaSize : { width : Int, height : Int }
     }
+
+
+elementId : String
+elementId =
+    "bouncing-ball"
 
 
 
@@ -46,10 +49,13 @@ init { window } =
     let
         animAreaWidth =
             min 500 (window.width - 40)
+
+        xPos =
+            toFloat animAreaWidth / 2 - 25
     in
     ( { animState =
-            CSS.init <|
-                [ Controls.init animAreaWidth ]
+            Keyframes.init <|
+                [ Translate.initXY elementId xPos 50 ]
       , animAreaSize =
             { width = animAreaWidth
             , height = 350
@@ -57,6 +63,20 @@ init { window } =
       }
     , Cmd.none
     )
+
+
+
+-- ANIMATION
+
+
+dropBall : AnimBuilder -> AnimBuilder
+dropBall =
+    Translate.for elementId
+        >> Translate.fromY 50
+        >> Translate.toY 300
+        >> Translate.speed 200
+        >> Translate.easing BounceOut
+        >> Translate.build
 
 
 
@@ -77,42 +97,42 @@ update msg model =
     case msg of
         Animate ->
             ( { model
-                | animState = CSS.animate model.animState Controls.animate
+                | animState = Keyframes.animate model.animState dropBall
               }
             , Cmd.none
             )
 
         -- --8<-- [start:stop]
         Stop ->
-            ( { model | animState = CSS.stop elementId model.animState }
+            ( { model | animState = Keyframes.stop elementId model.animState }
             , Cmd.none
             )
 
         -- --8<-- [end:stop]
         -- --8<-- [start:reset]
         Reset ->
-            ( { model | animState = CSS.reset elementId model.animState }
+            ( { model | animState = Keyframes.reset elementId model.animState }
             , Cmd.none
             )
 
         -- --8<-- [end:reset]
         -- --8<-- [start:restart]
         Restart ->
-            ( { model | animState = CSS.restart elementId model.animState }
+            ( { model | animState = Keyframes.restart elementId model.animState }
             , Cmd.none
             )
 
         -- --8<-- [end:restart]
         -- --8<-- [start:pause]
         Pause ->
-            ( { model | animState = CSS.pause elementId model.animState }
+            ( { model | animState = Keyframes.pause elementId model.animState }
             , Cmd.none
             )
 
         -- --8<-- [end:pause]
         -- --8<-- [start:resume]
         Resume ->
-            ( { model | animState = CSS.resume elementId model.animState }
+            ( { model | animState = Keyframes.resume elementId model.animState }
             , Cmd.none
             )
 
@@ -120,23 +140,6 @@ update msg model =
 
 -- --8<-- [end:resume]
 -- VIEW - Using ElmUI, but the same animation logic works with any view layer
---
---
--- Engine-specific view helpers
-
-
-keyframesNode : CSS.AnimState -> Element msg
-keyframesNode =
-    CSS.styleNodeFor elementId >> html
-
-
-keyframesStyles : CSS.AnimState -> List (Element.Attribute msg)
-keyframesStyles =
-    CSS.attributes elementId >> List.map htmlAttribute
-
-
-
--- View Helpers
 
 
 view : Model -> Document Msg
@@ -149,7 +152,8 @@ view model =
 
 viewContent : Model -> List (Element Msg)
 viewContent model =
-    [ keyframesNode model.animState
+    [ html <|
+        Keyframes.styleNodeFor elementId model.animState
     , ViewControls.header
         [ "Keyframes Engine Controls" ]
     , ViewControls.table
@@ -176,13 +180,13 @@ viewContent model =
     ]
 
 
-animatedBall : CSS.AnimState -> Element msg
+animatedBall : Keyframes.AnimState -> Element msg
 animatedBall animState =
     el
-        (keyframesStyles animState
-            ++ [ width (px 50)
+        (List.map htmlAttribute (Keyframes.attributes elementId animState)
+            ++ [ htmlAttribute (Html.Attributes.style "position" "relative")
+               , width (px 50)
                , height (px 50)
-               , htmlAttribute (Html.Attributes.style "position" "relative")
                ]
         )
         (el [ centerX, centerY, Font.size 50 ] (text "🏀"))

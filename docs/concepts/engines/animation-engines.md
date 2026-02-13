@@ -8,8 +8,8 @@ Elm Animate provides multiple animation engines, each optimized for different us
 | -------- | ----------- | --------- | ---------- |
 | [Transitions](#transitions-engine) | Browser CSS | stop, reset | Simple A→B animations |
 | [Keyframes](#keyframes-engine) | Browser CSS | stop, reset, restart, pause, resume | Looping, iterations, entry animations |
-| [Sub](#sub-engine) | Elm subscriptions | Programmatic | Mid-flight queries, dynamic redirects |
-| [WAAPI](#waapi-engine) | Web Animations API | Programmatic | Native performance + mid-flight control |
+| [Sub](#sub-engine) | Elm subscriptions | stop, reset, restart, pause, resume | Mid-flight queries, dynamic redirects |
+| [WAAPI](#waapi-engine) | Web Animations API | stop, reset, restart, pause, resume | Native performance, mid-flight queries, dynamic redirects |
 
 ## Transitions Engine
 
@@ -22,13 +22,13 @@ Uses native CSS transitions for simple A→B property animations. The browser ha
 ??? example "View Source Code"
 
     ```elm
-    import Anim.Engine.CSS.Transitions as CSS
+    import Anim.Engine.CSS.Transitions as Transitions
 
     animState =
-        CSS.animate model.animState myAnimation
+        Transitions.animate model.animState myAnimation
 
     animState =
-        CSS.fireAndForget myAnimation
+        Transitions.fireAndForget myAnimation
     ```
 
 **Best for:**
@@ -37,10 +37,7 @@ Uses native CSS transitions for simple A→B property animations. The browser ha
 - Simple property changes
 - Fire-and-forget animations
 
-!!! note "Entry Animations"
-    CSS transitions require a state change to animate. For page-load entry animations, use `Process.sleep 50` to delay triggering, or use the [Keyframes Engine](#keyframes-engine) instead.
-
-[Learn more about CSS Transitions →](../../engines/css-transitions.md)
+[Learn more about the Transitions Engine →](../../engines/transitions.md)
 
 ## Keyframes Engine
 
@@ -48,24 +45,23 @@ Uses native CSS `@keyframes` animations for complex animations with iterations, 
 
 - **Native performance** — Hardware-accelerated by the browser
 - **Battery efficient** — No JavaScript running during animation playback
-- **Runs immediately** — No delay needed for entry animations
-- **Full playback control** — pause, resume, restart
+- **Full playback control** — stop, reset, pause, resume, restart
 
 ??? example "View Source Code"
 
     ```elm
-    import Anim.Engine.CSS.Keyframes as CSS
+    import Anim.Engine.CSS.Keyframes as Keyframes
 
     animState =
-        CSS.animate model.animState myAnimation
+        Keyframes.animate model.animState myAnimation
 
     animState =
-        CSS.fireAndForget myAnimation
+        Keyframes.fireAndForget myAnimation
 
     -- With looping
     animState =
-        CSS.fireandForget <|
-            CSS.loopForever >> pulseAnimation
+        Keyframes.fireAndForget <|
+            Keyframes.loopForever >> pulseAnimation
     ```
 
 **Best for:**
@@ -74,10 +70,7 @@ Uses native CSS `@keyframes` animations for complex animations with iterations, 
 - Looping/repeating animations
 - When you need pause/resume control
 
-!!! note "Hardware Acceleration"
-    Only **transform** properties (Translate, Rotate, Scale) and Opacity get GPU acceleration by the Browser. All other properties cause Browser repaints or reflows, and so cannot be lifted onto the GPU.
-
-[Learn more about CSS Keyframes →](../../engines/css-keyframes.md)
+[Learn more about the Keyframes Engine →](../../engines/keyframes.md)
 
 
 ## Sub Engine
@@ -110,10 +103,8 @@ The Sub Engine uses Elm subscriptions to update animation state on each frame. T
 - Animations that need to be interrupted and redirected
 - When you need to know current animated values
 
-!!! note "Performance Consideration"
-    The Sub engine updates CSS transition attributes on every animation frame. While this enables pure Elm state management and mid-flight queries, it means Elm's Virtual DOM diffs the view each frame. For a few animated elements, this is negligible. For complex views with many simultaneous animations, if performance should become an issue, consider using the [WAAPI Engine](#waapi-engine) where the browser handles interpolation natively.
 
-[Learn more about Sub Engine →](../../engines/sub.md)
+[Learn more about the Sub Engine →](../../engines/sub.md)
 
 ## WAAPI Engine
 
@@ -131,17 +122,17 @@ The WAAPI Engine combines all the good bits from the CSS and Sub Engines by usin
     import Json.Encode exposing (Value)
 
     port waapiCommand : Value -> Cmd msg
-    port waapiSubscription : (Value -> msg) -> Sub msg
+    port waapiEvent : (Value -> msg) -> Sub msg
 
     init : Model
     init =
-        { animState = WAAPI.init waapiCommand waapiSubscription [] }
+        { animState = WAAPI.init waapiCommand waapiEvent [] }
 
     type Msg
-        = GotWaapiMsg WAAPI.Msg
+        = GotWaapiMsg WAAPI.AnimMsg
         | ...
 
-    update : Msg -> Model -> (Model Cmd Msg)
+    update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
         case msg of
             GotWaapiMsg waapiMsg ->
@@ -165,7 +156,7 @@ The WAAPI Engine combines all the good bits from the CSS and Sub Engines by usin
 - Complex animations needing both performance and control
 - Animations with many simultaneous elements
 
-[Learn more about WAAPI Engine →](../../engines/waapi.md)
+[Learn more about the WAAPI Engine →](../../engines/waapi.md)
 
 ## Switching Engines
 
@@ -186,7 +177,7 @@ Because all engines share the same builder API, animations are portable:
     Transitions.fireAndForget myAnimation
 
     -- Use with CSS.Keyframes
-    Keyframes.fireAneForget myAnimation
+    Keyframes.fireAndForget myAnimation
 
     -- Use with Sub
     Sub.animate model.animState myAnimation
@@ -197,8 +188,15 @@ Because all engines share the same builder API, animations are portable:
 
 This makes it easy to start simple with the one of the CSS Engines and migrate to Sub or WAAPI as your requirements grow.
 
+
+## Hardware Acceleration
+
+Only **transform** properties (Translate, Rotate, Scale) and Opacity get GPU acceleration by the Browser. All other properties cause Browser repaints or reflows, and so cannot run on the GPU.
+
+
+
 ## Next Steps
 
-Now that you've learned about the animation engines, lets move on to the scroll engine.
+Now that you've learned about the animation engines, let's move on to the scroll engine.
 
 [Scroll Engine →](scroll-engine.md){ .md-button .md-button--primary }
