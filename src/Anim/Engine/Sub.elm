@@ -1,6 +1,6 @@
 module Anim.Engine.Sub exposing
     ( AnimState, init
-    , AnimBuilder, animate
+    , AnimBuilder, animate, TransformOrder(..), animateOrder
     , AnimMsg, AnimEvent(..), update, subscriptions
     , attributes
     , stop, reset, restart, pause, resume
@@ -50,7 +50,7 @@ The Sub Engine is ideal when you need full programmatic control over your animat
 
 # Execute
 
-@docs AnimBuilder, animate
+@docs AnimBuilder, animate, TransformOrder, animateOrder
 
 
 # Update
@@ -219,6 +219,47 @@ init =
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
 animate animState transform =
     InternalSub.animate animState transform
+
+
+{-| Transform order for custom transform ordering.
+
+The default order is: Translate → Rotate → Scale.
+
+-}
+type TransformOrder
+    = Translate
+    | Rotate
+    | Scale
+
+
+{-| Apply animation with custom transform ordering.
+
+    -- Scale → Rotate → Translate
+    Sub.animateOrder [ Sub.Scale, Sub.Rotate, Sub.Translate ]
+        model.animState
+        (scaleUp >> rotateLeft >> moveRight)
+
+Transform order affects how combined transforms render. For example, rotating then
+translating moves along the rotated axis, while translating then rotating moves
+along the original axis.
+
+-}
+animateOrder : List TransformOrder -> AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
+animateOrder order animState transform =
+    InternalSub.animateWithOrder (List.map toInternalOrder order) animState transform
+
+
+toInternalOrder : TransformOrder -> InternalSub.TransformOrder
+toInternalOrder order =
+    case order of
+        Translate ->
+            InternalSub.Translate
+
+        Rotate ->
+            InternalSub.Rotate
+
+        Scale ->
+            InternalSub.Scale
 
 
 {-| Set global duration in milliseconds (overrides any previous speed setting).

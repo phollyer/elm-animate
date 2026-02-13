@@ -301,10 +301,21 @@ The Sub Engine fully supports 3D animations. See [3D Animations](../concepts/3d.
 
 ## Transform Ordering
 
-The Sub Engine uses the default transform order: **Translate → Rotate → Scale**. This order is applied automatically and works well for most animations.
+The default transform order is: **Translate → Rotate → Scale**. This works well for most animations.
 
-!!! note "Custom transform ordering"
-    If you need custom transform ordering, use the [Keyframes Engine](keyframes.md), [Transitions Engine](transitions.md), or [WAAPI Engine](waapi.md) which support `animateOrder`.
+For custom ordering, use `animateOrder`:
+
+??? example "Custom Transform Order"
+
+    ```elm
+    -- Scale → Rotate → Translate
+    Sub.animateOrder [ Scale, Rotate, Translate ] model.animState <|
+        scaleUp
+            >> rotateLeft 
+            >> moveRight
+    ```
+
+Transform order affects how combined transforms render. For example, rotating then translating moves along the rotated axis, while translating then rotating moves along the original axis.
 
 ## API Quick Reference
 
@@ -316,6 +327,7 @@ The Sub Engine uses the default transform order: **Translate → Rotate → Scal
 | `AnimBuilder` | Carries all the animations configurations |
 | `AnimMsg` | Messages from animation frame subscription |
 | `AnimEvent` | Events returned by `update` (Started, Completed, etc.) |
+| `TransformOrder` | Custom transform ordering (Translate, Rotate, Scale) |
 
 ### Core Functions
 
@@ -323,6 +335,7 @@ The Sub Engine uses the default transform order: **Translate → Rotate → Scal
 | ---------- | ------ | ------------- |
 | `init` | `List (AnimBuilder -> AnimBuilder) -> AnimState` | Create initial animation state |
 | `animate` | `AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Start the animation |
+| `animateOrder` | `List TransformOrder -> AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Animate with custom transform order |
 | `update` | `AnimMsg -> AnimState -> ( AnimState, List AnimEvent )` | Update state and get events |
 | `subscriptions` | `(AnimMsg -> msg) -> AnimState -> Sub msg` | Animation frame subscription |
 
