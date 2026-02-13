@@ -19,7 +19,7 @@ module Anim.Engine.Scroll exposing
     , withOffsetXY, withOffsetX, withOffsetY
     , delay, duration, speed
     , easing
-    , anyRunning, isRunning, getMaxDuration, getDuration
+    , anyRunning, isRunning
     , getPosition, getPositionX, getPositionY
     , stop, stopContainer
     , pause, pauseContainer
@@ -193,7 +193,7 @@ This overrides the global easing setting.
 
 ## Animation State
 
-@docs anyRunning, isRunning, getMaxDuration, getDuration
+@docs anyRunning, isRunning
 
 
 ## Scroll Position
@@ -509,14 +509,6 @@ isRunning =
     InternalScroll.isRunning
 
 
-{-| Get the maximum duration of currently running scroll animations.
-Returns the longest duration when multiple animations are running.
--}
-getMaxDuration : AnimState -> Maybe Int
-getMaxDuration =
-    InternalScroll.getDuration
-
-
 
 -- QUERYING SCROLL POSITION
 
@@ -545,29 +537,6 @@ getPositionX =
 getPositionY : String -> AnimState -> Maybe Float
 getPositionY =
     InternalScroll.getScrollPositionY
-
-
-
--- CONTAINER-SPECIFIC QUERIES
-
-
-{-| Get the duration of the scroll animation for a specific container.
-
-Returns `Nothing` if no animation is running for the specified container.
-
-    case Scroll.getDuration "my-container" model.scrollAnimations of
-        Just durationMs ->
-            -- Animation duration in milliseconds
-            ...
-
-        Nothing ->
-            -- No animation for this container
-            ...
-
--}
-getDuration : String -> AnimState -> Maybe Int
-getDuration =
-    InternalScroll.getContainerDuration
 
 
 
