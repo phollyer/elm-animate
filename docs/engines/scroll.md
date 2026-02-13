@@ -13,10 +13,15 @@ The simplest approach — just scroll and forget:
     ```elm
     import Anim.Engine.Scroll as Scroll
 
+    scrollToElement : AnimBuilder -> AnimBuilder
+    scrollToElement =
+        Scroll.forDocument
+            >> Scroll.toElement "target-section"
+            >> Scroll.build
 
     type Msg
         = ScrollToSection
-        | NoOp
+        | ScrollComplete String
 
 
     update : Msg -> Model -> ( Model, Cmd Msg )
@@ -24,11 +29,12 @@ The simplest approach — just scroll and forget:
         case msg of
             ScrollToSection ->
                 ( model
-                , Scroll.toCmd (\_ -> NoOp) <|
-                    Scroll.forDocument
-                        >> Scroll.toElement "target-section"
-                        >> Scroll.build
+                , Scroll.toCmd ScrollComplete scrollToElement                    
                 )
+
+            ScrollComplete elementId ->
+                -- handle any completed scrolls by element ID
+                (model, Cmd.none)
 
             NoOp ->
                 ( model, Cmd.none )

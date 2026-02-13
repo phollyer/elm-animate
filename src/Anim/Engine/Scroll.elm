@@ -2,8 +2,9 @@ module Anim.Engine.Scroll exposing
     ( AnimBuilder
     , toCmd
     , ScrollError(..), ScrollOk, toTask
+    , AnimState
     , animate
-    , AnimState, init
+    , init
     , AnimMsg, update, subscriptions
     , defaultDuration, defaultSpeed
     , defaultEasing
@@ -100,12 +101,14 @@ Use `Task` execution when you want to handle success or failure of the scroll an
 Use stateful subscription-based animations when you need to track ongoing scrolls, query their state, react to their progress,
 or redirect mid-flight.
 
+@docs AnimState
+
 @docs animate
 
 
-# State
+# Initialize State
 
-@docs AnimState, init
+@docs init
 
 
 # Update
@@ -439,10 +442,7 @@ defaultDelay =
 
     subscriptions : Model -> Sub Msg
     subscriptions model =
-        Sub.batch
-            [ Scroll.subscriptions ScrollMsg model.scrollAnimations
-            , ...
-            ]
+        Scroll.subscriptions ScrollMsg model.scrollAnimations
 
 -}
 subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg
