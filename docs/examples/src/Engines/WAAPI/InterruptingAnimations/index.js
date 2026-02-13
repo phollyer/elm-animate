@@ -10321,7 +10321,7 @@ var $author$project$Anim$Internal$WAAPI$update = F2(
 			var jsonValue = msg.a;
 			return _Utils_Tuple2(
 				A2($author$project$Anim$Internal$WAAPI$updatePropertyUpdate, jsonValue, animState),
-				_List_Nil);
+				$elm$core$Maybe$Nothing);
 		} else {
 			var jsonValue = msg.a;
 			var _v1 = $author$project$Anim$Internal$WAAPI$decodeAnimationEvent(jsonValue);
@@ -10331,12 +10331,10 @@ var $author$project$Anim$Internal$WAAPI$update = F2(
 				var status = _v2.b;
 				return _Utils_Tuple2(
 					A3($author$project$Anim$Internal$WAAPI$handleEventInternal, elementId, status, animState),
-					_List_fromArray(
-						[
-							_Utils_Tuple2(elementId, status)
-						]));
+					$elm$core$Maybe$Just(
+						_Utils_Tuple2(elementId, status)));
 			} else {
-				return _Utils_Tuple2(animState, _List_Nil);
+				return _Utils_Tuple2(animState, $elm$core$Maybe$Nothing);
 			}
 		}
 	});
@@ -10344,17 +10342,17 @@ var $author$project$Anim$Engine$WAAPI$update = F2(
 	function (msg, animState) {
 		var _v0 = A2($author$project$Anim$Internal$WAAPI$update, msg, animState);
 		var newState = _v0.a;
-		var rawEvents = _v0.b;
+		var maybeRawEvent = _v0.b;
 		return _Utils_Tuple2(
 			newState,
 			A2(
-				$elm$core$List$map,
+				$elm$core$Maybe$map,
 				function (_v1) {
 					var elementId = _v1.a;
 					var status = _v1.b;
 					return A2($author$project$Anim$Engine$WAAPI$statusStringToEvent, elementId, status);
 				},
-				rawEvents));
+				maybeRawEvent));
 	});
 var $author$project$Engines$WAAPI$InterruptingAnimations$Main$update = F2(
 	function (msg, model) {

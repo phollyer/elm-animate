@@ -2,19 +2,23 @@ module Anim.Internal.WAAPI exposing
     ( AnimBuilder
     , AnimMsg
     , AnimState
+    , TransformOrder(..)
     , allComplete
     , animate
+    , animateWithOrder
     , anyRunning
     , attributes
     , builder
     , decodeAnimationEvent
     , decodeEvent
+    , defaultTransformOrder
     , delay
     , duration
     , easing
     , encode
     , encodeCommand
     , fireAndForget
+    , fireAndForgetWithOrder
     , getCurrentBackgroundColor
     , getCurrentOpacity
     , getCurrentRotate
@@ -128,7 +132,56 @@ type alias PropertyAnimation =
 type alias ElementAnimation =
     { currentStates : ElementStates -- Updated by JavaScript during playback
     , properties : Dict String PropertyAnimation -- Tracks version and status per property type ("position", "opacity", etc.)
+    , transformOrder : List TransformOrder -- Order to apply transforms (default: Translate → Rotate → Scale)
     }
+
+
+{-| Specifies the order in which transform operations are applied.
+The order significantly affects the final visual result - rotating then translating
+produces different results than translating then rotating.
+-}
+type TransformOrder
+    = Translate
+    | Rotate
+    | Scale
+
+
+{-| Default transform order: Translate → Rotate → Scale.
+-}
+defaultTransformOrder : List TransformOrder
+defaultTransformOrder =
+    [ Translate, Rotate, Scale ]
+
+
+{-| Normalize a transform order list:
+
+1.  Remove duplicates, keeping the first occurrence
+2.  Append any missing transforms in the default order (Translate → Rotate → Scale)
+
+-}
+normalizeTransformOrder : List TransformOrder -> List TransformOrder
+normalizeTransformOrder order =
+    let
+        removeDuplicates : List TransformOrder -> List TransformOrder -> List TransformOrder
+        removeDuplicates seen remaining =
+            case remaining of
+                [] ->
+                    List.reverse seen
+
+                x :: xs ->
+                    if List.member x seen then
+                        removeDuplicates seen xs
+
+                    else
+                        removeDuplicates (x :: seen) xs
+
+        deduped =
+            removeDuplicates [] order
+
+        missing =
+            List.filter (\t -> not (List.member t deduped)) defaultTransformOrder
+    in
+    deduped ++ missing
 
 
 {-| Pending actions for optimistic state management.
@@ -200,6 +253,21 @@ fireAndForget portFunction buildAnimation =
 
         encodedData =
             encode processedData
+    in
+    portFunction encodedData
+
+
+fireAndForgetWithOrder : List TransformOrder -> (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
+fireAndForgetWithOrder order portFunction buildAnimation =
+    let
+        normalizedOrder =
+            normalizeTransformOrder order
+
+        processedData =
+            Builder.processAnimationData (buildAnimation Builder.init)
+
+        encodedData =
+            encodeWithOrder normalizedOrder processedData
     in
     portFunction encodedData
 
@@ -331,9 +399,16 @@ animate (AnimState state) buildAnimation =
                             -- Merge new property versions with existing ones (new ones take precedence)
                             mergedPropertyVersions =
                                 Dict.union newPropertyVersions existingPropertyVersions
+
+                            -- Preserve existing transform order, or use default if new element
+                            existingTransformOrder =
+                                existingAnimation
+                                    |> Maybe.map .transformOrder
+                                    |> Maybe.withDefault defaultTransformOrder
                         in
                         { currentStates = currentStates
                         , properties = mergedPropertyVersions
+                        , transformOrder = existingTransformOrder
                         }
                     )
 
@@ -356,6 +431,7 @@ animate (AnimState state) buildAnimation =
                                 Dict.insert elementId
                                     { currentStates = newAnim.currentStates
                                     , properties = mergedProperties
+                                    , transformOrder = newAnim.transformOrder
                                     }
                                     acc
                 )
@@ -383,6 +459,58 @@ animate (AnimState state) buildAnimation =
         }
     , state.commandPort <|
         encodeWithVersions updatedElementAnimations processedData
+    )
+
+
+{-| Animate with a custom transform order.
+
+The transform order specifies how translate, rotate, and scale are combined.
+This is applied to all elements in this animation. Start the list with the
+transform to apply first.
+
+    animateWithOrder [ Rotate, Translate, Scale ] model.animState myAnimation
+
+Any missing transforms are automatically appended in the default order.
+
+-}
+animateWithOrder : List TransformOrder -> AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
+animateWithOrder order (AnimState state) buildAnimation =
+    let
+        normalizedOrder =
+            normalizeTransformOrder order
+
+        -- Run the standard animate logic first
+        ( AnimState newState, _ ) =
+            animate (AnimState state) buildAnimation
+
+        -- Update the transform order for all elements that were animated
+        -- (We need to re-process to get the list of element IDs)
+        configuredBuilder =
+            state.builder
+                |> Builder.injectCurrentStates state.elementAnimations
+                |> buildAnimation
+
+        processedData =
+            Builder.processAnimationData configuredBuilder
+
+        -- Apply custom transform order to all animated elements
+        updatedWithOrder =
+            Dict.foldl
+                (\elementId _ acc ->
+                    Dict.update elementId
+                        (Maybe.map (\elem -> { elem | transformOrder = normalizedOrder }))
+                        acc
+                )
+                newState.elementAnimations
+                processedData.elements
+
+        -- Rebuild the encoding with updated transform orders
+        finalState =
+            { newState | elementAnimations = updatedWithOrder }
+    in
+    ( AnimState finalState
+    , state.commandPort <|
+        encodeWithVersionsAndOrder updatedWithOrder processedData
     )
 
 
@@ -446,6 +574,7 @@ init commandPort subscriptionPort propertyInitializers =
                                 in
                                 { currentStates = endStates
                                 , properties = Dict.empty -- No property tracking for init
+                                , transformOrder = defaultTransformOrder
                                 }
                             )
             in
@@ -666,24 +795,24 @@ decodeAnimationEvent jsonValue =
 {-| TEA-style update function for WAAPI messages.
 
 Handles both property updates and lifecycle events, returning the updated state
-and a list of animation events (elementId, status) for side effects.
+and an optional animation event (elementId, status) for side effects.
 
 -}
-update : AnimMsg -> AnimState msg -> ( AnimState msg, List ( String, String ) )
+update : AnimMsg -> AnimState msg -> ( AnimState msg, Maybe ( String, String ) )
 update msg animState =
     case msg of
         PropertyUpdate jsonValue ->
-            ( updatePropertyUpdate jsonValue animState, [] )
+            ( updatePropertyUpdate jsonValue animState, Nothing )
 
         AnimEvent jsonValue ->
             case decodeAnimationEvent jsonValue of
                 Just ( elementId, status ) ->
                     ( handleEventInternal elementId status animState
-                    , [ ( elementId, status ) ]
+                    , Just ( elementId, status )
                     )
 
                 Nothing ->
-                    ( animState, [] )
+                    ( animState, Nothing )
 
 
 {-| Handle full property updates from JavaScript.
@@ -1181,7 +1310,7 @@ attributes elementId (AnimState state) =
                 currentStates =
                     elementAnimation.currentStates
 
-                -- Build transform string: translate, rotate, scale
+                -- Build transform parts
                 translatePart =
                     currentStates.translate
                         |> Maybe.map Translate.toCssString
@@ -1197,8 +1326,12 @@ attributes elementId (AnimState state) =
                         |> Maybe.map Scale.toCssString
                         |> Maybe.withDefault ""
 
+                -- Build transform string using stored transform order
                 transformString =
-                    String.trim (translatePart ++ " " ++ rotatePart ++ " " ++ scalePart)
+                    elementAnimation.transformOrder
+                        |> List.map (transformOrderToPart translatePart rotatePart scalePart)
+                        |> List.filter (not << String.isEmpty)
+                        |> String.join " "
 
                 transformStyle =
                     if String.isEmpty transformString then
@@ -1240,6 +1373,21 @@ attributes elementId (AnimState state) =
                         |> Maybe.withDefault []
             in
             transformStyle ++ opacityStyle ++ backgroundColorStyle ++ fontColorStyle ++ sizeStyles
+
+
+{-| Convert a TransformOrder to its corresponding CSS string part.
+-}
+transformOrderToPart : String -> String -> String -> TransformOrder -> String
+transformOrderToPart translatePart rotatePart scalePart order =
+    case order of
+        Translate ->
+            translatePart
+
+        Rotate ->
+            rotatePart
+
+        Scale ->
+            scalePart
 
 
 
@@ -1635,11 +1783,60 @@ encodeWithVersions elementAnimations data =
         ]
 
 
+{-| Encode animation data including transform order for each element.
+-}
+encodeWithVersionsAndOrder : Dict ElementId ElementAnimation -> Builder.ProcessedAnimationData -> Encode.Value
+encodeWithVersionsAndOrder elementAnimations data =
+    let
+        elementsWithVersions =
+            data.elements
+                |> Dict.toList
+                |> List.map
+                    (\( elementId, config ) ->
+                        let
+                            transformOrder =
+                                Dict.get elementId elementAnimations
+                                    |> Maybe.map .transformOrder
+                                    |> Maybe.withDefault defaultTransformOrder
+                        in
+                        ( elementId
+                        , encodeProcessedElementConfigWithVersionsAndOrder elementAnimations elementId config transformOrder
+                        )
+                    )
+    in
+    Encode.object
+        [ ( "type", Encode.string "animate" )
+        , ( "elements", Encode.object elementsWithVersions )
+        ]
+
+
 encode : Builder.ProcessedAnimationData -> Encode.Value
 encode data =
     Encode.object
         [ ( "type", Encode.string "animate" )
         , ( "elements", Encode.dict identity encodeProcessedElementConfig data.elements )
+        ]
+
+
+{-| Encode animation data with a custom transform order applied to all elements.
+Used by fireAndForgetWithOrder.
+-}
+encodeWithOrder : List TransformOrder -> Builder.ProcessedAnimationData -> Encode.Value
+encodeWithOrder order data =
+    let
+        elementsWithOrder =
+            data.elements
+                |> Dict.toList
+                |> List.map
+                    (\( elementId, config ) ->
+                        ( elementId
+                        , encodeProcessedElementConfigWithOrder config order
+                        )
+                    )
+    in
+    Encode.object
+        [ ( "type", Encode.string "animate" )
+        , ( "elements", Encode.object elementsWithOrder )
         ]
 
 
@@ -1666,10 +1863,57 @@ encodeProcessedElementConfigWithVersions elementAnimations elementId config =
         [ ( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties ) ]
 
 
+{-| Encode element config with versions and custom transform order.
+-}
+encodeProcessedElementConfigWithVersionsAndOrder : Dict ElementId ElementAnimation -> String -> Builder.ProcessedElementConfig -> List TransformOrder -> Encode.Value
+encodeProcessedElementConfigWithVersionsAndOrder elementAnimations elementId config transformOrder =
+    let
+        elementProps =
+            Dict.get elementId elementAnimations
+                |> Maybe.map .properties
+                |> Maybe.withDefault Dict.empty
+                |> Debug.log "Element Properties with Versions"
+    in
+    Encode.object
+        [ ( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties )
+        , ( "transformOrder", encodeTransformOrder transformOrder )
+        ]
+
+
+{-| Encode transform order as a JSON array of strings.
+-}
+encodeTransformOrder : List TransformOrder -> Encode.Value
+encodeTransformOrder order =
+    Encode.list
+        (\t ->
+            case t of
+                Translate ->
+                    Encode.string "translate"
+
+                Rotate ->
+                    Encode.string "rotate"
+
+                Scale ->
+                    Encode.string "scale"
+        )
+        order
+
+
 encodeProcessedElementConfig : Builder.ProcessedElementConfig -> Encode.Value
 encodeProcessedElementConfig config =
     Encode.object
         [ ( "properties", Encode.list encodeProcessedPropertyConfig config.properties ) ]
+
+
+{-| Encode element config with custom transform order.
+Used by encodeWithOrder for fire-and-forget animations.
+-}
+encodeProcessedElementConfigWithOrder : Builder.ProcessedElementConfig -> List TransformOrder -> Encode.Value
+encodeProcessedElementConfigWithOrder config transformOrder =
+    Encode.object
+        [ ( "properties", Encode.list encodeProcessedPropertyConfig config.properties )
+        , ( "transformOrder", encodeTransformOrder transformOrder )
+        ]
 
 
 encodeProcessedPropertyConfigWithVersion : Dict String PropertyAnimation -> Builder.ProcessedPropertyConfig -> Encode.Value
@@ -2139,6 +2383,7 @@ reset elementId (AnimState state) =
                         newElementAnimation =
                             { currentStates = startStates
                             , properties = newProperties
+                            , transformOrder = defaultTransformOrder
                             }
 
                         updatedElementAnimations =
@@ -2240,6 +2485,7 @@ restart elementId (AnimState state) =
                         newElementAnimation =
                             { currentStates = startStates
                             , properties = newProperties
+                            , transformOrder = defaultTransformOrder
                             }
 
                         updatedElementAnimations =

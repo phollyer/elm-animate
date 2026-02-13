@@ -15,6 +15,7 @@ module Anim.Engine.WAAPI exposing
     , getStartRotate, getEndRotate, getCurrentRotate
     , getStartScale, getEndScale, getCurrentScale
     , getStartSize, getEndSize, getCurrentSize
+    , TransformOrder(..), animateOrder, fireAndForgetOrder
     )
 
 {-| Ports-based animation system with optional state tracking.
@@ -361,6 +362,58 @@ animate =
     Internal.animate
 
 
+{-| Specifies the order in which transform operations are applied.
+
+CSS transforms are applied right to left, so `[Rotate, Translate, Scale]` means:
+
+1.  Scale first (closest to element)
+2.  Translate second
+3.  Rotate last (outer transform)
+
+The order significantly affects the final result - rotating then translating
+produces different results than translating then rotating.
+
+-}
+type TransformOrder
+    = Translate
+    | Rotate
+    | Scale
+
+
+{-| Convert public TransformOrder to internal TransformOrder.
+-}
+toInternalTransformOrder : TransformOrder -> Internal.TransformOrder
+toInternalTransformOrder order =
+    case order of
+        Translate ->
+            Internal.Translate
+
+        Rotate ->
+            Internal.Rotate
+
+        Scale ->
+            Internal.Scale
+
+
+{-| Animate with a custom transform order.
+
+Use this when you need transforms applied in a specific order.
+Start the list with the transform you want applied first (outermost).
+
+    WAAPI.animateOrder [ Rotate, Translate, Scale ] model.animState <|
+        \builder ->
+            builder
+                |> -- configure animation
+
+Any missing transforms are automatically appended in the default order
+(Translate → Rotate → Scale), so `[Scale]` becomes `[Scale, Translate, Rotate]`.
+
+-}
+animateOrder : List TransformOrder -> AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
+animateOrder order animState buildAnimation =
+    Internal.animateWithOrder (List.map toInternalTransformOrder order) animState buildAnimation
+
+
 {-| Execute a fire-and-forget animation without state tracking.
 
 Use this when you don't need to track animation state or query animated values.
@@ -381,6 +434,23 @@ For state management and continuity, use [animate](#animate) instead.
 fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
 fireAndForget =
     Internal.fireAndForget
+
+
+{-| Fire-and-forget animation with custom transform order.
+
+    port waapiCommand : Encode.Value -> Cmd msg
+
+    myAnimationCmd : Cmd msg
+    myAnimationCmd =
+        WAAPI.fireAndForgetOrder [ Rotate, Translate, Scale ] waapiCommand <|
+            \builder ->
+                builder
+                    |> -- configure animation
+
+-}
+fireAndForgetOrder : List TransformOrder -> (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
+fireAndForgetOrder order portFunction buildAnimation =
+    Internal.fireAndForgetWithOrder (List.map toInternalTransformOrder order) portFunction buildAnimation
 
 
 
@@ -866,7 +936,7 @@ subscriptions =
 
 
 {-| Handles both property updates and lifecycle events, returning the updated state
-and a list of `AnimEvent`s that you can pattern match on and react to.
+and an optional `AnimEvent` that you can pattern match on and react to.
 
     type Msg
         = WaapiMsg WAAPI.AnimMsg
@@ -877,36 +947,37 @@ and a list of `AnimEvent`s that you can pattern match on and react to.
         case msg of
             WaapiMsg waapiMsg ->
                 let
-                    ( newAnimState, events ) =
+                    ( newAnimState, maybeEvent ) =
                         WAAPI.update waapiMsg model.animState
                 in
-                handleAnimationEvents events { model | animState = newAnimState }
+                handleAnimationEvent maybeEvent { model | animState = newAnimState }
 
             ...
 
-    handleAnimationEvents : List WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
-    handleAnimationEvents events model =
-        List.foldl handleSingleEvent ( model, Cmd.none ) events
-
-    handleSingleEvent : WAAPI.AnimEvent -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
-    handleSingleEvent event ( model, cmd ) =
-        case event of
-            WAAPI.Completed "box" ->
+    handleAnimationEvent : Maybe WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleAnimationEvent maybeEvent model =
+        case maybeEvent of
+            Just (WAAPI.Completed "box") ->
                 -- The "box" element finished animating
-                ( model, Cmd.batch [ cmd, startNextAnimation ] )
+                ( model, startNextAnimation )
 
-            _ ->
-                ( model, cmd )
+            Just _ ->
+                -- Other events
+                ( model, Cmd.none )
+
+            Nothing ->
+                -- Property update (no lifecycle event)
+                ( model, Cmd.none )
 
 -}
-update : AnimMsg -> AnimState msg -> ( AnimState msg, List AnimEvent )
+update : AnimMsg -> AnimState msg -> ( AnimState msg, Maybe AnimEvent )
 update msg animState =
     let
-        ( newState, rawEvents ) =
+        ( newState, maybeRawEvent ) =
             Internal.update msg animState
     in
     ( newState
-    , List.map (\( elementId, status ) -> statusStringToEvent elementId status) rawEvents
+    , Maybe.map (\( elementId, status ) -> statusStringToEvent elementId status) maybeRawEvent
     )
 
 

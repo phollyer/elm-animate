@@ -61,6 +61,10 @@ boxWidth =
     100
 
 
+
+-- INIT
+
+
 init : { width : Float, height : Float } -> ( Model, Cmd Msg )
 init { width, height } =
     ( { animState =

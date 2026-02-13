@@ -7298,13 +7298,13 @@ var $author$project$Anim$Internal$Sub$createPropertyAnimState = F2(
 					A8(buildPropertyAnimation, 'size', actualStart, config.end, config.duration, config.delay, config.easing, $author$project$Anim$Internal$Sub$createSizeSteps, $author$project$Anim$Internal$Sub$SizeAnimation));
 		}
 	});
-var $author$project$Anim$Internal$Sub$createElementAnimState = F3(
-	function (startValues, _v0, elementConfig) {
+var $author$project$Anim$Internal$Sub$createElementAnimState = F4(
+	function (order, startValues, _v0, elementConfig) {
 		var properties = A2(
 			$elm$core$List$filterMap,
 			$author$project$Anim$Internal$Sub$createPropertyAnimState(startValues),
 			elementConfig.properties);
-		return {isComplete: false, isPaused: false, properties: properties};
+		return {isComplete: false, isPaused: false, properties: properties, transformOrder: order};
 	});
 var $author$project$Anim$Internal$Properties$Color$fromRGBA = function (_v0) {
 	var r = _v0.r;
@@ -7321,6 +7321,11 @@ var $author$project$Anim$Internal$Properties$Color$black = $author$project$Anim$
 var $author$project$Anim$Internal$Properties$FontColor$default = $author$project$Anim$Internal$Properties$Color$black;
 var $author$project$Anim$Internal$Properties$Size$default = $author$project$Anim$Internal$Properties$Size$Size(
 	{h: 0, w: 0});
+var $author$project$Anim$Internal$Sub$Rotate = {$: 'Rotate'};
+var $author$project$Anim$Internal$Sub$Scale = {$: 'Scale'};
+var $author$project$Anim$Internal$Sub$Translate = {$: 'Translate'};
+var $author$project$Anim$Internal$Sub$defaultTransformOrder = _List_fromArray(
+	[$author$project$Anim$Internal$Sub$Translate, $author$project$Anim$Internal$Sub$Rotate, $author$project$Anim$Internal$Sub$Scale]);
 var $elm$core$List$append = F2(
 	function (xs, ys) {
 		if (!ys.b) {
@@ -7948,7 +7953,7 @@ var $author$project$Anim$Internal$Sub$animate = F2(
 		var processedData = $author$project$Anim$Internal$Builder$processAnimationData(builder_);
 		var elementStates = A2(
 			$elm$core$Dict$map,
-			$author$project$Anim$Internal$Sub$createElementAnimState(startValues),
+			A2($author$project$Anim$Internal$Sub$createElementAnimState, $author$project$Anim$Internal$Sub$defaultTransformOrder, startValues),
 			processedData.elements);
 		var startedEvents = A2(
 			$elm$core$List$map,
@@ -8226,7 +8231,7 @@ var $author$project$Anim$Internal$Sub$init = function (propertyInitializers) {
 				}),
 			A2(
 				$elm$core$Dict$map,
-				$author$project$Anim$Internal$Sub$createElementAnimState(startValues),
+				A2($author$project$Anim$Internal$Sub$createElementAnimState, $author$project$Anim$Internal$Sub$defaultTransformOrder, startValues),
 				processedData.elements));
 		return $author$project$Anim$Internal$Sub$AnimState(
 			{
@@ -8879,7 +8884,17 @@ var $author$project$Anim$Internal$Sub$getSizeStyleAttributes = function (propert
 		return _List_Nil;
 	}
 };
-var $elm$core$String$trim = _String_trim;
+var $author$project$Anim$Internal$Sub$transformOrderToPart = F2(
+	function (parts, order) {
+		switch (order.$) {
+			case 'Translate':
+				return parts.translate;
+			case 'Rotate':
+				return parts.rotate;
+			default:
+				return parts.scale;
+		}
+	});
 var $author$project$Anim$Internal$Sub$htmlAttributes = F2(
 	function (elementId, _v0) {
 		var state = _v0.a;
@@ -8892,7 +8907,16 @@ var $author$project$Anim$Internal$Sub$htmlAttributes = F2(
 			var nonTransformStyles = A2($elm$core$List$filterMap, $author$project$Anim$Internal$Sub$getNonTransformStyleAttribute, elementAnimation.properties);
 			var currentProperties = A2($elm$core$List$map, $author$project$Anim$Internal$Sub$getCurrentPropertyValue, elementAnimation.properties);
 			var transformParts = $author$project$Anim$Internal$Builder$extractTransformsFromProcessed(currentProperties);
-			var transformString = $elm$core$String$trim(transformParts.translate + (' ' + (transformParts.rotate + (' ' + transformParts.scale))));
+			var transformString = A2(
+				$elm$core$String$join,
+				' ',
+				A2(
+					$elm$core$List$filter,
+					A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$String$isEmpty),
+					A2(
+						$elm$core$List$map,
+						$author$project$Anim$Internal$Sub$transformOrderToPart(transformParts),
+						elementAnimation.transformOrder)));
 			var transformStyle = $elm$core$String$isEmpty(transformString) ? _List_Nil : _List_fromArray(
 				[
 					A2($elm$html$Html$Attributes$style, 'transform', transformString)
