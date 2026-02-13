@@ -29,6 +29,9 @@ type alias Model =
     { animState : Sub.AnimState }
 
 
+-- INIT
+
+
 init : () -> ( Model, Cmd Msg )
 init _ =
     let
@@ -36,9 +39,7 @@ init _ =
             Sub.init
                 [ Opacity.init "hello-text" 0 ]
     in
-    ( { animState =
-            Sub.animate initialAnimState fadeIn
-      }
+    ( { animState = Sub.animate initialAnimState fadeIn }
     , Cmd.none
     )
 
