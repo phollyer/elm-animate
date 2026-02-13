@@ -146,25 +146,53 @@ CSS transitions generate events throughout their lifecycle. Use these events to 
     ??? example "View Source Code"
 
         ```elm
+        update : Msg -> Model -> (Model, Cmd Msg)
+        update msg model =
+            case msg of
+                GotTransitionEvent event ->
+                    ( { model | animState = Transitions.handleEvent event model.animState }
+                    , Cmd.none 
+                    )
+        ```
+
+4. Handle any events you are interested in.
+
+    ??? example "View Source Code"
+
+        ```elm
+        update : Msg -> Model -> (Model, Cmd Msg)
         update msg model =
             case msg of
                 GotTransitionEvent event ->
                     let
                         newModel =
-                            { model | animState = Transitions.handleEvent event model.animState}
+                            { model | animState = Transitions.handleEvent event model.animState }
                     in
                     case event of
-                        Transitions.Ended "box" ->
-                            -- Animation complete
+                        Transitions.Run "box" ->
                             (newModel, Cmd.none)
 
                         Transitions.Started "box" ->
-                            -- Animation started
+                            (newModel, Cmd.none)
+
+                        Transitions.Ended "box" ->
+                            (newModel, Cmd.none)
+
+                        Transitions.Cancelled "box" ->
                             (newModel, Cmd.none)
 
                         _ ->
                             ( newModel, Cmd.none )
         ```
+
+!!! info "When events fire"
+
+    | Event | Fires when... |
+    | ----- | ------------- |
+    | `Run` | The transition is created (before any delay) |
+    | `Started` | The transition begins (after any delay) |
+    | `Ended` | The transition completes |
+    | `Cancelled` | The browser aborts the transition — e.g., the element is removed from the DOM, set to `display: none`, or the transition is interrupted by a new property change |
 
 !!! info "Event Bubbling"
     CSS transition events bubble up the DOM tree. If a child element's transition ends, the event fires on the child then bubbles to its parent. When using nested elements with transitions, conditionally attach event listeners based on which element's events you care about to avoid spurious events triggering unintended actions.

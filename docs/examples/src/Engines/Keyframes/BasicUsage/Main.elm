@@ -29,6 +29,10 @@ type alias Model =
     { animState : Keyframes.AnimState }
 
 
+
+-- INIT
+
+
 init : () -> ( Model, Cmd Msg )
 init _ =
     let
@@ -36,9 +40,7 @@ init _ =
             Keyframes.init
                 [ Opacity.init "hello-text" 0 ]
     in
-    ( { animState =
-            Keyframes.animate initialAnimState fadeIn
-      }
+    ( { animState = Keyframes.animate initialAnimState fadeIn }
     , Cmd.none
     )
 
