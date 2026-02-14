@@ -40,9 +40,9 @@ window.ElmAnimateWAAPI = (function () {
      */
     function processAnimationData(animationData) {
         if (animationData && animationData.elements) {
-            // Process element animations
-            Object.entries(animationData.elements).forEach(([elementId, elementConfig]) => {
-                processElementAnimation(elementId, elementConfig);
+            // Process element animations (keys are animation keys, not necessarily DOM element IDs)
+            Object.entries(animationData.elements).forEach(([animationKey, elementConfig]) => {
+                processElementAnimation(animationKey, elementConfig);
             });
         } else {
             console.warn('ElmAnimateWAAPI: Invalid animation data format received');
@@ -52,19 +52,24 @@ window.ElmAnimateWAAPI = (function () {
     /**
      * Process animation for a single element with all its properties
      * Now supports property-level animation tracking with version control
+     * 
+     * @param {string} animationKey - The animation key used for tracking (from Elm)
+     * @param {object} elementConfig - Configuration including optional targetElementId
      */
-    function processElementAnimation(elementId, elementConfig) {
-        const element = document.getElementById(elementId);
+    function processElementAnimation(animationKey, elementConfig) {
+        // Use targetElementId if specified, otherwise fall back to animationKey
+        const domElementId = elementConfig.targetElementId || animationKey;
+        const element = document.getElementById(domElementId);
         if (!element) {
-            console.warn(`ElmAnimateWAAPI: Element with id "${elementId}" not found`);
+            console.warn(`ElmAnimateWAAPI: Element with id "${domElementId}" not found`);
             return;
         }
 
-        // Get or create element animation tracking map
-        if (!activeAnimations.has(elementId)) {
-            activeAnimations.set(elementId, new Map());
+        // Get or create element animation tracking map (keyed by animationKey for proper tracking)
+        if (!activeAnimations.has(animationKey)) {
+            activeAnimations.set(animationKey, new Map());
         }
-        const elementAnims = activeAnimations.get(elementId);
+        const elementAnims = activeAnimations.get(animationKey);
 
         // Process each property independently
         elementConfig.properties.forEach(property => {

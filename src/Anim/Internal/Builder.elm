@@ -41,6 +41,7 @@ module Anim.Internal.Builder exposing
     , getScrollTargets
     , getTimeSpec
     , getTimespec
+    , getWaapiTargetElement
     , init
     , injectCurrentStates
     , iterations
@@ -55,6 +56,7 @@ module Anim.Internal.Builder exposing
     , restartCurrentAnimation
     , restartPreviousAnimation
     , setScrollContainer
+    , setWaapiTargetElement
     , speed
     , updateAnimationHistoryTranslates
     , updateCurrentElement
@@ -99,6 +101,7 @@ type alias BuilderData =
     , elementBaselines : Dict ElementId ElementEndStates -- Current animated states used as baselines
     , discreteTransitions : Bool -- Whether to allow discrete CSS properties (display, visibility) to transition
     , iterationCount : IterationCount -- How many times the animation should repeat
+    , waapiTargetElement : Maybe ElementId -- WAAPI-specific: target DOM element ID for animations
     }
 
 
@@ -155,7 +158,9 @@ type alias ElementHistoryMetadata =
 
 
 type alias ElementConfig =
-    { properties : List PropertyConfig }
+    { properties : List PropertyConfig
+    , targetElement : Maybe String -- WAAPI: DOM element ID (if different from animation key)
+    }
 
 
 type PropertyConfig
@@ -179,7 +184,9 @@ type ProcessedPropertyConfig
 
 
 type alias ProcessedElementConfig =
-    { properties : List ProcessedPropertyConfig }
+    { properties : List ProcessedPropertyConfig
+    , targetElement : Maybe String -- WAAPI: DOM element ID (if different from animation key)
+    }
 
 
 type alias AnimationConfig targetProperty =
@@ -248,6 +255,7 @@ init =
         , elementBaselines = Dict.empty -- NEW: Initialize empty baselines
         , discreteTransitions = False -- Disabled by default
         , iterationCount = Once -- Default: play once
+        , waapiTargetElement = Nothing -- WAAPI: no target element set
         }
 
 
@@ -374,11 +382,12 @@ getCurrentElementConfig : AnimBuilder -> ElementConfig
 getCurrentElementConfig (AnimBuilder data) =
     case data.currentElementId of
         Nothing ->
-            { properties = [] }
+            { properties = [], targetElement = data.waapiTargetElement }
 
         Just elementId ->
             Dict.get elementId data.elements
-                |> Maybe.withDefault { properties = [] }
+                |> Maybe.withDefault { properties = [], targetElement = data.waapiTargetElement }
+                |> (\config -> { config | targetElement = data.waapiTargetElement })
 
 
 getElementConfig : String -> AnimBuilder -> Maybe ElementConfig
@@ -524,6 +533,21 @@ setScrollContainer containerId (AnimBuilder data) =
     AnimBuilder { data | scrollContainer = containerId }
 
 
+{-| Set the target DOM element ID for WAAPI animations.
+This allows animation keys to be decoupled from DOM element IDs.
+-}
+setWaapiTargetElement : String -> AnimBuilder -> AnimBuilder
+setWaapiTargetElement elementId (AnimBuilder data) =
+    AnimBuilder { data | waapiTargetElement = Just elementId }
+
+
+{-| Get the current WAAPI target element ID.
+-}
+getWaapiTargetElement : AnimBuilder -> Maybe String
+getWaapiTargetElement (AnimBuilder data) =
+    data.waapiTargetElement
+
+
 
 -- PROCESSING
 --
@@ -578,6 +602,7 @@ processAnimationData (AnimBuilder data) =
 processElement : BuilderData -> ElementConfig -> ProcessedElementConfig
 processElement globalData elementConfig =
     { properties = List.filterMap (processProperty globalData) elementConfig.properties
+    , targetElement = elementConfig.targetElement
     }
 
 

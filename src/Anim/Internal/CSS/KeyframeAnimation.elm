@@ -50,8 +50,8 @@ generateWithSuffix elementId suffix properties =
         let
             processed =
                 Builder.processElement
-                    { globalTiming = Nothing, globalEasing = Nothing, globalDelay = Nothing, currentElementId = Nothing, elements = Dict.empty, scrollTargets = [], scrollContainer = "document", animationHistories = Dict.empty, nextAnimationId = 0, elementBaselines = Dict.empty, discreteTransitions = False, iterationCount = Builder.Once }
-                    { properties = properties }
+                    { globalTiming = Nothing, globalEasing = Nothing, globalDelay = Nothing, currentElementId = Nothing, elements = Dict.empty, scrollTargets = [], scrollContainer = "document", animationHistories = Dict.empty, nextAnimationId = 0, elementBaselines = Dict.empty, discreteTransitions = False, iterationCount = Builder.Once, waapiTargetElement = Nothing }
+                    { properties = properties, targetElement = Nothing }
 
             processedProps =
                 processed.properties

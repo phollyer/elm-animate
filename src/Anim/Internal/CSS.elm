@@ -997,6 +997,7 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount
                 , elementBaselines = Dict.empty
                 , discreteTransitions = discreteTransitions
                 , iterationCount = iterationCount
+                , waapiTargetElement = Nothing
                 }
                 elementConfig
 
@@ -1088,6 +1089,7 @@ generateStylesOnly maybeOrder elementConfig =
                 , elementBaselines = Dict.empty
                 , discreteTransitions = False
                 , iterationCount = Builder.Once
+                , waapiTargetElement = Nothing
                 }
                 elementConfig
 
@@ -1255,7 +1257,7 @@ stopAnimation elementId animState =
                 |> List.filterMap identity
 
         elementConfig =
-            { properties = properties }
+            { properties = properties, targetElement = Nothing }
     in
     if List.isEmpty properties then
         animState
@@ -1345,7 +1347,7 @@ reset elementId (AnimState state) =
                             )
 
                 newElementConfig =
-                    { properties = properties }
+                    { properties = properties, targetElement = Nothing }
             in
             if List.isEmpty properties then
                 AnimState state

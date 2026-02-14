@@ -4,6 +4,7 @@ module Anim.Engine.WAAPI exposing
     , TransformOrder(..), animateOrder, fireAndForgetOrder
     , AnimMsg, AnimEvent(..), update, subscriptions
     , attributes
+    , forElement
     , stop, reset, restart, pause, resume
     , onResize
     , duration, speed
@@ -112,6 +113,16 @@ displays (120Hz, 144Hz, etc.) while maintaining smooth visual feedback.
 @docs attributes
 
 
+# Element Targeting
+
+Target specific DOM elements for animations.
+
+This is **required** for WAAPI engine animations since it applies animations directly to
+DOM elements via the Web Animations API.
+
+@docs forElement
+
+
 # Animation Control
 
 Control running animations with stop, reset, restart, pause, and resume functionality.
@@ -201,6 +212,7 @@ during animation playback.
 
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
+import Anim.Internal.Builder as Builder
 import Anim.Internal.WAAPI as Internal
 import Html
 import Json.Decode as Decode
@@ -331,6 +343,38 @@ easing =
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
     Internal.delay
+
+
+{-| Set the target DOM element for subsequent animations.
+
+This allows you to define reusable animation functions with semantic animation keys,
+then target specific DOM elements when building the animation:
+
+    -- Define reusable animations
+    fadeIn : AnimBuilder -> AnimBuilder
+    fadeIn =
+        Opacity.for "fadeIn" >> Opacity.from 0 >> Opacity.to 1 >> Opacity.build
+
+    slideIn : AnimBuilder -> AnimBuilder
+    slideIn =
+        Translate.for "slideIn" >> Translate.fromX -100 >> Translate.toX 0 >> Translate.build
+
+    -- Apply to multiple elements
+    WAAPI.animate model.animState <|
+        (WAAPI.forElement "card-1"
+            >> fadeIn
+            >> slideIn
+            >> WAAPI.forElement "card-2"
+            >> fadeIn
+        )
+
+The target element remains active until the next `forElement` call, so multiple
+animations can be applied to the same element in sequence.
+
+-}
+forElement : String -> AnimBuilder -> AnimBuilder
+forElement =
+    Builder.setWaapiTargetElement
 
 
 

@@ -1858,9 +1858,19 @@ encodeProcessedElementConfigWithVersions elementAnimations elementId config =
                 |> Maybe.map .properties
                 |> Maybe.withDefault Dict.empty
                 |> Debug.log "Element Properties with Versions"
+
+        targetField =
+            case config.targetElement of
+                Just target ->
+                    [ ( "targetElementId", Encode.string target ) ]
+
+                Nothing ->
+                    []
     in
     Encode.object
-        [ ( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties ) ]
+        (( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties )
+            :: targetField
+        )
 
 
 {-| Encode element config with versions and custom transform order.
@@ -1873,11 +1883,20 @@ encodeProcessedElementConfigWithVersionsAndOrder elementAnimations elementId con
                 |> Maybe.map .properties
                 |> Maybe.withDefault Dict.empty
                 |> Debug.log "Element Properties with Versions"
+
+        targetField =
+            case config.targetElement of
+                Just target ->
+                    [ ( "targetElementId", Encode.string target ) ]
+
+                Nothing ->
+                    []
     in
     Encode.object
-        [ ( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties )
-        , ( "transformOrder", encodeTransformOrder transformOrder )
-        ]
+        (( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties )
+            :: ( "transformOrder", encodeTransformOrder transformOrder )
+            :: targetField
+        )
 
 
 {-| Encode transform order as a JSON array of strings.
@@ -1901,8 +1920,19 @@ encodeTransformOrder order =
 
 encodeProcessedElementConfig : Builder.ProcessedElementConfig -> Encode.Value
 encodeProcessedElementConfig config =
+    let
+        targetField =
+            case config.targetElement of
+                Just target ->
+                    [ ( "targetElementId", Encode.string target ) ]
+
+                Nothing ->
+                    []
+    in
     Encode.object
-        [ ( "properties", Encode.list encodeProcessedPropertyConfig config.properties ) ]
+        (( "properties", Encode.list encodeProcessedPropertyConfig config.properties )
+            :: targetField
+        )
 
 
 {-| Encode element config with custom transform order.
@@ -1910,10 +1940,20 @@ Used by encodeWithOrder for fire-and-forget animations.
 -}
 encodeProcessedElementConfigWithOrder : Builder.ProcessedElementConfig -> List TransformOrder -> Encode.Value
 encodeProcessedElementConfigWithOrder config transformOrder =
+    let
+        targetField =
+            case config.targetElement of
+                Just target ->
+                    [ ( "targetElementId", Encode.string target ) ]
+
+                Nothing ->
+                    []
+    in
     Encode.object
-        [ ( "properties", Encode.list encodeProcessedPropertyConfig config.properties )
-        , ( "transformOrder", encodeTransformOrder transformOrder )
-        ]
+        (( "properties", Encode.list encodeProcessedPropertyConfig config.properties )
+            :: ( "transformOrder", encodeTransformOrder transformOrder )
+            :: targetField
+        )
 
 
 encodeProcessedPropertyConfigWithVersion : Dict String PropertyAnimation -> Builder.ProcessedPropertyConfig -> Encode.Value
