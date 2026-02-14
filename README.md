@@ -13,73 +13,108 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 ---
 
+## 🧠 Core Concepts
+
+### One Animation - Multiple Engines
+
+There are many ways to create animations, and many good animation packages for Elm, and if all animations were equal, you could probably pick a package and stick with it. But they're not; there are CSS transitions, CSS keyframes, Timeline based animations, the Web Animations API, WebGL etc etc...
+
+Each different way of animating comes with its own learning curve and complexities, as does each different Elm package. Imagine learning and using an Elm package for CSS transitions, and then further down the line your company decides to start using the Web Animations API as well. They give you another Elm package to learn with a different API, and a different way of thinking about animations.
+
+So now you have two different mental models for essentially the same thing.
+
+While that may be the 'life of a developer', it doesn't have to be that way - Elm Animate can make it easier.
+
+Elm Animate provides a singular, composable builder API to build animation configurations, and multiple Engines that consume the configuration and output the animation to their own speciality target:
+
+- CSS Transitions
+- CSS Keyframes
+- Timeline/Subscription based
+- Web Animations API
+- more to come...
+
+How cool is that? Define once, use everywhere 🎉
+
+### Animation Groups
+
+Animations are organized into **groups**. A group is a logical name that identifies which animations run together on the same element. All properties sharing the same group name will animate simultaneously when triggered.
+
+```elm
+-- "fadeSlide" is the animation group name
+fadeSlideIn : AnimBuilder -> AnimBuilder
+fadeSlideIn =
+    Opacity.for "fadeSlide"
+        >> Opacity.from 0
+        >> Opacity.to 1
+        >> Opacity.build
+        >> Translate.for "fadeSlide"  -- same group = animates together
+        >> Translate.fromY -20
+        >> Translate.toY 0
+        >> Translate.build
+```
+
+---
+
 ## 🚦 Animation Engines
 
-All animation Engines use a unified builder API, so you can switch between them with minimal changes.
+All animation engines use a unified builder API, so you can switch between them with minimal changes.
 
-Here's a simple [BackgroundColor](Anim-Property-BackgroundColor) animation.
-
-```elm
-backgroundColorAnimation : AnimBuilder -> AnimBuilder
-backgroundColorAnimation builder =
-    builder 
-        |> BackgroundColor.for "my-element"
-        |> BackgroundColor.from (hex "#ff0000")
-        |> BackgroundColor.to (elmColor Color.blue)
-        |> BackgroundColor.duration 2000
-        |> BackgroundColor.build
-```
-
-And here's a more complex, GPU rendered, 3D [Translate](Anim-Property-Translate) animation that zooms in on the element.
+Here's a simple [BackgroundColor](Anim-Property-BackgroundColor) animation:
 
 ```elm
-zoomInAnimation : AnimBuilder -> AnimBuilder
-zoomInAnimation builder =
-    builder
-        |> Translate.for "my-element"
-        |> Translate.perspective "my-element-container" 900
-        |> Translate.fromXYZ 100 200 0
-        |> Translate.toZ 300
-        |> Translate.speed 150
-        |> Translate.easing BounceOut
-        |> Translate.build
+import Anim.Extra.Color exposing (hex, elmColor)
+import Anim.Property.BackgroundColor as BackgroundColor
+import Color
+
+colorFade : AnimBuilder -> AnimBuilder
+colorFade =
+    BackgroundColor.for "colorAnim"
+        >> BackgroundColor.from (hex "#ff0000")
+        >> BackgroundColor.to (elmColor Color.blue)
+        >> BackgroundColor.duration 2000
+        >> BackgroundColor.build
 ```
 
-Both can be used by all of the Engines - without any changes to the animations themselves. The quick-eyed out there will also have noticed that both animation functions share the same signature: `AnimBuilder -> AnimBuilder`. This means they can be chained together, and small single-purpose animations can be composed into larger, more complex ones.
-
-Here's both of the animations being consumed by the [CSS Engine](Anim-Engine-CSS).
+And here's a GPU-rendered 3D [Translate](Anim-Property-Translate) animation:
 
 ```elm
-CSS.init
-    |> CSS.builder
-    |> backgroundAnimation
-    |> zoomInAnimation
-    |> CSS.animate
+import Anim.Easing exposing (BounceOut)
+import Anim.Property.Translate as Translate
+
+zoomIn : AnimBuilder -> AnimBuilder
+zoomIn =
+    Translate.for "zoomAnim"
+        >> Translate.fromXYZ 100 200 0
+        >> Translate.toZ 300
+        >> Translate.speed 150
+        >> Translate.easing BounceOut
+        >> Translate.build
 ```
 
-And now by the [Sub Engine](Anim-Engine-Sub).
+Both animation functions share the same signature; `AnimBuilder -> AnimBuilder`, so they can be
+composed together and work with any engine:
 
 ```elm
-Sub.init
-    |> Sub.builder
-    |> backgroundAnimation
-    |> zoomInAnimation
-    |> Sub.animate
+-- CSS Transitions Engine
+Transitions.animate model.animState <|
+    colorFade >> zoomIn
+
+-- CSS Keyframes Engine
+Keyframes.animate model.animState <|
+    colorFade >> zoomIn
+
+-- Sub Engine
+Sub.animate model.animState <|
+    colorFade >> zoomIn
+
+-- WAAPI Engine (note: requires forElement)
+WAAPI.animate model.animState <|
+    WAAPI.forElement "element-id"
+        >> colorFade
+        >> zoomIn
 ```
 
-And finally by the [WAAPI Engine](Anim-Engine-WAAPI).
-
-```elm
-WAAPI.init
-    |> WAAPI.builder
-    |> backgroundAnimation
-    |> zoomInAnimation
-    |> WAAPI.animate
-```
-
-The re-usability of animations means switching between Engines is simply a matter of changing a few implementation details, you never have to touch the animations themselves.
-
-This makes it easy to start off with the CSS Engine for simple CSS transitions, and then migrate to the Sub or WAAPI Engines as your requirements change.
+This composability means switching engines only requires changing a few implementation details — your animations stay the same.
 
 ---
 
@@ -106,54 +141,32 @@ This makes it easy to start off with the CSS Engine for simple CSS transitions, 
 
 ## 🚦 Scroll Engine
 
-Uses the same fluent builder API as the animation engines. This makes it easy to start with fire-and-forget scrolls, and introduce more complexity as your requirements change.
+Smooth scrolling with the same builder API:
 
 ```elm
+import Anim.Engine.Scroll as Scroll
 
-import Anim.Engine.Scroll as Scroll exposing (ScrollError(..), ScrollResult)
-
--- Reusable scroll animation
-
-scrollToElement : String -> String -> ScrollBuilder -> ScrollBuilder
-scrollToElement targetElementId elementContainerId builder =
-    builder
-        |> Scroll.forContainer elementContainerId
-        >> Scroll.toElement targetElementId
-        >> Scroll.build
-
--- Fire-and-forget Cmd
-
-doScroll : Cmd Msg 
-doScroll =
+-- Simple fire-and-forget scroll
+scrollToSection : Cmd Msg
+scrollToSection =
     Scroll.toCmd (always NoOp) <|
-        scrollToElement "my-element" "my-element-container"
-
--- Composable Tasks with errors
-
-doScroll : Task ScrollError ScrollResult
-doScroll =
-    Scroll.toTask <|
-        scrollToElement "my-element" "my-element-container"
-
--- Mid-flight control/updates with state tracking and subscriptions
-
-doScroll : Model -> (AnimState, Cmd Msg)
-doScroll model =
-    Scroll.animate ScrollMsg model.scrollAnimations <|
-        scrollToElement "my-element" "my-element-container" 
+        Scroll.forDocument
+            >> Scroll.toElement "features-section"
+            >> Scroll.duration 600
+            >> Scroll.build
 ```
+
+The Scroll engine also supports container scrolling, `Task`-based composition with error handling, and subscription-based mid-flight control.
 
 ---
 
 ### 4. [Anim.Engine.Scroll](Anim-Engine-Scroll)
 
 - **Document and container scrolling**
-- **X, Y, or Both axes**
+- **X, Y, or both axes**
 - **Offset configuration**
 - **Full easing support**
-- **Fire-and-forget execution:** `Cmd` based.
-- **Composable with error handling:** `Task` based.
-- **Mid-flight interuptions:** Subscription based.
+- **Multiple execution modes:** `Cmd`, `Task`, or subscription-based
 ---
 
 ## 🚀 Quick Start
@@ -172,15 +185,14 @@ npm install elm-animate-waapi
 
 ---
 
-## 📚 Examples
+## 📚 Documentation
 
-All the examples for the CSS, Sub and WAAPI engines use the same animations which can
-be found in `examples/src/Common/Animations/`. The only differences between the animation
-examples, are the implementation details for each Engine.
+Full documentation is available at [phollyer.github.io/elm-animate](https://phollyer.github.io/elm-animate), including:
 
-To view the examples, in the project root run:
-
-`open examples/index.html`
+- **Getting Started guide** with installation and first animation tutorials
+- **Engine guides** with detailed API explanations for each animation engine
+- **Property documentation** covering all animatable properties (Translate, Scale, Rotate, Opacity, Colors, Size)
+- **Live examples** with source code you can copy and modify
 
 ---
 
@@ -188,7 +200,12 @@ To view the examples, in the project root run:
 
 In no particular order, and no particular time frame at the moment...
 
-- **Complete Properties**: Add all CSS animateable properties as per the CSS specifications
+- **Animations**
+  - Add reverse control
+  - Add sequencing
+  - Add FLIP support
+- **Properties**: Add all CSS animateable properties as per the CSS specifications
+- **WAAPI Engine**: Add full Web Animations API coverage
 - **Add Canvas Support**
 - **Add WebGL Support**
 ---
