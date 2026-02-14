@@ -1,13 +1,13 @@
 # Your First Animation
 
-Let's create a simple **fire-and-forget** fade-in animation using the **Transitions Engine**. This is the quickest way to get started.
+Let's create a simple **fire-and-forget** animation using the **Transitions Engine**. This is the quickest way to get started - and they're great for simple UI effects like button hovers etc.
 
 !!! info "What is fire-and-forget?"
     A fire-and-forget animation requires no state management or subscriptions to drive it. You trigger it once, and the browser handles the rest — completion events are available if you need them.
 
 ## The Animation
 
-We'll animate an element's opacity from 0 to 1 over 2500 milliseconds.
+We'll fade an element in and out over 2500 milliseconds.
 
 ??? example "View Source Code"
 
@@ -83,7 +83,7 @@ The real power comes from composing multiple animations. Since each animation is
         fadeIn >> slideIn
     ```
 
-Both animations run simultaneously on the same `my-box` element because they target the same element ID!
+Both animations run simultaneously on the same `my-box` element!
 
 ## Next Steps
 
