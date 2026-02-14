@@ -733,10 +733,10 @@ toCmd =
 
     update msg model =
         case msg of
-            HandleScrollResult (Ok value) ->
+            HandleScrollResult (Ok {containerId, targetElementId, targetDescription}) ->
                 ...
 
-            HandleScrollResult (Err error) ->
+            HandleScrollResult (Err (ScrollError {containerId, targetElementId, domError})) ->
                 ...
 
 -}

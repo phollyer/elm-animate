@@ -179,7 +179,7 @@ By default, scrolls the document. To scroll within a container:
 ??? example "View Source Code"
 
     ```elm
-    Scroll.toCmd (\_ -> NoOp) <|
+    Scroll.toCmd ScrollComplete <|
         Scroll.forContainer "scrollable-container"
             >> Scroll.toElement "item-in-container"
             >> Scroll.build
@@ -199,7 +199,7 @@ These settings will be used for all scroll actions.
 ??? example "View Source Code"
 
     ```elm
-    Scroll.toCmd (\_ -> NoOp) <|
+    Scroll.toCmd ScrollComplete <|
         Scroll.defaultDuration 800  -- 800ms scroll duration
             >> Scroll.forDocument
             >> Scroll.toElement "section"
@@ -211,7 +211,7 @@ These settings will be used for all scroll actions.
 ??? example "View Source Code"
 
     ```elm
-    Scroll.toCmd (\_ -> NoOp) <|
+    Scroll.toCmd ScrollComplete <|
         Scroll.defaultEasing QuintOut
             >> Scroll.forDocument
             >> Scroll.toElement "section"
