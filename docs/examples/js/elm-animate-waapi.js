@@ -57,6 +57,29 @@ window.ElmAnimateWAAPI = (function () {
      * @param {object} elementConfig - Configuration with properties to animate
      */
     function processElementAnimation(elementId, elementConfig) {
+        // Check if forElement was used - if not, warn and skip animation
+        if (elementConfig.hasExplicitTarget === false) {
+            console.warn(
+                `%cMISSING ELEMENT TARGET%c
+
+I received an animation with key "${elementId}" but no DOM element target was set.
+
+%cHint:%c When using WAAPI.animate, you need to specify which DOM element to animate 
+using WAAPI.forElement at the start of your animation pipeline:
+
+    WAAPI.animate animState <|
+        WAAPI.forElement "your-element-id"  -- Add this line
+            >> Translate.for "${elementId}"
+            >> Translate.toX 100
+            >> Translate.build`,
+                'color: #cc0000; font-weight: bold; font-size: 14px',
+                '',
+                'color: #4a9f4a; font-weight: bold',
+                ''
+            );
+            return;
+        }
+
         const element = document.getElementById(elementId);
         if (!element) {
             console.warn(`ElmAnimateWAAPI: Element with id "${elementId}" not found`);

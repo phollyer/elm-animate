@@ -1810,9 +1810,13 @@ encodeProcessedElementConfigWithVersions elementAnimations elementId config =
             Dict.get elementId elementAnimations
                 |> Maybe.map .properties
                 |> Maybe.withDefault Dict.empty
+
+        hasExplicitTarget =
+            config.targetElement /= Nothing
     in
     Encode.object
         [ ( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties )
+        , ( "hasExplicitTarget", Encode.bool hasExplicitTarget )
         ]
 
 
@@ -1825,10 +1829,14 @@ encodeProcessedElementConfigWithVersionsAndOrder elementAnimations elementId con
             Dict.get elementId elementAnimations
                 |> Maybe.map .properties
                 |> Maybe.withDefault Dict.empty
+
+        hasExplicitTarget =
+            config.targetElement /= Nothing
     in
     Encode.object
         [ ( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties )
         , ( "transformOrder", encodeTransformOrder transformOrder )
+        , ( "hasExplicitTarget", Encode.bool hasExplicitTarget )
         ]
 
 

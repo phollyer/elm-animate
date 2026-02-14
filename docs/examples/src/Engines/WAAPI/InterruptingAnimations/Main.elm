@@ -44,9 +44,14 @@ port waapiEvent : (Encode.Value -> msg) -> Sub msg
 -- Avoid typos from hardcoding string element IDs in multiple places
 
 
+animGroup : String
+animGroup =
+    "movingBox"
+
+
 elementId : String
 elementId =
-    "moving-box"
+    "box"
 
 
 type alias Model =
@@ -69,8 +74,8 @@ init : { width : Float, height : Float } -> ( Model, Cmd Msg )
 init { width, height } =
     ( { animState =
             WAAPI.init waapiCommand waapiEvent <|
-                [ WAAPI.forElement elementId >> Translate.initY elementId (height / 2 - boxWidth / 2)
-                , WAAPI.forElement elementId >> Translate.initX elementId (width / 2 - boxWidth / 2)
+                [ WAAPI.forElement animGroup >> Translate.initY animGroup (height / 2 - boxWidth / 2)
+                , WAAPI.forElement animGroup >> Translate.initX animGroup (width / 2 - boxWidth / 2)
                 ]
       , width = width - 20 -- Account for some padding on the sides
       , height = height - 75 -- Account for buttons height
@@ -116,8 +121,7 @@ moveToY targetY =
 moveBox : (Translate.Builder -> Translate.Builder) -> WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
 moveBox moveFunc animState =
     WAAPI.animate animState <|
-        WAAPI.forElement elementId
-            >> Translate.for elementId
+        Translate.for animGroup
             >> moveFunc
             >> Translate.speed 200
             >> Translate.easing BounceOut
@@ -228,7 +232,7 @@ view model =
 
         box =
             div
-                (WAAPI.attributes elementId model.animState
+                (WAAPI.attributes animGroup model.animState
                     ++ [ Html.Attributes.id elementId
                        , Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")

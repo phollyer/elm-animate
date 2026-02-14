@@ -2,9 +2,9 @@ module Anim.Engine.WAAPI exposing
     ( AnimState, AnimBuilder, init
     , animate, fireAndForget
     , TransformOrder(..), animateOrder, fireAndForgetOrder
+    , forElement
     , AnimMsg, AnimEvent(..), update, subscriptions
     , attributes
-    , forElement
     , stop, reset, restart, pause, resume
     , onResize
     , duration, speed
@@ -97,6 +97,16 @@ Both ports are needed.
 @docs TransformOrder, animateOrder, fireAndForgetOrder
 
 
+# Element Targeting
+
+Target specific DOM elements for animations.
+
+This is **required** for WAAPI engine animations since it applies animations directly to
+DOM elements via the Web Animations API.
+
+@docs forElement
+
+
 # Update
 
 The JavaScript companion library sends real-time property updates and events back to Elm during animations.
@@ -111,16 +121,6 @@ displays (120Hz, 144Hz, etc.) while maintaining smooth visual feedback.
 # View
 
 @docs attributes
-
-
-# Element Targeting
-
-Target specific DOM elements for animations.
-
-This is **required** for WAAPI engine animations since it applies animations directly to
-DOM elements via the Web Animations API.
-
-@docs forElement
 
 
 # Animation Control

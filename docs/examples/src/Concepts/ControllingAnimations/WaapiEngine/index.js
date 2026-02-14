@@ -7059,6 +7059,7 @@ var $author$project$Anim$Internal$Builder$addAnimationToHistory = F4(
 			$author$project$Anim$Internal$Builder$AnimBuilder(updatedData),
 			newAnimationId);
 	});
+var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$json$Json$Encode$float = _Json_wrap;
 var $author$project$Anim$Internal$Easing$customBackOut = F2(
 	function (strength, t) {
@@ -8994,6 +8995,7 @@ var $author$project$Anim$Internal$WAAPI$encodeProcessedPropertyConfigWithVersion
 	});
 var $author$project$Anim$Internal$WAAPI$encodeProcessedElementConfigWithVersions = F3(
 	function (elementAnimations, elementId, config) {
+		var hasExplicitTarget = !_Utils_eq(config.targetElement, $elm$core$Maybe$Nothing);
 		var elementProps = A2(
 			$elm$core$Maybe$withDefault,
 			$elm$core$Dict$empty,
@@ -9011,7 +9013,10 @@ var $author$project$Anim$Internal$WAAPI$encodeProcessedElementConfigWithVersions
 					A2(
 						$elm$json$Json$Encode$list,
 						$author$project$Anim$Internal$WAAPI$encodeProcessedPropertyConfigWithVersion(elementProps),
-						config.properties))
+						config.properties)),
+					_Utils_Tuple2(
+					'hasExplicitTarget',
+					$elm$json$Json$Encode$bool(hasExplicitTarget))
 				]));
 	});
 var $author$project$Anim$Internal$WAAPI$encodeWithVersions = F2(
@@ -9096,7 +9101,6 @@ var $elm$core$Dict$isEmpty = function (dict) {
 		return false;
 	}
 };
-var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Dict$union = F2(
 	function (t1, t2) {
 		return A3($elm$core$Dict$foldl, $elm$core$Dict$insert, t2, t1);
@@ -9186,11 +9190,11 @@ var $author$project$Anim$Internal$WAAPI$animate = F2(
 			$elm$core$Dict$foldl,
 			F3(
 				function (elementId, newAnim, acc) {
-					var _v8 = A2($elm$core$Dict$get, elementId, acc);
-					if (_v8.$ === 'Nothing') {
+					var _v2 = A2($elm$core$Dict$get, elementId, acc);
+					if (_v2.$ === 'Nothing') {
 						return A3($elm$core$Dict$insert, elementId, newAnim, acc);
 					} else {
-						var existingAnim = _v8.a;
+						var existingAnim = _v2.a;
 						var mergedProperties = A2($elm$core$Dict$union, newAnim.properties, existingAnim.properties);
 						return A3(
 							$elm$core$Dict$insert,
@@ -9204,59 +9208,11 @@ var $author$project$Anim$Internal$WAAPI$animate = F2(
 		var builderWithHistory = A3(
 			$elm$core$Dict$foldl,
 			F3(
-				function (elementId, _v7, accBuilder) {
+				function (elementId, _v1, accBuilder) {
 					return A4($author$project$Anim$Internal$Builder$addAnimationToHistory, elementId, processedData, $elm$core$Maybe$Nothing, accBuilder).a;
 				}),
 			configuredBuilder,
 			processedData.elements);
-		var _v1 = A2(
-			$elm$core$Debug$log,
-			'[animate] Sending to JS - element property versions',
-			A2(
-				$elm$core$List$map,
-				function (_v2) {
-					var elId = _v2.a;
-					var elAnim = _v2.b;
-					return _Utils_Tuple2(
-						elId,
-						A2(
-							$elm$core$List$map,
-							function (_v3) {
-								var propType = _v3.a;
-								var propAnim = _v3.b;
-								return _Utils_Tuple2(propType, propAnim.version);
-							},
-							$elm$core$Dict$toList(elAnim.properties)));
-				},
-				$elm$core$Dict$toList(updatedElementAnimations)));
-		var _v4 = A2(
-			$elm$core$Debug$log,
-			'[animate] Processed translate configs',
-			A2(
-				$elm$core$List$map,
-				function (_v5) {
-					var elId = _v5.a;
-					var cfg = _v5.b;
-					return _Utils_Tuple2(
-						elId,
-						A2(
-							$elm$core$List$filterMap,
-							function (prop) {
-								if (prop.$ === 'ProcessedTranslateConfig') {
-									var tc = prop.a;
-									return $elm$core$Maybe$Just(
-										{
-											duration: tc.duration,
-											end: $author$project$Anim$Internal$Properties$Translate$toTriple(tc.end),
-											start: A2($elm$core$Maybe$map, $author$project$Anim$Internal$Properties$Translate$toTriple, tc.start)
-										});
-								} else {
-									return $elm$core$Maybe$Nothing;
-								}
-							},
-							cfg.properties));
-				},
-				$elm$core$Dict$toList(processedData.elements)));
 		return _Utils_Tuple2(
 			$author$project$Anim$Internal$WAAPI$AnimState(
 				_Utils_update(
