@@ -71,20 +71,25 @@ type alias Builder =
     CB.ColorBuilder
 
 
-{-| Turn the `AnimBuilder` into a background color animation `Builder` for the specified element.
+{-| Turn the `AnimBuilder` into a background color animation `Builder` for the specified animation key.
+
+The key is a unique identifier for this animation. All animations in the same pipeline that share the same key
+will all run at once on the same element.
+
+For WAAPI engine, this must match the DOM element ID.
 
 From here, you can continue configuring the background color animation, then call [build](#build) to turn
 the `Builder` back into an `AnimBuilder` and then either continue configuring other property animations or
 animate it with the Engine.
 
     animBuilder
-        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.for "color-box"
         |> ... -- continue with background color configuration
 
 -}
 for : String -> AnimBuilder -> Builder
-for elementId =
-    CB.for elementId
+for animationKey =
+    CB.for animationKey
 
 
 {-| Set the initial background color.
@@ -97,15 +102,15 @@ Use this to initialize the background color in your `init` function.
 
     Engine.initProperties
         |> Engine.builder
-        |> BackgroundColor.init "element-id" (hex "#ff0000")
+        |> BackgroundColor.init "color-box" (hex "#ff0000")
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 init : String -> Color -> AnimBuilder -> AnimBuilder
-init elementId color animBuilder =
+init animationKey color animBuilder =
     animBuilder
-        |> CB.for elementId
+        |> CB.for animationKey
         |> CB.from color
         |> CB.to color
         |> CB.build

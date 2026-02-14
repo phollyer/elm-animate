@@ -71,14 +71,17 @@ type alias Builder =
     SB.SizeBuilder
 
 
-{-| Turn the `AnimBuilder` into a size animation `Builder` for the specified element.
+{-| Turn the `AnimBuilder` into a size animation `Builder` for the specified animation key.
+
+The key is a unique identifier for this animation. For WAAPI engine, this must match the DOM element ID.
+For other engines (CSS, Sub), this can be any unique string since the animation is applied via styles.
 
 From here, you can continue configuring the size animation, then call [build](#build) to turn
 the `Builder` back into an `AnimBuilder` and then either continue configuring other property animations or
 animate it with the Engine.
 
     animBuilder
-        |> Size.for "my-element"
+        |> Size.for "resize-panel"
         |> ... -- continue with size configuration
 
 -}
@@ -96,7 +99,7 @@ Use this to initialize the size in your `init` function.
 
     Engine.init
         |> Engine.builder
-        |> Size.init "element-id" 100
+        |> Size.init "resize-panel" 100
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -104,9 +107,9 @@ This is equivalent to calling `initWH 100 100`.
 
 -}
 init : String -> Float -> AnimBuilder -> AnimBuilder
-init elementId value animBuilder =
+init animationKey value animBuilder =
     animBuilder
-        |> SB.for elementId
+        |> SB.for animationKey
         |> from value
         |> to value
         |> SB.build
@@ -119,15 +122,15 @@ init elementId value animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Size.initWH "element-id" 200 100
+        |> Size.initWH "resize-panel" 200 100
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initWH : String -> Float -> Float -> AnimBuilder -> AnimBuilder
-initWH elementId w h animBuilder =
+initWH animationKey w h animBuilder =
     animBuilder
-        |> SB.for elementId
+        |> SB.for animationKey
         |> fromHW w h
         |> SB.toHW w h
         |> SB.build
@@ -140,15 +143,15 @@ initWH elementId w h animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Size.initW "element-id" 200
+        |> Size.initW "resize-panel" 200
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initW : String -> Float -> AnimBuilder -> AnimBuilder
-initW elementId w animBuilder =
+initW animationKey w animBuilder =
     animBuilder
-        |> SB.for elementId
+        |> SB.for animationKey
         |> fromW w
         |> SB.toW w
         |> SB.build
@@ -161,15 +164,15 @@ initW elementId w animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Size.initH "element-id" 150
+        |> Size.initH "resize-panel" 150
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initH : String -> Float -> AnimBuilder -> AnimBuilder
-initH elementId h animBuilder =
+initH animationKey h animBuilder =
     animBuilder
-        |> SB.for elementId
+        |> SB.for animationKey
         |> fromH h
         |> SB.toH h
         |> SB.build

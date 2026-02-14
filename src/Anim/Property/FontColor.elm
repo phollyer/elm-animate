@@ -71,20 +71,23 @@ type alias Builder =
     CB.ColorBuilder
 
 
-{-| Turn the `AnimBuilder` into a font color animation `Builder` for the specified element.
+{-| Turn the `AnimBuilder` into a font color animation `Builder` for the specified animation key.
+
+The key is a unique identifier for this animation. For WAAPI engine, this must match the DOM element ID.
+For other engines (CSS, Sub), this can be any unique string since the animation is applied via styles.
 
 From here, you can continue configuring the font color animation, then call [build](#build) to turn
 the `Builder` back into an `AnimBuilder` and then either continue configuring other property animations or
 animate it with the Engine.
 
     animBuilder
-        |> FontColor.for "my-element"
+        |> FontColor.for "text-header"
         |> ... -- continue with font color configuration
 
 -}
 for : String -> AnimBuilder -> Builder
-for elementId =
-    CB.for elementId
+for animationKey =
+    CB.for animationKey
 
 
 {-| Set the initial font/text color.
@@ -97,15 +100,15 @@ Use this to initialize the text color in your `init` function.
 
     Engine.init
         |> Engine.builder
-        |> FontColor.init "element-id" (hex "#ff0000")
+        |> FontColor.init "text-header" (hex "#ff0000")
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 init : String -> Color -> AnimBuilder -> AnimBuilder
-init elementId color animBuilder =
+init animationKey color animBuilder =
     animBuilder
-        |> CB.for elementId
+        |> CB.for animationKey
         |> CB.from color
         |> CB.to color
         |> CB.build

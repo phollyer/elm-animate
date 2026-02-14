@@ -69,14 +69,17 @@ type alias Builder =
     OB.OpacityBuilder
 
 
-{-| Turn the `AnimBuilder` into an opacity animation `Builder` for the specified element.
+{-| Turn the `AnimBuilder` into an opacity animation `Builder` for the specified animation key.
+
+The key is a unique identifier for this animation. For WAAPI engine, this must match the DOM element ID.
+For other engines (CSS, Sub), this can be any unique string since the animation is applied via styles.
 
 From here, you can continue configuring the opacity animation, then call [build](#build) to turn
 the `Builder` back into an `AnimBuilder` and then either continue configuring other property animations or
 animate it with the Engine.
 
     animBuilder
-        |> Opacity.for "my-element"
+        |> Opacity.for "fade-box"
         |> ... -- continue with opacity configuration
 
 -}
@@ -94,15 +97,15 @@ Use this to initialize the opacity in your `init` function.
 
     Engine.init
         |> Engine.builder
-        |> Opacity.init "element-id" 0.5
+        |> Opacity.init "fade-box" 0.5
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 init : String -> Float -> AnimBuilder -> AnimBuilder
-init elementId value animBuilder =
+init animationKey value animBuilder =
     animBuilder
-        |> OB.for elementId
+        |> OB.for animationKey
         |> OB.from (O.fromFloat value)
         |> OB.to (O.fromFloat value)
         |> OB.build

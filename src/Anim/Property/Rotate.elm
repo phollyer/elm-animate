@@ -77,14 +77,17 @@ type alias Builder =
     RB.RotateBuilder
 
 
-{-| Turn the `AnimBuilder` into a rotate animation `Builder` for the specified element.
+{-| Turn the `AnimBuilder` into a rotate animation `Builder` for the specified animation key.
+
+The key is a unique identifier for this animation. For WAAPI engine, this must match the DOM element ID.
+For other engines (CSS, Sub), this can be any unique string since the animation is applied via styles.
 
 From here, you can continue configuring the rotate animation, then call [build](#build) to turn
 the `Builder` back into an `AnimBuilder` and then either continue configuring other property animations or
 animate it with the Engine.
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "spinner"
         |> ... -- continue with rotation configuration
 
 -}
@@ -102,7 +105,7 @@ Use this to initialize the rotation in your `init` function.
 
     Engine.init
         |> Engine.builder
-        |> Rotate.init "element-id" 45
+        |> Rotate.init "spinner" 45
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -110,9 +113,9 @@ This is equivalent to calling `initXYZ 45 45 45`.
 
 -}
 init : String -> Float -> AnimBuilder -> AnimBuilder
-init elementId value animBuilder =
+init animationKey value animBuilder =
     animBuilder
-        |> for elementId
+        |> for animationKey
         |> from value
         |> to value
         |> build
@@ -125,15 +128,15 @@ init elementId value animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Rotate.initXYZ "element-id" 45 30 60
+        |> Rotate.initXYZ "spinner" 45 30 60
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initXYZ : String -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder
-initXYZ elementId x y z animBuilder =
+initXYZ animationKey x y z animBuilder =
     animBuilder
-        |> for elementId
+        |> for animationKey
         |> fromXYZ x y z
         |> toXYZ x y z
         |> build
@@ -146,15 +149,15 @@ initXYZ elementId x y z animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Rotate.initXY "element-id" 45 30
+        |> Rotate.initXY "spinner" 45 30
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initXY : String -> Float -> Float -> AnimBuilder -> AnimBuilder
-initXY elementId x y animBuilder =
+initXY animationKey x y animBuilder =
     animBuilder
-        |> for elementId
+        |> for animationKey
         |> fromXY x y
         |> toXY x y
         |> build
@@ -167,15 +170,15 @@ initXY elementId x y animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Rotate.initXZ "element-id" 45 60
+        |> Rotate.initXZ "spinner" 45 60
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initXZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
-initXZ elementId x z animBuilder =
+initXZ animationKey x z animBuilder =
     animBuilder
-        |> for elementId
+        |> for animationKey
         |> fromXZ x z
         |> toXZ x z
         |> build
@@ -188,15 +191,15 @@ initXZ elementId x z animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Rotate.initX "element-id" 45
+        |> Rotate.initX "spinner" 45
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initX : String -> Float -> AnimBuilder -> AnimBuilder
-initX elementId x animBuilder =
+initX animationKey x animBuilder =
     animBuilder
-        |> for elementId
+        |> for animationKey
         |> fromX x
         |> toX x
         |> build
@@ -209,15 +212,15 @@ initX elementId x animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Rotate.initYZ "element-id" 30 60
+        |> Rotate.initYZ "spinner" 30 60
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initYZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
-initYZ elementId y z animBuilder =
+initYZ animationKey y z animBuilder =
     animBuilder
-        |> for elementId
+        |> for animationKey
         |> fromYZ y z
         |> toYZ y z
         |> build
@@ -230,15 +233,15 @@ initYZ elementId y z animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Rotate.initY "element-id" 30
+        |> Rotate.initY "spinner" 30
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initY : String -> Float -> AnimBuilder -> AnimBuilder
-initY elementId y animBuilder =
+initY animationKey y animBuilder =
     animBuilder
-        |> for elementId
+        |> for animationKey
         |> fromY y
         |> toY y
         |> build
@@ -251,15 +254,15 @@ initY elementId y animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Rotate.initZ "element-id" 60
+        |> Rotate.initZ "spinner" 60
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initZ : String -> Float -> AnimBuilder -> AnimBuilder
-initZ elementId z animBuilder =
+initZ animationKey z animBuilder =
     animBuilder
-        |> for elementId
+        |> for animationKey
         |> fromZ z
         |> toZ z
         |> build

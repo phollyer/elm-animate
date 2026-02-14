@@ -78,14 +78,17 @@ type alias Builder =
     SB.ScaleBuilder
 
 
-{-| Turn the `AnimBuilder` into a scale animation `Builder` for the specified element.
+{-| Turn the `AnimBuilder` into a scale animation `Builder` for the specified animation key.
+
+The key is a unique identifier for this animation. For WAAPI engine, this must match the DOM element ID.
+For other engines (CSS, Sub), this can be any unique string since the animation is applied via styles.
 
 From here, you can continue configuring the scale animation, then call [build](#build) to turn
 the `Builder` back into an `AnimBuilder` and then either continue configuring other property animations or
 animate it with the Engine.
 
     animBuilder
-        |> Scale.for "my-element"
+        |> Scale.for "zoom-card"
         |> ... -- continue with scale configuration
 
 -}
@@ -103,7 +106,7 @@ Use this to initialize the scale in your `init` function.
 
     Engine.init
         |> Engine.builder
-        |> Scale.init "element-id" 1.5
+        |> Scale.init "zoom-card" 1.5
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -111,9 +114,9 @@ This is equivalent to calling `initXYZ 1.5 1.5 1.5`.
 
 -}
 init : String -> Float -> AnimBuilder -> AnimBuilder
-init elementId value animBuilder =
+init animationKey value animBuilder =
     animBuilder
-        |> SB.for elementId
+        |> SB.for animationKey
         |> from value
         |> to value
         |> SB.build
@@ -126,15 +129,15 @@ init elementId value animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Scale.initXYZ "element-id" 1.5 1.2 1.0
+        |> Scale.initXYZ "zoom-card" 1.5 1.2 1.0
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initXYZ : String -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder
-initXYZ elementId x y z animBuilder =
+initXYZ animationKey x y z animBuilder =
     animBuilder
-        |> SB.for elementId
+        |> SB.for animationKey
         |> fromXYZ x y z
         |> SB.toXYZ x y z
         |> SB.build
@@ -147,15 +150,15 @@ initXYZ elementId x y z animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Scale.initXY "element-id" 1.5 1.2
+        |> Scale.initXY "zoom-card" 1.5 1.2
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initXY : String -> Float -> Float -> AnimBuilder -> AnimBuilder
-initXY elementId x y animBuilder =
+initXY animationKey x y animBuilder =
     animBuilder
-        |> SB.for elementId
+        |> SB.for animationKey
         |> fromXY x y
         |> SB.toXY x y
         |> SB.build
@@ -168,15 +171,15 @@ initXY elementId x y animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Scale.initXZ "element-id" 1.5 1.0
+        |> Scale.initXZ "zoom-card" 1.5 1.0
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initXZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
-initXZ elementId x z animBuilder =
+initXZ animationKey x z animBuilder =
     animBuilder
-        |> SB.for elementId
+        |> SB.for animationKey
         |> fromXZ x z
         |> SB.toXZ x z
         |> SB.build
@@ -189,15 +192,15 @@ initXZ elementId x z animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Scale.initX "element-id" 1.5
+        |> Scale.initX "zoom-card" 1.5
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initX : String -> Float -> AnimBuilder -> AnimBuilder
-initX elementId x animBuilder =
+initX animationKey x animBuilder =
     animBuilder
-        |> SB.for elementId
+        |> SB.for animationKey
         |> fromX x
         |> SB.toX x
         |> SB.build
@@ -210,15 +213,15 @@ initX elementId x animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Scale.initYZ "element-id" 1.2 1.0
+        |> Scale.initYZ "zoom-card" 1.2 1.0
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initYZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
-initYZ elementId y z animBuilder =
+initYZ animationKey y z animBuilder =
     animBuilder
-        |> SB.for elementId
+        |> SB.for animationKey
         |> fromYZ y z
         |> SB.toYZ y z
         |> SB.build
@@ -231,15 +234,15 @@ initYZ elementId y z animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Scale.initY "element-id" 1.2
+        |> Scale.initY "zoom-card" 1.2
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initY : String -> Float -> AnimBuilder -> AnimBuilder
-initY elementId y animBuilder =
+initY animationKey y animBuilder =
     animBuilder
-        |> SB.for elementId
+        |> SB.for animationKey
         |> fromY y
         |> SB.toY y
         |> SB.build
@@ -252,15 +255,15 @@ initY elementId y animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Scale.initZ "element-id" 1.0
+        |> Scale.initZ "zoom-card" 1.0
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initZ : String -> Float -> AnimBuilder -> AnimBuilder
-initZ elementId z animBuilder =
+initZ animationKey z animBuilder =
     animBuilder
-        |> SB.for elementId
+        |> SB.for animationKey
         |> fromZ z
         |> SB.toZ z
         |> SB.build

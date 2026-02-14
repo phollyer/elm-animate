@@ -91,14 +91,17 @@ type alias Builder =
     TB.TranslateBuilder
 
 
-{-| Turn the `AnimBuilder` into a translate animation `Builder` for the specified element.
+{-| Turn the `AnimBuilder` into a translate animation `Builder` for the specified animation key.
+
+The key is a unique identifier for this animation. For WAAPI engine, this must match the DOM element ID.
+For other engines (CSS, Sub), this can be any unique string since the animation is applied via styles.
 
 From here, you can continue configuring the translate animation, then call [build](#build) to turn
 the `Builder` back into an `AnimBuilder` and then either continue configuring other property animations or
 animate it with the Engine.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "box"
         |> ... -- continue with translate configuration
 
 -}
@@ -116,7 +119,7 @@ Use this to initialize the position in your `init` function.
 
     Engine.init
         |> Engine.builder
-        |> Translate.init "element-id" 100
+        |> Translate.init "box" 100
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -124,9 +127,9 @@ This is equivalent to calling `initXYZ 100 100 100`.
 
 -}
 init : String -> Float -> AnimBuilder -> AnimBuilder
-init elementId value animBuilder =
+init animationKey value animBuilder =
     animBuilder
-        |> TB.for elementId
+        |> TB.for animationKey
         |> from value
         |> to value
         |> TB.build
@@ -139,15 +142,15 @@ init elementId value animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Translate.initXYZ "element-id" 100 20 50
+        |> Translate.initXYZ "box" 100 20 50
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initXYZ : String -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder
-initXYZ elementId x y z animBuilder =
+initXYZ animationKey x y z animBuilder =
     animBuilder
-        |> TB.for elementId
+        |> TB.for animationKey
         |> fromXYZ x y z
         |> TB.toXYZ x y z
         |> TB.build
@@ -160,15 +163,15 @@ initXYZ elementId x y z animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Translate.initXY "element-id" 100 20
+        |> Translate.initXY "box" 100 20
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initXY : String -> Float -> Float -> AnimBuilder -> AnimBuilder
-initXY elementId x y animBuilder =
+initXY animationKey x y animBuilder =
     animBuilder
-        |> TB.for elementId
+        |> TB.for animationKey
         |> fromXY x y
         |> TB.toXY x y
         |> TB.build
@@ -181,15 +184,15 @@ initXY elementId x y animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Translate.initXZ "element-id" 100 50
+        |> Translate.initXZ "box" 100 50
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initXZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
-initXZ elementId x z animBuilder =
+initXZ animationKey x z animBuilder =
     animBuilder
-        |> TB.for elementId
+        |> TB.for animationKey
         |> fromXZ x z
         |> TB.toXZ x z
         |> TB.build
@@ -202,15 +205,15 @@ initXZ elementId x z animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Translate.initX "element-id" 100
+        |> Translate.initX "box" 100
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initX : String -> Float -> AnimBuilder -> AnimBuilder
-initX elementId x animBuilder =
+initX animationKey x animBuilder =
     animBuilder
-        |> TB.for elementId
+        |> TB.for animationKey
         |> fromX x
         |> TB.toX x
         |> TB.build
@@ -223,15 +226,15 @@ initX elementId x animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Translate.initYZ "element-id" 20 50
+        |> Translate.initYZ "box" 20 50
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initYZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
-initYZ elementId y z animBuilder =
+initYZ animationKey y z animBuilder =
     animBuilder
-        |> TB.for elementId
+        |> TB.for animationKey
         |> fromYZ y z
         |> TB.toYZ y z
         |> TB.build
@@ -244,15 +247,15 @@ initYZ elementId y z animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Translate.initY "element-id" 20
+        |> Translate.initY "box" 20
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initY : String -> Float -> AnimBuilder -> AnimBuilder
-initY elementId y animBuilder =
+initY animationKey y animBuilder =
     animBuilder
-        |> TB.for elementId
+        |> TB.for animationKey
         |> fromY y
         |> TB.toY y
         |> TB.build
@@ -265,15 +268,15 @@ initY elementId y animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Translate.initZ "element-id" 50
+        |> Translate.initZ "box" 50
         |> ... -- continue setting initial values
         |> Engine.animate
 
 -}
 initZ : String -> Float -> AnimBuilder -> AnimBuilder
-initZ elementId z animBuilder =
+initZ animationKey z animBuilder =
     animBuilder
-        |> TB.for elementId
+        |> TB.for animationKey
         |> fromZ z
         |> TB.toZ z
         |> TB.build
