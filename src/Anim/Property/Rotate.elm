@@ -12,7 +12,7 @@ module Anim.Property.Rotate exposing
 Build animations that rotate elements around the X, Y, and Z axes.
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotate.to 180
         |> ... -- other rotate configuration steps
         |> Rotate.build
@@ -87,7 +87,7 @@ the `Builder` back into an `AnimBuilder` and then either continue configuring ot
 animate it with the Engine.
 
     animBuilder
-        |> Rotate.for "spinner"
+        |> Rotate.for "animGroupName"
         |> ... -- continue with rotation configuration
 
 -}
@@ -105,7 +105,7 @@ Use this to initialize the rotation in your `init` function.
 
     Engine.init
         |> Engine.builder
-        |> Rotate.init "spinner" 45
+        |> Rotate.init "animGroupName" 45
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -128,7 +128,7 @@ init animationKey value animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Rotate.initXYZ "spinner" 45 30 60
+        |> Rotate.initXYZ "animGroupName" 45 30 60
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -149,7 +149,7 @@ initXYZ animationKey x y z animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Rotate.initXY "spinner" 45 30
+        |> Rotate.initXY "animGroupName" 45 30
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -170,7 +170,7 @@ initXY animationKey x y animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Rotate.initXZ "spinner" 45 60
+        |> Rotate.initXZ "animGroupName" 45 60
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -191,7 +191,7 @@ initXZ animationKey x z animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Rotate.initX "spinner" 45
+        |> Rotate.initX "animGroupName" 45
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -212,7 +212,7 @@ initX animationKey x animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Rotate.initYZ "spinner" 30 60
+        |> Rotate.initYZ "animGroupName" 30 60
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -233,7 +233,7 @@ initYZ animationKey y z animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Rotate.initY "spinner" 30
+        |> Rotate.initY "animGroupName" 30
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -254,7 +254,7 @@ initY animationKey y animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Rotate.initZ "spinner" 60
+        |> Rotate.initZ "animGroupName" 60
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -272,7 +272,7 @@ initZ animationKey z animBuilder =
 so you can continue with the animation.
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "animGroupName"
         |> ... -- Rotate configuration steps
         |> Rotate.build
         |> ... -- continue with animation or execute
@@ -286,7 +286,7 @@ build =
 {-| Set the starting uniform rotation for the current element (degrees).
 
     animBuilder
-        |> Rotation.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotation.from 45
         |> ...
 
@@ -301,7 +301,7 @@ from =
 {-| Set the starting X, Y, and Z rotations for the current element (degrees).
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotate.fromXYZ 45 90 180
         |> ...
 
@@ -314,7 +314,7 @@ fromXYZ =
 {-| Set the starting X and Y rotations for the current element (degrees).
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotate.fromXY 45 90
         |> ...
 
@@ -329,7 +329,7 @@ fromXY =
 {-| Set the starting X and Z rotations for the current element (degrees).
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotate.fromXZ 45 180
         |> ...
 
@@ -344,7 +344,7 @@ fromXZ =
 {-| Set the starting X-axis rotation for the current element (degrees).
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotate.fromX 45
         |> ...
 
@@ -359,7 +359,7 @@ fromX =
 {-| Set the starting Y and Z rotations for the current element (degrees).
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotate.fromYZ 90 180
         |> ...
 
@@ -374,7 +374,7 @@ fromYZ =
 {-| Set the starting Y-axis rotation for the current element (degrees).
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotate.fromY 90
         |> ...
 
@@ -389,7 +389,7 @@ fromY =
 {-| Set the starting Z-axis rotation for the current element (degrees).
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotate.fromZ 180
         |> ...
 
@@ -404,7 +404,7 @@ fromZ =
 {-| Set the target uniform rotation for the current element.
 
     animBuilder
-        |> Rotation.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotation.to 180
         |> ...
 
@@ -419,7 +419,7 @@ to =
 {-| Set the target X, Y, and Z rotations for the current element (degrees).
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotate.toXYZ 45 90 180
         |> ...
 
@@ -432,7 +432,7 @@ toXYZ =
 {-| Set the target X and Y rotations for the current element (degrees).
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotate.toXY 45 90
         |> ...
 
@@ -445,7 +445,7 @@ toXY =
 {-| Set the target X and Z rotations for the current element (degrees).
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotate.toXZ 45 180
         |> ...
 
@@ -458,7 +458,7 @@ toXZ =
 {-| Set the target X-axis rotation for the current element (degrees).
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotate.toX 45
         |> ...
 
@@ -473,7 +473,7 @@ toX =
 {-| Set the target Y and Z rotations for the current element (degrees).
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotate.toYZ 90 180
         |> ...
 
@@ -486,7 +486,7 @@ toYZ =
 {-| Set the target Y-axis rotation for the current element (degrees).
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotate.toY 90
         |> ...
 
@@ -501,7 +501,7 @@ toY =
 {-| Set the target Z-axis rotation for the current element (degrees).
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotate.toZ 180
         |> ...
 
@@ -519,7 +519,7 @@ For example, lets take a rotation animation from `0°` to `180°`.
 A speed of `90.0` means the element will rotate 90 degrees per second, so our animation will take 2 seconds to complete (0° -> 90° in 1 second, then 90° -> 180° in the next second).
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotate.to 180
         |> Rotate.speed 90
         |> ...
@@ -535,7 +535,7 @@ speed =
 {-| Set the animation duration (milliseconds).
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotate.duration 2000
         |> ...
 
@@ -548,7 +548,7 @@ duration =
 {-| Set the easing function for the animation.
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotate.easing EaseInOut
         |> ...
 
@@ -561,7 +561,7 @@ easing =
 {-| Set the delay (milliseconds) before the animation starts.
 
     animBuilder
-        |> Rotate.for "my-element"
+        |> Rotate.for "animGroupName"
         |> Rotate.delay 500
         |> ...
 

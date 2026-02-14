@@ -12,7 +12,7 @@ module Anim.Property.Opacity exposing
 Build animations that change the opacity of elements.
 
     animBuilder
-        |> Opacity.for "my-element"
+        |> Opacity.for "animGroupName"
         |> Opacity.to 0.5
         |> ... -- other opacity configuration steps
         |> Opacity.build
@@ -79,7 +79,7 @@ the `Builder` back into an `AnimBuilder` and then either continue configuring ot
 animate it with the Engine.
 
     animBuilder
-        |> Opacity.for "fade-box"
+        |> Opacity.for "animGroupName"
         |> ... -- continue with opacity configuration
 
 -}
@@ -97,7 +97,7 @@ Use this to initialize the opacity in your `init` function.
 
     Engine.init
         |> Engine.builder
-        |> Opacity.init "fade-box" 0.5
+        |> Opacity.init "animGroupName" 0.5
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -115,7 +115,7 @@ init animationKey value animBuilder =
 so you can continue with the animation.
 
     animBuilder
-        |> Opacity.for "my-element"
+        |> Opacity.for "animGroupName"
         |> ... -- Opacity configuration steps
         |> Opacity.build
         |> ... -- continue with animation or execute
@@ -129,7 +129,7 @@ build =
 {-| Animate from a specific opacity value.
 
     animBuilder
-        |> Opacity.for "element"
+        |> Opacity.for "animGroupName"
         |> Opacity.from 1.0
         |> ...
 
@@ -142,7 +142,7 @@ from =
 {-| Animate to a specific opacity value.
 
     animBuilder
-        |> Opacity.for "element"
+        |> Opacity.for "animGroupName"
         |> Opacity.to 0.5
         |> ...
 
@@ -159,7 +159,7 @@ ranges from 0.0 (transparent) to 1.0 (opaque), a speed of `2.0` means the opacit
 will change by 2.0 units per second (e.g., from 0.0 to 1.0 takes 0.5 seconds).
 
     animBuilder
-        |> Opacity.for "my-element"
+        |> Opacity.for "animGroupName"
         |> Opacity.to 0.0
         |> Opacity.speed 1.0
         |> ...
@@ -173,7 +173,7 @@ speed =
 {-| Set the animation duration (milliseconds).
 
     animBuilder
-        |> Opacity.for "my-element"
+        |> Opacity.for "animGroupName"
         |> Opacity.duration 2000
         |> ...
 
@@ -186,7 +186,7 @@ duration =
 {-| Set the delay (milliseconds) before the animation starts.
 
     animBuilder
-        |> Opacity.for "my-element"
+        |> Opacity.for "animGroupName"
         |> Opacity.delay 500
         |> ...
 
@@ -199,7 +199,7 @@ delay =
 {-| Set the easing function for the animation.
 
     animBuilder
-        |> Opacity.for "my-element"
+        |> Opacity.for "animGroupName"
         |> Opacity.easing EaseInOut
         |> ...
 

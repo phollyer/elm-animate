@@ -36,7 +36,7 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 {- Usage:
 
    Anim.init
-      |> Rotate.for "my-element"
+      |> Rotate.for "animGroupName"
       |> Rotate.from 0
       |> Rotate.to 360
       |> Rotate.duration 2000

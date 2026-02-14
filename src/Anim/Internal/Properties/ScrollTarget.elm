@@ -69,11 +69,6 @@ type Axis
 -- BUILDERS
 
 
-{-| Create scroll target for a specific container.
-
-    ScrollTarget.for "main-content"
-
--}
 for : String -> ScrollTarget
 for containerId =
     ScrollTarget
@@ -84,151 +79,71 @@ for containerId =
         }
 
 
-{-| Set target position with X and Y coordinates.
-
-    scrollTarget
-        |> ScrollTarget.toXY 100 200
-
--}
 toXY : Float -> Float -> ScrollTarget -> ScrollTarget
 toXY x y (ScrollTarget data) =
     ScrollTarget { data | target = Coordinates x y, axis = Both }
 
 
-{-| Set target position with X coordinate only.
-
-    scrollTarget
-        |> ScrollTarget.toX 100
-
--}
 toX : Float -> ScrollTarget -> ScrollTarget
 toX x (ScrollTarget data) =
     ScrollTarget { data | target = Coordinates x 0, axis = X }
 
 
-{-| Set target position with Y coordinate only.
-
-    scrollTarget
-        |> ScrollTarget.toY 200
-
--}
 toY : Float -> ScrollTarget -> ScrollTarget
 toY y (ScrollTarget data) =
     ScrollTarget { data | target = Coordinates 0 y, axis = Y }
 
 
-{-| Set target to a specific element by ID.
-
-    scrollTarget
-        |> ScrollTarget.toElement "section-header"
-
--}
 toElement : String -> ScrollTarget -> ScrollTarget
 toElement elementId (ScrollTarget data) =
     ScrollTarget { data | target = Element elementId }
 
 
-{-| Set target to the top of the container.
-
-    scrollTarget
-        |> ScrollTarget.toTop
-
--}
 toTop : ScrollTarget -> ScrollTarget
 toTop (ScrollTarget data) =
     ScrollTarget { data | target = Top, axis = Y }
 
 
-{-| Set target to the bottom of the container.
-
-    scrollTarget
-        |> ScrollTarget.toBottom
-
--}
 toBottom : ScrollTarget -> ScrollTarget
 toBottom (ScrollTarget data) =
     ScrollTarget { data | target = Bottom, axis = Y }
 
 
-{-| Set target to the center of the container.
-
-    scrollTarget
-        |> ScrollTarget.toCenter
-
--}
 toCenter : ScrollTarget -> ScrollTarget
 toCenter (ScrollTarget data) =
     ScrollTarget { data | target = Center }
 
 
-{-| Set target to specific coordinates.
-
-    scrollTarget
-        |> ScrollTarget.toCoordinates 150 300
-
--}
 toCoordinates : Float -> Float -> ScrollTarget -> ScrollTarget
 toCoordinates x y (ScrollTarget data) =
     ScrollTarget { data | target = Coordinates x y }
 
 
-{-| Set target to percentage of container size.
-
-    scrollTarget
-        |> ScrollTarget.toPercentage 0.5 0.8  -- 50% width, 80% height
-
--}
 toPercentage : Float -> Float -> ScrollTarget -> ScrollTarget
 toPercentage xPercent yPercent (ScrollTarget data) =
     ScrollTarget { data | target = Percentage xPercent yPercent }
 
 
-{-| Scroll by a relative amount (delta) on both axes.
-
-    scrollTarget
-        |> ScrollTarget.byXY 100 -50  -- scroll right 100px and up 50px
-
--}
 byXY : Float -> Float -> ScrollTarget -> ScrollTarget
 byXY dx dy (ScrollTarget data) =
     ScrollTarget { data | target = Delta dx dy, axis = Both }
 
 
-{-| Scroll by a relative amount (delta) on X axis only.
-
-    scrollTarget
-        |> ScrollTarget.byX 100  -- scroll right 100px
-
--}
 byX : Float -> ScrollTarget -> ScrollTarget
 byX dx (ScrollTarget data) =
     ScrollTarget { data | target = Delta dx 0, axis = X }
 
 
-{-| Scroll by a relative amount (delta) on Y axis only.
-
-    scrollTarget
-        |> ScrollTarget.byY -50  -- scroll up 50px
-
--}
 byY : Float -> ScrollTarget -> ScrollTarget
 byY dy (ScrollTarget data) =
     ScrollTarget { data | target = Delta 0 dy, axis = Y }
 
 
-
--- GETTERS
-
-
-{-| Get the container ID for this scroll target.
--}
 getContainerId : ScrollTarget -> String
 getContainerId (ScrollTarget data) =
     data.containerId
 
 
-{-| Get the target X coordinate (calculated based on target type).
--}
 getTargetX : ScrollTarget -> Float
 getTargetX (ScrollTarget data) =
     case data.target of
@@ -256,8 +171,6 @@ getTargetX (ScrollTarget data) =
             dx
 
 
-{-| Get the target Y coordinate (calculated based on target type).
--}
 getTargetY : ScrollTarget -> Float
 getTargetY (ScrollTarget data) =
     case data.target of
@@ -286,15 +199,11 @@ getTargetY (ScrollTarget data) =
             dy
 
 
-{-| Get the axis configuration.
--}
 getAxis : ScrollTarget -> Axis
 getAxis (ScrollTarget data) =
     data.axis
 
 
-{-| Get the target element ID if the target is an element.
--}
 getTargetElement : ScrollTarget -> Maybe String
 getTargetElement (ScrollTarget data) =
     case data.target of
@@ -305,8 +214,6 @@ getTargetElement (ScrollTarget data) =
             Nothing
 
 
-{-| Get the scroll target type.
--}
 getTargetType : ScrollTarget -> ScrollTargetType
 getTargetType (ScrollTarget data) =
     data.target

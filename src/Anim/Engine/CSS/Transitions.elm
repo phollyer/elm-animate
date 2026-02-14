@@ -225,8 +225,8 @@ type AnimEvent
 
     -- With initial properties
     Transitions.init
-        [ Translate.initXY "element-id" 100 50
-        , Opacity.init "element-id" 0.5
+        [ Translate.initXY "animGroupName" 100 50
+        , Opacity.init "animGroupName" 0.5
         ]
 
 -}
@@ -407,7 +407,7 @@ startingStyleNodeFor =
 {-| Get the transition and transform attributes to apply to the target element.
 
     div
-        (Transitions.attributes "my-element" animState)
+        (Transitions.attributes "elementId" animState)
         [ text "Animating element" ]
 
 -}
@@ -426,8 +426,8 @@ attributes =
         = TransitionMsg Transitions.AnimEvent
 
     div
-        (Transitions.attributes "my-element" animState
-            ++ Transitions.events "my-element" TransitionMsg
+        (Transitions.attributes "elementId" animState
+            ++ Transitions.events "elementId" TransitionMsg
         )
         [ text "Animating element" ]
 
@@ -500,7 +500,7 @@ onTransitionCancel =
 
 {-| Stop a running animation by instantly jumping to its end state.
 
-    Transitions.stop "my-element" model.animState
+    Transitions.stop "elementId" model.animState
 
 -}
 stop : String -> AnimState -> AnimState
@@ -510,7 +510,7 @@ stop =
 
 {-| Reset an animation by instantly jumping back to its start state.
 
-    Transitions.reset "my-element" model.animState
+    Transitions.reset "elementId" model.animState
 
 -}
 reset : String -> AnimState -> AnimState

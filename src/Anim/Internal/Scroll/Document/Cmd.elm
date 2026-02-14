@@ -359,9 +359,9 @@ type alias YCoordinate =
 
 {-| Smoothly scroll to a DOM element using default configuration.
 
-    scroll "my-element" NoOp
+    scroll "targetId" NoOp
 
-This scrolls to the element with ID "my-element" in the document body.
+This scrolls to the element with ID "targetId" in the document body.
 
 -}
 scroll : TargetId -> msg -> Cmd msg
@@ -371,7 +371,7 @@ scroll elementId msg =
 
 {-| Smoothly scroll to a DOM element with custom configuration.
 
-    scrollWithConfig "my-element"
+    scrollWithConfig "targetId"
         NoOp
         { defaultConfig
             | axis = XWithOffset 20
@@ -386,7 +386,7 @@ scrollWithConfig elementId msg config =
 
 {-| Instantly jump to a DOM element using default configuration.
 
-    jump "my-element" NoOp
+    jump "targetId" NoOp
 
 -}
 jump : TargetId -> msg -> Cmd msg
@@ -396,7 +396,7 @@ jump elementId msg =
 
 {-| Instantly jump to a DOM element with custom configuration.
 
-    jumpWithConfig "my-element"
+    jumpWithConfig "targetId"
         NoOp
         { defaultConfig | offsetY = 50 }
 

@@ -54,7 +54,7 @@ Keyframe animations require both styles on the element AND a `<style>` node in t
         div []
             [ Keyframes.styleNode model.animState
             , div
-                (Keyframes.attributes "my-element" model.animState)
+                (Keyframes.attributes "elementId" model.animState)
                 [ text "Animating element" ]
             ]
 
@@ -231,8 +231,8 @@ type AnimEvent
 
     -- With initial properties
     Keyframes.init
-        [ Translate.initXY "element-id" 100 50
-        , Opacity.init "element-id" 0.5
+        [ Translate.initXY "animGroupName" 100 50
+        , Opacity.init "animGroupName" 0.5
         ]
 
 -}
@@ -364,7 +364,7 @@ delay =
 {-| Set how many times an animation should repeat.
 
     Keyframes.animate model.animState <|
-        (iterations 3 >> pulse "my-element")
+        (iterations 3 >> pulse "elementId")
 
 -}
 iterations : Int -> AnimBuilder -> AnimBuilder
@@ -375,7 +375,7 @@ iterations =
 {-| Make an animation loop infinitely.
 
     Keyframes.animate model.animState <|
-        (loopForever >> pulse "my-element")
+        (loopForever >> pulse "elementId")
 
 The animation will continue until you call `stop`, `reset`, or remove the element.
 
@@ -392,7 +392,7 @@ loopForever =
 {-| Get all attributes for keyframe-based animations.
 
     div
-        (Keyframes.attributes "my-element" animState)
+        (Keyframes.attributes "elementId" animState)
         [ text "Animating element" ]
 
 -}
@@ -421,7 +421,7 @@ styleNode =
 
     view model =
         div []
-            [ Keyframes.styleNodeFor "my-element" animState
+            [ Keyframes.styleNodeFor "elementId" animState
             , ...
             ]
 
@@ -454,8 +454,8 @@ getElementKeyframes =
         = KeyframeMsg Keyframes.AnimEvent
 
     div
-        (Keyframes.attributes "my-element" animState
-            ++ Keyframes.events "my-element" KeyframeMsg
+        (Keyframes.attributes "elementId" animState
+            ++ Keyframes.events "elementId" KeyframeMsg
         )
         [ text "Animating element" ]
 
@@ -528,7 +528,7 @@ onAnimationCancel =
 
 {-| Stop a running animation by instantly jumping to its end state.
 
-    Keyframes.stop "my-element" model.animState
+    Keyframes.stop "elementId" model.animState
 
 -}
 stop : String -> AnimState -> AnimState
@@ -538,7 +538,7 @@ stop =
 
 {-| Reset an animation by instantly jumping back to its start state.
 
-    Keyframes.reset "my-element" model.animState
+    Keyframes.reset "elementId" model.animState
 
 -}
 reset : String -> AnimState -> AnimState
@@ -548,7 +548,7 @@ reset =
 
 {-| Restart an animation from the beginning.
 
-    Keyframes.restart "my-element" model.animState
+    Keyframes.restart "elementId" model.animState
 
 -}
 restart : String -> AnimState -> AnimState
@@ -558,7 +558,7 @@ restart =
 
 {-| Pause a running animation.
 
-    Keyframes.pause "my-element" model.animState
+    Keyframes.pause "elementId" model.animState
 
 -}
 pause : String -> AnimState -> AnimState
@@ -568,7 +568,7 @@ pause =
 
 {-| Resume a paused animation.
 
-    Keyframes.resume "my-element" model.animState
+    Keyframes.resume "elementId" model.animState
 
 -}
 resume : String -> AnimState -> AnimState

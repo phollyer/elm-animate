@@ -12,7 +12,7 @@ module Anim.Property.Size exposing
 Build animations that change the size (width and height) of elements.
 
     animBuilder
-        |> Size.for "my-element"
+        |> Size.for "animGroupName"
         |> Size.fromHW 100 50
         |> Size.toH 200
         |> Size.speed 500
@@ -81,7 +81,7 @@ the `Builder` back into an `AnimBuilder` and then either continue configuring ot
 animate it with the Engine.
 
     animBuilder
-        |> Size.for "resize-panel"
+        |> Size.for "animGroupName"
         |> ... -- continue with size configuration
 
 -}
@@ -99,7 +99,7 @@ Use this to initialize the size in your `init` function.
 
     Engine.init
         |> Engine.builder
-        |> Size.init "resize-panel" 100
+        |> Size.init "animGroupName" 100
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -122,7 +122,7 @@ init animationKey value animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Size.initWH "resize-panel" 200 100
+        |> Size.initWH "animGroupName" 200 100
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -143,7 +143,7 @@ initWH animationKey w h animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Size.initW "resize-panel" 200
+        |> Size.initW "animGroupName" 200
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -164,7 +164,7 @@ initW animationKey w animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Size.initH "resize-panel" 150
+        |> Size.initH "animGroupName" 150
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -182,7 +182,7 @@ initH animationKey h animBuilder =
 so you can continue with the animation.
 
     animBuilder
-        |> Size.for "my-element"
+        |> Size.for "animGroupName"
         |> ... -- Size configuration steps
         |> Size.build
         |> ... -- continue with animation or execute
@@ -196,7 +196,7 @@ build =
 {-| Set the uniform starting size (width and height) for the current element.
 
     animBuilder
-        |> Size.for "my-element"
+        |> Size.for "animGroupName"
         |> Size.from 100
         |> ...
 
@@ -211,7 +211,7 @@ from =
 {-| Set the starting height and width for the current element.
 
     animBuilder
-        |> Size.for "my-element"
+        |> Size.for "animGroupName"
         |> Size.fromHW 200 100
         |> ...
 
@@ -224,7 +224,7 @@ fromHW =
 {-| Set the starting height for the current element, keeping the current width.
 
     animBuilder
-        |> Size.for "my-element"
+        |> Size.for "animGroupName"
         |> Size.fromH 150
         |> ...
 
@@ -239,7 +239,7 @@ fromH =
 {-| Set the starting width for the current element, keeping the current height.
 
     animBuilder
-        |> Size.for "my-element"
+        |> Size.for "animGroupName"
         |> Size.fromW 250
         |> ...
 
@@ -254,7 +254,7 @@ fromW =
 {-| Set the uniform target size (height and width) for the animation.
 
     animBuilder
-        |> Size.for "my-element"
+        |> Size.for "animGroupName"
         |> Size.to 150
         |> ...
 
@@ -269,7 +269,7 @@ to =
 {-| Set the target height and width for the animation.
 
     animBuilder
-        |> Size.for "my-element"
+        |> Size.for "animGroupName"
         |> Size.toHW 200 100
         |> ...
 
@@ -282,7 +282,7 @@ toHW =
 {-| Set the target height for the animation, keeping the current target width.
 
     animBuilder
-        |> Size.for "my-element"
+        |> Size.for "animGroupName"
         |> Size.toH 150
         |> ...
 
@@ -297,7 +297,7 @@ toH =
 {-| Set the target width for the animation, keeping the current target height.
 
     animBuilder
-        |> Size.for "my-element"
+        |> Size.for "animGroupName"
         |> Size.toW 250
         |> ...
 
@@ -312,7 +312,7 @@ toW =
 {-| Set the delay (milliseconds) before the animation starts.
 
     animBuilder
-        |> Size.for "my-element"
+        |> Size.for "animGroupName"
         |> Size.delay 500
         |> ...
 
@@ -325,7 +325,7 @@ delay =
 {-| Set the animation duration (milliseconds).
 
     animBuilder
-        |> Size.for "my-element"
+        |> Size.for "animGroupName"
         |> Size.duration 2000
         |> ...
 
@@ -341,7 +341,7 @@ For example, lets take a size animation from `(100, 100)` to `(200, 200)`.
 A speed of `50.0` means the size will change by 50 pixels per second, so our animation will take 2 seconds to complete.
 
     animBuilder
-        |> Size.for "my-element"
+        |> Size.for "animGroupName"
         |> Size.toHW 200 200
         |> Size.speed 50
         |> ...
@@ -357,7 +357,7 @@ speed =
 {-| Set the easing function for the animation.
 
     animBuilder
-        |> Size.for "my-element"
+        |> Size.for "animGroupName"
         |> Size.easing EaseInOut
         |> ...
 

@@ -14,7 +14,7 @@ Build animations that change the font color of elements.
     import Anim.Extra.Color exposing (hex)
 
     animBuilder
-        |> FontColor.for "my-element"
+        |> FontColor.for "animGroupName"
         |> FontColor.to (hex "#ff0000")
         |> ... -- other color configuration steps
         |> FontColor.build
@@ -81,7 +81,7 @@ the `Builder` back into an `AnimBuilder` and then either continue configuring ot
 animate it with the Engine.
 
     animBuilder
-        |> FontColor.for "text-header"
+        |> FontColor.for "animGroupName"
         |> ... -- continue with font color configuration
 
 -}
@@ -100,7 +100,7 @@ Use this to initialize the text color in your `init` function.
 
     Engine.init
         |> Engine.builder
-        |> FontColor.init "text-header" (hex "#ff0000")
+        |> FontColor.init "animGroupName" (hex "#ff0000")
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -120,7 +120,7 @@ so you can continue with the animation.
     import Anim.Property.FontColor as FontColor
 
         animBuilder
-        |> FontColor.for "my-element"
+        |> FontColor.for "animGroupName"
         |> ... -- Color configuration steps
         |> FontColor.build
         |> ... -- continue with animation or execute
@@ -137,12 +137,12 @@ build =
     import Color
 
     animBuilder
-        |> FontColor.for "my-element"
+        |> FontColor.for "animGroupName"
         |> FontColor.from (hex "#0000ff")
         |> ... -- continue with animation
 
     animBuilder
-        |> FontColor.for "my-element"
+        |> FontColor.for "animGroupName"
         |> FontColor.from (elmColor Color.blue)
         |> ... -- continue with animation
 
@@ -158,19 +158,19 @@ from =
     import Color
 
     animBuilder
-        |> FontColor.for "my-element"
+        |> FontColor.for "animGroupName"
         |> FontColor.from (rgb 0 0 255)
         |> FontColor.to (hex "#ff0000")
         |> ... -- continue with animation
 
     animBuilder
-        |> FontColor.for "my-element"
+        |> FontColor.for "animGroupName"
         |> FontColor.from (elmColor Color.blue)
         |> FontColor.to (rgb 255 0 0)
         |> ... -- continue with animation
 
     animBuilder
-        |> FontColor.for "my-element"
+        |> FontColor.for "animGroupName"
         |> FontColor.from (hex "#0000ff")
         |> FontColor.to (elmColor Color.red)
         |> ... -- continue with animation
@@ -184,7 +184,7 @@ to =
 {-| Set the delay (milliseconds) before the animation starts.
 
     animBuilder
-        |> FontColor.for "my-element"
+        |> FontColor.for "animGroupName"
         |> FontColor.delay 500
         |> ... -- continue with animation
 
@@ -197,7 +197,7 @@ delay =
 {-| Set the duration (milliseconds) of the animation.
 
     animBuilder
-        |> FontColor.for "my-element"
+        |> FontColor.for "animGroupName"
         |> FontColor.duration 1000
         |> ... -- continue with animation
 
@@ -219,7 +219,7 @@ change at a specific rate". Consider using `duration` unless you specifically ne
 speed-based timing that adapts to color distance.
 
     animBuilder
-        |> FontColor.for "my-element"
+        |> FontColor.for "animGroupName"
         |> FontColor.speed 300
         |> ... -- continue with animation
 
@@ -236,7 +236,7 @@ See [Anim.Easing](Anim-Easing) for available easing functions.
     import Anim.Extra.Easing exposing (Easing(..))
 
     animBuilder
-        |> FontColor.for "my-element"
+        |> FontColor.for "animGroupName"
         |> FontColor.easing EaseInOut
         |> ... -- continue with animation
 

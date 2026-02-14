@@ -25,7 +25,7 @@ across all engines:
 
     moveRight : AnimBuilder -> AnimBuilder
     moveRight =
-        Translate.for "box"
+        Translate.for "animGroupName"
             >> Translate.fromX 0
             >> Translate.toX 200
             >> Translate.speed 100

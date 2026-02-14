@@ -14,7 +14,7 @@ Build animations that change the background color of elements.
     import Anim.Extra.Color exposing (hex)
 
     animBuilder
-        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.for "animGroupName"
         |> BackgroundColor.to (hex "#ff0000")
         |> ... -- other color configuration steps
         |> BackgroundColor.build
@@ -81,7 +81,7 @@ the `Builder` back into an `AnimBuilder` and then either continue configuring ot
 animate it with the Engine.
 
     animBuilder
-        |> BackgroundColor.for "color-box"
+        |> BackgroundColor.for "animGroupName"
         |> ... -- continue with background color configuration
 
 -}
@@ -100,7 +100,7 @@ Use this to initialize the background color in your `init` function.
 
     Engine.initProperties
         |> Engine.builder
-        |> BackgroundColor.init "color-box" (hex "#ff0000")
+        |> BackgroundColor.init "animGroupName" (hex "#ff0000")
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -120,7 +120,7 @@ so you can continue with the animation.
     import Anim.Property.BackgroundColor as BackgroundColor
 
     animBuilder
-        |> BackgroundColor.for "element-id"
+        |> BackgroundColor.for "animGroupName"
         |> ... -- BackgroundColor configuration steps
         |> BackgroundColor.build
         |> ... -- continue with animation or execute
@@ -137,12 +137,12 @@ build =
     import Color
 
     animBuilder
-        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.for "animGroupName"
         |> BackgroundColor.from (hex "#ff0000")
         |> ... -- continue with animation
 
     animBuilder
-        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.for "animGroupName"
         |> BackgroundColor.from (elmColor Color.red)
         |> ... -- continue with animation
 
@@ -158,19 +158,19 @@ from color =
     import Color
 
     animBuilder
-        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.for "animGroupName"
         |> BackgroundColor.from (rgb 0 0 255)
         |> BackgroundColor.to (hex "#ff0000")
         |> ... -- continue with animation
 
     animBuilder
-        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.for "animGroupName"
         |> BackgroundColor.from (elmColor Color.blue)
         |> BackgroundColor.to (rgb 255 0 0)
         |> ... -- continue with animation
 
     animBuilder
-        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.for "animGroupName"
         |> BackgroundColor.from (hex "#0000ff")
         |> BackgroundColor.to (elmColor Color.red)
         |> ... -- continue with animation
@@ -193,7 +193,7 @@ change at a specific rate". Consider using `duration` unless you specifically ne
 speed-based timing that adapts to color distance.
 
     animBuilder
-        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.for "animGroupName"
         |> BackgroundColor.to (hex "#ff0000")
         |> BackgroundColor.speed 1.0
         |> ... -- continue with animation
@@ -207,7 +207,7 @@ speed =
 {-| Set the animation duration (milliseconds).
 
     animBuilder
-        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.for "animGroupName"
         |> BackgroundColor.duration 2000
         |> ... -- continue with animation
 
@@ -220,7 +220,7 @@ duration =
 {-| Set the easing function for the animation.
 
     animBuilder
-        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.for "animGroupName"
         |> BackgroundColor.easing EaseInOut
         |> ... -- continue with animation
 
@@ -233,7 +233,7 @@ easing =
 {-| Set the delay (milliseconds) before the animation starts.
 
     animBuilder
-        |> BackgroundColor.for "my-element"
+        |> BackgroundColor.for "animGroupName"
         |> BackgroundColor.delay 500
         |> ... -- continue with animation
 

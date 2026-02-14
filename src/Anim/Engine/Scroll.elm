@@ -964,7 +964,7 @@ toElement =
 {-| Scroll to specific X and Y coordinates.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "element-id"
+        (Scroll.forContainer "containerId"
             >> Scroll.toXY 100 200
             >> Scroll.duration 500
             >> Scroll.build
@@ -1024,7 +1024,7 @@ toTop =
 {-| Scroll to the bottom of the container.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "element-id"
+        (Scroll.forContainer "containerId"
             >> Scroll.toBottom
             >> Scroll.duration 500
             >> Scroll.build
@@ -1039,7 +1039,7 @@ toBottom =
 {-| Scroll to the center of the container.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "element-id"
+        (Scroll.forContainer "containerId"
             >> Scroll.toCenter
             >> Scroll.duration 500
             >> Scroll.build
@@ -1054,7 +1054,7 @@ toCenter =
 {-| Scroll to the left edge of the container.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "element-id"
+        (Scroll.forContainer "containerId"
             >> Scroll.toLeft
             >> Scroll.duration 500
             >> Scroll.build
@@ -1069,7 +1069,7 @@ toLeft =
 {-| Scroll to the right edge of the container.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "element-id"
+        (Scroll.forContainer "containerId"
             >> Scroll.toRight
             >> Scroll.duration 500
             >> Scroll.build
@@ -1084,7 +1084,7 @@ toRight =
 {-| Scroll to the top-left corner of the container.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "element-id"
+        (Scroll.forContainer "containerId"
             >> Scroll.toTopLeft
             >> Scroll.duration 500
             >> Scroll.build
@@ -1099,7 +1099,7 @@ toTopLeft =
 {-| Scroll to the top-right corner of the container.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "element-id"
+        (Scroll.forContainer "containerId"
             >> Scroll.toTopRight
             >> Scroll.duration 500
             >> Scroll.build
@@ -1114,7 +1114,7 @@ toTopRight =
 {-| Scroll to the bottom-left corner of the container.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "element-id"
+        (Scroll.forContainer "containerId"
             >> Scroll.toBottomLeft
             >> Scroll.duration 500
             >> Scroll.build
@@ -1129,7 +1129,7 @@ toBottomLeft =
 {-| Scroll to the bottom-right corner of the container.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "element-id"
+        (Scroll.forContainer "containerId"
             >> Scroll.toBottomRight
             >> Scroll.duration 500
             >> Scroll.build
@@ -1145,7 +1145,7 @@ toBottomRight =
 
     -- Scroll to 50% X and 80% Y of the container size.
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "element-id"
+        (Scroll.forContainer "containerId"
             >> Scroll.toPercentageXY 0.5 0.8
             >> Scroll.duration 500
             >> Scroll.build
@@ -1161,7 +1161,7 @@ toPercentageXY =
 
     -- Scroll to 50% of the container width.
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "element-id"
+        (Scroll.forContainer "containerId"
             >> Scroll.toPercentageX 0.5
             >> Scroll.duration 500
             >> Scroll.build
@@ -1177,7 +1177,7 @@ toPercentageX =
 
     -- Scroll to 80% of the container height.
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "element-id"
+        (Scroll.forContainer "containerId"
             >> Scroll.toPercentageY 0.8
             >> Scroll.duration 500
             >> Scroll.build
@@ -1203,7 +1203,7 @@ Positive values scroll right/down, negative values scroll left/up.
 
     -- Scroll left 50px and up 100px
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "element-id"
+        (Scroll.forContainer "containerId"
             >> Scroll.byXY -50 -100
             >> Scroll.duration 500
             >> Scroll.build
@@ -1258,7 +1258,7 @@ byY =
 {-| Scroll on both X and Y axes (default).
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "element-id"
+        (Scroll.forContainer "containerId"
             >> Scroll.onBothAxes
             >> Scroll.toElement "section-1"
             >> Scroll.speed 500
@@ -1274,7 +1274,7 @@ onBothAxes =
 {-| Scroll on X axis only.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "element-id"
+        (Scroll.forContainer "containerId"
             >> Scroll.onXAxis
             >> Scroll.toX 500
             >> Scroll.speed 500

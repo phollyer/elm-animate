@@ -17,7 +17,7 @@ In web development, "translate" refers to _moving an element's position_ along t
 Whereas "position" often refers to the CSS `position` property which controls _how an element is positioned_ in the document flow (like `static`, `relative`, `absolute`, etc.).
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.fromXY 100 20
         |> Translate.toY 200
         |> Translate.speed 500
@@ -93,7 +93,7 @@ type alias Builder =
 
 {-| Turn the `AnimBuilder` into a translate animation `Builder` for the specified animation group.
 
-The group name identifies which animations run together. All animations in the same pipeline that share
+Internally, animations are grouped by name so that all animations in the same pipeline that share
 the same group will run simultaneously on the same element.
 
 From here, you can continue configuring the translate animation, then call [build](#build) to turn
@@ -101,7 +101,7 @@ the `Builder` back into an `AnimBuilder` and then either continue configuring ot
 animate it with the Engine.
 
     animBuilder
-        |> Translate.for "box"
+        |> Translate.for "animGroupName"
         |> ... -- continue with translate configuration
 
 -}
@@ -119,7 +119,7 @@ Use this to initialize the position in your `init` function.
 
     Engine.init
         |> Engine.builder
-        |> Translate.init "box" 100
+        |> Translate.init "animGroupName" 100
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -142,7 +142,7 @@ init animationKey value animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Translate.initXYZ "box" 100 20 50
+        |> Translate.initXYZ "animGroupName" 100 20 50
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -163,7 +163,7 @@ initXYZ animationKey x y z animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Translate.initXY "box" 100 20
+        |> Translate.initXY "animGroupName" 100 20
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -184,7 +184,7 @@ initXY animationKey x y animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Translate.initXZ "box" 100 50
+        |> Translate.initXZ "animGroupName" 100 50
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -205,7 +205,7 @@ initXZ animationKey x z animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Translate.initX "box" 100
+        |> Translate.initX "animGroupName" 100
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -226,7 +226,7 @@ initX animationKey x animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Translate.initYZ "box" 20 50
+        |> Translate.initYZ "animGroupName" 20 50
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -247,7 +247,7 @@ initYZ animationKey y z animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Translate.initY "box" 20
+        |> Translate.initY "animGroupName" 20
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -268,7 +268,7 @@ initY animationKey y animBuilder =
 
     Engine.init
         |> Engine.builder
-        |> Translate.initZ "box" 50
+        |> Translate.initZ "animGroupName" 50
         |> ... -- continue setting initial values
         |> Engine.animate
 
@@ -286,7 +286,7 @@ initZ animationKey z animBuilder =
 so you can continue with the animation.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> ... -- Translate configuration steps
         |> Translate.build
         |> ... -- continue with animation or execute
@@ -300,7 +300,7 @@ build =
 {-| Set the uniform starting position for the current element.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.from 100
         |> ...
 
@@ -315,7 +315,7 @@ from =
 {-| Set the starting X, Y, and Z position for the current element.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.fromXYZ 100 20 50
         |> ...
 
@@ -328,7 +328,7 @@ fromXYZ =
 {-| Set the starting position for the current element.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.fromXY 100 20
         |> ...
 
@@ -343,7 +343,7 @@ fromXY =
 {-| Set the starting X and Z position for the current element.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.fromXZ 100 50
         |> ...
 
@@ -358,7 +358,7 @@ fromXZ =
 {-| Set the starting X position for the current element.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.fromX 100
         |> ...
 
@@ -373,7 +373,7 @@ fromX =
 {-| Set the starting Y and Z position for the current element.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.fromYZ 200 50
         |> ...
 
@@ -388,7 +388,7 @@ fromYZ =
 {-| Set the starting Y position for the current element.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.fromY 50
         |> ...
 
@@ -403,7 +403,7 @@ fromY =
 {-| Set the starting Z position for the current element.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.fromZ 75
         |> ...
 
@@ -418,7 +418,7 @@ fromZ =
 {-| Set the target uniform position for the current element.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.to 100
         |> ...
 
@@ -433,7 +433,7 @@ to =
 {-| Set the target X, Y, and Z position for the current element.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.toXYZ 100 200 50
         |> ...
 
@@ -446,7 +446,7 @@ toXYZ =
 {-| Set the target X and Y position for the current element.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.toXY 100 200
         |> ...
 
@@ -461,7 +461,7 @@ toXY =
 {-| Set the target X and Z position for the current element.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.toXZ 100 50
         |> ...
 
@@ -476,7 +476,7 @@ toXZ =
 {-| Set the target X position for the current element.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.toX 150
         |> ...
 
@@ -491,7 +491,7 @@ toX =
 {-| Set the target Y and Z position for the current element.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.toYZ 200 75
         |> ...
 
@@ -506,7 +506,7 @@ toYZ =
 {-| Set the target Y position for the current element.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.toY 250
         |> ...
 
@@ -521,7 +521,7 @@ toY =
 {-| Set the target Z position for the current element.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.toZ 75
         |> ...
 
@@ -539,7 +539,7 @@ For example, lets take a translate animation from `(0, 0)` to `(100, 0)`.
 A speed of `50.0` means the element will move 50 pixels per second, so our animation will take 2 seconds to complete (0 -> 50 in 1 second, then 50 -> 100 in the next second).
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.fromX 0
         |> Translate.toX 100
         |> Translate.speed 50
@@ -556,7 +556,7 @@ speed =
 {-| Set the animation duration (milliseconds).
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.toY 300
         |> Translate.duration 2000
         |> ...
@@ -570,7 +570,7 @@ duration =
 {-| Set the easing function for the animation.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.toY 300
         |> Translate.speed 400
         |> Translate.easing Ease.inOutQuad
@@ -585,7 +585,7 @@ easing =
 {-| Set the delay (milliseconds) before the animation starts.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.toY 300
         |> Translate.speed 400
         |> Translate.delay 500
@@ -604,7 +604,7 @@ delay =
 {-| Move uniformly by a specific amount on all axes.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.by 50
         |> ...
 
@@ -619,7 +619,7 @@ by delta =
 {-| Move by specific amounts on the X, Y, and Z axes.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.fromXY 100 100
         |> Translate.byXYZ 50 -25 10
         |> ...
@@ -635,7 +635,7 @@ byXYZ =
 {-| Move by specific amounts on the X and Y axes.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.fromXY 100 100
         |> Translate.byXY 50 -25
         |> ...
@@ -651,7 +651,7 @@ byXY =
 {-| Move by specific amounts on the X and Z axes.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.byXZ 50 10
         |> ...
 
@@ -664,7 +664,7 @@ byXZ =
 {-| Move by a specific amount on the X axis.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.fromX 100
         |> Translate.byX 50
         |> ...
@@ -680,7 +680,7 @@ byX =
 {-| Move by specific amounts on the Y and Z axes.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.byYZ -25 10
         |> ...
 
@@ -693,7 +693,7 @@ byYZ =
 {-| Move by a specific amount on the Y axis.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.fromY 100
         |> Translate.byY -50
         |> ...
@@ -709,7 +709,7 @@ byY =
 {-| Move by a specific amount on the Z axis.
 
     animBuilder
-        |> Translate.for "my-element"
+        |> Translate.for "animGroupName"
         |> Translate.fromZ 0
         |> Translate.byZ 100
         |> ...

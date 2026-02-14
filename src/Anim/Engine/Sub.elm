@@ -198,8 +198,8 @@ Pass an empty list for empty state, or property initializers to set initial valu
 
     -- With initial properties
     Sub.init
-        [ Translate.initXY "element-id" 100 50
-        , Opacity.init "element-id" 0.5
+        [ Translate.initXY "animGroupName" 100 50
+        , Opacity.init "animGroupName" 0.5
         ]
 
 Initial values are applied in the view via `htmlAttributes`.
@@ -761,7 +761,7 @@ getCurrentSize elementId animState =
 {-| Get all the HTML attributes needed for the CSS animations on the target element.
 
     div
-        (Sub.attributes "my-element" animState)
+        (Sub.attributes "elementId" animState)
         [ text "Animating element" ]
 
 -}
@@ -776,7 +776,7 @@ attributes =
 
 {-| Stop an animation by instantly jumping to its end state.
 
-    { model | animState = Sub.stop "my-element" model.animState }
+    { model | animState = Sub.stop "elementId" model.animState }
 
 -}
 stop : String -> AnimState -> AnimState
@@ -786,7 +786,7 @@ stop elementId animState =
 
 {-| Reset an animation by instantly jumping back to its start state.
 
-    { model | animState = Sub.reset "my-element" model.animState }
+    { model | animState = Sub.reset "elementId" model.animState }
 
 -}
 reset : String -> AnimState -> AnimState
@@ -796,7 +796,7 @@ reset elementId animState =
 
 {-| Restart an animation from the beginning.
 
-    { model | animState = Sub.restart "my-element" model.animState }
+    { model | animState = Sub.restart "elementId" model.animState }
 
 -}
 restart : String -> AnimState -> AnimState
@@ -808,7 +808,7 @@ restart elementId animState =
 
 Animation state is preserved and can be resumed later.
 
-    { model | animState = Sub.pause "my-element" model.animState }
+    { model | animState = Sub.pause "elementId" model.animState }
 
 -}
 pause : String -> AnimState -> AnimState
@@ -820,7 +820,7 @@ pause elementId animState =
 
 Animations continue from where they were paused.
 
-    { model | animState = Sub.resume "my-element" model.animState }
+    { model | animState = Sub.resume "elementId" model.animState }
 
 -}
 resume : String -> AnimState -> AnimState

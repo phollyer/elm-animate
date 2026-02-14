@@ -250,8 +250,8 @@ Takes the command port, event port, and optional property initializers:
 
     -- With initial properties
     WAAPI.init waapiCommand waapiEvent <|
-        [ Translate.initXY "element-id" 100 50
-        , Opacity.init "element-id" 1.0
+        [ Translate.initXY "animGroupName" 100 50
+        , Opacity.init "animGroupName" 1.0
         ]
 
 Use [attributes](#attributes) in your view to apply these initial property values as CSS inline styles.
@@ -342,14 +342,20 @@ delay =
 
 {-| Set the ID of the element being animated.
 
-    -- Define reusable animations (keys can be any string)
+    -- Define reusable animations
     fadeIn : AnimBuilder -> AnimBuilder
     fadeIn =
-        Opacity.for "fadeIn" >> Opacity.from 0 >> Opacity.to 1 >> Opacity.build
+        Opacity.for "animGroupName"
+            >> Opacity.from 0
+            >> Opacity.to 1
+            >> Opacity.build
 
     slideIn : AnimBuilder -> AnimBuilder
     slideIn =
-        Translate.for "slideIn" >> Translate.fromX -100 >> Translate.toX 0 >> Translate.build
+        Translate.for "animGroupName"
+            >> Translate.fromX -100
+            >> Translate.toX 0
+            >> Translate.build
 
     -- Apply to multiple elements
     WAAPI.animate model.animState <|
@@ -489,7 +495,7 @@ fireAndForgetOrder order portFunction buildAnimation =
 
     let
         ( newAnimState, stopCmd ) =
-            WAAPI.stop "my-element" model.animState
+            WAAPI.stop "elementId" model.animState
     in
     ( { model | animations = newAnimState }, stopCmd )
 
@@ -503,7 +509,7 @@ stop =
 
     let
         ( newAnimState, resetCmd ) =
-            WAAPI.reset "my-element" model.animState
+            WAAPI.reset "elementId" model.animState
     in
     ( { model | animations = newAnimState }, resetCmd )
 
@@ -517,7 +523,7 @@ reset =
 
     let
         ( newAnimState, restartCmd ) =
-            WAAPI.restart "my-element" model.animState
+            WAAPI.restart "elementId" model.animState
     in
     ( { model | animations = newAnimState }, restartCmd )
 
@@ -531,7 +537,7 @@ restart =
 
     let
         ( newAnimState, pauseCmd ) =
-            WAAPI.pause "my-element" model.animState
+            WAAPI.pause "elementId" model.animState
     in
     ( { model | animations = newAnimState }, pauseCmd )
 
@@ -545,7 +551,7 @@ pause =
 
     let
         ( newAnimState, resumeCmd ) =
-            WAAPI.resume "my-element" model.animState
+            WAAPI.resume "elementId" model.animState
     in
     ( { model | animations = newAnimState }, resumeCmd )
 

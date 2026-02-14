@@ -366,9 +366,9 @@ type alias YCoordinate =
 
 {-| Smoothly scroll to a DOM element within a specific container using default configuration.
 
-    scroll "container-id" "my-element" NoOp
+    scroll "containerId" "targetId" NoOp
 
-This scrolls to the element with ID "my-element" within the container with ID "container-id".
+This scrolls to the element with ID "targetId" within the container with ID "containerId".
 
 -}
 scroll : ContainerId -> TargetId -> msg -> Cmd msg
@@ -378,7 +378,7 @@ scroll containerId elementId msg =
 
 {-| Smoothly scroll to a DOM element within a container with custom configuration.
 
-    scrollWithConfig "container-id" "my-element" NoOp <|
+    scrollWithConfig "containerId" "targetId" NoOp <|
         { defaultConfig
             | axis = XWithOffset 20
         }
@@ -392,7 +392,7 @@ scrollWithConfig containerId elementId msg config =
 
 {-| Instantly jump to a DOM element within a container using default configuration.
 
-    jump "container-id" "my-element" NoOp
+    jump "containerId" "targetId" NoOp
 
 -}
 jump : ContainerId -> TargetId -> msg -> Cmd msg
@@ -402,7 +402,7 @@ jump containerId elementId msg =
 
 {-| Instantly jump to a DOM element within a container with custom configuration.
 
-    jumpWithConfig "container-id" "my-element" NoOp <|
+    jumpWithConfig "containerId" "targetId" NoOp <|
         { defaultConfig | offsetY = 50 }
 
 -}
@@ -418,7 +418,7 @@ jumpWithConfig containerId elementId msg config =
 
 {-| Smoothly scroll to the top of a container using default configuration.
 
-    scrollToTop "container-id" NoOp
+    scrollToTop "containerId" NoOp
 
 -}
 scrollToTop : ContainerId -> msg -> Cmd msg
@@ -428,7 +428,7 @@ scrollToTop containerId msg =
 
 {-| Smoothly scroll to the top of a container with custom configuration.
 
-    scrollToTopWithConfig "container-id" NoOp <|
+    scrollToTopWithConfig "containerId" NoOp <|
         { defaultConfig | timing = Duration 600 }
 
 -}
@@ -440,7 +440,7 @@ scrollToTopWithConfig containerId msg config =
 
 {-| Smoothly scroll to the bottom of a container using default configuration.
 
-    scrollToBottom "container-id" NoOp
+    scrollToBottom "containerId" NoOp
 
 -}
 scrollToBottom : ContainerId -> msg -> Cmd msg
@@ -450,7 +450,7 @@ scrollToBottom containerId msg =
 
 {-| Smoothly scroll to the bottom of a container with custom configuration.
 
-    scrollToBottomWithConfig "container-id" NoOp <|
+    scrollToBottomWithConfig "containerId" NoOp <|
         { defaultConfig | timing = Speed 800 }
 
 -}
@@ -462,7 +462,7 @@ scrollToBottomWithConfig containerId msg config =
 
 {-| Smoothly scroll to the left edge of a container using default configuration.
 
-    scrollToLeftEdge "container-id" NoOp
+    scrollToLeftEdge "containerId" NoOp
 
 -}
 scrollToLeftEdge : ContainerId -> msg -> Cmd msg
@@ -472,7 +472,7 @@ scrollToLeftEdge containerId msg =
 
 {-| Smoothly scroll to the left edge of a container with custom configuration.
 
-    scrollToLeftEdgeWithConfig "container-id" NoOp <|
+    scrollToLeftEdgeWithConfig "containerId" NoOp <|
         { defaultConfig | timing = Duration 400 }
 
 -}
@@ -484,7 +484,7 @@ scrollToLeftEdgeWithConfig containerId msg config =
 
 {-| Smoothly scroll to the right edge of a container using default configuration.
 
-    scrollToRightEdge "container-id" NoOp
+    scrollToRightEdge "containerId" NoOp
 
 -}
 scrollToRightEdge : ContainerId -> msg -> Cmd msg
@@ -494,7 +494,7 @@ scrollToRightEdge containerId msg =
 
 {-| Smoothly scroll to the right edge of a container with custom configuration.
 
-    scrollToRightEdgeWithConfig "container-id" NoOp <|
+    scrollToRightEdgeWithConfig "containerId" NoOp <|
         { defaultConfig | timing = Duration 500 }
 
 -}
@@ -506,7 +506,7 @@ scrollToRightEdgeWithConfig containerId msg config =
 
 {-| Instantly jump to the top of a container using default configuration.
 
-    jumpToTop "container-id" NoOp
+    jumpToTop "containerId" NoOp
 
 -}
 jumpToTop : ContainerId -> msg -> Cmd msg
@@ -516,7 +516,7 @@ jumpToTop containerId msg =
 
 {-| Instantly jump to the top of a container with custom configuration.
 
-    jumpToTopWithConfig "container-id" NoOp <|
+    jumpToTopWithConfig "containerId" NoOp <|
         { defaultConfig | timing = Duration 500 }
 
 -}
@@ -528,7 +528,7 @@ jumpToTopWithConfig containerId msg config =
 
 {-| Instantly jump to the bottom of a container using default configuration.
 
-    jumpToBottom "container-id" NoOp
+    jumpToBottom "containerId" NoOp
 
 -}
 jumpToBottom : ContainerId -> msg -> Cmd msg
@@ -538,7 +538,7 @@ jumpToBottom containerId msg =
 
 {-| Instantly jump to the bottom of a container with custom configuration.
 
-    jumpToBottomWithConfig "container-id" NoOp <|
+    jumpToBottomWithConfig "containerId" NoOp <|
         { defaultConfig | timing = Speed 500 }
 
 -}
@@ -550,7 +550,7 @@ jumpToBottomWithConfig containerId msg config =
 
 {-| Instantly jump to the left edge of a container using default configuration.
 
-    jumpToLeftEdge "container-id" NoOp
+    jumpToLeftEdge "containerId" NoOp
 
 -}
 jumpToLeftEdge : ContainerId -> msg -> Cmd msg
@@ -560,7 +560,7 @@ jumpToLeftEdge containerId msg =
 
 {-| Instantly jump to the left edge of a container with custom configuration.
 
-    jumpToLeftEdgeWithConfig "container-id" NoOp <|
+    jumpToLeftEdgeWithConfig "containerId" NoOp <|
         { defaultConfig | timing = Speed 500 }
 
 -}
@@ -572,7 +572,7 @@ jumpToLeftEdgeWithConfig containerId msg config =
 
 {-| Instantly jump to the right edge of a container using default configuration.
 
-    jumpToRightEdge "container-id" NoOp
+    jumpToRightEdge "containerId" NoOp
 
 -}
 jumpToRightEdge : ContainerId -> msg -> Cmd msg
@@ -582,7 +582,7 @@ jumpToRightEdge containerId msg =
 
 {-| Instantly jump to the right edge of a container with custom configuration.
 
-    jumpToRightEdgeWithConfig "container-id" NoOp <|
+    jumpToRightEdgeWithConfig "containerId" NoOp <|
         { defaultConfig | timing = Speed 500 }
 
 -}
@@ -598,7 +598,7 @@ jumpToRightEdgeWithConfig containerId msg config =
 
 {-| Smoothly scroll to bring an element into view within a container using minimal movement.
 
-    scrollIntoView "container-id" "target-element" NoOp
+    scrollIntoView "containerId" "target-element" NoOp
 
 -}
 scrollIntoView : ContainerId -> TargetId -> msg -> Cmd msg
@@ -608,7 +608,7 @@ scrollIntoView containerId elementId msg =
 
 {-| Smoothly scroll to bring an element into view within a container with custom configuration.
 
-    scrollIntoViewWithConfig "container-id" "target-element" NoOp <|
+    scrollIntoViewWithConfig "containerId" "target-element" NoOp <|
         { defaultConfig | offsetY = 50 }
 
 -}
@@ -620,7 +620,7 @@ scrollIntoViewWithConfig containerId elementId msg config =
 
 {-| Jump instantly to bring an element into view within a container using minimal movement.
 
-    jumpIntoView "container-id" "target-element" NoOp
+    jumpIntoView "containerId" "target-element" NoOp
 
 -}
 jumpIntoView : ContainerId -> TargetId -> msg -> Cmd msg
@@ -630,7 +630,7 @@ jumpIntoView containerId elementId msg =
 
 {-| Jump instantly to bring an element into view within a container with custom configuration.
 
-    jumpIntoViewWithConfig "container-id" "target-element" NoOp <|
+    jumpIntoViewWithConfig "containerId" "target-element" NoOp <|
         { defaultConfig | offsetY = 50 }
 
 -}
@@ -646,7 +646,7 @@ jumpIntoViewWithConfig containerId elementId msg config =
 
 {-| Smoothly scroll to the top-left corner of a container.
 
-    scrollToTopLeft "container-id" NoOp
+    scrollToTopLeft "containerId" NoOp
 
 -}
 scrollToTopLeft : ContainerId -> msg -> Cmd msg
@@ -656,7 +656,7 @@ scrollToTopLeft containerId msg =
 
 {-| Smoothly scroll to the top-left corner with custom configuration.
 
-    scrollToTopLeftWithConfig "container-id" NoOp <|
+    scrollToTopLeftWithConfig "containerId" NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -668,7 +668,7 @@ scrollToTopLeftWithConfig containerId msg config =
 
 {-| Jump instantly to the top-left corner of a container.
 
-    jumpToTopLeft "container-id" NoOp
+    jumpToTopLeft "containerId" NoOp
 
 -}
 jumpToTopLeft : ContainerId -> msg -> Cmd msg
@@ -678,7 +678,7 @@ jumpToTopLeft containerId msg =
 
 {-| Jump instantly to the top-left corner with custom configuration.
 
-    jumpToTopLeftWithConfig "container-id" NoOp <|
+    jumpToTopLeftWithConfig "containerId" NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -690,7 +690,7 @@ jumpToTopLeftWithConfig containerId msg config =
 
 {-| Smoothly scroll to the top-right corner of a container.
 
-    scrollToTopRight "container-id" NoOp
+    scrollToTopRight "containerId" NoOp
 
 -}
 scrollToTopRight : ContainerId -> msg -> Cmd msg
@@ -700,7 +700,7 @@ scrollToTopRight containerId msg =
 
 {-| Smoothly scroll to the top-right corner with custom configuration.
 
-    scrollToTopRightWithConfig "container-id" NoOp <|
+    scrollToTopRightWithConfig "containerId" NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -712,7 +712,7 @@ scrollToTopRightWithConfig containerId msg config =
 
 {-| Jump instantly to the top-right corner of a container.
 
-    jumpToTopRight "container-id" NoOp
+    jumpToTopRight "containerId" NoOp
 
 -}
 jumpToTopRight : ContainerId -> msg -> Cmd msg
@@ -722,7 +722,7 @@ jumpToTopRight containerId msg =
 
 {-| Jump instantly to the top-right corner with custom configuration.
 
-    jumpToTopRightWithConfig "container-id" NoOp <|
+    jumpToTopRightWithConfig "containerId" NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -734,7 +734,7 @@ jumpToTopRightWithConfig containerId msg config =
 
 {-| Smoothly scroll to the bottom-left corner of a container.
 
-    scrollToBottomLeft "container-id" NoOp
+    scrollToBottomLeft "containerId" NoOp
 
 -}
 scrollToBottomLeft : ContainerId -> msg -> Cmd msg
@@ -744,7 +744,7 @@ scrollToBottomLeft containerId msg =
 
 {-| Smoothly scroll to the bottom-left corner with custom configuration.
 
-    scrollToBottomLeftWithConfig "container-id" NoOp <|
+    scrollToBottomLeftWithConfig "containerId" NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -756,7 +756,7 @@ scrollToBottomLeftWithConfig containerId msg config =
 
 {-| Jump instantly to the bottom-left corner of a container.
 
-    jumpToBottomLeft "container-id" NoOp
+    jumpToBottomLeft "containerId" NoOp
 
 -}
 jumpToBottomLeft : ContainerId -> msg -> Cmd msg
@@ -766,7 +766,7 @@ jumpToBottomLeft containerId msg =
 
 {-| Jump instantly to the bottom-left corner with custom configuration.
 
-    jumpToBottomLeftWithConfig "container-id" NoOp <|
+    jumpToBottomLeftWithConfig "containerId" NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -778,7 +778,7 @@ jumpToBottomLeftWithConfig containerId msg config =
 
 {-| Smoothly scroll to the bottom-right corner of a container.
 
-    scrollToBottomRight "container-id" NoOp
+    scrollToBottomRight "containerId" NoOp
 
 -}
 scrollToBottomRight : ContainerId -> msg -> Cmd msg
@@ -788,7 +788,7 @@ scrollToBottomRight containerId msg =
 
 {-| Smoothly scroll to the bottom-right corner with custom configuration.
 
-    scrollToBottomRightWithConfig "container-id" NoOp <|
+    scrollToBottomRightWithConfig "containerId" NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -800,7 +800,7 @@ scrollToBottomRightWithConfig containerId msg config =
 
 {-| Jump instantly to the bottom-right corner of a container.
 
-    jumpToBottomRight "container-id" NoOp
+    jumpToBottomRight "containerId" NoOp
 
 -}
 jumpToBottomRight : ContainerId -> msg -> Cmd msg
@@ -810,7 +810,7 @@ jumpToBottomRight containerId msg =
 
 {-| Jump instantly to the bottom-right corner with custom configuration.
 
-    jumpToBottomRightWithConfig "container-id" NoOp <|
+    jumpToBottomRightWithConfig "containerId" NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -826,7 +826,7 @@ jumpToBottomRightWithConfig containerId msg config =
 
 {-| Smoothly scroll to the center of a container (both X and Y axes).
 
-    scrollToCenter "container-id" NoOp
+    scrollToCenter "containerId" NoOp
 
 -}
 scrollToCenter : ContainerId -> msg -> Cmd msg
@@ -836,7 +836,7 @@ scrollToCenter containerId msg =
 
 {-| Smoothly scroll to the center with custom configuration.
 
-    scrollToCenterWithConfig "container-id" NoOp <|
+    scrollToCenterWithConfig "containerId" NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -848,7 +848,7 @@ scrollToCenterWithConfig containerId msg config =
 
 {-| Jump instantly to the center of a container (both X and Y axes).
 
-    jumpToCenter "container-id" NoOp
+    jumpToCenter "containerId" NoOp
 
 -}
 jumpToCenter : ContainerId -> msg -> Cmd msg
@@ -858,7 +858,7 @@ jumpToCenter containerId msg =
 
 {-| Jump instantly to the center with custom configuration.
 
-    jumpToCenterWithConfig "container-id" NoOp <|
+    jumpToCenterWithConfig "containerId" NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -870,7 +870,7 @@ jumpToCenterWithConfig containerId msg config =
 
 {-| Smoothly scroll to center horizontally (X axis only).
 
-    scrollToCenterX "container-id" NoOp
+    scrollToCenterX "containerId" NoOp
 
 -}
 scrollToCenterX : ContainerId -> msg -> Cmd msg
@@ -880,7 +880,7 @@ scrollToCenterX containerId msg =
 
 {-| Smoothly scroll to center horizontally with custom configuration.
 
-    scrollToCenterXWithConfig "container-id" NoOp <|
+    scrollToCenterXWithConfig "containerId" NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -892,7 +892,7 @@ scrollToCenterXWithConfig containerId msg config =
 
 {-| Jump instantly to center horizontally (X axis only).
 
-    jumpToCenterX "container-id" NoOp
+    jumpToCenterX "containerId" NoOp
 
 -}
 jumpToCenterX : ContainerId -> msg -> Cmd msg
@@ -902,7 +902,7 @@ jumpToCenterX containerId msg =
 
 {-| Jump instantly to center horizontally with custom configuration.
 
-    jumpToCenterXWithConfig "container-id" NoOp <|
+    jumpToCenterXWithConfig "containerId" NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -914,7 +914,7 @@ jumpToCenterXWithConfig containerId msg config =
 
 {-| Smoothly scroll to center vertically (Y axis only).
 
-    scrollToCenterY "container-id" NoOp
+    scrollToCenterY "containerId" NoOp
 
 -}
 scrollToCenterY : ContainerId -> msg -> Cmd msg
@@ -924,7 +924,7 @@ scrollToCenterY containerId msg =
 
 {-| Smoothly scroll to center vertically with custom configuration.
 
-    scrollToCenterYWithConfig "container-id" NoOp <|
+    scrollToCenterYWithConfig "containerId" NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -936,7 +936,7 @@ scrollToCenterYWithConfig containerId msg config =
 
 {-| Jump instantly to center vertically (Y axis only).
 
-    jumpToCenterY "container-id" NoOp
+    jumpToCenterY "containerId" NoOp
 
 -}
 jumpToCenterY : ContainerId -> msg -> Cmd msg
@@ -946,7 +946,7 @@ jumpToCenterY containerId msg =
 
 {-| Jump instantly to center vertically with custom configuration.
 
-    jumpToCenterYWithConfig "container-id" NoOp <|
+    jumpToCenterYWithConfig "containerId" NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -962,7 +962,7 @@ jumpToCenterYWithConfig containerId msg config =
 
 {-| Smoothly scroll to a position defined by percentages (both X and Y).
 
-    scrollToPercentage "container-id" 50.0 75.0 NoOp
+    scrollToPercentage "containerId" 50.0 75.0 NoOp
 
 -}
 scrollToPercentage : ContainerId -> PercX -> PercY -> msg -> Cmd msg
@@ -972,7 +972,7 @@ scrollToPercentage containerId percentX percentY msg =
 
 {-| Smoothly scroll to percentage position with custom configuration.
 
-    scrollToPercentageWithConfig "container-id" 50.0 75.0 NoOp <|
+    scrollToPercentageWithConfig "containerId" 50.0 75.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -984,7 +984,7 @@ scrollToPercentageWithConfig containerId percentX percentY msg config =
 
 {-| Jump instantly to a position defined by percentages (both X and Y).
 
-    jumpToPercentage "container-id" 50.0 75.0 NoOp
+    jumpToPercentage "containerId" 50.0 75.0 NoOp
 
 -}
 jumpToPercentage : ContainerId -> PercX -> PercY -> msg -> Cmd msg
@@ -994,7 +994,7 @@ jumpToPercentage containerId percentX percentY msg =
 
 {-| Jump instantly to percentage position with custom configuration.
 
-    jumpToPercentageWithConfig "container-id" 50.0 75.0 NoOp <|
+    jumpToPercentageWithConfig "containerId" 50.0 75.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1006,7 +1006,7 @@ jumpToPercentageWithConfig containerId percentX percentY msg config =
 
 {-| Smoothly scroll to a horizontal percentage position (X axis only).
 
-    scrollToPercentageX "container-id" 25.0 NoOp
+    scrollToPercentageX "containerId" 25.0 NoOp
 
 -}
 scrollToPercentageX : ContainerId -> PercX -> msg -> Cmd msg
@@ -1016,7 +1016,7 @@ scrollToPercentageX containerId percentX msg =
 
 {-| Smoothly scroll to horizontal percentage with custom configuration.
 
-    scrollToPercentageXWithConfig "container-id" 25.0 NoOp <|
+    scrollToPercentageXWithConfig "containerId" 25.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1028,7 +1028,7 @@ scrollToPercentageXWithConfig containerId percentX msg config =
 
 {-| Jump instantly to a horizontal percentage position (X axis only).
 
-    jumpToPercentageX "container-id" 25.0 NoOp
+    jumpToPercentageX "containerId" 25.0 NoOp
 
 -}
 jumpToPercentageX : ContainerId -> PercX -> msg -> Cmd msg
@@ -1038,7 +1038,7 @@ jumpToPercentageX containerId percentX msg =
 
 {-| Jump instantly to horizontal percentage with custom configuration.
 
-    jumpToPercentageXWithConfig "container-id" 25.0 NoOp <|
+    jumpToPercentageXWithConfig "containerId" 25.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1050,7 +1050,7 @@ jumpToPercentageXWithConfig containerId percentX msg config =
 
 {-| Smoothly scroll to a vertical percentage position (Y axis only).
 
-    scrollToPercentageY "container-id" 80.0 NoOp
+    scrollToPercentageY "containerId" 80.0 NoOp
 
 -}
 scrollToPercentageY : ContainerId -> PercY -> msg -> Cmd msg
@@ -1060,7 +1060,7 @@ scrollToPercentageY containerId percentY msg =
 
 {-| Smoothly scroll to vertical percentage with custom configuration.
 
-    scrollToPercentageYWithConfig "container-id" 80.0 NoOp <|
+    scrollToPercentageYWithConfig "containerId" 80.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1072,7 +1072,7 @@ scrollToPercentageYWithConfig containerId percentY msg config =
 
 {-| Jump instantly to a vertical percentage position (Y axis only).
 
-    jumpToPercentageY "container-id" 80.0 NoOp
+    jumpToPercentageY "containerId" 80.0 NoOp
 
 -}
 jumpToPercentageY : ContainerId -> PercY -> msg -> Cmd msg
@@ -1082,7 +1082,7 @@ jumpToPercentageY containerId percentY msg =
 
 {-| Jump instantly to vertical percentage with custom configuration.
 
-    jumpToPercentageYWithConfig "container-id" 80.0 NoOp <|
+    jumpToPercentageYWithConfig "containerId" 80.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1098,7 +1098,7 @@ jumpToPercentageYWithConfig containerId percentY msg config =
 
 {-| Smoothly scroll by specific pixel amounts from the current position.
 
-    scrollBy "container-id" 100.0 -50.0 NoOp
+    scrollBy "containerId" 100.0 -50.0 NoOp
 
 -}
 scrollBy : ContainerId -> ScrollDeltaX -> ScrollDeltaY -> msg -> Cmd msg
@@ -1108,7 +1108,7 @@ scrollBy containerId deltaX deltaY msg =
 
 {-| Smoothly scroll by pixel amounts with custom configuration.
 
-    scrollByWithConfig "container-id" 100.0 -50.0 NoOp <|
+    scrollByWithConfig "containerId" 100.0 -50.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1120,7 +1120,7 @@ scrollByWithConfig containerId deltaX deltaY msg config =
 
 {-| Jump instantly by specific pixel amounts from the current position.
 
-    jumpBy "container-id" 100.0 -50.0 NoOp
+    jumpBy "containerId" 100.0 -50.0 NoOp
 
 -}
 jumpBy : ContainerId -> ScrollDeltaX -> ScrollDeltaY -> msg -> Cmd msg
@@ -1130,7 +1130,7 @@ jumpBy containerId deltaX deltaY msg =
 
 {-| Jump instantly by pixel amounts with custom configuration.
 
-    jumpByWithConfig "container-id" 100.0 -50.0 NoOp <|
+    jumpByWithConfig "containerId" 100.0 -50.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1142,7 +1142,7 @@ jumpByWithConfig containerId deltaX deltaY msg config =
 
 {-| Smoothly scroll horizontally by a specific pixel amount from the current position.
 
-    scrollByX "container-id" 100.0 NoOp
+    scrollByX "containerId" 100.0 NoOp
 
 -}
 scrollByX : ContainerId -> ScrollDeltaX -> msg -> Cmd msg
@@ -1152,7 +1152,7 @@ scrollByX containerId deltaX msg =
 
 {-| Smoothly scroll horizontally by pixel amounts with custom configuration.
 
-    scrollByXWithConfig "container-id" 100.0 NoOp <|
+    scrollByXWithConfig "containerId" 100.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1164,7 +1164,7 @@ scrollByXWithConfig containerId deltaX msg config =
 
 {-| Jump instantly horizontally by a specific pixel amount from the current position.
 
-    jumpByX "container-id" 100.0 NoOp
+    jumpByX "containerId" 100.0 NoOp
 
 -}
 jumpByX : ContainerId -> ScrollDeltaX -> msg -> Cmd msg
@@ -1174,7 +1174,7 @@ jumpByX containerId deltaX msg =
 
 {-| Jump instantly horizontally by pixel amounts with custom configuration.
 
-    jumpByXWithConfig "container-id" 100.0 NoOp <|
+    jumpByXWithConfig "containerId" 100.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1186,7 +1186,7 @@ jumpByXWithConfig containerId deltaX msg config =
 
 {-| Smoothly scroll vertically by a specific pixel amount from the current position.
 
-    scrollByY "container-id" -50.0 NoOp
+    scrollByY "containerId" -50.0 NoOp
 
 -}
 scrollByY : ContainerId -> ScrollDeltaY -> msg -> Cmd msg
@@ -1196,7 +1196,7 @@ scrollByY containerId deltaY msg =
 
 {-| Smoothly scroll vertically by pixel amounts with custom configuration.
 
-    scrollByYWithConfig "container-id" -50.0 NoOp <|
+    scrollByYWithConfig "containerId" -50.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1208,7 +1208,7 @@ scrollByYWithConfig containerId deltaY msg config =
 
 {-| Jump instantly vertically by a specific pixel amount from the current position.
 
-    jumpByY "container-id" -50.0 NoOp
+    jumpByY "containerId" -50.0 NoOp
 
 -}
 jumpByY : ContainerId -> ScrollDeltaY -> msg -> Cmd msg
@@ -1218,7 +1218,7 @@ jumpByY containerId deltaY msg =
 
 {-| Jump instantly vertically by pixel amounts with custom configuration.
 
-    jumpByYWithConfig "container-id" -50.0 NoOp <|
+    jumpByYWithConfig "containerId" -50.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1230,7 +1230,7 @@ jumpByYWithConfig containerId deltaY msg config =
 
 {-| Smoothly scroll by viewport multiples from the current position.
 
-    scrollByViewportSize "container-id" 1.0 0.5 NoOp
+    scrollByViewportSize "containerId" 1.0 0.5 NoOp
 
 -}
 scrollByViewportSize : ContainerId -> ViewportMultiplierX -> ViewportMultiplierY -> msg -> Cmd msg
@@ -1240,7 +1240,7 @@ scrollByViewportSize containerId multiplierX multiplierY msg =
 
 {-| Smoothly scroll by viewport multiples with custom configuration.
 
-    scrollByViewportSizeWithConfig "container-id" 1.0 0.5 NoOp <|
+    scrollByViewportSizeWithConfig "containerId" 1.0 0.5 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1252,7 +1252,7 @@ scrollByViewportSizeWithConfig containerId multiplierX multiplierY msg config =
 
 {-| Jump instantly by viewport multiples from the current position.
 
-    jumpByViewportSize "container-id" 1.0 0.5 NoOp
+    jumpByViewportSize "containerId" 1.0 0.5 NoOp
 
 -}
 jumpByViewportSize : ContainerId -> ViewportMultiplierX -> ViewportMultiplierY -> msg -> Cmd msg
@@ -1262,7 +1262,7 @@ jumpByViewportSize containerId multiplierX multiplierY msg =
 
 {-| Jump instantly by viewport multiples with custom configuration.
 
-    jumpByViewportSizeWithConfig "container-id" 1.0 0.5 NoOp <|
+    jumpByViewportSizeWithConfig "containerId" 1.0 0.5 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1274,7 +1274,7 @@ jumpByViewportSizeWithConfig containerId multiplierX multiplierY msg config =
 
 {-| Smoothly scroll horizontally by viewport width multiples from the current position.
 
-    scrollByViewportSizeX "container-id" 1.0 NoOp
+    scrollByViewportSizeX "containerId" 1.0 NoOp
 
 -}
 scrollByViewportSizeX : ContainerId -> ViewportMultiplierX -> msg -> Cmd msg
@@ -1284,7 +1284,7 @@ scrollByViewportSizeX containerId multiplierX msg =
 
 {-| Smoothly scroll horizontally by viewport width multiples with custom configuration.
 
-    scrollByViewportSizeXWithConfig "container-id" 1.0 NoOp <|
+    scrollByViewportSizeXWithConfig "containerId" 1.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1296,7 +1296,7 @@ scrollByViewportSizeXWithConfig containerId multiplierX msg config =
 
 {-| Jump instantly horizontally by viewport width multiples from the current position.
 
-    jumpByViewportSizeX "container-id" 1.0 NoOp
+    jumpByViewportSizeX "containerId" 1.0 NoOp
 
 -}
 jumpByViewportSizeX : ContainerId -> ViewportMultiplierX -> msg -> Cmd msg
@@ -1306,7 +1306,7 @@ jumpByViewportSizeX containerId multiplierX msg =
 
 {-| Jump instantly horizontally by viewport width multiples with custom configuration.
 
-    jumpByViewportSizeXWithConfig "container-id" 1.0 NoOp <|
+    jumpByViewportSizeXWithConfig "containerId" 1.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1318,7 +1318,7 @@ jumpByViewportSizeXWithConfig containerId multiplierX msg config =
 
 {-| Smoothly scroll vertically by viewport height multiples from the current position.
 
-    scrollByViewportSizeY "container-id" 1.0 NoOp
+    scrollByViewportSizeY "containerId" 1.0 NoOp
 
 -}
 scrollByViewportSizeY : ContainerId -> ViewportMultiplierY -> msg -> Cmd msg
@@ -1328,7 +1328,7 @@ scrollByViewportSizeY containerId multiplierY msg =
 
 {-| Smoothly scroll vertically by viewport height multiples with custom configuration.
 
-    scrollByViewportSizeYWithConfig "container-id" 1.0 NoOp <|
+    scrollByViewportSizeYWithConfig "containerId" 1.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1340,7 +1340,7 @@ scrollByViewportSizeYWithConfig containerId multiplierY msg config =
 
 {-| Jump instantly vertically by viewport height multiples from the current position.
 
-    jumpByViewportSizeY "container-id" 1.0 NoOp
+    jumpByViewportSizeY "containerId" 1.0 NoOp
 
 -}
 jumpByViewportSizeY : ContainerId -> ViewportMultiplierY -> msg -> Cmd msg
@@ -1350,7 +1350,7 @@ jumpByViewportSizeY containerId multiplierY msg =
 
 {-| Jump instantly vertically by viewport height multiples with custom configuration.
 
-    jumpByViewportSizeYWithConfig "container-id" 1.0 NoOp <|
+    jumpByViewportSizeYWithConfig "containerId" 1.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1366,7 +1366,7 @@ jumpByViewportSizeYWithConfig containerId multiplierY msg config =
 
 {-| Smoothly scroll to specific pixel coordinates within a container.
 
-    scrollToCoordinates "container-id" 500.0 300.0 NoOp
+    scrollToCoordinates "containerId" 500.0 300.0 NoOp
 
 -}
 scrollToCoordinates : ContainerId -> XCoordinate -> YCoordinate -> msg -> Cmd msg
@@ -1376,7 +1376,7 @@ scrollToCoordinates containerId x y msg =
 
 {-| Smoothly scroll to coordinates with custom configuration.
 
-    scrollToCoordinatesWithConfig "container-id" 500.0 300.0 NoOp <|
+    scrollToCoordinatesWithConfig "containerId" 500.0 300.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1388,7 +1388,7 @@ scrollToCoordinatesWithConfig containerId x y msg config =
 
 {-| Jump instantly to specific pixel coordinates within a container.
 
-    jumpToCoordinates "container-id" 500.0 300.0 NoOp
+    jumpToCoordinates "containerId" 500.0 300.0 NoOp
 
 -}
 jumpToCoordinates : ContainerId -> XCoordinate -> YCoordinate -> msg -> Cmd msg
@@ -1398,7 +1398,7 @@ jumpToCoordinates containerId x y msg =
 
 {-| Jump instantly to coordinates with custom configuration.
 
-    jumpToCoordinatesWithConfig "container-id" 500.0 300.0 NoOp <|
+    jumpToCoordinatesWithConfig "containerId" 500.0 300.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1414,7 +1414,7 @@ jumpToCoordinatesWithConfig containerId x y msg config =
 
 {-| Smoothly scroll to specific X coordinate, keeping current Y position.
 
-    scrollToCoordinateX "container-id" 500.0 NoOp
+    scrollToCoordinateX "containerId" 500.0 NoOp
 
 -}
 scrollToCoordinateX : ContainerId -> XCoordinate -> msg -> Cmd msg
@@ -1424,7 +1424,7 @@ scrollToCoordinateX containerId x msg =
 
 {-| Smoothly scroll to specific X coordinate with custom configuration.
 
-    scrollToCoordinateXWithConfig "container-id" 500.0 NoOp <|
+    scrollToCoordinateXWithConfig "containerId" 500.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1436,7 +1436,7 @@ scrollToCoordinateXWithConfig containerId x msg config =
 
 {-| Jump instantly to specific X coordinate, keeping current Y position.
 
-    jumpToCoordinateX "container-id" 500.0 NoOp
+    jumpToCoordinateX "containerId" 500.0 NoOp
 
 -}
 jumpToCoordinateX : ContainerId -> XCoordinate -> msg -> Cmd msg
@@ -1446,7 +1446,7 @@ jumpToCoordinateX containerId x msg =
 
 {-| Jump instantly to specific X coordinate with custom configuration.
 
-    jumpToCoordinateXWithConfig "container-id" 500.0 NoOp <|
+    jumpToCoordinateXWithConfig "containerId" 500.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1462,7 +1462,7 @@ jumpToCoordinateXWithConfig containerId x msg config =
 
 {-| Smoothly scroll to specific Y coordinate, keeping current X position.
 
-    scrollToCoordinateY "container-id" 1000.0 NoOp
+    scrollToCoordinateY "containerId" 1000.0 NoOp
 
 -}
 scrollToCoordinateY : ContainerId -> YCoordinate -> msg -> Cmd msg
@@ -1472,7 +1472,7 @@ scrollToCoordinateY containerId y msg =
 
 {-| Smoothly scroll to specific Y coordinate with custom configuration.
 
-    scrollToCoordinateYWithConfig "container-id" 1000.0 NoOp <|
+    scrollToCoordinateYWithConfig "containerId" 1000.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
@@ -1484,7 +1484,7 @@ scrollToCoordinateYWithConfig containerId y msg config =
 
 {-| Jump instantly to specific Y coordinate, keeping current X position.
 
-    jumpToCoordinateY "container-id" 1000.0 NoOp
+    jumpToCoordinateY "containerId" 1000.0 NoOp
 
 -}
 jumpToCoordinateY : ContainerId -> YCoordinate -> msg -> Cmd msg
@@ -1494,7 +1494,7 @@ jumpToCoordinateY containerId y msg =
 
 {-| Jump instantly to specific Y coordinate with custom configuration.
 
-    jumpToCoordinateYWithConfig "container-id" 1000.0 NoOp <|
+    jumpToCoordinateYWithConfig "containerId" 1000.0 NoOp <|
         { defaultConfig | speed = 1000 }
 
 -}
