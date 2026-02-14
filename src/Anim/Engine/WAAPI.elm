@@ -99,11 +99,6 @@ Both ports are needed.
 
 # Element Targeting
 
-Target specific DOM elements for animations.
-
-This is **required** for WAAPI engine animations since it applies animations directly to
-DOM elements via the Web Animations API.
-
 @docs forElement
 
 
@@ -345,10 +340,7 @@ delay =
     Internal.delay
 
 
-{-| Set the target DOM element for subsequent animations.
-
-This allows you to define reusable animation functions with meaningful names,
-then target specific DOM elements when building the animation:
+{-| Set the ID of the element being animated.
 
     -- Define reusable animations (keys can be any string)
     fadeIn : AnimBuilder -> AnimBuilder
@@ -367,20 +359,6 @@ then target specific DOM elements when building the animation:
             >> WAAPI.forElement "card-2"
             >> fadeIn
         )
-
-All animations are grouped by element ID. In this example:
-
-  - `"card-1"` receives both fadeIn and slideIn properties
-  - `"card-2"` receives fadeIn properties
-
-State queries and control use the element ID:
-
-    WAAPI.isRunning "card-1" model.animState
-
-    WAAPI.pause "card-1" model.animState
-
-The target element remains active until the next `forElement` call, so multiple
-animations can be applied to the same element in sequence.
 
 -}
 forElement : String -> AnimBuilder -> AnimBuilder

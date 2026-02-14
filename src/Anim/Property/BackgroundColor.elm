@@ -71,12 +71,10 @@ type alias Builder =
     CB.ColorBuilder
 
 
-{-| Turn the `AnimBuilder` into a background color animation `Builder` for the specified animation key.
+{-| Turn the `AnimBuilder` into a background color animation `Builder` for the specified animation group.
 
-The key is a unique identifier for this animation. All animations in the same pipeline that share the same key
-will all run at once on the same element.
-
-For WAAPI engine, this must match the DOM element ID.
+The group name identifies which animations run together. All animations in the same pipeline that share
+the same group will run simultaneously on the same element.
 
 From here, you can continue configuring the background color animation, then call [build](#build) to turn
 the `Builder` back into an `AnimBuilder` and then either continue configuring other property animations or
