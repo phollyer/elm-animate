@@ -108,7 +108,7 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg |> Debug.log "" of
+    case msg of
         GotWaapiMsg subMsg ->
             let
                 ( newAnimState, _ ) =

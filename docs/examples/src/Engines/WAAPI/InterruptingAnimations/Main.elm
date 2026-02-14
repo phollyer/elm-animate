@@ -69,8 +69,8 @@ init : { width : Float, height : Float } -> ( Model, Cmd Msg )
 init { width, height } =
     ( { animState =
             WAAPI.init waapiCommand waapiEvent <|
-                [ Translate.initY elementId (height / 2 - boxWidth / 2)
-                , Translate.initX elementId (width / 2 - boxWidth / 2)
+                [ WAAPI.forElement elementId >> Translate.initY elementId (height / 2 - boxWidth / 2)
+                , WAAPI.forElement elementId >> Translate.initX elementId (width / 2 - boxWidth / 2)
                 ]
       , width = width - 20 -- Account for some padding on the sides
       , height = height - 75 -- Account for buttons height
@@ -116,7 +116,8 @@ moveToY targetY =
 moveBox : (Translate.Builder -> Translate.Builder) -> WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
 moveBox moveFunc animState =
     WAAPI.animate animState <|
-        Translate.for elementId
+        WAAPI.forElement elementId
+            >> Translate.for elementId
             >> moveFunc
             >> Translate.speed 200
             >> Translate.easing BounceOut

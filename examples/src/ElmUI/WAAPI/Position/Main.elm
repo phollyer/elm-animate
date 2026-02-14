@@ -33,6 +33,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
+import Json.Decode as Decode
 import Json.Encode as Encode
 
 
@@ -65,7 +66,7 @@ main =
 
 
 type alias Model =
-    { animState : WAAPI.AnimState
+    { animState : WAAPI.AnimState Msg
     , isAnimating : Bool
     }
 
@@ -76,14 +77,13 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    let
-        ( initialAnimState, initCmd ) =
-            WAAPI.animate waapiCommand WAAPI.init Animations.init
-    in
-    ( { animState = initialAnimState
+    ( { animState =
+            WAAPI.init waapiCommand waapiEvent
+                [ WAAPI.forElement elementId >> Animations.init
+                ]
       , isAnimating = False
       }
-    , initCmd
+    , Cmd.none
     )
 
 
@@ -100,14 +100,14 @@ type Msg
     | MoveDown
     | ResetPosition
     | StopAnimation
-    | WaapiEventReceived ( WAAPI.AnimState, Maybe WAAPI.AnimationEvent )
+    | GotWaapiMsg WAAPI.AnimMsg
 
 
 animate : (WAAPI.AnimBuilder -> WAAPI.AnimBuilder) -> Model -> ( Model, Cmd Msg )
 animate builder model =
     let
         ( newAnimState, builderCmd ) =
-            WAAPI.animate waapiCommand model.animState builder
+            WAAPI.animate model.animState (WAAPI.forElement elementId >> builder)
     in
     ( { model
         | animState = newAnimState
@@ -142,21 +142,20 @@ update msg model =
             animate Animations.returnToOrigin model
 
         StopAnimation ->
-            ( { model | isAnimating = False }
-            , WAAPI.stop elementId waapiCommand
+            let
+                ( newAnimState, stopCmd ) =
+                    WAAPI.stop elementId model.animState
+            in
+            ( { model | animState = newAnimState, isAnimating = False }
+            , stopCmd
             )
 
-        WaapiEventReceived ( newAnimState, maybeEvent ) ->
+        GotWaapiMsg subMsg ->
             let
-                newModel =
-                    { model | animState = newAnimState }
+                ( newAnimState, _ ) =
+                    WAAPI.update subMsg model.animState
             in
-            case maybeEvent of
-                Just WAAPI.Completed ->
-                    ( { newModel | isAnimating = False }, Cmd.none )
-
-                _ ->
-                    ( newModel, Cmd.none )
+            ( { model | animState = newAnimState }, Cmd.none )
 
 
 
@@ -165,7 +164,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    waapiEvent (WaapiEventReceived << WAAPI.decode model.animState)
+    WAAPI.subscriptions GotWaapiMsg model.animState
 
 
 

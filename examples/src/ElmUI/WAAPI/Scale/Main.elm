@@ -35,7 +35,10 @@ import Json.Encode as Encode
 -- PORTS
 
 
-port animateElement : Encode.Value -> Cmd msg
+port waapiCommand : Encode.Value -> Cmd msg
+
+
+port waapiEvent : (Decode.Value -> msg) -> Sub msg
 
 
 
@@ -57,7 +60,7 @@ main =
 
 
 type alias Model =
-    { animState : WAAPI.AnimState
+    { animState : WAAPI.AnimState Msg
     }
 
 
@@ -67,13 +70,12 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    let
-        ( initialAnimState, initCmd ) =
-            WAAPI.animate animateElement WAAPI.init <|
-                \b -> b |> Scale.initXY "box" 1.0 1.0
-    in
-    ( { animState = initialAnimState }
-    , initCmd
+    ( { animState =
+            WAAPI.init waapiCommand waapiEvent
+                [ WAAPI.forElement "box" >> Scale.initXY "box" 1.0 1.0
+                ]
+      }
+    , Cmd.none
     )
 
 
@@ -83,7 +85,7 @@ type Msg
     | ScaleReset
     | ScaleWide
     | ScaleTall
-    | NoOp
+    | GotWaapiMsg WAAPI.AnimMsg
 
 
 
@@ -96,40 +98,44 @@ update msg model =
         ScaleUp ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate animateElement model.animState (Animations.scaleUp "box")
+                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.scaleUp "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ScaleDown ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate animateElement model.animState (Animations.scaleDown "box")
+                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.scaleDown "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ScaleReset ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate animateElement model.animState (Animations.scaleReset "box")
+                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.scaleReset "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ScaleWide ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate animateElement model.animState (Animations.scaleWide "box")
+                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.scaleWide "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ScaleTall ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate animateElement model.animState (Animations.scaleTall "box")
+                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.scaleTall "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
-        NoOp ->
-            ( model, Cmd.none )
+        GotWaapiMsg subMsg ->
+            let
+                ( newAnimState, _ ) =
+                    WAAPI.update subMsg model.animState
+            in
+            ( { model | animState = newAnimState }, Cmd.none )
 
 
 
@@ -138,7 +144,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    WAAPI.subscriptions GotWaapiMsg model.animState
 
 
 

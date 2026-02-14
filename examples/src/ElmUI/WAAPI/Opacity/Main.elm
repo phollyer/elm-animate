@@ -26,6 +26,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
+import Json.Decode as Decode
 import Json.Encode as Encode
 
 
@@ -33,7 +34,10 @@ import Json.Encode as Encode
 -- PORTS
 
 
-port animateElement : Encode.Value -> Cmd msg
+port waapiCommand : Encode.Value -> Cmd msg
+
+
+port waapiEvent : (Decode.Value -> msg) -> Sub msg
 
 
 
@@ -55,7 +59,7 @@ main =
 
 
 type alias Model =
-    { animState : WAAPI.AnimState
+    { animState : WAAPI.AnimState Msg
     }
 
 
@@ -65,15 +69,12 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    let
-        ( initialAnimState, initCmd ) =
-            WAAPI.animate animateElement WAAPI.init <|
-                \b ->
-                    b
-                        |> Opacity.init "box" 1.0
-    in
-    ( { animState = initialAnimState }
-    , initCmd
+    ( { animState =
+            WAAPI.init waapiCommand waapiEvent
+                [ WAAPI.forElement "box" >> Opacity.init "box" 1.0
+                ]
+      }
+    , Cmd.none
     )
 
 
@@ -81,6 +82,7 @@ type Msg
     = FadeIn
     | FadeOut
     | ResetOpacity
+    | GotWaapiMsg WAAPI.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -89,26 +91,30 @@ update msg model =
         FadeIn ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate animateElement model.animState <|
-                        Animations.fadeIn "box"
+                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.fadeIn "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         FadeOut ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate animateElement model.animState <|
-                        Animations.fadeOut "box"
+                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.fadeOut "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ResetOpacity ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate animateElement model.animState <|
-                        Animations.fadeToHalf "box"
+                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.fadeToHalf "box")
             in
             ( { model | animState = newAnimState }, animCmd )
+
+        GotWaapiMsg subMsg ->
+            let
+                ( newAnimState, _ ) =
+                    WAAPI.update subMsg model.animState
+            in
+            ( { model | animState = newAnimState }, Cmd.none )
 
 
 
@@ -117,7 +123,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    WAAPI.subscriptions GotWaapiMsg model.animState
 
 
 

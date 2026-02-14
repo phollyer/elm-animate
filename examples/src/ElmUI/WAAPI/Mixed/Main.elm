@@ -17,6 +17,7 @@ FEATURES:
 
 import Anim.Extra.Color
 import Anim.Extra.Easing as Easing exposing (Easing(..))
+import Anim.Extra.View3D as View3D
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.BackgroundColor as Color
 import Anim.Property.Opacity as Opacity
@@ -41,16 +42,10 @@ import Json.Encode as Encode
 -- PORTS
 
 
-port animateElement : Encode.Value -> Cmd msg
+port waapiCommand : Encode.Value -> Cmd msg
 
 
-port stopElementAnimation : String -> Cmd msg
-
-
-port animationUpdates : (Encode.Value -> msg) -> Sub msg
-
-
-port animationComplete : (String -> msg) -> Sub msg
+port waapiEvent : (Decode.Value -> msg) -> Sub msg
 
 
 
@@ -72,7 +67,7 @@ main =
 
 
 type alias Model =
-    { animState : WAAPI.AnimState
+    { animState : WAAPI.AnimState Msg
     }
 
 
@@ -82,27 +77,13 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    let
-        ( initialAnimState, initCmd ) =
-            initAnim 0 WAAPI.init
-    in
-    ( { animState = initialAnimState }
-    , initCmd
+    ( { animState =
+            WAAPI.init waapiCommand waapiEvent
+                [ WAAPI.forElement elementId >> Mixed.init
+                ]
+      }
+    , Cmd.none
     )
-
-
-initAnim : Int -> WAAPI.AnimState -> ( WAAPI.AnimState, Cmd msg )
-initAnim duration animState =
-    let
-        ( newAnimState, animCmd ) =
-            WAAPI.animate animateElement animState <|
-                \builder ->
-                    builder
-                        |> WAAPI.duration duration
-                        |> WAAPI.easing Easing.EaseOut
-                        |> Mixed.init
-    in
-    ( newAnimState, animCmd )
 
 
 
@@ -116,60 +97,60 @@ type Msg
     | ColorSizeOpacity
     | AllProperties
     | ResetAll
-    | ReceiveAnimationUpdate Encode.Value
-    | NoOp
+    | GotWaapiMsg WAAPI.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ReceiveAnimationUpdate jsonValue ->
-            ( { model | animState = WAAPI.update jsonValue model.animState }, Cmd.none )
+        GotWaapiMsg subMsg ->
+            let
+                ( newAnimState, _ ) =
+                    WAAPI.update subMsg model.animState
+            in
+            ( { model | animState = newAnimState }, Cmd.none )
 
         MoveScaleRotate ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate animateElement model.animState Mixed.moveScaleRotate
+                    WAAPI.animate model.animState (WAAPI.forElement elementId >> Mixed.moveScaleRotate)
             in
             ( { model | animState = newAnimState }, animCmd )
 
         FadeMove ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate animateElement model.animState Mixed.fadeMove
+                    WAAPI.animate model.animState (WAAPI.forElement elementId >> Mixed.fadeMove)
             in
             ( { model | animState = newAnimState }, animCmd )
 
         SpinScaleColor ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate animateElement model.animState Mixed.spinScaleColor
+                    WAAPI.animate model.animState (WAAPI.forElement elementId >> Mixed.spinScaleColor)
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ColorSizeOpacity ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate animateElement model.animState Mixed.colorSizeOpacity
+                    WAAPI.animate model.animState (WAAPI.forElement elementId >> Mixed.colorSizeOpacity)
             in
             ( { model | animState = newAnimState }, animCmd )
 
         AllProperties ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate animateElement model.animState Mixed.allProperties
+                    WAAPI.animate model.animState (WAAPI.forElement elementId >> Mixed.allProperties)
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ResetAll ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate animateElement model.animState Mixed.resetAll
+                    WAAPI.animate model.animState (WAAPI.forElement elementId >> Mixed.resetAll)
             in
             ( { model | animState = newAnimState }, animCmd )
-
-        NoOp ->
-            ( model, Cmd.none )
 
 
 
@@ -177,8 +158,8 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    animationUpdates ReceiveAnimationUpdate
+subscriptions model =
+    WAAPI.subscriptions GotWaapiMsg model.animState
 
 
 
@@ -231,7 +212,7 @@ viewContent model =
          , htmlAttribute (Html.Attributes.style "position" "relative")
          , htmlAttribute (Html.Attributes.style "overflow" "visible")
          ]
-            ++ List.map htmlAttribute (WAAPI.perspectiveWith 1000)
+            ++ [ htmlAttribute (View3D.perspective 1000) ]
         )
         (mixedAnimationBox model)
     ]

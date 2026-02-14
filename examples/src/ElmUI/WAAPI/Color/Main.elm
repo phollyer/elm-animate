@@ -36,7 +36,10 @@ import Json.Encode as Encode
 -- PORTS
 
 
-port animateElement : Encode.Value -> Cmd msg
+port waapiCommand : Encode.Value -> Cmd msg
+
+
+port waapiEvent : (Decode.Value -> msg) -> Sub msg
 
 
 
@@ -58,7 +61,7 @@ main =
 
 
 type alias Model =
-    { animState : WAAPI.AnimState
+    { animState : WAAPI.AnimState Msg
     }
 
 
@@ -68,13 +71,12 @@ type alias Model =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    let
-        ( initialAnimState, initCmd ) =
-            WAAPI.animate animateElement WAAPI.init <|
-                \b -> b |> Color.init "box" (Anim.Extra.Color.fromRgba { r = 149, g = 165, b = 166, a = 1 })
-    in
-    ( { animState = initialAnimState }
-    , initCmd
+    ( { animState =
+            WAAPI.init waapiCommand waapiEvent
+                [ WAAPI.forElement "box" >> Color.init "box" (Anim.Extra.Color.fromRgba { r = 149, g = 165, b = 166, a = 1 })
+                ]
+      }
+    , Cmd.none
     )
 
 
@@ -85,7 +87,7 @@ type Msg
     | ChangeToRed
     | ChangeToPurple
     | ResetColor
-    | NoOp
+    | GotWaapiMsg WAAPI.AnimMsg
 
 
 
@@ -98,47 +100,51 @@ update msg model =
         ChangeToBlue ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate animateElement model.animState (Animations.changeToBlue "box")
+                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.changeToBlue "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ChangeToGreen ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate animateElement model.animState (Animations.changeToGreen "box")
+                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.changeToGreen "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ChangeToOrange ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate animateElement model.animState (Animations.changeToOrange "box")
+                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.changeToOrange "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ChangeToRed ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate animateElement model.animState (Animations.changeToRed "box")
+                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.changeToRed "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ChangeToPurple ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate animateElement model.animState (Animations.changeToPurple "box")
+                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.changeToPurple "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ResetColor ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate animateElement model.animState (Animations.resetColor "box")
+                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.resetColor "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
-        NoOp ->
-            ( model, Cmd.none )
+        GotWaapiMsg subMsg ->
+            let
+                ( newAnimState, _ ) =
+                    WAAPI.update subMsg model.animState
+            in
+            ( { model | animState = newAnimState }, Cmd.none )
 
 
 
@@ -147,7 +153,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    WAAPI.subscriptions GotWaapiMsg model.animState
 
 
 

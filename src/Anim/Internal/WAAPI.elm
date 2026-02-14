@@ -275,19 +275,6 @@ fireAndForgetWithOrder order portFunction buildAnimation =
 animate : AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
 animate (AnimState state) buildAnimation =
     let
-        -- DEBUG: Log current states that will be used as baselines
-        _ =
-            state.elementAnimations
-                |> Dict.toList
-                |> List.map
-                    (\( elId, anim ) ->
-                        ( elId
-                        , anim.currentStates.translate
-                            |> Maybe.map Translate.toTriple
-                        )
-                    )
-                |> Debug.log "[animate] Current states (baselines):"
-
         -- Inject current animated states as baselines, then apply user configuration
         configuredBuilder =
             state.builder
@@ -296,31 +283,6 @@ animate (AnimState state) buildAnimation =
 
         processedData =
             Builder.processAnimationData configuredBuilder
-
-        -- DEBUG: Log processed animation data (start/end)
-        _ =
-            processedData.elements
-                |> Dict.toList
-                |> List.map
-                    (\( elId, cfg ) ->
-                        cfg.properties
-                            |> List.filterMap
-                                (\prop ->
-                                    case prop of
-                                        Builder.ProcessedTranslateConfig tc ->
-                                            Just
-                                                ( elId
-                                                , { start = Maybe.map Translate.toTriple tc.start
-                                                  , end = Translate.toTriple tc.end
-                                                  }
-                                                )
-
-                                        _ ->
-                                            Nothing
-                                )
-                    )
-                |> List.concat
-                |> Debug.log "[animate] Processed translate (start->end):"
 
         -- Create element animations from processed data with property-level versioning
         newElementAnimations =
@@ -427,13 +389,12 @@ animate (AnimState state) buildAnimation =
                                 mergedProperties =
                                     Dict.union newAnim.properties existingAnim.properties
                             in
-                            Debug.log "Merging element animation" <|
-                                Dict.insert elementId
-                                    { currentStates = newAnim.currentStates
-                                    , properties = mergedProperties
-                                    , transformOrder = newAnim.transformOrder
-                                    }
-                                    acc
+                            Dict.insert elementId
+                                { currentStates = newAnim.currentStates
+                                , properties = mergedProperties
+                                , transformOrder = newAnim.transformOrder
+                                }
+                                acc
                 )
                 state.elementAnimations
                 newElementAnimations
@@ -822,14 +783,6 @@ updatePropertyUpdate jsonValue (AnimState state) =
     case Decode.decodeValue animationUpdateDecoder jsonValue of
         Ok animationUpdate ->
             let
-                -- DEBUG: Log received position update from JS
-                _ =
-                    Debug.log "[updatePropertyUpdate] Received from JS:"
-                        { elementId = animationUpdate.elementId
-                        , translate = ( animationUpdate.translateX, animationUpdate.translateY, animationUpdate.translateZ )
-                        , isAnimating = animationUpdate.isAnimating
-                        }
-
                 updatedAnimations =
                     Dict.update animationUpdate.elementId
                         (Maybe.map (updateElementAnimation animationUpdate))
@@ -1857,20 +1810,10 @@ encodeProcessedElementConfigWithVersions elementAnimations elementId config =
             Dict.get elementId elementAnimations
                 |> Maybe.map .properties
                 |> Maybe.withDefault Dict.empty
-                |> Debug.log "Element Properties with Versions"
-
-        targetField =
-            case config.targetElement of
-                Just target ->
-                    [ ( "targetElementId", Encode.string target ) ]
-
-                Nothing ->
-                    []
     in
     Encode.object
-        (( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties )
-            :: targetField
-        )
+        [ ( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties )
+        ]
 
 
 {-| Encode element config with versions and custom transform order.
@@ -1882,21 +1825,11 @@ encodeProcessedElementConfigWithVersionsAndOrder elementAnimations elementId con
             Dict.get elementId elementAnimations
                 |> Maybe.map .properties
                 |> Maybe.withDefault Dict.empty
-                |> Debug.log "Element Properties with Versions"
-
-        targetField =
-            case config.targetElement of
-                Just target ->
-                    [ ( "targetElementId", Encode.string target ) ]
-
-                Nothing ->
-                    []
     in
     Encode.object
-        (( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties )
-            :: ( "transformOrder", encodeTransformOrder transformOrder )
-            :: targetField
-        )
+        [ ( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties )
+        , ( "transformOrder", encodeTransformOrder transformOrder )
+        ]
 
 
 {-| Encode transform order as a JSON array of strings.
@@ -1920,19 +1853,9 @@ encodeTransformOrder order =
 
 encodeProcessedElementConfig : Builder.ProcessedElementConfig -> Encode.Value
 encodeProcessedElementConfig config =
-    let
-        targetField =
-            case config.targetElement of
-                Just target ->
-                    [ ( "targetElementId", Encode.string target ) ]
-
-                Nothing ->
-                    []
-    in
     Encode.object
-        (( "properties", Encode.list encodeProcessedPropertyConfig config.properties )
-            :: targetField
-        )
+        [ ( "properties", Encode.list encodeProcessedPropertyConfig config.properties )
+        ]
 
 
 {-| Encode element config with custom transform order.
@@ -1940,20 +1863,10 @@ Used by encodeWithOrder for fire-and-forget animations.
 -}
 encodeProcessedElementConfigWithOrder : Builder.ProcessedElementConfig -> List TransformOrder -> Encode.Value
 encodeProcessedElementConfigWithOrder config transformOrder =
-    let
-        targetField =
-            case config.targetElement of
-                Just target ->
-                    [ ( "targetElementId", Encode.string target ) ]
-
-                Nothing ->
-                    []
-    in
     Encode.object
-        (( "properties", Encode.list encodeProcessedPropertyConfig config.properties )
-            :: ( "transformOrder", encodeTransformOrder transformOrder )
-            :: targetField
-        )
+        [ ( "properties", Encode.list encodeProcessedPropertyConfig config.properties )
+        , ( "transformOrder", encodeTransformOrder transformOrder )
+        ]
 
 
 encodeProcessedPropertyConfigWithVersion : Dict String PropertyAnimation -> Builder.ProcessedPropertyConfig -> Encode.Value

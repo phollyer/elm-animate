@@ -6855,7 +6855,8 @@ var $author$project$Anim$Internal$Builder$processElement = F2(
 			properties: A2(
 				$elm$core$List$filterMap,
 				$author$project$Anim$Internal$Builder$processProperty(globalData),
-				elementConfig.properties)
+				elementConfig.properties),
+			targetElement: elementConfig.targetElement
 		};
 	});
 var $elm$core$String$concat = function (strings) {
@@ -7313,8 +7314,8 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix = F3(
 		} else {
 			var processed = A2(
 				$author$project$Anim$Internal$Builder$processElement,
-				{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil},
-				{properties: properties});
+				{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
+				{properties: properties, targetElement: $elm$core$Maybe$Nothing});
 			var processedProps = processed.properties;
 			var maxDuration = A2(
 				$elm$core$Maybe$withDefault,
@@ -7675,7 +7676,7 @@ var $author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix = F6(
 			]) : _List_Nil;
 		var processed = A2(
 			$author$project$Anim$Internal$Builder$processElement,
-			{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: discreteTransitions, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: iterationCount, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil},
+			{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: discreteTransitions, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: iterationCount, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
 			elementConfig);
 		var processedProps = processed.properties;
 		var transforms = function () {
@@ -7748,7 +7749,7 @@ var $author$project$Anim$Internal$Builder$getIterationCount = function (_v0) {
 	return data.iterationCount;
 };
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
-	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil});
+	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
 var $elm$core$Dict$map = F2(
 	function (func, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
@@ -7928,13 +7929,45 @@ var $author$project$Anim$Internal$Builder$getCurrentElementConfig = function (_v
 	var data = _v0.a;
 	var _v1 = data.currentElementId;
 	if (_v1.$ === 'Nothing') {
-		return {properties: _List_Nil};
+		return {properties: _List_Nil, targetElement: data.waapiTargetElement};
 	} else {
 		var elementId = _v1.a;
+		return function (config) {
+			return _Utils_update(
+				config,
+				{targetElement: data.waapiTargetElement});
+		}(
+			A2(
+				$elm$core$Maybe$withDefault,
+				{properties: _List_Nil, targetElement: data.waapiTargetElement},
+				A2($elm$core$Dict$get, elementId, data.elements)));
+	}
+};
+var $elm$core$List$member = F2(
+	function (x, xs) {
 		return A2(
-			$elm$core$Maybe$withDefault,
-			{properties: _List_Nil},
-			A2($elm$core$Dict$get, elementId, data.elements));
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
+var $author$project$Anim$Internal$Builder$propertyType = function (prop) {
+	switch (prop.$) {
+		case 'TranslateConfig':
+			return 'translate';
+		case 'RotateConfig':
+			return 'rotate';
+		case 'ScaleConfig':
+			return 'scale';
+		case 'BackgroundColorConfig':
+			return 'backgroundColor';
+		case 'FontColorConfig':
+			return 'fontColor';
+		case 'OpacityConfig':
+			return 'opacity';
+		default:
+			return 'size';
 	}
 };
 var $author$project$Anim$Internal$Builder$updateCurrentElement = F2(
@@ -7944,12 +7977,36 @@ var $author$project$Anim$Internal$Builder$updateCurrentElement = F2(
 		if (_v1.$ === 'Nothing') {
 			return $author$project$Anim$Internal$Builder$AnimBuilder(data);
 		} else {
-			var elementId = _v1.a;
+			var animKey = _v1.a;
+			var newPropertyTypes = A2($elm$core$List$map, $author$project$Anim$Internal$Builder$propertyType, config.properties);
+			var effectiveKey = A2($elm$core$Maybe$withDefault, animKey, data.waapiTargetElement);
+			var mergedConfig = function () {
+				var _v2 = A2($elm$core$Dict$get, effectiveKey, data.elements);
+				if (_v2.$ === 'Just') {
+					var existing = _v2.a;
+					var filteredExisting = A2(
+						$elm$core$List$filter,
+						function (p) {
+							return !A2(
+								$elm$core$List$member,
+								$author$project$Anim$Internal$Builder$propertyType(p),
+								newPropertyTypes);
+						},
+						existing.properties);
+					return _Utils_update(
+						existing,
+						{
+							properties: _Utils_ap(filteredExisting, config.properties)
+						});
+				} else {
+					return config;
+				}
+			}();
 			return $author$project$Anim$Internal$Builder$AnimBuilder(
 				_Utils_update(
 					data,
 					{
-						elements: A3($elm$core$Dict$insert, elementId, config, data.elements)
+						elements: A3($elm$core$Dict$insert, effectiveKey, mergedConfig, data.elements)
 					}));
 		}
 	});
@@ -8454,7 +8511,7 @@ var $author$project$Anim$Internal$Builders$Translate$toXY = F3(
 			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
 	});
 var $author$project$Anim$Property$Translate$initXY = F4(
-	function (elementId, x, y, animBuilder) {
+	function (animationKey, x, y, animBuilder) {
 		return $author$project$Anim$Internal$Builders$Translate$build(
 			A3(
 				$author$project$Anim$Internal$Builders$Translate$toXY,
@@ -8464,7 +8521,7 @@ var $author$project$Anim$Property$Translate$initXY = F4(
 					$author$project$Anim$Property$Translate$fromXY,
 					x,
 					y,
-					A2($author$project$Anim$Internal$Builders$Translate$for, elementId, animBuilder))));
+					A2($author$project$Anim$Internal$Builders$Translate$for, animationKey, animBuilder))));
 	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
@@ -9028,7 +9085,7 @@ var $author$project$Anim$Internal$CSS$generateStylesOnly = F2(
 	function (maybeOrder, elementConfig) {
 		var processed = A2(
 			$author$project$Anim$Internal$Builder$processElement,
-			{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil},
+			{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
 			elementConfig);
 		var processedProps = processed.properties;
 		var transforms = function () {
@@ -9167,7 +9224,7 @@ var $author$project$Anim$Internal$CSS$reset = F2(
 					}
 				},
 				elementConfig.properties);
-			var newElementConfig = {properties: properties};
+			var newElementConfig = {properties: properties, targetElement: $elm$core$Maybe$Nothing};
 			return $elm$core$List$isEmpty(properties) ? $author$project$Anim$Internal$CSS$AnimState(state) : A4(
 				$author$project$Anim$Internal$CSS$setStylesInstantly,
 				elementId,
@@ -9459,7 +9516,7 @@ var $author$project$Anim$Internal$CSS$stopAnimation = F2(
 					},
 					A2($author$project$Anim$Internal$CSS$getSizeRange, elementId, animState))
 				]));
-		var elementConfig = {properties: properties};
+		var elementConfig = {properties: properties, targetElement: $elm$core$Maybe$Nothing};
 		return $elm$core$List$isEmpty(properties) ? animState : A4($author$project$Anim$Internal$CSS$setStylesInstantly, elementId, $author$project$Anim$Internal$CSS$Complete, elementConfig, animState);
 	});
 var $author$project$Anim$Engine$CSS$Keyframes$stop = $author$project$Anim$Internal$CSS$stopAnimation;

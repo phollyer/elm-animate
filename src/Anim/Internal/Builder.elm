@@ -471,9 +471,62 @@ updateCurrentElement config (AnimBuilder data) =
         Nothing ->
             AnimBuilder data
 
-        Just elementId ->
+        Just animKey ->
+            let
+                -- WAAPI: key by target element ID. CSS/Sub: key by animation key
+                effectiveKey =
+                    data.waapiTargetElement
+                        |> Maybe.withDefault animKey
+
+                -- Get types of new properties to avoid duplicates
+                newPropertyTypes =
+                    List.map propertyType config.properties
+
+                -- Replace properties of same type (not just append) to avoid accumulation
+                mergedConfig =
+                    case Dict.get effectiveKey data.elements of
+                        Just existing ->
+                            let
+                                -- Filter out existing properties that would be replaced by new ones
+                                filteredExisting =
+                                    existing.properties
+                                        |> List.filter
+                                            (\p -> not (List.member (propertyType p) newPropertyTypes))
+                            in
+                            { existing | properties = filteredExisting ++ config.properties }
+
+                        Nothing ->
+                            config
+            in
             AnimBuilder
-                { data | elements = Dict.insert elementId config data.elements }
+                { data | elements = Dict.insert effectiveKey mergedConfig data.elements }
+
+
+{-| Get the type tag of a PropertyConfig for comparison.
+-}
+propertyType : PropertyConfig -> String
+propertyType prop =
+    case prop of
+        TranslateConfig _ ->
+            "translate"
+
+        RotateConfig _ ->
+            "rotate"
+
+        ScaleConfig _ ->
+            "scale"
+
+        BackgroundColorConfig _ ->
+            "backgroundColor"
+
+        FontColorConfig _ ->
+            "fontColor"
+
+        OpacityConfig _ ->
+            "opacity"
+
+        SizeConfig _ ->
+            "size"
 
 
 markDirty : AnimBuilder -> AnimBuilder

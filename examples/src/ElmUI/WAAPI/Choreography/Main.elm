@@ -80,13 +80,13 @@ type alias Model =
 init : { window : { width : Int, height : Int } } -> ( Model, Cmd Msg )
 init { window } =
     let
-        ( initialAnimState, initCmd ) =
-            WAAPI.animate animateElement WAAPI.init Choreography.init
+        ( initialAnimState ) =
+            WAAPI.init Choreography.init
     in
     ( { animState = initialAnimState
       , window = window
       }
-    , initCmd
+    , Cmd.none
     )
 
 

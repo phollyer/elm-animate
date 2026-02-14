@@ -6819,7 +6819,8 @@ var $author$project$Anim$Internal$Builder$processElement = F2(
 			properties: A2(
 				$elm$core$List$filterMap,
 				$author$project$Anim$Internal$Builder$processProperty(globalData),
-				elementConfig.properties)
+				elementConfig.properties),
+			targetElement: elementConfig.targetElement
 		};
 	});
 var $elm$core$String$concat = function (strings) {
@@ -7277,8 +7278,8 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix = F3(
 		} else {
 			var processed = A2(
 				$author$project$Anim$Internal$Builder$processElement,
-				{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil},
-				{properties: properties});
+				{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
+				{properties: properties, targetElement: $elm$core$Maybe$Nothing});
 			var processedProps = processed.properties;
 			var maxDuration = A2(
 				$elm$core$Maybe$withDefault,
@@ -7639,7 +7640,7 @@ var $author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix = F6(
 			]) : _List_Nil;
 		var processed = A2(
 			$author$project$Anim$Internal$Builder$processElement,
-			{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: discreteTransitions, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: iterationCount, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil},
+			{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: discreteTransitions, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: iterationCount, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
 			elementConfig);
 		var processedProps = processed.properties;
 		var transforms = function () {
@@ -7796,13 +7797,45 @@ var $author$project$Anim$Internal$Builder$getCurrentElementConfig = function (_v
 	var data = _v0.a;
 	var _v1 = data.currentElementId;
 	if (_v1.$ === 'Nothing') {
-		return {properties: _List_Nil};
+		return {properties: _List_Nil, targetElement: data.waapiTargetElement};
 	} else {
 		var elementId = _v1.a;
+		return function (config) {
+			return _Utils_update(
+				config,
+				{targetElement: data.waapiTargetElement});
+		}(
+			A2(
+				$elm$core$Maybe$withDefault,
+				{properties: _List_Nil, targetElement: data.waapiTargetElement},
+				A2($elm$core$Dict$get, elementId, data.elements)));
+	}
+};
+var $elm$core$List$member = F2(
+	function (x, xs) {
 		return A2(
-			$elm$core$Maybe$withDefault,
-			{properties: _List_Nil},
-			A2($elm$core$Dict$get, elementId, data.elements));
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
+var $author$project$Anim$Internal$Builder$propertyType = function (prop) {
+	switch (prop.$) {
+		case 'TranslateConfig':
+			return 'translate';
+		case 'RotateConfig':
+			return 'rotate';
+		case 'ScaleConfig':
+			return 'scale';
+		case 'BackgroundColorConfig':
+			return 'backgroundColor';
+		case 'FontColorConfig':
+			return 'fontColor';
+		case 'OpacityConfig':
+			return 'opacity';
+		default:
+			return 'size';
 	}
 };
 var $author$project$Anim$Internal$Builder$updateCurrentElement = F2(
@@ -7812,12 +7845,36 @@ var $author$project$Anim$Internal$Builder$updateCurrentElement = F2(
 		if (_v1.$ === 'Nothing') {
 			return $author$project$Anim$Internal$Builder$AnimBuilder(data);
 		} else {
-			var elementId = _v1.a;
+			var animKey = _v1.a;
+			var newPropertyTypes = A2($elm$core$List$map, $author$project$Anim$Internal$Builder$propertyType, config.properties);
+			var effectiveKey = A2($elm$core$Maybe$withDefault, animKey, data.waapiTargetElement);
+			var mergedConfig = function () {
+				var _v2 = A2($elm$core$Dict$get, effectiveKey, data.elements);
+				if (_v2.$ === 'Just') {
+					var existing = _v2.a;
+					var filteredExisting = A2(
+						$elm$core$List$filter,
+						function (p) {
+							return !A2(
+								$elm$core$List$member,
+								$author$project$Anim$Internal$Builder$propertyType(p),
+								newPropertyTypes);
+						},
+						existing.properties);
+					return _Utils_update(
+						existing,
+						{
+							properties: _Utils_ap(filteredExisting, config.properties)
+						});
+				} else {
+					return config;
+				}
+			}();
 			return $author$project$Anim$Internal$Builder$AnimBuilder(
 				_Utils_update(
 					data,
 					{
-						elements: A3($elm$core$Dict$insert, elementId, config, data.elements)
+						elements: A3($elm$core$Dict$insert, effectiveKey, mergedConfig, data.elements)
 					}));
 		}
 	});
@@ -8311,7 +8368,7 @@ var $author$project$Engines$Keyframes$BasicUsage$Main$fadeIn = A2(
 			$author$project$Anim$Property$Opacity$duration(5000),
 			$author$project$Anim$Property$Opacity$build)));
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
-	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil});
+	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
 var $author$project$Anim$Internal$Builder$markPropertyDirty = function (property) {
 	switch (property.$) {
 		case 'TranslateConfig':
@@ -8430,7 +8487,7 @@ var $author$project$Anim$Internal$Builders$Opacity$from = F2(
 			builder);
 	});
 var $author$project$Anim$Property$Opacity$init = F3(
-	function (elementId, value, animBuilder) {
+	function (animationKey, value, animBuilder) {
 		return $author$project$Anim$Internal$Builders$Opacity$build(
 			A2(
 				$author$project$Anim$Internal$Builders$Opacity$to,
@@ -8438,7 +8495,7 @@ var $author$project$Anim$Property$Opacity$init = F3(
 				A2(
 					$author$project$Anim$Internal$Builders$Opacity$from,
 					$author$project$Anim$Internal$Properties$Opacity$fromFloat(value),
-					A2($author$project$Anim$Internal$Builders$Opacity$for, elementId, animBuilder))));
+					A2($author$project$Anim$Internal$Builders$Opacity$for, animationKey, animBuilder))));
 	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);

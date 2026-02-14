@@ -6549,7 +6549,7 @@ var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $author$project$Anim$Internal$Builder$Once = {$: 'Once'};
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
-	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil});
+	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
 		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
@@ -7036,7 +7036,8 @@ var $author$project$Anim$Internal$Builder$processElement = F2(
 			properties: A2(
 				$elm$core$List$filterMap,
 				$author$project$Anim$Internal$Builder$processProperty(globalData),
-				elementConfig.properties)
+				elementConfig.properties),
+			targetElement: elementConfig.targetElement
 		};
 	});
 var $author$project$Anim$Internal$Builder$processAnimationData = function (_v0) {
@@ -7152,15 +7153,31 @@ var $author$project$Anim$Internal$Builder$getCurrentElementConfig = function (_v
 	var data = _v0.a;
 	var _v1 = data.currentElementId;
 	if (_v1.$ === 'Nothing') {
-		return {properties: _List_Nil};
+		return {properties: _List_Nil, targetElement: data.waapiTargetElement};
 	} else {
 		var elementId = _v1.a;
-		return A2(
-			$elm$core$Maybe$withDefault,
-			{properties: _List_Nil},
-			A2($elm$core$Dict$get, elementId, data.elements));
+		return function (config) {
+			return _Utils_update(
+				config,
+				{targetElement: data.waapiTargetElement});
+		}(
+			A2(
+				$elm$core$Maybe$withDefault,
+				{properties: _List_Nil, targetElement: data.waapiTargetElement},
+				A2($elm$core$Dict$get, elementId, data.elements)));
 	}
 };
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
 var $elm$core$Dict$Black = {$: 'Black'};
 var $elm$core$Dict$Red = {$: 'Red'};
 var $elm$core$Dict$balance = F5(
@@ -7265,6 +7282,55 @@ var $elm$core$Dict$insert = F3(
 			return x;
 		}
 	});
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
+var $elm$core$Basics$not = _Basics_not;
+var $author$project$Anim$Internal$Builder$propertyType = function (prop) {
+	switch (prop.$) {
+		case 'TranslateConfig':
+			return 'translate';
+		case 'RotateConfig':
+			return 'rotate';
+		case 'ScaleConfig':
+			return 'scale';
+		case 'BackgroundColorConfig':
+			return 'backgroundColor';
+		case 'FontColorConfig':
+			return 'fontColor';
+		case 'OpacityConfig':
+			return 'opacity';
+		default:
+			return 'size';
+	}
+};
 var $author$project$Anim$Internal$Builder$updateCurrentElement = F2(
 	function (config, _v0) {
 		var data = _v0.a;
@@ -7272,12 +7338,36 @@ var $author$project$Anim$Internal$Builder$updateCurrentElement = F2(
 		if (_v1.$ === 'Nothing') {
 			return $author$project$Anim$Internal$Builder$AnimBuilder(data);
 		} else {
-			var elementId = _v1.a;
+			var animKey = _v1.a;
+			var newPropertyTypes = A2($elm$core$List$map, $author$project$Anim$Internal$Builder$propertyType, config.properties);
+			var effectiveKey = A2($elm$core$Maybe$withDefault, animKey, data.waapiTargetElement);
+			var mergedConfig = function () {
+				var _v2 = A2($elm$core$Dict$get, effectiveKey, data.elements);
+				if (_v2.$ === 'Just') {
+					var existing = _v2.a;
+					var filteredExisting = A2(
+						$elm$core$List$filter,
+						function (p) {
+							return !A2(
+								$elm$core$List$member,
+								$author$project$Anim$Internal$Builder$propertyType(p),
+								newPropertyTypes);
+						},
+						existing.properties);
+					return _Utils_update(
+						existing,
+						{
+							properties: _Utils_ap(filteredExisting, config.properties)
+						});
+				} else {
+					return config;
+				}
+			}();
 			return $author$project$Anim$Internal$Builder$AnimBuilder(
 				_Utils_update(
 					data,
 					{
-						elements: A3($elm$core$Dict$insert, elementId, config, data.elements)
+						elements: A3($elm$core$Dict$insert, effectiveKey, mergedConfig, data.elements)
 					}));
 		}
 	});
@@ -7479,17 +7569,6 @@ var $author$project$Anim$Internal$Builders$Property$configsMatch = F2(
 		}
 		return false;
 	});
-var $elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
-	});
 var $elm$core$List$head = function (list) {
 	if (list.b) {
 		var x = list.a;
@@ -7505,7 +7584,6 @@ var $author$project$Anim$Internal$Builders$Property$find = F2(
 		return $elm$core$List$head(
 			A2($elm$core$List$filter, predicate, currentElement.properties));
 	});
-var $elm$core$Basics$not = _Basics_not;
 var $author$project$Anim$Internal$Builders$Property$replace = F2(
 	function (propertyConfig, builder) {
 		var currentElement = $author$project$Anim$Internal$Builder$getCurrentElementConfig(builder);
@@ -7822,7 +7900,7 @@ var $author$project$Anim$Internal$Builders$Translate$toX = F2(
 			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
 	});
 var $author$project$Anim$Property$Translate$initX = F3(
-	function (elementId, x, animBuilder) {
+	function (animationKey, x, animBuilder) {
 		return $author$project$Anim$Internal$Builders$Translate$build(
 			A2(
 				$author$project$Anim$Internal$Builders$Translate$toX,
@@ -7830,7 +7908,7 @@ var $author$project$Anim$Property$Translate$initX = F3(
 				A2(
 					$author$project$Anim$Property$Translate$fromX,
 					x,
-					A2($author$project$Anim$Internal$Builders$Translate$for, elementId, animBuilder))));
+					A2($author$project$Anim$Internal$Builders$Translate$for, animationKey, animBuilder))));
 	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
@@ -8623,27 +8701,6 @@ var $author$project$Anim$Engine$Sub$toAnimEvent = function (event) {
 				$author$project$Anim$Engine$Sub$Restarted(elementId));
 	}
 };
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
 var $author$project$Anim$Internal$Sub$Completed = function (a) {
 	return {$: 'Completed', a: a};
 };

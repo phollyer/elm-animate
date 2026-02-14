@@ -57,7 +57,7 @@ init : ( Model, Cmd Msg )
 init =
     ( { animState =
             WAAPI.init waapiCommand waapiEvent <|
-                [ Opacity.init elementId 0 ]
+                [ WAAPI.forElement elementId >> Opacity.init elementId 0 ]
       }
     , Process.sleep 50 |> Task.perform (always StartAnimation)
     )
@@ -69,7 +69,8 @@ init =
 
 fadeIn : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 fadeIn =
-    Opacity.for elementId
+    WAAPI.forElement elementId
+        >> Opacity.for elementId
         >> Opacity.to 1
         >> Opacity.duration 5000
         >> Opacity.build

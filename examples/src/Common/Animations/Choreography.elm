@@ -27,7 +27,7 @@ FORMATIONS:
 -}
 
 import Anim.Extra.Easing as Easing
-import Anim.Internal.Builder exposing (AnimBuilder)
+import Anim.Builder as Builder exposing (AnimBuilder)
 import Anim.Property.Translate as Translate
 
 
@@ -93,12 +93,14 @@ elements coordinates =
 
 
 {-| Build the animation for multiple elements based on a list of (elementId, (x, y)) tuples.
+For WAAPI engine, each element needs forElement called before its animation.
 -}
 buildAnimation : List ( String, ( Float, Float ) ) -> AnimBuilder -> AnimBuilder
 buildAnimation elementsList builder =
     List.foldl
         (\( elementId, ( x, y ) ) builder_ ->
             builder_
+                |> Builder.setWaapiTargetElement elementId
                 |> Translate.for elementId
                 |> Translate.toXY x y
                 |> Translate.build
@@ -109,13 +111,13 @@ buildAnimation elementsList builder =
 
 {-| Set up the initial state for all elements before applying formations.
 -}
-init : AnimBuilder -> AnimBuilder
-init builder =
+init : List (AnimBuilder -> AnimBuilder)
+init =
     List.foldl
         (\( elementId, ( x, y ) ) builder_ ->
-            Translate.initXY elementId x y builder_
+            Translate.initXY elementId x y :: builder_
         )
-        builder
+        []
         (elements initialCoords)
 
 

@@ -347,10 +347,10 @@ delay =
 
 {-| Set the target DOM element for subsequent animations.
 
-This allows you to define reusable animation functions with semantic animation keys,
+This allows you to define reusable animation functions with meaningful names,
 then target specific DOM elements when building the animation:
 
-    -- Define reusable animations
+    -- Define reusable animations (keys can be any string)
     fadeIn : AnimBuilder -> AnimBuilder
     fadeIn =
         Opacity.for "fadeIn" >> Opacity.from 0 >> Opacity.to 1 >> Opacity.build
@@ -367,6 +367,17 @@ then target specific DOM elements when building the animation:
             >> WAAPI.forElement "card-2"
             >> fadeIn
         )
+
+All animations are grouped by element ID. In this example:
+
+  - `"card-1"` receives both fadeIn and slideIn properties
+  - `"card-2"` receives fadeIn properties
+
+State queries and control use the element ID:
+
+    WAAPI.isRunning "card-1" model.animState
+
+    WAAPI.pause "card-1" model.animState
 
 The target element remains active until the next `forElement` call, so multiple
 animations can be applied to the same element in sequence.
