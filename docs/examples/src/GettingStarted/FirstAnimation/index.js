@@ -5193,6 +5193,7 @@ var $author$project$GettingStarted$FirstAnimation$Main$update = F2(
 	});
 var $author$project$GettingStarted$FirstAnimation$Main$TriggerFadeIn = {$: 'TriggerFadeIn'};
 var $author$project$GettingStarted$FirstAnimation$Main$TriggerFadeOut = {$: 'TriggerFadeOut'};
+var $author$project$GettingStarted$FirstAnimation$Main$animGroup = 'boxAnim';
 var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -6081,7 +6082,7 @@ var $author$project$GettingStarted$FirstAnimation$Main$fade = F2(
 	function (from, to) {
 		return A2(
 			$elm$core$Basics$composeR,
-			$author$project$Anim$Property$Opacity$for('my-box'),
+			$author$project$Anim$Property$Opacity$for($author$project$GettingStarted$FirstAnimation$Main$animGroup),
 			A2(
 				$elm$core$Basics$composeR,
 				$author$project$Anim$Property$Opacity$from(from),
@@ -8618,7 +8619,7 @@ var $author$project$GettingStarted$FirstAnimation$Main$view = function (model) {
 				return $author$project$Anim$Engine$CSS$Transitions$init(
 					_List_fromArray(
 						[
-							A2($author$project$Anim$Property$Opacity$init, 'my-box', 0)
+							A2($author$project$Anim$Property$Opacity$init, $author$project$GettingStarted$FirstAnimation$Main$animGroup, 0)
 						]));
 			case 'FadeIn':
 				return $author$project$Anim$Engine$CSS$Transitions$fireAndForget($author$project$GettingStarted$FirstAnimation$Main$fadeIn);
@@ -8654,7 +8655,7 @@ var $author$project$GettingStarted$FirstAnimation$Main$view = function (model) {
 				A2(
 				$elm$html$Html$div,
 				_Utils_ap(
-					A2($author$project$Anim$Engine$CSS$Transitions$attributes, 'my-box', animState),
+					A2($author$project$Anim$Engine$CSS$Transitions$attributes, $author$project$GettingStarted$FirstAnimation$Main$animGroup, animState),
 					_List_fromArray(
 						[
 							A2($elm$html$Html$Attributes$style, 'width', '100px'),

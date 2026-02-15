@@ -20,8 +20,11 @@ fadeIn =
 
 -- Use with any engine
 Transitions.animate model.animState fadeIn
+
 Keyframes.animate model.animState fadeIn
+
 Sub.animate model.animState fadeIn
+
 WAAPI.animate model.animState <|
     WAAPI.forElement "my-element-id" >> fadeIn
 ```

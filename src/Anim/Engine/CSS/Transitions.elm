@@ -407,7 +407,7 @@ startingStyleNodeFor =
 {-| Get the transition and transform attributes to apply to the target element.
 
     div
-        (Transitions.attributes "elementId" animState)
+        (Transitions.attributes "animGroupName" animState)
         [ text "Animating element" ]
 
 -}
@@ -426,8 +426,8 @@ attributes =
         = TransitionMsg Transitions.AnimEvent
 
     div
-        (Transitions.attributes "elementId" animState
-            ++ Transitions.events "elementId" TransitionMsg
+        (Transitions.attributes "animGroupName" animState
+            ++ Transitions.events "animGroupName" TransitionMsg
         )
         [ text "Animating element" ]
 

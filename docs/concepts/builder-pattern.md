@@ -1,6 +1,6 @@
 # Builder Pattern
 
-Elm Animate uses a fluent builder pattern for defining animations. This approach provides a consistent, composable API across all engines and properties that reads naturally and is easy to reason about — you can see at a glance what an animation does, which element it targets, and how it behaves.
+Elm Animate uses a fluent builder pattern for defining animations. This approach provides a consistent, composable API across all engines and properties that reads naturally and is easy to reason about — you can see at a glance what an animation does and how it behaves.
 
 ## Basic Structure
 
@@ -12,7 +12,7 @@ Every animation follows this pattern:
     ```elm
     animationFunction : AnimBuilder -> AnimBuilder
     animationFunction =
-        Property.for "element-id"           -- Target element (required)
+        Property.for animGroup             -- Animation group name (required)
             >> Property.from startValue     
             >> Property.to endValue         
             >> Property.delay 100           -- ms
@@ -23,6 +23,8 @@ Every animation follows this pattern:
 
     `for` and `build` are required to start and end the builder chain respectively. All other configurations are optional, although without a `to` value the animations won't have anywhere to go!!
 
+    All animation configurations are grouped by `animGroup` in the Engine, enabling easy attachment to your elements. All animations with the same group name will run on the same element when you attach the group to the element.
+
 ## Why Builders?
 
 The `AnimBuilder -> AnimBuilder` type signature enables function composition with `>>`. Small, focused animations combine into larger ones:
@@ -32,14 +34,14 @@ The `AnimBuilder -> AnimBuilder` type signature enables function composition wit
     ```elm
     fadeIn : AnimBuilder -> AnimBuilder
     fadeIn =
-        Opacity.for "box"
+        Opacity.for animGroup
             >> Opacity.from 0
             >> Opacity.to 1
             >> Opacity.build
 
     slideUp : AnimBuilder -> AnimBuilder
     slideUp =
-        Translate.for "box"
+        Translate.for animGroup
             >> Translate.fromY 50
             >> Translate.toY 0
             >> Translate.build
@@ -52,48 +54,52 @@ The `AnimBuilder -> AnimBuilder` type signature enables function composition wit
 
 Because all engines accept `AnimBuilder -> AnimBuilder`, the same animation works with any engine — start simple with CSS Transitions and migrate to WAAPI later without rewriting your animations.
 
-## Multiple Elements
+## Multiple Animations
 
-Animate multiple elements in a single animation:
+Create multiple animations in a single pipeline:
 
 ??? example "Show Source Code"
 
     ```elm
     multiElementAnimation : AnimBuilder -> AnimBuilder
     multiElementAnimation =
-        -- First element
-        Translate.for "box-1"
+        -- First animation
+        Translate.for "animGroup1"
             >> Translate.toX 100
             >> Translate.build
-            -- Second element
-            >> Translate.for "box-2"
+            -- Second animation
+            >> Translate.for "animGroup2"
             >> Translate.toX 200
             >> Translate.build
-            -- Third element
-            >> Translate.for "box-3"
+            -- Third animation
+            >> Translate.for "animGroup3"
             >> Translate.toX 300
             >> Translate.build
     ```
 
+    You can add an animation group to as many elements as you choose, or dynamically change the animation group on your element. Elm Animate provides the tools, how you use them is up to you.
+
 ## Multiple Properties
 
-Animate multiple properties on the same element:
+Animate multiple properties at the same time:
 
 ??? example "Show Source Code"
 
     ```elm
     complexAnimation : AnimBuilder -> AnimBuilder
     complexAnimation =
-        Translate.for "box"
+        Translate.for "boxAnim"
             >> Translate.toXY 100 200
             >> Translate.build
-            >> Rotate.for "box"
+            >> Rotate.for "boxAnim"
             >> Rotate.to 45
             >> Rotate.build
-            >> Scale.for "box"
+            >> Scale.for "boxAnim"
             >> Scale.to 1.5
             >> Scale.build
     ```
+
+    Give different property animations the same animation group name and they will animate together on the same element.
 
 ## Duration vs Speed
 
@@ -141,10 +147,10 @@ You can specify timing with either `duration` (fixed time) or `speed` (distance-
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
         withStandardTiming
-            >> Translate.for "box"
+            >> Translate.for "boxAnim"
             >> Translate.toX 100
             >> Translate.build
-            >> Opacity.for "box"
+            >> Opacity.for "boxAnim"
             >> Opacity.to 1
             >> Opacity.build
     ```

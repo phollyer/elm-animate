@@ -8,8 +8,8 @@ Elm Animate provides multiple animation engines, each optimized for different us
 | ------- | ----------- | --------- | --- | ----- |
 | **Rendering** |
 | Browser-native rendering | ✓ | ✓ | | ✓ |
-| No JavaScript required | ✓ | ✓ | ✓ | |
 | Hardware acceleration | ✓ | ✓ | ✓ | ✓ |
+| JavaScript required | | | | ✓ |
 | **Animation Control** |
 | Stop | ✓ | ✓ | ✓ | ✓ |
 | Reset | ✓ | ✓ | ✓ | ✓ |
@@ -17,10 +17,10 @@ Elm Animate provides multiple animation engines, each optimized for different us
 | Pause/Resume | | ✓ | ✓ | ✓ |
 | **Playback** |
 | Looping/Iterations | | ✓ | | ✓ |
-| Event callbacks | | | | ✓ |
+| Event callbacks | ✓ | ✓ | ✓ | ✓ |
 | **Mid-Flight Access** |
 | Query current values | | | ✓ | ✓ |
-| Dynamic redirects | | | ✓ | ✓ |
+| Dynamic redirects | ✓ | | ✓ | ✓ |
 | **Properties** |
 | Custom transform order | ✓ | ✓ | ✓ | ✓ |
 | 3D transforms | ✓ | ✓ | ✓ | ✓ |
@@ -35,7 +35,7 @@ Because all engines share the same builder API, animations are portable:
     -- This animation works with any engine
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
-        Translate.for "box"
+        Translate.for animGroup
             >> Translate.toXY 100 200
             >> Translate.duration 500
             >> Translate.build
@@ -50,7 +50,9 @@ Because all engines share the same builder API, animations are portable:
     Sub.animate model.animState myAnimation
 
     -- Use with WAAPI
-    WAAPI.animate model.animState myAnimation
+    WAAPI.animate model.animState <|
+        WAAPI.forElement "elementId"
+            >> myAnimation
     ```
 
 This makes it easy to start simple with the one of the CSS Engines and migrate to Sub or WAAPI as your requirements grow.

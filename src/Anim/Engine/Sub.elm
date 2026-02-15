@@ -761,7 +761,7 @@ getCurrentSize elementId animState =
 {-| Get all the HTML attributes needed for the CSS animations on the target element.
 
     div
-        (Sub.attributes "elementId" animState)
+        (Sub.attributes "animGroupName" animState)
         [ text "Animating element" ]
 
 -}

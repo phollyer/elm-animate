@@ -60,9 +60,13 @@ The real power comes from composing multiple animations. Since each animation is
     import Anim.Property.Opacity as Opacity
     import Anim.Property.Translate as Translate
 
+    animGroup : String
+    animGroup = 
+        "animGroup"
+
     fadeIn : AnimBuilder -> AnimBuilder
     fadeIn =
-        Opacity.for "my-box"
+        Opacity.for animGroup
             >> Opacity.from 0
             >> Opacity.to 1
             >> Opacity.duration 500
@@ -71,7 +75,7 @@ The real power comes from composing multiple animations. Since each animation is
 
     slideIn : AnimBuilder -> AnimBuilder
     slideIn =
-        Translate.for "my-box"
+        Translate.for animGroup
             >> Translate.fromX -50
             >> Translate.toX 0
             >> Translate.duration 500
@@ -83,7 +87,7 @@ The real power comes from composing multiple animations. Since each animation is
         fadeIn >> slideIn
     ```
 
-Both animations run simultaneously on the same `my-box` element!
+Both animations run simultaneously on the same element because they are both part of the same `animGroup`!
 
 ## Next Steps
 

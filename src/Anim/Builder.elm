@@ -34,19 +34,21 @@ across all engines:
 These functions can then be used with any engine:
 
     -- With CSS Engines
-    Anim.Engine.CSS.Transitions.animate animState moveRight
+    CSS.Transitions.animate animState moveRight
 
-    Anim.Engine.CSS.Transitions.fireAndForget moveRight
+    CSS.Transitions.fireAndForget moveRight
 
-    Anim.Engine.CSS.Keyframes.animate animState moveRight
+    CSS.Keyframes.animate animState moveRight
 
-    Anim.Engine.CSS.Keyframes.fireAndForget moveRight
+    CSS.Keyframes.fireAndForget moveRight
 
     -- With Sub Engine
-    Anim.Engine.Sub.animate animState moveRight
+    Sub.animate animState moveRight
 
     -- With WAAPI Engine
-    Anim.Engine.WAAPI.animate animState moveRight
+    WAAPI.animate animState <|
+        WAAPI.forElemnt "element-id"
+            >> WAAPI.moveRight
 
 -}
 type alias AnimBuilder =

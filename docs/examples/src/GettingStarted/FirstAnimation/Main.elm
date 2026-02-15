@@ -68,6 +68,21 @@ update msg model =
 -- --8<-- [start:fadeIn]
 
 
+animGroup : String
+animGroup =
+    "boxAnim"
+
+
+fade : Float -> Float -> AnimBuilder -> AnimBuilder
+fade from to =
+    Opacity.for animGroup
+        >> Opacity.from from
+        >> Opacity.to to
+        >> Opacity.duration 2500
+        >> Opacity.easing CubicInOut
+        >> Opacity.build
+
+
 fadeIn : AnimBuilder -> AnimBuilder
 fadeIn =
     fade 0 1
@@ -76,16 +91,6 @@ fadeIn =
 fadeOut : AnimBuilder -> AnimBuilder
 fadeOut =
     fade 1 0
-
-
-fade : Float -> Float -> AnimBuilder -> AnimBuilder
-fade from to =
-    Opacity.for "my-box"
-        >> Opacity.from from
-        >> Opacity.to to
-        >> Opacity.duration 2500
-        >> Opacity.easing CubicInOut
-        >> Opacity.build
 
 
 
@@ -101,7 +106,7 @@ view model =
             case model.state of
                 Ready ->
                     Transitions.init
-                        [ Opacity.init "my-box" 0 ]
+                        [ Opacity.init animGroup 0 ]
 
                 FadeIn ->
                     Transitions.fireAndForget fadeIn
@@ -116,7 +121,7 @@ view model =
         , button [ onClick TriggerFadeOut ] [ text "Fade Out" ]
         , -- --8<-- [start:applyStyles]
           div
-            (Transitions.attributes "my-box" animState
+            (Transitions.attributes animGroup animState
                 ++ [ style "width" "100px"
                    , style "height" "100px"
                    , style "background-color" "blue"

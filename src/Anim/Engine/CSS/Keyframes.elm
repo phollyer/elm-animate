@@ -54,7 +54,7 @@ Keyframe animations require both styles on the element AND a `<style>` node in t
         div []
             [ Keyframes.styleNode model.animState
             , div
-                (Keyframes.attributes "elementId" model.animState)
+                (Keyframes.attributes "animGroupName" model.animState)
                 [ text "Animating element" ]
             ]
 
@@ -392,7 +392,7 @@ loopForever =
 {-| Get all attributes for keyframe-based animations.
 
     div
-        (Keyframes.attributes "elementId" animState)
+        (Keyframes.attributes "animGroupName" animState)
         [ text "Animating element" ]
 
 -}
@@ -421,7 +421,7 @@ styleNode =
 
     view model =
         div []
-            [ Keyframes.styleNodeFor "elementId" animState
+            [ Keyframes.styleNodeFor "animGroupName" animState
             , ...
             ]
 
@@ -454,8 +454,8 @@ getElementKeyframes =
         = KeyframeMsg Keyframes.AnimEvent
 
     div
-        (Keyframes.attributes "elementId" animState
-            ++ Keyframes.events "elementId" KeyframeMsg
+        (Keyframes.attributes "animGroupName" animState
+            ++ Keyframes.events "animGroupName" KeyframeMsg
         )
         [ text "Animating element" ]
 
