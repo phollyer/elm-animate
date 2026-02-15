@@ -165,6 +165,15 @@ moveToWithOptions { defaultConfig | speed = 500, axis = Both } "element-id" 0 0 
 - **Dashboard protection**: The dashboard files are critical infrastructure - never overwrite them
 - **When in doubt**: Use the build script rather than manual elm make commands
 
+## Language and Style Guidelines
+- Follow Elm best practices for code style and organization
+- Use descriptive names for functions and variables
+- Write clear documentation comments for all public functions
+- Use consistent formatting and indentation
+- Prefer composition and point-free style
+- Avoid unnecessary complexity and prefer readability
+- Hyphen between words in sentences must always have a space before and after it. Never use hyphens without spaces in sentences. For example, "This is a hyphen - used correctly." is correct, while "This is a hyphen-used incorrectly." is incorrect.
+
 ## Current Project Structure
 ```
 src/

@@ -63,6 +63,7 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Philosophy: philosophy.md
   - Getting Started:
     - Installation: getting-started/installation.md
     - Your First Animation: getting-started/first-animation.md

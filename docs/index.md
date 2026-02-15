@@ -20,11 +20,11 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 | [WAAPI](engines/waapi.md) | Browser-native performance, looping, full control, real-time mid-flight queries/diversions |
 | [Scroll](engines/scroll.md) | Smooth scrolling to elements or positions |
 
-## 📖 Getting Started
+## Next Steps
 
-Ready to add Elm Animate to your Elm app?
+Learn why Elm Animate exists and what it's trying to solve.
 
-[Get Started →](getting-started/installation.md){ .md-button .md-button--primary }
+[Philosophy →](philosophy.md){ .md-button .md-button--primary }
 
 ## 📚 API Reference
 

@@ -6,7 +6,7 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 **One animation API. Multiple rendering engines.**
 
-Define your animations once using a composable builder pattern, then run them with any engine — CSS transitions, CSS keyframes, subscriptions, or the Web Animations API. Switch engines without rewriting your animations.
+You've learned an Elm package for CSS transitions. Now the team wants the Web Animations API. Another package, another API, another mental model. Elm Animate solves this — define your animations once, run them with any engine.
 
 ```elm
 -- Define once
@@ -42,9 +42,9 @@ WAAPI.animate model.animState <|
 ## 🚦 Engines at a Glance
 
 - **CSS Transitions** — Simple state-to-state animations, minimal setup
-- **CSS Keyframes** — Multi-step sequences with looping support
-- **Sub** — Query mid-flight values, dynamically redirect animations
-- **WAAPI** — Browser-native with playback control (pause/resume/reverse)
+- **CSS Keyframes** — Looping support, pause/resume, DevTools visibility
+- **Sub** — Pure Elm, query current values, react mid-flight
+- **WAAPI** — Browser-native via JS, query values, pause/resume
 - **Scroll** — Smooth document and container scrolling
 
 ---
