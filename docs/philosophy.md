@@ -14,14 +14,14 @@ There are CSS transitions, CSS keyframes, subscription-based animations, the Web
 
 Each different animation approach comes with its own learning curve and complexities, as does each different Elm package - and because each Elm package only targets one approach:
 
-    changing approaches 
-        = new Elm package
-        = new API
-        = new mental model
+    changing approaches =
+        new ElmPackage
+            >> new API
+            >> new MentalModel
 
 Imagine you've learned and are using an Elm package for CSS transitions. It's working well. Then further down the line, your team decides to start using the Web Animations API too for better performance and playback control.
 
-Now you have another animation approach to learn. Another Elm package to learn. A different API. A different way of thinking about animations.
+Now you have another animation approach to learn about. Another Elm package to learn. A different API. A different way of thinking about animations.
 
 **Two different mental models for essentially the same thing - an animation.**
 
