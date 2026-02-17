@@ -48,5 +48,5 @@ Scroll within a specific scrollable container:
 
 Now that you've learned a bit about each of the engines, we'll take a look at how to control them.
 
-[Transitions Controls →](../controlling-animations/transitions.md){ .md-button .md-button--primary }
+[Controlling Animations →](../controlling-animations.md){ .md-button .md-button--primary }
 

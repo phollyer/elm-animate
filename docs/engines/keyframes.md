@@ -290,7 +290,7 @@ Fully supports 3D animations. See [3D Animations](../concepts/3d.md) for more in
 
 ## Controlling Animations
 
-For details on `stop`, `reset`, `restart`, `pause`, and `resume` controls, see [Controlling CSS Keyframe Animations](../concepts/controlling-animations/keyframes.md).
+For details on `stop`, `reset`, `restart`, `pause`, and `resume` controls, see [Controlling Animations](../concepts/controlling-animations.md).
 
 ## Querying Animation State
 

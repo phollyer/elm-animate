@@ -314,7 +314,7 @@ Fully supports 3D animations. See [3D Animations](../concepts/3d.md) for more in
 
 ## Controlling Animations
 
-For details on `stop` and `reset` controls, see [Controlling CSS Transitions](../concepts/controlling-animations/transitions.md).
+For details on `stop` and `reset` controls, see [Controlling Animations](../concepts/controlling-animations.md).
 
 ## Querying Animation State
 
