@@ -67,11 +67,14 @@ nav:
   - Getting Started:
     - Installation: getting-started/installation.md
     - Your First Animation: getting-started/first-animation.md
+  - Animation Workflow:
+    - 1. Build: animation-workflow/build.md
+    - 2. Trigger: animation-workflow/trigger.md
+    - 3. Apply: animation-workflow/apply.md
   - Concepts:
     - Engines:
       - Animation: concepts/engines/animation-engines.md
       - Scrolling: concepts/engines/scroll-engine.md
-    - Builder Pattern: concepts/builder-pattern.md
     - Controlling Animations: 
       - Transitions Engine: concepts/controlling-animations/transitions.md
       - Keyframes Engine: concepts/controlling-animations/keyframes.md

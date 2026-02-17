@@ -46,7 +46,7 @@ Scroll within a specific scrollable container:
 
 ## Next Steps
 
-Now that you've learned a bit about each of the engines, we'll look at the builder pattern used for all animations.
+Now that you've learned a bit about each of the engines, we'll take a look at how to control them.
 
-[Builder Pattern →](../builder-pattern.md){ .md-button .md-button--primary }
+[Transitions Controls →](../controlling-animations/transitions.md){ .md-button .md-button--primary }
 

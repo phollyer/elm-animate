@@ -1,4 +1,6 @@
-# Builder Pattern
+# Build
+
+## The Builder Pattern
 
 Elm Animate uses a fluent builder pattern for defining animations. This approach provides a consistent, composable API across all engines and properties that reads naturally and is easy to reason about — you can see at a glance what an animation does and how it behaves.
 
@@ -109,10 +111,10 @@ You can specify timing with either `duration` (fixed time) or `speed` (distance-
 
     ```elm
     -- Fixed 500ms regardless of distance
-    |> Translate.duration 500
+    Translate.duration 500
 
     -- 200 pixels per second (duration varies with distance)
-    |> Translate.speed 200
+    Translate.speed 200
     ```
 
 !!! note "Units for speed"
@@ -157,7 +159,7 @@ You can specify timing with either `duration` (fixed time) or `speed` (distance-
 
 ## Next Steps
 
-Now that you've learned about the builder pattern for building animations, we'll look at how to control them.
+Now that you've learned about the builder pattern for building animations, the next step is triggering them.
 
-[Controlling Animations →](../concepts/controlling-animations/transitions.md){ .md-button .md-button--primary }
+[Trigger Animations →](trigger.md){ .md-button .md-button--primary }
 
