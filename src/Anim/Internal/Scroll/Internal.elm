@@ -157,10 +157,9 @@ timingToSpeed timing distance =
             max 1 (round (distance * 60 / pixelsPerSecond))
 
         Duration milliseconds ->
-            -- Convert duration in milliseconds to frame divider
+            -- Convert duration in milliseconds to frame count
             -- Assuming 60fps: frames = (milliseconds / 1000) * 60 = milliseconds * 0.06
-            -- speed divider = distance / frames = distance / (milliseconds * 0.06)
-            max 1 (round (distance / (toFloat milliseconds * 0.06)))
+            max 1 (round (toFloat milliseconds * 0.06))
 
 
 {-| Get viewport information for a container.

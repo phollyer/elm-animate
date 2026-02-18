@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>FPS Test - elm-animate</title>
+    <style>
+        body {
+            font-family: system-ui;
+            padding: 40px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        #result {
+            font-size: 48px;
+            margin: 20px 0;
+            color: #333;
+        }
+
+        .info {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .info h2 {
+            margin-top: 0;
+        }
+
+        code {
+            background: #e0e0e0;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Browser Frame Rate Test</h1>
+    <div id="result">Measuring...</div>
+    <p>This measures how many frames your browser renders per second using <code>requestAnimationFrame</code>.</p>
+
+    <div class="info">
+        <h2>What This Means for elm-animate</h2>
+        <p>The <code>toCmd</code> and <code>toTask</code> scroll functions assume a 60 FPS refresh rate when calculating
+            animation frames.</p>
+        <ul>
+            <li><strong>~60 FPS:</strong> Scroll durations will match the specified time.</li>
+            <li><strong>~120 FPS:</strong> Scrolls will complete in <em>half</em> the specified duration.</li>
+            <li><strong>~144 FPS:</strong> Scrolls will complete in ~42% of the specified duration.</li>
+        </ul>
+        <p>For refresh-rate-independent animations, use <code>Scroll.animate</code> instead, which uses delta-time
+            interpolation.</p>
+    </div>
+
+    <script>
+        let frameCount = 0;
+        let lastTime = performance.now();
+        let measurements = [];
+
+        function measureFPS(currentTime) {
+            frameCount++;
+
+            if (currentTime - lastTime >= 1000) {
+                measurements.push(frameCount);
+                document.getElementById('result').textContent =
+                    `${frameCount} FPS (avg: ${Math.round(measurements.reduce((a, b) => a + b, 0) / measurements.length)} FPS)`;
+                frameCount = 0;
+                lastTime = currentTime;
+            }
+
+            requestAnimationFrame(measureFPS);
+        }
+
+        requestAnimationFrame(measureFPS);
+    </script>
+</body>
+
+</html>

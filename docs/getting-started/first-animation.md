@@ -60,3 +60,6 @@ Use `Transitions.attributes` to get the HTML attributes for your element's trans
 Now that you can create a simple animation, let's do a deep dive into the workflow.
 
 [Build →](../animation-workflow/build.md){ .md-button .md-button--primary }
+
+!!! tip "Need smooth scrolling?"
+    Check out [Your First Scroll](first-scroll.md) to learn about the Scroll Engine.

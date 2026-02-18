@@ -85,8 +85,8 @@ Continues a paused scroll from exactly where it was frozen:
 
 ## Next Steps
 
-Now you know how to control the Engines, lets look at animating properties.
+Now you know how to control scrolling, let's look at the Scroll Engine in more detail.
 
-[Animating Properties →](../properties.md){ .md-button .md-button--primary }
+[Scroll Engine →](../engines/scroll.md){ .md-button .md-button--primary }
 
 

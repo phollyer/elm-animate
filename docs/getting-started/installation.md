@@ -38,6 +38,8 @@ ElmAnimateWaapi.init(app.ports);
 
 ## Next Steps
 
-Now that you have the package installed, let's create your first animation:
+Now that you have the package installed, let's start using it:
 
-[Your First Animation →](first-animation.md){ .md-button .md-button--primary }
+[Your First Animation](first-animation.md){ .md-button .md-button--primary }
+or
+[Your First Scroll](first-scroll.md){ .md-button .md-button--primary }

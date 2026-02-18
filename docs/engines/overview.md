@@ -60,6 +60,6 @@ This makes it easy to start simple with the one of the CSS Engines and migrate t
 
 ## Next Steps
 
-Now that you've learned about the animation engines, let's move on to the scroll engine.
+Now that you've learned about the animation engines, explore each engine in detail or check out the scroll engine for smooth scrolling animations.
 
-[Scroll Engine →](scroll-engine.md){ .md-button .md-button--primary }
+[Scroll Engine →](scroll.md){ .md-button .md-button--primary }

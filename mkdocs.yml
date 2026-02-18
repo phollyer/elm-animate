@@ -67,20 +67,19 @@ nav:
   - Getting Started:
     - Installation: getting-started/installation.md
     - Your First Animation: getting-started/first-animation.md
+    - Your First Scroll: getting-started/first-scroll.md
   - Animation Workflow:
     - 1. Build: animation-workflow/build.md
     - 2. Trigger: animation-workflow/trigger.md
     - 3. Apply: animation-workflow/apply.md
   - Concepts:
-    - Engines:
-      - Animation: concepts/engines/animation-engines.md
-      - Scrolling: concepts/engines/scroll-engine.md
     - Controlling Animations: concepts/controlling-animations.md
     - Controlling Scroll: concepts/controlling-animations/scroll.md
     - Properties: concepts/properties.md
     - Easing Functions: concepts/easing.md
     - 3D Animations: concepts/3d.md
   - Engines:
+    - Overview: engines/overview.md
     - Transitions Engine: engines/transitions.md
     - Keyframes Engine: engines/keyframes.md
     - Sub Engine: engines/sub.md

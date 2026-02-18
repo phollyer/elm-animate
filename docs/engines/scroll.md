@@ -13,31 +13,18 @@ The simplest approach — just scroll and forget:
     ```elm
     import Anim.Engine.Scroll as Scroll
 
-    scrollToElement : AnimBuilder -> AnimBuilder
-    scrollToElement =
-        Scroll.forDocument
-            >> Scroll.toElement "target-section"
-            >> Scroll.build
-
     type Msg
-        = ScrollToSection
-        | ScrollComplete String
+        = ScrollComplete String
+        | ...
 
+    scrollToElement : Cmd Msg
+    scrollToElement =
+        Scroll.toCmd ScrollComplete <|
+            Scroll.forDocument
+                >> Scroll.toElement "target-section"
+                >> ... -- Continue configuring
+                >> Scroll.build
 
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
-        case msg of
-            ScrollToSection ->
-                ( model
-                , Scroll.toCmd ScrollComplete scrollToElement                    
-                )
-
-            ScrollComplete elementId ->
-                -- handle any completed scrolls by element ID
-                (model, Cmd.none)
-
-            NoOp ->
-                ( model, Cmd.none )
     ```
 
 ### With Error Handling (Task)
@@ -47,35 +34,28 @@ Use Tasks for composable operations with error handling:
 ??? example "View Source Code"
 
     ```elm
-    import Anim.Engine.Scroll as Scroll
+    import Anim.Engine.Scroll as Scroll exposing (AnimBuilder)
     import Task
 
 
+    scrollToElement : AnimBuilder -> AnimBuilder
+    scrollToElement =
+        Scroll.forDocument
+            >> Scroll.toElement "target-section"
+            >> ... -- Continue configuring
+            >> Scroll.build
+        
+
+
+    performScroll : Cmd Msg
+    performScroll =
+        Scroll.toTask scrollToElement
+            |> Task.attempt ScrollResult
+
     type Msg
-        = ScrollToSection
-        | ScrollResult (Result Scroll.ScrollError Scroll.ScrollOk)
+        = ScrollResult (Result Scroll.ScrollError Scroll.ScrollOk)
+        | ...
 
-
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
-        case msg of
-            ScrollToSection ->
-                ( model
-                , Scroll.toTask
-                    (Scroll.forDocument
-                        >> Scroll.toElement "target-section"
-                        >> Scroll.build
-                    )
-                    |> Task.attempt ScrollResult
-                )
-
-            ScrollResult (Ok result) ->
-                -- Scroll completed successfully
-                ( model, Cmd.none )
-
-            ScrollResult (Err (Scroll.ScrollError error)) ->
-                -- Handle scroll error - check error.domError, error.containerId, error.targetElementId
-                ( model, Cmd.none )
     ```
 
 ### With State Tracking (Subscriptions)
@@ -106,6 +86,7 @@ For full control with mid-scroll updates:
                         Scroll.animate ScrollMsg model.scrollState <|
                             Scroll.forDocument
                                 >> Scroll.toElement "target-section"
+                                >> ... -- Continue Configuring
                                 >> Scroll.build
                 in
                 ( { model | scrollState = newState }, cmd )
@@ -309,6 +290,21 @@ Handle errors with Tasks:
             )
     ```
 
+## Timing & Refresh Rates
+
+!!! warning "Cmd and Task timing varies with display refresh rate"
+    The `toCmd` and `toTask` functions calculate animation frames assuming a **60 FPS** display. On higher refresh rate displays (120Hz, 144Hz), animations complete faster than the specified duration:
+
+    | Display | Duration Effect |
+    | ------- | --------------- |
+    | 60Hz | Matches specified duration |
+    | 120Hz | Completes in **half** the time |
+    | 144Hz | Completes in ~42% of the time |
+
+    For consistent timing across all displays, use `animate` with subscriptions - it uses delta-time interpolation and is refresh-rate independent.
+
+    [Check your display's refresh rate](../examples/fps-test.html){ target="_blank" } to see how it affects timing.
+
 ## API Quick Reference
 
 ### Types
@@ -507,12 +503,12 @@ You can configure and execute single or multiple scroll animations using any of 
 
     1. DOM queries retrieve current scroll position and target element position
     2. Distance is calculated from current to target position
-    3. Animation steps are pre-calculated based on distance, timing and easing
-    4. `AnimState` is updated with pre-calculated animation steps
-    5. Initial `Cmd` is returned (may trigger immediate first step)
+    3. Animation state is initialized with scroll configuration
+    4. `AnimState` is updated with animation data
+    5. Initial `Cmd` is returned to query DOM positions
     6. `subscriptions` listen for animation frame updates
-    7. Each frame: scrolls to the next pre-calculated position
-    8. Animation continues until all steps are complete
+    7. Each frame: calculates new position using delta-time and easing, then scrolls
+    8. Animation continues until progress reaches 1.0
 
     **Multiple scroll targets:**
 

@@ -31,8 +31,10 @@ animationStepsWithFrames frames easing start stop =
         framesFloat =
             toFloat frames
 
+        -- Use (frames - 1) as divisor so progress ranges from 0.0 to 1.0 exactly
+        -- Frame 0: 0/(frames-1) = 0.0, Frame (frames-1): (frames-1)/(frames-1) = 1.0
         weights =
-            List.map (\i -> easing (toFloat i / framesFloat)) (List.range 0 (frames - 1))
+            List.map (\i -> easing (toFloat i / (framesFloat - 1))) (List.range 0 (frames - 1))
 
         operator =
             if start > stop then
