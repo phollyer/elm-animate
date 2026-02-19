@@ -6,23 +6,31 @@ Once you've defined an animation and triggered it with an engine, you need to ap
 
 Every animation engine provides an `attributes` function that generates HTML attributes for your element:
 
-??? example "View Source Code"
+=== "Transitions"
 
     ```elm
-    -- Transitions
     div (Transitions.attributes "boxAnim" model.animState) [ text "I animate!" ]
+    ```
 
-    -- Keyframes
+=== "Keyframes"
+
+    ```elm
     div (Keyframes.attributes "boxAnim" model.animState) [ text "I animate!" ]
+    ```
 
-    -- Sub
+=== "Sub"
+
+    ```elm
     div (Sub.attributes "boxAnim" model.animState) [ text "I animate!" ]
+    ```
 
-    -- WAAPI
+=== "WAAPI"
+
+    ```elm
     div (WAAPI.attributes "boxAnim" model.animState) [ text "I animate!" ]
     ```
 
-    The first argument is the **animation group name** - this tells the engine which group's animation data to look up from the `AnimState`.
+The first argument is the **animation group name** - this tells the engine which animation data to look up from the `AnimState`.
 
 ## Animation Group Names
 

@@ -102,7 +102,7 @@ For simple animations that don't need state tracking:
 
 Most animations trigger in response to user action events or application events. Trigger these in `update`:
 
-??? example "Common Trigger Points"
+??? example "View Source Code"
 
     ```elm
     update msg model =
@@ -125,31 +125,38 @@ Most animations trigger in response to user action events or application events.
 
 To animate immediately when the page loads, trigger in `init` using **Keyframes**, **Sub**, or **WAAPI**:
 
-??? example "Init Triggering"
+??? example "View Source Code"
 
-    ```elm
-    -- Keyframes
-    init _ =
-        ( { animState = Keyframes.fireAndForget fadeIn }, Cmd.none )
+    === "Keyframes"
 
-    -- Sub
-    init _ =
-        let
-            animState =
-                Sub.init
-                    [ Opacity.init 0 ]
-        in
-        ( { animState = Sub.animate animState fadeIn }, Cmd.none )
+        ```elm
+        init _ =
+            ( { animState = Keyframes.fireAndForget fadeIn }, Cmd.none )
+        ```
 
-    -- WAAPI
-    init _ =
-        let
-            ( animState, cmd ) =
-                WAAPI.fireAndForget waapiCommand <|
-                    WAAPI.forElement "element-id" >> fadeIn
-        in
-        ( { animState = animState }, cmd )
-    ```
+    === "Sub"
+
+        ```elm
+        init _ =
+            let
+                animState =
+                    Sub.init
+                        [ Opacity.init 0 ]
+            in
+            ( { animState = Sub.animate animState fadeIn }, Cmd.none )
+        ```
+
+    === "WAAPI"
+
+        ```elm
+        init _ =
+            let
+                ( animState, cmd ) =
+                    WAAPI.fireAndForget waapiCommand <|
+                        WAAPI.forElement "element-id" >> fadeIn
+            in
+            ( { animState = animState }, cmd )
+        ```
 
 !!! warning "CSS Transitions can't animate on page load"
     CSS Transitions require a state change between renders. Triggering in `init` means no state change — the element appears at the final state immediately because the browser has no initial `transition` state to animate from. To animate with Transitions on page load, trigger in a subsequent message after the first render.
