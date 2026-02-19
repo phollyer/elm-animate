@@ -32,8 +32,8 @@ These properties trigger browser repaints and/or reflows. Use them when needed, 
 
 ## Next Steps
 
-Natural motion with Easing.
+Control animation timing with duration and speed.
 
-[Easing →](easing.md){ .md-button .md-button--primary }
+[Timing →](timing.md){ .md-button .md-button--primary }
 
 

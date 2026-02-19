@@ -1,6 +1,6 @@
 # Controlling Animations
 
-All animation engines provide control functions to manipulate running animations. The available controls vary by engine.
+All animation engines provide control functions to manipulate running animations. The available controls vary slightly by engine.
 
 ## Control Functions
 

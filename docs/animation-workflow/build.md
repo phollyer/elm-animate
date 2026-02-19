@@ -25,11 +25,10 @@ Every animation follows this pattern:
 
     `for` and `build` are required to start and end the builder chain respectively. All other configurations are optional, although without a `to` value the animations won't have anywhere to go!!
 
-    All animation configurations are grouped by `animGroup` in the Engine, enabling easy attachment to your elements. All animations with the same group name will run on the same element when you attach the group to the element.
-
 ## Why Builders?
 
-The `AnimBuilder -> AnimBuilder` type signature enables function composition with `>>`. Small, focused animations combine into larger ones:
+The `AnimBuilder -> AnimBuilder` type signature enables [function composition](https://package.elm-lang.org/packages/elm/core/latest/Basics#function-helpers)
+with `>>`. Small, focused animations combine into larger ones:
 
 ??? example "Show Source Code"
 
@@ -48,38 +47,44 @@ The `AnimBuilder -> AnimBuilder` type signature enables function composition wit
             >> Translate.toY 0
             >> Translate.build
 
+    rotateClockwise : AnimBuilder -> AnimBuilder
+    rotateClockwise =
+        Rotate.for animGroup
+            >> Rotate.fromZ 0
+            >> Rotate.toZ 180
+            >> Rotate.build
+
+
     -- Compose them
-    enterAnimation : AnimBuilder -> AnimBuilder
-    enterAnimation =
-        fadeIn >> slideUp
+    complexAnimation : AnimBuilder -> AnimBuilder
+    complexAnimation =
+        fadeIn >> slideUp >> rotateClockwise
     ```
 
-Because all engines accept `AnimBuilder -> AnimBuilder`, the same animation works with any engine — start simple with CSS Transitions and migrate to WAAPI later without rewriting your animations.
+    Build complex animations from small, reusable pieces.
 
 ## Multiple Animations
 
-Create multiple animations in a single pipeline:
+Compose multiple animations together:
 
 ??? example "Show Source Code"
 
     ```elm
-    multiElementAnimation : AnimBuilder -> AnimBuilder
-    multiElementAnimation =
-        -- First animation
-        Translate.for "animGroup1"
-            >> Translate.toX 100
+    moveToX : String -> Float -> AnimBUilder -> AnimBUilder
+    moveToX groupName toX =
+        Translate.for groupName
+            >> Translate.toX toX
             >> Translate.build
-            -- Second animation
-            >> Translate.for "animGroup2"
-            >> Translate.toX 200
-            >> Translate.build
-            -- Third animation
-            >> Translate.for "animGroup3"
-            >> Translate.toX 300
-            >> Translate.build
+
+
+    multipleAnimations : AnimBuilder -> AnimBuilder
+    multipleAnimations =
+        moveToX "animGroup1" 100        -- First animation
+            >> moveToX "animGroup2" 200 -- Second animation
+            >> moveToX"animGroup3" 300  -- Third animation
     ```
 
-    You can add an animation group to as many elements as you choose, or dynamically change the animation group on your element. Elm Animate provides the tools, how you use them is up to you.
+    Each different group name represents a distinct animation that can be applied in your view.
 
 ## Multiple Properties
 
@@ -88,44 +93,32 @@ Animate multiple properties at the same time:
 ??? example "Show Source Code"
 
     ```elm
+    moveXY : String -> Float -> Float -> AnimBUilder -> AnimBuilder
+    moveXY groupName toX toY =
+        Translate.for groupName
+            >> Translate.toXY toX toY
+            >> Translate.build
+
+    rotate : String -> Float -> AnimBuilder -> AnimBuilder
+    rotate groupName deg =
+        Rotate.for groupName
+            >> Rotate.to deg
+            >> Rotate.build
+
+    scale : String -> Float -> AnimBuilder -> AnimBuilder
+    scale groupName ratio =
+        Scale.for groupName
+            >> Scale.to ratio
+            >> Scale.build
+
     complexAnimation : AnimBuilder -> AnimBuilder
     complexAnimation =
-        Translate.for "boxAnim"
-            >> Translate.toXY 100 200
-            >> Translate.build
-            >> Rotate.for "boxAnim"
-            >> Rotate.to 45
-            >> Rotate.build
-            >> Scale.for "boxAnim"
-            >> Scale.to 1.5
-            >> Scale.build
+        moveXY "boxAnim" 100 200
+            >> rotate "boxAnim" 45
+            >> scale "boxAnim" 1.5
     ```
 
     Give different property animations the same animation group name and they will animate together on the same element.
-
-## Duration vs Speed
-
-You can specify timing with either `duration` (fixed time) or `speed` (distance-based):
-
-??? example "View Source Code"
-
-    ```elm
-    -- Fixed 500ms regardless of distance
-    Translate.duration 500
-
-    -- 200 pixels per second (duration varies with distance)
-    Translate.speed 200
-    ```
-
-!!! note "Units for speed"
-    The meaning of 'units' varies by property type. For `Translate` it's 'pixels'. Refer to each individual property for how speed is interpreted.
-
-!!! warning
-    Use either `duration` or `speed`, not both. If both are set, the last one wins.
-
-!!! warning
-    If no `duration` or `speed` is set, either globally on the engine, or locally on the property, then a duration of 0ms will be used, and the element will instantly jump to its end state.
-
 
 ## Best Practices
 
@@ -138,24 +131,26 @@ You can specify timing with either `duration` (fixed time) or `speed` (distance-
 !!! tip "Extract common patterns"
     If you use the same configurations often, create helper functions.
 
-    ```elm
-    -- Common timing helper
-    withStandardTiming : AnimBuilder -> AnimBuilder
-    withStandardTiming =
-        Sub.duration 300
-            >> Sub.easing QuintOut
+    ??? example "View Source Code"
 
-    -- Use it with any animation
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        withStandardTiming
-            >> Translate.for "boxAnim"
-            >> Translate.toX 100
-            >> Translate.build
-            >> Opacity.for "boxAnim"
-            >> Opacity.to 1
-            >> Opacity.build
-    ```
+        ```elm
+        -- Common timing helper
+        withStandardTiming : AnimBuilder -> AnimBuilder
+        withStandardTiming =
+            Sub.duration 300
+                >> Sub.easing QuintOut
+
+        -- Use it with any animation
+        myAnimation : AnimBuilder -> AnimBuilder
+        myAnimation =
+            withStandardTiming
+                >> Translate.for "boxAnim"
+                >> Translate.toX 100
+                >> Translate.build
+                >> Opacity.for "boxAnim"
+                >> Opacity.to 1
+                >> Opacity.build
+        ```
 
 ## Next Steps
 

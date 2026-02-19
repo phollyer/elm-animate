@@ -27,24 +27,23 @@ main =
 -- MODEL
 
 
-type State
-    = Ready
-    | FadeIn
-    | FadeOut
-
-
 type alias Model =
-    { state : State }
+    { animState : Transitions.AnimState }
+
+
+
+-- --8<-- [start:initAnimationState]
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { state = Ready }
+    ( { animState = Transitions.init [ Opacity.init animGroup 0 ] }
     , Cmd.none
     )
 
 
 
+-- --8<-- [end:initAnimationState]
 -- UPDATE
 
 
@@ -53,17 +52,22 @@ type Msg
     | TriggerFadeOut
 
 
+
+-- --8<-- [start:triggerAnimation]
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         TriggerFadeIn ->
-            ( { model | state = FadeIn }, Cmd.none )
+            ( { model | animState = Transitions.fireAndForget fadeIn }, Cmd.none )
 
         TriggerFadeOut ->
-            ( { model | state = FadeOut }, Cmd.none )
+            ( { model | animState = Transitions.fireAndForget fadeOut }, Cmd.none )
 
 
 
+-- --8<-- [end:triggerAnimation]
 -- ANIMATION BUILDER
 -- --8<-- [start:fadeIn]
 
@@ -100,28 +104,13 @@ fadeOut =
 
 view : Model -> Html Msg
 view model =
-    -- --8<-- [start:fireAndForget]
-    let
-        animState =
-            case model.state of
-                Ready ->
-                    Transitions.init
-                        [ Opacity.init animGroup 0 ]
-
-                FadeIn ->
-                    Transitions.fireAndForget fadeIn
-
-                FadeOut ->
-                    Transitions.fireAndForget fadeOut
-    in
-    -- --8<-- [end:fireAndForget]
     div
         []
         [ button [ onClick TriggerFadeIn ] [ text "Fade In" ]
         , button [ onClick TriggerFadeOut ] [ text "Fade Out" ]
         , -- --8<-- [start:applyStyles]
           div
-            (Transitions.attributes animGroup animState
+            (Transitions.attributes animGroup model.animState
                 ++ [ style "width" "100px"
                    , style "height" "100px"
                    , style "background-color" "blue"

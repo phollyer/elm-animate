@@ -41,13 +41,13 @@ Engines trigger their animations with either their `animate` function if state-b
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/GettingStarted/FirstAnimation/Main.elm:fireAndForget"
+    --8<-- "docs/examples/src/GettingStarted/FirstAnimation/Main.elm:triggerAnimation"
     ```
-    `init` sets the initial state for first render. `fireAndForget` triggers the required animation.
+    Here, we use `fireAndForget` to trigger the required animation.
 
 ### 3. Apply
 
-Use `Transitions.attributes` to get the HTML attributes for your element's transition:
+Use the `attributes` function to apply the animation's attributes to your element:
 
 ??? example "View Source Code"
 

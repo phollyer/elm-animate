@@ -281,6 +281,6 @@ Each animation group gets its own data within the shared `AnimState`.
 
 ## Next Steps
 
-Now that you understand how to apply animations, let's learn a bit about the Engines.
+Now that you understand how to apply animations, let's learn how to control them.
 
-[Animation Engines →](../concepts/engines/animation-engines.md){ .md-button .md-button--primary }
+[Controlling Animations →](../concepts/controlling-animations.md){ .md-button .md-button--primary }
