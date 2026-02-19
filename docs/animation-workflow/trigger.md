@@ -1,26 +1,34 @@
 # Triggering Animations
 
-Once you've [built an animation](build.md), you need to trigger it. This is where your animation definition gets added to the engine's `AnimState`, making it available for rendering.
+Once you've [built an animation](build.md), you need to trigger it. This is where the engine processes your configuration — computing styles, interpolation values, and keyframes — and stores the results in `AnimState`. Rendering then simply applies the pre-computed data.
 
 ## Two Ways to Trigger
 
-There are two functions for triggering animations:
+| Function | State Tracking | Use When |
+| -------- | -------------- | -------- |
+| `animate` | Yes — engine tracks positions | Sequencing, redirecting, or controlling animations |
+| `fireAndForget` | No — starts fresh each time | Simple one-shot animations |
 
-- `animate` - for state tracked animations, requires state updates in your `update` function
-- `fireAndForget` - for non-state tracked animations, no state update is required in your `update` function
+With `animate`, you maintain an `AnimState` in your model that the engine updates. With `fireAndForget`, every call creates a new state — there's no continuity between triggers.
 
-The main difference between the two then, is that state tracked animations using `animate` need to have their state updated in your `update` function. `fireAndForget` animations don't because they always start with an empty state.
+### When to Choose Each
+
+| Scenario | Transitions | Keyframes | Sub | WAAPI |
+| -------- | :---------: | :-------: | :-: | :---: |
+| Animation runs once, no control needed | `fireAndForget` | `fireAndForget` | `animate` | `fireAndForget` |
+| Simple entry animations | `fireAndForget` | `fireAndForget` | `animate` | `fireAndForget` |
+| Stop/reset controls | `animate` | `animate` | `animate` | `animate` |
+| Pause/resume controls | | `animate` | `animate` | `animate` |
+| Sequencing animations | `animate` | `animate` | `animate` | `animate` |
+| Redirecting mid-flight | `animate`/`fireAndForget` | | `animate` | `animate` |
 
 ## Using `animate`
 
-The `animate` function adds animations to your existing `AnimState`:
+The `animate` function processes your animation configuration and merges the computed data into your existing `AnimState`:
 
 ??? example "View Source Code"
 
     ```elm
-    type Msg
-        = GotStartAnimation
-
     update msg model =
         case msg of
             GotStartAnimation ->
@@ -41,14 +49,14 @@ The `animate` function adds animations to your existing `AnimState`:
     -- Sub
     Sub.animate model.animState myAnimation
 
-    -- WAAPI (also requires the element ID to apply the animation to)
+    -- WAAPI (also requires the element ID)
     WAAPI.animate model.animState <|
         WAAPI.forElement "element-id" >> myAnimation
     ```
 
 ### WAAPI Returns a Cmd
 
-The WAAPI Engine uses JavaScript ports to apply animations, so `animate` returns both the updated state and a command that goes off to JS. Additionally, WAAPI requires `forElement` to specify the target element ID — this is how the JavaScript side knows which DOM element to animate:
+WAAPI uses JavaScript ports, so `animate` returns both the updated state and a command. It also requires `forElement` to specify which DOM element to animate:
 
 ??? example "WAAPI Pattern"
 
@@ -59,153 +67,60 @@ The WAAPI Engine uses JavaScript ports to apply animations, so `animate` returns
                 let
                     ( newAnimState, cmd ) =
                         WAAPI.animate model.animState <|
-                            WAAPI.forElement "element-id" 
-                                >> myAnimation
-                                >> WAAPI.forElement "other-element-id"
-                                >> myOtherAnimation
+                            WAAPI.forElement "header" 
+                                >> fadeIn
+                                >> slideDown
+                                >> WAAPI.forElement "sidebar"
+                                >> fadeIn
+                                >> slideRight
                 in
                 ( { model | animState = newAnimState }
                 , cmd
                 )
     ```
 
+    The "header" element will `fadeIn` and `slideDown` and the "sidebar" element will `fadeIn` and `slideRight`.
+
 ## Using `fireAndForget`
 
-For simple, one-shot animations that don't need state tracking:
+For simple animations that don't need state tracking:
 
 ??? example "View Source Code"
 
     ```elm
-    -- Trigger in init for entry animations
+    -- In init
     init _ =
-        ( { animState = 
-                Keyframes.fireAndForget <|
-                    fadeIn >> slideIn
-          }
+        ( { animState = Keyframes.fireAndForget (fadeIn >> slideIn) }
         , Cmd.none
         )
 
-    -- Or trigger in update in response to events
+    -- Or in update
     update msg model =
         case msg of
             GotShowBox ->
-                ( { model 
-                    | animState = 
-                        Keyframes.fireAndForget <|
-                            fadeIn >> slideIn
-                  }
+                ( { model | animState = Keyframes.fireAndForget (fadeIn >> slideIn) }
                 , Cmd.none
                 )
     ```
 
-    Fire-and-forget is ideal for:
+Fire-and-forget is ideal for entry animations, simple hover effects, and animations where you don't need control functions.
 
-    - Entry animations that run once on page load
-    - Simple hover effects
-    - Animations where you don't need control functions (pause, stop, etc.)
+## Where to Trigger
 
-??? warning "Avoid triggering in your view"
-    You might be tempted to call `fireAndForget` directly in your view function:
+### In `update` (Most Common)
 
-    ```elm
-    -- Works, but not recommended
-    view model =
-        let
-            boxAnimState =
-                Transitions.fireAndForget <|
-                    fadeIn >> slideIn
-        in
-        ...
-    ```
-
-    This works — the VDOM prevents actual DOM thrashing since the styles don't change. However, the builder functions and state allocation run on **every render**, creating unnecessary GC pressure. More importantly, it's un-idiomatic Elm: the view should be a pure function of model state, not a place to compute state.
-
-    For truly trivial cases the overhead is negligible, but prefer triggering in `init` or `update` and storing the state in your model.
-
-### When to Choose Each
-
-You can use `animate` for all of your animations if you choose, but sometimes it's simpler and quicker to use `fireAndForget`.
-
-| Scenario | Transitions | Keyframes | Sub | WAAPI |
-| -------- | :---------: | :-------: | :-: | :---: |
-| Animation runs once, no control needed | `fireAndForget` | `fireAndForget` | `animate` | `fireAndForget` |
-| Simple entry animations | `fireAndForget` | `fireAndForget` | `animate` | `fireAndForget` |
-| Stop/reset controls | `animate` | `animate` | `animate` | `animate` |
-| Pause/resume controls | | `animate` | `animate` | `animate` |
-| Sequencing animations | `animate` | `animate` | `animate` | `animate` |
-| Redirecting animations mid-flight | `animate`/`fireAndForget` | | `animate` | `animate` |
-
-## Sequencing Animations
-
-Sequencing animations — so each begins where the previous ended — is easier with `animate` because the engine tracks state automatically.
-
-### With `animate` (State Tracked)
-
-The engine remembers where each animation ended, using that as the starting point for the next:
-
-??? example "Cumulative Movement"
-
-    ```elm
-    -- Each call moves 100px further from the *current* position
-    moveRight : AnimBuilder -> AnimBuilder
-    moveRight =
-        Translate.for "box"
-            >> Translate.toX 100  -- No 'from' needed
-            >> Translate.build
-
-    -- First trigger:  0 → 100
-    -- Second trigger: 100 → 200  
-    -- Third trigger:  200 → 300
-    ```
-
-    Because state is tracked, you only need to specify `to`. The `from` value comes from the previous end state. Override with an explicit `from` only if you want to break the sequence.
-
-### With `fireAndForget` (No State)
-
-Each animation starts fresh — you must specify both `from` and `to`:
-
-??? example "Explicit Positions"
-
-    ```elm
-    -- Must track positions yourself
-    moveRight : Float -> AnimBuilder -> AnimBuilder
-    moveRight currentX =
-        Translate.for "box"
-            >> Translate.fromX currentX
-            >> Translate.toX (currentX + 100)
-            >> Translate.build
-    ```
-
-    Without state tracking, there's no "previous position" to reference.
-
-## Redirecting Mid-Flight
-
-With **Transitions**, **Sub**, and **WAAPI**, calling `animate` while an animation is already running smoothly redirects to the new target — the engine knows the element's current position. With `fireAndForget`, you'd need to manually track positions yourself.
-
-**Keyframes** don't support mid-flight redirection — once a keyframe animation starts, it runs to completion.
-
-## When to Trigger
-
-Animations are typically triggered in the `update` function in response to messages:
+Trigger in response to messages — user interactions, page events, or external data:
 
 ??? example "Common Trigger Points"
 
     ```elm
     update msg model =
         case msg of
-            -- User interaction
             GotButtonClick ->
                 ( { model | animState = Transitions.animate model.animState buttonPress }
                 , Cmd.none
                 )
 
-            -- Page events
-            GotPageLoaded ->
-                ( { model | animState = Transitions.animate model.animState pageEntrance }
-                , Cmd.none
-                )
-
-            -- External data
             GotDataReceived data ->
                 ( { model 
                     | data = data
@@ -215,55 +130,64 @@ Animations are typically triggered in the `update` function in response to messa
                 )
     ```
 
-### Triggering in `init`
+### In `init`
 
-For animations that should start immediately, use **Keyframes**, **Sub**, or **WAAPI** - these engines define their own animation frames and don't rely on CSS state changes:
+For animations that should start immediately, use **Keyframes**, **Sub**, or **WAAPI**:
 
 ??? example "Init Triggering"
 
     ```elm
-    -- Keyframes - defines its own keyframes
+    -- Keyframes
     init _ =
-        ( { animState = Keyframes.fireAndForget fadeIn }
-        , Cmd.none
-        )
+        ( { animState = Keyframes.fireAndForget fadeIn }, Cmd.none )
 
-    -- Sub - drives animation frame-by-frame
+    -- Sub
     init _ =
-        ( { animState = Sub.animate Sub.init fadeIn }
-        , Cmd.none
-        )
+        let
+            animState =
+                Sub.init
+                    [ Opacity.init 0 ]
+        in
+        ( { animState = Sub.animate animState fadeIn }, Cmd.none )
 
-    -- WAAPI - applies keyframes via JS
+    -- WAAPI
     init _ =
         let
             ( animState, cmd ) =
-                WAAPI.fireAndForget waapiCommand fadeIn
+                WAAPI.fireAndForget waapiCommand <|
+                    WAAPI.forElement "element-id" >> fadeIn
         in
         ( { animState = animState }, cmd )
     ```
 
 !!! warning "CSS Transitions can't animate on init"
-    CSS Transitions require a state change between renders. Setting initial state and triggering an animation in the same `init` means no transition - the element just appears at the final state. To animate with Transitions on page load, trigger in a subsequent message (e.g., after the first view renders).
+    CSS Transitions require a state change between renders. Triggering in `init` means no transition — the element appears at the final state immediately. To animate with Transitions on page load, trigger in a subsequent message after the first view renders.
+
+### Avoid Triggering in `view`
+
+??? warning "Why not in view?"
+    You might be tempted to call `fireAndForget` directly in your view:
+
+    ```elm
+    view model =
+        let
+            boxAnimState = Transitions.fireAndForget (fadeIn >> slideIn)
+        in
+        ...
+    ```
+
+    This works, but the builder functions run on **every render**, creating unnecessary GC pressure. The view should be a pure function of model state. Prefer triggering in `init` or `update`.
 
 !!! warning "Avoid defining all animations upfront"
-    You might be tempted to define every animation for your page in a single `fireAndForget` call in `init`, then selectively apply them in your view by choosing which groups to render. While this works for CSS-based engines (Transitions, Keyframes), it has drawbacks:
+    Don't define every animation in a single `fireAndForget` call in `init`, then selectively apply them in your view. This allocates memory for unused animations, and with Sub/WAAPI causes unnecessary computation. Trigger animations when they're needed.
 
-    - Allocates memory for animations that may never run
-    - Sub engine calculates frames for all groups, even unused ones
-    - WAAPI fires JS commands immediately — elements must already exist
-    - Makes it less clear *when* animations are meant to trigger
+## Multiple Animations
 
-    Instead, trigger animations when they're needed.
-
-## Triggering Multiple Animations
-
-Compose animations together before triggering:
+Compose animations together and trigger once:
 
 ??? example "Multiple Animations"
 
     ```elm
-    -- Compose, then trigger once
     update msg model =
         case msg of
             GotShowAll ->
@@ -277,7 +201,48 @@ Compose animations together before triggering:
                 )
     ```
 
-Or trigger sequentially with callbacks:
+## Sequencing Animations
+
+### State Continuity with `animate`
+
+The engine remembers where each animation ended, using that as the starting point for the next:
+
+??? example "Cumulative Movement"
+
+    ```elm
+    moveRight : AnimBuilder -> AnimBuilder
+    moveRight =
+        Translate.for "box"
+            >> Translate.toX 100  -- No 'from' needed
+            >> Translate.build
+
+    -- First trigger:  0 → 100
+    -- Second trigger: 100 → 200  
+    -- Third trigger:  200 → 300
+    ```
+
+    You only need to specify `to`. The `from` value comes from the previous end state. 
+    
+    To set the initial values to use on first trigger, use the Engine's `init` function. If nothing is set the property's start value will be a sensible default - see each property for details of what their defaults are. 
+
+### Manual Tracking with `fireAndForget`
+
+Each call starts fresh — you must specify both `from` and `to`:
+
+??? example "Explicit Positions"
+
+    ```elm
+    moveRight : Float -> AnimBuilder -> AnimBuilder
+    moveRight currentX =
+        Translate.for "box"
+            >> Translate.fromX currentX
+            >> Translate.toX (currentX + 100)
+            >> Translate.build
+    ```
+
+### Callback-Based Sequencing
+
+Trigger the next animation when the previous one ends using [animation events](../concepts/events.md):
 
 ??? example "Sequential Triggering"
 
@@ -294,6 +259,14 @@ Or trigger sequentially with callbacks:
                 , Cmd.none
                 )
     ```
+
+## Redirecting Mid-Flight
+
+With **Transitions**, **Sub**, and **WAAPI**, calling `animate` while an animation is running smoothly redirects to the new target — the engine knows the current position.
+
+**Keyframes** don't support mid-flight redirection — once started, they run to completion.
+
+With `fireAndForget`, you'd need to manually track positions yourself.
 
 ## Next Steps
 

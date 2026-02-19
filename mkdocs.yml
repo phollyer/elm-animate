@@ -78,6 +78,7 @@ nav:
     - Properties: concepts/properties.md
     - Timing: concepts/timing.md
     - Easing Functions: concepts/easing.md
+    - Events: concepts/events.md
     - 3D Animations: concepts/3d.md
   - Engines:
     - Overview: engines/overview.md
