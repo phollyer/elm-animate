@@ -226,8 +226,8 @@ The WAAPI engine uses a subscription-based event pattern. The `subscriptions` fu
                 -- Animation continued after pause
                 ( model, Cmd.none )
 
-            Just (WAAPI.Canceled elementId) ->
-                -- Animation was canceled (via stop or reset)
+            Just (WAAPI.Cancelled elementId) ->
+                -- Animation was Cancelled (via stop or reset)
                 ( model, Cmd.none )
 
             Just (WAAPI.Restarted elementId) ->
@@ -247,7 +247,7 @@ The WAAPI engine uses a subscription-based event pattern. The `subscriptions` fu
     | `Completed` | The animation finishes |
     | `Paused` | The animation is paused via `pause` |
     | `Resumed` | The animation is resumed via `resume` |
-    | `Canceled` | The animation is canceled via `stop` or `reset` |
+    | `Cancelled` | The animation is Cancelled via `stop` or `reset` |
     | `Restarted` | The animation is restarted via `restart` |
 
 
@@ -498,7 +498,7 @@ The WAAPI Engine fully supports 3D animations. See [3D Animations](../concepts/3
 | `AnimState msg` | Tracks animations and their states |
 | `AnimBuilder` | Carries all the animation configurations |
 | `AnimMsg` | Opaque message type for WAAPI subscription events |
-| `AnimEvent` | Lifecycle events: `Started String`, `Completed String`, `Paused String`, `Resumed String`, `Canceled String`, `Restarted String` |
+| `AnimEvent` | Lifecycle events: `Started String`, `Completed String`, `Paused String`, `Resumed String`, `Cancelled String`, `Restarted String` |
 
 ### Core Functions
 

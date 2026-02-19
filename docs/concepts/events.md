@@ -10,15 +10,12 @@ Each engine provides different events based on its capabilities:
 | ----- | :---------: | :-------: | :-: | :---: |
 | Started | ✓ | ✓ | ✓ | ✓ |
 | Ended/Completed | ✓ | ✓ | ✓ | ✓ |
-| Cancelled/Canceled | ✓ | ✓ | ✓ | ✓ |
+| Cancelled | ✓ | ✓ | ✓ | ✓ |
 | Run | ✓ | | | |
 | Iteration | | ✓ | | |
 | Paused | | | ✓ | ✓ |
 | Resumed | | | ✓ | ✓ |
 | Restarted | | | ✓ | ✓ |
-
-!!! note "Naming variations"
-    CSS engines use `Ended` and `Cancelled` (British spelling). Sub and WAAPI use `Completed` and `Canceled` (American spelling). This matches their underlying APIs.
 
 ## Handling Events
 
@@ -128,7 +125,7 @@ handleEvent maybeEvent model =
         Just (WAAPI.Completed "box") ->
             ( model, startNextAnimation )
 
-        Just (WAAPI.Canceled _) ->
+        Just (WAAPI.Cancelled _) ->
             ( model, Cmd.none )
 
         _ ->
@@ -145,7 +142,7 @@ Fired when an animation begins. For CSS engines, this fires after any delay.
 
 Fired when an animation finishes naturally — reaching its end state.
 
-### Cancelled / Canceled
+### Cancelled / Cancelled
 
 Fired when an animation is interrupted before completion. This can happen when:
 

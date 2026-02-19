@@ -9349,8 +9349,8 @@ var $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveRight = functi
 	return $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveToX(width - $author$project$Engines$WAAPI$InterruptingAnimations$Main$boxWidth);
 };
 var $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveUp = $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveToY(0);
-var $author$project$Anim$Engine$WAAPI$Canceled = function (a) {
-	return {$: 'Canceled', a: a};
+var $author$project$Anim$Engine$WAAPI$Cancelled = function (a) {
+	return {$: 'Cancelled', a: a};
 };
 var $author$project$Anim$Engine$WAAPI$Completed = function (a) {
 	return {$: 'Completed', a: a};
@@ -9378,8 +9378,8 @@ var $author$project$Anim$Engine$WAAPI$statusStringToEvent = F2(
 				return $author$project$Anim$Engine$WAAPI$Resumed(elementId);
 			case 'completed':
 				return $author$project$Anim$Engine$WAAPI$Completed(elementId);
-			case 'canceled':
-				return $author$project$Anim$Engine$WAAPI$Canceled(elementId);
+			case 'Cancelled':
+				return $author$project$Anim$Engine$WAAPI$Cancelled(elementId);
 			case 'restarted':
 				return $author$project$Anim$Engine$WAAPI$Restarted(elementId);
 			default:
@@ -9824,7 +9824,7 @@ var $author$project$Anim$Internal$WAAPI$handleEventInternal = F3(
 					return $author$project$Anim$Internal$WAAPI$Running;
 				case 'completed':
 					return $author$project$Anim$Internal$WAAPI$Complete;
-				case 'canceled':
+				case 'Cancelled':
 					return $author$project$Anim$Internal$WAAPI$Complete;
 				case 'restarted':
 					return $author$project$Anim$Internal$WAAPI$Running;

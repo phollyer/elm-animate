@@ -5246,7 +5246,7 @@ var $author$project$Anim$Internal$AnimationCore$animationStepsWithFrames = F4(
 		var weights = A2(
 			$elm$core$List$map,
 			function (i) {
-				return easing(i / framesFloat);
+				return easing(i / (framesFloat - 1));
 			},
 			A2($elm$core$List$range, 0, frames - 1));
 		var diff = $elm$core$Basics$abs(start - stop);
@@ -9096,8 +9096,8 @@ var $author$project$Anim$Engine$Sub$pause = F2(
 	function (elementId, animState) {
 		return A2($author$project$Anim$Internal$Sub$pauseElement, elementId, animState);
 	});
-var $author$project$Anim$Internal$Sub$Canceled = function (a) {
-	return {$: 'Canceled', a: a};
+var $author$project$Anim$Internal$Sub$Cancelled = function (a) {
+	return {$: 'Cancelled', a: a};
 };
 var $author$project$Anim$Internal$Sub$resetElement = F2(
 	function (elementId, _v0) {
@@ -9124,7 +9124,7 @@ var $author$project$Anim$Internal$Sub$resetElement = F2(
 				state.pendingEvents,
 				_List_fromArray(
 					[
-						$author$project$Anim$Internal$Sub$Canceled(elementId)
+						$author$project$Anim$Internal$Sub$Cancelled(elementId)
 					])) : state.pendingEvents;
 			return $author$project$Anim$Internal$Sub$AnimState(
 				_Utils_update(
@@ -9245,7 +9245,7 @@ var $author$project$Anim$Internal$Sub$stopElement = F2(
 				state.pendingEvents,
 				_List_fromArray(
 					[
-						$author$project$Anim$Internal$Sub$Canceled(elementId)
+						$author$project$Anim$Internal$Sub$Cancelled(elementId)
 					])) : state.pendingEvents;
 			return $author$project$Anim$Internal$Sub$AnimState(
 				_Utils_update(
@@ -9257,8 +9257,8 @@ var $author$project$Anim$Engine$Sub$stop = F2(
 	function (elementId, animState) {
 		return A2($author$project$Anim$Internal$Sub$stopElement, elementId, animState);
 	});
-var $author$project$Anim$Engine$Sub$Canceled = function (a) {
-	return {$: 'Canceled', a: a};
+var $author$project$Anim$Engine$Sub$Cancelled = function (a) {
+	return {$: 'Cancelled', a: a};
 };
 var $author$project$Anim$Engine$Sub$Completed = function (a) {
 	return {$: 'Completed', a: a};
@@ -9285,10 +9285,10 @@ var $author$project$Anim$Engine$Sub$toAnimEvent = function (event) {
 			var elementId = event.a;
 			return $elm$core$Maybe$Just(
 				$author$project$Anim$Engine$Sub$Completed(elementId));
-		case 'Canceled':
+		case 'Cancelled':
 			var elementId = event.a;
 			return $elm$core$Maybe$Just(
-				$author$project$Anim$Engine$Sub$Canceled(elementId));
+				$author$project$Anim$Engine$Sub$Cancelled(elementId));
 		case 'Paused':
 			var elementId = event.a;
 			return $elm$core$Maybe$Just(

@@ -896,7 +896,7 @@ handleEventInternal elementId status (AnimState state) =
                 "completed" ->
                     Complete
 
-                "canceled" ->
+                "Cancelled" ->
                     Complete
 
                 "restarted" ->

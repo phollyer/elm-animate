@@ -938,7 +938,7 @@ type AnimEvent
     | Paused String
     | Resumed String
     | Completed String
-    | Canceled String
+    | Cancelled String
     | Restarted String
 
 
@@ -1030,8 +1030,8 @@ statusStringToEvent elementId status =
         "completed" ->
             Completed elementId
 
-        "canceled" ->
-            Canceled elementId
+        "Cancelled" ->
+            Cancelled elementId
 
         "restarted" ->
             Restarted elementId

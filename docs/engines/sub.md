@@ -139,7 +139,7 @@ The `update` function returns a list of animation events. Use these to chain ani
                                 -- Animation started
                                 ( model, Cmd.none )
 
-                            Sub.Canceled "box" ->
+                            Sub.Cancelled "box" ->
                                 -- Animation was stopped/reset
                                 ( model, Cmd.none )
 
@@ -167,7 +167,7 @@ The `update` function returns a list of animation events. Use these to chain ani
     | ----- | ------------- |
     | `Started` | The animation begins playing |
     | `Completed` | The animation finishes |
-    | `Canceled` | The animation is stopped or reset via `stop` or `reset` |
+    | `Cancelled` | The animation is stopped or reset via `stop` or `reset` |
     | `Paused` | The animation is paused via `pause` |
     | `Resumed` | The animation is resumed via `resume` |
     | `Restarted` | The animation is restarted via `restart` |

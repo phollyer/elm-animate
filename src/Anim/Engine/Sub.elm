@@ -338,7 +338,7 @@ Emitted by `update` when animation state changes:
 
   - **Started**: Animation started for an element
   - **Completed**: Animation reached its end naturally
-  - **Canceled**: Animation was stopped or reset
+  - **Cancelled**: Animation was stopped or reset
   - **Paused**: Animation was paused
   - **Resumed**: Animation was resumed
   - **Restarted**: Animation was restarted
@@ -349,7 +349,7 @@ The `String` is the element ID affected.
 type AnimEvent
     = Started String
     | Completed String
-    | Canceled String
+    | Cancelled String
     | Paused String
     | Resumed String
     | Restarted String
@@ -393,8 +393,8 @@ toAnimEvent event =
         InternalSub.Completed elementId ->
             Just (Completed elementId)
 
-        InternalSub.Canceled elementId ->
-            Just (Canceled elementId)
+        InternalSub.Cancelled elementId ->
+            Just (Cancelled elementId)
 
         InternalSub.Paused elementId ->
             Just (Paused elementId)

@@ -344,7 +344,7 @@ type AnimMsg
 type AnimEvent
     = Started String
     | Completed String
-    | Canceled String
+    | Cancelled String
     | Paused String
     | Resumed String
     | Restarted String
@@ -1601,7 +1601,7 @@ stopElement elementId (AnimState state) =
 
                 newPendingEvents =
                     if wasRunning then
-                        state.pendingEvents ++ [ Canceled elementId ]
+                        state.pendingEvents ++ [ Cancelled elementId ]
 
                     else
                         state.pendingEvents
@@ -1642,7 +1642,7 @@ resetElement elementId (AnimState state) =
 
                 newPendingEvents =
                     if wasRunning then
-                        state.pendingEvents ++ [ Canceled elementId ]
+                        state.pendingEvents ++ [ Cancelled elementId ]
 
                     else
                         state.pendingEvents
