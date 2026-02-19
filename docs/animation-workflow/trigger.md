@@ -15,62 +15,53 @@ See [Engine Overview](../engines/overview.md#animate-vs-fireandforget) for a det
 
 ## Using `animate`
 
-The `animate` function processes your animation configuration and merges the computed data into your existing `AnimState`:
+The `animate` function processes your animation configuration and merges the computed data into your existing `AnimState`. The pattern is the same across all engines:
 
 ??? example "View Source Code"
 
-    ```elm
-    update msg model =
-        case msg of
-            GotStartAnimation ->
-                ( { model | animState = Transitions.animate model.animState fadeIn }
-                , Cmd.none
-                )
-    ```
+    `Engine.animate animState animConfiguration`
 
-    The pattern is the same across all engines:
+    === "Transitions"
 
-    ```elm
-    -- CSS Transitions
-    Transitions.animate model.animState myAnimation
+        ```elm
+        ( { model | animState = Transitions.animate model.animState fadeIn }
+        , Cmd.none
+        )
+        ```
 
-    -- CSS Keyframes
-    Keyframes.animate model.animState myAnimation
+    === "Keyframes"
 
-    -- Sub
-    Sub.animate model.animState myAnimation
+        ```elm
+        ( { model | animState = Keyframes.animate model.animState fadeIn }
+        , Cmd.none
+        )
+        ```
 
-    -- WAAPI (also requires the element ID)
-    WAAPI.animate model.animState <|
-        WAAPI.forElement "element-id" >> myAnimation
-    ```
+    === "Sub"
 
-### WAAPI Returns a Cmd
+        ```elm
+        ( { model | animState = Sub.animate model.animState fadeIn }
+        , Cmd.none
+        )
+        ```
 
-WAAPI uses JavaScript ports, so `animate` returns both the updated state and a command. It also requires `forElement` to specify which DOM element to animate:
+    === "WAAPI"
 
-??? example "WAAPI Pattern"
+        ```elm
+        let
+            ( newAnimState, cmd ) =
+                WAAPI.animate model.animState <|
+                    WAAPI.forElement "element-id" >> fadeIn
+        in
+        ( { model | animState = newAnimState }
+        , cmd
+        )
+        ```
 
-    ```elm
-    update msg model =
-        case msg of
-            GotStartAnimation ->
-                let
-                    ( newAnimState, cmd ) =
-                        WAAPI.animate model.animState <|
-                            WAAPI.forElement "header" 
-                                >> fadeIn
-                                >> slideDown
-                                >> WAAPI.forElement "sidebar"
-                                >> fadeIn
-                                >> slideRight
-                in
-                ( { model | animState = newAnimState }
-                , cmd
-                )
-    ```
+        WAAPI uses JavaScript ports, so `animate` returns both the updated state and a `cmd` that sends the animation data to JS.
+        
+        It also requires `forElement` to specify which DOM element to animate.
 
-    The "header" element will `fadeIn` and `slideDown`; the "sidebar" element will `fadeIn` and `slideRight`. The returned `cmd` sends these animations to JavaScript via ports.
 
 ## Using `fireAndForget`
 
@@ -78,23 +69,85 @@ For simple animations that don't need state tracking:
 
 ??? example "View Source Code"
 
-    ```elm
-    -- In init
-    init _ =
-        ( { animState = Keyframes.fireAndForget (fadeIn >> slideIn) }
-        , Cmd.none
-        )
+    === "Transitions"
 
-    -- Or in update
-    update msg model =
-        case msg of
-            GotShowBox ->
-                ( { model | animState = Keyframes.fireAndForget (fadeIn >> slideIn) }
-                , Cmd.none
-                )
-    ```
+        ```elm
+        -- In init
+        init _ =
+            ( { animState = Transitions.fireAndForget (fadeIn >> slideIn) }
+            , Cmd.none
+            )
 
-    Note that `fireAndForget` does not take an `AnimState` as a parameter.
+        -- Or in update
+        update msg model =
+            case msg of
+                GotShowBox ->
+                    ( { model | animState = Transitions.fireAndForget (fadeIn >> slideIn) }
+                    , Cmd.none
+                    )
+        ```
+
+    === "Keyframes"
+
+        ```elm
+        -- In init
+        init _ =
+            ( { animState = Keyframes.fireAndForget (fadeIn >> slideIn) }
+            , Cmd.none
+            )
+
+        -- Or in update
+        update msg model =
+            case msg of
+                GotShowBox ->
+                    ( { model | animState = Keyframes.fireAndForget (fadeIn >> slideIn) }
+                    , Cmd.none
+                    )
+        ```
+
+    === "Sub"
+
+        ```elm
+        -- In init
+        init _ =
+            ( { animState = Sub.fireAndForget (fadeIn >> slideIn) }
+            , Cmd.none
+            )
+
+        -- Or in update
+        update msg model =
+            case msg of
+                GotShowBox ->
+                    ( { model | animState = Sub.fireAndForget (fadeIn >> slideIn) }
+                    , Cmd.none
+                    )
+        ```
+
+    === "WAAPI"
+
+        ```elm
+        -- In init (returns Cmd)
+        init _ =
+            let
+                ( animState, cmd ) =
+                    WAAPI.fireAndForget waapiCommand <|
+                        WAAPI.forElement "element-id" >> fadeIn >> slideIn
+            in
+            ( { animState = animState }, cmd )
+
+        -- Or in update
+        update msg model =
+            case msg of
+                GotShowBox ->
+                    let
+                        ( animState, cmd ) =
+                            WAAPI.fireAndForget waapiCommand <|
+                                WAAPI.forElement "element-id" >> fadeIn >> slideIn
+                    in
+                    ( { model | animState = animState }, cmd )
+        ```
+
+Note that `fireAndForget` does not take an `AnimState` as a parameter — it creates a fresh state each time.
 
 ## When to Trigger
 
@@ -104,22 +157,84 @@ Most animations trigger in response to user action events or application events.
 
 ??? example "View Source Code"
 
-    ```elm
-    update msg model =
-        case msg of
-            GotButtonClick ->
-                ( { model | animState = Transitions.animate model.animState buttonPress }
-                , Cmd.none
-                )
+    === "Transitions"
 
-            GotDataReceived data ->
-                ( { model 
-                    | data = data
-                    , animState = Transitions.animate model.animState dataFadeIn 
-                  }
-                , Cmd.none
-                )
-    ```
+        ```elm
+        update msg model =
+            case msg of
+                GotButtonClick ->
+                    ( { model | animState = Transitions.animate model.animState buttonPress }
+                    , Cmd.none
+                    )
+
+                GotDataReceived data ->
+                    ( { model 
+                        | data = data
+                        , animState = Transitions.animate model.animState dataFadeIn 
+                      }
+                    , Cmd.none
+                    )
+        ```
+
+    === "Keyframes"
+
+        ```elm
+        update msg model =
+            case msg of
+                GotButtonClick ->
+                    ( { model | animState = Keyframes.animate model.animState buttonPress }
+                    , Cmd.none
+                    )
+
+                GotDataReceived data ->
+                    ( { model 
+                        | data = data
+                        , animState = Keyframes.animate model.animState dataFadeIn 
+                      }
+                    , Cmd.none
+                    )
+        ```
+
+    === "Sub"
+
+        ```elm
+        update msg model =
+            case msg of
+                GotButtonClick ->
+                    ( { model | animState = Sub.animate model.animState buttonPress }
+                    , Cmd.none
+                    )
+
+                GotDataReceived data ->
+                    ( { model 
+                        | data = data
+                        , animState = Sub.animate model.animState dataFadeIn 
+                      }
+                    , Cmd.none
+                    )
+        ```
+
+    === "WAAPI"
+
+        ```elm
+        update msg model =
+            case msg of
+                GotButtonClick ->
+                    let
+                        ( newAnimState, cmd ) =
+                            WAAPI.animate model.animState <|
+                                WAAPI.forElement "button" >> buttonPress
+                    in
+                    ( { model | animState = newAnimState }, cmd )
+
+                GotDataReceived data ->
+                    let
+                        ( newAnimState, cmd ) =
+                            WAAPI.animate model.animState <|
+                                WAAPI.forElement "data-container" >> dataFadeIn
+                    in
+                    ( { model | data = data, animState = newAnimState }, cmd )
+        ```
 
 ### On Page Load
 

@@ -34,28 +34,50 @@ Elm Animate provides a singular, composable builder API to build animation confi
 - **Sub**
 - **WAAPI**
 
-Define your animations once. Use them everywhere.
+Define your animations once.
 
-```elm
--- Define once
-fadeIn : AnimBuilder -> AnimBuilder
-fadeIn =
-    Opacity.for "entranceAnim"
-        >> Opacity.from 0
-        >> Opacity.to 1
-        >> Opacity.duration 300
-        >> Opacity.build
 
--- Use with any engine
-Transitions.animate model.animState fadeIn
+??? example "View Source Code"
 
-Keyframes.animate model.animState fadeIn
+    ```elm
+    -- Define once
+    fadeIn : AnimBuilder -> AnimBuilder
+    fadeIn =
+        Opacity.for "entranceAnim"
+            >> Opacity.from 0
+            >> Opacity.to 1
+            >> Opacity.duration 300
+            >> Opacity.build
+    ```
 
-Sub.animate model.animState fadeIn
+Then use with any engine.
 
-WAAPI.animate model.animState <|
-    WAAPI.forElement "element-id" >> fadeIn
-```
+??? example "View Source Code"
+
+    === "Transitions"
+
+        ```elm
+        Transitions.animate model.animState fadeIn
+        ```
+
+    === "Keyframes"
+
+        ```elm
+        Keyframes.animate model.animState fadeIn
+        ```
+
+    === "Sub"
+
+        ```elm
+        Sub.animate model.animState fadeIn
+        ```
+
+    === "WAAPI"
+
+        ```elm
+        WAAPI.animate model.animState <|
+            WAAPI.forElement "element-id" >> fadeIn
+        ```
 
 Elm Animate abstracts away the differences in each approach so you can focus on your task at hand rather than a new API - the same animation configurations work with every Engine.
 

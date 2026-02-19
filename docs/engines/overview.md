@@ -58,23 +58,35 @@ Because all engines share the same builder API, animations are portable:
             >> Translate.toXY 100 200
             >> Translate.duration 500
             >> Translate.build
-
-    -- Use with CSS.Transitions
-    Transitions.fireAndForget myAnimation
-
-    -- Use with CSS.Keyframes
-    Keyframes.fireAndForget myAnimation
-
-    -- Use with Sub
-    Sub.animate model.animState myAnimation
-
-    -- Use with WAAPI
-    WAAPI.animate model.animState <|
-        WAAPI.forElement "elementId"
-            >> myAnimation
     ```
 
-This makes it easy to start simple with the one of the CSS Engines and migrate to Sub or WAAPI as your requirements grow.
+    === "Transitions"
+
+        ```elm
+        Transitions.fireAndForget myAnimation
+        ```
+
+    === "Keyframes"
+
+        ```elm
+        Keyframes.fireAndForget myAnimation
+        ```
+
+    === "Sub"
+
+        ```elm
+        Sub.animate model.animState myAnimation
+        ```
+
+    === "WAAPI"
+
+        ```elm
+        WAAPI.animate model.animState <|
+            WAAPI.forElement "elementId"
+                >> myAnimation
+        ```
+
+This makes it easy to start simple with one of the CSS Engines and migrate to Sub or WAAPI as your requirements grow.
 
 
 ## Next Steps
