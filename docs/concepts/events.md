@@ -9,7 +9,7 @@ Each engine provides different events based on its capabilities:
 | Event | Transitions | Keyframes | Sub | WAAPI |
 | ----- | :---------: | :-------: | :-: | :---: |
 | Started | ✓ | ✓ | ✓ | ✓ |
-| Ended/Completed | ✓ | ✓ | ✓ | ✓ |
+| Ended | ✓ | ✓ | ✓ | ✓ |
 | Cancelled | ✓ | ✓ | ✓ | ✓ |
 | Run | ✓ | | | |
 | Iteration | | ✓ | | |
@@ -91,7 +91,7 @@ handleEvents events model =
 handleEvent : Sub.AnimEvent -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
 handleEvent event ( model, cmd ) =
     case event of
-        Sub.Completed "box" ->
+        Sub.Ended "box" ->
             ( model, Cmd.batch [ cmd, startNextAnimation ] )
 
         Sub.Paused _ ->
@@ -122,7 +122,7 @@ update msg model =
 handleEvent : Maybe WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
 handleEvent maybeEvent model =
     case maybeEvent of
-        Just (WAAPI.Completed "box") ->
+        Just (WAAPI.Ended "box") ->
             ( model, startNextAnimation )
 
         Just (WAAPI.Cancelled _) ->
@@ -138,11 +138,11 @@ handleEvent maybeEvent model =
 
 Fired when an animation begins. For CSS engines, this fires after any delay.
 
-### Ended / Completed
+### Ended
 
 Fired when an animation finishes naturally — reaching its end state.
 
-### Cancelled / Cancelled
+### Cancelled
 
 Fired when an animation is interrupted before completion. This can happen when:
 

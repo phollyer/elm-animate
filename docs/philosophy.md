@@ -54,10 +54,10 @@ Keyframes.animate model.animState fadeIn
 Sub.animate model.animState fadeIn
 
 WAAPI.animate model.animState <|
-    WAAPI.forElement "elementId" >> fadeIn
+    WAAPI.forElement "element-id" >> fadeIn
 ```
 
-Elm Animate abstracts away the differences in each approach so you can focus on your task at hand rather than a new API.
+Elm Animate abstracts away the differences in each approach so you can focus on your task at hand rather than a new API - the same animation configurations work with every Engine.
 
 When requirements change — and they always do — you can switch engines without rewriting your animations.
 
@@ -72,6 +72,14 @@ What starts as simple hover effects might need to become complex choreographed s
 With Elm Animate, you're not locked in. Your animation logic stays stable while you choose the right engine for your needs.
 
 **Learn once. Use everywhere. Adapt when needed.**
+
+## And One More Thing
+
+If animation is about smoothly interpolating values over time, why stop at CSS properties?
+
+Scroll position is just another value. The Scroll Engine applies the same philosophy — smooth, configurable, eased movement — to viewport and container scrolling.
+
+**Same mental model. Different target.**
 
 ## Next Steps
 

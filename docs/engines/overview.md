@@ -25,6 +25,25 @@ Elm Animate provides multiple animation engines, each optimized for different us
 | Custom transform order | ✓ | ✓ | ✓ | ✓ |
 | 3D transforms | ✓ | ✓ | ✓ | ✓ |
 
+## `animate` vs `fireAndForget`
+
+All engines provide two ways to trigger animations:
+
+- **`animate`** — Tracks state in `AnimState`, enabling sequencing, redirection, and control
+- **`fireAndForget`** — Starts fresh each time, no state continuity
+
+| Scenario | Transitions | Keyframes | Sub | WAAPI |
+| -------- | :---------: | :-------: | :-: | :---: |
+| Animation runs once, no control needed | `fireAndForget` | `fireAndForget` | `animate` | `fireAndForget` |
+| Simple entry animations | `fireAndForget` | `fireAndForget` | `animate` | `fireAndForget` |
+| Stop/reset controls | `animate` | `animate` | `animate` | `animate` |
+| Pause/resume controls | | `animate` | `animate` | `animate` |
+| Sequencing animations | `animate` | `animate` | `animate` | `animate` |
+| Redirecting mid-flight | `animate`/`fireAndForget` | | `animate` | `animate` |
+
+!!! note "Sub always uses `animate`"
+    The Sub engine requires `animate` even for simple animations because it needs ongoing subscriptions to drive frame updates.
+
 ## Switching Engines
 
 Because all engines share the same builder API, animations are portable:

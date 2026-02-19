@@ -5,8 +5,6 @@ Let's create a simple **fire-and-forget** animation using the **Transitions Engi
 !!! info "What is fire-and-forget?"
     A fire-and-forget animation requires no state management or subscriptions to drive it. You trigger it once, and the browser handles the rest — completion events are available if you need them.
 
-    (More on this later)
-
 ## The Animation
 
 We'll fade an element in and out over 2500 milliseconds.

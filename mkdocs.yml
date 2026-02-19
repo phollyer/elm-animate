@@ -79,6 +79,8 @@ nav:
     - Timing: concepts/timing.md
     - Easing Functions: concepts/easing.md
     - Events: concepts/events.md
+    - Sequencing: concepts/sequencing.md
+    - Interruptions: concepts/interruptions.md
     - 3D Animations: concepts/3d.md
   - Engines:
     - Overview: engines/overview.md

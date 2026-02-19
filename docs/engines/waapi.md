@@ -210,11 +210,11 @@ The WAAPI engine uses a subscription-based event pattern. The `subscriptions` fu
                 -- Animation began playing
                 ( model, Cmd.none )
 
-            Just (WAAPI.Completed "box") ->
+            Just (WAAPI.Ended "box") ->
                 -- The "box" element finished animating
                 startNextAnimation model
 
-            Just (WAAPI.Completed elementId) ->
+            Just (WAAPI.Ended elementId) ->
                 -- Some other element finished animating
                 ( model, Cmd.none )
 
@@ -244,7 +244,7 @@ The WAAPI engine uses a subscription-based event pattern. The `subscriptions` fu
     | Event | Fires when... |
     | ----- | ------------- |
     | `Started` | The animation begins playing |
-    | `Completed` | The animation finishes |
+    | `Ended` | The animation finishes |
     | `Paused` | The animation is paused via `pause` |
     | `Resumed` | The animation is resumed via `resume` |
     | `Cancelled` | The animation is Cancelled via `stop` or `reset` |
@@ -498,7 +498,7 @@ The WAAPI Engine fully supports 3D animations. See [3D Animations](../concepts/3
 | `AnimState msg` | Tracks animations and their states |
 | `AnimBuilder` | Carries all the animation configurations |
 | `AnimMsg` | Opaque message type for WAAPI subscription events |
-| `AnimEvent` | Lifecycle events: `Started String`, `Completed String`, `Paused String`, `Resumed String`, `Cancelled String`, `Restarted String` |
+| `AnimEvent` | Lifecycle events: `Started String`, `Ended String`, `Paused String`, `Resumed String`, `Cancelled String`, `Restarted String` |
 
 ### Core Functions
 

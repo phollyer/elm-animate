@@ -8658,8 +8658,8 @@ var $author$project$Engines$Sub$InterruptingAnimations$Main$moveUp = $author$pro
 var $author$project$Anim$Engine$Sub$Cancelled = function (a) {
 	return {$: 'Cancelled', a: a};
 };
-var $author$project$Anim$Engine$Sub$Completed = function (a) {
-	return {$: 'Completed', a: a};
+var $author$project$Anim$Engine$Sub$Ended = function (a) {
+	return {$: 'Ended', a: a};
 };
 var $author$project$Anim$Engine$Sub$Paused = function (a) {
 	return {$: 'Paused', a: a};
@@ -8679,10 +8679,10 @@ var $author$project$Anim$Engine$Sub$toAnimEvent = function (event) {
 			var elementId = event.a;
 			return $elm$core$Maybe$Just(
 				$author$project$Anim$Engine$Sub$Started(elementId));
-		case 'Completed':
+		case 'Ended':
 			var elementId = event.a;
 			return $elm$core$Maybe$Just(
-				$author$project$Anim$Engine$Sub$Completed(elementId));
+				$author$project$Anim$Engine$Sub$Ended(elementId));
 		case 'Cancelled':
 			var elementId = event.a;
 			return $elm$core$Maybe$Just(
@@ -8701,8 +8701,8 @@ var $author$project$Anim$Engine$Sub$toAnimEvent = function (event) {
 				$author$project$Anim$Engine$Sub$Restarted(elementId));
 	}
 };
-var $author$project$Anim$Internal$Sub$Completed = function (a) {
-	return {$: 'Completed', a: a};
+var $author$project$Anim$Internal$Sub$Ended = function (a) {
+	return {$: 'Ended', a: a};
 };
 var $author$project$Anim$Internal$Sub$detectCompletedElements = F2(
 	function (oldElements, newElements) {
@@ -8715,7 +8715,7 @@ var $author$project$Anim$Internal$Sub$detectCompletedElements = F2(
 					$elm$core$Maybe$andThen,
 					function (oldElem) {
 						return ((!oldElem.isComplete) && newElem.isComplete) ? $elm$core$Maybe$Just(
-							$author$project$Anim$Internal$Sub$Completed(elementId)) : $elm$core$Maybe$Nothing;
+							$author$project$Anim$Internal$Sub$Ended(elementId)) : $elm$core$Maybe$Nothing;
 					},
 					A2($elm$core$Dict$get, elementId, oldElements));
 			},

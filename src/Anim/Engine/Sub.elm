@@ -337,7 +337,7 @@ type alias AnimMsg =
 Emitted by `update` when animation state changes:
 
   - **Started**: Animation started for an element
-  - **Completed**: Animation reached its end naturally
+  - **Ended**: Animation reached its end naturally
   - **Cancelled**: Animation was stopped or reset
   - **Paused**: Animation was paused
   - **Resumed**: Animation was resumed
@@ -348,7 +348,7 @@ The `String` is the element ID affected.
 -}
 type AnimEvent
     = Started String
-    | Completed String
+    | Ended String
     | Cancelled String
     | Paused String
     | Resumed String
@@ -390,8 +390,8 @@ toAnimEvent event =
         InternalSub.Started elementId ->
             Just (Started elementId)
 
-        InternalSub.Completed elementId ->
-            Just (Completed elementId)
+        InternalSub.Ended elementId ->
+            Just (Ended elementId)
 
         InternalSub.Cancelled elementId ->
             Just (Cancelled elementId)

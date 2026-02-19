@@ -343,7 +343,7 @@ type AnimMsg
 -}
 type AnimEvent
     = Started String
-    | Completed String
+    | Ended String
     | Cancelled String
     | Paused String
     | Resumed String
@@ -395,7 +395,7 @@ detectCompletedElements oldElements newElements =
                     |> Maybe.andThen
                         (\oldElem ->
                             if not oldElem.isComplete && newElem.isComplete then
-                                Just (Completed elementId)
+                                Just (Ended elementId)
 
                             else
                                 Nothing

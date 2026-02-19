@@ -937,7 +937,7 @@ type AnimEvent
     = Started String
     | Paused String
     | Resumed String
-    | Completed String
+    | Ended String
     | Cancelled String
     | Restarted String
 
@@ -991,7 +991,7 @@ and an optional `AnimEvent` that you can pattern match on and react to.
     handleAnimationEvent : Maybe WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleAnimationEvent maybeEvent model =
         case maybeEvent of
-            Just (WAAPI.Completed "box") ->
+            Just (WAAPI.Ended "box") ->
                 -- The "box" element finished animating
                 ( model, startNextAnimation )
 
@@ -1028,7 +1028,7 @@ statusStringToEvent elementId status =
             Resumed elementId
 
         "completed" ->
-            Completed elementId
+            Ended elementId
 
         "Cancelled" ->
             Cancelled elementId

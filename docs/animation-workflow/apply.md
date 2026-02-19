@@ -24,22 +24,6 @@ Every animation engine provides an `attributes` function that generates HTML att
 
     The first argument is the **animation group name** - this tells the engine which group's animation data to look up from the `AnimState`.
 
-## What Attributes Produces
-
-The `attributes` function generates inline CSS styles based on your animation configuration:
-
-| Property | CSS Output |
-| -------- | ---------- |
-| Translate | `transform: translate3d(x, y, z)` |
-| Rotate | `transform: rotate3d(...)` |
-| Scale | `transform: scale3d(x, y, z)` |
-| Opacity | `opacity: value` |
-| BackgroundColor | `background-color: rgba(...)` |
-| FontColor | `color: rgba(...)` |
-| Size | `width: ...px; height: ...px` |
-
-For transform properties, the values are combined into a single `transform` property in the order: Translate → Rotate → Scale (or your custom order if specified).
-
 ## Animation Group Names
 
 The **animation group name** is the key that connects your animation definition to your view.
@@ -81,68 +65,6 @@ The **animation group name** is the key that connects your animation definition 
         div (Transitions.attributes "boxAnim" model.animState) [ ... ]
     ```
 
-### Reusing Animations Across Elements
-
-To apply the same animation logic to different elements, parameterize the group name:
-
-??? example "Parameterized Animation"
-
-    ```elm
-    fadeIn : String -> AnimBuilder -> AnimBuilder
-    fadeIn group =
-        Opacity.for group
-            >> Opacity.from 0
-            >> Opacity.to 1
-            >> Opacity.build
-
-    -- Apply to different elements
-    GotShowHeader ->
-        ( { model | animState = Transitions.animate model.animState (fadeIn "headerAnim") }
-        , Cmd.none
-        )
-
-    GotShowSidebar ->
-        ( { model | animState = Transitions.animate model.animState (fadeIn "sidebarAnim") }
-        , Cmd.none
-        )
-
-    view model =
-        div []
-            [ div (Transitions.attributes "headerAnim" model.animState) [ text "Header" ]
-            , div (Transitions.attributes "sidebarAnim" model.animState) [ text "Sidebar" ]
-            ]
-    ```
-
-### Building Complex Animations
-
-Use the group name to build up animations from smaller pieces.
-
-??? example "View Source Code"
-
-    ```elm
-    GotShowHeader ->
-        let
-            animGroup =
-                "headerAnim"
-        in
-        ( { model | animState = Transitions.animate model.animState <|
-                fadeIn animGroup >> slideDown animGroup
-          }
-        , Cmd.none
-        )
-
-    GotShowSidebar ->
-        let
-            animGroup =
-                "sideBarAnim"
-        in
-        ( { model | animState = Transitions.animate model.animState <|
-                fadeIn animGroup >> slideRight animGroup
-          }
-        , Cmd.none
-        )
-
-    ```
 
 ## Engine-Specific Requirements
 
@@ -172,7 +94,7 @@ Keyframes animations require a `<style>` node in the DOM containing the generate
     view model =
         div []
             [ Keyframes.styleNodeFor "headerAnim" model.animState 
-            , Keyframes.styleNodeFor "sidebarAnim" model.animstate
+            , Keyframes.styleNodeFor "sidebarAnim" model.animState
             , div
                 (Keyframes.attributes "headerAnim" model.animState)
                 [ text "I am a header!" ]
@@ -184,29 +106,7 @@ Keyframes animations require a `<style>` node in the DOM containing the generate
 
 ### WAAPI Engine
 
-The WAAPI Engine is slightly different to the CSS and Sub engines due to using the Web Animations API. WAAPI applies the animation in JS and so requires the element id to know which element to apply the animation group to.
-
-WAAPI uses the `forElement` builder to specify which DOM element to animate:
-
-??? example "Show Source Code"
-
-    ```elm
-    ( newAnimState, cmd ) =
-        WAAPI.animate model.animState <|
-            WAAPI.forElement "header"  -- Required!
-                >> fadeIn "headerAnim"
-                >> slideDown "headerAnim"
-                -- Add another element animation
-                >> WAAPI.forElement "sidebar"
-                >> fadeIn "sidebarAnim"
-                >> slideRight "sidebarAnim"
-    ```
-
-#### WAAPI `attributes`
-
-The `attributes` function for the WAAPI Engine works slightly differently to the CSS and Sub Engines.
-
-Since WAAPI applies keyframe effects via JavaScript, the animation itself isn't driven by the CSS from `attributes`. Instead, `attributes` serves two purposes:
+The WAAPI Engine does not use `attributes` to drive the animation — the Web Animations API on the JS side does this instead. Therefore, the `attributes` function bookends the animation and serves two purposes:
 
 1. **Initial state** — Renders the starting CSS immediately, preventing a flash of unstyled content before JavaScript processes the port command
 2. **Final state** — Keeps the element in its final position after the animation completes
@@ -222,52 +122,20 @@ Since WAAPI applies keyframe effects via JavaScript, the animation itself isn't 
             ]
     ```
 
-    Note: WAAPI elements also need an `id` attribute so JavaScript can find the element to apply the keyframe effects to.
-
-### CSS Transitions Engine
-
-No additional requirements — just use `attributes`.
-
-### Sub Engine
-
-No additional requirements — just use `attributes`.
-
-## Initial Values
-
-When you initialize an `AnimState` with property values, those values appear immediately via `attributes`:
-
-??? example "View Source Code"
-
-    ```elm
-    init _ =
-        ( { animState =
-                Transitions.init
-                    [ Opacity.init "box" 0
-                    , Translate.initXY "box" -100 0
-                    ]
-        }
-        , Cmd.none
-        )
-
-    view model =
-        -- Element starts invisible and offset left
-        div (Transitions.attributes "box" model.animState) [ text "I'll animate in!" ]
-    ```
-
-This is useful for entry animations where you want the element to start in a specific state before animating to its final position.
+    Note: WAAPI elements also need an `id` attribute so JavaScript can find the element to apply the animation to. The `id` must match the element ID provided in the `.forElement` call when building the animation configuration.
 
 ## Multiple Elements
 
-You can animate multiple elements from the same `AnimState`. Each element needs its own animation group:
+You can animate multiple elements from the same `AnimState`.
 
 ??? example "View Source Code"
 
     ```elm
     -- Define animations for each element
-    animateAll =
-        fadeIn "header"
+    Transition.animate model.animState <|
+        slideDown "header"
             >> fadeIn "content"
-            >> fadeIn "footer"
+            >> slideUp "footer"
 
     view model =
         div []
@@ -277,7 +145,19 @@ You can animate multiple elements from the same `AnimState`. Each element needs 
             ]
     ```
 
-Each animation group gets its own data within the shared `AnimState`.
+    Alternatively, one animation configuration can run on multiple elements.
+
+    ```elm
+    Transition.animate model.animState <|
+        fadeIn "introAnim"
+
+    view model =
+        div []
+            [ div (Transitions.attributes "introAnim" model.animState) [ text "Header" ]
+            , div (Transitions.attributes "introAnim" model.animState) [ text "Content" ]
+            , div (Transitions.attributes "introAnim" model.animState) [ text "Footer" ]
+            ]
+    ```
 
 ## Next Steps
 

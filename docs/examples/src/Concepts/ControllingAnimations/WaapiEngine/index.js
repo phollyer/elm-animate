@@ -10173,8 +10173,8 @@ var $author$project$Anim$Engine$WAAPI$stop = $author$project$Anim$Internal$WAAPI
 var $author$project$Anim$Engine$WAAPI$Cancelled = function (a) {
 	return {$: 'Cancelled', a: a};
 };
-var $author$project$Anim$Engine$WAAPI$Completed = function (a) {
-	return {$: 'Completed', a: a};
+var $author$project$Anim$Engine$WAAPI$Ended = function (a) {
+	return {$: 'Ended', a: a};
 };
 var $author$project$Anim$Engine$WAAPI$Paused = function (a) {
 	return {$: 'Paused', a: a};
@@ -10198,7 +10198,7 @@ var $author$project$Anim$Engine$WAAPI$statusStringToEvent = F2(
 			case 'resumed':
 				return $author$project$Anim$Engine$WAAPI$Resumed(elementId);
 			case 'completed':
-				return $author$project$Anim$Engine$WAAPI$Completed(elementId);
+				return $author$project$Anim$Engine$WAAPI$Ended(elementId);
 			case 'Cancelled':
 				return $author$project$Anim$Engine$WAAPI$Cancelled(elementId);
 			case 'restarted':

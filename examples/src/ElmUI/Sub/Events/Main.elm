@@ -243,8 +243,8 @@ processAnimEvent event model =
         Sub.Started _ ->
             addEventToLog AnimationStart "Animation started" model
 
-        Sub.Completed _ ->
-            addEventToLog AnimationEnd "Animation completed" model
+        Sub.Ended _ ->
+            addEventToLog AnimationEnd "Animation ended" model
 
         Sub.Cancelled _ ->
             addEventToLog AnimationCancel "Animation Cancelled" model

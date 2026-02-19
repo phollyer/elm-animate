@@ -131,7 +131,7 @@ The `update` function returns a list of animation events. Use these to chain ani
                 let
                     ( newModel, cmd ) =
                         case event of
-                            Sub.Completed "box" ->
+                            Sub.Ended "box" ->
                                 -- Animation complete
                                 ( model, Cmd.none )
 
@@ -166,7 +166,7 @@ The `update` function returns a list of animation events. Use these to chain ani
     | Event | Fires when... |
     | ----- | ------------- |
     | `Started` | The animation begins playing |
-    | `Completed` | The animation finishes |
+    | `Ended` | The animation finishes |
     | `Cancelled` | The animation is stopped or reset via `stop` or `reset` |
     | `Paused` | The animation is paused via `pause` |
     | `Resumed` | The animation is resumed via `resume` |
@@ -326,7 +326,7 @@ Transform order affects how combined transforms render. For example, rotating th
 | `AnimState` | Tracks animations and their states |
 | `AnimBuilder` | Carries all the animations configurations |
 | `AnimMsg` | Messages from animation frame subscription |
-| `AnimEvent` | Events returned by `update` (Started, Completed, etc.) |
+| `AnimEvent` | Events returned by `update` (Started, Ended, etc.) |
 | `TransformOrder` | Custom transform ordering (Translate, Rotate, Scale) |
 
 ### Core Functions
