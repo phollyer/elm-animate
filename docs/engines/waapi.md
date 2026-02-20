@@ -157,6 +157,138 @@ Don't do this:
             >> slideIn
     ```
 
+## Composite Keys and Animation Groups
+
+WAAPI tracks animations using **composite keys** that combine the element ID with the group name. This enables multiple independent animation groups per element.
+
+### Why Use Animation Groups?
+
+Animation groups give you **granular control** over independent animations on the same element:
+
+- **Pause one, continue others** - Pause position animation while fade keeps going
+- **Independent state queries** - Check if just the position animation is complete
+- **Selective restart** - Restart only the fade animation without affecting position
+
+??? example "View Source Code"
+
+    ```elm
+    -- Setup: two animation groups with different timings
+    startAnimations : AnimState msg -> ( AnimState msg, Cmd msg )
+    startAnimations state =
+        WAAPI.animate state <|
+            WAAPI.forElement "box"
+                >> Translate.for "position"
+                >> Translate.toX 500
+                >> Translate.duration 5000  -- 5 seconds
+                >> Translate.build
+                >> Opacity.for "fade"
+                >> Opacity.to 0
+                >> Opacity.duration 5000    -- 5 seconds
+                >> Opacity.build
+
+    -- Pause only position - fade continues!
+    pausePosition : AnimState msg -> ( AnimState msg, Cmd msg )
+    pausePosition state =
+        WAAPI.pause "box:position" state
+
+    -- Resume position
+    resumePosition : AnimState msg -> ( AnimState msg, Cmd msg )
+    resumePosition state =
+        WAAPI.resume "box:position" state
+
+    -- Or pause everything at once
+    pauseAll : AnimState msg -> ( AnimState msg, Cmd msg )
+    pauseAll state =
+        WAAPI.pause "box" state
+
+    -- Query just the position group
+    isPositionDone : AnimState msg -> Maybe Bool
+    isPositionDone state =
+        WAAPI.isComplete "box:position" state
+    ```
+
+Without separate groups, pausing would affect all properties at once. Groups let you control each animation stream independently.
+
+### How Composite Keys Work
+
+When you animate an element:
+
+??? example "View Source Code"
+
+    ```elm
+    WAAPI.animate model.animState <|
+        WAAPI.forElement "box"
+            >> Opacity.for "fadeGroup"
+            >> Opacity.to 1
+            >> Opacity.duration 500
+            >> Opacity.build
+    ```
+
+The animation is stored internally with the composite key `"box:fadeGroup"`.
+
+### Multiple Animation Groups
+
+You can have multiple independent animation groups on the same element:
+
+??? example "View Source Code"
+
+    ```elm
+    WAAPI.animate model.animState <|
+        WAAPI.forElement "box"
+            >> Opacity.for "fadeGroup" -- First animation group
+            >> Opacity.to 1
+            >> Opacity.build
+            >> Translate.for "moveGroup" -- Second animation group
+            >> Translate.toX 100
+            >> Translate.build
+    ```
+
+These create two independent animations: `"box:fadeGroup"` for opacity and `"box:moveGroup"` for translation.
+
+### Using Composite Keys in Control Functions
+
+Control and query functions accept either format:
+
+??? example "View Source Code"
+
+    **Element ID** - affects all animation groups for that element:
+
+    ```elm
+    -- Pause ALL animations on "box"
+    WAAPI.pause "box" model.animState
+    ```
+
+    **Composite key** - affects only that specific group:
+
+    ```elm
+    -- Pause only the fade animation
+    WAAPI.pause "box:fadeGroup" model.animState
+    ```
+
+### Using Composite Keys with `attributes`
+
+The `attributes` function also accepts both formats:
+
+??? example "View Source Code"
+
+    **Element ID** - merges states from all animation groups:
+
+    ```elm
+    div
+        (WAAPI.attributes "box" model.animState ++ [ id "box" ])
+        [ text "Box" ]
+    ```
+
+    **Composite key** - applies only that group's state:
+
+    ```elm
+    div
+        (WAAPI.attributes "box:fadeGroup" model.animState ++ [ id "box" ])
+        [ text "Box (fade only)" ]
+    ```
+
+    When using element ID, properties from different groups are merged, with later-defined animations taking precedence for conflicting properties.
+
 ## Running Animations
 
 ### Fire-and-Forget
@@ -602,9 +734,11 @@ The WAAPI Engine fully supports 3D animations. See [3D Animations](../concepts/3
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `attributes` | `String -> AnimState msg -> List (Html.Attribute msg)` | Apply initial animation state as inline styles |
+| `attributes` | `String -> AnimState msg -> List (Html.Attribute msg)` | Apply initial animation state as inline styles. Accepts composite key or element ID. When given element ID, merges all animation groups for that element. |
 
 ### Control Functions
+
+All control functions accept either a composite key (`"elementId:groupName"`) to target a specific animation group, or a plain element ID to target all animation groups for that element.
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
@@ -617,6 +751,8 @@ The WAAPI Engine fully supports 3D animations. See [3D Animations](../concepts/3
 
 ### State Query Functions
 
+All query functions accept either a composite key (`"elementId:groupName"`) or a plain element ID. When given element ID, functions check/merge all animation groups for that element.
+
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
 | `anyRunning` | `AnimState msg -> Bool` | Check if any animations are running |
@@ -625,6 +761,8 @@ The WAAPI Engine fully supports 3D animations. See [3D Animations](../concepts/3
 | `isComplete` | `String -> AnimState msg -> Maybe Bool` | Check if a specific element's animation is complete |
 
 ### Property Query Functions
+
+All property query functions accept either a composite key (`"elementId:groupName"`) or a plain element ID. When given element ID, returns the merged value from all animation groups for that element.
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |

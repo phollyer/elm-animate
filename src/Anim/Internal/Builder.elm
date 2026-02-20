@@ -4,6 +4,7 @@ module Anim.Internal.Builder exposing
     , AnimationHistory
     , AnimationHistoryEntry
     , AnimationId
+    , CompositeKey
     , ElementConfig
     , ElementEndStates
     , IterationCount(..)
@@ -22,6 +23,8 @@ module Anim.Internal.Builder exposing
     , duration
     , easing
     , elements
+    , extractElementId
+    , extractGroupName
     , extractTransformsFromProcessed
     , extractTransformsFromProperty
     , for
@@ -44,8 +47,10 @@ module Anim.Internal.Builder exposing
     , getWaapiTargetElement
     , init
     , injectCurrentStates
+    , isCompositeKey
     , iterations
     , loopForever
+    , makeCompositeKey
     , mapScrollTargets
     , markAnimationAsExecuted
     , markDirty
@@ -86,6 +91,53 @@ type AnimBuilder
 
 type alias ElementId =
     String
+
+
+{-| A composite key combining element ID and group name, formatted as "elementId:groupName".
+Used by WAAPI to track multiple animation groups per DOM element.
+-}
+type alias CompositeKey =
+    String
+
+
+{-| Create a composite key from element ID and group name.
+-}
+makeCompositeKey : ElementId -> String -> CompositeKey
+makeCompositeKey elementId groupName =
+    elementId ++ ":" ++ groupName
+
+
+{-| Extract the element ID from a composite key.
+If the key is not a composite key, returns the key itself.
+-}
+extractElementId : CompositeKey -> ElementId
+extractElementId compositeKey =
+    case String.split ":" compositeKey |> List.head of
+        Just id ->
+            id
+
+        Nothing ->
+            compositeKey
+
+
+{-| Extract the group name from a composite key.
+If the key is not a composite key (no colon), returns the key itself as the group name.
+-}
+extractGroupName : CompositeKey -> String
+extractGroupName compositeKey =
+    case String.split ":" compositeKey of
+        [ _, groupName ] ->
+            groupName
+
+        _ ->
+            compositeKey
+
+
+{-| Check if a key is a composite key (contains a colon separator).
+-}
+isCompositeKey : String -> Bool
+isCompositeKey key =
+    String.contains ":" key
 
 
 type alias BuilderData =
@@ -473,10 +525,15 @@ updateCurrentElement config (AnimBuilder data) =
 
         Just animKey ->
             let
-                -- WAAPI: key by target element ID. CSS/Sub: key by animation key
+                -- WAAPI: use composite key "elementId:groupName"
+                -- CSS/Sub: use animation key (group name) as before
                 effectiveKey =
-                    data.waapiTargetElement
-                        |> Maybe.withDefault animKey
+                    case data.waapiTargetElement of
+                        Just elementId ->
+                            makeCompositeKey elementId animKey
+
+                        Nothing ->
+                            animKey
 
                 -- Get types of new properties to avoid duplicates
                 newPropertyTypes =

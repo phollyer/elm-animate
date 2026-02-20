@@ -123,6 +123,118 @@ emptyElementStates =
     }
 
 
+{-| Merge two ElementStates, preferring values from the second (newer) state.
+-}
+mergeElementStates : ElementStates -> ElementStates -> ElementStates
+mergeElementStates old new =
+    let
+        orElse newer older =
+            case newer of
+                Just _ ->
+                    newer
+
+                Nothing ->
+                    older
+    in
+    { translate = orElse new.translate old.translate
+    , rotate = orElse new.rotate old.rotate
+    , scale = orElse new.scale old.scale
+    , backgroundColor = orElse new.backgroundColor old.backgroundColor
+    , fontColor = orElse new.fontColor old.fontColor
+    , opacity = orElse new.opacity old.opacity
+    , size = orElse new.size old.size
+    }
+
+
+{-| Find all animations for a given element ID by searching for composite keys that start with "elementId:".
+Returns a list of (compositeKey, ElementAnimation) pairs.
+-}
+findAnimationsForElement : ElementId -> Dict String ElementAnimation -> List ( String, ElementAnimation )
+findAnimationsForElement elementId animations =
+    let
+        prefix =
+            elementId ++ ":"
+    in
+    Dict.toList animations
+        |> List.filter (\( key, _ ) -> String.startsWith prefix key)
+
+
+{-| Get merged states and transform order for all animations targeting an element.
+When multiple animations exist for the same element, their states are merged
+with later-defined animations taking precedence for conflicting properties.
+-}
+getMergedElementAnimation : ElementId -> Dict String ElementAnimation -> Maybe ElementAnimation
+getMergedElementAnimation elementId animations =
+    let
+        matchingAnims =
+            findAnimationsForElement elementId animations
+    in
+    case matchingAnims of
+        [] ->
+            Nothing
+
+        [ ( _, anim ) ] ->
+            Just anim
+
+        first :: rest ->
+            -- Merge all animations: later ones override earlier for each property
+            Just <|
+                List.foldl
+                    (\( _, anim ) acc ->
+                        { currentStates = mergeElementStates acc.currentStates anim.currentStates
+                        , properties = Dict.union anim.properties acc.properties
+                        , transformOrder = anim.transformOrder -- Use the latest transform order
+                        }
+                    )
+                    (Tuple.second first)
+                    rest
+
+
+{-| Get all composite keys that match a given key.
+If the key is already a composite key, returns it as a singleton list.
+If the key is just an element ID, returns all composite keys starting with "elementId:".
+-}
+getMatchingCompositeKeys : String -> Dict String ElementAnimation -> List String
+getMatchingCompositeKeys key animations =
+    if Builder.isCompositeKey key then
+        -- Already a composite key, return as-is if it exists
+        if Dict.member key animations then
+            [ key ]
+
+        else
+            []
+
+    else
+        -- Element ID: find all composite keys for this element
+        findAnimationsForElement key animations
+            |> List.map Tuple.first
+
+
+{-| Extract the element ID from a key (either composite or plain element ID).
+Used for sending commands to JavaScript which needs the DOM element ID.
+-}
+getElementIdForJs : String -> String
+getElementIdForJs key =
+    if Builder.isCompositeKey key then
+        Builder.extractElementId key
+
+    else
+        key
+
+
+{-| Look up an animation by key. Supports both composite keys and element IDs.
+For composite key: returns that specific animation.
+For element ID: returns merged animation from all matching composite keys.
+-}
+lookupAnimation : String -> Dict String ElementAnimation -> Maybe ElementAnimation
+lookupAnimation key animations =
+    if Builder.isCompositeKey key then
+        Dict.get key animations
+
+    else
+        getMergedElementAnimation key animations
+
+
 type alias PropertyAnimation =
     { version : Int
     , status : AnimationStatus
@@ -659,20 +771,30 @@ updateStatus jsonValue (AnimState state) =
                         _ ->
                             Nothing
 
+                -- Find all matching composite keys for this element ID
+                matchingKeys =
+                    getMatchingCompositeKeys elementId state.elementAnimations
+
+                -- Update all matching animations
                 updatedAnimations =
                     case newStatus of
                         Just newStat ->
-                            Dict.update elementId
-                                (Maybe.map
-                                    (\elementAnim ->
-                                        let
-                                            updatedProps =
-                                                Dict.map (\_ prop -> { prop | status = newStat }) elementAnim.properties
-                                        in
-                                        { elementAnim | properties = updatedProps }
-                                    )
+                            List.foldl
+                                (\key acc ->
+                                    Dict.update key
+                                        (Maybe.map
+                                            (\elementAnim ->
+                                                let
+                                                    updatedProps =
+                                                        Dict.map (\_ prop -> { prop | status = newStat }) elementAnim.properties
+                                                in
+                                                { elementAnim | properties = updatedProps }
+                                            )
+                                        )
+                                        acc
                                 )
                                 state.elementAnimations
+                                matchingKeys
 
                         Nothing ->
                             state.elementAnimations
@@ -684,12 +806,16 @@ updateStatus jsonValue (AnimState state) =
                                 Dict.values elementAnim.properties
                                     |> List.any (\prop -> prop.status == Running)
                             )
+
+                -- Remove pending actions for all matching keys
+                updatedPendingActions =
+                    List.foldl Dict.remove state.pendingActions matchingKeys
             in
             AnimState
                 { state
                     | elementAnimations = updatedAnimations
                     , isRunning = hasRunningAnimations
-                    , pendingActions = Dict.remove elementId state.pendingActions
+                    , pendingActions = updatedPendingActions
                 }
 
         Err _ ->
@@ -783,10 +909,20 @@ updatePropertyUpdate jsonValue (AnimState state) =
     case Decode.decodeValue animationUpdateDecoder jsonValue of
         Ok animationUpdate ->
             let
+                -- Find all matching composite keys for this element ID
+                matchingKeys =
+                    getMatchingCompositeKeys animationUpdate.elementId state.elementAnimations
+
+                -- Update all matching animations
                 updatedAnimations =
-                    Dict.update animationUpdate.elementId
-                        (Maybe.map (updateElementAnimation animationUpdate))
+                    List.foldl
+                        (\key acc ->
+                            Dict.update key
+                                (Maybe.map (updateElementAnimation animationUpdate))
+                                acc
+                        )
                         state.elementAnimations
+                        matchingKeys
 
                 -- Update global isRunning based on animation status
                 hasRunningAnimations =
@@ -905,23 +1041,33 @@ handleEventInternal elementId status (AnimState state) =
                 _ ->
                     NotStarted
 
-        -- Clear pending action for this element since we got the event
-        clearedPendingActions =
-            Dict.remove elementId state.pendingActions
+        -- Find all matching composite keys for this element ID
+        matchingKeys =
+            getMatchingCompositeKeys elementId state.elementAnimations
 
+        -- Clear pending action for all matching keys since we got the event
+        clearedPendingActions =
+            List.foldl Dict.remove state.pendingActions matchingKeys
+
+        -- Update all matching animations
         updatedElementAnimations =
-            Dict.update elementId
-                (Maybe.map
-                    (\anim ->
-                        { anim
-                            | properties =
-                                Dict.map
-                                    (\_ propAnim -> { propAnim | status = newStatus })
-                                    anim.properties
-                        }
-                    )
+            List.foldl
+                (\key acc ->
+                    Dict.update key
+                        (Maybe.map
+                            (\anim ->
+                                { anim
+                                    | properties =
+                                        Dict.map
+                                            (\_ propAnim -> { propAnim | status = newStatus })
+                                            anim.properties
+                                }
+                            )
+                        )
+                        acc
                 )
                 state.elementAnimations
+                matchingKeys
 
         isRunning =
             Dict.values updatedElementAnimations
@@ -1066,25 +1212,41 @@ updatePositions :
     -> ( AnimState msg, Encode.Value )
 updatePositions updates (AnimState state) =
     let
-        -- Update AnimState with new end positions
+        -- Helper to update all animations for a given element ID
+        updateAllForElement :
+            String
+            -> (ElementAnimation -> ElementAnimation)
+            -> Dict String ElementAnimation
+            -> Dict String ElementAnimation
+        updateAllForElement elementId updateFn animations =
+            let
+                matchingKeys =
+                    getMatchingCompositeKeys elementId animations
+            in
+            List.foldl
+                (\key acc ->
+                    Dict.update key (Maybe.map updateFn) acc
+                )
+                animations
+                matchingKeys
+
+        -- Update AnimState with new end positions (all animations for the element)
         updatedAnimations =
             List.foldl
                 (\posUpdate acc ->
-                    Dict.update posUpdate.elementId
-                        (Maybe.map
-                            (\elementAnim ->
-                                let
-                                    newTranslate =
-                                        Translate.fromTriple ( posUpdate.endX, posUpdate.endY, posUpdate.endZ )
+                    updateAllForElement posUpdate.elementId
+                        (\elementAnim ->
+                            let
+                                newTranslate =
+                                    Translate.fromTriple ( posUpdate.endX, posUpdate.endY, posUpdate.endZ )
 
-                                    newCurrentStates =
-                                        elementAnim.currentStates
+                                newCurrentStates =
+                                    elementAnim.currentStates
 
-                                    updatedCurrentStates =
-                                        { newCurrentStates | translate = Just newTranslate }
-                                in
-                                { elementAnim | currentStates = updatedCurrentStates }
-                            )
+                                updatedCurrentStates =
+                                    { newCurrentStates | translate = Just newTranslate }
+                            in
+                            { elementAnim | currentStates = updatedCurrentStates }
                         )
                         acc
                 )
@@ -1096,7 +1258,7 @@ updatePositions updates (AnimState state) =
         -- Helper to check if an element has an active translate animation (running or paused)
         hasActiveTranslateAnimation : String -> Bool
         hasActiveTranslateAnimation elementId =
-            Dict.get elementId state.elementAnimations
+            lookupAnimation elementId state.elementAnimations
                 |> Maybe.andThen (\elem -> Dict.get "translate" elem.properties)
                 |> Maybe.map (\prop -> prop.status == Running || prop.status == Paused)
                 |> Maybe.withDefault False
@@ -1111,7 +1273,7 @@ updatePositions updates (AnimState state) =
             let
                 -- Get current scale and rotate values from element's state
                 ( scaleVals, rotateVals ) =
-                    Dict.get posUpdate.elementId updatedAnimations
+                    lookupAnimation posUpdate.elementId updatedAnimations
                         |> Maybe.map
                             (\elementAnim ->
                                 let
@@ -1167,7 +1329,7 @@ updatePositions updates (AnimState state) =
         encodeDirectUpdate posUpdate =
             let
                 ( scaleVals, rotateVals ) =
-                    Dict.get posUpdate.elementId updatedAnimations
+                    lookupAnimation posUpdate.elementId updatedAnimations
                         |> Maybe.map
                             (\elementAnim ->
                                 let
@@ -1251,10 +1413,25 @@ updatePositions updates (AnimState state) =
 This ensures initial values set via `init` are rendered synchronously,
 avoiding a flash of unstyled content before JavaScript processes the port command.
 
+The key parameter can be either:
+
+  - A composite key like `"myBox:fadeIn"` - looks up that exact animation
+  - Just an element ID like `"myBox"` - merges all animations targeting that element
+
 -}
 attributes : String -> AnimState msg -> List (Html.Attribute msg)
-attributes elementId (AnimState state) =
-    case Dict.get elementId state.elementAnimations of
+attributes key (AnimState state) =
+    let
+        maybeElementAnimation =
+            if Builder.isCompositeKey key then
+                -- Direct lookup by composite key
+                Dict.get key state.elementAnimations
+
+            else
+                -- Search for all animations targeting this element ID and merge
+                getMergedElementAnimation key state.elementAnimations
+    in
+    case maybeElementAnimation of
         Nothing ->
             []
 
@@ -1369,8 +1546,16 @@ anyRunning (AnimState state) =
 
 
 isElementComplete : String -> AnimState msg -> Maybe Bool
-isElementComplete elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
+isElementComplete key (AnimState state) =
+    let
+        maybeAnimation =
+            if Builder.isCompositeKey key then
+                Dict.get key state.elementAnimations
+
+            else
+                getMergedElementAnimation key state.elementAnimations
+    in
+    maybeAnimation
         |> Maybe.map
             (\elementAnimation ->
                 Dict.values elementAnimation.properties
@@ -1379,8 +1564,16 @@ isElementComplete elementId (AnimState state) =
 
 
 isElementRunning : String -> AnimState msg -> Bool
-isElementRunning elementId (AnimState state) =
-    case Dict.get elementId state.elementAnimations of
+isElementRunning key (AnimState state) =
+    let
+        maybeAnimation =
+            if Builder.isCompositeKey key then
+                Dict.get key state.elementAnimations
+
+            else
+                getMergedElementAnimation key state.elementAnimations
+    in
+    case maybeAnimation of
         Nothing ->
             False
 
@@ -1446,8 +1639,8 @@ getEndBackgroundColor elementId animState =
 
 
 getCurrentBackgroundColor : String -> AnimState msg -> Maybe Color
-getCurrentBackgroundColor elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
+getCurrentBackgroundColor key (AnimState state) =
+    lookupAnimation key state.elementAnimations
         |> Maybe.andThen (.currentStates >> .backgroundColor)
 
 
@@ -1482,8 +1675,8 @@ getEndOpacity elementId animState =
 
 
 getCurrentOpacity : String -> AnimState msg -> Maybe Float
-getCurrentOpacity elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
+getCurrentOpacity key (AnimState state) =
+    lookupAnimation key state.elementAnimations
         |> Maybe.andThen (.currentStates >> .opacity)
         |> Maybe.map Opacity.toFloat
 
@@ -1519,8 +1712,8 @@ getEndTranslate elementId animState =
 
 
 getCurrentTranslate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
-getCurrentTranslate elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
+getCurrentTranslate key (AnimState state) =
+    lookupAnimation key state.elementAnimations
         |> Maybe.andThen (.currentStates >> .translate)
         |> Maybe.map Translate.toRecord
 
@@ -1556,8 +1749,8 @@ getEndRotate elementId animState =
 
 
 getCurrentRotate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
-getCurrentRotate elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
+getCurrentRotate key (AnimState state) =
+    lookupAnimation key state.elementAnimations
         |> Maybe.andThen (.currentStates >> .rotate)
         |> Maybe.map Rotate.toRecord
 
@@ -1593,8 +1786,8 @@ getEndScale elementId animState =
 
 
 getCurrentScale : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
-getCurrentScale elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
+getCurrentScale key (AnimState state) =
+    lookupAnimation key state.elementAnimations
         |> Maybe.andThen (.currentStates >> .scale)
         |> Maybe.map Scale.toRecord
 
@@ -1630,8 +1823,8 @@ getEndSize elementId animState =
 
 
 getCurrentSize : String -> AnimState msg -> Maybe { width : Float, height : Float }
-getCurrentSize elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
+getCurrentSize key (AnimState state) =
+    lookupAnimation key state.elementAnimations
         |> Maybe.andThen (.currentStates >> .size)
         |> Maybe.map Size.toRecord
 
@@ -1724,9 +1917,15 @@ encodeWithVersions elementAnimations data =
             data.elements
                 |> Dict.toList
                 |> List.map
-                    (\( elementId, config ) ->
-                        ( elementId
-                        , encodeProcessedElementConfigWithVersions elementAnimations elementId config
+                    (\( compositeKey, config ) ->
+                        let
+                            -- Use targetElement if set, otherwise extract element ID from composite key
+                            jsElementId =
+                                config.targetElement
+                                    |> Maybe.withDefault (getElementIdForJs compositeKey)
+                        in
+                        ( jsElementId
+                        , encodeProcessedElementConfigWithVersions elementAnimations compositeKey config
                         )
                     )
     in
@@ -1745,15 +1944,20 @@ encodeWithVersionsAndOrder elementAnimations data =
             data.elements
                 |> Dict.toList
                 |> List.map
-                    (\( elementId, config ) ->
+                    (\( compositeKey, config ) ->
                         let
+                            -- Use targetElement if set, otherwise extract element ID from composite key
+                            jsElementId =
+                                config.targetElement
+                                    |> Maybe.withDefault (getElementIdForJs compositeKey)
+
                             transformOrder =
-                                Dict.get elementId elementAnimations
+                                Dict.get compositeKey elementAnimations
                                     |> Maybe.map .transformOrder
                                     |> Maybe.withDefault defaultTransformOrder
                         in
-                        ( elementId
-                        , encodeProcessedElementConfigWithVersionsAndOrder elementAnimations elementId config transformOrder
+                        ( jsElementId
+                        , encodeProcessedElementConfigWithVersionsAndOrder elementAnimations compositeKey config transformOrder
                         )
                     )
     in
@@ -1765,9 +1969,24 @@ encodeWithVersionsAndOrder elementAnimations data =
 
 encode : Builder.ProcessedAnimationData -> Encode.Value
 encode data =
+    let
+        -- Transform dict to use element IDs as keys for JavaScript
+        elementsForJs =
+            data.elements
+                |> Dict.toList
+                |> List.map
+                    (\( compositeKey, config ) ->
+                        let
+                            jsElementId =
+                                config.targetElement
+                                    |> Maybe.withDefault (getElementIdForJs compositeKey)
+                        in
+                        ( jsElementId, encodeProcessedElementConfig config )
+                    )
+    in
     Encode.object
         [ ( "type", Encode.string "animate" )
-        , ( "elements", Encode.dict identity encodeProcessedElementConfig data.elements )
+        , ( "elements", Encode.object elementsForJs )
         ]
 
 
@@ -1781,8 +2000,13 @@ encodeWithOrder order data =
             data.elements
                 |> Dict.toList
                 |> List.map
-                    (\( elementId, config ) ->
-                        ( elementId
+                    (\( compositeKey, config ) ->
+                        let
+                            jsElementId =
+                                config.targetElement
+                                    |> Maybe.withDefault (getElementIdForJs compositeKey)
+                        in
+                        ( jsElementId
                         , encodeProcessedElementConfigWithOrder config order
                         )
                     )
@@ -2269,10 +2493,26 @@ isComplexEasing easing_ =
 
 
 stop : String -> AnimState msg -> ( AnimState msg, Cmd msg )
-stop elementId (AnimState state) =
+stop key (AnimState state) =
+    let
+        -- Get the element ID for JavaScript command
+        elementId =
+            getElementIdForJs key
+
+        -- Get all matching composite keys
+        matchingKeys =
+            getMatchingCompositeKeys key state.elementAnimations
+
+        -- Update pending actions for all matching keys
+        updatedPendingActions =
+            List.foldl
+                (\k acc -> Dict.insert k PendingStop acc)
+                state.pendingActions
+                matchingKeys
+    in
     ( AnimState
         { state
-            | pendingActions = Dict.insert elementId PendingStop state.pendingActions
+            | pendingActions = updatedPendingActions
         }
     , state.commandPort <|
         encodeCommand "stop" elementId
@@ -2280,10 +2520,26 @@ stop elementId (AnimState state) =
 
 
 pause : String -> AnimState msg -> ( AnimState msg, Cmd msg )
-pause elementId (AnimState state) =
+pause key (AnimState state) =
+    let
+        -- Get the element ID for JavaScript command
+        elementId =
+            getElementIdForJs key
+
+        -- Get all matching composite keys
+        matchingKeys =
+            getMatchingCompositeKeys key state.elementAnimations
+
+        -- Update pending actions for all matching keys
+        updatedPendingActions =
+            List.foldl
+                (\k acc -> Dict.insert k PendingPause acc)
+                state.pendingActions
+                matchingKeys
+    in
     ( AnimState
         { state
-            | pendingActions = Dict.insert elementId PendingPause state.pendingActions
+            | pendingActions = updatedPendingActions
         }
     , state.commandPort <|
         encodeCommand "pause" elementId
@@ -2291,10 +2547,31 @@ pause elementId (AnimState state) =
 
 
 {-| Reset an element to its initial animation state by resetting internal state and creating a 0ms animation to start positions.
+
+The key parameter can be either:
+
+  - A composite key like `"myBox:fadeIn"` - resets that specific animation
+  - Just an element ID like `"myBox"` - resets the first matching animation
+
 -}
 reset : String -> AnimState msg -> ( AnimState msg, Cmd msg )
-reset elementId (AnimState state) =
-    case Builder.getCurrentAnimation elementId state.builder of
+reset key (AnimState state) =
+    let
+        -- Resolve the key: if it's an element ID, find the first matching composite key
+        resolvedKey =
+            if Builder.isCompositeKey key then
+                key
+
+            else
+                getMatchingCompositeKeys key state.elementAnimations
+                    |> List.head
+                    |> Maybe.withDefault key
+
+        -- Get the element ID for JavaScript targets
+        jsElementId =
+            getElementIdForJs resolvedKey
+    in
+    case Builder.getCurrentAnimation resolvedKey state.builder of
         Nothing ->
             ( AnimState state, Cmd.none )
 
@@ -2303,36 +2580,41 @@ reset elementId (AnimState state) =
                 -- Extract start and end states from the animation history
                 startStates =
                     historyEntry.processedData.elements
-                        |> Dict.get elementId
+                        |> Dict.get resolvedKey
                         |> Maybe.map extractElementStartStates
                         |> Maybe.withDefault emptyElementStates
 
                 endStates =
                     historyEntry.processedData.elements
-                        |> Dict.get elementId
+                        |> Dict.get resolvedKey
                         |> Maybe.map extractElementEndStates
                         |> Maybe.withDefault emptyElementStates
 
                 -- Get properties that were in the original animation
                 animatedPropertyTypes =
                     historyEntry.processedData.elements
-                        |> Dict.get elementId
+                        |> Dict.get resolvedKey
                         |> Maybe.map .properties
                         |> Maybe.withDefault []
                         |> List.map propertyTypeString
 
                 -- Create 0ms animation to visually jump to start positions
+                -- Use the resolved key for Builder.for so it ends up in the right place
+                groupName =
+                    Builder.extractGroupName resolvedKey
+
                 resetBuilder =
                     Builder.init
                         |> Builder.duration 0
                         |> Builder.easing Linear
-                        |> Builder.for elementId
-                        |> addResetProperties elementId endStates startStates
+                        |> Builder.for groupName
+                        |> Builder.setWaapiTargetElement jsElementId
+                        |> addResetProperties resolvedKey endStates startStates
 
                 processedData =
                     Builder.processAnimationData resetBuilder
             in
-            case Dict.get elementId state.elementAnimations of
+            case Dict.get resolvedKey state.elementAnimations of
                 Nothing ->
                     -- No tracking entry, create one with property versions
                     let
@@ -2348,14 +2630,14 @@ reset elementId (AnimState state) =
                             }
 
                         updatedElementAnimations =
-                            Dict.insert elementId newElementAnimation state.elementAnimations
+                            Dict.insert resolvedKey newElementAnimation state.elementAnimations
 
                         updatedAnimState =
                             AnimState
                                 { state
                                     | elementAnimations = updatedElementAnimations
                                     , isRunning = False
-                                    , pendingActions = Dict.insert elementId (PendingReset startStates) state.pendingActions
+                                    , pendingActions = Dict.insert resolvedKey (PendingReset startStates) state.pendingActions
                                 }
                     in
                     ( updatedAnimState
@@ -2387,7 +2669,7 @@ reset elementId (AnimState state) =
                             }
 
                         updatedElementAnimations =
-                            Dict.insert elementId resetElementAnimation state.elementAnimations
+                            Dict.insert resolvedKey resetElementAnimation state.elementAnimations
 
                         updatedAnimState =
                             AnimState
@@ -2400,7 +2682,7 @@ reset elementId (AnimState state) =
                                                     Dict.values anim.properties
                                                         |> List.any (\prop -> prop.status == Running)
                                                 )
-                                    , pendingActions = Dict.insert elementId (PendingReset startStates) state.pendingActions
+                                    , pendingActions = Dict.insert resolvedKey (PendingReset startStates) state.pendingActions
                                 }
                     in
                     ( updatedAnimState
@@ -2411,10 +2693,27 @@ reset elementId (AnimState state) =
 
 {-| Restart the last animation by retrieving it from Builder history and replaying it.
 The history will have already been updated by onResize, so we can use it directly.
+
+The key parameter can be either:
+
+  - A composite key like `"myBox:fadeIn"` - restarts that specific animation
+  - Just an element ID like `"myBox"` - restarts the first matching animation
+
 -}
 restart : String -> AnimState msg -> ( AnimState msg, Cmd msg )
-restart elementId (AnimState state) =
-    case Builder.restartCurrentAnimation elementId state.builder of
+restart key (AnimState state) =
+    let
+        -- Resolve the key: if it's an element ID, find the first matching composite key
+        resolvedKey =
+            if Builder.isCompositeKey key then
+                key
+
+            else
+                getMatchingCompositeKeys key state.elementAnimations
+                    |> List.head
+                    |> Maybe.withDefault key
+    in
+    case Builder.restartCurrentAnimation resolvedKey state.builder of
         Nothing ->
             ( AnimState state, Cmd.none )
 
@@ -2423,18 +2722,18 @@ restart elementId (AnimState state) =
             let
                 restartedPropertyTypes =
                     processedData.elements
-                        |> Dict.get elementId
+                        |> Dict.get resolvedKey
                         |> Maybe.map .properties
                         |> Maybe.withDefault []
                         |> List.map propertyTypeString
 
                 startStates =
                     processedData.elements
-                        |> Dict.get elementId
+                        |> Dict.get resolvedKey
                         |> Maybe.map extractElementStartStates
                         |> Maybe.withDefault emptyElementStates
             in
-            case Dict.get elementId state.elementAnimations of
+            case Dict.get resolvedKey state.elementAnimations of
                 Nothing ->
                     -- No tracking entry exists, create one with property versions
                     let
@@ -2450,14 +2749,14 @@ restart elementId (AnimState state) =
                             }
 
                         updatedElementAnimations =
-                            Dict.insert elementId newElementAnimation state.elementAnimations
+                            Dict.insert resolvedKey newElementAnimation state.elementAnimations
 
                         updatedAnimState =
                             AnimState
                                 { state
                                     | elementAnimations = updatedElementAnimations
                                     , isRunning = True
-                                    , pendingActions = Dict.insert elementId PendingRestart state.pendingActions
+                                    , pendingActions = Dict.insert resolvedKey PendingRestart state.pendingActions
                                 }
                     in
                     ( updatedAnimState
@@ -2492,14 +2791,14 @@ restart elementId (AnimState state) =
                             }
 
                         updatedElementAnimations =
-                            Dict.insert elementId resetElementAnimation state.elementAnimations
+                            Dict.insert resolvedKey resetElementAnimation state.elementAnimations
 
                         updatedAnimState =
                             AnimState
                                 { state
                                     | elementAnimations = updatedElementAnimations
                                     , isRunning = True
-                                    , pendingActions = Dict.insert elementId PendingRestart state.pendingActions
+                                    , pendingActions = Dict.insert resolvedKey PendingRestart state.pendingActions
                                 }
                     in
                     ( updatedAnimState
@@ -2509,10 +2808,26 @@ restart elementId (AnimState state) =
 
 
 resume : String -> AnimState msg -> ( AnimState msg, Cmd msg )
-resume elementId (AnimState state) =
+resume key (AnimState state) =
+    let
+        -- Get the element ID for JavaScript command
+        elementId =
+            getElementIdForJs key
+
+        -- Get all matching composite keys
+        matchingKeys =
+            getMatchingCompositeKeys key state.elementAnimations
+
+        -- Update pending actions for all matching keys
+        updatedPendingActions =
+            List.foldl
+                (\k acc -> Dict.insert k PendingResume acc)
+                state.pendingActions
+                matchingKeys
+    in
     ( AnimState
         { state
-            | pendingActions = Dict.insert elementId PendingResume state.pendingActions
+            | pendingActions = updatedPendingActions
         }
     , state.commandPort <|
         encodeCommand "resume" elementId
