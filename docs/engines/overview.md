@@ -27,8 +27,6 @@ Elm Animate provides multiple animation engines, each optimized for different us
 
 ## `animate` vs `fireAndForget`
 
-All engines provide two ways to trigger animations:
-
 - **`animate`** — Tracks state in `AnimState`, enabling sequencing, redirection, and control
 - **`fireAndForget`** — Starts fresh each time, no state continuity
 
@@ -42,7 +40,11 @@ All engines provide two ways to trigger animations:
 | Redirecting mid-flight | `animate`/`fireAndForget` | | `animate` | `animate` |
 
 !!! note "Sub always uses `animate`"
-    The Sub engine requires `animate` even for simple animations because it needs ongoing subscriptions to drive frame updates.
+    The Sub engine does not have a `fireAndForget` function, only `animate`; the Sub engine uses `subscriptions` with frame by frame `update`s, so the fire-and-forget concept does not exist in the world of subscription based animations.
+
+## Initializing Property Configs
+
+All Engines have an `init` function that should be used to set the initial property values that will be used for first render then first trigger.
 
 ## Switching Engines
 

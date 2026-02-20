@@ -19,7 +19,7 @@ The `animate` function processes your animation configuration and merges the com
 
 ??? example "View Source Code"
 
-    `Engine.animate animState animConfiguration`
+    Pattern: `Engine.animate animState (\ builder -> builder)`
 
     === "Transitions"
 
@@ -60,7 +60,7 @@ The `animate` function processes your animation configuration and merges the com
 
         WAAPI uses JavaScript ports, so `animate` returns both the updated state and a `cmd` that sends the animation data to JS.
         
-        It also requires `forElement` to specify which DOM element to animate.
+        It also requires `forElement` to specify which DOM element to animate - see [WAAPI - Targeting Elements](../engines/waapi.md#targeting-elements) for more info.
 
 
 ## Using `fireAndForget`

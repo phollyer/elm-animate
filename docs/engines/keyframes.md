@@ -107,7 +107,7 @@ You can also initialize with starting property values:
         )
     ```
 
-    These property values will be used in your view to set the initial state of your element(s).
+    These property values will be used in your view to set the initial state of your element(s) as well.
 
 ## Keyframes Style Node
 

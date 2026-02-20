@@ -14,16 +14,65 @@ Every animation follows this pattern:
     ```elm
     animationFunction : AnimBuilder -> AnimBuilder
     animationFunction =
-        Property.for animGroup             -- Animation group name (required)
-            >> Property.from startValue     
-            >> Property.to endValue         
+        Property.for animGroup              -- Animation group name (required)
+            >> Property.from startValue     -- If ommitted, uses a sensible default
+            >> Property.to endValue         -- Alternatives to `to` are available
             >> Property.delay 100           -- ms
-            >> Property.duration 500        -- ms, or (Property.speed 50 -- Int)
-            >> Property.easing BounceOut    
+            >> Property.duration 500        -- ms, or (Property.speed 50 (units per second))
+            >> Property.easing BounceOut    -- Make the animation feel natural
             >> Property.build               -- Finalize (required)
     ```
 
-    `for` and `build` are required to start and end the builder chain respectively. All other configurations are optional, although without a `to` value the animations won't have anywhere to go!!
+    `for` and `build` are required to start and end the builder chain respectively. All other configurations are optional, although without an end value the animations won't have anywhere to go!!
+
+## Animation Group Names
+
+The first argument to `Property.for` is the **animation group name** — a string that groups animation configurations together. Use it to animate multiple properties at once, or to create multiple animations for different elements.
+
+It is also the glue between your animation configurations and [the elements in your view](apply.md#connecting-builder-to-view).
+
+### Multiple Properties
+
+Properties with the same group name animate together and are applied to the same element:
+
+??? example "View Source Code"
+
+    ```elm
+    -- Both properties share "boxAnim" - they animate together
+    enterAnimation : AnimBuilder -> AnimBuilder
+    enterAnimation =
+        Opacity.for "boxAnim"
+            >> Opacity.from 0
+            >> Opacity.to 1
+            >> Opacity.build
+            >> Translate.for "boxAnim"
+            >> Translate.fromY 50
+            >> Translate.toY 0
+            >> Translate.build
+    ```
+
+### Multiple Animations
+
+Use different group names when you want separate animation sets for different elements:
+
+??? example "View Source Code"
+
+    ```elm
+    -- Different groups for different element animations
+    pageAnimations : AnimBuilder -> AnimBuilder
+    pageAnimations =
+        Opacity.for "header"            -- Header fades in
+            >> Opacity.to 1
+            >> Opacity.build
+            >> Translate.for "sidebar"  -- Sidebar slides in
+            >> Translate.fromX -200
+            >> Translate.toX 0
+            >> Translate.build
+    ```
+
+### WAAPI Composite Keys
+
+The WAAPI Engine extends group names into **composite keys** (`"elementId:groupName"`), enabling independent control of multiple animation groups on the same DOM element. See [Composite Keys and Animation Groups](../engines/waapi.md#composite-keys-and-animation-groups) for details.
 
 ## Why Builders?
 
@@ -62,63 +111,6 @@ with `>>`. Small, focused animations combine into larger ones:
     ```
 
     Build complex animations from small, reusable pieces.
-
-## Multiple Animations
-
-Compose multiple animations together:
-
-??? example "Show Source Code"
-
-    ```elm
-    moveToX : String -> Float -> AnimBUilder -> AnimBUilder
-    moveToX groupName toX =
-        Translate.for groupName
-            >> Translate.toX toX
-            >> Translate.build
-
-
-    multipleAnimations : AnimBuilder -> AnimBuilder
-    multipleAnimations =
-        moveToX "animGroup1" 100        -- First animation
-            >> moveToX "animGroup2" 200 -- Second animation
-            >> moveToX"animGroup3" 300  -- Third animation
-    ```
-
-    Each different group name represents a distinct animation that can be applied in your view.
-
-## Multiple Properties
-
-Animate multiple properties at the same time:
-
-??? example "Show Source Code"
-
-    ```elm
-    moveXY : String -> Float -> Float -> AnimBUilder -> AnimBuilder
-    moveXY groupName toX toY =
-        Translate.for groupName
-            >> Translate.toXY toX toY
-            >> Translate.build
-
-    rotate : String -> Float -> AnimBuilder -> AnimBuilder
-    rotate groupName deg =
-        Rotate.for groupName
-            >> Rotate.to deg
-            >> Rotate.build
-
-    scale : String -> Float -> AnimBuilder -> AnimBuilder
-    scale groupName ratio =
-        Scale.for groupName
-            >> Scale.to ratio
-            >> Scale.build
-
-    complexAnimation : AnimBuilder -> AnimBuilder
-    complexAnimation =
-        moveXY "boxAnim" 100 200
-            >> rotate "boxAnim" 45
-            >> scale "boxAnim" 1.5
-    ```
-
-    Give different property animations the same animation group name and they will animate together on the same element.
 
 ## Best Practices
 

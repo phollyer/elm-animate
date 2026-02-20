@@ -287,8 +287,6 @@ The `attributes` function also accepts both formats:
         [ text "Box (fade only)" ]
     ```
 
-    When using element ID, properties from different groups are merged, with later-defined animations taking precedence for conflicting properties.
-
 ## Running Animations
 
 ### Fire-and-Forget

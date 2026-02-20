@@ -11,32 +11,45 @@ Every animation engine provides an `attributes` function that generates HTML att
     === "Transitions"
 
         ```elm
-        div (Transitions.attributes "boxAnim" model.animState) [ text "I animate!" ]
+        div 
+            (Transitions.attributes "boxAnim" model.animState) 
+            [ text "I animate!" ]
         ```
 
     === "Keyframes"
 
         ```elm
-        div (Keyframes.attributes "boxAnim" model.animState) [ text "I animate!" ]
+        div 
+            (Keyframes.attributes "boxAnim" model.animState) 
+            [ text "I animate!" ]
         ```
 
     === "Sub"
 
         ```elm
-        div (Sub.attributes "boxAnim" model.animState) [ text "I animate!" ]
+        div 
+            (Sub.attributes "boxAnim" model.animState) 
+            [ text "I animate!" ]
         ```
 
     === "WAAPI"
 
         ```elm
-        div (WAAPI.attributes "boxAnim" model.animState) [ text "I animate!" ]
+        div 
+            (WAAPI.attributes "boxAnim" model.animState
+                ++ [ id "box" ]
+            ) 
+            [ text "I animate!" ]
         ```
 
-The first argument is the **animation group name** - this tells the engine which animation data to look up from the `AnimState`.
+The first argument is the **animation group name** - this connects your animation definition to your view element. See [Animation Group Names](build.md#animation-group-names) for how to define groups when building animations.
 
-## Animation Group Names
+!!! note "WAAPI requires element ID"
+    The WAAPI engine also needs an `id` attribute so JavaScript can find the DOM element. See [WAAPI Engine](#waapi-engine) below for details.
 
-The **animation group name** is the key that connects your animation definition to your view.
+## Connecting Builder to View
+
+The group name you use in `attributes` must match the group name used in your builder's `Property.for` call:
 
 ??? example "View Source Code"
 
@@ -116,10 +129,7 @@ Keyframes animations require a `<style>` node in the DOM containing the generate
 
 ### WAAPI Engine
 
-The WAAPI Engine does not use `attributes` to drive the animation — the Web Animations API on the JS side does this instead. Therefore, the `attributes` function bookends the animation and serves two purposes:
-
-1. **Initial state** — Renders the starting CSS immediately, preventing a flash of unstyled content before JavaScript processes the port command
-2. **Final state** — Keeps the element in its final position after the animation completes
+WAAPI elements need an `id` attribute so JavaScript can find the DOM element. The `id` must match the element ID provided in `WAAPI.forElement` when building the animation.
 
 ??? example "View Source Code"
 
@@ -132,7 +142,7 @@ The WAAPI Engine does not use `attributes` to drive the animation — the Web An
             ]
     ```
 
-    Note: WAAPI elements also need an `id` attribute so JavaScript can find the element to apply the animation to. The `id` must match the element ID provided in the `.forElement` call when building the animation configuration.
+See [WAAPI Engine](../engines/waapi.md) for details on how WAAPI handles attributes differently from other engines.
 
 ## Multiple Elements
 
