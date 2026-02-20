@@ -831,80 +831,124 @@ using WAAPI.forElement at the start of your animation pipeline:
 
     /**
      * Stop animation by jumping to end state
+     * @param {string} elementId - The DOM element ID
+     * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
      */
-    function stopAnimation(elementId) {
+    function stopAnimation(elementId, properties) {
         const elementAnims = activeAnimations.get(elementId);
         if (elementAnims) {
+            const propsToAffect = properties ? new Set(properties) : null;
+            let affectedCount = 0;
+
             elementAnims.forEach((animData, propertyType) => {
-                animData.animation.finish(); // Jump to end state
+                if (!propsToAffect || propsToAffect.has(propertyType)) {
+                    animData.animation.finish(); // Jump to end state
+                    affectedCount++;
+                }
             });
-            activeAnimations.delete(elementId);
+
+            // If we affected all properties, delete the element entry
+            if (!propsToAffect || affectedCount === elementAnims.size) {
+                activeAnimations.delete(elementId);
+            }
+
             // Send stopped event to Elm so it can update its state
-            sendEventToElm('animationUpdate', elementId, { status: 'stopped' });
+            sendEventToElm('animationUpdate', elementId, { status: 'stopped', properties: properties || null });
         }
     }
 
     /**
-     * Reset animation by jumping to start state  
+     * Reset animation by jumping to start state
+     * @param {string} elementId - The DOM element ID
+     * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
      */
-    function resetAnimation(elementId) {
+    function resetAnimation(elementId, properties) {
         const elementAnims = activeAnimations.get(elementId);
         if (elementAnims) {
+            const propsToAffect = properties ? new Set(properties) : null;
+            let affectedCount = 0;
+
             elementAnims.forEach((animData, propertyType) => {
-                animData.animation.cancel(); // Cancel to jump to start
+                if (!propsToAffect || propsToAffect.has(propertyType)) {
+                    animData.animation.cancel(); // Cancel to jump to start
+                    affectedCount++;
+                }
             });
-            activeAnimations.delete(elementId);
+
+            // If we affected all properties, delete the element entry
+            if (!propsToAffect || affectedCount === elementAnims.size) {
+                activeAnimations.delete(elementId);
+            }
+
             // Send reset event to Elm so it can update its state
-            sendEventToElm('animationUpdate', elementId, { status: 'reset' });
+            sendEventToElm('animationUpdate', elementId, { status: 'reset', properties: properties || null });
         }
     }
 
     /**
      * Restart animation from beginning
+     * @param {string} elementId - The DOM element ID
+     * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
      */
-    function restartAnimation(elementId) {
+    function restartAnimation(elementId, properties) {
         const elementAnims = activeAnimations.get(elementId);
         if (elementAnims) {
+            const propsToAffect = properties ? new Set(properties) : null;
+
             elementAnims.forEach((animData, propertyType) => {
-                animData.animation.cancel(); // Cancel first
-                animData.animation.play();   // Then replay
+                if (!propsToAffect || propsToAffect.has(propertyType)) {
+                    animData.animation.cancel(); // Cancel first
+                    animData.animation.play();   // Then replay
+                }
             });
             // Send restart event to Elm so it can update its state
-            sendEventToElm('animationUpdate', elementId, { status: 'restarted' });
+            sendEventToElm('animationUpdate', elementId, { status: 'restarted', properties: properties || null });
         }
     }
 
     /**
      * Pause animation for specific element
+     * @param {string} elementId - The DOM element ID
+     * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
      */
-    function pauseAnimation(elementId) {
+    function pauseAnimation(elementId, properties) {
         const element = document.getElementById(elementId);
         const elementAnims = activeAnimations.get(elementId);
         if (elementAnims && element) {
+            const propsToAffect = properties ? new Set(properties) : null;
+
             elementAnims.forEach((animData, propertyType) => {
-                animData.animation.pause();
+                if (!propsToAffect || propsToAffect.has(propertyType)) {
+                    animData.animation.pause();
+                }
             });
 
             // Send paused event to Elm so it can update its state
-            sendEventToElm('animationUpdate', elementId, { status: 'paused' });
+            sendEventToElm('animationUpdate', elementId, { status: 'paused', properties: properties || null });
         }
     }
 
     /**
      * Resume animation for specific element
+     * @param {string} elementId - The DOM element ID
+     * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
      */
-    function resumeAnimation(elementId) {
+    function resumeAnimation(elementId, properties) {
         const elementAnims = activeAnimations.get(elementId);
         if (elementAnims) {
+            const propsToAffect = properties ? new Set(properties) : null;
+
             elementAnims.forEach((animData, propertyType) => {
-                animData.animation.play();
-                // Restart the RAF update loop
-                if (animData.updateFn) {
-                    animData.updateFn();
+                if (!propsToAffect || propsToAffect.has(propertyType)) {
+                    animData.animation.play();
+                    // Restart the RAF update loop
+                    if (animData.updateFn) {
+                        animData.updateFn();
+                    }
                 }
             });
             // Send resumed status to Elm
-            sendEventToElm('animationUpdate', elementId, { status: 'resumed' });
+            sendEventToElm('animationUpdate', elementId, { status: 'resumed', properties: properties || null });
         }
     }
 
@@ -1087,15 +1131,15 @@ using WAAPI.forElement at the start of your animation pipeline:
                             break;
 
                         case 'stop':
-                            stopAnimation(commandData.elementId);
+                            stopAnimation(commandData.elementId, commandData.properties);
                             break;
 
                         case 'pause':
-                            pauseAnimation(commandData.elementId);
+                            pauseAnimation(commandData.elementId, commandData.properties);
                             break;
 
                         case 'resume':
-                            resumeAnimation(commandData.elementId);
+                            resumeAnimation(commandData.elementId, commandData.properties);
                             break;
 
                         default:

@@ -222,6 +222,22 @@ getElementIdForJs key =
         key
 
 
+{-| Get property types for the matching composite keys.
+Returns Nothing if the key is a plain element ID (meaning target all properties).
+Returns Just with the list of property types if targeting specific groups.
+-}
+getPropertyTypesForKey : String -> Dict String ElementAnimation -> Maybe (List String)
+getPropertyTypesForKey key animations =
+    if Builder.isCompositeKey key then
+        -- Specific composite key: get its property types
+        Dict.get key animations
+            |> Maybe.map (.properties >> Dict.keys)
+
+    else
+        -- Element ID: no filter (target all properties)
+        Nothing
+
+
 {-| Look up an animation by key. Supports both composite keys and element IDs.
 For composite key: returns that specific animation.
 For element ID: returns merged animation from all matching composite keys.
@@ -2027,6 +2043,29 @@ encodeCommand commandType elementId =
         ]
 
 
+{-| Encode a command with an optional property filter.
+When properties is Nothing, the command affects all properties.
+When properties is Just [...], only those property types are affected.
+-}
+encodeCommandWithProperties : String -> String -> Maybe (List String) -> Encode.Value
+encodeCommandWithProperties commandType elementId maybeProperties =
+    let
+        baseFields =
+            [ ( "type", Encode.string commandType )
+            , ( "elementId", Encode.string elementId )
+            ]
+
+        propertyField =
+            case maybeProperties of
+                Just props ->
+                    [ ( "properties", Encode.list Encode.string props ) ]
+
+                Nothing ->
+                    []
+    in
+    Encode.object (baseFields ++ propertyField)
+
+
 encodeProcessedElementConfigWithVersions : Dict ElementId ElementAnimation -> String -> Builder.ProcessedElementConfig -> Encode.Value
 encodeProcessedElementConfigWithVersions elementAnimations elementId config =
     let
@@ -2499,6 +2538,10 @@ stop key (AnimState state) =
         elementId =
             getElementIdForJs key
 
+        -- Get property types to filter (Nothing = all properties)
+        propertyFilter =
+            getPropertyTypesForKey key state.elementAnimations
+
         -- Get all matching composite keys
         matchingKeys =
             getMatchingCompositeKeys key state.elementAnimations
@@ -2515,7 +2558,7 @@ stop key (AnimState state) =
             | pendingActions = updatedPendingActions
         }
     , state.commandPort <|
-        encodeCommand "stop" elementId
+        encodeCommandWithProperties "stop" elementId propertyFilter
     )
 
 
@@ -2525,6 +2568,10 @@ pause key (AnimState state) =
         -- Get the element ID for JavaScript command
         elementId =
             getElementIdForJs key
+
+        -- Get property types to filter (Nothing = all properties)
+        propertyFilter =
+            getPropertyTypesForKey key state.elementAnimations
 
         -- Get all matching composite keys
         matchingKeys =
@@ -2542,7 +2589,7 @@ pause key (AnimState state) =
             | pendingActions = updatedPendingActions
         }
     , state.commandPort <|
-        encodeCommand "pause" elementId
+        encodeCommandWithProperties "pause" elementId propertyFilter
     )
 
 
@@ -2814,6 +2861,10 @@ resume key (AnimState state) =
         elementId =
             getElementIdForJs key
 
+        -- Get property types to filter (Nothing = all properties)
+        propertyFilter =
+            getPropertyTypesForKey key state.elementAnimations
+
         -- Get all matching composite keys
         matchingKeys =
             getMatchingCompositeKeys key state.elementAnimations
@@ -2830,7 +2881,7 @@ resume key (AnimState state) =
             | pendingActions = updatedPendingActions
         }
     , state.commandPort <|
-        encodeCommand "resume" elementId
+        encodeCommandWithProperties "resume" elementId propertyFilter
     )
 
 

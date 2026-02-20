@@ -20,13 +20,6 @@ window.ElmAnimateWAAPI = (function () {
     // Structure: Map<elementId, Map<propertyType, { animation, version }>>
     const activeAnimations = new Map();
 
-    // Track transform order per element (default: ['translate', 'rotate', 'scale'])
-    // Structure: Map<elementId, string[]>
-    const elementTransformOrders = new Map();
-
-    // Default transform order
-    const DEFAULT_TRANSFORM_ORDER = ['translate', 'rotate', 'scale'];
-
     // Default easing functions mapping for Web Animations API
     const easingFunctions = {
         'linear': 'linear',
@@ -47,7 +40,7 @@ window.ElmAnimateWAAPI = (function () {
      */
     function processAnimationData(animationData) {
         if (animationData && animationData.elements) {
-            // Process element animations
+            // Process element animations (keys are element IDs)
             Object.entries(animationData.elements).forEach(([elementId, elementConfig]) => {
                 processElementAnimation(elementId, elementConfig);
             });
@@ -59,8 +52,34 @@ window.ElmAnimateWAAPI = (function () {
     /**
      * Process animation for a single element with all its properties
      * Now supports property-level animation tracking with version control
+     * 
+     * @param {string} elementId - The DOM element ID (from Elm)
+     * @param {object} elementConfig - Configuration with properties to animate
      */
     function processElementAnimation(elementId, elementConfig) {
+        // Check if forElement was used - if not, warn and skip animation
+        if (elementConfig.hasExplicitTarget === false) {
+            console.warn(
+                `%cMISSING ELEMENT TARGET%c
+
+I received an animation with key "${elementId}" but no DOM element target was set.
+
+%cHint:%c When using WAAPI.animate, you need to specify which DOM element to animate 
+using WAAPI.forElement at the start of your animation pipeline:
+
+    WAAPI.animate animState <|
+        WAAPI.forElement "your-element-id"  -- Add this line
+            >> Translate.for "${elementId}"
+            >> Translate.toX 100
+            >> Translate.build`,
+                'color: #cc0000; font-weight: bold; font-size: 14px',
+                '',
+                'color: #4a9f4a; font-weight: bold',
+                ''
+            );
+            return;
+        }
+
         const element = document.getElementById(elementId);
         if (!element) {
             console.warn(`ElmAnimateWAAPI: Element with id "${elementId}" not found`);
@@ -72,13 +91,6 @@ window.ElmAnimateWAAPI = (function () {
             activeAnimations.set(elementId, new Map());
         }
         const elementAnims = activeAnimations.get(elementId);
-
-        // Store transform order for this element (use default if not specified)
-        if (elementConfig.transformOrder && Array.isArray(elementConfig.transformOrder)) {
-            elementTransformOrders.set(elementId, elementConfig.transformOrder);
-        } else if (!elementTransformOrders.has(elementId)) {
-            elementTransformOrders.set(elementId, DEFAULT_TRANSFORM_ORDER);
-        }
 
         // Process each property independently
         elementConfig.properties.forEach(property => {
@@ -97,7 +109,7 @@ window.ElmAnimateWAAPI = (function () {
             let animation;
             if (propType === 'translate' || propType === 'scale' || propType === 'rotate') {
                 // For transform properties, create individual transform animation
-                animation = createTransformPropertyAnimation(element, elementId, property);
+                animation = createTransformPropertyAnimation(element, property);
             } else {
                 animation = createPropertyAnimation(element, property);
             }
@@ -256,16 +268,13 @@ window.ElmAnimateWAAPI = (function () {
      * Create animation for a single transform property (translate, scale, or rotate)
      * Used for property-level tracking where each transform property is animated independently
      */
-    function createTransformPropertyAnimation(element, elementId, property) {
+    function createTransformPropertyAnimation(element, property) {
         const duration = property.duration;
         const easing = property.easing;
         const easingKeyframes = property.easingKeyframes;
 
         // Get current transform state to preserve other transform properties
         const currentTransform = getCurrentTransform(element);
-
-        // Get transform order for this element
-        const transformOrder = elementTransformOrders.get(elementId) || DEFAULT_TRANSFORM_ORDER;
 
         // Build start and end transforms based on property type
         let startTransform, endTransform;
@@ -281,10 +290,10 @@ window.ElmAnimateWAAPI = (function () {
 
                 startTransform = buildTransformString(startX, startY, startZ,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ, transformOrder);
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ);
                 endTransform = buildTransformString(endX, endY, endZ,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ, transformOrder);
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ);
                 break;
 
             case 'scale':
@@ -297,10 +306,10 @@ window.ElmAnimateWAAPI = (function () {
 
                 startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     startScaleX, startScaleY, startScaleZ,
-                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ, transformOrder);
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ);
                 endTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     endScaleX, endScaleY, endScaleZ,
-                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ, transformOrder);
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ);
                 break;
 
             case 'rotate':
@@ -313,10 +322,10 @@ window.ElmAnimateWAAPI = (function () {
 
                 startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                    startRotX, startRotY, startRotZ, transformOrder);
+                    startRotX, startRotY, startRotZ);
                 endTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                    endRotX, endRotY, endRotZ, transformOrder);
+                    endRotX, endRotY, endRotZ);
                 break;
 
             default:
@@ -472,56 +481,36 @@ window.ElmAnimateWAAPI = (function () {
 
     /**
      * Build a complete transform string with 3D support
-     * @param {number} x - Translate X
-     * @param {number} y - Translate Y
-     * @param {number} z - Translate Z
-     * @param {number} scaleX - Scale X
-     * @param {number} scaleY - Scale Y
-     * @param {number} scaleZ - Scale Z
-     * @param {number} rotateX - Rotate X (degrees)
-     * @param {number} rotateY - Rotate Y (degrees)
-     * @param {number} rotateZ - Rotate Z (degrees)
-     * @param {string[]} [order] - Transform order array (e.g., ['translate', 'rotate', 'scale'])
      */
-    function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ, order) {
-        const transformOrder = order || DEFAULT_TRANSFORM_ORDER;
+    function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ) {
         const parts = [];
 
-        // Build transform parts in the specified order
-        transformOrder.forEach(transformType => {
-            switch (transformType) {
-                case 'translate':
-                    // Translate: use translate3d for hardware acceleration
-                    if (x !== 0 || y !== 0 || z !== 0) {
-                        parts.push(`translate3d(${x}px, ${y}px, ${z}px)`);
-                    }
-                    break;
-                case 'rotate':
-                    // Rotation: apply in order X, Y, Z for consistent results
-                    if (rotateX !== 0) {
-                        parts.push(`rotateX(${rotateX}deg)`);
-                    }
-                    if (rotateY !== 0) {
-                        parts.push(`rotateY(${rotateY}deg)`);
-                    }
-                    if (rotateZ !== 0) {
-                        parts.push(`rotateZ(${rotateZ}deg)`);
-                    }
-                    break;
-                case 'scale':
-                    // Scale: use individual scale functions for better control
-                    if (scaleX !== 1) {
-                        parts.push(`scaleX(${scaleX})`);
-                    }
-                    if (scaleY !== 1) {
-                        parts.push(`scaleY(${scaleY})`);
-                    }
-                    if (scaleZ !== 1) {
-                        parts.push(`scaleZ(${scaleZ})`);
-                    }
-                    break;
-            }
-        });
+        // Translate: use translate3d for hardware acceleration
+        if (x !== 0 || y !== 0 || z !== 0) {
+            parts.push(`translate3d(${x}px, ${y}px, ${z}px)`);
+        }
+
+        // Rotation: apply in order X, Y, Z for consistent results
+        if (rotateX !== 0) {
+            parts.push(`rotateX(${rotateX}deg)`);
+        }
+        if (rotateY !== 0) {
+            parts.push(`rotateY(${rotateY}deg)`);
+        }
+        if (rotateZ !== 0) {
+            parts.push(`rotateZ(${rotateZ}deg)`);
+        }
+
+        // Scale: use individual scale functions for better control
+        if (scaleX !== 1) {
+            parts.push(`scaleX(${scaleX})`);
+        }
+        if (scaleY !== 1) {
+            parts.push(`scaleY(${scaleY})`);
+        }
+        if (scaleZ !== 1) {
+            parts.push(`scaleZ(${scaleZ})`);
+        }
 
         return parts.join(' ') || 'none';
     }
@@ -842,80 +831,124 @@ window.ElmAnimateWAAPI = (function () {
 
     /**
      * Stop animation by jumping to end state
+     * @param {string} elementId - The DOM element ID
+     * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
      */
-    function stopAnimation(elementId) {
+    function stopAnimation(elementId, properties) {
         const elementAnims = activeAnimations.get(elementId);
         if (elementAnims) {
+            const propsToAffect = properties ? new Set(properties) : null;
+            let affectedCount = 0;
+
             elementAnims.forEach((animData, propertyType) => {
-                animData.animation.finish(); // Jump to end state
+                if (!propsToAffect || propsToAffect.has(propertyType)) {
+                    animData.animation.finish(); // Jump to end state
+                    affectedCount++;
+                }
             });
-            activeAnimations.delete(elementId);
+
+            // If we affected all properties, delete the element entry
+            if (!propsToAffect || affectedCount === elementAnims.size) {
+                activeAnimations.delete(elementId);
+            }
+
             // Send stopped event to Elm so it can update its state
-            sendEventToElm('animationUpdate', elementId, { status: 'stopped' });
+            sendEventToElm('animationUpdate', elementId, { status: 'stopped', properties: properties || null });
         }
     }
 
     /**
-     * Reset animation by jumping to start state  
+     * Reset animation by jumping to start state
+     * @param {string} elementId - The DOM element ID
+     * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
      */
-    function resetAnimation(elementId) {
+    function resetAnimation(elementId, properties) {
         const elementAnims = activeAnimations.get(elementId);
         if (elementAnims) {
+            const propsToAffect = properties ? new Set(properties) : null;
+            let affectedCount = 0;
+
             elementAnims.forEach((animData, propertyType) => {
-                animData.animation.cancel(); // Cancel to jump to start
+                if (!propsToAffect || propsToAffect.has(propertyType)) {
+                    animData.animation.cancel(); // Cancel to jump to start
+                    affectedCount++;
+                }
             });
-            activeAnimations.delete(elementId);
+
+            // If we affected all properties, delete the element entry
+            if (!propsToAffect || affectedCount === elementAnims.size) {
+                activeAnimations.delete(elementId);
+            }
+
             // Send reset event to Elm so it can update its state
-            sendEventToElm('animationUpdate', elementId, { status: 'reset' });
+            sendEventToElm('animationUpdate', elementId, { status: 'reset', properties: properties || null });
         }
     }
 
     /**
      * Restart animation from beginning
+     * @param {string} elementId - The DOM element ID
+     * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
      */
-    function restartAnimation(elementId) {
+    function restartAnimation(elementId, properties) {
         const elementAnims = activeAnimations.get(elementId);
         if (elementAnims) {
+            const propsToAffect = properties ? new Set(properties) : null;
+
             elementAnims.forEach((animData, propertyType) => {
-                animData.animation.cancel(); // Cancel first
-                animData.animation.play();   // Then replay
+                if (!propsToAffect || propsToAffect.has(propertyType)) {
+                    animData.animation.cancel(); // Cancel first
+                    animData.animation.play();   // Then replay
+                }
             });
             // Send restart event to Elm so it can update its state
-            sendEventToElm('animationUpdate', elementId, { status: 'restarted' });
+            sendEventToElm('animationUpdate', elementId, { status: 'restarted', properties: properties || null });
         }
     }
 
     /**
      * Pause animation for specific element
+     * @param {string} elementId - The DOM element ID
+     * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
      */
-    function pauseAnimation(elementId) {
+    function pauseAnimation(elementId, properties) {
         const element = document.getElementById(elementId);
         const elementAnims = activeAnimations.get(elementId);
         if (elementAnims && element) {
+            const propsToAffect = properties ? new Set(properties) : null;
+
             elementAnims.forEach((animData, propertyType) => {
-                animData.animation.pause();
+                if (!propsToAffect || propsToAffect.has(propertyType)) {
+                    animData.animation.pause();
+                }
             });
 
             // Send paused event to Elm so it can update its state
-            sendEventToElm('animationUpdate', elementId, { status: 'paused' });
+            sendEventToElm('animationUpdate', elementId, { status: 'paused', properties: properties || null });
         }
     }
 
     /**
      * Resume animation for specific element
+     * @param {string} elementId - The DOM element ID
+     * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
      */
-    function resumeAnimation(elementId) {
+    function resumeAnimation(elementId, properties) {
         const elementAnims = activeAnimations.get(elementId);
         if (elementAnims) {
+            const propsToAffect = properties ? new Set(properties) : null;
+
             elementAnims.forEach((animData, propertyType) => {
-                animData.animation.play();
-                // Restart the RAF update loop
-                if (animData.updateFn) {
-                    animData.updateFn();
+                if (!propsToAffect || propsToAffect.has(propertyType)) {
+                    animData.animation.play();
+                    // Restart the RAF update loop
+                    if (animData.updateFn) {
+                        animData.updateFn();
+                    }
                 }
             });
             // Send resumed status to Elm
-            sendEventToElm('animationUpdate', elementId, { status: 'resumed' });
+            sendEventToElm('animationUpdate', elementId, { status: 'resumed', properties: properties || null });
         }
     }
 
@@ -949,23 +982,18 @@ window.ElmAnimateWAAPI = (function () {
             const startPos = update.startPosition;
             const endPos = update.endPosition;
 
-            // Get transform order for this element
-            const transformOrder = elementTransformOrders.get(update.elementId) || DEFAULT_TRANSFORM_ORDER;
-
             // Build full animation keyframes from scaled start to scaled end
             // The browser will interpolate correctly at preserved currentTime
             const fromTransform = buildTransformString(
                 startPos.x, startPos.y, startPos.z,
                 startPos.scaleX, startPos.scaleY, startPos.scaleZ,
-                startPos.rotateX, startPos.rotateY, startPos.rotateZ,
-                transformOrder
+                startPos.rotateX, startPos.rotateY, startPos.rotateZ
             );
 
             const toTransform = buildTransformString(
                 endPos.x, endPos.y, endPos.z,
                 endPos.scaleX, endPos.scaleY, endPos.scaleZ,
-                endPos.rotateX, endPos.rotateY, endPos.rotateZ,
-                transformOrder
+                endPos.rotateX, endPos.rotateY, endPos.rotateZ
             );
 
             // Generate keyframes using cached easing (preserves bounce/elastic during resize)
@@ -1021,9 +1049,6 @@ window.ElmAnimateWAAPI = (function () {
                 props.scaleX !== undefined || props.scaleY !== undefined || props.scaleZ !== undefined ||
                 props.rotateX !== undefined || props.rotateY !== undefined || props.rotateZ !== undefined) {
 
-                // Get transform order for this element
-                const transformOrder = elementTransformOrders.get(update.elementId) || DEFAULT_TRANSFORM_ORDER;
-
                 const transform = buildTransformString(
                     props.x || 0,
                     props.y || 0,
@@ -1033,8 +1058,7 @@ window.ElmAnimateWAAPI = (function () {
                     props.scaleZ !== undefined ? props.scaleZ : 1,
                     props.rotateX || 0,
                     props.rotateY || 0,
-                    props.rotateZ || 0,
-                    transformOrder
+                    props.rotateZ || 0
                 );
 
                 // Direct inline style assignment - no animation needed
@@ -1107,15 +1131,15 @@ window.ElmAnimateWAAPI = (function () {
                             break;
 
                         case 'stop':
-                            stopAnimation(commandData.elementId);
+                            stopAnimation(commandData.elementId, commandData.properties);
                             break;
 
                         case 'pause':
-                            pauseAnimation(commandData.elementId);
+                            pauseAnimation(commandData.elementId, commandData.properties);
                             break;
 
                         case 'resume':
-                            resumeAnimation(commandData.elementId);
+                            resumeAnimation(commandData.elementId, commandData.properties);
                             break;
 
                         default:
