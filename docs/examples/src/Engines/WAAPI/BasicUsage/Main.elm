@@ -69,8 +69,7 @@ init =
 
 fadeIn : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 fadeIn =
-    WAAPI.forElement elementId
-        >> Opacity.for elementId
+    Opacity.for elementId
         >> Opacity.to 1
         >> Opacity.duration 5000
         >> Opacity.build
@@ -91,7 +90,9 @@ update msg model =
         StartAnimation ->
             let
                 ( newAnimState, cmd ) =
-                    WAAPI.animate model.animState fadeIn
+                    WAAPI.animate model.animState <|
+                        WAAPI.forElement elementId
+                            >> fadeIn
             in
             ( { model | animState = newAnimState }, cmd )
 

@@ -75,6 +75,88 @@ The WAAPI engine uses just two ports - one for outgoing commands and one for inc
 
 [:material-play-circle: Run this example](../examples/src/Engines/WAAPI/BasicUsage/index.html){ .md-button target="_blank" }
 
+## Targeting Elements
+
+WAAPI sends animation commands to JavaScript which targets DOM elements directly.
+Therefore, the Engine needs to know which element id to apply which animations to.
+
+Use `forElement` to specify the element id:
+
+??? example "View Source Code"
+
+    ```elm
+    WAAPI.animate model.animState <|
+        WAAPI.forElement "header"  -- Target the DOM element with id="header"
+            >> fadeIn
+    ```
+
+    Target multiple elements
+
+    ```elm
+    WAAPI.animate model.animState <|
+        WAAPI.forElement "header"  -- Target the DOM element with id="header"
+            >> fadeIn
+            >> slideDown
+            >> WAAPI.forElement "sidebar" -- Next, target the sidebar element
+            >> fadeIn
+            >> slideRight
+    ```
+
+    The header will `fadeIn` and `slideDown`; the sidebar will `fadeIn` and `slideRight`.
+
+Don't do this:
+
+??? example "View Source Code"
+
+    ```elm
+    fadeIn =
+        WAAPI.forElement "header"
+            >> Opacity.for "fadeAnim"
+            >> Opacity.to 1
+            >> Opacity.duration 500
+            >> Opacity.build
+
+    WAAPI.animate model.animState fadeIn
+    ```
+
+    !!! tip "It works"
+        If you include `forElement` in an animation configuration and pass it to the CSS or Sub engines, they simply ignore it.
+
+    **But** after a refactor or two, it will likely result in something like this:
+
+    ```elm
+    fadeIn elementId =
+        WAAPI.forElement elementId
+            >> Opacity.for "entranceAnim"
+            >> Opacity.to 1
+            >> Opacity.duration 500
+            >> Opacity.build
+
+    slideIn elementId =
+        WAAPI.forElement elementId
+            >> Translate.for "entranceAnim"
+            >> Translate.toX 0
+            >> Translate.duration 500
+            >> Translate.build
+
+    WAAPI.animate model.animState <|
+        fadeIn "box" >> slideIn "box"
+    ```
+
+    !!! warning "It works, but..."
+        Now your animation configuration is no longer so easily portable between Engines.
+
+        Now, whenever these animation configurations are consumed, they will need an element id - something which is completely irrelevant to all the other engines.
+
+    WAAPI is the only Engine that cares about element id's, so probably best to keep it in the family:
+
+    ```elm
+    WAAPI.animate model.animState <|
+        WAAPI.forElement "sidebar"
+            >> fadeIn
+            >> slideIn
+    ```
+
 ## Running Animations
 
 ### Fire-and-Forget
@@ -87,14 +169,15 @@ For one-shot animations where you don't need to track state, use `fireAndForget`
     simpleButtonHover : Cmd msg
     simpleButtonHover =
         WAAPI.fireAndForget waapiCommand <|
-            Translate.for "button"
+            WAAPI.forElement "button"
+                >> Translate.for "buttonHover"
                 >> Translate.fromZ 0
                 >> Translate.toZ 10
                 >> Translate.duration 500
                 >> Translate.build
     ```
 
-Fire-and-forget is useful when you don't need chaining, state queries, or animation controls.
+    Fire-and-forget is useful when you don't need chaining, state queries, or animation controls.
 
 ### State-Tracked
 
@@ -106,19 +189,21 @@ Use `animate` when you need to query animation state, control playback (pause, r
     GotShowBox ->
         let
             ( newAnimState, cmd ) =
-                WAAPI.animate model.animState fadeIn
+                WAAPI.animate model.animState <|
+                    WAAPI.forElement "box" >> fadeIn
         in
         ( { model | animState = newAnimState }, cmd )
 
     GotHideBox ->
         let
             ( newAnimState, cmd ) =
-                WAAPI.animate model.animState fadeOut
+                WAAPI.animate model.animState  <|
+                    WAAPI.forElement "box" >> fadeOut
         in
         ( { model | animState = newAnimState }, cmd )
     ```
 
-The `animate` function takes your current `AnimState` and an animation pipeline, returning a new `AnimState` and a `Cmd` to send to JavaScript.
+    The `animate` function takes your current `AnimState` and an animation pipeline, returning a new `AnimState` and a `Cmd` that sends the animation data to JavaScript.
 
 ## Initialization
 
@@ -146,8 +231,9 @@ You can also initialize with starting property values:
     init _ =
         ( { animState =
                 WAAPI.init waapiCommand waapiEvent <|
-                    [ Opacity.init "my-element" 0
-                    , Translate.initXY "my-element" 100 50
+                    [ WAAPI.forElement "my-element"
+                        >> Opacity.init "fadeAnim" 0
+                        >> Translate.initXY "slideAnim" 100 50
                     ]
           }
         , Cmd.none
