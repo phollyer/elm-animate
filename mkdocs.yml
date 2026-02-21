@@ -75,10 +75,10 @@ nav:
   - Concepts:
     - Controlling Animations: concepts/controlling-animations.md
     - Controlling Scroll: concepts/controlling-animations/scroll.md
+    - Events: concepts/events.md
     - Properties: concepts/properties.md
     - Timing: concepts/timing.md
     - Easing Functions: concepts/easing.md
-    - Events: concepts/events.md
     - Sequencing: concepts/sequencing.md
     - Interruptions: concepts/interruptions.md
     - 3D Animations: concepts/3d.md

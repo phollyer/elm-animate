@@ -20,6 +20,9 @@ However, for page entry animations (like in the example), where we want the anim
 
 If you prefer animations that run immediately on render without this pattern, use the [Keyframes Engine](keyframes.md) instead - it gives you I-O-A's*...
 
+!!! warning "Avoid DOM changes during animation start"
+    CSS transitions are sensitive to DOM reflows. If other DOM elements are added or removed in the same render cycle as starting an animation, the browser may skip the transition entirely. Keep DOM structure stable when triggering animations.
+
 ## Discrete Transitions
 
 By default, CSS transitions only work with properties that can have intermediate values (like `opacity: 0.5`).

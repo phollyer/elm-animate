@@ -17,6 +17,95 @@ Each engine provides different events based on its capabilities:
 | Resumed | | | ✓ | ✓ |
 | Restarted | | | ✓ | ✓ |
 
+## Receiving Events
+
+How you receive events varies by Engine.
+
+
+??? example "View Source Code"
+
+    === "Transitions"
+
+        CSS Transitions provide events via HTML event attributes - use the `events` function to add them to the element being animated:
+
+        ```elm
+        view model =
+            div 
+                (Transitions.attributes "box" model.animState
+                    ++ Transitions.events "box" GotAnimEvent
+                )
+                [ text "Animated box" ]
+        ```
+
+    === "Keyframes"
+
+        CSS Keyframes provide events via HTML event attributes - use the `events` function to add them to the element being animated:
+
+        ```elm
+        view model =
+            div 
+                (Keyframes.render model.animState "box"
+                    ++ Keyframes.events "box" GotAnimEvent
+                )
+                [ text "Animated box" ]
+        ```
+
+
+    === "Sub"
+
+        Sub returns a list of events from its `update` function:
+
+        `update : Sub.AnimMsg -> Sub.AnimState -> (Sub.AnimState, List Sub.AnimEvent)`
+
+        ```elm
+        type Msg
+            = GotSubMsg Sub.AnimMsg
+            | ...
+
+        update msg model =
+            case msg of
+                GotSubMsg subMsg ->
+                    let
+                        ( newAnimState, events ) =
+                            Sub.update subMsg model.animState
+                    in
+                    ({ model | animState = newAnimState }, Cmd.none)
+        ```
+
+    === "WAAPI"
+
+        WAAPI returns a maybe event from its `update` function:
+
+        `update : WAAPI.AnimMsg -> WAAPI.AnimState -> (WAAPI.AnimState, Maybe WAAPI.AnimEvent)`
+
+        ```elm
+        type Msg
+            = GotWaapiMsg WAAPI.AnimMsg
+            | ...
+
+        update msg model =
+            case msg of
+                GotWaapiMsg waapiMsg ->
+                    let
+                        ( newAnimState, maybeEvent ) =
+                            WAAPI.update waapiMsg model.animState
+                    in
+                    ({ model | animState = newAnimState }, Cmd.none)
+
+        handleEvent : Maybe WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
+        handleEvent maybeEvent model =
+            case maybeEvent of
+                Just (WAAPI.Ended "box") ->
+                    ( model, startNextAnimation )
+
+                Just (WAAPI.Cancelled _) ->
+                    ( model, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
+        ```
+
+
 ## Handling Events
 
 ??? example "View Source Code"
@@ -28,7 +117,7 @@ Each engine provides different events based on its capabilities:
         ```elm
         view model =
             div 
-                (Transitions.render model.animState "box"
+                (Transitions.attributes "box" model.animState
                     ++ Transitions.events "box" GotAnimEvent
                 )
                 [ text "Animated box" ]
@@ -44,29 +133,26 @@ Each engine provides different events based on its capabilities:
         update msg model =
             case msg of
                 GotAnimEvent event ->
+                    let
+                        newModel =
+                            { model | animState = Transitions.handleEvent event model.animState }
+                    in
                     case event of
                         Transitions.Ended "box" ->
                             -- Animation finished, trigger next one
-                            ( { model | animState = Transitions.animate model.animState nextAnimation }
+                            ( { newModel | animState = Transitions.animate model.animState nextAnimation }
                             , Cmd.none
                             )
 
                         Transitions.Cancelled "box" ->
                             -- Handle interruption
-                            ( model, Cmd.none )
+                            ( newModel, Cmd.none )
 
                         _ ->
-                            ( model, Cmd.none )
+                            ( newModel, Cmd.none )
         ```
 
-        Use `handleEvent` to keep the `AnimState` in sync:
-
-        ```elm
-        GotAnimEvent event ->
-            ( { model | animState = Transitions.handleEvent event model.animState }
-            , Cmd.none
-            )
-        ```
+        Use `handleEvent` to keep the `AnimState` in sync.
 
     === "Keyframes"
 
@@ -268,3 +354,9 @@ update msg model =
         _ ->
             ( model, Cmd.none )
 ```
+
+## Next Steps
+
+Now that you understand how to react to events, let's take a closer look at the available properties that you can animate.
+
+[Properties →](properties.md){ .md-button .md-button--primary }

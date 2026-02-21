@@ -122,9 +122,11 @@ Bouncing ball effect.
 
 Custom easing curve defined by two control points — the same format used by CSS `cubic-bezier()`.
 
-```elm
-|> Property.easing (CubicBezier 0.68 -0.55 0.265 1.55)
-```
+??? example "View Source Code"
+
+    ```elm
+    >> Property.easing (CubicBezier 0.68 -0.55 0.265 1.55)
+    ```
 
 The four parameters (`x1 y1 x2 y2`) define the curve's control points. Use tools like [cubic-bezier.com](https://cubic-bezier.com) to visualize and create custom curves.
 

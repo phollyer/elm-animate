@@ -22,7 +22,7 @@ These properties are composited on the GPU for smooth 60fps performance with min
 These properties trigger browser repaints and/or reflows. Use them when needed, but be mindful of performance with many simultaneous animations.
 
 !!! warning "Size animations"
-    Size changes also trigger browser reflows. The scope depends on layout context — fixed-size containers can limit reflow to their subtree. Consider using `Scale` transforms when you don't need actual layout changes.
+    Size changes also trigger browser reflows in addition to repaints. The scope depends on layout context — fixed-size containers can limit reflow to their subtree. Consider using `Scale` transforms when you don't need actual layout changes.
 
 | Property | Description | Module | Impact |
 | ---------- | ------------- | -------- | -------- |

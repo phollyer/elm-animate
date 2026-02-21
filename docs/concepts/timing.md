@@ -15,12 +15,14 @@ Elm Animate offers two approaches to timing:
 
 Set a fixed animation time in milliseconds:
 
-```elm
-Opacity.for "boxAnim"
-    >> Opacity.to 1
-    >> Opacity.duration 300  -- Always 300ms
-    >> Opacity.build
-```
+??? example "View Source Code"
+
+    ```elm
+    Opacity.for "boxAnim"
+        >> Opacity.to 1
+        >> Opacity.duration 300  -- Always 300ms
+        >> Opacity.build
+    ```
 
 Duration is the default choice for most animations. Fades, color changes, and UI effects benefit from consistent timing.
 
@@ -28,12 +30,14 @@ Duration is the default choice for most animations. Fades, color changes, and UI
 
 Set a rate of change per second:
 
-```elm
-Translate.for "boxAnim"
-    >> Translate.toX 100
-    >> Translate.speed 200  -- 200 pixels per second
-    >> Translate.build
-```
+??? example "View Source Code"
+
+    ```elm
+    Translate.for "boxAnim"
+        >> Translate.toX 100
+        >> Translate.speed 200  -- 200 pixels per second
+        >> Translate.build
+    ```
 
 Moving 100 pixels at 200px/s takes 500ms. Moving 400 pixels takes 2000ms.
 
@@ -46,7 +50,7 @@ In practice, most properties work better with **duration**:
 
 | Property | Recommendation | Why |
 | -------- | -------------- | --- |
-| **Translate** | Speed ✓ | Distance-based timing feels natural for movement |
+| **Translate** | Speed | Distance-based timing feels natural for movement |
 | **Rotate** | Either | Speed works for continuous rotation; duration for UI effects |
 | **Scale** | Duration | "Scale factor per second" is unintuitive; consistent timing is clearer |
 | **Opacity** | Duration | Fades should feel consistent across your UI |
@@ -56,6 +60,23 @@ In practice, most properties work better with **duration**:
 !!! example "Practical example"
     A drag-and-drop interface where items snap to grid positions — use `speed` so nearby drops feel quick and distant drops take longer. But the fade effect when picking up an item? Use `duration` for consistency.
 
+## Global vs Local Timing
+
+Set timing globally on the engine to apply to all animations, or locally on individual properties to override:
+
+??? example "View Source Code"
+
+    ```elm
+    -- Global timing on engine
+    Sub.duration 300
+
+    -- Local override on specific property
+    Translate.for "boxAnim"
+        >> Translate.toX 100
+        >> Translate.speed 500  -- Overrides global 300ms
+        >> Translate.build
+    ```
+
 ## Important Notes
 
 !!! warning "Choose one"
@@ -64,20 +85,6 @@ In practice, most properties work better with **duration**:
 !!! warning "Default behavior"
     If no `duration` or `speed` is set — either globally on the engine or locally on the property — then a duration of 0ms is used and the element instantly jumps to its end state.
 
-## Global vs Local Timing
-
-Set timing globally on the engine to apply to all animations, or locally on individual properties to override:
-
-```elm
--- Global timing on engine
-Sub.duration 300
-
--- Local override on specific property
-Translate.for "boxAnim"
-    >> Translate.toX 100
-    >> Translate.duration 800  -- Overrides global 300ms
-    >> Translate.build
-```
 
 ## Next Steps
 
