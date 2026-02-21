@@ -17,9 +17,9 @@ import Anim.Property.BackgroundColor as ColorBuilder
 
 
 changeColor : Color.Color -> String -> Builder.AnimBuilder -> Builder.AnimBuilder
-changeColor color elementId builder =
+changeColor color animGroup builder =
     builder
-        |> ColorBuilder.for elementId
+        |> ColorBuilder.for animGroup
         |> ColorBuilder.to color
         |> ColorBuilder.duration 0
         |> ColorBuilder.easing Easing.EaseInOut

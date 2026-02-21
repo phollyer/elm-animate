@@ -81,7 +81,7 @@ circleCoords =
 elements : List ( Float, Float ) -> List ( String, ( Float, Float ) )
 elements coordinates =
     List.map2
-        (\elementId ( x, y ) -> ( elementId, ( x, y ) ))
+        (\animGroup ( x, y ) -> ( animGroup, ( x, y ) ))
         [ "elementA"
         , "elementB"
         , "elementC"
@@ -92,14 +92,14 @@ elements coordinates =
         coordinates
 
 
-{-| Build the animation for multiple elements based on a list of (elementId, (x, y)) tuples.
+{-| Build the animation for multiple elements based on a list of (animGroup, (x, y)) tuples.
 -}
 buildAnimation : List ( String, ( Float, Float ) ) -> AnimBuilder -> AnimBuilder
 buildAnimation elementsList builder =
     List.foldl
-        (\( elementId, ( x, y ) ) builder_ ->
+        (\( animGroup, ( x, y ) ) builder_ ->
             builder_
-                |> Translate.for elementId
+                |> Translate.for animGroup
                 |> Translate.toXY x y
                 |> Translate.build
         )
@@ -112,8 +112,8 @@ buildAnimation elementsList builder =
 init : AnimBuilder -> AnimBuilder
 init builder =
     List.foldl
-        (\( elementId, ( x, y ) ) builder_ ->
-            Translate.initXY elementId x y builder_
+        (\( animGroup, ( x, y ) ) builder_ ->
+            Translate.initXY animGroup x y builder_
         )
         builder
         (elements initialCoords)

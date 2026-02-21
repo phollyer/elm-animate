@@ -1,5 +1,5 @@
 module Common.Animations.Translate exposing
-    ( elementId
+    ( animGroup
     , init
     , moveDown
     , moveLeft
@@ -26,19 +26,19 @@ import Anim.Extra.Easing as Easing exposing (Easing(..))
 import Anim.Property.Translate as Translate
 
 
-elementId : String
-elementId =
+animGroup : String
+animGroup =
     "box"
 
 
 init : AnimBuilder -> AnimBuilder
 init =
-    Translate.initXY elementId 0 0
+    Translate.initXY animGroup 0 0
 
 
 moveToXY : Float -> Float -> Easing -> AnimBuilder -> AnimBuilder
 moveToXY x y easing =
-    Translate.for elementId
+    Translate.for animGroup
         >> Translate.toXY x y
         >> Translate.speed 100
         >> Translate.easing easing
@@ -47,7 +47,7 @@ moveToXY x y easing =
 
 moveToX : Float -> Easing -> AnimBuilder -> AnimBuilder
 moveToX x easing =
-    Translate.for elementId
+    Translate.for animGroup
         >> Translate.toX x
         >> Translate.speed 100
         >> Translate.easing easing
@@ -56,7 +56,7 @@ moveToX x easing =
 
 moveToY : Float -> Easing -> AnimBuilder -> AnimBuilder
 moveToY y easing =
-    Translate.for elementId
+    Translate.for animGroup
         >> Translate.toY y
         >> Translate.speed 100
         >> Translate.easing easing

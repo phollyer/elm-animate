@@ -46,8 +46,17 @@ type alias Model =
     }
 
 
-elementId : String
-elementId =
+{-| Animation group name for tracking animation state
+-}
+animGroup : String
+animGroup =
+    "bouncingBall"
+
+
+{-| DOM element ID for the animated element
+-}
+domId : String
+domId =
     "bouncing-ball"
 
 
@@ -66,7 +75,7 @@ init { window } =
 
         initialAnimState =
             WAAPI.init waapiCommand waapiEvent <|
-                [ Translate.initXY elementId xPos 50 ]
+                [ Translate.initXY animGroup xPos 50 ]
     in
     ( { animState = initialAnimState
       , animAreaSize =
@@ -84,7 +93,7 @@ init { window } =
 
 dropBall : AnimBuilder -> AnimBuilder
 dropBall =
-    Translate.for elementId
+    Translate.for animGroup
         >> Translate.fromY 50
         >> Translate.toY 300
         >> Translate.speed 200
@@ -131,7 +140,7 @@ update msg model =
         Stop ->
             let
                 ( newAnimState, stopCmd ) =
-                    WAAPI.stop elementId model.animState
+                    WAAPI.stop animGroup model.animState
             in
             ( { model | animState = newAnimState }
             , stopCmd
@@ -142,7 +151,7 @@ update msg model =
         Pause ->
             let
                 ( newAnimState, pauseCmd ) =
-                    WAAPI.pause elementId model.animState
+                    WAAPI.pause animGroup model.animState
             in
             ( { model | animState = newAnimState }
             , pauseCmd
@@ -153,7 +162,7 @@ update msg model =
         Resume ->
             let
                 ( newAnimState, resumeCmd ) =
-                    WAAPI.resume elementId model.animState
+                    WAAPI.resume animGroup model.animState
             in
             ( { model | animState = newAnimState }
             , resumeCmd
@@ -164,7 +173,7 @@ update msg model =
         Reset ->
             let
                 ( newAnimState, resetCmd ) =
-                    WAAPI.reset elementId model.animState
+                    WAAPI.reset animGroup model.animState
             in
             ( { model | animState = newAnimState }
             , resetCmd
@@ -175,7 +184,7 @@ update msg model =
         Restart ->
             let
                 ( newAnimState, restartCmd ) =
-                    WAAPI.restart elementId model.animState
+                    WAAPI.restart animGroup model.animState
             in
             ( { model | animState = newAnimState }
             , restartCmd
@@ -236,8 +245,8 @@ viewContent model =
 animatedBall : WAAPI.AnimState msg -> Element msg
 animatedBall animState =
     el
-        (List.map htmlAttribute (WAAPI.attributes elementId animState)
-            ++ [ htmlAttribute (Html.Attributes.id elementId)
+        (List.map htmlAttribute (WAAPI.attributes animGroup animState)
+            ++ [ htmlAttribute (Html.Attributes.id domId)
                , htmlAttribute (Html.Attributes.style "position" "relative")
                , width (px 50)
                , height (px 50)

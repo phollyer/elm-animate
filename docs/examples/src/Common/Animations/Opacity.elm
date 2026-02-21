@@ -17,9 +17,9 @@ import Anim.Property.Opacity as Opacity
 {-| Fade in to fully visible (opacity 1.0)
 -}
 fadeIn : String -> Builder.AnimBuilder -> Builder.AnimBuilder
-fadeIn elementId builder =
+fadeIn animGroup builder =
     builder
-        |> Opacity.for elementId
+        |> Opacity.for animGroup
         |> Opacity.to 1.0
         |> Opacity.duration 2000
         |> Opacity.easing Easing.EaseOut
@@ -29,9 +29,9 @@ fadeIn elementId builder =
 {-| Fade out to fully invisible (opacity 0.0)
 -}
 fadeOut : String -> Builder.AnimBuilder -> Builder.AnimBuilder
-fadeOut elementId builder =
+fadeOut animGroup builder =
     builder
-        |> Opacity.for elementId
+        |> Opacity.for animGroup
         |> Opacity.to 0.0
         |> Opacity.duration 2000
         |> Opacity.easing Easing.EaseOut
@@ -41,7 +41,7 @@ fadeOut elementId builder =
 {-| Toggle between visible (1.0) and invisible (0.0)
 -}
 fadeToggle : String -> Float -> Builder.AnimBuilder -> Builder.AnimBuilder
-fadeToggle elementId currentOpacity builder =
+fadeToggle animGroup currentOpacity builder =
     let
         newOpacity =
             if currentOpacity > 0.5 then
@@ -51,7 +51,7 @@ fadeToggle elementId currentOpacity builder =
                 1.0
     in
     builder
-        |> Opacity.for elementId
+        |> Opacity.for animGroup
         |> Opacity.to newOpacity
         |> Opacity.duration 1500
         |> Opacity.easing Easing.EaseInOut
@@ -61,9 +61,9 @@ fadeToggle elementId currentOpacity builder =
 {-| Fade to half opacity (0.5)
 -}
 fadeToHalf : String -> Builder.AnimBuilder -> Builder.AnimBuilder
-fadeToHalf elementId builder =
+fadeToHalf animGroup builder =
     builder
-        |> Opacity.for elementId
+        |> Opacity.for animGroup
         |> Opacity.to 0.5
         |> Opacity.duration 1000
         |> Opacity.easing Easing.EaseInOut
@@ -73,9 +73,9 @@ fadeToHalf elementId builder =
 {-| Fade to quarter opacity (0.25)
 -}
 fadeToQuarter : String -> Builder.AnimBuilder -> Builder.AnimBuilder
-fadeToQuarter elementId builder =
+fadeToQuarter animGroup builder =
     builder
-        |> Opacity.for elementId
+        |> Opacity.for animGroup
         |> Opacity.to 0.25
         |> Opacity.duration 1000
         |> Opacity.easing Easing.EaseOut

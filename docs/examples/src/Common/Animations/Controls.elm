@@ -1,6 +1,6 @@
 module Common.Animations.Controls exposing
     ( animate
-    , elementId
+    , animGroup
     , init
     )
 
@@ -18,8 +18,8 @@ import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Translate as Translate
 
 
-elementId : String
-elementId =
+animGroup : String
+animGroup =
     "bouncing-ball"
 
 
@@ -29,12 +29,12 @@ init animAreaWidth =
         xPos =
             toFloat animAreaWidth / 2 - 25
     in
-    Translate.initXY elementId xPos 50
+    Translate.initXY animGroup xPos 50
 
 
 animate : AnimBuilder -> AnimBuilder
 animate =
-    Translate.for elementId
+    Translate.for animGroup
         >> Translate.fromY 50
         >> Translate.toY 300
         >> Translate.speed 200

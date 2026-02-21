@@ -1,7 +1,7 @@
 module Common.Animations.Mixed exposing
     ( allProperties
     , colorSizeOpacity
-    , elementId
+    , animGroup
     , fadeMove
     , init
     , moveScaleRotate
@@ -43,14 +43,14 @@ import Anim.Property.Size as Size
 import Anim.Property.Translate as Translate
 
 
-elementId : String
-elementId =
+animGroup : String
+animGroup =
     "mixed-box"
 
 
 colorAnimation : Float -> Easing -> Color -> AnimBuilder -> Color.Builder
 colorAnimation speed easing targetColor =
-    Color.for elementId
+    Color.for animGroup
         >> Color.to targetColor
         >> Color.speed speed
         >> Color.easing easing
@@ -58,7 +58,7 @@ colorAnimation speed easing targetColor =
 
 opacityAnimation : Float -> Easing -> Float -> AnimBuilder -> Opacity.Builder
 opacityAnimation speed easing targetOpacity =
-    Opacity.for elementId
+    Opacity.for animGroup
         >> Opacity.to targetOpacity
         >> Opacity.speed speed
         >> Opacity.easing easing
@@ -66,7 +66,7 @@ opacityAnimation speed easing targetOpacity =
 
 positionAnimation : Float -> Easing -> ( Float, Float ) -> AnimBuilder -> Translate.Builder
 positionAnimation speed easing ( x, y ) =
-    Translate.for elementId
+    Translate.for animGroup
         >> Translate.toXY x y
         >> Translate.speed speed
         >> Translate.easing easing
@@ -74,7 +74,7 @@ positionAnimation speed easing ( x, y ) =
 
 rotateAnimation : Float -> Easing -> Float -> AnimBuilder -> Rotate.Builder
 rotateAnimation speed easing angle =
-    Rotate.for elementId
+    Rotate.for animGroup
         >> Rotate.toZ angle
         >> Rotate.speed speed
         >> Rotate.easing easing
@@ -82,7 +82,7 @@ rotateAnimation speed easing angle =
 
 scaleAnimation : Float -> Easing -> ( Float, Float ) -> AnimBuilder -> Scale.Builder
 scaleAnimation speed easing ( sx, sy ) =
-    Scale.for elementId
+    Scale.for animGroup
         >> Scale.toXY sx sy
         >> Scale.speed speed
         >> Scale.easing easing
@@ -90,7 +90,7 @@ scaleAnimation speed easing ( sx, sy ) =
 
 sizeAnimation : Float -> Easing -> ( Float, Float ) -> AnimBuilder -> Size.Builder
 sizeAnimation speed easing ( w, h ) =
-    Size.for elementId
+    Size.for animGroup
         >> Size.toHW h w
         >> Size.speed speed
         >> Size.easing easing
@@ -98,12 +98,12 @@ sizeAnimation speed easing ( w, h ) =
 
 init : AnimBuilder -> AnimBuilder
 init =
-    Color.init elementId (Anim.Extra.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
-        >> Opacity.init elementId 1.0
-        >> Translate.initXY elementId 0 0
-        >> Rotate.initXYZ elementId 0 0 0
-        >> Scale.initXYZ elementId 1.0 1.0 1.0
-        >> Size.initWH elementId 80 80
+    Color.init animGroup (Anim.Extra.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
+        >> Opacity.init animGroup 1.0
+        >> Translate.initXY animGroup 0 0
+        >> Rotate.initXYZ animGroup 0 0 0
+        >> Scale.initXYZ animGroup 1.0 1.0 1.0
+        >> Size.initWH animGroup 80 80
 
 
 {-| Move + Scale + Rotate with delayed animation starts

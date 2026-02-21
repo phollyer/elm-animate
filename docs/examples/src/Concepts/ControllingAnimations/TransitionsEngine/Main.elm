@@ -35,9 +35,9 @@ type alias Model =
     }
 
 
-elementId : String
-elementId =
-    "bouncing-ball"
+animGroup : String
+animGroup =
+    "bouncingBall"
 
 
 
@@ -55,7 +55,7 @@ init { window } =
     in
     ( { animState =
             Transitions.init <|
-                [ Translate.initXY elementId xPos 50 ]
+                [ Translate.initXY animGroup xPos 50 ]
       , animAreaSize =
             { width = animAreaWidth
             , height = 350
@@ -71,7 +71,7 @@ init { window } =
 
 dropBall : AnimBuilder -> AnimBuilder
 dropBall =
-    Translate.for elementId
+    Translate.for animGroup
         >> Translate.fromY 50
         >> Translate.toY 300
         >> Translate.speed 200
@@ -101,14 +101,14 @@ update msg model =
 
         -- --8<-- [start:stop]
         Stop ->
-            ( { model | animState = Transitions.stop elementId model.animState }
+            ( { model | animState = Transitions.stop animGroup model.animState }
             , Cmd.none
             )
 
         -- --8<-- [end:stop]
         -- --8<-- [start:reset]
         Reset ->
-            ( { model | animState = Transitions.reset elementId model.animState }
+            ( { model | animState = Transitions.reset animGroup model.animState }
             , Cmd.none
             )
 
@@ -149,7 +149,7 @@ viewContent model =
 animatedBall : Transitions.AnimState -> Element msg
 animatedBall animState =
     el
-        (List.map htmlAttribute (Transitions.attributes elementId animState)
+        (List.map htmlAttribute (Transitions.attributes animGroup animState)
             ++ [ htmlAttribute (Html.Attributes.style "position" "relative")
                , width (px 50)
                , height (px 50)

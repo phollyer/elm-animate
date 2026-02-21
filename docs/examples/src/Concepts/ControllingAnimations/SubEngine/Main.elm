@@ -35,9 +35,9 @@ type alias Model =
     }
 
 
-elementId : String
-elementId =
-    "bouncing-ball"
+animGroup : String
+animGroup =
+    "bouncingBall"
 
 
 
@@ -55,7 +55,7 @@ init { window } =
     in
     ( { animState =
             Sub.init <|
-                [ Translate.initXY elementId xPos 50 ]
+                [ Translate.initXY animGroup xPos 50 ]
       , animAreaSize =
             { width = animAreaWidth
             , height = 350
@@ -71,7 +71,7 @@ init { window } =
 
 dropBall : AnimBuilder -> AnimBuilder
 dropBall =
-    Translate.for elementId
+    Translate.for animGroup
         >> Translate.fromY 50
         >> Translate.toY 300
         >> Translate.speed 200
@@ -114,35 +114,35 @@ update msg model =
 
         -- --8<-- [start:stop]
         Stop ->
-            ( { model | animState = Sub.stop elementId model.animState }
+            ( { model | animState = Sub.stop animGroup model.animState }
             , Cmd.none
             )
 
         -- --8<-- [end:stop]
         -- --8<-- [start:pause]
         Pause ->
-            ( { model | animState = Sub.pause elementId model.animState }
+            ( { model | animState = Sub.pause animGroup model.animState }
             , Cmd.none
             )
 
         -- --8<-- [end:pause]
         -- --8<-- [start:resume]
         Resume ->
-            ( { model | animState = Sub.resume elementId model.animState }
+            ( { model | animState = Sub.resume animGroup model.animState }
             , Cmd.none
             )
 
         -- --8<-- [end:resume]
         -- --8<-- [start:reset]
         Reset ->
-            ( { model | animState = Sub.reset elementId model.animState }
+            ( { model | animState = Sub.reset animGroup model.animState }
             , Cmd.none
             )
 
         -- --8<-- [end:reset]
         -- --8<-- [start:restart]
         Restart ->
-            ( { model | animState = Sub.restart elementId model.animState }
+            ( { model | animState = Sub.restart animGroup model.animState }
             , Cmd.none
             )
 
@@ -201,7 +201,7 @@ viewContent model =
 animatedBall : Sub.AnimState -> Element msg
 animatedBall animState =
     el
-        (List.map htmlAttribute (Sub.attributes elementId animState)
+        (List.map htmlAttribute (Sub.attributes animGroup animState)
             ++ [ htmlAttribute (Html.Attributes.style "position" "relative")
                , width (px 50)
                , height (px 50)

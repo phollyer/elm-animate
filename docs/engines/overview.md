@@ -528,7 +528,7 @@ Because all engines share the same builder API, animations are portable:
 
         ```elm
         WAAPI.animate model.animState <|
-            WAAPI.forElement "elementId"
+            WAAPI.forElement "box"
                 >> myAnimation
         ```
 

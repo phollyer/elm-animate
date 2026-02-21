@@ -35,9 +35,9 @@ type alias Model =
     }
 
 
-elementId : String
-elementId =
-    "bouncing-ball"
+animGroup : String
+animGroup =
+    "bouncingBall"
 
 
 
@@ -55,7 +55,7 @@ init { window } =
     in
     ( { animState =
             Keyframes.init <|
-                [ Translate.initXY elementId xPos 50 ]
+                [ Translate.initXY animGroup xPos 50 ]
       , animAreaSize =
             { width = animAreaWidth
             , height = 350
@@ -71,7 +71,7 @@ init { window } =
 
 dropBall : AnimBuilder -> AnimBuilder
 dropBall =
-    Translate.for elementId
+    Translate.for animGroup
         >> Translate.fromY 50
         >> Translate.toY 300
         >> Translate.speed 200
@@ -104,35 +104,35 @@ update msg model =
 
         -- --8<-- [start:stop]
         Stop ->
-            ( { model | animState = Keyframes.stop elementId model.animState }
+            ( { model | animState = Keyframes.stop animGroup model.animState }
             , Cmd.none
             )
 
         -- --8<-- [end:stop]
         -- --8<-- [start:reset]
         Reset ->
-            ( { model | animState = Keyframes.reset elementId model.animState }
+            ( { model | animState = Keyframes.reset animGroup model.animState }
             , Cmd.none
             )
 
         -- --8<-- [end:reset]
         -- --8<-- [start:restart]
         Restart ->
-            ( { model | animState = Keyframes.restart elementId model.animState }
+            ( { model | animState = Keyframes.restart animGroup model.animState }
             , Cmd.none
             )
 
         -- --8<-- [end:restart]
         -- --8<-- [start:pause]
         Pause ->
-            ( { model | animState = Keyframes.pause elementId model.animState }
+            ( { model | animState = Keyframes.pause animGroup model.animState }
             , Cmd.none
             )
 
         -- --8<-- [end:pause]
         -- --8<-- [start:resume]
         Resume ->
-            ( { model | animState = Keyframes.resume elementId model.animState }
+            ( { model | animState = Keyframes.resume animGroup model.animState }
             , Cmd.none
             )
 
@@ -153,7 +153,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ html <|
-        Keyframes.styleNodeFor elementId model.animState
+        Keyframes.styleNodeFor animGroup model.animState
     , ViewControls.header
         [ "Keyframes Engine Controls" ]
     , ViewControls.table
@@ -183,7 +183,7 @@ viewContent model =
 animatedBall : Keyframes.AnimState -> Element msg
 animatedBall animState =
     el
-        (List.map htmlAttribute (Keyframes.attributes elementId animState)
+        (List.map htmlAttribute (Keyframes.attributes animGroup animState)
             ++ [ htmlAttribute (Html.Attributes.style "position" "relative")
                , width (px 50)
                , height (px 50)
