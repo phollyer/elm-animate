@@ -12,103 +12,6 @@ The CSS Keyframes Engine uses native browser CSS `@keyframes` animations for com
 
 [:material-play-circle: Run this example](../examples/src/Engines/Keyframes/BasicUsage/index.html){ .md-button target="_blank" }
 
-## Running Animations
-
-### Fire-and-Forget
-
-For one-shot animations where you don't need to track state, use `fireAndForget`:
-
-??? example "View Source Code"
-
-    ```elm
-    view : Model -> Html Msg
-    view model =
-        let
-            animState =
-                Keyframes.fireAndForget <|
-                    case model.state of
-                        ShowText ->
-                            fadeIn
-
-                        HideText ->
-                            fadeOut
-        in 
-        div []
-            [ Keyframes.styleNode animState
-            , div
-                (Keyframes.attributes "text" animState)
-                [ text "I fade in!" ]
-            ]
-    ```
-
-Fire-and-forget is useful when you don't need chaining, state queries, or stop/reset controls.
-
-### State-Tracked
-
-Use `animate` when you need to query animation state, use stop/reset/pause/resume controls,
-or chain animations that continue from the previous end state.
-
-??? example "View Source Code"
-
-    ```elm
-    GotShowText ->
-        ( { model| animState = Keyframes.animate model.animState fadeIn }
-        , Cmd.none
-        )
-
-    GotHideText ->
-        ( { model | animState = Keyframes.animate model.animState fadeOut }
-        , Cmd.none
-        )
-
-    view : Model -> Html Msg
-    view model =
-        div []
-            [ Keyframes.styleNode model.animState
-            , div
-                (Keyframes.attributes "text" model.animState)
-                [ text "I fade in!" ]
-            ]
-    ```
-
-The `animate` function takes your current `AnimState` and an animation pipeline, returning a new `AnimState` with the animation configured.
-
-## Initialization
-
-Create an `AnimState` for state-tracked animations using `init`:
-
-??? example "Empty State"
-
-    ```elm
-    type alias Model =
-        { animState : Keyframes.AnimState }
-
-    init : () -> ( Model, Cmd Msg )
-    init _ =
-        ( { animState = Keyframes.init [] }
-        , Cmd.none
-        )
-    ```
-
-You can also initialize with starting property values:
-
-??? example "With Initial Values"
-
-    ```elm
-    init : () -> ( Model, Cmd Msg )
-    init _ =
-        ( { animState =
-                Keyframes.init
-                    [ Opacity.init "my-element" 0
-                    , Translate.initXY "my-element" 100 50
-                    ]
-          }
-        , Cmd.none
-        )
-    ```
-
-    These property values will be used in your view to set the initial state of your element(s) as well.
-
 ## Keyframes Style Node
 
 Keyframe animations require a `<style>` node to define the `@keyframes` rules. Include this in your view:
@@ -120,7 +23,7 @@ Keyframe animations require a `<style>` node to define the `@keyframes` rules. I
         div []
             [ Keyframes.styleNode model.animState
             , div
-                []
+                (Keyframes.attributes "box" model.animState)
                 [ ... ]
             ]
     ```
@@ -164,225 +67,29 @@ Run an animation forever:
 
     You can keep track of the number of iterations/loops with the `Iteration` `AnimEvent`
 
-## Event Handling
+## Keyframes-Specific Events
 
-Keyframe animations generate events throughout their lifecycle. Use these events to chain animations, update state, or trigger follow-up actions.
+The Keyframes engine has a unique `Iteration` event that fires after each loop cycle. This is useful for tracking loop count in infinite or multi-iteration animations.
 
-1. Create a `Msg` type variant for your keyframe events.
+| Event | Fires when... |
+| ----- | ------------- |
+| `Started` | The animation begins playing |
+| `Ended` | The animation completes (after all iterations) |
+| `Iteration` | Each cycle completes (useful for tracking loop count) |
+| `Cancelled` | The browser aborts the animation |
 
-    ??? example "View Source Code"
+## Shared Features
 
-        ```elm
-        type Msg
-            = GotKeyframeEvent Keyframes.AnimEvent
-            | ...
-        ```
+The following features work the same across all engines. See [Engine Overview](overview.md) for detailed examples with tabbed code for each engine:
 
-2. Use `Keyframes.events` in your view to generate events.
-
-    ??? example "View Source Code"
-
-        ```elm
-        view model =
-            div
-                []
-                [ Keyframes.styleNodeFor "box" model.animState
-                , div
-                    (Keyframes.attributes "box" model.animState
-                        ++ Keyframes.events "box" GotKeyframeEvent
-                    )
-                    [...]
-                ]
-        ```
-
-3. Use `Keyframes.handleEvent` in your `update` function. This will keep the internal state in sync with the animation lifecycle.
-
-    ??? example "View Source Code"
-
-        ```elm
-        update msg model =
-            case msg of
-                GotKeyframeEvent event ->
-                    ( { model | animState = Keyframes.handleEvent event model.animState }
-                    , Cmd.none 
-                    )
-        ```
-
-4. Handle any events you are interested in.
-
-    ??? example "View Source Code"
-
-        ```elm
-        update msg model =
-            case msg of
-                GotKeyframeEvent event ->
-                    let
-                        newModel =
-                            { model | animState = Keyframes.handleEvent event model.animState }
-                    in
-                    case event of
-                        Keyframes.Started "box" ->
-                            (newModel, Cmd.none)
-                        
-                        Keyframes.Ended "box" ->
-                            (newModel, Cmd.none)
-
-                        Keyframes.Iteration "box" ->
-                            (newModel, Cmd.none)
-
-                        Keyframes.Cancelled "box" ->
-                            (newModel, Cmd.none)
-
-                        _ ->
-                            ( newModel, Cmd.none )
-        ```
-
-
-!!! info "When events fire"
-
-    | Event | Fires when... |
-    | ----- | ------------- |
-    | `Started` | The animation begins playing |
-    | `Ended` | The animation completes (after all iterations) |
-    | `Iteration` | Each cycle completes (useful for tracking loop count) |
-    | `Cancelled` | The browser aborts the animation — e.g., the element is removed from the DOM, set to `display: none`, or the animation CSS is removed mid-flight |
-
-## Default Settings
-
-Set (optional) defaults for all properties:
-
-- Timing: use `speed` or `duration`
-- Easing
-- Delay
-
-These settings will be used for all property animations in the pipeline.
-
-??? example "View Source Code"
-
-    ```elm
-
-    animState =
-        Keyframes.animate model.animState <|
-            Keyframes.duration 500 -- Or Keyframes.speed
-                >> Keyframes.easing QuintOut
-                >> Keyframes.delay 100
-                >> myAnimation
-            
-    ```
-
-Individual properties can override them:
-
-??? example "View Source Code"
-
-    ```elm
-    myAnimation : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
-    myAnimation =
-        Opacity.for "box"
-            >> Opacity.duration 1000  
-            >> Opacity.easing SineOut 
-            >> Opacity.delay 0
-            >> Opacity.build
-    ```
-
-## 3D Transforms
-
-Fully supports 3D animations. See [3D Animations](../concepts/3d.md) for more information.
-
-## Controlling Animations
-
-For details on `stop`, `reset`, `restart`, `pause`, and `resume` controls, see [Controlling Animations](../concepts/controlling-animations.md).
-
-## Querying Animation State
-
-Check whether animations are running or complete:
-
-??? example "View Source Code"
-
-    ```elm
-    view model =
-        div []
-            [ if Keyframes.anyRunning model.animState then
-                text "Animating..."
-              else
-                text "Complete"
-            ]
-    ```
-
-You can also query specific elements:
-
-??? example "View Source Code"
-
-    ```elm
-    view model =
-        let
-            boxStatus =
-                if Keyframes.isRunning "box" model.animState then
-                    "Box is animating"
-                else
-                    case Keyframes.isComplete "box" model.animState of
-                        Just True ->
-                            "Box animation complete"
-
-                        Just False ->
-                            "Box animation not started"
-
-                        Nothing ->
-                            "No animation for box"
-        in
-        div [] [ text boxStatus ]
-    ```
-
-## Querying Property Values
-
-Query the start, end, or current values of animated properties:
-
-??? example "View Source Code"
-
-    ```elm
-    view model =
-        let
-            positionText =
-                case Keyframes.getCurrentTranslate "box" model.animState of
-                    Just { x, y, z } ->
-                        "Position: " ++ String.fromFloat x ++ ", " ++ String.fromFloat y
-
-                    Nothing ->
-                        "No translate animation"
-        in
-        div [] [ text positionText ]
-    ```
-
-Available getters:
-
-| Property | Start | End | Current |
-| -------- | ----- | --- | ------- |
-| Translate | `getStartTranslate` | `getEndTranslate` | `getCurrentTranslate` |
-| Scale | `getStartScale` | `getEndScale` | `getCurrentScale` |
-| Rotate | `getStartRotate` | `getEndRotate` | `getCurrentRotate` |
-| Opacity | `getStartOpacity` | `getEndOpacity` | `getCurrentOpacity` |
-| Size | `getStartSize` | `getEndSize` | `getCurrentSize` |
-| Background Color | `getStartBackgroundColor` | `getEndBackgroundColor` | `getCurrentBackgroundColor` |
-
-!!! note "Mid-flight values"
-    CSS keyframes don't expose actual mid-flight values. The "current" getters return the start value before the animation runs and the end value once it starts. For true mid-flight interpolation, use the [Sub Engine](sub.md) or [WAAPI Engine](waapi.md).
-
-## Transform Ordering
-
-The default transform order is: **Translate → Rotate → Scale**. This works well for most animations.
-
-For custom ordering, use `animateOrder` or `fireAndForgetOrder`:
-
-??? example "Custom Transform Order"
-
-    ```elm
-    -- Scale → Rotate → Translate
-    Keyframes.animateOrder [ Scale, Rotate, Translate ] model.animState <|
-        scaleUp
-            >> rotateLeft
-            >> moveRight
-    ```
-
-Transform order affects how combined transforms render. For example, rotating then translating moves along the rotated axis, while translating then rotating moves along the original axis.
+- [Initializing Property Configs](overview.md#initializing-property-configs) — Setting up `AnimState` with optional initial values
+- [Default Settings](overview.md#default-settings) — Setting duration, easing, and delay defaults
+- [Event Handling](overview.md#event-handling) — Handling animation lifecycle events
+- [Querying Animation State](overview.md#querying-animation-state) — Checking if animations are running or complete
+- [Querying Property Values](overview.md#querying-property-values) — Getting start, end, and current values
+- [Transform Ordering](overview.md#transform-ordering) — Custom transform order with `animateOrder`
+- [3D Transforms](../concepts/3d.md) — Full 3D animation support
+- [Controlling Animations](../concepts/controlling-animations.md) — Stop, reset, restart, pause, and resume controls
 
 ## API Quick Reference
 

@@ -1,6 +1,6 @@
 # Triggering Animations
 
-Once you've [built an animation](build.md), you need to trigger it. Triggering is where the engine processes your configuration and computes the animation data, storing the results in AnimState ready for rendering.
+Once you've [built an animation](build.md), you need to trigger it. Triggering is where the engine processes your configuration and computes the animation data, storing the results in `AnimState` ready for rendering.
 
 ## Two Ways to Trigger
 

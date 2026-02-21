@@ -82,22 +82,22 @@ with `>>`. Small, focused animations combine into larger ones:
 ??? example "Show Source Code"
 
     ```elm
-    fadeIn : AnimBuilder -> AnimBuilder
-    fadeIn =
+    fadeIn : String -> AnimBuilder -> AnimBuilder
+    fadeIn animGroup =
         Opacity.for animGroup
             >> Opacity.from 0
             >> Opacity.to 1
             >> Opacity.build
 
-    slideUp : AnimBuilder -> AnimBuilder
-    slideUp =
+    slideUp : String -> AnimBuilder -> AnimBuilder
+    slideUp animGroup =
         Translate.for animGroup
             >> Translate.fromY 50
             >> Translate.toY 0
             >> Translate.build
 
-    rotateClockwise : AnimBuilder -> AnimBuilder
-    rotateClockwise =
+    rotateClockwise : String -> AnimBuilder -> AnimBuilder
+    rotateClockwise animGroup =
         Rotate.for animGroup
             >> Rotate.fromZ 0
             >> Rotate.toZ 180
@@ -105,9 +105,11 @@ with `>>`. Small, focused animations combine into larger ones:
 
 
     -- Compose them
-    complexAnimation : AnimBuilder -> AnimBuilder
-    complexAnimation =
-        fadeIn >> slideUp >> rotateClockwise
+    complexAnimation : String -> AnimBuilder -> AnimBuilder
+    complexAnimation animGroup =
+        fadeIn animGroup
+            >> slideUp animGroup
+            >> rotateClockwise animGroup
     ```
 
     Build complex animations from small, reusable pieces.

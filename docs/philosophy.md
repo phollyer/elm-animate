@@ -14,7 +14,7 @@ There are CSS transitions, CSS keyframes, subscription-based animations, the Web
 
 Each different animation approach comes with its own learning curve and complexities, as does each different Elm package - and because each Elm package only targets one approach:
 
-    changing approaches =
+    changingApproaches =
         new ElmPackage
             >> new API
             >> new MentalModel

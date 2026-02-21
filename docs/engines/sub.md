@@ -12,69 +12,8 @@ The Sub Engine uses Elm subscriptions to update animation state on every frame. 
 
 [:material-play-circle: Run this example](../examples/src/Engines/Sub/BasicUsage/index.html){ .md-button target="_blank" }
 
-## Running Animations
-
-The Sub Engine uses state-tracked animations exclusively. Use `animate` to start animations:
-
-??? example "View Source Code"
-
-    ```elm
-    GotShowBox ->
-        ( { model | animState = Sub.animate model.animState fadeIn }
-        , Cmd.none
-        )
-
-    GotHideBox ->
-        ( { model | animState = Sub.animate model.animState fadeOut }
-        , Cmd.none
-        )
-
-    view : Model -> Html Msg
-    view model =
-        div []
-            [ div
-                (Sub.attributes "box" model.animState)
-                [ text "I animate!" ]
-            ]
-    ```
-
-The `animate` function takes your current `AnimState` and an animation pipeline, returning a new `AnimState` with the animation configured.
-
-## Initialization
-
-Create an `AnimState` using `init`:
-
-??? example "Empty State"
-
-    ```elm
-    type alias Model =
-        { animState : Sub.AnimState }
-
-    init : () -> ( Model, Cmd Msg )
-    init _ =
-        ( { animState = Sub.init [] }
-        , Cmd.none
-        )
-    ```
-
-You can also initialize with starting property values:
-
-??? example "With Initial Values"
-
-    ```elm
-    init : () -> ( Model, Cmd Msg )
-    init _ =
-        ( { animState =
-                Sub.init
-                    [ Opacity.init "my-element" 0
-                    , Translate.initXY "my-element" 100 50
-                    ]
-          }
-        , Cmd.none
-        )
-    ```
-
-    These property values will be used in your view to set the initial state of your element(s).
+!!! note "Sub always uses `animate`"
+    The Sub engine does not have a `fireAndForget` function. Because the engine uses `subscriptions` with frame-by-frame `update`s, the fire-and-forget concept doesn't apply.
 
 ## Subscriptions
 
@@ -114,68 +53,9 @@ Handle animation messages in your update function. The `update` function returns
             ...
     ```
 
-## Event Handling
-
-The `update` function returns a list of animation events. Use these to chain animations, update state, or trigger follow-up actions:
-
-??? example "View Source Code"
-
-    ```elm
-    handleAnimationEvents : List Sub.AnimEvent -> Model -> ( Model, Cmd Msg )
-    handleAnimationEvents events model =
-        case events of
-            [] ->
-                ( model, Cmd.none )
-
-            event :: rest ->
-                let
-                    ( newModel, cmd ) =
-                        case event of
-                            Sub.Ended "box" ->
-                                -- Animation complete
-                                ( model, Cmd.none )
-
-                            Sub.Started "box" ->
-                                -- Animation started
-                                ( model, Cmd.none )
-
-                            Sub.Cancelled "box" ->
-                                -- Animation was stopped/reset
-                                ( model, Cmd.none )
-
-                            Sub.Paused "box" ->
-                                -- Animation was paused
-                                ( model, Cmd.none )
-
-                            Sub.Resumed "box" ->
-                                -- Animation was resumed
-                                ( model, Cmd.none )
-
-                            Sub.Restarted "box" ->
-                                -- Animation was restarted
-                                ( model, Cmd.none )
-
-                            _ ->
-                                ( model, Cmd.none )
-                in
-                handleAnimationEvents rest newModel
-    ```
-
-!!! info "When events fire"
-
-    | Event | Fires when... |
-    | ----- | ------------- |
-    | `Started` | The animation begins playing |
-    | `Ended` | The animation finishes |
-    | `Cancelled` | The animation is stopped or reset via `stop` or `reset` |
-    | `Paused` | The animation is paused via `pause` |
-    | `Resumed` | The animation is resumed via `resume` |
-    | `Restarted` | The animation is restarted via `restart` |
-
-
 ## Interrupting Animations
 
-Start a new animation at any time — the Sub Engine handles smooth transitions:
+Start a new animation at any time — the Sub Engine handles smooth transitions from the current position:
 
 ??? example "View Source Code"
 
@@ -185,51 +65,11 @@ Start a new animation at any time — the Sub Engine handles smooth transitions:
 
 [:material-play-circle: Run this example](../examples/src/Engines/Sub/InterruptingAnimations/index.html){ .md-button target="_blank" }
 
-The new animation starts from the current position, not the original start position.
+The new animation starts from the current position, not the original start position. This enables smooth redirections mid-flight.
 
-## Querying Animation State
+## True Mid-Flight Values
 
-Check whether animations are running or complete:
-
-??? example "View Source Code"
-
-    ```elm
-    view model =
-        div []
-            [ if Sub.anyRunning model.animState then
-                text "Animating..."
-              else
-                text "Complete"
-            ]
-    ```
-
-You can also query specific elements:
-
-??? example "View Source Code"
-
-    ```elm
-    view model =
-        let
-            boxStatus =
-                if Sub.isRunning "box" model.animState then
-                    "Box is animating"
-                else
-                    case Sub.isComplete "box" model.animState of
-                        Just True ->
-                            "Box animation complete"
-
-                        Just False ->
-                            "Box animation not started"
-
-                        Nothing ->
-                            "No animation for box"
-        in
-        div [] [ text boxStatus ]
-    ```
-
-## Querying Property Values
-
-Query the start, end, or current values of animated properties. Unlike CSS-based engines, the Sub Engine can give you true mid-flight values:
+Unlike CSS-based engines, the Sub Engine can give you true interpolated mid-flight values:
 
 ??? example "View Source Code"
 
@@ -247,75 +87,51 @@ Query the start, end, or current values of animated properties. Unlike CSS-based
         div [] [ text positionText ]
     ```
 
-Available getters:
+Available getters: `getCurrentTranslate`, `getCurrentScale`, `getCurrentRotate`, `getCurrentOpacity`, `getCurrentSize`, `getCurrentBackgroundColor`.
 
-| Property | Start | End | Current |
-| -------- | ----- | --- | ------- |
-| Translate | `getStartTranslate` | `getEndTranslate` | `getCurrentTranslate` |
-| Scale | `getStartScale` | `getEndScale` | `getCurrentScale` |
-| Rotate | `getStartRotate` | `getEndRotate` | `getCurrentRotate` |
-| Opacity | `getStartOpacity` | `getEndOpacity` | `getCurrentOpacity` |
-| Size | `getStartSize` | `getEndSize` | `getCurrentSize` |
-| Background Color | `getStartBackgroundColor` | `getEndBackgroundColor` | `getCurrentBackgroundColor` |
+## Sub-Specific Events
 
-## Default Settings
-
-Set (optional) defaults for all properties:
-
-- Timing: use `speed` or `duration`
-- Easing
-- Delay
-
-These settings will be used for all property animations.
+The Sub engine returns a **list** of events from `update` (not a single event), because multiple events can occur in one frame:
 
 ??? example "View Source Code"
 
     ```elm
-    animState =
-        Sub.animate model.animState <|
-            Sub.duration 500
-                >> Sub.easing QuintOut
-                >> Sub.delay 100
-                >> myAnimation
-            
+    handleAnimationEvents : List Sub.AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleAnimationEvents events model =
+        case events of
+            [] ->
+                ( model, Cmd.none )
+
+            event :: rest ->
+                case event of
+                    Sub.Ended "box" ->
+                        handleAnimationEvents rest model
+
+                    _ ->
+                        handleAnimationEvents rest model
     ```
 
-Individual properties can override them:
+| Event | Fires when... |
+| ----- | ------------- |
+| `Started` | The animation begins playing |
+| `Ended` | The animation finishes |
+| `Cancelled` | The animation is stopped or reset |
+| `Paused` | The animation is paused |
+| `Resumed` | The animation is resumed |
+| `Restarted` | The animation is restarted |
 
-??? example "View Source Code"
+## Shared Features
 
-    ```elm
-    myAnimation : Sub.AnimBuilder -> Sub.AnimBuilder
-    myAnimation =
-        Opacity.for "box"
-            >> Opacity.duration 1000  
-            >> Opacity.easing SineOut 
-            >> Opacity.delay 0
-            >> Opacity.build
-    ```
+The following features work the same across all engines. See [Engine Overview](overview.md) for detailed examples with tabbed code for each engine:
 
-
-## 3D Transforms and Perspective
-
-The Sub Engine fully supports 3D animations. See [3D Animations](../concepts/3d.md) for how to define 3D transforms.
-
-## Transform Ordering
-
-The default transform order is: **Translate → Rotate → Scale**. This works well for most animations.
-
-For custom ordering, use `animateOrder`:
-
-??? example "Custom Transform Order"
-
-    ```elm
-    -- Scale → Rotate → Translate
-    Sub.animateOrder [ Scale, Rotate, Translate ] model.animState <|
-        scaleUp
-            >> rotateLeft 
-            >> moveRight
-    ```
-
-Transform order affects how combined transforms render. For example, rotating then translating moves along the rotated axis, while translating then rotating moves along the original axis.
+- [Initializing Property Configs](overview.md#initializing-property-configs) — Setting up `AnimState` with optional initial values
+- [Default Settings](overview.md#default-settings) — Setting duration, easing, and delay defaults
+- [Event Handling](overview.md#event-handling) — Handling animation lifecycle events
+- [Querying Animation State](overview.md#querying-animation-state) — Checking if animations are running or complete
+- [Querying Property Values](overview.md#querying-property-values) — Getting start, end, and current values
+- [Transform Ordering](overview.md#transform-ordering) — Custom transform order with `animateOrder`
+- [3D Transforms](../concepts/3d.md) — Full 3D animation support
+- [Controlling Animations](../concepts/controlling-animations.md) — Stop, reset, restart, pause, and resume controls
 
 ## API Quick Reference
 

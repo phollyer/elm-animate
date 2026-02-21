@@ -137,7 +137,9 @@ WAAPI elements need an `id` attribute so JavaScript can find the DOM element. Th
     view model =
         div []
             [ div
-                ([ id "header" ] ++ WAAPI.attributes "headerAnim" model.animState)
+                (WAAPI.attributes "headerAnim" model.animState
+                    ++ [ id "header" ]
+                )
                 [ text "I animate via WAAPI!" ]
             ]
     ```

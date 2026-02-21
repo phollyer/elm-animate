@@ -287,93 +287,6 @@ The `attributes` function also accepts both formats:
         [ text "Box (fade only)" ]
     ```
 
-## Running Animations
-
-### Fire-and-Forget
-
-For one-shot animations where you don't need to track state, use `fireAndForget`:
-
-??? example "View Source Code"
-
-    ```elm
-    simpleButtonHover : Cmd msg
-    simpleButtonHover =
-        WAAPI.fireAndForget waapiCommand <|
-            WAAPI.forElement "button"
-                >> Translate.for "buttonHover"
-                >> Translate.fromZ 0
-                >> Translate.toZ 10
-                >> Translate.duration 500
-                >> Translate.build
-    ```
-
-    Fire-and-forget is useful when you don't need chaining, state queries, or animation controls.
-
-### State-Tracked
-
-Use `animate` when you need to query animation state, control playback (pause, resume, stop, reset, restart), or chain animations that continue from the previous end state:
-
-??? example "View Source Code"
-
-    ```elm
-    GotShowBox ->
-        let
-            ( newAnimState, cmd ) =
-                WAAPI.animate model.animState <|
-                    WAAPI.forElement "box" >> fadeIn
-        in
-        ( { model | animState = newAnimState }, cmd )
-
-    GotHideBox ->
-        let
-            ( newAnimState, cmd ) =
-                WAAPI.animate model.animState  <|
-                    WAAPI.forElement "box" >> fadeOut
-        in
-        ( { model | animState = newAnimState }, cmd )
-    ```
-
-    The `animate` function takes your current `AnimState` and an animation pipeline, returning a new `AnimState` and a `Cmd` that sends the animation data to JavaScript.
-
-## Initialization
-
-Create an `AnimState` using `init`:
-
-??? example "Empty State"
-
-    ```elm
-    type alias Model =
-        { animState : WAAPI.AnimState Msg }
-
-    init : () -> ( Model, Cmd Msg )
-    init _ =
-        ( { animState = WAAPI.init waapiCommand waapiEvent [] }
-        , Cmd.none
-        )
-    ```
-
-You can also initialize with starting property values:
-
-??? example "With Initial Values"
-
-    ```elm
-    init : () -> ( Model, Cmd Msg )
-    init _ =
-        ( { animState =
-                WAAPI.init waapiCommand waapiEvent <|
-                    [ WAAPI.forElement "my-element"
-                        >> Opacity.init "fadeAnim" 0
-                        >> Translate.initXY "slideAnim" 100 50
-                    ]
-          }
-        , Cmd.none
-        )
-    ```
-
-    Use `WAAPI.attributes` in your view to apply these values as CSS inline styles.
-
-
-
 ## Interrupting Animations
 
 Start a new animation at any time — the WAAPI Engine handles smooth transitions:
@@ -388,248 +301,9 @@ Start a new animation at any time — the WAAPI Engine handles smooth transition
 
 The new animation starts from the current position, not the original start position.
 
+## True Mid-Flight Values
 
-## Event Handling
-
-The WAAPI engine uses a subscription-based event pattern. The `subscriptions` function handles incoming messages from JavaScript, and `update` processes them, returning the updated `AnimState` and an optional `AnimEvent`:
-
-??? example "View Source Code"
-
-    ```elm
-    type Msg
-        = GotWaapiMsg WAAPI.AnimMsg
-        | ...
-
-
-    subscriptions : Model -> Sub Msg
-    subscriptions model =
-        WAAPI.subscriptions GotWaapiMsg model.animState
-
-
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
-        case msg of
-            GotWaapiMsg waapiMsg ->
-                let
-                    ( newAnimState, maybeEvent ) =
-                        WAAPI.update waapiMsg model.animState
-                in
-                handleAnimationEvent maybeEvent { model | animState = newAnimState }
-
-            ...
-
-
-    handleAnimationEvent : Maybe WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
-    handleAnimationEvent maybeEvent model =
-        case maybeEvent of
-            Just (WAAPI.Started elementId) ->
-                -- Animation began playing
-                ( model, Cmd.none )
-
-            Just (WAAPI.Ended "box") ->
-                -- The "box" element finished animating
-                startNextAnimation model
-
-            Just (WAAPI.Ended elementId) ->
-                -- Some other element finished animating
-                ( model, Cmd.none )
-
-            Just (WAAPI.Paused elementId) ->
-                -- Animation was paused
-                ( model, Cmd.none )
-
-            Just (WAAPI.Resumed elementId) ->
-                -- Animation continued after pause
-                ( model, Cmd.none )
-
-            Just (WAAPI.Cancelled elementId) ->
-                -- Animation was Cancelled (via stop or reset)
-                ( model, Cmd.none )
-
-            Just (WAAPI.Restarted elementId) ->
-                -- Animation was restarted
-                ( model, Cmd.none )
-
-            Nothing ->
-                -- Property update (no lifecycle event)
-                ( model, Cmd.none )
-    ```
-
-!!! info "When events fire"
-
-    | Event | Fires when... |
-    | ----- | ------------- |
-    | `Started` | The animation begins playing |
-    | `Ended` | The animation finishes |
-    | `Paused` | The animation is paused via `pause` |
-    | `Resumed` | The animation is resumed via `resume` |
-    | `Cancelled` | The animation is Cancelled via `stop` or `reset` |
-    | `Restarted` | The animation is restarted via `restart` |
-
-
-## Animation Control
-
-Control functions take the element ID and the current `AnimState`, returning the updated state and a command.
-
-### Pause and Resume
-
-??? example "View Source Code"
-
-    ```elm
-    type Msg
-        = Pause
-        | Resume
-
-
-    update msg model =
-        case msg of
-            Pause ->
-                let
-                    ( newAnimState, cmd ) =
-                        WAAPI.pause "box" model.animState
-                in
-                ( { model | animState = newAnimState }, cmd )
-
-            Resume ->
-                let
-                    ( newAnimState, cmd ) =
-                        WAAPI.resume "box" model.animState
-                in
-                ( { model | animState = newAnimState }, cmd )
-    ```
-
-### Stop Animation
-
-Stop instantly jumps to the end state:
-
-??? example "View Source Code"
-
-    ```elm
-    update msg model =
-        case msg of
-            Stop ->
-                let
-                    ( newAnimState, cmd ) =
-                        WAAPI.stop "box" model.animState
-                in
-                ( { model | animState = newAnimState }, cmd )
-    ```
-
-### Reset Animation
-
-Reset cancels and returns to the start state:
-
-??? example "View Source Code"
-
-    ```elm
-    update msg model =
-        case msg of
-            Reset ->
-                let
-                    ( newAnimState, cmd ) =
-                        WAAPI.reset "box" model.animState
-                in
-                ( { model | animState = newAnimState }, cmd )
-    ```
-
-### Restart Animation
-
-Restart replays the animation from the beginning:
-
-??? example "View Source Code"
-
-    ```elm
-    update msg model =
-        case msg of
-            Restart ->
-                let
-                    ( newAnimState, cmd ) =
-                        WAAPI.restart "box" model.animState
-                in
-                ( { model | animState = newAnimState }, cmd )
-    ```
-
-## Default Settings
-
-Set (optional) defaults for all properties:
-
-- Timing: use `speed` or `duration`
-- Easing
-- Delay
-
-These settings will be used for all property animations.
-
-??? example "View Source Code"
-
-    ```elm
-    let
-        ( newAnimState, cmd ) =
-            WAAPI.animate model.animState <|
-                WAAPI.duration 500
-                    >> WAAPI.easing QuintOut
-                    >> WAAPI.delay 100
-                    >> myAnimation
-    in
-    ( { model | animState = newAnimState }, cmd )
-    ```
-
-Individual properties can override them:
-
-??? example "View Source Code"
-
-    ```elm
-    myAnimation builder =
-        builder
-            |> Opacity.for "box"
-            |> Opacity.duration 1000  
-            |> Opacity.easing SineOut 
-            |> Opacity.delay 0
-            |> Opacity.build
-    ```
-
-## Querying Animation State
-
-Check whether animations are running or complete:
-
-??? example "View Source Code"
-
-    ```elm
-    view model =
-        div []
-            [ if WAAPI.anyRunning model.animState then
-                text "Animating..."
-              else
-                text "Complete"
-            ]
-    ```
-
-You can also query specific elements:
-
-??? example "View Source Code"
-
-    ```elm
-    view model =
-        let
-            boxStatus =
-                if WAAPI.isRunning "box" model.animState then
-                    "Box is animating"
-                else
-                    case WAAPI.isComplete "box" model.animState of
-                        Just True ->
-                            "Box animation complete"
-
-                        Just False ->
-                            "Box animation not started"
-
-                        Nothing ->
-                            "No animation for box"
-        in
-        div [] [ text boxStatus ]
-    ```
-
-## Querying Property Values
-
-Query the start, end, or current values of animated properties:
+Unlike CSS-based engines, the "current" getters return the actual animated value at any point during the animation:
 
 ??? example "View Source Code"
 
@@ -647,63 +321,95 @@ Query the start, end, or current values of animated properties:
         div [] [ text positionText ]
     ```
 
-Available getters:
+Available getters: `getCurrentTranslate`, `getCurrentScale`, `getCurrentRotate`, `getCurrentOpacity`, `getCurrentSize`, `getCurrentBackgroundColor`.
 
-| Property | Start | End | Current |
-| -------- | ----- | --- | ------- |
-| Translate | `getStartTranslate` | `getEndTranslate` | `getCurrentTranslate` |
-| Scale | `getStartScale` | `getEndScale` | `getCurrentScale` |
-| Rotate | `getStartRotate` | `getEndRotate` | `getCurrentRotate` |
-| Opacity | `getStartOpacity` | `getEndOpacity` | `getCurrentOpacity` |
-| Size | `getStartSize` | `getEndSize` | `getCurrentSize` |
-| Background Color | `getStartBackgroundColor` | `getEndBackgroundColor` | `getCurrentBackgroundColor` |
+## Animation Control
 
-!!! tip "Mid-flight values"
-    Unlike CSS-based engines, the "current" getters return the actual animated value at any point during the animation.
+WAAPI control functions return both a new `AnimState` and a `Cmd` that sends commands to JavaScript:
 
-## Transform Ordering
-
-CSS transforms are applied left-to-right. The default order is **Translate → Rotate → Scale**, meaning translate applies first, then rotate, then scale.
-
-### Custom Transform Order
-
-Use `animateOrder` for state-tracked animations:
-
-??? example "Show Source Code"
+??? example "View Source Code"
 
     ```elm
-    import Anim.Engine.WAAPI as WAAPI exposing (TransformOrder(..))
+    update msg model =
+        case msg of
+            Pause ->
+                let
+                    ( newAnimState, cmd ) =
+                        WAAPI.pause "box" model.animState
+                in
+                ( { model | animState = newAnimState }, cmd )
 
-    WAAPI.animateOrder [ Rotate, Translate, Scale ] model.animState <|
-        moveLeft >> scaleDown >> spin -- The order here is irrelevant
+            Resume ->
+                let
+                    ( newAnimState, cmd ) =
+                        WAAPI.resume "box" model.animState
+                in
+                ( { model | animState = newAnimState }, cmd )
+
+            Stop ->
+                let
+                    ( newAnimState, cmd ) =
+                        WAAPI.stop "box" model.animState
+                in
+                ( { model | animState = newAnimState }, cmd )
+
+            Reset ->
+                let
+                    ( newAnimState, cmd ) =
+                        WAAPI.reset "box" model.animState
+                in
+                ( { model | animState = newAnimState }, cmd )
+
+            Restart ->
+                let
+                    ( newAnimState, cmd ) =
+                        WAAPI.restart "box" model.animState
+                in
+                ( { model | animState = newAnimState }, cmd )
     ```
 
-Use `fireAndForgetOrder` for fire-and-forget animations:
+## WAAPI-Specific Initialization
 
-??? example "Show Source Code"
+WAAPI's `init` requires the port functions as parameters:
+
+??? example "View Source Code"
 
     ```elm
-    import Anim.Engine.WAAPI as WAAPI exposing (TransformOrder(..))
-
-    WAAPI.fireAndForgetOrder [ Rotate, Translate, Scale ] waapiCommand <|
-        moveLeft >> scaleDown >> spin -- The order here is irrelevant
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = WAAPI.init waapiCommand waapiEvent [] }
+        , Cmd.none
+        )
     ```
 
-Both apply **Rotate → Translate → Scale** (rotate first, translate second, scale last).
+    With initial values (note the use of `forElement`):
 
-### Transform Order Values
+    ```elm
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState =
+                WAAPI.init waapiCommand waapiEvent
+                    [ WAAPI.forElement "box"
+                        >> Opacity.init "fadeAnim" 0
+                        >> Translate.initXY "slideAnim" 100 50
+                    ]
+          }
+        , Cmd.none
+        )
+    ```
 
-- `Translate` - Translation (movement)
-- `Rotate` - Rotation
-- `Scale` - Scaling
+## Shared Features
 
-### Auto-Completion
+The following features work the same across all engines. See [Engine Overview](overview.md) for detailed examples with tabbed code for each engine:
 
-Any missing transforms are automatically appended in the default order. For example, `[Scale]` becomes `[Scale, Translate, Rotate]`.
-
-## 3D Transforms and Perspective
-
-The WAAPI Engine fully supports 3D animations. See [3D Animations](../concepts/3d.md) for how to define 3D transforms.
+- [Initializing Property Configs](overview.md#initializing-property-configs) — Setting up `AnimState` with optional initial values
+- [Default Settings](overview.md#default-settings) — Setting duration, easing, and delay defaults
+- [Event Handling](overview.md#event-handling) — Handling animation lifecycle events
+- [Querying Animation State](overview.md#querying-animation-state) — Checking if animations are running or complete
+- [Querying Property Values](overview.md#querying-property-values) — Getting start, end, and current values
+- [Transform Ordering](overview.md#transform-ordering) — Custom transform order with `animateOrder`
+- [3D Transforms](../concepts/3d.md) — Full 3D animation support
+- [Controlling Animations](../concepts/controlling-animations.md) — Stop, reset, restart, pause, and resume controls
 
 ## API Quick Reference
 
