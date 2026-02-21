@@ -72,6 +72,8 @@ How you receive events varies by Engine.
                     ({ model | animState = newAnimState }, Cmd.none)
         ```
 
+        Sub returns a list because it processes all animations on each frame — multiple animations can start, end, or change state simultaneously in a single update.
+
     === "WAAPI"
 
         WAAPI returns a maybe event from its `update` function:
@@ -91,19 +93,9 @@ How you receive events varies by Engine.
                             WAAPI.update waapiMsg model.animState
                     in
                     ({ model | animState = newAnimState }, Cmd.none)
-
-        handleEvent : Maybe WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
-        handleEvent maybeEvent model =
-            case maybeEvent of
-                Just (WAAPI.Ended "box") ->
-                    ( model, startNextAnimation )
-
-                Just (WAAPI.Cancelled _) ->
-                    ( model, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
         ```
+
+        WAAPI returns a `Maybe` because not every update from JS 
 
 
 ## Handling Events
