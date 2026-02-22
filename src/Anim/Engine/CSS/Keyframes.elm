@@ -2,7 +2,7 @@ module Anim.Engine.CSS.Keyframes exposing
     ( AnimState, init
     , attributes
     , styleNode, styleNodeFor, getElementKeyframes
-    , AnimEvent(..), handleEvent
+    , AnimMsg(..), update
     , events
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , AnimBuilder, animate, fireAndForget, TransformOrder(..), animateOrder, fireAndForgetOrder
@@ -68,7 +68,7 @@ Keyframe animations require both styles on the element AND a `<style>` node in t
 CSS keyframe animations trigger events at various stages of their lifecycle.
 Use these events to keep your [AnimState](#AnimState) in sync.
 
-@docs AnimEvent, handleEvent
+@docs AnimMsg, update
 
 @docs events
 
@@ -211,9 +211,9 @@ type TransformOrder
     | Scale
 
 
-{-| CSS keyframe animation lifecycle events.
+{-| CSS keyframe animation lifecycle messages.
 -}
-type AnimEvent
+type AnimMsg
     = Started String
     | Ended String
     | Cancelled String
@@ -448,10 +448,10 @@ getElementKeyframes =
 -- KEYFRAME ANIMATION EVENTS
 
 
-{-| The simplest way to receive keyframe animation event messages.
+{-| The simplest way to receive keyframe animation messages.
 
     type Msg
-        = KeyframeMsg Keyframes.AnimEvent
+        = KeyframeMsg Keyframes.AnimMsg
 
     div
         (Keyframes.attributes "animGroupName" animState
@@ -460,7 +460,7 @@ getElementKeyframes =
         [ text "Animating element" ]
 
 -}
-events : String -> (AnimEvent -> msg) -> List (Html.Attribute msg)
+events : String -> (AnimMsg -> msg) -> List (Html.Attribute msg)
 events elementId toMsg =
     List.map (Html.Attributes.map toMsg) <|
         [ onAnimationStart (Started elementId)
@@ -470,17 +470,17 @@ events elementId toMsg =
         ]
 
 
-{-| Handle CSS keyframe animation lifecycle events.
+{-| Handle CSS keyframe animation lifecycle messages.
 
-    update msg model =
+    updateModel msg model =
         case msg of
-            KeyframeMsg event ->
-                { model | animState = Keyframes.handleEvent event model.animState }
+            KeyframeMsg animMsg ->
+                { model | animState = Keyframes.update animMsg model.animState }
 
 -}
-handleEvent : AnimEvent -> AnimState -> AnimState
-handleEvent event animState =
-    case event of
+update : AnimMsg -> AnimState -> AnimState
+update animMsg animState =
+    case animMsg of
         Started elementId ->
             InternalCSS.handleEvent (InternalCSS.AnimationStarted elementId) animState
 

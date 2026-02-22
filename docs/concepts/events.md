@@ -37,10 +37,15 @@ How you set up events varies by Engine.
         CSS Transitions provide events via HTML event attributes - use the `events` function to add them to the element being animated.
 
         ```elm
+        type Msg
+            = GotTransitionMsg Transitions.AnimMsg
+            | ...
+
+        view : Model -> Html Msg
         view model =
             div 
                 (Transitions.attributes "box" model.animState
-                    ++ Transitions.events "box" GotAnimEvent
+                    ++ Transitions.events "box" GotTransitionMsg
                 )
                 [ text "Animated box" ]
         ```
@@ -50,10 +55,15 @@ How you set up events varies by Engine.
         CSS Keyframes provide events via HTML event attributes - use the `events` function to add them to the element being animated.
 
         ```elm
+        type Msg
+            = GotKeyframeMsg Keyframes.AnimMsg
+            | ...
+
+        view : Model -> Html Msg
         view model =
             div 
                 (Keyframes.render model.animState "box"
-                    ++ Keyframes.events "box" GotAnimEvent
+                    ++ Keyframes.events "box" GotKeyframeMsg
                 )
                 [ text "Animated box" ]
         ```
@@ -115,34 +125,34 @@ How you set up events varies by Engine.
 
     === "Transitions"
 
-        Handle events in your update function with `handleEvent` - this keeps your `animState` in sync with the animations running in the view.
+        Handle transition messages in your update function - this keeps your `animState` in sync with the animations running in the view.
 
         ```elm
         type Msg
-            = GotAnimEvent Transitions.AnimEvent
+            = GotTransitionMsg Transitions.AnimMsg
             | ...
 
         update msg model =
             case msg of
-                GotAnimEvent event ->
-                    ( { model | animState = Transitions.handleEvent event model.animState }
+                GotTransitionMsg animMsg ->
+                    ( { model | animState = Transitions.update animMsg model.animState }
                     , Cmd.none
                     )
         ```
 
     === "Keyframes"
 
-        Handle events in your update function with `handleEvent` - this keeps your `animState` in sync with the animations running in the view.
+        Handle keyframe messages in your update function - this keeps your `animState` in sync with the animations running in the view.
 
         ```elm
         type Msg
-            = GotAnimEvent Transitions.AnimEvent
+            = GotKeyframeMsg Keyframes.AnimMsg
             | ...
 
         update msg model =
             case msg of
-                GotAnimEvent event ->
-                    ( { model | animState = Keyframes.handleEvent event model.animState }
+                GotKeyframeMsg animMsg ->
+                    ( { model | animState = Keyframes.update animMsg model.animState }
                     , Cmd.none
                     )
         ```
@@ -279,12 +289,12 @@ Fired when an animation is restarted from the beginning.
 Trigger the next animation when the current one ends:
 
 ```elm
-GotAnimEvent (Transitions.Ended "step1") ->
+GotTransitionMsg (Transitions.Ended "step1") ->
     ( { model | animState = Transitions.animate model.animState step2Animation }
     , Cmd.none
     )
 
-GotAnimEvent (Transitions.Ended "step2") ->
+GotTransitionMsg (Transitions.Ended "step2") ->
     ( { model | animState = Transitions.animate model.animState step3Animation }
     , Cmd.none
     )
@@ -295,7 +305,7 @@ GotAnimEvent (Transitions.Ended "step2") ->
 Remove temporary state when animations finish:
 
 ```elm
-GotAnimEvent (Keyframes.Ended "notification") ->
+GotKeyframeMsg (Keyframes.Ended "notification") ->
     ( { model | notification = Nothing }
     , Cmd.none
     )
@@ -313,13 +323,13 @@ type Model =
 
 update msg model =
     case msg of
-        GotAnimEvent (Keyframes.Started _) ->
+        GotKeyframeMsg (Keyframes.Started _) ->
             ( { model | isAnimating = True }, Cmd.none )
 
-        GotAnimEvent (Keyframes.Ended _) ->
+        GotKeyframeMsg (Keyframes.Ended _) ->
             ( { model | isAnimating = False }, Cmd.none )
 
-        GotAnimEvent (Keyframes.Cancelled _) ->
+        GotKeyframeMsg (Keyframes.Cancelled _) ->
             ( { model | isAnimating = False }, Cmd.none )
 
         _ ->

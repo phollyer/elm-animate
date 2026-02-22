@@ -238,7 +238,7 @@ moveBottomFaceIn =
 
 
 type Msg
-    = GotKeyframeEvent Keyframes.AnimEvent
+    = GotKeyframeMsg Keyframes.AnimMsg
 
 
 
@@ -248,12 +248,12 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GotKeyframeEvent event ->
+        GotKeyframeMsg animMsg ->
             let
                 newModel =
-                    { model | animState = Keyframes.handleEvent event model.animState }
+                    { model | animState = Keyframes.update animMsg model.animState }
             in
-            case event of
+            case animMsg of
                 Keyframes.Ended "cube" ->
                     let
                         newState =
@@ -449,7 +449,7 @@ viewCube model =
 
         cubeEvents =
             if model.state == RotatingOpen || model.state == RotatingClosed then
-                Keyframes.events "cube" GotKeyframeEvent
+                Keyframes.events "cube" GotKeyframeMsg
                     |> List.map htmlAttribute
 
             else
@@ -505,7 +505,7 @@ viewFace animState listenForEvents config =
 
         eventAttributes =
             if listenForEvents then
-                Keyframes.events config.id GotKeyframeEvent
+                Keyframes.events config.id GotKeyframeMsg
                     |> List.map htmlAttribute
 
             else

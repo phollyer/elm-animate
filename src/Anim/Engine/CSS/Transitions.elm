@@ -1,7 +1,7 @@
 module Anim.Engine.CSS.Transitions exposing
     ( AnimState, init
     , attributes
-    , AnimEvent(..), handleEvent, events
+    , AnimMsg(..), update, events
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
     , AnimBuilder, animate, fireAndForget, TransformOrder(..), animateOrder, fireAndForgetOrder
     , duration, speed
@@ -54,7 +54,7 @@ Apply transition styles to your elements
 CSS transitions trigger events at various stages of their lifecycle.
 Use these events to keep your [AnimState](#AnimState) in sync.
 
-@docs AnimEvent, handleEvent, events
+@docs AnimMsg, update, events
 
 For more granular control over which events to handle:
 
@@ -205,9 +205,9 @@ type TransformOrder
     | Scale
 
 
-{-| CSS transition lifecycle events.
+{-| CSS transition lifecycle messages.
 -}
-type AnimEvent
+type AnimMsg
     = Started String
     | Ended String
     | Cancelled String
@@ -420,10 +420,10 @@ attributes =
 -- TRANSITION EVENTS
 
 
-{-| The simplest way to receive transition event messages.
+{-| The simplest way to receive transition messages.
 
     type Msg
-        = TransitionMsg Transitions.AnimEvent
+        = TransitionMsg Transitions.AnimMsg
 
     div
         (Transitions.attributes "animGroupName" animState
@@ -432,7 +432,7 @@ attributes =
         [ text "Animating element" ]
 
 -}
-events : String -> (AnimEvent -> msg) -> List (Html.Attribute msg)
+events : String -> (AnimMsg -> msg) -> List (Html.Attribute msg)
 events elementId toMsg =
     List.map (Html.Attributes.map toMsg) <|
         [ onTransitionStart (Started elementId)
@@ -442,17 +442,17 @@ events elementId toMsg =
         ]
 
 
-{-| Handle CSS transition lifecycle events.
+{-| Handle CSS transition lifecycle messages.
 
-    update msg model =
+    updateModel msg model =
         case msg of
-            TransitionMsg event ->
-                { model | animState = Transitions.handleEvent event model.animState }
+            TransitionMsg animMsg ->
+                { model | animState = Transitions.update animMsg model.animState }
 
 -}
-handleEvent : AnimEvent -> AnimState -> AnimState
-handleEvent event animState =
-    case event of
+update : AnimMsg -> AnimState -> AnimState
+update animMsg animState =
+    case animMsg of
         Started elementId ->
             InternalCSS.handleEvent (InternalCSS.TransitionStarted elementId) animState
 
