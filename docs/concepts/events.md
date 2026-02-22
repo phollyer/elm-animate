@@ -1,17 +1,29 @@
 # Events
 
-CSS Transitions, Keyframe Animations, and the Web Animations API all produce events during an animation's lifecycle. These events notify you when animations start, end, get interrupted, or change state — letting you chain animations in sequence, update the UI, or clean up resources.
+Animation engines produce lifecycle events when animations start, end, get interrupted, or change state. These events let you chain animations, update the UI, or clean up resources.
 
-How you receive these events depends on the engine:
+All engines share the same pattern: call `update` with the animation message, get back a tuple of new state and event(s) to react to:
 
-**DOM-based engines** (Transitions, Keyframes) produce native browser events. You capture them by adding event attributes to your animated elements, then handle them in your update function. This mirrors how you'd handle click or input events in Elm.
+??? example "View Source Code"
 
-**Subscription-based engine** (Sub) computes events internally by tracking animation progress on each frame. Because it processes all animations simultaneously, its `update` function returns a list of events — multiple animations can start, end, or change state in a single frame.
+    ```elm
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            GotAnimMsg animMsg ->
+                let
+                    ( newAnimState, event ) =
+                        Engine.update animMsg model.animState
+                in
+                reactToEvent event { model | animState = newAnimState }
+    ```
 
-**Port-based engine** (WAAPI) receives events from the JavaScript Web Animations API via ports. The browser fires animation lifecycle events (Started, Ended, Changed, etc.), which JavaScript captures and routes to Elm through subscriptions. Control events like Paused, Resumed, and Restarted are generated when you call the corresponding control functions.
+The only difference is **Sub returns a list** of events (multiple animations can change state per frame), while others return a single event.
 
 
 ## Events by Engine
+
+The Events available for each Engine are restr
 
 | Event | Transitions | Keyframes | Sub | WAAPI |
 | ----- | :---------: | :-------: | :-: | :---: |
@@ -28,231 +40,152 @@ How you receive these events depends on the engine:
 
 ## Receiving Events
 
-### DOM-Based Engines (Transitions, Keyframes)
+How you receive events depends on the engine - DOM events vs subscriptions:
 
-Add event listeners to your animated elements with the `events` function, then handle the resulting messages in your update function:
-
-??? example "View Source Code"
-
-    === "Transitions"
-
-        ```elm
-        type Msg
-            = GotTransitionMsg Transitions.AnimMsg
-            | ...
-
-        update : Msg -> Model -> ( Model, Cmd Msg )
-        update msg model =
-            case msg of
-                GotTransitionMsg animMsg ->
-                    let
-                        ( newAnimState, event ) =
-                            Transitions.update animMsg model.animState
-                    in
-                    reactToEvent event { model | animState = newAnimState }
-
-        view : Model -> Html Msg
-        view model =
-            div 
-                (Transitions.attributes "box" model.animState
-                    ++ Transitions.events "box" GotTransitionMsg
-                )
-                [ text "Animated box" ]
-        ```
-
-    === "Keyframes"
-
-        ```elm
-        type Msg
-            = GotKeyframeMsg Keyframes.AnimMsg
-            | ...
-
-        update : Msg -> Model -> ( Model, Cmd Msg )
-        update msg model =
-            case msg of
-                GotKeyframeMsg animMsg ->
-                    let
-                        ( newAnimState, event ) =
-                            Keyframes.update animMsg model.animState
-                    in
-                    reactToEvent event { model | animState = newAnimState }
-
-        view : Model -> Html Msg
-        view model =
-            div 
-                (Keyframes.attributes "box" model.animState
-                    ++ Keyframes.events "box" GotKeyframeMsg
-                )
-                [ text "Animated box" ]
-        ```
+| Engine | Event Source | Setup |
+| ------ | ------------ | ----- |
+| Transitions | DOM events | Add `events` to animated elements |
+| Keyframes | DOM events | Add `events` to animated elements |
+| Sub | Internal tracking | Add `subscriptions` to your app |
+| WAAPI | JavaScript ports | Add `subscriptions` to your app |
 
 
-### Subscription-Based Engine (Sub)
+### DOM-Based Setup (Transitions, Keyframes)
 
-Subscribe to animation frame updates. The `update` function returns both the new state and a list of events that occurred during that frame:
+Add the `events` helper to your animated elements:
 
 ??? example "View Source Code"
 
     ```elm
-    type Msg
-        = GotSubMsg Sub.AnimMsg
-        | ...
+    view model =
+        div 
+            (Transitions.attributes "box" model.animState
+                ++ Transitions.events "box" GotAnimMsg
+            )
+            [ text "Animated box" ]
+    ```
 
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
+
+### Subscription-Based Setup (Sub, WAAPI)
+
+Wire up subscriptions:
+
+??? example "View Source Code"
+
+    ```elm
+    subscriptions model =
+        Sub.subscriptions GotAnimMsg model.animState
+    ```
+
+
+### Handling the Update
+
+All engines use the same update pattern. The only difference is Sub returns `List AnimEvent`:
+
+??? example "View Source Code"
+
+    === "Transitions / Keyframes / WAAPI"
+
+        ```elm
         case msg of
-            GotSubMsg subMsg ->
+            GotAnimMsg animMsg ->
+                let
+                    ( newAnimState, event ) =
+                        Transitions.update animMsg model.animState
+                in
+                reactToEvent event { model | animState = newAnimState }
+        ```
+
+    === "Sub (returns List)"
+
+        ```elm
+        case msg of
+            GotAnimMsg animMsg ->
                 let
                     ( newAnimState, events ) =
-                        Sub.update subMsg model.animState
+                        Sub.update animMsg model.animState
+
+                    applyEvent event ( m, cmd ) =
+                        let
+                            ( newModel, newCmd ) =
+                                reactToEvent event m
+                        in
+                        ( newModel, Cmd.batch [ cmd, newCmd ] )
                 in
-                { model | animState = newAnimState }
-                    |> reactToEvents events
-
-    subscriptions : Model -> Sub Msg
-    subscriptions model =
-        Sub.subscriptions GotSubMsg model.animState
-    ```
-
-Sub returns a list because multiple animations can change state on the same frame. Process them with a fold:
-
-??? example "View Source Code"
-
-    ```elm
-    reactToEvents : List Sub.AnimEvent -> Model -> ( Model, Cmd Msg )
-    reactToEvents events model =
-        List.foldl reactToEvent ( model, Cmd.none ) events
-
-    reactToEvent : Sub.AnimEvent -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
-    reactToEvent event ( model, cmd ) =
-        case event of
-            Sub.Ended "fadeIn" ->
-                ( model, Cmd.batch [ cmd, startSlideAnimation ] )
-
-            _ ->
-                ( model, cmd )
-    ```
-
-
-### Port-Based Engine (WAAPI)
-
-Subscribe to receive events from the JavaScript companion. The `update` function returns both the new state and the event that triggered the update:
-
-```elm
-type Msg
-    = GotWaapiMsg WAAPI.AnimMsg
-    | ...
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        GotWaapiMsg waapiMsg ->
-            let
-                ( newAnimState, event ) =
-                    WAAPI.update waapiMsg model.animState
-            in
-            { model | animState = newAnimState }
-                |> reactToEvent event
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    WAAPI.subscriptions GotWaapiMsg model.animState
-```
+                List.foldl applyEvent ( { model | animState = newAnimState }, Cmd.none ) events
+        ```
 
 
 ## Reacting to Events
 
-Once you're receiving events, you can react to them to build complex animation sequences and behaviors.
+Pattern match on the event to build complex animation sequences and behaviors.
 
 
 ### Sequential Animations
 
 Chain animations by starting the next one when the current ends:
 
-```elm
-reactToEvent : Transitions.AnimEvent -> Model -> ( Model, Cmd Msg )
-reactToEvent event model =
-    case event of
-        Transitions.Ended "step1" ->
-            let
-                newAnimState =
-                    Transitions.animate model.animState step2Animation
-            in
-            ( { model | animState = newAnimState }, Cmd.none )
+??? example "View Source Code"
 
-        Transitions.Ended "step2" ->
-            let
-                newAnimState =
-                    Transitions.animate model.animState step3Animation
-            in
-            ( { model | animState = newAnimState }, Cmd.none )
+    ```elm
+    reactToEvent : Transitions.AnimEvent -> Model -> ( Model, Cmd Msg )
+    reactToEvent event model =
+        case event of
+            Transitions.Ended "step1" ->
+                ( { model | animState = Transitions.animate model.animState step2Animation }
+                , Cmd.none
+                )
 
-        _ ->
-            ( model, Cmd.none )
-```
+            Transitions.Ended "step2" ->
+                ( { model | animState = Transitions.animate model.animState step3Animation }
+                , Cmd.none
+                )
 
-
-### State Machine Transitions
-
-Use events to drive state machine transitions:
-
-```elm
-type AnimationPhase
-    = Idle
-    | FadingIn
-    | Visible
-    | FadingOut
-
-reactToEvent : Keyframes.AnimEvent -> Model -> ( Model, Cmd Msg )
-reactToEvent event model =
-    case ( event, model.phase ) of
-        ( Keyframes.Ended "fadeIn", FadingIn ) ->
-            ( { model | phase = Visible }, Cmd.none )
-
-        ( Keyframes.Ended "fadeOut", FadingOut ) ->
-            ( { model | phase = Idle }, Cmd.none )
-
-        _ ->
-            ( model, Cmd.none )
-```
+            _ ->
+                ( model, Cmd.none )
+    ```
 
 
 ### Cleanup on Completion
 
 Remove temporary state when animations finish:
 
-```elm
-reactToEvent : Keyframes.AnimEvent -> Model -> ( Model, Cmd Msg )
-reactToEvent event model =
-    case event of
-        Keyframes.Ended "notification" ->
-            ( { model | notification = Nothing }, Cmd.none )
+??? example "View Source Code"
 
-        Keyframes.Cancelled "notification" ->
-            ( { model | notification = Nothing }, Cmd.none )
+    ```elm
+    reactToEvent : Keyframes.AnimEvent -> Model -> ( Model, Cmd Msg )
+    reactToEvent event model =
+        case event of
+            Keyframes.Ended "notification" ->
+                ( { model | notification = Nothing }, Cmd.none )
 
-        _ ->
-            ( model, Cmd.none )
-```
+            Keyframes.Cancelled "notification" ->
+                ( { model | notification = Nothing }, Cmd.none )
+
+            _ ->
+                ( model, Cmd.none )
+    ```
 
 
 ### Progress Tracking (WAAPI)
 
 The WAAPI engine sends `Changed` events during animation, letting you track real-time progress:
 
-```elm
-reactToEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
-reactToEvent event model =
-    case event of
-        WAAPI.Changed _ _ { progress } ->
-            ( { model | progressBar = progress }, Cmd.none )
+??? example "View Source Code"
 
-        WAAPI.Ended _ _ _ ->
-            ( { model | progressBar = 1.0 }, Cmd.none )
+    ```elm
+    reactToEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
+    reactToEvent event model =
+        case event of
+            WAAPI.Changed _ _ { progress } ->
+                ( { model | progressBar = progress }, Cmd.none )
 
-        _ ->
-            ( model, Cmd.none )
-```
+            WAAPI.Ended _ _ _ ->
+                ( { model | progressBar = 1.0 }, Cmd.none )
+
+            _ ->
+                ( model, Cmd.none )
+    ```
 
 
 ## Event Reference
@@ -278,7 +211,7 @@ Fired when an animation is interrupted before completion:
 
 ### Run (Transitions only)
 
-Fired when a transition starts running, after the delay but before property changes begin. Useful for tracking the exact moment a transition becomes "live."
+Fired when a transition starts running, before any delay. Useful for tracking the exact moment a transition becomes "live."
 
 
 ### Iteration (Keyframes only)
@@ -288,7 +221,7 @@ Fired at the end of each iteration for looping animations. Useful for tracking p
 
 ### Paused / Resumed (Sub & WAAPI only)
 
-Fired when animations are paused or resumed via the `pause` and `resume` control functions. CSS engines don't support programmatic pause/resume, so they don't emit these events.
+Fired when animations are paused or resumed via the `pause` and `resume` control functions. While Keyframes also supports pause/resume controls, CSS animations don't fire DOM events for these state changes.
 
 
 ### Restarted (Sub & WAAPI only)
