@@ -1,7 +1,7 @@
 module Anim.Engine.CSS.Transitions exposing
     ( AnimState, init
     , attributes
-    , AnimMsg(..), update, events
+    , AnimMsg, AnimEvent(..), update, events
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
     , AnimBuilder, animate, fireAndForget, TransformOrder(..), animateOrder, fireAndForgetOrder
     , duration, speed
@@ -54,7 +54,7 @@ Apply transition styles to your elements
 CSS transitions trigger events at various stages of their lifecycle.
 Use these events to keep your [AnimState](#AnimState) in sync.
 
-@docs AnimMsg, update, events
+@docs AnimMsg, AnimEvent, update, events
 
 For more granular control over which events to handle:
 
@@ -205,9 +205,48 @@ type TransformOrder
     | Scale
 
 
-{-| CSS transition lifecycle messages.
+{-| Opaque message type for CSS transition DOM events.
+
+Pass this to your parent Msg type and forward it to [update](#update).
+
+    type Msg
+        = TransitionMsg Transitions.AnimMsg
+        | ...
+
 -}
 type AnimMsg
+    = AnimMsg InternalAnimMsg
+
+
+{-| Internal message variants.
+-}
+type InternalAnimMsg
+    = InternalStarted String
+    | InternalEnded String
+    | InternalCancelled String
+    | InternalRun String
+
+
+{-| CSS transition lifecycle events.
+
+Returned by [update](#update) for you to pattern match and react to.
+
+    handleAnimationEvent : Transitions.AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleAnimationEvent event model =
+        case event of
+            Transitions.Ended elementId ->
+                -- Animation ended, trigger next step
+                ( model, startNextAnimation )
+
+            Transitions.Started elementId ->
+                -- Animation started
+                ( model, Cmd.none )
+
+            _ ->
+                ( model, Cmd.none )
+
+-}
+type AnimEvent
     = Started String
     | Ended String
     | Cancelled String
@@ -435,35 +474,59 @@ attributes =
 events : String -> (AnimMsg -> msg) -> List (Html.Attribute msg)
 events elementId toMsg =
     List.map (Html.Attributes.map toMsg) <|
-        [ onTransitionStart (Started elementId)
-        , onTransitionEnd (Ended elementId)
-        , onTransitionRun (Run elementId)
-        , onTransitionCancel (Cancelled elementId)
+        [ onTransitionStart (AnimMsg (InternalStarted elementId))
+        , onTransitionEnd (AnimMsg (InternalEnded elementId))
+        , onTransitionRun (AnimMsg (InternalRun elementId))
+        , onTransitionCancel (AnimMsg (InternalCancelled elementId))
         ]
 
 
 {-| Handle CSS transition lifecycle messages.
 
+Returns the updated state and an event for you to pattern match on.
+
     updateModel msg model =
         case msg of
             TransitionMsg animMsg ->
-                { model | animState = Transitions.update animMsg model.animState }
+                let
+                    ( newAnimState, event ) =
+                        Transitions.update animMsg model.animState
+                in
+                handleAnimationEvent event { model | animState = newAnimState }
+
+    handleAnimationEvent : Transitions.AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleAnimationEvent event model =
+        case event of
+            Transitions.Ended elementId ->
+                -- Animation ended
+                ( model, Cmd.none )
+
+            _ ->
+                ( model, Cmd.none )
 
 -}
-update : AnimMsg -> AnimState -> AnimState
-update animMsg animState =
+update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
+update (AnimMsg animMsg) animState =
     case animMsg of
-        Started elementId ->
-            InternalCSS.handleEvent (InternalCSS.TransitionStarted elementId) animState
+        InternalStarted elementId ->
+            ( InternalCSS.handleEvent (InternalCSS.TransitionStarted elementId) animState
+            , Started elementId
+            )
 
-        Ended elementId ->
-            InternalCSS.handleEvent (InternalCSS.TransitionEnded elementId) animState
+        InternalEnded elementId ->
+            ( InternalCSS.handleEvent (InternalCSS.TransitionEnded elementId) animState
+            , Ended elementId
+            )
 
-        Run elementId ->
-            InternalCSS.handleEvent (InternalCSS.TransitionRun elementId) animState
+        InternalRun elementId ->
+            ( InternalCSS.handleEvent (InternalCSS.TransitionRun elementId) animState
+            , Run elementId
+            )
 
-        Cancelled elementId ->
-            InternalCSS.handleEvent (InternalCSS.TransitionCancelled elementId) animState
+        InternalCancelled elementId ->
+            ( InternalCSS.handleEvent (InternalCSS.TransitionCancelled elementId) animState
+            , Cancelled elementId
+            )
 
 
 {-| Event handler for when a CSS transition starts.

@@ -2,7 +2,7 @@ module Anim.Engine.CSS.Keyframes exposing
     ( AnimState, init
     , attributes
     , styleNode, styleNodeFor, getElementKeyframes
-    , AnimMsg(..), update
+    , AnimMsg, AnimEvent(..), update
     , events
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , AnimBuilder, animate, fireAndForget, TransformOrder(..), animateOrder, fireAndForgetOrder
@@ -68,7 +68,7 @@ Keyframe animations require both styles on the element AND a `<style>` node in t
 CSS keyframe animations trigger events at various stages of their lifecycle.
 Use these events to keep your [AnimState](#AnimState) in sync.
 
-@docs AnimMsg, update
+@docs AnimMsg, AnimEvent, update
 
 @docs events
 
@@ -211,9 +211,48 @@ type TransformOrder
     | Scale
 
 
-{-| CSS keyframe animation lifecycle messages.
+{-| Opaque message type for CSS keyframe animation DOM events.
+
+Pass this to your parent Msg type and forward it to [update](#update).
+
+    type Msg
+        = KeyframeMsg Keyframes.AnimMsg
+        | ...
+
 -}
 type AnimMsg
+    = AnimMsg InternalAnimMsg
+
+
+{-| Internal message variants.
+-}
+type InternalAnimMsg
+    = InternalStarted String
+    | InternalEnded String
+    | InternalCancelled String
+    | InternalIteration String
+
+
+{-| CSS keyframe animation lifecycle events.
+
+Returned by [update](#update) for you to pattern match and react to.
+
+    handleAnimationEvent : Keyframes.AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleAnimationEvent event model =
+        case event of
+            Keyframes.Ended elementId ->
+                -- Animation ended, trigger next step
+                ( model, startNextAnimation )
+
+            Keyframes.Iteration elementId ->
+                -- Animation iteration completed (for looping animations)
+                ( model, Cmd.none )
+
+            _ ->
+                ( model, Cmd.none )
+
+-}
+type AnimEvent
     = Started String
     | Ended String
     | Cancelled String
@@ -463,35 +502,59 @@ getElementKeyframes =
 events : String -> (AnimMsg -> msg) -> List (Html.Attribute msg)
 events elementId toMsg =
     List.map (Html.Attributes.map toMsg) <|
-        [ onAnimationStart (Started elementId)
-        , onAnimationEnd (Ended elementId)
-        , onAnimationCancel (Cancelled elementId)
-        , onAnimationIteration (Iteration elementId)
+        [ onAnimationStart (AnimMsg (InternalStarted elementId))
+        , onAnimationEnd (AnimMsg (InternalEnded elementId))
+        , onAnimationCancel (AnimMsg (InternalCancelled elementId))
+        , onAnimationIteration (AnimMsg (InternalIteration elementId))
         ]
 
 
 {-| Handle CSS keyframe animation lifecycle messages.
 
+Returns the updated state and an event for you to pattern match on.
+
     updateModel msg model =
         case msg of
             KeyframeMsg animMsg ->
-                { model | animState = Keyframes.update animMsg model.animState }
+                let
+                    ( newAnimState, event ) =
+                        Keyframes.update animMsg model.animState
+                in
+                handleAnimationEvent event { model | animState = newAnimState }
+
+    handleAnimationEvent : Keyframes.AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleAnimationEvent event model =
+        case event of
+            Keyframes.Ended elementId ->
+                -- Animation ended
+                ( model, Cmd.none )
+
+            _ ->
+                ( model, Cmd.none )
 
 -}
-update : AnimMsg -> AnimState -> AnimState
-update animMsg animState =
+update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
+update (AnimMsg animMsg) animState =
     case animMsg of
-        Started elementId ->
-            InternalCSS.handleEvent (InternalCSS.AnimationStarted elementId) animState
+        InternalStarted elementId ->
+            ( InternalCSS.handleEvent (InternalCSS.AnimationStarted elementId) animState
+            , Started elementId
+            )
 
-        Ended elementId ->
-            InternalCSS.handleEvent (InternalCSS.AnimationEnded elementId) animState
+        InternalEnded elementId ->
+            ( InternalCSS.handleEvent (InternalCSS.AnimationEnded elementId) animState
+            , Ended elementId
+            )
 
-        Cancelled elementId ->
-            InternalCSS.handleEvent (InternalCSS.AnimationCancelled elementId) animState
+        InternalCancelled elementId ->
+            ( InternalCSS.handleEvent (InternalCSS.AnimationCancelled elementId) animState
+            , Cancelled elementId
+            )
 
-        Iteration elementId ->
-            InternalCSS.handleEvent (InternalCSS.AnimationIteration elementId) animState
+        InternalIteration elementId ->
+            ( InternalCSS.handleEvent (InternalCSS.AnimationIteration elementId) animState
+            , Iteration elementId
+            )
 
 
 {-| Event handler for when a CSS animation starts.

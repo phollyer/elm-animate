@@ -45,8 +45,11 @@ Add event listeners to your animated elements with the `events` function, then h
         update msg model =
             case msg of
                 GotTransitionMsg animMsg ->
-                    { model | animState = Transitions.update animMsg model.animState }
-                        |> reactToEvent animMsg
+                    let
+                        ( newAnimState, event ) =
+                            Transitions.update animMsg model.animState
+                    in
+                    reactToEvent event { model | animState = newAnimState }
 
         view : Model -> Html Msg
         view model =
@@ -68,8 +71,11 @@ Add event listeners to your animated elements with the `events` function, then h
         update msg model =
             case msg of
                 GotKeyframeMsg animMsg ->
-                    { model | animState = Keyframes.update animMsg model.animState }
-                        |> reactToEvent animMsg
+                    let
+                        ( newAnimState, event ) =
+                            Keyframes.update animMsg model.animState
+                    in
+                    reactToEvent event { model | animState = newAnimState }
 
         view : Model -> Html Msg
         view model =
@@ -113,11 +119,11 @@ Sub returns a list because multiple animations can change state on the same fram
 ??? example "View Source Code"
 
     ```elm
-    reactToEvents : List Sub.AnimMsg -> Model -> ( Model, Cmd Msg )
+    reactToEvents : List Sub.AnimEvent -> Model -> ( Model, Cmd Msg )
     reactToEvents events model =
         List.foldl reactToEvent ( model, Cmd.none ) events
 
-    reactToEvent : Sub.AnimMsg -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+    reactToEvent : Sub.AnimEvent -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
     reactToEvent event ( model, cmd ) =
         case event of
             Sub.Ended "fadeIn" ->
@@ -164,7 +170,7 @@ Once you're receiving events, you can react to them to build complex animation s
 Chain animations by starting the next one when the current ends:
 
 ```elm
-reactToEvent : Transitions.AnimMsg -> Model -> ( Model, Cmd Msg )
+reactToEvent : Transitions.AnimEvent -> Model -> ( Model, Cmd Msg )
 reactToEvent event model =
     case event of
         Transitions.Ended "step1" ->
@@ -197,7 +203,7 @@ type AnimationPhase
     | Visible
     | FadingOut
 
-reactToEvent : Keyframes.AnimMsg -> Model -> ( Model, Cmd Msg )
+reactToEvent : Keyframes.AnimEvent -> Model -> ( Model, Cmd Msg )
 reactToEvent event model =
     case ( event, model.phase ) of
         ( Keyframes.Ended "fadeIn", FadingIn ) ->
@@ -216,7 +222,7 @@ reactToEvent event model =
 Remove temporary state when animations finish:
 
 ```elm
-reactToEvent : Keyframes.AnimMsg -> Model -> ( Model, Cmd Msg )
+reactToEvent : Keyframes.AnimEvent -> Model -> ( Model, Cmd Msg )
 reactToEvent event model =
     case event of
         Keyframes.Ended "notification" ->
@@ -235,7 +241,7 @@ reactToEvent event model =
 The WAAPI engine sends `Changed` events during animation, letting you track real-time progress:
 
 ```elm
-reactToEvent : WAAPI.AnimMsg -> Model -> ( Model, Cmd Msg )
+reactToEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
 reactToEvent event model =
     case event of
         WAAPI.Changed _ _ { progress } ->

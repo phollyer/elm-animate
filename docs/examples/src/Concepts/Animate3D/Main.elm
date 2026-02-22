@@ -250,10 +250,13 @@ update msg model =
     case msg of
         GotKeyframeMsg animMsg ->
             let
+                ( newAnimState, event ) =
+                    Keyframes.update animMsg model.animState
+
                 newModel =
-                    { model | animState = Keyframes.update animMsg model.animState }
+                    { model | animState = newAnimState }
             in
-            case animMsg of
+            case event of
                 Keyframes.Ended "cube" ->
                     let
                         newState =
