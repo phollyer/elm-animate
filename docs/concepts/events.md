@@ -1,6 +1,14 @@
 # Events
 
-Animation engines emit lifecycle events that let you react to state changes — starting the next animation in a sequence, updating UI, or cleaning up resources.
+CSS Transitions, Keyframe Animations, and the Web Animations API all produce events during an animation's lifecycle. These events notify you when animations start, end, get interrupted, or change state — letting you chain animations in sequence, update the UI, or clean up resources.
+
+How you receive these events depends on the engine:
+
+**DOM-based engines** (Transitions, Keyframes) produce native browser events. You capture them by adding event attributes to your animated elements, then handle them in your update function. This mirrors how you'd handle click or input events in Elm.
+
+**Subscription-based engine** (Sub) computes events internally by tracking animation progress on each frame. Because it processes all animations simultaneously, its `update` function returns a list of events - multiple animations can start, end, or change state in a single frame.
+
+**Port-based engine** (WAAPI) receives events from the JavaScript Web Animations API via ports. The browser fires animation lifecycle events (Started, Ended, Changed, etc.), which JavaScript captures and routes to Elm through subscriptions. Control events like Paused, Resumed, and Restarted are generated when you call the corresponding control functions.
 
 ## Events by Engine
 
@@ -11,22 +19,22 @@ Each engine provides different events based on its capabilities:
 | Started | ✓ | ✓ | ✓ | ✓ |
 | Ended | ✓ | ✓ | ✓ | ✓ |
 | Cancelled | ✓ | ✓ | ✓ | ✓ |
-| Run | ✓ | | | |
-| Iteration | | ✓ | | |
+| Restarted | | | ✓ | ✓ |
 | Paused | | | ✓ | ✓ |
 | Resumed | | | ✓ | ✓ |
-| Restarted | | | ✓ | ✓ |
+| Run | ✓ | | | |
+| Iteration | | ✓ | | |
+| Changed | | | | ✓ |
 
-## Receiving Events
+## Setting Up Events
 
-How you receive events varies by Engine.
-
+How you set up events varies by Engine.
 
 ??? example "View Source Code"
 
     === "Transitions"
 
-        CSS Transitions provide events via HTML event attributes - use the `events` function to add them to the element being animated:
+        CSS Transitions provide events via HTML event attributes - use the `events` function to add them to the element being animated.
 
         ```elm
         view model =
@@ -39,7 +47,7 @@ How you receive events varies by Engine.
 
     === "Keyframes"
 
-        CSS Keyframes provide events via HTML event attributes - use the `events` function to add them to the element being animated:
+        CSS Keyframes provide events via HTML event attributes - use the `events` function to add them to the element being animated.
 
         ```elm
         view model =
@@ -53,15 +61,14 @@ How you receive events varies by Engine.
 
     === "Sub"
 
-        Sub returns a list of events from its `update` function:
-
-        `update : Sub.AnimMsg -> Sub.AnimState -> (Sub.AnimState, List Sub.AnimEvent)`
+        Sub animations do not emit events in the same way that CSS animations do, so there is nothing to attach to your view. Instead, because the Sub engine manages animation state internally, it's `update` function will, based on the current internal state, return a list of ephemoral `AnimEvent`s. The list may be empty.
 
         ```elm
         type Msg
             = GotSubMsg Sub.AnimMsg
             | ...
 
+        update : Msg -> Model -> (Model, Cmd Msg)
         update msg model =
             case msg of
                 GotSubMsg subMsg ->
@@ -70,15 +77,17 @@ How you receive events varies by Engine.
                             Sub.update subMsg model.animState
                     in
                     ({ model | animState = newAnimState }, Cmd.none)
+
+        subscriptions : Model -> Sub Msg
+        subscriptions model =
+            Sub.subscriptions GotSubMsg model.animState        
         ```
 
         Sub returns a list because it processes all animations on each frame — multiple animations can start, end, or change state simultaneously in a single update.
 
     === "WAAPI"
 
-        WAAPI returns a maybe event from its `update` function:
-
-        `update : WAAPI.AnimMsg -> WAAPI.AnimState -> (WAAPI.AnimState, Maybe WAAPI.AnimEvent)`
+        The WAAPI engine receives events from the JS Web Animations API that is actually running the animation, so there is nothing to add to your view. Instead, animation lifecycle events are routed from JS, through `subscriptions` to your `update` function.
 
         ```elm
         type Msg
@@ -89,13 +98,15 @@ How you receive events varies by Engine.
             case msg of
                 GotWaapiMsg waapiMsg ->
                     let
-                        ( newAnimState, maybeEvent ) =
+                        ( newAnimState, event ) =
                             WAAPI.update waapiMsg model.animState
                     in
                     ({ model | animState = newAnimState }, Cmd.none)
-        ```
 
-        WAAPI returns a `Maybe` because not every update from JS 
+        subscriptions : Model -> Sub Msg
+        subscriptions model =
+            WAAPI.subscriptions GotWaapiMsg model.animState 
+        ```
 
 
 ## Handling Events
@@ -104,18 +115,7 @@ How you receive events varies by Engine.
 
     === "Transitions"
 
-        CSS Transitions provide events via HTML event attributes. Add them to the element being animated:
-
-        ```elm
-        view model =
-            div 
-                (Transitions.attributes "box" model.animState
-                    ++ Transitions.events "box" GotAnimEvent
-                )
-                [ text "Animated box" ]
-        ```
-
-        Handle events in your update function:
+        Handle events in your update function with `handleEvent` - this keeps your `animState` in sync with the animations running in the view.
 
         ```elm
         type Msg
@@ -125,77 +125,31 @@ How you receive events varies by Engine.
         update msg model =
             case msg of
                 GotAnimEvent event ->
-                    let
-                        newModel =
-                            { model | animState = Transitions.handleEvent event model.animState }
-                    in
-                    case event of
-                        Transitions.Ended "box" ->
-                            -- Animation finished, trigger next one
-                            ( { newModel | animState = Transitions.animate model.animState nextAnimation }
-                            , Cmd.none
-                            )
-
-                        Transitions.Cancelled "box" ->
-                            -- Handle interruption
-                            ( newModel, Cmd.none )
-
-                        _ ->
-                            ( newModel, Cmd.none )
+                    ( { model | animState = Transitions.handleEvent event model.animState }
+                    , Cmd.none
+                    )
         ```
-
-        Use `handleEvent` to keep the `AnimState` in sync.
 
     === "Keyframes"
 
-        CSS Keyframes provide events via HTML event attributes. Add them to the element being animated:
-
-        ```elm
-        view model =
-            div 
-                (Keyframes.render model.animState "box"
-                    ++ Keyframes.events "box" GotAnimEvent
-                )
-                [ text "Animated box" ]
-        ```
-
-        Handle events in your update function:
+        Handle events in your update function with `handleEvent` - this keeps your `animState` in sync with the animations running in the view.
 
         ```elm
         type Msg
-            = GotAnimEvent Keyframes.AnimEvent
+            = GotAnimEvent Transitions.AnimEvent
             | ...
 
         update msg model =
             case msg of
                 GotAnimEvent event ->
-                    case event of
-                        Keyframes.Ended "box" ->
-                            -- Animation finished, trigger next one
-                            ( { model | animState = Keyframes.animate model.animState nextAnimation }
-                            , Cmd.none
-                            )
-
-                        Keyframes.Iteration "box" ->
-                            -- Loop completed one iteration
-                            ( model, Cmd.none )
-
-                        _ ->
-                            ( model, Cmd.none )
-        ```
-
-        Use `handleEvent` to keep the `AnimState` in sync:
-
-        ```elm
-        GotAnimEvent event ->
-            ( { model | animState = Keyframes.handleEvent event model.animState }
-            , Cmd.none
-            )
+                    ( { model | animState = Keyframes.handleEvent event model.animState }
+                    , Cmd.none
+                    )
         ```
 
     === "Sub"
 
-        Sub returns events from its `update` function:
+        Sub animations do not emit events in the same way the CSS engines do.
 
         ```elm
         type Msg
@@ -209,23 +163,9 @@ How you receive events varies by Engine.
                         ( newAnimState, events ) =
                             Sub.update subMsg model.animState
                     in
-                    handleEvents events { model | animState = newAnimState }
-
-        handleEvents : List Sub.AnimEvent -> Model -> ( Model, Cmd Msg )
-        handleEvents events model =
-            List.foldl handleEvent ( model, Cmd.none ) events
-
-        handleEvent : Sub.AnimEvent -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
-        handleEvent event ( model, cmd ) =
-            case event of
-                Sub.Ended "box" ->
-                    ( model, Cmd.batch [ cmd, startNextAnimation ] )
-
-                Sub.Paused _ ->
-                    ( model, cmd )
-
-                _ ->
-                    ( model, cmd )
+                    ({ model | animState = newAnimState }
+                    , Cmd.none
+                    )
         ```
 
     === "WAAPI"
@@ -258,6 +198,45 @@ How you receive events varies by Engine.
                 _ ->
                     ( model, Cmd.none )
         ```
+
+## Reacting To Events
+
+
+=== "Sub"
+
+    Sub returns events from its `update` function:
+
+    ```elm
+    type Msg
+        = GotSubMsg Sub.AnimMsg
+        | ...
+
+    update msg model =
+        case msg of
+            GotSubMsg subMsg ->
+                let
+                    ( newAnimState, events ) =
+                        Sub.update subMsg model.animState
+                in
+                handleEvents events { model | animState = newAnimState }
+
+    handleEvents : List Sub.AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleEvents events model =
+        List.foldl handleEvent ( model, Cmd.none ) events
+
+    handleEvent : Sub.AnimEvent -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+    handleEvent event ( model, cmd ) =
+        case event of
+            Sub.Ended "box" ->
+                ( model, Cmd.batch [ cmd, startNextAnimation ] )
+
+            Sub.Paused _ ->
+                ( model, cmd )
+
+            _ ->
+                ( model, cmd )
+    ```
+
 
 ## Event Details
 

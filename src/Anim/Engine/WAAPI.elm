@@ -3,7 +3,7 @@ module Anim.Engine.WAAPI exposing
     , animate, fireAndForget
     , TransformOrder(..), animateOrder, fireAndForgetOrder
     , forElement
-    , AnimMsg, AnimEvent(..), update, subscriptions
+    , AnimMsg, AnimEvent(..), EventInfo, PropertyConfig, update, subscriptions
     , attributes
     , stop, reset, restart, pause, resume
     , onResize
@@ -110,7 +110,7 @@ Updates are throttled to approximately 60 FPS (~16ms intervals) regardless of di
 This balances real-time feedback with performance, preventing message flooding on high-refresh-rate
 displays (120Hz, 144Hz, etc.) while maintaining smooth visual feedback.
 
-@docs AnimMsg, AnimEvent, update, subscriptions
+@docs AnimMsg, AnimEvent, EventInfo, PropertyConfig, update, subscriptions
 
 
 # View
@@ -930,16 +930,66 @@ getCurrentSize =
 These events notify you when animations change state, allowing you to trigger
 side effects like starting the next animation in a sequence or updating the UI.
 
-Each event carries the `elementId` of the animated element.
+Each event carries the `elementId` and `animGroup` of the animated element, along
+with contextual data. Lifecycle events include full `EventInfo` with duration,
+progress, and property configurations. `Changed` events (fired per-frame) include
+only progress to minimize overhead.
+
+    case event of
+        WAAPI.Ended "box" "fadeIn" info ->
+            -- The "box" element finished the "fadeIn" animation
+            -- info.duration tells you how long it took
+            -- info.properties has the animation configuration
+            ...
+
+        WAAPI.Changed "box" "fadeIn" { progress } ->
+            -- Animation in progress, progress is 0.0 to 1.0
+            ...
 
 -}
 type AnimEvent
-    = Started String
-    | Paused String
-    | Resumed String
-    | Ended String
-    | Cancelled String
-    | Restarted String
+    = Started String String EventInfo
+    | Ended String String EventInfo
+    | Cancelled String String EventInfo
+    | Restarted String String EventInfo
+    | Paused String String EventInfo
+    | Resumed String String EventInfo
+    | Changed String String { progress : Float }
+
+
+{-| Information about an animation event.
+
+  - `duration`: The maximum duration across all animated properties (in milliseconds)
+  - `progress`: Current progress from 0.0 to 1.0 (0.0 for Started, 1.0 for Ended)
+  - `properties`: List of property configurations being animated
+
+-}
+type alias EventInfo =
+    { duration : Int
+    , progress : Float
+    , properties : List PropertyConfig
+    }
+
+
+{-| Configuration for a single animated property.
+
+  - `property`: Property type name ("translate", "opacity", "scale", etc.)
+  - `from`: Starting value as a string (e.g., "100,50,0" for translate, "0.5" for opacity, "rgb(255,0,0)" for colors)
+  - `to`: Ending value as a string
+  - `duration`: Duration for this property in milliseconds
+  - `easing`: Easing function name
+
+Use Elm's built-in parsers (`String.toFloat`, `String.toInt`) or string splitting
+to extract numeric values when needed.
+
+-}
+type alias PropertyConfig =
+    { property : String
+    , from : String
+    , to : String
+    , duration : Int
+    , easing : String
+    }
 
 
 {-| Opaque message type for WAAPI updates and subscriptions.
@@ -970,7 +1020,7 @@ subscriptions =
 
 
 {-| Handles both property updates and lifecycle events, returning the updated state
-and an optional `AnimEvent` that you can pattern match on and react to.
+and an `AnimEvent` that you can pattern match on and react to.
 
     type Msg
         = WaapiMsg WAAPI.AnimMsg
@@ -981,61 +1031,97 @@ and an optional `AnimEvent` that you can pattern match on and react to.
         case msg of
             WaapiMsg waapiMsg ->
                 let
-                    ( newAnimState, maybeEvent ) =
+                    ( newAnimState, event ) =
                         WAAPI.update waapiMsg model.animState
                 in
-                handleAnimationEvent maybeEvent { model | animState = newAnimState }
+                handleAnimationEvent event { model | animState = newAnimState }
 
             ...
 
-    handleAnimationEvent : Maybe WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
-    handleAnimationEvent maybeEvent model =
-        case maybeEvent of
-            Just (WAAPI.Ended "box") ->
-                -- The "box" element finished animating
+    handleAnimationEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleAnimationEvent event model =
+        case event of
+            WAAPI.Ended "box" "fadeIn" info ->
+                -- The "box" element finished the "fadeIn" animation
+                -- info.duration, info.progress, info.properties available
                 ( model, startNextAnimation )
 
-            Just _ ->
-                -- Other events
+            WAAPI.Changed _ _ { progress } ->
+                -- Property update during animation (fires frequently)
+                -- progress is 0.0 to 1.0
                 ( model, Cmd.none )
 
-            Nothing ->
-                -- Property update (no lifecycle event)
+            _ ->
+                -- Other lifecycle events
                 ( model, Cmd.none )
 
 -}
-update : AnimMsg -> AnimState msg -> ( AnimState msg, Maybe AnimEvent )
+update : AnimMsg -> AnimState msg -> ( AnimState msg, AnimEvent )
 update msg animState =
     let
-        ( newState, maybeRawEvent ) =
+        ( newState, eventData ) =
             Internal.update msg animState
     in
-    ( newState
-    , Maybe.map (\( elementId, status ) -> statusStringToEvent elementId status) maybeRawEvent
-    )
+    ( newState, eventDataToEvent eventData )
 
 
-statusStringToEvent : String -> String -> AnimEvent
-statusStringToEvent elementId status =
-    case status of
+{-| Convert internal EventData to public AnimEvent.
+-}
+eventDataToEvent : Internal.EventData -> AnimEvent
+eventDataToEvent eventData =
+    let
+        elementId =
+            eventData.elementId
+
+        animGroup =
+            eventData.animGroup
+
+        eventInfo =
+            { duration = eventData.duration
+            , progress = eventData.progress
+            , properties = List.map internalToPublicPropertyConfig eventData.properties
+            }
+    in
+    case eventData.status of
+        "changed" ->
+            Changed elementId animGroup { progress = eventData.progress }
+
         "started" ->
-            Started elementId
+            Started elementId animGroup eventInfo
 
         "paused" ->
-            Paused elementId
+            Paused elementId animGroup eventInfo
 
         "resumed" ->
-            Resumed elementId
+            Resumed elementId animGroup eventInfo
 
         "completed" ->
-            Ended elementId
+            Ended elementId animGroup eventInfo
 
-        "Cancelled" ->
-            Cancelled elementId
+        "cancelled" ->
+            Cancelled elementId animGroup eventInfo
+
+        "stopped" ->
+            Ended elementId animGroup eventInfo
+
+        "reset" ->
+            Cancelled elementId animGroup eventInfo
 
         "restarted" ->
-            Restarted elementId
+            Restarted elementId animGroup eventInfo
 
         _ ->
-            -- Fallback for unknown status (shouldn't happen with valid events)
-            Started elementId
+            -- Fallback for unknown status (includes "unknown" from decode failures)
+            Changed elementId animGroup { progress = eventData.progress }
+
+
+{-| Convert internal PropertyConfig to public PropertyConfig.
+-}
+internalToPublicPropertyConfig : Internal.PropertyConfig -> PropertyConfig
+internalToPublicPropertyConfig internal =
+    { property = internal.property
+    , from = internal.from
+    , to = internal.to
+    , duration = internal.duration
+    , easing = internal.easing
+    }

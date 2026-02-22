@@ -17,8 +17,12 @@ window.ElmAnimateWAAPI = (function () {
     'use strict';
 
     // Track active animations for cleanup and management
-    // Structure: Map<elementId, Map<propertyType, { animation, version }>>
+    // Structure: Map<elementId, Map<propertyType, { animation, version, animGroup }>>
     const activeAnimations = new Map();
+
+    // Track animation groups for Started/Ended events
+    // Structure: Map<animGroup, { elementId, totalProperties, completedProperties, started }>
+    const animationGroups = new Map();
 
     // Default easing functions mapping for Web Animations API
     const easingFunctions = {
@@ -86,11 +90,27 @@ using WAAPI.forElement at the start of your animation pipeline:
             return;
         }
 
+        // Get animGroup from config (defaults to elementId for backwards compatibility)
+        const animGroup = elementConfig.animGroup || elementId;
+        const compositeKey = `${elementId}:${animGroup}`;
+
         // Get or create element animation tracking map
-        if (!activeAnimations.has(elementId)) {
-            activeAnimations.set(elementId, new Map());
+        if (!activeAnimations.has(compositeKey)) {
+            activeAnimations.set(compositeKey, new Map());
         }
-        const elementAnims = activeAnimations.get(elementId);
+        const elementAnims = activeAnimations.get(compositeKey);
+
+        // Initialize or reset animation group tracking
+        const propertyCount = elementConfig.properties.length;
+        animationGroups.set(compositeKey, {
+            elementId: elementId,
+            animGroup: animGroup,
+            totalProperties: propertyCount,
+            completedProperties: 0,
+            cancelledProperties: 0,
+            started: false,
+            propertyConfigs: []  // Will store config for each property
+        });
 
         // Process each property independently
         elementConfig.properties.forEach(property => {
@@ -117,20 +137,33 @@ using WAAPI.forElement at the start of your animation pipeline:
             if (animation) {
                 // Mark this as our animation so we can identify it later
                 animation.__elmAnimate = true;
-                const updateFn = setupAnimationEvents(elementId, propType, element, animation, newVersion);
+                const updateFn = setupAnimationEvents(elementId, propType, element, animation, newVersion, animGroup);
                 elementAnims.set(propType, {
                     animation: animation,
                     version: newVersion,
                     updateFn: updateFn,
+                    animGroup: animGroup,
                     // Cache easingKeyframes for resize - preserves bounce/elastic easing
                     easingKeyframes: property.easingKeyframes || null
                 });
+
+                // Store property config for lifecycle events
+                const groupInfo = animationGroups.get(compositeKey);
+                if (groupInfo) {
+                    groupInfo.propertyConfigs.push(extractPropertyConfig(element, property));
+                }
+
+                // Emit Started event on first property for this group
+                if (groupInfo && !groupInfo.started) {
+                    groupInfo.started = true;
+                    sendLifecycleEvent('started', animGroup, elementId);
+                }
             }
         });
 
         // Clean up element entry if no animations remain
         if (elementAnims.size === 0) {
-            activeAnimations.delete(elementId);
+            activeAnimations.delete(compositeKey);
         }
     }
 
@@ -262,6 +295,88 @@ using WAAPI.forElement at the start of your animation pipeline:
         const a = start.a + (end.a - start.a) * progress;
 
         return `rgba(${r}, ${g}, ${b}, ${a})`;
+    }
+
+    /**
+     * Extract property configuration for lifecycle events.
+     * Returns a normalized config object with from/to values as strings.
+     * @param {Element} element - The DOM element
+     * @param {object} property - The property configuration from Elm
+     * @returns {object} Normalized property config
+     */
+    function extractPropertyConfig(element, property) {
+        const config = {
+            property: property.type,
+            duration: property.duration,
+            easing: property.easing,
+            from: '',
+            to: ''
+        };
+
+        const computedStyle = window.getComputedStyle(element);
+
+        switch (property.type) {
+            case 'translate': {
+                const currentTransform = getCurrentTransform(element);
+                const fromX = property.startX ?? property.defaultX ?? currentTransform.x;
+                const fromY = property.startY ?? property.defaultY ?? currentTransform.y;
+                const fromZ = property.startZ ?? property.defaultZ ?? currentTransform.z;
+                const toX = property.endX ?? currentTransform.x;
+                const toY = property.endY ?? currentTransform.y;
+                const toZ = property.endZ ?? currentTransform.z;
+                config.from = `${fromX},${fromY},${fromZ}`;
+                config.to = `${toX},${toY},${toZ}`;
+                break;
+            }
+            case 'scale': {
+                const currentTransform = getCurrentTransform(element);
+                const fromX = property.startX ?? property.defaultX ?? currentTransform.scaleX;
+                const fromY = property.startY ?? property.defaultY ?? currentTransform.scaleY;
+                const fromZ = property.startZ ?? property.defaultZ ?? currentTransform.scaleZ;
+                const toX = property.endX ?? currentTransform.scaleX;
+                const toY = property.endY ?? currentTransform.scaleY;
+                const toZ = property.endZ ?? currentTransform.scaleZ;
+                config.from = `${fromX},${fromY},${fromZ}`;
+                config.to = `${toX},${toY},${toZ}`;
+                break;
+            }
+            case 'rotate': {
+                const currentTransform = getCurrentTransform(element);
+                const fromX = property.startX ?? property.defaultX ?? currentTransform.rotateX;
+                const fromY = property.startY ?? property.defaultY ?? currentTransform.rotateY;
+                const fromZ = property.startZ ?? property.defaultZ ?? currentTransform.rotateZ;
+                const toX = property.endX ?? currentTransform.rotateX;
+                const toY = property.endY ?? currentTransform.rotateY;
+                const toZ = property.endZ ?? currentTransform.rotateZ;
+                config.from = `${fromX},${fromY},${fromZ}`;
+                config.to = `${toX},${toY},${toZ}`;
+                break;
+            }
+            case 'opacity': {
+                const computedOpacity = parseFloat(computedStyle.opacity);
+                const fromVal = property.startValue ?? property.defaultValue ?? computedOpacity;
+                config.from = `${fromVal}`;
+                config.to = `${property.endValue}`;
+                break;
+            }
+            case 'backgroundColor':
+            case 'color': {
+                const cssProp = property.type === 'backgroundColor' ? 'backgroundColor' : 'color';
+                const computedColor = computedStyle[cssProp];
+                config.from = property.startColor ?? property.defaultColor ?? computedColor;
+                config.to = property.endColor;
+                break;
+            }
+            case 'size': {
+                const startWidth = property.startWidth != null ? property.startWidth : parseFloat(computedStyle.width);
+                const startHeight = property.startHeight != null ? property.startHeight : parseFloat(computedStyle.height);
+                config.from = `${startWidth},${startHeight}`;
+                config.to = `${property.endWidth},${property.endHeight}`;
+                break;
+            }
+        }
+
+        return config;
     }
 
     /**
@@ -597,7 +712,8 @@ using WAAPI.forElement at the start of your animation pipeline:
     /**
      * Set up animation event listeners and property updates with version tracking
      */
-    function setupAnimationEvents(elementId, propertyType, element, animation, version) {
+    function setupAnimationEvents(elementId, propertyType, element, animation, version, animGroup) {
+        const compositeKey = `${elementId}:${animGroup}`;
         let updatePort = null;
 
         // Find the update port
@@ -622,15 +738,27 @@ using WAAPI.forElement at the start of your animation pipeline:
                 if (updatePort) {
                     // Collect property versions from all active animations for this element
                     const propertyVersions = {};
-                    const elementAnims = activeAnimations.get(elementId);
+                    const elementAnims = activeAnimations.get(compositeKey);
                     if (elementAnims) {
                         elementAnims.forEach((animData, propType) => {
                             propertyVersions[propType] = animData.version;
                         });
                     }
 
+                    // Calculate progress from animation currentTime/duration
+                    const groupInfo = animationGroups.get(compositeKey);
+                    const maxDuration = groupInfo?.propertyConfigs?.length > 0
+                        ? Math.max(...groupInfo.propertyConfigs.map(p => p.duration))
+                        : animation.effect?.getTiming()?.duration || 0;
+                    const currentTime = animation.currentTime || 0;
+                    const progress = maxDuration > 0
+                        ? Math.min(1.0, Math.max(0.0, currentTime / maxDuration))
+                        : 0;
+
                     const propertyData = {
                         elementId: elementId,
+                        animGroup: animGroup,
+                        progress: progress,
                         translate: {
                             x: transformState.x,
                             y: transformState.y,
@@ -656,7 +784,8 @@ using WAAPI.forElement at the start of your animation pipeline:
                         isAnimating: true,
                         propertyVersions: propertyVersions
                     };
-                    sendEventToElm('propertyUpdate', elementId, propertyData);
+                    // Send property update during animation
+                    sendPropertyUpdate(propertyData);
                 }
                 lastTime = now;
             }
@@ -690,7 +819,7 @@ using WAAPI.forElement at the start of your animation pipeline:
 
             // Only remove THIS property's animation if version matches
             // (prevents removing newer animation if finish event fires late)
-            const elementAnims = activeAnimations.get(elementId);
+            const elementAnims = activeAnimations.get(compositeKey);
             if (elementAnims) {
                 const current = elementAnims.get(propertyType);
                 if (current && current.version === version) {
@@ -698,61 +827,76 @@ using WAAPI.forElement at the start of your animation pipeline:
 
                     // If no more properties animating, clean up element entry
                     if (elementAnims.size === 0) {
-                        activeAnimations.delete(elementId);
+                        activeAnimations.delete(compositeKey);
                     }
                 }
             }
 
-            if (updatePort) {
-                const finalState = getCurrentTransform(element);
-                const computedStyle = window.getComputedStyle(element);
+            // Track completion for animGroup - emit 'completed' when all properties done
+            const groupInfo = animationGroups.get(compositeKey);
+            if (groupInfo) {
+                groupInfo.completedProperties++;
+                const allComplete = groupInfo.completedProperties >= groupInfo.totalProperties;
 
-                // Collect remaining property versions
-                const propertyVersions = {};
-                const remainingAnims = activeAnimations.get(elementId);
-                if (remainingAnims) {
-                    remainingAnims.forEach((animData, propType) => {
-                        propertyVersions[propType] = animData.version;
-                    });
+                if (updatePort) {
+                    const finalState = getCurrentTransform(element);
+                    const computedStyle = window.getComputedStyle(element);
+
+                    // Collect remaining property versions
+                    const propertyVersions = {};
+                    const remainingAnims = activeAnimations.get(compositeKey);
+                    if (remainingAnims) {
+                        remainingAnims.forEach((animData, propType) => {
+                            propertyVersions[propType] = animData.version;
+                        });
+                    }
+                    // Include the completed property with its version one last time
+                    propertyVersions[propertyType] = version;
+
+                    const finalPropertyData = {
+                        elementId: elementId,
+                        animGroup: animGroup,
+                        translate: {
+                            x: finalState.x,
+                            y: finalState.y,
+                            z: finalState.z
+                        },
+                        opacity: parseFloat(computedStyle.opacity),
+                        rotate: {
+                            x: finalState.rotateX,
+                            y: finalState.rotateY,
+                            z: finalState.rotateZ
+                        },
+                        scale: {
+                            x: finalState.scaleX,
+                            y: finalState.scaleY,
+                            z: finalState.scaleZ
+                        },
+                        backgroundColor: computedStyle.backgroundColor,
+                        color: computedStyle.color,
+                        size: {
+                            width: parseFloat(computedStyle.width),
+                            height: parseFloat(computedStyle.height)
+                        },
+                        isAnimating: !allComplete,
+                        propertyVersions: propertyVersions
+                    };
+                    // Send final state property update
+                    sendPropertyUpdate(finalPropertyData);
                 }
-                // Include the completed property with its version one last time
-                propertyVersions[propertyType] = version;
 
-                const finalPropertyData = {
-                    elementId: elementId,
-                    translate: {
-                        x: finalState.x,
-                        y: finalState.y,
-                        z: finalState.z
-                    },
-                    opacity: parseFloat(computedStyle.opacity),
-                    rotate: {
-                        x: finalState.rotateX,
-                        y: finalState.rotateY,
-                        z: finalState.rotateZ
-                    },
-                    scale: {
-                        x: finalState.scaleX,
-                        y: finalState.scaleY,
-                        z: finalState.scaleZ
-                    },
-                    backgroundColor: computedStyle.backgroundColor,
-                    color: computedStyle.color,
-                    size: {
-                        width: parseFloat(computedStyle.width),
-                        height: parseFloat(computedStyle.height)
-                    },
-                    isAnimating: false,
-                    propertyVersions: propertyVersions
-                };
-                sendEventToElm('propertyUpdate', elementId, finalPropertyData);
+                // Emit 'completed' when all properties in the group have finished
+                if (allComplete) {
+                    sendLifecycleEvent('completed', animGroup, elementId);
+                    animationGroups.delete(compositeKey);
+                }
             }
         });
 
         animation.addEventListener('cancel', () => {
             // Only remove THIS property's animation if version matches
             // (prevents removing newer animation if cancel event fires late)
-            const elementAnims = activeAnimations.get(elementId);
+            const elementAnims = activeAnimations.get(compositeKey);
             if (elementAnims) {
                 const current = elementAnims.get(propertyType);
                 if (current && current.version === version) {
@@ -760,54 +904,68 @@ using WAAPI.forElement at the start of your animation pipeline:
 
                     // If no more properties animating, clean up element entry
                     if (elementAnims.size === 0) {
-                        activeAnimations.delete(elementId);
+                        activeAnimations.delete(compositeKey);
                     }
                 }
             }
 
-            if (updatePort) {
-                const currentState = getCurrentTransform(element);
-                const computedStyle = window.getComputedStyle(element);
+            // Track cancellation for animGroup
+            const groupInfo = animationGroups.get(compositeKey);
+            if (groupInfo) {
+                groupInfo.completedProperties++;
+                const allCancelled = groupInfo.completedProperties >= groupInfo.totalProperties;
 
-                // Collect remaining property versions
-                const propertyVersions = {};
-                const remainingAnims = activeAnimations.get(elementId);
-                if (remainingAnims) {
-                    remainingAnims.forEach((animData, propType) => {
-                        propertyVersions[propType] = animData.version;
-                    });
+                if (updatePort) {
+                    const currentState = getCurrentTransform(element);
+                    const computedStyle = window.getComputedStyle(element);
+
+                    // Collect remaining property versions
+                    const propertyVersions = {};
+                    const remainingAnims = activeAnimations.get(compositeKey);
+                    if (remainingAnims) {
+                        remainingAnims.forEach((animData, propType) => {
+                            propertyVersions[propType] = animData.version;
+                        });
+                    }
+                    // Include the cancelled property with its version one last time
+                    propertyVersions[propertyType] = version;
+
+                    const currentPropertyData = {
+                        elementId: elementId,
+                        animGroup: animGroup,
+                        translate: {
+                            x: currentState.x,
+                            y: currentState.y,
+                            z: currentState.z
+                        },
+                        opacity: parseFloat(computedStyle.opacity),
+                        rotate: {
+                            x: currentState.rotateX,
+                            y: currentState.rotateY,
+                            z: currentState.rotateZ
+                        },
+                        scale: {
+                            x: currentState.scaleX,
+                            y: currentState.scaleY,
+                            z: currentState.scaleZ
+                        },
+                        backgroundColor: computedStyle.backgroundColor,
+                        color: computedStyle.color,
+                        size: {
+                            width: parseFloat(computedStyle.width),
+                            height: parseFloat(computedStyle.height)
+                        },
+                        isAnimating: !allCancelled,
+                        propertyVersions: propertyVersions
+                    };
+                    sendPropertyUpdate(currentPropertyData);
                 }
-                // Include the cancelled property with its version one last time
-                propertyVersions[propertyType] = version;
 
-                const currentPropertyData = {
-                    elementId: elementId,
-                    translate: {
-                        x: currentState.x,
-                        y: currentState.y,
-                        z: currentState.z
-                    },
-                    opacity: parseFloat(computedStyle.opacity),
-                    rotate: {
-                        x: currentState.rotateX,
-                        y: currentState.rotateY,
-                        z: currentState.rotateZ
-                    },
-                    scale: {
-                        x: currentState.scaleX,
-                        y: currentState.scaleY,
-                        z: currentState.scaleZ
-                    },
-                    backgroundColor: computedStyle.backgroundColor,
-                    color: computedStyle.color,
-                    size: {
-                        width: parseFloat(computedStyle.width),
-                        height: parseFloat(computedStyle.height)
-                    },
-                    isAnimating: false,
-                    propertyVersions: propertyVersions
-                };
-                sendEventToElm('propertyUpdate', elementId, currentPropertyData);
+                // Emit 'cancelled' when all properties in the group have been cancelled
+                if (allCancelled) {
+                    sendLifecycleEvent('cancelled', animGroup, elementId);
+                    animationGroups.delete(compositeKey);
+                }
             }
         });
 
@@ -816,17 +974,87 @@ using WAAPI.forElement at the start of your animation pipeline:
     }
 
     /**
-     * Send event to Elm via consolidated waapiEvent port
+     * Send lifecycle event to Elm (started, completed, cancelled, etc.)
+     * Uses 'animationUpdate' type which Elm routes to AnimEvent handling
+     * Includes property configurations and current progress for rich event data.
+     * @param {string} status - Lifecycle status ('started', 'completed', 'cancelled', 'paused', 'resumed', 'stopped', 'reset', 'restarted')
+     * @param {string} animGroup - The animation group identifier
+     * @param {string} elementId - The DOM element ID
      */
-    function sendEventToElm(eventType, elementId, payload) {
+    function sendLifecycleEvent(status, animGroup, elementId) {
         if (window.app && window.app.ports && window.app.ports.waapiEvent) {
+            const compositeKey = `${elementId}:${animGroup}`;
+            const groupInfo = animationGroups.get(compositeKey);
+
+            // Get property configs and calculate max duration
+            const properties = groupInfo?.propertyConfigs || [];
+            const maxDuration = properties.length > 0
+                ? Math.max(...properties.map(p => p.duration))
+                : 0;
+
+            // Calculate progress based on event type
+            let progress = 0;
+            if (status === 'completed' || status === 'stopped') {
+                progress = 1.0;
+            } else if (status === 'started' || status === 'reset' || status === 'restarted') {
+                progress = 0.0;
+            } else {
+                // For paused, resumed, cancelled - calculate actual progress
+                const elementAnims = activeAnimations.get(compositeKey);
+                if (elementAnims && elementAnims.size > 0) {
+                    // Get progress from any active animation (they should be in sync)
+                    const firstAnim = elementAnims.values().next().value;
+                    if (firstAnim && firstAnim.animation && maxDuration > 0) {
+                        const currentTime = firstAnim.animation.currentTime || 0;
+                        progress = Math.min(1.0, Math.max(0.0, currentTime / maxDuration));
+                    }
+                }
+            }
+
             const eventData = {
-                type: eventType,
-                elementId: elementId,
-                ...(payload || {})
+                type: 'animationUpdate',
+                payload: {
+                    elementId: elementId,
+                    animGroup: animGroup,
+                    status: status,
+                    duration: maxDuration,
+                    progress: progress,
+                    properties: properties
+                }
             };
             window.app.ports.waapiEvent.send(eventData);
         }
+    }
+
+    /**
+     * Send property update to Elm (during animation)
+     * Uses 'propertyUpdate' type which Elm routes to PropertyUpdate handling
+     * @param {object} propertyData - The current property values and metadata
+     */
+    function sendPropertyUpdate(propertyData) {
+        if (window.app && window.app.ports && window.app.ports.waapiEvent) {
+            const eventData = {
+                type: 'propertyUpdate',
+                ...propertyData
+            };
+            window.app.ports.waapiEvent.send(eventData);
+        }
+    }
+
+    /**
+     * Find all composite keys in activeAnimations that match an element ID
+     * @param {string} elementId - The DOM element ID to match
+     * @returns {string[]} Array of composite keys (elementId:animGroup) that match
+     */
+    function findCompositeKeysForElement(elementId) {
+        const keys = [];
+        const prefix = `${elementId}:`;
+        activeAnimations.forEach((_, compositeKey) => {
+            if (compositeKey.startsWith(prefix)) {
+                keys.push(compositeKey);
+            }
+        });
+        return keys;
     }
 
     /**
@@ -835,9 +1063,14 @@ using WAAPI.forElement at the start of your animation pipeline:
      * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
      */
     function stopAnimation(elementId, properties) {
-        const elementAnims = activeAnimations.get(elementId);
-        if (elementAnims) {
-            const propsToAffect = properties ? new Set(properties) : null;
+        const compositeKeys = findCompositeKeysForElement(elementId);
+        const propsToAffect = properties ? new Set(properties) : null;
+
+        compositeKeys.forEach(compositeKey => {
+            const elementAnims = activeAnimations.get(compositeKey);
+            if (!elementAnims) return;
+
+            const animGroup = compositeKey.split(':').slice(1).join(':');
             let affectedCount = 0;
 
             elementAnims.forEach((animData, propertyType) => {
@@ -847,14 +1080,15 @@ using WAAPI.forElement at the start of your animation pipeline:
                 }
             });
 
-            // If we affected all properties, delete the element entry
+            // If we affected all properties, delete the entry and clean up group tracking
             if (!propsToAffect || affectedCount === elementAnims.size) {
-                activeAnimations.delete(elementId);
+                activeAnimations.delete(compositeKey);
+                animationGroups.delete(compositeKey);
             }
 
-            // Send stopped event to Elm so it can update its state
-            sendEventToElm('animationUpdate', elementId, { status: 'stopped', properties: properties || null });
-        }
+            // Send stopped event to Elm for this animGroup
+            sendLifecycleEvent('stopped', animGroup, elementId);
+        });
     }
 
     /**
@@ -863,9 +1097,14 @@ using WAAPI.forElement at the start of your animation pipeline:
      * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
      */
     function resetAnimation(elementId, properties) {
-        const elementAnims = activeAnimations.get(elementId);
-        if (elementAnims) {
-            const propsToAffect = properties ? new Set(properties) : null;
+        const compositeKeys = findCompositeKeysForElement(elementId);
+        const propsToAffect = properties ? new Set(properties) : null;
+
+        compositeKeys.forEach(compositeKey => {
+            const elementAnims = activeAnimations.get(compositeKey);
+            if (!elementAnims) return;
+
+            const animGroup = compositeKey.split(':').slice(1).join(':');
             let affectedCount = 0;
 
             elementAnims.forEach((animData, propertyType) => {
@@ -875,14 +1114,15 @@ using WAAPI.forElement at the start of your animation pipeline:
                 }
             });
 
-            // If we affected all properties, delete the element entry
+            // If we affected all properties, delete the entry and clean up group tracking
             if (!propsToAffect || affectedCount === elementAnims.size) {
-                activeAnimations.delete(elementId);
+                activeAnimations.delete(compositeKey);
+                animationGroups.delete(compositeKey);
             }
 
-            // Send reset event to Elm so it can update its state
-            sendEventToElm('animationUpdate', elementId, { status: 'reset', properties: properties || null });
-        }
+            // Send reset event to Elm for this animGroup
+            sendLifecycleEvent('reset', animGroup, elementId);
+        });
     }
 
     /**
@@ -891,9 +1131,14 @@ using WAAPI.forElement at the start of your animation pipeline:
      * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
      */
     function restartAnimation(elementId, properties) {
-        const elementAnims = activeAnimations.get(elementId);
-        if (elementAnims) {
-            const propsToAffect = properties ? new Set(properties) : null;
+        const compositeKeys = findCompositeKeysForElement(elementId);
+        const propsToAffect = properties ? new Set(properties) : null;
+
+        compositeKeys.forEach(compositeKey => {
+            const elementAnims = activeAnimations.get(compositeKey);
+            if (!elementAnims) return;
+
+            const animGroup = compositeKey.split(':').slice(1).join(':');
 
             elementAnims.forEach((animData, propertyType) => {
                 if (!propsToAffect || propsToAffect.has(propertyType)) {
@@ -901,9 +1146,17 @@ using WAAPI.forElement at the start of your animation pipeline:
                     animData.animation.play();   // Then replay
                 }
             });
-            // Send restart event to Elm so it can update its state
-            sendEventToElm('animationUpdate', elementId, { status: 'restarted', properties: properties || null });
-        }
+
+            // Reset group tracking for restart
+            const groupTracking = animationGroups.get(compositeKey);
+            if (groupTracking) {
+                groupTracking.completedProperties = 0;
+                groupTracking.started = false;
+            }
+
+            // Send restarted event to Elm for this animGroup
+            sendLifecycleEvent('restarted', animGroup, elementId);
+        });
     }
 
     /**
@@ -913,9 +1166,16 @@ using WAAPI.forElement at the start of your animation pipeline:
      */
     function pauseAnimation(elementId, properties) {
         const element = document.getElementById(elementId);
-        const elementAnims = activeAnimations.get(elementId);
-        if (elementAnims && element) {
-            const propsToAffect = properties ? new Set(properties) : null;
+        if (!element) return;
+
+        const compositeKeys = findCompositeKeysForElement(elementId);
+        const propsToAffect = properties ? new Set(properties) : null;
+
+        compositeKeys.forEach(compositeKey => {
+            const elementAnims = activeAnimations.get(compositeKey);
+            if (!elementAnims) return;
+
+            const animGroup = compositeKey.split(':').slice(1).join(':');
 
             elementAnims.forEach((animData, propertyType) => {
                 if (!propsToAffect || propsToAffect.has(propertyType)) {
@@ -923,9 +1183,9 @@ using WAAPI.forElement at the start of your animation pipeline:
                 }
             });
 
-            // Send paused event to Elm so it can update its state
-            sendEventToElm('animationUpdate', elementId, { status: 'paused', properties: properties || null });
-        }
+            // Send paused event to Elm for this animGroup
+            sendLifecycleEvent('paused', animGroup, elementId);
+        });
     }
 
     /**
@@ -934,9 +1194,14 @@ using WAAPI.forElement at the start of your animation pipeline:
      * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
      */
     function resumeAnimation(elementId, properties) {
-        const elementAnims = activeAnimations.get(elementId);
-        if (elementAnims) {
-            const propsToAffect = properties ? new Set(properties) : null;
+        const compositeKeys = findCompositeKeysForElement(elementId);
+        const propsToAffect = properties ? new Set(properties) : null;
+
+        compositeKeys.forEach(compositeKey => {
+            const elementAnims = activeAnimations.get(compositeKey);
+            if (!elementAnims) return;
+
+            const animGroup = compositeKey.split(':').slice(1).join(':');
 
             elementAnims.forEach((animData, propertyType) => {
                 if (!propsToAffect || propsToAffect.has(propertyType)) {
@@ -947,9 +1212,10 @@ using WAAPI.forElement at the start of your animation pipeline:
                     }
                 }
             });
-            // Send resumed status to Elm
-            sendEventToElm('animationUpdate', elementId, { status: 'resumed', properties: properties || null });
-        }
+
+            // Send resumed event to Elm for this animGroup
+            sendLifecycleEvent('resumed', animGroup, elementId);
+        });
     }
 
 
@@ -968,47 +1234,56 @@ using WAAPI.forElement at the start of your animation pipeline:
                 return;
             }
 
-            const elementAnims = activeAnimations.get(update.elementId);
-            if (!elementAnims || !elementAnims.has('translate')) {
+            // Find all composite keys for this element
+            const compositeKeys = findCompositeKeysForElement(update.elementId);
+            let foundTranslate = false;
+
+            compositeKeys.forEach(compositeKey => {
+                const elementAnims = activeAnimations.get(compositeKey);
+                if (!elementAnims || !elementAnims.has('translate')) return;
+
+                foundTranslate = true;
+
+                const translateAnimData = elementAnims.get('translate');
+                const animation = translateAnimData.animation;
+                const cachedEasingKeyframes = translateAnimData.easingKeyframes;
+
+                // Extract scaled start and end positions from Elm
+                const startPos = update.startPosition;
+                const endPos = update.endPosition;
+
+                // Build full animation keyframes from scaled start to scaled end
+                // The browser will interpolate correctly at preserved currentTime
+                const fromTransform = buildTransformString(
+                    startPos.x, startPos.y, startPos.z,
+                    startPos.scaleX, startPos.scaleY, startPos.scaleZ,
+                    startPos.rotateX, startPos.rotateY, startPos.rotateZ
+                );
+
+                const toTransform = buildTransformString(
+                    endPos.x, endPos.y, endPos.z,
+                    endPos.scaleX, endPos.scaleY, endPos.scaleZ,
+                    endPos.rotateX, endPos.rotateY, endPos.rotateZ
+                );
+
+                // Generate keyframes using cached easing (preserves bounce/elastic during resize)
+                // For complex easings, this regenerates all 30+ keyframes with new positions
+                // For simple easings, this creates 2 keyframes (browser handles easing via timing)
+                const keyframes = generateKeyframesWithEasing(
+                    fromTransform,
+                    toTransform,
+                    cachedEasingKeyframes,
+                    'transform'
+                );
+
+                // Update keyframes in-place - animation continues seamlessly
+                // playState, currentTime, and event listeners are preserved
+                animation.effect.setKeyframes(keyframes);
+            });
+
+            if (!foundTranslate) {
                 console.warn(`No translate animation found for ${update.elementId} - Elm state may be out of sync`);
-                return;
             }
-
-            const translateAnimData = elementAnims.get('translate');
-            const animation = translateAnimData.animation;
-            const cachedEasingKeyframes = translateAnimData.easingKeyframes;
-
-            // Extract scaled start and end positions from Elm
-            const startPos = update.startPosition;
-            const endPos = update.endPosition;
-
-            // Build full animation keyframes from scaled start to scaled end
-            // The browser will interpolate correctly at preserved currentTime
-            const fromTransform = buildTransformString(
-                startPos.x, startPos.y, startPos.z,
-                startPos.scaleX, startPos.scaleY, startPos.scaleZ,
-                startPos.rotateX, startPos.rotateY, startPos.rotateZ
-            );
-
-            const toTransform = buildTransformString(
-                endPos.x, endPos.y, endPos.z,
-                endPos.scaleX, endPos.scaleY, endPos.scaleZ,
-                endPos.rotateX, endPos.rotateY, endPos.rotateZ
-            );
-
-            // Generate keyframes using cached easing (preserves bounce/elastic during resize)
-            // For complex easings, this regenerates all 30+ keyframes with new positions
-            // For simple easings, this creates 2 keyframes (browser handles easing via timing)
-            const keyframes = generateKeyframesWithEasing(
-                fromTransform,
-                toTransform,
-                cachedEasingKeyframes,
-                'transform'
-            );
-
-            // Update keyframes in-place - animation continues seamlessly
-            // playState, currentTime, and event listeners are preserved
-            animation.effect.setKeyframes(keyframes);
         });
     }
 
@@ -1026,8 +1301,12 @@ using WAAPI.forElement at the start of your animation pipeline:
             }
 
             // Check if Elm mistakenly sent setProperties instead of handleResize
-            const tracked = activeAnimations.get(update.elementId);
-            if (tracked && tracked.size > 0) {
+            const compositeKeys = findCompositeKeysForElement(update.elementId);
+            const hasActiveAnimations = compositeKeys.some(key => {
+                const anims = activeAnimations.get(key);
+                return anims && anims.size > 0;
+            });
+            if (hasActiveAnimations) {
                 console.warn(`ElmAnimateWAAPI: setProperties called but element "${update.elementId}" has active animations. Should use handleResize instead.`);
             }
 
@@ -1037,8 +1316,11 @@ using WAAPI.forElement at the start of your animation pipeline:
                 anim.cancel();
             });
 
-            // Clean up tracking for this element
-            activeAnimations.delete(update.elementId);
+            // Clean up tracking for this element (all composite keys)
+            compositeKeys.forEach(key => {
+                activeAnimations.delete(key);
+                animationGroups.delete(key);
+            });
 
             const props = update.properties;
 

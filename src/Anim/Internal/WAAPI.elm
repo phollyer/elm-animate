@@ -2,6 +2,8 @@ module Anim.Internal.WAAPI exposing
     ( AnimBuilder
     , AnimMsg
     , AnimState
+    , EventData
+    , PropertyConfig
     , TransformOrder(..)
     , allComplete
     , animate
@@ -331,6 +333,30 @@ Handles both property updates and lifecycle events internally.
 type AnimMsg
     = PropertyUpdate Decode.Value
     | AnimEvent Decode.Value
+
+
+{-| Data returned from animation events.
+Used by the public WAAPI module to construct AnimEvent values.
+-}
+type alias EventData =
+    { elementId : String
+    , animGroup : String
+    , status : String
+    , duration : Int
+    , progress : Float
+    , properties : List PropertyConfig
+    }
+
+
+{-| Configuration for a single animated property.
+-}
+type alias PropertyConfig =
+    { property : String
+    , from : String
+    , to : String
+    , duration : Int
+    , easing : String
+    }
 
 
 type AnimState msg
@@ -836,7 +862,7 @@ updateStatus jsonValue (AnimState state) =
 
         Err _ ->
             -- Fallback to old propertyUpdate decoder for backward compatibility
-            updatePropertyUpdate jsonValue (AnimState state)
+            Tuple.first (updatePropertyUpdate jsonValue (AnimState state))
 
 
 {-| Decode a WAAPI event from JavaScript and update AnimState.
@@ -851,7 +877,7 @@ decodeEvent jsonValue animState =
     case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue of
         Ok "propertyUpdate" ->
             -- Property updates: apply to state, no event
-            ( updatePropertyUpdate jsonValue animState, Nothing )
+            ( Tuple.first (updatePropertyUpdate jsonValue animState), Nothing )
 
         Ok "animationUpdate" ->
             -- Animation lifecycle: apply to state, return status string and elementId
@@ -876,51 +902,93 @@ decodeEvent jsonValue animState =
 
 
 {-| Decode just the animation event from JavaScript (without state updates).
-Returns the elementId and status string if this is an animation lifecycle event.
+Returns EventData if this is an animation lifecycle event.
 Returns Nothing for property updates or unknown event types.
 -}
-decodeAnimationEvent : Decode.Value -> Maybe ( String, String )
+decodeAnimationEvent : Decode.Value -> Maybe EventData
 decodeAnimationEvent jsonValue =
     case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue of
         Ok "animationUpdate" ->
-            Decode.decodeValue
-                (Decode.map2 Tuple.pair
-                    (Decode.at [ "payload", "elementId" ] Decode.string)
-                    (Decode.at [ "payload", "status" ] Decode.string)
-                )
-                jsonValue
+            Decode.decodeValue eventDataDecoder jsonValue
                 |> Result.toMaybe
 
         _ ->
             Nothing
 
 
+{-| Decoder for EventData from lifecycle events.
+-}
+eventDataDecoder : Decode.Decoder EventData
+eventDataDecoder =
+    Decode.map6 EventData
+        (Decode.at [ "payload", "elementId" ] Decode.string)
+        (Decode.at [ "payload", "animGroup" ] Decode.string)
+        (Decode.at [ "payload", "status" ] Decode.string)
+        (Decode.at [ "payload", "duration" ] Decode.int)
+        (Decode.at [ "payload", "progress" ] Decode.float)
+        (Decode.at [ "payload", "properties" ] (Decode.list propertyConfigDecoder))
+
+
+{-| Decoder for PropertyConfig.
+-}
+propertyConfigDecoder : Decode.Decoder PropertyConfig
+propertyConfigDecoder =
+    Decode.map5 PropertyConfig
+        (Decode.field "property" Decode.string)
+        (Decode.field "from" Decode.string)
+        (Decode.field "to" Decode.string)
+        (Decode.field "duration" Decode.int)
+        (Decode.field "easing" Decode.string)
+
+
 {-| TEA-style update function for WAAPI messages.
 
 Handles both property updates and lifecycle events, returning the updated state
-and an optional animation event (elementId, status) for side effects.
+and an EventData for side effects. Property updates return status "changed" with
+progress; lifecycle events include full property configurations.
 
 -}
-update : AnimMsg -> AnimState msg -> ( AnimState msg, Maybe ( String, String ) )
+update : AnimMsg -> AnimState msg -> ( AnimState msg, EventData )
 update msg animState =
     case msg of
         PropertyUpdate jsonValue ->
-            ( updatePropertyUpdate jsonValue animState, Nothing )
+            let
+                ( newState, propertyResult ) =
+                    updatePropertyUpdate jsonValue animState
+            in
+            ( newState
+            , { elementId = propertyResult.elementId
+              , animGroup = propertyResult.animGroup
+              , status = "changed"
+              , duration = 0
+              , progress = propertyResult.progress
+              , properties = []
+              }
+            )
 
         AnimEvent jsonValue ->
             case decodeAnimationEvent jsonValue of
-                Just ( elementId, status ) ->
-                    ( handleEventInternal elementId status animState
-                    , Just ( elementId, status )
+                Just eventData ->
+                    ( handleEventInternal eventData.elementId eventData.status animState
+                    , eventData
                     )
 
                 Nothing ->
-                    ( animState, Nothing )
+                    ( animState
+                    , { elementId = ""
+                      , animGroup = ""
+                      , status = "unknown"
+                      , duration = 0
+                      , progress = 0
+                      , properties = []
+                      }
+                    )
 
 
 {-| Handle full property updates from JavaScript.
+Returns the updated state and property result (elementId, animGroup, progress).
 -}
-updatePropertyUpdate : Decode.Value -> AnimState msg -> AnimState msg
+updatePropertyUpdate : Decode.Value -> AnimState msg -> ( AnimState msg, { elementId : String, animGroup : String, progress : Float } )
 updatePropertyUpdate jsonValue (AnimState state) =
     case Decode.decodeValue animationUpdateDecoder jsonValue of
         Ok animationUpdate ->
@@ -949,16 +1017,20 @@ updatePropertyUpdate jsonValue (AnimState state) =
                                     |> List.any (\prop -> prop.status == Running)
                             )
             in
-            AnimState
+            ( AnimState
                 { state
                     | elementAnimations = updatedAnimations
                     , isRunning = hasRunningAnimations
                 }
+            , { elementId = animationUpdate.elementId
+              , animGroup = animationUpdate.animGroup
+              , progress = animationUpdate.progress
+              }
+            )
 
         Err _ ->
             -- Silently ignore decode errors
-            -- TODO: Consider logging, or making it available via a callback
-            AnimState state
+            ( AnimState state, { elementId = "", animGroup = "", progress = 0 } )
 
 
 updateElementAnimation : AnimationUpdate -> ElementAnimation -> ElementAnimation
@@ -1048,7 +1120,13 @@ handleEventInternal elementId status (AnimState state) =
                 "completed" ->
                     Complete
 
-                "Cancelled" ->
+                "cancelled" ->
+                    Complete
+
+                "stopped" ->
+                    Complete
+
+                "reset" ->
                     Complete
 
                 "restarted" ->
@@ -1876,6 +1954,8 @@ statusUpdateDecoder =
 
 type alias AnimationUpdate =
     { elementId : String
+    , animGroup : String
+    , progress : Float
     , translateX : Float
     , translateY : Float
     , translateZ : Float
@@ -1899,6 +1979,8 @@ animationUpdateDecoder : Decoder AnimationUpdate
 animationUpdateDecoder =
     Decode.succeed AnimationUpdate
         |> andMap (Decode.field "elementId" Decode.string)
+        |> andMap (Decode.oneOf [ Decode.field "animGroup" Decode.string, Decode.field "elementId" Decode.string ])
+        |> andMap (Decode.oneOf [ Decode.field "progress" Decode.float, Decode.succeed 0 ])
         |> andMap (Decode.at [ "translate", "x" ] Decode.float)
         |> andMap (Decode.at [ "translate", "y" ] Decode.float)
         |> andMap (Decode.at [ "translate", "z" ] Decode.float)
@@ -1997,7 +2079,7 @@ encode data =
                                 config.targetElement
                                     |> Maybe.withDefault (getElementIdForJs compositeKey)
                         in
-                        ( jsElementId, encodeProcessedElementConfig config )
+                        ( jsElementId, encodeProcessedElementConfig compositeKey config )
                     )
     in
     Encode.object
@@ -2023,7 +2105,7 @@ encodeWithOrder order data =
                                     |> Maybe.withDefault (getElementIdForJs compositeKey)
                         in
                         ( jsElementId
-                        , encodeProcessedElementConfigWithOrder config order
+                        , encodeProcessedElementConfigWithOrder compositeKey config order
                         )
                     )
     in
@@ -2067,39 +2149,47 @@ encodeCommandWithProperties commandType elementId maybeProperties =
 
 
 encodeProcessedElementConfigWithVersions : Dict ElementId ElementAnimation -> String -> Builder.ProcessedElementConfig -> Encode.Value
-encodeProcessedElementConfigWithVersions elementAnimations elementId config =
+encodeProcessedElementConfigWithVersions elementAnimations compositeKey config =
     let
         elementProps =
-            Dict.get elementId elementAnimations
+            Dict.get compositeKey elementAnimations
                 |> Maybe.map .properties
                 |> Maybe.withDefault Dict.empty
 
         hasExplicitTarget =
             config.targetElement /= Nothing
+
+        animGroup =
+            Builder.extractGroupName compositeKey
     in
     Encode.object
         [ ( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties )
         , ( "hasExplicitTarget", Encode.bool hasExplicitTarget )
+        , ( "animGroup", Encode.string animGroup )
         ]
 
 
 {-| Encode element config with versions and custom transform order.
 -}
 encodeProcessedElementConfigWithVersionsAndOrder : Dict ElementId ElementAnimation -> String -> Builder.ProcessedElementConfig -> List TransformOrder -> Encode.Value
-encodeProcessedElementConfigWithVersionsAndOrder elementAnimations elementId config transformOrder =
+encodeProcessedElementConfigWithVersionsAndOrder elementAnimations compositeKey config transformOrder =
     let
         elementProps =
-            Dict.get elementId elementAnimations
+            Dict.get compositeKey elementAnimations
                 |> Maybe.map .properties
                 |> Maybe.withDefault Dict.empty
 
         hasExplicitTarget =
             config.targetElement /= Nothing
+
+        animGroup =
+            Builder.extractGroupName compositeKey
     in
     Encode.object
         [ ( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties )
         , ( "transformOrder", encodeTransformOrder transformOrder )
         , ( "hasExplicitTarget", Encode.bool hasExplicitTarget )
+        , ( "animGroup", Encode.string animGroup )
         ]
 
 
@@ -2122,21 +2212,31 @@ encodeTransformOrder order =
         order
 
 
-encodeProcessedElementConfig : Builder.ProcessedElementConfig -> Encode.Value
-encodeProcessedElementConfig config =
+encodeProcessedElementConfig : String -> Builder.ProcessedElementConfig -> Encode.Value
+encodeProcessedElementConfig compositeKey config =
+    let
+        animGroup =
+            Builder.extractGroupName compositeKey
+    in
     Encode.object
         [ ( "properties", Encode.list encodeProcessedPropertyConfig config.properties )
+        , ( "animGroup", Encode.string animGroup )
         ]
 
 
 {-| Encode element config with custom transform order.
 Used by encodeWithOrder for fire-and-forget animations.
 -}
-encodeProcessedElementConfigWithOrder : Builder.ProcessedElementConfig -> List TransformOrder -> Encode.Value
-encodeProcessedElementConfigWithOrder config transformOrder =
+encodeProcessedElementConfigWithOrder : String -> Builder.ProcessedElementConfig -> List TransformOrder -> Encode.Value
+encodeProcessedElementConfigWithOrder compositeKey config transformOrder =
+    let
+        animGroup =
+            Builder.extractGroupName compositeKey
+    in
     Encode.object
         [ ( "properties", Encode.list encodeProcessedPropertyConfig config.properties )
         , ( "transformOrder", encodeTransformOrder transformOrder )
+        , ( "animGroup", Encode.string animGroup )
         ]
 
 
