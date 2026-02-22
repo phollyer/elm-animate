@@ -18,6 +18,7 @@ module Anim.Engine.CSS.Keyframes exposing
     , getStartScale, getEndScale, getCurrentScale
     , getStartSize, getEndSize, getCurrentSize
     , getStartTranslate, getEndTranslate, getCurrentTranslate
+    , pauseCmd, restartCmd, resumeCmd
     )
 
 {-| CSS Keyframe Animations engine for complex, multi-step animations.
@@ -171,6 +172,7 @@ import Anim.Internal.Properties.Size as Size
 import Anim.Internal.Properties.Translate as Translate
 import Html
 import Html.Attributes
+import Task
 
 
 
@@ -231,6 +233,9 @@ type InternalAnimMsg
     | InternalEnded String
     | InternalCancelled String
     | InternalIteration String
+    | InternalPaused String
+    | InternalResumed String
+    | InternalRestarted String
 
 
 {-| CSS keyframe animation lifecycle events.
@@ -257,6 +262,9 @@ type AnimEvent
     | Ended String
     | Cancelled String
     | Iteration String
+    | Paused String
+    | Resumed String
+    | Restarted String
 
 
 
@@ -556,6 +564,15 @@ update (AnimMsg animMsg) animState =
             , Iteration elementId
             )
 
+        InternalPaused elementId ->
+            ( animState, Paused elementId )
+
+        InternalResumed elementId ->
+            ( animState, Resumed elementId )
+
+        InternalRestarted elementId ->
+            ( animState, Restarted elementId )
+
 
 {-| Event handler for when a CSS animation starts.
 -}
@@ -619,6 +636,23 @@ restart =
     InternalCSS.restartAnimation
 
 
+{-| Restart an animation and receive a `Restarted` event through `update`.
+
+    let
+        ( newState, cmd ) =
+            Keyframes.restartCmd "elementId" GotAnimMsg model.animState
+    in
+    ( { model | animState = newState }, cmd )
+
+-}
+restartCmd : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+restartCmd elementId toMsg animState =
+    ( InternalCSS.restartAnimation elementId animState
+    , Task.succeed (toMsg (AnimMsg (InternalRestarted elementId)))
+        |> Task.perform identity
+    )
+
+
 {-| Pause a running animation.
 
     Keyframes.pause "elementId" model.animState
@@ -629,6 +663,23 @@ pause =
     InternalCSS.pauseAnimation
 
 
+{-| Pause an animation and receive a `Paused` event through `update`.
+
+    let
+        ( newState, cmd ) =
+            Keyframes.pauseCmd "elementId" GotAnimMsg model.animState
+    in
+    ( { model | animState = newState }, cmd )
+
+-}
+pauseCmd : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+pauseCmd elementId toMsg animState =
+    ( InternalCSS.pauseAnimation elementId animState
+    , Task.succeed (toMsg (AnimMsg (InternalPaused elementId)))
+        |> Task.perform identity
+    )
+
+
 {-| Resume a paused animation.
 
     Keyframes.resume "elementId" model.animState
@@ -637,6 +688,23 @@ pause =
 resume : String -> AnimState -> AnimState
 resume =
     InternalCSS.resumeAnimation
+
+
+{-| Resume an animation and receive a `Resumed` event through `update`.
+
+    let
+        ( newState, cmd ) =
+            Keyframes.resumeCmd "elementId" GotAnimMsg model.animState
+    in
+    ( { model | animState = newState }, cmd )
+
+-}
+resumeCmd : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+resumeCmd elementId toMsg animState =
+    ( InternalCSS.resumeAnimation elementId animState
+    , Task.succeed (toMsg (AnimMsg (InternalResumed elementId)))
+        |> Task.perform identity
+    )
 
 
 

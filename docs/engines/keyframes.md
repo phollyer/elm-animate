@@ -78,6 +78,37 @@ The Keyframes engine has a unique `Iteration` event that fires after each loop c
 | `Iteration` | Each cycle completes (useful for tracking loop count) |
 | `Cancelled` | The browser aborts the animation |
 
+
+## Events
+
+CSS animations don't fire DOM events for pause/resume/restart. To receive these events through `update`, use the `*Cmd` variants:
+
+| Control | Event Function | Event Produced |
+| ------- | -------------- | -------------- |
+| `pause` | `pauseCmd` | `Paused` |
+| `resume` | `resumeCmd` | `Resumed` |
+| `restart` | `restartCmd` | `Restarted` |
+
+??? example "View Source Code"
+
+    ```elm
+    -- Simple pause (no event)
+    Pause ->
+        ( { model | animState = Keyframes.pause "box" model.animState }
+        , Cmd.none
+        )
+
+    -- Pause with event
+    Pause ->
+        let
+            ( newState, cmd ) =
+                Keyframes.pauseCmd "box" GotAnimMsg model.animState
+        in
+        ( { model | animState = newState }, cmd )
+    ```
+
+The Cmd routes back through your `update`, which returns the corresponding event for your `reactToEvent` function.
+
 ## Shared Features
 
 The following features work the same across all engines. See [Engine Overview](overview.md) for detailed examples with tabbed code for each engine:
@@ -150,8 +181,11 @@ The following features work the same across all engines. See [Engine Overview](o
 | `stop` | `String -> AnimState -> AnimState` | Jump to end state and stop |
 | `reset` | `String -> AnimState -> AnimState` | Jump to start state and stop |
 | `restart` | `String -> AnimState -> AnimState` | Reset and begin playing again |
+| `restartCmd` | `String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Restart and receive `Restarted` event |
 | `pause` | `String -> AnimState -> AnimState` | Freeze at current position |
+| `pauseCmd` | `String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Pause and receive `Paused` event |
 | `resume` | `String -> AnimState -> AnimState` | Continue from paused position |
+| `resumeCmd` | `String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Resume and receive `Resumed` event |
 
 ### State Query Functions
 
