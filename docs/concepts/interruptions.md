@@ -10,15 +10,22 @@ When an animation is already running and you trigger a new one, the behavior dep
 
 Transitions redirect smoothly regardless of trigger type (`animate` or `fireAndForget`). The browser's CSS engine handles the interpolation — it always animates from the current computed value to the new target. No Elm-side tracking required.
 
-### Sub and WAAPI: Requires `animate`
+!!! note "The `from` value doesn't affect interruption"
+    Even if you specify a `from` value, Transitions will always start from the browser's current computed value. The `from` value is only used for speed calculations (when using `speed` instead of `duration`) and for state queries like `getStartOpacity`.
 
-For **Sub** and **WAAPI**, smooth redirection requires using `animate` so the engine can track the current position. When you trigger a new animation:
+### Sub and WAAPI: State-Tracked
+
+**Sub** always tracks animation state — it's designed around subscriptions and has no fire-and-forget mode. When you trigger a new animation, the engine reads the current value and uses it as the starting point.
+
+**WAAPI** supports both modes. For smooth redirection, use `animate` so the engine can track the current position. With `fireAndForget`, the state resets — so mid-flight triggers will jump to the start value.
+
+For both engines, if you provide a `from` value, that will be used as the starting point instead of the tracked current value.
+
+When you trigger a new animation with state tracking:
 
 1. The engine reads the current animated value from state
 2. Uses that as the starting point for the new animation
 3. Begins animating toward the new target
-
-With `fireAndForget`, the state resets — so mid-flight triggers will jump to the start value.
 
 ```elm
 -- User clicks while fade-in is at 50% opacity
@@ -94,6 +101,6 @@ With proper interruption support, animations feel directly connected to user act
 
 ## Next Steps
 
-Learn about animating in 3D!!
+Now that you can interrupt animations mid-flight, learn all about their lifecycle events, and how to react to them.
 
-[3D Animations →](3d.md){ .md-button .md-button--primary }
+[Events →](events.md){ .md-button .md-button--primary }

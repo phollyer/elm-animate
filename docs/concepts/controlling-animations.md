@@ -203,6 +203,13 @@ Try the control functions in action:
 
 ## Next Steps
 
-Now that you understand how to control animations, let's learn how to react to their lifecycle events.
+Now that you understand how to control animations, let's learn how to interrupt them mid-flight.
 
-[Events →](events.md){ .md-button .md-button--primary }
+[Interrupting Animations →](interruptions.md){ .md-button .md-button--primary }
+
+Or
+
+Learn about controlling scrolls.
+
+[Controlling Scrolls →](controlling-scroll.md){ .md-button .md-button--primary }
+

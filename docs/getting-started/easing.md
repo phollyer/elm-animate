@@ -216,8 +216,8 @@ The four parameters (`x1 y1 x2 y2`) define the curve's control points. Use tools
 
 ## Next Steps
 
-Learn about interrupting animations mid-flight.
+A closer look at the Animation Workflow.
 
-[Interrupting Animations →](interruptiond.md){ .md-button .md-button--primary }
+[Animation Workflow →](../animation-workflow/build.md){ .md-button .md-button--primary }
 
 

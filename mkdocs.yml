@@ -77,7 +77,7 @@ nav:
     - 3. Apply: animation-workflow/apply.md
   - Concepts:
     - Controlling Animations: concepts/controlling-animations.md
-    - Controlling Scroll: concepts/controlling-animations/scroll.md
+    - Controlling Scroll: concepts/controlling-scroll.md
     - Interrupting Animations: concepts/interruptions.md
     - Events: concepts/events.md
     - 3D Animations: concepts/3d.md
