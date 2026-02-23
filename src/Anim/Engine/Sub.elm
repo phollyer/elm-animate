@@ -7,6 +7,7 @@ module Anim.Engine.Sub exposing
     , duration, speed
     , easing
     , delay
+    , iterations, loopForever
     , anyRunning, isRunning, allComplete, isComplete
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
     , getStartOpacity, getEndOpacity, getCurrentOpacity
@@ -98,6 +99,11 @@ These settings will be used for all animations unless overridden on a per-proper
 @docs delay
 
 
+## Iterations
+
+@docs iterations, loopForever
+
+
 # Querying Animation State
 
 @docs anyRunning, isRunning, allComplete, isComplete
@@ -143,6 +149,7 @@ during animation playback.
 
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
+import Anim.Internal.Builder as Builder
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Rotate as Rotate
@@ -315,6 +322,36 @@ delay =
     InternalSub.delay
 
 
+{-| Set the animation to repeat a specific number of times.
+
+    Sub.animate model.animState <|
+        (Sub.iterations 3
+            >> ... -- Animation will play 3 times
+        )
+
+The `Iteration` event is emitted after each iteration completes (except the final one).
+
+-}
+iterations : Int -> AnimBuilder -> AnimBuilder
+iterations =
+    Builder.iterations
+
+
+{-| Set the animation to loop forever.
+
+    Sub.animate model.animState <|
+        (Sub.loopForever
+            >> ... -- Animation will loop continuously
+        )
+
+The `Iteration` event is emitted after each iteration completes.
+
+-}
+loopForever : AnimBuilder -> AnimBuilder
+loopForever =
+    Builder.loopForever
+
+
 
 -- UPDATE
 
@@ -342,6 +379,7 @@ Emitted by `update` when animation state changes:
   - **Paused**: Animation was paused
   - **Resumed**: Animation was resumed
   - **Restarted**: Animation was restarted
+  - **Iteration**: Animation completed an iteration (includes iteration number)
 
 The `String` is the element ID affected.
 
@@ -353,6 +391,7 @@ type AnimEvent
     | Paused String
     | Resumed String
     | Restarted String
+    | Iteration String Int
 
 
 {-| Update animation state and check for animation events.
@@ -404,6 +443,9 @@ toAnimEvent event =
 
         InternalSub.Restarted elementId ->
             Just (Restarted elementId)
+
+        InternalSub.Iteration elementId iterationNumber ->
+            Just (Iteration elementId iterationNumber)
 
 
 

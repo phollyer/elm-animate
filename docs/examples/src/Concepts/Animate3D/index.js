@@ -7973,6 +7973,10 @@ var $author$project$Anim$Internal$Builder$getCurrentElementConfig = function (_v
 				A2($elm$core$Dict$get, elementId, data.elements)));
 	}
 };
+var $author$project$Anim$Internal$Builder$makeCompositeKey = F2(
+	function (elementId, groupName) {
+		return elementId + (':' + groupName);
+	});
 var $elm$core$List$member = F2(
 	function (x, xs) {
 		return A2(
@@ -8009,7 +8013,15 @@ var $author$project$Anim$Internal$Builder$updateCurrentElement = F2(
 		} else {
 			var animKey = _v1.a;
 			var newPropertyTypes = A2($elm$core$List$map, $author$project$Anim$Internal$Builder$propertyType, config.properties);
-			var effectiveKey = A2($elm$core$Maybe$withDefault, animKey, data.waapiTargetElement);
+			var effectiveKey = function () {
+				var _v3 = data.waapiTargetElement;
+				if (_v3.$ === 'Just') {
+					var elementId = _v3.a;
+					return A2($author$project$Anim$Internal$Builder$makeCompositeKey, elementId, animKey);
+				} else {
+					return animKey;
+				}
+			}();
 			var mergedConfig = function () {
 				var _v2 = A2($elm$core$Dict$get, effectiveKey, data.elements);
 				if (_v2.$ === 'Just') {
@@ -8979,89 +8991,6 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Concepts$Animate3D$Main$Closing = {$: 'Closing'};
 var $author$project$Concepts$Animate3D$Main$RotatingClosed = {$: 'RotatingClosed'};
 var $author$project$Concepts$Animate3D$Main$RotatingOpen = {$: 'RotatingOpen'};
-var $author$project$Anim$Internal$CSS$AnimationCancelled = function (a) {
-	return {$: 'AnimationCancelled', a: a};
-};
-var $author$project$Anim$Internal$CSS$AnimationEnded = function (a) {
-	return {$: 'AnimationEnded', a: a};
-};
-var $author$project$Anim$Internal$CSS$AnimationIteration = function (a) {
-	return {$: 'AnimationIteration', a: a};
-};
-var $author$project$Anim$Internal$CSS$AnimationStarted = function (a) {
-	return {$: 'AnimationStarted', a: a};
-};
-var $author$project$Anim$Internal$CSS$Complete = {$: 'Complete'};
-var $author$project$Anim$Internal$CSS$Running = {$: 'Running'};
-var $author$project$Anim$Internal$CSS$handleEvent = F2(
-	function (event, _v0) {
-		var state = _v0.a;
-		var _v1 = function () {
-			switch (event.$) {
-				case 'AnimationStarted':
-					var id = event.a;
-					return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$Running);
-				case 'AnimationEnded':
-					var id = event.a;
-					return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$Complete);
-				case 'AnimationCancelled':
-					var id = event.a;
-					return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$Complete);
-				case 'AnimationIteration':
-					var id = event.a;
-					return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$Running);
-				case 'TransitionStarted':
-					var id = event.a;
-					return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$Running);
-				case 'TransitionEnded':
-					var id = event.a;
-					return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$Complete);
-				case 'TransitionRun':
-					var id = event.a;
-					return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$Running);
-				default:
-					var id = event.a;
-					return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$Complete);
-			}
-		}();
-		var elementId = _v1.a;
-		var newElementState = _v1.b;
-		return $author$project$Anim$Internal$CSS$AnimState(
-			_Utils_update(
-				state,
-				{
-					elementStates: A3($elm$core$Dict$insert, elementId, newElementState, state.elementStates)
-				}));
-	});
-var $author$project$Anim$Engine$CSS$Keyframes$handleEvent = F2(
-	function (event, animState) {
-		switch (event.$) {
-			case 'Started':
-				var elementId = event.a;
-				return A2(
-					$author$project$Anim$Internal$CSS$handleEvent,
-					$author$project$Anim$Internal$CSS$AnimationStarted(elementId),
-					animState);
-			case 'Ended':
-				var elementId = event.a;
-				return A2(
-					$author$project$Anim$Internal$CSS$handleEvent,
-					$author$project$Anim$Internal$CSS$AnimationEnded(elementId),
-					animState);
-			case 'Cancelled':
-				var elementId = event.a;
-				return A2(
-					$author$project$Anim$Internal$CSS$handleEvent,
-					$author$project$Anim$Internal$CSS$AnimationCancelled(elementId),
-					animState);
-			default:
-				var elementId = event.a;
-				return A2(
-					$author$project$Anim$Internal$CSS$handleEvent,
-					$author$project$Anim$Internal$CSS$AnimationIteration(elementId),
-					animState);
-		}
-	});
 var $author$project$Concepts$Animate3D$Main$moveBackFaceIn = A2(
 	$author$project$Concepts$Animate3D$Main$moveFace,
 	'back-face',
@@ -9152,22 +9081,151 @@ var $author$project$Concepts$Animate3D$Main$selectAnimation = function (state) {
 			return $author$project$Concepts$Animate3D$Main$rotateCubeAntiClockwise;
 	}
 };
+var $author$project$Anim$Internal$CSS$AnimationCancelled = function (a) {
+	return {$: 'AnimationCancelled', a: a};
+};
+var $author$project$Anim$Internal$CSS$AnimationEnded = function (a) {
+	return {$: 'AnimationEnded', a: a};
+};
+var $author$project$Anim$Internal$CSS$AnimationIteration = function (a) {
+	return {$: 'AnimationIteration', a: a};
+};
+var $author$project$Anim$Internal$CSS$AnimationStarted = function (a) {
+	return {$: 'AnimationStarted', a: a};
+};
+var $author$project$Anim$Engine$CSS$Keyframes$Cancelled = function (a) {
+	return {$: 'Cancelled', a: a};
+};
+var $author$project$Anim$Engine$CSS$Keyframes$Ended = function (a) {
+	return {$: 'Ended', a: a};
+};
+var $author$project$Anim$Engine$CSS$Keyframes$Iteration = function (a) {
+	return {$: 'Iteration', a: a};
+};
+var $author$project$Anim$Engine$CSS$Keyframes$Paused = function (a) {
+	return {$: 'Paused', a: a};
+};
+var $author$project$Anim$Engine$CSS$Keyframes$Restarted = function (a) {
+	return {$: 'Restarted', a: a};
+};
+var $author$project$Anim$Engine$CSS$Keyframes$Resumed = function (a) {
+	return {$: 'Resumed', a: a};
+};
+var $author$project$Anim$Engine$CSS$Keyframes$Started = function (a) {
+	return {$: 'Started', a: a};
+};
+var $author$project$Anim$Internal$CSS$Complete = {$: 'Complete'};
+var $author$project$Anim$Internal$CSS$Running = {$: 'Running'};
+var $author$project$Anim$Internal$CSS$handleEvent = F2(
+	function (event, _v0) {
+		var state = _v0.a;
+		var _v1 = function () {
+			switch (event.$) {
+				case 'AnimationStarted':
+					var id = event.a;
+					return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$Running);
+				case 'AnimationEnded':
+					var id = event.a;
+					return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$Complete);
+				case 'AnimationCancelled':
+					var id = event.a;
+					return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$Complete);
+				case 'AnimationIteration':
+					var id = event.a;
+					return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$Running);
+				case 'TransitionStarted':
+					var id = event.a;
+					return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$Running);
+				case 'TransitionEnded':
+					var id = event.a;
+					return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$Complete);
+				case 'TransitionRun':
+					var id = event.a;
+					return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$Running);
+				default:
+					var id = event.a;
+					return _Utils_Tuple2(id, $author$project$Anim$Internal$CSS$Complete);
+			}
+		}();
+		var elementId = _v1.a;
+		var newElementState = _v1.b;
+		return $author$project$Anim$Internal$CSS$AnimState(
+			_Utils_update(
+				state,
+				{
+					elementStates: A3($elm$core$Dict$insert, elementId, newElementState, state.elementStates)
+				}));
+	});
+var $author$project$Anim$Engine$CSS$Keyframes$update = F2(
+	function (_v0, animState) {
+		var animMsg = _v0.a;
+		switch (animMsg.$) {
+			case 'InternalStarted':
+				var elementId = animMsg.a;
+				return _Utils_Tuple2(
+					A2(
+						$author$project$Anim$Internal$CSS$handleEvent,
+						$author$project$Anim$Internal$CSS$AnimationStarted(elementId),
+						animState),
+					$author$project$Anim$Engine$CSS$Keyframes$Started(elementId));
+			case 'InternalEnded':
+				var elementId = animMsg.a;
+				return _Utils_Tuple2(
+					A2(
+						$author$project$Anim$Internal$CSS$handleEvent,
+						$author$project$Anim$Internal$CSS$AnimationEnded(elementId),
+						animState),
+					$author$project$Anim$Engine$CSS$Keyframes$Ended(elementId));
+			case 'InternalCancelled':
+				var elementId = animMsg.a;
+				return _Utils_Tuple2(
+					A2(
+						$author$project$Anim$Internal$CSS$handleEvent,
+						$author$project$Anim$Internal$CSS$AnimationCancelled(elementId),
+						animState),
+					$author$project$Anim$Engine$CSS$Keyframes$Cancelled(elementId));
+			case 'InternalIteration':
+				var elementId = animMsg.a;
+				return _Utils_Tuple2(
+					A2(
+						$author$project$Anim$Internal$CSS$handleEvent,
+						$author$project$Anim$Internal$CSS$AnimationIteration(elementId),
+						animState),
+					$author$project$Anim$Engine$CSS$Keyframes$Iteration(elementId));
+			case 'InternalPaused':
+				var elementId = animMsg.a;
+				return _Utils_Tuple2(
+					animState,
+					$author$project$Anim$Engine$CSS$Keyframes$Paused(elementId));
+			case 'InternalResumed':
+				var elementId = animMsg.a;
+				return _Utils_Tuple2(
+					animState,
+					$author$project$Anim$Engine$CSS$Keyframes$Resumed(elementId));
+			default:
+				var elementId = animMsg.a;
+				return _Utils_Tuple2(
+					animState,
+					$author$project$Anim$Engine$CSS$Keyframes$Restarted(elementId));
+		}
+	});
 var $author$project$Concepts$Animate3D$Main$update = F2(
 	function (msg, model) {
-		var event = msg.a;
+		var animMsg = msg.a;
+		var _v1 = A2($author$project$Anim$Engine$CSS$Keyframes$update, animMsg, model.animState);
+		var newAnimState = _v1.a;
+		var event = _v1.b;
 		var newModel = _Utils_update(
 			model,
-			{
-				animState: A2($author$project$Anim$Engine$CSS$Keyframes$handleEvent, event, model.animState)
-			});
-		_v1$2:
+			{animState: newAnimState});
+		_v2$2:
 		while (true) {
 			if (event.$ === 'Ended') {
 				switch (event.a) {
 					case 'cube':
 						var newState = function () {
-							var _v2 = newModel.state;
-							switch (_v2.$) {
+							var _v3 = newModel.state;
+							switch (_v3.$) {
 								case 'RotatingOpen':
 									return $author$project$Concepts$Animate3D$Main$Closing;
 								case 'RotatingClosed':
@@ -9189,8 +9247,8 @@ var $author$project$Concepts$Animate3D$Main$update = F2(
 							$elm$core$Platform$Cmd$none);
 					case 'front-face':
 						var newState = function () {
-							var _v3 = newModel.state;
-							switch (_v3.$) {
+							var _v4 = newModel.state;
+							switch (_v4.$) {
 								case 'Opening':
 									return $author$project$Concepts$Animate3D$Main$RotatingOpen;
 								case 'Closing':
@@ -9211,10 +9269,10 @@ var $author$project$Concepts$Animate3D$Main$update = F2(
 								}),
 							$elm$core$Platform$Cmd$none);
 					default:
-						break _v1$2;
+						break _v2$2;
 				}
 			} else {
-				break _v1$2;
+				break _v2$2;
 			}
 		}
 		return _Utils_Tuple2(newModel, $elm$core$Platform$Cmd$none);
@@ -15249,8 +15307,8 @@ var $author$project$Anim$Internal$CSS$keyframesStyleNode = function (_v0) {
 };
 var $author$project$Anim$Engine$CSS$Keyframes$styleNode = $author$project$Anim$Internal$CSS$keyframesStyleNode;
 var $author$project$Anim$Extra$View3D$Center = {$: 'Center'};
-var $author$project$Concepts$Animate3D$Main$GotKeyframeEvent = function (a) {
-	return {$: 'GotKeyframeEvent', a: a};
+var $author$project$Concepts$Animate3D$Main$GotKeyframeMsg = function (a) {
+	return {$: 'GotKeyframeMsg', a: a};
 };
 var $author$project$Anim$Extra$View3D$Preserve3D = {$: 'Preserve3D'};
 var $author$project$Anim$Internal$CSS$getElementAnimation = F2(
@@ -15322,17 +15380,20 @@ var $author$project$Concepts$Animate3D$Main$bottomFace = {
 	id: 'bottom-face',
 	label: 'BOTTOM'
 };
-var $author$project$Anim$Engine$CSS$Keyframes$Cancelled = function (a) {
-	return {$: 'Cancelled', a: a};
+var $author$project$Anim$Engine$CSS$Keyframes$AnimMsg = function (a) {
+	return {$: 'AnimMsg', a: a};
 };
-var $author$project$Anim$Engine$CSS$Keyframes$Ended = function (a) {
-	return {$: 'Ended', a: a};
+var $author$project$Anim$Engine$CSS$Keyframes$InternalCancelled = function (a) {
+	return {$: 'InternalCancelled', a: a};
 };
-var $author$project$Anim$Engine$CSS$Keyframes$Iteration = function (a) {
-	return {$: 'Iteration', a: a};
+var $author$project$Anim$Engine$CSS$Keyframes$InternalEnded = function (a) {
+	return {$: 'InternalEnded', a: a};
 };
-var $author$project$Anim$Engine$CSS$Keyframes$Started = function (a) {
-	return {$: 'Started', a: a};
+var $author$project$Anim$Engine$CSS$Keyframes$InternalIteration = function (a) {
+	return {$: 'InternalIteration', a: a};
+};
+var $author$project$Anim$Engine$CSS$Keyframes$InternalStarted = function (a) {
+	return {$: 'InternalStarted', a: a};
 };
 var $elm$virtual_dom$VirtualDom$mapAttribute = _VirtualDom_mapAttribute;
 var $elm$html$Html$Attributes$map = $elm$virtual_dom$VirtualDom$mapAttribute;
@@ -15375,13 +15436,17 @@ var $author$project$Anim$Engine$CSS$Keyframes$events = F2(
 			_List_fromArray(
 				[
 					$author$project$Anim$Engine$CSS$Keyframes$onAnimationStart(
-					$author$project$Anim$Engine$CSS$Keyframes$Started(elementId)),
+					$author$project$Anim$Engine$CSS$Keyframes$AnimMsg(
+						$author$project$Anim$Engine$CSS$Keyframes$InternalStarted(elementId))),
 					$author$project$Anim$Engine$CSS$Keyframes$onAnimationEnd(
-					$author$project$Anim$Engine$CSS$Keyframes$Ended(elementId)),
+					$author$project$Anim$Engine$CSS$Keyframes$AnimMsg(
+						$author$project$Anim$Engine$CSS$Keyframes$InternalEnded(elementId))),
 					$author$project$Anim$Engine$CSS$Keyframes$onAnimationCancel(
-					$author$project$Anim$Engine$CSS$Keyframes$Cancelled(elementId)),
+					$author$project$Anim$Engine$CSS$Keyframes$AnimMsg(
+						$author$project$Anim$Engine$CSS$Keyframes$InternalCancelled(elementId))),
 					$author$project$Anim$Engine$CSS$Keyframes$onAnimationIteration(
-					$author$project$Anim$Engine$CSS$Keyframes$Iteration(elementId))
+					$author$project$Anim$Engine$CSS$Keyframes$AnimMsg(
+						$author$project$Anim$Engine$CSS$Keyframes$InternalIteration(elementId)))
 				]));
 	});
 var $author$project$Concepts$Animate3D$Main$frontFace = {
@@ -15499,7 +15564,7 @@ var $author$project$Concepts$Animate3D$Main$viewFace = F3(
 		var eventAttributes = listenForEvents ? A2(
 			$elm$core$List$map,
 			$mdgriffith$elm_ui$Element$htmlAttribute,
-			A2($author$project$Anim$Engine$CSS$Keyframes$events, config.id, $author$project$Concepts$Animate3D$Main$GotKeyframeEvent)) : _List_Nil;
+			A2($author$project$Anim$Engine$CSS$Keyframes$events, config.id, $author$project$Concepts$Animate3D$Main$GotKeyframeMsg)) : _List_Nil;
 		var baseAttributes = _List_fromArray(
 			[
 				$mdgriffith$elm_ui$Element$htmlAttribute(
@@ -15540,7 +15605,7 @@ var $author$project$Concepts$Animate3D$Main$viewCube = function (model) {
 	var cubeEvents = (_Utils_eq(model.state, $author$project$Concepts$Animate3D$Main$RotatingOpen) || _Utils_eq(model.state, $author$project$Concepts$Animate3D$Main$RotatingClosed)) ? A2(
 		$elm$core$List$map,
 		$mdgriffith$elm_ui$Element$htmlAttribute,
-		A2($author$project$Anim$Engine$CSS$Keyframes$events, 'cube', $author$project$Concepts$Animate3D$Main$GotKeyframeEvent)) : _List_Nil;
+		A2($author$project$Anim$Engine$CSS$Keyframes$events, 'cube', $author$project$Concepts$Animate3D$Main$GotKeyframeMsg)) : _List_Nil;
 	return A2(
 		$mdgriffith$elm_ui$Element$column,
 		_Utils_ap(

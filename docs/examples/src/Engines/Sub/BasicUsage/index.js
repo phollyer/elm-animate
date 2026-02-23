@@ -5595,6 +5595,10 @@ var $elm$core$Dict$insert = F3(
 			return x;
 		}
 	});
+var $author$project$Anim$Internal$Builder$makeCompositeKey = F2(
+	function (elementId, groupName) {
+		return elementId + (':' + groupName);
+	});
 var $elm$core$List$any = F2(
 	function (isOkay, list) {
 		any:
@@ -5653,7 +5657,15 @@ var $author$project$Anim$Internal$Builder$updateCurrentElement = F2(
 		} else {
 			var animKey = _v1.a;
 			var newPropertyTypes = A2($elm$core$List$map, $author$project$Anim$Internal$Builder$propertyType, config.properties);
-			var effectiveKey = A2($elm$core$Maybe$withDefault, animKey, data.waapiTargetElement);
+			var effectiveKey = function () {
+				var _v3 = data.waapiTargetElement;
+				if (_v3.$ === 'Just') {
+					var elementId = _v3.a;
+					return A2($author$project$Anim$Internal$Builder$makeCompositeKey, elementId, animKey);
+				} else {
+					return animKey;
+				}
+			}();
 			var mergedConfig = function () {
 				var _v2 = A2($elm$core$Dict$get, effectiveKey, data.elements);
 				if (_v2.$ === 'Just') {
@@ -7375,13 +7387,13 @@ var $author$project$Anim$Internal$Sub$createPropertyAnimState = F2(
 					A8(buildPropertyAnimation, 'size', actualStart, config.end, config.duration, config.delay, config.easing, $author$project$Anim$Internal$Sub$createSizeSteps, $author$project$Anim$Internal$Sub$SizeAnimation));
 		}
 	});
-var $author$project$Anim$Internal$Sub$createElementAnimState = F4(
-	function (order, startValues, _v0, elementConfig) {
+var $author$project$Anim$Internal$Sub$createElementAnimState = F5(
+	function (iterationCount, order, startValues, _v0, elementConfig) {
 		var properties = A2(
 			$elm$core$List$filterMap,
 			$author$project$Anim$Internal$Sub$createPropertyAnimState(startValues),
 			elementConfig.properties);
-		return {isComplete: false, isPaused: false, properties: properties, transformOrder: order};
+		return {currentIteration: 1, isComplete: false, isPaused: false, iterationCount: iterationCount, properties: properties, transformOrder: order};
 	});
 var $author$project$Anim$Internal$Properties$Color$fromRGBA = function (_v0) {
 	var r = _v0.r;
@@ -7897,7 +7909,7 @@ var $author$project$Anim$Internal$Builder$processAnimationData = function (_v0) 
 				return A2($author$project$Anim$Internal$Builder$processElement, data, elementConfig);
 			}),
 		data.elements);
-	return {elements: processedElements, globalDelay: data.globalDelay, globalEasing: data.globalEasing, globalTiming: data.globalTiming};
+	return {elements: processedElements, globalDelay: data.globalDelay, globalEasing: data.globalEasing, globalTiming: data.globalTiming, iterationCount: data.iterationCount};
 };
 var $author$project$Anim$Internal$Sub$propertyValuesEmpty = {color: $elm$core$Maybe$Nothing, fontColor: $elm$core$Maybe$Nothing, opacity: $elm$core$Maybe$Nothing, rotate: $elm$core$Maybe$Nothing, scale: $elm$core$Maybe$Nothing, size: $elm$core$Maybe$Nothing, translate: $elm$core$Maybe$Nothing};
 var $elm$core$Dict$values = function (dict) {
@@ -8031,7 +8043,7 @@ var $author$project$Anim$Internal$Sub$animate = F2(
 		var processedData = $author$project$Anim$Internal$Builder$processAnimationData(builder_);
 		var elementStates = A2(
 			$elm$core$Dict$map,
-			A2($author$project$Anim$Internal$Sub$createElementAnimState, $author$project$Anim$Internal$Sub$defaultTransformOrder, startValues),
+			A3($author$project$Anim$Internal$Sub$createElementAnimState, processedData.iterationCount, $author$project$Anim$Internal$Sub$defaultTransformOrder, startValues),
 			processedData.elements);
 		var startedEvents = A2(
 			$elm$core$List$map,
@@ -8309,7 +8321,7 @@ var $author$project$Anim$Internal$Sub$init = function (propertyInitializers) {
 				}),
 			A2(
 				$elm$core$Dict$map,
-				A2($author$project$Anim$Internal$Sub$createElementAnimState, $author$project$Anim$Internal$Sub$defaultTransformOrder, startValues),
+				A3($author$project$Anim$Internal$Sub$createElementAnimState, processedData.iterationCount, $author$project$Anim$Internal$Sub$defaultTransformOrder, startValues),
 				processedData.elements));
 		return $author$project$Anim$Internal$Sub$AnimState(
 			{
@@ -8516,6 +8528,10 @@ var $author$project$Anim$Engine$Sub$Cancelled = function (a) {
 var $author$project$Anim$Engine$Sub$Ended = function (a) {
 	return {$: 'Ended', a: a};
 };
+var $author$project$Anim$Engine$Sub$Iteration = F2(
+	function (a, b) {
+		return {$: 'Iteration', a: a, b: b};
+	});
 var $author$project$Anim$Engine$Sub$Paused = function (a) {
 	return {$: 'Paused', a: a};
 };
@@ -8550,31 +8566,52 @@ var $author$project$Anim$Engine$Sub$toAnimEvent = function (event) {
 			var elementId = event.a;
 			return $elm$core$Maybe$Just(
 				$author$project$Anim$Engine$Sub$Resumed(elementId));
-		default:
+		case 'Restarted':
 			var elementId = event.a;
 			return $elm$core$Maybe$Just(
 				$author$project$Anim$Engine$Sub$Restarted(elementId));
+		default:
+			var elementId = event.a;
+			var iterationNumber = event.b;
+			return $elm$core$Maybe$Just(
+				A2($author$project$Anim$Engine$Sub$Iteration, elementId, iterationNumber));
 	}
+};
+var $elm$core$Dict$fromList = function (assocs) {
+	return A3(
+		$elm$core$List$foldl,
+		F2(
+			function (_v0, dict) {
+				var key = _v0.a;
+				var value = _v0.b;
+				return A3($elm$core$Dict$insert, key, value, dict);
+			}),
+		$elm$core$Dict$empty,
+		assocs);
+};
+var $elm$core$List$unzip = function (pairs) {
+	var step = F2(
+		function (_v0, _v1) {
+			var x = _v0.a;
+			var y = _v0.b;
+			var xs = _v1.a;
+			var ys = _v1.b;
+			return _Utils_Tuple2(
+				A2($elm$core$List$cons, x, xs),
+				A2($elm$core$List$cons, y, ys));
+		});
+	return A3(
+		$elm$core$List$foldr,
+		step,
+		_Utils_Tuple2(_List_Nil, _List_Nil),
+		pairs);
 };
 var $author$project$Anim$Internal$Sub$Ended = function (a) {
 	return {$: 'Ended', a: a};
 };
-var $author$project$Anim$Internal$Sub$detectCompletedElements = F2(
-	function (oldElements, newElements) {
-		return A2(
-			$elm$core$List$filterMap,
-			function (_v0) {
-				var elementId = _v0.a;
-				var newElem = _v0.b;
-				return A2(
-					$elm$core$Maybe$andThen,
-					function (oldElem) {
-						return ((!oldElem.isComplete) && newElem.isComplete) ? $elm$core$Maybe$Just(
-							$author$project$Anim$Internal$Sub$Ended(elementId)) : $elm$core$Maybe$Nothing;
-					},
-					A2($elm$core$Dict$get, elementId, oldElements));
-			},
-			$elm$core$Dict$toList(newElements));
+var $author$project$Anim$Internal$Sub$Iteration = F2(
+	function (a, b) {
+		return {$: 'Iteration', a: a, b: b};
 	});
 var $elm$core$List$all = F2(
 	function (isOkay, list) {
@@ -8583,6 +8620,11 @@ var $elm$core$List$all = F2(
 			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
 			list);
 	});
+var $author$project$Anim$Internal$Sub$resetPropertyAnimation = function (prop) {
+	return _Utils_update(
+		prop,
+		{currentStepIndex: 0, elapsedMs: 0, isComplete: false});
+};
 var $author$project$Anim$Internal$Sub$updatePropertyAnimation = F2(
 	function (deltaMs, propertyState) {
 		if (propertyState.isComplete) {
@@ -8610,10 +8652,10 @@ var $author$project$Anim$Internal$Sub$updatePropertyAnimation = F2(
 				{currentStepIndex: correctFrameIndex, elapsedMs: newElapsedMs, isComplete: isComplete_});
 		}
 	});
-var $author$project$Anim$Internal$Sub$updateElementAnimation = F3(
-	function (deltaMs, _v0, elementState) {
+var $author$project$Anim$Internal$Sub$updateElementWithEvents = F3(
+	function (deltaMs, elementId, elementState) {
 		if (elementState.isPaused) {
-			return elementState;
+			return _Utils_Tuple2(elementState, _List_Nil);
 		} else {
 			var updatedProperties = A2(
 				$elm$core$List$map,
@@ -8625,19 +8667,85 @@ var $author$project$Anim$Internal$Sub$updateElementAnimation = F3(
 					return $.isComplete;
 				},
 				updatedProperties);
-			return _Utils_update(
-				elementState,
-				{isComplete: allPropertiesComplete, properties: updatedProperties});
+			if (allPropertiesComplete && (!elementState.isComplete)) {
+				var _v0 = elementState.iterationCount;
+				switch (_v0.$) {
+					case 'Infinite':
+						var resetProperties = A2($elm$core$List$map, $author$project$Anim$Internal$Sub$resetPropertyAnimation, updatedProperties);
+						var nextIteration = elementState.currentIteration + 1;
+						return _Utils_Tuple2(
+							_Utils_update(
+								elementState,
+								{currentIteration: nextIteration, isComplete: false, properties: resetProperties}),
+							_List_fromArray(
+								[
+									A2($author$project$Anim$Internal$Sub$Iteration, elementId, nextIteration)
+								]));
+					case 'Times':
+						var totalIterations = _v0.a;
+						if (_Utils_cmp(elementState.currentIteration, totalIterations) < 0) {
+							var resetProperties = A2($elm$core$List$map, $author$project$Anim$Internal$Sub$resetPropertyAnimation, updatedProperties);
+							var nextIteration = elementState.currentIteration + 1;
+							return _Utils_Tuple2(
+								_Utils_update(
+									elementState,
+									{currentIteration: nextIteration, isComplete: false, properties: resetProperties}),
+								_List_fromArray(
+									[
+										A2($author$project$Anim$Internal$Sub$Iteration, elementId, nextIteration)
+									]));
+						} else {
+							return _Utils_Tuple2(
+								_Utils_update(
+									elementState,
+									{isComplete: true, properties: updatedProperties}),
+								_List_fromArray(
+									[
+										$author$project$Anim$Internal$Sub$Ended(elementId)
+									]));
+						}
+					default:
+						return _Utils_Tuple2(
+							_Utils_update(
+								elementState,
+								{isComplete: true, properties: updatedProperties}),
+							_List_fromArray(
+								[
+									$author$project$Anim$Internal$Sub$Ended(elementId)
+								]));
+				}
+			} else {
+				return _Utils_Tuple2(
+					_Utils_update(
+						elementState,
+						{properties: updatedProperties}),
+					_List_Nil);
+			}
 		}
 	});
 var $author$project$Anim$Internal$Sub$update = F2(
 	function (msg, _v0) {
 		var state = _v0.a;
 		var deltaMs = msg.a;
-		var updatedElements = A2(
-			$elm$core$Dict$map,
-			$author$project$Anim$Internal$Sub$updateElementAnimation(deltaMs),
-			state.elementAnimations);
+		var _v2 = $elm$core$List$unzip(
+			A2(
+				$elm$core$List$map,
+				function (_v3) {
+					var elementId = _v3.a;
+					var elem = _v3.b;
+					var _v4 = A3($author$project$Anim$Internal$Sub$updateElementWithEvents, deltaMs, elementId, elem);
+					var newElem = _v4.a;
+					var events = _v4.b;
+					return _Utils_Tuple2(
+						_Utils_Tuple2(elementId, newElem),
+						events);
+				},
+				$elm$core$Dict$toList(state.elementAnimations)));
+		var updatedElementsList = _v2.a;
+		var elementEvents = _v2.b;
+		var allElementEvents = $elm$core$List$concat(elementEvents);
+		var allEvents = _Utils_ap(state.pendingEvents, allElementEvents);
+		var updatedElements = $elm$core$Dict$fromList(updatedElementsList);
 		var stillRunning = A2(
 			$elm$core$List$any,
 			A2(
@@ -8649,8 +8757,6 @@ var $author$project$Anim$Internal$Sub$update = F2(
 			$elm$core$Dict$values(updatedElements));
 		var newState = $author$project$Anim$Internal$Sub$AnimState(
 			{builder: state.builder, elementAnimations: updatedElements, isRunning: stillRunning, pendingEvents: _List_Nil});
-		var completedEvents = A2($author$project$Anim$Internal$Sub$detectCompletedElements, state.elementAnimations, updatedElements);
-		var allEvents = _Utils_ap(state.pendingEvents, completedEvents);
 		return _Utils_Tuple2(newState, allEvents);
 	});
 var $author$project$Anim$Engine$Sub$update = F2(

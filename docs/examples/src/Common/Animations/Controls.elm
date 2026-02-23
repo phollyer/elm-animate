@@ -1,6 +1,6 @@
 module Common.Animations.Controls exposing
-    ( animate
-    , animGroup
+    ( animGroup
+    , animate
     , init
     )
 

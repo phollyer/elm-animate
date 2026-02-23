@@ -942,6 +942,10 @@ only progress to minimize overhead.
             -- info.properties has the animation configuration
             ...
 
+        WAAPI.Iteration "box" "pulse" iterationNumber info ->
+            -- Animation completed iteration number (1-based)
+            ...
+
         WAAPI.Changed "box" "fadeIn" { progress } ->
             -- Animation in progress, progress is 0.0 to 1.0
             ...
@@ -954,6 +958,7 @@ type AnimEvent
     | Restarted String String EventInfo
     | Paused String String EventInfo
     | Resumed String String EventInfo
+    | Iteration String String Int EventInfo
     | Changed String String { progress : Float }
 
 
@@ -1109,6 +1114,10 @@ eventDataToEvent eventData =
 
         "restarted" ->
             Restarted elementId animGroup eventInfo
+
+        "iteration" ->
+            -- Extract iteration number from progress (JS encodes it in progress field)
+            Iteration elementId animGroup (round eventData.progress) eventInfo
 
         _ ->
             -- Fallback for unknown status (includes "unknown" from decode failures)

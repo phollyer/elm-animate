@@ -48,6 +48,7 @@ These events are generated internally by the engine. The Sub engine generates al
 | Paused | ✓* | ✓ | ✓ |
 | Resumed | ✓* | ✓ | ✓ |
 | Restarted | ✓* | ✓ | ✓ |
+| Iteration | | ✓ | ✓ |
 | Changed | | | ✓ |
 
 \* To generate these events, use `pauseCmd`, `resumeCmd` or `restartCmd`. See [Keyframe Event Variants](../engines/keyframes.md#event-variants) for more info.

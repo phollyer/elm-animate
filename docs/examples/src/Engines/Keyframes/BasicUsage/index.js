@@ -7811,6 +7811,10 @@ var $author$project$Anim$Internal$Builder$getCurrentElementConfig = function (_v
 				A2($elm$core$Dict$get, elementId, data.elements)));
 	}
 };
+var $author$project$Anim$Internal$Builder$makeCompositeKey = F2(
+	function (elementId, groupName) {
+		return elementId + (':' + groupName);
+	});
 var $elm$core$List$member = F2(
 	function (x, xs) {
 		return A2(
@@ -7847,7 +7851,15 @@ var $author$project$Anim$Internal$Builder$updateCurrentElement = F2(
 		} else {
 			var animKey = _v1.a;
 			var newPropertyTypes = A2($elm$core$List$map, $author$project$Anim$Internal$Builder$propertyType, config.properties);
-			var effectiveKey = A2($elm$core$Maybe$withDefault, animKey, data.waapiTargetElement);
+			var effectiveKey = function () {
+				var _v3 = data.waapiTargetElement;
+				if (_v3.$ === 'Just') {
+					var elementId = _v3.a;
+					return A2($author$project$Anim$Internal$Builder$makeCompositeKey, elementId, animKey);
+				} else {
+					return animKey;
+				}
+			}();
 			var mergedConfig = function () {
 				var _v2 = A2($elm$core$Dict$get, effectiveKey, data.elements);
 				if (_v2.$ === 'Just') {

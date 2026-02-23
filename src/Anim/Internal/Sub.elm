@@ -40,7 +40,7 @@ module Anim.Internal.Sub exposing
 
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.AnimationCore as AnimationCore
-import Anim.Internal.Builder as Builder
+import Anim.Internal.Builder as Builder exposing (IterationCount(..))
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Easing as Easing
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
@@ -93,6 +93,8 @@ type alias ElementAnimation =
     , isComplete : Bool
     , isPaused : Bool
     , transformOrder : List TransformOrder
+    , iterationCount : IterationCount
+    , currentIteration : Int
     }
 
 
@@ -190,7 +192,7 @@ init propertyInitializers =
 
                 -- Create element states with all animations marked as complete (no running animations)
                 elementStates =
-                    Dict.map (createElementAnimState defaultTransformOrder startValues) processedData.elements
+                    Dict.map (createElementAnimState processedData.iterationCount defaultTransformOrder startValues) processedData.elements
                         |> Dict.map
                             (\_ elem ->
                                 { elem
@@ -246,7 +248,7 @@ animate (AnimState state) transform =
             }
 
         elementStates =
-            Dict.map (createElementAnimState defaultTransformOrder startValues) processedData.elements
+            Dict.map (createElementAnimState processedData.iterationCount defaultTransformOrder startValues) processedData.elements
 
         -- Queue Started events for all animated elements
         startedEvents =
@@ -293,7 +295,7 @@ animateWithOrder order (AnimState state) transform =
             }
 
         elementStates =
-            Dict.map (createElementAnimState normalizedOrder startValues) processedData.elements
+            Dict.map (createElementAnimState processedData.iterationCount normalizedOrder startValues) processedData.elements
 
         -- Queue Started events for all animated elements
         startedEvents =
@@ -348,6 +350,7 @@ type AnimEvent
     | Paused String
     | Resumed String
     | Restarted String
+    | Iteration String Int
 
 
 
@@ -359,19 +362,31 @@ update msg (AnimState state) =
     case msg of
         AnimationFrame deltaMs ->
             let
+                -- Update each element and collect events
+                ( updatedElementsList, elementEvents ) =
+                    Dict.toList state.elementAnimations
+                        |> List.map
+                            (\( elementId, elem ) ->
+                                let
+                                    ( newElem, events ) =
+                                        updateElementWithEvents deltaMs elementId elem
+                                in
+                                ( ( elementId, newElem ), events )
+                            )
+                        |> List.unzip
+
                 updatedElements =
-                    Dict.map (updateElementAnimation deltaMs) state.elementAnimations
+                    Dict.fromList updatedElementsList
+
+                allElementEvents =
+                    List.concat elementEvents
 
                 stillRunning =
                     Dict.values updatedElements |> List.any (not << .isComplete)
 
-                -- Detect newly completed elements
-                completedEvents =
-                    detectCompletedElements state.elementAnimations updatedElements
-
-                -- Combine pending events with any new completion events
+                -- Combine pending events with element events
                 allEvents =
-                    state.pendingEvents ++ completedEvents
+                    state.pendingEvents ++ allElementEvents
 
                 newState =
                     AnimState
@@ -384,23 +399,95 @@ update msg (AnimState state) =
             ( newState, allEvents )
 
 
-{-| Detect all elements that just completed (were running, now complete).
+{-| Update an element and return any events (Iteration or Ended).
 -}
-detectCompletedElements : Dict String ElementAnimation -> Dict String ElementAnimation -> List AnimEvent
-detectCompletedElements oldElements newElements =
-    Dict.toList newElements
-        |> List.filterMap
-            (\( elementId, newElem ) ->
-                Dict.get elementId oldElements
-                    |> Maybe.andThen
-                        (\oldElem ->
-                            if not oldElem.isComplete && newElem.isComplete then
-                                Just (Ended elementId)
+updateElementWithEvents : Float -> String -> ElementAnimation -> ( ElementAnimation, List AnimEvent )
+updateElementWithEvents deltaMs elementId elementState =
+    if elementState.isPaused then
+        ( elementState, [] )
 
-                            else
-                                Nothing
+    else
+        let
+            updatedProperties =
+                List.map (updatePropertyAnimation deltaMs) elementState.properties
+
+            allPropertiesComplete =
+                List.all .isComplete updatedProperties
+        in
+        if allPropertiesComplete && not elementState.isComplete then
+            -- Properties just finished - check if we need to iterate
+            case elementState.iterationCount of
+                Infinite ->
+                    -- Reset for next iteration
+                    let
+                        nextIteration =
+                            elementState.currentIteration + 1
+
+                        resetProperties =
+                            List.map resetPropertyAnimation updatedProperties
+                    in
+                    ( { elementState
+                        | properties = resetProperties
+                        , currentIteration = nextIteration
+                        , isComplete = False
+                      }
+                    , [ Iteration elementId nextIteration ]
+                    )
+
+                Times totalIterations ->
+                    if elementState.currentIteration < totalIterations then
+                        -- More iterations to go
+                        let
+                            nextIteration =
+                                elementState.currentIteration + 1
+
+                            resetProperties =
+                                List.map resetPropertyAnimation updatedProperties
+                        in
+                        ( { elementState
+                            | properties = resetProperties
+                            , currentIteration = nextIteration
+                            , isComplete = False
+                          }
+                        , [ Iteration elementId nextIteration ]
                         )
+
+                    else
+                        -- All iterations done
+                        ( { elementState
+                            | properties = updatedProperties
+                            , isComplete = True
+                          }
+                        , [ Ended elementId ]
+                        )
+
+                Once ->
+                    -- Single iteration, just complete
+                    ( { elementState
+                        | properties = updatedProperties
+                        , isComplete = True
+                      }
+                    , [ Ended elementId ]
+                    )
+
+        else
+            -- Not all properties complete yet (or already complete)
+            ( { elementState
+                | properties = updatedProperties
+              }
+            , []
             )
+
+
+{-| Reset a property animation to its initial state for a new iteration.
+-}
+resetPropertyAnimation : PropertyAnimation -> PropertyAnimation
+resetPropertyAnimation prop =
+    { prop
+        | elapsedMs = 0
+        , currentStepIndex = 0
+        , isComplete = False
+    }
 
 
 
@@ -1272,8 +1359,8 @@ extractFromProperty property acc =
 -- Create Element Animation State
 
 
-createElementAnimState : List TransformOrder -> UnwrappedPropertyValues -> String -> Builder.ProcessedElementConfig -> ElementAnimation
-createElementAnimState order startValues _ elementConfig =
+createElementAnimState : IterationCount -> List TransformOrder -> UnwrappedPropertyValues -> String -> Builder.ProcessedElementConfig -> ElementAnimation
+createElementAnimState iterationCount order startValues _ elementConfig =
     let
         properties =
             List.filterMap (createPropertyAnimState startValues) elementConfig.properties
@@ -1282,6 +1369,8 @@ createElementAnimState order startValues _ elementConfig =
     , isComplete = False
     , isPaused = False
     , transformOrder = order
+    , iterationCount = iterationCount
+    , currentIteration = 1
     }
 
 
@@ -1439,29 +1528,6 @@ createPropertyAnimState startValues property =
                     config.easing
                     createSizeSteps
                     SizeAnimation
-
-
-
--- Update Element Animation
-
-
-updateElementAnimation : Float -> String -> ElementAnimation -> ElementAnimation
-updateElementAnimation deltaMs _ elementState =
-    if elementState.isPaused then
-        elementState
-
-    else
-        let
-            updatedProperties =
-                List.map (updatePropertyAnimation deltaMs) elementState.properties
-
-            allPropertiesComplete =
-                List.all .isComplete updatedProperties
-        in
-        { elementState
-            | properties = updatedProperties
-            , isComplete = allPropertiesComplete
-        }
 
 
 updatePropertyAnimation : Float -> PropertyAnimation -> PropertyAnimation

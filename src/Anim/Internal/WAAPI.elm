@@ -61,7 +61,7 @@ module Anim.Internal.WAAPI exposing
     )
 
 import Anim.Extra.Easing exposing (Easing(..))
-import Anim.Internal.Builder as Builder
+import Anim.Internal.Builder as Builder exposing (IterationCount(..))
 import Anim.Internal.Builders.BackgroundColor as BackgroundColor
 import Anim.Internal.Builders.Opacity as Opacity
 import Anim.Internal.Builders.Rotate as Rotate
@@ -2085,6 +2085,7 @@ encode data =
     Encode.object
         [ ( "type", Encode.string "animate" )
         , ( "elements", Encode.object elementsForJs )
+        , ( "iterationCount", encodeIterationCount data.iterationCount )
         ]
 
 
@@ -2112,6 +2113,7 @@ encodeWithOrder order data =
     Encode.object
         [ ( "type", Encode.string "animate" )
         , ( "elements", Encode.object elementsWithOrder )
+        , ( "iterationCount", encodeIterationCount data.iterationCount )
         ]
 
 
@@ -2146,6 +2148,32 @@ encodeCommandWithProperties commandType elementId maybeProperties =
                     []
     in
     Encode.object (baseFields ++ propertyField)
+
+
+{-| Encode iteration count for JavaScript.
+Returns a JSON object with type and count fields.
+JavaScript will use this to set the animation iterations.
+-}
+encodeIterationCount : IterationCount -> Encode.Value
+encodeIterationCount iterationCount =
+    case iterationCount of
+        Once ->
+            Encode.object
+                [ ( "type", Encode.string "once" )
+                , ( "count", Encode.int 1 )
+                ]
+
+        Times n ->
+            Encode.object
+                [ ( "type", Encode.string "times" )
+                , ( "count", Encode.int n )
+                ]
+
+        Infinite ->
+            Encode.object
+                [ ( "type", Encode.string "infinite" )
+                , ( "count", Encode.int -1 )
+                ]
 
 
 encodeProcessedElementConfigWithVersions : Dict ElementId ElementAnimation -> String -> Builder.ProcessedElementConfig -> Encode.Value

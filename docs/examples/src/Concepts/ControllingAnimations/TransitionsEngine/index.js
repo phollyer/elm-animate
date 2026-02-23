@@ -5202,7 +5202,7 @@ var $elm$core$Task$perform = F2(
 	});
 var $elm$browser$Browser$document = _Browser_document;
 var $elm$json$Json$Decode$field = _Json_decodeField;
-var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$elementId = 'bouncing-ball';
+var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$animGroup = 'bouncingBall';
 var $author$project$Anim$Internal$CSS$AnimState = function (a) {
 	return {$: 'AnimState', a: a};
 };
@@ -7943,6 +7943,10 @@ var $author$project$Anim$Internal$Builder$getCurrentElementConfig = function (_v
 				A2($elm$core$Dict$get, elementId, data.elements)));
 	}
 };
+var $author$project$Anim$Internal$Builder$makeCompositeKey = F2(
+	function (elementId, groupName) {
+		return elementId + (':' + groupName);
+	});
 var $elm$core$List$member = F2(
 	function (x, xs) {
 		return A2(
@@ -7979,7 +7983,15 @@ var $author$project$Anim$Internal$Builder$updateCurrentElement = F2(
 		} else {
 			var animKey = _v1.a;
 			var newPropertyTypes = A2($elm$core$List$map, $author$project$Anim$Internal$Builder$propertyType, config.properties);
-			var effectiveKey = A2($elm$core$Maybe$withDefault, animKey, data.waapiTargetElement);
+			var effectiveKey = function () {
+				var _v3 = data.waapiTargetElement;
+				if (_v3.$ === 'Just') {
+					var elementId = _v3.a;
+					return A2($author$project$Anim$Internal$Builder$makeCompositeKey, elementId, animKey);
+				} else {
+					return animKey;
+				}
+			}();
 			var mergedConfig = function () {
 				var _v2 = A2($elm$core$Dict$get, effectiveKey, data.elements);
 				if (_v2.$ === 'Just') {
@@ -8535,7 +8547,7 @@ var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$init =
 			animState: $author$project$Anim$Engine$CSS$Transitions$init(
 				_List_fromArray(
 					[
-						A3($author$project$Anim$Property$Translate$initXY, $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$elementId, xPos, 50)
+						A3($author$project$Anim$Property$Translate$initXY, $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$animGroup, xPos, 50)
 					]))
 		},
 		$elm$core$Platform$Cmd$none);
@@ -8664,7 +8676,7 @@ var $author$project$Anim$Internal$Builders$Translate$toY = F2(
 var $author$project$Anim$Property$Translate$toY = $author$project$Anim$Internal$Builders$Translate$toY;
 var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$dropBall = A2(
 	$elm$core$Basics$composeR,
-	$author$project$Anim$Property$Translate$for($author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$elementId),
+	$author$project$Anim$Property$Translate$for($author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$animGroup),
 	A2(
 		$elm$core$Basics$composeR,
 		$author$project$Anim$Property$Translate$fromY(50),
@@ -8845,7 +8857,7 @@ var $author$project$Anim$Internal$Builder$processAnimationData = function (_v0) 
 				return A2($author$project$Anim$Internal$Builder$processElement, data, elementConfig);
 			}),
 		data.elements);
-	return {elements: processedElements, globalDelay: data.globalDelay, globalEasing: data.globalEasing, globalTiming: data.globalTiming};
+	return {elements: processedElements, globalDelay: data.globalDelay, globalEasing: data.globalEasing, globalTiming: data.globalTiming, iterationCount: data.iterationCount};
 };
 var $author$project$Anim$Internal$CSS$getBackgroundColorRange = F2(
 	function (elementId, _v0) {
@@ -9069,7 +9081,7 @@ var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$update
 					_Utils_update(
 						model,
 						{
-							animState: A2($author$project$Anim$Engine$CSS$Transitions$stop, $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$elementId, model.animState)
+							animState: A2($author$project$Anim$Engine$CSS$Transitions$stop, $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$animGroup, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 			default:
@@ -9077,7 +9089,7 @@ var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$update
 					_Utils_update(
 						model,
 						{
-							animState: A2($author$project$Anim$Engine$CSS$Transitions$reset, $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$elementId, model.animState)
+							animState: A2($author$project$Anim$Engine$CSS$Transitions$reset, $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$animGroup, model.animState)
 						}),
 					$elm$core$Platform$Cmd$none);
 		}
@@ -15003,7 +15015,7 @@ var $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$animat
 			A2(
 				$elm$core$List$map,
 				$mdgriffith$elm_ui$Element$htmlAttribute,
-				A2($author$project$Anim$Engine$CSS$Transitions$attributes, $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$elementId, animState)),
+				A2($author$project$Anim$Engine$CSS$Transitions$attributes, $author$project$Concepts$ControllingAnimations$TransitionsEngine$Main$animGroup, animState)),
 			_List_fromArray(
 				[
 					$mdgriffith$elm_ui$Element$htmlAttribute(

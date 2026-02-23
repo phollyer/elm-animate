@@ -1,7 +1,7 @@
 module Common.Animations.Mixed exposing
     ( allProperties
-    , colorSizeOpacity
     , animGroup
+    , colorSizeOpacity
     , fadeMove
     , init
     , moveScaleRotate
