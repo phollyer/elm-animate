@@ -77,6 +77,31 @@ Set timing globally on the engine to apply to all animations, or locally on indi
         >> Translate.build
     ```
 
+## Scroll Timing
+
+The [Scroll Engine](../engines/scroll.md) uses the same timing concepts. Since scroll distances vary based on where the user has scrolled and where the target is, **speed** is usually the better choice:
+
+??? example "View Source Code"
+
+    ```elm
+    -- Speed-based: consistent feel regardless of distance
+    Scroll.toCmd ScrollComplete <|
+        Scroll.defaultSpeed 1200  -- 1200 pixels per second
+            >> Scroll.forDocument
+            >> Scroll.toElement "section"
+            >> Scroll.build
+
+    -- Duration-based: always takes the same time
+    Scroll.toCmd ScrollComplete <|
+        Scroll.defaultDuration 800  -- Always 800ms
+            >> Scroll.forDocument
+            >> Scroll.toElement "section"
+            >> Scroll.build
+    ```
+
+!!! tip "Speed feels more natural for scrolling"
+    With `speed`, a short scroll (100px) feels snappy while a long scroll (2000px) takes appropriately longer. With `duration`, a short scroll crawls while a long scroll races.
+
 ## Important Notes
 
 !!! warning "Choose one"
