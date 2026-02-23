@@ -29,8 +29,6 @@ Every animation follows this pattern:
 
 The first argument to `Property.for` is the **animation group name** — a string that groups animation configurations together. Use it to animate multiple properties at once, or to create multiple animations for different elements.
 
-It is also the glue between your animation configurations and [the elements in your view](apply.md#connecting-builder-to-view).
-
 ### Multiple Properties
 
 Properties with the same group name animate together and are applied to the same element:

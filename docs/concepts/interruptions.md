@@ -11,7 +11,7 @@ When an animation is already running and you trigger a new one, the behavior dep
 Transitions redirect smoothly regardless of trigger type (`animate` or `fireAndForget`). The browser's CSS engine handles the interpolation — it always animates from the current computed value to the new target. No Elm-side tracking required.
 
 !!! note "The `from` value doesn't affect interruption"
-    Even if you specify a `from` value, Transitions will always start from the browser's current computed value. The `from` value is only used for speed calculations (when using `speed` instead of `duration`) and for state queries like `getStartOpacity`.
+    Even if you specify a `from` value, Transitions will always start from the browser's current computed value.
 
 ### Sub and WAAPI: State-Tracked
 
@@ -27,41 +27,74 @@ When you trigger a new animation with state tracking:
 2. Uses that as the starting point for the new animation
 3. Begins animating toward the new target
 
-```elm
--- User clicks while fade-in is at 50% opacity
--- Engine starts from 0.5 and animates to new target
-update msg model =
-    case msg of
-        GotClickWhileAnimating ->
-            ( { model 
-                | animState = Transitions.animate model.animState fadeOut 
-              }
-            , Cmd.none
-            )
-```
-
 ### Example: Toggle Animation
 
 A common pattern is toggling between two states. The animation redirects smoothly regardless of when the user triggers it:
 
-```elm
-update msg model =
-    case msg of
-        GotToggle ->
-            let
-                animation =
-                    if model.isOpen then
-                        closePanel
-                    else
-                        openPanel
-            in
-            ( { model 
-                | isOpen = not model.isOpen
-                , animState = Transitions.animate model.animState animation
-              }
-            , Cmd.none
-            )
-```
+??? example "View Source Code"
+
+    === "Transitions"
+        ```elm
+        update msg model =
+            case msg of
+                GotToggle ->
+                    let
+                        newAnimState =
+                            Transitions.animate model.animState <|
+                                if model.isOpen then
+                                    closePanel
+                                else
+                                    openPanel
+                    in
+                    ( { model 
+                        | isOpen = not model.isOpen
+                        , animState = newAnimState
+                      }
+                    , Cmd.none
+                    )
+        ```
+
+    === "Sub"
+        ```elm
+        update msg model =
+            case msg of
+                GotToggle ->
+                    let
+                        newAnimState =
+                            Sub.animate model.animState <|
+                                if model.isOpen then
+                                    closePanel
+                                else
+                                    openPanel
+                    in
+                    ( { model 
+                        | isOpen = not model.isOpen
+                        , animState = newAnimState
+                      }
+                    , Cmd.none
+                    )
+        ```
+
+    === "WAAPI"
+        ```elm
+        update msg model =
+            case msg of
+                GotToggle ->
+                    let
+                        (newAnimState, cmd) =
+                            WAAPI.animate model.animState <|
+                                if model.isOpen then
+                                    closePanel
+                                else
+                                    openPanel
+                    in
+                    ( { model 
+                        | isOpen = not model.isOpen
+                        , animState = newAnimState
+                      }
+                    , cmd
+                    )
+        ```
 
 If the user toggles rapidly, the animation smoothly reverses direction from wherever it currently is.
 

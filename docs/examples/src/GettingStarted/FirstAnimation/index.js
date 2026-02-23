@@ -8501,29 +8501,24 @@ var $author$project$Anim$Internal$Builders$Opacity$easing = F2(
 	});
 var $author$project$Anim$Property$Opacity$easing = $author$project$Anim$Internal$Builders$Opacity$easing;
 var $author$project$Anim$Property$Opacity$for = $author$project$Anim$Internal$Builders$Opacity$for;
-var $author$project$Anim$Property$Opacity$from = A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Builders$Opacity$from, $author$project$Anim$Internal$Properties$Opacity$fromFloat);
 var $author$project$Anim$Property$Opacity$to = A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Builders$Opacity$to, $author$project$Anim$Internal$Properties$Opacity$fromFloat);
-var $author$project$GettingStarted$FirstAnimation$Main$fade = F2(
-	function (from, to) {
-		return A2(
+var $author$project$GettingStarted$FirstAnimation$Main$fadeTo = function (to) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$author$project$Anim$Property$Opacity$for($author$project$GettingStarted$FirstAnimation$Main$animGroup),
+		A2(
 			$elm$core$Basics$composeR,
-			$author$project$Anim$Property$Opacity$for($author$project$GettingStarted$FirstAnimation$Main$animGroup),
+			$author$project$Anim$Property$Opacity$to(to),
 			A2(
 				$elm$core$Basics$composeR,
-				$author$project$Anim$Property$Opacity$from(from),
+				$author$project$Anim$Property$Opacity$duration(2500),
 				A2(
 					$elm$core$Basics$composeR,
-					$author$project$Anim$Property$Opacity$to(to),
-					A2(
-						$elm$core$Basics$composeR,
-						$author$project$Anim$Property$Opacity$duration(2500),
-						A2(
-							$elm$core$Basics$composeR,
-							$author$project$Anim$Property$Opacity$easing($author$project$Anim$Extra$Easing$CubicInOut),
-							$author$project$Anim$Property$Opacity$build)))));
-	});
-var $author$project$GettingStarted$FirstAnimation$Main$fadeIn = A2($author$project$GettingStarted$FirstAnimation$Main$fade, 0, 1);
-var $author$project$GettingStarted$FirstAnimation$Main$fadeOut = A2($author$project$GettingStarted$FirstAnimation$Main$fade, 1, 0);
+					$author$project$Anim$Property$Opacity$easing($author$project$Anim$Extra$Easing$CubicInOut),
+					$author$project$Anim$Property$Opacity$build))));
+};
+var $author$project$GettingStarted$FirstAnimation$Main$fadeIn = $author$project$GettingStarted$FirstAnimation$Main$fadeTo(1);
+var $author$project$GettingStarted$FirstAnimation$Main$fadeOut = $author$project$GettingStarted$FirstAnimation$Main$fadeTo(0);
 var $author$project$Anim$Internal$CSS$builder = function (_v0) {
 	var state = _v0.a;
 	return state.builder;

@@ -24,6 +24,36 @@ main =
 
 
 
+-- ANIMATION BUILDER
+-- --8<-- [start:fadeIn]
+
+
+animGroup : String
+animGroup =
+    "boxAnim"
+
+
+fadeTo : Float -> AnimBuilder -> AnimBuilder
+fadeTo to =
+    Opacity.for animGroup
+        >> Opacity.to to
+        >> Opacity.duration 2500
+        >> Opacity.easing CubicInOut
+        >> Opacity.build
+
+
+fadeIn : AnimBuilder -> AnimBuilder
+fadeIn =
+    fadeTo 1
+
+
+fadeOut : AnimBuilder -> AnimBuilder
+fadeOut =
+    fadeTo 0
+
+
+
+-- --8<-- [end:fadeIn]
 -- MODEL
 
 
@@ -68,37 +98,6 @@ update msg model =
 
 
 -- --8<-- [end:triggerAnimation]
--- ANIMATION BUILDER
--- --8<-- [start:fadeIn]
-
-
-animGroup : String
-animGroup =
-    "boxAnim"
-
-
-fade : Float -> Float -> AnimBuilder -> AnimBuilder
-fade from to =
-    Opacity.for animGroup
-        >> Opacity.from from
-        >> Opacity.to to
-        >> Opacity.duration 2500
-        >> Opacity.easing CubicInOut
-        >> Opacity.build
-
-
-fadeIn : AnimBuilder -> AnimBuilder
-fadeIn =
-    fade 0 1
-
-
-fadeOut : AnimBuilder -> AnimBuilder
-fadeOut =
-    fade 1 0
-
-
-
--- --8<-- [end:fadeIn]
 -- VIEW
 
 
