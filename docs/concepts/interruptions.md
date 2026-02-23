@@ -90,3 +90,10 @@ With proper interruption support, animations feel directly connected to user act
 | Keyframes | ❌ Jumps to new animation start |
 | Sub | ✅ Smooth with `animate` only |
 | WAAPI | ✅ Smooth with `animate` only |
+
+
+## Next Steps
+
+Learn about animating in 3D!!
+
+[3D Animations →](3d.md){ .md-button .md-button--primary }

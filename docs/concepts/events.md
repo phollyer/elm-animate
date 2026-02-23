@@ -29,7 +29,7 @@ These events come directly from the underlying technology - CSS DOM events or We
 
 | Event | Transitions | Keyframes | WAAPI |
 | ----- | :---------: | :-------: | :---: |
-| Started | ✓ | ✓ | ✓ |
+| Started | ✓ | ✓ | |
 | Ended | ✓ | ✓ | ✓ |
 | Cancelled | ✓ | ✓ | ✓ |
 | Run | ✓ | | |
@@ -38,11 +38,11 @@ These events come directly from the underlying technology - CSS DOM events or We
 
 ### Engine-Generated Events
 
-These events are generated internally by the engine. The Sub engine generates all its events this way, while Keyframes and WAAPI generate control-related events when you call `pause`, `resume`, or `restart`:
+These events are generated internally by the engine:
 
 | Event | Keyframes | Sub | WAAPI |
 | ----- | :-------: | :-: | :---: |
-| Started | | ✓ | |
+| Started | | ✓ | ✓ |
 | Ended | | ✓ | |
 | Cancelled | | ✓ | |
 | Paused | ✓* | ✓ | ✓ |
@@ -52,6 +52,22 @@ These events are generated internally by the engine. The Sub engine generates al
 | Changed | | | ✓ |
 
 \* To generate these events, use `pauseCmd`, `resumeCmd` or `restartCmd`. See [Keyframe Event Variants](../engines/keyframes.md#event-variants) for more info.
+
+
+??? info "Full Event Table"
+
+    | Event | Transitions | Keyframes | Sub | WAAPI |
+    | ----- | :---------: | :-------: | :-: | :---: |
+    | Run | ✓ | | | |
+    | Started | ✓ | ✓ | ✓ | ✓ |
+    | Ended | ✓ | ✓ | ✓ | ✓ |
+    | Cancelled | ✓ | ✓ | ✓ | ✓ |
+    | Iteration | | ✓ | ✓ | ✓ |
+    | Paused | | ✓ | ✓ | ✓ |
+    | Resumed | | ✓ | ✓ | ✓ |
+    | Restarted | | ✓ | ✓ | ✓ |
+    | Changed | | | | ✓ |
+
 
 ## Receiving Events
 
@@ -152,79 +168,6 @@ All engines use the same update pattern. The only difference is Sub returns `Lis
                 in
                 List.foldl applyEvent ( { model | animState = newAnimState }, Cmd.none ) events
         ```
-
-
-## Reacting to Events
-
-Pattern match on the event to build complex animation sequences and behaviors.
-
-
-### Sequential Animations
-
-Chain animations by starting the next one when the current ends:
-
-??? example "View Source Code"
-
-    ```elm
-    reactToEvent : Transitions.AnimEvent -> Model -> ( Model, Cmd Msg )
-    reactToEvent event model =
-        case event of
-            Transitions.Ended "step1" ->
-                ( { model | animState = Transitions.animate model.animState step2Animation }
-                , Cmd.none
-                )
-
-            Transitions.Ended "step2" ->
-                ( { model | animState = Transitions.animate model.animState step3Animation }
-                , Cmd.none
-                )
-
-            _ ->
-                ( model, Cmd.none )
-    ```
-
-
-### Cleanup on Completion
-
-Remove temporary state when animations finish:
-
-??? example "View Source Code"
-
-    ```elm
-    reactToEvent : Keyframes.AnimEvent -> Model -> ( Model, Cmd Msg )
-    reactToEvent event model =
-        case event of
-            Keyframes.Ended "notification" ->
-                ( { model | notification = Nothing }, Cmd.none )
-
-            Keyframes.Cancelled "notification" ->
-                ( { model | notification = Nothing }, Cmd.none )
-
-            _ ->
-                ( model, Cmd.none )
-    ```
-
-
-### Progress Tracking (WAAPI)
-
-The WAAPI engine sends `Changed` events during animation, letting you track real-time progress:
-
-??? example "View Source Code"
-
-    ```elm
-    reactToEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
-    reactToEvent event model =
-        case event of
-            WAAPI.Changed _ _ { progress } ->
-                ( { model | progressBar = progress }, Cmd.none )
-
-            WAAPI.Ended _ _ _ ->
-                ( { model | progressBar = 1.0 }, Cmd.none )
-
-            _ ->
-                ( model, Cmd.none )
-    ```
-
 
 ## Event Reference
 

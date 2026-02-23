@@ -68,6 +68,9 @@ nav:
     - Installation: getting-started/installation.md
     - Your First Animation: getting-started/first-animation.md
     - Your First Scroll: getting-started/first-scroll.md
+    - Properties: getting-started/properties.md
+    - Timing: getting-started/timing.md
+    - Easing Functions: getting-started/easing.md
   - Animation Workflow:
     - 1. Build: animation-workflow/build.md
     - 2. Trigger: animation-workflow/trigger.md
@@ -75,12 +78,8 @@ nav:
   - Concepts:
     - Controlling Animations: concepts/controlling-animations.md
     - Controlling Scroll: concepts/controlling-animations/scroll.md
+    - Interrupting Animations: concepts/interruptions.md
     - Events: concepts/events.md
-    - Properties: concepts/properties.md
-    - Timing: concepts/timing.md
-    - Easing Functions: concepts/easing.md
-    - Sequencing: concepts/sequencing.md
-    - Interruptions: concepts/interruptions.md
     - 3D Animations: concepts/3d.md
   - Engines:
     - Overview: engines/overview.md

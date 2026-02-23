@@ -11,6 +11,7 @@ module Anim.Engine.CSS.Keyframes exposing
     , delay
     , iterations, loopForever
     , stop, reset, restart, pause, resume
+    , pauseCmd, resumeCmd, restartCmd
     , anyRunning, isRunning, allComplete, isComplete
     , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
     , getStartOpacity, getEndOpacity, getCurrentOpacity
@@ -18,7 +19,6 @@ module Anim.Engine.CSS.Keyframes exposing
     , getStartScale, getEndScale, getCurrentScale
     , getStartSize, getEndSize, getCurrentSize
     , getStartTranslate, getEndTranslate, getCurrentTranslate
-    , pauseCmd, restartCmd, resumeCmd
     )
 
 {-| CSS Keyframe Animations engine for complex, multi-step animations.
@@ -114,6 +114,8 @@ Control how many times an animation repeats.
 # Animation Control
 
 @docs stop, reset, restart, pause, resume
+
+@docs pauseCmd, resumeCmd, restartCmd
 
 
 # Querying Animation State

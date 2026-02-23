@@ -23,7 +23,7 @@ If you prefer animations that run immediately on render without this pattern, us
 !!! warning "Avoid DOM changes during animation start"
     CSS transitions are sensitive to DOM reflows. If other DOM elements are added or removed in the same render cycle as starting an animation, the browser may skip the transition entirely. Keep DOM structure stable when triggering animations.
 
-## Discrete Transitions
+## Discrete Properties
 
 By default, CSS transitions only work with properties that can have intermediate values (like `opacity: 0.5`).
 Discrete properties like `display`, `visibility`, and `content-visibility` have no in-between states — they snap instantly from one value to the next.
@@ -134,33 +134,39 @@ The following features work the same across all engines. See [Engine Overview](o
 | ---- | ----------- |
 | `AnimState` | Tracks animations and their states |
 | `AnimBuilder` | Carries all the animations configurations |
+| `AnimMsg` | Internal `Msg`s for state tracked animations |
 | `AnimEvent` | Events received during a transitions lifecycle |
 | `TransformOrder` | Custom transform ordering |
 
-### Core Functions
+### Initialize
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
 | `init` | `List (AnimBuilder -> AnimBuilder) -> AnimState` | Create initial animation state |
+
+### Trigger
+
+| Function | Type | Description |
+| ---------- | ------ | ------------- |
 | `animate` | `AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Create a state-tracked animation |
-| `fireAndForget` | `(AnimBuilder -> AnimBuilder) -> AnimState` | Fire-and-forget animation (no state tracking) |
 | `animateOrder` | `List TransformOrder -> AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Animate with custom transform order |
+| `fireAndForget` | `(AnimBuilder -> AnimBuilder) -> AnimState` | Fire-and-forget animation (no state tracking) |
 | `fireAndForgetOrder` | `List TransformOrder -> (AnimBuilder -> AnimBuilder) -> AnimState` | Fire-and-forget with custom transform order |
 
-### View Functions
+### Update
+
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `update` | `AnimMsg -> AnimState -> (AnimState, AnimEvent)` | Update AnimState after a transition event |
+
+### View
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
 | `attributes` | `String -> AnimState -> List (Html.Attribute msg)` | Get the transition attributes for an element |
 | `events` | `String -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach transition event listeners |
 
-### Event Functions
-
-| Function | Type | Description |
-| ---------- | ---- | ------------- |
-| `handleEvent` | `AnimEvent -> AnimState -> AnimState` | Update AnimState after a transition event |
-
-### Default Functions
+### Defaults
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
@@ -169,14 +175,22 @@ The following features work the same across all engines. See [Engine Overview](o
 | `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing function |
 | `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
 
-### Control Functions
+### Controls
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
 | `stop` | `String -> AnimState -> AnimState` | Jump to end state and stop |
 | `reset` | `String -> AnimState -> AnimState` | Jump to start state and stop |
 
-### State Query Functions
+### Discrete Transitions
+
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `allowDiscrete` | `AnimBuilder -> AnimBuilder` | Enable `transition-behavior: allow-discrete` |
+| `startingStyleNode` | `AnimState -> Html msg` | Generate `@starting-style` for discrete entry animations |
+| `startingStyleNodeFor` | `String -> AnimState -> Html msg` | Generate `@starting-style` for a specific `animGroup` |
+
+### State Queries
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
@@ -185,7 +199,7 @@ The following features work the same across all engines. See [Engine Overview](o
 | `allComplete` | `AnimState -> Maybe Bool` | Check if all animations are complete |
 | `isComplete` | `String -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
 
-### Property Query Functions
+### Property Queries
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
@@ -196,19 +210,11 @@ The following features work the same across all engines. See [Engine Overview](o
 | `getEnd*` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get end value |
 | `getCurrent*` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get current value |
 
-### Discrete Transition Functions
-
-| Function | Type | Description |
-| ---------- | ---- | ------------- |
-| `allowDiscrete` | `AnimBuilder -> AnimBuilder` | Enable `transition-behavior: allow-discrete` |
-| `startingStyleNode` | `AnimState -> Html msg` | Generate `@starting-style` for discrete entry animations |
-| `startingStyleNodeFor` | `String -> AnimState -> Html msg` | Generate `@starting-style` for a specific element |
-
 For complete API details, see the [Anim.Engine.CSS.Transitions](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Transitions) documentation.
 
 ## Next Steps
 
-The Keyframes Engine which provides a few more features than you get with transitions.
+The Keyframes Engine which provides a few different features to what you get with transitions.
 
 [Keyframes Engine →](keyframes.md){ .md-button .md-button--primary }
 

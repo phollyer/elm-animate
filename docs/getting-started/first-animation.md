@@ -55,9 +55,13 @@ Use the `attributes` function to apply the animation's attributes to your elemen
 
 ## Next Steps
 
-Now that you can create a simple animation, we'll look a bit closer at the workflow.
+Now that you can create a simple animation, take a look at the properties you can animate.
 
-[Workflow - Build →](../animation-workflow/build.md){ .md-button .md-button--primary }
+[Properties →](properties.md){ .md-button .md-button--primary }
 
-!!! tip "Need smooth scrolling?"
-    Check out [Your First Scroll](first-scroll.md) to learn about the Scroll Engine.
+Or
+
+Start your first scroll.
+
+[First Scroll →](first-scroll.md){ .md-button .md-button--primary }
+

@@ -368,6 +368,26 @@ WAAPI control functions return both a new `AnimState` and a `Cmd` that sends com
                 ( { model | animState = newAnimState }, cmd )
     ```
 
+## Progress Tracking
+
+The WAAPI engine sends `Changed` events during animation, letting you track real-time progress:
+
+??? example "View Source Code"
+
+    ```elm
+    reactToEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
+    reactToEvent event model =
+        case event of
+            WAAPI.Changed _ _ { progress } ->
+                ( { model | progressBar = progress }, Cmd.none )
+
+            WAAPI.Ended _ _ _ ->
+                ( { model | progressBar = 1.0 }, Cmd.none )
+
+            _ ->
+                ( model, Cmd.none )
+    ```
+
 ## WAAPI-Specific Initialization
 
 WAAPI's `init` requires the port functions as parameters:

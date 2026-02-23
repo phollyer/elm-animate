@@ -216,8 +216,8 @@ The four parameters (`x1 y1 x2 y2`) define the curve's control points. Use tools
 
 ## Next Steps
 
-Learn about animating in 3D!!
+Learn about interrupting animations mid-flight.
 
-[3D Animations →](3d.md){ .md-button .md-button--primary }
+[Interrupting Animations →](interruptiond.md){ .md-button .md-button--primary }
 
 
