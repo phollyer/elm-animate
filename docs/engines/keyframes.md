@@ -12,6 +12,127 @@ The CSS Keyframes Engine uses native browser CSS `@keyframes` animations for com
 
 [:material-play-circle: Run this example](../examples/src/Engines/Keyframes/BasicUsage/index.html){ .md-button target="_blank" }
 
+## Control Functions
+
+CSS Keyframes support the following control functions:
+
+| Function | Description |
+| -------- | ----------- |
+| `stop` | Jump to end state and stop |
+| `reset` | Jump to start state and stop |
+| `restart` | Reset and begin playing again |
+| `pause` | Freeze at current position |
+| `resume` | Continue from paused position |
+
+### Event Variants
+
+For `restart`, `pause`, and `resume`, there are also `*Cmd` variants that produce events:
+
+| Function | Produces Event |
+| -------- | -------------- |
+| `restartCmd` | `Restarted` |
+| `pauseCmd` | `Paused` |
+| `resumeCmd` | `Resumed` |
+
+**Why use `*Cmd` variants?**
+
+Centralizing animation logic in one place makes code easier to maintain. Without event routing, pause/resume/restart logic gets scattered across multiple call sites:
+
+??? example "View Source Code"
+
+    ```elm
+    -- Without events: logic scattered at each call site
+    PauseFromButton ->
+        ( { model 
+            | animState = Keyframes.pause "box" model.animState
+            , isPaused = True
+            , showResumeHint = True
+          }
+        , Cmd.none
+        )
+
+    PauseFromKeyboard ->
+        ( { model 
+            | animState = Keyframes.pause "box" model.animState
+            , isPaused = True  -- duplicated
+            , showResumeHint = True  -- duplicated
+          }
+        , Cmd.none
+        )
+    ```
+
+With `*Cmd` variants, all animation responses flow through `update`:
+
+??? example "View Source Code"
+
+    ```elm
+    -- With events: logic centralized
+    PauseFromButton ->
+        let
+            ( newState, cmd ) =
+                Keyframes.pauseCmd "box" GotAnimMsg model.animState
+        in
+        ( { model | animState = newState }, cmd )
+
+    PauseFromKeyboard ->
+        let
+            ( newState, cmd ) =
+                Keyframes.pauseCmd "box" GotAnimMsg model.animState
+        in
+        ( { model | animState = newState }, cmd )
+
+    GotAnimMsg animMsg ->
+        let
+            ( newAnimState, event ) =
+                Keyframes.update animMsg model.animState
+        in
+        reactToEvent event { model | animState = newAnimState }
+
+
+    -- All pause logic in one place
+    reactToEvent : Keyframes.AnimEvent -> Model -> ( Model, Cmd Msg )
+    reactToEvent event model =
+        case event of
+            Keyframes.Paused _ ->
+                ( { model | isPaused = True, showResumeHint = True }
+                , Cmd.none
+                )
+
+            Keyframes.Resumed _ ->
+                ( { model | isPaused = False, showResumeHint = False }
+                , Cmd.none
+                )
+
+            _ ->
+                ( model, Cmd.none )
+    ```
+
+
+## Events
+
+### Native DOM Events
+
+The Keyframes engine has a unique `Iteration` event that fires after each loop cycle. This is useful for tracking loop count in infinite or multi-iteration animations.
+
+| Event | Fires when... |
+| ----- | ------------- |
+| `Started` | The animation begins playing |
+| `Ended` | The animation completes (after all iterations) |
+| `Iteration` | Each cycle completes (useful for tracking loop count) |
+| `Cancelled` | The browser aborts the animation |
+
+
+### Engine-Generated Events
+
+CSS animations don't natively fire DOM events for pause/resume/restart. To receive these events, use the [Event Variants](#event-variants) of the control functions:
+
+| Event | Fires when... |
+| ----- | ------------- |
+| `Paused` | `pauseCmd` is called |
+| `Resumed` | `resumeCmd` is called |
+| `Restarted` | `restartCmd` is called |
+
+
 ## Keyframes Style Node
 
 Keyframe animations require a `<style>` node to define the `@keyframes` rules. Include this in your view:
@@ -66,48 +187,6 @@ Run an animation forever:
 !!! tip "Tracking Iterations"
 
     You can keep track of the number of iterations/loops with the `Iteration` `AnimEvent`
-
-## Keyframes-Specific Events
-
-The Keyframes engine has a unique `Iteration` event that fires after each loop cycle. This is useful for tracking loop count in infinite or multi-iteration animations.
-
-| Event | Fires when... |
-| ----- | ------------- |
-| `Started` | The animation begins playing |
-| `Ended` | The animation completes (after all iterations) |
-| `Iteration` | Each cycle completes (useful for tracking loop count) |
-| `Cancelled` | The browser aborts the animation |
-
-
-## Events
-
-CSS animations don't fire DOM events for pause/resume/restart. To receive these events through `update`, use the `*Cmd` variants:
-
-| Control | Event Function | Event Produced |
-| ------- | -------------- | -------------- |
-| `pause` | `pauseCmd` | `Paused` |
-| `resume` | `resumeCmd` | `Resumed` |
-| `restart` | `restartCmd` | `Restarted` |
-
-??? example "View Source Code"
-
-    ```elm
-    -- Simple pause (no event)
-    Pause ->
-        ( { model | animState = Keyframes.pause "box" model.animState }
-        , Cmd.none
-        )
-
-    -- Pause with event
-    Pause ->
-        let
-            ( newState, cmd ) =
-                Keyframes.pauseCmd "box" GotAnimMsg model.animState
-        in
-        ( { model | animState = newState }, cmd )
-    ```
-
-The Cmd routes back through your `update`, which returns the corresponding event for your `reactToEvent` function.
 
 ## Shared Features
 
