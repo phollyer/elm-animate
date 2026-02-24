@@ -5898,10 +5898,84 @@ var $elm$core$List$filterMap = F2(
 			_List_Nil,
 			xs);
 	});
+var $elm$core$String$endsWith = _String_endsWith;
+var $author$project$Anim$Internal$Builder$mergeElementEndStates = F2(
+	function (a, b) {
+		return {
+			backgroundColor: A2(
+				$elm$core$Maybe$withDefault,
+				a.backgroundColor,
+				A2($elm$core$Maybe$map, $elm$core$Maybe$Just, b.backgroundColor)),
+			fontColor: A2(
+				$elm$core$Maybe$withDefault,
+				a.fontColor,
+				A2($elm$core$Maybe$map, $elm$core$Maybe$Just, b.fontColor)),
+			opacity: A2(
+				$elm$core$Maybe$withDefault,
+				a.opacity,
+				A2($elm$core$Maybe$map, $elm$core$Maybe$Just, b.opacity)),
+			rotate: A2(
+				$elm$core$Maybe$withDefault,
+				a.rotate,
+				A2($elm$core$Maybe$map, $elm$core$Maybe$Just, b.rotate)),
+			scale: A2(
+				$elm$core$Maybe$withDefault,
+				a.scale,
+				A2($elm$core$Maybe$map, $elm$core$Maybe$Just, b.scale)),
+			size: A2(
+				$elm$core$Maybe$withDefault,
+				a.size,
+				A2($elm$core$Maybe$map, $elm$core$Maybe$Just, b.size)),
+			translate: A2(
+				$elm$core$Maybe$withDefault,
+				a.translate,
+				A2($elm$core$Maybe$map, $elm$core$Maybe$Just, b.translate))
+		};
+	});
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
 var $author$project$Anim$Internal$Builder$getElementBaseline = F2(
-	function (elementId, _v0) {
+	function (key, _v0) {
 		var data = _v0.a;
-		return A2($elm$core$Dict$get, elementId, data.elementBaselines);
+		var _v1 = A2($elm$core$Dict$get, key, data.elementBaselines);
+		if (_v1.$ === 'Just') {
+			var baseline = _v1.a;
+			return $elm$core$Maybe$Just(baseline);
+		} else {
+			var suffix = ':' + key;
+			var prefix = key + ':';
+			var matches = A2(
+				$elm$core$List$filter,
+				function (_v5) {
+					var k = _v5.a;
+					return A2($elm$core$String$startsWith, prefix, k) || A2($elm$core$String$endsWith, suffix, k);
+				},
+				$elm$core$Dict$toList(data.elementBaselines));
+			if (!matches.b) {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				if (!matches.b.b) {
+					var _v3 = matches.a;
+					var baseline = _v3.b;
+					return $elm$core$Maybe$Just(baseline);
+				} else {
+					var first = matches.a;
+					var rest = matches.b;
+					return $elm$core$Maybe$Just(
+						A3(
+							$elm$core$List$foldl,
+							F2(
+								function (_v4, acc) {
+									var baseline = _v4.b;
+									return A2($author$project$Anim$Internal$Builder$mergeElementEndStates, acc, baseline);
+								}),
+							first.b,
+							rest));
+				}
+			}
+		}
 	});
 var $author$project$Anim$Internal$Builder$getElementConfig = F2(
 	function (elementId, _v0) {

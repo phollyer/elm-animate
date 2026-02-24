@@ -449,10 +449,67 @@ getElementConfig elementId (AnimBuilder data) =
 
 
 {-| Get baseline states for an element (current animated values from JavaScript).
+Searches for:
+
+1.  Exact match
+2.  Composite keys that start with "key:" (when key is element ID)
+3.  Composite keys that end with ":key" (when key is animation group)
+
+If multiple matches exist, merges them with later matches taking precedence.
+
 -}
 getElementBaseline : String -> AnimBuilder -> Maybe ElementEndStates
-getElementBaseline elementId (AnimBuilder data) =
-    Dict.get elementId data.elementBaselines
+getElementBaseline key (AnimBuilder data) =
+    -- First try exact match
+    case Dict.get key data.elementBaselines of
+        Just baseline ->
+            Just baseline
+
+        Nothing ->
+            -- Search for composite key matches
+            let
+                prefix =
+                    key ++ ":"
+
+                suffix =
+                    ":" ++ key
+
+                -- Find all matching baselines
+                matches =
+                    Dict.toList data.elementBaselines
+                        |> List.filter
+                            (\( k, _ ) ->
+                                String.startsWith prefix k || String.endsWith suffix k
+                            )
+            in
+            case matches of
+                [] ->
+                    Nothing
+
+                [ ( _, baseline ) ] ->
+                    Just baseline
+
+                first :: rest ->
+                    -- Merge multiple matches
+                    Just <|
+                        List.foldl
+                            (\( _, baseline ) acc -> mergeElementEndStates acc baseline)
+                            (Tuple.second first)
+                            rest
+
+
+{-| Merge two ElementEndStates, with the second taking precedence for non-Nothing values.
+-}
+mergeElementEndStates : ElementEndStates -> ElementEndStates -> ElementEndStates
+mergeElementEndStates a b =
+    { translate = Maybe.map Just b.translate |> Maybe.withDefault a.translate
+    , rotate = Maybe.map Just b.rotate |> Maybe.withDefault a.rotate
+    , scale = Maybe.map Just b.scale |> Maybe.withDefault a.scale
+    , opacity = Maybe.map Just b.opacity |> Maybe.withDefault a.opacity
+    , backgroundColor = Maybe.map Just b.backgroundColor |> Maybe.withDefault a.backgroundColor
+    , fontColor = Maybe.map Just b.fontColor |> Maybe.withDefault a.fontColor
+    , size = Maybe.map Just b.size |> Maybe.withDefault a.size
+    }
 
 
 getTimespec : AnimBuilder -> Maybe TimeSpec
