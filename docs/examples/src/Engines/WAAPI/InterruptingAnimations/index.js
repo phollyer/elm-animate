@@ -9498,17 +9498,7 @@ var $author$project$Anim$Internal$WAAPI$decodeAnimationEvent = function (jsonVal
 var $author$project$Anim$Internal$WAAPI$Complete = {$: 'Complete'};
 var $author$project$Anim$Internal$WAAPI$Paused = {$: 'Paused'};
 var $author$project$Anim$Internal$WAAPI$Running = {$: 'Running'};
-var $author$project$Anim$Internal$WAAPI$findAnimationsForElement = F2(
-	function (elementId, animations) {
-		var prefix = elementId + ':';
-		return A2(
-			$elm$core$List$filter,
-			function (_v0) {
-				var key = _v0.a;
-				return A2($elm$core$String$startsWith, prefix, key);
-			},
-			$elm$core$Dict$toList(animations));
-	});
+var $elm$core$String$endsWith = _String_endsWith;
 var $elm$core$Dict$member = F2(
 	function (key, dict) {
 		var _v0 = A2($elm$core$Dict$get, key, dict);
@@ -9517,6 +9507,51 @@ var $elm$core$Dict$member = F2(
 		} else {
 			return false;
 		}
+	});
+var $author$project$Anim$Internal$WAAPI$findAnimationsForElement = F2(
+	function (key, animations) {
+		var suffix = ':' + key;
+		var suffixMatches = A2(
+			$elm$core$List$filter,
+			function (_v2) {
+				var k = _v2.a;
+				return A2($elm$core$String$endsWith, suffix, k);
+			},
+			$elm$core$Dict$toList(animations));
+		var prefix = key + ':';
+		var prefixMatches = A2(
+			$elm$core$List$filter,
+			function (_v1) {
+				var k = _v1.a;
+				return A2($elm$core$String$startsWith, prefix, k);
+			},
+			$elm$core$Dict$toList(animations));
+		var exactMatch = A2(
+			$elm$core$Maybe$withDefault,
+			_List_Nil,
+			A2(
+				$elm$core$Maybe$map,
+				function (anim) {
+					return _List_fromArray(
+						[
+							_Utils_Tuple2(key, anim)
+						]);
+				},
+				A2($elm$core$Dict$get, key, animations)));
+		var allMatches = _Utils_ap(
+			exactMatch,
+			_Utils_ap(prefixMatches, suffixMatches));
+		var uniqueKeys = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, acc) {
+					var k = _v0.a;
+					var anim = _v0.b;
+					return A2($elm$core$Dict$member, k, acc) ? acc : A3($elm$core$Dict$insert, k, anim, acc);
+				}),
+			$elm$core$Dict$empty,
+			allMatches);
+		return $elm$core$Dict$toList(uniqueKeys);
 	});
 var $author$project$Anim$Internal$WAAPI$getMatchingCompositeKeys = F2(
 	function (key, animations) {

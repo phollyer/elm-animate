@@ -75,7 +75,9 @@ init { window } =
 
         initialAnimState =
             WAAPI.init waapiCommand waapiEvent <|
-                [ Translate.initXY animGroup xPos 50 ]
+                [ WAAPI.forElement domId
+                    >> Translate.initXY animGroup xPos 50
+                ]
     in
     ( { animState = initialAnimState
       , animAreaSize =

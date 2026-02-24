@@ -5199,11 +5199,28 @@ var $elm$core$Task$perform = F2(
 var $elm$browser$Browser$document = _Browser_document;
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $author$project$Concepts$ControllingAnimations$WaapiEngine$Main$animGroup = 'bouncingBall';
-var $author$project$Anim$Internal$WAAPI$AnimState = function (a) {
-	return {$: 'AnimState', a: a};
-};
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var $author$project$Concepts$ControllingAnimations$WaapiEngine$Main$domId = 'bouncing-ball';
 var $author$project$Anim$Internal$Builder$AnimBuilder = function (a) {
 	return {$: 'AnimBuilder', a: a};
+};
+var $author$project$Anim$Internal$Builder$setWaapiTargetElement = F2(
+	function (elementId, _v0) {
+		var data = _v0.a;
+		return $author$project$Anim$Internal$Builder$AnimBuilder(
+			_Utils_update(
+				data,
+				{
+					waapiTargetElement: $elm$core$Maybe$Just(elementId)
+				}));
+	});
+var $author$project$Anim$Engine$WAAPI$forElement = $author$project$Anim$Internal$Builder$setWaapiTargetElement;
+var $author$project$Anim$Internal$WAAPI$AnimState = function (a) {
+	return {$: 'AnimState', a: a};
 };
 var $author$project$Anim$Internal$Builder$createEmptyHistory = function (timestamp) {
 	return {
@@ -6994,7 +7011,10 @@ var $author$project$Concepts$ControllingAnimations$WaapiEngine$Main$init = funct
 		$author$project$Concepts$ControllingAnimations$WaapiEngine$Main$waapiEvent,
 		_List_fromArray(
 			[
-				A3($author$project$Anim$Property$Translate$initXY, $author$project$Concepts$ControllingAnimations$WaapiEngine$Main$animGroup, xPos, 50)
+				A2(
+				$elm$core$Basics$composeR,
+				$author$project$Anim$Engine$WAAPI$forElement($author$project$Concepts$ControllingAnimations$WaapiEngine$Main$domId),
+				A3($author$project$Anim$Property$Translate$initXY, $author$project$Concepts$ControllingAnimations$WaapiEngine$Main$animGroup, xPos, 50))
 			]));
 	return _Utils_Tuple2(
 		{
@@ -9216,11 +9236,6 @@ var $author$project$Anim$Internal$WAAPI$animate = F2(
 var $author$project$Anim$Engine$WAAPI$animate = $author$project$Anim$Internal$WAAPI$animate;
 var $author$project$Anim$Extra$Easing$BounceOut = {$: 'BounceOut'};
 var $author$project$Anim$Property$Translate$build = $author$project$Anim$Internal$Builders$Translate$build;
-var $elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
 var $author$project$Anim$Internal$Builders$Property$withEasing = F2(
 	function (easing_, config) {
 		return _Utils_update(
@@ -9345,17 +9360,7 @@ var $author$project$Anim$Internal$WAAPI$encodeCommandWithProperties = F3(
 		return $elm$json$Json$Encode$object(
 			_Utils_ap(baseFields, propertyField));
 	});
-var $author$project$Anim$Internal$WAAPI$findAnimationsForElement = F2(
-	function (elementId, animations) {
-		var prefix = elementId + ':';
-		return A2(
-			$elm$core$List$filter,
-			function (_v0) {
-				var key = _v0.a;
-				return A2($elm$core$String$startsWith, prefix, key);
-			},
-			$elm$core$Dict$toList(animations));
-	});
+var $elm$core$String$endsWith = _String_endsWith;
 var $elm$core$Dict$member = F2(
 	function (key, dict) {
 		var _v0 = A2($elm$core$Dict$get, key, dict);
@@ -9364,6 +9369,51 @@ var $elm$core$Dict$member = F2(
 		} else {
 			return false;
 		}
+	});
+var $author$project$Anim$Internal$WAAPI$findAnimationsForElement = F2(
+	function (key, animations) {
+		var suffix = ':' + key;
+		var suffixMatches = A2(
+			$elm$core$List$filter,
+			function (_v2) {
+				var k = _v2.a;
+				return A2($elm$core$String$endsWith, suffix, k);
+			},
+			$elm$core$Dict$toList(animations));
+		var prefix = key + ':';
+		var prefixMatches = A2(
+			$elm$core$List$filter,
+			function (_v1) {
+				var k = _v1.a;
+				return A2($elm$core$String$startsWith, prefix, k);
+			},
+			$elm$core$Dict$toList(animations));
+		var exactMatch = A2(
+			$elm$core$Maybe$withDefault,
+			_List_Nil,
+			A2(
+				$elm$core$Maybe$map,
+				function (anim) {
+					return _List_fromArray(
+						[
+							_Utils_Tuple2(key, anim)
+						]);
+				},
+				A2($elm$core$Dict$get, key, animations)));
+		var allMatches = _Utils_ap(
+			exactMatch,
+			_Utils_ap(prefixMatches, suffixMatches));
+		var uniqueKeys = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, acc) {
+					var k = _v0.a;
+					var anim = _v0.b;
+					return A2($elm$core$Dict$member, k, acc) ? acc : A3($elm$core$Dict$insert, k, anim, acc);
+				}),
+			$elm$core$Dict$empty,
+			allMatches);
+		return $elm$core$Dict$toList(uniqueKeys);
 	});
 var $author$project$Anim$Internal$WAAPI$getMatchingCompositeKeys = F2(
 	function (key, animations) {
@@ -9385,6 +9435,23 @@ var $author$project$Anim$Internal$WAAPI$getPropertyTypesForKey = F2(
 				$elm$core$Dict$keys),
 			A2($elm$core$Dict$get, key, animations)) : $elm$core$Maybe$Nothing;
 	});
+var $author$project$Anim$Internal$WAAPI$resolveElementIdForJs = F2(
+	function (key, animations) {
+		if ($author$project$Anim$Internal$Builder$isCompositeKey(key)) {
+			return $author$project$Anim$Internal$Builder$extractElementId(key);
+		} else {
+			var matchingKeys = A2(
+				$elm$core$List$map,
+				$elm$core$Tuple$first,
+				A2($author$project$Anim$Internal$WAAPI$findAnimationsForElement, key, animations));
+			if (!matchingKeys.b) {
+				return key;
+			} else {
+				var compositeKey = matchingKeys.a;
+				return $author$project$Anim$Internal$Builder$isCompositeKey(compositeKey) ? $author$project$Anim$Internal$Builder$extractElementId(compositeKey) : compositeKey;
+			}
+		}
+	});
 var $author$project$Anim$Internal$WAAPI$pause = F2(
 	function (key, _v0) {
 		var state = _v0.a;
@@ -9398,7 +9465,7 @@ var $author$project$Anim$Internal$WAAPI$pause = F2(
 				}),
 			state.pendingActions,
 			matchingKeys);
-		var elementId = $author$project$Anim$Internal$WAAPI$getElementIdForJs(key);
+		var elementId = A2($author$project$Anim$Internal$WAAPI$resolveElementIdForJs, key, state.elementAnimations);
 		return _Utils_Tuple2(
 			$author$project$Anim$Internal$WAAPI$AnimState(
 				_Utils_update(
@@ -9947,16 +10014,6 @@ var $author$project$Anim$Internal$Builder$getCurrentAnimation = F2(
 			},
 			A2($elm$core$Dict$get, elementId, data.animationHistories));
 	});
-var $author$project$Anim$Internal$Builder$setWaapiTargetElement = F2(
-	function (elementId, _v0) {
-		var data = _v0.a;
-		return $author$project$Anim$Internal$Builder$AnimBuilder(
-			_Utils_update(
-				data,
-				{
-					waapiTargetElement: $elm$core$Maybe$Just(elementId)
-				}));
-	});
 var $elm$core$Dict$values = function (dict) {
 	return A3(
 		$elm$core$Dict$foldr,
@@ -10229,7 +10286,7 @@ var $author$project$Anim$Internal$WAAPI$resume = F2(
 				}),
 			state.pendingActions,
 			matchingKeys);
-		var elementId = $author$project$Anim$Internal$WAAPI$getElementIdForJs(key);
+		var elementId = A2($author$project$Anim$Internal$WAAPI$resolveElementIdForJs, key, state.elementAnimations);
 		return _Utils_Tuple2(
 			$author$project$Anim$Internal$WAAPI$AnimState(
 				_Utils_update(
@@ -10253,7 +10310,7 @@ var $author$project$Anim$Internal$WAAPI$stop = F2(
 				}),
 			state.pendingActions,
 			matchingKeys);
-		var elementId = $author$project$Anim$Internal$WAAPI$getElementIdForJs(key);
+		var elementId = A2($author$project$Anim$Internal$WAAPI$resolveElementIdForJs, key, state.elementAnimations);
 		return _Utils_Tuple2(
 			$author$project$Anim$Internal$WAAPI$AnimState(
 				_Utils_update(
@@ -17510,7 +17567,6 @@ var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
 };
 var $mdgriffith$elm_ui$Internal$Model$CenterY = {$: 'CenterY'};
 var $mdgriffith$elm_ui$Element$centerY = $mdgriffith$elm_ui$Internal$Model$AlignY($mdgriffith$elm_ui$Internal$Model$CenterY);
-var $author$project$Concepts$ControllingAnimations$WaapiEngine$Main$domId = 'bouncing-ball';
 var $mdgriffith$elm_ui$Element$el = F2(
 	function (attrs, child) {
 		return A4(

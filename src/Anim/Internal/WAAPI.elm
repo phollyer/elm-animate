@@ -148,17 +148,57 @@ mergeElementStates old new =
     }
 
 
-{-| Find all animations for a given element ID by searching for composite keys that start with "elementId:".
-Returns a list of (compositeKey, ElementAnimation) pairs.
+{-| Find all animations for a given key by searching for:
+
+1.  Exact match (for init-only case where key is just the animation group name)
+2.  Composite keys that start with "key:" (for WAAPI with target element, when key is element ID)
+3.  Composite keys that end with ":key" (for WAAPI with target element, when key is animation group)
+
+Returns a list of (key, ElementAnimation) pairs.
+
 -}
 findAnimationsForElement : ElementId -> Dict String ElementAnimation -> List ( String, ElementAnimation )
-findAnimationsForElement elementId animations =
+findAnimationsForElement key animations =
     let
         prefix =
-            elementId ++ ":"
+            key ++ ":"
+
+        suffix =
+            ":" ++ key
+
+        -- Match composite keys starting with "key:" (when key is element ID)
+        prefixMatches =
+            Dict.toList animations
+                |> List.filter (\( k, _ ) -> String.startsWith prefix k)
+
+        -- Match composite keys ending with ":key" (when key is animation group)
+        suffixMatches =
+            Dict.toList animations
+                |> List.filter (\( k, _ ) -> String.endsWith suffix k)
+
+        -- Also check for exact match (init-only case without forElement)
+        exactMatch =
+            Dict.get key animations
+                |> Maybe.map (\anim -> [ ( key, anim ) ])
+                |> Maybe.withDefault []
+
+        -- Combine all matches, removing duplicates by key
+        allMatches =
+            exactMatch ++ prefixMatches ++ suffixMatches
+
+        uniqueKeys =
+            allMatches
+                |> List.foldl
+                    (\( k, anim ) acc ->
+                        if Dict.member k acc then
+                            acc
+
+                        else
+                            Dict.insert k anim acc
+                    )
+                    Dict.empty
     in
-    Dict.toList animations
-        |> List.filter (\( key, _ ) -> String.startsWith prefix key)
+    Dict.toList uniqueKeys
 
 
 {-| Get merged states and transform order for all animations targeting an element.
@@ -214,6 +254,10 @@ getMatchingCompositeKeys key animations =
 
 {-| Extract the element ID from a key (either composite or plain element ID).
 Used for sending commands to JavaScript which needs the DOM element ID.
+
+If a composite key, extracts the element ID (part before the colon).
+If a plain key, checks if it matches any composite keys to find the actual element ID.
+
 -}
 getElementIdForJs : String -> String
 getElementIdForJs key =
@@ -222,6 +266,36 @@ getElementIdForJs key =
 
     else
         key
+
+
+{-| Resolve the DOM element ID for JavaScript commands by looking up animations.
+If the key is a composite key, extracts the element ID directly.
+If the key is a plain key (animation group name), looks up matching composite keys.
+-}
+resolveElementIdForJs : String -> Dict String ElementAnimation -> String
+resolveElementIdForJs key animations =
+    if Builder.isCompositeKey key then
+        Builder.extractElementId key
+
+    else
+        -- Key might be an animation group name - look for matching composite keys
+        let
+            matchingKeys =
+                findAnimationsForElement key animations
+                    |> List.map Tuple.first
+        in
+        case matchingKeys of
+            [] ->
+                -- No matches, return key as-is (backwards compatibility)
+                key
+
+            compositeKey :: _ ->
+                -- Found a composite key, extract the element ID from it
+                if Builder.isCompositeKey compositeKey then
+                    Builder.extractElementId compositeKey
+
+                else
+                    compositeKey
 
 
 {-| Get property types for the matching composite keys.
@@ -2672,7 +2746,7 @@ stop key (AnimState state) =
     let
         -- Get the element ID for JavaScript command
         elementId =
-            getElementIdForJs key
+            resolveElementIdForJs key state.elementAnimations
 
         -- Get property types to filter (Nothing = all properties)
         propertyFilter =
@@ -2703,7 +2777,7 @@ pause key (AnimState state) =
     let
         -- Get the element ID for JavaScript command
         elementId =
-            getElementIdForJs key
+            resolveElementIdForJs key state.elementAnimations
 
         -- Get property types to filter (Nothing = all properties)
         propertyFilter =
@@ -2995,7 +3069,7 @@ resume key (AnimState state) =
     let
         -- Get the element ID for JavaScript command
         elementId =
-            getElementIdForJs key
+            resolveElementIdForJs key state.elementAnimations
 
         -- Get property types to filter (Nothing = all properties)
         propertyFilter =
