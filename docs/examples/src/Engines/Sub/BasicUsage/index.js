@@ -6119,12 +6119,13 @@ var $author$project$Anim$Internal$Sub$builder = function (animState) {
 		state.builder,
 		state.elementAnimations);
 };
-var $author$project$Anim$Internal$Builder$clearCurrentElement = function (_v0) {
+var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
+var $author$project$Anim$Internal$Builder$clearElements = function (_v0) {
 	var data = _v0.a;
 	return $author$project$Anim$Internal$Builder$AnimBuilder(
 		_Utils_update(
 			data,
-			{currentElementId: $elm$core$Maybe$Nothing}));
+			{currentElementId: $elm$core$Maybe$Nothing, elements: $elm$core$Dict$empty}));
 };
 var $author$project$Anim$Internal$Sub$BackgroundColorAnimation = function (a) {
 	return {$: 'BackgroundColorAnimation', a: a};
@@ -7947,71 +7948,6 @@ var $elm$core$Dict$isEmpty = function (dict) {
 		return false;
 	}
 };
-var $author$project$Anim$Internal$Builder$markPropertyDirty = function (property) {
-	switch (property.$) {
-		case 'TranslateConfig':
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$TranslateConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-		case 'RotateConfig':
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$RotateConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-		case 'ScaleConfig':
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$ScaleConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-		case 'BackgroundColorConfig':
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$BackgroundColorConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-		case 'FontColorConfig':
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$FontColorConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-		case 'OpacityConfig':
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$OpacityConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-		default:
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$SizeConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-	}
-};
-var $author$project$Anim$Internal$Builder$markDirty = function (_v0) {
-	var data = _v0.a;
-	return $author$project$Anim$Internal$Builder$AnimBuilder(
-		_Utils_update(
-			data,
-			{
-				elements: A2(
-					$elm$core$Dict$map,
-					F2(
-						function (_v1, el) {
-							return _Utils_update(
-								el,
-								{
-									properties: A2($elm$core$List$map, $author$project$Anim$Internal$Builder$markPropertyDirty, el.properties)
-								});
-						}),
-					data.elements)
-			}));
-};
 var $author$project$Anim$Internal$Sub$animate = F2(
 	function (_v0, transform) {
 		var state = _v0.a;
@@ -8051,8 +7987,7 @@ var $author$project$Anim$Internal$Sub$animate = F2(
 			$elm$core$Dict$keys(elementStates));
 		return $author$project$Anim$Internal$Sub$AnimState(
 			{
-				builder: $author$project$Anim$Internal$Builder$clearCurrentElement(
-					$author$project$Anim$Internal$Builder$markDirty(builder_)),
+				builder: $author$project$Anim$Internal$Builder$clearElements(builder_),
 				elementAnimations: elementStates,
 				isRunning: !$elm$core$Dict$isEmpty(elementStates),
 				pendingEvents: _Utils_ap(state.pendingEvents, startedEvents)
@@ -8274,7 +8209,6 @@ var $author$project$Engines$Sub$BasicUsage$Main$fadeIn = A2(
 			$elm$core$Basics$composeR,
 			$author$project$Anim$Property$Opacity$duration(5000),
 			$author$project$Anim$Property$Opacity$build)));
-var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $author$project$Anim$Internal$Builder$Once = {$: 'Once'};
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
 	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
@@ -8325,8 +8259,7 @@ var $author$project$Anim$Internal$Sub$init = function (propertyInitializers) {
 				processedData.elements));
 		return $author$project$Anim$Internal$Sub$AnimState(
 			{
-				builder: $author$project$Anim$Internal$Builder$clearCurrentElement(
-					$author$project$Anim$Internal$Builder$markDirty(configuredBuilder)),
+				builder: $author$project$Anim$Internal$Builder$clearElements(configuredBuilder),
 				elementAnimations: elementStates,
 				isRunning: false,
 				pendingEvents: _List_Nil

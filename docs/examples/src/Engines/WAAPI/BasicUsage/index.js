@@ -5187,20 +5187,20 @@ var $author$project$Anim$Engine$WAAPI$forElement = $author$project$Anim$Internal
 var $author$project$Anim$Internal$WAAPI$AnimState = function (a) {
 	return {$: 'AnimState', a: a};
 };
-var $author$project$Anim$Internal$Builder$clearCurrentElement = function (_v0) {
+var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
+var $author$project$Anim$Internal$Builder$clearElements = function (_v0) {
 	var data = _v0.a;
 	return $author$project$Anim$Internal$Builder$AnimBuilder(
 		_Utils_update(
 			data,
-			{currentElementId: $elm$core$Maybe$Nothing}));
+			{currentElementId: $elm$core$Maybe$Nothing, elements: $elm$core$Dict$empty}));
 };
 var $author$project$Anim$Internal$WAAPI$Rotate = {$: 'Rotate'};
 var $author$project$Anim$Internal$WAAPI$Scale = {$: 'Scale'};
 var $author$project$Anim$Internal$WAAPI$Translate = {$: 'Translate'};
 var $author$project$Anim$Internal$WAAPI$defaultTransformOrder = _List_fromArray(
 	[$author$project$Anim$Internal$WAAPI$Translate, $author$project$Anim$Internal$WAAPI$Rotate, $author$project$Anim$Internal$WAAPI$Scale]);
-var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
-var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $author$project$Anim$Internal$WAAPI$emptyElementStates = {backgroundColor: $elm$core$Maybe$Nothing, fontColor: $elm$core$Maybe$Nothing, opacity: $elm$core$Maybe$Nothing, rotate: $elm$core$Maybe$Nothing, scale: $elm$core$Maybe$Nothing, size: $elm$core$Maybe$Nothing, translate: $elm$core$Maybe$Nothing};
 var $author$project$Anim$Internal$WAAPI$extractElementEndStates = function (elementConfig) {
 	var extractPropertyEndState = F2(
@@ -5285,92 +5285,6 @@ var $elm$core$Dict$map = F2(
 				A2($elm$core$Dict$map, func, right));
 		}
 	});
-var $author$project$Anim$Internal$Builder$BackgroundColorConfig = function (a) {
-	return {$: 'BackgroundColorConfig', a: a};
-};
-var $author$project$Anim$Internal$Builder$FontColorConfig = function (a) {
-	return {$: 'FontColorConfig', a: a};
-};
-var $author$project$Anim$Internal$Builder$OpacityConfig = function (a) {
-	return {$: 'OpacityConfig', a: a};
-};
-var $author$project$Anim$Internal$Builder$RotateConfig = function (a) {
-	return {$: 'RotateConfig', a: a};
-};
-var $author$project$Anim$Internal$Builder$ScaleConfig = function (a) {
-	return {$: 'ScaleConfig', a: a};
-};
-var $author$project$Anim$Internal$Builder$SizeConfig = function (a) {
-	return {$: 'SizeConfig', a: a};
-};
-var $author$project$Anim$Internal$Builder$TranslateConfig = function (a) {
-	return {$: 'TranslateConfig', a: a};
-};
-var $author$project$Anim$Internal$Builder$markPropertyDirty = function (property) {
-	switch (property.$) {
-		case 'TranslateConfig':
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$TranslateConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-		case 'RotateConfig':
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$RotateConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-		case 'ScaleConfig':
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$ScaleConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-		case 'BackgroundColorConfig':
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$BackgroundColorConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-		case 'FontColorConfig':
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$FontColorConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-		case 'OpacityConfig':
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$OpacityConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-		default:
-			var config = property.a;
-			return $author$project$Anim$Internal$Builder$SizeConfig(
-				_Utils_update(
-					config,
-					{isDirty: true}));
-	}
-};
-var $author$project$Anim$Internal$Builder$markDirty = function (_v0) {
-	var data = _v0.a;
-	return $author$project$Anim$Internal$Builder$AnimBuilder(
-		_Utils_update(
-			data,
-			{
-				elements: A2(
-					$elm$core$Dict$map,
-					F2(
-						function (_v1, el) {
-							return _Utils_update(
-								el,
-								{
-									properties: A2($elm$core$List$map, $author$project$Anim$Internal$Builder$markPropertyDirty, el.properties)
-								});
-						}),
-					data.elements)
-			}));
-};
 var $elm$core$List$maybeCons = F3(
 	function (f, mx, xs) {
 		var _v0 = f(mx);
@@ -6125,8 +6039,7 @@ var $author$project$Anim$Internal$WAAPI$init = F3(
 				processedData.elements);
 			return $author$project$Anim$Internal$WAAPI$AnimState(
 				{
-					builder: $author$project$Anim$Internal$Builder$clearCurrentElement(
-						$author$project$Anim$Internal$Builder$markDirty(state.builder)),
+					builder: $author$project$Anim$Internal$Builder$clearElements(state.builder),
 					commandPort: commandPort,
 					elementAnimations: elementAnimations,
 					isRunning: false,
@@ -6136,6 +6049,9 @@ var $author$project$Anim$Internal$WAAPI$init = F3(
 		}
 	});
 var $author$project$Anim$Engine$WAAPI$init = $author$project$Anim$Internal$WAAPI$init;
+var $author$project$Anim$Internal$Builder$OpacityConfig = function (a) {
+	return {$: 'OpacityConfig', a: a};
+};
 var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -6415,6 +6331,24 @@ var $author$project$Anim$Internal$Builders$Property$add = F2(
 			});
 		return A2($author$project$Anim$Internal$Builder$updateCurrentElement, updatedElement, builder);
 	});
+var $author$project$Anim$Internal$Builder$BackgroundColorConfig = function (a) {
+	return {$: 'BackgroundColorConfig', a: a};
+};
+var $author$project$Anim$Internal$Builder$FontColorConfig = function (a) {
+	return {$: 'FontColorConfig', a: a};
+};
+var $author$project$Anim$Internal$Builder$RotateConfig = function (a) {
+	return {$: 'RotateConfig', a: a};
+};
+var $author$project$Anim$Internal$Builder$ScaleConfig = function (a) {
+	return {$: 'ScaleConfig', a: a};
+};
+var $author$project$Anim$Internal$Builder$SizeConfig = function (a) {
+	return {$: 'SizeConfig', a: a};
+};
+var $author$project$Anim$Internal$Builder$TranslateConfig = function (a) {
+	return {$: 'TranslateConfig', a: a};
+};
 var $author$project$Anim$Extra$Easing$BounceInCustom = function (a) {
 	return {$: 'BounceInCustom', a: a};
 };
@@ -9188,8 +9122,7 @@ var $author$project$Anim$Internal$WAAPI$animate = F2(
 				_Utils_update(
 					state,
 					{
-						builder: $author$project$Anim$Internal$Builder$clearCurrentElement(
-							$author$project$Anim$Internal$Builder$markDirty(builderWithHistory)),
+						builder: $author$project$Anim$Internal$Builder$clearElements(builderWithHistory),
 						elementAnimations: updatedElementAnimations,
 						isRunning: !$elm$core$Dict$isEmpty(newElementAnimations)
 					})),

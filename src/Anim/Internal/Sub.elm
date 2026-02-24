@@ -207,8 +207,7 @@ init propertyInitializers =
                 , isRunning = False
                 , builder =
                     configuredBuilder
-                        |> Builder.markDirty
-                        |> Builder.clearCurrentElement
+                        |> Builder.clearElements
                 , pendingEvents = []
                 }
 
@@ -260,8 +259,7 @@ animate (AnimState state) transform =
         , isRunning = not (Dict.isEmpty elementStates)
         , builder =
             builder_
-                |> Builder.markDirty
-                |> Builder.clearCurrentElement
+                |> Builder.clearElements
         , pendingEvents = state.pendingEvents ++ startedEvents
         }
 
@@ -307,8 +305,7 @@ animateWithOrder order (AnimState state) transform =
         , isRunning = not (Dict.isEmpty elementStates)
         , builder =
             builder_
-                |> Builder.markDirty
-                |> Builder.clearCurrentElement
+                |> Builder.clearElements
         , pendingEvents = state.pendingEvents ++ startedEvents
         }
 

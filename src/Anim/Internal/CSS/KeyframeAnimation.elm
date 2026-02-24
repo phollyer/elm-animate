@@ -1,7 +1,9 @@
 module Anim.Internal.CSS.KeyframeAnimation exposing
     ( KeyframeAnimation
     , generate
+    , generateFromProcessed
     , generateWithSuffix
+    , generateWithSuffixFromProcessed
     , setIterationCount
     , toAttributeString
     )
@@ -38,6 +40,13 @@ generate elementId properties =
     generateWithSuffix elementId "" properties
 
 
+{-| Generate animation layers from already-processed properties.
+-}
+generateFromProcessed : String -> List Builder.ProcessedPropertyConfig -> List KeyframeAnimation
+generateFromProcessed elementId processedProps =
+    generateWithSuffixFromProcessed elementId "" processedProps
+
+
 {-| Generate animation layers with an optional suffix for the animation name.
 Used for restarting animations - passing a unique suffix forces the browser to treat it as a new animation.
 -}
@@ -52,10 +61,20 @@ generateWithSuffix elementId suffix properties =
                 Builder.processElement
                     { globalTiming = Nothing, globalEasing = Nothing, globalDelay = Nothing, currentElementId = Nothing, elements = Dict.empty, scrollTargets = [], scrollContainer = "document", animationHistories = Dict.empty, nextAnimationId = 0, elementBaselines = Dict.empty, discreteTransitions = False, iterationCount = Builder.Once, waapiTargetElement = Nothing }
                     { properties = properties, targetElement = Nothing }
+        in
+        generateWithSuffixFromProcessed elementId suffix processed.properties
 
-            processedProps =
-                processed.properties
 
+{-| Generate animation layers with a suffix, from already-processed properties.
+Used for restarting animations from history where properties are already processed.
+-}
+generateWithSuffixFromProcessed : String -> String -> List Builder.ProcessedPropertyConfig -> List KeyframeAnimation
+generateWithSuffixFromProcessed elementId suffix processedProps =
+    if List.isEmpty processedProps then
+        []
+
+    else
+        let
             maxDuration =
                 processedProps
                     |> List.map

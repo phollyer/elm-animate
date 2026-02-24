@@ -18,6 +18,7 @@ module Anim.Internal.Builder exposing
     , allowDiscreteTransitions
     , clearAnimationHistory
     , clearCurrentElement
+    , clearElements
     , delay
     , discreteTransitionsEnabled
     , duration
@@ -53,7 +54,6 @@ module Anim.Internal.Builder exposing
     , makeCompositeKey
     , mapScrollTargets
     , markAnimationAsExecuted
-    , markDirty
     , processAnimationData
     , processAnimationDataWithHistory
     , processElement
@@ -512,6 +512,15 @@ clearCurrentElement (AnimBuilder data) =
     AnimBuilder { data | currentElementId = Nothing }
 
 
+{-| Clear all elements from the builder.
+Used after processing animations to prevent stale element data from being re-sent.
+The animationHistories are preserved for reset/restart functionality.
+-}
+clearElements : AnimBuilder -> AnimBuilder
+clearElements (AnimBuilder data) =
+    AnimBuilder { data | elements = Dict.empty, currentElementId = Nothing }
+
+
 updateElementConfig : String -> ElementConfig -> AnimBuilder -> AnimBuilder
 updateElementConfig elementId elementConfig (AnimBuilder data) =
     AnimBuilder
@@ -585,47 +594,6 @@ propertyType prop =
 
         SizeConfig _ ->
             "size"
-
-
-markDirty : AnimBuilder -> AnimBuilder
-markDirty (AnimBuilder data) =
-    AnimBuilder
-        { data
-            | elements =
-                Dict.map
-                    (\_ el ->
-                        { el
-                            | properties =
-                                List.map markPropertyDirty el.properties
-                        }
-                    )
-                    data.elements
-        }
-
-
-markPropertyDirty : PropertyConfig -> PropertyConfig
-markPropertyDirty property =
-    case property of
-        TranslateConfig config ->
-            TranslateConfig { config | isDirty = True }
-
-        RotateConfig config ->
-            RotateConfig { config | isDirty = True }
-
-        ScaleConfig config ->
-            ScaleConfig { config | isDirty = True }
-
-        BackgroundColorConfig config ->
-            BackgroundColorConfig { config | isDirty = True }
-
-        FontColorConfig config ->
-            FontColorConfig { config | isDirty = True }
-
-        OpacityConfig config ->
-            OpacityConfig { config | isDirty = True }
-
-        SizeConfig config ->
-            SizeConfig { config | isDirty = True }
 
 
 mapScrollTargets : (ScrollTarget -> ScrollTarget) -> AnimBuilder -> AnimBuilder
