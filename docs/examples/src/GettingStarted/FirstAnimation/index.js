@@ -5171,51 +5171,28 @@ var $author$project$Anim$Internal$CSS$NotStarted = {$: 'NotStarted'};
 var $author$project$Anim$Internal$Builder$AnimBuilder = function (a) {
 	return {$: 'AnimBuilder', a: a};
 };
-var $author$project$Anim$Internal$Builder$createEmptyHistory = function (timestamp) {
-	return {
-		current: $elm$core$Maybe$Nothing,
-		history: _List_Nil,
-		metadata: {createdAt: timestamp, lastExecutedId: $elm$core$Maybe$Nothing, totalAnimations: 0}
-	};
+var $author$project$Anim$Internal$Builder$clearCurrentElement = function (_v0) {
+	var data = _v0.a;
+	return $author$project$Anim$Internal$Builder$AnimBuilder(
+		_Utils_update(
+			data,
+			{currentElementId: $elm$core$Maybe$Nothing}));
 };
-var $elm$core$Basics$compare = _Utils_compare;
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
+var $author$project$Anim$Internal$Builder$discreteTransitionsEnabled = function (_v0) {
+	var data = _v0.a;
+	return data.discreteTransitions;
+};
+var $author$project$Anim$Internal$Builder$elements = function (_v0) {
+	var data = _v0.a;
+	return data.elements;
+};
+var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $elm$core$Dict$Black = {$: 'Black'};
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
 		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
 	});
-var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var $elm$core$Dict$Red = {$: 'Red'};
 var $elm$core$Dict$balance = F5(
 	function (color, key, value, left, right) {
@@ -5271,6 +5248,7 @@ var $elm$core$Dict$balance = F5(
 			}
 		}
 	});
+var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$insertHelp = F3(
 	function (key, value, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
@@ -5317,92 +5295,6 @@ var $elm$core$Dict$insert = F3(
 		} else {
 			var x = _v0;
 			return x;
-		}
-	});
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
-var $author$project$Anim$Internal$Builder$addAnimationToHistory = F4(
-	function (elementId, processedData, maybeLabel, _v0) {
-		var data = _v0.a;
-		var newAnimationId = data.nextAnimationId;
-		var currentTimestamp = 0;
-		var existingHistory = A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Anim$Internal$Builder$createEmptyHistory(currentTimestamp),
-			A2($elm$core$Dict$get, elementId, data.animationHistories));
-		var newEntry = {id: newAnimationId, label: maybeLabel, processedData: processedData, timestamp: currentTimestamp};
-		var updatedHistory = function () {
-			var _v1 = existingHistory.current;
-			if (_v1.$ === 'Nothing') {
-				return _Utils_update(
-					existingHistory,
-					{
-						current: $elm$core$Maybe$Just(newEntry),
-						metadata: {createdAt: existingHistory.metadata.createdAt, lastExecutedId: existingHistory.metadata.lastExecutedId, totalAnimations: existingHistory.metadata.totalAnimations + 1}
-					});
-			} else {
-				var previousCurrent = _v1.a;
-				return _Utils_update(
-					existingHistory,
-					{
-						current: $elm$core$Maybe$Just(newEntry),
-						history: A2($elm$core$List$cons, previousCurrent, existingHistory.history),
-						metadata: {createdAt: existingHistory.metadata.createdAt, lastExecutedId: existingHistory.metadata.lastExecutedId, totalAnimations: existingHistory.metadata.totalAnimations + 1}
-					});
-			}
-		}();
-		var updatedData = _Utils_update(
-			data,
-			{
-				animationHistories: A3($elm$core$Dict$insert, elementId, updatedHistory, data.animationHistories),
-				nextAnimationId: data.nextAnimationId + 1
-			});
-		return _Utils_Tuple2(
-			$author$project$Anim$Internal$Builder$AnimBuilder(updatedData),
-			newAnimationId);
-	});
-var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
-var $author$project$Anim$Internal$Builder$clearElements = function (_v0) {
-	var data = _v0.a;
-	return $author$project$Anim$Internal$Builder$AnimBuilder(
-		_Utils_update(
-			data,
-			{currentElementId: $elm$core$Maybe$Nothing, elements: $elm$core$Dict$empty}));
-};
-var $author$project$Anim$Internal$Builder$discreteTransitionsEnabled = function (_v0) {
-	var data = _v0.a;
-	return data.discreteTransitions;
-};
-var $elm$core$Dict$foldl = F3(
-	function (func, acc, dict) {
-		foldl:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return acc;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var $temp$func = func,
-					$temp$acc = A3(
-					func,
-					key,
-					value,
-					A3($elm$core$Dict$foldl, func, acc, left)),
-					$temp$dict = right;
-				func = $temp$func;
-				acc = $temp$acc;
-				dict = $temp$dict;
-				continue foldl;
-			}
 		}
 	});
 var $elm$core$Dict$fromList = function (assocs) {
@@ -5785,6 +5677,15 @@ var $author$project$Anim$Internal$Easing$toCSS = function (maybeEasing) {
 		return 'ease';
 	}
 };
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
 var $author$project$Anim$Internal$CSS$Transition$consolidateProcessedTiming = function (transformProps) {
 	if (!transformProps.b) {
 		return $elm$core$Maybe$Nothing;
@@ -7295,124 +7196,6 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffixFromPr
 				]);
 		}
 	});
-var $author$project$Anim$Internal$CSS$KeyframeAnimation$setIterationCount = F2(
-	function (count, layers) {
-		return A2(
-			$elm$core$List$map,
-			function (layer) {
-				return _Utils_update(
-					layer,
-					{iterationCount: count});
-			},
-			layers);
-	});
-var $author$project$Anim$Internal$CSS$transformOrderToString = function (order) {
-	switch (order.$) {
-		case 'Translate':
-			return 'translate';
-		case 'Rotate':
-			return 'rotate';
-		default:
-			return 'scale';
-	}
-};
-var $author$project$Anim$Internal$CSS$generateElementAnimationFromProcessedWithSuffix = F6(
-	function (maybeOrder, discreteTransitions, iterationCount, suffix, elementId, processed) {
-		var transitionBehaviorStyle = discreteTransitions ? _List_fromArray(
-			[
-				_Utils_Tuple2('transition-behavior', 'allow-discrete')
-			]) : _List_Nil;
-		var processedProps = processed.properties;
-		var transforms = function () {
-			if (maybeOrder.$ === 'Nothing') {
-				return $author$project$Anim$Internal$CSS$Transform$generateFromProcessed(processedProps);
-			} else {
-				var order = maybeOrder.a;
-				var orderStrings = A2($elm$core$List$map, $author$project$Anim$Internal$CSS$transformOrderToString, order);
-				return A2($author$project$Anim$Internal$CSS$Transform$generateFromProcessedWithOrder, orderStrings, processedProps);
-			}
-		}();
-		var transitions = $author$project$Anim$Internal$CSS$Transition$generateFromProcessed(processedProps);
-		var opacityStyles = A2(
-			$elm$core$List$filterMap,
-			function (prop) {
-				if (prop.$ === 'ProcessedOpacityConfig') {
-					var config = prop.a;
-					return $elm$core$Maybe$Just(
-						_Utils_Tuple2(
-							'opacity',
-							$author$project$Anim$Internal$Properties$Opacity$toString(config.end)));
-				} else {
-					return $elm$core$Maybe$Nothing;
-				}
-			},
-			processedProps);
-		var colorStyles = A2(
-			$elm$core$List$filterMap,
-			function (prop) {
-				if (prop.$ === 'ProcessedBackgroundColorConfig') {
-					var config = prop.a;
-					return $elm$core$Maybe$Just(
-						_Utils_Tuple2(
-							'background-color',
-							$author$project$Anim$Internal$Properties$Color$toCssString(config.end)));
-				} else {
-					return $elm$core$Maybe$Nothing;
-				}
-			},
-			processedProps);
-		var allStyles = A2(
-			$elm$core$List$filter,
-			function (_v0) {
-				var value = _v0.b;
-				return !$elm$core$String$isEmpty(value);
-			},
-			_Utils_ap(
-				_List_fromArray(
-					[
-						_Utils_Tuple2('transform', transforms),
-						_Utils_Tuple2('transition', transitions)
-					]),
-				_Utils_ap(
-					transitionBehaviorStyle,
-					_Utils_ap(colorStyles, opacityStyles))));
-		return {
-			animationLayers: A2(
-				$author$project$Anim$Internal$CSS$KeyframeAnimation$setIterationCount,
-				iterationCount,
-				A3($author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffixFromProcessed, elementId, suffix, processedProps)),
-			styles: allStyles
-		};
-	});
-var $author$project$Anim$Internal$CSS$generateElementAnimationFromProcessed = F5(
-	function (maybeOrder, discreteTransitions, iterationCount, elementId, processed) {
-		return A6($author$project$Anim$Internal$CSS$generateElementAnimationFromProcessedWithSuffix, maybeOrder, discreteTransitions, iterationCount, '', elementId, processed);
-	});
-var $author$project$Anim$Internal$Builder$getIterationCount = function (_v0) {
-	var data = _v0.a;
-	return data.iterationCount;
-};
-var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
-	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
-var $elm$core$Dict$map = F2(
-	function (func, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		} else {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				key,
-				A2(func, key, value),
-				A2($elm$core$Dict$map, func, left),
-				A2($elm$core$Dict$map, func, right));
-		}
-	});
 var $author$project$Anim$Internal$Builder$ProcessedBackgroundColorConfig = function (a) {
 	return {$: 'ProcessedBackgroundColorConfig', a: a};
 };
@@ -7820,17 +7603,140 @@ var $author$project$Anim$Internal$Builder$processElement = F2(
 			targetElement: elementConfig.targetElement
 		};
 	});
-var $author$project$Anim$Internal$Builder$processAnimationData = function (_v0) {
-	var data = _v0.a;
-	var processedElements = A2(
-		$elm$core$Dict$map,
-		F2(
-			function (_v1, elementConfig) {
-				return A2($author$project$Anim$Internal$Builder$processElement, data, elementConfig);
-			}),
-		data.elements);
-	return {elements: processedElements, globalDelay: data.globalDelay, globalEasing: data.globalEasing, globalTiming: data.globalTiming, iterationCount: data.iterationCount};
+var $author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix = F3(
+	function (elementId, suffix, properties) {
+		if ($elm$core$List$isEmpty(properties)) {
+			return _List_Nil;
+		} else {
+			var processed = A2(
+				$author$project$Anim$Internal$Builder$processElement,
+				{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
+				{properties: properties, targetElement: $elm$core$Maybe$Nothing});
+			return A3($author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffixFromProcessed, elementId, suffix, processed.properties);
+		}
+	});
+var $author$project$Anim$Internal$CSS$KeyframeAnimation$setIterationCount = F2(
+	function (count, layers) {
+		return A2(
+			$elm$core$List$map,
+			function (layer) {
+				return _Utils_update(
+					layer,
+					{iterationCount: count});
+			},
+			layers);
+	});
+var $author$project$Anim$Internal$CSS$transformOrderToString = function (order) {
+	switch (order.$) {
+		case 'Translate':
+			return 'translate';
+		case 'Rotate':
+			return 'rotate';
+		default:
+			return 'scale';
+	}
 };
+var $author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix = F6(
+	function (maybeOrder, discreteTransitions, iterationCount, suffix, elementId, elementConfig) {
+		var transitionBehaviorStyle = discreteTransitions ? _List_fromArray(
+			[
+				_Utils_Tuple2('transition-behavior', 'allow-discrete')
+			]) : _List_Nil;
+		var processed = A2(
+			$author$project$Anim$Internal$Builder$processElement,
+			{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: discreteTransitions, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: iterationCount, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
+			elementConfig);
+		var processedProps = processed.properties;
+		var transforms = function () {
+			if (maybeOrder.$ === 'Nothing') {
+				return $author$project$Anim$Internal$CSS$Transform$generateFromProcessed(processedProps);
+			} else {
+				var order = maybeOrder.a;
+				var orderStrings = A2($elm$core$List$map, $author$project$Anim$Internal$CSS$transformOrderToString, order);
+				return A2($author$project$Anim$Internal$CSS$Transform$generateFromProcessedWithOrder, orderStrings, processedProps);
+			}
+		}();
+		var transitions = $author$project$Anim$Internal$CSS$Transition$generateFromProcessed(processedProps);
+		var opacityStyles = A2(
+			$elm$core$List$filterMap,
+			function (prop) {
+				if (prop.$ === 'ProcessedOpacityConfig') {
+					var config = prop.a;
+					return $elm$core$Maybe$Just(
+						_Utils_Tuple2(
+							'opacity',
+							$author$project$Anim$Internal$Properties$Opacity$toString(config.end)));
+				} else {
+					return $elm$core$Maybe$Nothing;
+				}
+			},
+			processedProps);
+		var colorStyles = A2(
+			$elm$core$List$filterMap,
+			function (prop) {
+				if (prop.$ === 'ProcessedBackgroundColorConfig') {
+					var config = prop.a;
+					return $elm$core$Maybe$Just(
+						_Utils_Tuple2(
+							'background-color',
+							$author$project$Anim$Internal$Properties$Color$toCssString(config.end)));
+				} else {
+					return $elm$core$Maybe$Nothing;
+				}
+			},
+			processedProps);
+		var allStyles = A2(
+			$elm$core$List$filter,
+			function (_v0) {
+				var value = _v0.b;
+				return !$elm$core$String$isEmpty(value);
+			},
+			_Utils_ap(
+				_List_fromArray(
+					[
+						_Utils_Tuple2('transform', transforms),
+						_Utils_Tuple2('transition', transitions)
+					]),
+				_Utils_ap(
+					transitionBehaviorStyle,
+					_Utils_ap(colorStyles, opacityStyles))));
+		return {
+			animationLayers: A2(
+				$author$project$Anim$Internal$CSS$KeyframeAnimation$setIterationCount,
+				iterationCount,
+				A3($author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix, elementId, suffix, elementConfig.properties)),
+			styles: allStyles
+		};
+	});
+var $author$project$Anim$Internal$CSS$generateElementAnimation = F5(
+	function (maybeOrder, discreteTransitions, iterationCount, elementId, elementConfig) {
+		return A6($author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix, maybeOrder, discreteTransitions, iterationCount, '', elementId, elementConfig);
+	});
+var $author$project$Anim$Internal$Builder$getIterationCount = function (_v0) {
+	var data = _v0.a;
+	return data.iterationCount;
+};
+var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
+	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
+var $elm$core$Dict$map = F2(
+	function (func, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				A2(func, key, value),
+				A2($elm$core$Dict$map, func, left),
+				A2($elm$core$Dict$map, func, right));
+		}
+	});
 var $author$project$Anim$Internal$CSS$init = function (propertyInitializers) {
 	if (!propertyInitializers.b) {
 		return $author$project$Anim$Internal$CSS$AnimState(
@@ -7844,27 +7750,19 @@ var $author$project$Anim$Internal$CSS$init = function (propertyInitializers) {
 				}),
 			$author$project$Anim$Internal$Builder$init,
 			propertyInitializers);
-		var processedData = $author$project$Anim$Internal$Builder$processAnimationData(configuredBuilder);
-		var elementIds = $elm$core$Dict$keys(processedData.elements);
-		var builderWithHistory = A3(
-			$elm$core$Dict$foldl,
-			F3(
-				function (elementId, _v1, accBuilder) {
-					return A4($author$project$Anim$Internal$Builder$addAnimationToHistory, elementId, processedData, $elm$core$Maybe$Nothing, accBuilder).a;
-				}),
-			configuredBuilder,
-			processedData.elements);
+		var elementIds = $elm$core$Dict$keys(
+			$author$project$Anim$Internal$Builder$elements(configuredBuilder));
 		return $author$project$Anim$Internal$CSS$AnimState(
 			{
-				builder: $author$project$Anim$Internal$Builder$clearElements(builderWithHistory),
+				builder: $author$project$Anim$Internal$Builder$clearCurrentElement(configuredBuilder),
 				elementAnimations: A2(
 					$elm$core$Dict$map,
 					A3(
-						$author$project$Anim$Internal$CSS$generateElementAnimationFromProcessed,
+						$author$project$Anim$Internal$CSS$generateElementAnimation,
 						$elm$core$Maybe$Nothing,
 						$author$project$Anim$Internal$Builder$discreteTransitionsEnabled(configuredBuilder),
 						$author$project$Anim$Internal$Builder$getIterationCount(configuredBuilder)),
-					processedData.elements),
+					$author$project$Anim$Internal$Builder$elements(configuredBuilder)),
 				elementStates: $elm$core$Dict$fromList(
 					A2(
 						$elm$core$List$map,
@@ -7880,6 +7778,37 @@ var $author$project$Anim$Engine$CSS$Transitions$init = $author$project$Anim$Inte
 var $author$project$Anim$Internal$Builder$OpacityConfig = function (a) {
 	return {$: 'OpacityConfig', a: a};
 };
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
 var $author$project$Anim$Internal$Builder$getCurrentElementConfig = function (_v0) {
 	var data = _v0.a;
 	var _v1 = data.currentElementId;
@@ -8531,9 +8460,164 @@ var $author$project$GettingStarted$FirstAnimation$Main$fadeTo = function (to) {
 };
 var $author$project$GettingStarted$FirstAnimation$Main$fadeIn = $author$project$GettingStarted$FirstAnimation$Main$fadeTo(1);
 var $author$project$GettingStarted$FirstAnimation$Main$fadeOut = $author$project$GettingStarted$FirstAnimation$Main$fadeTo(0);
+var $author$project$Anim$Internal$Builder$createEmptyHistory = function (timestamp) {
+	return {
+		current: $elm$core$Maybe$Nothing,
+		history: _List_Nil,
+		metadata: {createdAt: timestamp, lastExecutedId: $elm$core$Maybe$Nothing, totalAnimations: 0}
+	};
+};
+var $author$project$Anim$Internal$Builder$addAnimationToHistory = F4(
+	function (elementId, processedData, maybeLabel, _v0) {
+		var data = _v0.a;
+		var newAnimationId = data.nextAnimationId;
+		var currentTimestamp = 0;
+		var existingHistory = A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Anim$Internal$Builder$createEmptyHistory(currentTimestamp),
+			A2($elm$core$Dict$get, elementId, data.animationHistories));
+		var newEntry = {id: newAnimationId, label: maybeLabel, processedData: processedData, timestamp: currentTimestamp};
+		var updatedHistory = function () {
+			var _v1 = existingHistory.current;
+			if (_v1.$ === 'Nothing') {
+				return _Utils_update(
+					existingHistory,
+					{
+						current: $elm$core$Maybe$Just(newEntry),
+						metadata: {createdAt: existingHistory.metadata.createdAt, lastExecutedId: existingHistory.metadata.lastExecutedId, totalAnimations: existingHistory.metadata.totalAnimations + 1}
+					});
+			} else {
+				var previousCurrent = _v1.a;
+				return _Utils_update(
+					existingHistory,
+					{
+						current: $elm$core$Maybe$Just(newEntry),
+						history: A2($elm$core$List$cons, previousCurrent, existingHistory.history),
+						metadata: {createdAt: existingHistory.metadata.createdAt, lastExecutedId: existingHistory.metadata.lastExecutedId, totalAnimations: existingHistory.metadata.totalAnimations + 1}
+					});
+			}
+		}();
+		var updatedData = _Utils_update(
+			data,
+			{
+				animationHistories: A3($elm$core$Dict$insert, elementId, updatedHistory, data.animationHistories),
+				nextAnimationId: data.nextAnimationId + 1
+			});
+		return _Utils_Tuple2(
+			$author$project$Anim$Internal$Builder$AnimBuilder(updatedData),
+			newAnimationId);
+	});
 var $author$project$Anim$Internal$CSS$builder = function (_v0) {
 	var state = _v0.a;
 	return state.builder;
+};
+var $elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3($elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
+var $author$project$Anim$Internal$CSS$generateElementAnimationFromProcessedWithSuffix = F6(
+	function (maybeOrder, discreteTransitions, iterationCount, suffix, elementId, processed) {
+		var transitionBehaviorStyle = discreteTransitions ? _List_fromArray(
+			[
+				_Utils_Tuple2('transition-behavior', 'allow-discrete')
+			]) : _List_Nil;
+		var processedProps = processed.properties;
+		var transforms = function () {
+			if (maybeOrder.$ === 'Nothing') {
+				return $author$project$Anim$Internal$CSS$Transform$generateFromProcessed(processedProps);
+			} else {
+				var order = maybeOrder.a;
+				var orderStrings = A2($elm$core$List$map, $author$project$Anim$Internal$CSS$transformOrderToString, order);
+				return A2($author$project$Anim$Internal$CSS$Transform$generateFromProcessedWithOrder, orderStrings, processedProps);
+			}
+		}();
+		var transitions = $author$project$Anim$Internal$CSS$Transition$generateFromProcessed(processedProps);
+		var opacityStyles = A2(
+			$elm$core$List$filterMap,
+			function (prop) {
+				if (prop.$ === 'ProcessedOpacityConfig') {
+					var config = prop.a;
+					return $elm$core$Maybe$Just(
+						_Utils_Tuple2(
+							'opacity',
+							$author$project$Anim$Internal$Properties$Opacity$toString(config.end)));
+				} else {
+					return $elm$core$Maybe$Nothing;
+				}
+			},
+			processedProps);
+		var colorStyles = A2(
+			$elm$core$List$filterMap,
+			function (prop) {
+				if (prop.$ === 'ProcessedBackgroundColorConfig') {
+					var config = prop.a;
+					return $elm$core$Maybe$Just(
+						_Utils_Tuple2(
+							'background-color',
+							$author$project$Anim$Internal$Properties$Color$toCssString(config.end)));
+				} else {
+					return $elm$core$Maybe$Nothing;
+				}
+			},
+			processedProps);
+		var allStyles = A2(
+			$elm$core$List$filter,
+			function (_v0) {
+				var value = _v0.b;
+				return !$elm$core$String$isEmpty(value);
+			},
+			_Utils_ap(
+				_List_fromArray(
+					[
+						_Utils_Tuple2('transform', transforms),
+						_Utils_Tuple2('transition', transitions)
+					]),
+				_Utils_ap(
+					transitionBehaviorStyle,
+					_Utils_ap(colorStyles, opacityStyles))));
+		return {
+			animationLayers: A2(
+				$author$project$Anim$Internal$CSS$KeyframeAnimation$setIterationCount,
+				iterationCount,
+				A3($author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffixFromProcessed, elementId, suffix, processedProps)),
+			styles: allStyles
+		};
+	});
+var $author$project$Anim$Internal$CSS$generateElementAnimationFromProcessed = F5(
+	function (maybeOrder, discreteTransitions, iterationCount, elementId, processed) {
+		return A6($author$project$Anim$Internal$CSS$generateElementAnimationFromProcessedWithSuffix, maybeOrder, discreteTransitions, iterationCount, '', elementId, processed);
+	});
+var $author$project$Anim$Internal$Builder$processAnimationData = function (_v0) {
+	var data = _v0.a;
+	var processedElements = A2(
+		$elm$core$Dict$map,
+		F2(
+			function (_v1, elementConfig) {
+				return A2($author$project$Anim$Internal$Builder$processElement, data, elementConfig);
+			}),
+		data.elements);
+	return {elements: processedElements, globalDelay: data.globalDelay, globalEasing: data.globalEasing, globalTiming: data.globalTiming, iterationCount: data.iterationCount};
 };
 var $author$project$Anim$Internal$CSS$animate = F2(
 	function (animState, transform) {
@@ -8551,7 +8635,7 @@ var $author$project$Anim$Internal$CSS$animate = F2(
 			processedData.elements);
 		return $author$project$Anim$Internal$CSS$AnimState(
 			{
-				builder: $author$project$Anim$Internal$Builder$clearElements(builderWithHistory),
+				builder: $author$project$Anim$Internal$Builder$clearCurrentElement(builderWithHistory),
 				elementAnimations: A2(
 					$elm$core$Dict$map,
 					A3(

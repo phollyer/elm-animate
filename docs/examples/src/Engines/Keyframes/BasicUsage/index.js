@@ -5371,18 +5371,18 @@ var $author$project$Anim$Internal$CSS$builder = function (_v0) {
 	var state = _v0.a;
 	return state.builder;
 };
-var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
-var $author$project$Anim$Internal$Builder$clearElements = function (_v0) {
+var $author$project$Anim$Internal$Builder$clearCurrentElement = function (_v0) {
 	var data = _v0.a;
 	return $author$project$Anim$Internal$Builder$AnimBuilder(
 		_Utils_update(
 			data,
-			{currentElementId: $elm$core$Maybe$Nothing, elements: $elm$core$Dict$empty}));
+			{currentElementId: $elm$core$Maybe$Nothing}));
 };
 var $author$project$Anim$Internal$Builder$discreteTransitionsEnabled = function (_v0) {
 	var data = _v0.a;
 	return data.discreteTransitions;
 };
+var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $elm$core$Dict$foldl = F3(
 	function (func, acc, dict) {
 		foldl:
@@ -7848,7 +7848,7 @@ var $author$project$Anim$Internal$CSS$animate = F2(
 			processedData.elements);
 		return $author$project$Anim$Internal$CSS$AnimState(
 			{
-				builder: $author$project$Anim$Internal$Builder$clearElements(builderWithHistory),
+				builder: $author$project$Anim$Internal$Builder$clearCurrentElement(builderWithHistory),
 				elementAnimations: A2(
 					$elm$core$Dict$map,
 					A3(
@@ -8457,6 +8457,98 @@ var $author$project$Engines$Keyframes$BasicUsage$Main$fadeIn = A2(
 			$elm$core$Basics$composeR,
 			$author$project$Anim$Property$Opacity$duration(5000),
 			$author$project$Anim$Property$Opacity$build)));
+var $author$project$Anim$Internal$Builder$elements = function (_v0) {
+	var data = _v0.a;
+	return data.elements;
+};
+var $author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix = F3(
+	function (elementId, suffix, properties) {
+		if ($elm$core$List$isEmpty(properties)) {
+			return _List_Nil;
+		} else {
+			var processed = A2(
+				$author$project$Anim$Internal$Builder$processElement,
+				{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
+				{properties: properties, targetElement: $elm$core$Maybe$Nothing});
+			return A3($author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffixFromProcessed, elementId, suffix, processed.properties);
+		}
+	});
+var $author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix = F6(
+	function (maybeOrder, discreteTransitions, iterationCount, suffix, elementId, elementConfig) {
+		var transitionBehaviorStyle = discreteTransitions ? _List_fromArray(
+			[
+				_Utils_Tuple2('transition-behavior', 'allow-discrete')
+			]) : _List_Nil;
+		var processed = A2(
+			$author$project$Anim$Internal$Builder$processElement,
+			{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: discreteTransitions, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: iterationCount, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
+			elementConfig);
+		var processedProps = processed.properties;
+		var transforms = function () {
+			if (maybeOrder.$ === 'Nothing') {
+				return $author$project$Anim$Internal$CSS$Transform$generateFromProcessed(processedProps);
+			} else {
+				var order = maybeOrder.a;
+				var orderStrings = A2($elm$core$List$map, $author$project$Anim$Internal$CSS$transformOrderToString, order);
+				return A2($author$project$Anim$Internal$CSS$Transform$generateFromProcessedWithOrder, orderStrings, processedProps);
+			}
+		}();
+		var transitions = $author$project$Anim$Internal$CSS$Transition$generateFromProcessed(processedProps);
+		var opacityStyles = A2(
+			$elm$core$List$filterMap,
+			function (prop) {
+				if (prop.$ === 'ProcessedOpacityConfig') {
+					var config = prop.a;
+					return $elm$core$Maybe$Just(
+						_Utils_Tuple2(
+							'opacity',
+							$author$project$Anim$Internal$Properties$Opacity$toString(config.end)));
+				} else {
+					return $elm$core$Maybe$Nothing;
+				}
+			},
+			processedProps);
+		var colorStyles = A2(
+			$elm$core$List$filterMap,
+			function (prop) {
+				if (prop.$ === 'ProcessedBackgroundColorConfig') {
+					var config = prop.a;
+					return $elm$core$Maybe$Just(
+						_Utils_Tuple2(
+							'background-color',
+							$author$project$Anim$Internal$Properties$Color$toCssString(config.end)));
+				} else {
+					return $elm$core$Maybe$Nothing;
+				}
+			},
+			processedProps);
+		var allStyles = A2(
+			$elm$core$List$filter,
+			function (_v0) {
+				var value = _v0.b;
+				return !$elm$core$String$isEmpty(value);
+			},
+			_Utils_ap(
+				_List_fromArray(
+					[
+						_Utils_Tuple2('transform', transforms),
+						_Utils_Tuple2('transition', transitions)
+					]),
+				_Utils_ap(
+					transitionBehaviorStyle,
+					_Utils_ap(colorStyles, opacityStyles))));
+		return {
+			animationLayers: A2(
+				$author$project$Anim$Internal$CSS$KeyframeAnimation$setIterationCount,
+				iterationCount,
+				A3($author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix, elementId, suffix, elementConfig.properties)),
+			styles: allStyles
+		};
+	});
+var $author$project$Anim$Internal$CSS$generateElementAnimation = F5(
+	function (maybeOrder, discreteTransitions, iterationCount, elementId, elementConfig) {
+		return A6($author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix, maybeOrder, discreteTransitions, iterationCount, '', elementId, elementConfig);
+	});
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
 	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
 var $author$project$Anim$Internal$CSS$init = function (propertyInitializers) {
@@ -8472,27 +8564,19 @@ var $author$project$Anim$Internal$CSS$init = function (propertyInitializers) {
 				}),
 			$author$project$Anim$Internal$Builder$init,
 			propertyInitializers);
-		var processedData = $author$project$Anim$Internal$Builder$processAnimationData(configuredBuilder);
-		var elementIds = $elm$core$Dict$keys(processedData.elements);
-		var builderWithHistory = A3(
-			$elm$core$Dict$foldl,
-			F3(
-				function (elementId, _v1, accBuilder) {
-					return A4($author$project$Anim$Internal$Builder$addAnimationToHistory, elementId, processedData, $elm$core$Maybe$Nothing, accBuilder).a;
-				}),
-			configuredBuilder,
-			processedData.elements);
+		var elementIds = $elm$core$Dict$keys(
+			$author$project$Anim$Internal$Builder$elements(configuredBuilder));
 		return $author$project$Anim$Internal$CSS$AnimState(
 			{
-				builder: $author$project$Anim$Internal$Builder$clearElements(builderWithHistory),
+				builder: $author$project$Anim$Internal$Builder$clearCurrentElement(configuredBuilder),
 				elementAnimations: A2(
 					$elm$core$Dict$map,
 					A3(
-						$author$project$Anim$Internal$CSS$generateElementAnimationFromProcessed,
+						$author$project$Anim$Internal$CSS$generateElementAnimation,
 						$elm$core$Maybe$Nothing,
 						$author$project$Anim$Internal$Builder$discreteTransitionsEnabled(configuredBuilder),
 						$author$project$Anim$Internal$Builder$getIterationCount(configuredBuilder)),
-					processedData.elements),
+					$author$project$Anim$Internal$Builder$elements(configuredBuilder)),
 				elementStates: $elm$core$Dict$fromList(
 					A2(
 						$elm$core$List$map,

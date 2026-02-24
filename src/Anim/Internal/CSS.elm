@@ -122,35 +122,23 @@ init propertyInitializers =
                         Builder.init
                         propertyInitializers
 
-                -- Process all elements to get processed data
-                processedData =
-                    Builder.processAnimationData configuredBuilder
-
                 elementIds =
-                    processedData.elements
+                    configuredBuilder
+                        |> Builder.elements
                         |> Dict.keys
-
-                -- Add each element to animation history
-                builderWithHistory =
-                    Dict.foldl
-                        (\elementId _ accBuilder ->
-                            Builder.addAnimationToHistory elementId processedData Nothing accBuilder
-                                |> Tuple.first
-                        )
-                        configuredBuilder
-                        processedData.elements
             in
             AnimState
                 { elementAnimations =
-                    processedData.elements
-                        |> Dict.map (generateElementAnimationFromProcessed Nothing (Builder.discreteTransitionsEnabled configuredBuilder) (Builder.getIterationCount configuredBuilder))
+                    configuredBuilder
+                        |> Builder.elements
+                        |> Dict.map (generateElementAnimation Nothing (Builder.discreteTransitionsEnabled configuredBuilder) (Builder.getIterationCount configuredBuilder))
                 , elementStates =
                     elementIds
                         |> List.map (\id -> ( id, NotStarted ))
                         |> Dict.fromList
                 , builder =
-                    builderWithHistory
-                        |> Builder.clearElements
+                    configuredBuilder
+                        |> Builder.clearCurrentElement
                 , restartCounters = Dict.empty
                 }
 
@@ -196,7 +184,7 @@ animate animState transform =
                 |> Dict.fromList
         , builder =
             builderWithHistory
-                |> Builder.clearElements
+                |> Builder.clearCurrentElement
         , restartCounters = Dict.empty
         }
 
@@ -1373,139 +1361,204 @@ stopAnimation elementId animState =
 
 {-| Reset an animation by jumping instantly to its start state.
 Sets styles directly without creating keyframe animations.
-Uses the animation history to get the original start values.
+Uses the animation history if available, otherwise falls back to builder.elements.
 -}
 reset : String -> AnimState -> AnimState
 reset elementId (AnimState state) =
-    case Builder.getCurrentAnimation elementId state.builder of
-        Nothing ->
-            AnimState state
+    let
+        -- Helper to build a minimal PropertyConfig for instant positioning
+        makeInstantConfig : a -> Builder.AnimationConfig a
+        makeInstantConfig value =
+            { start = Just value
+            , end = value
+            , duration = 0
+            , speed = 0
+            , distance = 0
+            , timing = Just (Duration 0)
+            , easing = Just Anim.Extra.Easing.Linear
+            , delay = Nothing
+            , isDirty = True
+            }
 
-        Just entry ->
-            case Dict.get elementId entry.processedData.elements of
-                Nothing ->
-                    AnimState state
+        -- Try to get start values from animation history first
+        maybeFromHistory =
+            Builder.getCurrentAnimation elementId state.builder
+                |> Maybe.andThen (\entry -> Dict.get elementId entry.processedData.elements)
+                |> Maybe.map
+                    (\processedElementConfig ->
+                        processedElementConfig.properties
+                            |> List.filterMap
+                                (\prop ->
+                                    case prop of
+                                        Builder.ProcessedTranslateConfig config ->
+                                            Just <|
+                                                Builder.TranslateConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault Translate.default config.start)
+                                                    )
 
-                Just processedElementConfig ->
-                    let
-                        -- Helper to build a minimal PropertyConfig for instant positioning
-                        makeInstantConfig : a -> Builder.AnimationConfig a
-                        makeInstantConfig value =
-                            { start = Just value
-                            , end = value
-                            , duration = 0
-                            , speed = 0
-                            , distance = 0
-                            , timing = Just (Duration 0)
-                            , easing = Just Anim.Extra.Easing.Linear
-                            , delay = Nothing
-                            , isDirty = True
-                            }
+                                        Builder.ProcessedScaleConfig config ->
+                                            Just <|
+                                                Builder.ScaleConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault (Scale.fromUniform 1.0) config.start)
+                                                    )
 
-                        -- Extract start values from the processed config
-                        properties =
-                            processedElementConfig.properties
-                                |> List.filterMap
-                                    (\prop ->
-                                        case prop of
-                                            Builder.ProcessedTranslateConfig config ->
-                                                Just <|
-                                                    Builder.TranslateConfig
-                                                        (makeInstantConfig
-                                                            (Maybe.withDefault Translate.default config.start)
-                                                        )
+                                        Builder.ProcessedRotateConfig config ->
+                                            Just <|
+                                                Builder.RotateConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault Rotate.default config.start)
+                                                    )
 
-                                            Builder.ProcessedScaleConfig config ->
-                                                Just <|
-                                                    Builder.ScaleConfig
-                                                        (makeInstantConfig
-                                                            (Maybe.withDefault (Scale.fromUniform 1.0) config.start)
-                                                        )
+                                        Builder.ProcessedOpacityConfig config ->
+                                            Just <|
+                                                Builder.OpacityConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault Opacity.default config.start)
+                                                    )
 
-                                            Builder.ProcessedRotateConfig config ->
-                                                Just <|
-                                                    Builder.RotateConfig
-                                                        (makeInstantConfig
-                                                            (Maybe.withDefault Rotate.default config.start)
-                                                        )
+                                        Builder.ProcessedBackgroundColorConfig config ->
+                                            Just <|
+                                                Builder.BackgroundColorConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault BackgroundColor.default config.start)
+                                                    )
 
-                                            Builder.ProcessedOpacityConfig config ->
-                                                Just <|
-                                                    Builder.OpacityConfig
-                                                        (makeInstantConfig
-                                                            (Maybe.withDefault Opacity.default config.start)
-                                                        )
+                                        Builder.ProcessedSizeConfig config ->
+                                            Just <|
+                                                Builder.SizeConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault Size.default config.start)
+                                                    )
 
-                                            Builder.ProcessedBackgroundColorConfig config ->
-                                                Just <|
-                                                    Builder.BackgroundColorConfig
-                                                        (makeInstantConfig
-                                                            (Maybe.withDefault BackgroundColor.default config.start)
-                                                        )
+                                        Builder.ProcessedFontColorConfig _ ->
+                                            Nothing
+                                )
+                    )
 
-                                            Builder.ProcessedSizeConfig config ->
-                                                Just <|
-                                                    Builder.SizeConfig
-                                                        (makeInstantConfig
-                                                            (Maybe.withDefault Size.default config.start)
-                                                        )
+        -- Fallback to builder.elements if no history
+        maybeFromBuilder =
+            Builder.getElementConfig elementId state.builder
+                |> Maybe.map
+                    (\elementConfig ->
+                        elementConfig.properties
+                            |> List.filterMap
+                                (\prop ->
+                                    case prop of
+                                        Builder.TranslateConfig config ->
+                                            Just <|
+                                                Builder.TranslateConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault Translate.default config.start)
+                                                    )
 
-                                            Builder.ProcessedFontColorConfig _ ->
-                                                -- FontColor not supported in reset yet
-                                                Nothing
-                                    )
+                                        Builder.ScaleConfig config ->
+                                            Just <|
+                                                Builder.ScaleConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault (Scale.fromUniform 1.0) config.start)
+                                                    )
 
-                        newElementConfig =
-                            { properties = properties, targetElement = Nothing }
-                    in
-                    if List.isEmpty properties then
-                        AnimState state
+                                        Builder.RotateConfig config ->
+                                            Just <|
+                                                Builder.RotateConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault Rotate.default config.start)
+                                                    )
 
-                    else
-                        setStylesInstantly elementId NotStarted newElementConfig (AnimState state)
+                                        Builder.OpacityConfig config ->
+                                            Just <|
+                                                Builder.OpacityConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault Opacity.default config.start)
+                                                    )
+
+                                        Builder.BackgroundColorConfig config ->
+                                            Just <|
+                                                Builder.BackgroundColorConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault BackgroundColor.default config.start)
+                                                    )
+
+                                        Builder.SizeConfig config ->
+                                            Just <|
+                                                Builder.SizeConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault Size.default config.start)
+                                                    )
+
+                                        Builder.FontColorConfig _ ->
+                                            Nothing
+                                )
+                    )
+
+        properties =
+            maybeFromHistory
+                |> Maybe.withDefault (Maybe.withDefault [] maybeFromBuilder)
+
+        newElementConfig =
+            { properties = properties, targetElement = Nothing }
+    in
+    if List.isEmpty properties then
+        AnimState state
+
+    else
+        setStylesInstantly elementId NotStarted newElementConfig (AnimState state)
 
 
 {-| Restart an animation from the beginning.
 First resets to start position, then re-applies the original animation keyframes with a new name to force browser restart.
+Uses the animation history if available, otherwise falls back to builder.elements.
 -}
 restartAnimation : String -> AnimState -> AnimState
 restartAnimation elementId ((AnimState state) as animState) =
-    case Builder.getCurrentAnimation elementId state.builder of
-        Nothing ->
-            animState
+    let
+        -- Try to get config from animation history first
+        maybeFromHistory =
+            Builder.getCurrentAnimation elementId state.builder
+                |> Maybe.andThen (\entry -> Dict.get elementId entry.processedData.elements)
 
-        Just entry ->
-            case Dict.get elementId entry.processedData.elements of
+        -- Fallback to builder.elements
+        maybeFromBuilder =
+            Builder.getElementConfig elementId state.builder
+
+        -- Increment restart counter for suffix
+        currentCounter =
+            Dict.get elementId state.restartCounters
+                |> Maybe.withDefault 0
+
+        newCounter =
+            currentCounter + 1
+
+        restartSuffix =
+            "r" ++ String.fromInt newCounter
+
+        -- Helper to apply restart with a given element animation
+        applyRestart : ElementAnimation -> AnimState
+        applyRestart elementAnimation =
+            let
+                -- First reset to start position (instantly)
+                (AnimState resetStateData) =
+                    reset elementId animState
+            in
+            AnimState
+                { resetStateData
+                    | elementAnimations = Dict.insert elementId elementAnimation resetStateData.elementAnimations
+                    , elementStates = Dict.insert elementId NotStarted resetStateData.elementStates
+                    , restartCounters = Dict.insert elementId newCounter resetStateData.restartCounters
+                }
+    in
+    case maybeFromHistory of
+        Just processedElementConfig ->
+            generateElementAnimationFromProcessedWithSuffix Nothing (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) restartSuffix elementId processedElementConfig
+                |> applyRestart
+
+        Nothing ->
+            case maybeFromBuilder of
+                Just elementConfig ->
+                    generateElementAnimationWithSuffix Nothing (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) restartSuffix elementId elementConfig
+                        |> applyRestart
+
                 Nothing ->
                     animState
-
-                Just processedElementConfig ->
-                    let
-                        -- First reset to start position (instantly)
-                        resetState =
-                            reset elementId animState
-
-                        (AnimState resetStateData) =
-                            resetState
-
-                        -- Increment restart counter for this element
-                        currentCounter =
-                            Dict.get elementId state.restartCounters
-                                |> Maybe.withDefault 0
-
-                        newCounter =
-                            currentCounter + 1
-
-                        -- Generate animation with restart suffix to force browser to treat as new animation
-                        suffix =
-                            "r" ++ String.fromInt newCounter
-
-                        elementAnimation =
-                            generateElementAnimationFromProcessedWithSuffix Nothing (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) suffix elementId processedElementConfig
-                    in
-                    AnimState
-                        { resetStateData
-                            | elementAnimations = Dict.insert elementId elementAnimation resetStateData.elementAnimations
-                            , elementStates = Dict.insert elementId NotStarted resetStateData.elementStates
-                            , restartCounters = Dict.insert elementId newCounter resetStateData.restartCounters
-                        }

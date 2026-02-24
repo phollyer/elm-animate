@@ -691,12 +691,22 @@ init commandPort subscriptionPort propertyInitializers =
                                 , transformOrder = defaultTransformOrder
                                 }
                             )
+
+                -- Save each element's initial state to history for reset/restart
+                builderWithHistory =
+                    Dict.foldl
+                        (\elementId _ accBuilder ->
+                            Builder.addAnimationToHistory elementId processedData Nothing accBuilder
+                                |> Tuple.first
+                        )
+                        configuredBuilder
+                        processedData.elements
             in
             AnimState
                 { elementAnimations = elementAnimations
                 , isRunning = False
                 , builder =
-                    state.builder
+                    builderWithHistory
                         |> Builder.clearElements
                 , commandPort = commandPort
                 , subscriptionPort = subscriptionPort

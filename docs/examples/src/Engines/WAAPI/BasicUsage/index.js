@@ -5187,7 +5187,203 @@ var $author$project$Anim$Engine$WAAPI$forElement = $author$project$Anim$Internal
 var $author$project$Anim$Internal$WAAPI$AnimState = function (a) {
 	return {$: 'AnimState', a: a};
 };
+var $author$project$Anim$Internal$Builder$createEmptyHistory = function (timestamp) {
+	return {
+		current: $elm$core$Maybe$Nothing,
+		history: _List_Nil,
+		metadata: {createdAt: timestamp, lastExecutedId: $elm$core$Maybe$Nothing, totalAnimations: 0}
+	};
+};
+var $elm$core$Basics$compare = _Utils_compare;
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var $elm$core$Dict$Black = {$: 'Black'};
+var $elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+	});
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var $elm$core$Dict$Red = {$: 'Red'};
+var $elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+			var _v1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+				var _v3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					key,
+					value,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+				var _v5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _v6 = left.d;
+				var _v7 = _v6.a;
+				var llK = _v6.b;
+				var llV = _v6.c;
+				var llLeft = _v6.d;
+				var llRight = _v6.e;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					lK,
+					lV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
+			} else {
+				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var $elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _v1 = A2($elm$core$Basics$compare, key, nKey);
+			switch (_v1.$) {
+				case 'LT':
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3($elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 'EQ':
+					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3($elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var $elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Anim$Internal$Builder$addAnimationToHistory = F4(
+	function (elementId, processedData, maybeLabel, _v0) {
+		var data = _v0.a;
+		var newAnimationId = data.nextAnimationId;
+		var currentTimestamp = 0;
+		var existingHistory = A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Anim$Internal$Builder$createEmptyHistory(currentTimestamp),
+			A2($elm$core$Dict$get, elementId, data.animationHistories));
+		var newEntry = {id: newAnimationId, label: maybeLabel, processedData: processedData, timestamp: currentTimestamp};
+		var updatedHistory = function () {
+			var _v1 = existingHistory.current;
+			if (_v1.$ === 'Nothing') {
+				return _Utils_update(
+					existingHistory,
+					{
+						current: $elm$core$Maybe$Just(newEntry),
+						metadata: {createdAt: existingHistory.metadata.createdAt, lastExecutedId: existingHistory.metadata.lastExecutedId, totalAnimations: existingHistory.metadata.totalAnimations + 1}
+					});
+			} else {
+				var previousCurrent = _v1.a;
+				return _Utils_update(
+					existingHistory,
+					{
+						current: $elm$core$Maybe$Just(newEntry),
+						history: A2($elm$core$List$cons, previousCurrent, existingHistory.history),
+						metadata: {createdAt: existingHistory.metadata.createdAt, lastExecutedId: existingHistory.metadata.lastExecutedId, totalAnimations: existingHistory.metadata.totalAnimations + 1}
+					});
+			}
+		}();
+		var updatedData = _Utils_update(
+			data,
+			{
+				animationHistories: A3($elm$core$Dict$insert, elementId, updatedHistory, data.animationHistories),
+				nextAnimationId: data.nextAnimationId + 1
+			});
+		return _Utils_Tuple2(
+			$author$project$Anim$Internal$Builder$AnimBuilder(updatedData),
+			newAnimationId);
+	});
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
 var $author$project$Anim$Internal$Builder$clearElements = function (_v0) {
 	var data = _v0.a;
@@ -5259,13 +5455,34 @@ var $author$project$Anim$Internal$WAAPI$extractElementEndStates = function (elem
 		});
 	return A3($elm$core$List$foldl, extractPropertyEndState, $author$project$Anim$Internal$WAAPI$emptyElementStates, elementConfig.properties);
 };
+var $elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3($elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
 var $author$project$Anim$Internal$Builder$Once = {$: 'Once'};
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
 	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
-var $elm$core$Dict$RBNode_elm_builtin = F5(
-	function (a, b, c, d, e) {
-		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
-	});
 var $elm$core$Dict$map = F2(
 	function (func, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
@@ -5431,15 +5648,6 @@ var $author$project$Anim$Internal$Properties$Color$hexToInt = function (str) {
 		return $elm$core$Maybe$Nothing;
 	}
 };
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
 var $author$project$Anim$Internal$Properties$Color$hexToRgb = function (hex_) {
 	var cleanHex = A2(
 		$elm$core$String$dropLeft,
@@ -6029,6 +6237,14 @@ var $author$project$Anim$Internal$WAAPI$init = F3(
 				state.builder,
 				propertyInitializers);
 			var processedData = $author$project$Anim$Internal$Builder$processAnimationData(configuredBuilder);
+			var builderWithHistory = A3(
+				$elm$core$Dict$foldl,
+				F3(
+					function (elementId, _v3, accBuilder) {
+						return A4($author$project$Anim$Internal$Builder$addAnimationToHistory, elementId, processedData, $elm$core$Maybe$Nothing, accBuilder).a;
+					}),
+				configuredBuilder,
+				processedData.elements);
 			var elementAnimations = A2(
 				$elm$core$Dict$map,
 				F2(
@@ -6039,7 +6255,7 @@ var $author$project$Anim$Internal$WAAPI$init = F3(
 				processedData.elements);
 			return $author$project$Anim$Internal$WAAPI$AnimState(
 				{
-					builder: $author$project$Anim$Internal$Builder$clearElements(state.builder),
+					builder: $author$project$Anim$Internal$Builder$clearElements(builderWithHistory),
 					commandPort: commandPort,
 					elementAnimations: elementAnimations,
 					isRunning: false,
@@ -6052,38 +6268,6 @@ var $author$project$Anim$Engine$WAAPI$init = $author$project$Anim$Internal$WAAPI
 var $author$project$Anim$Internal$Builder$OpacityConfig = function (a) {
 	return {$: 'OpacityConfig', a: a};
 };
-var $elm$core$Basics$compare = _Utils_compare;
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1.$) {
-					case 'LT':
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 'EQ':
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
 var $author$project$Anim$Internal$Builder$getCurrentElementConfig = function (_v0) {
 	var data = _v0.a;
 	var _v1 = data.currentElementId;
@@ -6112,110 +6296,6 @@ var $elm$core$List$filter = F2(
 				}),
 			_List_Nil,
 			list);
-	});
-var $elm$core$Dict$Black = {$: 'Black'};
-var $elm$core$Dict$Red = {$: 'Red'};
-var $elm$core$Dict$balance = F5(
-	function (color, key, value, left, right) {
-		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
-			var _v1 = right.a;
-			var rK = right.b;
-			var rV = right.c;
-			var rLeft = right.d;
-			var rRight = right.e;
-			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
-				var _v3 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var lLeft = left.d;
-				var lRight = left.e;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Red,
-					key,
-					value,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					color,
-					rK,
-					rV,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
-					rRight);
-			}
-		} else {
-			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
-				var _v5 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var _v6 = left.d;
-				var _v7 = _v6.a;
-				var llK = _v6.b;
-				var llV = _v6.c;
-				var llLeft = _v6.d;
-				var llRight = _v6.e;
-				var lRight = left.e;
-				return A5(
-					$elm$core$Dict$RBNode_elm_builtin,
-					$elm$core$Dict$Red,
-					lK,
-					lV,
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
-					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
-			} else {
-				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
-			}
-		}
-	});
-var $elm$core$Dict$insertHelp = F3(
-	function (key, value, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
-		} else {
-			var nColor = dict.a;
-			var nKey = dict.b;
-			var nValue = dict.c;
-			var nLeft = dict.d;
-			var nRight = dict.e;
-			var _v1 = A2($elm$core$Basics$compare, key, nKey);
-			switch (_v1.$) {
-				case 'LT':
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						A3($elm$core$Dict$insertHelp, key, value, nLeft),
-						nRight);
-				case 'EQ':
-					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
-				default:
-					return A5(
-						$elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						nLeft,
-						A3($elm$core$Dict$insertHelp, key, value, nRight));
-			}
-		}
-	});
-var $elm$core$Dict$insert = F3(
-	function (key, value, dict) {
-		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
-		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
-			var _v1 = _v0.a;
-			var k = _v0.b;
-			var v = _v0.c;
-			var l = _v0.d;
-			var r = _v0.e;
-			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
-		} else {
-			var x = _v0;
-			return x;
-		}
 	});
 var $author$project$Anim$Internal$Builder$makeCompositeKey = F2(
 	function (elementId, groupName) {
@@ -6868,53 +6948,6 @@ var $author$project$Engines$WAAPI$BasicUsage$Main$subscriptions = function (mode
 	return A2($author$project$Anim$Engine$WAAPI$subscriptions, $author$project$Engines$WAAPI$BasicUsage$Main$GotWaapiMsg, model.animState);
 };
 var $author$project$Anim$Internal$WAAPI$NotStarted = {$: 'NotStarted'};
-var $author$project$Anim$Internal$Builder$createEmptyHistory = function (timestamp) {
-	return {
-		current: $elm$core$Maybe$Nothing,
-		history: _List_Nil,
-		metadata: {createdAt: timestamp, lastExecutedId: $elm$core$Maybe$Nothing, totalAnimations: 0}
-	};
-};
-var $author$project$Anim$Internal$Builder$addAnimationToHistory = F4(
-	function (elementId, processedData, maybeLabel, _v0) {
-		var data = _v0.a;
-		var newAnimationId = data.nextAnimationId;
-		var currentTimestamp = 0;
-		var existingHistory = A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Anim$Internal$Builder$createEmptyHistory(currentTimestamp),
-			A2($elm$core$Dict$get, elementId, data.animationHistories));
-		var newEntry = {id: newAnimationId, label: maybeLabel, processedData: processedData, timestamp: currentTimestamp};
-		var updatedHistory = function () {
-			var _v1 = existingHistory.current;
-			if (_v1.$ === 'Nothing') {
-				return _Utils_update(
-					existingHistory,
-					{
-						current: $elm$core$Maybe$Just(newEntry),
-						metadata: {createdAt: existingHistory.metadata.createdAt, lastExecutedId: existingHistory.metadata.lastExecutedId, totalAnimations: existingHistory.metadata.totalAnimations + 1}
-					});
-			} else {
-				var previousCurrent = _v1.a;
-				return _Utils_update(
-					existingHistory,
-					{
-						current: $elm$core$Maybe$Just(newEntry),
-						history: A2($elm$core$List$cons, previousCurrent, existingHistory.history),
-						metadata: {createdAt: existingHistory.metadata.createdAt, lastExecutedId: existingHistory.metadata.lastExecutedId, totalAnimations: existingHistory.metadata.totalAnimations + 1}
-					});
-			}
-		}();
-		var updatedData = _Utils_update(
-			data,
-			{
-				animationHistories: A3($elm$core$Dict$insert, elementId, updatedHistory, data.animationHistories),
-				nextAnimationId: data.nextAnimationId + 1
-			});
-		return _Utils_Tuple2(
-			$author$project$Anim$Internal$Builder$AnimBuilder(updatedData),
-			newAnimationId);
-	});
 var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$json$Json$Encode$float = _Json_wrap;
 var $author$project$Anim$Internal$Easing$customBackOut = F2(
@@ -8945,31 +8978,6 @@ var $author$project$Anim$Internal$WAAPI$encodeWithVersions = F2(
 					'elements',
 					$elm$json$Json$Encode$object(elementsWithVersions))
 				]));
-	});
-var $elm$core$Dict$foldl = F3(
-	function (func, acc, dict) {
-		foldl:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return acc;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var $temp$func = func,
-					$temp$acc = A3(
-					func,
-					key,
-					value,
-					A3($elm$core$Dict$foldl, func, acc, left)),
-					$temp$dict = right;
-				func = $temp$func;
-				acc = $temp$acc;
-				dict = $temp$dict;
-				continue foldl;
-			}
-		}
 	});
 var $elm$core$Dict$fromList = function (assocs) {
 	return A3(
