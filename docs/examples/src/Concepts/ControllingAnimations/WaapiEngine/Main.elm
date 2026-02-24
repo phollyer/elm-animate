@@ -53,13 +53,6 @@ animGroup =
     "bouncingBall"
 
 
-{-| DOM element ID for the animated element
--}
-domId : String
-domId =
-    "bouncing-ball"
-
-
 
 -- INIT
 
@@ -75,8 +68,7 @@ init { window } =
 
         initialAnimState =
             WAAPI.init waapiCommand waapiEvent <|
-                [ WAAPI.forElement domId
-                    >> Translate.initXY animGroup xPos 50
+                [ Translate.initXY animGroup xPos 50
                 ]
     in
     ( { animState = initialAnimState
@@ -248,7 +240,7 @@ animatedBall : WAAPI.AnimState msg -> Element msg
 animatedBall animState =
     el
         (List.map htmlAttribute (WAAPI.attributes animGroup animState)
-            ++ [ htmlAttribute (Html.Attributes.id domId)
+            ++ [ htmlAttribute (Html.Attributes.id animGroup)
                , htmlAttribute (Html.Attributes.style "position" "relative")
                , width (px 50)
                , height (px 50)

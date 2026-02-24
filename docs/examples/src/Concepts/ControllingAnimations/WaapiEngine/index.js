@@ -5199,28 +5199,11 @@ var $elm$core$Task$perform = F2(
 var $elm$browser$Browser$document = _Browser_document;
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $author$project$Concepts$ControllingAnimations$WaapiEngine$Main$animGroup = 'bouncingBall';
-var $elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
-var $author$project$Concepts$ControllingAnimations$WaapiEngine$Main$domId = 'bouncing-ball';
-var $author$project$Anim$Internal$Builder$AnimBuilder = function (a) {
-	return {$: 'AnimBuilder', a: a};
-};
-var $author$project$Anim$Internal$Builder$setWaapiTargetElement = F2(
-	function (elementId, _v0) {
-		var data = _v0.a;
-		return $author$project$Anim$Internal$Builder$AnimBuilder(
-			_Utils_update(
-				data,
-				{
-					waapiTargetElement: $elm$core$Maybe$Just(elementId)
-				}));
-	});
-var $author$project$Anim$Engine$WAAPI$forElement = $author$project$Anim$Internal$Builder$setWaapiTargetElement;
 var $author$project$Anim$Internal$WAAPI$AnimState = function (a) {
 	return {$: 'AnimState', a: a};
+};
+var $author$project$Anim$Internal$Builder$AnimBuilder = function (a) {
+	return {$: 'AnimBuilder', a: a};
 };
 var $author$project$Anim$Internal$Builder$createEmptyHistory = function (timestamp) {
 	return {
@@ -7085,10 +7068,7 @@ var $author$project$Concepts$ControllingAnimations$WaapiEngine$Main$init = funct
 		$author$project$Concepts$ControllingAnimations$WaapiEngine$Main$waapiEvent,
 		_List_fromArray(
 			[
-				A2(
-				$elm$core$Basics$composeR,
-				$author$project$Anim$Engine$WAAPI$forElement($author$project$Concepts$ControllingAnimations$WaapiEngine$Main$domId),
-				A3($author$project$Anim$Property$Translate$initXY, $author$project$Concepts$ControllingAnimations$WaapiEngine$Main$animGroup, xPos, 50))
+				A3($author$project$Anim$Property$Translate$initXY, $author$project$Concepts$ControllingAnimations$WaapiEngine$Main$animGroup, xPos, 50)
 			]));
 	return _Utils_Tuple2(
 		{
@@ -9076,9 +9056,12 @@ var $author$project$Anim$Internal$Builder$extractGroupName = function (composite
 		return compositeKey;
 	}
 };
+var $author$project$Anim$Internal$Builder$isCompositeKey = function (key) {
+	return A2($elm$core$String$contains, ':', key);
+};
 var $author$project$Anim$Internal$WAAPI$encodeProcessedElementConfigWithVersions = F3(
 	function (elementAnimations, compositeKey, config) {
-		var hasExplicitTarget = !_Utils_eq(config.targetElement, $elm$core$Maybe$Nothing);
+		var hasExplicitTarget = (!_Utils_eq(config.targetElement, $elm$core$Maybe$Nothing)) || (!$author$project$Anim$Internal$Builder$isCompositeKey(compositeKey));
 		var elementProps = A2(
 			$elm$core$Maybe$withDefault,
 			$elm$core$Dict$empty,
@@ -9115,9 +9098,6 @@ var $author$project$Anim$Internal$Builder$extractElementId = function (composite
 	} else {
 		return compositeKey;
 	}
-};
-var $author$project$Anim$Internal$Builder$isCompositeKey = function (key) {
-	return A2($elm$core$String$contains, ':', key);
 };
 var $author$project$Anim$Internal$WAAPI$getElementIdForJs = function (key) {
 	return $author$project$Anim$Internal$Builder$isCompositeKey(key) ? $author$project$Anim$Internal$Builder$extractElementId(key) : key;
@@ -9310,6 +9290,11 @@ var $author$project$Anim$Internal$WAAPI$animate = F2(
 var $author$project$Anim$Engine$WAAPI$animate = $author$project$Anim$Internal$WAAPI$animate;
 var $author$project$Anim$Extra$Easing$BounceOut = {$: 'BounceOut'};
 var $author$project$Anim$Property$Translate$build = $author$project$Anim$Internal$Builders$Translate$build;
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
 var $author$project$Anim$Internal$Builders$Property$withEasing = F2(
 	function (easing_, config) {
 		return _Utils_update(
@@ -10086,6 +10071,16 @@ var $author$project$Anim$Internal$Builder$getCurrentAnimation = F2(
 				return $.current;
 			},
 			A2($elm$core$Dict$get, elementId, data.animationHistories));
+	});
+var $author$project$Anim$Internal$Builder$setWaapiTargetElement = F2(
+	function (elementId, _v0) {
+		var data = _v0.a;
+		return $author$project$Anim$Internal$Builder$AnimBuilder(
+			_Utils_update(
+				data,
+				{
+					waapiTargetElement: $elm$core$Maybe$Just(elementId)
+				}));
 	});
 var $elm$core$Dict$values = function (dict) {
 	return A3(
@@ -17681,7 +17676,7 @@ var $author$project$Concepts$ControllingAnimations$WaapiEngine$Main$animatedBall
 			_List_fromArray(
 				[
 					$mdgriffith$elm_ui$Element$htmlAttribute(
-					$elm$html$Html$Attributes$id($author$project$Concepts$ControllingAnimations$WaapiEngine$Main$domId)),
+					$elm$html$Html$Attributes$id($author$project$Concepts$ControllingAnimations$WaapiEngine$Main$animGroup)),
 					$mdgriffith$elm_ui$Element$htmlAttribute(
 					A2($elm$html$Html$Attributes$style, 'position', 'relative')),
 					$mdgriffith$elm_ui$Element$width(

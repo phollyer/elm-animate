@@ -2266,8 +2266,11 @@ encodeProcessedElementConfigWithVersions elementAnimations compositeKey config =
                 |> Maybe.map .properties
                 |> Maybe.withDefault Dict.empty
 
+        -- hasExplicitTarget is True when:
+        -- 1. forElement was used (targetElement is set), OR
+        -- 2. Using single key pattern (not a composite key) where the key IS the element ID
         hasExplicitTarget =
-            config.targetElement /= Nothing
+            config.targetElement /= Nothing || not (Builder.isCompositeKey compositeKey)
 
         animGroup =
             Builder.extractGroupName compositeKey
@@ -2289,8 +2292,11 @@ encodeProcessedElementConfigWithVersionsAndOrder elementAnimations compositeKey 
                 |> Maybe.map .properties
                 |> Maybe.withDefault Dict.empty
 
+        -- hasExplicitTarget is True when:
+        -- 1. forElement was used (targetElement is set), OR
+        -- 2. Using single key pattern (not a composite key) where the key IS the element ID
         hasExplicitTarget =
-            config.targetElement /= Nothing
+            config.targetElement /= Nothing || not (Builder.isCompositeKey compositeKey)
 
         animGroup =
             Builder.extractGroupName compositeKey

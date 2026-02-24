@@ -75,8 +75,7 @@ Then use with any engine.
     === "WAAPI"
 
         ```elm
-        WAAPI.animate model.animState <|
-            WAAPI.forElement "element-id" >> fadeIn
+        WAAPI.animate model.animState fadeIn
         ```
 
 Elm Animate abstracts away the differences in each approach so you can focus on your task at hand rather than a new API - the same animation configurations work with every Engine.

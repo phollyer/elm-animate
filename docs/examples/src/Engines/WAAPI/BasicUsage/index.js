@@ -8980,9 +8980,12 @@ var $author$project$Anim$Internal$Builder$extractGroupName = function (composite
 		return compositeKey;
 	}
 };
+var $author$project$Anim$Internal$Builder$isCompositeKey = function (key) {
+	return A2($elm$core$String$contains, ':', key);
+};
 var $author$project$Anim$Internal$WAAPI$encodeProcessedElementConfigWithVersions = F3(
 	function (elementAnimations, compositeKey, config) {
-		var hasExplicitTarget = !_Utils_eq(config.targetElement, $elm$core$Maybe$Nothing);
+		var hasExplicitTarget = (!_Utils_eq(config.targetElement, $elm$core$Maybe$Nothing)) || (!$author$project$Anim$Internal$Builder$isCompositeKey(compositeKey));
 		var elementProps = A2(
 			$elm$core$Maybe$withDefault,
 			$elm$core$Dict$empty,
@@ -9019,9 +9022,6 @@ var $author$project$Anim$Internal$Builder$extractElementId = function (composite
 	} else {
 		return compositeKey;
 	}
-};
-var $author$project$Anim$Internal$Builder$isCompositeKey = function (key) {
-	return A2($elm$core$String$contains, ':', key);
 };
 var $author$project$Anim$Internal$WAAPI$getElementIdForJs = function (key) {
 	return $author$project$Anim$Internal$Builder$isCompositeKey(key) ? $author$project$Anim$Internal$Builder$extractElementId(key) : key;
