@@ -1,14 +1,18 @@
 # Initialize
 
-Before building and triggering animations, you need to initialize your animation state. Initialization sets the starting property values so your elements render correctly on first load - before any animation runs.
+Before building and triggering animations, you need to initialize your animation state. 
 
 ## Why Initialize?
+
+Initialization sets the starting property values so that:
+
+- your elements render correctly on first load - before any animation runs
+- the Engine knows where to start the element's animation from
 
 Without initialization, animated elements may flash or jump when the page loads:
 
 - An element meant to fade in might briefly appear at full opacity
 - An element meant to slide in might appear in its final position first
-- Transform properties might not apply until the first animation triggers
 
 Initialization ensures your elements start in the correct state immediately.
 
