@@ -1042,6 +1042,28 @@ using WAAPI.forElement at the start of your animation pipeline:
     }
 
     /**
+     * Send initialized event to Elm after setting initial properties
+     * This allows Elm to safely trigger animations without flash/jump
+     * @param {string} elementId - The DOM element ID that was initialized
+     */
+    function sendInitializedEvent(elementId) {
+        if (window.app && window.app.ports && window.app.ports.waapiEvent) {
+            const eventData = {
+                type: 'animationUpdate',
+                payload: {
+                    elementId: elementId,
+                    animGroup: elementId,
+                    status: 'initialized',
+                    duration: 0,
+                    progress: 0,
+                    properties: []
+                }
+            };
+            window.app.ports.waapiEvent.send(eventData);
+        }
+    }
+
+    /**
      * Find all composite keys in activeAnimations that match an element ID
      * @param {string} elementId - The DOM element ID to match
      * @returns {string[]} Array of composite keys (elementId:animGroup) that match
@@ -1367,6 +1389,9 @@ using WAAPI.forElement at the start of your animation pipeline:
                 element.style.width = `${props.width}px`;
                 element.style.height = `${props.height}px`;
             }
+
+            // Send initialized event back to Elm
+            sendInitializedEvent(update.elementId);
         });
     }
 

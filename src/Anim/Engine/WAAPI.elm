@@ -262,6 +262,41 @@ init =
     Internal.init
 
 
+{-| Get the initialization command to send initial property values to JavaScript.
+
+Use this when you need the `Initialized` event for triggering onload animations.
+The command sends a `setProperties` message to JavaScript, which will apply
+the initial values and send back an `Initialized` event for each element.
+
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        let
+            animState =
+                WAAPI.init waapiCommand waapiEvent
+                    [ WAAPI.forElement "box"
+                        >> Opacity.init "fadeAnim" 0
+                    ]
+        in
+        ( { animState = animState }
+        , WAAPI.initCmd animState
+        )
+
+Then react to the `Initialized` event in your update function:
+
+    case maybeEvent of
+        Just (WAAPI.Initialized elementId) ->
+            -- Element is ready, safe to animate without flash
+            WAAPI.animate newAnimState fadeIn
+
+        _ ->
+            ( { model | animState = newAnimState }, Cmd.none )
+
+-}
+initCmd : AnimState msg -> Cmd msg
+initCmd =
+    Internal.initCmd
+
+
 {-| Get HTML attributes that apply the current animation state as inline styles.
 
 Use this in your view to apply initial property values and maintain state between animations:
@@ -936,6 +971,10 @@ progress, and property configurations. `Changed` events (fired per-frame) includ
 only progress to minimize overhead.
 
     case event of
+        WAAPI.Initialized "box" ->
+            -- JS has set initial properties on "box", safe to animate
+            ...
+
         WAAPI.Ended "box" "fadeIn" info ->
             -- The "box" element finished the "fadeIn" animation
             -- info.duration tells you how long it took
@@ -952,7 +991,8 @@ only progress to minimize overhead.
 
 -}
 type AnimEvent
-    = Started String String EventInfo
+    = Initialized String
+    | Started String String EventInfo
     | Ended String String EventInfo
     | Cancelled String String EventInfo
     | Restarted String String EventInfo
@@ -1088,6 +1128,9 @@ eventDataToEvent eventData =
             }
     in
     case eventData.status of
+        "initialized" ->
+            Initialized elementId
+
         "changed" ->
             Changed elementId animGroup { progress = eventData.progress }
 

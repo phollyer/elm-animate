@@ -1,6 +1,6 @@
 # Triggering Animations
 
-Once you've [built an animation](build.md), you need to trigger it. Triggering is where the engine processes your configuration and computes the animation data, storing the results in `AnimState` ready for rendering.
+Once you've [built](build.md), [initialized](init.md) and [rendered](rednder.md) your animation you need to trigger it. Triggering is where the engine processes your configuration and computes the animation data, storing the results in `AnimState` ready for rendering.
 
 ## Two Ways to Trigger
 
@@ -237,6 +237,8 @@ To animate immediately when the page loads, trigger in `init` using **Keyframes*
             in
             ( { animState = animState }, cmd )
         ```
+
+        This will likely result in an initial 'flash' when the browser renders the element in it's default state before the `cmd` reaches JS.
 
 !!! warning "CSS Transitions can't animate on page load"
     CSS Transitions require a state change between renders. Triggering in `init` means no state change — the element appears at the final state immediately because the browser has no initial `transition` state to animate from. To animate with Transitions on page load, trigger in a subsequent message after the first render.

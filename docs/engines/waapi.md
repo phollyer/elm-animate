@@ -418,6 +418,56 @@ WAAPI's `init` requires the port functions as parameters:
         )
     ```
 
+## The Initialized Event
+
+When you need onload animations, use `initCmd` to send your initial property values to JavaScript. JavaScript will apply those values and send back an `Initialized` event, signaling that it's safe to animate without flashes or jumps.
+
+??? example "View Source Code"
+
+    ```elm
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        let
+            animState =
+                WAAPI.init waapiCommand waapiEvent
+                    [ WAAPI.forElement "box"
+                        >> Opacity.init "fadeAnim" 0
+                    ]
+        in
+        ( { animState = animState }
+        , WAAPI.initCmd animState  -- Send init command to JS
+        )
+
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            GotWaapiEvent value ->
+                let
+                    ( newAnimState, maybeEvent ) =
+                        WAAPI.update value model.animState
+                in
+                case maybeEvent of
+                    Just (WAAPI.Initialized elementId) ->
+                        -- Element is ready, safe to animate
+                        let
+                            ( animState, cmd ) =
+                                WAAPI.animate newAnimState <|
+                                    WAAPI.forElement elementId
+                                        >> fadeIn elementId
+                        in
+                        ( { model | animState = animState }, cmd )
+
+                    _ ->
+                        ( { model | animState = newAnimState }, Cmd.none )
+    ```
+
+**Why use initCmd?**
+
+Without `initCmd`, JavaScript doesn't know about your initial property values. If you trigger an animation immediately after page load, the element may briefly appear at its default state (e.g., full opacity) before JavaScript starts the animation.
+
+!!! tip "Best Practice for Onload Animations"
+    Use `init` with initial property values, send `initCmd`, then trigger your animation in response to the `Initialized` event. This guarantees the element renders correctly in both Elm's view and JavaScript before any animation starts.
+
 ## Shared Features
 
 The following features work the same across all engines. See [Engine Overview](overview.md) for detailed examples with tabbed code for each engine:
@@ -440,13 +490,14 @@ The following features work the same across all engines. See [Engine Overview](o
 | `AnimState msg` | Tracks animations and their states |
 | `AnimBuilder` | Carries all the animation configurations |
 | `AnimMsg` | Opaque message type for WAAPI subscription events |
-| `AnimEvent` | Lifecycle events: `Started String`, `Ended String`, `Paused String`, `Resumed String`, `Cancelled String`, `Restarted String` |
+| `AnimEvent` | Lifecycle events: `Initialized String`, `Started String`, `Ended String`, `Paused String`, `Resumed String`, `Cancelled String`, `Restarted String` |
 
 ### Core Functions
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
 | `init` | `(Value -> Cmd msg) -> ((Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> AnimState msg` | Create initial animation state with ports and optional property initializers. |
+| `initCmd` | `AnimState msg -> Cmd msg` | Send initial property values to JavaScript; returns `Initialized` event. |
 | `animate` | `AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )` | Execute animation with state tracking |
 | `animateOrder` | `List TransformOrder -> AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )` | Execute animation with custom transform order |
 | `fireAndForget` | `(Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Execute animation without state tracking |

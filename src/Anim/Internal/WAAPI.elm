@@ -45,6 +45,7 @@ module Anim.Internal.WAAPI exposing
     , getStartTranslate
     , getTranslateRange
     , init
+    , initCmd
     , isElementComplete
     , isElementRunning
     , onResize
@@ -786,6 +787,158 @@ init commandPort subscriptionPort propertyInitializers =
                 , subscriptionPort = subscriptionPort
                 , pendingActions = Dict.empty
                 }
+
+
+{-| Get the initialization command to send initial property values to JavaScript.
+
+Use this when you need the `Initialized` event for triggering onload animations.
+The command sends a `setProperties` message to JavaScript, which will apply
+the initial values and send back an `Initialized` event for each element.
+
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        let
+            animState =
+                WAAPI.init waapiCommand waapiEvent
+                    [ WAAPI.forElement "box"
+                        >> Opacity.init "fadeAnim" 0
+                    ]
+        in
+        ( { animState = animState }
+        , WAAPI.initCmd animState
+        )
+
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            GotWaapiEvent value ->
+                case WAAPI.update value model.animState of
+                    ( newAnimState, Just (WAAPI.Initialized elementId) ) ->
+                        -- Element is ready, safe to animate
+                        WAAPI.animate newAnimState fadeIn
+
+                    ( newAnimState, _ ) ->
+                        ( { model | animState = newAnimState }, Cmd.none )
+
+-}
+initCmd : AnimState msg -> Cmd msg
+initCmd (AnimState state) =
+    if Dict.isEmpty state.elementAnimations then
+        Cmd.none
+
+    else
+        let
+            -- Build setProperties updates for each element
+            updates =
+                state.elementAnimations
+                    |> Dict.toList
+                    |> List.map
+                        (\( elementId, elementAnim ) ->
+                            encodeInitUpdate elementId elementAnim.currentStates
+                        )
+
+            -- Build the setProperties command
+            commandData =
+                Encode.object
+                    [ ( "type", Encode.string "setProperties" )
+                    , ( "updates", Encode.list identity updates )
+                    ]
+        in
+        state.commandPort commandData
+
+
+{-| Encode an element's initial states for the setProperties command.
+-}
+encodeInitUpdate : String -> ElementStates -> Encode.Value
+encodeInitUpdate elementId states =
+    let
+        -- Get translation values
+        ( transX, transY, transZ ) =
+            case states.translate of
+                Just t ->
+                    let
+                        tr =
+                            Translate.toRecord t
+                    in
+                    ( tr.x, tr.y, tr.z )
+
+                Nothing ->
+                    ( 0, 0, 0 )
+
+        -- Get scale values
+        ( scaleX, scaleY, scaleZ ) =
+            case states.scale of
+                Just s ->
+                    let
+                        sc =
+                            Scale.toRecord s
+                    in
+                    ( sc.x, sc.y, sc.z )
+
+                Nothing ->
+                    ( 1, 1, 1 )
+
+        -- Get rotation values
+        ( rotateX, rotateY, rotateZ ) =
+            case states.rotate of
+                Just r ->
+                    let
+                        ro =
+                            Rotate.toRecord r
+                    in
+                    ( ro.x, ro.y, ro.z )
+
+                Nothing ->
+                    ( 0, 0, 0 )
+
+        -- Base properties (always included)
+        baseProps =
+            [ ( "elementId", Encode.string elementId )
+            , ( "x", Encode.float transX )
+            , ( "y", Encode.float transY )
+            , ( "z", Encode.float transZ )
+            , ( "scaleX", Encode.float scaleX )
+            , ( "scaleY", Encode.float scaleY )
+            , ( "scaleZ", Encode.float scaleZ )
+            , ( "rotateX", Encode.float rotateX )
+            , ( "rotateY", Encode.float rotateY )
+            , ( "rotateZ", Encode.float rotateZ )
+            ]
+
+        -- Optional properties
+        opacityProp =
+            states.opacity
+                |> Maybe.map (\o -> [ ( "opacity", Encode.float (Opacity.toFloat o) ) ])
+                |> Maybe.withDefault []
+
+        bgColorProp =
+            states.backgroundColor
+                |> Maybe.map (\c -> [ ( "backgroundColor", Encode.string (Color.toCssString c) ) ])
+                |> Maybe.withDefault []
+
+        fontColorProp =
+            states.fontColor
+                |> Maybe.map (\c -> [ ( "color", Encode.string (Color.toCssString c) ) ])
+                |> Maybe.withDefault []
+
+        sizeProp =
+            states.size
+                |> Maybe.map
+                    (\s ->
+                        let
+                            sz =
+                                Size.toRecord s
+                        in
+                        [ ( "width", Encode.float sz.width )
+                        , ( "height", Encode.float sz.height )
+                        ]
+                    )
+                |> Maybe.withDefault []
+    in
+    Encode.object
+        (baseProps ++ opacityProp ++ bgColorProp ++ fontColorProp ++ sizeProp
+            ++ [ ( "properties", Encode.object baseProps ) ]
+        )
 
 
 propertyTypeString : Builder.ProcessedPropertyConfig -> String

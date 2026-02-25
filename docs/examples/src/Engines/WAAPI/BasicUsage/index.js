@@ -9259,6 +9259,9 @@ var $author$project$Anim$Engine$WAAPI$Ended = F3(
 	function (a, b, c) {
 		return {$: 'Ended', a: a, b: b, c: c};
 	});
+var $author$project$Anim$Engine$WAAPI$Initialized = function (a) {
+	return {$: 'Initialized', a: a};
+};
 var $author$project$Anim$Engine$WAAPI$Iteration = F4(
 	function (a, b, c, d) {
 		return {$: 'Iteration', a: a, b: b, c: c, d: d};
@@ -9292,6 +9295,8 @@ var $author$project$Anim$Engine$WAAPI$eventDataToEvent = function (eventData) {
 	var animGroup = eventData.animGroup;
 	var _v0 = eventData.status;
 	switch (_v0) {
+		case 'initialized':
+			return $author$project$Anim$Engine$WAAPI$Initialized(elementId);
 		case 'changed':
 			return A3(
 				$author$project$Anim$Engine$WAAPI$Changed,
