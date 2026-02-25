@@ -15,10 +15,10 @@ Every animation follows this pattern:
     animationFunction : AnimBuilder -> AnimBuilder
     animationFunction =
         Property.for animGroup              -- Animation group name (required)
-            >> Property.from startValue     -- If ommitted, uses a sensible default
-            >> Property.to endValue         -- Alternatives to `to` are available
+            >> Property.from startValue     -- Mainly used for `fireAndForget` animations
+            >> Property.to endValue         -- Property specific alternatives to `to` are available
             >> Property.delay 100           -- ms
-            >> Property.duration 500        -- ms, or (Property.speed 50 (units per second))
+            >> Property.duration 500        -- ms, or `Property.speed 50` (units per second)
             >> Property.easing BounceOut    -- Make the animation feel natural
             >> Property.build               -- Finalize (required)
     ```
@@ -36,7 +36,7 @@ Properties with the same group name animate together and are applied to the same
 ??? example "View Source Code"
 
     ```elm
-    -- Both properties share "boxAnim" - they animate together
+    -- Both properties share "boxAnim" - they animate together on the same element
     enterAnimation : AnimBuilder -> AnimBuilder
     enterAnimation =
         Opacity.for "boxAnim"
@@ -146,7 +146,7 @@ with `>>`. Small, focused animations combine into larger ones:
 
 ## Next Steps
 
-Now that you've learned about the builder pattern for building animations, the next step is triggering them.
+Now that you've defined your animations, the next step is initializing your animation state.
 
-[Trigger Animations →](trigger.md){ .md-button .md-button--primary }
+[Initialize →](init.md){ .md-button .md-button--primary }
 

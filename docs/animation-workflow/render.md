@@ -1,10 +1,10 @@
-# Applying Animations
+# Render
 
-Once you've defined an animation and triggered it with an engine, you need to apply the animation to your element. All engines use the same pattern: the `attributes` function.
+In order to view an animation, it needs to be rendered in your view. All engines provide an `attributes` function for this.
 
-## The Attributes Pattern
+## Using `attributes`
 
-Every animation engine provides an `attributes` function that generates HTML attributes for your element:
+The `attributes` function generates HTML attributes for your element.
 
 ??? example "View Source Code"
 
@@ -36,16 +36,12 @@ Every animation engine provides an `attributes` function that generates HTML att
 
         ```elm
         div 
-            (WAAPI.attributes "boxAnim" model.animState
-                ++ [ id "box" ]
-            ) 
+            (WAAPI.attributes "boxAnim" model.animState) 
             [ text "I animate!" ]
         ```
 
 The first argument is the **animation group name** - this connects your animation definition to your view element. See [Animation Group Names](build.md#animation-group-names) for how to define groups when building animations.
 
-!!! note "WAAPI requires element ID"
-    The WAAPI engine also needs an `id` attribute so JavaScript can find the DOM element. See [WAAPI Engine](#waapi-engine) below for details.
 
 ## Connecting Builder to View
 
@@ -183,6 +179,6 @@ You can animate multiple elements from the same `AnimState`.
 
 ## Next Steps
 
-Now that you understand how to apply animations, let's learn how to control them.
+Now that your elements are connected to the animation state, the next step is triggering animations.
 
-[Controlling Animations →](../concepts/controlling-animations.md){ .md-button .md-button--primary }
+[Trigger Animations →](trigger.md){ .md-button .md-button--primary }

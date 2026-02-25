@@ -262,6 +262,6 @@ What happens when you call `animate` while an animation is already running? See 
 
 ## Next Steps
 
-Now that you've triggered an animation, you need to apply it to your elements.
+Now that you understand the animation workflow, learn how to control your animations.
 
-[Apply Animations →](apply.md){ .md-button .md-button--primary }
+[Controlling Animations →](../concepts/controlling-animations.md){ .md-button .md-button--primary }

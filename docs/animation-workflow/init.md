@@ -1,6 +1,6 @@
 # Initialize
 
-Before building and triggering animations, you need to initialize your animation state. 
+All animations should be initialized ready for rendering and triggering. 
 
 ## Why Initialize?
 
@@ -107,8 +107,6 @@ Store the initialized `AnimState` in your model:
 
 ## Next Steps
 
-Once initialized, you're ready to:
+Now that your animation state is initialized, the next step is rendering them in your view.
 
-1. [Build](build.md) - Define your animation configurations
-2. [Trigger](trigger.md) - Start animations with `animate` or `fireAndForget`
-3. [Apply](apply.md) - Connect animations to your view elements
+[Render →](render.md){ .md-button .md-button--primary }
