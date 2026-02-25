@@ -1,6 +1,6 @@
 # Render
 
-In order to view an animation, it needs to be rendered in your view. All engines provide an `attributes` function for this.
+In order to view an animation, it needs to be rendered in your `view`. All engines provide an `attributes` function for this.
 
 ## Using `attributes`
 
@@ -41,49 +41,6 @@ The `attributes` function generates HTML attributes for your element.
         ```
 
 The first argument is the **animation group name** - this connects your animation definition to your view element. See [Animation Group Names](build.md#animation-group-names) for how to define groups when building animations.
-
-
-## Connecting Builder to View
-
-The group name you use in `attributes` must match the group name used in your builder's `Property.for` call:
-
-??? example "View Source Code"
-
-    ```elm
-    -- Define an animation for group "boxAnim"
-    fadeIn =
-        Opacity.for "boxAnim"
-            >> Opacity.from 0
-            >> Opacity.to 1
-            >> Opacity.build
-
-    -- Add fadeIn to your Engine
-    Transitions.animate model.animState fadeIn
-
-    -- Then apply it to your element
-    view model =
-        div (Transitions.attributes "boxAnim" model.animState) [ ... ]
-    ```
-
-    Use the group name to group multiple property animations together so that they can all be applied to the same element.
-
-    ```elm
-    -- Define another animation for group "boxAnim"
-    slideIn =
-        Translate.for "boxAnim"
-            >> Translate.Xfrom -100
-            >> Translate.toX 50
-            >> Translate.build
-
-    -- Add slideIn to your Engine too
-    Transitions.animate model.animState <|
-        fadeIn >> slideIn
-
-    -- Then apply the `boxAnim` group of animations to your element (slideIn & fadeIn)
-    view model =
-        div (Transitions.attributes "boxAnim" model.animState) [ ... ]
-    ```
-
 
 ## Engine-Specific Requirements
 
@@ -141,41 +98,6 @@ WAAPI elements need an `id` attribute so JavaScript can find the DOM element. Th
     ```
 
 See [WAAPI Engine](../engines/waapi.md) for details on how WAAPI handles attributes differently from other engines.
-
-## Multiple Elements
-
-You can animate multiple elements from the same `AnimState`.
-
-??? example "View Source Code"
-
-    ```elm
-    -- Define animations for each element
-    Transition.animate model.animState <|
-        slideDown "header"
-            >> fadeIn "content"
-            >> slideUp "footer"
-
-    view model =
-        div []
-            [ div (Transitions.attributes "header" model.animState) [ text "Header" ]
-            , div (Transitions.attributes "content" model.animState) [ text "Content" ]
-            , div (Transitions.attributes "footer" model.animState) [ text "Footer" ]
-            ]
-    ```
-
-    Alternatively, one animation configuration can run on multiple elements.
-
-    ```elm
-    Transition.animate model.animState <|
-        fadeIn "introAnim"
-
-    view model =
-        div []
-            [ div (Transitions.attributes "introAnim" model.animState) [ text "Header" ]
-            , div (Transitions.attributes "introAnim" model.animState) [ text "Content" ]
-            , div (Transitions.attributes "introAnim" model.animState) [ text "Footer" ]
-            ]
-    ```
 
 ## Next Steps
 
