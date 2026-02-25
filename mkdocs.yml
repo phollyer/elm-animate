@@ -72,9 +72,10 @@ nav:
     - Timing: getting-started/timing.md
     - Easing Functions: getting-started/easing.md
   - Animation Workflow:
-    - 1. Build: animation-workflow/build.md
-    - 2. Trigger: animation-workflow/trigger.md
-    - 3. Apply: animation-workflow/apply.md
+    - 1. Initialize: animation-workflow/init.md
+    - 2. Build: animation-workflow/build.md
+    - 3. Trigger: animation-workflow/trigger.md
+    - 4. Apply: animation-workflow/apply.md
   - Concepts:
     - Controlling Animations: concepts/controlling-animations.md
     - Controlling Scroll: concepts/controlling-scroll.md

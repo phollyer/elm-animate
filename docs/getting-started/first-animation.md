@@ -20,9 +20,20 @@ We'll fade an element in and out over 2500 milliseconds.
 
 ## Breaking It Down
 
-There are three simple steps to animating with Elm Animate.
+There are four simple steps to animating with Elm Animate.
 
-### 1. Build
+### 1. Initialize
+
+Set up the initial state for your animated properties. This ensures elements render with the correct starting values before any animation runs:
+
+??? example "View Source Code"
+
+    ```elm
+    --8<-- "docs/examples/src/GettingStarted/FirstAnimation/Main.elm:initAnimationState"
+    ```
+    Here, we initialize the opacity to 0 so the element starts invisible.
+
+### 2. Build
 
 Animations are defined as functions that transform an `AnimBuilder`:
 
@@ -32,7 +43,7 @@ Animations are defined as functions that transform an `AnimBuilder`:
     --8<-- "docs/examples/src/GettingStarted/FirstAnimation/Main.elm:fadeIn"
     ```
 
-### 2. Trigger
+### 3. Trigger
 
 Engines trigger their animations with either their `animate` function if state-based, or `fireAndForget` if not state-based.
 
@@ -43,7 +54,7 @@ Engines trigger their animations with either their `animate` function if state-b
     ```
     Here, we use `fireAndForget` to trigger the required animation.
 
-### 3. Apply
+### 4. Apply
 
 Use the `attributes` function to apply the animation's attributes to your element:
 

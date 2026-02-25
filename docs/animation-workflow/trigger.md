@@ -50,8 +50,7 @@ The `animate` function processes your animation configuration and merges the com
         ```elm
         let
             ( newAnimState, cmd ) =
-                WAAPI.animate model.animState <|
-                    WAAPI.forElement "element-id" >> fadeIn
+                WAAPI.animate model.animState fadeIn
         in
         ( { model | animState = newAnimState }
         , cmd
@@ -59,8 +58,6 @@ The `animate` function processes your animation configuration and merges the com
         ```
 
         WAAPI uses JavaScript ports, so `animate` returns both the updated state and a `cmd` that sends the animation data to JS.
-        
-        It also requires `forElement` to specify which DOM element to animate - see [WAAPI - Targeting Elements](../engines/waapi.md#targeting-elements) for more info.
 
 
 ## Using `fireAndForget`
@@ -72,17 +69,14 @@ For simple animations that don't need state tracking:
     === "Transitions"
 
         ```elm
-        -- In init
-        init _ =
-            ( { animState = Transitions.fireAndForget (fadeIn >> slideIn) }
-            , Cmd.none
-            )
-
-        -- Or in update
         update msg model =
             case msg of
                 GotShowBox ->
-                    ( { model | animState = Transitions.fireAndForget (fadeIn >> slideIn) }
+                    ( { model 
+                      | animState =
+                          Transitions.fireAndForget <|
+                              fadeIn >> slideIn
+                      }
                     , Cmd.none
                     )
         ```
@@ -90,35 +84,14 @@ For simple animations that don't need state tracking:
     === "Keyframes"
 
         ```elm
-        -- In init
-        init _ =
-            ( { animState = Keyframes.fireAndForget (fadeIn >> slideIn) }
-            , Cmd.none
-            )
-
-        -- Or in update
         update msg model =
             case msg of
                 GotShowBox ->
-                    ( { model | animState = Keyframes.fireAndForget (fadeIn >> slideIn) }
-                    , Cmd.none
-                    )
-        ```
-
-    === "Sub"
-
-        ```elm
-        -- In init
-        init _ =
-            ( { animState = Sub.fireAndForget (fadeIn >> slideIn) }
-            , Cmd.none
-            )
-
-        -- Or in update
-        update msg model =
-            case msg of
-                GotShowBox ->
-                    ( { model | animState = Sub.fireAndForget (fadeIn >> slideIn) }
+                    ( { model 
+                      | animState =
+                          Keyframes.fireAndForget <|
+                              fadeIn >> slideIn
+                      }
                     , Cmd.none
                     )
         ```
@@ -126,26 +99,18 @@ For simple animations that don't need state tracking:
     === "WAAPI"
 
         ```elm
-        -- In init (returns Cmd)
-        init _ =
-            let
-                ( animState, cmd ) =
-                    WAAPI.fireAndForget waapiCommand <|
-                        WAAPI.forElement "element-id" >> fadeIn >> slideIn
-            in
-            ( { animState = animState }, cmd )
-
-        -- Or in update
         update msg model =
             case msg of
                 GotShowBox ->
                     let
                         ( animState, cmd ) =
                             WAAPI.fireAndForget waapiCommand <|
-                                WAAPI.forElement "element-id" >> fadeIn >> slideIn
+                                fadeIn >> slideIn
                     in
                     ( { model | animState = animState }, cmd )
         ```
+
+    There is no Sub example, because being a subscription based Engine it is naturally state-based so `fireAndForget` just wouldn't make sense.
 
 Note that `fireAndForget` does not take an `AnimState` as a parameter — it creates a fresh state each time.
 
