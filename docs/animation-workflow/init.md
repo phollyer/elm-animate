@@ -9,10 +9,10 @@ Initialization sets the starting property values so that:
 - your elements render correctly on first load - before any animation runs
 - the Engine knows where to start the element's animation from
 
-Without initialization, animated elements may flash or jump when the page loads:
+Without initialization:
 
-- An element meant to fade in might briefly appear at full opacity
-- An element meant to slide in might appear in its final position first
+- your fade-in elements might briefly flash at full opacity
+- your slide-in elements might appear in their final position first
 
 Initialization ensures your elements start in the correct state immediately.
 
@@ -29,8 +29,8 @@ Every animation engine provides an `init` function that creates an `AnimState` w
         initialAnimState =
             Transitions.init
                 [ Opacity.init "fadeBox" 0
-                , Scale.initXY "growBox" ( 0.5, 0.5 )
-                , Translate.initXY "slideBox" ( -100, 0 )
+                , Scale.initXY "growBox" 0.5 0.5
+                , Translate.initXY "slideBox" -100 0 
                 ]
         ```
 
@@ -41,8 +41,8 @@ Every animation engine provides an `init` function that creates an `AnimState` w
         initialAnimState =
             Keyframes.init
                 [ Opacity.init "fadeBox" 0
-                , Scale.initXY "growBox" ( 0.5, 0.5 )
-                , Translate.initXY "slideBox" ( -100, 0 )
+                , Scale.initXY "growBox" 0.5 0.5
+                , Translate.initXY "slideBox" -100 0 
                 ]
         ```
 
@@ -53,8 +53,8 @@ Every animation engine provides an `init` function that creates an `AnimState` w
         initialAnimState =
             Sub.init
                 [ Opacity.init "fadeBox" 0
-                , Scale.initXY "growBox" ( 0.5, 0.5 )
-                , Translate.initXY "slideBox" ( -100, 0 )
+                , Scale.initXY "growBox" 0.5 0.5
+                , Translate.initXY "slideBox" -100 0 
                 ]
         ```
 
@@ -63,47 +63,24 @@ Every animation engine provides an `init` function that creates an `AnimState` w
         ```elm
         initialAnimState : WAAPI.AnimState
         initialAnimState =
-            WAAPI.init
+            WAAPI.init waapiCommand waapiEvent <|
                 [ Opacity.init "fadeBox" 0
-                , Scale.initXY "growBox" ( 0.5, 0.5 )
-                , Translate.initXY "slideBox" ( -100, 0 )
+                , Scale.initXY "growBox" 0.5 0.5
+                , Translate.initXY "slideBox" -100 0 
                 ]
         ```
 
+        The WAAPI Engine also requires it's port functions [`waapiCommand` & `waapiEvent`] so that it can talk to JS. 
+        [More on these](../engines/waapi.md#3-define-ports-in-elm) later.
+
 ## Property Init Functions
 
-Each animatable property module provides init functions for setting initial values:
+Each animatable property module provides `init` functions for setting initial values, the range of functions depends on the property:
 
-| Property | Init Functions |
-| -------- | -------------- |
-| `Opacity` | `init` |
-| `Translate` | `init`, `initX`, `initY`, `initZ`, `initXY`, `initXYZ` |
-| `Scale` | `init`, `initX`, `initY`, `initZ`, `initXY`, `initXYZ` |
-| `Rotate` | `init`, `initX`, `initY`, `initZ` |
-| `BackgroundColor` | `init` |
-| `FontColor` | `init` |
+- Opacity only has `init` - there is only one value to set
+- Size has `init`, `initH`, `initW` & `initHW` - Size has height and width
 
-??? example "View Source Code"
-
-    ```elm
-    -- Single value inits
-    Opacity.init "myGroup" 0.5              -- opacity: 0.5
-    Scale.init "myGroup" 2                  -- scale: 2
-    Rotate.init "myGroup" 45                -- rotate: 45deg
-    
-    -- Axis-specific inits
-    Translate.initX "myGroup" 100           -- translateX: 100px
-    Translate.initY "myGroup" -50           -- translateY: -50px
-    Scale.initX "myGroup" 0.8               -- scaleX: 0.8
-    
-    -- Combined inits
-    Translate.initXY "myGroup" ( 100, 50 )  -- translate: 100px, 50px
-    Scale.initXYZ "myGroup" ( 1, 1, 0.5 )   -- scale3d: 1, 1, 0.5
-    
-    -- Color inits
-    BackgroundColor.init "myGroup" (Color.rgba 0 0.5 1 0.8)
-    FontColor.init "myGroup" Color.white
-    ```
+Refer to each property's documentation for specifics.
 
 ## Using Initialized State in Your Model
 
@@ -127,42 +104,6 @@ Store the initialized `AnimState` in your model:
         , -- other initializations
         }
     ```
-
-## When to Skip Initialization
-
-You can skip initialization when:
-
-- Using `fireAndForget` for simple one-shot animations
-- The element's initial state matches the default (e.g., opacity 1, no transform)
-- You want the element visible immediately, then animate it later
-
-For these cases, use `Engine.empty` instead:
-
-??? example "View Source Code"
-
-    === "Transitions"
-
-        ```elm
-        { animState = Transitions.empty }
-        ```
-
-    === "Keyframes"
-
-        ```elm
-        { animState = Keyframes.empty }
-        ```
-
-    === "Sub"
-
-        ```elm
-        { animState = Sub.empty }
-        ```
-
-    === "WAAPI"
-
-        ```elm
-        { animState = WAAPI.empty }
-        ```
 
 ## Next Steps
 
