@@ -2,7 +2,9 @@
 
 Easing functions control the rate of change during an animation, making motion feel natural and polished.
 
-## Available Easings
+## Standard Easings
+
+These are the standard easing curves calculated using the functions from [elm-community/easing-functions](https://package.elm-lang.org/packages/elm-community/easing-functions/latest/Ease).
 
 ### Linear
 
@@ -130,6 +132,130 @@ Custom easing curve defined by two control points — the same format used by CS
 
 The four parameters (`x1 y1 x2 y2`) define the curve's control points. Use tools like [cubic-bezier.com](https://cubic-bezier.com) to visualize and create custom curves.
 
+## Complex Easings
+
+Back, Bounce, and Elastic are mathematically complex easings. Unlike simple power curves (Quad, Cubic, etc.), these use trigonometric functions, exponentials, and piecewise calculations to create oscillations, bounces, and overshoots.
+
+The following `*Custom` and `*Advanced` variants give you extra control over how these complex curves behave - adjusting bounce count, oscillation intensity, overshoot amount, and decay rates.
+
+!!! note "Duration behavior"
+    Custom and Advanced easings are generated such that the transition time (A → B) matches your specified duration/speed. Any oscillations or bounces are calculated based on the provided parameters and then prepended or appended to the transition phase. This provides a smoother, more natural effect - rather than squashing 6 bounces (3 at either end) plus the transition phase into a 2sec animation, you decide on the duration of the transition phase, and then bounces and oscilations are calculated based on velocity and the provided parameters.
+
+
+## Custom Easings
+
+For Back, Bounce, and Elastic, you can customize their behavior with `*Custom` variants.
+
+### BackCustom
+
+Adjust the overshoot amount with a `strength` parameter.
+
+??? example "View Source Code"
+
+    ```elm
+    >> Property.easing (BackOutCustom 2.5)  -- More overshoot
+    >> Property.easing (BackOutCustom 0.5)  -- Less overshoot
+    >> Property.easing (BackInOutCustom ( 1.0, 2.0 ))  -- Different in/out
+    ```
+
+### BounceCustom
+
+Adjust the bounce intensity with a `strength` parameter.
+
+??? example "View Source Code"
+
+    ```elm
+    >> Property.easing (BounceOutCustom 1.5)  -- More intense bounces
+    >> Property.easing (BounceOutCustom 0.5)  -- Gentler bounces
+    >> Property.easing (BounceInOutCustom ( 0.8, 1.2 ))  -- Different in/out
+    ```
+
+### ElasticCustom
+
+Adjust the oscillation intensity with a `strength` parameter.
+
+??? example "View Source Code"
+
+    ```elm
+    >> Property.easing (ElasticOutCustom 1.5)  -- More oscillation
+    >> Property.easing (ElasticOutCustom 0.5)  -- Less oscillation
+    >> Property.easing (ElasticInOutCustom ( 1.0, 0.8 ))  -- Different in/out
+    ```
+
+## Advanced Easings
+
+For even more control over Bounce and Elastic, use the `*Advanced` variants with full parameter records.
+
+### BounceAdvanced
+
+Control bounces, amplitude, and decay rate.
+
+| Parameter | Effect |
+| --------- | ------ |
+| `bounces` | Number of bounces |
+| `amplitude` | Bounce height (higher = larger bounces) |
+| `decay` | How quickly bounces shrink (higher = faster decay) |
+
+??? example "View Source Code"
+
+    ```elm
+    >> Property.easing
+        (BounceOutAdvanced
+            { bounces = 3
+            , amplitude = 1.2
+            , decay = 0.5
+            }
+        )
+    ```
+
+For `BounceInOutAdvanced`, configure each phase independently:
+
+??? example "View Source Code"
+
+    ```elm
+    >> Property.easing
+        (BounceInOutAdvanced
+            { in_ = { bounces = 2, amplitude = 0.8, decay = 0.4 }
+            , out = { bounces = 4, amplitude = 1.0, decay = 0.6 }
+            }
+        )
+    ```
+
+### ElasticAdvanced
+
+Control elasticity, amplitude, and decay rate.
+
+| Parameter | Effect |
+| --------- | ------ |
+| `elasticity` | Springiness (higher = more oscillation) |
+| `amplitude` | Oscillation size (higher = larger swings) |
+| `decay` | How quickly oscillations fade (higher = faster decay) |
+
+??? example "View Source Code"
+
+    ```elm
+    >> Property.easing
+        (ElasticOutAdvanced
+            { elasticity = 0.8
+            , amplitude = 1.5
+            , decay = 0.3
+            }
+        )
+    ```
+
+For `ElasticInOutAdvanced`, configure each phase independently:
+
+??? example "View Source Code"
+
+    ```elm
+    >> Property.easing
+        (ElasticInOutAdvanced
+            { in_ = { elasticity = 0.6, amplitude = 1.0, decay = 0.4 }
+            , out = { elasticity = 0.9, amplitude = 1.2, decay = 0.5 }
+            }
+        )
+    ```
+
 ## Choosing an Easing
 
 !!! tip "General recommendations"
@@ -146,73 +272,6 @@ The four parameters (`x1 y1 x2 y2`) define the curve's control points. Use tools
 
 !!! tip "For state changes:"
     Use `InOut` variants — smooth transitions between states.
-
-## Examples
-
-### Snappy button response
-
-??? example "Show Source Code"
-
-    ```elm
-    buttonHover : AnimBuilder -> AnimBuilder
-    buttonHover =
-        Scale.for "button"
-            >> Scale.to 1.05
-            >> Scale.duration 150
-            >> Scale.easing QuintOut
-            >> Scale.build
-    ```
-
-### Smooth modal entrance
-
-??? example "Show Source Code"
-
-    ```elm
-    modalEnter : AnimBuilder -> AnimBuilder
-    modalEnter =
-        Opacity.for "modal"
-            >> Opacity.from 0
-            >> Opacity.to 1
-            >> Opacity.duration 300
-            >> Opacity.easing CubicOut
-            >> Opacity.build
-            >> Translate.for "modal"
-            >> Translate.fromY 20
-            >> Translate.toY 0
-            >> Translate.duration 300
-            >> Translate.easing CubicOut
-            >> Translate.build
-    ```
-
-### Playful bounce
-
-??? example "Show Source Code"
-
-    ```elm
-    notification : AnimBuilder -> AnimBuilder
-    notification =
-        Translate.for "toast"
-            >> Translate.fromY -100
-            >> Translate.toY 0
-            >> Translate.duration 600
-            >> Translate.easing BounceOut
-            >> Translate.build
-    ```
-
-### Elastic attention
-
-??? example "Show Source Code"
-
-    ```elm
-    shake : AnimBuilder -> AnimBuilder
-    shake =
-        Rotate.for "icon"
-            >> Rotate.from 0
-            >> Rotate.to 15
-            >> Rotate.duration 400
-            >> Rotate.easing ElasticOut
-            >> Rotate.build
-    ```
 
 ## Next Steps
 

@@ -40,7 +40,7 @@ The `attributes` function generates HTML attributes for your element.
             [ text "I animate!" ]
         ```
 
-The first argument is the **animation group name** - this connects your animation definition to your view element. See [Animation Group Names](build.md#animation-group-names) for how to define groups when building animations.
+The first argument is the **animation group name** - this connects your animation definition to your view element. See [Animation Group Names](build.md#animation-group-names) for more on defining groups when building animations.
 
 ## Engine-Specific Requirements
 
@@ -62,7 +62,7 @@ Keyframes animations require a `<style>` node in the DOM containing the generate
             ]
     ```
 
-    The `styleNode` should be placed once in your view, typically at the top level. It contains all keyframe definitions for all animation groups in that `AnimState`.
+    `styleNode` produces all the `@keyframes` rules for all animations in `animState`.
 
     For a more targeted `style` node, use `styleNodeFor animGroup` which only applies the keyframes for that animation group. You can add multiple `styleNodeFor`s to your DOM if so required.
 
@@ -80,9 +80,15 @@ Keyframes animations require a `<style>` node in the DOM containing the generate
             ]
     ```
 
+#### A Place at the Top
+
+The `@keyframes` `<style>` node should be placed in your view **at a stable top level**.
+
+If any `@keyframes` rules are inside a part of the DOM that gets re-rendered (a conditional branch, a list, etc.), Elm's virtual DOM diff may remove and re-add them - and when the browser sees "new" `@keyframes` rules, it restarts any animations using them - so be mindful where you put them and, unless you have a real need, place them as high up your DOM tree as you can.
+
 ### WAAPI Engine
 
-WAAPI elements need an `id` attribute so JavaScript can find the DOM element. The `id` must match the element ID provided in `WAAPI.forElement` when building the animation.
+WAAPI elements need an `id` attribute so JavaScript can find the DOM element.
 
 ??? example "View Source Code"
 
@@ -97,10 +103,10 @@ WAAPI elements need an `id` attribute so JavaScript can find the DOM element. Th
             ]
     ```
 
-See [WAAPI Engine](../engines/waapi.md) for details on how WAAPI handles attributes differently from other engines.
+The element `id` and the animation group name make up the WAAPI Composite Key. For more info on Composite Keys, see the [WAAPI Engine](../engines/waapi.md#composite-keys-and-animation-groups) documentation.
 
 ## Next Steps
 
-Now that your elements are connected to the animation state, the next step is triggering animations.
+Now that your view is setup ready to render your animations, the next step is triggering them.
 
 [Trigger Animations →](trigger.md){ .md-button .md-button--primary }

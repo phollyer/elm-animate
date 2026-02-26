@@ -24,7 +24,7 @@ Set a fixed animation time in milliseconds:
         >> Opacity.build
     ```
 
-Duration is the default choice for most animations. Fades, color changes, and UI effects benefit from consistent timing.
+Duration should be the default choice for most animations. Fades, color changes, and UI effects benefit from consistent timing.
 
 ## Speed
 
@@ -43,6 +43,9 @@ Moving 100 pixels at 200px/s takes 500ms. Moving 400 pixels takes 2000ms.
 
 !!! tip "When to use speed"
     Speed shines for **Translate** animations where elements travel different distances. A short move feels snappy while a long move takes appropriately longer — matching how physical objects behave.
+
+!!! warning "Units of Speed"
+    Speed is calculated in 'property specific units per second'. Exactly what 'units' represents differs by property type - details of which are on each Property page.
 
 ## Which to Use?
 
@@ -71,10 +74,10 @@ Set timing globally on the engine to apply to all animations, or locally on indi
     Engine.duration 300
 
     -- Local override on specific property
-    Translate.for "boxAnim"
-        >> Translate.toX 100
-        >> Translate.speed 500  -- Overrides global 300ms
-        >> Translate.build
+    Property.for "boxAnim"
+        >> ... -- Config
+        >> Property.speed 500  -- Overrides global 300ms
+        >> Property.build
     ```
 
 ## Scroll Timing

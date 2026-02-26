@@ -129,19 +129,16 @@ with `>>`. Small, focused animations combine into larger ones:
         -- Common timing helper
         withStandardTiming : AnimBuilder -> AnimBuilder
         withStandardTiming =
-            Sub.duration 300
-                >> Sub.easing QuintOut
+            Engine.duration 300
+                >> Engine.easing QuintOut
 
         -- Use it with any animation
         myAnimation : AnimBuilder -> AnimBuilder
         myAnimation =
             withStandardTiming
-                >> Translate.for "boxAnim"
-                >> Translate.toX 100
-                >> Translate.build
-                >> Opacity.for "boxAnim"
-                >> Opacity.to 1
-                >> Opacity.build
+                >> Property.for "boxAnim"
+                >> ... -- Additional Configuration
+                >> Property.build
         ```
 
 ## Next Steps

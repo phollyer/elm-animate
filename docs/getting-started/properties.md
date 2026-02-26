@@ -1,6 +1,6 @@
 # Properties
 
-Elm Animate supports various CSS properties that can be animated. All properties use the same [builder pattern](../animation-workflow/build.md) — start with `for`, configure, end with `build`.
+Elm Animate supports various CSS properties that can be animated.
 
 
 ## GPU Accelerated Properties

@@ -14,7 +14,12 @@ Without initialization:
 - your fade-in elements might briefly flash at full opacity
 - your slide-in elements might appear in their final position first
 
-Initialization ensures your elements start in the correct state immediately.
+Initialization ensures your elements start in the correct state immediately without requiring inline styles in your view.
+
+!!! info "Fire-and-forget vs state-tracked"
+    For **fire-and-forget** animations (`fireAndForget`), initialization is optional - it just sets inline styles. You could use inline styles in your view instead; it's a preference.
+
+    For **state-tracked** animations (`animate`), initialization is important. The engine tracks these values so animations can start from the element's current position - essential for smooth interruptions. Without it, you'd need hardcoded `from` values in every config, making them less portable.
 
 ## The Init Pattern
 

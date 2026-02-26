@@ -53,6 +53,8 @@ Use the `attributes` function to apply the animation's attributes to your elemen
     --8<-- "docs/examples/src/GettingStarted/FirstAnimation/Main.elm:applyStyles"
     ```
 
+    Exactly what `attributes` returns depends on the Engine being used, the animation configuration and the current animation state - all details you no longer need to concern yourself with 🎉.
+
 ### 4. Trigger
 
 Engines trigger their animations with either their `animate` function if state-based, or `fireAndForget` if not state-based.
@@ -63,7 +65,7 @@ Engines trigger their animations with either their `animate` function if state-b
     --8<-- "docs/examples/src/GettingStarted/FirstAnimation/Main.elm:triggerAnimation"
     ```
     Here, we use `fireAndForget` to trigger the required animation.
-
+    
 ## Next Steps
 
 Now that you can create a simple animation, take a look at the properties you can animate.

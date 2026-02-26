@@ -107,3 +107,9 @@ Scroll position is just another value. The Scroll Engine applies the same philos
 Ready to add Elm Animate to your Elm app?
 
 [Installation →](getting-started/installation.md){ .md-button .md-button--primary }
+
+Or, continue reading and learn how to create your first animation or scroll.
+
+[Your First Animation](getting-started/first-animation.md){ .md-button .md-button--primary }
+or
+[Your First Scroll](getting-started/first-scroll.md){ .md-button .md-button--primary }
