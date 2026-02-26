@@ -10,6 +10,7 @@ module Anim.Internal.WAAPI exposing
     , animateWithOrder
     , anyRunning
     , attributes
+    , awaitLoad
     , builder
     , decodeAnimationEvent
     , decodeEvent
@@ -45,7 +46,6 @@ module Anim.Internal.WAAPI exposing
     , getStartTranslate
     , getTranslateRange
     , init
-    , initCmd
     , isElementComplete
     , isElementRunning
     , onResize
@@ -789,11 +789,11 @@ init commandPort subscriptionPort propertyInitializers =
                 }
 
 
-initCmd : AnimState msg -> Cmd msg
-initCmd (AnimState state) =
+awaitLoad : AnimState msg -> Cmd msg
+awaitLoad (AnimState state) =
     state.commandPort
         (Encode.object
-            [ ( "type", Encode.string "requestInitialized" )
+            [ ( "type", Encode.string "requestLoaded" )
             ]
         )
 

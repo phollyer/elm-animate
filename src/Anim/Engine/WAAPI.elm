@@ -1,5 +1,5 @@
 module Anim.Engine.WAAPI exposing
-    ( AnimState, AnimBuilder, init, initCmd
+    ( AnimState, AnimBuilder, init, awaitLoad
     , animate, fireAndForget
     , TransformOrder(..), animateOrder, fireAndForgetOrder
     , forElement
@@ -87,7 +87,7 @@ Both ports are needed.
 
 # State
 
-@docs AnimState, AnimBuilder, init, initCmd
+@docs AnimState, AnimBuilder, init, awaitLoad
 
 
 # Execute
@@ -265,7 +265,7 @@ init =
 {-| Get the initialization command to send to JavaScript.
 
 Use this for triggering onload animations. JavaScript responds with an
-`Initialized` event, signaling that it's ready to receive animation commands.
+`Loaded` event, signaling that it's ready to receive animation commands.
 
     init : () -> ( Model, Cmd Msg )
     init _ =
@@ -278,13 +278,13 @@ Use this for triggering onload animations. JavaScript responds with an
                     ]
         in
         ( { animState = animState }
-        , WAAPI.initCmd animState
+        , WAAPI.awaitLoad animState
         )
 
-Then react to the `Initialized` event in your update function:
+Then react to the `Loaded` event in your update function:
 
     case event of
-        Just WAAPI.Initialized ->
+        Just WAAPI.Loaded ->
             -- JS is ready, trigger onload animations
             WAAPI.animate model.animState fadeIn
 
@@ -292,9 +292,9 @@ Then react to the `Initialized` event in your update function:
             ( model, Cmd.none )
 
 -}
-initCmd : AnimState msg -> Cmd msg
-initCmd =
-    Internal.initCmd
+awaitLoad : AnimState msg -> Cmd msg
+awaitLoad =
+    Internal.awaitLoad
 
 
 {-| Get HTML attributes that apply the current animation state as inline styles.
@@ -971,7 +971,7 @@ progress, and property configurations. `Changed` events (fired per-frame) includ
 only progress to minimize overhead.
 
     case event of
-        WAAPI.Initialized ->
+        WAAPI.Loaded ->
             -- JS is ready, safe to trigger onload animations
             ...
 
@@ -991,7 +991,7 @@ only progress to minimize overhead.
 
 -}
 type AnimEvent
-    = Initialized
+    = Loaded
     | Started String String EventInfo
     | Ended String String EventInfo
     | Cancelled String String EventInfo
@@ -1128,8 +1128,8 @@ eventDataToEvent eventData =
             }
     in
     case eventData.status of
-        "initialized" ->
-            Initialized
+        "loaded" ->
+            Loaded
 
         "changed" ->
             Changed elementId animGroup { progress = eventData.progress }

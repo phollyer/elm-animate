@@ -44,13 +44,9 @@ window.ElmAnimateWAAPI = (function () {
      */
     function processAnimationData(animationData) {
         if (animationData && animationData.elements) {
-            // Extract iteration configuration (or default to once)
-            const iterationConfig = animationData.iterationCount || { type: 'once', count: 1 };
-            const iterations = iterationConfig.type === 'infinite' ? Infinity : iterationConfig.count;
-            
             // Process element animations (keys are element IDs)
             Object.entries(animationData.elements).forEach(([elementId, elementConfig]) => {
-                processElementAnimation(elementId, elementConfig, iterations);
+                processElementAnimation(elementId, elementConfig);
             });
         } else {
             console.warn('ElmAnimateWAAPI: Invalid animation data format received');
@@ -63,9 +59,8 @@ window.ElmAnimateWAAPI = (function () {
      * 
      * @param {string} elementId - The DOM element ID (from Elm)
      * @param {object} elementConfig - Configuration with properties to animate
-     * @param {number} iterations - Number of iterations (Infinity for infinite loop)
      */
-    function processElementAnimation(elementId, elementConfig, iterations = 1) {
+    function processElementAnimation(elementId, elementConfig) {
         // Check if forElement was used - if not, warn and skip animation
         if (elementConfig.hasExplicitTarget === false) {
             console.warn(
@@ -114,19 +109,13 @@ using WAAPI.forElement at the start of your animation pipeline:
             completedProperties: 0,
             cancelledProperties: 0,
             started: false,
-            propertyConfigs: [],  // Will store config for each property
-            iterations: iterations,
-            currentIteration: 1,
-            lastKnownIteration: 0  // For detecting iteration changes
+            propertyConfigs: []  // Will store config for each property
         });
 
         // Process each property independently
         elementConfig.properties.forEach(property => {
             const propType = property.type;
             const newVersion = property.version || 1;
-            
-            // Add iterations to property config for animation creation
-            property.iterations = iterations;
 
             // Check if there's an existing animation for this property
             if (elementAnims.has(propType)) {
@@ -478,8 +467,7 @@ using WAAPI.forElement at the start of your animation pipeline:
         return element.animate(keyframes, {
             duration: duration,
             easing: animationEasing,
-            fill: 'forwards',
-            iterations: property.iterations || 1
+            fill: 'forwards'
         });
     }
 
@@ -602,8 +590,7 @@ using WAAPI.forElement at the start of your animation pipeline:
         return element.animate(keyframes, {
             duration: duration,
             easing: animationEasing,
-            fill: 'forwards',
-            iterations: property.iterations || 1
+            fill: 'forwards'
         });
     }
 
@@ -767,19 +754,6 @@ using WAAPI.forElement at the start of your animation pipeline:
                     const progress = maxDuration > 0
                         ? Math.min(1.0, Math.max(0.0, currentTime / maxDuration))
                         : 0;
-
-                    // Check for iteration changes (for multi-iteration animations)
-                    if (groupInfo && groupInfo.iterations > 1) {
-                        const computedTiming = animation.effect?.getComputedTiming();
-                        const currentIteration = computedTiming?.currentIteration ?? 0;
-                        
-                        // Emit iteration event when iteration number increases
-                        if (currentIteration > groupInfo.lastKnownIteration && groupInfo.lastKnownIteration > 0) {
-                            groupInfo.currentIteration = currentIteration;
-                            sendLifecycleEvent('iteration', animGroup, elementId);
-                        }
-                        groupInfo.lastKnownIteration = currentIteration;
-                    }
 
                     const propertyData = {
                         elementId: elementId,
@@ -1024,9 +998,6 @@ using WAAPI.forElement at the start of your animation pipeline:
                 progress = 1.0;
             } else if (status === 'started' || status === 'reset' || status === 'restarted') {
                 progress = 0.0;
-            } else if (status === 'iteration') {
-                // For iteration events, progress holds the iteration number
-                progress = groupInfo?.currentIteration || 1;
             } else {
                 // For paused, resumed, cancelled - calculate actual progress
                 const elementAnims = activeAnimations.get(compositeKey);
@@ -1065,6 +1036,27 @@ using WAAPI.forElement at the start of your animation pipeline:
             const eventData = {
                 type: 'propertyUpdate',
                 ...propertyData
+            };
+            window.app.ports.waapiEvent.send(eventData);
+        }
+    }
+
+    /**
+     * Send loaded event to Elm as handshake response
+     * This signals that JS is ready to receive animation commands
+     */
+    function sendLoadedEvent() {
+        if (window.app && window.app.ports && window.app.ports.waapiEvent) {
+            const eventData = {
+                type: 'animationUpdate',
+                payload: {
+                    elementId: '',
+                    animGroup: '',
+                    status: 'loaded',
+                    duration: 0,
+                    progress: 0,
+                    properties: []
+                }
             };
             window.app.ports.waapiEvent.send(eventData);
         }
@@ -1396,6 +1388,9 @@ using WAAPI.forElement at the start of your animation pipeline:
                 element.style.width = `${props.width}px`;
                 element.style.height = `${props.height}px`;
             }
+
+            // Send loaded event back to Elm
+            sendLoadedEvent();
         });
     }
 
@@ -1439,6 +1434,10 @@ using WAAPI.forElement at the start of your animation pipeline:
 
                         case 'setProperties':
                             setProperties(commandData.updates);
+                            break;
+
+                        case 'requestLoaded':
+                            sendLoadedEvent();
                             break;
 
                         case 'stop':

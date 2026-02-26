@@ -1,6 +1,6 @@
 # Initialize
 
-All animations should be initialized ready for rendering and triggering. 
+All animations should be initialized ready for rendering and triggering.
 
 ## Why Initialize?
 

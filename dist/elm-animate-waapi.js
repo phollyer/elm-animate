@@ -1042,17 +1042,17 @@ using WAAPI.forElement at the start of your animation pipeline:
     }
 
     /**
-     * Send initialized event to Elm as handshake response
+     * Send loaded event to Elm as handshake response
      * This signals that JS is ready to receive animation commands
      */
-    function sendInitializedEvent() {
+    function sendLoadedEvent() {
         if (window.app && window.app.ports && window.app.ports.waapiEvent) {
             const eventData = {
                 type: 'animationUpdate',
                 payload: {
                     elementId: '',
                     animGroup: '',
-                    status: 'initialized',
+                    status: 'loaded',
                     duration: 0,
                     progress: 0,
                     properties: []
@@ -1389,8 +1389,8 @@ using WAAPI.forElement at the start of your animation pipeline:
                 element.style.height = `${props.height}px`;
             }
 
-            // Send initialized event back to Elm
-            sendInitializedEvent();
+            // Send loaded event back to Elm
+            sendLoadedEvent();
         });
     }
 
@@ -1436,8 +1436,8 @@ using WAAPI.forElement at the start of your animation pipeline:
                             setProperties(commandData.updates);
                             break;
 
-                        case 'requestInitialized':
-                            sendInitializedEvent();
+                        case 'requestLoaded':
+                            sendLoadedEvent();
                             break;
 
                         case 'stop':

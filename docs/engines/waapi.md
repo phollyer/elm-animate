@@ -420,7 +420,7 @@ WAAPI's `init` requires the port functions as parameters:
 
 ## Onload Animations
 
-Animating elements immediately on page load requires coordination between Elm and JavaScript. The `initCmd` function and `Initialized` event provide this coordination.
+Animating elements immediately on page load requires coordination between Elm and JavaScript. The `awaitLoad` function and `Loaded` event provide this coordination.
 
 ### The Problem
 
@@ -450,7 +450,7 @@ Don't trigger in `init`, trigger in `update` - leave `init` just for initializat
 
     Here we initialize the starting state, which is rendered by the `attributes` function on first render, then the `StartAnimation` msg is sent 50ms later so that the animation can be triggered.
 
-A better way is to use `initCmd` to send an initial `Cmd` to JavaScript, then trigger your animation in response to the `Initialized` event. This keeps all animation logic flowing through a single event handler and avoids `Process.sleep` workarounds.
+A better way is to use `awaitLoad` to send an initial `Cmd` to JavaScript, then trigger your animation in response to the `Loaded` event. This keeps all animation logic flowing through a single event handler and avoids `Process.sleep` workarounds.
 
 ??? example "View Source Code"
 
@@ -465,7 +465,7 @@ A better way is to use `initCmd` to send an initial `Cmd` to JavaScript, then tr
                     ]
         in
         ( { animState = animState }
-        , WAAPI.initCmd animState  -- Send init Cmd to JS
+        , WAAPI.awaitLoad animState  -- Send init Cmd to JS
         )
 
     update : Msg -> Model -> ( Model, Cmd Msg )
@@ -477,7 +477,7 @@ A better way is to use `initCmd` to send an initial `Cmd` to JavaScript, then tr
                         WAAPI.update subMsg model.animState
                 in
                 case maybeEvent of
-                    Just WAAPI.Initialized ->
+                    Just WAAPI.Loaded ->
                         -- JS is ready, trigger onload animations
                         let
                             (newAnimState, cmd) =
@@ -519,14 +519,14 @@ The following features work the same across all engines. See [Engine Overview](o
 | `AnimState msg` | Tracks animations and their states |
 | `AnimBuilder` | Carries all the animation configurations |
 | `AnimMsg` | Opaque message type for WAAPI subscription events |
-| `AnimEvent` | Lifecycle events: `Initialized`, `Started String String`, `Ended String String`, `Paused String String`, `Resumed String String`, `Cancelled String String`, `Restarted String String` |
+| `AnimEvent` | Lifecycle events: `Loaded`, `Started String String`, `Ended String String`, `Paused String String`, `Resumed String String`, `Cancelled String String`, `Restarted String String` |
 
 ### Core Functions
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
 | `init` | `(Value -> Cmd msg) -> ((Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> AnimState msg` | Create initial animation state with ports and optional property initializers. |
-| `initCmd` | `AnimState msg -> Cmd msg` | Request JS handshake; returns `Initialized` event. |
+| `awaitLoad` | `AnimState msg -> Cmd msg` | Request JS handshake; returns `Loaded` event. |
 | `animate` | `AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )` | Execute animation with state tracking |
 | `animateOrder` | `List TransformOrder -> AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )` | Execute animation with custom transform order |
 | `fireAndForget` | `(Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Execute animation without state tracking |

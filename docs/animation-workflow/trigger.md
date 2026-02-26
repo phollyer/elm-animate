@@ -228,7 +228,7 @@ To animate immediately when the page loads, trigger in `init` using **Keyframes*
 
     === "WAAPI"
 
-        For WAAPI, use `initCmd` with the `Initialized` event to avoid flash:
+        For WAAPI, use `awaitLoad` with the `Loaded` event to avoid flash:
 
         ```elm
         init _ =
@@ -240,7 +240,7 @@ To animate immediately when the page loads, trigger in `init` using **Keyframes*
                         ]
             in
             ( { animState = animState }
-            , WAAPI.initCmd animState
+            , WAAPI.awaitLoad animState
             )
 
         update msg model =
@@ -251,14 +251,14 @@ To animate immediately when the page loads, trigger in `init` using **Keyframes*
                             WAAPI.update subMsg model.animState
                     in
                     case event of
-                        WAAPI.Initialized ->
+                        WAAPI.Loaded ->
                             -- JS is ready, trigger onload animations
 
                         _ ->
                             ( { model | animState = animState }, Cmd.none )
         ```
 
-        The `Initialized` event signals that JavaScript is ready to receive animation commands, making it safe to animate without any flash. See [WAAPI Onload Animations](../engines/waapi.md#onload-animations) for details.
+        The `Loaded` event signals that JavaScript is ready to receive animation commands, making it safe to animate without any flash. See [WAAPI Onload Animations](../engines/waapi.md#onload-animations) for details.
 
 !!! warning "CSS Transitions can't animate on page load"
     CSS Transitions require a state change between renders. Triggering in `init` means no state change — the element appears at the final state immediately because the browser has no initial `transition` state to animate from. To animate with Transitions on page load, trigger in a subsequent message after the first render.

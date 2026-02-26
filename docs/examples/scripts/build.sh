@@ -11,6 +11,13 @@ echo "🚀 Building Elm Animate Documentation Examples..."
 # Change to examples directory (parent of scripts)
 cd "$(dirname "$0")/.."
 
+# Copy JS from dist to ensure we have the latest version
+echo "📦 Copying JS from dist..."
+mkdir -p js
+cp ../../dist/elm-animate-waapi.js js/
+echo "✅ Copied elm-animate-waapi.js to js/"
+echo ""
+
 # Track build and format results
 FAILED_BUILDS=()
 SUCCESSFUL_BUILDS=()
@@ -94,7 +101,7 @@ if [ ${#FAILED_BUILDS[@]} -eq 0 ] && [ ${#FAILED_FORMAT[@]} -eq 0 ]; then
     echo "   ⚙️  Engines/ - Engine-specific examples (CSS, Sub, etc.)"
     echo ""
     echo "💡 To view examples:"
-    echo "   mkdocs serve   # From the docs directory"
+    echo "   mkdocs serve   # From the project root"
     echo "   Then open http://localhost:8000"
 else
     echo ""
