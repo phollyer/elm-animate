@@ -67,8 +67,8 @@ Set timing globally on the engine to apply to all animations, or locally on indi
 ??? example "View Source Code"
 
     ```elm
-    -- Global timing on engine
-    Sub.duration 300
+    -- Global timing on the engine
+    Engine.duration 300
 
     -- Local override on specific property
     Translate.for "boxAnim"

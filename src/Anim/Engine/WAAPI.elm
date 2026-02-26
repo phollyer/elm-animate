@@ -1,5 +1,5 @@
 module Anim.Engine.WAAPI exposing
-    ( AnimState, AnimBuilder, init
+    ( AnimState, AnimBuilder, init, initCmd
     , animate, fireAndForget
     , TransformOrder(..), animateOrder, fireAndForgetOrder
     , forElement
@@ -87,7 +87,7 @@ Both ports are needed.
 
 # State
 
-@docs AnimState, AnimBuilder, init
+@docs AnimState, AnimBuilder, init, initCmd
 
 
 # Execute
@@ -262,17 +262,17 @@ init =
     Internal.init
 
 
-{-| Get the initialization command to send initial property values to JavaScript.
+{-| Get the initialization command to send to JavaScript.
 
-Use this when you need the `Initialized` event for triggering onload animations.
-The command sends a `setProperties` message to JavaScript, which will apply
-the initial values and send back an `Initialized` event for each element.
+Use this for triggering onload animations. JavaScript responds with an
+`Initialized` event, signaling that it's ready to receive animation commands.
 
     init : () -> ( Model, Cmd Msg )
     init _ =
         let
             animState =
-                WAAPI.init waapiCommand waapiEvent
+                WAAPI.init waapiCommand
+                    waapiEvent
                     [ WAAPI.forElement "box"
                         >> Opacity.init "fadeAnim" 0
                     ]
@@ -283,13 +283,13 @@ the initial values and send back an `Initialized` event for each element.
 
 Then react to the `Initialized` event in your update function:
 
-    case maybeEvent of
-        Just (WAAPI.Initialized elementId) ->
-            -- Element is ready, safe to animate without flash
-            WAAPI.animate newAnimState fadeIn
+    case event of
+        Just WAAPI.Initialized ->
+            -- JS is ready, trigger onload animations
+            WAAPI.animate model.animState fadeIn
 
         _ ->
-            ( { model | animState = newAnimState }, Cmd.none )
+            ( model, Cmd.none )
 
 -}
 initCmd : AnimState msg -> Cmd msg
@@ -965,14 +965,14 @@ getCurrentSize =
 These events notify you when animations change state, allowing you to trigger
 side effects like starting the next animation in a sequence or updating the UI.
 
-Each event carries the `elementId` and `animGroup` of the animated element, along
+Most events carry the `elementId` and `animGroup` of the animated element, along
 with contextual data. Lifecycle events include full `EventInfo` with duration,
 progress, and property configurations. `Changed` events (fired per-frame) include
 only progress to minimize overhead.
 
     case event of
-        WAAPI.Initialized "box" ->
-            -- JS has set initial properties on "box", safe to animate
+        WAAPI.Initialized ->
+            -- JS is ready, safe to trigger onload animations
             ...
 
         WAAPI.Ended "box" "fadeIn" info ->
@@ -991,7 +991,7 @@ only progress to minimize overhead.
 
 -}
 type AnimEvent
-    = Initialized String
+    = Initialized
     | Started String String EventInfo
     | Ended String String EventInfo
     | Cancelled String String EventInfo
@@ -1074,12 +1074,12 @@ and an `AnimEvent` that you can pattern match on and react to.
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
         case msg of
-            WaapiMsg waapiMsg ->
+            WaapiMsg subMsg ->
                 let
-                    ( newAnimState, event ) =
-                        WAAPI.update waapiMsg model.animState
+                    ( animState, event ) =
+                        WAAPI.update subMsg model.animState
                 in
-                handleAnimationEvent event { model | animState = newAnimState }
+                handleAnimationEvent event { model | animState = animState }
 
             ...
 
@@ -1129,7 +1129,7 @@ eventDataToEvent eventData =
     in
     case eventData.status of
         "initialized" ->
-            Initialized elementId
+            Initialized
 
         "changed" ->
             Changed elementId animGroup { progress = eventData.progress }

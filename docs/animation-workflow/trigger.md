@@ -1,6 +1,6 @@
 # Triggering Animations
 
-Once you've [built](build.md), [initialized](init.md) and [rendered](rednder.md) your animation you need to trigger it. Triggering is where the engine processes your configuration and computes the animation data, storing the results in `AnimState` ready for rendering.
+Once you've [built](build.md), [initialized](init.md) and [rendered](render.md) your animation you need to trigger it. Triggering is where the engine processes your configuration and computes the animation data, storing the results in `AnimState` ready for rendering.
 
 ## Two Ways to Trigger
 
@@ -228,17 +228,37 @@ To animate immediately when the page loads, trigger in `init` using **Keyframes*
 
     === "WAAPI"
 
+        For WAAPI, use `initCmd` with the `Initialized` event to avoid flash:
+
         ```elm
         init _ =
             let
-                ( animState, cmd ) =
-                    WAAPI.fireAndForget waapiCommand <|
-                        WAAPI.forElement "element-id" >> fadeIn
+                animState =
+                    WAAPI.init waapiCommand waapiEvent
+                        [ WAAPI.forElement "element-id"
+                            >> Opacity.init "fadeAnim" 0
+                        ]
             in
-            ( { animState = animState }, cmd )
+            ( { animState = animState }
+            , WAAPI.initCmd animState
+            )
+
+        update msg model =
+            case msg of
+                GotWaapiMsg subMsg ->
+                    let
+                        ( animState, event ) =
+                            WAAPI.update subMsg model.animState
+                    in
+                    case event of
+                        WAAPI.Initialized ->
+                            -- JS is ready, trigger onload animations
+
+                        _ ->
+                            ( { model | animState = animState }, Cmd.none )
         ```
 
-        This will likely result in an initial 'flash' when the browser renders the element in it's default state before the `cmd` reaches JS.
+        The `Initialized` event signals that JavaScript is ready to receive animation commands, making it safe to animate without any flash. See [WAAPI Onload Animations](../engines/waapi.md#onload-animations) for details.
 
 !!! warning "CSS Transitions can't animate on page load"
     CSS Transitions require a state change between renders. Triggering in `init` means no state change — the element appears at the final state immediately because the browser has no initial `transition` state to animate from. To animate with Transitions on page load, trigger in a subsequent message after the first render.

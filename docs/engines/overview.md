@@ -319,10 +319,10 @@ WAAPI uses subscriptions to receive events from JavaScript:
 
     update msg model =
         case msg of
-            GotWaapiMsg waapiMsg ->
+            GotWaapiMsg subMsg ->
                 let
                     ( newAnimState, maybeEvent ) =
-                        WAAPI.update waapiMsg model.animState
+                        WAAPI.update subMsg model.animState
                 in
                 case maybeEvent of
                     Just (WAAPI.Ended "box") ->

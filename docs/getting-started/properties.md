@@ -15,7 +15,7 @@ These properties are composited on the GPU for smooth 60fps performance with min
 | [Translate](../properties/translate.md) | Move elements on X, Y, Z axes | `Anim.Property.Translate` |
 
 !!! tip "3D Animations"
-    Rotate, Scale, and Translate all support 3D transforms. See the [3D Animations](3d.md) page for details.
+    Rotate, Scale, and Translate all support 3D transforms. See the [3D Animations](../concepts/3d.md) page for details.
 
 ## Non GPU Accelerated Properties
 

@@ -388,7 +388,7 @@ The WAAPI engine sends `Changed` events during animation, letting you track real
                 ( model, Cmd.none )
     ```
 
-## WAAPI-Specific Initialization
+## Initializing
 
 WAAPI's `init` requires the port functions as parameters:
 
@@ -418,9 +418,17 @@ WAAPI's `init` requires the port functions as parameters:
         )
     ```
 
-## The Initialized Event
+## Onload Animations
 
-When you need onload animations, use `initCmd` to send your initial property values to JavaScript. JavaScript will apply those values and send back an `Initialized` event, signaling that it's safe to animate without flashes or jumps.
+Animating elements immediately on page load requires coordination between Elm and JavaScript. The `initCmd` function and `Initialized` event provide this coordination.
+
+### The Problem
+
+If you trigger a WAAPI animation in `init`, the command reaches JavaScript after the browser has already rendered the page, so the element may flash its default state before JavaScript applies the animation.
+
+### The Solution
+
+Don't trigger in `init`, trigger in `update` - leave `init` just for initialization. But that leads to another problem - how to get a `Msg` from `init` to `update` in order to perform the trigger. A simple hack is `Process.sleep`:
 
 ??? example "View Source Code"
 
@@ -435,38 +443,59 @@ When you need onload animations, use `initCmd` to send your initial property val
                     ]
         in
         ( { animState = animState }
-        , WAAPI.initCmd animState  -- Send init command to JS
+        , Process.sleep 50 
+            |> Task.perform (always StartAnimation)
+        )
+    ```
+
+    Here we initialize the starting state, which is rendered by the `attributes` function on first render, then the `StartAnimation` msg is sent 50ms later so that the animation can be triggered.
+
+A better way is to use `initCmd` to send an initial `Cmd` to JavaScript, then trigger your animation in response to the `Initialized` event. This keeps all animation logic flowing through a single event handler and avoids `Process.sleep` workarounds.
+
+??? example "View Source Code"
+
+    ```elm
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        let
+            animState =
+                WAAPI.init waapiCommand waapiEvent
+                    [ WAAPI.forElement "box"
+                        >> Opacity.init "fadeAnim" 0
+                    ]
+        in
+        ( { animState = animState }
+        , WAAPI.initCmd animState  -- Send init Cmd to JS
         )
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
         case msg of
-            GotWaapiEvent value ->
+            GotWaapiMsg subMsg ->
                 let
-                    ( newAnimState, maybeEvent ) =
-                        WAAPI.update value model.animState
+                    ( animState, maybeEvent ) =
+                        WAAPI.update subMsg model.animState
                 in
                 case maybeEvent of
-                    Just (WAAPI.Initialized elementId) ->
-                        -- Element is ready, safe to animate
+                    Just WAAPI.Initialized ->
+                        -- JS is ready, trigger onload animations
                         let
-                            ( animState, cmd ) =
+                            (newAnimState, cmd) =
                                 WAAPI.animate newAnimState <|
-                                    WAAPI.forElement elementId
-                                        >> fadeIn elementId
+                                    WAAPI.forElement "box"
+                                        >> fadeIn
                         in
-                        ( { model | animState = animState }, cmd )
-
+                        ( { model | animState = newAnimState }, cmd )
                     _ ->
-                        ( { model | animState = newAnimState }, Cmd.none )
+                        ( { model | animState = animState }, Cmd.none )
     ```
 
-**Why use initCmd?**
+**Why this pattern?**
 
-Without `initCmd`, JavaScript doesn't know about your initial property values. If you trigger an animation immediately after page load, the element may briefly appear at its default state (e.g., full opacity) before JavaScript starts the animation.
-
-!!! tip "Best Practice for Onload Animations"
-    Use `init` with initial property values, send `initCmd`, then trigger your animation in response to the `Initialized` event. This guarantees the element renders correctly in both Elm's view and JavaScript before any animation starts.
+- **No timing hacks** — No `Process.sleep` delays or arbitrary timeouts
+- **Explicit handshake** — JavaScript confirms it's ready to receive commands
+- **Consistent event flow** — All animation triggers flow through `GotWaapiMsg`
+- **No flash** — Element renders with initial values before animation starts
 
 ## Shared Features
 
@@ -490,14 +519,14 @@ The following features work the same across all engines. See [Engine Overview](o
 | `AnimState msg` | Tracks animations and their states |
 | `AnimBuilder` | Carries all the animation configurations |
 | `AnimMsg` | Opaque message type for WAAPI subscription events |
-| `AnimEvent` | Lifecycle events: `Initialized String`, `Started String`, `Ended String`, `Paused String`, `Resumed String`, `Cancelled String`, `Restarted String` |
+| `AnimEvent` | Lifecycle events: `Initialized`, `Started String String`, `Ended String String`, `Paused String String`, `Resumed String String`, `Cancelled String String`, `Restarted String String` |
 
 ### Core Functions
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
 | `init` | `(Value -> Cmd msg) -> ((Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> AnimState msg` | Create initial animation state with ports and optional property initializers. |
-| `initCmd` | `AnimState msg -> Cmd msg` | Send initial property values to JavaScript; returns `Initialized` event. |
+| `initCmd` | `AnimState msg -> Cmd msg` | Request JS handshake; returns `Initialized` event. |
 | `animate` | `AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )` | Execute animation with state tracking |
 | `animateOrder` | `List TransformOrder -> AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )` | Execute animation with custom transform order |
 | `fireAndForget` | `(Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Execute animation without state tracking |

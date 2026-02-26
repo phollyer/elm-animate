@@ -26,6 +26,10 @@ Learn why Elm Animate exists and what it's trying to solve.
 
 [Philosophy →](philosophy.md){ .md-button .md-button--primary }
 
+Or, jump right in and get started.
+
+[Installation →](getting-started/installation.md){ .md-button .md-button--primary }
+
 ## 📚 API Reference
 
 For detailed API documentation, see the official Elm package docs:

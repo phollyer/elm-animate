@@ -1042,17 +1042,16 @@ using WAAPI.forElement at the start of your animation pipeline:
     }
 
     /**
-     * Send initialized event to Elm after setting initial properties
-     * This allows Elm to safely trigger animations without flash/jump
-     * @param {string} elementId - The DOM element ID that was initialized
+     * Send initialized event to Elm as handshake response
+     * This signals that JS is ready to receive animation commands
      */
-    function sendInitializedEvent(elementId) {
+    function sendInitializedEvent() {
         if (window.app && window.app.ports && window.app.ports.waapiEvent) {
             const eventData = {
                 type: 'animationUpdate',
                 payload: {
-                    elementId: elementId,
-                    animGroup: elementId,
+                    elementId: '',
+                    animGroup: '',
                     status: 'initialized',
                     duration: 0,
                     progress: 0,
@@ -1391,7 +1390,7 @@ using WAAPI.forElement at the start of your animation pipeline:
             }
 
             // Send initialized event back to Elm
-            sendInitializedEvent(update.elementId);
+            sendInitializedEvent();
         });
     }
 
@@ -1435,6 +1434,10 @@ using WAAPI.forElement at the start of your animation pipeline:
 
                         case 'setProperties':
                             setProperties(commandData.updates);
+                            break;
+
+                        case 'requestInitialized':
+                            sendInitializedEvent();
                             break;
 
                         case 'stop':
