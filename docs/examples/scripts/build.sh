@@ -96,13 +96,55 @@ if [ ${#FAILED_BUILDS[@]} -eq 0 ] && [ ${#FAILED_FORMAT[@]} -eq 0 ]; then
     echo ""
     echo "🎉 All examples built successfully!"
     echo ""
-    echo "📚 Documentation examples available at:"
-    echo "   📖 GettingStarted/ - Introduction examples"
-    echo "   ⚙️  Engines/ - Engine-specific examples (CSS, Sub, etc.)"
-    echo ""
-    echo "💡 To view examples:"
-    echo "   mkdocs serve   # From the project root"
-    echo "   Then open http://localhost:8000"
+    echo "💡 To view the documentation with live examples:"
+    
+    # Check if mkdocs is available
+    if command -v mkdocs &> /dev/null; then
+        echo "   mkdocs serve   # From the project root"
+        echo "   mkdocs serve -a localhost:8001   # To specify a different port"
+        echo "   Then open http://localhost:8000"
+    else
+        echo "   You need MkDocs - it's not installed."
+        echo ""
+        
+        # Check if pip is available
+        if command -v pip3 &> /dev/null; then
+            PIP_CMD="pip3"
+        elif command -v pip &> /dev/null; then
+            PIP_CMD="pip"
+        else
+            PIP_CMD=""
+        fi
+        
+        if [ -n "$PIP_CMD" ]; then
+            read -p "   Would you like to install MkDocs now? (y/n): " -n 1 -r
+            echo ""
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                echo ""
+                echo "📦 Installing MkDocs and dependencies..."
+                $PIP_CMD install mkdocs mkdocs-material pymdown-extensions
+                if [ $? -eq 0 ]; then
+                    echo ""
+                    echo "✅ MkDocs installed successfully!"
+                    echo ""
+                    echo "💡 To view examples:"
+                    echo "   mkdocs serve   # From the project root"
+                    echo "   Then open http://localhost:8000"
+                else
+                    echo ""
+                    echo "❌ MkDocs installation failed."
+                    echo "   Try running: $PIP_CMD install mkdocs mkdocs-material pymdown-extensions"
+                fi
+            else
+                echo ""
+                echo "   To install manually:"
+                echo "   $PIP_CMD install mkdocs mkdocs-material pymdown-extensions"
+            fi
+        else
+            echo "   Python pip is required to install MkDocs."
+            echo "   Install Python from https://python.org"
+        fi
+    fi
 else
     echo ""
     if [ ${#FAILED_BUILDS[@]} -gt 0 ]; then
