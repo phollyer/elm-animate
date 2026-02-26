@@ -303,7 +303,7 @@ Handle errors with Tasks:
 
     For consistent timing across all displays, use `animate` with subscriptions - it uses delta-time interpolation and is refresh-rate independent.
 
-    [Check your display's refresh rate](../examples/fps-test.html){ target="_blank" } to see how it affects timing.
+    [Check your display's refresh rate](../tools/fps-test.html){ target="_blank" } to see how it affects timing.
 
 ## API Quick Reference
 
