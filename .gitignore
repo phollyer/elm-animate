@@ -20,5 +20,7 @@ npm-debug.log
 # Ignore MkDocs build output
 site/
 
-# Ignore generated JS outputs for ElmUI CSS examples
+# Ignore generated JS outputs for examples
 examples/src/**/index.js
+docs/examples/src/**/index.js
+docs/examples/js/

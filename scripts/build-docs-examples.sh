@@ -2,14 +2,13 @@
 
 # Elm Animate Documentation Examples Build Script
 # This script compiles all documentation examples to their respective JavaScript files
-# 
-# IMPORTANT: Always use specific output paths ending in .js
-# NEVER use --output=index.html as it would overwrite dashboard files!
+# Uses elm-format to format all files before building
+# Tries to install MkDocs if not available for easy viewing of documentation with examples
 
 echo "🚀 Building Elm Animate Documentation Examples..."
 
-# Change to examples directory (parent of scripts)
-cd "$(dirname "$0")/.."
+# Change to docs/examples directory from project root
+cd "$(dirname "$0")/../docs/examples"
 
 # Copy JS from dist to ensure we have the latest version
 echo "📦 Copying JS from dist..."

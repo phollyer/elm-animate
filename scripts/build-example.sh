@@ -5,9 +5,7 @@
 #
 # Usage: ./scripts/build-single.sh Engines/CSS/BasicUsage/Main.elm
 #        ./scripts/build-single.sh GettingStarted/FirstAnimation/Main.elm
-#
-# IMPORTANT: Always uses specific output paths ending in .js
-# NEVER uses --output=index.html as it would overwrite dashboard files!
+
 
 set -e  # Exit on any error
 
@@ -38,8 +36,8 @@ fi
 
 INPUT_PATH="$1"
 
-# Change to examples directory (parent of scripts)
-cd "$(dirname "$0")/.."
+# Change to docs/examples directory from project root
+cd "$(dirname "$0")/../docs/examples"
 
 # Track formatting results
 FORMATTED_FILES=()

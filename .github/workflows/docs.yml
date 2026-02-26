@@ -8,6 +8,8 @@ on:
       - 'docs/**'
       - 'mkdocs.yml'
       - 'examples/src/Docs/**'
+      - 'src/**'
+      - 'dist/**'
   workflow_dispatch:
 
 permissions:
@@ -19,14 +21,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Setup Elm
+        run: npm install -g elm elm-format
+      
+      - name: Build documentation examples
+        run: |
+          chmod +x scripts/build-docs-examples.sh
+          # Run non-interactively (skip mkdocs install prompt)
+          yes n | ./scripts/build-docs-examples.sh || ./scripts/build-docs-examples.sh
+      
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
       
-      - name: Install dependencies
-        run: |
-          pip install mkdocs-material
+      - name: Install MkDocs
+        run: pip install mkdocs-material
       
       - name: Build and deploy
         run: mkdocs gh-deploy --force

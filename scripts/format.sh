@@ -7,8 +7,8 @@
 
 echo "🎨 Formatting Elm Animate Examples..."
 
-# Change to examples directory (parent of scripts)
-cd "$(dirname "$0")/.."
+# Change to docs/examples directory from project root
+cd "$(dirname "$0")/../docs/examples"
 
 # Check if elm-format is installed
 if ! command -v elm-format &> /dev/null; then
