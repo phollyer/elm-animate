@@ -10,7 +10,6 @@ module Anim.Internal.WAAPI exposing
     , animateWithOrder
     , anyRunning
     , attributes
-    , awaitLoad
     , builder
     , decodeAnimationEvent
     , decodeEvent
@@ -787,15 +786,6 @@ init commandPort subscriptionPort propertyInitializers =
                 , subscriptionPort = subscriptionPort
                 , pendingActions = Dict.empty
                 }
-
-
-awaitLoad : AnimState msg -> Cmd msg
-awaitLoad (AnimState state) =
-    state.commandPort
-        (Encode.object
-            [ ( "type", Encode.string "requestLoaded" )
-            ]
-        )
 
 
 propertyTypeString : Builder.ProcessedPropertyConfig -> String

@@ -6,8 +6,6 @@ import Browser
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (id, style)
 import Json.Encode as Encode
-import Process
-import Task
 
 
 
@@ -55,12 +53,17 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { animState =
-            WAAPI.init waapiCommand waapiEvent <|
+    let
+        animState =
+            WAAPI.init waapiCommand waapiEvent
                 [ WAAPI.forElement elementId >> Opacity.init elementId 0 ]
-      }
-    , Process.sleep 50 |> Task.perform (always StartAnimation)
-    )
+
+        ( newAnimState, cmd ) =
+            WAAPI.animate animState <|
+                WAAPI.forElement elementId
+                    >> fadeIn
+    in
+    ( { animState = newAnimState }, cmd )
 
 
 
@@ -80,22 +83,12 @@ fadeIn =
 
 
 type Msg
-    = StartAnimation
-    | GotWaapiMsg WAAPI.AnimMsg
+    = GotWaapiMsg WAAPI.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        StartAnimation ->
-            let
-                ( newAnimState, cmd ) =
-                    WAAPI.animate model.animState <|
-                        WAAPI.forElement elementId
-                            >> fadeIn
-            in
-            ( { model | animState = newAnimState }, cmd )
-
         GotWaapiMsg subMsg ->
             let
                 ( newAnimState, _ ) =

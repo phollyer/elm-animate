@@ -92,7 +92,7 @@ For simple animations that don't need state tracking:
 
     There is no Sub example because being a subscription based Engine, it is naturally state-based so `fireAndForget` just wouldn't make sense, therefore the Sub Engine does not have a `fireAndForget` option.
 
-Note that `fireAndForget` does not take an `AnimState` as a parameter — it creates a fresh state each time.
+Note that `fireAndForget` does not take an `AnimState` as a parameter — it creates a fresh state each time, or in the case of WAAPI - a fresh `Cmd`.
 
 The benefit of `fireAndForget` is that you don't 'pollute' your `update` function with animation messages required to update the Engine state.
 
@@ -179,7 +179,7 @@ Most animations trigger in response to user action events or application events.
 
                 GotDataReceived data ->
                     ( { model | data = data }
-                    , WAAPI.fireAndForget model.animState dataFadeIn
+                    , WAAPI.fireAndForget waapiCommand dataFadeIn
                     )
         ```
 
@@ -190,11 +190,6 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
 ??? example "View Source Code"
 
     === "Transitions"
-
-        ```elm
-        init _ =
-            ( { animState = Transitions.fireAndForget fadeIn }, Cmd.none )
-        ```
         
         !!! warning "CSS Transitions can't animate on page load"
             CSS Transitions require a state change between renders. Triggering in `init` means no state change — the element appears at the final state immediately because the browser has no initial `transition` state to animate from. To animate with Transitions on page load, trigger in a subsequent message after the first render.
@@ -209,34 +204,48 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
         update msg model =
             case msg of
                 StartFadeIn ->
-                    ( { model | animState | Transitions.fireAndForget fadeIn }
+                    ( { model | animState = Transitions.fireAndForget fadeIn }
                     , Cmd.none
                     )
                 
                 ...
         ```
 
-        The initial Property values are used in the view, then 50ms after first render the animation will begin.
+        The initial Property values are used in the view for first render, then 50ms after first render the animation will begin.
 
         This works, but it's not ideal.
 
     === "Keyframes"
+
+        With `animate`:
+
+        ```elm
+        init _ =
+            let
+                animState =
+                    Keyframes.init [ Opacity.init "boxAnim" 0 ]
+            in
+            ( { animState = Keyframes.animate animState fadeIn }, Cmd.none )
+        ```
+
+        And with `fireAndForget`:
 
         ```elm
         init _ =
             ( { animState = Keyframes.fireAndForget fadeIn }, Cmd.none )
         ```
 
-        This works fine, the `@keyframes` rules are added to the DOM on first render.
+        Both work fine, the `@keyframes` rules are added to the DOM on first render.
 
     === "Sub"
+
+        With `animate`:
 
         ```elm
         init _ =
             let
                 animState =
-                    Sub.init
-                        [ Opacity.init "boxAnim" 0 ]
+                    Sub.init [ Opacity.init "boxAnim" 0 ]
             in
             ( { animState = Sub.animate animState fadeIn }, Cmd.none )
         ```
@@ -245,49 +254,34 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
 
     === "WAAPI"
 
-        ```elm
-        init _ =
-            let
-                animState =
-                    WAAPI.init waapiCommand waapiEvent <|
-                        [ Opacity.init "fadeAnim" 0 ]
-                        
-            in
-            ( { animState = animState }
-            , WAAPI.awaitLoad animState
-            )
-        ```
-
-        For WAAPI, use `awaitLoad` with the `Loaded` event to avoid flash:
+        With `animate`:
 
         ```elm
         init _ =
             let
                 animState =
                     WAAPI.init waapiCommand waapiEvent <|
-                        [ Opacity.init "fadeAnim" 0 ]
-                        
+                        [ Opacity.init "box" 0 ]
+                
+                ( newAnimState, cmd ) =
+                    WAAPI.animate animState fadeIn
             in
-            ( { animState = animState }
-            , WAAPI.awaitLoad animState
-            )
-
-        update msg model =
-            case msg of
-                GotWaapiMsg subMsg ->
-                    let
-                        ( animState, event ) =
-                            WAAPI.update subMsg model.animState
-                    in
-                    case event of
-                        WAAPI.Loaded ->
-                            -- JS is ready, trigger onload animations
-
-                        _ ->
-                            ( { model | animState = animState }, Cmd.none )
+            ( { animState = newAnimState }, cmd )
         ```
 
-        The `Loaded` event signals that JavaScript is ready to receive animation commands, making it safe to animate without any flash. See [WAAPI Onload Animations](../engines/waapi.md#onload-animations) for details.
+        And with `fireAndForget`:
+
+        ```elm
+        init _ =
+            ( { animState =
+                    WAAPI.init waapiCommand waapiEvent <|
+                        [ Opacity.init "box" 0 ]
+              }
+              , WAAPI.fireAndForget waapiCommand fadeIn
+            )
+        ```
+
+        Both work fine. The initial property values are used for first render, and the animation command is processed immediately after.
 
 
 ### Not in `view`
@@ -298,16 +292,21 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
     ```elm
     view model =
         let
-            boxAnimState = Transitions.fireAndForget (fadeIn >> slideIn)
+            boxAnimState = Transitions.fireAndForget fadeIn
         in
-        ...
+        div
+            []
+            [ div
+                (Transitions.attributes "boxAnim" boxAnimState)
+                [ text "I'm animated wrongly" ]
+            ]
     ```
 
     This works, but the builder functions run on **every render**, creating unnecessary GC pressure. The view should be a pure function of model state. Prefer triggering in `update` or `init`.
 
 ## Triggering Mid-Flight
 
-What happens when you call `animate` while an animation is already running? See [Mid-Flight Interruptions](../concepts/interruptions.md) for how each engine handles this.
+What happens when you trigger an animation while another animation is already running on the same element? See [Mid-Flight Interruptions](../concepts/interruptions.md) for how each engine handles this.
 
 ## Next Steps
 

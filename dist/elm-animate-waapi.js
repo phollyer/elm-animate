@@ -1042,27 +1042,6 @@ using WAAPI.forElement at the start of your animation pipeline:
     }
 
     /**
-     * Send loaded event to Elm as handshake response
-     * This signals that JS is ready to receive animation commands
-     */
-    function sendLoadedEvent() {
-        if (window.app && window.app.ports && window.app.ports.waapiEvent) {
-            const eventData = {
-                type: 'animationUpdate',
-                payload: {
-                    elementId: '',
-                    animGroup: '',
-                    status: 'loaded',
-                    duration: 0,
-                    progress: 0,
-                    properties: []
-                }
-            };
-            window.app.ports.waapiEvent.send(eventData);
-        }
-    }
-
-    /**
      * Find all composite keys in activeAnimations that match an element ID
      * @param {string} elementId - The DOM element ID to match
      * @returns {string[]} Array of composite keys (elementId:animGroup) that match
@@ -1388,9 +1367,6 @@ using WAAPI.forElement at the start of your animation pipeline:
                 element.style.width = `${props.width}px`;
                 element.style.height = `${props.height}px`;
             }
-
-            // Send loaded event back to Elm
-            sendLoadedEvent();
         });
     }
 
@@ -1434,10 +1410,6 @@ using WAAPI.forElement at the start of your animation pipeline:
 
                         case 'setProperties':
                             setProperties(commandData.updates);
-                            break;
-
-                        case 'requestLoaded':
-                            sendLoadedEvent();
                             break;
 
                         case 'stop':

@@ -1,5 +1,5 @@
 module Anim.Engine.WAAPI exposing
-    ( AnimState, AnimBuilder, init, awaitLoad
+    ( AnimState, AnimBuilder, init
     , animate, fireAndForget
     , TransformOrder(..), animateOrder, fireAndForgetOrder
     , forElement
@@ -87,7 +87,7 @@ Both ports are needed.
 
 # State
 
-@docs AnimState, AnimBuilder, init, awaitLoad
+@docs AnimState, AnimBuilder, init
 
 
 # Execute
@@ -260,41 +260,6 @@ Use [attributes](#attributes) in your view to apply these initial property value
 init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> AnimState msg
 init =
     Internal.init
-
-
-{-| Get the initialization command to send to JavaScript.
-
-Use this for triggering onload animations. JavaScript responds with an
-`Loaded` event, signaling that it's ready to receive animation commands.
-
-    init : () -> ( Model, Cmd Msg )
-    init _ =
-        let
-            animState =
-                WAAPI.init waapiCommand
-                    waapiEvent
-                    [ WAAPI.forElement "box"
-                        >> Opacity.init "fadeAnim" 0
-                    ]
-        in
-        ( { animState = animState }
-        , WAAPI.awaitLoad animState
-        )
-
-Then react to the `Loaded` event in your update function:
-
-    case event of
-        Just WAAPI.Loaded ->
-            -- JS is ready, trigger onload animations
-            WAAPI.animate model.animState fadeIn
-
-        _ ->
-            ( model, Cmd.none )
-
--}
-awaitLoad : AnimState msg -> Cmd msg
-awaitLoad =
-    Internal.awaitLoad
 
 
 {-| Get HTML attributes that apply the current animation state as inline styles.
@@ -971,10 +936,6 @@ progress, and property configurations. `Changed` events (fired per-frame) includ
 only progress to minimize overhead.
 
     case event of
-        WAAPI.Loaded ->
-            -- JS is ready, safe to trigger onload animations
-            ...
-
         WAAPI.Ended "box" "fadeIn" info ->
             -- The "box" element finished the "fadeIn" animation
             -- info.duration tells you how long it took
@@ -991,8 +952,7 @@ only progress to minimize overhead.
 
 -}
 type AnimEvent
-    = Loaded
-    | Started String String EventInfo
+    = Started String String EventInfo
     | Ended String String EventInfo
     | Cancelled String String EventInfo
     | Restarted String String EventInfo
@@ -1128,9 +1088,6 @@ eventDataToEvent eventData =
             }
     in
     case eventData.status of
-        "loaded" ->
-            Loaded
-
         "changed" ->
             Changed elementId animGroup { progress = eventData.progress }
 
