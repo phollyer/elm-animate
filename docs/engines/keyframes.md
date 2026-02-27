@@ -279,12 +279,10 @@ The following features work the same across all engines. See [Engine Overview](o
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `getStartTranslate` | `String -> AnimState -> Maybe { x, y, z }` | Get start translate value |
-| `getEndTranslate` | `String -> AnimState -> Maybe { x, y, z }` | Get end translate value |
-| `getCurrentTranslate` | `String -> AnimState -> Maybe { x, y, z }` | Get current translate value |
-| `getStart*` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get start value |
-| `getEnd*` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get end value |
-| `getCurrent*` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get current value |
+| `getTranslateStart` | `String -> AnimState -> Maybe { x, y, z }` | Get start translate value |
+| `getTranslateEnd` | `String -> AnimState -> Maybe { x, y, z }` | Get end translate value |
+| `get*Start` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get start value |
+| `get*End` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get end value |
 
 For complete API details, see the [Anim.Engine.CSS.Keyframes](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Keyframes) documentation.
 

@@ -77,7 +77,7 @@ Unlike CSS-based engines, the Sub Engine can give you true interpolated mid-flig
     view model =
         let
             positionText =
-                case Sub.getCurrentTranslate "box" model.animState of
+                case Sub.getTranslateCurrent "box" model.animState of
                     Just { x, y, z } ->
                         "Position: " ++ String.fromFloat x ++ ", " ++ String.fromFloat y
 
@@ -87,7 +87,7 @@ Unlike CSS-based engines, the Sub Engine can give you true interpolated mid-flig
         div [] [ text positionText ]
     ```
 
-Available getters: `getCurrentTranslate`, `getCurrentScale`, `getCurrentRotate`, `getCurrentOpacity`, `getCurrentSize`, `getCurrentBackgroundColor`.
+Available getters: `getTranslateCurrent`, `getScaleCurrent`, `getRotateCurrent`, `getOpacityCurrent`, `getSizeCurrent`, `getBackgroundColorCurrent`.
 
 ## Sub-Specific Events
 
@@ -193,12 +193,12 @@ The following features work the same across all engines. See [Engine Overview](o
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `getStartTranslate` | `String -> AnimState -> Maybe { x, y, z }` | Get start translate value |
-| `getEndTranslate` | `String -> AnimState -> Maybe { x, y, z }` | Get end translate value |
-| `getCurrentTranslate` | `String -> AnimState -> Maybe { x, y, z }` | Get current translate value |
-| `getStart*` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get start value |
-| `getEnd*` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get end value |
-| `getCurrent*` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get current value |
+| `getTranslateStart` | `String -> AnimState -> Maybe { x, y, z }` | Get start translate value |
+| `getTranslateEnd` | `String -> AnimState -> Maybe { x, y, z }` | Get end translate value |
+| `getTranslateCurrent` | `String -> AnimState -> Maybe { x, y, z }` | Get current translate value |
+| `get*Start` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get start value |
+| `get*End` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get end value |
+| `get*Current` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get current value |
 
 For complete API details, see the [Anim.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Sub) documentation.
 

@@ -468,7 +468,7 @@ viewCube model =
 
         -- Conditionally listen for keyframe events on both the cube and front face
         -- depending on the current state of the animation.
-        -- This prevents us from receiving events that would bubble up from the 
+        -- This prevents us from receiving events that would bubble up from the
         -- sides to the cube which would trigger unwanted state changes
         cubeEvents =
             if model.state == RotatingOpen || model.state == RotatingClosed then

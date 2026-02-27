@@ -9,12 +9,12 @@ module Anim.Engine.Sub exposing
     , delay
     , iterations, loopForever
     , anyRunning, isRunning, allComplete, isComplete
-    , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
-    , getStartOpacity, getEndOpacity, getCurrentOpacity
-    , getStartTranslate, getEndTranslate, getCurrentTranslate
-    , getStartRotate, getEndRotate, getCurrentRotate
-    , getStartScale, getEndScale, getCurrentScale
-    , getStartSize, getEndSize, getCurrentSize
+    , getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
+    , getOpacityStart, getOpacityEnd, getOpacityCurrent
+    , getTranslateStart, getTranslateEnd, getTranslateCurrent
+    , getRotateStart, getRotateEnd, getRotateCurrent
+    , getScaleStart, getScaleEnd, getScaleCurrent
+    , getSizeStart, getSizeEnd, getSizeCurrent
     )
 
 {-| Subscription-based animation system with state tracking.
@@ -118,32 +118,32 @@ during animation playback.
 
 ## Background Color
 
-@docs getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
+@docs getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
 
 
 ## Opacity
 
-@docs getStartOpacity, getEndOpacity, getCurrentOpacity
+@docs getOpacityStart, getOpacityEnd, getOpacityCurrent
 
 
 ## Translate
 
-@docs getStartTranslate, getEndTranslate, getCurrentTranslate
+@docs getTranslateStart, getTranslateEnd, getTranslateCurrent
 
 
 ## Rotate
 
-@docs getStartRotate, getEndRotate, getCurrentRotate
+@docs getRotateStart, getRotateEnd, getRotateCurrent
 
 
 ## Scale
 
-@docs getStartScale, getEndScale, getCurrentScale
+@docs getScaleStart, getScaleEnd, getScaleCurrent
 
 
 ## Size
 
-@docs getStartSize, getEndSize, getCurrentSize
+@docs getSizeStart, getSizeEnd, getSizeCurrent
 
 -}
 
@@ -513,8 +513,8 @@ Returns `Nothing` if the element has no background color animation.
 Returns `transparent white (rgba 255 255 255 0)` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartBackgroundColor : String -> AnimState -> Maybe Color
-getStartBackgroundColor elementId animState =
+getBackgroundColorStart : String -> AnimState -> Maybe Color
+getBackgroundColorStart elementId animState =
     InternalSub.getBackgroundColorRange elementId animState
         |> Maybe.map
             (\{ start } ->
@@ -532,8 +532,8 @@ getStartBackgroundColor elementId animState =
 Returns `Nothing` if the element has no background color animation.
 
 -}
-getEndBackgroundColor : String -> AnimState -> Maybe Color
-getEndBackgroundColor elementId animState =
+getBackgroundColorEnd : String -> AnimState -> Maybe Color
+getBackgroundColorEnd elementId animState =
     InternalSub.getBackgroundColorRange elementId animState
         |> Maybe.map .end
 
@@ -549,8 +549,8 @@ Returns the current interpolated color if the animation is running.
 Returns the end color if the animation has completed.
 
 -}
-getCurrentBackgroundColor : String -> AnimState -> Maybe Color
-getCurrentBackgroundColor elementId animState =
+getBackgroundColorCurrent : String -> AnimState -> Maybe Color
+getBackgroundColorCurrent elementId animState =
     InternalSub.getBackgroundColor elementId animState
 
 
@@ -561,8 +561,8 @@ Returns `Nothing` if the element has no opacity animation.
 Returns `Just 1.0` (fully opaque) if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartOpacity : String -> AnimState -> Maybe Float
-getStartOpacity elementId animState =
+getOpacityStart : String -> AnimState -> Maybe Float
+getOpacityStart elementId animState =
     InternalSub.getOpacityRange elementId animState
         |> Maybe.map
             (\{ start } ->
@@ -580,8 +580,8 @@ getStartOpacity elementId animState =
 Returns `Nothing` if the element has no opacity animation.
 
 -}
-getEndOpacity : String -> AnimState -> Maybe Float
-getEndOpacity elementId animState =
+getOpacityEnd : String -> AnimState -> Maybe Float
+getOpacityEnd elementId animState =
     InternalSub.getOpacityRange elementId animState
         |> Maybe.map (.end >> Opacity.toFloat)
 
@@ -597,8 +597,8 @@ Returns the current interpolated opacity if the animation is running.
 Returns the end opacity if the animation has completed.
 
 -}
-getCurrentOpacity : String -> AnimState -> Maybe Float
-getCurrentOpacity elementId animState =
+getOpacityCurrent : String -> AnimState -> Maybe Float
+getOpacityCurrent elementId animState =
     InternalSub.getOpacity elementId animState
         |> Maybe.map Opacity.toFloat
 
@@ -610,8 +610,8 @@ Returns `Nothing` if the element has no translate animation.
 Returns `Just {x = 0, y = 0, z = 0}` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getStartTranslate elementId animState =
+getTranslateStart : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateStart elementId animState =
     InternalSub.getTranslateRange elementId animState
         |> Maybe.map
             (\{ start } ->
@@ -629,8 +629,8 @@ getStartTranslate elementId animState =
 Returns `Nothing` if the element has no translate animation.
 
 -}
-getEndTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getEndTranslate elementId animState =
+getTranslateEnd : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateEnd elementId animState =
     InternalSub.getTranslateRange elementId animState
         |> Maybe.map .end
         |> Maybe.map Translate.toRecord
@@ -647,8 +647,8 @@ Returns the current interpolated translate if the animation is running.
 Returns the end translate if the animation has completed.
 
 -}
-getCurrentTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getCurrentTranslate elementId animState =
+getTranslateCurrent : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateCurrent elementId animState =
     InternalSub.getTranslate elementId animState
         |> Maybe.map Translate.toRecord
 
@@ -660,8 +660,8 @@ Returns `Nothing` if the element has no rotate animation.
 Returns `Just { x = 0, y = 0, z = 0 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getStartRotate elementId animState =
+getRotateStart : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateStart elementId animState =
     InternalSub.getRotateRange elementId animState
         |> Maybe.map
             (\{ start } ->
@@ -679,8 +679,8 @@ getStartRotate elementId animState =
 Returns `Nothing` if the element has no rotate animation.
 
 -}
-getEndRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getEndRotate elementId animState =
+getRotateEnd : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateEnd elementId animState =
     InternalSub.getRotateRange elementId animState
         |> Maybe.map (.end >> Rotate.toRecord)
 
@@ -696,8 +696,8 @@ Returns the current interpolated rotation if the animation is running.
 Returns the end rotation if the animation has completed.
 
 -}
-getCurrentRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getCurrentRotate elementId animState =
+getRotateCurrent : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateCurrent elementId animState =
     InternalSub.getRotate elementId animState
         |> Maybe.map Rotate.toRecord
 
@@ -709,8 +709,8 @@ Returns `Nothing` if the element has no scale animation.
 Returns `Just { x = 1, y = 1, z = 1 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getStartScale elementId animState =
+getScaleStart : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleStart elementId animState =
     InternalSub.getScaleRange elementId animState
         |> Maybe.map
             (\{ start } ->
@@ -728,8 +728,8 @@ getStartScale elementId animState =
 Returns `Nothing` if the element has no scale animation.
 
 -}
-getEndScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getEndScale elementId animState =
+getScaleEnd : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleEnd elementId animState =
     InternalSub.getScaleRange elementId animState
         |> Maybe.map (.end >> Scale.toRecord)
 
@@ -745,8 +745,8 @@ Returns the current interpolated scale if the animation is running.
 Returns the end scale if the animation has completed.
 
 -}
-getCurrentScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getCurrentScale elementId animState =
+getScaleCurrent : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleCurrent elementId animState =
     InternalSub.getScale elementId animState
         |> Maybe.map Scale.toRecord
 
@@ -758,8 +758,8 @@ Returns `Nothing` if the element has no size animation.
 Returns `Just { width = 0, height = 0 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartSize : String -> AnimState -> Maybe { width : Float, height : Float }
-getStartSize elementId animState =
+getSizeStart : String -> AnimState -> Maybe { width : Float, height : Float }
+getSizeStart elementId animState =
     InternalSub.getSizeRange elementId animState
         |> Maybe.map
             (\{ start } ->
@@ -777,8 +777,8 @@ getStartSize elementId animState =
 Returns `Nothing` if the element has no size animation.
 
 -}
-getEndSize : String -> AnimState -> Maybe { width : Float, height : Float }
-getEndSize elementId animState =
+getSizeEnd : String -> AnimState -> Maybe { width : Float, height : Float }
+getSizeEnd elementId animState =
     InternalSub.getSizeRange elementId animState
         |> Maybe.map (.end >> Size.toRecord)
 
@@ -794,8 +794,8 @@ Returns the current interpolated size if the animation is running.
 Returns the end size if the animation has completed.
 
 -}
-getCurrentSize : String -> AnimState -> Maybe { width : Float, height : Float }
-getCurrentSize elementId animState =
+getSizeCurrent : String -> AnimState -> Maybe { width : Float, height : Float }
+getSizeCurrent elementId animState =
     InternalSub.getSize elementId animState
         |> Maybe.map Size.toRecord
 

@@ -11,12 +11,12 @@ module Anim.Engine.WAAPI exposing
     , easing
     , delay
     , anyRunning, isRunning, allComplete, isComplete
-    , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
-    , getStartOpacity, getEndOpacity, getCurrentOpacity
-    , getStartTranslate, getEndTranslate, getCurrentTranslate
-    , getStartRotate, getEndRotate, getCurrentRotate
-    , getStartScale, getEndScale, getCurrentScale
-    , getStartSize, getEndSize, getCurrentSize
+    , getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
+    , getOpacityStart, getOpacityEnd, getOpacityCurrent
+    , getTranslateStart, getTranslateEnd, getTranslateCurrent
+    , getRotateStart, getRotateEnd, getRotateCurrent
+    , getScaleStart, getScaleEnd, getScaleCurrent
+    , getSizeStart, getSizeEnd, getSizeCurrent
     )
 
 {-| Ports-based animation system with optional state tracking.
@@ -176,32 +176,32 @@ during animation playback.
 
 ## Background Color
 
-@docs getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
+@docs getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
 
 
 ## Opacity
 
-@docs getStartOpacity, getEndOpacity, getCurrentOpacity
+@docs getOpacityStart, getOpacityEnd, getOpacityCurrent
 
 
 ## Translate
 
-@docs getStartTranslate, getEndTranslate, getCurrentTranslate
+@docs getTranslateStart, getTranslateEnd, getTranslateCurrent
 
 
 ## Rotate
 
-@docs getStartRotate, getEndRotate, getCurrentRotate
+@docs getRotateStart, getRotateEnd, getRotateCurrent
 
 
 ## Scale
 
-@docs getStartScale, getEndScale, getCurrentScale
+@docs getScaleStart, getScaleEnd, getScaleCurrent
 
 
 ## Size
 
-@docs getStartSize, getEndSize, getCurrentSize
+@docs getSizeStart, getSizeEnd, getSizeCurrent
 
 -}
 
@@ -684,8 +684,8 @@ Returns `Nothing` if the element has no background color animation.
 Returns `transparent white (rgba 255 255 255 0)` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartBackgroundColor : String -> AnimState msg -> Maybe Color
-getStartBackgroundColor =
+getBackgroundColorStart : String -> AnimState msg -> Maybe Color
+getBackgroundColorStart =
     Internal.getStartBackgroundColor
 
 
@@ -694,8 +694,8 @@ getStartBackgroundColor =
 Returns `Nothing` if the element has no background color animation.
 
 -}
-getEndBackgroundColor : String -> AnimState msg -> Maybe Color
-getEndBackgroundColor =
+getBackgroundColorEnd : String -> AnimState msg -> Maybe Color
+getBackgroundColorEnd =
     Internal.getEndBackgroundColor
 
 
@@ -710,8 +710,8 @@ Returns the current interpolated color if the animation is running.
 Returns the end color if the animation has completed.
 
 -}
-getCurrentBackgroundColor : String -> AnimState msg -> Maybe Color
-getCurrentBackgroundColor =
+getBackgroundColorCurrent : String -> AnimState msg -> Maybe Color
+getBackgroundColorCurrent =
     Internal.getCurrentBackgroundColor
 
 
@@ -726,8 +726,8 @@ Returns `Nothing` if the element has no opacity animation.
 Returns `Just 1.0` (fully opaque) if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartOpacity : String -> AnimState msg -> Maybe Float
-getStartOpacity =
+getOpacityStart : String -> AnimState msg -> Maybe Float
+getOpacityStart =
     Internal.getStartOpacity
 
 
@@ -736,8 +736,8 @@ getStartOpacity =
 Returns `Nothing` if the element has no opacity animation.
 
 -}
-getEndOpacity : String -> AnimState msg -> Maybe Float
-getEndOpacity =
+getOpacityEnd : String -> AnimState msg -> Maybe Float
+getOpacityEnd =
     Internal.getEndOpacity
 
 
@@ -752,8 +752,8 @@ Returns the current interpolated opacity if the animation is running.
 Returns the end opacity if the animation has completed.
 
 -}
-getCurrentOpacity : String -> AnimState msg -> Maybe Float
-getCurrentOpacity =
+getOpacityCurrent : String -> AnimState msg -> Maybe Float
+getOpacityCurrent =
     Internal.getCurrentOpacity
 
 
@@ -768,8 +768,8 @@ Returns `Nothing` if the element has no translate animation.
 Returns `Just {x = 0, y = 0, z = 0}` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartTranslate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
-getStartTranslate =
+getTranslateStart : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getTranslateStart =
     Internal.getStartTranslate
 
 
@@ -778,8 +778,8 @@ getStartTranslate =
 Returns `Nothing` if the element has no translate animation.
 
 -}
-getEndTranslate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
-getEndTranslate =
+getTranslateEnd : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getTranslateEnd =
     Internal.getEndTranslate
 
 
@@ -794,8 +794,8 @@ Returns the current interpolated translate if the animation is running.
 Returns the end translate if the animation has completed.
 
 -}
-getCurrentTranslate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
-getCurrentTranslate =
+getTranslateCurrent : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getTranslateCurrent =
     Internal.getCurrentTranslate
 
 
@@ -810,8 +810,8 @@ Returns `Nothing` if the element has no rotate animation.
 Returns `Just { x = 0, y = 0, z = 0 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartRotate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
-getStartRotate =
+getRotateStart : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getRotateStart =
     Internal.getStartRotate
 
 
@@ -820,8 +820,8 @@ getStartRotate =
 Returns `Nothing` if the element has no rotate animation.
 
 -}
-getEndRotate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
-getEndRotate =
+getRotateEnd : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getRotateEnd =
     Internal.getEndRotate
 
 
@@ -836,8 +836,8 @@ Returns the current interpolated rotation if the animation is running.
 Returns the end rotation if the animation has completed.
 
 -}
-getCurrentRotate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
-getCurrentRotate =
+getRotateCurrent : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getRotateCurrent =
     Internal.getCurrentRotate
 
 
@@ -852,8 +852,8 @@ Returns `Nothing` if the element has no scale animation.
 Returns `Just { x = 1, y = 1, z = 1 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartScale : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
-getStartScale =
+getScaleStart : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getScaleStart =
     Internal.getStartScale
 
 
@@ -862,8 +862,8 @@ getStartScale =
 Returns `Nothing` if the element has no scale animation.
 
 -}
-getEndScale : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
-getEndScale =
+getScaleEnd : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getScaleEnd =
     Internal.getEndScale
 
 
@@ -878,8 +878,8 @@ Returns the current interpolated scale if the animation is running.
 Returns the end scale if the animation has completed.
 
 -}
-getCurrentScale : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
-getCurrentScale =
+getScaleCurrent : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getScaleCurrent =
     Internal.getCurrentScale
 
 
@@ -894,8 +894,8 @@ Returns `Nothing` if the element has no size animation.
 Returns `Just { width = 0, height = 0 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getStartSize : String -> AnimState msg -> Maybe { width : Float, height : Float }
-getStartSize =
+getSizeStart : String -> AnimState msg -> Maybe { width : Float, height : Float }
+getSizeStart =
     Internal.getStartSize
 
 
@@ -904,8 +904,8 @@ getStartSize =
 Returns `Nothing` if the element has no size animation.
 
 -}
-getEndSize : String -> AnimState msg -> Maybe { width : Float, height : Float }
-getEndSize =
+getSizeEnd : String -> AnimState msg -> Maybe { width : Float, height : Float }
+getSizeEnd =
     Internal.getEndSize
 
 
@@ -920,8 +920,8 @@ Returns the current interpolated size if the animation is running.
 Returns the end size if the animation has completed.
 
 -}
-getCurrentSize : String -> AnimState msg -> Maybe { width : Float, height : Float }
-getCurrentSize =
+getSizeCurrent : String -> AnimState msg -> Maybe { width : Float, height : Float }
+getSizeCurrent =
     Internal.getCurrentSize
 
 

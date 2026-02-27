@@ -311,7 +311,7 @@ Unlike CSS-based engines, the "current" getters return the actual animated value
     view model =
         let
             positionText =
-                case WAAPI.getCurrentTranslate "box" model.animState of
+                case WAAPI.getTranslateCurrent "box" model.animState of
                     Just { x, y, z } ->
                         "Position: " ++ String.fromFloat x ++ ", " ++ String.fromFloat y
 
@@ -321,7 +321,7 @@ Unlike CSS-based engines, the "current" getters return the actual animated value
         div [] [ text positionText ]
     ```
 
-Available getters: `getCurrentTranslate`, `getCurrentScale`, `getCurrentRotate`, `getCurrentOpacity`, `getCurrentSize`, `getCurrentBackgroundColor`.
+Available getters: `getTranslateCurrent`, `getScaleCurrent`, `getRotateCurrent`, `getOpacityCurrent`, `getSizeCurrent`, `getBackgroundColorCurrent`.
 
 ## Animation Control
 
@@ -517,12 +517,12 @@ All property query functions accept either a composite key (`"elementId:groupNam
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `getStartTranslate` | `String -> AnimState msg -> Maybe { x, y, z }` | Get start translate value |
-| `getEndTranslate` | `String -> AnimState msg -> Maybe { x, y, z }` | Get end translate value |
-| `getCurrentTranslate` | `String -> AnimState msg -> Maybe { x, y, z }` | Get current translate value |
-| `getStart*` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get start value |
-| `getEnd*` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get end value |
-| `getCurrent*` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get current value |
+| `getTranslateStart` | `String -> AnimState msg -> Maybe { x, y, z }` | Get start translate value |
+| `getTranslateEnd` | `String -> AnimState msg -> Maybe { x, y, z }` | Get end translate value |
+| `getTranslateCurrent` | `String -> AnimState msg -> Maybe { x, y, z }` | Get current translate value |
+| `get*Start` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get start value |
+| `get*End` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get end value |
+| `get*Current` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get current value |
 
 ### Default Functions
 

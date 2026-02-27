@@ -326,14 +326,14 @@ All engines use the same API for querying animation state and property values:
     === "Transitions"
 
         ```elm
+        -- Have they all completed?
+        Transitions.allComplete model.animState -- Bool
+
         -- Is anything animating?
         Transitions.anyRunning model.animState  -- Bool
 
         -- Is a specific group animating?
         Transitions.isRunning "box" model.animState  -- Bool
-
-        -- Have they all completed?
-        Transitions.allComplete model.animState -- Bool
 
         -- Has it completed?
         Transitions.isComplete "box" model.animState  -- Maybe Bool
@@ -342,14 +342,14 @@ All engines use the same API for querying animation state and property values:
     === "Keyframes"
 
         ```elm
+        -- Have they all completed?
+        Keyframes.allComplete model.animState -- Bool
+
         -- Is anything animating?
         Keyframes.anyRunning model.animState  -- Bool
 
         -- Is a specific group animating?
         Keyframes.isRunning "box" model.animState  -- Bool
-
-        -- Have they all completed?
-        Keyframes.allComplete model.animState -- Bool
 
         -- Has it completed?
         Keyframes.isComplete "box" model.animState  -- Maybe Bool
@@ -358,14 +358,14 @@ All engines use the same API for querying animation state and property values:
     === "Sub"
 
         ```elm
+        -- Have they all completed?
+        Sub.allComplete model.animState -- Bool
+
         -- Is anything animating?
         Sub.anyRunning model.animState  -- Bool
 
         -- Is a specific group animating?
         Sub.isRunning "box" model.animState  -- Bool
-
-        -- Have they all completed?
-        Sub.allComplete model.animState -- Bool
 
         -- Has it completed?
         Sub.isComplete "box" model.animState  -- Maybe Bool
@@ -374,14 +374,14 @@ All engines use the same API for querying animation state and property values:
     === "WAAPI"
 
         ```elm
+        -- Have they all completed?
+        WAAPI.allComplete model.animState -- Bool
+
         -- Is anything animating?
         WAAPI.anyRunning model.animState  -- Bool
 
         -- Is a specific group animating?
         WAAPI.isRunning "box" model.animState  -- Bool
-
-        -- Have they all completed?
-        WAAPI.allComplete model.animState -- Bool
 
         -- Has it completed?
         WAAPI.isComplete "box" model.animState  -- Maybe Bool
@@ -389,38 +389,46 @@ All engines use the same API for querying animation state and property values:
 
 ### Querying Property Values
 
-```elm
-Engine.getStartTranslate "box" model.animState    -- Maybe { x, y, z }
-Engine.getEndTranslate "box" model.animState      -- Maybe { x, y, z }
-Engine.getCurrentTranslate "box" model.animState  -- Maybe { x, y, z }
-```
+All engines support querying start and end values, with the functions following this  pattern `get[Property][Position]`:
 
-Available for: Translate, Scale, Rotate, Opacity, Size, BackgroundColor.
+??? example "View Source Code"
 
-!!! note "Mid-flight values"
-    CSS engines (Transitions, Keyframes) don't track true mid-flight values - "current" returns start before animation and end after. For true interpolated values, use Sub or WAAPI.
+    ```elm
+    Transitions.getTranslateStart "box" model.animState    
+    Keyframes.getOpacityEnd "box" model.animState      
+    ```
+
+    Sub and WAAPI engines also support querying current interpolated values:
+
+    ```elm
+    Sub.getTranslateCurrent "box" model.animState     
+    WAAPI.getOpacityCurrent "box" model.animState   
+    ```
 
 
 ## Switching Engines
 
 Because all engines share the same builder API, animations are portable:
 
-```elm
--- This animation works with any engine
-myAnimation : AnimBuilder -> AnimBuilder
-myAnimation =
-    Translate.for "box"
-        >> Translate.toXY 100 200
-        >> Translate.duration 500
-        >> Translate.build
+??? example "View Source Code"
 
--- Use with any engine
-Transitions.animate model.animState myAnimation
-Keyframes.animate model.animState myAnimation
-Sub.animate model.animState myAnimation
-```
+    ```elm
+    -- This animation works with any engine
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "box"
+            >> Translate.toXY 100 200
+            >> Translate.duration 500
+            >> Translate.build
 
-This makes it easy to start simple with Transitions and migrate to Sub or WAAPI as requirements grow.
+    -- Use with any engine
+    Transitions.animate model.animState myAnimation
+    Keyframes.animate model.animState myAnimation
+    Sub.animate model.animState myAnimation
+    WAAPI.animate model.animState myAnimation
+    ```
+
+This makes it easy to start simple with Transitions and migrate to Sub or WAAPI as requirements grow. If you switch engines, all you need to change are a few implementation details for the Engine. The compiler will help with this, but you can also use the [Migration Guide](migration-guide.md) should you need to.
 
 
 ## Next Steps

@@ -13,12 +13,12 @@ module Anim.Engine.CSS.Keyframes exposing
     , stop, reset, restart, pause, resume
     , pauseCmd, resumeCmd, restartCmd
     , anyRunning, isRunning, allComplete, isComplete
-    , getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
-    , getStartOpacity, getEndOpacity, getCurrentOpacity
-    , getStartRotate, getEndRotate, getCurrentRotate
-    , getStartScale, getEndScale, getCurrentScale
-    , getStartSize, getEndSize, getCurrentSize
-    , getStartTranslate, getEndTranslate, getCurrentTranslate
+    , getBackgroundColorStart, getBackgroundColorEnd
+    , getOpacityStart, getOpacityEnd
+    , getRotateStart, getRotateEnd
+    , getScaleStart, getScaleEnd
+    , getSizeStart, getSizeEnd
+    , getTranslateStart, getTranslateEnd
     )
 
 {-| CSS Keyframe Animations engine for complex, multi-step animations.
@@ -133,32 +133,32 @@ For accurate mid-flight values, consider [Sub](Anim.Engine.Sub) or [WAAPI](Anim.
 
 ## Background Color
 
-@docs getStartBackgroundColor, getEndBackgroundColor, getCurrentBackgroundColor
+@docs getBackgroundColorStart, getBackgroundColorEnd
 
 
 ## Opacity
 
-@docs getStartOpacity, getEndOpacity, getCurrentOpacity
+@docs getOpacityStart, getOpacityEnd
 
 
 ## Rotate
 
-@docs getStartRotate, getEndRotate, getCurrentRotate
+@docs getRotateStart, getRotateEnd
 
 
 ## Scale
 
-@docs getStartScale, getEndScale, getCurrentScale
+@docs getScaleStart, getScaleEnd
 
 
 ## Size
 
-@docs getStartSize, getEndSize, getCurrentSize
+@docs getSizeStart, getSizeEnd
 
 
 ## Translate
 
-@docs getStartTranslate, getEndTranslate, getCurrentTranslate
+@docs getTranslateStart, getTranslateEnd
 
 -}
 
@@ -748,32 +748,6 @@ allComplete =
 
 
 
--- PROPERTY GETTERS (HELPER)
-
-
-getCurrent : String -> a -> AnimState -> { start : Maybe a, end : a } -> Maybe a
-getCurrent elementId default animState range =
-    InternalCSS.getState elementId animState
-        |> Maybe.map
-            (\state ->
-                case state of
-                    NotStarted ->
-                        case range.start of
-                            Nothing ->
-                                default
-
-                            Just startValue ->
-                                startValue
-
-                    Running ->
-                        range.end
-
-                    Complete ->
-                        range.end
-            )
-
-
-
 -- TRANSLATE GETTERS
 
 
@@ -782,8 +756,8 @@ getCurrent elementId default animState range =
 Returns `Nothing` if the element has no translate animation.
 
 -}
-getStartTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getStartTranslate elementId animState =
+getTranslateStart : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateStart elementId animState =
     InternalCSS.getTranslateRange elementId animState
         |> Maybe.map
             (\{ start } ->
@@ -801,23 +775,10 @@ getStartTranslate elementId animState =
 Returns `Nothing` if the element has no translate animation.
 
 -}
-getEndTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getEndTranslate elementId animState =
+getTranslateEnd : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateEnd elementId animState =
     InternalCSS.getTranslateRange elementId animState
         |> Maybe.map .end
-        |> Maybe.map Translate.toRecord
-
-
-{-| Get the current translate value based on animation state.
-
-Returns `Nothing` if the element has no translate animation.
-
--}
-getCurrentTranslate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getCurrentTranslate elementId animState =
-    InternalCSS.getTranslateRange elementId animState
-        |> Maybe.andThen
-            (getCurrent elementId Translate.default animState)
         |> Maybe.map Translate.toRecord
 
 
@@ -830,8 +791,8 @@ getCurrentTranslate elementId animState =
 Returns `Nothing` if the element has no scale animation.
 
 -}
-getStartScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getStartScale elementId animState =
+getScaleStart : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleStart elementId animState =
     InternalCSS.getScaleRange elementId animState
         |> Maybe.map
             (\{ start } ->
@@ -849,23 +810,10 @@ getStartScale elementId animState =
 Returns `Nothing` if the element has no scale animation.
 
 -}
-getEndScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getEndScale elementId animState =
+getScaleEnd : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleEnd elementId animState =
     InternalCSS.getScaleRange elementId animState
         |> Maybe.map (.end >> Scale.toRecord)
-
-
-{-| Get the current scale based on animation state.
-
-Returns `Nothing` if the element has no scale animation.
-
--}
-getCurrentScale : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getCurrentScale elementId animState =
-    InternalCSS.getScaleRange elementId animState
-        |> Maybe.andThen
-            (getCurrent elementId (Scale.fromUniform 1.0) animState)
-        |> Maybe.map Scale.toRecord
 
 
 
@@ -877,8 +825,8 @@ getCurrentScale elementId animState =
 Returns `Nothing` if the element has no rotate animation.
 
 -}
-getStartRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getStartRotate elementId animState =
+getRotateStart : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateStart elementId animState =
     InternalCSS.getRotateRange elementId animState
         |> Maybe.map
             (\{ start } ->
@@ -896,23 +844,10 @@ getStartRotate elementId animState =
 Returns `Nothing` if the element has no rotate animation.
 
 -}
-getEndRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getEndRotate elementId animState =
+getRotateEnd : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateEnd elementId animState =
     InternalCSS.getRotateRange elementId animState
         |> Maybe.map (.end >> Rotate.toRecord)
-
-
-{-| Get the current rotation based on animation state.
-
-Returns `Nothing` if the element has no rotate animation.
-
--}
-getCurrentRotate : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getCurrentRotate elementId animState =
-    InternalCSS.getRotateRange elementId animState
-        |> Maybe.andThen
-            (getCurrent elementId Rotate.default animState)
-        |> Maybe.map Rotate.toRecord
 
 
 
@@ -924,8 +859,8 @@ getCurrentRotate elementId animState =
 Returns `Nothing` if the element has no opacity animation.
 
 -}
-getStartOpacity : String -> AnimState -> Maybe Float
-getStartOpacity elementId animState =
+getOpacityStart : String -> AnimState -> Maybe Float
+getOpacityStart elementId animState =
     InternalCSS.getOpacityRange elementId animState
         |> Maybe.map
             (\{ start } ->
@@ -943,23 +878,10 @@ getStartOpacity elementId animState =
 Returns `Nothing` if the element has no opacity animation.
 
 -}
-getEndOpacity : String -> AnimState -> Maybe Float
-getEndOpacity elementId animState =
+getOpacityEnd : String -> AnimState -> Maybe Float
+getOpacityEnd elementId animState =
     InternalCSS.getOpacityRange elementId animState
         |> Maybe.map (.end >> Opacity.toFloat)
-
-
-{-| Get the current opacity based on animation state.
-
-Returns `Nothing` if the element has no opacity animation.
-
--}
-getCurrentOpacity : String -> AnimState -> Maybe Float
-getCurrentOpacity elementId animState =
-    InternalCSS.getOpacityRange elementId animState
-        |> Maybe.andThen
-            (getCurrent elementId Opacity.default animState)
-        |> Maybe.map Opacity.toFloat
 
 
 
@@ -971,8 +893,8 @@ getCurrentOpacity elementId animState =
 Returns `Nothing` if the element has no size animation.
 
 -}
-getStartSize : String -> AnimState -> Maybe { width : Float, height : Float }
-getStartSize elementId animState =
+getSizeStart : String -> AnimState -> Maybe { width : Float, height : Float }
+getSizeStart elementId animState =
     InternalCSS.getSizeRange elementId animState
         |> Maybe.map
             (\{ start } ->
@@ -990,23 +912,10 @@ getStartSize elementId animState =
 Returns `Nothing` if the element has no size animation.
 
 -}
-getEndSize : String -> AnimState -> Maybe { width : Float, height : Float }
-getEndSize elementId animState =
+getSizeEnd : String -> AnimState -> Maybe { width : Float, height : Float }
+getSizeEnd elementId animState =
     InternalCSS.getSizeRange elementId animState
         |> Maybe.map (.end >> Size.toRecord)
-
-
-{-| Get the current size based on animation state.
-
-Returns `Nothing` if the element has no size animation.
-
--}
-getCurrentSize : String -> AnimState -> Maybe { width : Float, height : Float }
-getCurrentSize elementId animState =
-    InternalCSS.getSizeRange elementId animState
-        |> Maybe.andThen
-            (getCurrent elementId Size.default animState)
-        |> Maybe.map Size.toRecord
 
 
 
@@ -1018,8 +927,8 @@ getCurrentSize elementId animState =
 Returns `Nothing` if the element has no background color animation.
 
 -}
-getStartBackgroundColor : String -> AnimState -> Maybe Color
-getStartBackgroundColor elementId animState =
+getBackgroundColorStart : String -> AnimState -> Maybe Color
+getBackgroundColorStart elementId animState =
     InternalCSS.getBackgroundColorRange elementId animState
         |> Maybe.map
             (\{ start } ->
@@ -1037,19 +946,7 @@ getStartBackgroundColor elementId animState =
 Returns `Nothing` if the element has no background color animation.
 
 -}
-getEndBackgroundColor : String -> AnimState -> Maybe Color
-getEndBackgroundColor elementId animState =
+getBackgroundColorEnd : String -> AnimState -> Maybe Color
+getBackgroundColorEnd elementId animState =
     InternalCSS.getBackgroundColorRange elementId animState
         |> Maybe.map .end
-
-
-{-| Get the current background color based on animation state.
-
-Returns `Nothing` if the element has no background color animation.
-
--}
-getCurrentBackgroundColor : String -> AnimState -> Maybe Color
-getCurrentBackgroundColor elementId animState =
-    InternalCSS.getBackgroundColorRange elementId animState
-        |> Maybe.andThen
-            (getCurrent elementId BackgroundColor.default animState)
