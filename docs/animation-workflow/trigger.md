@@ -284,6 +284,11 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
         Both work fine. The initial property values are used for first render, and the animation command is processed immediately after.
 
 
+The Keyframes engine with `fireAndForget` is the simplest setup for animations that need to play on first render - closely followed by the Sub and WAAPI engines.
+
+CSS transitions don't play well as 'onload' animations.
+
+
 ### Not in `view`
 
 ??? warning "Why not?"

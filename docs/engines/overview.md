@@ -5,9 +5,9 @@ Elm Animate provides multiple animation engines, each optimized for different us
 ## Feature Comparison
 
 | Feature | Transitions | Keyframes | Sub | WAAPI |
-| ------- | ----------- | --------- | --- | ----- |
+| ------- | :---------: | :-------: | :-: | :---: |
 | **Rendering** |
-| Browser-native rendering | ✓ | ✓ | | ✓ |
+| Browser-native interpolation | ✓ | ✓ | | ✓ |
 | Hardware acceleration | ✓ | ✓ | ✓ | ✓ |
 | JavaScript required | | | | ✓ |
 | **Animation Control** |
@@ -321,11 +321,11 @@ WAAPI uses subscriptions to receive events from JavaScript:
         case msg of
             GotWaapiMsg subMsg ->
                 let
-                    ( newAnimState, maybeEvent ) =
+                    ( newAnimState, event ) =
                         WAAPI.update subMsg model.animState
                 in
-                case maybeEvent of
-                    Just (WAAPI.Ended "box") ->
+                case event of
+                    WAAPI.Ended "box" ->
                         -- Handle completion
                         ( { model | animState = newAnimState }, Cmd.none )
 

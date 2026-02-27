@@ -55,7 +55,8 @@ init : ( Model, Cmd Msg )
 init =
     let
         animState =
-            WAAPI.init waapiCommand waapiEvent
+            WAAPI.init waapiCommand
+                waapiEvent
                 [ WAAPI.forElement elementId >> Opacity.init elementId 0 ]
 
         ( newAnimState, cmd ) =

@@ -13,19 +13,11 @@ Transitions redirect smoothly regardless of trigger type (`animate` or `fireAndF
 !!! note "The `from` value doesn't affect interruption"
     Even if you specify a `from` value, Transitions will always start from the browser's current computed value.
 
-### Sub and WAAPI: State-Tracked
+### Sub and WAAPI: `animate`
 
-**Sub** always tracks animation state — it's designed around subscriptions and has no fire-and-forget mode. When you trigger a new animation, the engine reads the current value and uses it as the starting point.
+When you trigger a new animation, the engine reads the current value and uses it as the starting point.
 
-**WAAPI** supports both modes. For smooth redirection, use `animate` so the engine can track the current position. With `fireAndForget`, the state resets — so mid-flight triggers will jump to the start value.
-
-For both engines, if you provide a `from` value, that will be used as the starting point instead of the tracked current value.
-
-When you trigger a new animation with state tracking:
-
-1. The engine reads the current animated value from state
-2. Uses that as the starting point for the new animation
-3. Begins animating toward the new target
+If you provide a `from` value, that will be used as the starting point instead of the tracked current value.
 
 ### Example: Toggle Animation
 
@@ -96,7 +88,7 @@ A common pattern is toggling between two states. The animation redirects smoothl
                     )
         ```
 
-If the user toggles rapidly, the animation smoothly reverses direction from wherever it currently is.
+If the user toggles rapidly, the animation smoothly redirects from wherever it currently is.
 
 ## Engine That Doesn't Support Interruption
 
@@ -105,7 +97,7 @@ If the user toggles rapidly, the animation smoothly reverses direction from wher
 This is a fundamental limitation of CSS `@keyframes`:
 
 - **No playhead access** — CSS provides no API to query where an animation currently is (e.g., "50% through the fade")
-- **No progress events** — Unlike `transitionend`, there's no event that reports intermediate values
+- **No progress events** — There's no event that reports intermediate values
 - **Hardcoded keyframes** — The `@keyframes` rule defines fixed values; the browser can't start from an arbitrary midpoint
 
 Even with state-tracked animations using `animate`, Elm has no way to know the current animated value. The browser runs the animation independently — which is exactly what makes Keyframes so performant — but it means the in-progress state isn't accessible.

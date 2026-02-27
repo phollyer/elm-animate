@@ -9426,7 +9426,6 @@ var $author$project$Anim$Engine$WAAPI$Iteration = F4(
 	function (a, b, c, d) {
 		return {$: 'Iteration', a: a, b: b, c: c, d: d};
 	});
-var $author$project$Anim$Engine$WAAPI$Loaded = {$: 'Loaded'};
 var $author$project$Anim$Engine$WAAPI$Paused = F3(
 	function (a, b, c) {
 		return {$: 'Paused', a: a, b: b, c: c};
@@ -9456,8 +9455,6 @@ var $author$project$Anim$Engine$WAAPI$eventDataToEvent = function (eventData) {
 	var animGroup = eventData.animGroup;
 	var _v0 = eventData.status;
 	switch (_v0) {
-		case 'loaded':
-			return $author$project$Anim$Engine$WAAPI$Loaded;
 		case 'changed':
 			return A3(
 				$author$project$Anim$Engine$WAAPI$Changed,

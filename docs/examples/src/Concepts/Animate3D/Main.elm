@@ -73,7 +73,10 @@ init flags =
                   -- sides and rotate
                   Translate.initZ "cube" 200
 
-                -- Position each face in 3D space
+                -- Position each face in 3D space along the axis it faces
+                -- Front/Back faces move on Z (forward/backward)
+                -- Left/Right faces move on X (sideways)
+                -- Top/Bottom faces move on Y (up/down)
                 , Translate.initZ "front-face" depth
                 , Translate.initZ "back-face" (depth * -1)
                 , Translate.initX "right-face" depth
@@ -81,7 +84,7 @@ init flags =
                 , Translate.initY "top-face" (-1 * depth)
                 , Translate.initY "bottom-face" depth
 
-                -- Rotate each face to build the cube
+                -- Rotate each face into position to build the cube
                 -- Front face is not rotated due to facing forward by default
                 , Rotate.initY "back-face" 180
                 , Rotate.initY "right-face" 90
@@ -108,27 +111,34 @@ init flags =
 
 -- ANIMATIONS
 -- --8<-- [start:animationFunctions]
+-- We only rotate the whole cube, not individual faces, they maintain their
+-- position in 3D space because we use `View3D.transformStyle View3D.Preserve3D`
+-- on the cube container which preserves the 3D transforms of child elements
+-- instead of flattening them into 2D space
 
 
-rotateCube : (Rotate.Builder -> Rotate.Builder) -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
-rotateCube targetFunc =
+rotateCube : Float -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+rotateCube to =
     Rotate.for "cube"
-        >> targetFunc
+        >> Rotate.to to
         >> Rotate.easing BackInOut
-        >> Rotate.duration 4000
+        >> Rotate.duration 8000
         >> Rotate.build
 
 
 rotateCubeClockwise : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 rotateCubeClockwise =
-    rotateCube <|
-        Rotate.to 360
+    rotateCube 360
 
 
 rotateCubeAntiClockwise : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 rotateCubeAntiClockwise =
-    rotateCube <|
-        Rotate.to (-1 * 360)
+    rotateCube (-1 * 360)
+
+
+
+-- For the side movement animations, we build complex animations out of
+-- smaller pieces. Each individual piece is easy to understand and reason about
 
 
 moveSidesOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
@@ -152,12 +162,19 @@ moveSidesIn =
 
 
 moveFace : String -> (Translate.Builder -> Translate.Builder) -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
-moveFace faceId targetFunc =
-    Translate.for faceId
-        >> targetFunc
+moveFace animGroup moveToBuilder =
+    Translate.for animGroup
+        >> moveToBuilder
         >> Translate.duration 1000
         >> Translate.easing BounceOut
         >> Translate.build
+
+
+
+-- Each face moves along the axis it faces:
+-- Front/Back faces move on Z (forward/backward)
+-- Left/Right faces move on X (sideways)
+-- Top/Bottom faces move on Y (up/down)
 
 
 moveFrontFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
@@ -362,9 +379,11 @@ viewContent model =
             [ View3D.perspective 1000
                 |> htmlAttribute
             , View3D.opacityHack
-                -- Fixes Chrome/macOS compositor tile corruption when
+                -- Kind of fixes Chrome on macOS compositor tile corruption when
                 -- animating 3D transforms by creating a new stacking
                 -- context for the animation area
+                -- it's not perfect, some flickering can still occur
+                -- pull requests to improve this are welcome!
                 |> htmlAttribute
             , centerX
             , centerY
@@ -443,13 +462,14 @@ bottomFace =
 viewCube : Model -> Element Msg
 viewCube model =
     let
-        shouldListenForSideEvents =
-            model.state == Opening || model.state == Closing
-
-        cubeStyles =
+        cubeAttrs =
             Keyframes.attributes "cube" model.animState
                 |> List.map htmlAttribute
 
+        -- Conditionally listen for keyframe events on both the cube and front face
+        -- depending on the current state of the animation.
+        -- This prevents us from receiving events that would bubble up from the 
+        -- sides to the cube which would trigger unwanted state changes
         cubeEvents =
             if model.state == RotatingOpen || model.state == RotatingClosed then
                 Keyframes.events "cube" GotKeyframeMsg
@@ -457,9 +477,12 @@ viewCube model =
 
             else
                 []
+
+        shouldListenForSideEvents =
+            model.state == Opening || model.state == Closing
     in
     column
-        (cubeStyles
+        (cubeAttrs
             ++ cubeEvents
             ++ [ View3D.transformStyle View3D.Preserve3D
                     |> htmlAttribute
@@ -470,8 +493,7 @@ viewCube model =
                ]
         )
         [ -- we only listen for animation events on the front face
-          -- since all side faces trigger at the same time,
-          -- so listening to one is sufficient to know when to rotate
+          -- since all faces would trigger at the same time
           viewFace model.animState shouldListenForSideEvents frontFace
         , viewFace model.animState False backFace
         , viewFace model.animState False rightFace

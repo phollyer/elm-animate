@@ -239,6 +239,6 @@ Fired on each animation frame (~60fps) with the current progress value (0.0 to 1
 
 ## Next Steps
 
-Now that you understand how to react to animation events, explore the properties you can animate.
+Now that you understand how to react to animation events, let's animate something in 3D.
 
-[Properties →](properties.md){ .md-button .md-button--primary }
+[3D Animations →](3d.md){ .md-button .md-button--primary }

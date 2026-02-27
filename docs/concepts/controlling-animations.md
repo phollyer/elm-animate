@@ -81,7 +81,7 @@ Immediately jumps back to the animation's **start state** and stops.
 Resets to the start state, then immediately begins playing the animation again.
 
 !!! warning "Not available for Transitions"
-    CSS Transitions don't support restart. Use `reset` followed by `animate` instead.
+    CSS Transitions don't support restart.
 
 ??? example "View Source Code"
 
@@ -156,41 +156,6 @@ Continues a paused animation from exactly where it was frozen.
         ```elm
         --8<-- "docs/examples/src/Concepts/ControllingAnimations/WaapiEngine/Main.elm:resume"
         ```
-
-
-## Replaying The Same Animation
-
-### CSS Transitions Limitations
-
-CSS transitions trigger on property changes - the browser must see a property change to start a transition - therefore, repeatedly calling `animate` with the same animation configuration **will not** replay the transition because there is no state change.
-
-To 'fix' this, call `reset` first, then in the next `update` loop call `animate`. This allows Elm to render the `reset` state before the `animate` state, and gives the Browser the state change it needs.
-
-In Elm, if you call `reset` and `animate` in the same `update` loop, only the final `animate` state is rendered, so the browser never sees the `reset` state.
-
-Use a small delay to ensure separate renders:
-
-??? example "View Source Code"
-
-    ```elm
-    type Msg
-        = ReplayAnimation
-        | StartAnimation
-
-    update msg model =
-        case msg of
-            ReplayAnimation ->
-                ( { model | animState = Transitions.reset "boxAnim" model.animState }
-                , Process.sleep 50 |> Task.perform (always StartAnimation)
-                )
-
-            StartAnimation ->
-                ( { model | animState = Transitions.animate model.animState fadeIn }
-                , Cmd.none
-                )
-    ```
-    
-    The 50ms delay ensures that Elm renders the `reset` state before the `animate` state. This provides the state change that the Browser requires in order to run the transition. 
 
 ## Live Examples
 

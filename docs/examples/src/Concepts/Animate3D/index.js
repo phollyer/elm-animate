@@ -9078,13 +9078,13 @@ var $author$project$Anim$Internal$Builders$Translate$easing = F2(
 var $author$project$Anim$Property$Translate$easing = $author$project$Anim$Internal$Builders$Translate$easing;
 var $author$project$Anim$Property$Translate$for = $author$project$Anim$Internal$Builders$Translate$for;
 var $author$project$Concepts$Animate3D$Main$moveFace = F2(
-	function (faceId, targetFunc) {
+	function (animGroup, moveToBuilder) {
 		return A2(
 			$elm$core$Basics$composeR,
-			$author$project$Anim$Property$Translate$for(faceId),
+			$author$project$Anim$Property$Translate$for(animGroup),
 			A2(
 				$elm$core$Basics$composeR,
-				targetFunc,
+				moveToBuilder,
 				A2(
 					$elm$core$Basics$composeR,
 					$author$project$Anim$Property$Translate$duration(1000),
@@ -9227,26 +9227,24 @@ var $author$project$Anim$Internal$Builders$Rotate$easing = F2(
 			builder);
 	});
 var $author$project$Anim$Property$Rotate$easing = $author$project$Anim$Internal$Builders$Rotate$easing;
-var $author$project$Concepts$Animate3D$Main$rotateCube = function (targetFunc) {
+var $author$project$Anim$Property$Rotate$to = A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Builders$Rotate$to, $author$project$Anim$Internal$Properties$Rotate$fromFloat);
+var $author$project$Concepts$Animate3D$Main$rotateCube = function (to) {
 	return A2(
 		$elm$core$Basics$composeR,
 		$author$project$Anim$Property$Rotate$for('cube'),
 		A2(
 			$elm$core$Basics$composeR,
-			targetFunc,
+			$author$project$Anim$Property$Rotate$to(to),
 			A2(
 				$elm$core$Basics$composeR,
 				$author$project$Anim$Property$Rotate$easing($author$project$Anim$Extra$Easing$BackInOut),
 				A2(
 					$elm$core$Basics$composeR,
-					$author$project$Anim$Property$Rotate$duration(4000),
+					$author$project$Anim$Property$Rotate$duration(8000),
 					$author$project$Anim$Property$Rotate$build))));
 };
-var $author$project$Anim$Property$Rotate$to = A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Builders$Rotate$to, $author$project$Anim$Internal$Properties$Rotate$fromFloat);
-var $author$project$Concepts$Animate3D$Main$rotateCubeAntiClockwise = $author$project$Concepts$Animate3D$Main$rotateCube(
-	$author$project$Anim$Property$Rotate$to((-1) * 360));
-var $author$project$Concepts$Animate3D$Main$rotateCubeClockwise = $author$project$Concepts$Animate3D$Main$rotateCube(
-	$author$project$Anim$Property$Rotate$to(360));
+var $author$project$Concepts$Animate3D$Main$rotateCubeAntiClockwise = $author$project$Concepts$Animate3D$Main$rotateCube((-1) * 360);
+var $author$project$Concepts$Animate3D$Main$rotateCubeClockwise = $author$project$Concepts$Animate3D$Main$rotateCube(360);
 var $author$project$Concepts$Animate3D$Main$selectAnimation = function (state) {
 	switch (state.$) {
 		case 'Opening':
@@ -15772,18 +15770,18 @@ var $author$project$Concepts$Animate3D$Main$viewFace = F3(
 	});
 var $author$project$Concepts$Animate3D$Main$viewCube = function (model) {
 	var shouldListenForSideEvents = _Utils_eq(model.state, $author$project$Concepts$Animate3D$Main$Opening) || _Utils_eq(model.state, $author$project$Concepts$Animate3D$Main$Closing);
-	var cubeStyles = A2(
-		$elm$core$List$map,
-		$mdgriffith$elm_ui$Element$htmlAttribute,
-		A2($author$project$Anim$Engine$CSS$Keyframes$attributes, 'cube', model.animState));
 	var cubeEvents = (_Utils_eq(model.state, $author$project$Concepts$Animate3D$Main$RotatingOpen) || _Utils_eq(model.state, $author$project$Concepts$Animate3D$Main$RotatingClosed)) ? A2(
 		$elm$core$List$map,
 		$mdgriffith$elm_ui$Element$htmlAttribute,
 		A2($author$project$Anim$Engine$CSS$Keyframes$events, 'cube', $author$project$Concepts$Animate3D$Main$GotKeyframeMsg)) : _List_Nil;
+	var cubeAttrs = A2(
+		$elm$core$List$map,
+		$mdgriffith$elm_ui$Element$htmlAttribute,
+		A2($author$project$Anim$Engine$CSS$Keyframes$attributes, 'cube', model.animState));
 	return A2(
 		$mdgriffith$elm_ui$Element$column,
 		_Utils_ap(
-			cubeStyles,
+			cubeAttrs,
 			_Utils_ap(
 				cubeEvents,
 				_List_fromArray(
