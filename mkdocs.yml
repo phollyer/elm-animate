@@ -89,6 +89,7 @@ nav:
     - Sub Engine: engines/sub.md
     - WAAPI Engine: engines/waapi.md
     - Scroll Engine: engines/scroll.md
+    - Migration Guide: engines/migration-guide.md
   - Properties:
     - GPU Accelerated:
       - Opacity: properties/opacity.md
