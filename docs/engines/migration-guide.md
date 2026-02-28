@@ -24,9 +24,9 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Migrating Up (adding features)
 
-- [Transitions → Keyframes](#transitions-keyframes) - Add full controls, looping
-- [Transitions → Sub](#transitions-sub) - Add full controls, looping, mid-flight access
-- [Transitions → WAAPI](#transitions-waapi) - Add full controls, looping, mid-flight access
+- [Transitions → Keyframes](#transitions-keyframes) - Add pause/resume & restart controls, looping
+- [Transitions → Sub](#transitions-sub) - Add pause/resume & restart controls, looping, mid-flight access
+- [Transitions → WAAPI](#transitions-waapi) - Add pause/resume & restart controls, looping, mid-flight access
 - [Keyframes → Sub](#keyframes-sub) - Add mid-flight access, dynamic redirects
 - [Keyframes → WAAPI](#keyframes-waapi) - Add mid-flight access, dynamic redirects
 - [Sub → WAAPI](#sub-waapi) - Add browser-native interpolation
@@ -36,8 +36,8 @@ If you need to migrate, you can use the quick guides below, just select your mig
 - [WAAPI → Sub](#waapi-sub) - Regain pure Elm (no JavaScript/ports)
 - [WAAPI → Keyframes](#waapi-keyframes) - Regain pure Elm (no JavaScript/ports)
 - [WAAPI → Transitions](#waapi-transitions) - Regain pure Elm (no JavaScript/ports)
-- [Sub → Keyframes](#sub-keyframes) - Regain CSS hardware acceleration
-- [Sub → Transitions](#sub-transitions) - Regain CSS hardware acceleration
+- [Sub → Keyframes](#sub-keyframes) - Regain browser-native interpolation
+- [Sub → Transitions](#sub-transitions) - Regain browser-native interpolation
 - [Keyframes → Transitions](#keyframes-transitions) - Regain mid-flight redirections
 
 
@@ -47,7 +47,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Transitions → Keyframes
 
-- **Adds**: full controls, looping
+- **Adds**: pause/resume & restart controls, looping
 - **Loses**: mid-flight redirections
 
 **Changes required:**
@@ -159,8 +159,8 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Transitions → Sub
 
-- **Adds**: full controls, looping, mid-flight access
-- **Loses**: CSS hardware acceleration
+- **Adds**: pause/resume & restart controls, looping, mid-flight access
+- **Loses**: browser-native interpolation
 
 **Changes required:**
 
@@ -277,7 +277,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Transitions → WAAPI
 
-- **Adds**: full controls, looping, mid-flight access
+- **Adds**: pause/resume & restart controls, looping, mid-flight access
 - **Loses**: pure Elm (requires JavaScript/ports)
 
 **Changes required:**
@@ -430,7 +430,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ### Keyframes → Sub
 
 - **Adds**: mid-flight access, dynamic redirects
-- **Loses**: CSS hardware acceleration
+- **Loses**: browser-native interpolation
 
 **Changes required:**
 
@@ -1071,7 +1071,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ### WAAPI → Transitions
 
 - **Adds**: pure Elm (no JavaScript/ports)
-- **Loses**: full controls, looping, mid-flight access
+- **Loses**: pause/resume & restart controls, looping, mid-flight access
 
 **Changes required:**
 
@@ -1186,7 +1186,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Sub → Keyframes
 
-- **Adds**: CSS hardware acceleration
+- **Adds**: browser-native interpolation
 - **Loses**: mid-flight access, dynamic redirects
 
 **Changes required:**
@@ -1296,8 +1296,8 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Sub → Transitions
 
-- **Adds**: CSS hardware acceleration
-- **Loses**: full controls, looping, mid-flight access
+- **Adds**: browser-native interpolation
+- **Loses**: pause/resume & restart controls, looping, mid-flight access
 
 **Changes required:**
 
@@ -1403,7 +1403,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ### Keyframes → Transitions
 
 - **Adds**: mid-flight redirections
-- **Loses**: full controls, looping
+- **Loses**: pause/resume & restart controls, looping
 **Changes required:**
 
 - Change types from `Keyframes.*` to `Transitions.*` (AnimState, AnimMsg, AnimEvent)
