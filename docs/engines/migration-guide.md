@@ -29,15 +29,15 @@ If you need to migrate, you can use the quick guides below, just select your mig
 - [Transitions → WAAPI](#transitions-waapi) - Add pause/resume & restart controls, looping, mid-flight access
 - [Keyframes → Sub](#keyframes-sub) - Add mid-flight access, dynamic redirects
 - [Keyframes → WAAPI](#keyframes-waapi) - Add mid-flight access, dynamic redirects
-- [Sub → WAAPI](#sub-waapi) - Add browser-native interpolation
+- [Sub → WAAPI](#sub-waapi) - Add browser-native interpolation, `fireAndForget` convenience
 
 ### Migrating Down (simplifying)
 
 - [WAAPI → Sub](#waapi-sub) - Regain pure Elm (no JavaScript/ports)
 - [WAAPI → Keyframes](#waapi-keyframes) - Regain pure Elm (no JavaScript/ports)
 - [WAAPI → Transitions](#waapi-transitions) - Regain pure Elm (no JavaScript/ports)
-- [Sub → Keyframes](#sub-keyframes) - Regain browser-native interpolation
-- [Sub → Transitions](#sub-transitions) - Regain browser-native interpolation
+- [Sub → Keyframes](#sub-keyframes) - Regain browser-native interpolation, `fireAndForget` convenience
+- [Sub → Transitions](#sub-transitions) - Regain browser-native interpolation, `fireAndForget` convenience
 - [Keyframes → Transitions](#keyframes-transitions) - Regain mid-flight redirections
 
 
@@ -160,7 +160,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ### Transitions → Sub
 
 - **Adds**: pause/resume & restart controls, looping, mid-flight access
-- **Loses**: browser-native interpolation
+- **Loses**: browser-native interpolation, `fireAndForget` convenience
 
 **Changes required:**
 
@@ -430,7 +430,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ### Keyframes → Sub
 
 - **Adds**: mid-flight access, dynamic redirects
-- **Loses**: browser-native interpolation
+- **Loses**: browser-native interpolation, `fireAndForget` convenience
 
 **Changes required:**
 
@@ -688,7 +688,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Sub → WAAPI
 
-- **Adds**: browser-native interpolation
+- **Adds**: browser-native interpolation, `fireAndForget` convenience
 - **Loses**: pure Elm (requires JavaScript/ports)
 
 **Changes required:**
@@ -821,7 +821,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ### WAAPI → Sub
 
 - **Adds**: pure Elm (no JavaScript/ports)
-- **Loses**: browser-native interpolation
+- **Loses**: browser-native interpolation, `fireAndForget` convenience
 
 **Changes required:**
 
@@ -1186,7 +1186,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Sub → Keyframes
 
-- **Adds**: browser-native interpolation
+- **Adds**: browser-native interpolation, `fireAndForget` convenience
 - **Loses**: mid-flight access, dynamic redirects
 
 **Changes required:**
@@ -1296,7 +1296,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Sub → Transitions
 
-- **Adds**: browser-native interpolation
+- **Adds**: browser-native interpolation, `fireAndForget` convenience
 - **Loses**: pause/resume & restart controls, looping, mid-flight access
 
 **Changes required:**
@@ -1527,6 +1527,53 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ## Common Gotchas
 
+### Keyframes: styleNode placement
+
+Place `styleNode` as high in your DOM as possible - ideally at the root level. If DOM diffing causes the `styleNode` to be re-rendered, the browser treats it as a new `<style>` element being inserted, which restarts all CSS keyframe animations from the beginning. At the root level, unrelated view changes are less likely to cause the `styleNode` to be reconstructed.
+
+??? example "View Source Code"
+
+    ```elm
+    view : Model -> Html Msg
+    view model =
+        div []
+            [ Keyframes.styleNode model.animState  -- At root level
+            , viewHeader model
+            , viewContent model  -- Contains animated elements
+            , viewFooter model
+            ]
+    ```
+
+### Sub: Events are a List
+
+Sub's `update` returns a list of events because multiple animations can complete on the same frame. Make sure to handle all of them:
+
+??? example "View Source Code"
+
+    ```elm
+    -- Wrong - silently drops events after the first
+    GotAnimMsg animMsg ->
+        let
+            ( newAnimState, events ) =
+                Sub.update animMsg model.animState
+        in
+        case events of
+            [ Sub.Ended "boxAnim" ] ->
+                ...
+            _ ->
+                ( { model | animState = newAnimState }, Cmd.none )
+
+    -- Correct - processes every event
+    GotAnimMsg animMsg ->
+        let
+            ( newAnimState, events ) =
+                Sub.update animMsg model.animState
+        in
+        List.foldl handleEvent
+            ( { model | animState = newAnimState }, Cmd.none )
+            events
+    ```
+
 ### WAAPI: Don't forget the Cmd
 
 With WAAPI, `animate` returns `(AnimState, Cmd)`. If you forget to return the `Cmd`, no animation will play:
@@ -1549,43 +1596,6 @@ With WAAPI, `animate` returns `(AnimState, Cmd)`. If you forget to return the `C
     ( { model | animState = newAnimState }, cmd )
     ```
 
-### Sub: Events are a List
-
-Sub's `update` returns a list of events (multiple properties can complete simultaneously). Handle them all:
-
-??? example "View Source Code"
-
-    ```elm
-    -- Wrong - only handles first event
-    let
-        ( newAnimState, events ) =
-            Sub.update animMsg model.animState
-    in
-    case List.head events of
-        Just (Sub.Ended "boxAnim") -> ...
-
-    -- Correct - handles all events
-    handleEvents events { model | animState = newAnimState }
-    ```
-
-### Keyframes: styleNode placement
-
-The `styleNode` must be rendered before the animated elements, or animations won't apply on the first frame:
-
-```elm
--- Wrong - styleNode after animated element
-div []
-    [ div (Keyframes.attributes "box" model.animState) [ ... ]
-    , Keyframes.styleNode model.animState
-    ]
-
--- Correct - styleNode first
-div []
-    [ Keyframes.styleNode model.animState
-    , div (Keyframes.attributes "box" model.animState) [ ... ]
-    ]
-```
-
 
 ## Need Help?
 
@@ -1594,3 +1604,5 @@ If you run into issues during migration, check:
 1. The compiler errors - Elm will catch most type mismatches
 2. The individual engine documentation for detailed API reference
 3. The examples in the [examples directory](../../examples/) for working code
+
+If you have a problem you just can't solve, you can <a href="https://discourse.elm-lang.org/new-message?username=paulh" target="_blank">PM me on Discourse</a>.
