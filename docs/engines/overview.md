@@ -118,7 +118,7 @@ All engines provide `animate` for state-tracked animations. There's also `fireAn
 
 | Function | What It Does |
 | -------- | ------------ |
-| `animate` | Tracks state in `AnimState`, enabling sequencing, control, and events |
+| `animate` | Tracks state in `AnimState` |
 | `fireAndForget` | Starts fresh each time, no state needed |
 
 #### Suggested Use Cases
