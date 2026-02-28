@@ -24,21 +24,21 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Migrating Up (adding features)
 
-- [Transitions to Keyframes](#transitions-keyframes) - Add looping, iterations
-- [Transitions to Sub](#transitions-sub) - Add full Elm control, mid-flight access
-- [Transitions to WAAPI](#transitions-waapi) - Add browser-native performance, full control
-- [Keyframes to Sub](#keyframes-sub) - Add mid-flight value access, Elm-side control
-- [Keyframes to WAAPI](#keyframes-waapi) - Add browser-native performance
-- [Sub to WAAPI](#sub-waapi) - Add browser-native interpolation
+- [Transitions → Keyframes](#transitions-keyframes) - Add full controls, looping
+- [Transitions → Sub](#transitions-sub) - Add full controls, looping, mid-flight access
+- [Transitions → WAAPI](#transitions-waapi) - Add full controls, looping, mid-flight access
+- [Keyframes → Sub](#keyframes-sub) - Add mid-flight access, dynamic redirects
+- [Keyframes → WAAPI](#keyframes-waapi) - Add mid-flight access, dynamic redirects
+- [Sub → WAAPI](#sub-waapi) - Add browser-native interpolation
 
 ### Migrating Down (simplifying)
 
-- [WAAPI to Sub](#waapi-sub) - Remove JavaScript dependency
-- [WAAPI to Keyframes](#waapi-keyframes) - Remove subscriptions, simpler setup
-- [WAAPI to Transitions](#waapi-transitions) - Simplest possible setup
-- [Sub to Keyframes](#sub-keyframes) - Remove subscriptions, use CSS animations
-- [Sub to Transitions](#sub-transitions) - Simplest possible setup
-- [Keyframes to Transitions](#keyframes-transitions) - Remove styleNode, simpler setup
+- [WAAPI → Sub](#waapi-sub) - Regain pure Elm (no JavaScript/ports)
+- [WAAPI → Keyframes](#waapi-keyframes) - Regain pure Elm (no JavaScript/ports)
+- [WAAPI → Transitions](#waapi-transitions) - Regain pure Elm (no JavaScript/ports)
+- [Sub → Keyframes](#sub-keyframes) - Regain CSS hardware acceleration
+- [Sub → Transitions](#sub-transitions) - Regain CSS hardware acceleration
+- [Keyframes → Transitions](#keyframes-transitions) - Regain mid-flight redirections
 
 
 ---
@@ -47,7 +47,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Transitions → Keyframes
 
-- **Adds**: looping, pause/resume, and restart capabilities
+- **Adds**: full controls, looping
 - **Loses**: mid-flight redirections
 
 **Changes required:**
@@ -159,7 +159,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Transitions → Sub
 
-- **Adds**: full controls, mid-flight value access, dynamic redirects
+- **Adds**: full controls, looping, mid-flight access
 - **Loses**: CSS hardware acceleration
 
 **Changes required:**
@@ -277,7 +277,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Transitions → WAAPI
 
-- **Adds**: full controls, mid-flight value access
+- **Adds**: full controls, looping, mid-flight access
 - **Loses**: pure Elm (requires JavaScript/ports)
 
 **Changes required:**
@@ -429,7 +429,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Keyframes → Sub
 
-- **Adds**: mid-flight value access, dynamic redirects
+- **Adds**: mid-flight access, dynamic redirects
 - **Loses**: CSS hardware acceleration
 
 **Changes required:**
@@ -551,7 +551,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Keyframes → WAAPI
 
-- **Adds**: mid-flight value access, dynamic redirects
+- **Adds**: mid-flight access, dynamic redirects
 - **Loses**: pure Elm (requires JavaScript/ports)
 
 **Changes required:**
@@ -820,7 +820,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### WAAPI → Sub
 
-- **Adds**: pure Elm (no JavaScript dependency)
+- **Adds**: pure Elm (no JavaScript/ports)
 - **Loses**: browser-native interpolation
 
 **Changes required:**
@@ -943,8 +943,8 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### WAAPI → Keyframes
 
-- **Adds**: pure Elm, no subscriptions, CSS hardware acceleration
-- **Loses**: runtime control (pause/resume during playback)
+- **Adds**: pure Elm (no JavaScript/ports)
+- **Loses**: mid-flight access, dynamic redirects
 
 **Changes required:**
 
@@ -1070,8 +1070,8 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### WAAPI → Transitions
 
-- **Adds**: pure Elm, simplest setup
-- **Loses**: looping, pause/resume, restart capabilities
+- **Adds**: pure Elm (no JavaScript/ports)
+- **Loses**: full controls, looping, mid-flight access
 
 **Changes required:**
 
@@ -1186,8 +1186,8 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Sub → Keyframes
 
-- **Adds**: CSS hardware acceleration, no subscriptions
-- **Loses**: mid-flight value access
+- **Adds**: CSS hardware acceleration
+- **Loses**: mid-flight access, dynamic redirects
 
 **Changes required:**
 
@@ -1296,8 +1296,8 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Sub → Transitions
 
-- **Adds**: simplest setup, CSS hardware acceleration
-- **Loses**: mid-flight value access, looping capabilities
+- **Adds**: CSS hardware acceleration
+- **Loses**: full controls, looping, mid-flight access
 
 **Changes required:**
 
@@ -1402,9 +1402,8 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Keyframes → Transitions
 
-- **Adds**: dynamic redirects
-- **Loses**: looping, pause/resume, restart capabilities
-
+- **Adds**: mid-flight redirections
+- **Loses**: full controls, looping
 **Changes required:**
 
 - Change types from `Keyframes.*` to `Transitions.*` (AnimState, AnimMsg, AnimEvent)
