@@ -16,12 +16,9 @@ The CSS Transitions Engine uses native browser CSS transitions for simple A→B 
 
 CSS transitions animate when the browser detects a **_property change_** between renders. This makes them stable and predictable — they won't re-trigger unexpectedly during browser repaints or reflows.
 
-However, for page entry animations (like in the example), where we want the animation to run straight away without any user interaction, we must simulate the **_property change_**. We use `Process.sleep 50` for this: the element renders in its `Idle` state first, then 50ms later the `state` is changed, which in-turn creates the **_property change_** and the animation runs. For most circumstances, user-triggered interactions naturally provide the state change to trigger a transition.
+However, for page entry animations (like in the example), where we want the animation to run straight away without any user interaction, we must simulate the **_property change_**. We use `Process.sleep 50` for this: the element renders in its initial state first (opacity = 0), then 50ms later we trigger the animation (opacity = 1), which in-turn creates the **_property change_** from the initial state and the animation runs. For most circumstances, user-triggered interactions naturally provide the state change to trigger a transition.
 
-If you prefer animations that run immediately on render without this pattern, use the [Keyframes Engine](keyframes.md) instead - it gives you I-O-A's*...
-
-!!! warning "Avoid DOM changes during animation start"
-    CSS transitions are sensitive to DOM reflows. If other DOM elements are added or removed in the same render cycle as starting an animation, the browser may skip the transition entirely. Keep DOM structure stable when triggering animations.
+If you prefer animations that run immediately on render without this pattern, use the [Keyframes Engine](keyframes.md) instead.
 
 ## Discrete Properties
 
@@ -30,10 +27,14 @@ Discrete properties like `display`, `visibility`, and `content-visibility` have 
 
 To enable smooth transitions with discrete properties, use `allowDiscrete`:
 
-```elm
-Transitions.animate model.animState <|
-    (Transitions.allowDiscrete >> fadeIn >> slideIn)
-```
+??? example "View Source Code"
+
+    ```elm
+    Transitions.animate model.animState <|
+        Transitions.allowDiscrete 
+            >> fadeIn 
+            >> slideIn
+    ```
 
 ### Entry vs Exit Animations
 
@@ -48,15 +49,18 @@ Discrete transitions behave differently depending on direction:
     
     Include `startingStyleNode` in your view:
     
-    ```elm
-    view model =
-        div []
-            [ Transitions.startingStyleNode model.animState  
-            , div
-                (Transitions.attributes "my-element" model.animState)
-                [ text "I'll animate when I appear" ]
-            ]
-    ```
+    ??? example "View Source Code"
+
+        ```elm
+        view : Model -> Html Msg
+        view model =
+            div []
+                [ Transitions.startingStyleNode model.animState  
+                , div
+                    (Transitions.attributes "my-element" model.animState)
+                    [ text "I'll animate when I appear" ]
+                ]
+        ```
 
 
 === "Exit Animations (Hiding)"

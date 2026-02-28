@@ -27,18 +27,13 @@ main =
 -- MODEL
 
 
-type State
-    = Idle
-    | Animating
-
-
 type alias Model =
-    { state : State }
+    { animState : Transitions.AnimState }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { state = Idle }
+    ( { animState = Transitions.init [ Opacity.init "helloTextAnim" 0 ] }
     , Process.sleep 50
         |> Task.perform (always TriggerAnimation)
     )
@@ -50,7 +45,7 @@ init _ =
 
 fadeIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
 fadeIn =
-    Opacity.for "hello-text"
+    Opacity.for "helloTextAnim"
         >> Opacity.to 1
         >> Opacity.duration 5000
         >> Opacity.build
@@ -68,7 +63,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         TriggerAnimation ->
-            ( { model | state = Animating }
+            ( { model | animState = Transitions.fireAndForget fadeIn }
             , Cmd.none
             )
 
@@ -79,16 +74,6 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    let
-        animState =
-            case model.state of
-                Idle ->
-                    Transitions.init
-                        [ Opacity.init "hello-text" 0 ]
-
-                Animating ->
-                    Transitions.fireAndForget fadeIn
-    in
     div
         [ style "display" "flex"
         , style "align-items" "center"
@@ -99,6 +84,6 @@ view model =
         , style "width" "100vw"
         ]
         [ div
-            (Transitions.attributes "hello-text" animState)
+            (Transitions.attributes "helloTextAnim" model.animState)
             [ text "Hello World!" ]
         ]

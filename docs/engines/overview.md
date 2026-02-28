@@ -49,17 +49,13 @@ This page covers the shared patterns. For engine-specific details, see:
 
 ### Initialization
 
-All engines use `Engine.init` to create the initial `AnimState`. You can optionally pass property initializers to set starting values:
+All engines use `Engine.init` to create the initial `AnimState`. Pass property initializers to set starting values for animated elements:
 
 ??? example "View Source Code"
 
     === "Transitions"
 
         ```elm
-        -- Empty state
-        animState = Transitions.init []
-
-        -- With initial values
         animState =
             Transitions.init
                 [ Opacity.init "box" 0
@@ -70,10 +66,6 @@ All engines use `Engine.init` to create the initial `AnimState`. You can optiona
     === "Keyframes"  
 
         ```elm
-        -- Empty state
-        animState = Keyframes.init []
-
-        -- With initial values
         animState =
             Keyframes.init
                 [ Opacity.init "box" 0
@@ -84,10 +76,6 @@ All engines use `Engine.init` to create the initial `AnimState`. You can optiona
     === "Sub"  
 
         ```elm
-        -- Empty state
-        animState = Sub.init []
-
-        -- With initial values
         animState =
             Sub.init
                 [ Opacity.init "box" 0
@@ -98,10 +86,6 @@ All engines use `Engine.init` to create the initial `AnimState`. You can optiona
     === "WAAPI"  
 
         ```elm
-        -- Empty state
-        animState = WAAPI.init waapiCommand waapiEvent []
-
-        -- With initial values
         animState =
             Keyframes.init waapiCommand waapiEvent <|
                 [ Opacity.init "box" 0
@@ -114,7 +98,7 @@ All engines use `Engine.init` to create the initial `AnimState`. You can optiona
 
 ### Triggering Animations
 
-All engines provide `animate` for state-tracked animations. There's also `fireAndForget` for one-shot animations, although this isn't available for the Sub Engine because it tracks state automatically:
+All engines provide `animate` for state-tracked animations. There's also `fireAndForget` for one-shot animations, although this isn't available for the Sub Engine because it tracks state by default:
 
 | Function | What It Does |
 | -------- | ------------ |
@@ -171,7 +155,7 @@ All engines provide `animate` for state-tracked animations. There's also `fireAn
         cmd = WAAPI.fireAndForget waapiCommand fadeIn
         ```
 
-        WAAPI needs to send animation data to JS for the Web Animations API to use, so it returns `Cmd`s.
+        WAAPI needs to send animation data to JS for the Web Animations API to use, so `fireAndForget` requires the outgoing port function, and both return a `Cmd` which sends the animation to JS.
 
 ## Building Animations
 
@@ -291,13 +275,14 @@ Transform order affects how combined transforms render. Rotating then translatin
 
 ## Reacting to Animations
 
-All engines provide lifecycle events (`Started`, `Ended`, `Cancelled`, etc.), but the mechanism differs:
+All engines provide lifecycle events (`Started`, `Ended`, `Cancelled`, etc.), which are returned from each Engine's `update` function:
 
 | Engine | Event Mechanism |
 | ------ | --------------- |
-| Transitions, Keyframes | DOM event listeners in view |
-| Sub | Events returned from `update` |
-| WAAPI | Port subscriptions |
+| Transitions | DOM event listeners in view, all events are native |
+| Keyframes | DOM event listeners in view for native, others created by the Engine |
+| Sub | created by the Engine based on internal state |
+| WAAPI | some are native and sent directly from the JavaScript Web Animations API via Port subscriptions, some are created by the Engine |
 
 ### Event Types
 
@@ -308,9 +293,9 @@ All engines provide lifecycle events (`Started`, `Ended`, `Cancelled`, etc.), bu
 | Ended | ✓ | ✓ | ✓ | ✓ |
 | Cancelled | ✓ | ✓ | ✓ | ✓ |
 | Iteration | | ✓ | ✓ | ✓ |
-| Paused | | | ✓ | ✓ |
-| Resumed | | | ✓ | ✓ |
-| Restarted | | | ✓ | ✓ |
+| Paused | | ✓ | ✓ | ✓ |
+| Resumed | | ✓ | ✓ | ✓ |
+| Restarted | | ✓ | ✓ | ✓ |
 | Changed | | | | ✓ |
 
 
@@ -433,6 +418,13 @@ This makes it easy to start simple with Transitions and migrate to Sub or WAAPI 
 
 ## Next Steps
 
-Explore each engine in detail, or check out the scroll engine for smooth scrolling animations.
+Explore each engine in detail:
+
+- [Transitions](transitions.md) — CSS transitions, simplest setup
+- [Keyframes](keyframes.md) — CSS @keyframes, looping and iterations
+- [Sub](sub.md) — Elm subscriptions, full Elm-side control
+- [WAAPI](waapi.md) — Web Animations API, browser-native with JS
+
+Or check out the scroll engine for smooth scrolling animations.
 
 [Scroll Engine →](scroll.md){ .md-button .md-button--primary }

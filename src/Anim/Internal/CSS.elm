@@ -760,10 +760,13 @@ transitionAttributes elementId animationResult =
         styles =
             getElementStyles elementId animationResult
 
-        attrs =
+        styleAttrs =
             List.map (\( prop, value ) -> Html.Attributes.style prop value) styles
+
+        dataAttr =
+            Html.Attributes.attribute "data-anim-group-name" elementId
     in
-    attrs
+    dataAttr :: styleAttrs
 
 
 keyframesStyleNode : AnimState -> Html msg
@@ -900,7 +903,7 @@ generateStartingStyleForElement elementId (AnimState state) =
                     Nothing
 
                 else
-                    Just ("  #" ++ elementId ++ " {\n" ++ String.join "\n" (List.map (\s -> "    " ++ s) allStyles) ++ "\n  }")
+                    Just ("  [data-anim-group-name=\"" ++ elementId ++ "\"] {\n" ++ String.join "\n" (List.map (\s -> "    " ++ s) allStyles) ++ "\n  }")
             )
 
 
