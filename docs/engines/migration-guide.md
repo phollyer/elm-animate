@@ -47,13 +47,13 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Transitions → Keyframes
 
-Keyframes adds looping, pause/resume, and restart capabilities.
+- **Adds**: looping, pause/resume, and restart capabilities
+- **Loses**: mid-flight redirections
 
 **Changes required:**
 
-- Change import from `Anim.Engine.CSS.Transitions` to `Anim.Engine.CSS.Keyframes`
-- Add `Keyframes.styleNode model.animState` to your view (before animated elements)
-- Change types from `Transitions.AnimMsg` / `Transitions.AnimEvent` to `Keyframes.AnimMsg` / `Keyframes.AnimEvent`
+- Change types from `Transitions.*` to `Keyframes.*` (AnimState, AnimMsg, AnimEvent)
+- Add `Keyframes.styleNode model.animState` to your view
 - Update pattern matching for events (Keyframes has `Iteration` event)
 
 ??? example "Before & After"
@@ -61,6 +61,16 @@ Keyframes adds looping, pause/resume, and restart capabilities.
     **Before (Transitions):**
     ```elm
     import Anim.Engine.CSS.Transitions as Transitions
+    import Anim.Opacity as Opacity
+
+    type alias Model =
+        { animState : Transitions.AnimState }
+
+    init : flags -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Transitions.init [ Opacity.init "boxAnim" 0 ] }
+        , Cmd.none
+        )
 
     type Msg
         = GotAnimMsg Transitions.AnimMsg
@@ -78,7 +88,7 @@ Keyframes adds looping, pause/resume, and restart capabilities.
     handleEvent : Transitions.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleEvent event model =
         case event of
-            Transitions.Ended "box" ->
+            Transitions.Ended "boxAnim" ->
                 ( model, Cmd.none )
 
             _ ->
@@ -96,6 +106,16 @@ Keyframes adds looping, pause/resume, and restart capabilities.
     **After (Keyframes):**
     ```elm
     import Anim.Engine.CSS.Keyframes as Keyframes
+    import Anim.Opacity as Opacity
+
+    type alias Model =
+        { animState : Keyframes.AnimState }
+
+    init : flags -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Keyframes.init [ Opacity.init "boxAnim" 0 ] }
+        , Cmd.none
+        )
 
     type Msg
         = GotAnimMsg Keyframes.AnimMsg
@@ -113,10 +133,10 @@ Keyframes adds looping, pause/resume, and restart capabilities.
     handleEvent : Keyframes.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleEvent event model =
         case event of
-            Keyframes.Ended "box" ->
+            Keyframes.Ended "boxAnim" ->
                 ( model, Cmd.none )
 
-            Keyframes.Iteration "box" ->
+            Keyframes.Iteration "boxAnim" ->
                 -- New event type for iterations
                 ( model, Cmd.none )
 
@@ -126,7 +146,7 @@ Keyframes adds looping, pause/resume, and restart capabilities.
     view : Model -> Html Msg
     view model =
         div []
-            [ Keyframes.styleNode model.animState  -- Add this first
+            [ Keyframes.styleNode model.animState
             , div
                 (Keyframes.attributes "box" model.animState
                     ++ Keyframes.events "box" GotAnimMsg
@@ -139,13 +159,13 @@ Keyframes adds looping, pause/resume, and restart capabilities.
 
 ### Transitions → Sub
 
-Sub gives you full Elm-side control and true mid-flight value access.
+- **Adds**: full controls, mid-flight value access, dynamic redirects
+- **Loses**: CSS hardware acceleration
 
 **Changes required:**
 
-- Change import from `Anim.Engine.CSS.Transitions` to `Anim.Engine.Sub`
+- Change types from `Transitions.*` to `Sub.*` (AnimState, AnimMsg, AnimEvent)
 - Add subscriptions function
-- Change message type from `Transitions.AnimMsg` to `Sub.AnimMsg`
 - Update `update` function - events come from `Sub.update` as a `List`, not from DOM
 - Replace `fireAndForget` calls with `animate`
 - Remove event listeners from view (events come via subscription now)
@@ -155,13 +175,19 @@ Sub gives you full Elm-side control and true mid-flight value access.
     **Before (Transitions):**
     ```elm
     import Anim.Engine.CSS.Transitions as Transitions
+    import Anim.Opacity as Opacity
+
+    type alias Model =
+        { animState : Transitions.AnimState }
+
+    init : flags -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Transitions.init [ Opacity.init "boxAnim" 0 ] }
+        , Cmd.none
+        )
 
     type Msg
         = GotAnimMsg Transitions.AnimMsg
-
-    subscriptions : Model -> Sub Msg
-    subscriptions _ =
-        Sub.none
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -176,11 +202,15 @@ Sub gives you full Elm-side control and true mid-flight value access.
     handleEvent : Transitions.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleEvent event model =
         case event of
-            Transitions.Ended "box" ->
+            Transitions.Ended "boxAnim" ->
                 ( model, Cmd.none )
 
             _ ->
                 ( model, Cmd.none )
+
+    subscriptions : Model -> Sub Msg
+    subscriptions _ =
+        Sub.none
 
     view : Model -> Html Msg
     view model =
@@ -194,13 +224,19 @@ Sub gives you full Elm-side control and true mid-flight value access.
     **After (Sub):**
     ```elm
     import Anim.Engine.Sub as Sub
+    import Anim.Opacity as Opacity
+
+    type alias Model =
+        { animState : Sub.AnimState }
+
+    init : flags -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Sub.init [ Opacity.init "boxAnim" 0 ] }
+        , Cmd.none
+        )
 
     type Msg
         = GotAnimMsg Sub.AnimMsg
-
-    subscriptions : Model -> Sub Msg
-    subscriptions model =
-        Sub.subscriptions GotAnimMsg model.animState
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -220,11 +256,15 @@ Sub gives you full Elm-side control and true mid-flight value access.
 
             event :: rest ->
                 case event of
-                    Sub.Ended "box" ->
+                    Sub.Ended "boxAnim" ->
                         handleEvents rest model
 
                     _ ->
                         handleEvents rest model
+
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        Sub.subscriptions GotAnimMsg model.animState
 
     view : Model -> Html Msg
     view model =
@@ -237,12 +277,13 @@ Sub gives you full Elm-side control and true mid-flight value access.
 
 ### Transitions → WAAPI
 
-WAAPI provides browser-native performance with full control capabilities.
+- **Adds**: full controls, mid-flight value access
+- **Loses**: pure Elm (requires JavaScript/ports)
 
 **Changes required:**
 
 - Add JavaScript setup (ports and WAAPI runtime)
-- Change import from `Anim.Engine.CSS.Transitions` to `Anim.Engine.WAAPI`
+- Change types from `Transitions.*` to `WAAPI.*` (AnimState, AnimMsg, AnimEvent)
 - Define port functions and pass to `init`
 - Add subscriptions function
 - Update `animate` calls to handle returned `Cmd`
@@ -255,18 +296,20 @@ WAAPI provides browser-native performance with full control capabilities.
     **Before (Transitions):**
     ```elm
     import Anim.Engine.CSS.Transitions as Transitions
+    import Anim.Opacity as Opacity
+
+    type alias Model =
+        { animState : Transitions.AnimState }
+
+    init : flags -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Transitions.init [ Opacity.init "boxAnim" 0 ] }
+        , Cmd.none
+        )
 
     type Msg
         = GotAnimMsg Transitions.AnimMsg
         | TriggerAnimation
-
-    init : flags -> ( Model, Cmd Msg )
-    init _ =
-        ( { animState = Transitions.init [] }, Cmd.none )
-
-    subscriptions : Model -> Sub Msg
-    subscriptions _ =
-        Sub.none
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -286,11 +329,15 @@ WAAPI provides browser-native performance with full control capabilities.
     handleEvent : Transitions.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleEvent event model =
         case event of
-            Transitions.Ended "box" ->
+            Transitions.Ended "boxAnim" ->
                 ( model, Cmd.none )
 
             _ ->
                 ( model, Cmd.none )
+
+    subscriptions : Model -> Sub Msg
+    subscriptions _ =
+        Sub.none
 
     view : Model -> Html Msg
     view model =
@@ -306,23 +353,30 @@ WAAPI provides browser-native performance with full control capabilities.
     port module Main exposing (..)
 
     import Anim.Engine.WAAPI as WAAPI
+    import Anim.Opacity as Opacity
     import Json.Decode
     import Json.Encode
 
     port waapiCommand : Json.Encode.Value -> Cmd msg
     port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
 
-    type Msg
-        = GotAnimMsg WAAPI.AnimMsg
-        | TriggerAnimation
+    type alias Model =
+        { animState : WAAPI.AnimState }
 
     init : flags -> ( Model, Cmd Msg )
     init _ =
-        ( { animState = WAAPI.init waapiCommand waapiEvent [] }, Cmd.none )
+        ( { animState =
+                WAAPI.init waapiCommand waapiEvent <|
+                    [ WAAPI.forElement "box"
+                        >> Opacity.init "boxAnim" 0
+                    ]
+          }
+        , Cmd.none
+        )
 
-    subscriptions : Model -> Sub Msg
-    subscriptions model =
-        WAAPI.subscriptions GotAnimMsg model.animState
+    type Msg
+        = GotAnimMsg WAAPI.AnimMsg
+        | TriggerAnimation
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -344,12 +398,16 @@ WAAPI provides browser-native performance with full control capabilities.
     handleEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleEvent event model =
         case event of
-            WAAPI.Ended "box" _ _ ->
+            WAAPI.Ended "boxAnim" _ _ ->
                 -- WAAPI events include animationId and EventInfo
                 ( model, Cmd.none )
 
             _ ->
                 ( model, Cmd.none )
+
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        WAAPI.subscriptions GotAnimMsg model.animState
 
     view : Model -> Html Msg
     view model =
@@ -371,12 +429,14 @@ WAAPI provides browser-native performance with full control capabilities.
 
 ### Keyframes → Sub
 
+- **Adds**: mid-flight value access, dynamic redirects
+- **Loses**: CSS hardware acceleration
+
 **Changes required:**
 
-- Change import from `Anim.Engine.CSS.Keyframes` to `Anim.Engine.Sub`
+- Change types from `Keyframes.*` to `Sub.*` (AnimState, AnimMsg, AnimEvent)
 - Remove `Keyframes.styleNode` from view
 - Add subscriptions function
-- Change message type from `Keyframes.AnimMsg` to `Sub.AnimMsg`
 - Update `update` function - events come as a `List` now
 - Replace `fireAndForget` calls with `animate`
 - Remove event listeners from view
@@ -386,13 +446,19 @@ WAAPI provides browser-native performance with full control capabilities.
     **Before (Keyframes):**
     ```elm
     import Anim.Engine.CSS.Keyframes as Keyframes
+    import Anim.Opacity as Opacity
+
+    type alias Model =
+        { animState : Keyframes.AnimState }
+
+    init : flags -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Keyframes.init [ Opacity.init "boxAnim" 0 ] }
+        , Cmd.none
+        )
 
     type Msg
         = GotAnimMsg Keyframes.AnimMsg
-
-    subscriptions : Model -> Sub Msg
-    subscriptions _ =
-        Sub.none
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -403,6 +469,19 @@ WAAPI provides browser-native performance with full control capabilities.
                         Keyframes.update animMsg model.animState
                 in
                 handleEvent event { model | animState = newAnimState }
+
+    handleEvent : Keyframes.AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleEvent event model =
+        case event of
+            Keyframes.Ended "boxAnim" ->
+                ( model, Cmd.none )
+
+            _ ->
+                ( model, Cmd.none )
+
+    subscriptions : Model -> Sub Msg
+    subscriptions _ =
+        Sub.none
 
     view : Model -> Html Msg
     view model =
@@ -419,13 +498,19 @@ WAAPI provides browser-native performance with full control capabilities.
     **After (Sub):**
     ```elm
     import Anim.Engine.Sub as Sub
+    import Anim.Opacity as Opacity
+
+    type alias Model =
+        { animState : Sub.AnimState }
+
+    init : flags -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Sub.init [ Opacity.init "boxAnim" 0 ] }
+        , Cmd.none
+        )
 
     type Msg
         = GotAnimMsg Sub.AnimMsg
-
-    subscriptions : Model -> Sub Msg
-    subscriptions model =
-        Sub.subscriptions GotAnimMsg model.animState
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -436,6 +521,24 @@ WAAPI provides browser-native performance with full control capabilities.
                         Sub.update animMsg model.animState
                 in
                 handleEvents events { model | animState = newAnimState }
+
+    handleEvents : List Sub.AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleEvents events model =
+        case events of
+            [] ->
+                ( model, Cmd.none )
+
+            event :: rest ->
+                case event of
+                    Sub.Ended "boxAnim" ->
+                        handleEvents rest model
+
+                    _ ->
+                        handleEvents rest model
+
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        Sub.subscriptions GotAnimMsg model.animState
 
     view : Model -> Html Msg
     view model =
@@ -448,10 +551,13 @@ WAAPI provides browser-native performance with full control capabilities.
 
 ### Keyframes → WAAPI
 
+- **Adds**: mid-flight value access, dynamic redirects
+- **Loses**: pure Elm (requires JavaScript/ports)
+
 **Changes required:**
 
 - Add JavaScript setup (ports and WAAPI runtime)
-- Change import from `Anim.Engine.CSS.Keyframes` to `Anim.Engine.WAAPI`
+- Change types from `Keyframes.*` to `WAAPI.*` (AnimState, AnimMsg, AnimEvent)
 - Remove `Keyframes.styleNode` from view
 - Define port functions and pass to `init`
 - Add subscriptions function
@@ -465,18 +571,20 @@ WAAPI provides browser-native performance with full control capabilities.
     **Before (Keyframes):**
     ```elm
     import Anim.Engine.CSS.Keyframes as Keyframes
+    import Anim.Opacity as Opacity
+
+    type alias Model =
+        { animState : Keyframes.AnimState }
+
+    init : flags -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Keyframes.init [ Opacity.init "boxAnim" 0 ] }
+        , Cmd.none
+        )
 
     type Msg
         = GotAnimMsg Keyframes.AnimMsg
         | TriggerAnimation
-
-    init : flags -> ( Model, Cmd Msg )
-    init _ =
-        ( { animState = Keyframes.init [] }, Cmd.none )
-
-    subscriptions : Model -> Sub Msg
-    subscriptions _ =
-        Sub.none
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -492,6 +600,10 @@ WAAPI provides browser-native performance with full control capabilities.
                 ( { model | animState = Keyframes.animate model.animState fadeIn }
                 , Cmd.none
                 )
+
+    subscriptions : Model -> Sub Msg
+    subscriptions _ =
+        Sub.none
 
     view : Model -> Html Msg
     view model =
@@ -510,23 +622,30 @@ WAAPI provides browser-native performance with full control capabilities.
     port module Main exposing (..)
 
     import Anim.Engine.WAAPI as WAAPI
+    import Anim.Opacity as Opacity
     import Json.Decode
     import Json.Encode
 
     port waapiCommand : Json.Encode.Value -> Cmd msg
     port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
 
-    type Msg
-        = GotAnimMsg WAAPI.AnimMsg
-        | TriggerAnimation
+    type alias Model =
+        { animState : WAAPI.AnimState }
 
     init : flags -> ( Model, Cmd Msg )
     init _ =
-        ( { animState = WAAPI.init waapiCommand waapiEvent [] }, Cmd.none )
+        ( { animState =
+                WAAPI.init waapiCommand waapiEvent <|
+                    [ WAAPI.forElement "box"
+                        >> Opacity.init "boxAnim" 0
+                    ]
+          }
+        , Cmd.none
+        )
 
-    subscriptions : Model -> Sub Msg
-    subscriptions model =
-        WAAPI.subscriptions GotAnimMsg model.animState
+    type Msg
+        = GotAnimMsg WAAPI.AnimMsg
+        | TriggerAnimation
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -544,6 +663,10 @@ WAAPI provides browser-native performance with full control capabilities.
                         WAAPI.animate model.animState fadeIn
                 in
                 ( { model | animState = newAnimState }, cmd )
+
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        WAAPI.subscriptions GotAnimMsg model.animState
 
     view : Model -> Html Msg
     view model =
@@ -565,10 +688,13 @@ WAAPI provides browser-native performance with full control capabilities.
 
 ### Sub → WAAPI
 
+- **Adds**: browser-native interpolation
+- **Loses**: pure Elm (requires JavaScript/ports)
+
 **Changes required:**
 
 - Add JavaScript setup (ports and WAAPI runtime)
-- Change import from `Anim.Engine.Sub` to `Anim.Engine.WAAPI`
+- Change types from `Sub.*` to `WAAPI.*` (AnimState, AnimMsg, AnimEvent)
 - Define port functions and update `init`
 - Update subscriptions to use `WAAPI.subscriptions`
 - Update `animate` calls to handle returned `Cmd`
@@ -579,18 +705,20 @@ WAAPI provides browser-native performance with full control capabilities.
     **Before (Sub):**
     ```elm
     import Anim.Engine.Sub as Sub
+    import Anim.Opacity as Opacity
+
+    type alias Model =
+        { animState : Sub.AnimState }
+
+    init : flags -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Sub.init [ Opacity.init "boxAnim" 0 ] }
+        , Cmd.none
+        )
 
     type Msg
         = GotAnimMsg Sub.AnimMsg
         | TriggerAnimation
-
-    init : flags -> ( Model, Cmd Msg )
-    init _ =
-        ( { animState = Sub.init [] }, Cmd.none )
-
-    subscriptions : Model -> Sub Msg
-    subscriptions model =
-        Sub.subscriptions GotAnimMsg model.animState
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -607,6 +735,10 @@ WAAPI provides browser-native performance with full control capabilities.
                 , Cmd.none
                 )
 
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        Sub.subscriptions GotAnimMsg model.animState
+
     view : Model -> Html Msg
     view model =
         div
@@ -619,23 +751,30 @@ WAAPI provides browser-native performance with full control capabilities.
     port module Main exposing (..)
 
     import Anim.Engine.WAAPI as WAAPI
+    import Anim.Opacity as Opacity
     import Json.Decode
     import Json.Encode
 
     port waapiCommand : Json.Encode.Value -> Cmd msg
     port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
 
-    type Msg
-        = GotAnimMsg WAAPI.AnimMsg
-        | TriggerAnimation
+    type alias Model =
+        { animState : WAAPI.AnimState }
 
     init : flags -> ( Model, Cmd Msg )
     init _ =
-        ( { animState = WAAPI.init waapiCommand waapiEvent [] }, Cmd.none )
+        ( { animState =
+                WAAPI.init waapiCommand waapiEvent <|
+                    [ WAAPI.forElement "box"
+                        >> Opacity.init "boxAnim" 0
+                    ]
+          }
+        , Cmd.none
+        )
 
-    subscriptions : Model -> Sub Msg
-    subscriptions model =
-        WAAPI.subscriptions GotAnimMsg model.animState
+    type Msg
+        = GotAnimMsg WAAPI.AnimMsg
+        | TriggerAnimation
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -653,6 +792,10 @@ WAAPI provides browser-native performance with full control capabilities.
                         WAAPI.animate model.animState fadeIn
                 in
                 ( { model | animState = newAnimState }, cmd )
+
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        WAAPI.subscriptions GotAnimMsg model.animState
 
     view : Model -> Html Msg
     view model =
@@ -677,12 +820,13 @@ WAAPI provides browser-native performance with full control capabilities.
 
 ### WAAPI → Sub
 
-Remove JavaScript dependency while keeping full Elm-side control.
+- **Adds**: pure Elm (no JavaScript dependency)
+- **Loses**: browser-native interpolation
 
 **Changes required:**
 
 - Remove JavaScript setup (ports and WAAPI runtime)
-- Change import from `Anim.Engine.WAAPI` to `Anim.Engine.Sub`
+- Change types from `WAAPI.*` to `Sub.*` (AnimState, AnimMsg, AnimEvent)
 - Remove port functions from `init`
 - Update subscriptions to use `Sub.subscriptions`
 - Update `animate` calls - no longer returns `Cmd`
@@ -696,23 +840,30 @@ Remove JavaScript dependency while keeping full Elm-side control.
     port module Main exposing (..)
 
     import Anim.Engine.WAAPI as WAAPI
+    import Anim.Opacity as Opacity
     import Json.Decode
     import Json.Encode
 
     port waapiCommand : Json.Encode.Value -> Cmd msg
     port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
 
-    type Msg
-        = GotAnimMsg WAAPI.AnimMsg
-        | TriggerAnimation
+    type alias Model =
+        { animState : WAAPI.AnimState }
 
     init : flags -> ( Model, Cmd Msg )
     init _ =
-        ( { animState = WAAPI.init waapiCommand waapiEvent [] }, Cmd.none )
+        ( { animState =
+                WAAPI.init waapiCommand waapiEvent <|
+                    [ WAAPI.forElement "box"
+                        >> Opacity.init "boxAnim" 0
+                    ]
+          }
+        , Cmd.none
+        )
 
-    subscriptions : Model -> Sub Msg
-    subscriptions model =
-        WAAPI.subscriptions GotAnimMsg model.animState
+    type Msg
+        = GotAnimMsg WAAPI.AnimMsg
+        | TriggerAnimation
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -731,6 +882,10 @@ Remove JavaScript dependency while keeping full Elm-side control.
                 in
                 ( { model | animState = newAnimState }, cmd )
 
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        WAAPI.subscriptions GotAnimMsg model.animState
+
     view : Model -> Html Msg
     view model =
         div
@@ -743,18 +898,20 @@ Remove JavaScript dependency while keeping full Elm-side control.
     module Main exposing (..)  -- No longer a port module
 
     import Anim.Engine.Sub as Sub
+    import Anim.Opacity as Opacity
+
+    type alias Model =
+        { animState : Sub.AnimState }
+
+    init : flags -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Sub.init [ Opacity.init "boxAnim" 0 ] }
+        , Cmd.none
+        )
 
     type Msg
         = GotAnimMsg Sub.AnimMsg
         | TriggerAnimation
-
-    init : flags -> ( Model, Cmd Msg )
-    init _ =
-        ( { animState = Sub.init [] }, Cmd.none )
-
-    subscriptions : Model -> Sub Msg
-    subscriptions model =
-        Sub.subscriptions GotAnimMsg model.animState
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -771,6 +928,10 @@ Remove JavaScript dependency while keeping full Elm-side control.
                 , Cmd.none
                 )
 
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        Sub.subscriptions GotAnimMsg model.animState
+
     view : Model -> Html Msg
     view model =
         div
@@ -782,12 +943,13 @@ Remove JavaScript dependency while keeping full Elm-side control.
 
 ### WAAPI → Keyframes
 
-Remove JavaScript and subscriptions, use CSS @keyframes.
+- **Adds**: pure Elm, no subscriptions, CSS hardware acceleration
+- **Loses**: runtime control (pause/resume during playback)
 
 **Changes required:**
 
 - Remove JavaScript setup (ports and WAAPI runtime)
-- Change import from `Anim.Engine.WAAPI` to `Anim.Engine.CSS.Keyframes`
+- Change types from `WAAPI.*` to `Keyframes.*` (AnimState, AnimMsg, AnimEvent)
 - Remove port functions from `init`
 - Remove subscriptions (or set to `Sub.none`)
 - Add `Keyframes.styleNode model.animState` to view
@@ -802,21 +964,28 @@ Remove JavaScript and subscriptions, use CSS @keyframes.
     port module Main exposing (..)
 
     import Anim.Engine.WAAPI as WAAPI
+    import Anim.Opacity as Opacity
 
     port waapiCommand : Json.Encode.Value -> Cmd msg
     port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
 
-    type Msg
-        = GotAnimMsg WAAPI.AnimMsg
-        | TriggerAnimation
+    type alias Model =
+        { animState : WAAPI.AnimState }
 
     init : flags -> ( Model, Cmd Msg )
     init _ =
-        ( { animState = WAAPI.init waapiCommand waapiEvent [] }, Cmd.none )
+        ( { animState =
+                WAAPI.init waapiCommand waapiEvent <|
+                    [ WAAPI.forElement "box"
+                        >> Opacity.init "boxAnim" 0
+                    ]
+          }
+        , Cmd.none
+        )
 
-    subscriptions : Model -> Sub Msg
-    subscriptions model =
-        WAAPI.subscriptions GotAnimMsg model.animState
+    type Msg
+        = GotAnimMsg WAAPI.AnimMsg
+        | TriggerAnimation
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -835,6 +1004,10 @@ Remove JavaScript and subscriptions, use CSS @keyframes.
                 in
                 ( { model | animState = newAnimState }, cmd )
 
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        WAAPI.subscriptions GotAnimMsg model.animState
+
     view : Model -> Html Msg
     view model =
         div
@@ -847,18 +1020,20 @@ Remove JavaScript and subscriptions, use CSS @keyframes.
     module Main exposing (..)  -- No longer a port module
 
     import Anim.Engine.CSS.Keyframes as Keyframes
+    import Anim.Opacity as Opacity
+
+    type alias Model =
+        { animState : Keyframes.AnimState }
+
+    init : flags -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Keyframes.init [ Opacity.init "boxAnim" 0 ] }
+        , Cmd.none
+        )
 
     type Msg
         = GotAnimMsg Keyframes.AnimMsg
         | TriggerAnimation
-
-    init : flags -> ( Model, Cmd Msg )
-    init _ =
-        ( { animState = Keyframes.init [] }, Cmd.none )
-
-    subscriptions : Model -> Sub Msg
-    subscriptions _ =
-        Sub.none
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -874,6 +1049,10 @@ Remove JavaScript and subscriptions, use CSS @keyframes.
                 ( { model | animState = Keyframes.animate model.animState fadeIn }
                 , Cmd.none
                 )
+
+    subscriptions : Model -> Sub Msg
+    subscriptions _ =
+        Sub.none
 
     view : Model -> Html Msg
     view model =
@@ -891,18 +1070,18 @@ Remove JavaScript and subscriptions, use CSS @keyframes.
 
 ### WAAPI → Transitions
 
-Simplest possible setup - no JavaScript, no subscriptions, no styleNode.
+- **Adds**: pure Elm, simplest setup
+- **Loses**: looping, pause/resume, restart capabilities
 
 **Changes required:**
 
 - Remove JavaScript setup (ports and WAAPI runtime)
-- Change import from `Anim.Engine.WAAPI` to `Anim.Engine.CSS.Transitions`
+- Change types from `WAAPI.*` to `Transitions.*` (AnimState, AnimMsg, AnimEvent)
 - Remove port functions from `init`
 - Remove subscriptions (or set to `Sub.none`)
 - Add event listeners to view
 - Update `animate` calls - no longer returns `Cmd`
 - Update event handling - events come from DOM, not ports
-- Note: Loses looping/iterations capability
 
 ??? example "Before & After"
 
@@ -911,21 +1090,28 @@ Simplest possible setup - no JavaScript, no subscriptions, no styleNode.
     port module Main exposing (..)
 
     import Anim.Engine.WAAPI as WAAPI
+    import Anim.Opacity as Opacity
 
     port waapiCommand : Json.Encode.Value -> Cmd msg
     port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
 
-    type Msg
-        = GotAnimMsg WAAPI.AnimMsg
-        | TriggerAnimation
+    type alias Model =
+        { animState : WAAPI.AnimState }
 
     init : flags -> ( Model, Cmd Msg )
     init _ =
-        ( { animState = WAAPI.init waapiCommand waapiEvent [] }, Cmd.none )
+        ( { animState =
+                WAAPI.init waapiCommand waapiEvent <|
+                    [ WAAPI.forElement "box"
+                        >> Opacity.init "boxAnim" 0
+                    ]
+          }
+        , Cmd.none
+        )
 
-    subscriptions : Model -> Sub Msg
-    subscriptions model =
-        WAAPI.subscriptions GotAnimMsg model.animState
+    type Msg
+        = GotAnimMsg WAAPI.AnimMsg
+        | TriggerAnimation
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -936,6 +1122,10 @@ Simplest possible setup - no JavaScript, no subscriptions, no styleNode.
                         WAAPI.animate model.animState fadeIn
                 in
                 ( { model | animState = newAnimState }, cmd )
+
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        WAAPI.subscriptions GotAnimMsg model.animState
 
     view : Model -> Html Msg
     view model =
@@ -949,18 +1139,20 @@ Simplest possible setup - no JavaScript, no subscriptions, no styleNode.
     module Main exposing (..)  -- No longer a port module
 
     import Anim.Engine.CSS.Transitions as Transitions
+    import Anim.Opacity as Opacity
+
+    type alias Model =
+        { animState : Transitions.AnimState }
+
+    init : flags -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Transitions.init [ Opacity.init "boxAnim" 0 ] }
+        , Cmd.none
+        )
 
     type Msg
         = GotAnimMsg Transitions.AnimMsg
         | TriggerAnimation
-
-    init : flags -> ( Model, Cmd Msg )
-    init _ =
-        ( { animState = Transitions.init [] }, Cmd.none )
-
-    subscriptions : Model -> Sub Msg
-    subscriptions _ =
-        Sub.none
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -977,6 +1169,10 @@ Simplest possible setup - no JavaScript, no subscriptions, no styleNode.
                 , Cmd.none
                 )
 
+    subscriptions : Model -> Sub Msg
+    subscriptions _ =
+        Sub.none
+
     view : Model -> Html Msg
     view model =
         div
@@ -990,30 +1186,36 @@ Simplest possible setup - no JavaScript, no subscriptions, no styleNode.
 
 ### Sub → Keyframes
 
-Remove subscriptions, use CSS @keyframes instead.
+- **Adds**: CSS hardware acceleration, no subscriptions
+- **Loses**: mid-flight value access
 
 **Changes required:**
 
-- Change import from `Anim.Engine.Sub` to `Anim.Engine.CSS.Keyframes`
+- Change types from `Sub.*` to `Keyframes.*` (AnimState, AnimMsg, AnimEvent)
 - Remove subscriptions (or set to `Sub.none`)
 - Add `Keyframes.styleNode model.animState` to view
 - Add event listeners to view
 - Update `update` function - single event instead of list
-- Note: Loses mid-flight value access (`get*Current` functions)
 
 ??? example "Before & After"
 
     **Before (Sub):**
     ```elm
     import Anim.Engine.Sub as Sub
+    import Anim.Opacity as Opacity
+
+    type alias Model =
+        { animState : Sub.AnimState }
+
+    init : flags -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Sub.init [ Opacity.init "boxAnim" 0 ] }
+        , Cmd.none
+        )
 
     type Msg
         = GotAnimMsg Sub.AnimMsg
         | TriggerAnimation
-
-    subscriptions : Model -> Sub Msg
-    subscriptions model =
-        Sub.subscriptions GotAnimMsg model.animState
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -1030,6 +1232,10 @@ Remove subscriptions, use CSS @keyframes instead.
                 , Cmd.none
                 )
 
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        Sub.subscriptions GotAnimMsg model.animState
+
     view : Model -> Html Msg
     view model =
         div
@@ -1040,14 +1246,20 @@ Remove subscriptions, use CSS @keyframes instead.
     **After (Keyframes):**
     ```elm
     import Anim.Engine.CSS.Keyframes as Keyframes
+    import Anim.Opacity as Opacity
+
+    type alias Model =
+        { animState : Keyframes.AnimState }
+
+    init : flags -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Keyframes.init [ Opacity.init "boxAnim" 0 ] }
+        , Cmd.none
+        )
 
     type Msg
         = GotAnimMsg Keyframes.AnimMsg
         | TriggerAnimation
-
-    subscriptions : Model -> Sub Msg
-    subscriptions _ =
-        Sub.none
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -1063,6 +1275,10 @@ Remove subscriptions, use CSS @keyframes instead.
                 ( { model | animState = Keyframes.animate model.animState fadeIn }
                 , Cmd.none
                 )
+
+    subscriptions : Model -> Sub Msg
+    subscriptions _ =
+        Sub.none
 
     view : Model -> Html Msg
     view model =
@@ -1080,29 +1296,35 @@ Remove subscriptions, use CSS @keyframes instead.
 
 ### Sub → Transitions
 
-Simplest setup - no subscriptions, no styleNode.
+- **Adds**: simplest setup, CSS hardware acceleration
+- **Loses**: mid-flight value access, looping capabilities
 
 **Changes required:**
 
-- Change import from `Anim.Engine.Sub` to `Anim.Engine.CSS.Transitions`
+- Change types from `Sub.*` to `Transitions.*` (AnimState, AnimMsg, AnimEvent)
 - Remove subscriptions (or set to `Sub.none`)
 - Add event listeners to view
 - Update `update` function - single event instead of list
-- Note: Loses mid-flight value access and looping/iterations
 
 ??? example "Before & After"
 
     **Before (Sub):**
     ```elm
     import Anim.Engine.Sub as Sub
+    import Anim.Opacity as Opacity
+
+    type alias Model =
+        { animState : Sub.AnimState }
+
+    init : flags -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Sub.init [ Opacity.init "boxAnim" 0 ] }
+        , Cmd.none
+        )
 
     type Msg
         = GotAnimMsg Sub.AnimMsg
         | TriggerAnimation
-
-    subscriptions : Model -> Sub Msg
-    subscriptions model =
-        Sub.subscriptions GotAnimMsg model.animState
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -1119,6 +1341,10 @@ Simplest setup - no subscriptions, no styleNode.
                 , Cmd.none
                 )
 
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        Sub.subscriptions GotAnimMsg model.animState
+
     view : Model -> Html Msg
     view model =
         div
@@ -1129,14 +1355,20 @@ Simplest setup - no subscriptions, no styleNode.
     **After (Transitions):**
     ```elm
     import Anim.Engine.CSS.Transitions as Transitions
+    import Anim.Opacity as Opacity
+
+    type alias Model =
+        { animState : Transitions.AnimState }
+
+    init : flags -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Transitions.init [ Opacity.init "boxAnim" 0 ] }
+        , Cmd.none
+        )
 
     type Msg
         = GotAnimMsg Transitions.AnimMsg
         | TriggerAnimation
-
-    subscriptions : Model -> Sub Msg
-    subscriptions _ =
-        Sub.none
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -1153,6 +1385,10 @@ Simplest setup - no subscriptions, no styleNode.
                 , Cmd.none
                 )
 
+    subscriptions : Model -> Sub Msg
+    subscriptions _ =
+        Sub.none
+
     view : Model -> Html Msg
     view model =
         div
@@ -1166,21 +1402,30 @@ Simplest setup - no subscriptions, no styleNode.
 
 ### Keyframes → Transitions
 
-Simplest setup - remove styleNode.
+- **Adds**: dynamic redirects
+- **Loses**: looping, pause/resume, restart capabilities
 
 **Changes required:**
 
-- Change import from `Anim.Engine.CSS.Keyframes` to `Anim.Engine.CSS.Transitions`
+- Change types from `Keyframes.*` to `Transitions.*` (AnimState, AnimMsg, AnimEvent)
 - Remove `Keyframes.styleNode` from view
-- Change types from `Keyframes.AnimMsg` / `Keyframes.AnimEvent` to `Transitions.AnimMsg` / `Transitions.AnimEvent`
 - Update pattern matching - remove `Iteration` event handling
-- Note: Loses looping/iterations capability
 
 ??? example "Before & After"
 
     **Before (Keyframes):**
     ```elm
     import Anim.Engine.CSS.Keyframes as Keyframes
+    import Anim.Opacity as Opacity
+
+    type alias Model =
+        { animState : Keyframes.AnimState }
+
+    init : flags -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Keyframes.init [ Opacity.init "boxAnim" 0 ] }
+        , Cmd.none
+        )
 
     type Msg
         = GotAnimMsg Keyframes.AnimMsg
@@ -1204,10 +1449,10 @@ Simplest setup - remove styleNode.
     handleEvent : Keyframes.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleEvent event model =
         case event of
-            Keyframes.Ended "box" ->
+            Keyframes.Ended "boxAnim" ->
                 ( model, Cmd.none )
 
-            Keyframes.Iteration "box" ->
+            Keyframes.Iteration "boxAnim" ->
                 ( model, Cmd.none )
 
             _ ->
@@ -1228,6 +1473,16 @@ Simplest setup - remove styleNode.
     **After (Transitions):**
     ```elm
     import Anim.Engine.CSS.Transitions as Transitions
+    import Anim.Opacity as Opacity
+
+    type alias Model =
+        { animState : Transitions.AnimState }
+
+    init : flags -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Transitions.init [ Opacity.init "boxAnim" 0 ] }
+        , Cmd.none
+        )
 
     type Msg
         = GotAnimMsg Transitions.AnimMsg
@@ -1251,7 +1506,7 @@ Simplest setup - remove styleNode.
     handleEvent : Transitions.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleEvent event model =
         case event of
-            Transitions.Ended "box" ->
+            Transitions.Ended "boxAnim" ->
                 ( model, Cmd.none )
 
             _ ->
@@ -1308,7 +1563,7 @@ Sub's `update` returns a list of events (multiple properties can complete simult
             Sub.update animMsg model.animState
     in
     case List.head events of
-        Just (Sub.Ended "box") -> ...
+        Just (Sub.Ended "boxAnim") -> ...
 
     -- Correct - handles all events
     handleEvents events { model | animState = newAnimState }
