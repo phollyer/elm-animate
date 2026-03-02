@@ -1,5 +1,10 @@
 # CSS Keyframes Engine
 
+!!! info "Prerequisites"
+    This page assumes you've completed [Getting Started](../getting-started/installation.md) and are familiar with [animation concepts](../concepts/controlling-animations.md) like the builder pattern, AnimState, and property initializers.
+
+    It focuses on what makes this Engine different, read [Engines Overview](overview.md) for how to use the features that are shared across all Engines.
+
 The CSS Keyframes Engine uses native browser CSS `@keyframes` animations for complex animations with iterations, looping, and pause/resume control. The browser handles all rendering, providing excellent performance.
 
 ## Basic Usage
@@ -11,6 +16,66 @@ The CSS Keyframes Engine uses native browser CSS `@keyframes` animations for com
     ```
 
 [:material-play-circle: Run this example](../examples/src/Engines/Keyframes/BasicUsage/index.html){ .md-button target="_blank" }
+
+
+## Keyframes Style Node
+
+Keyframe animations require a `<style>` node to define the `@keyframes` rules. Include this in your view:
+
+??? example "View Source Code"
+
+    ```elm
+    view : Model -> Html Msg
+    view model =
+        div []
+            [ Keyframes.styleNode model.animState
+            , div
+                (Keyframes.attributes "boxAnim" model.animState)
+                [ ... ]
+            ]
+    ```
+
+    Or for a specific animation group:
+
+    ```elm
+    Keyframes.styleNodeFor "boxAnim" model.animState
+    ```
+
+!!! tip "Positioning the `style` node"
+    Keyframe animations restart whenever the browser re-renders their `<style>` node.
+
+    Place `styleNode` in a stable part of your DOM — ideally near the root, outside any conditionally-rendered elements or frequently-updating regions.
+
+## Iterations and Looping
+
+### Fixed Iterations
+
+Run an animation a specific number of times:
+
+??? example "View Source Code"
+
+    ```elm
+    Keyframes.animate model.animState <|
+        Keyframes.iterations 3 
+            >> bounceAnimation
+    ```
+
+### Infinite Looping
+
+Run an animation forever:
+
+??? example "View Source Code"
+
+    ```elm
+    Keyframes.animate model.animState <|
+        Keyframes.loopForever 
+            >> pulseAnimation
+    ```
+
+!!! tip "Tracking Iterations"
+
+    You can keep track of the number of iterations/loops with the `Iteration` event.
+
 
 ## Control Functions
 
@@ -26,7 +91,7 @@ CSS Keyframes support the following control functions:
 
 ### Event Variants
 
-For `restart`, `pause`, and `resume`, there are also `*Cmd` variants that produce events:
+Restarting, pausing and resuming do not produce native events. So in order to keep animation logic in one place the Engine provides the following functions which do produce events you can react to.
 
 | Function | Produces Event |
 | -------- | -------------- |
@@ -131,62 +196,6 @@ CSS animations don't natively fire DOM events for pause/resume/restart. To recei
 | `Paused` | `pauseCmd` is called |
 | `Resumed` | `resumeCmd` is called |
 | `Restarted` | `restartCmd` is called |
-
-
-## Keyframes Style Node
-
-Keyframe animations require a `<style>` node to define the `@keyframes` rules. Include this in your view:
-
-??? example "View Source Code"
-
-    ```elm
-    view model =
-        div []
-            [ Keyframes.styleNode model.animState
-            , div
-                (Keyframes.attributes "box" model.animState)
-                [ ... ]
-            ]
-    ```
-
-    Or for a specific element:
-
-    ```elm
-    Keyframes.styleNodeFor "box" model.animState
-    ```
-
-!!! tip "Positioning the `style` node"
-    Keyframe animations restart whenever the browser re-renders their `<style>` node.
-
-    Place `styleNode` in a stable part of your DOM — ideally near the root, outside any conditionally-rendered elements or frequently-updating regions.
-
-## Iterations and Looping
-
-### Fixed Iterations
-
-Run an animation a specific number of times:
-
-??? example "View Source Code"
-
-    ```elm
-    Keyframes.animate model.animState <|
-        (Keyframes.iterations 3 >> bounceAnimation)
-    ```
-
-### Infinite Looping
-
-Run an animation forever:
-
-??? example "View Source Code"
-
-    ```elm
-    Keyframes.animate model.animState <|
-        (Keyframes.loopForever >> pulseAnimation)
-    ```
-
-!!! tip "Tracking Iterations"
-
-    You can keep track of the number of iterations/loops with the `Iteration` `AnimEvent`
 
 ## Shared Features
 

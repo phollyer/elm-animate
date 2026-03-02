@@ -1,8 +1,9 @@
 module Anim.Engine.CSS.Transitions exposing
     ( AnimState, init
     , attributes
-    , AnimMsg, AnimEvent(..), update, events
+    , AnimMsg, AnimEvent(..), update, events, eventsStopPropagation
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
+    , onTransitionStartStopPropagation, onTransitionEndStopPropagation, onTransitionRunStopPropagation, onTransitionCancelStopPropagation
     , AnimBuilder, animate, fireAndForget, TransformOrder(..), animateOrder, fireAndForgetOrder
     , duration, speed
     , easing
@@ -54,11 +55,15 @@ Apply transition styles to your elements
 CSS transitions trigger events at various stages of their lifecycle.
 Use these events to keep your [AnimState](#AnimState) in sync.
 
-@docs AnimMsg, AnimEvent, update, events
+@docs AnimMsg, AnimEvent, update, events, eventsStopPropagation
 
 For more granular control over which events to handle:
 
 @docs onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
+
+To stop event propagation (for nested animated elements):
+
+@docs onTransitionStartStopPropagation, onTransitionEndStopPropagation, onTransitionRunStopPropagation, onTransitionCancelStopPropagation
 
 
 # Execute
@@ -555,6 +560,58 @@ onTransitionRun =
 onTransitionCancel : msg -> Html.Attribute msg
 onTransitionCancel =
     InternalCSS.onTransitionCancel
+
+
+{-| Like [onTransitionStart](#onTransitionStart) but stops event propagation.
+Use this to prevent events from bubbling up to parent elements with listeners.
+-}
+onTransitionStartStopPropagation : msg -> Html.Attribute msg
+onTransitionStartStopPropagation =
+    InternalCSS.onTransitionStartStopPropagation
+
+
+{-| Like [onTransitionEnd](#onTransitionEnd) but stops event propagation.
+Use this to prevent events from bubbling up to parent elements with listeners.
+-}
+onTransitionEndStopPropagation : msg -> Html.Attribute msg
+onTransitionEndStopPropagation =
+    InternalCSS.onTransitionEndStopPropagation
+
+
+{-| Like [onTransitionRun](#onTransitionRun) but stops event propagation.
+Use this to prevent events from bubbling up to parent elements with listeners.
+-}
+onTransitionRunStopPropagation : msg -> Html.Attribute msg
+onTransitionRunStopPropagation =
+    InternalCSS.onTransitionRunStopPropagation
+
+
+{-| Like [onTransitionCancel](#onTransitionCancel) but stops event propagation.
+Use this to prevent events from bubbling up to parent elements with listeners.
+-}
+onTransitionCancelStopPropagation : msg -> Html.Attribute msg
+onTransitionCancelStopPropagation =
+    InternalCSS.onTransitionCancelStopPropagation
+
+
+{-| All transition event handlers with propagation stopped.
+Use this to prevent events from bubbling up to parent elements with listeners.
+
+    div
+        (Transitions.attributes "myElement" model.animState
+            ++ Transitions.eventsStopPropagation "myElement" TransitionMsg
+        )
+        [ text "Animated element" ]
+
+-}
+eventsStopPropagation : String -> (AnimMsg -> msg) -> List (Html.Attribute msg)
+eventsStopPropagation elementId toMsg =
+    List.map (Html.Attributes.map toMsg) <|
+        [ onTransitionStartStopPropagation (AnimMsg (InternalStarted elementId))
+        , onTransitionEndStopPropagation (AnimMsg (InternalEnded elementId))
+        , onTransitionRunStopPropagation (AnimMsg (InternalRun elementId))
+        , onTransitionCancelStopPropagation (AnimMsg (InternalCancelled elementId))
+        ]
 
 
 

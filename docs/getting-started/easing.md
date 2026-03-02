@@ -190,7 +190,7 @@ For even more control over Bounce and Elastic, use the `*Advanced` variants with
 
 Control bounces, amplitude, and decay rate.
 
-| Parameter | Effect |
+| Field | Effect |
 | --------- | ------ |
 | `bounces` | Number of bounces |
 | `amplitude` | Bounce height (higher = larger bounces) |
@@ -225,7 +225,7 @@ For `BounceInOutAdvanced`, configure each phase independently:
 
 Control elasticity, amplitude, and decay rate.
 
-| Parameter | Effect |
+| Field | Effect |
 | --------- | ------ |
 | `elasticity` | Springiness (higher = more oscillation) |
 | `amplitude` | Oscillation size (higher = larger swings) |

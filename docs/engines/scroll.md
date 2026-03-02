@@ -1,5 +1,8 @@
 # Scroll Engine
 
+!!! info "Prerequisites"
+    This page assumes you've completed [Getting Started](../getting-started/installation.md) and are familiar with [animation concepts](../concepts/controlling-animations.md) like the builder pattern, AnimState, and property initializers.
+
 The Scroll Engine provides smooth scrolling to elements or positions. It shares the same builder API as the animation engines.
 
 ## Basic Usage

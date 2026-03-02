@@ -1,5 +1,8 @@
 # Animation Engines
 
+!!! info "Prerequisites"
+    This section assumes you've completed [Getting Started](../getting-started/installation.md) and are familiar with [animation concepts](../concepts/controlling-animations.md) like the builder pattern, AnimState, and property initializers.
+
 Elm Animate provides four animation engines, each optimized for different use cases. All engines share the same builder API for defining animations - where they differ is in how they run those animations and what control they offer.
 
 This page covers the shared patterns. For engine-specific details, see:

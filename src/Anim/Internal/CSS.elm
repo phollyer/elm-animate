@@ -28,18 +28,27 @@ module Anim.Internal.CSS exposing
     , init
     , isComplete
     , isRunning
+    , keyframeEventsStopPropagation
     , keyframesAttribute
     , keyframesStyleNode
     , keyframesStyleNodeFor
     , keyframesStyles
     , onAnimationCancel
+    , onAnimationCancelStopPropagation
     , onAnimationEnd
+    , onAnimationEndStopPropagation
     , onAnimationIteration
+    , onAnimationIterationStopPropagation
     , onAnimationStart
+    , onAnimationStartStopPropagation
     , onTransitionCancel
+    , onTransitionCancelStopPropagation
     , onTransitionEnd
+    , onTransitionEndStopPropagation
     , onTransitionRun
+    , onTransitionRunStopPropagation
     , onTransitionStart
+    , onTransitionStartStopPropagation
     , pauseAnimation
     , reset
     , restartAnimation
@@ -49,6 +58,7 @@ module Anim.Internal.CSS exposing
     , startingStyleNodeFor
     , stopAnimation
     , transitionAttributes
+    , transitionEventsStopPropagation
     )
 
 import Anim.Extra.Easing exposing (Easing)
@@ -355,7 +365,7 @@ handleEvent event (AnimState state) =
 
 
 -- Event Handlers
--- Keyframe ANIMATION EVENT HANDLERS
+-- TRANSITION EVENT HANDLERS
 
 
 onTransitionStart : msg -> Html.Attribute msg
@@ -364,10 +374,28 @@ onTransitionStart =
         << Json.Decode.succeed
 
 
+{-| Like `onTransitionStart` but stops event propagation.
+Use this to prevent events from bubbling up to parent elements with listeners.
+-}
+onTransitionStartStopPropagation : msg -> Html.Attribute msg
+onTransitionStartStopPropagation msg =
+    Html.Events.stopPropagationOn "transitionstart"
+        (Json.Decode.succeed ( msg, True ))
+
+
 onTransitionEnd : msg -> Html.Attribute msg
 onTransitionEnd =
     Html.Events.on "transitionend"
         << Json.Decode.succeed
+
+
+{-| Like `onTransitionEnd` but stops event propagation.
+Use this to prevent events from bubbling up to parent elements with listeners.
+-}
+onTransitionEndStopPropagation : msg -> Html.Attribute msg
+onTransitionEndStopPropagation msg =
+    Html.Events.stopPropagationOn "transitionend"
+        (Json.Decode.succeed ( msg, True ))
 
 
 onTransitionRun : msg -> Html.Attribute msg
@@ -376,10 +404,28 @@ onTransitionRun =
         << Json.Decode.succeed
 
 
+{-| Like `onTransitionRun` but stops event propagation.
+Use this to prevent events from bubbling up to parent elements with listeners.
+-}
+onTransitionRunStopPropagation : msg -> Html.Attribute msg
+onTransitionRunStopPropagation msg =
+    Html.Events.stopPropagationOn "transitionrun"
+        (Json.Decode.succeed ( msg, True ))
+
+
 onTransitionCancel : msg -> Html.Attribute msg
 onTransitionCancel =
     Html.Events.on "transitioncancel"
         << Json.Decode.succeed
+
+
+{-| Like `onTransitionCancel` but stops event propagation.
+Use this to prevent events from bubbling up to parent elements with listeners.
+-}
+onTransitionCancelStopPropagation : msg -> Html.Attribute msg
+onTransitionCancelStopPropagation msg =
+    Html.Events.stopPropagationOn "transitioncancel"
+        (Json.Decode.succeed ( msg, True ))
 
 
 
@@ -392,10 +438,28 @@ onAnimationStart =
         << Json.Decode.succeed
 
 
+{-| Like `onAnimationStart` but stops event propagation.
+Use this to prevent events from bubbling up to parent elements with listeners.
+-}
+onAnimationStartStopPropagation : msg -> Html.Attribute msg
+onAnimationStartStopPropagation msg =
+    Html.Events.stopPropagationOn "animationstart"
+        (Json.Decode.succeed ( msg, True ))
+
+
 onAnimationEnd : msg -> Html.Attribute msg
 onAnimationEnd =
     Html.Events.on "animationend"
         << Json.Decode.succeed
+
+
+{-| Like `onAnimationEnd` but stops event propagation.
+Use this to prevent events from bubbling up to parent elements with listeners.
+-}
+onAnimationEndStopPropagation : msg -> Html.Attribute msg
+onAnimationEndStopPropagation msg =
+    Html.Events.stopPropagationOn "animationend"
+        (Json.Decode.succeed ( msg, True ))
 
 
 onAnimationIteration : msg -> Html.Attribute msg
@@ -404,10 +468,70 @@ onAnimationIteration =
         << Json.Decode.succeed
 
 
+{-| Like `onAnimationIteration` but stops event propagation.
+Use this to prevent events from bubbling up to parent elements with listeners.
+-}
+onAnimationIterationStopPropagation : msg -> Html.Attribute msg
+onAnimationIterationStopPropagation msg =
+    Html.Events.stopPropagationOn "animationiteration"
+        (Json.Decode.succeed ( msg, True ))
+
+
 onAnimationCancel : msg -> Html.Attribute msg
 onAnimationCancel =
     Html.Events.on "animationcancel"
         << Json.Decode.succeed
+
+
+{-| Like `onAnimationCancel` but stops event propagation.
+Use this to prevent events from bubbling up to parent elements with listeners.
+-}
+onAnimationCancelStopPropagation : msg -> Html.Attribute msg
+onAnimationCancelStopPropagation msg =
+    Html.Events.stopPropagationOn "animationcancel"
+        (Json.Decode.succeed ( msg, True ))
+
+
+
+-- COMBINED EVENT HELPERS
+
+
+{-| All transition event handlers with propagation stopped.
+Use this to prevent events from bubbling up to parent elements with listeners.
+
+    div
+        (CSS.transitionAttributes "myElement" model.animState
+            ++ CSS.transitionEventsStopPropagation AnimEvent
+        )
+        [ text "Animated element" ]
+
+-}
+transitionEventsStopPropagation : msg -> List (Html.Attribute msg)
+transitionEventsStopPropagation msg =
+    [ onTransitionStartStopPropagation msg
+    , onTransitionEndStopPropagation msg
+    , onTransitionRunStopPropagation msg
+    , onTransitionCancelStopPropagation msg
+    ]
+
+
+{-| All keyframe animation event handlers with propagation stopped.
+Use this to prevent events from bubbling up to parent elements with listeners.
+
+    div
+        (CSS.keyframesStyles "myElement" model.animState
+            ++ CSS.keyframeEventsStopPropagation AnimEvent
+        )
+        [ text "Animated element" ]
+
+-}
+keyframeEventsStopPropagation : msg -> List (Html.Attribute msg)
+keyframeEventsStopPropagation msg =
+    [ onAnimationStartStopPropagation msg
+    , onAnimationEndStopPropagation msg
+    , onAnimationIterationStopPropagation msg
+    , onAnimationCancelStopPropagation msg
+    ]
 
 
 

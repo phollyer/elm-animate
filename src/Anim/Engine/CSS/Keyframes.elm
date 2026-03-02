@@ -3,8 +3,9 @@ module Anim.Engine.CSS.Keyframes exposing
     , attributes
     , styleNode, styleNodeFor, getElementKeyframes
     , AnimMsg, AnimEvent(..), update
-    , events
+    , events, eventsStopPropagation
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
+    , onAnimationStartStopPropagation, onAnimationEndStopPropagation, onAnimationIterationStopPropagation, onAnimationCancelStopPropagation
     , AnimBuilder, animate, fireAndForget, TransformOrder(..), animateOrder, fireAndForgetOrder
     , duration, speed
     , easing
@@ -71,11 +72,15 @@ Use these events to keep your [AnimState](#AnimState) in sync.
 
 @docs AnimMsg, AnimEvent, update
 
-@docs events
+@docs events, eventsStopPropagation
 
 For more granular control over which events to handle:
 
 @docs onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
+
+To stop event propagation (for nested animated elements):
+
+@docs onAnimationStartStopPropagation, onAnimationEndStopPropagation, onAnimationIterationStopPropagation, onAnimationCancelStopPropagation
 
 
 # Execute
@@ -602,6 +607,58 @@ onAnimationIteration =
 onAnimationCancel : msg -> Html.Attribute msg
 onAnimationCancel =
     InternalCSS.onAnimationCancel
+
+
+{-| Like [onAnimationStart](#onAnimationStart) but stops event propagation.
+Use this to prevent events from bubbling up to parent elements with listeners.
+-}
+onAnimationStartStopPropagation : msg -> Html.Attribute msg
+onAnimationStartStopPropagation =
+    InternalCSS.onAnimationStartStopPropagation
+
+
+{-| Like [onAnimationEnd](#onAnimationEnd) but stops event propagation.
+Use this to prevent events from bubbling up to parent elements with listeners.
+-}
+onAnimationEndStopPropagation : msg -> Html.Attribute msg
+onAnimationEndStopPropagation =
+    InternalCSS.onAnimationEndStopPropagation
+
+
+{-| Like [onAnimationIteration](#onAnimationIteration) but stops event propagation.
+Use this to prevent events from bubbling up to parent elements with listeners.
+-}
+onAnimationIterationStopPropagation : msg -> Html.Attribute msg
+onAnimationIterationStopPropagation =
+    InternalCSS.onAnimationIterationStopPropagation
+
+
+{-| Like [onAnimationCancel](#onAnimationCancel) but stops event propagation.
+Use this to prevent events from bubbling up to parent elements with listeners.
+-}
+onAnimationCancelStopPropagation : msg -> Html.Attribute msg
+onAnimationCancelStopPropagation =
+    InternalCSS.onAnimationCancelStopPropagation
+
+
+{-| All keyframe animation event handlers with propagation stopped.
+Use this to prevent events from bubbling up to parent elements with listeners.
+
+    div
+        (Keyframes.attributes "myElement" model.animState
+            ++ Keyframes.eventsStopPropagation "myElement" KeyframeMsg
+        )
+        [ text "Animated element" ]
+
+-}
+eventsStopPropagation : String -> (AnimMsg -> msg) -> List (Html.Attribute msg)
+eventsStopPropagation elementId toMsg =
+    List.map (Html.Attributes.map toMsg) <|
+        [ onAnimationStartStopPropagation (AnimMsg (InternalStarted elementId))
+        , onAnimationEndStopPropagation (AnimMsg (InternalEnded elementId))
+        , onAnimationCancelStopPropagation (AnimMsg (InternalCancelled elementId))
+        , onAnimationIterationStopPropagation (AnimMsg (InternalIteration elementId))
+        ]
 
 
 

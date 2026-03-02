@@ -38,7 +38,7 @@ init _ =
     let
         initialAnimState =
             Keyframes.init
-                [ Opacity.init "hello-text" 0 ]
+                [ Opacity.init "helloTextAnim" 0 ]
     in
     ( { animState = Keyframes.animate initialAnimState fadeIn }
     , Cmd.none
@@ -51,7 +51,7 @@ init _ =
 
 fadeIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 fadeIn =
-    Opacity.for "hello-text"
+    Opacity.for "helloTextAnim"
         >> Opacity.to 1
         >> Opacity.duration 5000
         >> Opacity.build
@@ -89,6 +89,6 @@ view model =
         ]
         [ Keyframes.styleNode model.animState
         , div
-            (Keyframes.attributes "hello-text" model.animState)
+            (Keyframes.attributes "helloTextAnim" model.animState)
             [ text "Hello World!" ]
         ]
