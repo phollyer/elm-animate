@@ -15302,7 +15302,6 @@ var $author$project$Common$UI$createDocument = F3(
 		};
 	});
 var $author$project$Anim$Extra$View3D$LeftMiddle = {$: 'LeftMiddle'};
-var $author$project$Anim$Extra$View3D$Preserve3D = {$: 'Preserve3D'};
 var $author$project$Common$Colors$backgroundWhite = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
 var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
 	return {$: 'AlignY', a: a};
@@ -15527,21 +15526,10 @@ var $author$project$Anim$Internal$CSS$keyframesStyleNode = function (_v0) {
 			]));
 };
 var $author$project$Anim$Engine$CSS$Keyframes$styleNode = $author$project$Anim$Internal$CSS$keyframesStyleNode;
-var $author$project$Anim$Extra$View3D$transformStyle = function (ts) {
-	return A2(
-		$elm$html$Html$Attributes$style,
-		'transform-style',
-		function () {
-			if (ts.$ === 'Flat') {
-				return 'flat';
-			} else {
-				return 'preserve-3d';
-			}
-		}());
-};
 var $author$project$Concepts$Animate3D$Main$GotKeyframeMsg = function (a) {
 	return {$: 'GotKeyframeMsg', a: a};
 };
+var $author$project$Anim$Extra$View3D$Preserve3D = {$: 'Preserve3D'};
 var $author$project$Anim$Internal$CSS$getElementAnimation = F2(
 	function (elementId, _v0) {
 		var state = _v0.a;
@@ -15703,6 +15691,18 @@ var $author$project$Concepts$Animate3D$Main$topFace = {
 	borderColor: A3($mdgriffith$elm_ui$Element$rgb255, 39, 174, 96),
 	id: 'top-face',
 	label: 'TOP'
+};
+var $author$project$Anim$Extra$View3D$transformStyle = function (ts) {
+	return A2(
+		$elm$html$Html$Attributes$style,
+		'transform-style',
+		function () {
+			if (ts.$ === 'Flat') {
+				return 'flat';
+			} else {
+				return 'preserve-3d';
+			}
+		}());
 };
 var $mdgriffith$elm_ui$Element$Font$bold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.bold);
 var $mdgriffith$elm_ui$Internal$Flag$borderColor = $mdgriffith$elm_ui$Internal$Flag$flag(28);
@@ -15934,18 +15934,16 @@ var $author$project$Concepts$Animate3D$Main$viewContent = function (model) {
 						color: A4($mdgriffith$elm_ui$Element$rgba, 0, 0, 0, 0.1),
 						offset: _Utils_Tuple2(0, 4),
 						size: 0
-					}),
-					$mdgriffith$elm_ui$Element$htmlAttribute(
-					$author$project$Anim$Extra$View3D$perspective(1000)),
-					$mdgriffith$elm_ui$Element$htmlAttribute(
-					$author$project$Anim$Extra$View3D$perspectiveOrigin($author$project$Anim$Extra$View3D$LeftMiddle))
+					})
 				]),
 			A2(
 				$mdgriffith$elm_ui$Element$el,
 				_List_fromArray(
 					[
 						$mdgriffith$elm_ui$Element$htmlAttribute(
-						$author$project$Anim$Extra$View3D$transformStyle($author$project$Anim$Extra$View3D$Preserve3D)),
+						$author$project$Anim$Extra$View3D$perspective(1000)),
+						$mdgriffith$elm_ui$Element$htmlAttribute(
+						$author$project$Anim$Extra$View3D$perspectiveOrigin($author$project$Anim$Extra$View3D$LeftMiddle)),
 						$mdgriffith$elm_ui$Element$htmlAttribute($author$project$Anim$Extra$View3D$opacityHack),
 						$mdgriffith$elm_ui$Element$centerX,
 						$mdgriffith$elm_ui$Element$centerY

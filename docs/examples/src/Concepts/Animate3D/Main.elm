@@ -392,13 +392,11 @@ viewContent model =
             , blur = 8
             , color = Element.rgba 0 0 0 0.1
             }
-        , View3D.perspective 1000
-            |> htmlAttribute
-        , View3D.perspectiveOrigin View3D.LeftMiddle
-            |> htmlAttribute
         ]
         (el
-            [ View3D.transformStyle View3D.Preserve3D
+            [ View3D.perspective 1000
+                |> htmlAttribute
+            , View3D.perspectiveOrigin View3D.LeftMiddle
                 |> htmlAttribute
             , View3D.opacityHack
                 -- Kind of fixes Chrome on macOS compositor tile corruption when
