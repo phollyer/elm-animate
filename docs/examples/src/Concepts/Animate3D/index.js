@@ -9036,6 +9036,7 @@ var $elm$core$Basics$composeR = F3(
 		return g(
 			f(x));
 	});
+var $author$project$Concepts$Animate3D$Main$moveAmount = 50;
 var $author$project$Anim$Extra$Easing$BounceOut = {$: 'BounceOut'};
 var $author$project$Anim$Property$Translate$build = $author$project$Anim$Internal$Builders$Translate$build;
 var $author$project$Anim$Internal$Builders$Property$withDuration = F2(
@@ -9097,29 +9098,29 @@ var $author$project$Anim$Property$Translate$toZ = $author$project$Anim$Internal$
 var $author$project$Concepts$Animate3D$Main$moveBackFaceOut = A2(
 	$author$project$Concepts$Animate3D$Main$moveFace,
 	'back-face',
-	$author$project$Anim$Property$Translate$toZ(((-1) * $author$project$Concepts$Animate3D$Main$depth) - 50));
+	$author$project$Anim$Property$Translate$toZ(((-1) * $author$project$Concepts$Animate3D$Main$depth) - $author$project$Concepts$Animate3D$Main$moveAmount));
 var $author$project$Anim$Property$Translate$toY = $author$project$Anim$Internal$Builders$Translate$toY;
 var $author$project$Concepts$Animate3D$Main$moveBottomFaceOut = A2(
 	$author$project$Concepts$Animate3D$Main$moveFace,
 	'bottom-face',
-	$author$project$Anim$Property$Translate$toY($author$project$Concepts$Animate3D$Main$depth + 50));
+	$author$project$Anim$Property$Translate$toY($author$project$Concepts$Animate3D$Main$depth + $author$project$Concepts$Animate3D$Main$moveAmount));
 var $author$project$Concepts$Animate3D$Main$moveFrontFaceOut = A2(
 	$author$project$Concepts$Animate3D$Main$moveFace,
 	'front-face',
-	$author$project$Anim$Property$Translate$toZ($author$project$Concepts$Animate3D$Main$depth + 50));
+	$author$project$Anim$Property$Translate$toZ($author$project$Concepts$Animate3D$Main$depth + $author$project$Concepts$Animate3D$Main$moveAmount));
 var $author$project$Anim$Property$Translate$toX = $author$project$Anim$Internal$Builders$Translate$toX;
 var $author$project$Concepts$Animate3D$Main$moveLeftFaceOut = A2(
 	$author$project$Concepts$Animate3D$Main$moveFace,
 	'left-face',
-	$author$project$Anim$Property$Translate$toX(((-1) * $author$project$Concepts$Animate3D$Main$depth) - 50));
+	$author$project$Anim$Property$Translate$toX(((-1) * $author$project$Concepts$Animate3D$Main$depth) - $author$project$Concepts$Animate3D$Main$moveAmount));
 var $author$project$Concepts$Animate3D$Main$moveRightFaceOut = A2(
 	$author$project$Concepts$Animate3D$Main$moveFace,
 	'right-face',
-	$author$project$Anim$Property$Translate$toX($author$project$Concepts$Animate3D$Main$depth + 50));
+	$author$project$Anim$Property$Translate$toX($author$project$Concepts$Animate3D$Main$depth + $author$project$Concepts$Animate3D$Main$moveAmount));
 var $author$project$Concepts$Animate3D$Main$moveTopFaceOut = A2(
 	$author$project$Concepts$Animate3D$Main$moveFace,
 	'top-face',
-	$author$project$Anim$Property$Translate$toY(((-1) * $author$project$Concepts$Animate3D$Main$depth) - 50));
+	$author$project$Anim$Property$Translate$toY(((-1) * $author$project$Concepts$Animate3D$Main$depth) - $author$project$Concepts$Animate3D$Main$moveAmount));
 var $author$project$Concepts$Animate3D$Main$moveSidesOut = A2(
 	$elm$core$Basics$composeR,
 	$author$project$Concepts$Animate3D$Main$moveFrontFaceOut,
@@ -9167,8 +9168,6 @@ var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Concepts$Animate3D$Main$Closing = {$: 'Closing'};
-var $author$project$Concepts$Animate3D$Main$RotatingClosed = {$: 'RotatingClosed'};
-var $author$project$Concepts$Animate3D$Main$RotatingOpen = {$: 'RotatingOpen'};
 var $author$project$Concepts$Animate3D$Main$moveBackFaceIn = A2(
 	$author$project$Concepts$Animate3D$Main$moveFace,
 	'back-face',
@@ -9257,6 +9256,71 @@ var $author$project$Concepts$Animate3D$Main$selectAnimation = function (state) {
 			return $author$project$Concepts$Animate3D$Main$rotateCubeAntiClockwise;
 	}
 };
+var $author$project$Concepts$Animate3D$Main$cubeRotationEnded = function (model) {
+	var state = function () {
+		var _v0 = model.state;
+		switch (_v0.$) {
+			case 'RotatingOpen':
+				return $author$project$Concepts$Animate3D$Main$Closing;
+			case 'RotatingClosed':
+				return $author$project$Concepts$Animate3D$Main$Opening;
+			default:
+				return model.state;
+		}
+	}();
+	return _Utils_update(
+		model,
+		{
+			animState: A2(
+				$author$project$Anim$Engine$CSS$Keyframes$animate,
+				model.animState,
+				$author$project$Concepts$Animate3D$Main$selectAnimation(state)),
+			state: state
+		});
+};
+var $author$project$Concepts$Animate3D$Main$RotatingClosed = {$: 'RotatingClosed'};
+var $author$project$Concepts$Animate3D$Main$RotatingOpen = {$: 'RotatingOpen'};
+var $author$project$Concepts$Animate3D$Main$sidesMovementEnded = function (model) {
+	var state = function () {
+		var _v0 = model.state;
+		switch (_v0.$) {
+			case 'Opening':
+				return $author$project$Concepts$Animate3D$Main$RotatingOpen;
+			case 'Closing':
+				return $author$project$Concepts$Animate3D$Main$RotatingClosed;
+			default:
+				return model.state;
+		}
+	}();
+	return _Utils_update(
+		model,
+		{
+			animState: A2(
+				$author$project$Anim$Engine$CSS$Keyframes$animate,
+				model.animState,
+				$author$project$Concepts$Animate3D$Main$selectAnimation(state)),
+			state: state
+		});
+};
+var $author$project$Concepts$Animate3D$Main$handleKeyframeEvent = F2(
+	function (animEvent, model) {
+		_v0$2:
+		while (true) {
+			if (animEvent.$ === 'Ended') {
+				switch (animEvent.a) {
+					case 'cube':
+						return $author$project$Concepts$Animate3D$Main$cubeRotationEnded(model);
+					case 'front-face':
+						return $author$project$Concepts$Animate3D$Main$sidesMovementEnded(model);
+					default:
+						break _v0$2;
+				}
+			} else {
+				break _v0$2;
+			}
+		}
+		return model;
+	});
 var $author$project$Anim$Internal$CSS$AnimationCancelled = function (a) {
 	return {$: 'AnimationCancelled', a: a};
 };
@@ -9389,69 +9453,16 @@ var $author$project$Concepts$Animate3D$Main$update = F2(
 	function (msg, model) {
 		var animMsg = msg.a;
 		var _v1 = A2($author$project$Anim$Engine$CSS$Keyframes$update, animMsg, model.animState);
-		var newAnimState = _v1.a;
-		var event = _v1.b;
-		var newModel = _Utils_update(
-			model,
-			{animState: newAnimState});
-		_v2$2:
-		while (true) {
-			if (event.$ === 'Ended') {
-				switch (event.a) {
-					case 'cube':
-						var newState = function () {
-							var _v3 = newModel.state;
-							switch (_v3.$) {
-								case 'RotatingOpen':
-									return $author$project$Concepts$Animate3D$Main$Closing;
-								case 'RotatingClosed':
-									return $author$project$Concepts$Animate3D$Main$Opening;
-								default:
-									return newModel.state;
-							}
-						}();
-						return _Utils_Tuple2(
-							_Utils_update(
-								newModel,
-								{
-									animState: A2(
-										$author$project$Anim$Engine$CSS$Keyframes$animate,
-										newModel.animState,
-										$author$project$Concepts$Animate3D$Main$selectAnimation(newState)),
-									state: newState
-								}),
-							$elm$core$Platform$Cmd$none);
-					case 'front-face':
-						var newState = function () {
-							var _v4 = newModel.state;
-							switch (_v4.$) {
-								case 'Opening':
-									return $author$project$Concepts$Animate3D$Main$RotatingOpen;
-								case 'Closing':
-									return $author$project$Concepts$Animate3D$Main$RotatingClosed;
-								default:
-									return newModel.state;
-							}
-						}();
-						return _Utils_Tuple2(
-							_Utils_update(
-								newModel,
-								{
-									animState: A2(
-										$author$project$Anim$Engine$CSS$Keyframes$animate,
-										newModel.animState,
-										$author$project$Concepts$Animate3D$Main$selectAnimation(newState)),
-									state: newState
-								}),
-							$elm$core$Platform$Cmd$none);
-					default:
-						break _v2$2;
-				}
-			} else {
-				break _v2$2;
-			}
-		}
-		return _Utils_Tuple2(newModel, $elm$core$Platform$Cmd$none);
+		var animState = _v1.a;
+		var animEvent = _v1.b;
+		return _Utils_Tuple2(
+			A2(
+				$author$project$Concepts$Animate3D$Main$handleKeyframeEvent,
+				animEvent,
+				_Utils_update(
+					model,
+					{animState: animState})),
+			$elm$core$Platform$Cmd$none);
 	});
 var $author$project$Common$UI$Basic = {$: 'Basic'};
 var $mdgriffith$elm_ui$Internal$Model$Rgba = F4(
@@ -15290,6 +15301,8 @@ var $author$project$Common$UI$createDocument = F3(
 			title: title
 		};
 	});
+var $author$project$Anim$Extra$View3D$LeftMiddle = {$: 'LeftMiddle'};
+var $author$project$Anim$Extra$View3D$Preserve3D = {$: 'Preserve3D'};
 var $author$project$Common$Colors$backgroundWhite = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
 var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
 	return {$: 'AlignY', a: a};
@@ -15401,6 +15414,42 @@ var $author$project$Anim$Extra$View3D$perspective = function (value) {
 		'perspective',
 		$elm$core$String$fromFloat(value) + 'px');
 };
+var $author$project$Anim$Extra$View3D$perspectiveOriginToString = function (origin) {
+	switch (origin.$) {
+		case 'Center':
+			return 'center center';
+		case 'TopLeft':
+			return 'left top';
+		case 'TopCenter':
+			return 'center top';
+		case 'TopRight':
+			return 'right top';
+		case 'LeftMiddle':
+			return 'left center';
+		case 'RightMiddle':
+			return 'right center';
+		case 'BottomLeft':
+			return 'left bottom';
+		case 'BottomCenter':
+			return 'center bottom';
+		case 'BottomRight':
+			return 'right bottom';
+		case 'Percent':
+			var x = origin.a;
+			var y = origin.b;
+			return $elm$core$String$fromFloat(x) + ('% ' + ($elm$core$String$fromFloat(y) + '%'));
+		default:
+			var x = origin.a;
+			var y = origin.b;
+			return $elm$core$String$fromFloat(x) + ('px ' + ($elm$core$String$fromFloat(y) + 'px'));
+	}
+};
+var $author$project$Anim$Extra$View3D$perspectiveOrigin = function (origin) {
+	return A2(
+		$elm$html$Html$Attributes$style,
+		'perspective-origin',
+		$author$project$Anim$Extra$View3D$perspectiveOriginToString(origin));
+};
 var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
 	return {$: 'Px', a: a};
 };
@@ -15478,11 +15527,21 @@ var $author$project$Anim$Internal$CSS$keyframesStyleNode = function (_v0) {
 			]));
 };
 var $author$project$Anim$Engine$CSS$Keyframes$styleNode = $author$project$Anim$Internal$CSS$keyframesStyleNode;
-var $author$project$Anim$Extra$View3D$Center = {$: 'Center'};
+var $author$project$Anim$Extra$View3D$transformStyle = function (ts) {
+	return A2(
+		$elm$html$Html$Attributes$style,
+		'transform-style',
+		function () {
+			if (ts.$ === 'Flat') {
+				return 'flat';
+			} else {
+				return 'preserve-3d';
+			}
+		}());
+};
 var $author$project$Concepts$Animate3D$Main$GotKeyframeMsg = function (a) {
 	return {$: 'GotKeyframeMsg', a: a};
 };
-var $author$project$Anim$Extra$View3D$Preserve3D = {$: 'Preserve3D'};
 var $author$project$Anim$Internal$CSS$getElementAnimation = F2(
 	function (elementId, _v0) {
 		var state = _v0.a;
@@ -15633,42 +15692,6 @@ var $author$project$Concepts$Animate3D$Main$leftFace = {
 	id: 'left-face',
 	label: 'LEFT'
 };
-var $author$project$Anim$Extra$View3D$perspectiveOriginToString = function (origin) {
-	switch (origin.$) {
-		case 'Center':
-			return 'center center';
-		case 'TopLeft':
-			return 'left top';
-		case 'TopCenter':
-			return 'center top';
-		case 'TopRight':
-			return 'right top';
-		case 'LeftMiddle':
-			return 'left center';
-		case 'RightMiddle':
-			return 'right center';
-		case 'BottomLeft':
-			return 'left bottom';
-		case 'BottomCenter':
-			return 'center bottom';
-		case 'BottomRight':
-			return 'right bottom';
-		case 'Percent':
-			var x = origin.a;
-			var y = origin.b;
-			return $elm$core$String$fromFloat(x) + ('% ' + ($elm$core$String$fromFloat(y) + '%'));
-		default:
-			var x = origin.a;
-			var y = origin.b;
-			return $elm$core$String$fromFloat(x) + ('px ' + ($elm$core$String$fromFloat(y) + 'px'));
-	}
-};
-var $author$project$Anim$Extra$View3D$perspectiveOrigin = function (origin) {
-	return A2(
-		$elm$html$Html$Attributes$style,
-		'perspective-origin',
-		$author$project$Anim$Extra$View3D$perspectiveOriginToString(origin));
-};
 var $author$project$Concepts$Animate3D$Main$rightFace = {
 	background: A3($mdgriffith$elm_ui$Element$rgb255, 231, 76, 60),
 	borderColor: A3($mdgriffith$elm_ui$Element$rgb255, 192, 57, 43),
@@ -15680,18 +15703,6 @@ var $author$project$Concepts$Animate3D$Main$topFace = {
 	borderColor: A3($mdgriffith$elm_ui$Element$rgb255, 39, 174, 96),
 	id: 'top-face',
 	label: 'TOP'
-};
-var $author$project$Anim$Extra$View3D$transformStyle = function (ts) {
-	return A2(
-		$elm$html$Html$Attributes$style,
-		'transform-style',
-		function () {
-			if (ts.$ === 'Flat') {
-				return 'flat';
-			} else {
-				return 'preserve-3d';
-			}
-		}());
 };
 var $mdgriffith$elm_ui$Element$Font$bold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.bold);
 var $mdgriffith$elm_ui$Internal$Flag$borderColor = $mdgriffith$elm_ui$Internal$Flag$flag(28);
@@ -15788,8 +15799,6 @@ var $author$project$Concepts$Animate3D$Main$viewCube = function (model) {
 					[
 						$mdgriffith$elm_ui$Element$htmlAttribute(
 						$author$project$Anim$Extra$View3D$transformStyle($author$project$Anim$Extra$View3D$Preserve3D)),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						$author$project$Anim$Extra$View3D$perspectiveOrigin($author$project$Anim$Extra$View3D$Center)),
 						$mdgriffith$elm_ui$Element$width(
 						$mdgriffith$elm_ui$Element$px($author$project$Concepts$Animate3D$Main$cubeSize)),
 						$mdgriffith$elm_ui$Element$height(
@@ -15925,14 +15934,18 @@ var $author$project$Concepts$Animate3D$Main$viewContent = function (model) {
 						color: A4($mdgriffith$elm_ui$Element$rgba, 0, 0, 0, 0.1),
 						offset: _Utils_Tuple2(0, 4),
 						size: 0
-					})
+					}),
+					$mdgriffith$elm_ui$Element$htmlAttribute(
+					$author$project$Anim$Extra$View3D$perspective(1000)),
+					$mdgriffith$elm_ui$Element$htmlAttribute(
+					$author$project$Anim$Extra$View3D$perspectiveOrigin($author$project$Anim$Extra$View3D$LeftMiddle))
 				]),
 			A2(
 				$mdgriffith$elm_ui$Element$el,
 				_List_fromArray(
 					[
 						$mdgriffith$elm_ui$Element$htmlAttribute(
-						$author$project$Anim$Extra$View3D$perspective(1000)),
+						$author$project$Anim$Extra$View3D$transformStyle($author$project$Anim$Extra$View3D$Preserve3D)),
 						$mdgriffith$elm_ui$Element$htmlAttribute($author$project$Anim$Extra$View3D$opacityHack),
 						$mdgriffith$elm_ui$Element$centerX,
 						$mdgriffith$elm_ui$Element$centerY

@@ -40,11 +40,9 @@ Properties with the same group name animate together and are applied to the same
     enterAnimation : AnimBuilder -> AnimBuilder
     enterAnimation =
         Opacity.for "boxAnim"
-            >> Opacity.from 0
             >> Opacity.to 1
             >> Opacity.build
             >> Translate.for "boxAnim"
-            >> Translate.fromY 50
             >> Translate.toY 0
             >> Translate.build
     ```
@@ -63,7 +61,6 @@ Use different group names when you want separate animation sets for different el
             >> Opacity.to 1
             >> Opacity.build
             >> Translate.for "sidebar"  -- Sidebar slides in
-            >> Translate.fromX -200
             >> Translate.toX 0
             >> Translate.build
     ```

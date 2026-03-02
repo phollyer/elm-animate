@@ -30,6 +30,26 @@ These properties trigger browser repaints and/or reflows. Use them when needed, 
 | [Font Color](../properties/font-color.md) | Animate text colors | `Anim.Property.FontColor` | Repaint |
 | [Size](../properties/size.md) | Animate width and height | `Anim.Property.Size` | Reflow + Repaint |
 
+## Property Functions
+
+Each property module provides functions tailored to its dimensions:
+
+| Dimensions | Property | Available Functions |
+| ---------- | -------- | ------------------- |
+| Single value | Opacity | `init`, `to` |
+| Two values | Size (W×H) | `init`, `initW`, `initH`, `to`, `toW`, `toH` |
+| Three values | Translate (X,Y,Z) | `init`, `initX`, `initXY`, `to`, `toX`, `toXY`, etc. |
+
+Each property also uses sensible defaults for any values that have not been set:
+
+| Property | Default | Examples |
+| -------- | :-----: | -------- |
+| Size | 0 | `initW 100` -> (width = 100, height = 0) |
+| Translate | 0 | `toXY 20 30` -> move to (x = 20, y = 30), leave `z` where it is, or 0 if not set |
+
+
+See each property's documentation for the full function list.
+
 ## Next Steps
 
 Control animation timing with duration and speed.

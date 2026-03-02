@@ -6,17 +6,68 @@ All engines share the same pattern: call `update` with the animation message, ge
 
 ??? example "View Source Code"
 
-    ```elm
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
-        case msg of
-            GotAnimMsg animMsg ->
-                let
-                    ( newAnimState, event ) =
-                        Engine.update animMsg model.animState
-                in
-                reactToEvent event { model | animState = newAnimState }
-    ```
+    === "Transitions"
+
+        ```elm
+        update : Msg -> Model -> ( Model, Cmd Msg )
+        update msg model =
+            case msg of
+                GotAnimMsg animMsg ->
+                    let
+                        ( newAnimState, event ) =
+                            Transitions.update animMsg model.animState
+                    in
+                    reactToEvent event { model | animState = newAnimState }
+        ```
+
+    === "Keyframes"
+
+        ```elm
+        update : Msg -> Model -> ( Model, Cmd Msg )
+        update msg model =
+            case msg of
+                GotAnimMsg animMsg ->
+                    let
+                        ( newAnimState, event ) =
+                            Keyframes.update animMsg model.animState
+                    in
+                    reactToEvent event { model | animState = newAnimState }
+        ```
+
+    === "Sub (returns List)"
+
+        ```elm
+        update : Msg -> Model -> ( Model, Cmd Msg )
+        update msg model =
+            case msg of
+                GotAnimMsg animMsg ->
+                    let
+                        ( newAnimState, events ) =
+                            Sub.update animMsg model.animState
+
+                        applyEvent event ( m, cmd ) =
+                            let
+                                ( newModel, newCmd ) =
+                                    reactToEvent event m
+                            in
+                            ( newModel, Cmd.batch [ cmd, newCmd ] )
+                    in
+                    List.foldl applyEvent ( { model | animState = newAnimState }, Cmd.none ) events
+        ```
+
+    === "WAAPI"
+
+        ```elm
+        update : Msg -> Model -> ( Model, Cmd Msg )
+        update msg model =
+            case msg of
+                GotAnimMsg animMsg ->
+                    let
+                        ( newAnimState, event ) =
+                            WAAPI.update animMsg model.animState
+                    in
+                    reactToEvent event { model | animState = newAnimState }
+        ```
 
 The only difference is **Sub returns a list** of events (multiple animations can change state per frame), while others return a single event.
 
@@ -131,43 +182,6 @@ Wire up subscriptions:
             WAAPI.subscriptions GotAnimMsg model.animState
         ```
 
-
-### Handling the Update
-
-All engines use the same update pattern. The only difference is Sub returns `List AnimEvent`:
-
-??? example "View Source Code"
-
-    === "Transitions / Keyframes / WAAPI"
-
-        ```elm
-        case msg of
-            GotAnimMsg animMsg ->
-                let
-                    ( newAnimState, event ) =
-                        Engine.update animMsg model.animState
-                in
-                reactToEvent event { model | animState = newAnimState }
-        ```
-
-    === "Sub (returns List)"
-
-        ```elm
-        case msg of
-            GotAnimMsg animMsg ->
-                let
-                    ( newAnimState, events ) =
-                        Sub.update animMsg model.animState
-
-                    applyEvent event ( m, cmd ) =
-                        let
-                            ( newModel, newCmd ) =
-                                reactToEvent event m
-                        in
-                        ( newModel, Cmd.batch [ cmd, newCmd ] )
-                in
-                List.foldl applyEvent ( { model | animState = newAnimState }, Cmd.none ) events
-        ```
 
 ## Event Reference
 

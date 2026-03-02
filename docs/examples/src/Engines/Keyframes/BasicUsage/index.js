@@ -8523,7 +8523,7 @@ var $author$project$Anim$Internal$Builders$Opacity$to = F2(
 var $author$project$Anim$Property$Opacity$to = A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Builders$Opacity$to, $author$project$Anim$Internal$Properties$Opacity$fromFloat);
 var $author$project$Engines$Keyframes$BasicUsage$Main$fadeIn = A2(
 	$elm$core$Basics$composeR,
-	$author$project$Anim$Property$Opacity$for('hello-text'),
+	$author$project$Anim$Property$Opacity$for('helloTextAnim'),
 	A2(
 		$elm$core$Basics$composeR,
 		$author$project$Anim$Property$Opacity$to(1),
@@ -8693,7 +8693,7 @@ var $author$project$Engines$Keyframes$BasicUsage$Main$init = function (_v0) {
 	var initialAnimState = $author$project$Anim$Engine$CSS$Keyframes$init(
 		_List_fromArray(
 			[
-				A2($author$project$Anim$Property$Opacity$init, 'hello-text', 0)
+				A2($author$project$Anim$Property$Opacity$init, 'helloTextAnim', 0)
 			]));
 	return _Utils_Tuple2(
 		{
@@ -8833,7 +8833,7 @@ var $author$project$Engines$Keyframes$BasicUsage$Main$view = function (model) {
 				$author$project$Anim$Engine$CSS$Keyframes$styleNode(model.animState),
 				A2(
 				$elm$html$Html$div,
-				A2($author$project$Anim$Engine$CSS$Keyframes$attributes, 'hello-text', model.animState),
+				A2($author$project$Anim$Engine$CSS$Keyframes$attributes, 'helloTextAnim', model.animState),
 				_List_fromArray(
 					[
 						$elm$html$Html$text('Hello World!')

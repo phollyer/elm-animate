@@ -8753,6 +8753,14 @@ var $author$project$GettingStarted$FirstAnimation$Main$update = F2(
 	});
 var $author$project$GettingStarted$FirstAnimation$Main$TriggerFadeIn = {$: 'TriggerFadeIn'};
 var $author$project$GettingStarted$FirstAnimation$Main$TriggerFadeOut = {$: 'TriggerFadeOut'};
+var $elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
 var $author$project$Anim$Internal$CSS$getElementStyles = F2(
 	function (elementId, _v0) {
 		var state = _v0.a;
@@ -8771,7 +8779,7 @@ var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Anim$Internal$CSS$transitionAttributes = F2(
 	function (elementId, animationResult) {
 		var styles = A2($author$project$Anim$Internal$CSS$getElementStyles, elementId, animationResult);
-		var attrs = A2(
+		var styleAttrs = A2(
 			$elm$core$List$map,
 			function (_v0) {
 				var prop = _v0.a;
@@ -8779,7 +8787,8 @@ var $author$project$Anim$Internal$CSS$transitionAttributes = F2(
 				return A2($elm$html$Html$Attributes$style, prop, value);
 			},
 			styles);
-		return attrs;
+		var dataAttr = A2($elm$html$Html$Attributes$attribute, 'data-anim-group-name', elementId);
+		return A2($elm$core$List$cons, dataAttr, styleAttrs);
 	});
 var $author$project$Anim$Engine$CSS$Transitions$attributes = $author$project$Anim$Internal$CSS$transitionAttributes;
 var $elm$html$Html$button = _VirtualDom_node('button');

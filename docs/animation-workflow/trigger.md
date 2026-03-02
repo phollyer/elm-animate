@@ -235,7 +235,7 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
             ( { animState = Keyframes.fireAndForget fadeIn }, Cmd.none )
         ```
 
-        Both work fine, the `@keyframes` rules are added to the DOM on first render.
+        Both work fine, the `@keyframes` rules are added to the DOM on first render, and the browser will run them immediately.
 
     === "Sub"
 

@@ -171,16 +171,24 @@ moveFace animGroup moveToBuilder =
 
 
 
--- Each face moves along the axis it faces:
+-- Each face moves along the axis it faces by a `moveAmount` number
+-- of pixels when the cube expands, and moves back to it's original position
+-- when the cube closes.
+--
 -- Front/Back faces move on Z (forward/backward)
 -- Left/Right faces move on X (sideways)
 -- Top/Bottom faces move on Y (up/down)
 
 
+moveAmount : Float
+moveAmount =
+    50
+
+
 moveFrontFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveFrontFaceOut =
     moveFace "front-face" <|
-        Translate.toZ (depth + 50)
+        Translate.toZ (depth + moveAmount)
 
 
 moveFrontFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
@@ -192,7 +200,7 @@ moveFrontFaceIn =
 moveBackFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveBackFaceOut =
     moveFace "back-face" <|
-        Translate.toZ (-1 * depth - 50)
+        Translate.toZ (-1 * depth - moveAmount)
 
 
 moveBackFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
@@ -204,7 +212,7 @@ moveBackFaceIn =
 moveRightFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveRightFaceOut =
     moveFace "right-face" <|
-        Translate.toX (depth + 50)
+        Translate.toX (depth + moveAmount)
 
 
 moveRightFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
@@ -216,7 +224,7 @@ moveRightFaceIn =
 moveLeftFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveLeftFaceOut =
     moveFace "left-face" <|
-        Translate.toX (-1 * depth - 50)
+        Translate.toX (-1 * depth - moveAmount)
 
 
 moveLeftFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
@@ -228,7 +236,7 @@ moveLeftFaceIn =
 moveTopFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveTopFaceOut =
     moveFace "top-face" <|
-        Translate.toY (-1 * depth - 50)
+        Translate.toY (-1 * depth - moveAmount)
 
 
 moveTopFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
@@ -240,7 +248,7 @@ moveTopFaceIn =
 moveBottomFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveBottomFaceOut =
     moveFace "bottom-face" <|
-        Translate.toY (depth + 50)
+        Translate.toY (depth + moveAmount)
 
 
 moveBottomFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
@@ -267,59 +275,69 @@ update msg model =
     case msg of
         GotKeyframeMsg animMsg ->
             let
-                ( newAnimState, event ) =
+                ( animState, animEvent ) =
                     Keyframes.update animMsg model.animState
-
-                newModel =
-                    { model | animState = newAnimState }
             in
-            case event of
-                Keyframes.Ended "cube" ->
-                    let
-                        newState =
-                            case newModel.state of
-                                RotatingOpen ->
-                                    Closing
+            ( handleKeyframeEvent animEvent { model | animState = animState }
+            , Cmd.none
+            )
 
-                                RotatingClosed ->
-                                    Opening
 
-                                _ ->
-                                    newModel.state
-                    in
-                    ( { newModel
-                        | state = newState
-                        , animState =
-                            Keyframes.animate newModel.animState <|
-                                selectAnimation newState
-                      }
-                    , Cmd.none
-                    )
+handleKeyframeEvent : Keyframes.AnimEvent -> Model -> Model
+handleKeyframeEvent animEvent model =
+    case animEvent of
+        Keyframes.Ended "cube" ->
+            cubeRotationEnded model
 
-                Keyframes.Ended "front-face" ->
-                    let
-                        newState =
-                            case newModel.state of
-                                Opening ->
-                                    RotatingOpen
+        Keyframes.Ended "front-face" ->
+            sidesMovementEnded model
 
-                                Closing ->
-                                    RotatingClosed
+        _ ->
+            model
 
-                                _ ->
-                                    newModel.state
-                    in
-                    ( { newModel
-                        | state = newState
-                        , animState =
-                            Keyframes.animate newModel.animState <|
-                                selectAnimation newState
-                      }
-                    , Cmd.none
-                    )
+
+cubeRotationEnded : Model -> Model
+cubeRotationEnded model =
+    let
+        state =
+            case model.state of
+                RotatingOpen ->
+                    Closing
+
+                RotatingClosed ->
+                    Opening
 
                 _ ->
-                    ( newModel, Cmd.none )
+                    model.state
+    in
+    { model
+        | state = state
+        , animState =
+            Keyframes.animate model.animState <|
+                selectAnimation state
+    }
+
+
+sidesMovementEnded : Model -> Model
+sidesMovementEnded model =
+    let
+        state =
+            case model.state of
+                Opening ->
+                    RotatingOpen
+
+                Closing ->
+                    RotatingClosed
+
+                _ ->
+                    model.state
+    in
+    { model
+        | state = state
+        , animState =
+            Keyframes.animate model.animState <|
+                selectAnimation state
+    }
 
 
 
@@ -374,9 +392,13 @@ viewContent model =
             , blur = 8
             , color = Element.rgba 0 0 0 0.1
             }
+        , View3D.perspective 1000
+            |> htmlAttribute
+        , View3D.perspectiveOrigin View3D.LeftMiddle
+            |> htmlAttribute
         ]
         (el
-            [ View3D.perspective 1000
+            [ View3D.transformStyle View3D.Preserve3D
                 |> htmlAttribute
             , View3D.opacityHack
                 -- Kind of fixes Chrome on macOS compositor tile corruption when
@@ -485,8 +507,6 @@ viewCube model =
         (cubeAttrs
             ++ cubeEvents
             ++ [ View3D.transformStyle View3D.Preserve3D
-                    |> htmlAttribute
-               , View3D.perspectiveOrigin View3D.Center
                     |> htmlAttribute
                , width (px cubeSize)
                , height (px cubeSize)
