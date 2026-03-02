@@ -9201,6 +9201,7 @@ var $author$project$Concepts$Animate3D$MainBox$init = function (flags) {
 		_List_fromArray(
 			[
 				A2($author$project$Anim$Property$Translate$initZ, 'cube', 200),
+				A2($author$project$Anim$Property$Rotate$initY, 'cube', 0),
 				A2($author$project$Anim$Property$Translate$initZ, 'front-face', $author$project$Concepts$Animate3D$MainBox$depth),
 				A2($author$project$Anim$Property$Translate$initZ, 'back-face', $author$project$Concepts$Animate3D$MainBox$depth * (-1)),
 				A2($author$project$Anim$Property$Translate$initX, 'right-face', $author$project$Concepts$Animate3D$MainBox$depth),
@@ -9234,8 +9235,7 @@ var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Concepts$Animate3D$MainBox$Closing = {$: 'Closing'};
-var $author$project$Concepts$Animate3D$MainBox$RotatingClosed = {$: 'RotatingClosed'};
-var $author$project$Concepts$Animate3D$MainBox$RotatingOpen = {$: 'RotatingOpen'};
+var $elm$core$Debug$log = _Debug_log;
 var $author$project$Concepts$Animate3D$MainBox$moveBackFaceIn = A2(
 	$author$project$Concepts$Animate3D$MainBox$moveFace,
 	'back-face',
@@ -9362,9 +9362,11 @@ var $author$project$Concepts$Animate3D$MainBox$cubeRotationEnded = function (mod
 				$author$project$Anim$Engine$CSS$Keyframes$animate,
 				model.animState,
 				$author$project$Concepts$Animate3D$MainBox$selectAnimation(state)),
-			state: state
+			state: A2($elm$core$Debug$log, 'State changed to', state)
 		});
 };
+var $author$project$Concepts$Animate3D$MainBox$RotatingClosed = {$: 'RotatingClosed'};
+var $author$project$Concepts$Animate3D$MainBox$RotatingOpen = {$: 'RotatingOpen'};
 var $author$project$Concepts$Animate3D$MainBox$sidesMovementEnded = function (model) {
 	var state = function () {
 		var _v0 = model.state;
@@ -9384,24 +9386,40 @@ var $author$project$Concepts$Animate3D$MainBox$sidesMovementEnded = function (mo
 				$author$project$Anim$Engine$CSS$Keyframes$animate,
 				model.animState,
 				$author$project$Concepts$Animate3D$MainBox$selectAnimation(state)),
-			state: state
+			state: A2($elm$core$Debug$log, 'State changed to', state)
 		});
+};
+var $author$project$Concepts$Animate3D$MainBox$stateToString = function (state) {
+	switch (state.$) {
+		case 'Opening':
+			return 'Opening';
+		case 'Closing':
+			return 'Closing';
+		case 'RotatingOpen':
+			return 'RotatingOpen';
+		default:
+			return 'RotatingClosed';
+	}
 };
 var $author$project$Concepts$Animate3D$MainBox$handleKeyframeEvent = F2(
 	function (animEvent, model) {
-		_v0$2:
+		var _v0 = A2(
+			$elm$core$Debug$log,
+			'AnimEvent in state ' + $author$project$Concepts$Animate3D$MainBox$stateToString(model.state),
+			animEvent);
+		_v1$2:
 		while (true) {
 			if (animEvent.$ === 'Ended') {
 				switch (animEvent.a) {
 					case 'cube':
-						return (_Utils_eq(model.state, $author$project$Concepts$Animate3D$MainBox$RotatingOpen) || _Utils_eq(model.state, $author$project$Concepts$Animate3D$MainBox$RotatingClosed)) ? $author$project$Concepts$Animate3D$MainBox$cubeRotationEnded(model) : model;
+						return $author$project$Concepts$Animate3D$MainBox$cubeRotationEnded(model);
 					case 'front-face':
-						return (_Utils_eq(model.state, $author$project$Concepts$Animate3D$MainBox$Opening) || _Utils_eq(model.state, $author$project$Concepts$Animate3D$MainBox$Closing)) ? $author$project$Concepts$Animate3D$MainBox$sidesMovementEnded(model) : model;
+						return $author$project$Concepts$Animate3D$MainBox$sidesMovementEnded(model);
 					default:
-						break _v0$2;
+						break _v1$2;
 				}
 			} else {
-				break _v0$2;
+				break _v1$2;
 			}
 		}
 		return model;
@@ -9536,21 +9554,36 @@ var $author$project$Anim$Engine$CSS$Keyframes$update = F2(
 	});
 var $author$project$Concepts$Animate3D$MainBox$update = F2(
 	function (msg, model) {
-		if (msg.$ === 'NoOp') {
-			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-		} else {
-			var animMsg = msg.a;
-			var _v1 = A2($author$project$Anim$Engine$CSS$Keyframes$update, animMsg, model.animState);
-			var animState = _v1.a;
-			var animEvent = _v1.b;
-			return _Utils_Tuple2(
-				A2(
-					$author$project$Concepts$Animate3D$MainBox$handleKeyframeEvent,
-					animEvent,
-					_Utils_update(
-						model,
-						{animState: animState})),
-				$elm$core$Platform$Cmd$none);
+		var _v0 = A2($elm$core$Debug$log, 'Msg received', msg);
+		switch (_v0.$) {
+			case 'NoOp':
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			case 'GotCubeMsg':
+				var animMsg = _v0.a;
+				var _v1 = A2($author$project$Anim$Engine$CSS$Keyframes$update, animMsg, model.animState);
+				var animState = _v1.a;
+				var animEvent = _v1.b;
+				return _Utils_Tuple2(
+					A2(
+						$author$project$Concepts$Animate3D$MainBox$handleKeyframeEvent,
+						animEvent,
+						_Utils_update(
+							model,
+							{animState: animState})),
+					$elm$core$Platform$Cmd$none);
+			default:
+				var animMsg = _v0.a;
+				var _v2 = A2($author$project$Anim$Engine$CSS$Keyframes$update, animMsg, model.animState);
+				var animState = _v2.a;
+				var animEvent = _v2.b;
+				return _Utils_Tuple2(
+					A2(
+						$author$project$Concepts$Animate3D$MainBox$handleKeyframeEvent,
+						animEvent,
+						_Utils_update(
+							model,
+							{animState: animState})),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Common$UI$Basic = {$: 'Basic'};
@@ -15390,8 +15423,14 @@ var $author$project$Common$UI$createDocument = F3(
 			title: title
 		};
 	});
-var $author$project$Anim$Extra$View3D$Center = {$: 'Center'};
+var $author$project$Anim$Extra$View3D$LeftMiddle = {$: 'LeftMiddle'};
 var $author$project$Common$Colors$backgroundWhite = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
+var $mdgriffith$elm_ui$Internal$Model$Class = F2(
+	function (a, b) {
+		return {$: 'Class', a: a, b: b};
+	});
+var $mdgriffith$elm_ui$Internal$Flag$fontWeight = $mdgriffith$elm_ui$Internal$Flag$flag(13);
+var $mdgriffith$elm_ui$Element$Font$bold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.bold);
 var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
 	return A2(
 		$mdgriffith$elm_ui$Internal$Model$StyleClass,
@@ -15428,10 +15467,6 @@ var $mdgriffith$elm_ui$Element$html = $mdgriffith$elm_ui$Internal$Model$unstyled
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Anim$Extra$View3D$opacityHack = A2($elm$html$Html$Attributes$style, 'opacity', '0.99');
-var $mdgriffith$elm_ui$Internal$Model$Class = F2(
-	function (a, b) {
-		return {$: 'Class', a: a, b: b};
-	});
 var $mdgriffith$elm_ui$Internal$Flag$fontAlignment = $mdgriffith$elm_ui$Internal$Flag$flag(12);
 var $mdgriffith$elm_ui$Element$Font$center = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontAlignment, $mdgriffith$elm_ui$Internal$Style$classes.textCenter);
 var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
@@ -15466,7 +15501,6 @@ var $mdgriffith$elm_ui$Element$paragraph = F2(
 						attrs))),
 			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
 	});
-var $mdgriffith$elm_ui$Internal$Flag$fontWeight = $mdgriffith$elm_ui$Internal$Flag$flag(13);
 var $mdgriffith$elm_ui$Element$Font$semiBold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.textSemiBold);
 var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
 	return {$: 'Text', a: a};
@@ -15573,6 +15607,12 @@ var $mdgriffith$elm_ui$Element$Border$shadow = function (almostShade) {
 			'box-shadow',
 			$mdgriffith$elm_ui$Internal$Model$formatBoxShadow(shade)));
 };
+var $mdgriffith$elm_ui$Element$Font$size = function (i) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$fontSize,
+		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
+};
 var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
 var $elm$core$Dict$values = function (dict) {
 	return A3(
@@ -15610,8 +15650,8 @@ var $author$project$Anim$Internal$CSS$keyframesStyleNode = function (_v0) {
 			]));
 };
 var $author$project$Anim$Engine$CSS$Keyframes$styleNode = $author$project$Anim$Internal$CSS$keyframesStyleNode;
-var $author$project$Concepts$Animate3D$MainBox$GotKeyframeMsg = function (a) {
-	return {$: 'GotKeyframeMsg', a: a};
+var $author$project$Concepts$Animate3D$MainBox$GotCubeMsg = function (a) {
+	return {$: 'GotCubeMsg', a: a};
 };
 var $author$project$Anim$Extra$View3D$Preserve3D = {$: 'Preserve3D'};
 var $author$project$Anim$Internal$CSS$getElementAnimation = F2(
@@ -15710,54 +15750,66 @@ var $author$project$Anim$Engine$CSS$Keyframes$InternalStarted = function (a) {
 };
 var $elm$virtual_dom$VirtualDom$mapAttribute = _VirtualDom_mapAttribute;
 var $elm$html$Html$Attributes$map = $elm$virtual_dom$VirtualDom$mapAttribute;
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
+var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 'MayStopPropagation', a: a};
 };
 var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$on = F2(
+var $elm$html$Html$Events$stopPropagationOn = F2(
 	function (event, decoder) {
 		return A2(
 			$elm$virtual_dom$VirtualDom$on,
 			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
+			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
 	});
-var $author$project$Anim$Internal$CSS$onAnimationCancel = A2(
-	$elm$core$Basics$composeL,
-	$elm$html$Html$Events$on('animationcancel'),
-	$elm$json$Json$Decode$succeed);
-var $author$project$Anim$Engine$CSS$Keyframes$onAnimationCancel = $author$project$Anim$Internal$CSS$onAnimationCancel;
-var $author$project$Anim$Internal$CSS$onAnimationEnd = A2(
-	$elm$core$Basics$composeL,
-	$elm$html$Html$Events$on('animationend'),
-	$elm$json$Json$Decode$succeed);
-var $author$project$Anim$Engine$CSS$Keyframes$onAnimationEnd = $author$project$Anim$Internal$CSS$onAnimationEnd;
-var $author$project$Anim$Internal$CSS$onAnimationIteration = A2(
-	$elm$core$Basics$composeL,
-	$elm$html$Html$Events$on('animationiteration'),
-	$elm$json$Json$Decode$succeed);
-var $author$project$Anim$Engine$CSS$Keyframes$onAnimationIteration = $author$project$Anim$Internal$CSS$onAnimationIteration;
-var $author$project$Anim$Internal$CSS$onAnimationStart = A2(
-	$elm$core$Basics$composeL,
-	$elm$html$Html$Events$on('animationstart'),
-	$elm$json$Json$Decode$succeed);
-var $author$project$Anim$Engine$CSS$Keyframes$onAnimationStart = $author$project$Anim$Internal$CSS$onAnimationStart;
-var $author$project$Anim$Engine$CSS$Keyframes$events = F2(
+var $author$project$Anim$Internal$CSS$onAnimationCancelStopPropagation = function (msg) {
+	return A2(
+		$elm$html$Html$Events$stopPropagationOn,
+		'animationcancel',
+		$elm$json$Json$Decode$succeed(
+			_Utils_Tuple2(msg, true)));
+};
+var $author$project$Anim$Engine$CSS$Keyframes$onAnimationCancelStopPropagation = $author$project$Anim$Internal$CSS$onAnimationCancelStopPropagation;
+var $author$project$Anim$Internal$CSS$onAnimationEndStopPropagation = function (msg) {
+	return A2(
+		$elm$html$Html$Events$stopPropagationOn,
+		'animationend',
+		$elm$json$Json$Decode$succeed(
+			_Utils_Tuple2(msg, true)));
+};
+var $author$project$Anim$Engine$CSS$Keyframes$onAnimationEndStopPropagation = $author$project$Anim$Internal$CSS$onAnimationEndStopPropagation;
+var $author$project$Anim$Internal$CSS$onAnimationIterationStopPropagation = function (msg) {
+	return A2(
+		$elm$html$Html$Events$stopPropagationOn,
+		'animationiteration',
+		$elm$json$Json$Decode$succeed(
+			_Utils_Tuple2(msg, true)));
+};
+var $author$project$Anim$Engine$CSS$Keyframes$onAnimationIterationStopPropagation = $author$project$Anim$Internal$CSS$onAnimationIterationStopPropagation;
+var $author$project$Anim$Internal$CSS$onAnimationStartStopPropagation = function (msg) {
+	return A2(
+		$elm$html$Html$Events$stopPropagationOn,
+		'animationstart',
+		$elm$json$Json$Decode$succeed(
+			_Utils_Tuple2(msg, true)));
+};
+var $author$project$Anim$Engine$CSS$Keyframes$onAnimationStartStopPropagation = $author$project$Anim$Internal$CSS$onAnimationStartStopPropagation;
+var $author$project$Anim$Engine$CSS$Keyframes$eventsStopPropagation = F2(
 	function (elementId, toMsg) {
 		return A2(
 			$elm$core$List$map,
 			$elm$html$Html$Attributes$map(toMsg),
 			_List_fromArray(
 				[
-					$author$project$Anim$Engine$CSS$Keyframes$onAnimationStart(
+					$author$project$Anim$Engine$CSS$Keyframes$onAnimationStartStopPropagation(
 					$author$project$Anim$Engine$CSS$Keyframes$AnimMsg(
 						$author$project$Anim$Engine$CSS$Keyframes$InternalStarted(elementId))),
-					$author$project$Anim$Engine$CSS$Keyframes$onAnimationEnd(
+					$author$project$Anim$Engine$CSS$Keyframes$onAnimationEndStopPropagation(
 					$author$project$Anim$Engine$CSS$Keyframes$AnimMsg(
 						$author$project$Anim$Engine$CSS$Keyframes$InternalEnded(elementId))),
-					$author$project$Anim$Engine$CSS$Keyframes$onAnimationCancel(
+					$author$project$Anim$Engine$CSS$Keyframes$onAnimationCancelStopPropagation(
 					$author$project$Anim$Engine$CSS$Keyframes$AnimMsg(
 						$author$project$Anim$Engine$CSS$Keyframes$InternalCancelled(elementId))),
-					$author$project$Anim$Engine$CSS$Keyframes$onAnimationIteration(
+					$author$project$Anim$Engine$CSS$Keyframes$onAnimationIterationStopPropagation(
 					$author$project$Anim$Engine$CSS$Keyframes$AnimMsg(
 						$author$project$Anim$Engine$CSS$Keyframes$InternalIteration(elementId)))
 				]));
@@ -15802,13 +15854,10 @@ var $author$project$Anim$Extra$View3D$transformStyle = function (ts) {
 			}
 		}());
 };
-var $author$project$Concepts$Animate3D$MainBox$NoOp = {$: 'NoOp'};
-var $mdgriffith$elm_ui$Element$Font$bold = A2($mdgriffith$elm_ui$Internal$Model$Class, $mdgriffith$elm_ui$Internal$Flag$fontWeight, $mdgriffith$elm_ui$Internal$Style$classes.bold);
-var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
-	return {$: 'AlignY', a: a};
+var $author$project$Concepts$Animate3D$MainBox$GotSidesMsg = function (a) {
+	return {$: 'GotSidesMsg', a: a};
 };
-var $mdgriffith$elm_ui$Internal$Model$CenterY = {$: 'CenterY'};
-var $mdgriffith$elm_ui$Element$centerY = $mdgriffith$elm_ui$Internal$Model$AlignY($mdgriffith$elm_ui$Internal$Model$CenterY);
+var $author$project$Concepts$Animate3D$MainBox$NoOp = {$: 'NoOp'};
 var $mdgriffith$elm_ui$Internal$Flag$borderColor = $mdgriffith$elm_ui$Internal$Flag$flag(28);
 var $mdgriffith$elm_ui$Element$Border$color = function (clr) {
 	return A2(
@@ -15824,12 +15873,6 @@ var $mdgriffith$elm_ui$Element$rgb = F3(
 	function (r, g, b) {
 		return A4($mdgriffith$elm_ui$Internal$Model$Rgba, r, g, b, 1);
 	});
-var $mdgriffith$elm_ui$Element$Font$size = function (i) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$fontSize,
-		$mdgriffith$elm_ui$Internal$Model$FontSize(i));
-};
 var $mdgriffith$elm_ui$Internal$Model$BorderWidth = F5(
 	function (a, b, c, d, e) {
 		return {$: 'BorderWidth', a: a, b: b, c: c, d: d, e: e};
@@ -15848,6 +15891,15 @@ var $mdgriffith$elm_ui$Element$Border$width = function (v) {
 };
 var $author$project$Concepts$Animate3D$MainBox$viewFace = F3(
 	function (animState, listenForEvents, config) {
+		var textEventAttributes = A2(
+			$elm$core$List$map,
+			$mdgriffith$elm_ui$Element$htmlAttribute,
+			A2(
+				$author$project$Anim$Engine$CSS$Keyframes$eventsStopPropagation,
+				config.textId,
+				function (_v1) {
+					return $author$project$Concepts$Animate3D$MainBox$NoOp;
+				}));
 		var textAnimAttributes = A2(
 			$elm$core$List$map,
 			$mdgriffith$elm_ui$Element$htmlAttribute,
@@ -15856,9 +15908,9 @@ var $author$project$Concepts$Animate3D$MainBox$viewFace = F3(
 			$elm$core$List$map,
 			$mdgriffith$elm_ui$Element$htmlAttribute,
 			A2(
-				$author$project$Anim$Engine$CSS$Keyframes$events,
+				$author$project$Anim$Engine$CSS$Keyframes$eventsStopPropagation,
 				config.id,
-				listenForEvents ? $author$project$Concepts$Animate3D$MainBox$GotKeyframeMsg : function (_v0) {
+				listenForEvents ? $author$project$Concepts$Animate3D$MainBox$GotSidesMsg : function (_v0) {
 					return $author$project$Concepts$Animate3D$MainBox$NoOp;
 				}));
 		var baseAttributes = _List_fromArray(
@@ -15902,10 +15954,7 @@ var $author$project$Concepts$Animate3D$MainBox$viewFace = F3(
 							])))),
 			A2(
 				$mdgriffith$elm_ui$Element$el,
-				_Utils_ap(
-					textAnimAttributes,
-					_List_fromArray(
-						[$mdgriffith$elm_ui$Element$centerX, $mdgriffith$elm_ui$Element$centerY])),
+				_Utils_ap(textAnimAttributes, textEventAttributes),
 				$mdgriffith$elm_ui$Element$text(config.label)));
 	});
 var $author$project$Concepts$Animate3D$MainBox$viewCube = function (model) {
@@ -15913,7 +15962,7 @@ var $author$project$Concepts$Animate3D$MainBox$viewCube = function (model) {
 	var cubeEvents = (_Utils_eq(model.state, $author$project$Concepts$Animate3D$MainBox$RotatingOpen) || _Utils_eq(model.state, $author$project$Concepts$Animate3D$MainBox$RotatingClosed)) ? A2(
 		$elm$core$List$map,
 		$mdgriffith$elm_ui$Element$htmlAttribute,
-		A2($author$project$Anim$Engine$CSS$Keyframes$events, 'cube', $author$project$Concepts$Animate3D$MainBox$GotKeyframeMsg)) : _List_Nil;
+		A2($author$project$Anim$Engine$CSS$Keyframes$eventsStopPropagation, 'cube', $author$project$Concepts$Animate3D$MainBox$GotCubeMsg)) : _List_Nil;
 	var cubeAttrs = A2(
 		$elm$core$List$map,
 		$mdgriffith$elm_ui$Element$htmlAttribute,
@@ -15935,7 +15984,7 @@ var $author$project$Concepts$Animate3D$MainBox$viewCube = function (model) {
 					]))),
 		_List_fromArray(
 			[
-				A3($author$project$Concepts$Animate3D$MainBox$viewFace, model.animState, true, $author$project$Concepts$Animate3D$MainBox$frontFace),
+				A3($author$project$Concepts$Animate3D$MainBox$viewFace, model.animState, shouldListenForSideEvents, $author$project$Concepts$Animate3D$MainBox$frontFace),
 				A3($author$project$Concepts$Animate3D$MainBox$viewFace, model.animState, false, $author$project$Concepts$Animate3D$MainBox$backFace),
 				A3($author$project$Concepts$Animate3D$MainBox$viewFace, model.animState, false, $author$project$Concepts$Animate3D$MainBox$rightFace),
 				A3($author$project$Concepts$Animate3D$MainBox$viewFace, model.animState, false, $author$project$Concepts$Animate3D$MainBox$leftFace),
@@ -16043,6 +16092,16 @@ var $author$project$Concepts$Animate3D$MainBox$viewContent = function (model) {
 	return _List_fromArray(
 		[
 			$author$project$Common$UI$pageHeader('Keyframes 3D Example'),
+			A2(
+			$mdgriffith$elm_ui$Element$el,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$Font$size(16),
+					$mdgriffith$elm_ui$Element$Font$bold,
+					$mdgriffith$elm_ui$Element$centerX
+				]),
+			$mdgriffith$elm_ui$Element$text(
+				'State: ' + $author$project$Concepts$Animate3D$MainBox$stateToString(model.state))),
 			$mdgriffith$elm_ui$Element$html(
 			$author$project$Anim$Engine$CSS$Keyframes$styleNode(model.animState)),
 			$author$project$Concepts$Animate3D$MainBox$viewExplanation,
@@ -16067,7 +16126,7 @@ var $author$project$Concepts$Animate3D$MainBox$viewContent = function (model) {
 					$mdgriffith$elm_ui$Element$htmlAttribute(
 					$author$project$Anim$Extra$View3D$perspective(1000)),
 					$mdgriffith$elm_ui$Element$htmlAttribute(
-					$author$project$Anim$Extra$View3D$perspectiveOrigin($author$project$Anim$Extra$View3D$Center)),
+					$author$project$Anim$Extra$View3D$perspectiveOrigin($author$project$Anim$Extra$View3D$LeftMiddle)),
 					$mdgriffith$elm_ui$Element$htmlAttribute($author$project$Anim$Extra$View3D$opacityHack),
 					$mdgriffith$elm_ui$Element$htmlAttribute(
 					A2($elm$html$Html$Attributes$style, 'display', 'flex')),

@@ -103,16 +103,10 @@ init flags =
     in
     -- --8<-- [end:initializeProperties]
     -- --8<-- [start:startAnimation]
-    ( { animState =
-            Keyframes.animate initialAnimState
-                (Keyframes.loopForever
-                    >> Keyframes.alternate
-                    >> moveSidesOut
-                    >> rotateCubeClockwise
-                )
+    ( { animState = Keyframes.animate initialAnimState moveSidesOut
 
       -- --8<-- [end:startAnimation]
-      , state = RotatingOpen
+      , state = Opening
       , animAreaSize =
             { width = min 500 (flags.window.width - 40)
             , height = 350
@@ -318,7 +312,8 @@ moveTextsIn =
 
 
 type Msg
-    = GotKeyframeMsg Keyframes.AnimMsg
+    = NoOp
+    | GotKeyframeMsg Keyframes.AnimMsg
 
 
 
@@ -328,6 +323,9 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        NoOp ->
+            ( model, Cmd.none )
+
         GotKeyframeMsg animMsg ->
             let
                 ( animState, animEvent ) =
@@ -342,10 +340,20 @@ handleKeyframeEvent : Keyframes.AnimEvent -> Model -> Model
 handleKeyframeEvent animEvent model =
     case animEvent of
         Keyframes.Ended "cube" ->
-            cubeRotationEnded model
+            -- Only process cube ended when we're in a rotating state
+            if model.state == RotatingOpen || model.state == RotatingClosed then
+                cubeRotationEnded model
+
+            else
+                model
 
         Keyframes.Ended "front-face" ->
-            sidesMovementEnded model
+            -- Only process front-face ended when we're in opening/closing state
+            if model.state == Opening || model.state == Closing then
+                sidesMovementEnded model
+
+            else
+                model
 
         _ ->
             model
@@ -451,7 +459,7 @@ viewContent model =
         -- Perspective and centering on the same element to avoid breaking 3D context
         , View3D.perspective 1000
             |> htmlAttribute
-        , View3D.perspectiveOrigin View3D.LeftMiddle
+        , View3D.perspectiveOrigin View3D.Center
             |> htmlAttribute
         , View3D.opacityHack
             -- Kind of fixes Chrome on macOS compositor tile corruption when
@@ -466,7 +474,14 @@ viewContent model =
         , Html.Attributes.style "justify-content" "center" |> htmlAttribute
         , Html.Attributes.style "align-items" "center" |> htmlAttribute
         ]
-        (viewCube model)
+      <|
+        el
+            [ View3D.transformStyle View3D.Preserve3D
+                |> htmlAttribute
+            ]
+    , width (px model.animAreaSize.width)
+    , height (px model.animAreaSize.height) <|
+        viewCube model
     ]
 
 
@@ -550,10 +565,8 @@ viewCube model =
             Keyframes.attributes "cube" model.animState
                 |> List.map htmlAttribute
 
-        -- Conditionally listen for keyframe events on both the cube and front face
-        -- depending on the current state of the animation.
-        -- This prevents us from receiving events that would bubble up from the
-        -- sides to the cube which would trigger unwanted state changes
+        -- Only listen for cube events when we're in rotation states
+        -- This prevents catching bubbled events from faces during side movement
         cubeEvents =
             if model.state == RotatingOpen || model.state == RotatingClosed then
                 Keyframes.events "cube" GotKeyframeMsg
@@ -576,7 +589,7 @@ viewCube model =
         )
         [ -- we only listen for animation events on the front face
           -- since all faces would trigger at the same time
-          viewFace model.animState shouldListenForSideEvents frontFace
+          viewFace model.animState True frontFace
         , viewFace model.animState False backFace
         , viewFace model.animState False rightFace
         , viewFace model.animState False leftFace
@@ -610,15 +623,21 @@ viewFace animState listenForEvents config =
             Keyframes.attributes config.id animState
                 |> List.map htmlAttribute
 
+        -- Always stop propagation on face events to prevent bubbling to cube
+        -- Only forward events to our handler when we actually want to listen
         eventAttributes =
-            if listenForEvents then
-                Keyframes.events config.id GotKeyframeMsg
-                    |> List.map htmlAttribute
+            Keyframes.events config.id
+                (if listenForEvents then
+                    GotKeyframeMsg
 
-            else
-                []
+                 else
+                    \_ -> NoOp
+                )
+                |> List.map htmlAttribute
 
         -- Text element with its own 3D animation (3rd level)
+        -- Use eventsStopPropagation to prevent text animation events from
+        -- bubbling up to the face element and triggering unwanted state changes
         textAnimAttributes =
             Keyframes.attributes config.textId animState
                 |> List.map htmlAttribute
@@ -633,7 +652,7 @@ viewFace animState listenForEvents config =
                , View3D.transformStyle View3D.Preserve3D |> htmlAttribute
                ]
         )
-        (el textAnimAttributes (text config.label))
+        (el (textAnimAttributes ++ [ centerX, centerY ]) (text config.label))
 
 
 
