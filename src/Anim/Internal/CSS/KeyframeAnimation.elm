@@ -4,6 +4,7 @@ module Anim.Internal.CSS.KeyframeAnimation exposing
     , generateFromProcessed
     , generateWithSuffix
     , generateWithSuffixFromProcessed
+    , setDirection
     , setIterationCount
     , toAttributeString
     )
@@ -30,6 +31,7 @@ type alias KeyframeAnimation =
     , delay : Int
     , properties : List String -- Properties this layer animates
     , iterationCount : Builder.IterationCount
+    , direction : Builder.AnimationDirection
     }
 
 
@@ -59,7 +61,7 @@ generateWithSuffix elementId suffix properties =
         let
             processed =
                 Builder.processElement
-                    { globalTiming = Nothing, globalEasing = Nothing, globalDelay = Nothing, currentElementId = Nothing, elements = Dict.empty, scrollTargets = [], scrollContainer = "document", animationHistories = Dict.empty, nextAnimationId = 0, elementBaselines = Dict.empty, discreteTransitions = False, iterationCount = Builder.Once, waapiTargetElement = Nothing }
+                    { globalTiming = Nothing, globalEasing = Nothing, globalDelay = Nothing, currentElementId = Nothing, elements = Dict.empty, scrollTargets = [], scrollContainer = "document", animationHistories = Dict.empty, nextAnimationId = 0, elementBaselines = Dict.empty, discreteTransitions = False, iterationCount = Builder.Once, animationDirection = Builder.Normal, waapiTargetElement = Nothing }
                     { properties = properties, targetElement = Nothing }
         in
         generateWithSuffixFromProcessed elementId suffix processed.properties
@@ -411,6 +413,7 @@ generateWithSuffixFromProcessed elementId suffix processedProps =
           , delay = 0
           , properties = animatedProperties
           , iterationCount = Builder.Once -- Default, can be overridden via setIterationCount
+          , direction = Builder.Normal -- Default, can be overridden via setDirection
           }
         ]
 
@@ -420,6 +423,11 @@ generateWithSuffixFromProcessed elementId suffix processedProps =
 setIterationCount : Builder.IterationCount -> List KeyframeAnimation -> List KeyframeAnimation
 setIterationCount count layers =
     List.map (\layer -> { layer | iterationCount = count }) layers
+
+
+setDirection : Builder.AnimationDirection -> List KeyframeAnimation -> List KeyframeAnimation
+setDirection dir layers =
+    List.map (\layer -> { layer | direction = dir }) layers
 
 
 toAttributeString : List KeyframeAnimation -> String
@@ -439,6 +447,14 @@ toAttributeString animationLayers =
 
                                 Builder.Infinite ->
                                     "infinite"
+
+                        directionString =
+                            case layer.direction of
+                                Builder.Normal ->
+                                    "normal"
+
+                                Builder.Alternate ->
+                                    "alternate"
                     in
                     layer.animationName
                         ++ " "
@@ -449,6 +465,8 @@ toAttributeString animationLayers =
                         ++ String.fromInt layer.delay
                         ++ "ms "
                         ++ iterationString
+                        ++ " "
+                        ++ directionString
                         ++ " forwards"
                 )
             |> String.join ", "

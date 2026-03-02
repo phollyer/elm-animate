@@ -10,7 +10,7 @@ module Anim.Engine.CSS.Keyframes exposing
     , duration, speed
     , easing
     , delay
-    , iterations, loopForever
+    , iterations, loopForever, alternate
     , stop, reset, restart, pause, resume
     , pauseCmd, resumeCmd, restartCmd
     , anyRunning, isRunning, allComplete, isComplete
@@ -113,7 +113,7 @@ accurate complex curves like bounce and elastic.
 
 Control how many times an animation repeats.
 
-@docs iterations, loopForever
+@docs iterations, loopForever, alternate
 
 
 # Animation Control
@@ -437,6 +437,20 @@ The animation will continue until you call `stop`, `reset`, or remove the elemen
 loopForever : AnimBuilder -> AnimBuilder
 loopForever =
     Builder.loopForever
+
+
+{-| Make an animation alternate direction on each iteration (ping-pong effect).
+
+    Keyframes.animate model.animState <|
+        (loopForever >> alternate >> pulse "elementId")
+
+This creates a smooth ping-pong animation without needing reverse keyframes.
+The animation plays forward, then backward, then forward, etc.
+
+-}
+alternate : AnimBuilder -> AnimBuilder
+alternate =
+    Builder.alternate
 
 
 

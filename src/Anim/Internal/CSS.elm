@@ -141,7 +141,7 @@ init propertyInitializers =
                 { elementAnimations =
                     configuredBuilder
                         |> Builder.elements
-                        |> Dict.map (generateElementAnimation Nothing (Builder.discreteTransitionsEnabled configuredBuilder) (Builder.getIterationCount configuredBuilder))
+                        |> Dict.map (generateElementAnimation Nothing (Builder.discreteTransitionsEnabled configuredBuilder) (Builder.getIterationCount configuredBuilder) (Builder.getAnimationDirection configuredBuilder))
                 , elementStates =
                     elementIds
                         |> List.map (\id -> ( id, NotStarted ))
@@ -187,7 +187,7 @@ animate animState transform =
     AnimState
         { elementAnimations =
             processedData.elements
-                |> Dict.map (generateElementAnimationFromProcessed Nothing (Builder.discreteTransitionsEnabled builder_) (Builder.getIterationCount builder_))
+                |> Dict.map (generateElementAnimationFromProcessed Nothing (Builder.discreteTransitionsEnabled builder_) (Builder.getIterationCount builder_) (Builder.getAnimationDirection builder_))
         , elementStates =
             elementIds
                 |> List.map (\id -> ( id, NotStarted ))
@@ -270,7 +270,7 @@ animateWithOrder order animState transform =
         { elementAnimations =
             builder_
                 |> Builder.elements
-                |> Dict.map (generateElementAnimation (Just normalizedOrder) (Builder.discreteTransitionsEnabled builder_) (Builder.getIterationCount builder_))
+                |> Dict.map (generateElementAnimation (Just normalizedOrder) (Builder.discreteTransitionsEnabled builder_) (Builder.getIterationCount builder_) (Builder.getAnimationDirection builder_))
         , elementStates =
             elementIds
                 |> List.map (\id -> ( id, NotStarted ))
@@ -1109,16 +1109,16 @@ transformOrderToString order =
 -- CSS GENERATION
 
 
-generateElementAnimation : Maybe (List TransformOrder) -> Bool -> Builder.IterationCount -> String -> Builder.ElementConfig -> ElementAnimation
-generateElementAnimation maybeOrder discreteTransitions iterationCount elementId elementConfig =
-    generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount "" elementId elementConfig
+generateElementAnimation : Maybe (List TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> Builder.ElementConfig -> ElementAnimation
+generateElementAnimation maybeOrder discreteTransitions iterationCount direction elementId elementConfig =
+    generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount direction "" elementId elementConfig
 
 
 {-| Generate element animation with a suffix for the animation name.
 Used for restarting animations - passing a unique suffix forces the browser to treat it as a new animation.
 -}
-generateElementAnimationWithSuffix : Maybe (List TransformOrder) -> Bool -> Builder.IterationCount -> String -> String -> Builder.ElementConfig -> ElementAnimation
-generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount suffix elementId elementConfig =
+generateElementAnimationWithSuffix : Maybe (List TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> String -> Builder.ElementConfig -> ElementAnimation
+generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount direction suffix elementId elementConfig =
     let
         -- Process properties first (like keyframes do) for consistency
         processed =
@@ -1135,6 +1135,7 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount
                 , elementBaselines = Dict.empty
                 , discreteTransitions = discreteTransitions
                 , iterationCount = iterationCount
+                , animationDirection = direction
                 , waapiTargetElement = Nothing
                 }
                 elementConfig
@@ -1204,22 +1205,23 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount
     , animationLayers =
         KeyframeAnimation.generateWithSuffix elementId suffix elementConfig.properties
             |> KeyframeAnimation.setIterationCount iterationCount
+            |> KeyframeAnimation.setDirection direction
     }
 
 
 {-| Generate element animation from already-processed element config.
 Used when generating from animation history where data is already processed.
 -}
-generateElementAnimationFromProcessed : Maybe (List TransformOrder) -> Bool -> Builder.IterationCount -> String -> Builder.ProcessedElementConfig -> ElementAnimation
-generateElementAnimationFromProcessed maybeOrder discreteTransitions iterationCount elementId processed =
-    generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions iterationCount "" elementId processed
+generateElementAnimationFromProcessed : Maybe (List TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> Builder.ProcessedElementConfig -> ElementAnimation
+generateElementAnimationFromProcessed maybeOrder discreteTransitions iterationCount direction elementId processed =
+    generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions iterationCount direction "" elementId processed
 
 
 {-| Generate element animation from processed config with a suffix.
 Used for restarting animations from history.
 -}
-generateElementAnimationFromProcessedWithSuffix : Maybe (List TransformOrder) -> Bool -> Builder.IterationCount -> String -> String -> Builder.ProcessedElementConfig -> ElementAnimation
-generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions iterationCount suffix elementId processed =
+generateElementAnimationFromProcessedWithSuffix : Maybe (List TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> String -> Builder.ProcessedElementConfig -> ElementAnimation
+generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions iterationCount direction suffix elementId processed =
     let
         processedProps =
             processed.properties
@@ -1286,6 +1288,7 @@ generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions i
     , animationLayers =
         KeyframeAnimation.generateWithSuffixFromProcessed elementId suffix processedProps
             |> KeyframeAnimation.setIterationCount iterationCount
+            |> KeyframeAnimation.setDirection direction
     }
 
 
@@ -1309,6 +1312,7 @@ generateStylesOnly maybeOrder elementConfig =
                 , elementBaselines = Dict.empty
                 , discreteTransitions = False
                 , iterationCount = Builder.Once
+                , animationDirection = Builder.Normal
                 , waapiTargetElement = Nothing
                 }
                 elementConfig
@@ -1678,13 +1682,13 @@ restartAnimation elementId ((AnimState state) as animState) =
     in
     case maybeFromHistory of
         Just processedElementConfig ->
-            generateElementAnimationFromProcessedWithSuffix Nothing (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) restartSuffix elementId processedElementConfig
+            generateElementAnimationFromProcessedWithSuffix Nothing (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) (Builder.getAnimationDirection state.builder) restartSuffix elementId processedElementConfig
                 |> applyRestart
 
         Nothing ->
             case maybeFromBuilder of
                 Just elementConfig ->
-                    generateElementAnimationWithSuffix Nothing (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) restartSuffix elementId elementConfig
+                    generateElementAnimationWithSuffix Nothing (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) (Builder.getAnimationDirection state.builder) restartSuffix elementId elementConfig
                         |> applyRestart
 
                 Nothing ->

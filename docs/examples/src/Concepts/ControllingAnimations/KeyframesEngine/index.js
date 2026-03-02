@@ -5864,6 +5864,7 @@ var $author$project$Anim$Internal$CSS$Transform$generateFromProcessedWithOrder =
 		return $elm$core$String$trim(
 			A2($elm$core$String$join, ' ', orderedTransforms));
 	});
+var $author$project$Anim$Internal$Builder$Normal = {$: 'Normal'};
 var $author$project$Anim$Internal$Builder$Once = {$: 'Once'};
 var $author$project$Anim$Internal$CSS$KeyframeAnimation$buildKeyframesString = F2(
 	function (elementId, steps) {
@@ -7231,7 +7232,7 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffixFromPr
 				['transform', 'background-color', 'opacity', 'width', 'height']);
 			return _List_fromArray(
 				[
-					{animationName: animationName, delay: 0, duration: totalAnimationTime, easing: 'linear', iterationCount: $author$project$Anim$Internal$Builder$Once, keyframes: keyframesString, properties: animatedProperties}
+					{animationName: animationName, delay: 0, direction: $author$project$Anim$Internal$Builder$Normal, duration: totalAnimationTime, easing: 'linear', iterationCount: $author$project$Anim$Internal$Builder$Once, keyframes: keyframesString, properties: animatedProperties}
 				]);
 		}
 	});
@@ -7649,10 +7650,21 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix = F3(
 		} else {
 			var processed = A2(
 				$author$project$Anim$Internal$Builder$processElement,
-				{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
+				{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
 				{properties: properties, targetElement: $elm$core$Maybe$Nothing});
 			return A3($author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffixFromProcessed, elementId, suffix, processed.properties);
 		}
+	});
+var $author$project$Anim$Internal$CSS$KeyframeAnimation$setDirection = F2(
+	function (dir, layers) {
+		return A2(
+			$elm$core$List$map,
+			function (layer) {
+				return _Utils_update(
+					layer,
+					{direction: dir});
+			},
+			layers);
 	});
 var $author$project$Anim$Internal$CSS$KeyframeAnimation$setIterationCount = F2(
 	function (count, layers) {
@@ -7675,15 +7687,15 @@ var $author$project$Anim$Internal$CSS$transformOrderToString = function (order) 
 			return 'scale';
 	}
 };
-var $author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix = F6(
-	function (maybeOrder, discreteTransitions, iterationCount, suffix, elementId, elementConfig) {
+var $author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix = F7(
+	function (maybeOrder, discreteTransitions, iterationCount, direction, suffix, elementId, elementConfig) {
 		var transitionBehaviorStyle = discreteTransitions ? _List_fromArray(
 			[
 				_Utils_Tuple2('transition-behavior', 'allow-discrete')
 			]) : _List_Nil;
 		var processed = A2(
 			$author$project$Anim$Internal$Builder$processElement,
-			{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: discreteTransitions, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: iterationCount, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
+			{animationDirection: direction, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: discreteTransitions, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: iterationCount, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
 			elementConfig);
 		var processedProps = processed.properties;
 		var transforms = function () {
@@ -7741,22 +7753,29 @@ var $author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix = F6(
 					_Utils_ap(colorStyles, opacityStyles))));
 		return {
 			animationLayers: A2(
-				$author$project$Anim$Internal$CSS$KeyframeAnimation$setIterationCount,
-				iterationCount,
-				A3($author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix, elementId, suffix, elementConfig.properties)),
+				$author$project$Anim$Internal$CSS$KeyframeAnimation$setDirection,
+				direction,
+				A2(
+					$author$project$Anim$Internal$CSS$KeyframeAnimation$setIterationCount,
+					iterationCount,
+					A3($author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix, elementId, suffix, elementConfig.properties))),
 			styles: allStyles
 		};
 	});
-var $author$project$Anim$Internal$CSS$generateElementAnimation = F5(
-	function (maybeOrder, discreteTransitions, iterationCount, elementId, elementConfig) {
-		return A6($author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix, maybeOrder, discreteTransitions, iterationCount, '', elementId, elementConfig);
+var $author$project$Anim$Internal$CSS$generateElementAnimation = F6(
+	function (maybeOrder, discreteTransitions, iterationCount, direction, elementId, elementConfig) {
+		return A7($author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix, maybeOrder, discreteTransitions, iterationCount, direction, '', elementId, elementConfig);
 	});
+var $author$project$Anim$Internal$Builder$getAnimationDirection = function (_v0) {
+	var data = _v0.a;
+	return data.animationDirection;
+};
 var $author$project$Anim$Internal$Builder$getIterationCount = function (_v0) {
 	var data = _v0.a;
 	return data.iterationCount;
 };
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
-	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
+	{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
 var $elm$core$Dict$map = F2(
 	function (func, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
@@ -7796,11 +7815,12 @@ var $author$project$Anim$Internal$CSS$init = function (propertyInitializers) {
 				builder: $author$project$Anim$Internal$Builder$clearCurrentElement(configuredBuilder),
 				elementAnimations: A2(
 					$elm$core$Dict$map,
-					A3(
+					A4(
 						$author$project$Anim$Internal$CSS$generateElementAnimation,
 						$elm$core$Maybe$Nothing,
 						$author$project$Anim$Internal$Builder$discreteTransitionsEnabled(configuredBuilder),
-						$author$project$Anim$Internal$Builder$getIterationCount(configuredBuilder)),
+						$author$project$Anim$Internal$Builder$getIterationCount(configuredBuilder),
+						$author$project$Anim$Internal$Builder$getAnimationDirection(configuredBuilder)),
 					$author$project$Anim$Internal$Builder$elements(configuredBuilder)),
 				elementStates: $elm$core$Dict$fromList(
 					A2(
@@ -8646,8 +8666,8 @@ var $elm$core$Dict$foldl = F3(
 			}
 		}
 	});
-var $author$project$Anim$Internal$CSS$generateElementAnimationFromProcessedWithSuffix = F6(
-	function (maybeOrder, discreteTransitions, iterationCount, suffix, elementId, processed) {
+var $author$project$Anim$Internal$CSS$generateElementAnimationFromProcessedWithSuffix = F7(
+	function (maybeOrder, discreteTransitions, iterationCount, direction, suffix, elementId, processed) {
 		var transitionBehaviorStyle = discreteTransitions ? _List_fromArray(
 			[
 				_Utils_Tuple2('transition-behavior', 'allow-discrete')
@@ -8708,15 +8728,18 @@ var $author$project$Anim$Internal$CSS$generateElementAnimationFromProcessedWithS
 					_Utils_ap(colorStyles, opacityStyles))));
 		return {
 			animationLayers: A2(
-				$author$project$Anim$Internal$CSS$KeyframeAnimation$setIterationCount,
-				iterationCount,
-				A3($author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffixFromProcessed, elementId, suffix, processedProps)),
+				$author$project$Anim$Internal$CSS$KeyframeAnimation$setDirection,
+				direction,
+				A2(
+					$author$project$Anim$Internal$CSS$KeyframeAnimation$setIterationCount,
+					iterationCount,
+					A3($author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffixFromProcessed, elementId, suffix, processedProps))),
 			styles: allStyles
 		};
 	});
-var $author$project$Anim$Internal$CSS$generateElementAnimationFromProcessed = F5(
-	function (maybeOrder, discreteTransitions, iterationCount, elementId, processed) {
-		return A6($author$project$Anim$Internal$CSS$generateElementAnimationFromProcessedWithSuffix, maybeOrder, discreteTransitions, iterationCount, '', elementId, processed);
+var $author$project$Anim$Internal$CSS$generateElementAnimationFromProcessed = F6(
+	function (maybeOrder, discreteTransitions, iterationCount, direction, elementId, processed) {
+		return A7($author$project$Anim$Internal$CSS$generateElementAnimationFromProcessedWithSuffix, maybeOrder, discreteTransitions, iterationCount, direction, '', elementId, processed);
 	});
 var $author$project$Anim$Internal$Builder$processAnimationData = function (_v0) {
 	var data = _v0.a;
@@ -8748,11 +8771,12 @@ var $author$project$Anim$Internal$CSS$animate = F2(
 				builder: $author$project$Anim$Internal$Builder$clearCurrentElement(builderWithHistory),
 				elementAnimations: A2(
 					$elm$core$Dict$map,
-					A3(
+					A4(
 						$author$project$Anim$Internal$CSS$generateElementAnimationFromProcessed,
 						$elm$core$Maybe$Nothing,
 						$author$project$Anim$Internal$Builder$discreteTransitionsEnabled(builder_),
-						$author$project$Anim$Internal$Builder$getIterationCount(builder_)),
+						$author$project$Anim$Internal$Builder$getIterationCount(builder_),
+						$author$project$Anim$Internal$Builder$getAnimationDirection(builder_)),
 					processedData.elements),
 				elementStates: $elm$core$Dict$fromList(
 					A2(
@@ -9285,7 +9309,7 @@ var $author$project$Anim$Internal$CSS$generateStylesOnly = F2(
 	function (maybeOrder, elementConfig) {
 		var processed = A2(
 			$author$project$Anim$Internal$Builder$processElement,
-			{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
+			{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
 			elementConfig);
 		var processedProps = processed.properties;
 		var transforms = function () {
@@ -9526,11 +9550,12 @@ var $author$project$Anim$Internal$CSS$restartAnimation = F2(
 		if (maybeFromHistory.$ === 'Just') {
 			var processedElementConfig = maybeFromHistory.a;
 			return applyRestart(
-				A6(
+				A7(
 					$author$project$Anim$Internal$CSS$generateElementAnimationFromProcessedWithSuffix,
 					$elm$core$Maybe$Nothing,
 					$author$project$Anim$Internal$Builder$discreteTransitionsEnabled(state.builder),
 					$author$project$Anim$Internal$Builder$getIterationCount(state.builder),
+					$author$project$Anim$Internal$Builder$getAnimationDirection(state.builder),
 					restartSuffix,
 					elementId,
 					processedElementConfig));
@@ -9538,11 +9563,12 @@ var $author$project$Anim$Internal$CSS$restartAnimation = F2(
 			if (maybeFromBuilder.$ === 'Just') {
 				var elementConfig = maybeFromBuilder.a;
 				return applyRestart(
-					A6(
+					A7(
 						$author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix,
 						$elm$core$Maybe$Nothing,
 						$author$project$Anim$Internal$Builder$discreteTransitionsEnabled(state.builder),
 						$author$project$Anim$Internal$Builder$getIterationCount(state.builder),
+						$author$project$Anim$Internal$Builder$getAnimationDirection(state.builder),
 						restartSuffix,
 						elementId,
 						elementConfig));
@@ -15706,18 +15732,26 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$toAttributeString = func
 			$elm$core$List$map,
 			function (layer) {
 				var iterationString = function () {
-					var _v0 = layer.iterationCount;
-					switch (_v0.$) {
+					var _v1 = layer.iterationCount;
+					switch (_v1.$) {
 						case 'Once':
 							return '1';
 						case 'Times':
-							var n = _v0.a;
+							var n = _v1.a;
 							return $elm$core$String$fromInt(n);
 						default:
 							return 'infinite';
 					}
 				}();
-				return layer.animationName + (' ' + ($elm$core$String$fromInt(layer.duration) + ('ms ' + (layer.easing + (' ' + ($elm$core$String$fromInt(layer.delay) + ('ms ' + (iterationString + ' forwards'))))))));
+				var directionString = function () {
+					var _v0 = layer.direction;
+					if (_v0.$ === 'Normal') {
+						return 'normal';
+					} else {
+						return 'alternate';
+					}
+				}();
+				return layer.animationName + (' ' + ($elm$core$String$fromInt(layer.duration) + ('ms ' + (layer.easing + (' ' + ($elm$core$String$fromInt(layer.delay) + ('ms ' + (iterationString + (' ' + (directionString + ' forwards'))))))))));
 			},
 			animationLayers)) : '';
 };

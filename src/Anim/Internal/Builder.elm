@@ -1,6 +1,7 @@
 module Anim.Internal.Builder exposing
     ( AnimBuilder
     , AnimationConfig
+    , AnimationDirection(..)
     , AnimationHistory
     , AnimationHistoryEntry
     , AnimationId
@@ -16,6 +17,7 @@ module Anim.Internal.Builder exposing
     , addAnimationToHistory
     , addScrollTarget
     , allowDiscreteTransitions
+    , alternate
     , clearAnimationHistory
     , clearCurrentElement
     , clearElements
@@ -31,6 +33,7 @@ module Anim.Internal.Builder exposing
     , for
     , getAllAnimationHistory
     , getAnimationById
+    , getAnimationDirection
     , getCurrentAnimation
     , getCurrentElementConfig
     , getDelay
@@ -153,6 +156,7 @@ type alias BuilderData =
     , elementBaselines : Dict ElementId ElementEndStates -- Current animated states used as baselines
     , discreteTransitions : Bool -- Whether to allow discrete CSS properties (display, visibility) to transition
     , iterationCount : IterationCount -- How many times the animation should repeat
+    , animationDirection : AnimationDirection -- Direction the animation plays (normal, alternate)
     , waapiTargetElement : Maybe ElementId -- WAAPI-specific: target DOM element ID for animations
     }
 
@@ -168,6 +172,17 @@ type IterationCount
     = Once
     | Times Int
     | Infinite
+
+
+{-| Specifies the direction an animation should play.
+
+  - `Normal` - Animation plays forwards each iteration (default)
+  - `Alternate` - Animation alternates direction each iteration (ping-pong)
+
+-}
+type AnimationDirection
+    = Normal
+    | Alternate
 
 
 {-| Animation history for a single element.
@@ -308,6 +323,7 @@ init =
         , elementBaselines = Dict.empty -- NEW: Initialize empty baselines
         , discreteTransitions = False -- Disabled by default
         , iterationCount = Once -- Default: play once
+        , animationDirection = Normal -- Default: play forwards
         , waapiTargetElement = Nothing -- WAAPI: no target element set
         }
 
@@ -415,11 +431,31 @@ loopForever (AnimBuilder data) =
     AnimBuilder { data | iterationCount = Infinite }
 
 
+{-| Set the animation to alternate direction each iteration (ping-pong effect).
+
+Combine with `loopForever` or `iterations` for continuous back-and-forth motion:
+
+    CSS.animate model.animState <|
+        (loopForever >> alternate >> rotate "element")  -- Rotates back and forth forever
+
+-}
+alternate : AnimBuilder -> AnimBuilder
+alternate (AnimBuilder data) =
+    AnimBuilder { data | animationDirection = Alternate }
+
+
 {-| Get the configured iteration count.
 -}
 getIterationCount : AnimBuilder -> IterationCount
 getIterationCount (AnimBuilder data) =
     data.iterationCount
+
+
+{-| Get the configured animation direction.
+-}
+getAnimationDirection : AnimBuilder -> AnimationDirection
+getAnimationDirection (AnimBuilder data) =
+    data.animationDirection
 
 
 

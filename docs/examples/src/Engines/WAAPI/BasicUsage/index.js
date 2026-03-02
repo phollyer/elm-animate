@@ -9111,9 +9111,10 @@ var $author$project$Anim$Internal$Builder$setWaapiTargetElement = F2(
 				}));
 	});
 var $author$project$Anim$Engine$WAAPI$forElement = $author$project$Anim$Internal$Builder$setWaapiTargetElement;
+var $author$project$Anim$Internal$Builder$Normal = {$: 'Normal'};
 var $author$project$Anim$Internal$Builder$Once = {$: 'Once'};
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
-	{animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
+	{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
 var $author$project$Anim$Internal$WAAPI$init = F3(
 	function (commandPort, subscriptionPort, propertyInitializers) {
 		if (!propertyInitializers.b) {
