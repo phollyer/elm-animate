@@ -1,4 +1,4 @@
-module Concepts.Animate3D.Main exposing (main)
+module Concepts.Animate3D.MainBox exposing (main)
 
 import Anim.Engine.CSS.Keyframes as Keyframes
 import Anim.Extra.Easing exposing (Easing(..))
@@ -91,14 +91,28 @@ init flags =
                 , Rotate.initY "left-face" -90
                 , Rotate.initX "top-face" 90
                 , Rotate.initX "bottom-face" -90
+
+                -- Initialize text labels at Z=0 (flush with face)
+                , Translate.initZ "front-face-text" 0
+                , Translate.initZ "back-face-text" 0
+                , Translate.initZ "right-face-text" 0
+                , Translate.initZ "left-face-text" 0
+                , Translate.initZ "top-face-text" 0
+                , Translate.initZ "bottom-face-text" 0
                 ]
     in
     -- --8<-- [end:initializeProperties]
     -- --8<-- [start:startAnimation]
-    ( { animState = Keyframes.animate initialAnimState moveSidesOut
+    ( { animState =
+            Keyframes.animate initialAnimState
+                (Keyframes.loopForever
+                    >> Keyframes.alternate
+                    >> moveSidesOut
+                    >> rotateCubeClockwise
+                )
 
       -- --8<-- [end:startAnimation]
-      , state = Opening
+      , state = RotatingOpen
       , animAreaSize =
             { width = min 500 (flags.window.width - 40)
             , height = 350
@@ -149,6 +163,7 @@ moveSidesOut =
         >> moveLeftFaceOut
         >> moveTopFaceOut
         >> moveBottomFaceOut
+        >> moveTextsOut
 
 
 moveSidesIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
@@ -159,6 +174,7 @@ moveSidesIn =
         >> moveLeftFaceIn
         >> moveTopFaceIn
         >> moveBottomFaceIn
+        >> moveTextsIn
 
 
 moveFace : String -> (Translate.Builder -> Translate.Builder) -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
@@ -255,6 +271,45 @@ moveBottomFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveBottomFaceIn =
     moveFace "bottom-face" <|
         Translate.toY depth
+
+
+
+-- Text animations - 3rd level of 3D animation
+-- Text moves forward (Z+20) when sides expand, back to Z=0 when sides close
+
+
+textMoveAmount : Float
+textMoveAmount =
+    20
+
+
+moveText : String -> Float -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveText textId toZ =
+    Translate.for textId
+        >> Translate.toZ toZ
+        >> Translate.duration 1000
+        >> Translate.easing BounceOut
+        >> Translate.build
+
+
+moveTextsOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveTextsOut =
+    moveText "front-face-text" textMoveAmount
+        >> moveText "back-face-text" textMoveAmount
+        >> moveText "right-face-text" textMoveAmount
+        >> moveText "left-face-text" textMoveAmount
+        >> moveText "top-face-text" textMoveAmount
+        >> moveText "bottom-face-text" textMoveAmount
+
+
+moveTextsIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveTextsIn =
+    moveText "front-face-text" 0
+        >> moveText "back-face-text" 0
+        >> moveText "right-face-text" 0
+        >> moveText "left-face-text" 0
+        >> moveText "top-face-text" 0
+        >> moveText "bottom-face-text" 0
 
 
 
@@ -392,29 +447,32 @@ viewContent model =
             , blur = 8
             , color = Element.rgba 0 0 0 0.1
             }
+
+        -- Perspective and centering on the same element to avoid breaking 3D context
+        , View3D.perspective 1000
+            |> htmlAttribute
+        , View3D.perspectiveOrigin View3D.LeftMiddle
+            |> htmlAttribute
+        , View3D.opacityHack
+            -- Kind of fixes Chrome on macOS compositor tile corruption when
+            -- animating 3D transforms by creating a new stacking
+            -- context for the animation area
+            -- it's not perfect, some flickering can still occur
+            -- pull requests to improve this are welcome!
+            |> htmlAttribute
+
+        -- Use raw CSS for centering to avoid elm-ui wrapper elements
+        , Html.Attributes.style "display" "flex" |> htmlAttribute
+        , Html.Attributes.style "justify-content" "center" |> htmlAttribute
+        , Html.Attributes.style "align-items" "center" |> htmlAttribute
         ]
-        (el
-            [ View3D.perspective 1000
-                |> htmlAttribute
-            , View3D.perspectiveOrigin View3D.LeftMiddle
-                |> htmlAttribute
-            , View3D.opacityHack
-                -- Kind of fixes Chrome on macOS compositor tile corruption when
-                -- animating 3D transforms by creating a new stacking
-                -- context for the animation area
-                -- it's not perfect, some flickering can still occur
-                -- pull requests to improve this are welcome!
-                |> htmlAttribute
-            , centerX
-            , centerY
-            ]
-            (viewCube model)
-        )
+        (viewCube model)
     ]
 
 
 type alias FaceConfig =
     { id : String
+    , textId : String
     , label : String
     , background : Element.Color
     , borderColor : Element.Color
@@ -424,6 +482,7 @@ type alias FaceConfig =
 frontFace : FaceConfig
 frontFace =
     { id = "front-face"
+    , textId = "front-face-text"
     , label = "FRONT"
     , background = Element.rgb255 52 152 219
     , borderColor = Element.rgb255 41 128 185
@@ -433,6 +492,7 @@ frontFace =
 backFace : FaceConfig
 backFace =
     { id = "back-face"
+    , textId = "back-face-text"
     , label = "BACK"
     , background = Element.rgb255 41 128 185
     , borderColor = Element.rgb255 33 97 140
@@ -442,6 +502,7 @@ backFace =
 rightFace : FaceConfig
 rightFace =
     { id = "right-face"
+    , textId = "right-face-text"
     , label = "RIGHT"
     , background = Element.rgb255 231 76 60
     , borderColor = Element.rgb255 192 57 43
@@ -451,6 +512,7 @@ rightFace =
 leftFace : FaceConfig
 leftFace =
     { id = "left-face"
+    , textId = "left-face-text"
     , label = "LEFT"
     , background = Element.rgb255 230 126 34
     , borderColor = Element.rgb255 211 84 0
@@ -460,6 +522,7 @@ leftFace =
 topFace : FaceConfig
 topFace =
     { id = "top-face"
+    , textId = "top-face-text"
     , label = "TOP"
     , background = Element.rgb255 46 204 113
     , borderColor = Element.rgb255 39 174 96
@@ -469,6 +532,7 @@ topFace =
 bottomFace : FaceConfig
 bottomFace =
     { id = "bottom-face"
+    , textId = "bottom-face-text"
     , label = "BOTTOM"
     , background = Element.rgb255 155 89 182
     , borderColor = Element.rgb255 142 68 173
@@ -537,7 +601,7 @@ viewFace animState listenForEvents config =
             , Background.color config.background
             , Border.width 2
             , Border.color config.borderColor
-            , Font.color (Element.rgb 1 1 1)
+            , Font.color (Element.rgb 0 0 0)
             , Font.bold
             , Font.size 14
             ]
@@ -553,10 +617,23 @@ viewFace animState listenForEvents config =
 
             else
                 []
+
+        -- Text element with its own 3D animation (3rd level)
+        textAnimAttributes =
+            Keyframes.attributes config.textId animState
+                |> List.map htmlAttribute
     in
     el
-        (baseAttributes ++ animAttributes ++ eventAttributes)
-        (el [ centerX, centerY ] (text config.label))
+        (baseAttributes
+            ++ animAttributes
+            ++ eventAttributes
+            ++ [ Html.Attributes.style "display" "flex" |> htmlAttribute
+               , Html.Attributes.style "justify-content" "center" |> htmlAttribute
+               , Html.Attributes.style "align-items" "center" |> htmlAttribute
+               , View3D.transformStyle View3D.Preserve3D |> htmlAttribute
+               ]
+        )
+        (el textAnimAttributes (text config.label))
 
 
 
