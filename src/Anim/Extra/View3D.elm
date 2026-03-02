@@ -18,7 +18,9 @@ This module provides type-safe helpers for setting these properties.
 
 # Container Properties
 
-These go on the **parent** element of the animated element.
+These establish the 3D scene on a container element. Perspective applies to
+direct children; use `transformStyle Preserve3D` on intermediate elements
+to propagate 3D context to deeper descendants.
 
 @docs perspective, perspectiveOrigin
 
@@ -118,6 +120,10 @@ type TransformStyle
 Perspective controls the intensity of the 3D effect. Smaller values create
 more dramatic effects, larger values are more subtle.
 
+Perspective applies to **direct children** of the element. For deeper nesting,
+use `transformStyle Preserve3D` on intermediate elements to propagate the 3D
+context down to descendants.
+
 | Value | Effect |
 | ------------ | ----------------------------- |
 | 500-800px | Dramatic, close-up 3D effect |
@@ -128,10 +134,12 @@ more dramatic effects, larger values are more subtle.
 
     view model =
         div
-            [ id "container"
-            , View3D.perspective 1000
+            [ View3D.perspective 1000 ]
+            [ div
+                [ View3D.transformStyle View3D.Preserve3D ]
+                -- Passes 3D context down
+                [ animatedElement ]
             ]
-            [ animatedCard ]
 
 -}
 perspective : Float -> Html.Attribute msg

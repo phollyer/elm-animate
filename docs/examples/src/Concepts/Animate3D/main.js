@@ -15934,19 +15934,21 @@ var $author$project$Concepts$Animate3D$Main$viewContent = function (model) {
 						color: A4($mdgriffith$elm_ui$Element$rgba, 0, 0, 0, 0.1),
 						offset: _Utils_Tuple2(0, 4),
 						size: 0
-					})
+					}),
+					$mdgriffith$elm_ui$Element$htmlAttribute(
+					$author$project$Anim$Extra$View3D$perspective(1000)),
+					$mdgriffith$elm_ui$Element$htmlAttribute(
+					$author$project$Anim$Extra$View3D$perspectiveOrigin($author$project$Anim$Extra$View3D$LeftMiddle)),
+					$mdgriffith$elm_ui$Element$htmlAttribute($author$project$Anim$Extra$View3D$opacityHack)
 				]),
 			A2(
 				$mdgriffith$elm_ui$Element$el,
 				_List_fromArray(
 					[
 						$mdgriffith$elm_ui$Element$htmlAttribute(
-						$author$project$Anim$Extra$View3D$perspective(1000)),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
-						$author$project$Anim$Extra$View3D$perspectiveOrigin($author$project$Anim$Extra$View3D$LeftMiddle)),
-						$mdgriffith$elm_ui$Element$htmlAttribute(
 						$author$project$Anim$Extra$View3D$transformStyle($author$project$Anim$Extra$View3D$Preserve3D)),
-						$mdgriffith$elm_ui$Element$htmlAttribute($author$project$Anim$Extra$View3D$opacityHack),
+						$mdgriffith$elm_ui$Element$htmlAttribute(
+						A2($elm$html$Html$Attributes$style, 'transform', 'translate3d(0px, 0px, 0px)')),
 						$mdgriffith$elm_ui$Element$centerX,
 						$mdgriffith$elm_ui$Element$centerY
 					]),
