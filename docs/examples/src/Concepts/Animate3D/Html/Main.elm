@@ -669,6 +669,7 @@ viewFace animState listenForEvents config =
 
         -- Use eventsStopPropagation to prevent text animation events from
         -- bubbling up to the face element and triggering unwanted state changes
+        -- Events are forwarded to NoOp since we don't want to react to them
         textEventAttributes =
             Keyframes.eventsStopPropagation config.textId (\_ -> NoOp)
     in
