@@ -401,43 +401,35 @@ handleKeyframeEvent animEvent model =
 
 cubeRotationEnded : Model -> Model
 cubeRotationEnded model =
-    let
-        state =
-            case model.state of
-                RotatingOpen ->
-                    Closing
+    case model.state of
+        RotatingOpen ->
+            stateChanged Closing model
 
-                RotatingClosed ->
-                    Opening
+        RotatingClosed ->
+            stateChanged Opening model
 
-                _ ->
-                    model.state
-    in
-    { model
-        | state = state
-        , animState =
-            Keyframes.animate model.animState <|
-                selectAnimation state
-    }
+        _ ->
+            model
 
 
 sidesMovementEnded : Model -> Model
 sidesMovementEnded model =
-    let
-        state =
-            case model.state of
-                Ready ->
-                    RotatingOpen
+    case model.state of
+        Ready ->
+            stateChanged RotatingOpen model
 
-                Opening ->
-                    RotatingOpen
+        Opening ->
+            stateChanged RotatingOpen model
 
-                Closing ->
-                    RotatingClosed
+        Closing ->
+            stateChanged RotatingClosed model
 
-                _ ->
-                    model.state
-    in
+        _ ->
+            model
+
+
+stateChanged : State -> Model -> Model
+stateChanged state model =
     { model
         | state = state
         , animState =
@@ -637,8 +629,10 @@ viewFace animState listenForEvents config =
             Keyframes.attributes config.id animState
                 |> List.map htmlAttribute
 
-        -- Always stop propagation on face events to prevent bubbling to cube
-        -- Only forward events to our handler when we actually want to listen
+        -- We stop propagation on face events to prevent them bubbling up to the cube
+        -- We only forward events to our handler when we actually want to listen
+        -- If we don't capture every event on the face, the uncaught events bubble
+        -- up to the next listener - the cube
         eventAttributes =
             Keyframes.eventsStopPropagation config.id
                 (if listenForEvents then
@@ -650,12 +644,12 @@ viewFace animState listenForEvents config =
                 |> List.map htmlAttribute
 
         -- Text element with its own 3D animation (3rd level)
-        -- Use eventsStopPropagation to prevent text animation events from
-        -- bubbling up to the face element and triggering unwanted state changes
         textAnimAttributes =
             Keyframes.attributes config.textId animState
                 |> List.map htmlAttribute
 
+        -- Use eventsStopPropagation to prevent text animation events from
+        -- bubbling up to the face element and triggering unwanted state changes
         textEventAttributes =
             Keyframes.eventsStopPropagation config.textId (\_ -> NoOp)
                 |> List.map htmlAttribute
