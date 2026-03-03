@@ -484,12 +484,14 @@ viewContent model =
             |> htmlAttribute
         , View3D.perspectiveOrigin View3D.Center
             |> htmlAttribute
+
+        --
+        -- Kind of fixes Chrome on macOS compositor tile corruption when
+        -- animating 3D transforms by creating a new stacking
+        -- context for the animation area
+        -- it's not perfect, some flickering can still occur
+        -- pull requests to improve this are welcome!
         , View3D.opacityHack
-            -- Kind of fixes Chrome on macOS compositor tile corruption when
-            -- animating 3D transforms by creating a new stacking
-            -- context for the animation area
-            -- it's not perfect, some flickering can still occur
-            -- pull requests to improve this are welcome!
             |> htmlAttribute
         ]
       <|

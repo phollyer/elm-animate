@@ -16014,11 +16014,10 @@ var $author$project$Common$UI$pageHeader = function (title) {
 		$mdgriffith$elm_ui$Element$paragraph,
 		_List_fromArray(
 			[
+				$mdgriffith$elm_ui$Element$Font$size(28),
 				$mdgriffith$elm_ui$Element$Font$semiBold,
 				$mdgriffith$elm_ui$Element$Font$color($author$project$Common$Colors$textDark),
-				$mdgriffith$elm_ui$Element$Font$center,
-				$mdgriffith$elm_ui$Element$htmlAttribute(
-				$elm$html$Html$Attributes$class('responsive-header'))
+				$mdgriffith$elm_ui$Element$Font$center
 			]),
 		_List_fromArray(
 			[

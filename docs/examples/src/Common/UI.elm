@@ -119,10 +119,10 @@ backButtonWithPath path =
 pageHeader : String -> Element msg
 pageHeader title =
     paragraph
-        [ Font.semiBold
+        [ Font.size 28
+        , Font.semiBold
         , Font.color Colors.textDark
         , Font.center
-        , htmlAttribute (Html.Attributes.class "responsive-header")
         ]
         [ text title ]
 

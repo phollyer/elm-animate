@@ -9018,183 +9018,61 @@ var $author$project$Anim$Property$Translate$initZ = F3(
 					z,
 					A2($author$project$Anim$Internal$Builders$Translate$for, animationKey, animBuilder))));
 	});
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $elm$core$Basics$composeR = F3(
 	function (f, g, x) {
 		return g(
 			f(x));
 	});
-var $author$project$Concepts$Animate3D$Html$Main$moveAmount = 50;
-var $author$project$Anim$Extra$Easing$BounceOut = {$: 'BounceOut'};
 var $author$project$Anim$Property$Translate$build = $author$project$Anim$Internal$Builders$Translate$build;
-var $author$project$Anim$Internal$Builders$Property$withDuration = F2(
-	function (ms, config) {
-		return _Utils_update(
-			config,
-			{
-				duration: ms,
-				timing: $elm$core$Maybe$Just(
-					$author$project$Anim$Internal$Timing$TimeSpec$Duration(ms))
-			});
-	});
-var $author$project$Anim$Internal$Builders$Translate$duration = F2(
-	function (ms, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		return A2(
-			$author$project$Anim$Internal$Builders$Translate$TranslateBuilder,
-			A2($author$project$Anim$Internal$Builders$Property$withDuration, ms, config),
-			builder);
-	});
-var $author$project$Anim$Property$Translate$duration = $author$project$Anim$Internal$Builders$Translate$duration;
-var $author$project$Anim$Internal$Builders$Property$withEasing = F2(
-	function (easing_, config) {
-		return _Utils_update(
-			config,
-			{
-				easing: $elm$core$Maybe$Just(easing_)
-			});
-	});
-var $author$project$Anim$Internal$Builders$Translate$easing = F2(
-	function (easing_, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		return A2(
-			$author$project$Anim$Internal$Builders$Translate$TranslateBuilder,
-			A2($author$project$Anim$Internal$Builders$Property$withEasing, easing_, config),
-			builder);
-	});
-var $author$project$Anim$Property$Translate$easing = $author$project$Anim$Internal$Builders$Translate$easing;
 var $author$project$Anim$Property$Translate$for = $author$project$Anim$Internal$Builders$Translate$for;
+var $author$project$Anim$Extra$Easing$BounceOut = {$: 'BounceOut'};
+var $author$project$Anim$Internal$Builder$duration = F2(
+	function (ms, _v0) {
+		var data = _v0.a;
+		return $author$project$Anim$Internal$Builder$AnimBuilder(
+			_Utils_update(
+				data,
+				{
+					globalTiming: $elm$core$Maybe$Just(
+						$author$project$Anim$Internal$Timing$TimeSpec$Duration(ms))
+				}));
+	});
+var $author$project$Anim$Internal$CSS$duration = $author$project$Anim$Internal$Builder$duration;
+var $author$project$Anim$Engine$CSS$Keyframes$duration = $author$project$Anim$Internal$CSS$duration;
+var $author$project$Anim$Internal$Builder$easing = F2(
+	function (easingValue, _v0) {
+		var data = _v0.a;
+		return $author$project$Anim$Internal$Builder$AnimBuilder(
+			_Utils_update(
+				data,
+				{
+					globalEasing: $elm$core$Maybe$Just(easingValue)
+				}));
+	});
+var $author$project$Anim$Internal$CSS$easing = $author$project$Anim$Internal$Builder$easing;
+var $author$project$Anim$Engine$CSS$Keyframes$easing = $author$project$Anim$Internal$CSS$easing;
+var $author$project$Concepts$Animate3D$Html$Main$sharedTiming = A2(
+	$elm$core$Basics$composeR,
+	$author$project$Anim$Engine$CSS$Keyframes$duration(1000),
+	$author$project$Anim$Engine$CSS$Keyframes$easing($author$project$Anim$Extra$Easing$BounceOut));
 var $author$project$Concepts$Animate3D$Html$Main$moveFace = F2(
 	function (animGroup, moveToBuilder) {
 		return A2(
 			$elm$core$Basics$composeR,
-			$author$project$Anim$Property$Translate$for(animGroup),
+			$author$project$Concepts$Animate3D$Html$Main$sharedTiming,
 			A2(
 				$elm$core$Basics$composeR,
-				moveToBuilder,
-				A2(
-					$elm$core$Basics$composeR,
-					$author$project$Anim$Property$Translate$duration(1000),
-					A2(
-						$elm$core$Basics$composeR,
-						$author$project$Anim$Property$Translate$easing($author$project$Anim$Extra$Easing$BounceOut),
-						$author$project$Anim$Property$Translate$build))));
+				$author$project$Anim$Property$Translate$for(animGroup),
+				A2($elm$core$Basics$composeR, moveToBuilder, $author$project$Anim$Property$Translate$build)));
 	});
 var $author$project$Anim$Property$Translate$toZ = $author$project$Anim$Internal$Builders$Translate$toZ;
-var $author$project$Concepts$Animate3D$Html$Main$moveBackFaceOut = A2(
-	$author$project$Concepts$Animate3D$Html$Main$moveFace,
-	'back-face',
-	$author$project$Anim$Property$Translate$toZ(((-1) * $author$project$Concepts$Animate3D$Html$Main$depth) - $author$project$Concepts$Animate3D$Html$Main$moveAmount));
-var $author$project$Anim$Property$Translate$toY = $author$project$Anim$Internal$Builders$Translate$toY;
-var $author$project$Concepts$Animate3D$Html$Main$moveBottomFaceOut = A2(
-	$author$project$Concepts$Animate3D$Html$Main$moveFace,
-	'bottom-face',
-	$author$project$Anim$Property$Translate$toY($author$project$Concepts$Animate3D$Html$Main$depth + $author$project$Concepts$Animate3D$Html$Main$moveAmount));
-var $author$project$Concepts$Animate3D$Html$Main$moveFrontFaceOut = A2(
-	$author$project$Concepts$Animate3D$Html$Main$moveFace,
-	'front-face',
-	$author$project$Anim$Property$Translate$toZ($author$project$Concepts$Animate3D$Html$Main$depth + $author$project$Concepts$Animate3D$Html$Main$moveAmount));
-var $author$project$Anim$Property$Translate$toX = $author$project$Anim$Internal$Builders$Translate$toX;
-var $author$project$Concepts$Animate3D$Html$Main$moveLeftFaceOut = A2(
-	$author$project$Concepts$Animate3D$Html$Main$moveFace,
-	'left-face',
-	$author$project$Anim$Property$Translate$toX(((-1) * $author$project$Concepts$Animate3D$Html$Main$depth) - $author$project$Concepts$Animate3D$Html$Main$moveAmount));
-var $author$project$Concepts$Animate3D$Html$Main$moveRightFaceOut = A2(
-	$author$project$Concepts$Animate3D$Html$Main$moveFace,
-	'right-face',
-	$author$project$Anim$Property$Translate$toX($author$project$Concepts$Animate3D$Html$Main$depth + $author$project$Concepts$Animate3D$Html$Main$moveAmount));
-var $author$project$Concepts$Animate3D$Html$Main$moveText = F2(
-	function (textId, toZ) {
-		return A2(
-			$elm$core$Basics$composeR,
-			$author$project$Anim$Property$Translate$for(textId),
-			A2(
-				$elm$core$Basics$composeR,
-				$author$project$Anim$Property$Translate$toZ(toZ),
-				A2(
-					$elm$core$Basics$composeR,
-					$author$project$Anim$Property$Translate$duration(1000),
-					A2(
-						$elm$core$Basics$composeR,
-						$author$project$Anim$Property$Translate$easing($author$project$Anim$Extra$Easing$BounceOut),
-						$author$project$Anim$Property$Translate$build))));
-	});
-var $author$project$Concepts$Animate3D$Html$Main$textMoveAmount = 20;
-var $author$project$Concepts$Animate3D$Html$Main$moveTextsOut = A2(
-	$elm$core$Basics$composeR,
-	A2($author$project$Concepts$Animate3D$Html$Main$moveText, 'front-face-text', $author$project$Concepts$Animate3D$Html$Main$textMoveAmount),
-	A2(
-		$elm$core$Basics$composeR,
-		A2($author$project$Concepts$Animate3D$Html$Main$moveText, 'back-face-text', $author$project$Concepts$Animate3D$Html$Main$textMoveAmount),
-		A2(
-			$elm$core$Basics$composeR,
-			A2($author$project$Concepts$Animate3D$Html$Main$moveText, 'right-face-text', $author$project$Concepts$Animate3D$Html$Main$textMoveAmount),
-			A2(
-				$elm$core$Basics$composeR,
-				A2($author$project$Concepts$Animate3D$Html$Main$moveText, 'left-face-text', $author$project$Concepts$Animate3D$Html$Main$textMoveAmount),
-				A2(
-					$elm$core$Basics$composeR,
-					A2($author$project$Concepts$Animate3D$Html$Main$moveText, 'top-face-text', $author$project$Concepts$Animate3D$Html$Main$textMoveAmount),
-					A2($author$project$Concepts$Animate3D$Html$Main$moveText, 'bottom-face-text', $author$project$Concepts$Animate3D$Html$Main$textMoveAmount))))));
-var $author$project$Concepts$Animate3D$Html$Main$moveTopFaceOut = A2(
-	$author$project$Concepts$Animate3D$Html$Main$moveFace,
-	'top-face',
-	$author$project$Anim$Property$Translate$toY(((-1) * $author$project$Concepts$Animate3D$Html$Main$depth) - $author$project$Concepts$Animate3D$Html$Main$moveAmount));
-var $author$project$Concepts$Animate3D$Html$Main$moveSidesOut = A2(
-	$elm$core$Basics$composeR,
-	$author$project$Concepts$Animate3D$Html$Main$moveFrontFaceOut,
-	A2(
-		$elm$core$Basics$composeR,
-		$author$project$Concepts$Animate3D$Html$Main$moveBackFaceOut,
-		A2(
-			$elm$core$Basics$composeR,
-			$author$project$Concepts$Animate3D$Html$Main$moveRightFaceOut,
-			A2(
-				$elm$core$Basics$composeR,
-				$author$project$Concepts$Animate3D$Html$Main$moveLeftFaceOut,
-				A2(
-					$elm$core$Basics$composeR,
-					$author$project$Concepts$Animate3D$Html$Main$moveTopFaceOut,
-					A2($elm$core$Basics$composeR, $author$project$Concepts$Animate3D$Html$Main$moveBottomFaceOut, $author$project$Concepts$Animate3D$Html$Main$moveTextsOut))))));
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
-var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $author$project$Concepts$Animate3D$Html$Main$init = function (flags) {
-	var initialAnimState = $author$project$Anim$Engine$CSS$Keyframes$init(
-		_List_fromArray(
-			[
-				A2($author$project$Anim$Property$Translate$initZ, 'cube', 200),
-				A2($author$project$Anim$Property$Translate$initZ, 'front-face', $author$project$Concepts$Animate3D$Html$Main$depth),
-				A2($author$project$Anim$Property$Translate$initZ, 'back-face', $author$project$Concepts$Animate3D$Html$Main$depth * (-1)),
-				A2($author$project$Anim$Property$Translate$initX, 'right-face', $author$project$Concepts$Animate3D$Html$Main$depth),
-				A2($author$project$Anim$Property$Translate$initX, 'left-face', (-1) * $author$project$Concepts$Animate3D$Html$Main$depth),
-				A2($author$project$Anim$Property$Translate$initY, 'top-face', (-1) * $author$project$Concepts$Animate3D$Html$Main$depth),
-				A2($author$project$Anim$Property$Translate$initY, 'bottom-face', $author$project$Concepts$Animate3D$Html$Main$depth),
-				A2($author$project$Anim$Property$Rotate$initY, 'back-face', 180),
-				A2($author$project$Anim$Property$Rotate$initY, 'right-face', 90),
-				A2($author$project$Anim$Property$Rotate$initY, 'left-face', -90),
-				A2($author$project$Anim$Property$Rotate$initX, 'top-face', 90),
-				A2($author$project$Anim$Property$Rotate$initX, 'bottom-face', -90)
-			]));
-	var animAreaWidth = A2($elm$core$Basics$min, 500, flags.window.width - 40);
-	var animAreaHeight = 350;
-	return _Utils_Tuple2(
-		{
-			animAreaSize: {height: animAreaHeight, width: animAreaWidth},
-			animState: A2($author$project$Anim$Engine$CSS$Keyframes$animate, initialAnimState, $author$project$Concepts$Animate3D$Html$Main$moveSidesOut),
-			state: $author$project$Concepts$Animate3D$Html$Main$Ready
-		},
-		$elm$core$Platform$Cmd$none);
-};
-var $elm$json$Json$Decode$int = _Json_decodeInt;
-var $elm$core$Platform$Sub$batch = _Platform_batch;
-var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$Concepts$Animate3D$Html$Main$Closing = {$: 'Closing'};
-var $author$project$Concepts$Animate3D$Html$Main$Opening = {$: 'Opening'};
 var $author$project$Concepts$Animate3D$Html$Main$moveBackFaceIn = A2(
 	$author$project$Concepts$Animate3D$Html$Main$moveFace,
 	'back-face',
 	$author$project$Anim$Property$Translate$toZ((-1) * $author$project$Concepts$Animate3D$Html$Main$depth));
+var $author$project$Anim$Property$Translate$toY = $author$project$Anim$Internal$Builders$Translate$toY;
 var $author$project$Concepts$Animate3D$Html$Main$moveBottomFaceIn = A2(
 	$author$project$Concepts$Animate3D$Html$Main$moveFace,
 	'bottom-face',
@@ -9203,6 +9081,7 @@ var $author$project$Concepts$Animate3D$Html$Main$moveFrontFaceIn = A2(
 	$author$project$Concepts$Animate3D$Html$Main$moveFace,
 	'front-face',
 	$author$project$Anim$Property$Translate$toZ($author$project$Concepts$Animate3D$Html$Main$depth));
+var $author$project$Anim$Property$Translate$toX = $author$project$Anim$Internal$Builders$Translate$toX;
 var $author$project$Concepts$Animate3D$Html$Main$moveLeftFaceIn = A2(
 	$author$project$Concepts$Animate3D$Html$Main$moveFace,
 	'left-face',
@@ -9211,22 +9090,6 @@ var $author$project$Concepts$Animate3D$Html$Main$moveRightFaceIn = A2(
 	$author$project$Concepts$Animate3D$Html$Main$moveFace,
 	'right-face',
 	$author$project$Anim$Property$Translate$toX($author$project$Concepts$Animate3D$Html$Main$depth));
-var $author$project$Concepts$Animate3D$Html$Main$moveTextsIn = A2(
-	$elm$core$Basics$composeR,
-	A2($author$project$Concepts$Animate3D$Html$Main$moveText, 'front-face-text', 0),
-	A2(
-		$elm$core$Basics$composeR,
-		A2($author$project$Concepts$Animate3D$Html$Main$moveText, 'back-face-text', 0),
-		A2(
-			$elm$core$Basics$composeR,
-			A2($author$project$Concepts$Animate3D$Html$Main$moveText, 'right-face-text', 0),
-			A2(
-				$elm$core$Basics$composeR,
-				A2($author$project$Concepts$Animate3D$Html$Main$moveText, 'left-face-text', 0),
-				A2(
-					$elm$core$Basics$composeR,
-					A2($author$project$Concepts$Animate3D$Html$Main$moveText, 'top-face-text', 0),
-					A2($author$project$Concepts$Animate3D$Html$Main$moveText, 'bottom-face-text', 0))))));
 var $author$project$Concepts$Animate3D$Html$Main$moveTopFaceIn = A2(
 	$author$project$Concepts$Animate3D$Html$Main$moveFace,
 	'top-face',
@@ -9243,11 +9106,125 @@ var $author$project$Concepts$Animate3D$Html$Main$moveSidesIn = A2(
 			A2(
 				$elm$core$Basics$composeR,
 				$author$project$Concepts$Animate3D$Html$Main$moveLeftFaceIn,
+				A2($elm$core$Basics$composeR, $author$project$Concepts$Animate3D$Html$Main$moveTopFaceIn, $author$project$Concepts$Animate3D$Html$Main$moveBottomFaceIn)))));
+var $author$project$Concepts$Animate3D$Html$Main$moveAmount = 50;
+var $author$project$Concepts$Animate3D$Html$Main$moveBackFaceOut = A2(
+	$author$project$Concepts$Animate3D$Html$Main$moveFace,
+	'back-face',
+	$author$project$Anim$Property$Translate$toZ(((-1) * $author$project$Concepts$Animate3D$Html$Main$depth) - $author$project$Concepts$Animate3D$Html$Main$moveAmount));
+var $author$project$Concepts$Animate3D$Html$Main$moveBottomFaceOut = A2(
+	$author$project$Concepts$Animate3D$Html$Main$moveFace,
+	'bottom-face',
+	$author$project$Anim$Property$Translate$toY($author$project$Concepts$Animate3D$Html$Main$depth + $author$project$Concepts$Animate3D$Html$Main$moveAmount));
+var $author$project$Concepts$Animate3D$Html$Main$moveFrontFaceOut = A2(
+	$author$project$Concepts$Animate3D$Html$Main$moveFace,
+	'front-face',
+	$author$project$Anim$Property$Translate$toZ($author$project$Concepts$Animate3D$Html$Main$depth + $author$project$Concepts$Animate3D$Html$Main$moveAmount));
+var $author$project$Concepts$Animate3D$Html$Main$moveLeftFaceOut = A2(
+	$author$project$Concepts$Animate3D$Html$Main$moveFace,
+	'left-face',
+	$author$project$Anim$Property$Translate$toX(((-1) * $author$project$Concepts$Animate3D$Html$Main$depth) - $author$project$Concepts$Animate3D$Html$Main$moveAmount));
+var $author$project$Concepts$Animate3D$Html$Main$moveRightFaceOut = A2(
+	$author$project$Concepts$Animate3D$Html$Main$moveFace,
+	'right-face',
+	$author$project$Anim$Property$Translate$toX($author$project$Concepts$Animate3D$Html$Main$depth + $author$project$Concepts$Animate3D$Html$Main$moveAmount));
+var $author$project$Concepts$Animate3D$Html$Main$moveTopFaceOut = A2(
+	$author$project$Concepts$Animate3D$Html$Main$moveFace,
+	'top-face',
+	$author$project$Anim$Property$Translate$toY(((-1) * $author$project$Concepts$Animate3D$Html$Main$depth) - $author$project$Concepts$Animate3D$Html$Main$moveAmount));
+var $author$project$Concepts$Animate3D$Html$Main$moveSidesOut = A2(
+	$elm$core$Basics$composeR,
+	$author$project$Concepts$Animate3D$Html$Main$moveFrontFaceOut,
+	A2(
+		$elm$core$Basics$composeR,
+		$author$project$Concepts$Animate3D$Html$Main$moveBackFaceOut,
+		A2(
+			$elm$core$Basics$composeR,
+			$author$project$Concepts$Animate3D$Html$Main$moveRightFaceOut,
+			A2(
+				$elm$core$Basics$composeR,
+				$author$project$Concepts$Animate3D$Html$Main$moveLeftFaceOut,
+				A2($elm$core$Basics$composeR, $author$project$Concepts$Animate3D$Html$Main$moveTopFaceOut, $author$project$Concepts$Animate3D$Html$Main$moveBottomFaceOut)))));
+var $author$project$Anim$Internal$Builders$Rotate$toZ = F2(
+	function (z, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var y = $author$project$Anim$Internal$Properties$Rotate$rotateY(config.end);
+		var x = $author$project$Anim$Internal$Properties$Rotate$rotateX(config.end);
+		return A4(
+			$author$project$Anim$Internal$Builders$Rotate$toXYZ,
+			x,
+			y,
+			z,
+			A2($author$project$Anim$Internal$Builders$Rotate$RotateBuilder, config, builder));
+	});
+var $author$project$Anim$Property$Rotate$toZ = $author$project$Anim$Internal$Builders$Rotate$toZ;
+var $author$project$Concepts$Animate3D$Html$Main$moveText = F3(
+	function (textId, toZ, toRotate) {
+		return A2(
+			$elm$core$Basics$composeR,
+			$author$project$Concepts$Animate3D$Html$Main$sharedTiming,
+			A2(
+				$elm$core$Basics$composeR,
+				$author$project$Anim$Property$Translate$for(textId),
 				A2(
 					$elm$core$Basics$composeR,
-					$author$project$Concepts$Animate3D$Html$Main$moveTopFaceIn,
-					A2($elm$core$Basics$composeR, $author$project$Concepts$Animate3D$Html$Main$moveBottomFaceIn, $author$project$Concepts$Animate3D$Html$Main$moveTextsIn))))));
+					$author$project$Anim$Property$Translate$toZ(toZ),
+					A2(
+						$elm$core$Basics$composeR,
+						$author$project$Anim$Property$Translate$build,
+						A2(
+							$elm$core$Basics$composeR,
+							$author$project$Anim$Property$Rotate$for(textId),
+							A2(
+								$elm$core$Basics$composeR,
+								$author$project$Anim$Property$Rotate$toZ(toRotate),
+								$author$project$Anim$Property$Rotate$build))))));
+	});
+var $author$project$Concepts$Animate3D$Html$Main$moveTextsIn = A2(
+	$elm$core$Basics$composeR,
+	A3($author$project$Concepts$Animate3D$Html$Main$moveText, 'front-face-text', 0, 0),
+	A2(
+		$elm$core$Basics$composeR,
+		A3($author$project$Concepts$Animate3D$Html$Main$moveText, 'back-face-text', 0, 0),
+		A2(
+			$elm$core$Basics$composeR,
+			A3($author$project$Concepts$Animate3D$Html$Main$moveText, 'right-face-text', 0, 0),
+			A2(
+				$elm$core$Basics$composeR,
+				A3($author$project$Concepts$Animate3D$Html$Main$moveText, 'left-face-text', 0, 0),
+				A2(
+					$elm$core$Basics$composeR,
+					A3($author$project$Concepts$Animate3D$Html$Main$moveText, 'top-face-text', 0, 0),
+					A3($author$project$Concepts$Animate3D$Html$Main$moveText, 'bottom-face-text', 0, 0))))));
+var $author$project$Concepts$Animate3D$Html$Main$textMoveAmount = 20;
+var $author$project$Concepts$Animate3D$Html$Main$moveTextsOut = A2(
+	$elm$core$Basics$composeR,
+	A3($author$project$Concepts$Animate3D$Html$Main$moveText, 'front-face-text', $author$project$Concepts$Animate3D$Html$Main$textMoveAmount, 360),
+	A2(
+		$elm$core$Basics$composeR,
+		A3($author$project$Concepts$Animate3D$Html$Main$moveText, 'back-face-text', $author$project$Concepts$Animate3D$Html$Main$textMoveAmount, 360),
+		A2(
+			$elm$core$Basics$composeR,
+			A3($author$project$Concepts$Animate3D$Html$Main$moveText, 'right-face-text', $author$project$Concepts$Animate3D$Html$Main$textMoveAmount, 360),
+			A2(
+				$elm$core$Basics$composeR,
+				A3($author$project$Concepts$Animate3D$Html$Main$moveText, 'left-face-text', $author$project$Concepts$Animate3D$Html$Main$textMoveAmount, 360),
+				A2(
+					$elm$core$Basics$composeR,
+					A3($author$project$Concepts$Animate3D$Html$Main$moveText, 'top-face-text', $author$project$Concepts$Animate3D$Html$Main$textMoveAmount, 360),
+					A3($author$project$Concepts$Animate3D$Html$Main$moveText, 'bottom-face-text', $author$project$Concepts$Animate3D$Html$Main$textMoveAmount, 360))))));
 var $author$project$Anim$Extra$Easing$BackInOut = {$: 'BackInOut'};
+var $author$project$Anim$Internal$Builders$Property$withDuration = F2(
+	function (ms, config) {
+		return _Utils_update(
+			config,
+			{
+				duration: ms,
+				timing: $elm$core$Maybe$Just(
+					$author$project$Anim$Internal$Timing$TimeSpec$Duration(ms))
+			});
+	});
 var $author$project$Anim$Internal$Builders$Rotate$duration = F2(
 	function (ms, _v0) {
 		var config = _v0.a;
@@ -9258,6 +9235,14 @@ var $author$project$Anim$Internal$Builders$Rotate$duration = F2(
 			builder);
 	});
 var $author$project$Anim$Property$Rotate$duration = $author$project$Anim$Internal$Builders$Rotate$duration;
+var $author$project$Anim$Internal$Builders$Property$withEasing = F2(
+	function (easing_, config) {
+		return _Utils_update(
+			config,
+			{
+				easing: $elm$core$Maybe$Just(easing_)
+			});
+	});
 var $author$project$Anim$Internal$Builders$Rotate$easing = F2(
 	function (easing_, _v0) {
 		var config = _v0.a;
@@ -9284,22 +9269,58 @@ var $author$project$Concepts$Animate3D$Html$Main$rotateCube = function (to) {
 					$author$project$Anim$Property$Rotate$duration(8000),
 					$author$project$Anim$Property$Rotate$build))));
 };
-var $author$project$Concepts$Animate3D$Html$Main$rotateCubeAntiClockwise = $author$project$Concepts$Animate3D$Html$Main$rotateCube((-1) * 360);
+var $author$project$Concepts$Animate3D$Html$Main$rotateCubeAntiClockwise = $author$project$Concepts$Animate3D$Html$Main$rotateCube(0);
 var $author$project$Concepts$Animate3D$Html$Main$rotateCubeClockwise = $author$project$Concepts$Animate3D$Html$Main$rotateCube(360);
 var $author$project$Concepts$Animate3D$Html$Main$selectAnimation = function (state) {
 	switch (state.$) {
 		case 'Ready':
-			return $author$project$Concepts$Animate3D$Html$Main$moveSidesOut;
+			return A2($elm$core$Basics$composeR, $author$project$Concepts$Animate3D$Html$Main$moveSidesOut, $author$project$Concepts$Animate3D$Html$Main$moveTextsOut);
 		case 'Opening':
-			return $author$project$Concepts$Animate3D$Html$Main$moveSidesOut;
+			return A2($elm$core$Basics$composeR, $author$project$Concepts$Animate3D$Html$Main$moveSidesOut, $author$project$Concepts$Animate3D$Html$Main$moveTextsOut);
 		case 'Closing':
-			return $author$project$Concepts$Animate3D$Html$Main$moveSidesIn;
+			return A2($elm$core$Basics$composeR, $author$project$Concepts$Animate3D$Html$Main$moveSidesIn, $author$project$Concepts$Animate3D$Html$Main$moveTextsIn);
 		case 'RotatingOpen':
 			return $author$project$Concepts$Animate3D$Html$Main$rotateCubeClockwise;
 		default:
 			return $author$project$Concepts$Animate3D$Html$Main$rotateCubeAntiClockwise;
 	}
 };
+var $author$project$Concepts$Animate3D$Html$Main$init = function (flags) {
+	var state = $author$project$Concepts$Animate3D$Html$Main$Ready;
+	var initialAnimState = $author$project$Anim$Engine$CSS$Keyframes$init(
+		_List_fromArray(
+			[
+				A2($author$project$Anim$Property$Translate$initZ, 'cube', 200),
+				A2($author$project$Anim$Property$Translate$initZ, 'front-face', $author$project$Concepts$Animate3D$Html$Main$depth),
+				A2($author$project$Anim$Property$Translate$initZ, 'back-face', $author$project$Concepts$Animate3D$Html$Main$depth * (-1)),
+				A2($author$project$Anim$Property$Translate$initX, 'right-face', $author$project$Concepts$Animate3D$Html$Main$depth),
+				A2($author$project$Anim$Property$Translate$initX, 'left-face', (-1) * $author$project$Concepts$Animate3D$Html$Main$depth),
+				A2($author$project$Anim$Property$Translate$initY, 'top-face', (-1) * $author$project$Concepts$Animate3D$Html$Main$depth),
+				A2($author$project$Anim$Property$Translate$initY, 'bottom-face', $author$project$Concepts$Animate3D$Html$Main$depth),
+				A2($author$project$Anim$Property$Rotate$initY, 'back-face', 180),
+				A2($author$project$Anim$Property$Rotate$initY, 'right-face', 90),
+				A2($author$project$Anim$Property$Rotate$initY, 'left-face', -90),
+				A2($author$project$Anim$Property$Rotate$initX, 'top-face', 90),
+				A2($author$project$Anim$Property$Rotate$initX, 'bottom-face', -90)
+			]));
+	var animAreaWidth = A2($elm$core$Basics$min, 500, flags.window.width - 40);
+	var animAreaHeight = 350;
+	return _Utils_Tuple2(
+		{
+			animAreaSize: {height: animAreaHeight, width: animAreaWidth},
+			animState: A2(
+				$author$project$Anim$Engine$CSS$Keyframes$animate,
+				initialAnimState,
+				$author$project$Concepts$Animate3D$Html$Main$selectAnimation(state)),
+			state: state
+		},
+		$elm$core$Platform$Cmd$none);
+};
+var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $elm$core$Platform$Sub$batch = _Platform_batch;
+var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $author$project$Concepts$Animate3D$Html$Main$Closing = {$: 'Closing'};
+var $author$project$Concepts$Animate3D$Html$Main$Opening = {$: 'Opening'};
 var $author$project$Concepts$Animate3D$Html$Main$cubeRotationEnded = function (model) {
 	var state = function () {
 		var _v0 = model.state;
@@ -9913,7 +9934,8 @@ var $author$project$Concepts$Animate3D$Html$Main$viewExplanation = A2(
 			A2($elm$html$Html$Attributes$style, 'background-color', '#f2f5ff'),
 			A2($elm$html$Html$Attributes$style, 'border-radius', '8px'),
 			A2($elm$html$Html$Attributes$style, 'padding', '20px'),
-			A2($elm$html$Html$Attributes$style, 'margin-bottom', '20px')
+			A2($elm$html$Html$Attributes$style, 'margin', '0 auto 40px auto'),
+			A2($elm$html$Html$Attributes$style, 'max-width', '700px')
 		]),
 	_List_fromArray(
 		[
@@ -9922,6 +9944,7 @@ var $author$project$Concepts$Animate3D$Html$Main$viewExplanation = A2(
 			_List_fromArray(
 				[
 					A2($elm$html$Html$Attributes$style, 'font-size', '16px'),
+					A2($elm$html$Html$Attributes$style, 'font-weight', 'bold'),
 					A2($elm$html$Html$Attributes$style, 'margin', '0 0 10px 0')
 				]),
 			_List_fromArray(
@@ -9947,7 +9970,7 @@ var $author$project$Concepts$Animate3D$Html$Main$viewHeader = A2(
 	_List_fromArray(
 		[
 			A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
-			A2($elm$html$Html$Attributes$style, 'margin-bottom', '20px')
+			A2($elm$html$Html$Attributes$style, 'margin-bottom', '60px')
 		]),
 	_List_fromArray(
 		[
@@ -9955,7 +9978,8 @@ var $author$project$Concepts$Animate3D$Html$Main$viewHeader = A2(
 			$elm$html$Html$h1,
 			_List_fromArray(
 				[
-					A2($elm$html$Html$Attributes$style, 'font-size', '24px'),
+					A2($elm$html$Html$Attributes$style, 'font-size', '28px'),
+					A2($elm$html$Html$Attributes$style, 'font-weight', '600'),
 					A2($elm$html$Html$Attributes$style, 'margin', '0')
 				]),
 			_List_fromArray(
@@ -9971,17 +9995,27 @@ var $author$project$Concepts$Animate3D$Html$Main$view = function (model) {
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						A2($elm$html$Html$Attributes$style, 'font-family', 'system-ui, sans-serif'),
-						A2($elm$html$Html$Attributes$style, 'padding', '20px'),
-						A2($elm$html$Html$Attributes$style, 'max-width', '800px'),
-						A2($elm$html$Html$Attributes$style, 'margin', '0 auto')
+						A2($elm$html$Html$Attributes$style, 'min-height', '100vh'),
+						A2($elm$html$Html$Attributes$style, 'background', 'linear-gradient(to bottom, rgb(226, 232, 240), rgb(248, 250, 252))')
 					]),
 				_List_fromArray(
 					[
-						$author$project$Anim$Engine$CSS$Keyframes$styleNode(model.animState),
-						$author$project$Concepts$Animate3D$Html$Main$viewHeader,
-						$author$project$Concepts$Animate3D$Html$Main$viewExplanation,
-						$author$project$Concepts$Animate3D$Html$Main$viewAnimationArea(model)
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								A2($elm$html$Html$Attributes$style, 'font-family', 'system-ui, sans-serif'),
+								A2($elm$html$Html$Attributes$style, 'padding', '20px 40px'),
+								A2($elm$html$Html$Attributes$style, 'max-width', '800px'),
+								A2($elm$html$Html$Attributes$style, 'margin', '0 auto')
+							]),
+						_List_fromArray(
+							[
+								$author$project$Anim$Engine$CSS$Keyframes$styleNode(model.animState),
+								$author$project$Concepts$Animate3D$Html$Main$viewHeader,
+								$author$project$Concepts$Animate3D$Html$Main$viewExplanation,
+								$author$project$Concepts$Animate3D$Html$Main$viewAnimationArea(model)
+							]))
 					]))
 			]),
 		title: 'Keyframes 3D Example - HTML'

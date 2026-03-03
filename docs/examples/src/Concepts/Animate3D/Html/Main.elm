@@ -59,6 +59,7 @@ depth =
 
 init : { window : { width : Int } } -> ( Model, Cmd Msg )
 init flags =
+    -- --8<-- [start:initializeProperties]
     let
         animAreaWidth =
             min 500 (flags.window.width - 40)
@@ -101,9 +102,13 @@ init flags =
         state =
             Ready
     in
+    -- --8<-- [end:initializeProperties]
+    -- --8<-- [start:startAnimation]
     ( { animState =
             Keyframes.animate initialAnimState <|
                 selectAnimation state
+
+      -- --8<-- [end:startAnimation]
       , state = state
       , animAreaSize =
             { width = animAreaWidth
@@ -117,6 +122,7 @@ init flags =
 
 -- ANIMATIONS
 --
+-- --8<-- [start:animationFunctions]
 -- CUBE - 1st level of 3D animation
 --
 -- We only rotate the whole cube, not individual faces, they maintain their
@@ -170,12 +176,17 @@ moveSidesIn =
         >> moveBottomFaceIn
 
 
+sharedTiming : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+sharedTiming =
+    Keyframes.duration 1000
+        >> Keyframes.easing BounceOut
+
+
 moveFace : String -> (Translate.Builder -> Translate.Builder) -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveFace animGroup moveToBuilder =
-    Translate.for animGroup
+    sharedTiming
+        >> Translate.for animGroup
         >> moveToBuilder
-        >> Translate.duration 1000
-        >> Translate.easing BounceOut
         >> Translate.build
 
 
@@ -269,7 +280,7 @@ moveBottomFaceIn =
 
 -- TEXT - 3rd level of 3D animation
 --
--- Text moves forward (Z+20) and rotate (to 360deg) when sides expand,
+-- Text moves forward (Z+20) and rotates (to 360deg) when sides expand,
 -- and then back to Z=0 and 0deg when sides close
 
 
@@ -278,15 +289,9 @@ textMoveAmount =
     20
 
 
-textTiming : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
-textTiming =
-    Keyframes.duration 1000
-        >> Keyframes.easing BounceOut
-
-
 moveText : String -> Float -> Float -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveText textId toZ toRotate =
-    textTiming
+    sharedTiming
         >> Translate.for textId
         >> Translate.toZ toZ
         >> Translate.build
@@ -315,6 +320,11 @@ moveTextsIn =
         >> moveText "bottom-face-text" 0 0
 
 
+
+-- --8<-- [end:animationFunctions]
+-- --8<-- [start:animationSelector]
+
+
 selectAnimation : State -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 selectAnimation state =
     case state of
@@ -338,12 +348,17 @@ selectAnimation state =
 
 
 
+-- --8<-- [end:animationSelector]
 -- UPDATE
 
 
 type Msg
     = NoOp
     | GotKeyframeMsg Keyframes.AnimMsg
+
+
+
+-- --8<-- [start:stateMachine]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -395,7 +410,9 @@ cubeRotationEnded model =
     in
     { model
         | state = state
-        , animState = Keyframes.animate model.animState <| selectAnimation state
+        , animState =
+            Keyframes.animate model.animState <|
+                selectAnimation state
     }
 
 
@@ -418,11 +435,14 @@ sidesMovementEnded model =
     in
     { model
         | state = state
-        , animState = Keyframes.animate model.animState <| selectAnimation state
+        , animState =
+            Keyframes.animate model.animState <|
+                selectAnimation state
     }
 
 
 
+-- --8<-- [end:stateMachine]
 -- VIEW
 
 
@@ -431,15 +451,20 @@ view model =
     { title = "Keyframes 3D Example - HTML"
     , body =
         [ div
-            [ style "font-family" "system-ui, sans-serif"
-            , style "padding" "20px"
-            , style "max-width" "800px"
-            , style "margin" "0 auto"
+            [ style "min-height" "100vh"
+            , style "background" "linear-gradient(to bottom, rgb(226, 232, 240), rgb(248, 250, 252))"
             ]
-            [ Keyframes.styleNode model.animState
-            , viewHeader
-            , viewExplanation
-            , viewAnimationArea model
+            [ div
+                [ style "font-family" "system-ui, sans-serif"
+                , style "padding" "20px 40px"
+                , style "max-width" "700px"
+                , style "margin" "0 auto"
+                ]
+                [ Keyframes.styleNode model.animState
+                , viewHeader
+                , viewExplanation
+                , viewAnimationArea model
+                ]
             ]
         ]
     }
@@ -452,7 +477,8 @@ viewHeader =
         , style "margin-bottom" "20px"
         ]
         [ Html.h1
-            [ style "font-size" "24px"
+            [ style "font-size" "28px"
+            , style "font-weight" "bold"
             , style "margin" "0"
             ]
             [ text "Keyframes 3D Example - HTML" ]
@@ -464,11 +490,13 @@ viewExplanation =
     div
         [ style "background-color" "#f2f5ff"
         , style "border-radius" "8px"
-        , style "padding" "20px"
-        , style "margin-bottom" "20px"
+        , style "padding" "14px"
+        , style "margin" "0 0 40px 0"
+        , style "max-width" "700px"
         ]
         [ Html.h2
             [ style "font-size" "16px"
+            , style "font-weight" "bold"
             , style "margin" "0 0 10px 0"
             ]
             [ text "3D Cube Animation" ]
@@ -495,6 +523,13 @@ viewAnimationArea model =
         -- Perspective container
         , View3D.perspective 1000
         , View3D.perspectiveOrigin View3D.Center
+
+        --
+        -- Kind of fixes Chrome on macOS compositor tile corruption when
+        -- animating 3D transforms by creating a new stacking
+        -- context for the animation area
+        -- it's not perfect, some flickering can still occur
+        -- pull requests to improve this are welcome!
         , View3D.opacityHack
 
         -- flexbox centering on the perspective container
@@ -507,35 +542,6 @@ viewAnimationArea model =
             , style "position" "relative"
             ]
             [ viewCube model ]
-        ]
-
-
-viewCube : Model -> Html Msg
-viewCube model =
-    let
-        cubeAttrs =
-            Keyframes.attributes "cube" model.animState
-
-        cubeEvents =
-            Keyframes.eventsStopPropagation "cube" GotKeyframeMsg
-    in
-    div
-        (cubeAttrs
-            ++ cubeEvents
-            ++ [ View3D.transformStyle View3D.Preserve3D
-               , style "width" (String.fromInt cubeSize ++ "px")
-               , style "height" (String.fromInt cubeSize ++ "px")
-               , style "position" "relative"
-               ]
-        )
-        [ -- we only listen for animation events on the front face
-          -- since all faces would trigger at the same time
-          viewFace model.animState True frontFace
-        , viewFace model.animState False backFace
-        , viewFace model.animState False rightFace
-        , viewFace model.animState False leftFace
-        , viewFace model.animState False topFace
-        , viewFace model.animState False bottomFace
         ]
 
 
@@ -608,6 +614,44 @@ bottomFace =
     }
 
 
+
+-- --8<-- [start:viewCube]
+
+
+viewCube : Model -> Html Msg
+viewCube model =
+    let
+        cubeAttrs =
+            Keyframes.attributes "cube" model.animState
+
+        cubeEvents =
+            Keyframes.eventsStopPropagation "cube" GotKeyframeMsg
+    in
+    div
+        (cubeAttrs
+            ++ cubeEvents
+            ++ [ View3D.transformStyle View3D.Preserve3D
+               , style "width" (String.fromInt cubeSize ++ "px")
+               , style "height" (String.fromInt cubeSize ++ "px")
+               , style "position" "relative"
+               ]
+        )
+        [ -- we only listen for animation events on the front face
+          -- since all faces would trigger at the same time
+          viewFace model.animState True frontFace
+        , viewFace model.animState False backFace
+        , viewFace model.animState False rightFace
+        , viewFace model.animState False leftFace
+        , viewFace model.animState False topFace
+        , viewFace model.animState False bottomFace
+        ]
+
+
+
+-- --8<-- [end:viewCube]
+-- --8<-- [start:viewFace]
+
+
 viewFace : Keyframes.AnimState -> Bool -> FaceConfig -> Html Msg
 viewFace animState listenForEvents config =
     let
@@ -652,3 +696,7 @@ viewFace animState listenForEvents config =
                ]
         )
         [ span (textAnimAttributes ++ textEventAttributes) [ text config.label ] ]
+
+
+
+-- --8<-- [end:viewFace]
