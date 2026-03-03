@@ -132,8 +132,7 @@ init flags =
 --
 -- We only rotate the whole cube, not individual faces, they maintain their
 -- position in 3D space because we use `View3D.transformStyle View3D.Preserve3D`
--- on the cube container which preserves the 3D transforms of child elements
--- instead of flattening them into 2D space
+-- on the cube container
 
 
 rotateCube : Float -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
@@ -152,7 +151,7 @@ rotateCubeClockwise =
 
 rotateCubeAntiClockwise : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 rotateCubeAntiClockwise =
-    rotateCube (-1 * 360)
+    rotateCube 0
 
 
 
@@ -182,12 +181,17 @@ moveSidesIn =
         >> moveBottomFaceIn
 
 
+sharedTiming : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+sharedTiming =
+    Keyframes.duration 1000
+        >> Keyframes.easing BounceOut
+
+
 moveFace : String -> (Translate.Builder -> Translate.Builder) -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveFace animGroup moveToBuilder =
-    Translate.for animGroup
+    sharedTiming
+        >> Translate.for animGroup
         >> moveToBuilder
-        >> Translate.duration 1000
-        >> Translate.easing BounceOut
         >> Translate.build
 
 
@@ -290,15 +294,9 @@ textMoveAmount =
     20
 
 
-textTiming : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
-textTiming =
-    Keyframes.duration 1000
-        >> Keyframes.easing BounceOut
-
-
 moveText : String -> Float -> Float -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveText textId toZ toRotate =
-    textTiming
+    sharedTiming
         >> Translate.for textId
         >> Translate.toZ toZ
         >> Translate.build
