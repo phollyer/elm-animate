@@ -10,6 +10,7 @@ module Anim.Engine.WAAPI exposing
     , duration, speed
     , easing
     , delay
+    , iterations, loopForever, alternate
     , anyRunning, isRunning, allComplete, isComplete
     , getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
     , getOpacityStart, getOpacityEnd, getOpacityCurrent
@@ -160,6 +161,11 @@ These settings will be used for all animations unless overridden on a per-proper
 ## Delay
 
 @docs delay
+
+
+## Iterations
+
+@docs iterations, loopForever, alternate
 
 
 # Querying Animation State
@@ -338,6 +344,50 @@ easing =
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
     Internal.delay
+
+
+{-| Set how many times an animation should repeat.
+
+    WAAPI.animate waapiCommand model.animState <|
+        (WAAPI.iterations 3
+            >> ... -- Animation will play 3 times
+        )
+
+-}
+iterations : Int -> AnimBuilder -> AnimBuilder
+iterations =
+    Builder.iterations
+
+
+{-| Make an animation loop infinitely.
+
+    WAAPI.animate waapiCommand model.animState <|
+        (WAAPI.loopForever
+            >> ... -- Animation will loop continuously
+        )
+
+The animation will continue until you call `stop`, `reset`, or remove the element.
+
+-}
+loopForever : AnimBuilder -> AnimBuilder
+loopForever =
+    Builder.loopForever
+
+
+{-| Make an animation alternate direction on each iteration (ping-pong effect).
+
+    WAAPI.animate waapiCommand model.animState <|
+        (WAAPI.loopForever >> WAAPI.alternate
+            >> ... -- Animation will ping-pong continuously
+        )
+
+This creates a smooth ping-pong animation without needing reverse keyframes.
+The animation plays forward, then backward, then forward, etc.
+
+-}
+alternate : AnimBuilder -> AnimBuilder
+alternate =
+    Builder.alternate
 
 
 {-| Set the ID of the element being animated.

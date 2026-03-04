@@ -96,7 +96,7 @@ init flags =
 
                 -- The text labels all start on the same plane as their faces
                 -- at z=0, which is the default starting position for elements, so we don't need
-                -- to initialize them with a transform
+                -- to initialize them
                 ]
 
         state =
@@ -280,8 +280,8 @@ moveBottomFaceIn =
 
 -- TEXT - 3rd level of 3D animation
 --
--- Text moves forward (Z+20) and rotates (to 360deg) when sides expand,
--- and then back to Z=0 and 0deg when sides close
+-- Text moves forward (Z+20) and rotates (to z=360deg) when sides expand,
+-- and then moves back (to Z=0) and rotates back (to z=0deg) when sides close
 
 
 textMoveAmount : Float
@@ -671,7 +671,9 @@ viewFace animState listenForEvents config =
         -- bubbling up to the face element and triggering unwanted state changes
         -- Events are forwarded to NoOp since we don't want to react to them
         textEventAttributes =
-            Keyframes.eventsStopPropagation config.textId (\_ -> NoOp)
+            []
+
+        --Keyframes.eventsStopPropagation config.textId (\_ -> NoOp)
     in
     div
         (animAttributes

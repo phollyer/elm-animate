@@ -44,12 +44,35 @@ window.ElmAnimateWAAPI = (function () {
      */
     function processAnimationData(animationData) {
         if (animationData && animationData.elements) {
+            // Extract global animation options
+            const globalOptions = {
+                iterations: parseIterationCount(animationData.iterationCount),
+                direction: animationData.direction || 'normal'
+            };
+
             // Process element animations (keys are element IDs)
             Object.entries(animationData.elements).forEach(([elementId, elementConfig]) => {
-                processElementAnimation(elementId, elementConfig);
+                processElementAnimation(elementId, elementConfig, globalOptions);
             });
         } else {
             console.warn('ElmAnimateWAAPI: Invalid animation data format received');
+        }
+    }
+
+    /**
+     * Parse iteration count from Elm format to Web Animations API format
+     */
+    function parseIterationCount(iterationCount) {
+        if (!iterationCount) return 1;
+
+        switch (iterationCount.type) {
+            case 'infinite':
+                return Infinity;
+            case 'times':
+                return iterationCount.count;
+            case 'once':
+            default:
+                return 1;
         }
     }
 
@@ -59,8 +82,9 @@ window.ElmAnimateWAAPI = (function () {
      * 
      * @param {string} elementId - The DOM element ID (from Elm)
      * @param {object} elementConfig - Configuration with properties to animate
+     * @param {object} globalOptions - Global animation options (iterations, direction)
      */
-    function processElementAnimation(elementId, elementConfig) {
+    function processElementAnimation(elementId, elementConfig, globalOptions = { iterations: 1, direction: 'normal' }) {
         // Check if forElement was used - if not, warn and skip animation
         if (elementConfig.hasExplicitTarget === false) {
             console.warn(
@@ -129,9 +153,9 @@ using WAAPI.forElement at the start of your animation pipeline:
             let animation;
             if (propType === 'translate' || propType === 'scale' || propType === 'rotate') {
                 // For transform properties, create individual transform animation
-                animation = createTransformPropertyAnimation(element, property);
+                animation = createTransformPropertyAnimation(element, property, globalOptions);
             } else {
-                animation = createPropertyAnimation(element, property);
+                animation = createPropertyAnimation(element, property, globalOptions);
             }
 
             if (animation) {
@@ -383,7 +407,7 @@ using WAAPI.forElement at the start of your animation pipeline:
      * Create animation for a single transform property (translate, scale, or rotate)
      * Used for property-level tracking where each transform property is animated independently
      */
-    function createTransformPropertyAnimation(element, property) {
+    function createTransformPropertyAnimation(element, property, globalOptions = { iterations: 1, direction: 'normal' }) {
         const duration = property.duration;
         const easing = property.easing;
         const easingKeyframes = property.easingKeyframes;
@@ -467,14 +491,16 @@ using WAAPI.forElement at the start of your animation pipeline:
         return element.animate(keyframes, {
             duration: duration,
             easing: animationEasing,
-            fill: 'forwards'
+            fill: 'forwards',
+            iterations: globalOptions.iterations,
+            direction: globalOptions.direction
         });
     }
 
     /**
      * Create animation for non-transform properties
      */
-    function createPropertyAnimation(element, property) {
+    function createPropertyAnimation(element, property, globalOptions = { iterations: 1, direction: 'normal' }) {
         const duration = property.duration;
         const easing = property.easing;
         const easingKeyframes = property.easingKeyframes;
@@ -590,7 +616,9 @@ using WAAPI.forElement at the start of your animation pipeline:
         return element.animate(keyframes, {
             duration: duration,
             easing: animationEasing,
-            fill: 'forwards'
+            fill: 'forwards',
+            iterations: globalOptions.iterations,
+            direction: globalOptions.direction
         });
     }
 

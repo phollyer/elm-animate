@@ -275,6 +275,7 @@ type alias ProcessedAnimationData =
     , globalEasing : Maybe Easing
     , globalDelay : Maybe Int
     , iterationCount : IterationCount
+    , animationDirection : AnimationDirection
     }
 
 
@@ -769,6 +770,7 @@ processAnimationData (AnimBuilder data) =
     , globalEasing = data.globalEasing
     , globalDelay = data.globalDelay
     , iterationCount = data.iterationCount
+    , animationDirection = data.animationDirection
     }
 
 

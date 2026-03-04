@@ -7,7 +7,7 @@ module Anim.Engine.Sub exposing
     , duration, speed
     , easing
     , delay
-    , iterations, loopForever
+    , iterations, loopForever, alternate
     , anyRunning, isRunning, allComplete, isComplete
     , getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
     , getOpacityStart, getOpacityEnd, getOpacityCurrent
@@ -101,7 +101,7 @@ These settings will be used for all animations unless overridden on a per-proper
 
 ## Iterations
 
-@docs iterations, loopForever
+@docs iterations, loopForever, alternate
 
 
 # Querying Animation State
@@ -350,6 +350,22 @@ The `Iteration` event is emitted after each iteration completes.
 loopForever : AnimBuilder -> AnimBuilder
 loopForever =
     Builder.loopForever
+
+
+{-| Make an animation alternate direction on each iteration (ping-pong effect).
+
+    Sub.animate model.animState <|
+        (Sub.loopForever >> Sub.alternate
+            >> ... -- Animation will ping-pong continuously
+        )
+
+This creates a smooth ping-pong animation without needing reverse keyframes.
+The animation plays forward, then backward, then forward, etc.
+
+-}
+alternate : AnimBuilder -> AnimBuilder
+alternate =
+    Builder.alternate
 
 
 

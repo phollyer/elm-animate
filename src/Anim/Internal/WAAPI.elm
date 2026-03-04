@@ -61,7 +61,7 @@ module Anim.Internal.WAAPI exposing
     )
 
 import Anim.Extra.Easing exposing (Easing(..))
-import Anim.Internal.Builder as Builder exposing (IterationCount(..))
+import Anim.Internal.Builder as Builder exposing (AnimationDirection(..), IterationCount(..))
 import Anim.Internal.Builders.BackgroundColor as BackgroundColor
 import Anim.Internal.Builders.Opacity as Opacity
 import Anim.Internal.Builders.Rotate as Rotate
@@ -2168,6 +2168,7 @@ encode data =
         [ ( "type", Encode.string "animate" )
         , ( "elements", Encode.object elementsForJs )
         , ( "iterationCount", encodeIterationCount data.iterationCount )
+        , ( "direction", encodeAnimationDirection data.animationDirection )
         ]
 
 
@@ -2196,6 +2197,7 @@ encodeWithOrder order data =
         [ ( "type", Encode.string "animate" )
         , ( "elements", Encode.object elementsWithOrder )
         , ( "iterationCount", encodeIterationCount data.iterationCount )
+        , ( "direction", encodeAnimationDirection data.animationDirection )
         ]
 
 
@@ -2256,6 +2258,19 @@ encodeIterationCount iterationCount =
                 [ ( "type", Encode.string "infinite" )
                 , ( "count", Encode.int -1 )
                 ]
+
+
+{-| Encode animation direction for JavaScript.
+Returns a string that matches Web Animations API direction values.
+-}
+encodeAnimationDirection : AnimationDirection -> Encode.Value
+encodeAnimationDirection direction =
+    case direction of
+        Normal ->
+            Encode.string "normal"
+
+        Alternate ->
+            Encode.string "alternate"
 
 
 encodeProcessedElementConfigWithVersions : Dict ElementId ElementAnimation -> String -> Builder.ProcessedElementConfig -> Encode.Value
