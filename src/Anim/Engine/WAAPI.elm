@@ -3,7 +3,7 @@ module Anim.Engine.WAAPI exposing
     , animate, fireAndForget
     , TransformOrder(..), animateOrder, fireAndForgetOrder
     , forElement
-    , AnimMsg, AnimEvent(..), EventInfo, PropertyConfig, update, subscriptions
+    , AnimMsg, AnimEvent(..), update, subscriptions
     , attributes
     , stop, reset, restart, pause, resume
     , onResize
@@ -111,7 +111,7 @@ Updates are throttled to approximately 60 FPS (~16ms intervals) regardless of di
 This balances real-time feedback with performance, preventing message flooding on high-refresh-rate
 displays (120Hz, 144Hz, etc.) while maintaining smooth visual feedback.
 
-@docs AnimMsg, AnimEvent, EventInfo, PropertyConfig, update, subscriptions
+@docs AnimMsg, AnimEvent, update, subscriptions
 
 
 # View
@@ -980,24 +980,29 @@ getSizeCurrent =
 These events notify you when animations change state, allowing you to trigger
 side effects like starting the next animation in a sequence or updating the UI.
 
-Most events carry two `String` values followed by `EventInfo`.
+Events carry two `String` values: `elementId` and `animGroup`.
 
   - `elementId`: The HTML `id` attribute of the animated element.
   - `animGroup`: The animation group name.
 
-Lifecycle events include full `EventInfo` with duration, progress, and property
-configurations. `Changed` events (fired per-frame) include only progress to
-minimize overhead.
+The `Paused`, `Cancelled`, and `Changed` events include a `{ progress : Float }`
+record with the current progress (0.0 to 1.0). `Iteration` includes the iteration count.
 
     case event of
-        WAAPI.Ended "box" "fadeIn" info ->
+        WAAPI.Ended "box" "fadeIn" ->
             -- The "box" element finished the "fadeIn" animation
-            -- info.duration tells you how long it took
-            -- info.properties has the animation configuration
             ...
 
-        WAAPI.Iteration "box" "pulse" iterationNumber info ->
+        WAAPI.Iteration "box" "pulse" iterationNumber ->
             -- Animation completed iteration number (1-based)
+            ...
+
+        WAAPI.Paused "box" "fadeIn" { progress } ->
+            -- Animation paused, progress is where it stopped
+            ...
+
+        WAAPI.Cancelled "box" "fadeIn" { progress } ->
+            -- Animation was cancelled, progress shows where it was
             ...
 
         WAAPI.Changed "box" "fadeIn" { progress } ->
@@ -1006,49 +1011,14 @@ minimize overhead.
 
 -}
 type AnimEvent
-    = Started String String EventInfo
-    | Ended String String EventInfo
-    | Cancelled String String EventInfo
-    | Restarted String String EventInfo
-    | Paused String String EventInfo
-    | Resumed String String EventInfo
-    | Iteration String String Int EventInfo
+    = Started String String
+    | Ended String String
+    | Cancelled String String { progress : Float }
+    | Restarted String String
+    | Paused String String { progress : Float }
+    | Resumed String String
+    | Iteration String String Int
     | Changed String String { progress : Float }
-
-
-{-| Information about an animation event.
-
-  - `duration`: The maximum duration across all animated properties (in milliseconds)
-  - `progress`: Current progress from 0.0 to 1.0 (0.0 for Started, 1.0 for Ended)
-  - `properties`: List of property configurations being animated
-
--}
-type alias EventInfo =
-    { duration : Int
-    , progress : Float
-    , properties : List PropertyConfig
-    }
-
-
-{-| Configuration for a single animated property.
-
-  - `property`: Property type name ("translate", "opacity", "scale", etc.)
-  - `from`: Starting value as a string (e.g., "100,50,0" for translate, "0.5" for opacity, "rgb(255,0,0)" for colors)
-  - `to`: Ending value as a string
-  - `duration`: Duration for this property in milliseconds
-  - `easing`: Easing function name
-
-Use Elm's built-in parsers (`String.toFloat`, `String.toInt`) or string splitting
-to extract numeric values when needed.
-
--}
-type alias PropertyConfig =
-    { property : String
-    , from : String
-    , to : String
-    , duration : Int
-    , easing : String
-    }
 
 
 {-| Opaque message type for WAAPI updates and subscriptions.
@@ -1100,9 +1070,8 @@ and an `AnimEvent` that you can pattern match on and react to.
     handleAnimationEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleAnimationEvent event model =
         case event of
-            WAAPI.Ended "box" "fadeIn" info ->
+            WAAPI.Ended "box" "fadeIn" ->
                 -- The "box" element finished the "fadeIn" animation
-                -- info.duration, info.progress, info.properties available
                 ( model, startNextAnimation )
 
             WAAPI.Changed _ _ { progress } ->
@@ -1134,57 +1103,39 @@ eventDataToEvent eventData =
 
         animGroup =
             eventData.animGroup
-
-        eventInfo =
-            { duration = eventData.duration
-            , progress = eventData.progress
-            , properties = List.map internalToPublicPropertyConfig eventData.properties
-            }
     in
     case eventData.status of
         "changed" ->
             Changed elementId animGroup { progress = eventData.progress }
 
         "started" ->
-            Started elementId animGroup eventInfo
+            Started elementId animGroup
 
         "paused" ->
-            Paused elementId animGroup eventInfo
+            Paused elementId animGroup { progress = eventData.progress }
 
         "resumed" ->
-            Resumed elementId animGroup eventInfo
+            Resumed elementId animGroup
 
         "completed" ->
-            Ended elementId animGroup eventInfo
+            Ended elementId animGroup
 
         "cancelled" ->
-            Cancelled elementId animGroup eventInfo
+            Cancelled elementId animGroup { progress = eventData.progress }
 
         "stopped" ->
-            Ended elementId animGroup eventInfo
+            Ended elementId animGroup
 
         "reset" ->
-            Cancelled elementId animGroup eventInfo
+            Cancelled elementId animGroup { progress = eventData.progress }
 
         "restarted" ->
-            Restarted elementId animGroup eventInfo
+            Restarted elementId animGroup
 
         "iteration" ->
             -- Extract iteration number from progress (JS encodes it in progress field)
-            Iteration elementId animGroup (round eventData.progress) eventInfo
+            Iteration elementId animGroup (round eventData.progress)
 
         _ ->
             -- Fallback for unknown status (includes "unknown" from decode failures)
             Changed elementId animGroup { progress = eventData.progress }
-
-
-{-| Convert internal PropertyConfig to public PropertyConfig.
--}
-internalToPublicPropertyConfig : Internal.PropertyConfig -> PropertyConfig
-internalToPublicPropertyConfig internal =
-    { property = internal.property
-    , from = internal.from
-    , to = internal.to
-    , duration = internal.duration
-    , easing = internal.easing
-    }

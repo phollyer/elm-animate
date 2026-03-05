@@ -1014,7 +1014,7 @@ using WAAPI.forElement at the start of your animation pipeline:
             const compositeKey = `${elementId}:${animGroup}`;
             const groupInfo = animationGroups.get(compositeKey);
 
-            // Get property configs and calculate max duration
+            // Get property configs to calculate max duration for progress
             const properties = groupInfo?.propertyConfigs || [];
             const maxDuration = properties.length > 0
                 ? Math.max(...properties.map(p => p.duration))
@@ -1045,9 +1045,7 @@ using WAAPI.forElement at the start of your animation pipeline:
                     elementId: elementId,
                     animGroup: animGroup,
                     status: status,
-                    duration: maxDuration,
-                    progress: progress,
-                    properties: properties
+                    progress: progress
                 }
             };
             window.app.ports.waapiEvent.send(eventData);

@@ -386,7 +386,7 @@ The WAAPI engine sends `Changed` events during animation, letting you track real
             WAAPI.Changed _ _ { progress } ->
                 ( { model | progressBar = progress }, Cmd.none )
 
-            WAAPI.Ended _ _ _ ->
+            WAAPI.Ended _ _ ->
                 ( { model | progressBar = 1.0 }, Cmd.none )
 
             _ ->

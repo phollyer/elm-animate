@@ -9419,39 +9419,31 @@ var $author$project$Anim$Engine$WAAPI$Changed = F3(
 	function (a, b, c) {
 		return {$: 'Changed', a: a, b: b, c: c};
 	});
-var $author$project$Anim$Engine$WAAPI$Ended = F3(
-	function (a, b, c) {
-		return {$: 'Ended', a: a, b: b, c: c};
+var $author$project$Anim$Engine$WAAPI$Ended = F2(
+	function (a, b) {
+		return {$: 'Ended', a: a, b: b};
 	});
-var $author$project$Anim$Engine$WAAPI$Iteration = F4(
-	function (a, b, c, d) {
-		return {$: 'Iteration', a: a, b: b, c: c, d: d};
+var $author$project$Anim$Engine$WAAPI$Iteration = F3(
+	function (a, b, c) {
+		return {$: 'Iteration', a: a, b: b, c: c};
 	});
 var $author$project$Anim$Engine$WAAPI$Paused = F3(
 	function (a, b, c) {
 		return {$: 'Paused', a: a, b: b, c: c};
 	});
-var $author$project$Anim$Engine$WAAPI$Restarted = F3(
-	function (a, b, c) {
-		return {$: 'Restarted', a: a, b: b, c: c};
+var $author$project$Anim$Engine$WAAPI$Restarted = F2(
+	function (a, b) {
+		return {$: 'Restarted', a: a, b: b};
 	});
-var $author$project$Anim$Engine$WAAPI$Resumed = F3(
-	function (a, b, c) {
-		return {$: 'Resumed', a: a, b: b, c: c};
+var $author$project$Anim$Engine$WAAPI$Resumed = F2(
+	function (a, b) {
+		return {$: 'Resumed', a: a, b: b};
 	});
-var $author$project$Anim$Engine$WAAPI$Started = F3(
-	function (a, b, c) {
-		return {$: 'Started', a: a, b: b, c: c};
+var $author$project$Anim$Engine$WAAPI$Started = F2(
+	function (a, b) {
+		return {$: 'Started', a: a, b: b};
 	});
-var $author$project$Anim$Engine$WAAPI$internalToPublicPropertyConfig = function (internal) {
-	return {duration: internal.duration, easing: internal.easing, from: internal.from, property: internal.property, to: internal.to};
-};
 var $author$project$Anim$Engine$WAAPI$eventDataToEvent = function (eventData) {
-	var eventInfo = {
-		duration: eventData.duration,
-		progress: eventData.progress,
-		properties: A2($elm$core$List$map, $author$project$Anim$Engine$WAAPI$internalToPublicPropertyConfig, eventData.properties)
-	};
 	var elementId = eventData.elementId;
 	var animGroup = eventData.animGroup;
 	var _v0 = eventData.status;
@@ -9463,28 +9455,39 @@ var $author$project$Anim$Engine$WAAPI$eventDataToEvent = function (eventData) {
 				animGroup,
 				{progress: eventData.progress});
 		case 'started':
-			return A3($author$project$Anim$Engine$WAAPI$Started, elementId, animGroup, eventInfo);
+			return A2($author$project$Anim$Engine$WAAPI$Started, elementId, animGroup);
 		case 'paused':
-			return A3($author$project$Anim$Engine$WAAPI$Paused, elementId, animGroup, eventInfo);
+			return A3(
+				$author$project$Anim$Engine$WAAPI$Paused,
+				elementId,
+				animGroup,
+				{progress: eventData.progress});
 		case 'resumed':
-			return A3($author$project$Anim$Engine$WAAPI$Resumed, elementId, animGroup, eventInfo);
+			return A2($author$project$Anim$Engine$WAAPI$Resumed, elementId, animGroup);
 		case 'completed':
-			return A3($author$project$Anim$Engine$WAAPI$Ended, elementId, animGroup, eventInfo);
+			return A2($author$project$Anim$Engine$WAAPI$Ended, elementId, animGroup);
 		case 'cancelled':
-			return A3($author$project$Anim$Engine$WAAPI$Cancelled, elementId, animGroup, eventInfo);
+			return A3(
+				$author$project$Anim$Engine$WAAPI$Cancelled,
+				elementId,
+				animGroup,
+				{progress: eventData.progress});
 		case 'stopped':
-			return A3($author$project$Anim$Engine$WAAPI$Ended, elementId, animGroup, eventInfo);
+			return A2($author$project$Anim$Engine$WAAPI$Ended, elementId, animGroup);
 		case 'reset':
-			return A3($author$project$Anim$Engine$WAAPI$Cancelled, elementId, animGroup, eventInfo);
+			return A3(
+				$author$project$Anim$Engine$WAAPI$Cancelled,
+				elementId,
+				animGroup,
+				{progress: eventData.progress});
 		case 'restarted':
-			return A3($author$project$Anim$Engine$WAAPI$Restarted, elementId, animGroup, eventInfo);
+			return A2($author$project$Anim$Engine$WAAPI$Restarted, elementId, animGroup);
 		case 'iteration':
-			return A4(
+			return A3(
 				$author$project$Anim$Engine$WAAPI$Iteration,
 				elementId,
 				animGroup,
-				$elm$core$Basics$round(eventData.progress),
-				eventInfo);
+				$elm$core$Basics$round(eventData.progress));
 		default:
 			return A3(
 				$author$project$Anim$Engine$WAAPI$Changed,
@@ -9493,32 +9496,17 @@ var $author$project$Anim$Engine$WAAPI$eventDataToEvent = function (eventData) {
 				{progress: eventData.progress});
 	}
 };
-var $author$project$Anim$Internal$WAAPI$EventData = F6(
-	function (elementId, animGroup, status, duration, progress, properties) {
-		return {animGroup: animGroup, duration: duration, elementId: elementId, progress: progress, properties: properties, status: status};
+var $author$project$Anim$Internal$WAAPI$EventData = F4(
+	function (elementId, animGroup, status, progress) {
+		return {animGroup: animGroup, elementId: elementId, progress: progress, status: status};
 	});
 var $elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
 		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
 	});
-var $elm$json$Json$Decode$int = _Json_decodeInt;
-var $elm$json$Json$Decode$list = _Json_decodeList;
-var $elm$json$Json$Decode$map6 = _Json_map6;
-var $author$project$Anim$Internal$WAAPI$PropertyConfig = F5(
-	function (property, from, to, duration, easing) {
-		return {duration: duration, easing: easing, from: from, property: property, to: to};
-	});
-var $elm$json$Json$Decode$map5 = _Json_map5;
-var $author$project$Anim$Internal$WAAPI$propertyConfigDecoder = A6(
-	$elm$json$Json$Decode$map5,
-	$author$project$Anim$Internal$WAAPI$PropertyConfig,
-	A2($elm$json$Json$Decode$field, 'property', $elm$json$Json$Decode$string),
-	A2($elm$json$Json$Decode$field, 'from', $elm$json$Json$Decode$string),
-	A2($elm$json$Json$Decode$field, 'to', $elm$json$Json$Decode$string),
-	A2($elm$json$Json$Decode$field, 'duration', $elm$json$Json$Decode$int),
-	A2($elm$json$Json$Decode$field, 'easing', $elm$json$Json$Decode$string));
-var $author$project$Anim$Internal$WAAPI$eventDataDecoder = A7(
-	$elm$json$Json$Decode$map6,
+var $elm$json$Json$Decode$map4 = _Json_map4;
+var $author$project$Anim$Internal$WAAPI$eventDataDecoder = A5(
+	$elm$json$Json$Decode$map4,
 	$author$project$Anim$Internal$WAAPI$EventData,
 	A2(
 		$elm$json$Json$Decode$at,
@@ -9538,18 +9526,8 @@ var $author$project$Anim$Internal$WAAPI$eventDataDecoder = A7(
 	A2(
 		$elm$json$Json$Decode$at,
 		_List_fromArray(
-			['payload', 'duration']),
-		$elm$json$Json$Decode$int),
-	A2(
-		$elm$json$Json$Decode$at,
-		_List_fromArray(
 			['payload', 'progress']),
-		$elm$json$Json$Decode$float),
-	A2(
-		$elm$json$Json$Decode$at,
-		_List_fromArray(
-			['payload', 'properties']),
-		$elm$json$Json$Decode$list($author$project$Anim$Internal$WAAPI$propertyConfigDecoder)));
+		$elm$json$Json$Decode$float));
 var $elm$core$Result$toMaybe = function (result) {
 	if (result.$ === 'Ok') {
 		var v = result.a;
@@ -10136,6 +10114,7 @@ var $elm$json$Json$Decode$dict = function (decoder) {
 		$elm$core$Dict$fromList,
 		$elm$json$Json$Decode$keyValuePairs(decoder));
 };
+var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $elm$json$Json$Decode$maybe = function (decoder) {
 	return $elm$json$Json$Decode$oneOf(
@@ -10602,7 +10581,7 @@ var $author$project$Anim$Internal$WAAPI$update = F2(
 			var propertyResult = _v1.b;
 			return _Utils_Tuple2(
 				newState,
-				{animGroup: propertyResult.animGroup, duration: 0, elementId: propertyResult.elementId, progress: propertyResult.progress, properties: _List_Nil, status: 'changed'});
+				{animGroup: propertyResult.animGroup, elementId: propertyResult.elementId, progress: propertyResult.progress, status: 'changed'});
 		} else {
 			var jsonValue = msg.a;
 			var _v2 = $author$project$Anim$Internal$WAAPI$decodeAnimationEvent(jsonValue);
@@ -10614,7 +10593,7 @@ var $author$project$Anim$Internal$WAAPI$update = F2(
 			} else {
 				return _Utils_Tuple2(
 					animState,
-					{animGroup: '', duration: 0, elementId: '', progress: 0, properties: _List_Nil, status: 'unknown'});
+					{animGroup: '', elementId: '', progress: 0, status: 'unknown'});
 			}
 		}
 	});

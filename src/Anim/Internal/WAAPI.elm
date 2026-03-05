@@ -3,7 +3,6 @@ module Anim.Internal.WAAPI exposing
     , AnimMsg
     , AnimState
     , EventData
-    , PropertyConfig
     , TransformOrder(..)
     , allComplete
     , animate
@@ -416,20 +415,7 @@ type alias EventData =
     { elementId : String
     , animGroup : String
     , status : String
-    , duration : Int
     , progress : Float
-    , properties : List PropertyConfig
-    }
-
-
-{-| Configuration for a single animated property.
--}
-type alias PropertyConfig =
-    { property : String
-    , from : String
-    , to : String
-    , duration : Int
-    , easing : String
     }
 
 
@@ -1002,25 +988,11 @@ decodeAnimationEvent jsonValue =
 -}
 eventDataDecoder : Decode.Decoder EventData
 eventDataDecoder =
-    Decode.map6 EventData
+    Decode.map4 EventData
         (Decode.at [ "payload", "elementId" ] Decode.string)
         (Decode.at [ "payload", "animGroup" ] Decode.string)
         (Decode.at [ "payload", "status" ] Decode.string)
-        (Decode.at [ "payload", "duration" ] Decode.int)
         (Decode.at [ "payload", "progress" ] Decode.float)
-        (Decode.at [ "payload", "properties" ] (Decode.list propertyConfigDecoder))
-
-
-{-| Decoder for PropertyConfig.
--}
-propertyConfigDecoder : Decode.Decoder PropertyConfig
-propertyConfigDecoder =
-    Decode.map5 PropertyConfig
-        (Decode.field "property" Decode.string)
-        (Decode.field "from" Decode.string)
-        (Decode.field "to" Decode.string)
-        (Decode.field "duration" Decode.int)
-        (Decode.field "easing" Decode.string)
 
 
 {-| TEA-style update function for WAAPI messages.
@@ -1042,9 +1014,7 @@ update msg animState =
             , { elementId = propertyResult.elementId
               , animGroup = propertyResult.animGroup
               , status = "changed"
-              , duration = 0
               , progress = propertyResult.progress
-              , properties = []
               }
             )
 
@@ -1060,9 +1030,7 @@ update msg animState =
                     , { elementId = ""
                       , animGroup = ""
                       , status = "unknown"
-                      , duration = 0
                       , progress = 0
-                      , properties = []
                       }
                     )
 
