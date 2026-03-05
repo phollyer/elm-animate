@@ -13,7 +13,15 @@ With `animate`, you maintain an `AnimState` in your model that the engine update
 
 With `fireAndForget`, every call creates a new state — there's no continuity between triggers, and nothing to add to `update`.
 
-See [Engine Overview](../engines/overview.md#animate-vs-fireandforget) for a detailed comparison of when to use each.
+### Suggested Use Cases
+
+| Scenario | Transitions | Keyframes | Sub | WAAPI |
+| -------- | :---------: | :-------: | :-: | :---: |
+| One-shot, no control needed | `fireAndForget` | `fireAndForget` | `animate` | `fireAndForget` |
+| Stop/reset/pause controls | `animate` | `animate` | `animate` | `animate` |
+| Sequencing animations | `animate` | `animate` | `animate` | `animate` |
+| Redirecting mid-flight | either | | `animate` | `animate` |
+
 
 ## Using `animate`
 

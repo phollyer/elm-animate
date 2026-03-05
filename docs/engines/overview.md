@@ -1,8 +1,5 @@
 # Animation Engines Overview
 
-!!! info "Prerequisites"
-    This section assumes you've completed [Getting Started](../getting-started/installation.md) and are familiar with [animation concepts](../concepts/controlling-animations.md) like the builder pattern, AnimState, and property initializers.
-
 This page mainly covers the shared patterns that are the same/similar for each Engine. For engine-specific details, see:
 
 - [Transitions](transitions.md) — CSS transitions, simplest setup
@@ -111,22 +108,12 @@ All engines use `Engine.init` to create the initial `AnimState`. Pass property i
 
 ### Triggering Animations
 
-All engines provide `animate` for state-tracked animations. There's also `fireAndForget` for one-shot animations, although this isn't available for the Sub Engine because it tracks state by default:
+All engines provide `animate` for state-tracked animations. There's also `fireAndForget` for one-shot animations, although this isn't available for the Sub Engine because it tracks state by default and therefore has no concept of `fireAndForget`:
 
 | Function | What It Does |
 | -------- | ------------ |
 | `animate` | Tracks state in `AnimState` |
 | `fireAndForget` | Starts fresh each time, no state needed |
-
-
-#### Suggested Use Cases
-
-| Scenario | Transitions | Keyframes | Sub | WAAPI |
-| -------- | :---------: | :-------: | :-: | :---: |
-| One-shot, no control needed | `fireAndForget` | `fireAndForget` | `animate` | `fireAndForget` |
-| Stop/reset/pause controls | `animate` | `animate` | `animate` | `animate` |
-| Sequencing animations | `animate` | `animate` | `animate` | `animate` |
-| Redirecting mid-flight | either | | `animate` | `animate` |
 
 ??? example "View Source Code"
 
@@ -320,7 +307,7 @@ All engines provide lifecycle events (`Started`, `Ended`, `Cancelled`, etc.), wh
 | Changed | | | | ✓ |
 
 
-See [Events](../concepts/events.md) for the full pattern, or the individual engine docs for specifics.
+📖 See [Events](../concepts/events.md) for the full pattern, or the individual engine docs for specifics.
 
 
 ## Querying State
@@ -414,7 +401,15 @@ All engines support querying start and end values, with the functions following 
 
 ## Switching Engines
 
-Because all engines share the same builder API, animations are portable:
+Most of what you've learned on this page applies to all engines: initialization, triggering, default settings, events, and querying state. This shared foundation makes switching straightforward.
+
+When migrating, you'll mainly adjust:
+
+- Import statements
+- Engine-specific return types (e.g., WAAPI returns `(AnimState, Cmd msg)`)
+- Port setup for WAAPI
+
+Animations themselves are portable - the same builder works with any engine:
 
 ??? example "View Source Code"
 
@@ -434,7 +429,7 @@ Because all engines share the same builder API, animations are portable:
     WAAPI.animate model.animState myAnimation
     ```
 
-This makes it easy to start simple with Transitions and migrate to Sub or WAAPI as requirements grow. If you switch engines, all you need to change are a few implementation details for the Engine. The compiler will help with this, but you can also use the [Migration Guide](migration-guide.md) should you need to.
+This makes it easy to start simple with Transitions and migrate to Sub or WAAPI as requirements grow. The compiler will guide you through the differences, and the [Migration Guide](migration-guide.md) covers specifics.
 
 
 ## Next Steps
