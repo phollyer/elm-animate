@@ -34,8 +34,7 @@ main =
 
 
 type State
-    = Ready
-    | Opening
+    = Opening
     | Closing
     | RotatingOpen
     | RotatingClosed
@@ -103,9 +102,8 @@ init flags =
                 -- at z=0, which is the default starting position for elements, so we don't need
                 -- to initialize them
                 ]
-
         state =
-            Ready
+            Opening
     in
     ( { animState =
             Keyframes.animate initialAnimState <|
@@ -124,6 +122,29 @@ init flags =
 
 
 -- --8<-- [end:initializeAndTrigger]
+-- --8<-- [start:animationSelector]
+
+
+selectAnimation : State -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+selectAnimation state =
+    case state of
+        Opening ->
+            moveSidesOut
+                >> moveTextsOut
+
+        Closing ->
+            moveSidesIn
+                >> moveTextsIn
+
+        RotatingOpen ->
+            rotateCubeClockwise
+
+        RotatingClosed ->
+            rotateCubeAntiClockwise
+
+
+
+-- --8<-- [end:animationSelector]
 -- ANIMATIONS
 --
 -- --8<-- [start:animationFunctions]
@@ -157,7 +178,7 @@ rotateCubeAntiClockwise =
 -- SIDES - 2nd level of 3D animation
 --
 -- For the side movement animations, we build complex animations out of
--- smaller pieces. Each individual piece is easy to understand and reason about
+-- smaller pieces.
 
 
 moveSidesOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
@@ -284,8 +305,8 @@ moveBottomFaceIn =
 
 -- TEXT - 3rd level of 3D animation
 --
--- Text moves forward (Z+20) and rotates (to z=360deg) when sides expand,
--- and then moves back (to Z=0) and rotates back (to z=0deg) when sides close
+-- Text moves forward (Z+20) and rotates (to Z=360deg) when sides expand,
+-- and then moves back (to Z=0) and rotates back (to Z=0deg) when sides close
 
 
 textMoveAmount : Float
@@ -326,33 +347,6 @@ moveTextsIn =
 
 
 -- --8<-- [end:animationFunctions]
--- --8<-- [start:animationSelector]
-
-
-selectAnimation : State -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
-selectAnimation state =
-    case state of
-        Ready ->
-            moveSidesOut
-                >> moveTextsOut
-
-        Opening ->
-            moveSidesOut
-                >> moveTextsOut
-
-        Closing ->
-            moveSidesIn
-                >> moveTextsIn
-
-        RotatingOpen ->
-            rotateCubeClockwise
-
-        RotatingClosed ->
-            rotateCubeAntiClockwise
-
-
-
--- --8<-- [end:animationSelector]
 -- UPDATE
 
 
@@ -385,11 +379,7 @@ handleKeyframeEvent : Keyframes.AnimEvent -> Model -> Model
 handleKeyframeEvent animEvent model =
     case animEvent of
         Keyframes.Ended _ _ "cube" ->
-            if model.state /= Ready then
-                cubeRotationEnded model
-
-            else
-                model
+            cubeRotationEnded model
 
         Keyframes.Ended _ _ "front-face" ->
             sidesMovementEnded model
@@ -414,9 +404,6 @@ cubeRotationEnded model =
 sidesMovementEnded : Model -> Model
 sidesMovementEnded model =
     case model.state of
-        Ready ->
-            stateChanged RotatingOpen model
-
         Opening ->
             stateChanged RotatingOpen model
 
@@ -486,6 +473,35 @@ viewContent model =
       <|
         viewCube model
     ]
+
+
+viewExplanation : Element Msg
+viewExplanation =
+    el
+        [ centerX
+        , paddingEach
+            { top = 20
+            , right = 0
+            , left = 0
+            , bottom = 0
+            }
+        ]
+    <|
+        column
+            [ width (fill |> maximum 700)
+            , centerX
+            , padding 20
+            , spacing 10
+            , Background.color (Element.rgb 0.95 0.97 1)
+            , Border.rounded 8
+            , Font.size 14
+            ]
+            [ el [ Font.bold, Font.size 16 ] (text "3D Cube Animation")
+            , Element.paragraph []
+                [ text "This example demonstrates a 3D cube built with six positioned faces "
+                , text "that cycles through: expand sides → rotate → close sides → rotate back."
+                ]
+            ]
 
 
 type alias FaceConfig =
@@ -568,8 +584,6 @@ viewCube model =
             Keyframes.attributes "cube" model.animState
                 |> List.map htmlAttribute
 
-        -- We only need one listener on the cube - no need to listen for events on the faces
-        -- or the text elements, they will bubble up to the cube listener.
         cubeEvents =
             Keyframes.events "cube" GotKeyframeMsg
                 |> List.map htmlAttribute
@@ -597,25 +611,26 @@ viewCube model =
 viewFace : Keyframes.AnimState -> FaceConfig -> Element Msg
 viewFace animState config =
     let
-        animAttributes =
+        faceAnimAttributes =
             Keyframes.attributes config.id animState
                 |> List.map htmlAttribute
 
-        -- No event handlers needed here - events bubble to the cube listener
-        -- and correctly report this element's ID as the source
-        -- Text element with its own 3D animation (3rd level)
         textAnimAttributes =
             Keyframes.attributes config.textId animState
                 |> List.map htmlAttribute
     in
     el
-        (animAttributes
-            ++ [ View3D.transformStyle View3D.Preserve3D |> htmlAttribute
+        (faceAnimAttributes
+            ++ [ View3D.transformStyle View3D.Preserve3D
+                    |> htmlAttribute
                , Html.Attributes.style "position" "absolute"
                     |> htmlAttribute
-               , Html.Attributes.style "display" "flex" |> htmlAttribute
-               , Html.Attributes.style "justify-content" "center" |> htmlAttribute
-               , Html.Attributes.style "align-items" "center" |> htmlAttribute
+               , Html.Attributes.style "display" "flex"
+                    |> htmlAttribute
+               , Html.Attributes.style "justify-content" "center"
+                    |> htmlAttribute
+               , Html.Attributes.style "align-items" "center"
+                    |> htmlAttribute
                , width (px cubeSize)
                , height (px cubeSize)
                , Background.color config.background
@@ -636,32 +651,3 @@ viewFace animState config =
 
 
 -- --8<-- [end:renderCube]
-
-
-viewExplanation : Element Msg
-viewExplanation =
-    el
-        [ centerX
-        , paddingEach
-            { top = 20
-            , right = 0
-            , left = 0
-            , bottom = 0
-            }
-        ]
-    <|
-        column
-            [ width (fill |> maximum 700)
-            , centerX
-            , padding 20
-            , spacing 10
-            , Background.color (Element.rgb 0.95 0.97 1)
-            , Border.rounded 8
-            , Font.size 14
-            ]
-            [ el [ Font.bold, Font.size 16 ] (text "3D Cube Animation")
-            , Element.paragraph []
-                [ text "This example demonstrates a 3D cube built with six positioned faces "
-                , text "that cycles through: expand sides → rotate → close sides → rotate back."
-                ]
-            ]

@@ -29,8 +29,7 @@ main =
 
 
 type State
-    = Ready
-    | Opening
+    = Opening
     | Closing
     | RotatingOpen
     | RotatingClosed
@@ -100,11 +99,11 @@ init flags =
                 ]
 
         state =
-            Ready
+            Opening
     in
     ( { animState =
             Keyframes.animate initialAnimState <|
-                selectAnimation state
+                 selectAnimation state
 
       -- --8<-- [end:startAnimation]
       , state = state
@@ -119,6 +118,29 @@ init flags =
 
 
 -- --8<-- [end:initializeAndTrigger]
+-- --8<-- [start:animationSelector]
+
+
+selectAnimation : State -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+selectAnimation state =
+    case state of
+        Opening ->
+            moveSidesOut
+                >> moveTextsOut
+
+        Closing ->
+            moveSidesIn
+                >> moveTextsIn
+
+        RotatingOpen ->
+            rotateCubeClockwise
+
+        RotatingClosed ->
+            rotateCubeAntiClockwise
+
+
+
+-- --8<-- [end:animationSelector]
 -- ANIMATIONS
 --
 -- --8<-- [start:animationFunctions]
@@ -152,7 +174,7 @@ rotateCubeAntiClockwise =
 -- SIDES - 2nd level of 3D animation
 --
 -- For the side movement animations, we build complex animations out of
--- smaller pieces. Each individual piece is easy to understand and reason about
+-- smaller pieces.
 
 
 moveSidesOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
@@ -279,8 +301,8 @@ moveBottomFaceIn =
 
 -- TEXT - 3rd level of 3D animation
 --
--- Text moves forward (Z+20) and rotates (to z=360deg) when sides expand,
--- and then moves back (to Z=0) and rotates back (to z=0deg) when sides close
+-- Text moves forward (Z+20) and rotates (to Z=360deg) when sides expand,
+-- and then moves back (to Z=0) and rotates back (to Z=0deg) when sides close
 
 
 textMoveAmount : Float
@@ -321,33 +343,6 @@ moveTextsIn =
 
 
 -- --8<-- [end:animationFunctions]
--- --8<-- [start:animationSelector]
-
-
-selectAnimation : State -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
-selectAnimation state =
-    case state of
-        Ready ->
-            moveSidesOut
-                >> moveTextsOut
-
-        Opening ->
-            moveSidesOut
-                >> moveTextsOut
-
-        Closing ->
-            moveSidesIn
-                >> moveTextsIn
-
-        RotatingOpen ->
-            rotateCubeClockwise
-
-        RotatingClosed ->
-            rotateCubeAntiClockwise
-
-
-
--- --8<-- [end:animationSelector]
 -- UPDATE
 
 
@@ -380,11 +375,7 @@ handleKeyframeEvent : Keyframes.AnimEvent -> Model -> Model
 handleKeyframeEvent animEvent model =
     case animEvent of
         Keyframes.Ended _ _ "cube" ->
-            if model.state /= Ready then
-                cubeRotationEnded model
-
-            else
-                model
+            cubeRotationEnded model
 
         Keyframes.Ended _ _ "front-face" ->
             sidesMovementEnded model
@@ -409,9 +400,6 @@ cubeRotationEnded model =
 sidesMovementEnded : Model -> Model
 sidesMovementEnded model =
     case model.state of
-        Ready ->
-            stateChanged RotatingOpen model
-
         Opening ->
             stateChanged RotatingOpen model
 
@@ -606,9 +594,6 @@ viewCube model =
         cubeAttrs =
             Keyframes.attributes "cube" model.animState
 
-        -- Events now correctly report the source element ID from the CSS animation name,
-        -- so bubbled events will report "front-face" or "front-face-text" correctly.
-        -- We only need one listener on the cube - no need for eventsStopPropagation on children.
         cubeEvents =
             Keyframes.events "cube" GotKeyframeMsg
     in
@@ -633,17 +618,14 @@ viewCube model =
 viewFace : Keyframes.AnimState -> FaceConfig -> Html Msg
 viewFace animState config =
     let
-        animAttributes =
+        faceAnimAttributes =
             Keyframes.attributes config.id animState
 
-        -- No event handlers needed here - events bubble to the cube listener
-        -- and correctly report this element's ID as the source
-        -- Text element with its own 3D animation (3rd level)
         textAnimAttributes =
             Keyframes.attributes config.textId animState
     in
     div
-        (animAttributes
+        (faceAnimAttributes
             ++ [ View3D.transformStyle View3D.Preserve3D
                , style "position" "absolute"
                , style "width" (String.fromInt cubeSize ++ "px")
