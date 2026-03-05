@@ -3,6 +3,7 @@ module Anim.Internal.CSS exposing
     , AnimEvent(..)
     , AnimState
     , ElementState(..)
+    , SourceEventData
     , TransformOrder(..)
     , allComplete
     , animate
@@ -35,12 +36,20 @@ module Anim.Internal.CSS exposing
     , keyframesStyles
     , onAnimationCancel
     , onAnimationCancelStopPropagation
+    , onAnimationCancelWithSource
+    , onAnimationCancelWithSourceStopPropagation
     , onAnimationEnd
     , onAnimationEndStopPropagation
+    , onAnimationEndWithSource
+    , onAnimationEndWithSourceStopPropagation
     , onAnimationIteration
     , onAnimationIterationStopPropagation
+    , onAnimationIterationWithSource
+    , onAnimationIterationWithSourceStopPropagation
     , onAnimationStart
     , onAnimationStartStopPropagation
+    , onAnimationStartWithSource
+    , onAnimationStartWithSourceStopPropagation
     , onTransitionCancel
     , onTransitionCancelStopPropagation
     , onTransitionEnd
@@ -490,6 +499,158 @@ onAnimationCancelStopPropagation : msg -> Html.Attribute msg
 onAnimationCancelStopPropagation msg =
     Html.Events.stopPropagationOn "animationcancel"
         (Json.Decode.succeed ( msg, True ))
+
+
+
+-- SOURCE-AWARE EVENT HANDLERS
+-- These handlers decode the animationName from the DOM event and extract
+-- the source element ID, enabling proper event attribution even when events bubble.
+-- They also decode the target element's DOM id attribute for distinguishing elements.
+
+
+{-| Data decoded from animation events for source identification.
+
+  - `animGroup`: The animation group name extracted from the CSS animation name
+  - `domElementId`: The HTML id attribute of the event target element (if set)
+  - `currentTargetId`: The HTML id attribute of the element where the handler is attached (if set)
+
+-}
+type alias SourceEventData =
+    { animGroup : String
+    , domElementId : Maybe String
+    , currentTargetId : Maybe String
+    }
+
+
+{-| Decode the animationName property from an animation event.
+-}
+animationNameDecoder : Json.Decode.Decoder String
+animationNameDecoder =
+    Json.Decode.field "animationName" Json.Decode.string
+
+
+{-| Decode an element id attribute from a given path.
+Returns Nothing if the id is empty or not set.
+-}
+elementIdDecoder : List String -> Json.Decode.Decoder (Maybe String)
+elementIdDecoder path =
+    Json.Decode.at path Json.Decode.string
+        |> Json.Decode.map
+            (\id ->
+                if String.isEmpty id then
+                    Nothing
+
+                else
+                    Just id
+            )
+        |> Json.Decode.maybe
+        |> Json.Decode.map (Maybe.andThen identity)
+
+
+{-| Decode the target element's id attribute.
+Returns Nothing if the id is empty or not set.
+-}
+targetIdDecoder : Json.Decode.Decoder (Maybe String)
+targetIdDecoder =
+    elementIdDecoder [ "target", "id" ]
+
+
+{-| Decode the currentTarget element's id attribute.
+Returns Nothing if the id is empty or not set.
+-}
+currentTargetIdDecoder : Json.Decode.Decoder (Maybe String)
+currentTargetIdDecoder =
+    elementIdDecoder [ "currentTarget", "id" ]
+
+
+{-| Extract element ID from animation name.
+
+Animation names follow the format: `{elementId}-anim-{hash}` or `{elementId}-anim-{hash}-{suffix}`
+So we split on "-anim-" and take the first part.
+
+-}
+extractElementIdFromAnimationName : String -> String
+extractElementIdFromAnimationName animName =
+    case String.split "-anim-" animName of
+        elementId :: _ ->
+            elementId
+
+        [] ->
+            animName
+
+
+{-| Decode the source element data from an animation event.
+-}
+sourceEventDecoder : Json.Decode.Decoder SourceEventData
+sourceEventDecoder =
+    Json.Decode.map3 SourceEventData
+        (animationNameDecoder |> Json.Decode.map extractElementIdFromAnimationName)
+        targetIdDecoder
+        currentTargetIdDecoder
+
+
+{-| Animation start event that reports the actual source element.
+-}
+onAnimationStartWithSource : (SourceEventData -> msg) -> Html.Attribute msg
+onAnimationStartWithSource toMsg =
+    Html.Events.on "animationstart"
+        (sourceEventDecoder |> Json.Decode.map toMsg)
+
+
+{-| Like `onAnimationStartWithSource` but stops event propagation.
+-}
+onAnimationStartWithSourceStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
+onAnimationStartWithSourceStopPropagation toMsg =
+    Html.Events.stopPropagationOn "animationstart"
+        (sourceEventDecoder |> Json.Decode.map (\data -> ( toMsg data, True )))
+
+
+{-| Animation end event that reports the actual source element.
+-}
+onAnimationEndWithSource : (SourceEventData -> msg) -> Html.Attribute msg
+onAnimationEndWithSource toMsg =
+    Html.Events.on "animationend"
+        (sourceEventDecoder |> Json.Decode.map toMsg)
+
+
+{-| Like `onAnimationEndWithSource` but stops event propagation.
+-}
+onAnimationEndWithSourceStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
+onAnimationEndWithSourceStopPropagation toMsg =
+    Html.Events.stopPropagationOn "animationend"
+        (sourceEventDecoder |> Json.Decode.map (\data -> ( toMsg data, True )))
+
+
+{-| Animation iteration event that reports the actual source element.
+-}
+onAnimationIterationWithSource : (SourceEventData -> msg) -> Html.Attribute msg
+onAnimationIterationWithSource toMsg =
+    Html.Events.on "animationiteration"
+        (sourceEventDecoder |> Json.Decode.map toMsg)
+
+
+{-| Like `onAnimationIterationWithSource` but stops event propagation.
+-}
+onAnimationIterationWithSourceStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
+onAnimationIterationWithSourceStopPropagation toMsg =
+    Html.Events.stopPropagationOn "animationiteration"
+        (sourceEventDecoder |> Json.Decode.map (\data -> ( toMsg data, True )))
+
+
+{-| Animation cancel event that reports the actual source element.
+-}
+onAnimationCancelWithSource : (SourceEventData -> msg) -> Html.Attribute msg
+onAnimationCancelWithSource toMsg =
+    Html.Events.on "animationcancel"
+        (sourceEventDecoder |> Json.Decode.map toMsg)
+
+
+{-| Like `onAnimationCancelWithSource` but stops event propagation.
+-}
+onAnimationCancelWithSourceStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
+onAnimationCancelWithSourceStopPropagation toMsg =
+    Html.Events.stopPropagationOn "animationcancel"
+        (sourceEventDecoder |> Json.Decode.map (\data -> ( toMsg data, True )))
 
 
 

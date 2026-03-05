@@ -289,12 +289,12 @@ textMoveAmount =
 
 
 moveText : String -> Float -> Float -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
-moveText textId toZ toRotate =
+moveText animGroup toZ toRotate =
     sharedTiming
-        >> Translate.for textId
+        >> Translate.for animGroup
         >> Translate.toZ toZ
         >> Translate.build
-        >> Rotate.for textId
+        >> Rotate.for animGroup
         >> Rotate.toZ toRotate
         >> Rotate.build
 
@@ -379,14 +379,14 @@ update msg model =
 handleKeyframeEvent : Keyframes.AnimEvent -> Model -> Model
 handleKeyframeEvent animEvent model =
     case animEvent of
-        Keyframes.Ended "cube" ->
+        Keyframes.Ended _ _ "cube" ->
             if model.state /= Ready then
                 cubeRotationEnded model
 
             else
                 model
 
-        Keyframes.Ended "front-face" ->
+        Keyframes.Ended _ _ "front-face" ->
             sidesMovementEnded model
 
         _ ->
@@ -504,36 +504,27 @@ viewExplanation =
 viewAnimationArea : Model -> Html Msg
 viewAnimationArea model =
     div
-        [ style "width" (String.fromInt model.animAreaSize.width ++ "px")
+        [ -- Perspective container
+          View3D.perspective 1000
+        , View3D.perspectiveOrigin View3D.Center
+
+        --
+        -- Workaround for Chrome on macOS GPU compositing issues with 3D transforms.
+        -- Setting opacity: 0.99 forces a new compositing layer, which prevents
+        -- the colored rectangle artifacts that can appear during complex 3D animations.
+        -- It's not perfect, some flickering can still occur.
+        , View3D.opacityHack
+        , style "display" "flex"
+        , style "justify-content" "center"
+        , style "align-items" "center"
+        , style "width" (String.fromInt model.animAreaSize.width ++ "px")
         , style "height" (String.fromInt model.animAreaSize.height ++ "px")
         , style "margin" "0 auto"
         , style "background-color" "#ffffff"
         , style "border-radius" "12px"
         , style "box-shadow" "0 4px 8px rgba(0,0,0,0.1)"
-
-        -- Perspective container
-        , View3D.perspective 1000
-        , View3D.perspectiveOrigin View3D.Center
-
-        --
-        -- Kind of fixes Chrome on macOS compositor tile corruption when
-        -- animating 3D transforms by creating a new stacking
-        -- context for the animation area
-        -- it's not perfect, some flickering can still occur
-        -- pull requests to improve this are welcome!
-        , View3D.opacityHack
-
-        -- flexbox centering on the perspective container
-        , style "display" "flex"
-        , style "justify-content" "center"
-        , style "align-items" "center"
         ]
-        [ div
-            [ View3D.transformStyle View3D.Preserve3D
-            , style "position" "relative"
-            ]
-            [ viewCube model ]
-        ]
+        [ viewCube model ]
 
 
 type alias FaceConfig =
@@ -615,6 +606,9 @@ viewCube model =
         cubeAttrs =
             Keyframes.attributes "cube" model.animState
 
+        -- Events now correctly report the source element ID from the CSS animation name,
+        -- so bubbled events will report "front-face" or "front-face-text" correctly.
+        -- We only need one listener on the cube - no need for eventsStopPropagation on children.
         cubeEvents =
             Keyframes.events "cube" GotKeyframeMsg
     in
@@ -627,50 +621,29 @@ viewCube model =
                , style "position" "relative"
                ]
         )
-        [ -- we only listen for animation events on the front face
-          -- since all faces would trigger at the same time
-          viewFace model.animState True frontFace
-        , viewFace model.animState False backFace
-        , viewFace model.animState False rightFace
-        , viewFace model.animState False leftFace
-        , viewFace model.animState False topFace
-        , viewFace model.animState False bottomFace
+        [ viewFace model.animState frontFace
+        , viewFace model.animState backFace
+        , viewFace model.animState rightFace
+        , viewFace model.animState leftFace
+        , viewFace model.animState topFace
+        , viewFace model.animState bottomFace
         ]
 
 
-viewFace : Keyframes.AnimState -> Bool -> FaceConfig -> Html Msg
-viewFace animState listenForEvents config =
+viewFace : Keyframes.AnimState -> FaceConfig -> Html Msg
+viewFace animState config =
     let
         animAttributes =
             Keyframes.attributes config.id animState
 
-        -- We only forward events to our handler when we actually want to listen
-        -- otherwise they go to NoOp
-        --
-        -- We stop propagation on face and text events to prevent them bubbling up to the cube
-        -- If we don't capture every event, and stop propagation,
-        -- the uncaught events bubble up to the next listener:
-        -- text -> face -> cube
-        -- face -> cube
-        eventAttributes =
-            Keyframes.eventsStopPropagation config.id
-                (if listenForEvents then
-                    GotKeyframeMsg
-
-                 else
-                    \_ -> NoOp
-                )
-
+        -- No event handlers needed here - events bubble to the cube listener
+        -- and correctly report this element's ID as the source
         -- Text element with its own 3D animation (3rd level)
         textAnimAttributes =
             Keyframes.attributes config.textId animState
-
-        textEvents =
-            Keyframes.eventsStopPropagation config.textId (\_ -> NoOp)
     in
     div
         (animAttributes
-            ++ eventAttributes
             ++ [ View3D.transformStyle View3D.Preserve3D
                , style "position" "absolute"
                , style "width" (String.fromInt cubeSize ++ "px")
@@ -686,9 +659,7 @@ viewFace animState listenForEvents config =
                ]
         )
         [ span
-            (textAnimAttributes
-                ++ textEvents
-            )
+            textAnimAttributes
             [ text config.label ]
         ]
 

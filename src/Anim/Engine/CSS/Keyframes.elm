@@ -236,10 +236,10 @@ type AnimMsg
 {-| Internal message variants.
 -}
 type InternalAnimMsg
-    = InternalStarted String
-    | InternalEnded String
-    | InternalCancelled String
-    | InternalIteration String
+    = InternalStarted InternalCSS.SourceEventData
+    | InternalEnded InternalCSS.SourceEventData
+    | InternalCancelled InternalCSS.SourceEventData
+    | InternalIteration InternalCSS.SourceEventData
     | InternalPaused String
     | InternalResumed String
     | InternalRestarted String
@@ -249,15 +249,29 @@ type InternalAnimMsg
 
 Returned by [update](#update) for you to pattern match and react to.
 
+Each event contains three `String` values: `currentTargetId`, `targetId`, and `animGroup`.
+
+  - `currentTargetId`: The HTML `id` attribute of the element where the handler is attached.
+    This is an empty string `""` if the element has no `id` attribute set.
+  - `targetId`: The HTML `id` attribute of the element that triggered the event (event.target).
+    This is an empty string `""` if the element has no `id` attribute set.
+  - `animGroup`: The animation group name passed to `Keyframes.attributes`.
+
+You can pattern match on any combination of values:
+
     handleAnimationEvent : Keyframes.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleAnimationEvent event model =
         case event of
-            Keyframes.Ended elementId ->
-                -- Animation ended, trigger next step
+            -- Match specific handler, any source element, specific animation
+            Keyframes.Ended "cube" _ "fadeIn" ->
+                ( { model | phase = Complete }, Cmd.none )
+
+            -- Match any handler and any source with a specific animation group
+            Keyframes.Ended _ _ "box" ->
                 ( model, startNextAnimation )
 
-            Keyframes.Iteration elementId ->
-                -- Animation iteration completed (for looping animations)
+            -- Match specific source element with any handler and animation
+            Keyframes.Ended _ "header" _ ->
                 ( model, Cmd.none )
 
             _ ->
@@ -265,13 +279,13 @@ Returned by [update](#update) for you to pattern match and react to.
 
 -}
 type AnimEvent
-    = Started String
-    | Ended String
-    | Cancelled String
-    | Iteration String
-    | Paused String
-    | Resumed String
-    | Restarted String
+    = Started String String String
+    | Ended String String String
+    | Cancelled String String String
+    | Iteration String String String
+    | Paused String String String
+    | Resumed String String String
+    | Restarted String String String
 
 
 
@@ -518,6 +532,9 @@ getElementKeyframes =
 
 {-| The simplest way to receive keyframe animation messages.
 
+Events automatically detect their source element from the CSS animation name,
+so even bubbled events correctly report which element triggered them.
+
     type Msg
         = KeyframeMsg Keyframes.AnimMsg
 
@@ -527,15 +544,17 @@ getElementKeyframes =
         )
         [ text "Animating element" ]
 
+**Note:** The `elementId` parameter is kept for API consistency but is not used.
+The actual source element ID is decoded from the DOM event's `animationName` property.
+
 -}
 events : String -> (AnimMsg -> msg) -> List (Html.Attribute msg)
-events elementId toMsg =
-    List.map (Html.Attributes.map toMsg) <|
-        [ onAnimationStart (AnimMsg (InternalStarted elementId))
-        , onAnimationEnd (AnimMsg (InternalEnded elementId))
-        , onAnimationCancel (AnimMsg (InternalCancelled elementId))
-        , onAnimationIteration (AnimMsg (InternalIteration elementId))
-        ]
+events _ toMsg =
+    [ InternalCSS.onAnimationStartWithSource (\data -> toMsg (AnimMsg (InternalStarted data)))
+    , InternalCSS.onAnimationEndWithSource (\data -> toMsg (AnimMsg (InternalEnded data)))
+    , InternalCSS.onAnimationCancelWithSource (\data -> toMsg (AnimMsg (InternalCancelled data)))
+    , InternalCSS.onAnimationIterationWithSource (\data -> toMsg (AnimMsg (InternalIteration data)))
+    ]
 
 
 {-| Handle CSS keyframe animation lifecycle messages.
@@ -554,8 +573,10 @@ Returns the updated state and an event for you to pattern match on.
     handleAnimationEvent : Keyframes.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleAnimationEvent event model =
         case event of
-            Keyframes.Ended elementId ->
+            Keyframes.Ended domElementId animGroup ->
                 -- Animation ended
+                -- domElementId is the HTML id attribute (or "" if not set)
+                -- animGroup is the animation group name
                 ( model, Cmd.none )
 
             _ ->
@@ -564,35 +585,39 @@ Returns the updated state and an event for you to pattern match on.
 -}
 update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
 update (AnimMsg animMsg) animState =
+    let
+        idOrEmpty maybeId =
+            Maybe.withDefault "" maybeId
+    in
     case animMsg of
-        InternalStarted elementId ->
-            ( InternalCSS.handleEvent (InternalCSS.AnimationStarted elementId) animState
-            , Started elementId
+        InternalStarted data ->
+            ( InternalCSS.handleEvent (InternalCSS.AnimationStarted data.animGroup) animState
+            , Started (idOrEmpty data.currentTargetId) (idOrEmpty data.domElementId) data.animGroup
             )
 
-        InternalEnded elementId ->
-            ( InternalCSS.handleEvent (InternalCSS.AnimationEnded elementId) animState
-            , Ended elementId
+        InternalEnded data ->
+            ( InternalCSS.handleEvent (InternalCSS.AnimationEnded data.animGroup) animState
+            , Ended (idOrEmpty data.currentTargetId) (idOrEmpty data.domElementId) data.animGroup
             )
 
-        InternalCancelled elementId ->
-            ( InternalCSS.handleEvent (InternalCSS.AnimationCancelled elementId) animState
-            , Cancelled elementId
+        InternalCancelled data ->
+            ( InternalCSS.handleEvent (InternalCSS.AnimationCancelled data.animGroup) animState
+            , Cancelled (idOrEmpty data.currentTargetId) (idOrEmpty data.domElementId) data.animGroup
             )
 
-        InternalIteration elementId ->
-            ( InternalCSS.handleEvent (InternalCSS.AnimationIteration elementId) animState
-            , Iteration elementId
+        InternalIteration data ->
+            ( InternalCSS.handleEvent (InternalCSS.AnimationIteration data.animGroup) animState
+            , Iteration (idOrEmpty data.currentTargetId) (idOrEmpty data.domElementId) data.animGroup
             )
 
-        InternalPaused elementId ->
-            ( animState, Paused elementId )
+        InternalPaused animGroup ->
+            ( animState, Paused "" "" animGroup )
 
-        InternalResumed elementId ->
-            ( animState, Resumed elementId )
+        InternalResumed animGroup ->
+            ( animState, Resumed "" "" animGroup )
 
-        InternalRestarted elementId ->
-            ( animState, Restarted elementId )
+        InternalRestarted animGroup ->
+            ( animState, Restarted "" "" animGroup )
 
 
 {-| Event handler for when a CSS animation starts.
@@ -656,7 +681,10 @@ onAnimationCancelStopPropagation =
 
 
 {-| All keyframe animation event handlers with propagation stopped.
-Use this to prevent events from bubbling up to parent elements with listeners.
+
+Events automatically detect their source element from the CSS animation name,
+so even bubbled events correctly report which element triggered them.
+This version also stops propagation to prevent parent handlers from receiving the event.
 
     div
         (Keyframes.attributes "myElement" model.animState
@@ -664,15 +692,17 @@ Use this to prevent events from bubbling up to parent elements with listeners.
         )
         [ text "Animated element" ]
 
+**Note:** The `elementId` parameter is kept for API consistency but is not used.
+The actual source element ID is decoded from the DOM event's `animationName` property.
+
 -}
 eventsStopPropagation : String -> (AnimMsg -> msg) -> List (Html.Attribute msg)
-eventsStopPropagation elementId toMsg =
-    List.map (Html.Attributes.map toMsg) <|
-        [ onAnimationStartStopPropagation (AnimMsg (InternalStarted elementId))
-        , onAnimationEndStopPropagation (AnimMsg (InternalEnded elementId))
-        , onAnimationCancelStopPropagation (AnimMsg (InternalCancelled elementId))
-        , onAnimationIterationStopPropagation (AnimMsg (InternalIteration elementId))
-        ]
+eventsStopPropagation _ toMsg =
+    [ InternalCSS.onAnimationStartWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalStarted data)))
+    , InternalCSS.onAnimationEndWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalEnded data)))
+    , InternalCSS.onAnimationCancelWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalCancelled data)))
+    , InternalCSS.onAnimationIterationWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalIteration data)))
+    ]
 
 
 

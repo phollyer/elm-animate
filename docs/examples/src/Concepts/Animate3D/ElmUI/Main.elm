@@ -6,7 +6,6 @@ import Anim.Extra.View3D as View3D
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
-import Browser.Events exposing (onAnimationFrameDelta)
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, centerY, clip, column, el, fill, height, html, htmlAttribute, maximum, moveDown, moveRight, padding, paddingEach, px, spacing, text, width)
@@ -26,7 +25,7 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = \_ -> onAnimationFrameDelta Tick
+        , subscriptions = \_ -> Sub.none
         }
 
 
@@ -295,12 +294,12 @@ textMoveAmount =
 
 
 moveText : String -> Float -> Float -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
-moveText textId toZ toRotate =
+moveText animGroup toZ toRotate =
     sharedTiming
-        >> Translate.for textId
+        >> Translate.for animGroup
         >> Translate.toZ toZ
         >> Translate.build
-        >> Rotate.for textId
+        >> Rotate.for animGroup
         >> Rotate.toZ toRotate
         >> Rotate.build
 
@@ -358,8 +357,7 @@ selectAnimation state =
 
 
 type Msg
-    = NoOp String
-    | Tick Float
+    = NoOp
     | GotKeyframeMsg Keyframes.AnimMsg
 
 
@@ -369,11 +367,8 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg |> Debug.log "" of
-        NoOp id ->
-            ( model, Cmd.none )
-
-        Tick _ ->
+    case msg of
+        NoOp ->
             ( model, Cmd.none )
 
         GotKeyframeMsg animMsg ->
@@ -389,14 +384,14 @@ update msg model =
 handleKeyframeEvent : Keyframes.AnimEvent -> Model -> Model
 handleKeyframeEvent animEvent model =
     case animEvent of
-        Keyframes.Ended "cube" ->
+        Keyframes.Ended _ _ "cube" ->
             if model.state /= Ready then
                 cubeRotationEnded model
 
             else
                 model
 
-        Keyframes.Ended "front-face" ->
+        Keyframes.Ended _ _ "front-face" ->
             sidesMovementEnded model
 
         _ ->
@@ -462,7 +457,20 @@ viewContent model =
         |> html
     , viewExplanation
     , el
-        [ width (px model.animAreaSize.width)
+        [ -- Perspective container
+          View3D.perspective 1000
+            |> htmlAttribute
+        , View3D.perspectiveOrigin View3D.Center
+            |> htmlAttribute
+
+        --
+        -- Workaround for Chrome on macOS GPU compositing issues with 3D transforms.
+        -- Setting opacity: 0.99 forces a new compositing layer, which prevents
+        -- the colored rectangle artifacts that can appear during complex 3D animations.
+        -- It's not perfect, some flickering can still occur.
+        , View3D.opacityHack
+            |> htmlAttribute
+        , width (px model.animAreaSize.width)
         , height (px model.animAreaSize.height)
         , centerX
         , centerY
@@ -474,33 +482,9 @@ viewContent model =
             , blur = 8
             , color = Element.rgba 0 0 0 0.1
             }
-
-        -- Perspective and centering on the same element to avoid breaking 3D context
-        , View3D.perspective 1000
-            |> htmlAttribute
-        , View3D.perspectiveOrigin View3D.Center
-            |> htmlAttribute
-
-        --
-        -- Kind of fixes Chrome on macOS compositor tile corruption when
-        -- animating 3D transforms by creating a new stacking
-        -- context for the animation area
-        -- it's not perfect, some flickering can still occur
-        -- pull requests to improve this are welcome!
-        , View3D.opacityHack
-            |> htmlAttribute
         ]
       <|
-        el
-            [ View3D.transformStyle View3D.Preserve3D
-                |> htmlAttribute
-            , Html.Attributes.style "position" "relative"
-                |> htmlAttribute
-            , centerX
-            , centerY
-            ]
-        <|
-            viewCube model
+        viewCube model
     ]
 
 
@@ -584,6 +568,8 @@ viewCube model =
             Keyframes.attributes "cube" model.animState
                 |> List.map htmlAttribute
 
+        -- We only need one listener on the cube - no need to listen for events on the faces
+        -- or the text elements, they will bubble up to the cube listener.
         cubeEvents =
             Keyframes.events "cube" GotKeyframeMsg
                 |> List.map htmlAttribute
@@ -595,52 +581,35 @@ viewCube model =
                     |> htmlAttribute
                , width (px cubeSize)
                , height (px cubeSize)
+               , centerX
+               , centerY
                ]
         )
-        [ -- we only listen for animation events on the front face
-          -- since all faces would trigger at the same time
-          viewFace model.animState True frontFace
-        , viewFace model.animState False backFace
-        , viewFace model.animState False rightFace
-        , viewFace model.animState False leftFace
-        , viewFace model.animState False topFace
-        , viewFace model.animState False bottomFace
+        [ viewFace model.animState frontFace
+        , viewFace model.animState backFace
+        , viewFace model.animState rightFace
+        , viewFace model.animState leftFace
+        , viewFace model.animState topFace
+        , viewFace model.animState bottomFace
         ]
 
 
-viewFace : Keyframes.AnimState -> Bool -> FaceConfig -> Element Msg
-viewFace animState listenForEvents config =
+viewFace : Keyframes.AnimState -> FaceConfig -> Element Msg
+viewFace animState config =
     let
         animAttributes =
             Keyframes.attributes config.id animState
                 |> List.map htmlAttribute
 
-        -- We stop propagation on face events to prevent them bubbling up to the cube
-        -- We only forward events to our handler when we actually want to listen
-        -- If we don't capture every event on the face, the uncaught events bubble
-        -- up to the next listener - the cube
-        eventAttributes =
-            Keyframes.eventsStopPropagation config.id
-                (if listenForEvents then
-                    GotKeyframeMsg
-
-                 else
-                    \_ -> NoOp config.id
-                )
-                |> List.map htmlAttribute
-
+        -- No event handlers needed here - events bubble to the cube listener
+        -- and correctly report this element's ID as the source
         -- Text element with its own 3D animation (3rd level)
         textAnimAttributes =
             Keyframes.attributes config.textId animState
                 |> List.map htmlAttribute
-
-        textEvents =
-            Keyframes.eventsStopPropagation config.textId (\_ -> NoOp config.textId)
-                |> List.map htmlAttribute
     in
     el
         (animAttributes
-            ++ eventAttributes
             ++ [ View3D.transformStyle View3D.Preserve3D |> htmlAttribute
                , Html.Attributes.style "position" "absolute"
                     |> htmlAttribute
@@ -659,7 +628,6 @@ viewFace animState listenForEvents config =
         )
         (el
             (textAnimAttributes
-                ++ textEvents
                 ++ [ centerX, centerY ]
             )
             (text config.label)
