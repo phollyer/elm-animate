@@ -55,11 +55,11 @@ depth =
 
 
 -- INIT
+-- --8<-- [start:initializeAndTrigger]
 
 
 init : { window : { width : Int } } -> ( Model, Cmd Msg )
 init flags =
-    -- --8<-- [start:initializeProperties]
     let
         animAreaWidth =
             min 500 (flags.window.width - 40)
@@ -102,8 +102,6 @@ init flags =
         state =
             Ready
     in
-    -- --8<-- [end:initializeProperties]
-    -- --8<-- [start:startAnimation]
     ( { animState =
             Keyframes.animate initialAnimState <|
                 selectAnimation state
@@ -120,6 +118,7 @@ init flags =
 
 
 
+-- --8<-- [end:initializeAndTrigger]
 -- ANIMATIONS
 --
 -- --8<-- [start:animationFunctions]
@@ -607,7 +606,7 @@ bottomFace =
 
 
 
--- --8<-- [start:viewCube]
+-- --8<-- [start:renderCube]
 
 
 viewCube : Model -> Html Msg
@@ -617,7 +616,7 @@ viewCube model =
             Keyframes.attributes "cube" model.animState
 
         cubeEvents =
-            Keyframes.eventsStopPropagation "cube" GotKeyframeMsg
+            Keyframes.events "cube" GotKeyframeMsg
     in
     div
         (cubeAttrs
@@ -639,21 +638,20 @@ viewCube model =
         ]
 
 
-
--- --8<-- [end:viewCube]
--- --8<-- [start:viewFace]
-
-
 viewFace : Keyframes.AnimState -> Bool -> FaceConfig -> Html Msg
 viewFace animState listenForEvents config =
     let
         animAttributes =
             Keyframes.attributes config.id animState
 
-        -- We stop propagation on face events to prevent them bubbling up to the cube
         -- We only forward events to our handler when we actually want to listen
-        -- If we don't capture every event on the face, the uncaught events bubble
-        -- up to the next listener - the cube
+        -- otherwise they go to NoOp
+        --
+        -- We stop propagation on face and text events to prevent them bubbling up to the cube
+        -- If we don't capture every event, and stop propagation,
+        -- the uncaught events bubble up to the next listener:
+        -- text -> face -> cube
+        -- face -> cube
         eventAttributes =
             Keyframes.eventsStopPropagation config.id
                 (if listenForEvents then
@@ -667,18 +665,14 @@ viewFace animState listenForEvents config =
         textAnimAttributes =
             Keyframes.attributes config.textId animState
 
-        -- Use eventsStopPropagation to prevent text animation events from
-        -- bubbling up to the face element and triggering unwanted state changes
-        -- Events are forwarded to NoOp since we don't want to react to them
-        textEventAttributes =
-            []
-
-        --Keyframes.eventsStopPropagation config.textId (\_ -> NoOp)
+        textEvents =
+            Keyframes.eventsStopPropagation config.textId (\_ -> NoOp)
     in
     div
         (animAttributes
             ++ eventAttributes
-            ++ [ style "position" "absolute"
+            ++ [ View3D.transformStyle View3D.Preserve3D
+               , style "position" "absolute"
                , style "width" (String.fromInt cubeSize ++ "px")
                , style "height" (String.fromInt cubeSize ++ "px")
                , style "background-color" config.background
@@ -689,11 +683,15 @@ viewFace animState listenForEvents config =
                , style "align-items" "center"
                , style "font-weight" "bold"
                , style "font-size" "14px"
-               , View3D.transformStyle View3D.Preserve3D
                ]
         )
-        [ span (textAnimAttributes ++ textEventAttributes) [ text config.label ] ]
+        [ span
+            (textAnimAttributes
+                ++ textEvents
+            )
+            [ text config.label ]
+        ]
 
 
 
--- --8<-- [end:viewFace]
+-- --8<-- [end:renderCube]

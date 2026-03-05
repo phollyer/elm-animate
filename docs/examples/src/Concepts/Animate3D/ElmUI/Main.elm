@@ -6,6 +6,7 @@ import Anim.Extra.View3D as View3D
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
+import Browser.Events exposing (onAnimationFrameDelta)
 import Common.Colors as Colors
 import Common.UI as UI
 import Element exposing (Element, centerX, centerY, clip, column, el, fill, height, html, htmlAttribute, maximum, moveDown, moveRight, padding, paddingEach, px, spacing, text, width)
@@ -25,7 +26,7 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = \_ -> onAnimationFrameDelta Tick
         }
 
 
@@ -60,11 +61,11 @@ depth =
 
 
 -- INIT
+-- --8<-- [start:initializeAndTrigger]
 
 
 init : { window : { width : Int } } -> ( Model, Cmd Msg )
 init flags =
-    -- --8<-- [start:initializeProperties]
     let
         animAreaWidth =
             min 500 (flags.window.width - 40)
@@ -107,8 +108,6 @@ init flags =
         state =
             Ready
     in
-    -- --8<-- [end:initializeProperties]
-    -- --8<-- [start:startAnimation]
     ( { animState =
             Keyframes.animate initialAnimState <|
                 selectAnimation state
@@ -125,6 +124,7 @@ init flags =
 
 
 
+-- --8<-- [end:initializeAndTrigger]
 -- ANIMATIONS
 --
 -- --8<-- [start:animationFunctions]
@@ -358,7 +358,8 @@ selectAnimation state =
 
 
 type Msg
-    = NoOp
+    = NoOp String
+    | Tick Float
     | GotKeyframeMsg Keyframes.AnimMsg
 
 
@@ -368,8 +369,11 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        NoOp ->
+    case msg |> Debug.log "" of
+        NoOp id ->
+            ( model, Cmd.none )
+
+        Tick _ ->
             ( model, Cmd.none )
 
         GotKeyframeMsg animMsg ->
@@ -570,7 +574,7 @@ bottomFace =
 
 
 
--- --8<-- [start:viewCube]
+-- --8<-- [start:renderCube]
 
 
 viewCube : Model -> Element Msg
@@ -581,7 +585,7 @@ viewCube model =
                 |> List.map htmlAttribute
 
         cubeEvents =
-            Keyframes.eventsStopPropagation "cube" GotKeyframeMsg
+            Keyframes.events "cube" GotKeyframeMsg
                 |> List.map htmlAttribute
     in
     column
@@ -604,27 +608,9 @@ viewCube model =
         ]
 
 
-
--- --8<-- [end:viewCube]
--- --8<-- [start:viewFace]
-
-
 viewFace : Keyframes.AnimState -> Bool -> FaceConfig -> Element Msg
 viewFace animState listenForEvents config =
     let
-        baseAttributes =
-            [ Html.Attributes.style "position" "absolute"
-                |> htmlAttribute
-            , width (px cubeSize)
-            , height (px cubeSize)
-            , Background.color config.background
-            , Border.width 2
-            , Border.color config.borderColor
-            , Font.color (Element.rgb 0 0 0)
-            , Font.bold
-            , Font.size 14
-            ]
-
         animAttributes =
             Keyframes.attributes config.id animState
                 |> List.map htmlAttribute
@@ -639,7 +625,7 @@ viewFace animState listenForEvents config =
                     GotKeyframeMsg
 
                  else
-                    \_ -> NoOp
+                    \_ -> NoOp config.id
                 )
                 |> List.map htmlAttribute
 
@@ -648,32 +634,40 @@ viewFace animState listenForEvents config =
             Keyframes.attributes config.textId animState
                 |> List.map htmlAttribute
 
-        -- Use eventsStopPropagation to prevent text animation events from
-        -- bubbling up to the face element and triggering unwanted state changes
-        -- Events are forwarded to NoOp since we don't want to react to them
-        textEventAttributes =
-            []
-
-        {-
-           Keyframes.eventsStopPropagation config.textId (\_ -> NoOp)
-               |> List.map htmlAttribute
-        -}
+        textEvents =
+            Keyframes.eventsStopPropagation config.textId (\_ -> NoOp config.textId)
+                |> List.map htmlAttribute
     in
     el
-        (baseAttributes
-            ++ animAttributes
+        (animAttributes
             ++ eventAttributes
-            ++ [ Html.Attributes.style "display" "flex" |> htmlAttribute
+            ++ [ View3D.transformStyle View3D.Preserve3D |> htmlAttribute
+               , Html.Attributes.style "position" "absolute"
+                    |> htmlAttribute
+               , Html.Attributes.style "display" "flex" |> htmlAttribute
                , Html.Attributes.style "justify-content" "center" |> htmlAttribute
                , Html.Attributes.style "align-items" "center" |> htmlAttribute
-               , View3D.transformStyle View3D.Preserve3D |> htmlAttribute
+               , width (px cubeSize)
+               , height (px cubeSize)
+               , Background.color config.background
+               , Border.width 2
+               , Border.color config.borderColor
+               , Font.color (Element.rgb 0 0 0)
+               , Font.bold
+               , Font.size 14
                ]
         )
-        (el (textAnimAttributes ++ textEventAttributes ++ [ centerX, centerY ]) (text config.label))
+        (el
+            (textAnimAttributes
+                ++ textEvents
+                ++ [ centerX, centerY ]
+            )
+            (text config.label)
+        )
 
 
 
--- --8<-- [end:viewFace]
+-- --8<-- [end:renderCube]
 
 
 viewExplanation : Element Msg
