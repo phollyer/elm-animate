@@ -80,10 +80,10 @@ These events come directly from the underlying technology - CSS DOM events or We
 
 | Event | Transitions | Keyframes | WAAPI |
 | ----- | :---------: | :-------: | :---: |
+| Run | ✓ | | |
 | Started | ✓ | ✓ | |
 | Ended | ✓ | ✓ | ✓ |
 | Cancelled | ✓ | ✓ | ✓ |
-| Run | ✓ | | |
 | Iteration | | ✓ | |
 
 
@@ -253,6 +253,6 @@ Fired on each animation frame (~60fps) with the current progress value (0.0 to 1
 
 ## Next Steps
 
-Now that you understand how to react to animation events, let's animate something in 3D.
+Create different effects by controlling the transform order.
 
-[3D Animations →](3d.md){ .md-button .md-button--primary }
+[Transform Ordering →](transform-order.md){ .md-button .md-button--primary }

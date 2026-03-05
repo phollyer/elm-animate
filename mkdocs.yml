@@ -81,6 +81,7 @@ nav:
     - Controlling Scroll: concepts/controlling-scroll.md
     - Interrupting Animations: concepts/interruptions.md
     - Events: concepts/events.md
+    - Transform Order: concepts/transform-order.md
     - 3D Animations: concepts/3d.md
   - Engines:
     - Overview: engines/overview.md

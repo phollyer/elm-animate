@@ -3,7 +3,7 @@
 !!! info "Prerequisites"
     This section assumes you've completed [Getting Started](../getting-started/installation.md) and are familiar with [animation concepts](../concepts/controlling-animations.md) like the builder pattern, AnimState, and property initializers.
 
-This page covers the shared patterns that are the same for each Engine. For engine-specific details, see:
+This page mainly covers the shared patterns that are the same/similar for each Engine. For engine-specific details, see:
 
 - [Transitions](transitions.md) — CSS transitions, simplest setup
 - [Keyframes](keyframes.md) — CSS @keyframes, looping and iterations
@@ -34,10 +34,21 @@ This page covers the shared patterns that are the same for each Engine. For engi
 | Stop | ✓ | ✓ | ✓ | ✓ |
 | Reset | ✓ | ✓ | ✓ | ✓ |
 | Restart | | ✓ | ✓ | ✓ |
-| Pause/Resume | | ✓ | ✓ | ✓ |
+| Pause | | ✓ | ✓ | ✓ |
+| Resume | | ✓ | ✓ | ✓ |
+| **Events** |
+| Run | ✓ | | | |
+| Started | ✓ | ✓ | ✓ | ✓ |
+| Ended | ✓ | ✓ | ✓ | ✓ |
+| Cancelled | ✓ | ✓ | ✓ | ✓ |
+| Restarted | | ✓ | ✓ | ✓ |
+| Paused | | ✓ | ✓ | ✓ |
+| Resumed | | ✓ | ✓ | ✓ |
+| Iteration | | ✓ | ✓ | ✓ |
+| Changed | | | | ✓ |
 | **Playback** |
 | Looping/Iterations | | ✓ | ✓ | ✓ |
-| Event callbacks | ✓ | ✓ | ✓ | ✓ |
+| Alternate | | ✓ | ✓ | ✓ |
 | **Mid-Flight Access** |
 | Query current values | | | ✓ | ✓ |
 | Dynamic redirects | ✓ | | ✓ | ✓ |
@@ -96,6 +107,7 @@ All engines use `Engine.init` to create the initial `AnimState`. Pass property i
 
         WAAPI additionally requires port functions to talk to JS - see [WAAPI Setup](waapi.md#setup).
 
+📖 See [Animation Workflow - Initialize](../animation-workflow/init.md) for detailed information.
 
 ### Triggering Animations
 
@@ -105,6 +117,7 @@ All engines provide `animate` for state-tracked animations. There's also `fireAn
 | -------- | ------------ |
 | `animate` | Tracks state in `AnimState` |
 | `fireAndForget` | Starts fresh each time, no state needed |
+
 
 #### Suggested Use Cases
 
@@ -157,6 +170,8 @@ All engines provide `animate` for state-tracked animations. There's also `fireAn
         ```
 
         WAAPI needs to send animation data to JS for the Web Animations API to use, so `fireAndForget` requires the outgoing port function, and both return a `Cmd` which sends the animation to JS.
+
+📖 See [Animation Workflow - Trigger](../animation-workflow/trigger.md) for detailed information.
 
 ## Building Animations
 
@@ -225,6 +240,9 @@ Set default timing, easing, and delay for all properties in an animation. Indivi
                 >> myAnimation
         ```
 
+📖 See [Getting Started - Timing](../getting-started/timing.md) for detailed timing information.
+
+📖 See [Getting Started - Easing](../getting-started/easing.md) for detailed easing information.
 
 
 ### Transform Ordering
@@ -272,6 +290,8 @@ The default transform order is **Translate → Rotate → Scale**. Use `animateO
         ```
 
 Transform order affects how combined transforms render. Rotating then translating moves along the rotated axis; translating then rotating moves along the original axis.
+
+📖 See [Transform Order](../concepts/transform-order.md) for visual examples and common patterns.
 
 
 ## Reacting to Animations
