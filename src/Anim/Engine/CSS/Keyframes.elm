@@ -178,7 +178,6 @@ import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
 import Anim.Internal.Properties.Translate as Translate
 import Html
-import Html.Attributes
 import Task
 
 
