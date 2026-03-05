@@ -226,25 +226,39 @@ type AnimMsg
 {-| Internal message variants.
 -}
 type InternalAnimMsg
-    = InternalStarted String
-    | InternalEnded String
-    | InternalCancelled String
-    | InternalRun String
+    = InternalStarted InternalCSS.SourceEventData
+    | InternalEnded InternalCSS.SourceEventData
+    | InternalCancelled InternalCSS.SourceEventData
+    | InternalRun InternalCSS.SourceEventData
 
 
 {-| CSS transition lifecycle events.
 
 Returned by [update](#update) for you to pattern match and react to.
 
+Each event contains three `String` values: `currentTargetId`, `targetId`, and `animGroup`.
+
+  - `currentTargetId`: The HTML `id` attribute of the element where the handler is attached.
+    This is an empty string `""` if the element has no `id` attribute set.
+  - `targetId`: The HTML `id` attribute of the element that triggered the event (event.target).
+    This is an empty string `""` if the element has no `id` attribute set.
+  - `animGroup`: The animation group name passed to `Transitions.attributes`.
+
+You can pattern match on any combination of values:
+
     handleAnimationEvent : Transitions.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleAnimationEvent event model =
         case event of
-            Transitions.Ended elementId ->
-                -- Animation ended, trigger next step
+            -- Match specific handler, any source element, specific animation
+            Transitions.Ended "container" _ "fadeIn" ->
+                ( { model | phase = Complete }, Cmd.none )
+
+            -- Match any handler and any source with a specific animation group
+            Transitions.Ended _ _ "box" ->
                 ( model, startNextAnimation )
 
-            Transitions.Started elementId ->
-                -- Animation started
+            -- Match specific source element with any handler and animation
+            Transitions.Ended _ "header" _ ->
                 ( model, Cmd.none )
 
             _ ->
@@ -252,10 +266,10 @@ Returned by [update](#update) for you to pattern match and react to.
 
 -}
 type AnimEvent
-    = Started String
-    | Ended String
-    | Cancelled String
-    | Run String
+    = Started String String String
+    | Ended String String String
+    | Cancelled String String String
+    | Run String String String
 
 
 
@@ -477,12 +491,12 @@ attributes =
 
 -}
 events : String -> (AnimMsg -> msg) -> List (Html.Attribute msg)
-events elementId toMsg =
+events animGroup toMsg =
     List.map (Html.Attributes.map toMsg) <|
-        [ onTransitionStart (AnimMsg (InternalStarted elementId))
-        , onTransitionEnd (AnimMsg (InternalEnded elementId))
-        , onTransitionRun (AnimMsg (InternalRun elementId))
-        , onTransitionCancel (AnimMsg (InternalCancelled elementId))
+        [ InternalCSS.onTransitionStartWithSource animGroup (AnimMsg << InternalStarted)
+        , InternalCSS.onTransitionEndWithSource animGroup (AnimMsg << InternalEnded)
+        , InternalCSS.onTransitionRunWithSource animGroup (AnimMsg << InternalRun)
+        , InternalCSS.onTransitionCancelWithSource animGroup (AnimMsg << InternalCancelled)
         ]
 
 
@@ -502,7 +516,7 @@ Returns the updated state and an event for you to pattern match on.
     handleAnimationEvent : Transitions.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleAnimationEvent event model =
         case event of
-            Transitions.Ended elementId ->
+            Transitions.Ended _ _ animGroup ->
                 -- Animation ended
                 ( model, Cmd.none )
 
@@ -512,25 +526,29 @@ Returns the updated state and an event for you to pattern match on.
 -}
 update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
 update (AnimMsg animMsg) animState =
+    let
+        idOrEmpty maybeId =
+            Maybe.withDefault "" maybeId
+    in
     case animMsg of
-        InternalStarted elementId ->
-            ( InternalCSS.handleEvent (InternalCSS.TransitionStarted elementId) animState
-            , Started elementId
+        InternalStarted data ->
+            ( InternalCSS.handleEvent (InternalCSS.TransitionStarted data.animGroup) animState
+            , Started (idOrEmpty data.currentTargetId) (idOrEmpty data.domElementId) data.animGroup
             )
 
-        InternalEnded elementId ->
-            ( InternalCSS.handleEvent (InternalCSS.TransitionEnded elementId) animState
-            , Ended elementId
+        InternalEnded data ->
+            ( InternalCSS.handleEvent (InternalCSS.TransitionEnded data.animGroup) animState
+            , Ended (idOrEmpty data.currentTargetId) (idOrEmpty data.domElementId) data.animGroup
             )
 
-        InternalRun elementId ->
-            ( InternalCSS.handleEvent (InternalCSS.TransitionRun elementId) animState
-            , Run elementId
+        InternalRun data ->
+            ( InternalCSS.handleEvent (InternalCSS.TransitionRun data.animGroup) animState
+            , Run (idOrEmpty data.currentTargetId) (idOrEmpty data.domElementId) data.animGroup
             )
 
-        InternalCancelled elementId ->
-            ( InternalCSS.handleEvent (InternalCSS.TransitionCancelled elementId) animState
-            , Cancelled elementId
+        InternalCancelled data ->
+            ( InternalCSS.handleEvent (InternalCSS.TransitionCancelled data.animGroup) animState
+            , Cancelled (idOrEmpty data.currentTargetId) (idOrEmpty data.domElementId) data.animGroup
             )
 
 
@@ -605,12 +623,12 @@ Use this to prevent events from bubbling up to parent elements with listeners.
 
 -}
 eventsStopPropagation : String -> (AnimMsg -> msg) -> List (Html.Attribute msg)
-eventsStopPropagation elementId toMsg =
+eventsStopPropagation animGroup toMsg =
     List.map (Html.Attributes.map toMsg) <|
-        [ onTransitionStartStopPropagation (AnimMsg (InternalStarted elementId))
-        , onTransitionEndStopPropagation (AnimMsg (InternalEnded elementId))
-        , onTransitionRunStopPropagation (AnimMsg (InternalRun elementId))
-        , onTransitionCancelStopPropagation (AnimMsg (InternalCancelled elementId))
+        [ InternalCSS.onTransitionStartWithSourceStopPropagation animGroup (AnimMsg << InternalStarted)
+        , InternalCSS.onTransitionEndWithSourceStopPropagation animGroup (AnimMsg << InternalEnded)
+        , InternalCSS.onTransitionRunWithSourceStopPropagation animGroup (AnimMsg << InternalRun)
+        , InternalCSS.onTransitionCancelWithSourceStopPropagation animGroup (AnimMsg << InternalCancelled)
         ]
 
 

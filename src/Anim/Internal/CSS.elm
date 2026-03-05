@@ -52,12 +52,20 @@ module Anim.Internal.CSS exposing
     , onAnimationStartWithSourceStopPropagation
     , onTransitionCancel
     , onTransitionCancelStopPropagation
+    , onTransitionCancelWithSource
+    , onTransitionCancelWithSourceStopPropagation
     , onTransitionEnd
     , onTransitionEndStopPropagation
+    , onTransitionEndWithSource
+    , onTransitionEndWithSourceStopPropagation
     , onTransitionRun
     , onTransitionRunStopPropagation
+    , onTransitionRunWithSource
+    , onTransitionRunWithSourceStopPropagation
     , onTransitionStart
     , onTransitionStartStopPropagation
+    , onTransitionStartWithSource
+    , onTransitionStartWithSourceStopPropagation
     , pauseAnimation
     , reset
     , restartAnimation
@@ -435,6 +443,81 @@ onTransitionCancelStopPropagation : msg -> Html.Attribute msg
 onTransitionCancelStopPropagation msg =
     Html.Events.stopPropagationOn "transitioncancel"
         (Json.Decode.succeed ( msg, True ))
+
+
+{-| Decode source element data from transition events.
+Unlike animation events, transition events don't contain the animation name,
+so the animGroup must be passed explicitly.
+-}
+transitionSourceDecoder : String -> Json.Decode.Decoder SourceEventData
+transitionSourceDecoder animGroup =
+    Json.Decode.map2 (SourceEventData animGroup)
+        targetIdDecoder
+        currentTargetIdDecoder
+
+
+{-| Transition start event that reports the actual source element.
+-}
+onTransitionStartWithSource : String -> (SourceEventData -> msg) -> Html.Attribute msg
+onTransitionStartWithSource animGroup toMsg =
+    Html.Events.on "transitionstart"
+        (transitionSourceDecoder animGroup |> Json.Decode.map toMsg)
+
+
+{-| Like `onTransitionStartWithSource` but stops event propagation.
+-}
+onTransitionStartWithSourceStopPropagation : String -> (SourceEventData -> msg) -> Html.Attribute msg
+onTransitionStartWithSourceStopPropagation animGroup toMsg =
+    Html.Events.stopPropagationOn "transitionstart"
+        (transitionSourceDecoder animGroup |> Json.Decode.map (\data -> ( toMsg data, True )))
+
+
+{-| Transition end event that reports the actual source element.
+-}
+onTransitionEndWithSource : String -> (SourceEventData -> msg) -> Html.Attribute msg
+onTransitionEndWithSource animGroup toMsg =
+    Html.Events.on "transitionend"
+        (transitionSourceDecoder animGroup |> Json.Decode.map toMsg)
+
+
+{-| Like `onTransitionEndWithSource` but stops event propagation.
+-}
+onTransitionEndWithSourceStopPropagation : String -> (SourceEventData -> msg) -> Html.Attribute msg
+onTransitionEndWithSourceStopPropagation animGroup toMsg =
+    Html.Events.stopPropagationOn "transitionend"
+        (transitionSourceDecoder animGroup |> Json.Decode.map (\data -> ( toMsg data, True )))
+
+
+{-| Transition run event that reports the actual source element.
+-}
+onTransitionRunWithSource : String -> (SourceEventData -> msg) -> Html.Attribute msg
+onTransitionRunWithSource animGroup toMsg =
+    Html.Events.on "transitionrun"
+        (transitionSourceDecoder animGroup |> Json.Decode.map toMsg)
+
+
+{-| Like `onTransitionRunWithSource` but stops event propagation.
+-}
+onTransitionRunWithSourceStopPropagation : String -> (SourceEventData -> msg) -> Html.Attribute msg
+onTransitionRunWithSourceStopPropagation animGroup toMsg =
+    Html.Events.stopPropagationOn "transitionrun"
+        (transitionSourceDecoder animGroup |> Json.Decode.map (\data -> ( toMsg data, True )))
+
+
+{-| Transition cancel event that reports the actual source element.
+-}
+onTransitionCancelWithSource : String -> (SourceEventData -> msg) -> Html.Attribute msg
+onTransitionCancelWithSource animGroup toMsg =
+    Html.Events.on "transitioncancel"
+        (transitionSourceDecoder animGroup |> Json.Decode.map toMsg)
+
+
+{-| Like `onTransitionCancelWithSource` but stops event propagation.
+-}
+onTransitionCancelWithSourceStopPropagation : String -> (SourceEventData -> msg) -> Html.Attribute msg
+onTransitionCancelWithSourceStopPropagation animGroup toMsg =
+    Html.Events.stopPropagationOn "transitioncancel"
+        (transitionSourceDecoder animGroup |> Json.Decode.map (\data -> ( toMsg data, True )))
 
 
 

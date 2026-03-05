@@ -980,10 +980,14 @@ getSizeCurrent =
 These events notify you when animations change state, allowing you to trigger
 side effects like starting the next animation in a sequence or updating the UI.
 
-Most events carry the `elementId` and `animGroup` of the animated element, along
-with contextual data. Lifecycle events include full `EventInfo` with duration,
-progress, and property configurations. `Changed` events (fired per-frame) include
-only progress to minimize overhead.
+Most events carry two `String` values followed by `EventInfo`.
+
+  - `elementId`: The HTML `id` attribute of the animated element.
+  - `animGroup`: The animation group name.
+
+Lifecycle events include full `EventInfo` with duration, progress, and property
+configurations. `Changed` events (fired per-frame) include only progress to
+minimize overhead.
 
     case event of
         WAAPI.Ended "box" "fadeIn" info ->

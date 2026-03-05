@@ -399,7 +399,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
     handleEvent event model =
         case event of
             WAAPI.Ended "boxAnim" _ _ ->
-                -- WAAPI events include animationId and EventInfo
+                -- WAAPI events include elementId, animGroup and EventInfo
                 ( model, Cmd.none )
 
             _ ->
