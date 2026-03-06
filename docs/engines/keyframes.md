@@ -90,89 +90,6 @@ CSS Keyframes support the following control functions:
 | `pause` | Freeze at current position |
 | `resume` | Continue from paused position |
 
-### Event Variants
-
-Restarting, pausing and resuming do not produce native events. So in order to keep animation logic in one place the Engine provides the following functions which do produce events you can react to.
-
-| Function | Produces Event |
-| -------- | -------------- |
-| `restartCmd` | `Restarted` |
-| `pauseCmd` | `Paused` |
-| `resumeCmd` | `Resumed` |
-
-**Why use `*Cmd` variants?**
-
-Centralizing animation logic in one place makes code easier to maintain. Without event routing, pause/resume/restart logic gets scattered across multiple call sites:
-
-??? example "View Source Code"
-
-    ```elm
-    -- Without events: logic scattered at each call site
-    PauseFromButton ->
-        ( { model 
-            | animState = Keyframes.pause "box" model.animState
-            , isPaused = True
-            , showResumeHint = True
-          }
-        , Cmd.none
-        )
-
-    PauseFromKeyboard ->
-        ( { model 
-            | animState = Keyframes.pause "box" model.animState
-            , isPaused = True  -- duplicated
-            , showResumeHint = True  -- duplicated
-          }
-        , Cmd.none
-        )
-    ```
-
-With `*Cmd` variants, all animation responses flow through `update`:
-
-??? example "View Source Code"
-
-    ```elm
-    -- With events: logic centralized
-    PauseFromButton ->
-        let
-            ( newState, cmd ) =
-                Keyframes.pauseCmd "box" GotAnimMsg model.animState
-        in
-        ( { model | animState = newState }, cmd )
-
-    PauseFromKeyboard ->
-        let
-            ( newState, cmd ) =
-                Keyframes.pauseCmd "box" GotAnimMsg model.animState
-        in
-        ( { model | animState = newState }, cmd )
-
-    GotAnimMsg animMsg ->
-        let
-            ( newAnimState, event ) =
-                Keyframes.update animMsg model.animState
-        in
-        reactToEvent event { model | animState = newAnimState }
-
-
-    -- All pause logic in one place
-    reactToEvent : Keyframes.AnimEvent -> Model -> ( Model, Cmd Msg )
-    reactToEvent event model =
-        case event of
-            Keyframes.Paused _ ->
-                ( { model | isPaused = True, showResumeHint = True }
-                , Cmd.none
-                )
-
-            Keyframes.Resumed _ ->
-                ( { model | isPaused = False, showResumeHint = False }
-                , Cmd.none
-                )
-
-            _ ->
-                ( model, Cmd.none )
-    ```
-
 
 ## Events
 
@@ -188,13 +105,13 @@ With `*Cmd` variants, all animation responses flow through `update`:
 
 ### Engine-Generated Events
 
-CSS animations don't natively fire DOM events for pause/resume/restart. To receive these events, use the [Event Variants](#event-variants) of the control functions:
+CSS animations don't natively fire DOM events for pause/resume/restart. The control functions generate these events through `update`:
 
 | Event | Fires when... |
 | ----- | ------------- |
-| `Paused` | `pauseCmd` is called |
-| `Resumed` | `resumeCmd` is called |
-| `Restarted` | `restartCmd` is called |
+| `Paused` | `pause` is called |
+| `Resumed` | `resume` is called |
+| `Restarted` | `restart` is called |
 
 ## API Quick Reference
 
@@ -261,9 +178,9 @@ CSS animations don't natively fire DOM events for pause/resume/restart. To recei
 | `Ended` | The animation completes (after all iterations) |
 | `Iteration` | Each cycle completes |
 | `Cancelled` | The browser aborts the animation |
-| `Paused` | `pauseCmd` is called |
-| `Resumed` | `resumeCmd` is called |
-| `Restarted` | `restartCmd` is called |
+| `Paused` | `pause` is called |
+| `Resumed` | `resume` is called |
+| `Restarted` | `restart` is called |
 
 ### Defaults
 
@@ -288,12 +205,9 @@ CSS animations don't natively fire DOM events for pause/resume/restart. To recei
 | ---------- | ---- | ------------- |
 | `stop` | `String -> AnimState -> AnimState` | Jump to end state and stop |
 | `reset` | `String -> AnimState -> AnimState` | Jump to start state and stop |
-| `restart` | `String -> AnimState -> AnimState` | Reset and begin playing again |
-| `restartCmd` | `String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Restart and receive `Restarted` event |
-| `pause` | `String -> AnimState -> AnimState` | Freeze at current position |
-| `pauseCmd` | `String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Pause and receive `Paused` event |
-| `resume` | `String -> AnimState -> AnimState` | Continue from paused position |
-| `resumeCmd` | `String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Resume and receive `Resumed` event |
+| `restart` | `String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Reset and begin playing again |
+| `pause` | `String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Freeze at current position |
+| `resume` | `String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Continue from paused position |
 
 ### State Queries
 

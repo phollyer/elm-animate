@@ -12,7 +12,6 @@ module Anim.Engine.CSS.Keyframes exposing
     , delay
     , iterations, loopForever, alternate
     , stop, reset, restart, pause, resume
-    , pauseCmd, resumeCmd, restartCmd
     , anyRunning, isRunning, allComplete, isComplete
     , getBackgroundColorStart, getBackgroundColorEnd
     , getOpacityStart, getOpacityEnd
@@ -119,8 +118,6 @@ Control how many times an animation repeats.
 # Animation Control
 
 @docs stop, reset, restart, pause, resume
-
-@docs pauseCmd, resumeCmd, restartCmd
 
 
 # Querying Animation State
@@ -730,25 +727,17 @@ reset =
 
 {-| Restart an animation from the beginning.
 
-    Keyframes.restart "elementId" model.animState
-
--}
-restart : String -> AnimState -> AnimState
-restart =
-    InternalCSS.restartAnimation
-
-
-{-| Restart an animation and receive a `Restarted` event through `update`.
+Returns a `Restarted` event through `update`.
 
     let
         ( newState, cmd ) =
-            Keyframes.restartCmd "elementId" GotAnimMsg model.animState
+            Keyframes.restart "elementId" GotAnimMsg model.animState
     in
     ( { model | animState = newState }, cmd )
 
 -}
-restartCmd : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-restartCmd elementId toMsg animState =
+restart : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+restart elementId toMsg animState =
     ( InternalCSS.restartAnimation elementId animState
     , Task.succeed (toMsg (AnimMsg (InternalRestarted elementId)))
         |> Task.perform identity
@@ -757,25 +746,17 @@ restartCmd elementId toMsg animState =
 
 {-| Pause a running animation.
 
-    Keyframes.pause "elementId" model.animState
-
--}
-pause : String -> AnimState -> AnimState
-pause =
-    InternalCSS.pauseAnimation
-
-
-{-| Pause an animation and receive a `Paused` event through `update`.
+Returns a `Paused` event through `update`.
 
     let
         ( newState, cmd ) =
-            Keyframes.pauseCmd "elementId" GotAnimMsg model.animState
+            Keyframes.pause "elementId" GotAnimMsg model.animState
     in
     ( { model | animState = newState }, cmd )
 
 -}
-pauseCmd : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-pauseCmd elementId toMsg animState =
+pause : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+pause elementId toMsg animState =
     ( InternalCSS.pauseAnimation elementId animState
     , Task.succeed (toMsg (AnimMsg (InternalPaused elementId)))
         |> Task.perform identity
@@ -784,25 +765,17 @@ pauseCmd elementId toMsg animState =
 
 {-| Resume a paused animation.
 
-    Keyframes.resume "elementId" model.animState
-
--}
-resume : String -> AnimState -> AnimState
-resume =
-    InternalCSS.resumeAnimation
-
-
-{-| Resume an animation and receive a `Resumed` event through `update`.
+Returns a `Resumed` event through `update`.
 
     let
         ( newState, cmd ) =
-            Keyframes.resumeCmd "elementId" GotAnimMsg model.animState
+            Keyframes.resume "elementId" GotAnimMsg model.animState
     in
     ( { model | animState = newState }, cmd )
 
 -}
-resumeCmd : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-resumeCmd elementId toMsg animState =
+resume : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+resume elementId toMsg animState =
     ( InternalCSS.resumeAnimation elementId animState
     , Task.succeed (toMsg (AnimMsg (InternalResumed elementId)))
         |> Task.perform identity

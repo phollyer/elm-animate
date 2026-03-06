@@ -90,6 +90,7 @@ type Msg
     | Restart
     | Pause
     | Resume
+    | GotAnimMsg Keyframes.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -118,23 +119,33 @@ update msg model =
         -- --8<-- [end:reset]
         -- --8<-- [start:restart]
         Restart ->
-            ( { model | animState = Keyframes.restart animGroup model.animState }
-            , Cmd.none
-            )
+            let
+                ( newState, cmd ) =
+                    Keyframes.restart animGroup GotAnimMsg model.animState
+            in
+            ( { model | animState = newState }, cmd )
 
         -- --8<-- [end:restart]
         -- --8<-- [start:pause]
         Pause ->
-            ( { model | animState = Keyframes.pause animGroup model.animState }
-            , Cmd.none
-            )
+            let
+                ( newState, cmd ) =
+                    Keyframes.pause animGroup GotAnimMsg model.animState
+            in
+            ( { model | animState = newState }, cmd )
 
         -- --8<-- [end:pause]
         -- --8<-- [start:resume]
         Resume ->
-            ( { model | animState = Keyframes.resume animGroup model.animState }
-            , Cmd.none
-            )
+            let
+                ( newState, cmd ) =
+                    Keyframes.resume animGroup GotAnimMsg model.animState
+            in
+            ( { model | animState = newState }, cmd )
+
+        -- --8<-- [end:resume]
+        GotAnimMsg _ ->
+            ( model, Cmd.none )
 
 
 

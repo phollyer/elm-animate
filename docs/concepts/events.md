@@ -102,7 +102,7 @@ These events are generated internally by the engine:
 | Iteration | | ✓ | ✓ |
 | Changed | | | ✓ |
 
-\* To generate these events, use `pauseCmd`, `resumeCmd` or `restartCmd`. See [Keyframe Event Variants](../engines/keyframes.md#event-variants) for more info.
+\* These events are generated when you call `pause`, `resume` or `restart`. See [Keyframe Events from Control Functions](../engines/keyframes.md#events-from-control-functions) for more info.
 
 
 ??? info "Full Event Table"
@@ -218,18 +218,17 @@ Fired at the end of each iteration for looping animations. Useful for tracking p
 
 Fired when animations are paused or resumed via the `pause` and `resume` control functions.
 
-- **Sub & WAAPI**: Events fire automatically
-- **Keyframes**: Use `pauseCmd` / `resumeCmd` to receive events through `update`
+- **Keyframes, Sub & WAAPI**: Events provided through `update`
 - **Transitions**: Cannot be paused/resumed once started
 
 ??? example "View Source Code"
 
     ```elm
-    -- Keyframes: use pauseCmd to get the event
+    -- Keyframes: pause returns (AnimState, Cmd msg)
     Pause ->
         let
             ( newState, cmd ) =
-                Keyframes.pauseCmd "box" GotAnimMsg model.animState
+                Keyframes.pause "box" GotAnimMsg model.animState
         in
         ( { model | animState = newState }, cmd )
 
@@ -241,8 +240,7 @@ Fired when animations are paused or resumed via the `pause` and `resume` control
 
 Fired when an animation is restarted from the beginning via the `restart` control function.
 
-- **Sub & WAAPI**: Events fire automatically
-- **Keyframes**: Use `restartCmd` to receive events through `update`
+- **Keyframes, Sub & WAAPI**: Events provided through `update`
 - **Transitions**: Cannot be restarted/replayed without a state change, see [How Transitions Work](../engines/transitions.md#how-css-transitions-work)
 
 
